@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "bugs": [
+    {
+      "id": "bug-001",
+      "timestamp": "2026-04-16T15:26:04.459Z",
+      "error_message": "Significant refactor of ",
+      "file": "README.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 22→27 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T15:26:04.459Z"
+    },
+    {
+      "id": "bug-002",
+      "timestamp": "2026-04-16T16:14:10.991Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 20→27 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T16:14:10.991Z"
+    },
+    {
+      "id": "bug-003",
+      "timestamp": "2026-04-16T17:29:43.609Z",
+      "error_message": "Incorrect value in code",
+      "file": "docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md",
+      "root_cause": "Had `apps/project-management/`",
+      "fix": "Changed to `apps/bridge/`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T17:29:43.609Z"
+    },
+    {
+      "id": "bug-004",
+      "timestamp": "2026-04-16T18:45:02.773Z",
+      "error_message": "Significant refactor of ",
+      "file": ".gitignore",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6→9 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "unknown"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T18:45:02.773Z"
+    }
+  ]
+}

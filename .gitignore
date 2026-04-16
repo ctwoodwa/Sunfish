@@ -73,6 +73,7 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+_site/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -213,9 +214,10 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+# (scoped to nested paths only; /packages/ at the repo root is Sunfish source code)
+*/**/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/
+!*/**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files

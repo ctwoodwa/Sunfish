@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Authors>Sunfish Contributors</Authors>
+    <Company>Sunfish</Company>
+    <RepositoryUrl>https://github.com/your-org/sunfish</RepositoryUrl>
+    <PackageVersion>0.1.0</PackageVersion>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+</Project>
