@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components.Web;
-
 namespace Sunfish.Foundation.Models;
 
 /// <summary>
@@ -13,8 +11,8 @@ public class TreeItemContextMenuEventArgs
     /// <summary>The ID of the right-clicked node.</summary>
     public string ItemId { get; set; } = string.Empty;
 
-    /// <summary>The mouse event args from the context menu event.</summary>
-    public MouseEventArgs MouseEventArgs { get; set; } = default!;
+    /// <summary>Mouse position and modifier keys from the context menu event.</summary>
+    public SunfishMouseEventArgs MouseEventArgs { get; set; } = new();
 }
 
 /// <summary>

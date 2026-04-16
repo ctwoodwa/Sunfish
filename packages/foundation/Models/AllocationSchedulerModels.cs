@@ -76,7 +76,7 @@ public class AllocationCellRef
     public DateTime BucketEnd { get; set; }
 }
 
-/// <summary>Context passed to CellTemplate RenderFragment.</summary>
+/// <summary>Context passed to a cell template callback.</summary>
 public class AllocationCellContext
 {
     public AllocationRecord? Record { get; set; }

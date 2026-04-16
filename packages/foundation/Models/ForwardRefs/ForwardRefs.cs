@@ -16,21 +16,27 @@
 
 namespace Sunfish.Foundation.Models.ForwardRefs;
 
-/// <summary>Placeholder — real type arrives in Task 7 at Sunfish.Foundation.BusinessLogic.Enums.</summary>
+/// <summary>
+/// Placeholder — real type arrives in Task 7 at Sunfish.Foundation.BusinessLogic.Enums.
+/// Members must stay in parity with Marilo.Core.Enums.ScenarioStatus.
+/// </summary>
 public enum ScenarioStatus
 {
-    Draft,
-    Shared,
-    Approved,
-    Promoted,
-    Rejected
+    Draft,      // source: Marilo.Core.Enums.ScenarioStatus.Draft
+    Shared,     // source: Marilo.Core.Enums.ScenarioStatus.Shared
+    Approved,   // source: Marilo.Core.Enums.ScenarioStatus.Approved
+    Promoted,   // source: Marilo.Core.Enums.ScenarioStatus.Promoted
+    Rejected    // source: Marilo.Core.Enums.ScenarioStatus.Rejected
 }
 
-/// <summary>Placeholder — real type arrives in Task 7 at Sunfish.Foundation.BusinessLogic.Enums.</summary>
+/// <summary>
+/// Placeholder — real type arrives in Task 7 at Sunfish.Foundation.BusinessLogic.Enums.
+/// Members must stay in parity with Marilo.Core.Enums.AllocationSetType.
+/// </summary>
 public enum AllocationSetType
 {
-    Baseline,
-    Scenario
+    Baseline,   // source: Marilo.Core.Enums.AllocationSetType.Baseline
+    Scenario    // source: Marilo.Core.Enums.AllocationSetType.Scenario
 }
 
 /// <summary>Placeholder — real type arrives in Task 5 at Sunfish.Foundation.Configuration.</summary>

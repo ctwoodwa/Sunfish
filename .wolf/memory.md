@@ -74,3 +74,15 @@
 | 15:04 | Edited packages/foundation/Models/AllocationSchedulerModels.cs | modified TODO() | ~56 |
 | 15:04 | Created packages/foundation/Models/ForwardRefs/ForwardRefs.cs | — | ~373 |
 | 15:04 | Edited packages/foundation/Models/ThemeChangedEventArgs.cs | modified TODO() | ~44 |
+| 19:xx | Task 3 complete: 37 model files + 6 DataSheet files copied from Marilo.Core/Models → packages/foundation/Models/; namespaces rewritten Marilo.Core→Sunfish.Foundation; all Marilo product name refs in doc comments replaced with Sunfish equivalents; MariloResizeEventArgs.cs renamed SunfishResizeEventArgs.cs; FrameworkReference added to csproj for Blazor types; ForwardRefs.cs stubs ScenarioStatus/AllocationSetType (Task 7) and SunfishTheme (Task 5); build clean 0W/0E; committed 62da7bc to feat/migration-phase1-foundation | — | — |
+
+## Session: 2026-04-16 15:11
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 15:12 | Edited packages/foundation/Sunfish.Foundation.csproj | 5→2 lines | ~23 |
+| 15:12 | Created packages/foundation/Models/SunfishMouseEventArgs.cs | — | ~391 |
+| 15:12 | Edited packages/foundation/Models/TreeViewModels.cs | 18→16 lines | ~154 |
+| 15:12 | Edited packages/foundation/Models/TileLayoutModels.cs | 15→19 lines | ~142 |
+| 15:12 | Edited packages/foundation/Models/AllocationSchedulerModels.cs | inline fix | ~18 |
+| 15:12 | Edited packages/foundation/Models/ForwardRefs/ForwardRefs.cs | expanded (+6 lines) | ~248 |
