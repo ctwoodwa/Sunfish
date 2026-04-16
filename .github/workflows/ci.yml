@@ -17,47 +17,18 @@ jobs:
         with:
           dotnet-version: '10.x'
 
-      - name: Find buildable projects
-        id: find
-        run: |
-          # Collect non-test csproj files (exclude tests/ subdirectories)
-          src=$(find packages apps tooling accelerators -name "*.csproj" \
-                ! -path "*/tests/*" ! -path "*/test/*" 2>/dev/null | sort | tr '\n' ' ')
-          tests=$(find packages apps tooling accelerators -name "*.csproj" \
-                  -path "*/tests/*" 2>/dev/null | sort | tr '\n' ' ')
-          echo "src=$src"   >> "$GITHUB_OUTPUT"
-          echo "tests=$tests" >> "$GITHUB_OUTPUT"
-          echo "has_src=$([ -n \"$src\" ] && echo true || echo false)"   >> "$GITHUB_OUTPUT"
-          echo "has_tests=$([ -n \"$tests\" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
       - name: Restore
-        if: steps.find.outputs.has_src == 'true'
-        run: |
-          for p in ${{ steps.find.outputs.src }}; do
-            dotnet restore "$p"
-          done
+        run: dotnet restore Sunfish.slnx
 
       - name: Build
-        if: steps.find.outputs.has_src == 'true'
-        run: |
-          for p in ${{ steps.find.outputs.src }}; do
-            dotnet build "$p" --no-restore
-          done
+        run: dotnet build Sunfish.slnx --no-restore
 
       - name: Test
-        if: steps.find.outputs.has_tests == 'true'
-        run: |
-          for p in ${{ steps.find.outputs.tests }}; do
-            dotnet test "$p" --no-build --logger "trx" --results-directory TestResults
-          done
+        run: dotnet test Sunfish.slnx --no-build --logger "trx" --results-directory TestResults
 
       - name: Upload test results
-        if: steps.find.outputs.has_tests == 'true' && always()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: TestResults/
-
-      - name: Nothing to build yet
-        if: steps.find.outputs.has_src == 'false'
-        run: echo "No projects found — skipping build. Add packages to enable CI checks."

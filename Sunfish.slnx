@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
+  <Project Path="packages/foundation/tests/tests.csproj" />
+</Solution>
