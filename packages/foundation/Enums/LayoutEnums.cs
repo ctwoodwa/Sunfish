@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies how accordion items expand (single or multiple expanded at once).

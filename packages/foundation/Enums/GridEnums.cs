@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies how the data grid enters edit mode.

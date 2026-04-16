@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies the color format that the ColorPicker returns to the application.

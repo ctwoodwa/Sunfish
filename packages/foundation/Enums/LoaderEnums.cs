@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies the visual style of a loading indicator.

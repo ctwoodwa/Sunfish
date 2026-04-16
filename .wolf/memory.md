@@ -61,3 +61,8 @@
 | 14:54 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~8 |
 | 14:54 | Edited packages/foundation/Enums/LayoutEnums.cs | inline fix | ~17 |
 | 14:54 | Edited packages/foundation/Sunfish.Foundation.csproj | 5→7 lines | ~85 |
+| 19:xx | Task 2 complete: 29 enum files copied from Marilo.Core/Enums → packages/foundation/Enums/, namespaces rewritten Marilo→Sunfish, MariloResizeEdges/MariloResizeAxis renamed to SunfishResizeEdges/SunfishResizeAxis, doc comments debranded, NoWarn CS1591 added to csproj; build clean 0W/0E; committed 9fca494 to feat/migration-phase1-foundation | — | — |
+| 14:58 | Edited packages/foundation/Enums/ComponentEnums.cs | 6→4 lines | ~43 |
+| 14:58 | Edited packages/foundation/Sunfish.Foundation.csproj | 2→4 lines | ~68 |
+| 14:59 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~3 |
+| 14:59 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~3 |

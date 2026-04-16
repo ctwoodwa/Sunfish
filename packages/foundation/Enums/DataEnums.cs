@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies the type of data change that occurred.

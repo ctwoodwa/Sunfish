@@ -328,24 +328,159 @@
       "first_read": "2026-04-16T18:48:46.896Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj": {
-      "count": 3,
+      "count": 5,
       "tokens": 0,
       "first_read": "2026-04-16T18:48:50.079Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs": {
-      "count": 1,
+      "count": 4,
       "tokens": 0,
       "first_read": "2026-04-16T18:54:28.853Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Enums/CellState.cs": {
-      "count": 1,
+      "count": 2,
       "tokens": 0,
       "first_read": "2026-04-16T18:54:29.016Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Enums/DataSheetColumnType.cs": {
-      "count": 1,
+      "count": 2,
       "tokens": 0,
       "first_read": "2026-04-16T18:54:31.010Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ButtonVariant.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:55.192Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/AlertSeverity.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:55.590Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ComponentEnums.cs": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:55.995Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/AllocationSchedulerEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:57.838Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/GridEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:57.844Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/DataEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:56:57.876Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ConnectionHealthState.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:00.768Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/AggregateConnectionState.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:01.152Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/MapEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:01.542Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/BarcodeEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:02.399Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/SliderEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:02.415Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ConnectionPopupPlacement.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:10.454Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/LayoutEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:10.840Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/NotificationEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:11.117Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/WindowEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:14.918Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/TreeListEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:15.639Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/FormEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:15.807Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/EditorEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:16.089Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ButtonFillMode.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:20.649Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ButtonSize.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:21.054Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ChartSeriesType.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:21.774Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ColorPickerEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:22.179Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ListBoxEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:23.312Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/LoaderEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:23.734Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/SelectionEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:24.118Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ToastSeverity.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:24.489Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/TooltipEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:57:24.786Z"
     }
   },
   "files_written": [
@@ -528,6 +663,30 @@
       "action": "edit",
       "tokens": 91,
       "at": "2026-04-16T18:54:53.989Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/ComponentEnums.cs",
+      "action": "edit",
+      "tokens": 46,
+      "at": "2026-04-16T18:58:53.743Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj",
+      "action": "edit",
+      "tokens": 73,
+      "at": "2026-04-16T18:58:59.241Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs",
+      "action": "edit",
+      "tokens": 4,
+      "at": "2026-04-16T18:59:05.780Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs",
+      "action": "edit",
+      "tokens": 3,
+      "at": "2026-04-16T18:59:08.316Z"
     }
   ],
   "edit_counts": {
@@ -536,16 +695,17 @@
     ".claude/skill/skill-gitbutler.md": 1,
     "Directory.Build.props": 2,
     "Directory.Packages.props": 1,
-    "packages/foundation/Sunfish.Foundation.csproj": 2,
+    "packages/foundation/Sunfish.Foundation.csproj": 3,
     ".gitignore": 4,
-    "packages/foundation/Enums/ResizableContainerEnums.cs": 2,
+    "packages/foundation/Enums/ResizableContainerEnums.cs": 4,
     "packages/foundation/Enums/CellState.cs": 1,
     "packages/foundation/Enums/DataSheetColumnType.cs": 1,
-    "packages/foundation/Enums/LayoutEnums.cs": 1
+    "packages/foundation/Enums/LayoutEnums.cs": 1,
+    "packages/foundation/Enums/ComponentEnums.cs": 1
   },
   "anatomy_hits": 5,
-  "anatomy_misses": 64,
-  "repeated_reads_warned": 19,
+  "anatomy_misses": 91,
+  "repeated_reads_warned": 28,
   "cerebrum_warnings": 0,
   "stop_count": 8
 }

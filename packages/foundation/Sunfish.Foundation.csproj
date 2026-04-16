@@ -3,7 +3,9 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Foundation</PackageId>
     <Description>Core contracts, enums, models, and services for Sunfish.</Description>
-    <!-- CS1591: suppress missing XML doc warnings on migrated content (Phase 1) -->
+    <!-- TODO: Remove project-level CS1591 suppression before stable release.
+         Add per-file #pragma guards on files with genuinely undocumented members instead.
+         Tracked as Phase 1 migration accommodation. -->
     <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>

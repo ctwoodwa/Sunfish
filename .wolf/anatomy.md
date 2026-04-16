@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-16T18:54:53.979Z
-> Files: 5 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-16T18:59:08.307Z
+> Files: 3 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/plans/
 
@@ -29,11 +29,9 @@
 
 ## packages/foundation/
 
-- `Sunfish.Foundation.csproj` (~127 tok)
+- `Sunfish.Foundation.csproj` (~165 tok)
 
 ## packages/foundation/Enums/
 
-- `CellState.cs` — Represents the current state of a cell in SunfishDataSheet. (~145 tok)
-- `DataSheetColumnType.cs` — Defines the editor type for a column in SunfishDataSheet. (~156 tok)
-- `LayoutEnums.cs` — Specifies how accordion items expand (single or multiple expanded at once). (~1852 tok)
-- `ResizableContainerEnums.cs` — Specifies which edges and corners of a resizable container have resize handles. This is a flags enum (~339 tok)
+- `ComponentEnums.cs` — Specifies the layout alignment of action buttons in dialogs, popovers, and similar containers. (~3397 tok)
+- `ResizableContainerEnums.cs` — Specifies which edges and corners of a resizable container have resize handles. This is a flags enum (~337 tok)

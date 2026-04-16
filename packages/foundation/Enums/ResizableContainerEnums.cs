@@ -1,11 +1,11 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies which edges and corners of a resizable container have resize handles.
 /// This is a flags enum allowing combinations of edges.
 /// </summary>
 [Flags]
-public enum SunfishResizeEdges
+public enum ResizeEdges
 {
     /// <summary>No resize handles.</summary>
     None = 0,
@@ -41,7 +41,7 @@ public enum SunfishResizeEdges
 /// <summary>
 /// Specifies the axis along which a resize operation occurs.
 /// </summary>
-public enum SunfishResizeAxis
+public enum ResizeAxis
 {
     /// <summary>Horizontal resize only.</summary>
     Horizontal,

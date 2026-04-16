@@ -1,4 +1,4 @@
-namespace Sunfish.Core.Enums;
+namespace Sunfish.Foundation.Enums;
 
 /// <summary>
 /// Specifies the layout alignment of action buttons in dialogs, popovers, and similar containers.
@@ -492,9 +492,7 @@ public enum AutoCompleteAdaptiveMode
     None,
 
     /// <summary>
-    /// Automatically switches to a full-screen action sheet on small viewports.
-    /// CSS class mar-autocomplete--adaptive is applied and a media query
-    /// triggers full-screen overlay rendering.
+    /// An adaptive CSS class is applied and a media query triggers full-screen overlay rendering on small screens.
     /// </summary>
     Auto
 }
