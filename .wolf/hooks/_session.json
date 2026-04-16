@@ -76,6 +76,11 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-16T19:17:58.614Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/BusinessLogic/Enums/BusinessLogicEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:19:40.907Z"
     }
   },
   "files_written": [
@@ -138,6 +143,12 @@
       "action": "edit",
       "tokens": 48,
       "at": "2026-04-16T19:16:25.473Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/AllocationSchedulerModels.cs",
+      "action": "edit",
+      "tokens": 22,
+      "at": "2026-04-16T19:19:53.673Z"
     }
   ],
   "edit_counts": {
@@ -145,13 +156,13 @@
     "packages/foundation/Models/SunfishMouseEventArgs.cs": 1,
     "packages/foundation/Models/TreeViewModels.cs": 1,
     "packages/foundation/Models/TileLayoutModels.cs": 1,
-    "packages/foundation/Models/AllocationSchedulerModels.cs": 1,
+    "packages/foundation/Models/AllocationSchedulerModels.cs": 2,
     "packages/foundation/Models/ForwardRefs/ForwardRefs.cs": 3,
     "packages/foundation/Models/ThemeChangedEventArgs.cs": 1,
     "packages/foundation/Configuration/SunfishTheme.cs": 1
   },
   "anatomy_hits": 0,
-  "anatomy_misses": 15,
+  "anatomy_misses": 16,
   "repeated_reads_warned": 3,
   "cerebrum_warnings": 0,
   "stop_count": 0

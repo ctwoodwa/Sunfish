@@ -1,7 +1,5 @@
-// TODO(Task 7): Restore once Sunfish.Foundation.BusinessLogic.Enums is migrated.
-// using Sunfish.Foundation.BusinessLogic.Enums;
+using Sunfish.Foundation.BusinessLogic.Enums;
 using Sunfish.Foundation.Enums;
-using Sunfish.Foundation.Models.ForwardRefs;
 
 namespace Sunfish.Foundation.Models;
 

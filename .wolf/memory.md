@@ -90,3 +90,4 @@
 | 15:15 | Edited packages/foundation/Models/ThemeChangedEventArgs.cs | 5→3 lines | ~21 |
 | 15:16 | Edited packages/foundation/Models/ForwardRefs/ForwardRefs.cs | 15→13 lines | ~175 |
 | 15:16 | Edited packages/foundation/Configuration/SunfishTheme.cs | 2→2 lines | ~45 |
+| 15:19 | Edited packages/foundation/Models/AllocationSchedulerModels.cs | 4→2 lines | ~21 |
