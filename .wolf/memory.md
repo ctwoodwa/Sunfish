@@ -91,3 +91,10 @@
 | 15:16 | Edited packages/foundation/Models/ForwardRefs/ForwardRefs.cs | 15→13 lines | ~175 |
 | 15:16 | Edited packages/foundation/Configuration/SunfishTheme.cs | 2→2 lines | ~45 |
 | 15:19 | Edited packages/foundation/Models/AllocationSchedulerModels.cs | 4→2 lines | ~21 |
+| 15:21 | Created packages/foundation/Services/SunfishThemeService.cs | — | ~550 |
+| 15:21 | Edited packages/foundation/Extensions/ServiceCollectionExtensions.cs | AddSunfishCoreServices() → services() | ~229 |
+| 15:21 | Edited Directory.Packages.props | 2→4 lines | ~62 |
+| 15:22 | Created packages/foundation/tests/tests.csproj | — | ~155 |
+| 15:22 | Created packages/foundation/tests/ServiceCollectionExtensionsTests.cs | — | ~359 |
+| 15:22 | Edited packages/foundation/Sunfish.Foundation.csproj | 3→7 lines | ~64 |
+| 15:22 | Edited packages/foundation/tests/tests.csproj | 4→5 lines | ~49 |

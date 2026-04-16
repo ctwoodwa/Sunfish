@@ -1,13 +1,14 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-16T19:19:53.670Z
-> Files: 1 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-16T19:22:47.781Z
+> Files: 6 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/plans/
 
 
 ## ./
 
+- `Directory.Packages.props` (~220 tok)
 
 ## .claude/
 
@@ -29,6 +30,7 @@
 
 ## packages/foundation/
 
+- `Sunfish.Foundation.csproj` — /*.cs" /> (~203 tok)
 
 ## packages/foundation/Configuration/
 
@@ -36,12 +38,24 @@
 ## packages/foundation/Enums/
 
 
+## packages/foundation/Extensions/
+
+- `ServiceCollectionExtensions.cs` — Registers Sunfish foundation services and applies optional configuration. Registers <see cref="ISunf (~335 tok)
+
 ## packages/foundation/Models/
 
-- `AllocationSchedulerModels.cs` — A single allocation record: one resource, one task, one time bucket. The authoritative, persisted un (~2264 tok)
 
 ## packages/foundation/Models/DataSheet/
 
 
 ## packages/foundation/Models/ForwardRefs/
 
+
+## packages/foundation/Services/
+
+- `SunfishThemeService.cs` — Framework-agnostic, in-memory implementation of <see cref="ISunfishThemeService"/>. Holds theme stat (~550 tok)
+
+## packages/foundation/tests/
+
+- `ServiceCollectionExtensionsTests.cs` — Class: ServiceCollectionExtensionsTests (~359 tok)
+- `tests.csproj` (~172 tok)

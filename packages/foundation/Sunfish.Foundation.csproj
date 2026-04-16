@@ -11,4 +11,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
 </Project>

@@ -28,7 +28,7 @@
       "first_read": "2026-04-16T19:12:04.657Z"
     },
     "C:/Projects/Sunfish/docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md": {
-      "count": 2,
+      "count": 3,
       "tokens": 0,
       "first_read": "2026-04-16T19:13:57.618Z"
     },
@@ -81,6 +81,31 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-16T19:19:40.907Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Extensions/ServiceCollectionExtensions.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:20:38.616Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Services/ISunfishThemeService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:20:48.343Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Extensions/ServiceCollectionExtensions.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:21:08.300Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/tests/tests.csproj": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:21:41.812Z"
+    },
+    "C:/Projects/Sunfish/Directory.Packages.props": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:21:52.333Z"
     }
   },
   "files_written": [
@@ -149,21 +174,68 @@
       "action": "edit",
       "tokens": 22,
       "at": "2026-04-16T19:19:53.673Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Services/SunfishThemeService.cs",
+      "action": "create",
+      "tokens": 590,
+      "at": "2026-04-16T19:21:00.004Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Extensions/ServiceCollectionExtensions.cs",
+      "action": "edit",
+      "tokens": 246,
+      "at": "2026-04-16T19:21:21.359Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/Directory.Packages.props",
+      "action": "edit",
+      "tokens": 66,
+      "at": "2026-04-16T19:21:56.980Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/tests/tests.csproj",
+      "action": "create",
+      "tokens": 166,
+      "at": "2026-04-16T19:22:01.142Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/tests/ServiceCollectionExtensionsTests.cs",
+      "action": "create",
+      "tokens": 385,
+      "at": "2026-04-16T19:22:08.280Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj",
+      "action": "edit",
+      "tokens": 68,
+      "at": "2026-04-16T19:22:35.512Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/tests/tests.csproj",
+      "action": "edit",
+      "tokens": 53,
+      "at": "2026-04-16T19:22:47.791Z"
     }
   ],
   "edit_counts": {
-    "packages/foundation/Sunfish.Foundation.csproj": 1,
+    "packages/foundation/Sunfish.Foundation.csproj": 2,
     "packages/foundation/Models/SunfishMouseEventArgs.cs": 1,
     "packages/foundation/Models/TreeViewModels.cs": 1,
     "packages/foundation/Models/TileLayoutModels.cs": 1,
     "packages/foundation/Models/AllocationSchedulerModels.cs": 2,
     "packages/foundation/Models/ForwardRefs/ForwardRefs.cs": 3,
     "packages/foundation/Models/ThemeChangedEventArgs.cs": 1,
-    "packages/foundation/Configuration/SunfishTheme.cs": 1
+    "packages/foundation/Configuration/SunfishTheme.cs": 1,
+    "packages/foundation/Services/SunfishThemeService.cs": 1,
+    "packages/foundation/Extensions/ServiceCollectionExtensions.cs": 1,
+    "Directory.Packages.props": 1,
+    "packages/foundation/tests/tests.csproj": 2,
+    "packages/foundation/tests/ServiceCollectionExtensionsTests.cs": 1
   },
   "anatomy_hits": 0,
-  "anatomy_misses": 16,
-  "repeated_reads_warned": 3,
+  "anatomy_misses": 21,
+  "repeated_reads_warned": 4,
   "cerebrum_warnings": 0,
   "stop_count": 0
 }
