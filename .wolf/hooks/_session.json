@@ -41,6 +41,41 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-16T19:16:15.645Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/IMariloScrollService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:05.203Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/ThemeService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:05.485Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/SignalRConnectionRegistry.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:10.728Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/IMariloDialogService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:10.898Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Contracts/ISignalRConnectionRegistry.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:29.782Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/IMariloOverlayService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:30.211Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Services/MariloNotificationService.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:17:58.614Z"
     }
   },
   "files_written": [
@@ -116,7 +151,7 @@
     "packages/foundation/Configuration/SunfishTheme.cs": 1
   },
   "anatomy_hits": 0,
-  "anatomy_misses": 8,
+  "anatomy_misses": 15,
   "repeated_reads_warned": 3,
   "cerebrum_warnings": 0,
   "stop_count": 0
