@@ -39,6 +39,23 @@ export SUNFISH="$HOME/Sunfish"                    # or C:/Projects/Sunfish on Wi
 export MARILO="$HOME/Marilo"                      # or C:/Projects/Marilo on Windows
 ```
 
+**Marilo source.** The canonical upstream is <https://github.com/ctwoodwa/Marilo>. If you
+don't already have a clone at `$MARILO`, get one before starting — this plan is a
+read-only consumer of that repo:
+
+```bash
+if [ ! -d "$MARILO/.git" ]; then
+  git clone https://github.com/ctwoodwa/Marilo.git "$MARILO"
+fi
+# Work from a known commit so the sed rewrites are reproducible.
+git -C "$MARILO" fetch origin
+git -C "$MARILO" rev-parse HEAD > "$SUNFISH/docs/superpowers/plans/.marilo-source-sha"
+```
+
+The recorded SHA is committed with the rest of Phase 2 so a future reviewer can diff
+`ISunfishCssProvider.cs` against the exact Marilo revision it was derived from. Never commit
+into `$MARILO` from this plan.
+
 All `cd "$SUNFISH"`, `cp "$MARILO/..."`, and `sed -i` commands assume GNU sed. On macOS, replace `sed -i` with `sed -i ''`. On Windows, use WSL or Git Bash with MSYS GNU sed.
 
 **GitButler virtual branch.** This plan commits through the GitButler CLI (`but`). The virtual branch name `feat/migration-phase2-ui-core` is a **GitButler vbranch** layered on top of the real git branch `claude/review-sunfish-phase2-ui-AGtOf`. Before starting:
@@ -757,7 +774,8 @@ echo "OK: ui-core/Contracts is Blazor-free"
 ```bash
 cd "$SUNFISH"
 but stage "Sunfish.slnx" "feat/migration-phase2-ui-core"
-but commit -m "chore: add ui-core projects to Sunfish.slnx; 19 tests passing" "feat/migration-phase2-ui-core"
+but stage "docs/superpowers/plans/.marilo-source-sha" "feat/migration-phase2-ui-core"
+but commit -m "chore: add ui-core projects to Sunfish.slnx; record Marilo source SHA; 19 tests passing" "feat/migration-phase2-ui-core"
 ```
 
 - [ ] **Step 5: Push the Phase 2 vbranch**
@@ -808,7 +826,8 @@ investigate the underlying cause first.
 - [ ] All commits authored on the GitButler vbranch `feat/migration-phase2-ui-core` (not directly on `claude/review-sunfish-phase2-ui-AGtOf`)
 - [ ] `but push feat/migration-phase2-ui-core` succeeded
 - [ ] No files outside `packages/ui-core/` and `Sunfish.slnx` were modified by this plan (run `git diff --name-only origin/main...HEAD` to confirm)
-- [ ] Marilo source repo at `$MARILO` was read-only — no edits made there
+- [ ] Marilo source repo at `$MARILO` (from <https://github.com/ctwoodwa/Marilo>) was read-only — no edits or commits made there
+- [ ] `.marilo-source-sha` file was committed, pinning the exact upstream Marilo revision this migration was derived from
 
 ---
 
