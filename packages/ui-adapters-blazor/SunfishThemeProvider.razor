@@ -1,0 +1,86 @@
+@inherits SunfishComponentBase
+
+<CascadingValue Value="@Theme">
+    <div class="@CombineClasses("sf-theme-provider")"
+         style="@GenerateThemeStyles()"
+         dir="@(Theme.IsRtl ? "rtl" : null)"
+         data-sf-theme="@(ThemeService.IsDarkMode ? "dark" : "light")"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter] public SunfishTheme Theme { get; set; } = new();
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback<ThemeChangedEventArgs> ThemeChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ThemeService.ThemeChanged += OnThemeServiceChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThemeService.InitializeAsync();
+        }
+    }
+
+    private async void OnThemeServiceChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        try
+        {
+            Theme = e.NewTheme;
+            await ThemeChanged.InvokeAsync(e);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or TaskCanceledException)
+        {
+            // Component disposed during async operation — safe to ignore
+        }
+    }
+
+    private string GenerateThemeStyles()
+    {
+        var colors = ThemeService.IsDarkMode && Theme.Colors.Dark is not null
+            ? Theme.Colors.Dark
+            : Theme.Colors;
+
+        var builder = new StyleBuilder()
+            // Color tokens
+            .AddStyle("--sf-color-primary", colors.Primary)
+            .AddStyle("--sf-color-secondary", colors.Secondary)
+            .AddStyle("--sf-color-danger", colors.Danger)
+            .AddStyle("--sf-color-warning", colors.Warning)
+            .AddStyle("--sf-color-info", colors.Info)
+            .AddStyle("--sf-color-success", colors.Success)
+            .AddStyle("--sf-color-bg", colors.Background)
+            .AddStyle("--sf-color-surface", colors.Surface)
+            .AddStyle("--sf-color-text", colors.OnBackground)
+            // Typography tokens
+            .AddStyle("--sf-font-family", Theme.Typography.FontFamily)
+            .AddStyle("--sf-font-size-base", Theme.Typography.FontSizeBase)
+            // Shape tokens
+            .AddStyle("--sf-radius-md", Theme.Shape.BorderRadius)
+            .AddStyle("--sf-radius-lg", Theme.Shape.BorderRadiusLarge)
+            .AddStyle("--sf-shadow-sm", Theme.Shape.Elevation1)
+            .AddStyle("--sf-shadow-md", Theme.Shape.Elevation2)
+            .AddStyle("--sf-shadow-lg", Theme.Shape.Elevation3);
+
+        // Append user-supplied Style parameter
+        builder.AddStyle(Style);
+
+        return builder.Build();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            ThemeService.ThemeChanged -= OnThemeServiceChanged;
+        }
+        base.Dispose(disposing);
+    }
+}
