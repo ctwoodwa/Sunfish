@@ -31,13 +31,19 @@ A running checklist of those items should live at `docs/superpowers/plans/marilo
 
 ## Prerequisites & Environment
 
-**Paths.** Commands below use two environment variables so the plan is portable across machines:
+**Paths.** Canonical local layout when an agent runs on the author's machine: repos live under `C:/projects/`. The plan uses two environment variables so commands are portable and so a reader isn't guessing which repo a path points to:
 
 ```bash
-# Set once per shell session. Adjust to your layout.
-export SUNFISH="$HOME/Sunfish"                    # or C:/Projects/Sunfish on Windows
-export MARILO="$HOME/Marilo"                      # or C:/Projects/Marilo on Windows
+# Local default — matches the agent's working environment.
+export SUNFISH="C:/projects/Sunfish"
+export MARILO="C:/projects/Marilo"
+
+# On macOS/Linux (adjust as needed):
+# export SUNFISH="$HOME/projects/Sunfish"
+# export MARILO="$HOME/projects/Marilo"
 ```
+
+Use forward slashes in these values even on Windows — Git Bash, WSL, and the `dotnet` CLI all accept them, and the `sed` / `cp` commands below will not need any quoting tweaks.
 
 **Marilo source.** The canonical upstream is <https://github.com/ctwoodwa/Marilo>. If you
 don't already have a clone at `$MARILO`, get one before starting — this plan is a
@@ -56,7 +62,7 @@ The recorded SHA is committed with the rest of Phase 2 so a future reviewer can 
 `ISunfishCssProvider.cs` against the exact Marilo revision it was derived from. Never commit
 into `$MARILO` from this plan.
 
-All `cd "$SUNFISH"`, `cp "$MARILO/..."`, and `sed -i` commands assume GNU sed. On macOS, replace `sed -i` with `sed -i ''`. On Windows, use WSL or Git Bash with MSYS GNU sed.
+All `cd "$SUNFISH"`, `cp "$MARILO/..."`, and `sed -i` commands assume GNU sed — on Windows run them from Git Bash (ships MSYS GNU sed) or WSL, not from PowerShell or `cmd`. On macOS, replace `sed -i` with `sed -i ''`.
 
 **GitButler virtual branch.** This plan commits through the GitButler CLI (`but`). The virtual branch name `feat/migration-phase2-ui-core` is a **GitButler vbranch** layered on top of the real git branch `claude/review-sunfish-phase2-ui-AGtOf`. Before starting:
 
