@@ -418,3 +418,23 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# ─── Sunfish project-specific ─────────────────────────────────────────────────
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Playwright (Phase 3+ component testing)
+playwright-report/
+test-results/
+/playwright/.cache/
+
+# OpenWolf runtime state — volatile, generated per-session.
+# Knowledge files (anatomy.md, cerebrum.md, buglog.json, memory.md, hooks, config) stay tracked.
+.wolf/token-ledger.json
+.wolf/cron-state.json
+.wolf/designqc-report.json
+.wolf/suggestions.json
+.wolf/hooks/_session.json
+.wolf/designqc-captures/
