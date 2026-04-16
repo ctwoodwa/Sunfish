@@ -144,6 +144,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-16T18:58:53.746Z"
+    },
+    {
+      "id": "bug-010",
+      "timestamp": "2026-04-16T19:02:44.024Z",
+      "error_message": "Wrong reference: MariloObservedSizeChangedEventArgs should be SunfishObservedSizeChangedEventArgs",
+      "file": "packages/foundation/Models/MariloResizeEventArgs.cs",
+      "root_cause": "Used \"MariloObservedSizeChangedEventArgs\" instead of \"SunfishObservedSizeChangedEventArgs\"",
+      "fix": "Changed MariloObservedSizeChangedEventArgs → SunfishObservedSizeChangedEventArgs",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T19:02:44.024Z"
+    },
+    {
+      "id": "bug-011",
+      "timestamp": "2026-04-16T19:03:23.954Z",
+      "error_message": "Wrong reference: SunfishResizeEdges should be ResizeEdges",
+      "file": "packages/foundation/Models/SunfishResizeEventArgs.cs",
+      "root_cause": "Used \"SunfishResizeEdges\" instead of \"ResizeEdges\"",
+      "fix": "Changed SunfishResizeEdges → ResizeEdges",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T19:03:23.954Z"
     }
   ]
 }

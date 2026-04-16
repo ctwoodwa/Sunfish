@@ -328,12 +328,12 @@
       "first_read": "2026-04-16T18:48:46.896Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj": {
-      "count": 5,
+      "count": 7,
       "tokens": 0,
       "first_read": "2026-04-16T18:48:50.079Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs": {
-      "count": 4,
+      "count": 6,
       "tokens": 0,
       "first_read": "2026-04-16T18:54:28.853Z"
     },
@@ -358,7 +358,7 @@
       "first_read": "2026-04-16T18:56:55.590Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Enums/ComponentEnums.cs": {
-      "count": 3,
+      "count": 4,
       "tokens": 0,
       "first_read": "2026-04-16T18:56:55.995Z"
     },
@@ -481,6 +481,46 @@
       "count": 1,
       "tokens": 0,
       "first_read": "2026-04-16T18:57:24.786Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/MariloResizeEventArgs.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:02:24.558Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/ThemeChangedEventArgs.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:02:24.962Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/SunfishResizeEventArgs.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:03:06.885Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/AllocationSchedulerModels.cs": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:03:07.067Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/BusinessLogic/Enums/BusinessLogicEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:03:27.473Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/TileLayoutModels.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:03:33.890Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Models/TreeViewModels.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:03:33.901Z"
+    },
+    "C:/Projects/Marilo/src/Marilo.Core/Configuration/MariloTheme.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:04:00.631Z"
     }
   },
   "files_written": [
@@ -687,6 +727,54 @@
       "action": "edit",
       "tokens": 3,
       "at": "2026-04-16T18:59:08.316Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/MariloResizeEventArgs.cs",
+      "action": "edit",
+      "tokens": 220,
+      "at": "2026-04-16T19:02:43.347Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/MariloResizeEventArgs.cs",
+      "action": "edit",
+      "tokens": 16,
+      "at": "2026-04-16T19:02:44.022Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/ThemeChangedEventArgs.cs",
+      "action": "edit",
+      "tokens": 33,
+      "at": "2026-04-16T19:02:52.044Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/SunfishResizeEventArgs.cs",
+      "action": "edit",
+      "tokens": 14,
+      "at": "2026-04-16T19:03:23.952Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj",
+      "action": "edit",
+      "tokens": 55,
+      "at": "2026-04-16T19:03:54.319Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/AllocationSchedulerModels.cs",
+      "action": "edit",
+      "tokens": 60,
+      "at": "2026-04-16T19:04:42.691Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/ForwardRefs/ForwardRefs.cs",
+      "action": "create",
+      "tokens": 399,
+      "at": "2026-04-16T19:04:50.491Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Models/ThemeChangedEventArgs.cs",
+      "action": "edit",
+      "tokens": 47,
+      "at": "2026-04-16T19:04:55.615Z"
     }
   ],
   "edit_counts": {
@@ -695,17 +783,22 @@
     ".claude/skill/skill-gitbutler.md": 1,
     "Directory.Build.props": 2,
     "Directory.Packages.props": 1,
-    "packages/foundation/Sunfish.Foundation.csproj": 3,
+    "packages/foundation/Sunfish.Foundation.csproj": 4,
     ".gitignore": 4,
     "packages/foundation/Enums/ResizableContainerEnums.cs": 4,
     "packages/foundation/Enums/CellState.cs": 1,
     "packages/foundation/Enums/DataSheetColumnType.cs": 1,
     "packages/foundation/Enums/LayoutEnums.cs": 1,
-    "packages/foundation/Enums/ComponentEnums.cs": 1
+    "packages/foundation/Enums/ComponentEnums.cs": 1,
+    "packages/foundation/Models/MariloResizeEventArgs.cs": 2,
+    "packages/foundation/Models/ThemeChangedEventArgs.cs": 2,
+    "packages/foundation/Models/SunfishResizeEventArgs.cs": 1,
+    "packages/foundation/Models/AllocationSchedulerModels.cs": 1,
+    "packages/foundation/Models/ForwardRefs/ForwardRefs.cs": 1
   },
   "anatomy_hits": 5,
-  "anatomy_misses": 91,
-  "repeated_reads_warned": 28,
+  "anatomy_misses": 99,
+  "repeated_reads_warned": 34,
   "cerebrum_warnings": 0,
   "stop_count": 8
 }

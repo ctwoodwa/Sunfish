@@ -66,3 +66,11 @@
 | 14:58 | Edited packages/foundation/Sunfish.Foundation.csproj | 2→4 lines | ~68 |
 | 14:59 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~3 |
 | 14:59 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~3 |
+| 15:02 | Edited packages/foundation/Models/MariloResizeEventArgs.cs | 20→20 lines | ~205 |
+| 15:02 | Edited packages/foundation/Models/MariloResizeEventArgs.cs | inline fix | ~15 |
+| 15:02 | Edited packages/foundation/Models/ThemeChangedEventArgs.cs | 2→2 lines | ~31 |
+| 15:03 | Edited packages/foundation/Models/SunfishResizeEventArgs.cs | inline fix | ~13 |
+| 15:03 | Edited packages/foundation/Sunfish.Foundation.csproj | 3→6 lines | ~51 |
+| 15:04 | Edited packages/foundation/Models/AllocationSchedulerModels.cs | modified TODO() | ~56 |
+| 15:04 | Created packages/foundation/Models/ForwardRefs/ForwardRefs.cs | — | ~373 |
+| 15:04 | Edited packages/foundation/Models/ThemeChangedEventArgs.cs | modified TODO() | ~44 |
