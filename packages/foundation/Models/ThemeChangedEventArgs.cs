@@ -1,6 +1,4 @@
-// TODO(Task 5): Restore once Sunfish.Foundation.Configuration is migrated.
-// using Sunfish.Foundation.Configuration;
-using Sunfish.Foundation.Models.ForwardRefs;
+using Sunfish.Foundation.Configuration;
 
 namespace Sunfish.Foundation.Models;
 

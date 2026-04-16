@@ -208,6 +208,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-16T19:12:54.828Z"
+    },
+    {
+      "id": "bug-014",
+      "timestamp": "2026-04-16T19:15:59.531Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/foundation/Models/ThemeChangedEventArgs.cs",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 5→3 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T19:15:59.531Z"
     }
   ]
 }
