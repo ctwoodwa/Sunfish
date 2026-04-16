@@ -26,6 +26,11 @@
       "count": 2,
       "tokens": 165,
       "first_read": "2026-04-16T19:12:04.657Z"
+    },
+    "C:/Projects/Sunfish/docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-16T19:13:57.618Z"
     }
   },
   "files_written": [
@@ -75,8 +80,8 @@
     "packages/foundation/Models/ForwardRefs/ForwardRefs.cs": 1
   },
   "anatomy_hits": 0,
-  "anatomy_misses": 5,
-  "repeated_reads_warned": 1,
+  "anatomy_misses": 6,
+  "repeated_reads_warned": 2,
   "cerebrum_warnings": 0,
   "stop_count": 0
 }
