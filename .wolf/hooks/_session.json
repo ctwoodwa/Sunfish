@@ -313,9 +313,24 @@
       "first_read": "2026-04-16T18:33:35.539Z"
     },
     "C:/Projects/Sunfish/.gitignore": {
-      "count": 2,
-      "tokens": 2079,
+      "count": 6,
+      "tokens": 0,
       "first_read": "2026-04-16T18:43:32.707Z"
+    },
+    "C:/Projects/Sunfish/Directory.Build.props": {
+      "count": 3,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:48:46.774Z"
+    },
+    "C:/Projects/Sunfish/Directory.Packages.props": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:48:46.896Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj": {
+      "count": 2,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:48:50.079Z"
     }
   },
   "files_written": [
@@ -456,20 +471,26 @@
       "action": "edit",
       "tokens": 70,
       "at": "2026-04-16T18:45:17.164Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/Directory.Build.props",
+      "action": "edit",
+      "tokens": 94,
+      "at": "2026-04-16T18:52:05.706Z"
     }
   ],
   "edit_counts": {
     "README.md": 6,
     "docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md": 9,
     ".claude/skill/skill-gitbutler.md": 1,
-    "Directory.Build.props": 1,
+    "Directory.Build.props": 2,
     "Directory.Packages.props": 1,
     "packages/foundation/Sunfish.Foundation.csproj": 1,
     ".gitignore": 4
   },
   "anatomy_hits": 5,
-  "anatomy_misses": 58,
-  "repeated_reads_warned": 8,
+  "anatomy_misses": 61,
+  "repeated_reads_warned": 16,
   "cerebrum_warnings": 0,
   "stop_count": 8
 }

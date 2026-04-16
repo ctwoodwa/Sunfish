@@ -17,6 +17,8 @@
 
 <!-- Mistakes made and corrected. Each entry prevents the same mistake recurring. -->
 <!-- Format: [YYYY-MM-DD] Description of what went wrong and what to do instead. -->
+[2026-04-16] `but commit` fails with GPG timeout when `commit.gpgsign` is not explicitly set to `false` in `.git/config`, even with `gitbutler.signcommits=false`. Fix: run `git config --local commit.gpgsign false` before `but commit`, then `git config --local --unset commit.gpgsign` after.
+[2026-04-16] `.gitignore` had `**/[Pp]ackages/*` (NuGet restore rule) which also ignored `/packages/` (Sunfish source root). Fix: scope the NuGet rule to nested paths only: `*/**/[Pp]ackages/*`. Never use `**/[Pp]ackages/*` in this repo.
 
 ## Decision Log
 

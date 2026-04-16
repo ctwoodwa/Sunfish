@@ -52,3 +52,5 @@
 | 14:44 | Edited .gitignore | 4→6 lines | ~67 |
 | 14:45 | Edited .gitignore | 6→9 lines | ~90 |
 | 14:45 | Edited .gitignore | 9→5 lines | ~66 |
+| 14:46 | Task 1 complete: Directory.Build.props, Directory.Packages.props, packages/foundation/Sunfish.Foundation.csproj created; .gitignore fixed for /packages/ source; committed d61db57 to feat/migration-phase1-foundation | — | — |
+| 14:52 | Edited Directory.Build.props | 6→7 lines | ~88 |
