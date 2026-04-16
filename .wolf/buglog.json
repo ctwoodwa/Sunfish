@@ -64,6 +64,70 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-16T18:45:02.773Z"
+    },
+    {
+      "id": "bug-005",
+      "timestamp": "2026-04-16T18:54:35.089Z",
+      "error_message": "Wrong reference: MariloResizeEdges should be SunfishResizeEdges",
+      "file": "packages/foundation/Enums/ResizableContainerEnums.cs",
+      "root_cause": "Used \"MariloResizeEdges\" instead of \"SunfishResizeEdges\"",
+      "fix": "Changed MariloResizeEdges → SunfishResizeEdges",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-16T18:54:39.450Z"
+    },
+    {
+      "id": "bug-006",
+      "timestamp": "2026-04-16T18:54:35.838Z",
+      "error_message": "Wrong reference: MariloDataSheet should be SunfishDataSheet",
+      "file": "packages/foundation/Enums/CellState.cs",
+      "root_cause": "Used \"MariloDataSheet\" instead of \"SunfishDataSheet\"",
+      "fix": "Changed MariloDataSheet → SunfishDataSheet",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T18:54:35.838Z"
+    },
+    {
+      "id": "bug-007",
+      "timestamp": "2026-04-16T18:54:36.528Z",
+      "error_message": "Wrong reference: MariloDataSheet should be SunfishDataSheet",
+      "file": "packages/foundation/Enums/DataSheetColumnType.cs",
+      "root_cause": "Used \"MariloDataSheet\" instead of \"SunfishDataSheet\"",
+      "fix": "Changed MariloDataSheet → SunfishDataSheet",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T18:54:36.528Z"
+    },
+    {
+      "id": "bug-008",
+      "timestamp": "2026-04-16T18:54:43.478Z",
+      "error_message": "Wrong reference: MariloAnimationContainer should be SunfishAnimationContainer",
+      "file": "packages/foundation/Enums/LayoutEnums.cs",
+      "root_cause": "Used \"MariloAnimationContainer\" instead of \"SunfishAnimationContainer\"",
+      "fix": "Changed MariloAnimationContainer → SunfishAnimationContainer",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-16T18:54:43.478Z"
     }
   ]
 }

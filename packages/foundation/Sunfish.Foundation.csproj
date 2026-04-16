@@ -3,6 +3,8 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Foundation</PackageId>
     <Description>Core contracts, enums, models, and services for Sunfish.</Description>
+    <!-- CS1591: suppress missing XML doc warnings on migrated content (Phase 1) -->
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />

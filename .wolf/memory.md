@@ -54,3 +54,10 @@
 | 14:45 | Edited .gitignore | 9→5 lines | ~66 |
 | 14:46 | Task 1 complete: Directory.Build.props, Directory.Packages.props, packages/foundation/Sunfish.Foundation.csproj created; .gitignore fixed for /packages/ source; committed d61db57 to feat/migration-phase1-foundation | — | — |
 | 14:52 | Edited Directory.Build.props | 6→7 lines | ~88 |
+| 18:52 | Edited Directory.Build.props | renamed PackageVersion→Version, added TreatWarningsAsErrors; build clean 0W/0E; committed c260b6f to feat/migration-phase1-foundation | ~150 |
+| 14:54 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~8 |
+| 14:54 | Edited packages/foundation/Enums/CellState.cs | inline fix | ~17 |
+| 14:54 | Edited packages/foundation/Enums/DataSheetColumnType.cs | inline fix | ~17 |
+| 14:54 | Edited packages/foundation/Enums/ResizableContainerEnums.cs | inline fix | ~8 |
+| 14:54 | Edited packages/foundation/Enums/LayoutEnums.cs | inline fix | ~17 |
+| 14:54 | Edited packages/foundation/Sunfish.Foundation.csproj | 5→7 lines | ~85 |

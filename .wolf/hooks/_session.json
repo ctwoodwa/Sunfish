@@ -318,7 +318,7 @@
       "first_read": "2026-04-16T18:43:32.707Z"
     },
     "C:/Projects/Sunfish/Directory.Build.props": {
-      "count": 3,
+      "count": 5,
       "tokens": 0,
       "first_read": "2026-04-16T18:48:46.774Z"
     },
@@ -328,9 +328,24 @@
       "first_read": "2026-04-16T18:48:46.896Z"
     },
     "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj": {
-      "count": 2,
+      "count": 3,
       "tokens": 0,
       "first_read": "2026-04-16T18:48:50.079Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:54:28.853Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/CellState.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:54:29.016Z"
+    },
+    "C:/Projects/Sunfish/packages/foundation/Enums/DataSheetColumnType.cs": {
+      "count": 1,
+      "tokens": 0,
+      "first_read": "2026-04-16T18:54:31.010Z"
     }
   },
   "files_written": [
@@ -477,6 +492,42 @@
       "action": "edit",
       "tokens": 94,
       "at": "2026-04-16T18:52:05.706Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs",
+      "action": "edit",
+      "tokens": 9,
+      "at": "2026-04-16T18:54:35.087Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/CellState.cs",
+      "action": "edit",
+      "tokens": 18,
+      "at": "2026-04-16T18:54:35.836Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/DataSheetColumnType.cs",
+      "action": "edit",
+      "tokens": 18,
+      "at": "2026-04-16T18:54:36.525Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/ResizableContainerEnums.cs",
+      "action": "edit",
+      "tokens": 9,
+      "at": "2026-04-16T18:54:39.448Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Enums/LayoutEnums.cs",
+      "action": "edit",
+      "tokens": 18,
+      "at": "2026-04-16T18:54:43.476Z"
+    },
+    {
+      "file": "C:/Projects/Sunfish/packages/foundation/Sunfish.Foundation.csproj",
+      "action": "edit",
+      "tokens": 91,
+      "at": "2026-04-16T18:54:53.989Z"
     }
   ],
   "edit_counts": {
@@ -485,12 +536,16 @@
     ".claude/skill/skill-gitbutler.md": 1,
     "Directory.Build.props": 2,
     "Directory.Packages.props": 1,
-    "packages/foundation/Sunfish.Foundation.csproj": 1,
-    ".gitignore": 4
+    "packages/foundation/Sunfish.Foundation.csproj": 2,
+    ".gitignore": 4,
+    "packages/foundation/Enums/ResizableContainerEnums.cs": 2,
+    "packages/foundation/Enums/CellState.cs": 1,
+    "packages/foundation/Enums/DataSheetColumnType.cs": 1,
+    "packages/foundation/Enums/LayoutEnums.cs": 1
   },
   "anatomy_hits": 5,
-  "anatomy_misses": 61,
-  "repeated_reads_warned": 16,
+  "anatomy_misses": 64,
+  "repeated_reads_warned": 19,
   "cerebrum_warnings": 0,
   "stop_count": 8
 }
