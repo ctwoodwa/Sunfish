@@ -1,0 +1,37 @@
+# CODEOWNERS — auto-request reviews when these paths change in a PR.
+# Update the right column as contributors join.
+
+# Default: all unmatched paths
+*                               @ctwoodwa
+
+# Architecture and process
+/icm/                           @ctwoodwa
+/_shared/                       @ctwoodwa
+/CLAUDE.md                      @ctwoodwa
+/.github/                       @ctwoodwa
+
+# Foundation layer (framework-agnostic contracts)
+/packages/foundation/           @ctwoodwa
+
+# UI contracts — require extra scrutiny (breaking change surface)
+/packages/ui-core/              @ctwoodwa
+
+# Adapters
+/packages/ui-adapters-blazor/   @ctwoodwa
+/packages/ui-adapters-react/    @ctwoodwa
+
+# Compatibility shim — policy-gated
+/packages/compat-telerik/       @ctwoodwa
+
+# Domain blocks
+/packages/blocks-forms/         @ctwoodwa
+/packages/blocks-tasks/         @ctwoodwa
+/packages/blocks-scheduling/    @ctwoodwa
+/packages/blocks-assets/        @ctwoodwa
+
+# Solution accelerators
+/accelerators/                  @ctwoodwa
+
+# Apps
+/apps/                          @ctwoodwa
+/tooling/                       @ctwoodwa

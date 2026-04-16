@@ -1,0 +1,27 @@
+version: 2
+updates:
+  # NuGet — Central Package Management (Directory.Packages.props)
+  - package-ecosystem: nuget
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      aspnetcore:
+        patterns:
+          - "Microsoft.AspNetCore.*"
+          - "Microsoft.AspNetCore.SignalR.*"
+      testing:
+        patterns:
+          - "xunit*"
+          - "bunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet.*"
+
+  # GitHub Actions — pin to latest SHAs
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
