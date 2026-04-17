@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+# Usage: scripts/migrate-marilo-category.sh <category-name>
+# Example: scripts/migrate-marilo-category.sh Buttons
+#
+# Prerequisites: SUNFISH and MARILO env vars exported.
+
+set -euo pipefail
+
+CATEGORY="${1:?category name required, e.g. Buttons}"
+SRC="$MARILO/src/Marilo.Components/$CATEGORY"
+DST="$SUNFISH/packages/ui-adapters-blazor/Components/$CATEGORY"
+
+[ -d "$SRC" ] || { echo "FAIL: Marilo category not found: $SRC"; exit 1; }
+[ ! -d "$DST" ] || { echo "FAIL: Sunfish category already exists: $DST (migration re-run?)"; exit 1; }
+
+echo "→ Copying $CATEGORY: $SRC → $DST"
+mkdir -p "$DST"
+cp -r "$SRC/." "$DST/"
+
+echo "→ Renaming Marilo-prefixed files"
+find "$DST" -type f \( -name "Marilo*.razor" -o -name "Marilo*.cs" \) | while read -r f; do
+  new="$(dirname "$f")/$(basename "$f" | sed 's/^Marilo/Sunfish/')"
+  mv "$f" "$new"
+done
+
+echo "→ Rewriting content (sed pass)"
+find "$DST" -type f \( -name "*.razor" -o -name "*.cs" -o -name "*.razor.cs" \) -exec sed -i \
+  -e 's/\bIMarilo/ISunfish/g' \
+  -e 's/\bMarilo\.Core\.Contracts/Sunfish.UICore.Contracts/g' \
+  -e 's/\bMarilo\.Core\./Sunfish.Foundation./g' \
+  -e 's/\bMarilo\.Components\./Sunfish.Components.Blazor./g' \
+  -e 's/namespace Marilo\.Components;/namespace Sunfish.Components.Blazor;/g' \
+  -e 's/@inherits MariloComponentBase/@inherits SunfishComponentBase/g' \
+  -e 's/\bMariloResizeEdges\b/ResizeEdges/g' \
+  -e 's/\bMarilo/Sunfish/g' \
+  -e 's/class="mar-/class="sf-/g' \
+  -e 's/class="marilo-/class="sf-/g' \
+  -e "s/class='mar-/class='sf-/g" \
+  -e "s/class='marilo-/class='sf-/g" \
+  {} \;
+
+echo "→ Grepping for leftover Marilo references"
+if grep -rE '\bMarilo[A-Za-z]|Marilo\.(Core|Components)' "$DST"; then
+  echo "FAIL: 'Marilo' identifiers remain in $DST"
+  exit 1
+fi
+
+echo "OK: $CATEGORY migration complete"
