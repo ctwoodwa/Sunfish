@@ -15,6 +15,11 @@
     <Content Remove="Providers/**/*" />
     <None Remove="Providers/**/*" />
     <EmbeddedResource Remove="Providers/**/*" />
+    <!-- Icon packages live in their own projects under Icons/<Name>/ -->
+    <Compile Remove="Icons/**/*.cs" />
+    <Content Remove="Icons/**/*" />
+    <None Remove="Icons/**/*" />
+    <EmbeddedResource Remove="Icons/**/*" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

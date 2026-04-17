@@ -16,4 +16,12 @@
     <Project Path="packages/ui-adapters-blazor/Providers/Bootstrap/Sunfish.Providers.Bootstrap.csproj" />
     <Project Path="packages/ui-adapters-blazor/Providers/Material/Sunfish.Providers.Material.csproj" />
   </Folder>
+  <Folder Name="/icons/tabler/">
+    <Project Path="packages/ui-adapters-blazor/Icons/Tabler/Sunfish.Icons.Tabler.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Icons/Tabler/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/icons/legacy/">
+    <Project Path="packages/ui-adapters-blazor/Icons/Legacy/Sunfish.Icons.Legacy.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Icons/Legacy/tests/tests.csproj" />
+  </Folder>
 </Solution>
