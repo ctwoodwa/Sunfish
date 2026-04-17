@@ -1,4 +1,4 @@
-// marilo-dropzone.js — External drop-zone forwarding for MariloFileUpload / MariloUpload
+// sunfish-dropzone.js — External drop-zone forwarding for SunfishFileUpload / SunfishUpload
 // Exports: registerDropZone, unregisterDropZone
 
 let nextHandleId = 1;
@@ -24,25 +24,25 @@ export function registerDropZone(dropZoneElementId, fileInputElementId) {
     const onDragEnter = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.add('mar-dropzone--drag-over');
+        dropZone.classList.add('sf-dropzone--drag-over');
     };
 
     const onDragOver = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.add('mar-dropzone--drag-over');
+        dropZone.classList.add('sf-dropzone--drag-over');
     };
 
     const onDragLeave = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.remove('mar-dropzone--drag-over');
+        dropZone.classList.remove('sf-dropzone--drag-over');
     };
 
     const onDrop = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        dropZone.classList.remove('mar-dropzone--drag-over');
+        dropZone.classList.remove('sf-dropzone--drag-over');
 
         if (e.dataTransfer && e.dataTransfer.files.length > 0) {
             fileInput.files = e.dataTransfer.files;
@@ -72,7 +72,7 @@ export function unregisterDropZone(handleId) {
     entry.dropZone.removeEventListener('dragover', entry.onDragOver);
     entry.dropZone.removeEventListener('dragleave', entry.onDragLeave);
     entry.dropZone.removeEventListener('drop', entry.onDrop);
-    entry.dropZone.classList.remove('mar-dropzone--drag-over');
+    entry.dropZone.classList.remove('sf-dropzone--drag-over');
 
     handles.delete(handleId);
 }

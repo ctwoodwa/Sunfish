@@ -1,4 +1,4 @@
-// Marilo Shared Interop: Drag & Drop Module
+// Sunfish Shared Interop: Drag & Drop Module
 // Provides pointer-based drag operations for Window, Scheduler, etc.
 
 let activeDrag = null;

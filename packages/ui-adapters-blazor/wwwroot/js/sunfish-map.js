@@ -1,4 +1,4 @@
-// marilo-map.js — MapLibre GL JS adapter for MariloMap component.
+// sunfish-map.js — MapLibre GL JS adapter for SunfishMap component.
 // Loaded as an ESM module via JS interop from MapLibreAdapter.cs.
 // MapLibre GL JS is loaded from CDN (not bundled).
 
@@ -166,8 +166,8 @@ export function updateViewport(centerLat, centerLng, zoom) {
 }
 
 /**
- * Translate a Marilo URL template to MapLibre's tiles array format.
- * Marilo uses {s}/{z}/{x}/{y}. MapLibre uses {z}/{x}/{y} and expects
+ * Translate a Sunfish URL template to MapLibre's tiles array format.
+ * Sunfish uses {s}/{z}/{x}/{y}. MapLibre uses {z}/{x}/{y} and expects
  * multiple tile URLs for subdomains (one per subdomain value).
  * @param {string} urlTemplate
  * @param {string[]|null} subdomains

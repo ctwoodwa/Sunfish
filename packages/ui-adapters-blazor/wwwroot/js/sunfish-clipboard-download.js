@@ -1,4 +1,4 @@
-// Marilo Shared Interop: Clipboard & Download Module
+// Sunfish Shared Interop: Clipboard & Download Module
 // Provides clipboard read/write and in-memory file download triggering.
 
 /**

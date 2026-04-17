@@ -1,4 +1,4 @@
-// Marilo Shared Interop: Positioning Module
+// Sunfish Shared Interop: Positioning Module
 // Computes popup position relative to an anchor element, with flip and viewport clamping.
 
 /**

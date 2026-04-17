@@ -1,5 +1,5 @@
-// Marilo Shared Interop: Element Measurement Module
-// Provides getBoundingClientRect and viewport measurement for all Marilo components.
+// Sunfish Shared Interop: Element Measurement Module
+// Provides getBoundingClientRect and viewport measurement for all Sunfish components.
 
 /**
  * Gets the bounding client rect of the given element.

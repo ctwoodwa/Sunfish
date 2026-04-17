@@ -1,4 +1,4 @@
-// Marilo Shared Interop: Graphics Module
+// Sunfish Shared Interop: Graphics Module
 // Provides text measurement, DPI queries, and element size for Chart/Diagram/Map rendering.
 
 let measureCanvas = null;

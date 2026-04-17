@@ -1,4 +1,4 @@
-// Marilo Shared Interop: Resize Module
+// Sunfish Shared Interop: Resize Module
 // Provides pointer-based resize operations for Window, Splitter, DataGrid columns, etc.
 
 let activeResize = null;

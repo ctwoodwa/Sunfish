@@ -1,5 +1,5 @@
 /**
- * MariloAllocationScheduler JS Interop
+ * SunfishAllocationScheduler JS Interop
  * Handles drag-fill, cell selection, keyboard editing, and clipboard
  * interactions that require DOM-level event handling.
  */
@@ -7,7 +7,7 @@ export const AllocationSchedulerInterop = {
 
     /**
      * Initialize fill-handle drag behavior.
-     * Drag starts ONLY when the user grabs the .mar-allocation-scheduler__fill-handle element.
+     * Drag starts ONLY when the user grabs the .sf-allocation-scheduler__fill-handle element.
      * Sends {source, targets} JSON to .NET on drop.
      */
     initDragFill: function (gridElement, dotNetRef) {
@@ -23,12 +23,12 @@ export const AllocationSchedulerInterop = {
         });
 
         const clearPreview = () => {
-            previewCells.forEach(c => c.classList.remove('mar-allocation-scheduler__cell--drag-target'));
+            previewCells.forEach(c => c.classList.remove('sf-allocation-scheduler__cell--drag-target'));
             previewCells = [];
         };
 
         const handleMouseDown = (e) => {
-            const handle = e.target.closest('.mar-allocation-scheduler__fill-handle');
+            const handle = e.target.closest('.sf-allocation-scheduler__fill-handle');
             if (!handle) return;
 
             const cell = handle.closest('[role="gridcell"][data-resource-key]');
@@ -54,7 +54,7 @@ export const AllocationSchedulerInterop = {
             clearPreview();
 
             // Collect all cells in the timeline panel between source and target
-            const timelinePanel = sourceCell.closest('.mar-allocation-scheduler__timeline-panel');
+            const timelinePanel = sourceCell.closest('.sf-allocation-scheduler__timeline-panel');
             if (!timelinePanel) return;
 
             const allCells = Array.from(timelinePanel.querySelectorAll('[role="gridcell"][data-resource-key]'));
@@ -67,7 +67,7 @@ export const AllocationSchedulerInterop = {
             previewCells = allCells.slice(lo, hi + 1).filter(c => c !== sourceCell);
             previewCells.forEach(c => {
                 if (c.getAttribute('aria-disabled') !== 'true')
-                    c.classList.add('mar-allocation-scheduler__cell--drag-target');
+                    c.classList.add('sf-allocation-scheduler__cell--drag-target');
             });
         };
 
@@ -125,12 +125,12 @@ export const AllocationSchedulerInterop = {
         // Returns only the editable cells in the timeline panel, in DOM order.
         const getEditableCells = () =>
             Array.from(gridElement.querySelectorAll(
-                '.mar-allocation-scheduler__timeline-panel [role="gridcell"][tabindex="0"]'
+                '.sf-allocation-scheduler__timeline-panel [role="gridcell"][tabindex="0"]'
             ));
 
         // Number of columns in one timeline row.
         const columnsPerRow = () => {
-            const panel = gridElement.querySelector('.mar-allocation-scheduler__timeline-panel');
+            const panel = gridElement.querySelector('.sf-allocation-scheduler__timeline-panel');
             if (!panel) return 1;
             const rows = panel.querySelectorAll('[role="row"]');
             if (rows.length < 2) return 1;
@@ -254,8 +254,8 @@ export const AllocationSchedulerInterop = {
                 // ── Copy ───────────────────────────────────────────────
                 const selected = Array.from(
                     gridElement.querySelectorAll(
-                        '.mar-allocation-scheduler__timeline-panel [role="gridcell"].mar-allocation-scheduler__cell--selected[data-resource-key],' +
-                        '.mar-allocation-scheduler__timeline-panel [role="gridcell"].mar-bs-allocation-scheduler__cell--selected[data-resource-key]'
+                        '.sf-allocation-scheduler__timeline-panel [role="gridcell"].sf-allocation-scheduler__cell--selected[data-resource-key],' +
+                        '.sf-allocation-scheduler__timeline-panel [role="gridcell"].sf-bs-allocation-scheduler__cell--selected[data-resource-key]'
                     )
                 );
                 if (selected.length === 0) return;
@@ -268,7 +268,7 @@ export const AllocationSchedulerInterop = {
                     const rk = cell.dataset.resourceKey;
                     const bs = cell.dataset.bucketStart;
                     const valueEl = cell.querySelector(
-                        '.mar-allocation-scheduler__cell-value, .mar-bs-allocation-scheduler__cell-value'
+                        '.sf-allocation-scheduler__cell-value, .sf-bs-allocation-scheduler__cell-value'
                     );
                     const text = valueEl ? valueEl.textContent.trim() : '';
 
@@ -331,12 +331,12 @@ export const AllocationSchedulerInterop = {
 
         const findCol = (colId) => {
             return gridElement.querySelector(
-                `.mar-allocation-scheduler__resource-panel colgroup col[data-col-id="${colId}"]`
+                `.sf-allocation-scheduler__resource-panel colgroup col[data-col-id="${colId}"]`
             );
         };
 
         const handleMouseDown = (e) => {
-            const handle = e.target.closest('.mar-allocation-scheduler__col-resize-handle');
+            const handle = e.target.closest('.sf-allocation-scheduler__col-resize-handle');
             if (!handle) return;
 
             const colId = handle.dataset.colId;
@@ -353,7 +353,7 @@ export const AllocationSchedulerInterop = {
             activeColId = colId;
             activeColEl = col;
 
-            handle.classList.add('mar-allocation-scheduler__col-resize-handle--active');
+            handle.classList.add('sf-allocation-scheduler__col-resize-handle--active');
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
             e.preventDefault();
@@ -376,8 +376,8 @@ export const AllocationSchedulerInterop = {
             document.body.style.userSelect = '';
 
             // Remove active class from all handles
-            gridElement.querySelectorAll('.mar-allocation-scheduler__col-resize-handle--active')
-                .forEach(h => h.classList.remove('mar-allocation-scheduler__col-resize-handle--active'));
+            gridElement.querySelectorAll('.sf-allocation-scheduler__col-resize-handle--active')
+                .forEach(h => h.classList.remove('sf-allocation-scheduler__col-resize-handle--active'));
 
             if (activeColId) {
                 const delta = 0; // already applied via OnColumnResizeDrag
@@ -416,8 +416,8 @@ export const AllocationSchedulerInterop = {
         const splitter = gridElement.querySelector('[role="separator"]');
         if (!splitter) return;
 
-        const resourcePanel = gridElement.querySelector('.mar-allocation-scheduler__resource-panel');
-        const grid = gridElement.querySelector('.mar-allocation-scheduler__grid');
+        const resourcePanel = gridElement.querySelector('.sf-allocation-scheduler__resource-panel');
+        const grid = gridElement.querySelector('.sf-allocation-scheduler__grid');
         if (!resourcePanel || !grid) return;
 
         let isDragging = false;
@@ -432,7 +432,7 @@ export const AllocationSchedulerInterop = {
             isDragging = true;
             startX = e.clientX;
             startWidth = resourcePanel.getBoundingClientRect().width;
-            splitter.classList.add('mar-allocation-scheduler__splitter--dragging');
+            splitter.classList.add('sf-allocation-scheduler__splitter--dragging');
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
             e.preventDefault();
@@ -465,7 +465,7 @@ export const AllocationSchedulerInterop = {
         const handleMouseUp = async () => {
             if (!isDragging) return;
             isDragging = false;
-            splitter.classList.remove('mar-allocation-scheduler__splitter--dragging');
+            splitter.classList.remove('sf-allocation-scheduler__splitter--dragging');
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
 
@@ -519,7 +519,7 @@ export const AllocationSchedulerInterop = {
         let activeColIdx = -1;
 
         const handleMouseDown = (e) => {
-            const handle = e.target.closest('.mar-allocation-scheduler__time-resize-handle');
+            const handle = e.target.closest('.sf-allocation-scheduler__time-resize-handle');
             if (!handle) return;
 
             const colIdx = parseInt(handle.dataset.bucketColIdx, 10);
@@ -533,7 +533,7 @@ export const AllocationSchedulerInterop = {
             startWidth = th.getBoundingClientRect().width;
             activeColIdx = colIdx;
 
-            handle.classList.add('mar-allocation-scheduler__time-resize-handle--active');
+            handle.classList.add('sf-allocation-scheduler__time-resize-handle--active');
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
             e.preventDefault();
@@ -558,13 +558,13 @@ export const AllocationSchedulerInterop = {
             document.body.style.userSelect = '';
 
             // Remove active class from all time resize handles
-            gridElement.querySelectorAll('.mar-allocation-scheduler__time-resize-handle--active')
-                .forEach(h => h.classList.remove('mar-allocation-scheduler__time-resize-handle--active'));
+            gridElement.querySelectorAll('.sf-allocation-scheduler__time-resize-handle--active')
+                .forEach(h => h.classList.remove('sf-allocation-scheduler__time-resize-handle--active'));
 
             if (activeColIdx >= 0) {
                 // Read the current <th> width
                 const th = gridElement.querySelector(
-                    `.mar-allocation-scheduler__timeline-panel th[data-bucket-col-idx="${activeColIdx}"]`
+                    `.sf-allocation-scheduler__timeline-panel th[data-bucket-col-idx="${activeColIdx}"]`
                 );
                 const finalWidth = th ? Math.round(th.getBoundingClientRect().width) : Math.round(startWidth);
                 try {
@@ -577,14 +577,14 @@ export const AllocationSchedulerInterop = {
 
         const handleDblClick = async (e) => {
             if (!autoFit) return;
-            const handle = e.target.closest('.mar-allocation-scheduler__time-resize-handle');
+            const handle = e.target.closest('.sf-allocation-scheduler__time-resize-handle');
             if (!handle) return;
 
             const colIdx = parseInt(handle.dataset.bucketColIdx, 10);
             if (isNaN(colIdx)) return;
 
             // Measure widest cell content in this column (header + body rows)
-            const timelinePanel = gridElement.querySelector('.mar-allocation-scheduler__timeline-panel');
+            const timelinePanel = gridElement.querySelector('.sf-allocation-scheduler__timeline-panel');
             if (!timelinePanel) return;
 
             const nthChild = colIdx + 1;
@@ -634,8 +634,8 @@ export const AllocationSchedulerInterop = {
     initScrollSync: function (gridElement) {
         if (!gridElement) return;
 
-        const resourcePanel = gridElement.querySelector('.mar-allocation-scheduler__resource-panel');
-        const timelinePanel = gridElement.querySelector('.mar-allocation-scheduler__timeline-panel');
+        const resourcePanel = gridElement.querySelector('.sf-allocation-scheduler__resource-panel');
+        const timelinePanel = gridElement.querySelector('.sf-allocation-scheduler__timeline-panel');
         if (!resourcePanel || !timelinePanel) return;
 
         let isSyncing = false;

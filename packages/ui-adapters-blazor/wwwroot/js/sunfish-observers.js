@@ -1,5 +1,5 @@
-// Marilo Shared Interop: Observers Module
-// Wraps ResizeObserver and IntersectionObserver for Marilo components.
+// Sunfish Shared Interop: Observers Module
+// Wraps ResizeObserver and IntersectionObserver for Sunfish components.
 
 const resizeObservers = new Map();
 const intersectionObservers = new Map();

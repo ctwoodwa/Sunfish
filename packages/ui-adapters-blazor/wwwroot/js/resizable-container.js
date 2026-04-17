@@ -1,4 +1,4 @@
-// MariloResizableContainer JS Interop Module
+// SunfishResizableContainer JS Interop Module
 // Handles pointer-based resize, ResizeObserver, keyboard resize, and optional persistence.
 
 let containerEl = null;
@@ -12,7 +12,7 @@ let startY = 0;
 let startWidth = 0;
 let startHeight = 0;
 
-// Edge flag constants (must match MariloResizeEdges C# enum)
+// Edge flag constants (must match SunfishResizeEdges C# enum)
 const EDGE_RIGHT = 1;
 const EDGE_BOTTOM = 2;
 const EDGE_LEFT = 4;
@@ -33,7 +33,7 @@ export function init(container, dotNet, opts) {
     options = opts || {};
 
     // Attach pointer listeners to all handle buttons
-    const handles = containerEl.querySelectorAll('.mar-resizable-container__handle, .mar-bs-resizable-container__handle');
+    const handles = containerEl.querySelectorAll('.sf-resizable-container__handle, .sf-bs-resizable-container__handle');
     handles.forEach(handle => {
         handle.addEventListener('pointerdown', onPointerDown);
         if (options.keyboardResizeEnabled) {
@@ -55,7 +55,7 @@ export function init(container, dotNet, opts) {
     // Restore persisted size
     if (options.persistSize && options.persistKey) {
         try {
-            const stored = localStorage.getItem(`marilo-rc-${options.persistKey}`);
+            const stored = localStorage.getItem(`sf-rc-${options.persistKey}`);
             if (stored) {
                 const { w, h } = JSON.parse(stored);
                 containerEl.style.width = `${w}px`;
@@ -154,7 +154,7 @@ function onPointerUp(e) {
     if (options.persistSize && options.persistKey) {
         try {
             localStorage.setItem(
-                `marilo-rc-${options.persistKey}`,
+                `sf-rc-${options.persistKey}`,
                 JSON.stringify({ w: finalWidth, h: finalHeight })
             );
         } catch { /* ignore storage errors */ }
@@ -230,7 +230,7 @@ function getEdgeFromHandle(handle) {
  */
 export function focusHandle() {
     if (!containerEl) return;
-    const handle = containerEl.querySelector('.mar-resizable-container__handle, .mar-bs-resizable-container__handle');
+    const handle = containerEl.querySelector('.sf-resizable-container__handle, .sf-bs-resizable-container__handle');
     if (handle) handle.focus();
 }
 
@@ -244,7 +244,7 @@ export function dispose() {
     }
 
     if (containerEl) {
-        const handles = containerEl.querySelectorAll('.mar-resizable-container__handle, .mar-bs-resizable-container__handle');
+        const handles = containerEl.querySelectorAll('.sf-resizable-container__handle, .sf-bs-resizable-container__handle');
         handles.forEach(handle => {
             handle.removeEventListener('pointerdown', onPointerDown);
             handle.removeEventListener('keydown', onKeyDown);

@@ -1,5 +1,5 @@
-// ESM module for MariloDataSheet — clipboard, focus, scroll, keyboard.
-// Loaded lazily via import() in MariloDataSheet.Interop.cs.
+// ESM module for SunfishDataSheet — clipboard, focus, scroll, keyboard.
+// Loaded lazily via import() in SunfishDataSheet.Interop.cs.
 
 const handlers = new Map();
 
@@ -103,7 +103,7 @@ export function registerKeydownHandler(gridId, dotNetRef) {
 
         // Handle Ctrl+C in JS (needs clipboard API access)
         if (ctrl && key === 'c') {
-            const activeCell = grid.querySelector('.mar-datasheet__cell--active');
+            const activeCell = grid.querySelector('.sf-datasheet__cell--active');
             if (activeCell) {
                 // V04.4 — Prefer data-raw-value when present (columns with a
                 // Format delegate set this attribute so copy yields the raw

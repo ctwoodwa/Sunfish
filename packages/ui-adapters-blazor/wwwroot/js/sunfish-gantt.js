@@ -1,11 +1,11 @@
-// MariloGantt JS Interop Module
+// SunfishGantt JS Interop Module
 // Handles scroll sync between task list and timeline, drag-to-move bars,
 // drag-to-resize bars (left/right handles), and progress drag handle.
 
 /**
  * Initialize the Gantt interop on a container element.
  * @param {object} dotNetRef - DotNetObjectReference for .NET callbacks
- * @param {HTMLElement} containerEl - The root .mar-gantt element
+ * @param {HTMLElement} containerEl - The root .sf-gantt element
  * @param {object} options - { rowHeight, slotWidth }
  * @returns {{ dispose: Function }} Cleanup handle
  */
@@ -16,8 +16,8 @@ export function initGantt(dotNetRef, containerEl, options) {
     const signal = abortController.signal;
 
     // --- Scroll sync ---
-    const taskList = containerEl.querySelector('.mar-gantt__tasklist');
-    const timeline = containerEl.querySelector('.mar-gantt__timeline');
+    const taskList = containerEl.querySelector('.sf-gantt__tasklist');
+    const timeline = containerEl.querySelector('.sf-gantt__timeline');
 
     if (taskList && timeline) {
         let syncing = false;
@@ -33,12 +33,12 @@ export function initGantt(dotNetRef, containerEl, options) {
 
     // --- Drag to move / resize / progress ---
     containerEl.addEventListener('pointerdown', (e) => {
-        const bar = e.target.closest('.mar-gantt__bar');
+        const bar = e.target.closest('.sf-gantt__bar');
         if (!bar) return;
 
-        const isResizeLeft = e.target.classList.contains('mar-gantt__bar-resize--left');
-        const isResizeRight = e.target.classList.contains('mar-gantt__bar-resize--right');
-        const isProgressHandle = e.target.classList.contains('mar-gantt__bar-progress-handle');
+        const isResizeLeft = e.target.classList.contains('sf-gantt__bar-resize--left');
+        const isResizeRight = e.target.classList.contains('sf-gantt__bar-resize--right');
+        const isProgressHandle = e.target.classList.contains('sf-gantt__bar-progress-handle');
 
         // Don't drag if it's just a click on the bar itself with no intent to move
         const barRect = bar.getBoundingClientRect();
@@ -61,7 +61,7 @@ export function initGantt(dotNetRef, containerEl, options) {
             } else if (isResizeRight) {
                 bar.style.width = Math.max(originalWidth + dx, 4) + 'px';
             } else if (isProgressHandle) {
-                const progressBar = bar.querySelector('.mar-gantt__bar-progress');
+                const progressBar = bar.querySelector('.sf-gantt__bar-progress');
                 if (progressBar) {
                     const newWidth = Math.max(0, Math.min(ev.clientX - barRect.left, originalWidth));
                     progressBar.style.width = newWidth + 'px';
