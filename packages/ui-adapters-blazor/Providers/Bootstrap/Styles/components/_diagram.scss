@@ -1,0 +1,119 @@
+// SunfishDiagram — Bootstrap Bridge Styles
+// Uses Bootstrap variables where available, falls back to Sunfish tokens
+
+.sf-diagram {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  background: var(--bs-body-bg, #ffffff);
+  box-sizing: border-box;
+
+  &__canvas {
+    display: block;
+  }
+
+  &__shape {
+    cursor: pointer;
+    fill: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.1);
+    stroke: var(--bs-primary, #0d6efd);
+    stroke-width: 2;
+    transition: fill 0.15s ease, stroke 0.15s ease, filter 0.15s ease;
+
+    &:hover {
+      fill: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.2);
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary, #0d6efd);
+      outline-offset: 2px;
+    }
+  }
+
+  &__shape-label {
+    fill: var(--bs-body-color, #212529);
+    font-size: 14px;
+    font-family: var(--bs-body-font-family, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__connection {
+    stroke: var(--bs-secondary-color, #6c757d);
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.15s ease;
+
+    &:hover {
+      stroke: var(--bs-primary, #0d6efd);
+    }
+  }
+
+  &__connection-label {
+    fill: var(--bs-secondary-color, #6c757d);
+    font-size: 12px;
+    font-family: var(--bs-body-font-family, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+// ── Dark mode patch ───────────────────────────────────────────────
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+  .sf-diagram {
+    border-color: var(--bs-border-color, #495057);
+  }
+
+  .sf-diagram__shape {
+    fill: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.15);
+
+    &:hover {
+      fill: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.28);
+    }
+  }
+
+  .sf-diagram__connection-label,
+  .sf-diagram__shape-label {
+    fill: var(--bs-body-color, #dee2e6);
+  }
+
+  .sf-diagram__connection {
+    stroke: var(--bs-secondary-color, #adb5bd);
+  }
+}
+
+// ── Accessibility: reduced motion ─────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sf-diagram,
+  .sf-diagram * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Accessibility: high contrast ──────────────────────────────────
+@media (forced-colors: active) {
+  .sf-diagram {
+    border-color: ButtonText;
+  }
+
+  .sf-diagram__shape {
+    fill: Canvas;
+    stroke: ButtonText;
+  }
+
+  .sf-diagram__shape-label {
+    fill: ButtonText;
+  }
+
+  .sf-diagram__connection {
+    stroke: ButtonText;
+  }
+
+  .sf-diagram__connection-label {
+    fill: ButtonText;
+  }
+}

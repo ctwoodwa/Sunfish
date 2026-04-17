@@ -1,0 +1,37 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Timeline
+// =================================================================
+// From _bridge-data.scss: .sf-bs-timeline, .sf-bs-timeline-item
+// =================================================================
+
+.sf-bs-timeline {
+  position: relative;
+  padding-left: 2rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--sf-color-border);
+  }
+}
+
+.sf-bs-timeline-item {
+  position: relative;
+  padding-bottom: var(--sf-space-xl);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1.625rem;
+    top: 0.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--sf-color-primary);
+    border: 2px solid var(--sf-color-bg);
+  }
+}

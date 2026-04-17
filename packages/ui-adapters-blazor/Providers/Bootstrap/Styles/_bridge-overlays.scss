@@ -1,0 +1,62 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Overlays Bridge Styles
+// =================================================================
+
+// Window
+.sf-bs-window {
+  position: fixed;
+  z-index: var(--sf-z-modal);
+  min-width: 300px;
+  min-height: 200px;
+  resize: both;
+  overflow: hidden;
+
+  &--modal {
+    z-index: calc(var(--sf-z-modal) + 1);
+  }
+}
+
+.sf-bs-window-titlebar {
+  cursor: move;
+  user-select: none;
+}
+
+.sf-bs-window-actions {
+  display: flex;
+  gap: var(--sf-space-xs);
+}
+
+// Editor
+.sf-bs-editor {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.sf-bs-editor-toolbar {
+  background-color: var(--sf-color-surface);
+
+  .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: var(--sf-font-size-sm);
+  }
+}
+
+.sf-bs-editor-content {
+  flex: 1;
+  min-height: 150px;
+  outline: none;
+
+  &:focus {
+    box-shadow: inset 0 0 0 1px var(--sf-color-primary);
+  }
+}
+
+// Upload
+.sf-bs-upload {
+  .sf-bs-upload-dropzone {
+    transition: border-color var(--sf-transition-normal),
+                background-color var(--sf-transition-normal);
+    cursor: pointer;
+  }
+}

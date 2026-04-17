@@ -1,0 +1,16 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Spacing Tokens
+// =================================================================
+// Derived from Bootstrap's $spacer Sass variable.
+// =================================================================
+
+:root {
+  --sf-space-xxs: 2px;
+  --sf-space-xs: #{$spacer * 0.25};
+  --sf-space-sm: #{$spacer * 0.5};
+  --sf-space-md: #{$spacer * 0.75};
+  --sf-space-lg: #{$spacer};
+  --sf-space-xl: #{$spacer * 1.5};
+  --sf-space-2xl: #{$spacer * 2};
+  --sf-space-3xl: #{$spacer * 3};
+}

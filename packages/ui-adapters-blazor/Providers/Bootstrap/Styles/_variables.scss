@@ -1,0 +1,15 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Variable Overrides
+// =================================================================
+// These overrides are loaded BEFORE Bootstrap's _variables.scss.
+// Any variable set here takes precedence due to Bootstrap's !default flags.
+// =================================================================
+
+// Enable features
+$enable-dark-mode: true;
+$enable-rounded: true;
+$enable-shadows: true;
+$enable-transitions: true;
+$enable-reduced-motion: true;
+$enable-smooth-scroll: true;
+$enable-negative-margins: true;

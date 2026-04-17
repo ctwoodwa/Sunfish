@@ -1,0 +1,134 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Layout Bridge Styles
+// =================================================================
+
+.sf-bs-grid {
+  padding: 0;
+}
+
+.sf-bs-divider {
+  margin: var(--sf-space-md) 0;
+  border: 0;
+}
+
+.sf-bs-panel {
+  border: 1px solid var(--sf-color-border);
+}
+
+// Stepper
+.sf-bs-stepper {
+  gap: var(--sf-space-sm);
+  align-items: center;
+}
+
+.sf-bs-step {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-xs);
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-radius: var(--sf-radius-md);
+  font-size: var(--sf-font-size-sm);
+
+  &--active {
+    font-weight: 600;
+    color: var(--sf-color-primary);
+    background-color: var(--sf-color-primary-light);
+  }
+
+  &--completed {
+    color: var(--sf-color-success);
+  }
+
+  &--error {
+    background-color: var(--sf-color-danger-light);
+  }
+}
+
+// Splitter — styles for the sf-splitter__* child elements used by the component
+.sf-bs-splitter {
+  --sf-splitter-bar-size: 5px;
+  overflow: hidden;
+}
+
+.sf-splitter__pane {
+  overflow: auto;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+.sf-splitter__pane--fill {
+  flex: 1 1 0 !important;
+}
+
+.sf-splitter__pane--collapsed {
+  flex: 0 0 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.sf-splitter__handle {
+  flex: 0 0 var(--sf-splitter-bar-size);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: $border-color;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 1;
+  transition: background-color 0.15s;
+
+  &:hover,
+  &--active {
+    background-color: $primary;
+  }
+}
+
+.flex-column .sf-splitter__handle {
+  cursor: row-resize;
+}
+
+.sf-splitter__collapse-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 18px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-sm;
+  background: $body-bg;
+  color: $text-muted;
+  font-size: 8px;
+  cursor: pointer;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.flex-column .sf-splitter__collapse-btn {
+  width: 28px;
+  height: 18px;
+}
+
+.sf-splitter__handle:hover .sf-splitter__collapse-btn {
+  opacity: 1;
+}
+
+.sf-splitter__collapse-btn:hover {
+  background: $gray-200;
+  color: $body-color;
+}
+
+// Context Menu
+.sf-bs-context-menu {
+  position: absolute;
+  z-index: var(--sf-z-dropdown);
+}

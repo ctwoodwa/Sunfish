@@ -1,0 +1,83 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Design Tokens
+// =================================================================
+// CSS custom properties derived from Bootstrap Sass variables.
+// Because Bootstrap is compiled in, these use Sass values directly
+// instead of hardcoded hex fallbacks.
+// =================================================================
+
+:root {
+  // Primary palette
+  --sf-color-primary: #{$primary};
+  --sf-color-primary-hover: #{shade-color($primary, 20%)};
+  --sf-color-primary-active: #{shade-color($primary, 25%)};
+  --sf-color-primary-light: #{tint-color($primary, 80%)};
+
+  // Semantic palette
+  --sf-color-secondary: #{$secondary};
+  --sf-color-success: #{$success};
+  --sf-color-success-light: #{tint-color($success, 80%)};
+  --sf-color-warning: #{$warning};
+  --sf-color-warning-light: #{tint-color($warning, 80%)};
+  --sf-color-danger: #{$danger};
+  --sf-color-danger-light: #{tint-color($danger, 80%)};
+  --sf-color-info: #{$info};
+  --sf-color-info-light: #{tint-color($info, 80%)};
+
+  // Neutral palette
+  --sf-color-bg: #{$body-bg};
+  --sf-color-surface: #{$gray-100};
+  --sf-color-text: #{$body-color};
+  --sf-color-text-secondary: #{$gray-600};
+  --sf-color-text-disabled: #{$gray-500};
+  --sf-color-border: #{$border-color};
+  --sf-color-border-strong: #{$gray-500};
+
+  // Typography
+  --sf-font-family: #{inspect($font-family-base)};
+  --sf-font-size-xs: #{$font-size-base * 0.75};
+  --sf-font-size-sm: #{$font-size-sm};
+  --sf-font-size-base: #{$font-size-base};
+  --sf-font-size-md: #{$font-size-base * 1.125};
+  --sf-font-size-lg: #{$font-size-lg};
+  --sf-font-size-xl: #{$h4-font-size};
+  --sf-font-size-2xl: #{$h3-font-size};
+  --sf-font-size-3xl: #{$h2-font-size};
+
+  // Spacing
+  --sf-space-xxs: 2px;
+  --sf-space-xs: #{$spacer * 0.25};
+  --sf-space-sm: #{$spacer * 0.5};
+  --sf-space-md: #{$spacer * 0.75};
+  --sf-space-lg: #{$spacer};
+  --sf-space-xl: #{$spacer * 1.5};
+  --sf-space-2xl: #{$spacer * 2};
+  --sf-space-3xl: #{$spacer * 3};
+
+  // Shape
+  --sf-radius-sm: #{$border-radius-sm};
+  --sf-radius-md: #{$border-radius};
+  --sf-radius-lg: #{$border-radius-lg};
+  --sf-radius-xl: #{$border-radius-xl};
+  --sf-radius-full: 50rem;
+
+  // Shadows
+  --sf-shadow-sm: #{$box-shadow-sm};
+  --sf-shadow-md: #{$box-shadow};
+  --sf-shadow-lg: #{$box-shadow-lg};
+
+  // Transitions
+  --sf-transition-fast: 150ms ease-in-out;
+  --sf-transition-normal: 200ms ease-in-out;
+  --sf-transition-slow: 300ms ease-in-out;
+
+  // Z-index hierarchy
+  --sf-z-dropdown: #{$zindex-dropdown};
+  --sf-z-sticky: #{$zindex-sticky};
+  --sf-z-fixed: #{$zindex-fixed};
+  --sf-z-modal-overlay: #{$zindex-modal-backdrop};
+  --sf-z-modal: #{$zindex-modal};
+  --sf-z-popover: #{$zindex-popover};
+  --sf-z-tooltip: #{$zindex-tooltip};
+  --sf-z-toast: #{$zindex-toast};
+}

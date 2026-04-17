@@ -1,0 +1,34 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Field Base Pattern
+// =================================================================
+// Bootstrap's reboot handles most form control normalization.
+// This file adds Sunfish-scoped fixes for gaps that Bootstrap's
+// reboot does not cover: ::-moz-focus-inner on .sf-* buttons,
+// and search input appearance resets.
+// =================================================================
+
+// Firefox adds 2px padding + 1px border inside <button> via ::-moz-focus-inner.
+// Bootstrap reboot resets this on bare <button>, but not on Sunfish-classed wrappers
+// where the <button> is a child element (e.g. .sf-search-box__clear).
+[class^="sf-"] button::-moz-focus-inner,
+[class*=" sf-"] button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+// Ensure consistent line-height on form controls inside Sunfish containers.
+// Bootstrap sets this on .form-control / .form-select but not on bare elements
+// inside .sf-* wrappers.
+[class^="sf-"] input,
+[class^="sf-"] select,
+[class^="sf-"] textarea,
+[class^="sf-"] button,
+[class*=" sf-"] input,
+[class*=" sf-"] select,
+[class*=" sf-"] textarea,
+[class*=" sf-"] button {
+  font: inherit;
+  line-height: var(--sf-line-height-base, 1.5);
+  box-sizing: border-box;
+  margin: 0;
+}

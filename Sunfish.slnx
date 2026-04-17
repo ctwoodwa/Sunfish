@@ -13,5 +13,6 @@
   </Folder>
   <Folder Name="/providers/">
     <Project Path="packages/ui-adapters-blazor/Providers/FluentUI/Sunfish.Providers.FluentUI.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Providers/Bootstrap/Sunfish.Providers.Bootstrap.csproj" />
   </Folder>
 </Solution>

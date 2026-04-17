@@ -1,0 +1,122 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Utility Bridge Styles
+// =================================================================
+
+// Icon sizing and transforms
+.sf-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+
+  &--small { width: 16px; height: 16px; }
+  &--medium { width: 20px; height: 20px; }
+  &--large { width: 24px; height: 24px; }
+  &--extralarge { width: 32px; height: 32px; }
+
+  &--flip-horizontal { transform: scaleX(-1); }
+  &--flip-vertical { transform: scaleY(-1); }
+  &--flip-both { transform: scale(-1); }
+}
+
+// Drag and Drop
+.sf-bs-dragdrop {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.sf-bs-dropzone,
+.sf-bs-upload-dropzone {
+  &.border-dashed {
+    border-style: dashed !important;
+  }
+}
+
+// ScrollView
+.sf-bs-scrollview {
+  max-height: 100%;
+}
+
+// Link
+.sf-bs-link {
+  color: var(--sf-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--sf-color-primary-hover);
+  }
+}
+
+// Selection / Dropdowns
+.sf-bs-combobox,
+.sf-bs-multiselect,
+.sf-bs-dropdownlist {
+  position: relative;
+
+  .form-control,
+  .form-select {
+    cursor: pointer;
+  }
+
+  &--open .dropdown-menu {
+    display: block;
+  }
+}
+
+.sf-bs-multiselect-tag {
+  cursor: pointer;
+  font-weight: 400;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.sf-bs-item--highlighted {
+  background-color: var(--sf-color-surface);
+}
+
+// Time Range Selector
+.sf-bs-time-range-selector {
+  gap: var(--sf-space-sm);
+  align-items: center;
+}
+
+// Charts
+.sf-bs-chart-container {
+  position: relative;
+  width: 100%;
+
+  svg {
+    width: 100%;
+    height: auto;
+  }
+}
+
+.sf-bs-gauge {
+  display: inline-block;
+  position: relative;
+}
+
+// Scheduling
+.sf-bs-calendar {
+  border: 1px solid var(--sf-color-border);
+  border-radius: var(--sf-radius-md);
+  padding: var(--sf-space-md);
+}
+
+.sf-bs-scheduler {
+  border: 1px solid var(--sf-color-border);
+  border-radius: var(--sf-radius-md);
+}
+
+// File Upload
+.sf-bs-file-upload-list {
+  .list-group-item {
+    font-size: var(--sf-font-size-sm);
+  }
+}

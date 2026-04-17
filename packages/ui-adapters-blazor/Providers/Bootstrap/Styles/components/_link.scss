@@ -1,0 +1,15 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Link
+// =================================================================
+// From _bridge-utility.scss: .sf-bs-link
+// =================================================================
+
+.sf-bs-link {
+  color: var(--sf-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--sf-color-primary-hover);
+  }
+}

@@ -1,0 +1,328 @@
+// =============================================================================
+// Component: DockManager (Bootstrap provider)
+
+// -- Tab strip (matches razor BEM classes) --
+
+.sf-dockmanager__tabs {
+    display: flex;
+    gap: $spacer * 0.25;
+    padding: $spacer * 0.25 $spacer * 0.5;
+    border-bottom: $border-width solid $border-color;
+    background: $gray-100;
+    overflow-x: auto;
+}
+
+.sf-dockmanager__tab {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacer * 0.25;
+    padding: $spacer * 0.25 $spacer * 0.75;
+    cursor: pointer;
+    border-radius: $border-radius $border-radius 0 0;
+    white-space: nowrap;
+    user-select: none;
+    transition: background-color 0.15s ease-in-out,
+                opacity 0.15s ease-in-out;
+
+    &:hover {
+        background: $gray-200;
+    }
+
+    &--active {
+        background: $body-bg;
+        border-bottom: 2px solid $primary;
+        font-weight: 600;
+    }
+
+    &--dragging {
+        opacity: 0.4;
+    }
+
+    &--drop-target {
+        box-shadow: inset 2px 0 0 $primary;
+    }
+}
+
+.sf-dockmanager__tab-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: $spacer * 0.25;
+}
+
+.sf-dockmanager__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: $border-radius-sm;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    color: $text-muted;
+
+    &:hover {
+        background: $gray-200;
+        color: $body-color;
+    }
+
+    &--close:hover {
+        background: $danger;
+        color: #fff;
+    }
+}
+
+.sf-dockmanager__content {
+    flex: 1;
+    overflow: auto;
+}
+
+.sf-dockpane {
+    padding: $spacer;
+}
+
+// =============================================================================
+
+.sf-dockmanager {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    background: $body-bg;
+}
+
+.sf-dockmanager__split {
+    display: flex;
+    height: 100%;
+
+    &--horizontal {
+        flex-direction: row;
+    }
+
+    &--vertical {
+        flex-direction: column;
+    }
+}
+
+.sf-dockmanager__split-item {
+    overflow: hidden;
+    min-width: 0;
+    min-height: 0;
+}
+
+.sf-dockmanager__tab-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sf-dockmanager__tab-header-strip {
+    display: flex;
+    gap: $spacer * 0.25;
+    padding: $spacer * 0.25 $spacer * 0.5;
+    border-bottom: $border-width solid $border-color;
+    background: $gray-100;
+    overflow-x: auto;
+}
+
+.sf-dockmanager__tab-header {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacer * 0.25;
+    padding: $spacer * 0.25 $spacer * 0.75;
+    cursor: pointer;
+    border-radius: $border-radius $border-radius 0 0;
+    white-space: nowrap;
+    user-select: none;
+    transition: background-color 0.15s ease-in-out,
+                opacity 0.15s ease-in-out;
+
+    &:hover {
+        background: $gray-200;
+    }
+
+    &--active {
+        background: $body-bg;
+        border-bottom: 2px solid $primary;
+        font-weight: 600;
+    }
+
+    // ── Drag-and-drop states ────────────────────────────────────────
+    &--dragging {
+        opacity: 0.4;
+    }
+
+    &--drop-target {
+        box-shadow: inset 2px 0 0 $primary;
+    }
+}
+
+.sf-dockmanager__tab-title {
+    font-size: $font-size-base;
+}
+
+.sf-dockmanager__tab-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: $border-radius-sm;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    color: $text-muted;
+
+    &:hover {
+        background: $gray-200;
+        color: $body-color;
+    }
+}
+
+.sf-dockmanager__tab-content {
+    flex: 1;
+    overflow: auto;
+    padding: $spacer;
+}
+
+.sf-dockmanager__pane {
+    padding: $spacer;
+}
+
+.sf-dockmanager__pane--active {
+    // Active state styling (used for standalone content panes)
+}
+
+// =============================================================================
+// Floating Panes
+// =============================================================================
+
+.sf-dockmanager__floating-pane {
+    position: absolute;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    background: $body-bg;
+    box-shadow: $box-shadow-lg;
+    overflow: hidden;
+}
+
+.sf-dockmanager__floating-pane-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $spacer * 0.25 $spacer * 0.5;
+    background: $gray-100;
+    border-bottom: $border-width solid $border-color;
+    cursor: default;
+    user-select: none;
+}
+
+.sf-dockmanager__floating-pane-title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-dockmanager__floating-pane-actions {
+    display: flex;
+    gap: $spacer * 0.25;
+}
+
+.sf-dockmanager__floating-pane-dock,
+.sf-dockmanager__floating-pane-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background: transparent;
+    border-radius: $border-radius-sm;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    color: $text-muted;
+
+    &:hover {
+        background: $gray-200;
+        color: $body-color;
+    }
+}
+
+.sf-dockmanager__floating-pane-content {
+    flex: 1;
+    overflow: auto;
+    padding: $spacer;
+}
+
+// ── Dark mode ────────────────────────────────────────────────────────
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+
+    .sf-dockmanager__tabs {
+        background: var(--bs-tertiary-bg, #2b3035);
+        border-color: var(--bs-border-color, #495057);
+    }
+
+    .sf-dockmanager__tab {
+        &:hover {
+            background: var(--bs-tertiary-bg, #2b3035);
+        }
+
+        &--active {
+            background: var(--bs-body-bg, #212529);
+        }
+    }
+
+    .sf-dockmanager__action {
+        color: var(--bs-secondary-color, #adb5bd);
+
+        &:hover {
+            background: var(--bs-tertiary-bg, #2b3035);
+            color: var(--bs-body-color, #dee2e6);
+        }
+
+        &--close:hover {
+            background: $danger;
+            color: #fff;
+        }
+    }
+
+    .sf-dockmanager__floating-pane {
+        background: var(--bs-body-bg, #212529);
+        border-color: var(--bs-border-color, #495057);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .sf-dockmanager__floating-pane-titlebar {
+        background: var(--bs-tertiary-bg, #2b3035);
+        border-color: var(--bs-border-color, #495057);
+    }
+
+    .sf-dockmanager__floating-pane-dock,
+    .sf-dockmanager__floating-pane-close {
+        color: var(--bs-secondary-color, #adb5bd);
+
+        &:hover {
+            background: var(--bs-tertiary-bg, #2b3035);
+            color: var(--bs-body-color, #dee2e6);
+        }
+    }
+}

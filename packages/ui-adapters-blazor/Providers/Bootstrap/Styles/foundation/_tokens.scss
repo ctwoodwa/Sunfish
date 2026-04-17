@@ -1,0 +1,19 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Z-Index & Remaining Tokens
+// =================================================================
+// Z-index hierarchy derived from Bootstrap Sass variables.
+// Color, spacing, typography, radius, elevation, and motion tokens
+// live in their respective foundation partials.
+// =================================================================
+
+:root {
+  // Z-index hierarchy
+  --sf-z-dropdown: #{$zindex-dropdown};
+  --sf-z-sticky: #{$zindex-sticky};
+  --sf-z-fixed: #{$zindex-fixed};
+  --sf-z-modal-overlay: #{$zindex-modal-backdrop};
+  --sf-z-modal: #{$zindex-modal};
+  --sf-z-popover: #{$zindex-popover};
+  --sf-z-tooltip: #{$zindex-tooltip};
+  --sf-z-toast: #{$zindex-toast};
+}

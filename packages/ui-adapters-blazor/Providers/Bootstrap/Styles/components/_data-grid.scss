@@ -1,0 +1,293 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Data Grid
+// =================================================================
+// From _bridge-data.scss: .sf-bs-datagrid and related selectors
+// =================================================================
+
+.sf-bs-datagrid {
+  border: 1px solid var(--sf-color-border);
+  border-radius: var(--sf-radius-md);
+
+  table {
+    margin-bottom: 0;
+    border-collapse: collapse;
+    width: 100%;
+  }
+}
+
+.sf-bs-datagrid-header-cell {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  font-weight: var(--sf-font-weight-semibold);
+  text-align: left;
+  white-space: nowrap;
+  user-select: none;
+  border-bottom: 2px solid var(--sf-color-border);
+
+  &--sortable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--sf-color-surface);
+    }
+  }
+
+  &--sorted {
+    font-weight: 600;
+    color: var(--sf-color-primary);
+  }
+}
+
+.sf-bs-datagrid-header {
+  background: var(--sf-color-surface);
+}
+
+.sf-bs-datagrid-row {
+  border-bottom: 1px solid var(--sf-color-border);
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--sf-color-surface); }
+  &--selected { background: var(--sf-color-primary-light); }
+  &--selected:hover { background: var(--sf-color-primary-light); }
+}
+
+.sf-bs-datagrid-cell {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-bs-datagrid-row--striped {
+  &:nth-child(even) {
+    background-color: #{$table-striped-bg};
+  }
+}
+
+.sf-bs-datagrid-pager {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-top: 1px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-toolbar {
+  padding: var(--sf-space-sm);
+  border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-filter-row {
+  background-color: var(--sf-color-surface);
+}
+
+.sf-bs-datagrid-filter-cell {
+  padding: var(--sf-space-xs) var(--sf-space-sm);
+
+  .form-control {
+    font-size: var(--sf-font-size-sm);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.sf-bs-datagrid .sf-bs-datagrid-header-cell {
+  position: relative;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  border: 1px solid var(--sf-color-border);
+  background: var(--bs-body-bg);
+  color: var(--sf-color-text-secondary);
+  border-radius: 4px;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn:hover {
+  border-color: var(--sf-color-primary);
+  color: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-icon {
+  width: .875rem;
+  height: .875rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active {
+  border-color: var(--sf-color-primary);
+  background: rgba(var(--bs-primary-rgb), .1);
+  color: var(--sf-color-primary);
+  box-shadow: 0 0 0 1px rgba(var(--bs-primary-rgb), .25);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-popup {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 40;
+  min-width: 260px;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.5rem;
+  background: var(--bs-body-bg);
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-datagrid-filter-menu-value {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  font-size: var(--sf-font-size-base);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  background: var(--bs-body-bg);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+.sf-bs-datagrid-group-header td {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+}
+
+// =================================================================
+// Unstyled selectors (DG-08 Phase 5)
+// =================================================================
+
+.sf-bs-datagrid-pager-btn {
+  @extend .btn;
+  @extend .btn-outline-secondary;
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--sf-font-size-sm);
+
+  &.active, &--active {
+    @extend .btn-primary;
+    border-color: var(--bs-primary);
+  }
+}
+
+.sf-bs-datagrid-empty {
+  text-align: center;
+  padding: var(--sf-space-xl) var(--sf-space-md);
+  color: var(--bs-secondary-color);
+}
+
+.sf-bs-datagrid-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--bs-body-bg-rgb, 255, 255, 255), 0.7);
+  z-index: 10;
+}
+
+.sf-bs-datagrid-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-bs-datagrid-sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  color: var(--bs-primary);
+  font-size: 0.75rem;
+}
+
+.sf-bs-datagrid-validation-summary {
+  @extend .alert;
+  @extend .alert-danger;
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  font-size: var(--sf-font-size-sm);
+}
+
+.sf-bs-datagrid-footer-row {
+  background-color: var(--bs-tertiary-bg);
+  border-top: 1px solid var(--sf-color-border);
+  font-weight: 600;
+}
+
+.sf-bs-datagrid-detail-row {
+  background-color: var(--bs-secondary-bg);
+  border-bottom: 1px solid var(--sf-color-border);
+
+  > td {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+  }
+}
+
+.sf-bs-datagrid-col--locked {
+  position: sticky;
+  z-index: 2;
+  background-color: var(--bs-body-bg);
+  border-right: 2px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-searchbox {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-xs) var(--sf-space-md);
+  border-bottom: 1px solid var(--sf-color-border);
+
+  input {
+    @extend .form-control;
+    @extend .form-control-sm;
+  }
+}
+
+// =================================================================
+// Focus ring rules (DG-10 Phase 5)
+// =================================================================
+
+.sf-bs-datagrid-cell:focus,
+.sf-bs-datagrid-header-cell:focus {
+  outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
+  outline-offset: -2px;
+  position: relative;
+  z-index: 1;
+}
+
+.sf-bs-datagrid-row--focused {
+  outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
+  outline-offset: -1px;
+}

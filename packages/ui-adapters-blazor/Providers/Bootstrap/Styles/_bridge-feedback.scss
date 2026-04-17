@@ -1,0 +1,80 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Feedback Bridge Styles
+// =================================================================
+
+.sf-bs-alert-strip {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-radius: 0;
+  margin-bottom: 0;
+}
+
+.sf-bs-snackbar {
+  &--top { top: var(--sf-space-lg); }
+  &--bottom { bottom: var(--sf-space-lg); }
+  &--start { left: var(--sf-space-lg); }
+  &--center { left: 50%; transform: translateX(-50%); }
+  &--end { right: var(--sf-space-lg); }
+}
+
+.sf-bs-dialog--draggable {
+  cursor: move;
+}
+
+.sf-bs-progress-circle {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  position: relative;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+}
+
+.sf-bs-skeleton {
+  &--text {
+    height: 1em;
+    width: 100%;
+    border-radius: var(--sf-radius-sm);
+  }
+
+  &--rect {
+    height: 100px;
+    width: 100%;
+  }
+
+  &--circle {
+    width: 48px;
+    height: 48px;
+  }
+
+  &--rounded {
+    height: 100px;
+    width: 100%;
+  }
+
+  .placeholder {
+    background-color: var(--sf-color-surface);
+  }
+}
+
+.sf-bs-spinner--lg {
+  width: 3rem;
+  height: 3rem;
+}
+
+.sf-bs-callout {
+  padding: var(--sf-space-md) var(--sf-space-lg);
+  margin-bottom: var(--sf-space-md);
+  border-left: 4px solid;
+  border-radius: var(--sf-radius-sm);
+  background-color: var(--sf-color-surface);
+
+  &--info { border-left-color: var(--sf-color-info); }
+  &--warning { border-left-color: var(--sf-color-warning); }
+  &--danger { border-left-color: var(--sf-color-danger); }
+  &--success { border-left-color: var(--sf-color-success); }
+  &--note { border-left-color: var(--sf-color-secondary); }
+}

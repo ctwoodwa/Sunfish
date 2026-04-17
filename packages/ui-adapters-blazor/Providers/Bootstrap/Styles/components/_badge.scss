@@ -1,0 +1,21 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Badge / Chip
+// =================================================================
+// From _bridge-buttons.scss: .sf-bs-chip, .sf-bs-chip-set
+// =================================================================
+
+.sf-bs-chip {
+  cursor: pointer;
+  font-size: var(--sf-font-size-sm);
+  padding: 0.35em 0.65em;
+  transition: opacity var(--sf-transition-fast);
+
+  &--selected {
+    outline: 2px solid var(--sf-color-primary);
+    outline-offset: 1px;
+  }
+}
+
+.sf-bs-chip-set {
+  min-height: 2rem;
+}

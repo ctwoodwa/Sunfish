@@ -1,0 +1,55 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Dark Mode Tokens
+// =================================================================
+// Uses Bootstrap 5.3's color-mode() mixin to scope dark theme
+// overrides. Values are derived from Bootstrap Sass color functions.
+// =================================================================
+
+@include color-mode(dark) {
+  --sf-color-primary: #{tint-color($primary, 40%)};
+  --sf-color-primary-hover: #{tint-color($primary, 50%)};
+  --sf-color-primary-active: #{tint-color($primary, 60%)};
+  --sf-color-primary-light: #{shade-color($primary, 80%)};
+
+  --sf-color-success: #{tint-color($success, 40%)};
+  --sf-color-success-light: #{shade-color($success, 80%)};
+  --sf-color-warning: #{tint-color($warning, 40%)};
+  --sf-color-warning-light: #{shade-color($warning, 80%)};
+  --sf-color-danger: #{tint-color($danger, 40%)};
+  --sf-color-danger-light: #{shade-color($danger, 80%)};
+  --sf-color-info: #{tint-color($info, 40%)};
+  --sf-color-info-light: #{shade-color($info, 80%)};
+
+  --sf-color-bg: #{$gray-900};
+  --sf-color-surface: #{mix($gray-800, $gray-900, 50%)};
+  --sf-color-text: #{$gray-300};
+  --sf-color-text-secondary: #{$gray-500};
+  --sf-color-text-disabled: #{$gray-600};
+  --sf-color-border: #{$gray-700};
+  --sf-color-border-strong: #{$gray-600};
+}
+
+// Also support Sunfish's own theme attribute
+[data-sf-theme="dark"] {
+  --sf-color-primary: #{tint-color($primary, 40%)};
+  --sf-color-primary-hover: #{tint-color($primary, 50%)};
+  --sf-color-primary-active: #{tint-color($primary, 60%)};
+  --sf-color-primary-light: #{shade-color($primary, 80%)};
+
+  --sf-color-success: #{tint-color($success, 40%)};
+  --sf-color-success-light: #{shade-color($success, 80%)};
+  --sf-color-warning: #{tint-color($warning, 40%)};
+  --sf-color-warning-light: #{shade-color($warning, 80%)};
+  --sf-color-danger: #{tint-color($danger, 40%)};
+  --sf-color-danger-light: #{shade-color($danger, 80%)};
+  --sf-color-info: #{tint-color($info, 40%)};
+  --sf-color-info-light: #{shade-color($info, 80%)};
+
+  --sf-color-bg: #{$gray-900};
+  --sf-color-surface: #{mix($gray-800, $gray-900, 50%)};
+  --sf-color-text: #{$gray-300};
+  --sf-color-text-secondary: #{$gray-500};
+  --sf-color-text-disabled: #{$gray-600};
+  --sf-color-border: #{$gray-700};
+  --sf-color-border-strong: #{$gray-600};
+}
