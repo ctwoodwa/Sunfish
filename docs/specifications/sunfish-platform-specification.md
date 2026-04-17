@@ -8,7 +8,10 @@
 **v0.2 changes:**
 - §10.2 delegation model revised from Macaroon-primary to Keyhive-inspired group-membership (primary) + Macaroon-style tokens (supplementary). Driven by research in `docs/specifications/research-notes/automerge-evaluation.md`.
 - §3 kernel primitives expanded from 6 to 7 with the addition of **§3.7 Blob Store** — content-addressed binary storage keyed by CID. Driven by research in `docs/specifications/research-notes/ipfs-evaluation.md`. Positions IPFS + IPFS-Cluster as candidate federation backends; `FileSystemBlobStore` remains the single-node default.
-- Collectively: the platform now has a clearer split between structured-entity (Automerge-style CRDT + Keyhive capability), binary-blob (IPFS-style CID addressing), and policy (PolicyL DSL on top of Keyhive). The three research notes in `docs/specifications/research-notes/` are the detailed sources.
+- Collectively: the platform now has a clearer split between structured-entity (Automerge-style CRDT + Keyhive capability), binary-blob (IPFS-style CID addressing), and policy (PolicyL DSL on top of Keyhive). The research notes in `docs/specifications/research-notes/` are the detailed sources:
+  - `automerge-evaluation.md` — CRDT entity store + Keyhive capability model
+  - `ipfs-evaluation.md` — content-addressed blob store (spec §3.7)
+  - `external-references.md` — catalog of prior art across forms, workflow, authorization, schema, BIM (cross-cuts §3.4, §3.5, §3.6, §6, §7, §9, §10, Phase 5)
 
 ---
 
