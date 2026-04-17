@@ -45,7 +45,9 @@
 
 **Tech Stack:** .NET 10, C# 13, Blazor Server (interactive server components), .NET Aspire 13.2.1, EF Core 10 (Npgsql provider), PostgreSQL, Redis (output cache + SignalR backplane), RabbitMQ (via WolverineFx), Data API Builder (DAB) GraphQL, SignalR, xUnit 2.9.x.
 
-**Known gap vs. platform spec — decentralization primitives:** The current Sunfish repo does NOT yet have kernel-level cryptographic ownership, Macaroon-style delegation, or federation primitives (spec Sections 2, 10). Bridge as shipped by this phase plan uses conventional single-tenant auth (DemoTenantContext + MockOktaService). Spec-aligned decentralization work is a future migration phase — flagged explicitly in the updated ROADMAP.md and in Task 9-10 below.
+**Known gap vs. platform spec — decentralization primitives:** The current Sunfish repo does NOT yet have kernel-level cryptographic ownership, capability-based delegation, or federation primitives (spec Sections 2, 10). Bridge as shipped by this phase plan uses conventional single-tenant auth (DemoTenantContext + MockOktaService). Spec-aligned decentralization work is a future migration phase — flagged explicitly in the updated ROADMAP.md and in Task 9-10 below.
+
+**Candidate implementation path (see `docs/specifications/research-notes/automerge-evaluation.md`):** The decentralization primitives should adopt Automerge's **semantic model** (Merkle-DAG change log, CRDT merge rules, sync protocol shape) and Keyhive's **capability model** (group membership over Ed25519 keys) as design references. The Automerge library itself is **not** a drop-in: (a) no .NET binding exists, (b) Bridge is server-hosted not local-first, (c) Keyhive's group-based model replaces the spec's original Macaroon-style delegation. Implementation is expected to be a .NET-native version store + crypto + sync built in the style of these references rather than a direct integration. See the evaluation doc for integration paths, mismatches, and open questions.
 
 ---
 
@@ -1544,9 +1546,9 @@ Legend: ✅ adopted · 🟡 partially adopted · 🔴 not adopted · ⚪ N/A
 
 | Primitive | Bridge Status | Notes |
 |---|---|---|
-| Cryptographic ownership proofs | 🔴 | No crypto primitives in Foundation yet; DemoTenantContext uses tenant IDs as strings |
-| Macaroon-style delegation | 🔴 | Time-bound delegation not implemented |
-| Federation (peer-to-peer sync) | 🔴 | Single-server deployment; no federation endpoints |
+| Cryptographic ownership proofs | 🔴 | No crypto primitives in Foundation yet; DemoTenantContext uses tenant IDs as strings. Candidate implementation: Keyhive-style Ed25519 + BeeKEM (see `docs/specifications/research-notes/automerge-evaluation.md`) |
+| Delegation / time-bound access | 🔴 | Not implemented. Candidate: Keyhive group-membership graphs (primary) + Macaroon-style ephemeral tokens (supplement for short-lived scenarios) |
+| Federation (peer-to-peer sync) | 🔴 | Single-server deployment; no federation endpoints. Candidate: Automerge-style sync protocol shape adapted for .NET; see evaluation doc for integration paths (sidecar vs native .NET rewrite) |
 
 ## Spec Section 6 — Property Management MVP Coverage
 
@@ -1599,7 +1601,7 @@ Legend: ✅ adopted · 🟡 partially adopted · 🔴 not adopted · ⚪ N/A
 
 - **Post-Phase 9 (immediate):** None — Bridge is a functional demo as shipped.
 - **Platform Phase A (asset modeling — new migration phase):** Expand kernel primitives for temporal entities + asset hierarchies; swap Bridge's generic TaskItem entity for a Property/Unit/Fixture hierarchy.
-- **Platform Phase B (decentralization — new migration phase):** Introduce crypto primitives in Foundation; adopt Macaroon-style delegation; rewire DemoTenantContext to use real claims.
+- **Platform Phase B (decentralization — new migration phase):** Introduce crypto primitives in Foundation; adopt Keyhive-inspired group-membership capability model (see `docs/specifications/research-notes/automerge-evaluation.md` for the research and the Keyhive-vs-Macaroons reconciliation); rewire DemoTenantContext to use real Ed25519 signed claims. Adopt Automerge's Merkle-DAG change-log semantics and sync-protocol shape without integrating the Automerge library directly (no .NET binding exists as of April 2026; integration via sidecar is an option for a later phase). Initial implementation is a .NET-native version store + crypto + sync inspired by Automerge + Keyhive.
 - **Platform Phase C (input modalities — new migration phase):** Build the ingestion pipeline per spec Section 7; wire voice/sensor/drone ingestion into Bridge as optional inputs.
 - **Platform Phase D (federation — new migration phase):** Define federation protocol; implement peer-to-peer sync; demonstrate a cross-jurisdictional scenario (landlord + code-enforcement agency share inspection data).
 

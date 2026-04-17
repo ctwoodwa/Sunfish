@@ -2,8 +2,10 @@
 
 **Document type:** Strategic platform specification
 **Audience:** Architects, senior engineers, product leadership, executive stakeholders, partner ecosystem
-**Status:** Draft v0.1 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
+**Status:** Draft v0.2 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
 **Last updated:** 2026-04-17
+
+**v0.2 changes:** §10.2 delegation model revised from Macaroon-primary to Keyhive-inspired group-membership (primary) + Macaroon-style tokens (supplementary), driven by research in `docs/specifications/research-notes/automerge-evaluation.md`. See that doc for the full evaluation, mismatches (no .NET binding, Bridge is server-hosted not local-first), and integration-path recommendation.
 
 ---
 
@@ -1682,11 +1684,43 @@ Every entity carries a `tenant_id`. Every query is tenant-scoped at the Postgres
 
 A "tenant" in Sunfish is a **governance boundary**: a PM company, a base command, a hospital system. Users belong to one or more tenants with roles.
 
-### 10.2 Delegation — Macaroon-Style
+### 10.2 Delegation — Keyhive-Inspired Capability Groups (primary) + Macaroon-Style Tokens (supplementary)
 
-Sunfish delegates authority using **Macaroons** (Google Research, 2014): bearer tokens with verifiable first-party caveats and attenuation.
+> **Revision note (v0.2):** Earlier drafts specified Macaroons as the sole delegation mechanism. After evaluating Automerge + Keyhive (see `docs/specifications/research-notes/automerge-evaluation.md`), Sunfish adopts a **Keyhive-inspired group-membership capability model** as the primary mechanism, with Macaroon-style bearer tokens as a supplementary primitive for short-lived, third-party, or scope-bounded scenarios. Rationale: group-graph capabilities model revocation and offline peer-to-peer enforcement more naturally than bearer-token attenuation, and they compose cleanly with Sunfish's CRDT-shaped version store (§3, §8). Macaroons retain specific advantages (time caveats, third-party caveats, ephemeral tokens) and are kept as a secondary primitive.
 
-Anatomy:
+#### 10.2.1 Primary: Group-Membership Capabilities
+
+Every principal in Sunfish (user, device, organization, jurisdiction) is either an **individual** (one Ed25519 keypair, typically bound to a device) or a **group** (a mutable set of member principals, itself a CRDT). Every entity belongs to one or more groups that control access. Authorization proofs are Ed25519 signatures on operations; possession of a signing key for a member principal is the capability.
+
+```
+Principal {
+  kind: individual | group
+  public_key: Ed25519 (individuals only)
+  members: [Principal]  (groups only — self-referential CRDT)
+  operations: [Signed<MembershipOp>]  (add, remove, delegate, revoke)
+}
+```
+
+Key properties:
+
+- **Documents are groups.** A `property:42` entity is accessed by membership in the `group:property:42:access` group.
+- **Sharing nests.** `group:property:42:access` can contain `group:acme-rentals-staff` which contains individual devices. Transitive membership gives access.
+- **Revocation is an operation.** Removing a member is a signed CRDT op that syncs to all peers. No central blocklist; eventual consistency is automatic.
+- **Offline enforcement.** Every peer verifies signatures locally against the membership graph it has. No call-home required.
+- **Key rotation.** A person's principal is a group of their devices; rotating a key means adding the new device and revoking the old — no token reissuance needed.
+- **Confidentiality.** Group keys are derived via **BeeKEM** (continuous group key agreement). Sync servers see only ciphertext; only members can decrypt.
+
+See §2.4 for the crypto primitives and §3.5 for how the kernel permission evaluator consumes membership proofs.
+
+#### 10.2.2 Supplementary: Macaroon-Style Bearer Tokens
+
+Macaroons (Google Research, 2014) remain useful for scenarios where group membership is overkill or too heavy:
+
+- **Short-lived third-party access** — "emergency inspector, valid 48 hours, can read property 42 only"
+- **Third-party caveats** — "valid only if code-enforcement agency co-signs" — Macaroons natively support this via discharge macaroons; Keyhive requires cross-group membership arrangements
+- **Stateless attenuation** — a landlord hands the inspection firm a token; the firm attenuates it further before handing to an inspector; no group-graph mutation required
+
+Macaroon anatomy:
 
 ```
 Macaroon {
