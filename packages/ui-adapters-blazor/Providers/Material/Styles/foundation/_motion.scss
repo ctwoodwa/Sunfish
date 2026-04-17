@@ -1,0 +1,65 @@
+// =============================================================================
+// Foundation: Motion — Material 3 Motion System
+// Source: https://m3.material.io/styles/motion/easing-and-duration
+//
+// M3 emphasizes "emphasized" easing (decelerate into position) for most
+// transitions. Standard and linear easings are used for simple state changes.
+// =============================================================================
+
+:root {
+  // -------------------------------------------------------------------------
+  // M3 Easing curves
+  // -------------------------------------------------------------------------
+  --sf-motion-easing-emphasized:          cubic-bezier(0.2, 0, 0, 1);
+  --sf-motion-easing-emphasized-decel:    cubic-bezier(0.05, 0.7, 0.1, 1.0);
+  --sf-motion-easing-emphasized-accel:    cubic-bezier(0.3, 0, 0.8, 0.15);
+  --sf-motion-easing-standard:            cubic-bezier(0.2, 0, 0, 1);
+  --sf-motion-easing-standard-decel:      cubic-bezier(0, 0, 0, 1);
+  --sf-motion-easing-standard-accel:      cubic-bezier(0.3, 0, 1, 1);
+  --sf-motion-easing-linear:              cubic-bezier(0, 0, 1, 1);
+
+  // -------------------------------------------------------------------------
+  // M3 Duration tokens
+  // -------------------------------------------------------------------------
+  --sf-motion-duration-short1:    50ms;
+  --sf-motion-duration-short2:    100ms;
+  --sf-motion-duration-short3:    150ms;
+  --sf-motion-duration-short4:    200ms;
+  --sf-motion-duration-medium1:   250ms;
+  --sf-motion-duration-medium2:   300ms;
+  --sf-motion-duration-medium3:   350ms;
+  --sf-motion-duration-medium4:   400ms;
+  --sf-motion-duration-long1:     450ms;
+  --sf-motion-duration-long2:     500ms;
+  --sf-motion-duration-long3:     550ms;
+  --sf-motion-duration-long4:     600ms;
+  --sf-motion-duration-extra-long1: 700ms;
+  --sf-motion-duration-extra-long2: 800ms;
+  --sf-motion-duration-extra-long3: 900ms;
+  --sf-motion-duration-extra-long4: 1000ms;
+
+  // -------------------------------------------------------------------------
+  // Sunfish composite transition tokens (shorthand for common use)
+  // Uses M3-recommended easing curve
+  // -------------------------------------------------------------------------
+  --sf-transition-fast:    100ms cubic-bezier(0.2, 0, 0, 1);
+  --sf-transition-normal:  200ms cubic-bezier(0.2, 0, 0, 1);
+  --sf-transition-slow:    400ms cubic-bezier(0.2, 0, 0, 1);
+
+  // Named duration aliases (for components that need explicit names)
+  --sf-motion-duration-short:  200ms;
+  --sf-motion-duration-medium: 400ms;
+  --sf-motion-duration-long:   700ms;
+}
+
+// Respect user reduced-motion preference
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sf-transition-fast:    0ms;
+    --sf-transition-normal:  0ms;
+    --sf-transition-slow:    0ms;
+    --sf-motion-duration-short:  0ms;
+    --sf-motion-duration-medium: 0ms;
+    --sf-motion-duration-long:   0ms;
+  }
+}

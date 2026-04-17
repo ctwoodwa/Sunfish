@@ -1,0 +1,77 @@
+// =============================================================================
+// Patterns: Field Base — Shared input chrome for Material 3
+// M3 defines two field variants: Filled and Outlined.
+// This file establishes the shared chrome tokens, base class, and
+// cross-browser form control normalization.
+// =============================================================================
+
+// ── Cross-browser form control normalization ────────────────────────────────
+// Scoped to .sf-* containers so it does not leak into consumer markup.
+// Addresses Firefox/Safari differences: line-height, font inheritance,
+// ::-moz-focus-inner padding, appearance, and box-sizing.
+
+[class^="sf-"] button::-moz-focus-inner,
+[class*=" sf-"] button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+[class^="sf-"] input,
+[class^="sf-"] select,
+[class^="sf-"] textarea,
+[class^="sf-"] button,
+[class*=" sf-"] input,
+[class*=" sf-"] select,
+[class*=" sf-"] textarea,
+[class*=" sf-"] button {
+  font: inherit;
+  line-height: var(--sf-line-height-base, 1.5);
+  box-sizing: border-box;
+  margin: 0;
+}
+
+[class^="sf-"] input[type="search"],
+[class*=" sf-"] input[type="search"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  &::-webkit-search-decoration,
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-results-button,
+  &::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none;
+  }
+}
+
+// ── Material 3 field tokens ─────────────────────────────────────────────────
+
+:root {
+  // Field dimensions
+  --sf-field-height:              56px;   // M3 standard text field height
+  --sf-field-height-dense:        40px;
+  --sf-field-border-radius:       var(--sf-radius-sm);   // 4px top corners (filled)
+  --sf-field-border-radius-outlined: var(--sf-radius-sm);
+
+  // Indicator line (filled variant)
+  --sf-field-indicator-color:     var(--sf-color-outline);
+  --sf-field-indicator-width:     1px;
+  --sf-field-indicator-width-focus: 2px;
+  --sf-field-indicator-color-focus: var(--sf-color-primary);
+  --sf-field-indicator-color-error: var(--sf-color-error);
+
+  // Fill (filled variant)
+  --sf-field-fill:                var(--sf-color-surface-variant);
+  --sf-field-fill-hover:          var(--sf-color-surface-variant);
+  --sf-field-fill-hover:          color-mix(in srgb, var(--sf-color-on-surface) 8%, var(--sf-color-surface-variant));
+
+  // Label
+  --sf-field-label-color:         var(--sf-color-on-surface-variant);
+  --sf-field-label-color-focus:   var(--sf-color-primary);
+  --sf-field-label-color-error:   var(--sf-color-error);
+
+  // Supporting text
+  --sf-field-supporting-color:    var(--sf-color-on-surface-variant);
+  --sf-field-supporting-color-error: var(--sf-color-error);
+}

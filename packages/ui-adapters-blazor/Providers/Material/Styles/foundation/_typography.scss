@@ -1,0 +1,63 @@
+// =============================================================================
+// Foundation: Typography — Material 3 Type Scale
+// Source: https://m3.material.io/styles/typography/type-scale-tokens
+// =============================================================================
+
+// ----------------------------------------------------------------------------
+// M3 Type Scale — Sass map for reference / tooling use
+// Keys match M3 role names exactly
+// ----------------------------------------------------------------------------
+
+$material-type-scale: (
+  display-large:   (font-size: 3.5625rem,  line-height: 4rem,     font-weight: 400, letter-spacing: -0.015625rem),
+  display-medium:  (font-size: 2.8125rem,  line-height: 3.25rem,  font-weight: 400, letter-spacing: 0),
+  display-small:   (font-size: 2.25rem,    line-height: 2.75rem,  font-weight: 400, letter-spacing: 0),
+  headline-large:  (font-size: 2rem,       line-height: 2.5rem,   font-weight: 400, letter-spacing: 0),
+  headline-medium: (font-size: 1.75rem,    line-height: 2.25rem,  font-weight: 400, letter-spacing: 0),
+  headline-small:  (font-size: 1.5rem,     line-height: 2rem,     font-weight: 400, letter-spacing: 0),
+  title-large:     (font-size: 1.375rem,   line-height: 1.75rem,  font-weight: 400, letter-spacing: 0),
+  title-medium:    (font-size: 1rem,       line-height: 1.5rem,   font-weight: 500, letter-spacing: 0.009375rem),
+  title-small:     (font-size: 0.875rem,   line-height: 1.25rem,  font-weight: 500, letter-spacing: 0.00625rem),
+  body-large:      (font-size: 1rem,       line-height: 1.5rem,   font-weight: 400, letter-spacing: 0.03125rem),
+  body-medium:     (font-size: 0.875rem,   line-height: 1.25rem,  font-weight: 400, letter-spacing: 0.015625rem),
+  body-small:      (font-size: 0.75rem,    line-height: 1rem,     font-weight: 400, letter-spacing: 0.025rem),
+  label-large:     (font-size: 0.875rem,   line-height: 1.25rem,  font-weight: 500, letter-spacing: 0.00625rem),
+  label-medium:    (font-size: 0.75rem,    line-height: 1rem,     font-weight: 500, letter-spacing: 0.03125rem),
+  label-small:     (font-size: 0.6875rem,  line-height: 1rem,     font-weight: 500, letter-spacing: 0.03125rem),
+);
+
+// ----------------------------------------------------------------------------
+// Sunfish-compatible typography tokens
+// Mapped to M3 type scale roles for cross-provider compatibility
+// ----------------------------------------------------------------------------
+
+:root {
+  --sf-font-family:     'Roboto', 'Noto Sans', system-ui, sans-serif;
+
+  // Size scale — mapped to M3 roles
+  --sf-font-size-xs:    0.6875rem;   // label-small
+  --sf-font-size-sm:    0.75rem;     // body-small / label-medium
+  --sf-font-size-base:  0.875rem;    // body-medium / label-large
+  --sf-font-size-md:    1rem;        // body-large / title-medium
+  --sf-font-size-lg:    1.375rem;    // title-large
+  --sf-font-size-xl:    1.5rem;      // headline-small
+  --sf-font-size-2xl:   1.75rem;     // headline-medium
+  --sf-font-size-3xl:   2rem;        // headline-large
+  --sf-font-size-4xl:   2.25rem;     // display-small
+
+  // Weight
+  --sf-font-weight-normal:  400;
+  --sf-font-weight-medium:  500;
+  --sf-font-weight-bold:    700;
+
+  // Line heights
+  --sf-line-height-base:    1.5;
+  --sf-line-height-tight:   1rem;
+  --sf-line-height-normal:  1.5rem;
+  --sf-line-height-loose:   2rem;
+
+  // Letter spacing (M3 uses rem-based tracking)
+  --sf-letter-spacing-tight:  -0.015625rem;
+  --sf-letter-spacing-normal: 0;
+  --sf-letter-spacing-wide:   0.03125rem;
+}
