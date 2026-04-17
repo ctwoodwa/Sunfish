@@ -1,0 +1,59 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.SearchBoxClass())"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <span class="sf-search-box__icon">
+        @IconProvider.GetIcon("search", IconSize.Small)
+    </span>
+    <input type="search"
+           value="@Value"
+           placeholder="@(Placeholder ?? "Search...")"
+           disabled="@Disabled"
+           @oninput="OnInputChanged"
+           @onkeydown="OnKeyDown" />
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        <button class="sf-search-box__clear"
+                type="button"
+                aria-label="Clear search"
+                disabled="@Disabled"
+                @onclick="ClearValue">
+            @IconProvider.GetIcon("x-close", IconSize.Small)
+        </button>
+    }
+    else if (!string.IsNullOrEmpty(KbdHint))
+    {
+        <kbd class="sf-search-box__kbd">@KbdHint</kbd>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public EventCallback<string> OnSearch { get; set; }
+    [Parameter] public EventCallback OnEscape { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? KbdHint { get; set; }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await OnSearch.InvokeAsync(Value);
+        else if (e.Key == "Escape")
+            await OnEscape.InvokeAsync();
+    }
+
+    private async Task ClearValue()
+    {
+        Value = string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

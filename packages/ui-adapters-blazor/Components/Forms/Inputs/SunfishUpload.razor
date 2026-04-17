@@ -1,0 +1,209 @@
+@inherits SunfishComponentBase
+@using Microsoft.AspNetCore.Components.Forms
+@implements IUploadChunkSettingsSink
+@implements IAsyncDisposable
+
+<CascadingValue Value="(IUploadChunkSettingsSink)this" IsFixed="true">
+<div class="@CombineClasses(CssProvider.UploadClass())"
+     style="@CombineStyles()"
+     role="region"
+     aria-label="File upload"
+     @attributes="AdditionalAttributes">
+
+    @* ── Drop zone ─────────────────────────────────────────────────────── *@
+    <div class="@DropZoneCssClass()"
+         @ondragenter="HandleDragEnter"
+         @ondragover="HandleDragOver"
+         @ondragleave="HandleDragLeave"
+         @ondrop="HandleDrop"
+         @ondragenter:preventDefault
+         @ondragover:preventDefault
+         @ondrop:preventDefault>
+
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <span class="sf-upload__icon" aria-hidden="true">
+                @IconProvider.GetIcon("upload", Sunfish.Foundation.Enums.IconSize.Medium)
+            </span>
+            <span class="sf-upload__text">
+                Drag and drop file@(Multiple ? "s" : "") here, or
+            </span>
+        }
+
+        <label class="sf-upload__browse-btn" for="@InputId">
+            @if (SelectFilesButtonTemplate != null)
+            {
+                @SelectFilesButtonTemplate
+            }
+            else
+            {
+                <span>Browse files</span>
+            }
+            <InputFile id="@InputId"
+                       OnChange="HandleFileSelected"
+                       multiple="@Multiple"
+                       accept="@Accept"
+                       capture="@Capture"
+                       disabled="@(!Enabled)"
+                       class="sf-upload__input"
+                       aria-hidden="true"
+                       tabindex="-1" />
+        </label>
+
+        @if (AllowedExtensions?.Any() == true)
+        {
+            <span class="sf-upload__hint">
+                Allowed: @string.Join(", ", AllowedExtensions)
+            </span>
+        }
+    </div>
+
+    @* ── File list ─────────────────────────────────────────────────────── *@
+    @if (_files.Count > 0)
+    {
+        <ul class="@CssProvider.UploadFileListClass()"
+            role="list"
+            aria-label="Upload queue">
+
+            @foreach (var file in _files)
+            {
+                <li class="@CssProvider.UploadFileItemClass() @(file.IsInvalid ? "mar-upload__file-item--invalid" : "")"
+                    role="listitem">
+
+                    @if (FileTemplate != null)
+                    {
+                        @FileTemplate(file)
+                    }
+                    else
+                    {
+                        @* File icon *@
+                        <span class="sf-upload__file-icon" aria-hidden="true">
+                            @IconProvider.GetIcon("file", Sunfish.Foundation.Enums.IconSize.Small)
+                        </span>
+
+                        @* File info *@
+                        @if (FileInfoTemplate != null)
+                        {
+                            @FileInfoTemplate(file)
+                        }
+                        else
+                        {
+                            <span class="sf-upload__file-info">
+                                <span class="sf-upload__file-name" title="@file.Name">@file.Name</span>
+                                <span class="sf-upload__file-size">@FormatSize(file.Size)</span>
+
+                                @if (file.IsInvalid)
+                                {
+                                    <span class="sf-upload__file-error" role="alert">
+                                        @(file.InvalidExtension ? "Invalid file type. " : "")@(file.InvalidMaxFileSize ? "File too large. " : "")@(file.InvalidMinFileSize ? "File too small." : "")
+                                    </span>
+                                }
+                            </span>
+                        }
+
+                        @* Status badge *@
+                        <span class="sf-upload__file-status mar-upload__file-status--@file.Status.ToString().ToLower()"
+                              aria-live="polite">
+                            @StatusLabel(file.Status)
+                        </span>
+
+                        @* Progress bar *@
+                        @if (file.Status == UploadFileStatus.Uploading)
+                        {
+                            <div class="sf-upload__progress" role="progressbar"
+                                 aria-valuenow="@file.Progress"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-label="Uploading @file.Name: @(file.Progress)%">
+                                <div class="sf-upload__progress-bar" style="width:@(file.Progress)%"></div>
+                            </div>
+                        }
+
+                        @* Actions *@
+                        <span class="sf-upload__file-actions">
+                            @if (file.Status == UploadFileStatus.Uploading)
+                            {
+                                <button type="button"
+                                        class="sf-upload__cancel-btn"
+                                        aria-label="Cancel upload of @file.Name"
+                                        @onclick="() => CancelFile(file.Id)">
+                                    <span aria-hidden="true">&#x23F8;</span>
+                                </button>
+                            }
+                            else if (file.Status == UploadFileStatus.Paused)
+                            {
+                                <button type="button"
+                                        class="sf-upload__resume-btn"
+                                        aria-label="Resume upload of @file.Name"
+                                        @onclick="() => ResumeFile(file.Id)">
+                                    <span aria-hidden="true">&#x25B6;</span>
+                                </button>
+                                <button type="button"
+                                        class="sf-upload__remove-btn"
+                                        aria-label="Remove @file.Name"
+                                        @onclick="() => RemoveFileInternalAsync(file)">
+                                    <span aria-hidden="true">&#x2715;</span>
+                                </button>
+                            }
+                            else if (file.Status == UploadFileStatus.Failed)
+                            {
+                                <button type="button"
+                                        class="sf-upload__retry-btn"
+                                        aria-label="Retry upload of @file.Name"
+                                        @onclick="() => RetryFile(file.Id)">
+                                    <span aria-hidden="true">&#x21BA;</span>
+                                </button>
+                                <button type="button"
+                                        class="sf-upload__remove-btn"
+                                        aria-label="Remove @file.Name"
+                                        @onclick="() => RemoveFileInternalAsync(file)">
+                                    <span aria-hidden="true">&#x2715;</span>
+                                </button>
+                            }
+                            else if (file.Status != UploadFileStatus.Uploaded || !string.IsNullOrEmpty(RemoveUrl))
+                            {
+                                @* Show remove button for selected files or uploaded files when RemoveUrl is set *@
+                                <button type="button"
+                                        class="sf-upload__remove-btn"
+                                        aria-label="Remove @file.Name"
+                                        @onclick="() => RemoveFileInternalAsync(file)">
+                                    <span aria-hidden="true">&#x2715;</span>
+                                </button>
+                            }
+                        </span>
+                    }
+                </li>
+            }
+        </ul>
+
+        @* ── Manual upload / clear toolbar (AutoUpload=false) ──────────── *@
+        @if (!AutoUpload)
+        {
+            <div class="sf-upload__actions" role="toolbar" aria-label="Upload actions">
+                @if (CanUploadManually)
+                {
+                    <button type="button"
+                            class="sf-upload__upload-btn"
+                            aria-label="Upload all files"
+                            @onclick="UploadFiles">
+                        Upload
+                    </button>
+                }
+                @if (CanClear)
+                {
+                    <button type="button"
+                            class="sf-upload__clear-btn"
+                            aria-label="Clear file list"
+                            @onclick="ClearFiles">
+                        Clear
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>
+</CascadingValue>

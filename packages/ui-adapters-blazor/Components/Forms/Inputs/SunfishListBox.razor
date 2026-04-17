@@ -1,0 +1,123 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(ListBoxCss())"
+     style="@CombineStyles(HeightStyle())"
+     role="listbox"
+     aria-multiselectable="@((SelectionMode == ListBoxSelectionMode.Multiple).ToString().ToLowerInvariant())"
+     @attributes="AdditionalAttributes">
+
+    @if (Data is not null)
+    {
+        @foreach (var item in Data)
+        {
+            var isSelected = IsItemSelected(item);
+            <div class="@ItemCss(isSelected)"
+                 role="option"
+                 aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                 @onclick="() => HandleSelect(item)">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    <span class="sf-listbox__item-text">@GetFieldValue(item, TextField)</span>
+                }
+            </div>
+        }
+    }
+    else if (!string.IsNullOrEmpty(Placeholder))
+    {
+        <div class="sf-listbox__placeholder">@Placeholder</div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+    [Parameter] public IEnumerable<object>? SelectedItems { get; set; }
+    [Parameter] public EventCallback<IEnumerable<object>?> SelectedItemsChanged { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public string ValueField { get; set; } = "Value";
+    [Parameter] public ListBoxSelectionMode SelectionMode { get; set; } = ListBoxSelectionMode.Single;
+    [Parameter] public string? Height { get; set; } = "200px";
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Reorderable { get; set; }
+    [Parameter] public bool Draggable { get; set; }
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+    private List<object> _selectedItems = new();
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedItems is not null)
+        {
+            _selectedItems = SelectedItems.ToList();
+        }
+        else if (Value is not null && _selectedItems.Count == 0)
+        {
+            _selectedItems = new List<object> { Value };
+        }
+    }
+
+    private string ListBoxCss()
+    {
+        var css = "mar-listbox";
+        if (!Enabled) css += " mar-listbox--disabled";
+        return css;
+    }
+
+    private string? HeightStyle()
+    {
+        return !string.IsNullOrEmpty(Height) ? $"height:{Height};overflow-y:auto" : null;
+    }
+
+    private string ItemCss(bool isSelected)
+    {
+        var css = "mar-listbox__item";
+        if (isSelected) css += " mar-listbox__item--selected";
+        return css;
+    }
+
+    private bool IsItemSelected(object item)
+    {
+        var itemValue = GetFieldValue(item, ValueField);
+        return _selectedItems.Any(s => GetFieldValue(s, ValueField) == itemValue);
+    }
+
+    private async Task HandleSelect(object item)
+    {
+        if (!Enabled) return;
+
+        if (SelectionMode == ListBoxSelectionMode.Single)
+        {
+            _selectedItems = new List<object> { item };
+            Value = item;
+            await ValueChanged.InvokeAsync(item);
+        }
+        else
+        {
+            var itemValue = GetFieldValue(item, ValueField);
+            var existing = _selectedItems.FirstOrDefault(s => GetFieldValue(s, ValueField) == itemValue);
+
+            if (existing is not null)
+            {
+                _selectedItems.Remove(existing);
+            }
+            else
+            {
+                _selectedItems.Add(item);
+            }
+        }
+
+        await SelectedItemsChanged.InvokeAsync(_selectedItems);
+    }
+
+    private string GetFieldValue(object item, string fieldName)
+    {
+        var prop = item.GetType().GetProperty(fieldName);
+        return prop?.GetValue(item)?.ToString() ?? "";
+    }
+}

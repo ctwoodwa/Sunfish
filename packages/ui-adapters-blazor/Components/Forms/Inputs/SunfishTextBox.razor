@@ -1,0 +1,95 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.TextBoxClass(IsInvalid, Disabled))"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    @if (Prefix != null)
+    {
+        <span class="sf-textbox__prefix @(ShowPrefixSeparator ? "mar-textbox__prefix--sep" : "")">
+            @Prefix
+        </span>
+    }
+    <input type="@InputType"
+           value="@Value"
+           placeholder="@Placeholder"
+           disabled="@Disabled"
+           readonly="@ReadOnly"
+           maxlength="@MaxLength"
+           autocomplete="@Autocomplete"
+           @oninput="OnInputChanged" />
+    @if (ShowClearButton && !string.IsNullOrEmpty(Value) && !Disabled && !ReadOnly)
+    {
+        <button type="button" class="sf-textbox__clear" aria-label="Clear" @onclick="ClearValue">&times;</button>
+    }
+    @if (Suffix != null)
+    {
+        <span class="sf-textbox__suffix @(ShowSuffixSeparator ? "mar-textbox__suffix--sep" : "")">
+            @Suffix
+        </span>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string InputType { get; set; } = "text";
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public RenderFragment? Prefix { get; set; }
+    [Parameter] public RenderFragment? Suffix { get; set; }
+    [Parameter] public bool ShowPrefixSeparator { get; set; }
+    [Parameter] public bool ShowSuffixSeparator { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public int? MaxLength { get; set; }
+    [Parameter] public int DebounceDelay { get; set; }
+    [Parameter] public string? Autocomplete { get; set; }
+
+    /// <summary>Whether to show a clear button when the field has a value.</summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    private System.Timers.Timer? _debounceTimer;
+    private string _pendingValue = string.Empty;
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        var newValue = e.Value?.ToString() ?? string.Empty;
+
+        if (DebounceDelay > 0)
+        {
+            _pendingValue = newValue;
+            _debounceTimer?.Stop();
+            _debounceTimer?.Dispose();
+            _debounceTimer = new System.Timers.Timer(DebounceDelay);
+            _debounceTimer.AutoReset = false;
+            _debounceTimer.Elapsed += async (_, _) => await InvokeAsync(async () =>
+            {
+                Value = _pendingValue;
+                await ValueChanged.InvokeAsync(Value);
+                StateHasChanged();
+            });
+            _debounceTimer.Start();
+        }
+        else
+        {
+            Value = newValue;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    private async Task ClearValue()
+    {
+        Value = string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _debounceTimer?.Stop();
+            _debounceTimer?.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+}

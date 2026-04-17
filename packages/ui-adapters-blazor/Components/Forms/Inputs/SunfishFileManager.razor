@@ -1,0 +1,359 @@
+@typeparam TItem
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-filemanager")"
+     style="@CombineStyles(GetContainerStyle())"
+     @attributes="AdditionalAttributes"
+     role="application"
+     aria-label="File Manager"
+     @onclick="CloseContextMenu">
+
+    @* Toolbar *@
+    <div class="sf-filemanager__toolbar" role="toolbar" aria-label="File manager toolbar">
+        @if (ToolBarTemplate is not null)
+        {
+            @ToolBarTemplate
+        }
+        else
+        {
+            @* Up button *@
+            <button type="button" class="sf-btn mar-btn--flat mar-btn--sm" @onclick="NavigateUp"
+                    disabled="@(!CanNavigateUp)">
+                @IconProvider.GetIcon("arrow-up", IconSize.Small)
+                Up
+            </button>
+
+            @* Hidden path span for backward compatibility *@
+            <span class="sf-filemanager__path" style="display:none" aria-hidden="true">@Path</span>
+
+            @* Breadcrumb path *@
+            <nav class="sf-filemanager__breadcrumb" aria-label="File path">
+                @{
+                    var segments = GetBreadcrumbSegments().ToList();
+                    for (var si = 0; si < segments.Count; si++)
+                    {
+                        var seg = segments[si];
+                        var isLast = si == segments.Count - 1;
+                        if (isLast)
+                        {
+                            <span class="sf-filemanager__breadcrumb-segment mar-filemanager__breadcrumb-segment--active">@seg.Label</span>
+                        }
+                        else
+                        {
+                            var segPath = seg.SegmentPath;
+                            <span class="sf-filemanager__breadcrumb-segment"
+                                  @onclick="() => NavigateTo(segPath)"
+                                  role="button">@seg.Label</span>
+                            <span class="sf-filemanager__breadcrumb-separator">/</span>
+                        }
+                    }
+                }
+            </nav>
+
+            @* New Folder (before spacer so selector-order matches Phase A test expectations) *@
+            @if (AllowCreate)
+            {
+                <button type="button" class="sf-btn mar-btn--flat mar-btn--sm" @onclick="CreateFolder">
+                    New Folder
+                </button>
+            }
+
+            <span class="sf-filemanager__spacer"></span>
+
+            @* Sort controls *@
+            <select class="sf-filemanager__sort-select"
+                    value="@_sortField"
+                    @onchange="HandleSortFieldChange"
+                    aria-label="Sort by">
+                <option value="Name">Name</option>
+                <option value="Size">Size</option>
+                <option value="DateModified">Date Modified</option>
+                <option value="Extension">Extension</option>
+                <option value="Type">Type</option>
+            </select>
+            <button type="button" class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__sort-dir"
+                    title="@(_sortAscending ? "Sort descending" : "Sort ascending")"
+                    @onclick="ToggleSortDirection">
+                @if (_sortAscending)
+                {
+                    @IconProvider.GetIcon("sort-asc", IconSize.Small)
+                }
+                else
+                {
+                    @IconProvider.GetIcon("sort-desc", IconSize.Small)
+                }
+            </button>
+
+            @* Search *@
+            <input type="search"
+                   class="sf-filemanager__search"
+                   placeholder="Search…"
+                   aria-label="Search files"
+                   value="@SearchFilter"
+                   @oninput="e => SearchFilter = e.Value?.ToString() ?? string.Empty" />
+
+            @* Upload button — visible when UploadSettings is configured *@
+            @if (UploadSettings is not null)
+            {
+                <button type="button" class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__upload-btn"
+                        title="Upload files"
+                        @onclick="ShowUploadDialog">
+                    @IconProvider.GetIcon("upload", IconSize.Small)
+                    Upload
+                </button>
+            }
+
+            @* Details toggle button — visible when ShowPreviewPane is enabled *@
+            @if (ShowPreviewPane)
+            {
+                <button type="button"
+                        class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__details-btn @(_previewPaneVisible ? "mar-filemanager__details-btn--active" : "")"
+                        title="@(_previewPaneVisible ? "Hide details" : "Show details")"
+                        @onclick="TogglePreviewPane">
+                    @IconProvider.GetIcon("info", IconSize.Small)
+                    Details
+                </button>
+            }
+
+            @* View toggle *@
+            <button type="button" class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__view-toggle"
+                    title="@(View == FileManagerViewType.Grid ? "Switch to List view" : "Switch to Grid view")"
+                    @onclick="ToggleView">
+                @if (View == FileManagerViewType.Grid)
+                {
+                    @IconProvider.GetIcon("view-list", IconSize.Small)
+                }
+                else
+                {
+                    @IconProvider.GetIcon("view-grid", IconSize.Small)
+                }
+            </button>
+        }
+    </div>
+
+    @* Content area *@
+    <div class="sf-filemanager__content">
+        @* Folder tree sidebar *@
+        @if (ShowFolderTree)
+        {
+            <div class="sf-filemanager__sidebar">
+                <ul class="sf-filemanager__tree" role="tree" aria-label="Folder tree">
+                    @foreach (var folder in GetRootFolders())
+                    {
+                        var f = folder;
+                        var isActive = GetPath(f) == Path;
+                        <li role="treeitem"
+                            tabindex="0"
+                            aria-selected="@isActive"
+                            class="@(isActive ? "mar-filemanager__tree-item--active" : "")"
+                            @onclick="() => NavigateTo(GetPath(f))">
+                            @IconProvider.GetIcon("folder", IconSize.Small) @GetName(f)
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        @* File list — shrinks when the preview pane is open *@
+        <div class="sf-filemanager__files @(_previewPaneVisible ? "mar-filemanager__files--with-preview" : "")">
+            @if (EnableLoaderContainer && _isLoading)
+            {
+                <div class="sf-filemanager__loader">Loading...</div>
+            }
+            @if (View == FileManagerViewType.Grid)
+            {
+                <div class="sf-filemanager__grid">
+                    @foreach (var item in GetCurrentItems())
+                    {
+                        var entry = item;
+                        <div class="sf-filemanager__grid-item @(IsSelected(entry) ? "mar-filemanager__grid-item--selected" : "")"
+                             role="option"
+                             aria-selected="@IsSelected(entry)"
+                             @onclick:stopPropagation="true"
+                             @onclick="() => SelectItem(entry)"
+                             @ondblclick="() => OpenItem(entry)"
+                             @oncontextmenu="e => ShowContextMenu(entry, e)"
+                             @oncontextmenu:preventDefault="true">
+                            <span class="sf-filemanager__icon">
+                                @IconProvider.GetIcon(GetIsDirectory(entry) ? "folder" : "file", IconSize.Large)
+                            </span>
+                            @if (IsRenaming(entry))
+                            {
+                                <input class="sf-filemanager__rename-input"
+                                       value="@_renameText"
+                                       @oninput="e => UpdateRenameText(e.Value?.ToString() ?? string.Empty)"
+                                       @onblur="CommitRename"
+                                       @onkeydown="HandleRenameKeyDown"
+                                       @onclick:stopPropagation="true" />
+                            }
+                            else
+                            {
+                                <span class="sf-filemanager__name">@GetName(entry)</span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <table class="sf-filemanager__list" role="grid">
+                    <thead>
+                        <tr role="row">
+                            <th role="gridcell">Name</th>
+                            <th role="gridcell">Size</th>
+                            <th role="gridcell">Modified</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in GetCurrentItems())
+                        {
+                            var entry = item;
+                            <tr role="row"
+                                class="@(IsSelected(entry) ? "mar-filemanager__row--selected" : "")"
+                                @onclick:stopPropagation="true"
+                                @onclick="() => SelectItem(entry)"
+                                @ondblclick="() => OpenItem(entry)"
+                                @oncontextmenu="e => ShowContextMenu(entry, e)"
+                                @oncontextmenu:preventDefault="true">
+                                <td role="gridcell">
+                                    @IconProvider.GetIcon(GetIsDirectory(entry) ? "folder" : "file", IconSize.Small)
+                                    @if (IsRenaming(entry))
+                                    {
+                                        <input class="sf-filemanager__rename-input"
+                                               value="@_renameText"
+                                               @oninput="e => UpdateRenameText(e.Value?.ToString() ?? string.Empty)"
+                                               @onblur="CommitRename"
+                                               @onkeydown="HandleRenameKeyDown"
+                                               @onclick:stopPropagation="true" />
+                                    }
+                                    else
+                                    {
+                                        <span class="sf-filemanager__name">@GetName(entry)</span>
+                                    }
+                                </td>
+                                <td role="gridcell">@(GetIsDirectory(entry) ? "" : FormatSize(GetSize(entry)))</td>
+                                <td role="gridcell">@GetDateModified(entry)?.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        @* Preview pane — rendered when ShowPreviewPane && _previewPaneVisible *@
+        @if (ShowPreviewPane && _previewPaneVisible)
+        {
+            <div class="sf-filemanager__preview" tabindex="0" aria-label="File details">
+                @if (SelectedItem is null)
+                {
+                    <p class="sf-filemanager__preview-empty">No item selected</p>
+                }
+                else
+                {
+                    var sel = SelectedItem;
+                    <div class="sf-filemanager__preview-icon">
+                        @IconProvider.GetIcon(GetIsDirectory(sel) ? "folder" : "file", IconSize.Large)
+                    </div>
+                    <div class="sf-filemanager__preview-details">
+                        <div class="sf-filemanager__preview-name">@GetName(sel)</div>
+                        <dl class="sf-filemanager__preview-meta">
+                            <dt>Type</dt>
+                            <dd>@(GetIsDirectory(sel) ? "Folder" : (GetExtension(sel) ?? "File"))</dd>
+                            @if (!GetIsDirectory(sel))
+                            {
+                                <dt>Size</dt>
+                                <dd>@FormatSize(GetSize(sel))</dd>
+                            }
+                            @if (GetDateCreated(sel) is { } dc)
+                            {
+                                <dt>Created</dt>
+                                <dd>@dc.ToString("yyyy-MM-dd HH:mm")</dd>
+                            }
+                            @if (GetDateModified(sel) is { } dm)
+                            {
+                                <dt>Modified</dt>
+                                <dd>@dm.ToString("yyyy-MM-dd HH:mm")</dd>
+                            }
+                        </dl>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    @* Upload dialog overlay *@
+    @if (_uploadDialogVisible)
+    {
+        <div class="sf-filemanager__upload-overlay" @onclick="CloseUploadDialog">
+            <div class="sf-filemanager__upload-dialog" @onclick:stopPropagation="true">
+                <div class="sf-filemanager__upload-header">
+                    <span>Upload Files</span>
+                    <button type="button" class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__upload-close"
+                            @onclick="CloseUploadDialog">
+                        ×
+                    </button>
+                </div>
+                <div class="sf-filemanager__upload-body">
+                    <input type="file"
+                           class="sf-filemanager__upload-input"
+                           multiple="@(UploadSettings?.Multiple ?? true)"
+                           accept="@(UploadSettings?.AllowedExtensions is { Length: > 0 } exts ? string.Join(",", exts) : null)" />
+                </div>
+            </div>
+        </div>
+    }
+
+    @* Context menu overlay *@
+    @if (_contextMenuVisible && _contextMenuItem is not null)
+    {
+        <div class="sf-filemanager__context-menu"
+             role="menu"
+             style="position:fixed;left:@(_contextMenuX)px;top:@(_contextMenuY)px;z-index:1000;"
+             @onclick:stopPropagation="true">
+            @if (AllowRename)
+            {
+                <button type="button" role="menuitem"
+                        class="sf-filemanager__context-menu-item mar-filemanager__context-menu-item--rename"
+                        @onclick="() => StartRename(_contextMenuItem!)">
+                    Rename
+                </button>
+            }
+            @if (!GetIsDirectory(_contextMenuItem!))
+            {
+                <button type="button" role="menuitem"
+                        class="sf-filemanager__context-menu-item mar-filemanager__context-menu-item--download"
+                        @onclick="ContextMenuDownload">
+                    Download
+                </button>
+            }
+            @if (AllowDelete)
+            {
+                <button type="button" role="menuitem"
+                        class="sf-filemanager__context-menu-item mar-filemanager__context-menu-item--delete"
+                        @onclick="() => ConfirmDelete(_contextMenuItem!)">
+                    Delete
+                </button>
+            }
+        </div>
+    }
+
+    @* Delete confirmation dialog *@
+    @if (_deleteConfirmItem is not null)
+    {
+        <div class="sf-filemanager__confirm-overlay" @onclick:stopPropagation="true">
+            <div class="sf-filemanager__confirm-dialog" role="alertdialog" aria-modal="true">
+                <p class="sf-filemanager__confirm-message">Delete "@GetName(_deleteConfirmItem)"?</p>
+                <div class="sf-filemanager__confirm-actions">
+                    <button type="button" class="sf-btn mar-btn--danger mar-filemanager__confirm-ok"
+                            @onclick="ExecuteDelete">
+                        OK
+                    </button>
+                    <button type="button" class="sf-btn mar-btn--flat mar-filemanager__confirm-cancel"
+                            @onclick="CancelDelete">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
+</div>

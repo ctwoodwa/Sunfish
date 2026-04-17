@@ -1,0 +1,902 @@
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+@inject Sunfish.Components.Blazor.Internal.Interop.ISunfishJsModuleLoader JsModuleLoader
+
+<div class="@CombineClasses(CssProvider.DatePickerClass()) mar-date-range-picker @(_isPopupOpen ? "mar-date-range-picker--open" : "") @SizeClass @RoundedClass @FillModeClass"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes"
+     @onkeydown="OnKeyDown">
+
+    @* ── Input row ── *@
+    <div class="sf-date-range-picker__input-wrapper">
+        <span class="sf-date-picker__icon" aria-hidden="true">
+            @IconProvider.GetIcon("calendar", IconSize.Small)
+        </span>
+
+        @* Start input *@
+        <input id="@_startInputId"
+               type="text"
+               class="@CssProvider.TextBoxClass(false, !Enabled) mar-date-range-picker__input"
+               value="@FormatDate(StartValue)"
+               placeholder="@(Placeholder ?? "Start date")"
+               disabled="@(!Enabled)"
+               readonly="true"
+               tabindex="@TabIndex"
+               inputmode="@InputMode"
+               role="combobox"
+               aria-label="Start date"
+               aria-haspopup="dialog"
+               aria-expanded="@_isPopupOpen.ToString().ToLowerInvariant()"
+               aria-controls="@(_isPopupOpen ? _popupId : null)"
+               @onfocus="OpenPopup"
+               @onclick="OpenPopup" />
+
+        <span class="sf-date-range-picker__separator" aria-hidden="true">&ndash;</span>
+
+        @* End input *@
+        <input id="@_endInputId"
+               type="text"
+               class="@CssProvider.TextBoxClass(false, !Enabled) mar-date-range-picker__input"
+               value="@FormatDate(EndValue)"
+               placeholder="@(Placeholder ?? "End date")"
+               disabled="@(!Enabled)"
+               readonly="true"
+               tabindex="@TabIndex"
+               role="combobox"
+               aria-label="End date"
+               aria-haspopup="dialog"
+               aria-expanded="@_isPopupOpen.ToString().ToLowerInvariant()"
+               aria-controls="@(_isPopupOpen ? _popupId : null)"
+               @onfocus="OpenPopup"
+               @onclick="OpenPopup" />
+
+        @if (ShowClearButton && Enabled && !ReadOnly && (StartValue.HasValue || EndValue.HasValue))
+        {
+            <button type="button"
+                    class="sf-datepicker__clear"
+                    aria-label="Clear dates"
+                    @onclick="ClearDates"
+                    @onclick:stopPropagation="true">
+                &times;
+            </button>
+        }
+    </div>
+
+    @* ── Calendar Popup ── *@
+    @if (_isPopupOpen && Enabled && !ReadOnly)
+    {
+        <div class="sf-datepicker__overlay" @onclick="ClosePopup"></div>
+        <div id="@_popupId"
+             class="sf-date-range-picker__popup @(Orientation == CalendarOrientation.Vertical ? "mar-date-range-picker__popup--vertical" : "") @PopupClass"
+             role="dialog"
+             aria-label="Select date range"
+             aria-modal="true"
+             @onclick:stopPropagation="true">
+
+            @* ── Header (custom or default) ── *@
+            @if (HeaderTemplate is not null)
+            {
+                @HeaderTemplate
+            }
+            else if (!string.IsNullOrEmpty(Title))
+            {
+                <div class="sf-date-range-picker__title">@Title</div>
+            }
+
+            @* ── Dual calendars ── *@
+            <div class="sf-date-range-picker__calendars">
+                @RenderCalendarPanel(_startDisplayMonth, isStart: true)
+                @RenderCalendarPanel(_endDisplayMonth, isStart: false)
+            </div>
+
+            @* ── Action buttons ── *@
+            <div class="sf-date-range-picker__actions">
+                @if (StartValue.HasValue || EndValue.HasValue)
+                {
+                    <button type="button"
+                            class="sf-btn mar-btn--ghost mar-btn--sm"
+                            @onclick="ClearDates">
+                        Clear
+                    </button>
+                }
+                <button type="button"
+                        class="sf-btn mar-btn--secondary mar-btn--sm"
+                        @onclick="ClosePopup">
+                    Close
+                </button>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // ─── Parameters ───────────────────────────────────────────────────────────
+
+    /// <summary>The start value of the date range. Supports two-way binding.</summary>
+    [Parameter] public DateTime? StartValue { get; set; }
+    [Parameter] public EventCallback<DateTime?> StartValueChanged { get; set; }
+
+    /// <summary>The end value of the date range. Supports two-way binding.</summary>
+    [Parameter] public DateTime? EndValue { get; set; }
+    [Parameter] public EventCallback<DateTime?> EndValueChanged { get; set; }
+
+    /// <summary>The earliest selectable date.</summary>
+    [Parameter] public DateTime Min { get; set; } = new DateTime(1900, 1, 1);
+
+    /// <summary>The latest selectable date.</summary>
+    [Parameter] public DateTime Max { get; set; } = new DateTime(2099, 12, 31);
+
+    /// <summary>Dates that cannot be selected as start or end of the range.</summary>
+    [Parameter] public List<DateTime>? DisabledDates { get; set; }
+
+    /// <summary>Whether the component allows input. Maps to enabled/disabled state.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>When true, the component is read-only.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>
+    /// When true, the range is valid even when the end date precedes the start date.
+    /// In that case the popup closes on each date selection rather than waiting for a complete range.
+    /// </summary>
+    [Parameter] public bool AllowReverse { get; set; }
+
+    /// <summary>The display format for the date inputs.</summary>
+    [Parameter] public string Format { get; set; } = "M/d/yyyy";
+
+    /// <summary>Placeholder text shown in both inputs when empty.</summary>
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>Whether to show a clear (x) button.</summary>
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>Whether the calendars show ISO-8601 week numbers.</summary>
+    [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>Whether leading/trailing days from adjacent months are shown.</summary>
+    [Parameter] public bool ShowOtherMonthDays { get; set; } = true;
+
+    /// <summary>The id attribute for the start date input.</summary>
+    [Parameter] public string? StartId { get; set; }
+
+    /// <summary>The id attribute for the end date input.</summary>
+    [Parameter] public string? EndId { get; set; }
+
+    /// <summary>The inputmode attribute for both inputs.</summary>
+    [Parameter] public string? InputMode { get; set; }
+
+    /// <summary>The tabindex for both inputs.</summary>
+    [Parameter] public int? TabIndex { get; set; }
+
+    /// <summary>Controls horizontal or vertical layout of the two calendars.</summary>
+    [Parameter] public CalendarOrientation Orientation { get; set; } = CalendarOrientation.Horizontal;
+
+    /// <summary>Additional CSS class applied to the popup panel.</summary>
+    [Parameter] public string? PopupClass { get; set; }
+
+    /// <summary>Fires when the range selection changes.</summary>
+    [Parameter] public EventCallback OnRangeChanged { get; set; }
+
+    /// <summary>Fires before the popup opens. Set <see cref="PopupEventArgs.IsCancelled"/> to prevent opening.</summary>
+    [Parameter] public EventCallback<PopupEventArgs> OnOpen { get; set; }
+
+    /// <summary>Fires before the popup closes. Set <see cref="PopupEventArgs.IsCancelled"/> to prevent closing.</summary>
+    [Parameter] public EventCallback<PopupEventArgs> OnClose { get; set; }
+
+    /// <summary>Specifies the adaptive rendering mode for the popup on mobile devices.</summary>
+    [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
+
+    /// <summary>Size of the component trigger. Use ThemeConstants size values (e.g. "sm", "md", "lg").</summary>
+    [Parameter] public string? Size { get; set; }
+
+    /// <summary>Border-radius rounding. Use ThemeConstants rounded values.</summary>
+    [Parameter] public string? Rounded { get; set; }
+
+    /// <summary>Fill mode (solid, flat, outline).</summary>
+    [Parameter] public string? FillMode { get; set; }
+
+    /// <summary>Debounce delay in milliseconds for value-change callbacks. Defaults to 150.</summary>
+    [Parameter] public int DebounceDelay { get; set; } = 150;
+
+    /// <summary>Optional title rendered at the top of the popup panel.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Custom header rendered at the top of the popup, replacing the default title. When null, Title is shown if set.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>The deepest calendar view the user can navigate to. Default is Month (days visible).</summary>
+    [Parameter] public CalendarView BottomView { get; set; } = CalendarView.Month;
+
+    /// <summary>The current calendar view level. Supports two-way binding.</summary>
+    [Parameter] public CalendarView View { get; set; } = CalendarView.Month;
+
+    /// <summary>Fires when the calendar view level changes.</summary>
+    [Parameter] public EventCallback<CalendarView> ViewChanged { get; set; }
+
+    // ─── Computed Input IDs ──────────────────────────────────────────────────
+
+    private string _startInputId => StartId ?? $"mar-drp-start-{_popupId}";
+    private string _endInputId => EndId ?? $"mar-drp-end-{_popupId}";
+
+    // ─── Private State ────────────────────────────────────────────────────────
+
+    private bool _isPopupOpen;
+    private readonly string _popupId = $"mar-drp-{Guid.NewGuid():N}";
+    private DateTime _startDisplayMonth;
+    private DateTime _endDisplayMonth;
+    private DateOnly? _hoverDate;
+
+    /// <summary>true = selecting start date; false = selecting end date.</summary>
+    private bool _selectingStart = true;
+
+    private static readonly string[] _dayHeaders = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+    private static readonly string[] _monthAbbreviations = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    /// <summary>Per-panel calendar view state.</summary>
+    private CalendarView _startCalView = CalendarView.Month;
+    private CalendarView _endCalView = CalendarView.Month;
+
+    // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+    protected override void OnInitialized()
+    {
+        var today = DateTime.Today;
+        _startDisplayMonth = new DateTime(today.Year, today.Month, 1);
+        _endDisplayMonth = _startDisplayMonth.AddMonths(1);
+
+        if (StartValue.HasValue)
+        {
+            _startDisplayMonth = new DateTime(StartValue.Value.Year, StartValue.Value.Month, 1);
+            _endDisplayMonth = _startDisplayMonth.AddMonths(1);
+        }
+
+        if (EndValue.HasValue)
+        {
+            var endMonth = new DateTime(EndValue.Value.Year, EndValue.Value.Month, 1);
+            if (endMonth > _startDisplayMonth)
+                _endDisplayMonth = endMonth;
+        }
+
+        // Initialize per-panel views from the View parameter
+        _startCalView = View;
+        _endCalView = View;
+    }
+
+    protected override void OnParametersSet()
+    {
+        // Sync both panels when View changes externally
+        if (_startCalView != View || _endCalView != View)
+        {
+            _startCalView = View;
+            _endCalView = View;
+        }
+    }
+
+    // ─── Public Methods ───────────────────────────────────────────────────────
+
+    /// <summary>Opens the calendar popup.</summary>
+    public async Task Open() => await OpenPopup();
+
+    /// <summary>Closes the calendar popup.</summary>
+    public async Task Close() => await ClosePopup();
+
+    /// <summary>Navigates both calendars to the specified date.</summary>
+    public void NavigateTo(DateTime date, CalendarView view = CalendarView.Month)
+    {
+        _startDisplayMonth = new DateTime(date.Year, date.Month, 1);
+        _endDisplayMonth = _startDisplayMonth.AddMonths(1);
+        _startCalView = view;
+        _endCalView = view;
+        StateHasChanged();
+    }
+
+    /// <summary>Re-renders the calendar popup.</summary>
+    public void Refresh() => StateHasChanged();
+
+    /// <summary>Programmatically focuses the start-date input element via JS interop.</summary>
+    public async Task FocusStartAsync() => await FocusElementByIdAsync(_startInputId);
+
+    /// <summary>Programmatically focuses the end-date input element via JS interop.</summary>
+    public async Task FocusEndAsync() => await FocusElementByIdAsync(_endInputId);
+
+    private async Task FocusElementByIdAsync(string elementId)
+    {
+        var module = await JsModuleLoader.ImportAsync("js/marilo-measurement.js");
+        await module.InvokeVoidAsync("focusById", elementId);
+    }
+
+    // ─── Popup Handling ───────────────────────────────────────────────────────
+
+    private async Task OpenPopup()
+    {
+        if (!Enabled || ReadOnly) return;
+
+        var args = new PopupEventArgs();
+        await OnOpen.InvokeAsync(args);
+        if (args.IsCancelled) return;
+
+        _selectingStart = !StartValue.HasValue || (StartValue.HasValue && EndValue.HasValue);
+        _hoverDate = null;
+        _isPopupOpen = true;
+    }
+
+    private async Task ClosePopup()
+    {
+        var args = new PopupEventArgs();
+        await OnClose.InvokeAsync(args);
+        if (args.IsCancelled) return;
+
+        _isPopupOpen = false;
+        _hoverDate = null;
+    }
+
+    // ─── View Navigation ─────────────────────────────────────────────────────
+
+    /// <summary>Drill up from a panel's current view to the next higher view.</summary>
+    private async Task DrillUp(bool isStart)
+    {
+        ref var calView = ref (isStart ? ref _startCalView : ref _endCalView);
+        var nextView = calView switch
+        {
+            CalendarView.Month => CalendarView.Year,
+            CalendarView.Year => CalendarView.Decade,
+            _ => CalendarView.Decade
+        };
+        calView = nextView;
+        await SetViewAndNotify(nextView);
+    }
+
+    /// <summary>Whether the header is clickable to drill up.</summary>
+    private bool CanDrillUp(CalendarView currentView)
+    {
+        return currentView < CalendarView.Decade;
+    }
+
+    private async Task SetViewAndNotify(CalendarView newView)
+    {
+        if (View != newView)
+        {
+            View = newView;
+            await ViewChanged.InvokeAsync(newView);
+        }
+    }
+
+    // ─── Panel Navigation (Prev/Next) ─────────────────────────────────────────
+
+    private void NavigatePrev(bool isStart)
+    {
+        ref var calView = ref (isStart ? ref _startCalView : ref _endCalView);
+        switch (calView)
+        {
+            case CalendarView.Month:
+                if (isStart)
+                    PreviousMonth();
+                else
+                    PreviousMonthEnd();
+                break;
+            case CalendarView.Year:
+                if (isStart)
+                    _startDisplayMonth = _startDisplayMonth.AddYears(-1);
+                else
+                    _endDisplayMonth = _endDisplayMonth.AddYears(-1);
+                break;
+            case CalendarView.Decade:
+                if (isStart)
+                    _startDisplayMonth = _startDisplayMonth.AddYears(-10);
+                else
+                    _endDisplayMonth = _endDisplayMonth.AddYears(-10);
+                break;
+        }
+    }
+
+    private void NavigateNext(bool isStart)
+    {
+        ref var calView = ref (isStart ? ref _startCalView : ref _endCalView);
+        switch (calView)
+        {
+            case CalendarView.Month:
+                if (isStart)
+                    NextMonthStart();
+                else
+                    NextMonth();
+                break;
+            case CalendarView.Year:
+                if (isStart)
+                    _startDisplayMonth = _startDisplayMonth.AddYears(1);
+                else
+                    _endDisplayMonth = _endDisplayMonth.AddYears(1);
+                break;
+            case CalendarView.Decade:
+                if (isStart)
+                    _startDisplayMonth = _startDisplayMonth.AddYears(10);
+                else
+                    _endDisplayMonth = _endDisplayMonth.AddYears(10);
+                break;
+        }
+    }
+
+    private void PreviousMonth()
+    {
+        _startDisplayMonth = _startDisplayMonth.AddMonths(-1);
+        if (_endDisplayMonth <= _startDisplayMonth)
+            _endDisplayMonth = _startDisplayMonth.AddMonths(1);
+    }
+
+    private void NextMonth()
+    {
+        _endDisplayMonth = _endDisplayMonth.AddMonths(1);
+        if (_startDisplayMonth >= _endDisplayMonth)
+            _startDisplayMonth = _endDisplayMonth.AddMonths(-1);
+    }
+
+    private void NextMonthStart()
+    {
+        var next = _startDisplayMonth.AddMonths(1);
+        if (next < _endDisplayMonth)
+            _startDisplayMonth = next;
+    }
+
+    private void PreviousMonthEnd()
+    {
+        var prev = _endDisplayMonth.AddMonths(-1);
+        if (prev > _startDisplayMonth)
+            _endDisplayMonth = prev;
+    }
+
+    // ─── Decade Helpers ───────────────────────────────────────────────────────
+
+    private int GetDecadeStart(DateTime displayMonth)
+    {
+        return (displayMonth.Year / 10) * 10;
+    }
+
+    private string GetDecadeRangeText(DateTime displayMonth)
+    {
+        var start = GetDecadeStart(displayMonth);
+        return $"{start}\u2013{start + 9}";
+    }
+
+    // ─── Year/Decade Tile Selection ───────────────────────────────────────────
+
+    /// <summary>Handle click on a month tile in Year view.</summary>
+    private async Task SelectMonthTile(int month, DateTime displayMonth, bool isStart)
+    {
+        ref var calView = ref (isStart ? ref _startCalView : ref _endCalView);
+
+        if (BottomView == CalendarView.Month)
+        {
+            // Drill down to Month view for that month
+            if (isStart)
+                _startDisplayMonth = new DateTime(displayMonth.Year, month, 1);
+            else
+                _endDisplayMonth = new DateTime(displayMonth.Year, month, 1);
+            calView = CalendarView.Month;
+            await SetViewAndNotify(CalendarView.Month);
+        }
+        else
+        {
+            // BottomView is Year — selecting a month directly selects the 1st of that month
+            var dt = new DateTime(displayMonth.Year, month, 1);
+            await SelectDay(DateOnly.FromDateTime(dt), false);
+        }
+    }
+
+    /// <summary>Handle click on a year tile in Decade view.</summary>
+    private async Task SelectYearTile(int year, bool isStart)
+    {
+        ref var calView = ref (isStart ? ref _startCalView : ref _endCalView);
+
+        if (BottomView <= CalendarView.Year)
+        {
+            // Drill down to Year view for that year
+            if (isStart)
+                _startDisplayMonth = new DateTime(year, _startDisplayMonth.Month, 1);
+            else
+                _endDisplayMonth = new DateTime(year, _endDisplayMonth.Month, 1);
+            calView = CalendarView.Year;
+            await SetViewAndNotify(CalendarView.Year);
+        }
+        else
+        {
+            // BottomView is Decade — select 1st Jan of that year
+            var dt = new DateTime(year, 1, 1);
+            await SelectDay(DateOnly.FromDateTime(dt), false);
+        }
+    }
+
+    // ─── Range Highlighting for Year/Decade Views ─────────────────────────────
+
+    private bool IsMonthInRange(int year, int month)
+    {
+        if (!StartValue.HasValue || !EndValue.HasValue) return false;
+        var start = StartValue.Value;
+        var end = EndValue.Value;
+        if (start > end && AllowReverse) (start, end) = (end, start);
+        var monthStart = new DateTime(year, month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+        return !(monthEnd < start || monthStart > end);
+    }
+
+    private bool IsMonthRangeStart(int year, int month)
+    {
+        if (!StartValue.HasValue) return false;
+        return StartValue.Value.Year == year && StartValue.Value.Month == month;
+    }
+
+    private bool IsMonthRangeEnd(int year, int month)
+    {
+        if (!EndValue.HasValue) return false;
+        return EndValue.Value.Year == year && EndValue.Value.Month == month;
+    }
+
+    private bool IsMonthSelected(int year, int month)
+    {
+        return IsMonthRangeStart(year, month) || IsMonthRangeEnd(year, month);
+    }
+
+    private bool IsYearInRange(int year)
+    {
+        if (!StartValue.HasValue || !EndValue.HasValue) return false;
+        var startYear = StartValue.Value.Year;
+        var endYear = EndValue.Value.Year;
+        if (startYear > endYear && AllowReverse) (startYear, endYear) = (endYear, startYear);
+        return year > startYear && year < endYear;
+    }
+
+    private bool IsYearRangeStart(int year)
+    {
+        return StartValue.HasValue && StartValue.Value.Year == year;
+    }
+
+    private bool IsYearRangeEnd(int year)
+    {
+        return EndValue.HasValue && EndValue.Value.Year == year;
+    }
+
+    private bool IsYearSelected(int year)
+    {
+        return IsYearRangeStart(year) || IsYearRangeEnd(year);
+    }
+
+    // ─── Day Selection ────────────────────────────────────────────────────────
+
+    private async Task SelectDay(DateOnly date, bool isDisabled)
+    {
+        if (isDisabled) return;
+        var dt = date.ToDateTime(TimeOnly.MinValue);
+
+        if (_selectingStart || AllowReverse)
+        {
+            // Selecting start date
+            StartValue = dt;
+            await StartValueChanged.InvokeAsync(StartValue);
+
+            // If AllowReverse: close immediately; otherwise switch to selecting end
+            if (AllowReverse)
+            {
+                await OnRangeChanged.InvokeAsync();
+                await ClosePopup();
+                return;
+            }
+
+            // Reset end if it's now before start
+            if (EndValue.HasValue && EndValue.Value < StartValue.Value)
+            {
+                EndValue = null;
+                await EndValueChanged.InvokeAsync(null);
+            }
+
+            _selectingStart = false;
+        }
+        else
+        {
+            // Selecting end date
+            EndValue = dt;
+            await EndValueChanged.InvokeAsync(EndValue);
+            await OnRangeChanged.InvokeAsync();
+
+            // Close popup when a valid range is selected
+            if (StartValue.HasValue && EndValue.Value >= StartValue.Value)
+            {
+                await ClosePopup();
+            }
+            else if (!StartValue.HasValue)
+            {
+                _selectingStart = true;
+            }
+            // If end < start and AllowReverse is false, reset and start over
+            else
+            {
+                StartValue = dt;
+                EndValue = null;
+                await StartValueChanged.InvokeAsync(StartValue);
+                await EndValueChanged.InvokeAsync(null);
+                _selectingStart = false;
+            }
+        }
+    }
+
+    private void OnDayHover(DateOnly date)
+    {
+        if (!_selectingStart && StartValue.HasValue)
+            _hoverDate = date;
+    }
+
+    private async Task ClearDates()
+    {
+        StartValue = null;
+        EndValue = null;
+        _selectingStart = true;
+        _hoverDate = null;
+        await StartValueChanged.InvokeAsync(null);
+        await EndValueChanged.InvokeAsync(null);
+        await OnRangeChanged.InvokeAsync();
+        await ClosePopup();
+    }
+
+    // ─── Helper Predicates ────────────────────────────────────────────────────
+
+    private bool IsDayDisabled(DateOnly date)
+    {
+        var minDate = DateOnly.FromDateTime(Min);
+        var maxDate = DateOnly.FromDateTime(Max);
+        if (date < minDate || date > maxDate) return true;
+        if (DisabledDates != null)
+        {
+            foreach (var d in DisabledDates)
+            {
+                if (DateOnly.FromDateTime(d) == date) return true;
+            }
+        }
+        return false;
+    }
+
+    private bool IsInRange(DateOnly date)
+    {
+        if (!StartValue.HasValue || !EndValue.HasValue) return false;
+        var start = DateOnly.FromDateTime(StartValue.Value);
+        var end = DateOnly.FromDateTime(EndValue.Value);
+        if (start > end && AllowReverse) (start, end) = (end, start);
+        return date > start && date < end;
+    }
+
+    private bool IsInHoverRange(DateOnly date)
+    {
+        if (!StartValue.HasValue || !_hoverDate.HasValue) return false;
+        var start = DateOnly.FromDateTime(StartValue.Value);
+        var hover = _hoverDate.Value;
+        var min = start < hover ? start : hover;
+        var max = start < hover ? hover : start;
+        return date > min && date < max;
+    }
+
+    private string? FormatDate(DateTime? dt) => dt?.ToString(Format);
+
+    // ─── Calendar Grid Generation ─────────────────────────────────────────────
+
+    private record struct CalendarDay(DateOnly Date);
+
+    private List<CalendarDay> GetCalendarDays(DateTime displayMonth)
+    {
+        var days = new List<CalendarDay>(42);
+        var firstOfMonth = new DateOnly(displayMonth.Year, displayMonth.Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(displayMonth.Year, displayMonth.Month);
+        var startOffset = (int)firstOfMonth.DayOfWeek;
+
+        for (var i = startOffset - 1; i >= 0; i--)
+            days.Add(new CalendarDay(firstOfMonth.AddDays(-(i + 1))));
+
+        for (var d = 1; d <= daysInMonth; d++)
+            days.Add(new CalendarDay(new DateOnly(displayMonth.Year, displayMonth.Month, d)));
+
+        while (days.Count % 7 != 0)
+            days.Add(new CalendarDay(days[^1].Date.AddDays(1)));
+
+        return days;
+    }
+
+    // ─── Render Fragments ─────────────────────────────────────────────────────
+
+    private RenderFragment RenderCalendarPanel(DateTime displayMonth, bool isStart) => __builder =>
+    {
+        var calView = isStart ? _startCalView : _endCalView;
+
+        <div class="sf-date-range-picker__calendar">
+            @* ── Panel Header ── *@
+            <div class="sf-calendar__header">
+                <button type="button"
+                        class="sf-calendar__nav-btn"
+                        aria-label="@GetPrevAriaLabel(calView)"
+                        @onclick="() => NavigatePrev(isStart)">&#9664;</button>
+
+                @if (CanDrillUp(calView))
+                {
+                    <button type="button"
+                            class="sf-calendar__title mar-calendar__title--clickable"
+                            @onclick="() => DrillUp(isStart)">
+                        @GetHeaderText(displayMonth, calView)
+                    </button>
+                }
+                else
+                {
+                    <span class="sf-calendar__title">@GetHeaderText(displayMonth, calView)</span>
+                }
+
+                <button type="button"
+                        class="sf-calendar__nav-btn"
+                        aria-label="@GetNextAriaLabel(calView)"
+                        @onclick="() => NavigateNext(isStart)">&#9654;</button>
+            </div>
+
+            @* ── View-specific grid ── *@
+            @switch (calView)
+            {
+                case CalendarView.Month:
+                    @RenderMonthGrid(displayMonth, isStart)
+                    break;
+                case CalendarView.Year:
+                    @RenderYearGrid(displayMonth, isStart)
+                    break;
+                case CalendarView.Decade:
+                    @RenderDecadeGrid(displayMonth, isStart)
+                    break;
+            }
+        </div>
+    };
+
+    private string GetHeaderText(DateTime displayMonth, CalendarView calView) => calView switch
+    {
+        CalendarView.Month => displayMonth.ToString("MMMM yyyy"),
+        CalendarView.Year => displayMonth.Year.ToString(),
+        CalendarView.Decade => GetDecadeRangeText(displayMonth),
+        _ => displayMonth.ToString("MMMM yyyy")
+    };
+
+    private string GetPrevAriaLabel(CalendarView calView) => calView switch
+    {
+        CalendarView.Month => "Previous month",
+        CalendarView.Year => "Previous year",
+        CalendarView.Decade => "Previous decade",
+        _ => "Previous"
+    };
+
+    private string GetNextAriaLabel(CalendarView calView) => calView switch
+    {
+        CalendarView.Month => "Next month",
+        CalendarView.Year => "Next year",
+        CalendarView.Decade => "Next decade",
+        _ => "Next"
+    };
+
+    // ─── Month Grid (existing day-level view) ─────────────────────────────────
+
+    private RenderFragment RenderMonthGrid(DateTime displayMonth, bool isStart) => __builder =>
+    {
+        <div class="sf-calendar__grid @(ShowWeekNumbers ? "mar-calendar__grid--week-numbers" : "")">
+            <div class="sf-calendar__weekdays">
+                @if (ShowWeekNumbers)
+                {
+                    <span class="sf-calendar__weekday mar-calendar__week-number-header">Wk</span>
+                }
+                @foreach (var dayName in _dayHeaders)
+                {
+                    <span class="sf-calendar__weekday">@dayName</span>
+                }
+            </div>
+            <div class="sf-calendar__days">
+                @{
+                    var calDays = GetCalendarDays(displayMonth);
+                    for (var rowIdx = 0; rowIdx < calDays.Count; rowIdx++)
+                    {
+                        var day = calDays[rowIdx];
+                        if (ShowWeekNumbers && rowIdx % 7 == 0)
+                        {
+                            var weekNum = System.Globalization.ISOWeek.GetWeekOfYear(day.Date.ToDateTime(TimeOnly.MinValue));
+                            <span class="sf-calendar__week-number" aria-hidden="true">@weekNum</span>
+                        }
+                        var date = day.Date;
+                        var isDayDisabled = IsDayDisabled(date);
+                        var isToday = date == DateOnly.FromDateTime(DateTime.Today);
+                        var isStart2 = StartValue.HasValue && date == DateOnly.FromDateTime(StartValue.Value);
+                        var isEnd2 = EndValue.HasValue && date == DateOnly.FromDateTime(EndValue.Value);
+                        var inRange = IsInRange(date);
+                        var inHoverRange = IsInHoverRange(date);
+                        var isOutsideMonth = date.Month != displayMonth.Month || date.Year != displayMonth.Year;
+
+                        if (isOutsideMonth && !ShowOtherMonthDays)
+                        {
+                            <span class="sf-calendar__day mar-calendar__day--outside mar-calendar__day--placeholder"></span>
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="sf-calendar__day @(isToday ? "mar-calendar__day--today" : "") @(isStart2 ? "mar-calendar__day--range-start mar-calendar__day--selected" : "") @(isEnd2 ? "mar-calendar__day--range-end mar-calendar__day--selected" : "") @(inRange ? "mar-calendar__day--in-range" : "") @(inHoverRange ? "mar-calendar__day--in-range mar-calendar__day--hover" : "") @(isDayDisabled ? "mar-calendar__day--disabled" : "") @(isOutsideMonth ? "mar-calendar__day--outside" : "")"
+                                    disabled="@isDayDisabled"
+                                    aria-label="@date.ToString("MMMM d, yyyy")"
+                                    aria-selected="@((isStart2 || isEnd2).ToString().ToLowerInvariant())"
+                                    @onclick="() => SelectDay(date, isDayDisabled)"
+                                    @onmouseenter="() => OnDayHover(date)"
+                                    @onmouseleave="() => _hoverDate = null">
+                                @date.Day
+                            </button>
+                        }
+                    }
+                }
+            </div>
+        </div>
+    };
+
+    // ─── Year Grid (12 month tiles) ───────────────────────────────────────────
+
+    private RenderFragment RenderYearGrid(DateTime displayMonth, bool isStart) => __builder =>
+    {
+        var year = displayMonth.Year;
+        <div class="sf-date-range-picker__year-grid">
+            @for (var m = 1; m <= 12; m++)
+            {
+                var month = m;
+                var selected = IsMonthSelected(year, month);
+                var inRange = IsMonthInRange(year, month);
+                var isRangeStart = IsMonthRangeStart(year, month);
+                var isRangeEnd = IsMonthRangeEnd(year, month);
+                var tileClass = "mar-date-range-picker__month-tile"
+                    + (selected ? " mar-date-range-picker__month-tile--selected" : "")
+                    + (inRange ? " mar-date-range-picker__month-tile--in-range" : "")
+                    + (isRangeStart ? " mar-date-range-picker__month-tile--start" : "")
+                    + (isRangeEnd ? " mar-date-range-picker__month-tile--end" : "");
+
+                <button type="button"
+                        class="@tileClass"
+                        aria-label="@_monthAbbreviations[month - 1] @year"
+                        @onclick="() => SelectMonthTile(month, displayMonth, isStart)">
+                    @_monthAbbreviations[month - 1]
+                </button>
+            }
+        </div>
+    };
+
+    // ─── Decade Grid (~12 year tiles) ─────────────────────────────────────────
+
+    private RenderFragment RenderDecadeGrid(DateTime displayMonth, bool isStart) => __builder =>
+    {
+        var decadeStart = GetDecadeStart(displayMonth);
+        <div class="sf-date-range-picker__decade-grid">
+            @for (var y = decadeStart - 1; y <= decadeStart + 10; y++)
+            {
+                var year = y;
+                var isOutside = year < decadeStart || year > decadeStart + 9;
+                var selected = IsYearSelected(year);
+                var inRange = IsYearInRange(year);
+                var isRangeStart = IsYearRangeStart(year);
+                var isRangeEnd = IsYearRangeEnd(year);
+                var tileClass = "mar-date-range-picker__year-tile"
+                    + (selected ? " mar-date-range-picker__year-tile--selected" : "")
+                    + (inRange ? " mar-date-range-picker__year-tile--in-range" : "")
+                    + (isRangeStart ? " mar-date-range-picker__year-tile--start" : "")
+                    + (isRangeEnd ? " mar-date-range-picker__year-tile--end" : "")
+                    + (isOutside ? " mar-date-range-picker__year-tile--outside" : "");
+
+                <button type="button"
+                        class="@tileClass"
+                        aria-label="@year"
+                        @onclick="() => SelectYearTile(year, isStart)">
+                    @year
+                </button>
+            }
+        </div>
+    };
+
+    // ─── Appearance Helpers ───────────────────────────────────────────────────
+
+    private string SizeClass => Size is { Length: > 0 } s ? $"mar-date-range-picker--{s}" : "mar-date-range-picker--md";
+    private string RoundedClass => Rounded is { Length: > 0 } r ? $"mar-date-range-picker--rounded-{r}" : "";
+    private string FillModeClass => FillMode is { Length: > 0 } f ? $"mar-date-range-picker--{f}" : "mar-date-range-picker--solid";
+
+    // ─── Keyboard Handling ────────────────────────────────────────────────────
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && _isPopupOpen)
+            await ClosePopup();
+    }
+}

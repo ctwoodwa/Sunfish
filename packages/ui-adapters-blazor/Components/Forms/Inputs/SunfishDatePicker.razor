@@ -1,0 +1,176 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.DatePickerClass()) @(_isAdaptive ? "mar-datepicker--adaptive" : "")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <div class="sf-datepicker__input-wrapper">
+        <span class="sf-date-picker__icon">
+            @IconProvider.GetIcon("calendar", IconSize.Small)
+        </span>
+        <input type="text"
+               class="@CssProvider.TextBoxClass(false, Disabled)"
+               value="@FormatValue()"
+               placeholder="@(Placeholder ?? "Select date")"
+               disabled="@Disabled"
+               readonly="true"
+               @onfocus="OpenCalendar"
+               @onclick="OpenCalendar" />
+    </div>
+    @if (_isCalendarOpen && !Disabled)
+    {
+        <div class="sf-datepicker__overlay @(_isAdaptive ? "mar-datepicker__overlay--adaptive" : "")" @onclick="CloseCalendar"></div>
+        <div class="@CssProvider.CalendarClass() @(_isAdaptive ? "mar-calendar--adaptive" : "")" role="dialog" aria-label="Date picker calendar">
+            <div class="sf-calendar__header">
+                <button type="button"
+                        class="sf-calendar__nav-btn"
+                        aria-label="Previous month"
+                        @onclick="PreviousMonth">
+                    &#9664;
+                </button>
+                <span class="sf-calendar__title">
+                    @_displayMonth.ToString("MMMM yyyy")
+                </span>
+                <button type="button"
+                        class="sf-calendar__nav-btn"
+                        aria-label="Next month"
+                        @onclick="NextMonth">
+                    &#9654;
+                </button>
+            </div>
+            <div class="sf-calendar__grid">
+                <div class="sf-calendar__weekdays">
+                    @foreach (var day in _dayHeaders)
+                    {
+                        <span class="sf-calendar__weekday">@day</span>
+                    }
+                </div>
+                <div class="sf-calendar__days">
+                    @foreach (var day in GetCalendarDays())
+                    {
+                        var isDisabled = IsDayDisabled(day.Date);
+                        var isToday = day.Date == DateOnly.FromDateTime(DateTime.Today);
+                        var isSelected = Value.HasValue && day.Date == Value.Value;
+                        var isOutsideMonth = day.Date.Month != _displayMonth.Month || day.Date.Year != _displayMonth.Year;
+                        <button type="button"
+                                class="sf-calendar__day @(isToday ? "mar-calendar__day--today" : "") @(isSelected ? "mar-calendar__day--selected" : "") @(isDisabled ? "mar-calendar__day--disabled" : "") @(isOutsideMonth ? "mar-calendar__day--outside" : "")"
+                                disabled="@isDisabled"
+                                aria-label="@day.Date.ToString("MMMM d, yyyy")"
+                                aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                                @onclick="() => SelectDay(day.Date, isDisabled)">
+                            @day.Date.Day
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public DateOnly? Value { get; set; }
+    [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public DateOnly? Min { get; set; }
+    [Parameter] public DateOnly? Max { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public bool ShowWeekNumbers { get; set; }
+    [Parameter] public IEnumerable<DateOnly>? DisabledDates { get; set; }
+    [Parameter] public string Format { get; set; } = "yyyy-MM-dd";
+
+    /// <summary>
+    /// Specifies the adaptive rendering mode for the popup on mobile devices.
+    /// When set to <see cref="AdaptiveMode.Auto"/>, the calendar popup renders as a
+    /// full-screen overlay on small viewports using the CSS class mar-datepicker--adaptive.
+    /// </summary>
+    [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
+
+    private bool _isCalendarOpen;
+    private DateOnly _displayMonth;
+    private bool _isAdaptive => AdaptiveMode == Sunfish.Foundation.Enums.AdaptiveMode.Auto;
+
+    private static readonly string[] _dayHeaders = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
+
+    protected override void OnInitialized()
+    {
+        _displayMonth = Value ?? DateOnly.FromDateTime(DateTime.Today);
+        // Normalize to first of month
+        _displayMonth = new DateOnly(_displayMonth.Year, _displayMonth.Month, 1);
+    }
+
+    private string? FormatValue() => Value?.ToString(Format);
+
+    private void OpenCalendar()
+    {
+        if (Disabled) return;
+        // Reset display month to the selected value or today
+        var reference = Value ?? DateOnly.FromDateTime(DateTime.Today);
+        _displayMonth = new DateOnly(reference.Year, reference.Month, 1);
+        _isCalendarOpen = true;
+    }
+
+    private void CloseCalendar()
+    {
+        _isCalendarOpen = false;
+    }
+
+    private void PreviousMonth()
+    {
+        _displayMonth = _displayMonth.AddMonths(-1);
+    }
+
+    private void NextMonth()
+    {
+        _displayMonth = _displayMonth.AddMonths(1);
+    }
+
+    private record struct CalendarDay(DateOnly Date);
+
+    private List<CalendarDay> GetCalendarDays()
+    {
+        var days = new List<CalendarDay>();
+        var firstOfMonth = new DateOnly(_displayMonth.Year, _displayMonth.Month, 1);
+        var daysInMonth = DateTime.DaysInMonth(_displayMonth.Year, _displayMonth.Month);
+
+        // Day of week offset (Sunday = 0)
+        var startOffset = (int)firstOfMonth.DayOfWeek;
+
+        // Fill in previous month's trailing days
+        for (var i = startOffset - 1; i >= 0; i--)
+        {
+            days.Add(new CalendarDay(firstOfMonth.AddDays(-(i + 1))));
+        }
+
+        // Current month days
+        for (var d = 1; d <= daysInMonth; d++)
+        {
+            days.Add(new CalendarDay(new DateOnly(_displayMonth.Year, _displayMonth.Month, d)));
+        }
+
+        // Fill to complete the last week (up to 42 cells for 6 rows)
+        while (days.Count % 7 != 0)
+        {
+            days.Add(new CalendarDay(days[^1].Date.AddDays(1)));
+        }
+
+        return days;
+    }
+
+    private bool IsDayDisabled(DateOnly date)
+    {
+        if (Min.HasValue && date < Min.Value) return true;
+        if (Max.HasValue && date > Max.Value) return true;
+        if (DisabledDates != null && DisabledDates.Contains(date)) return true;
+        return false;
+    }
+
+    private async Task SelectDay(DateOnly date, bool isDisabled)
+    {
+        if (isDisabled) return;
+        Value = date;
+        await ValueChanged.InvokeAsync(Value);
+        _isCalendarOpen = false;
+    }
+}

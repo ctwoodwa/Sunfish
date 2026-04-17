@@ -1,0 +1,62 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-dateinput")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+    <input type="date"
+           class="sf-dateinput__input"
+           value="@FormatForInput()"
+           min="@FormatDate(Min)"
+           max="@FormatDate(Max)"
+           placeholder="@Placeholder"
+           disabled="@(!Enabled)"
+           readonly="@ReadOnly"
+           tabindex="@TabIndex"
+           @onchange="HandleChange" />
+</div>
+
+@code {
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+    [Parameter] public string Format { get; set; } = "MM/dd/yyyy";
+    [Parameter] public DateTime? Min { get; set; }
+    [Parameter] public DateTime? Max { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public int TabIndex { get; set; }
+    [Parameter] public EventCallback<DateTime?> OnChange { get; set; }
+
+    private string? FormatForInput()
+    {
+        return Value?.ToString("yyyy-MM-dd");
+    }
+
+    private string? FormatDate(DateTime? date)
+    {
+        return date?.ToString("yyyy-MM-dd");
+    }
+
+    private string? WidthStyle()
+    {
+        return !string.IsNullOrEmpty(Width) ? $"width:{Width}" : null;
+    }
+
+    private async Task HandleChange(ChangeEventArgs e)
+    {
+        var raw = e.Value?.ToString();
+        DateTime? parsed = null;
+
+        if (!string.IsNullOrEmpty(raw) && DateTime.TryParse(raw, out var dt))
+        {
+            if (Min.HasValue && dt < Min.Value) dt = Min.Value;
+            if (Max.HasValue && dt > Max.Value) dt = Max.Value;
+            parsed = dt;
+        }
+
+        Value = parsed;
+        await ValueChanged.InvokeAsync(Value);
+        await OnChange.InvokeAsync(Value);
+    }
+}

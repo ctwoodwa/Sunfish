@@ -17,6 +17,11 @@ echo "→ Copying $CATEGORY: $SRC → $DST"
 mkdir -p "$DST"
 cp -r "$SRC/." "$DST/"
 
+# Drop editor/backup artifacts before processing so the contamination gate
+# doesn't trip on stale Marilo content inside *.bak scratch files.
+echo "→ Removing backup/scratch files (*.bak, *.orig, *~)"
+find "$DST" -type f \( -name "*.bak" -o -name "*.orig" -o -name "*~" \) -delete
+
 echo "→ Renaming Marilo-prefixed files"
 find "$DST" -type f \( -name "Marilo*.razor" -o -name "Marilo*.cs" \) | while read -r f; do
   new="$(dirname "$f")/$(basename "$f" | sed 's/^Marilo/Sunfish/')"

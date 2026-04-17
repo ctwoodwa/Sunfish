@@ -1,0 +1,228 @@
+@inherits SunfishComponentBase
+
+<CascadingValue Value="_editContext" IsFixed="false">
+    <form class="@CombineClasses(CssProvider.FormClass())"
+          style="@BuildFormStyles()"
+          id="@Id"
+          autocomplete="@AutoComplete"
+          @onsubmit="HandleSubmitAsync"
+          @attributes="AdditionalAttributes">
+        @FormValidation
+        @if (FormItems != null)
+        {
+            @FormItems
+        }
+        @ChildContent
+        @FormButtons
+    </form>
+</CascadingValue>
+
+@code {
+    private EditContext? _editContext;
+    private bool _hasSetEditContextExplicitly;
+
+    /// <summary>
+    /// The data object the form is bound to. Creates an EditContext internally.
+    /// Mutually exclusive with EditContext parameter.
+    /// </summary>
+    [Parameter] public object? Model { get; set; }
+
+    /// <summary>
+    /// An existing EditContext to use. Mutually exclusive with Model parameter.
+    /// </summary>
+    [Parameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>
+    /// The form's HTML id attribute. Used for external submit buttons via the form attribute.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// The HTML autocomplete attribute value.
+    /// </summary>
+    [Parameter] public string? AutoComplete { get; set; }
+
+    /// <summary>
+    /// How validation messages are displayed. Default is Inline.
+    /// </summary>
+    [Parameter] public FormValidationMessageType ValidationMessageType { get; set; } = FormValidationMessageType.Inline;
+
+    /// <summary>
+    /// The form layout orientation. Default is Vertical.
+    /// </summary>
+    [Parameter] public FormOrientation Orientation { get; set; } = FormOrientation.Vertical;
+
+    /// <summary>
+    /// Number of columns for multi-column form layout.
+    /// </summary>
+    [Parameter] public int Columns { get; set; } = 1;
+
+    /// <summary>
+    /// Horizontal spacing between columns (CSS value). Default is "32px".
+    /// </summary>
+    [Parameter] public string ColumnSpacing { get; set; } = "32px";
+
+    /// <summary>
+    /// Vertical spacing between rows (CSS value).
+    /// </summary>
+    [Parameter] public string? RowSpacing { get; set; }
+
+    /// <summary>
+    /// The size of form editors (sm, md, lg).
+    /// </summary>
+    [Parameter] public string? Size { get; set; }
+
+    /// <summary>
+    /// CSS width of the form container.
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>
+    /// Fired on every form submission, regardless of validation state.
+    /// </summary>
+    [Parameter] public EventCallback<EditContext> OnSubmit { get; set; }
+
+    /// <summary>
+    /// Fired when the form is submitted and passes validation.
+    /// </summary>
+    [Parameter] public EventCallback<EditContext> OnValidSubmit { get; set; }
+
+    /// <summary>
+    /// Fired when the form is submitted and fails validation.
+    /// </summary>
+    [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
+    /// <summary>
+    /// Fired when a field value changes, with model and field name.
+    /// </summary>
+    [Parameter] public EventCallback<FormUpdateEventArgs> OnUpdate { get; set; }
+
+    /// <summary>
+    /// Render fragment for adding validators (e.g., DataAnnotationsValidator).
+    /// </summary>
+    [Parameter] public RenderFragment? FormValidation { get; set; }
+
+    /// <summary>
+    /// Render fragment for form item definitions.
+    /// </summary>
+    [Parameter] public RenderFragment? FormItems { get; set; }
+
+    /// <summary>
+    /// Render fragment for form action buttons.
+    /// </summary>
+    [Parameter] public RenderFragment? FormButtons { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The current EditContext for programmatic access.
+    /// </summary>
+    public EditContext? CurrentEditContext => _editContext;
+
+    /// <summary>
+    /// Triggers a re-render of the form.
+    /// </summary>
+    public void Refresh() => StateHasChanged();
+
+    protected override void OnParametersSet()
+    {
+        if (Model != null && EditContext != null)
+        {
+            throw new InvalidOperationException(
+                $"{nameof(SunfishForm)} requires either a {nameof(Model)} parameter or an {nameof(EditContext)} parameter, but not both.");
+        }
+
+        if (EditContext != null)
+        {
+            if (_editContext != EditContext)
+            {
+                UnsubscribeFromFieldChanged();
+                _editContext = EditContext;
+                _hasSetEditContextExplicitly = true;
+                SubscribeToFieldChanged();
+            }
+        }
+        else if (Model != null)
+        {
+            if (!_hasSetEditContextExplicitly || _editContext?.Model != Model)
+            {
+                UnsubscribeFromFieldChanged();
+                _editContext = new EditContext(Model);
+                _hasSetEditContextExplicitly = false;
+                SubscribeToFieldChanged();
+            }
+        }
+    }
+
+    private async Task HandleSubmitAsync()
+    {
+        if (_editContext == null) return;
+
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync(_editContext);
+        }
+        else
+        {
+            var isValid = _editContext.Validate();
+
+            if (isValid && OnValidSubmit.HasDelegate)
+            {
+                await OnValidSubmit.InvokeAsync(_editContext);
+            }
+            else if (!isValid && OnInvalidSubmit.HasDelegate)
+            {
+                await OnInvalidSubmit.InvokeAsync(_editContext);
+            }
+        }
+    }
+
+    private void SubscribeToFieldChanged()
+    {
+        if (_editContext != null && OnUpdate.HasDelegate)
+        {
+            _editContext.OnFieldChanged += HandleFieldChanged;
+        }
+    }
+
+    private void UnsubscribeFromFieldChanged()
+    {
+        if (_editContext != null)
+        {
+            _editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+
+    private async void HandleFieldChanged(object? sender, FieldChangedEventArgs e)
+    {
+        try
+        {
+            await OnUpdate.InvokeAsync(new FormUpdateEventArgs
+            {
+                Model = _editContext!.Model,
+                FieldName = e.FieldIdentifier.FieldName
+            });
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or TaskCanceledException)
+        {
+            // Component disposed during async operation
+        }
+    }
+
+    private string BuildFormStyles()
+    {
+        return new StyleBuilder()
+            .AddStyle("width", Width!, !string.IsNullOrWhiteSpace(Width))
+            .AddStyle(Style)
+            .Build();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            UnsubscribeFromFieldChanged();
+        }
+        base.Dispose(disposing);
+    }
+}

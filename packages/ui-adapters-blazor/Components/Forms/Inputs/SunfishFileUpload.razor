@@ -1,0 +1,104 @@
+@inherits SunfishComponentBase
+@using Microsoft.AspNetCore.Components.Forms
+@implements IAsyncDisposable
+
+<div class="@CombineClasses(CssProvider.FileUploadClass())"
+     style="@CombineStyles()"
+     role="region"
+     aria-label="File selection"
+     @attributes="AdditionalAttributes">
+
+    @* ── Drop zone / select button ─────────────────────────────────────── *@
+    <label class="@DropZoneCssClass()"
+           for="@InputId"
+           @ondragenter="HandleDragEnter"
+           @ondragover="HandleDragOver"
+           @ondragleave="HandleDragLeave"
+           @ondrop="HandleDrop"
+           @ondragenter:preventDefault
+           @ondragover:preventDefault
+           @ondrop:preventDefault>
+
+        @if (SelectFilesButtonTemplate != null)
+        {
+            @SelectFilesButtonTemplate
+        }
+        else
+        {
+            <span class="sf-file-upload__icon" aria-hidden="true">
+                @IconProvider.GetIcon("upload", Sunfish.Foundation.Enums.IconSize.Medium)
+            </span>
+            <span class="sf-file-upload__text">
+                Drag and drop file@(Multiple ? "s" : "") here, or
+                <span class="sf-file-upload__browse-link">browse</span>
+            </span>
+
+            @if (AllowedExtensions?.Any() == true)
+            {
+                <span class="sf-file-upload__hint">
+                    Allowed: @string.Join(", ", AllowedExtensions)
+                </span>
+            }
+        }
+
+        <InputFile id="@InputId"
+                   OnChange="HandleFileSelected"
+                   multiple="@Multiple"
+                   accept="@Accept"
+                   capture="@Capture"
+                   disabled="@(!Enabled)"
+                   class="sf-file-upload__input"
+                   aria-hidden="true"
+                   tabindex="-1" />
+    </label>
+
+    @* ── File list ─────────────────────────────────────────────────────── *@
+    @if (_files.Count > 0)
+    {
+        <ul class="@CssProvider.FileUploadFileListClass()"
+            role="list"
+            aria-label="Selected files">
+            @foreach (var file in _files)
+            {
+                <li class="sf-file-upload__file-item @(file.IsInvalid ? "mar-file-upload__file-item--invalid" : "")"
+                    role="listitem">
+                    @if (FileTemplate != null)
+                    {
+                        @FileTemplate(BuildTemplateContext(file))
+                    }
+                    else
+                    {
+                        <span class="sf-file-upload__file-icon" aria-hidden="true">
+                            @IconProvider.GetIcon("file", Sunfish.Foundation.Enums.IconSize.Small)
+                        </span>
+
+                        <span class="sf-file-upload__file-info">
+                            @if (FileInfoTemplate != null)
+                            {
+                                @FileInfoTemplate(BuildTemplateContext(file))
+                            }
+                            else
+                            {
+                                <span class="sf-file-upload__file-name" title="@file.Name">@file.Name</span>
+                                <span class="sf-file-upload__file-size">@FormatFileSize(file.Size)</span>
+                                @if (file.IsInvalid)
+                                {
+                                    <span class="sf-file-upload__file-error" role="alert">
+                                        @ValidationSummary(file)
+                                    </span>
+                                }
+                            }
+                        </span>
+
+                        <button type="button"
+                                class="sf-file-upload__file-remove"
+                                aria-label="Remove @file.Name"
+                                @onclick="() => RemoveFileInternalAsync(file)">
+                            <span aria-hidden="true">&#x2715;</span>
+                        </button>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</div>

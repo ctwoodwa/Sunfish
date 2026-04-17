@@ -1,0 +1,54 @@
+@inherits SunfishComponentBase
+
+<label class="@CombineClasses(BuildLabelClass())"
+       style="@CombineStyles()"
+       for="@For"
+       id="@Id"
+       @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        @Text
+    }
+    else
+    {
+        @ChildContent
+    }
+</label>
+
+@code {
+    /// <summary>
+    /// The label text. When set, takes precedence over ChildContent.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// Associates the label with an input element by its id (HTML for attribute).
+    /// </summary>
+    [Parameter] public string? For { get; set; }
+
+    /// <summary>
+    /// The id of the label element (for aria-labelledby associations).
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+
+    private string BuildLabelClass()
+    {
+        var baseClass = CssProvider.LabelClass();
+        var hasValidationErrors = false;
+
+        if (EditContext != null && !string.IsNullOrEmpty(For))
+        {
+            var fieldIdentifier = EditContext.Field(For);
+            hasValidationErrors = EditContext.GetValidationMessages(fieldIdentifier).Any();
+        }
+
+        return new CssClassBuilder()
+            .AddClass(baseClass)
+            .AddClass("mar-label--invalid", hasValidationErrors)
+            .Build();
+    }
+}

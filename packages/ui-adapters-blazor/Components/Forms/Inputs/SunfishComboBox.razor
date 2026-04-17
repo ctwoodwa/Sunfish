@@ -1,0 +1,234 @@
+@inherits SunfishComponentBase
+@typeparam TItem
+@typeparam TValue
+
+<div class="@CombineClasses(CssProvider.ComboBoxClass(_isOpen, Disabled, IsInvalid))"
+     style="@CombineStyles()"
+     @onkeydown="OnKeyDown"
+     @onclick:stopPropagation="true"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-combobox__input-wrapper">
+        <input type="text"
+               class="sf-combobox__input"
+               value="@_inputText"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               role="combobox"
+               aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+               aria-autocomplete="list"
+               @oninput="OnInputChanged"
+               @onfocus="OpenDropdown"
+               @onblur="CloseDropdownDelayed" />
+
+        @if (ShowClearButton && !string.IsNullOrEmpty(_inputText))
+        {
+            <button type="button"
+                    class="sf-combobox__clear-btn"
+                    tabindex="-1"
+                    @onclick="ClearValue"
+                    @onclick:stopPropagation="true">
+                &times;
+            </button>
+        }
+    </div>
+
+    <DropdownPopup IsOpen="@_isOpen">
+        <div class="@CssProvider.ComboBoxPopupClass()">
+            <ul role="listbox">
+                @for (var i = 0; i < _filteredItems.Count; i++)
+                {
+                    var index = i;
+                    var item = _filteredItems[i];
+                    var isHighlighted = index == _highlightedIndex;
+                    var isSelected = Equals(GetValue(item), Value);
+                    <li id="cb-option-@index"
+                        class="@CssProvider.ComboBoxItemClass(isHighlighted, isSelected)"
+                        role="option"
+                        aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                        @onmousedown="() => SelectItem(item)"
+                        @onmouseover="() => _highlightedIndex = index">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            @GetText(item)
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </DropdownPopup>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = Enumerable.Empty<TItem>();
+    [Parameter] public string? TextField { get; set; }
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<TValue?> OnChange { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool AllowCustom { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public ComboBoxFilterMode FilterMode { get; set; } = ComboBoxFilterMode.Contains;
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? ValueTemplate { get; set; }
+
+    private bool _isOpen;
+    private int _highlightedIndex = -1;
+    private string _inputText = string.Empty;
+    private List<TItem> _filteredItems = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Value is not null)
+        {
+            var selectedItem = Data.FirstOrDefault(item => Equals(GetValue(item), Value));
+            if (selectedItem is not null)
+            {
+                _inputText = GetText(selectedItem) ?? string.Empty;
+            }
+        }
+        ApplyFilter();
+    }
+
+    private string? GetText(TItem item)
+    {
+        if (item is null) return null;
+        if (string.IsNullOrEmpty(TextField)) return item.ToString();
+        return typeof(TItem).GetProperty(TextField)?.GetValue(item)?.ToString();
+    }
+
+    private TValue? GetValue(TItem item)
+    {
+        if (item is null) return default;
+        if (string.IsNullOrEmpty(ValueField)) return (TValue?)(object?)item;
+        var propValue = typeof(TItem).GetProperty(ValueField)?.GetValue(item);
+        if (propValue is null) return default;
+        var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+        return (TValue?)Convert.ChangeType(propValue, targetType);
+    }
+
+    private void ApplyFilter()
+    {
+        if (string.IsNullOrEmpty(_inputText))
+        {
+            _filteredItems = Data.ToList();
+            return;
+        }
+
+        _filteredItems = Data
+            .Where(item =>
+            {
+                var text = GetText(item);
+                if (text is null) return false;
+                return FilterMode == ComboBoxFilterMode.StartsWith
+                    ? text.StartsWith(_inputText, StringComparison.OrdinalIgnoreCase)
+                    : text.Contains(_inputText, StringComparison.OrdinalIgnoreCase);
+            })
+            .ToList();
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        _inputText = e.Value?.ToString() ?? string.Empty;
+        ApplyFilter();
+        _isOpen = _filteredItems.Count > 0;
+        _highlightedIndex = _filteredItems.Count > 0 ? 0 : -1;
+
+        if (AllowCustom)
+        {
+            // For custom values, try to parse input as TValue
+            var matchingItem = Data.FirstOrDefault(item =>
+                string.Equals(GetText(item), _inputText, StringComparison.OrdinalIgnoreCase));
+            if (matchingItem is not null)
+            {
+                var value = GetValue(matchingItem);
+                Value = value;
+                await ValueChanged.InvokeAsync(value);
+                await OnChange.InvokeAsync(value);
+            }
+        }
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        var value = GetValue(item);
+        Value = value;
+        _inputText = GetText(item) ?? string.Empty;
+        _isOpen = false;
+        await ValueChanged.InvokeAsync(value);
+        await OnChange.InvokeAsync(value);
+    }
+
+    private async Task ClearValue()
+    {
+        Value = default;
+        _inputText = string.Empty;
+        ApplyFilter();
+        await ValueChanged.InvokeAsync(default);
+        await OnChange.InvokeAsync(default);
+    }
+
+    private void OpenDropdown()
+    {
+        if (Disabled) return;
+        ApplyFilter();
+        _isOpen = _filteredItems.Count > 0;
+    }
+
+    private void CloseDropdownDelayed()
+    {
+        _ = Task.Delay(200).ContinueWith(_ =>
+        {
+            _isOpen = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (Disabled) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (!_isOpen)
+                {
+                    OpenDropdown();
+                }
+                else if (_filteredItems.Count > 0)
+                {
+                    _highlightedIndex = (_highlightedIndex + 1) % _filteredItems.Count;
+                }
+                break;
+
+            case "ArrowUp":
+                if (_isOpen && _filteredItems.Count > 0)
+                {
+                    _highlightedIndex = _highlightedIndex <= 0
+                        ? _filteredItems.Count - 1
+                        : _highlightedIndex - 1;
+                }
+                break;
+
+            case "Enter":
+                if (_isOpen && _highlightedIndex >= 0 && _highlightedIndex < _filteredItems.Count)
+                {
+                    await SelectItem(_filteredItems[_highlightedIndex]);
+                }
+                break;
+
+            case "Escape":
+                _isOpen = false;
+                break;
+        }
+    }
+}

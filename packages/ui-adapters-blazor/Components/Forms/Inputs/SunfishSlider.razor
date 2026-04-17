@@ -1,0 +1,86 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(SliderClass)"
+     style="@CombineStyles()">
+    @if (ShowButtons)
+    {
+        <button type="button" class="sf-slider__btn" disabled="@(!Enabled)" @onclick="Decrement" aria-label="Decrease">-</button>
+    }
+    <input type="range"
+           value="@Value"
+           min="@Min"
+           max="@Max"
+           step="@Step"
+           disabled="@(!Enabled)"
+           orient="@(Orientation == SliderOrientation.Vertical ? "vertical" : "horizontal")"
+           @oninput="OnSliderChanged"
+           @attributes="AdditionalAttributes" />
+    @if (ShowButtons)
+    {
+        <button type="button" class="sf-slider__btn" disabled="@(!Enabled)" @onclick="Increment" aria-label="Increase">+</button>
+    }
+    @if (LargeStep.HasValue)
+    {
+        <div class="sf-slider__ticks">
+            @{
+                var tickValue = Min;
+                while (tickValue <= Max)
+                {
+                    var pct = (tickValue - Min) / (Max - Min) * 100;
+                    <span class="sf-slider__tick" style="@(Orientation == SliderOrientation.Horizontal ? $"left: {pct}%;" : $"bottom: {pct}%;")"></span>
+                    tickValue += LargeStep.Value;
+                }
+            }
+        </div>
+    }
+    @if (LabelTemplate != null)
+    {
+        <div class="sf-slider__label">
+            @LabelTemplate(Value)
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public double Step { get; set; } = 1;
+    [Parameter] public SliderOrientation Orientation { get; set; } = SliderOrientation.Horizontal;
+    [Parameter] public double? LargeStep { get; set; }
+    [Parameter] public RenderFragment<double>? LabelTemplate { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ShowButtons { get; set; }
+
+    private string SliderClass
+    {
+        get
+        {
+            var cls = CssProvider.SliderClass(Orientation);
+            if (!Enabled) cls += " mar-slider--disabled";
+            return cls;
+        }
+    }
+
+    private async Task OnSliderChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var val))
+        {
+            Value = val;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    private async Task Decrement()
+    {
+        Value = Math.Max(Min, Value - Step);
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task Increment()
+    {
+        Value = Math.Min(Max, Value + Step);
+        await ValueChanged.InvokeAsync(Value);
+    }
+}
