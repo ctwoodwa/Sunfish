@@ -5,7 +5,10 @@
 **Status:** Draft v0.2 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
 **Last updated:** 2026-04-17
 
-**v0.2 changes:** §10.2 delegation model revised from Macaroon-primary to Keyhive-inspired group-membership (primary) + Macaroon-style tokens (supplementary), driven by research in `docs/specifications/research-notes/automerge-evaluation.md`. See that doc for the full evaluation, mismatches (no .NET binding, Bridge is server-hosted not local-first), and integration-path recommendation.
+**v0.2 changes:**
+- §10.2 delegation model revised from Macaroon-primary to Keyhive-inspired group-membership (primary) + Macaroon-style tokens (supplementary). Driven by research in `docs/specifications/research-notes/automerge-evaluation.md`.
+- §3 kernel primitives expanded from 6 to 7 with the addition of **§3.7 Blob Store** — content-addressed binary storage keyed by CID. Driven by research in `docs/specifications/research-notes/ipfs-evaluation.md`. Positions IPFS + IPFS-Cluster as candidate federation backends; `FileSystemBlobStore` remains the single-node default.
+- Collectively: the platform now has a clearer split between structured-entity (Automerge-style CRDT + Keyhive capability), binary-blob (IPFS-style CID addressing), and policy (PolicyL DSL on top of Keyhive). The three research notes in `docs/specifications/research-notes/` are the detailed sources.
 
 ---
 
@@ -669,7 +672,60 @@ Event { op: Write, entity: unit:42/3b, actor: inspector:jim, tenant: acme-rental
      - audit:              appends to the immutable audit log
 ```
 
-### 3.7 Kernel Primitive Summary Table
+### 3.7 Primitive 7: Blob Store
+
+> **Revision note (v0.2):** added as a distinct kernel primitive after the IPFS evaluation in `docs/specifications/research-notes/ipfs-evaluation.md`. Earlier drafts folded blob storage into the Entity Store; separating it reflects the different operational characteristics (immutable, content-addressed, replicatable).
+
+Content-addressed binary storage. Every blob is identified by a **CID** (self-describing cryptographic hash — multihash/multicodec/multibase encoded). Inspection photos, scanned lease PDFs, drone footage, BIM exports, voice recordings, and other large binary content all flow through this primitive.
+
+**Contract:**
+
+```csharp
+public interface IBlobStore
+{
+    // Put bytes; returns the computed CID. Idempotent — same bytes → same CID.
+    ValueTask<Cid> PutAsync(ReadOnlyMemory<byte> content, CancellationToken ct);
+
+    // Fetch bytes by CID. Returns null if not locally available and no remote fetch attempted.
+    ValueTask<ReadOnlyMemory<byte>?> GetAsync(Cid cid, CancellationToken ct);
+
+    // Does this node have the blob pinned (guaranteed retrievable)?
+    ValueTask<bool> ExistsLocallyAsync(Cid cid, CancellationToken ct);
+
+    // Pin = promise to retain. Unpin = eligible for garbage collection.
+    ValueTask PinAsync(Cid cid, CancellationToken ct);
+    ValueTask UnpinAsync(Cid cid, CancellationToken ct);
+
+    // Attestation — periodic signed statement "as of timestamp T, I still have CID X".
+    // Detects silent content loss before consumers do.
+    ValueTask<BlobAttestation> AttestAsync(Cid cid, CancellationToken ct);
+}
+```
+
+**Properties:**
+- **Deduplication.** Two identical blobs produce the same CID → single stored copy.
+- **Verifiability.** Any party can re-hash received bytes and confirm they match the CID. Tampering is detectable cryptographically.
+- **Replication-friendly.** CIDs are location-independent; a peer can request a blob from any node that has it.
+- **Immutable.** Updating a blob means producing a new CID. Mutability lives at the entity layer (the entity updates its CID reference).
+
+**Backends (pluggable):**
+
+| Backend | When to use |
+|---|---|
+| `FileSystemBlobStore` | Single-node deployments; dev/test; Bridge accelerator's default |
+| `S3BlobStore` | Cloud-hosted; no federation needed |
+| `PostgresBlobStore` | Co-located with entity store; simplest ops; small blobs |
+| `IpfsBlobStore` | Federated multi-jurisdiction deployments; private IPFS network via Kubo daemon sidecar; deduplication and peer-to-peer replication |
+| `IpfsClusterBlobStore` | Production federation with replication-factor enforcement via IPFS-Cluster Raft consensus |
+
+**Out of scope at this primitive layer:**
+- Encryption — when blobs need confidentiality (most PII cases), the entity that references the blob encrypts before `PutAsync`, decrypts after `GetAsync`. Keys come from Keyhive (spec §10.2.1).
+- Access control — anyone who knows a CID and has network access can fetch the blob. Confidentiality comes from encryption (above) or from running in a private network.
+- Versioning — blobs are immutable; "versioning" is the entity updating its `blob_cid` reference.
+
+See `docs/specifications/research-notes/ipfs-evaluation.md` for the integration-path analysis. Near-term recommendation: ship `FileSystemBlobStore` with CID-style keys so the upgrade to IPFS is a backend swap; defer running actual Kubo daemons to the federation phase.
+
+### 3.8 Kernel Primitive Summary Table
 
 | # | Primitive | Key methods | Persistence | Signed? |
 |---|-----------|-------------|-------------|---------|
@@ -679,8 +735,9 @@ Event { op: Write, entity: unit:42/3b, actor: inspector:jim, tenant: acme-rental
 | 4 | Schema Registry | Get/Register/Validate/Migrate | Postgres + content-addressed blobs | Optional |
 | 5 | Permission Evaluator | Evaluate | Stateless (policies sourced from registry) | N/A |
 | 6 | Event Bus | Publish/Subscribe/Checkpoint | Transport-dependent | Yes |
+| 7 | Blob Store | Put/Get/Exists/Pin/Attest | FileSystem / S3 / Postgres / IPFS / IPFS-Cluster | Content-addressed (CIDs are self-verifying) |
 
-### 3.8 What the Kernel Does Not Do
+### 3.9 What the Kernel Does Not Do
 
 This is as important as what the kernel does. The kernel does **not**:
 

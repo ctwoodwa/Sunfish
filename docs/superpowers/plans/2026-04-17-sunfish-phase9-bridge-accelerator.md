@@ -47,7 +47,13 @@
 
 **Known gap vs. platform spec — decentralization primitives:** The current Sunfish repo does NOT yet have kernel-level cryptographic ownership, capability-based delegation, or federation primitives (spec Sections 2, 10). Bridge as shipped by this phase plan uses conventional single-tenant auth (DemoTenantContext + MockOktaService). Spec-aligned decentralization work is a future migration phase — flagged explicitly in the updated ROADMAP.md and in Task 9-10 below.
 
-**Candidate implementation path (see `docs/specifications/research-notes/automerge-evaluation.md`):** The decentralization primitives should adopt Automerge's **semantic model** (Merkle-DAG change log, CRDT merge rules, sync protocol shape) and Keyhive's **capability model** (group membership over Ed25519 keys) as design references. The Automerge library itself is **not** a drop-in: (a) no .NET binding exists, (b) Bridge is server-hosted not local-first, (c) Keyhive's group-based model replaces the spec's original Macaroon-style delegation. Implementation is expected to be a .NET-native version store + crypto + sync built in the style of these references rather than a direct integration. See the evaluation doc for integration paths, mismatches, and open questions.
+**Candidate implementation path (see the research-notes/ directory):** The decentralization primitives should adopt a layered design informed by three research evaluations in `docs/specifications/research-notes/`:
+
+1. **Automerge + Keyhive** (`automerge-evaluation.md`) — Automerge's **semantic model** (Merkle-DAG change log, CRDT merge rules, sync protocol shape) as the reference for the Version Store primitive; Keyhive's **capability model** (group membership over Ed25519 keys) as the reference for the Permission Evaluator + access control. The libraries themselves are not drop-ins: no .NET binding for Automerge, Keyhive's group-based model replaces the spec's original Macaroon-style delegation.
+
+2. **IPFS + IPLD + libp2p + IPFS-Cluster** (`ipfs-evaluation.md`) — Content-addressing via **CIDs** as the reference for the Blob Store primitive (spec §3.7). Near-term: compute CIDs natively in `Sunfish.Foundation.Blobs`, use `FileSystemBlobStore` default. Longer-term: swap in `IpfsBlobStore` for federated deployments. Full IPFS nodes deferred to the federation phase.
+
+Implementation across both is expected to be **.NET-native code built in the style of these references**, not direct library integration. .NET HTTP RPC to a sidecar Kubo daemon is the recommended integration path when actual IPFS deployment is in the picture. See the evaluation docs for integration paths, mismatches, and open questions.
 
 ---
 
@@ -1537,10 +1543,12 @@ Legend: ✅ adopted · 🟡 partially adopted · 🔴 not adopted · ⚪ N/A
 | Kernel Primitive | Bridge Status | Notes |
 |---|---|---|
 | Entity storage (multi-versioned) | 🟡 | EF Core entities are versioned via audit columns (CreatedAt/UpdatedAt) but not temporal tables; spec calls for as-of queries |
+| Version store (CRDT / Merkle DAG) | 🔴 | Candidate: Automerge-style change log (see automerge-evaluation.md) |
 | Schema registry | 🔴 | Entities use compile-time types only; no runtime schema registry |
 | Permissions (ABAC/RBAC evaluator) | 🟡 | Basic RBAC via Permissions.cs + Roles.cs; no policy language or decision engine |
 | Audit trail | 🟡 | AuditRecord entity exists; not all mutations emit audit events |
 | Event stream | 🔴 | Wolverine handles workflow events but no canonical domain event stream for external consumers |
+| **Blob store (CID-addressed)** | 🔴 | Bridge stores no large binaries today. Candidate: `Sunfish.Foundation.Blobs` module with CID v1 + SHA-256 + `FileSystemBlobStore` default; upgrade path to `IpfsBlobStore` for federated deployments. See `docs/specifications/research-notes/ipfs-evaluation.md`. |
 
 ## Spec Section 2 — Decentralized Primitives
 
@@ -1601,7 +1609,9 @@ Legend: ✅ adopted · 🟡 partially adopted · 🔴 not adopted · ⚪ N/A
 
 - **Post-Phase 9 (immediate):** None — Bridge is a functional demo as shipped.
 - **Platform Phase A (asset modeling — new migration phase):** Expand kernel primitives for temporal entities + asset hierarchies; swap Bridge's generic TaskItem entity for a Property/Unit/Fixture hierarchy.
-- **Platform Phase B (decentralization — new migration phase):** Introduce crypto primitives in Foundation; adopt Keyhive-inspired group-membership capability model (see `docs/specifications/research-notes/automerge-evaluation.md` for the research and the Keyhive-vs-Macaroons reconciliation); rewire DemoTenantContext to use real Ed25519 signed claims. Adopt Automerge's Merkle-DAG change-log semantics and sync-protocol shape without integrating the Automerge library directly (no .NET binding exists as of April 2026; integration via sidecar is an option for a later phase). Initial implementation is a .NET-native version store + crypto + sync inspired by Automerge + Keyhive.
+- **Platform Phase B (decentralization — new migration phase):** Introduce crypto primitives in Foundation; adopt Keyhive-inspired group-membership capability model (see `docs/specifications/research-notes/automerge-evaluation.md` for the Keyhive-vs-Macaroons reconciliation); rewire DemoTenantContext to use real Ed25519 signed claims. Adopt Automerge's Merkle-DAG change-log semantics and sync-protocol shape without integrating the Automerge library directly (no .NET binding exists as of April 2026; integration via sidecar is an option for a later phase). Initial implementation is a .NET-native version store + crypto + sync inspired by Automerge + Keyhive.
+- **Platform Phase B-blobs (parallel with decentralization):** Build `Sunfish.Foundation.Blobs` with CID v1 + SHA-256 + `FileSystemBlobStore` default. Bridge adopts it for any binary ingestion (avatars, document attachments, future drone imagery per spec §7). Plumbing ready for `IpfsBlobStore` backend when federation comes online. See `docs/specifications/research-notes/ipfs-evaluation.md`.
+- **Platform Phase D (federation — new migration phase):** Stand up private IPFS network + IPFS-Cluster for multi-jurisdictional blob replication; wire Automerge-style sync for structured entities. Blob-side and entity-side federation operate over libp2p-compatible transports but remain operationally separate processes.
 - **Platform Phase C (input modalities — new migration phase):** Build the ingestion pipeline per spec Section 7; wire voice/sensor/drone ingestion into Bridge as optional inputs.
 - **Platform Phase D (federation — new migration phase):** Define federation protocol; implement peer-to-peer sync; demonstrate a cross-jurisdictional scenario (landlord + code-enforcement agency share inspection data).
 

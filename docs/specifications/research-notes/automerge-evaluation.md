@@ -249,6 +249,7 @@ Add:
 ## 8. Sources
 
 - [Automerge documentation — Welcome](https://automerge.org/docs/hello/)
+- [Automerge Repo is a wrapper for the Automerge CRDT library](https://automerge.org/automerge-repo)
 - [Automerge Repo: A "batteries-included" toolkit for building local-first applications](https://automerge.org/blog/automerge-repo/)
 - [Keyhive notebook 05 — Syncing](https://www.inkandswitch.com/keyhive/notebook/05/)
 - [Automerge sync protocol (Rust docs)](https://automerge.org/automerge/automerge/sync/index.html)
