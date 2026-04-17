@@ -1,0 +1,37 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(ContainerClass())"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <div class="sf-pivotgrid-container__content">
+        @ChildContent
+    </div>
+    @if (ConfiguratorContent != null && ShowConfigurator)
+    {
+        <div class="sf-pivotgrid-container__configurator-panel">
+            @ConfiguratorContent
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Primary content, typically a SunfishPivotGrid.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional configurator panel content.</summary>
+    [Parameter] public RenderFragment? ConfiguratorContent { get; set; }
+
+    /// <summary>Whether the configurator panel is visible.</summary>
+    [Parameter] public bool ShowConfigurator { get; set; }
+
+    /// <summary>Callback when ShowConfigurator changes (supports two-way binding).</summary>
+    [Parameter] public EventCallback<bool> ShowConfiguratorChanged { get; set; }
+
+    private string ContainerClass()
+    {
+        var cls = "mar-pivotgrid-container";
+        if (ShowConfigurator && ConfiguratorContent != null)
+            cls += " mar-pivotgrid-container--with-configurator";
+        return cls;
+    }
+}

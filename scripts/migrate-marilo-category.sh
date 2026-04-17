@@ -34,6 +34,8 @@ find "$DST" -type f \( -name "*.razor" -o -name "*.cs" -o -name "*.razor.cs" \) 
   -e 's/@inherits MariloComponentBase/@inherits SunfishComponentBase/g' \
   -e 's/\bMariloResizeEdges\b/ResizeEdges/g' \
   -e 's/\bMarilo/Sunfish/g' \
+  -e 's/@inherits Sunfish\.Foundation\.Base\.SunfishComponentBase/@inherits SunfishComponentBase/g' \
+  -e 's/\bCore\.Helpers\.GridReflectionHelper/Sunfish.Foundation.Helpers.GridReflectionHelper/g' \
   -e 's/class="mar-/class="sf-/g' \
   -e 's/class="marilo-/class="sf-/g' \
   -e "s/class='mar-/class='sf-/g" \
@@ -54,10 +56,19 @@ find "$DST" -type f -name "*.md" -exec sed -i \
 # lives — NOT Foundation.Base, which holds the framework-agnostic CssClassBuilder).
 # Marilo had both in Marilo.Core.Base, so the original only needed one using.
 # Insert after the (already renamed) Sunfish.Foundation.Base line if missing.
-echo "→ Patching code-behind usings for SunfishComponentBase"
-find "$DST" -name "*.razor.cs" | while read -r f; do
+echo "→ Patching code-behind / plain-cs usings for SunfishComponentBase"
+# Both .razor.cs code-behinds AND plain .cs files (e.g. SunfishColumnBase.cs in
+# DataGrid) can inherit SunfishComponentBase. Both need the explicit using —
+# _Imports.razor only affects Razor files, not plain C#.
+find "$DST" -type f \( -name "*.razor.cs" -o -name "*.cs" \) ! -name "*.AssemblyInfo.cs" | while read -r f; do
   if grep -q "SunfishComponentBase" "$f" && ! grep -q "using Sunfish\.Components\.Blazor\.Base;" "$f"; then
-    sed -i '0,/^using Sunfish\.Foundation\.Base;/{s//using Sunfish.Foundation.Base;\nusing Sunfish.Components.Blazor.Base;/}' "$f"
+    if grep -q "^using Sunfish\.Foundation\.Base;" "$f"; then
+      # Preferred: insert right after Foundation.Base using
+      sed -i '0,/^using Sunfish\.Foundation\.Base;/{s//using Sunfish.Foundation.Base;\nusing Sunfish.Components.Blazor.Base;/}' "$f"
+    else
+      # Fallback: prepend at top of file
+      sed -i '1i using Sunfish.Components.Blazor.Base;' "$f"
+    fi
   fi
 done
 
