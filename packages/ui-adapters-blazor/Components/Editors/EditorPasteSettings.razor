@@ -1,0 +1,33 @@
+@* EditorPasteSettings — configures paste cleanup behavior for SunfishEditor. *@
+
+@code {
+    [CascadingParameter] internal SunfishEditor? ParentEditor { get; set; }
+
+    /// <summary>Convert Microsoft Word list formatting to HTML lists.</summary>
+    [Parameter] public bool ConvertMsLists { get; set; } = true;
+
+    /// <summary>Remove Microsoft-specific CSS classes.</summary>
+    [Parameter] public bool RemoveMsClasses { get; set; } = true;
+
+    /// <summary>Remove Microsoft-specific inline styles.</summary>
+    [Parameter] public bool RemoveMsStyles { get; set; } = true;
+
+    /// <summary>Remove HTML comments.</summary>
+    [Parameter] public bool RemoveHtmlComments { get; set; } = true;
+
+    /// <summary>Comma-separated list of tags to strip (e.g., "span,div").</summary>
+    [Parameter] public string? StripTags { get; set; }
+
+    /// <summary>Comma-separated list of attributes to remove.</summary>
+    [Parameter] public string? RemoveAttributes { get; set; }
+
+    /// <summary>Remove all HTML attributes from pasted content.</summary>
+    [Parameter] public bool RemoveAllAttributes { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentEditor is null)
+            throw new InvalidOperationException("EditorPasteSettings must be placed inside a SunfishEditor.");
+        ParentEditor.SetPasteSettings(this);
+    }
+}

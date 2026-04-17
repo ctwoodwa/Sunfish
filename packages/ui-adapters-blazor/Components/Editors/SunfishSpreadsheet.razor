@@ -1,0 +1,153 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-spreadsheet")"
+     style="@CombineStyles(SizeStyle())"
+     @attributes="AdditionalAttributes">
+
+    @if (ToolbarTemplate != null)
+    {
+        <div class="sf-spreadsheet__toolbar" style="padding:4px 8px;border-bottom:1px solid #e0e0e0;background:#fafafa;">
+            @ToolbarTemplate
+        </div>
+    }
+
+    <div class="sf-spreadsheet__scroll" style="overflow:auto;flex:1;">
+        <table class="sf-spreadsheet__table" style="border-collapse:collapse;min-width:100%;">
+            <thead>
+                <tr>
+                    <th class="sf-spreadsheet__corner"
+                        style="position:sticky;top:0;left:0;z-index:2;background:#f5f5f5;border:1px solid #e0e0e0;min-width:40px;padding:4px;text-align:center;">
+                    </th>
+                    @for (var c = 0; c < ColumnCount; c++)
+                    {
+                        <th class="sf-spreadsheet__col-header"
+                            style="position:sticky;top:0;z-index:1;background:#f5f5f5;border:1px solid #e0e0e0;min-width:80px;padding:4px;text-align:center;font-weight:600;font-size:12px;">
+                            @GetColumnLabel(c)
+                        </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @for (var r = 0; r < RowCount; r++)
+                {
+                    var row = r;
+                    <tr>
+                        <td class="sf-spreadsheet__row-header"
+                            style="position:sticky;left:0;z-index:1;background:#f5f5f5;border:1px solid #e0e0e0;min-width:40px;padding:4px;text-align:center;font-weight:600;font-size:12px;">
+                            @(row + 1)
+                        </td>
+                        @for (var c = 0; c < ColumnCount; c++)
+                        {
+                            var col = c;
+                            var key = (row, col);
+                            var isActive = _activeCell == key;
+                            <td class="sf-spreadsheet__cell @(isActive ? "mar-spreadsheet__cell--active" : "")"
+                                style="border:1px solid #e0e0e0;padding:0;min-width:80px;@(isActive ? "outline:2px solid #1976d2;outline-offset:-1px;" : "")"
+                                @onclick="() => SetActiveCell(row, col)">
+                                @if (isActive && !ReadOnly)
+                                {
+                                    <input type="text"
+                                           class="sf-spreadsheet__input"
+                                           style="width:100%;border:none;outline:none;padding:4px;font-size:13px;box-sizing:border-box;"
+                                           value="@GetCellValue(row, col)"
+                                           @oninput="e => HandleCellInput(row, col, e)"
+                                           @onblur="() => CommitCell(row, col)" />
+                                }
+                                else
+                                {
+                                    <div style="padding:4px;font-size:13px;min-height:20px;cursor:cell;">
+                                        @GetCellValue(row, col)
+                                    </div>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    /// <summary>Number of rows in the spreadsheet. Defaults to 50.</summary>
+    [Parameter] public int RowCount { get; set; } = 50;
+
+    /// <summary>Number of columns in the spreadsheet. Defaults to 26.</summary>
+    [Parameter] public int ColumnCount { get; set; } = 26;
+
+    /// <summary>CSS height of the spreadsheet container.</summary>
+    [Parameter] public string? Height { get; set; } = "400px";
+
+    /// <summary>CSS width of the spreadsheet container.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>When true, cells cannot be edited.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>Callback invoked when a cell value is changed.</summary>
+    [Parameter] public EventCallback<SpreadsheetCellEditEventArgs> OnCellEdit { get; set; }
+
+    /// <summary>Optional toolbar content rendered above the grid.</summary>
+    [Parameter] public RenderFragment? ToolbarTemplate { get; set; }
+
+    private Dictionary<(int row, int col), string> _cellData = new();
+    private (int row, int col)? _activeCell;
+    private string? _pendingValue;
+
+    private string SizeStyle()
+    {
+        var parts = new List<string> { "display:flex", "flex-direction:column" };
+        if (Width != null) parts.Add($"width:{Width}");
+        if (Height != null) parts.Add($"height:{Height}");
+        return string.Join(";", parts);
+    }
+
+    private static string GetColumnLabel(int index)
+    {
+        var label = "";
+        var i = index;
+        do
+        {
+            label = (char)('A' + i % 26) + label;
+            i = i / 26 - 1;
+        } while (i >= 0);
+        return label;
+    }
+
+    private string GetCellValue(int row, int col)
+    {
+        return _cellData.TryGetValue((row, col), out var val) ? val : "";
+    }
+
+    private void SetActiveCell(int row, int col)
+    {
+        _activeCell = (row, col);
+        _pendingValue = null;
+    }
+
+    private void HandleCellInput(int row, int col, ChangeEventArgs e)
+    {
+        _pendingValue = e.Value?.ToString();
+    }
+
+    private async Task CommitCell(int row, int col)
+    {
+        if (_pendingValue != null)
+        {
+            var oldValue = GetCellValue(row, col);
+            _cellData[(row, col)] = _pendingValue;
+
+            await OnCellEdit.InvokeAsync(new SpreadsheetCellEditEventArgs
+            {
+                Row = row,
+                Column = col,
+                OldValue = oldValue,
+                NewValue = _pendingValue
+            });
+
+            _pendingValue = null;
+        }
+
+        _activeCell = null;
+    }
+}

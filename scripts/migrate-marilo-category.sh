@@ -28,7 +28,8 @@ find "$DST" -type f \( -name "*.razor" -o -name "*.cs" -o -name "*.razor.cs" \) 
   -e 's/\bIMarilo/ISunfish/g' \
   -e 's/\bMarilo\.Core\.Contracts/Sunfish.UICore.Contracts/g' \
   -e 's/\bMarilo\.Core\./Sunfish.Foundation./g' \
-  -e 's/\bMarilo\.Components\./Sunfish.Components.Blazor./g' \
+  -e 's/\bMarilo\.Components\.Internal\b/Sunfish.Components.Blazor.Internal/g' \
+  -e 's/\bMarilo\.Components\./Sunfish.Components.Blazor.Components./g' \
   -e 's/namespace Marilo\.Components;/namespace Sunfish.Components.Blazor;/g' \
   -e 's/@inherits MariloComponentBase/@inherits SunfishComponentBase/g' \
   -e 's/\bMariloResizeEdges\b/ResizeEdges/g' \
