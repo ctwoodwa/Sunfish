@@ -1,0 +1,33 @@
+@implements IDisposable
+
+@{
+    // Render nothing - content is rendered by the parent SunfishWizard
+}
+
+@code {
+    [CascadingParameter] public SunfishWizard? ParentWizard { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Content { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Text { get; set; }
+    [Parameter] public bool Optional { get; set; }
+    [Parameter] public bool? Valid { get; set; }
+    [Parameter] public RenderFragment? StepTemplate { get; set; }
+    [Parameter] public EventCallback<WizardStepChangeEventArgs> OnChange { get; set; }
+
+    /// <summary>Gets the effective content to render (Content takes priority over ChildContent).</summary>
+    internal RenderFragment? EffectiveContent => Content ?? ChildContent;
+
+    protected override void OnInitialized()
+    {
+        ParentWizard?.RegisterStep(this);
+    }
+
+    public void Dispose()
+    {
+        ParentWizard?.UnregisterStep(this);
+    }
+}

@@ -1,0 +1,255 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(RootCssClass)"
+     style="@CombineStyles(RootStyle)"
+     @attributes="AdditionalAttributes">
+
+    @* Hidden container for step registration via CascadingValue *@
+    <div style="display:none">
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    </div>
+
+    @* Step indicators *@
+    <div class="sf-wizard__steps @StepperCssClass" role="tablist" @onkeydown="HandleStepperKeyDown">
+        @for (var i = 0; i < _steps.Count; i++)
+        {
+            var stepIndex = i;
+            var step = _steps[i];
+            var isCurrent = stepIndex == Value;
+            var isCompleted = stepIndex < Value;
+            var isClickable = !Linear || isCurrent || isCompleted;
+            <button type="button"
+                    class="sf-wizard__step @(isCurrent ? "mar-wizard__step--active" : "") @(isCompleted ? "mar-wizard__step--completed" : "") @(step.Disabled ? "mar-wizard__step--disabled" : "")"
+                    role="tab"
+                    aria-selected="@isCurrent.ToString().ToLowerInvariant()"
+                    aria-controls="@($"mar-wizard-panel-{_instanceId}")"
+                    aria-current="@(isCurrent ? "step" : null)"
+                    tabindex="@(stepIndex == _focusedIndex ? 0 : -1)"
+                    disabled="@(!isClickable || step.Disabled)"
+                    @onclick="() => GoToStep(stepIndex)">
+                @if (step.StepTemplate != null)
+                {
+                    @step.StepTemplate
+                }
+                else
+                {
+                    <span class="sf-wizard__step-indicator">
+                        @if (step.Valid == true)
+                        {
+                            <span class="sf-wizard__step-icon mar-wizard__step-icon--valid">&#x2713;</span>
+                        }
+                        else if (step.Valid == false)
+                        {
+                            <span class="sf-wizard__step-icon mar-wizard__step-icon--invalid">&#x2717;</span>
+                        }
+                        else
+                        {
+                            <span class="sf-wizard__step-number">@(isCompleted ? "\u2713" : (step.Text ?? (stepIndex + 1).ToString()))</span>
+                        }
+                    </span>
+                    @if (!string.IsNullOrEmpty(step.Label))
+                    {
+                        <span class="sf-wizard__step-label">
+                            @step.Label
+                            @if (step.Optional)
+                            {
+                                <span class="sf-wizard__step-optional">(Optional)</span>
+                            }
+                        </span>
+                    }
+                }
+            </button>
+            @if (i < _steps.Count - 1)
+            {
+                <span class="sf-wizard__connector @(isCompleted ? "mar-wizard__connector--completed" : "")"></span>
+            }
+        }
+    </div>
+
+    @* Active step content *@
+    <div class="sf-wizard__content"
+         id="@($"mar-wizard-panel-{_instanceId}")"
+         role="tabpanel"
+         aria-label="@($"Step {Value + 1} of {_steps.Count}")"
+         tabindex="0">
+        @if (Value >= 0 && Value < _steps.Count)
+        {
+            @(_steps[Value].EffectiveContent)
+        }
+    </div>
+
+    @* Navigation buttons *@
+    @if (WizardButtons != null)
+    {
+        <div class="sf-wizard__actions">
+            @WizardButtons(Value)
+        </div>
+    }
+    else
+    {
+        <div class="sf-wizard__actions">
+            @if (Value > 0)
+            {
+                var prevDisabled = _steps.Count > 0 && Value - 1 >= 0 && _steps[Value - 1].Disabled;
+                <button type="button" class="sf-btn mar-btn--flat" disabled="@prevDisabled" @onclick="PreviousStep">
+                    @(PreviousText ?? "Previous")
+                </button>
+            }
+            <span class="sf-wizard__spacer"></span>
+            @if (ShowPager)
+            {
+                <span class="sf-wizard__pager">Step @(Value + 1) of @_steps.Count</span>
+            }
+            @if (Value < _steps.Count - 1)
+            {
+                var nextDisabled = _steps.Count > 0 && Value + 1 < _steps.Count && _steps[Value + 1].Disabled;
+                <button type="button" class="sf-btn mar-btn--primary" disabled="@nextDisabled" @onclick="NextStep">
+                    @(NextText ?? "Next")
+                </button>
+            }
+            else
+            {
+                <button type="button" class="sf-btn mar-btn--primary" @onclick="HandleFinish">
+                    @(FinishText ?? "Finish")
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<WizardStep> _steps = new();
+    private int _focusedIndex;
+    private readonly string _instanceId = Guid.NewGuid().ToString("N")[..8];
+
+    // ── Parameters ─────────────────────────────────────────────────────
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public bool Linear { get; set; } = true;
+    [Parameter] public string? PreviousText { get; set; }
+    [Parameter] public string? NextText { get; set; }
+    [Parameter] public string? FinishText { get; set; }
+    [Parameter] public EventCallback OnFinish { get; set; }
+    [Parameter] public EventCallback<int> OnStepChange { get; set; }
+    [Parameter] public RenderFragment<int>? WizardButtons { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool ShowPager { get; set; }
+    [Parameter] public WizardStepperPosition StepperPosition { get; set; } = WizardStepperPosition.Top;
+
+    // ── Computed CSS ────────────────────────────────────────────────────
+
+    private string RootCssClass
+    {
+        get
+        {
+            var pos = StepperPosition.ToString().ToLowerInvariant();
+            return $"mar-wizard mar-wizard--stepper-{pos}";
+        }
+    }
+
+    private string? RootStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width}");
+            if (Height != null) parts.Add($"height:{Height}");
+            return parts.Count > 0 ? string.Join(";", parts) : null;
+        }
+    }
+
+    private string StepperCssClass => StepperPosition is WizardStepperPosition.Left or WizardStepperPosition.Right
+        ? "mar-wizard__steps--vertical"
+        : "";
+
+    // ── Step registration ──────────────────────────────────────────────
+
+    internal void RegisterStep(WizardStep step)
+    {
+        if (!_steps.Contains(step))
+        {
+            _steps.Add(step);
+            StateHasChanged();
+        }
+    }
+
+    internal void UnregisterStep(WizardStep step)
+    {
+        _steps.Remove(step);
+        StateHasChanged();
+    }
+
+    // ── Navigation ─────────────────────────────────────────────────────
+
+    private async Task GoToStep(int index)
+    {
+        if (index < 0 || index >= _steps.Count || _steps[index].Disabled) return;
+        if (index == Value) return;
+
+        // Fire current step's OnChange for cancellation support
+        if (Value >= 0 && Value < _steps.Count)
+        {
+            var currentStep = _steps[Value];
+            if (currentStep.OnChange.HasDelegate)
+            {
+                var args = new WizardStepChangeEventArgs { TargetIndex = index };
+                await currentStep.OnChange.InvokeAsync(args);
+                if (args.IsCancelled) return;
+            }
+        }
+
+        Value = index;
+        _focusedIndex = index;
+        await ValueChanged.InvokeAsync(Value);
+        await OnStepChange.InvokeAsync(Value);
+    }
+
+    private async Task NextStep()
+    {
+        if (Value < _steps.Count - 1)
+            await GoToStep(Value + 1);
+    }
+
+    private async Task PreviousStep()
+    {
+        if (Value > 0)
+            await GoToStep(Value - 1);
+    }
+
+    private async Task HandleFinish()
+    {
+        await OnFinish.InvokeAsync();
+    }
+
+    // ── Keyboard navigation (WAI-ARIA tablist) ─────────────────────────
+
+    private void HandleStepperKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (_steps.Count == 0) return;
+
+        var isVertical = StepperPosition is WizardStepperPosition.Left or WizardStepperPosition.Right;
+        var nextKey = isVertical ? "ArrowDown" : "ArrowRight";
+        var prevKey = isVertical ? "ArrowUp" : "ArrowLeft";
+
+        switch (e.Key)
+        {
+            case var k when k == nextKey:
+                _focusedIndex = (_focusedIndex + 1) % _steps.Count;
+                break;
+            case var k when k == prevKey:
+                _focusedIndex = (_focusedIndex - 1 + _steps.Count) % _steps.Count;
+                break;
+            case "Home":
+                _focusedIndex = 0;
+                break;
+            case "End":
+                _focusedIndex = _steps.Count - 1;
+                break;
+        }
+    }
+}

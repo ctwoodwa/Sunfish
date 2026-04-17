@@ -1,0 +1,45 @@
+@inherits SunfishComponentBase
+
+@if (_stepper?.IsStepActive(this) == true)
+{
+    <div class="sf-step__content">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [CascadingParameter] private SunfishStepper? _stepper { get; set; }
+
+    /// <summary>Title text displayed in the step indicator.</summary>
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>Custom icon content for the step indicator (overrides number/checkmark).</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Whether this step is optional.</summary>
+    [Parameter] public bool Optional { get; set; }
+
+    /// <summary>Whether this step is disabled (cannot be navigated to).</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Override the automatic step status. When null, the stepper calculates status
+    /// based on position relative to ActiveStep. Set to <see cref="Sunfish.Foundation.Enums.StepStatus.Error"/>
+    /// to indicate validation failure.
+    /// </summary>
+    [Parameter] public StepStatus? StepStatus { get; set; }
+
+    /// <summary>Step content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _stepper?.RegisterStep(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _stepper?.UnregisterStep(this);
+        base.Dispose(disposing);
+    }
+}

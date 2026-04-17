@@ -1,0 +1,205 @@
+@inherits SunfishComponentBase
+
+@if (Mode == DrawerMode.Overlay && Expanded)
+{
+    <div class="@CssProvider.DrawerOverlayClass()" @onclick="HandleOverlayClick"></div>
+}
+
+<div class="@CombineClasses(CssProvider.DrawerClass(Position, Expanded))"
+     style="@CombineStyles(DrawerStyle)"
+     role="navigation"
+     aria-expanded="@Expanded"
+     @attributes="AdditionalAttributes">
+
+    @if (Data != null && Data.Any())
+    {
+        @* Data-driven mode *@
+        <nav class="sf-drawer__nav">
+            @foreach (var item in Data)
+            {
+                var isSelected = SelectedItem != null && SelectedItem.Equals(item);
+                var text = GetPropertyValue(item, TextField);
+                var icon = GetPropertyValue(item, IconField);
+                var url = GetPropertyValue(item, UrlField);
+
+                @if (ItemTemplate != null)
+                {
+                    @ItemTemplate(item)
+                }
+                else if (!string.IsNullOrEmpty(url))
+                {
+                    <a class="sf-drawer__item @(isSelected ? "mar-drawer__item--selected" : "")"
+                       href="@url"
+                       @onclick="() => HandleItemClick(item)"
+                       @onclick:preventDefault="@(SelectedItemChanged.HasDelegate)">
+                        @if (!string.IsNullOrEmpty(icon))
+                        {
+                            <span class="sf-drawer__item-icon">@IconProvider.GetIcon(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                        }
+                        @if (!MiniMode || Expanded)
+                        {
+                            <span class="sf-drawer__item-text">@text</span>
+                        }
+                    </a>
+                }
+                else
+                {
+                    <div class="sf-drawer__item @(isSelected ? "mar-drawer__item--selected" : "")"
+                         @onclick="() => HandleItemClick(item)">
+                        @if (!string.IsNullOrEmpty(icon))
+                        {
+                            <span class="sf-drawer__item-icon">@IconProvider.GetIcon(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                        }
+                        @if (!MiniMode || Expanded)
+                        {
+                            <span class="sf-drawer__item-text">@text</span>
+                        }
+                    </div>
+                }
+            }
+        </nav>
+    }
+    else
+    {
+        @* Template/ChildContent mode *@
+        @ChildContent
+    }
+
+    @* DrawerContent is rendered adjacent to the drawer (page content area) *@
+</div>
+
+@if (DrawerContent != null)
+{
+    <div class="sf-drawer__page-content" style="@PageContentStyle">
+        @DrawerContent
+    </div>
+}
+
+@code {
+    /// <summary>Position from which the drawer slides. Defaults to Left.</summary>
+    [Parameter] public DrawerPosition Position { get; set; } = DrawerPosition.Left;
+
+    /// <summary>Whether the drawer is expanded/open. Supports two-way binding.</summary>
+    [Parameter] public bool Expanded { get; set; }
+
+    /// <summary>Fires when the expanded state changes.</summary>
+    [Parameter] public EventCallback<bool> ExpandedChanged { get; set; }
+
+    /// <summary>The display mode of the drawer (Overlay or Push). Defaults to Overlay.</summary>
+    [Parameter] public DrawerMode Mode { get; set; } = DrawerMode.Overlay;
+
+    /// <summary>When true, shows a narrow icon-only view when collapsed. Icons expand to full items when opened.</summary>
+    [Parameter] public bool MiniMode { get; set; }
+
+    /// <summary>The width when collapsed in MiniMode (e.g. "50px").</summary>
+    [Parameter] public string MiniWidth { get; set; } = "50px";
+
+    /// <summary>The width of the drawer when expanded. Defaults to "300px".</summary>
+    [Parameter] public string? Width { get; set; } = "300px";
+
+    /// <summary>Data source for data-driven drawer items.</summary>
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+
+    /// <summary>The property name on the data item for display text.</summary>
+    [Parameter] public string TextField { get; set; } = "Text";
+
+    /// <summary>The property name on the data item for the icon.</summary>
+    [Parameter] public string IconField { get; set; } = "Icon";
+
+    /// <summary>The property name on the data item for navigation URL.</summary>
+    [Parameter] public string UrlField { get; set; } = "Url";
+
+    /// <summary>The currently selected data item. Supports two-way binding.</summary>
+    [Parameter] public object? SelectedItem { get; set; }
+
+    /// <summary>Fires when the selected item changes.</summary>
+    [Parameter] public EventCallback<object?> SelectedItemChanged { get; set; }
+
+    /// <summary>Fires when the drawer is closed.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    /// <summary>Custom template for rendering each data item.</summary>
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    /// <summary>Manual drawer content (items, links, etc.).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Page content that sits adjacent to the drawer (pushed when Mode is Push).</summary>
+    [Parameter] public RenderFragment? DrawerContent { get; set; }
+
+    // ── Computed styles ─────────────────────────────────────────────────
+
+    private string DrawerStyle
+    {
+        get
+        {
+            var w = (MiniMode && !Expanded) ? MiniWidth : Width;
+            return $"width:{w}";
+        }
+    }
+
+    private string? PageContentStyle
+    {
+        get
+        {
+            if (Mode != DrawerMode.Push) return null;
+            var margin = Expanded ? Width : (MiniMode ? MiniWidth : "0");
+            return Position == DrawerPosition.Left
+                ? $"margin-left:{margin};"
+                : Position == DrawerPosition.Right
+                    ? $"margin-right:{margin};"
+                    : null;
+        }
+    }
+
+    // ── Public programmatic API ─────────────────────────────────────────
+
+    /// <summary>Expands the drawer.</summary>
+    public async Task ExpandAsync()
+    {
+        if (!Expanded)
+        {
+            Expanded = true;
+            await ExpandedChanged.InvokeAsync(true);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Collapses the drawer.</summary>
+    public async Task CollapseAsync()
+    {
+        if (Expanded)
+        {
+            Expanded = false;
+            await ExpandedChanged.InvokeAsync(false);
+            await OnClose.InvokeAsync();
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Toggles the drawer expanded state.</summary>
+    public async Task ToggleAsync()
+    {
+        if (Expanded) await CollapseAsync(); else await ExpandAsync();
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task HandleOverlayClick()
+    {
+        await CollapseAsync();
+    }
+
+    private async Task HandleItemClick(object item)
+    {
+        SelectedItem = item;
+        await SelectedItemChanged.InvokeAsync(item);
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────
+
+    private static string? GetPropertyValue(object item, string propertyName)
+    {
+        return item.GetType().GetProperty(propertyName)?.GetValue(item)?.ToString();
+    }
+}

@@ -1,0 +1,91 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.AccordionItemClass(IsExpanded))"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <button type="button"
+            class="sf-accordion-item__header"
+            aria-expanded="@IsExpanded.ToString().ToLower()"
+            aria-controls="@_contentId"
+            disabled="@Disabled"
+            @onclick="ToggleExpanded">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-accordion-item__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+        }
+        @Title
+    </button>
+    @if (IsExpanded)
+    {
+        <div id="@_contentId" role="region" class="sf-accordion-item__content">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    private readonly string _contentId = $"acc-{Guid.NewGuid().ToString("N")[..8]}";
+
+    [CascadingParameter] private SunfishAccordion? ParentAccordion { get; set; }
+
+    /// <summary>Header text for the accordion item.</summary>
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>Icon class or name for the item header.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Whether this item is expanded. Supports two-way binding.</summary>
+    [Parameter] public bool IsExpanded { get; set; }
+
+    /// <summary>Fires when the expanded state changes.</summary>
+    [Parameter] public EventCallback<bool> IsExpandedChanged { get; set; }
+
+    /// <summary>Whether this item is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Item content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+
+    protected override void OnInitialized()
+    {
+        ParentAccordion?.RegisterItem(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) ParentAccordion?.UnregisterItem(this);
+        base.Dispose(disposing);
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Collapses this item programmatically.</summary>
+    public async Task CollapseAsync()
+    {
+        if (IsExpanded)
+        {
+            IsExpanded = false;
+            await IsExpandedChanged.InvokeAsync(false);
+            StateHasChanged();
+        }
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task ToggleExpanded()
+    {
+        if (Disabled) return;
+
+        IsExpanded = !IsExpanded;
+        await IsExpandedChanged.InvokeAsync(IsExpanded);
+
+        if (IsExpanded)
+        {
+            // Notify parent to collapse other items in Single mode
+            if (ParentAccordion != null)
+                await ParentAccordion.NotifyItemExpanded(this);
+        }
+    }
+}

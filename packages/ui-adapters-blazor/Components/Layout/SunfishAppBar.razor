@@ -1,0 +1,45 @@
+@inherits SunfishComponentBase
+
+<header class="@CombineClasses(AppBarRootClass)"
+        style="@CombineStyles(SizeStyle)"
+        role="banner"
+        @attributes="AdditionalAttributes">
+    @ChildContent
+</header>
+
+@code {
+    [Parameter] public AppBarPosition Position { get; set; } = AppBarPosition.Top;
+
+    /// <summary>CSS position mode (static, fixed, sticky). Defaults to static.</summary>
+    [Parameter] public string PositionMode { get; set; } = "static";
+
+    /// <summary>Height of the app bar.</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Width of the app bar.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string AppBarRootClass
+    {
+        get
+        {
+            var cls = CssProvider.AppBarClass(Position);
+            if (PositionMode != "static") cls += $" mar-appbar--{PositionMode}";
+            return cls;
+        }
+    }
+
+    private string? SizeStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (PositionMode != "static") parts.Add($"position:{PositionMode};");
+            if (Height != null) parts.Add($"height:{Height};");
+            if (Width != null) parts.Add($"width:{Width};");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+}

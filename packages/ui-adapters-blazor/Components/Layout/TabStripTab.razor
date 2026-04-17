@@ -1,0 +1,125 @@
+@using Sunfish.Foundation.Models
+@inherits SunfishComponentBase
+
+@{
+    var isActive = _strip?.IsTabActive(this) == true;
+    var shouldRender = isActive || (_strip?.PersistContent == true);
+}
+
+@if (shouldRender)
+{
+    <div role="tabpanel"
+         id="@GetPanelId()"
+         class="@CssProvider.TabPanelClass(isActive, _strip?.PersistContent ?? false)"
+         aria-labelledby="@GetTabId()"
+         aria-hidden="@((!isActive).ToString().ToLower())">
+        @if (Content != null)
+        {
+            @Content
+        }
+        else
+        {
+            @ChildContent
+        }
+    </div>
+}
+
+@code {
+    private readonly string _generatedId = $"mar-tab-{Guid.NewGuid().ToString("N")[..8]}";
+
+    [CascadingParameter] private SunfishTabStrip? _strip { get; set; }
+
+    /// <summary>
+    /// The unique identifier for this tab. Used with <see cref="SunfishTabStrip.ActiveTabId"/>.
+    /// If not set, an ID is generated automatically.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// The text displayed in the tab heading.
+    /// </summary>
+    [Parameter] public string Title { get; set; } = "";
+
+    /// <summary>
+    /// Controls whether this tab is visible in the tab list.
+    /// </summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>
+    /// Fires when the tab visibility changes (e.g. when a closeable tab is closed).
+    /// </summary>
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>
+    /// Whether this tab is disabled and cannot be selected by the user.
+    /// </summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, renders a close button on the tab. Closing sets
+    /// <see cref="Visible"/> to <c>false</c> and fires <see cref="VisibleChanged"/>.
+    /// </summary>
+    [Parameter] public bool Closeable { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, the user can pin this tab to the start of the tab list
+    /// via the tab context menu.
+    /// </summary>
+    [Parameter] public bool Pinnable { get; set; }
+
+    /// <summary>
+    /// Whether the tab is currently pinned. Supports two-way binding.
+    /// Pinned tabs are fixed at the start of the list and cannot be mixed
+    /// with unpinned tabs during drag-and-drop reordering.
+    /// </summary>
+    [Parameter] public bool Pinned { get; set; }
+
+    /// <summary>
+    /// Fires when the pinned state changes.
+    /// </summary>
+    [Parameter] public EventCallback<bool> PinnedChanged { get; set; }
+
+    /// <summary>
+    /// Custom content for the tab header, replacing the <see cref="Title"/> text.
+    /// </summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// The tab panel content. Use this when <see cref="HeaderTemplate"/> is also used.
+    /// </summary>
+    [Parameter] public RenderFragment? Content { get; set; }
+
+    /// <summary>
+    /// The tab panel content (shorthand when no <see cref="HeaderTemplate"/> is needed).
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    internal string GetTabId()   => $"{Id ?? _generatedId}-tab";
+    internal string GetPanelId() => $"{Id ?? _generatedId}-panel";
+
+    /// <summary>Gets the effective tab ID (user-supplied or auto-generated).</summary>
+    public string GetEffectiveId() => Id ?? _generatedId;
+
+    internal async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    internal async Task SetPinnedAsync(bool pinned)
+    {
+        Pinned = pinned;
+        await PinnedChanged.InvokeAsync(pinned);
+    }
+
+    protected override void OnInitialized()
+    {
+        _strip?.RegisterTab(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _strip?.UnregisterTab(this);
+        base.Dispose(disposing);
+    }
+}

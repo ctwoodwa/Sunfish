@@ -1,0 +1,462 @@
+@using System.Linq
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-dockmanager")"
+     style="@CombineStyles(HeightStyle(), WidthStyle(), "position:relative")"
+     @attributes="AdditionalAttributes">
+
+    @foreach (var group in _dockedGroups)
+    {
+        <div class="sf-dockmanager__tabs" data-group-id="@group.Key">
+            @foreach (var pane in group)
+            {
+                var paneId = pane.Id ?? pane.Title ?? "";
+                var isDragging = _dragSourcePaneId == paneId;
+                var isDropTarget = _dragTargetPaneId == paneId && _dragSourcePaneId != paneId;
+                var tabClass = "mar-dockmanager__tab"
+                    + (paneId == _activeId ? " mar-dockmanager__tab--active" : "")
+                    + (isDragging ? " mar-dockmanager__tab--dragging" : "")
+                    + (isDropTarget ? " mar-dockmanager__tab--drop-target" : "");
+                <div class="@tabClass"
+                     draggable="true"
+                     @onclick="() => ActivatePane(paneId)"
+                     @ondragstart="() => OnTabDragStart(paneId)"
+                     @ondragover:preventDefault="true"
+                     @ondragover="() => OnTabDragOver(paneId)"
+                     @ondragleave="() => OnTabDragLeave(paneId)"
+                     @ondrop="OnTabDrop"
+                     @ondragend="OnTabDragEnd">
+                    <span class="sf-dockmanager__tab-title">@(pane.Title ?? pane.Id)</span>
+                    <span class="sf-dockmanager__tab-actions">
+                        <button type="button" class="sf-dockmanager__action" title="Pin" @onclick:stopPropagation="true" @onclick="() => PinPane(paneId)">&#128204;</button>
+                        <button type="button" class="sf-dockmanager__action" title="Float" @onclick:stopPropagation="true" @onclick="() => ToggleFloat(paneId)">&#8599;</button>
+                        @if (pane.Closable)
+                        {
+                            <button type="button" class="sf-dockmanager__action mar-dockmanager__action--close" title="Close" @onclick:stopPropagation="true" @onclick="() => ClosePane(paneId)">&times;</button>
+                        }
+                    </span>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="sf-dockmanager__content">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+
+    @* ── Drag overlay (captures mouse events outside pane during drag/resize) ─ *@
+    @if (_isDragging || _isResizing)
+    {
+        <div class="sf-dockmanager__drag-overlay"
+             @onmousemove="OnOverlayMouseMove"
+             @onmouseup="OnOverlayMouseUp"
+             @onmousemove:preventDefault="true"
+             @onmouseup:preventDefault="true"></div>
+    }
+
+    @* ── Floating panes render as overlays ──────────────────────────── *@
+    @foreach (var pane in _floatingPanes)
+    {
+        var paneId = pane.Id ?? pane.Title ?? "";
+        var floatClass = "mar-dockmanager__floating-pane"
+            + (_isDragging && _floatingDragPaneId == paneId ? " mar-dockmanager__floating-pane--dragging" : "")
+            + (_isResizing && _floatingDragPaneId == paneId ? " mar-dockmanager__floating-pane--resizing" : "");
+        var floatStyle = $"top:{pane.RuntimeTop};left:{pane.RuntimeLeft};width:{pane.RuntimeWidth};height:{pane.RuntimeHeight}";
+        <div class="@floatClass" style="@floatStyle">
+            <div class="sf-dockmanager__floating-pane-titlebar"
+                 @onmousedown="(e) => OnFloatingPaneTitleBarMouseDown(e, paneId)"
+                 @onmousedown:preventDefault="true">
+                <span class="sf-dockmanager__floating-pane-title">@(pane.Title ?? pane.Id)</span>
+                <span class="sf-dockmanager__floating-pane-actions">
+                    <button type="button"
+                            class="sf-dockmanager__floating-pane-dock"
+                            title="Dock"
+                            @onmousedown:stopPropagation="true"
+                            @onclick="() => ToggleFloat(paneId)">&#8601;</button>
+                    <button type="button"
+                            class="sf-dockmanager__floating-pane-close"
+                            title="Close"
+                            @onmousedown:stopPropagation="true"
+                            @onclick="() => CloseFloatingPane(paneId)">&times;</button>
+                </span>
+            </div>
+            <div class="sf-dockmanager__floating-pane-content">
+                @pane.ChildContent
+            </div>
+            @* ── Resize handles ─────────────────────────────────────── *@
+            @{ var pId = paneId; }
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--n" @onmousedown="@(e => OnResizeMouseDown(e, pId, "n"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--s" @onmousedown="@(e => OnResizeMouseDown(e, pId, "s"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--e" @onmousedown="@(e => OnResizeMouseDown(e, pId, "e"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--w" @onmousedown="@(e => OnResizeMouseDown(e, pId, "w"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--ne" @onmousedown="@(e => OnResizeMouseDown(e, pId, "ne"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--nw" @onmousedown="@(e => OnResizeMouseDown(e, pId, "nw"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--se" @onmousedown="@(e => OnResizeMouseDown(e, pId, "se"))" @onmousedown:preventDefault="true"></div>
+            <div class="sf-dockmanager__resize-handle mar-dockmanager__resize-handle--sw" @onmousedown="@(e => OnResizeMouseDown(e, pId, "sw"))" @onmousedown:preventDefault="true"></div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Child content containing <c>SunfishDockPane</c> declarations.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>CSS height of the dock manager container.</summary>
+    [Parameter] public string? Height { get; set; } = "500px";
+
+    /// <summary>CSS width of the dock manager container.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Callback invoked when a pane is closed.</summary>
+    [Parameter] public EventCallback<string> OnPaneClosed { get; set; }
+
+    /// <summary>Callback invoked when a pane is pinned.</summary>
+    [Parameter] public EventCallback<string> OnPanePin { get; set; }
+
+    /// <summary>Callback invoked when a pane is floated or docked.</summary>
+    [Parameter] public EventCallback<string> OnPaneFloat { get; set; }
+
+    /// <summary>Callback invoked when a pane becomes the active tab.</summary>
+    [Parameter] public EventCallback<string> OnPaneActivated { get; set; }
+
+    /// <summary>
+    /// Callback invoked when a tab is reordered within the tab strip via drag-and-drop.
+    /// </summary>
+    [Parameter] public EventCallback<DockTabReorderEventArgs> OnTabReordered { get; set; }
+
+    /// <summary>
+    /// Callback invoked whenever the layout changes (pane added, removed, reordered, floated, or docked).
+    /// </summary>
+    [Parameter] public EventCallback OnLayoutChanged { get; set; }
+
+    /// <summary>
+    /// Callback invoked when a tab is moved from one tab group to another via drag-and-drop.
+    /// </summary>
+    [Parameter] public EventCallback<DockPaneMoveEventArgs> OnPaneMoved { get; set; }
+
+    private readonly List<SunfishDockPane> _panes = new();
+    private string? _activeId;
+
+    // ── Derived views over _panes ─────────────��──────────────────────
+    private IEnumerable<SunfishDockPane> _dockedPanes => _panes.Where(p => !p.IsCurrentlyFloating);
+    private IEnumerable<SunfishDockPane> _floatingPanes => _panes.Where(p => p.IsCurrentlyFloating);
+    private IEnumerable<IGrouping<string, SunfishDockPane>> _dockedGroups =>
+        _dockedPanes.GroupBy(p => p.TabGroupId);
+
+    // ── Drag-and-drop state for tab reordering ───────────────────────
+    private string? _dragSourcePaneId;
+    private string? _dragTargetPaneId;
+
+    // ── Floating pane drag-move state ─────────────────────────────────
+    private bool _isDragging;
+    private string? _floatingDragPaneId;
+    private double _dragOffsetX;
+    private double _dragOffsetY;
+    private double _dragStartTop;
+    private double _dragStartLeft;
+
+    // ── Floating pane resize state ────────────────────────────────────
+    private bool _isResizing;
+    private string? _resizeDirection;
+    private double _resizeStartMouseX;
+    private double _resizeStartMouseY;
+    private double _resizeStartTop;
+    private double _resizeStartLeft;
+    private double _resizeStartWidth;
+    private double _resizeStartHeight;
+
+    private string HeightStyle() => Height != null ? $"height:{Height}" : "";
+    private string WidthStyle() => Width != null ? $"width:{Width}" : "";
+
+    internal async Task RegisterPane(SunfishDockPane pane)
+    {
+        if (!_panes.Contains(pane))
+        {
+            _panes.Add(pane);
+            if (!pane.IsCurrentlyFloating)
+            {
+                _activeId ??= pane.Id ?? pane.Title ?? _panes.Count.ToString();
+            }
+            await InvokeAsync(StateHasChanged);
+            await OnLayoutChanged.InvokeAsync();
+        }
+    }
+
+    internal async Task UnregisterPane(SunfishDockPane pane)
+    {
+        _panes.Remove(pane);
+        if (_activeId == (pane.Id ?? pane.Title))
+        {
+            _activeId = _dockedPanes.FirstOrDefault()?.Id ?? _dockedPanes.FirstOrDefault()?.Title;
+        }
+        await InvokeAsync(StateHasChanged);
+        await OnLayoutChanged.InvokeAsync();
+    }
+
+    internal bool IsPaneActive(SunfishDockPane pane)
+    {
+        // Floating panes are always visible (rendered in overlay), not via tab content
+        if (pane.IsCurrentlyFloating) return false;
+        var id = pane.Id ?? pane.Title ?? "";
+        return id == _activeId;
+    }
+
+    private async Task ActivatePane(string? id)
+    {
+        if (id == _activeId) return;
+        _activeId = id;
+        if (id != null) await OnPaneActivated.InvokeAsync(id);
+    }
+
+    private async Task ClosePane(string? id)
+    {
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == id);
+        if (pane != null) await UnregisterPane(pane);
+        if (id != null) await OnPaneClosed.InvokeAsync(id);
+    }
+
+    private async Task PinPane(string? id)
+    {
+        if (id != null) await OnPanePin.InvokeAsync(id);
+    }
+
+    /// <summary>
+    /// Toggles a pane between floating and docked states.
+    /// When floating, the pane is removed from the tab strip and rendered as an overlay.
+    /// When docking, it re-enters the tab strip as the active tab.
+    /// </summary>
+    public async Task ToggleFloat(string? id)
+    {
+        if (id == null) return;
+
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == id);
+        if (pane == null) return;
+
+        pane.IsCurrentlyFloating = !pane.IsCurrentlyFloating;
+
+        if (!pane.IsCurrentlyFloating)
+        {
+            // Re-docking: make it the active tab
+            _activeId = id;
+        }
+        else
+        {
+            // Floating: select next docked pane as active
+            var nextDocked = _dockedPanes.FirstOrDefault();
+            _activeId = nextDocked?.Id ?? nextDocked?.Title;
+        }
+
+        await OnPaneFloat.InvokeAsync(id);
+        await OnLayoutChanged.InvokeAsync();
+        StateHasChanged();
+    }
+
+    private async Task CloseFloatingPane(string? id)
+    {
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == id);
+        if (pane != null)
+        {
+            pane.IsCurrentlyFloating = false;
+            await UnregisterPane(pane);
+        }
+        if (id != null) await OnPaneClosed.InvokeAsync(id);
+    }
+
+    // ── Drag-and-drop tab reordering ──────���──────────────────────────
+
+    private void OnTabDragStart(string paneId)
+    {
+        _dragSourcePaneId = paneId;
+    }
+
+    private void OnTabDragOver(string paneId)
+    {
+        if (_dragSourcePaneId != null && _dragSourcePaneId != paneId)
+        {
+            _dragTargetPaneId = paneId;
+        }
+    }
+
+    private void OnTabDragLeave(string paneId)
+    {
+        if (_dragTargetPaneId == paneId)
+        {
+            _dragTargetPaneId = null;
+        }
+    }
+
+    private async Task OnTabDrop()
+    {
+        if (_dragSourcePaneId == null || _dragTargetPaneId == null)
+        {
+            ResetDragState();
+            return;
+        }
+
+        var sourcePane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == _dragSourcePaneId);
+        var targetPane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == _dragTargetPaneId);
+
+        if (sourcePane != null && targetPane != null && sourcePane != targetPane)
+        {
+            if (sourcePane.TabGroupId != targetPane.TabGroupId)
+            {
+                // Cross-pane move: move source pane into target's tab group
+                var sourceGroupId = sourcePane.TabGroupId;
+                var targetGroupId = targetPane.TabGroupId;
+                sourcePane.SetTabGroupId(targetGroupId);
+
+                // Activate the moved pane in its new group
+                _activeId = _dragSourcePaneId;
+
+                await OnPaneMoved.InvokeAsync(new DockPaneMoveEventArgs
+                {
+                    PaneId = _dragSourcePaneId,
+                    SourceGroupId = sourceGroupId,
+                    TargetGroupId = targetGroupId
+                });
+                await OnLayoutChanged.InvokeAsync();
+            }
+            else
+            {
+                // Same-group reorder
+                var sourceIndex = _panes.IndexOf(sourcePane);
+                var targetIndex = _panes.IndexOf(targetPane);
+                _panes.RemoveAt(sourceIndex);
+                _panes.Insert(targetIndex, sourcePane);
+
+                await OnTabReordered.InvokeAsync(new DockTabReorderEventArgs
+                {
+                    TabGroupId = sourcePane.TabGroupId,
+                    PaneId = _dragSourcePaneId,
+                    OldIndex = sourceIndex,
+                    NewIndex = targetIndex
+                });
+                await OnLayoutChanged.InvokeAsync();
+            }
+        }
+
+        ResetDragState();
+        StateHasChanged();
+    }
+
+    private void OnTabDragEnd()
+    {
+        ResetDragState();
+    }
+
+    private void ResetDragState()
+    {
+        _dragSourcePaneId = null;
+        _dragTargetPaneId = null;
+    }
+
+    // ── Floating pane drag-move ───────────────────────────────────────
+
+    private static double ParsePx(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return 0;
+        var trimmed = value.Trim();
+        if (trimmed.EndsWith("px", StringComparison.OrdinalIgnoreCase))
+            trimmed = trimmed[..^2];
+        return double.TryParse(trimmed, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out var result) ? result : 0;
+    }
+
+    private void OnFloatingPaneTitleBarMouseDown(MouseEventArgs e, string paneId)
+    {
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == paneId);
+        if (pane == null) return;
+
+        _isDragging = true;
+        _floatingDragPaneId = paneId;
+        _dragStartTop = ParsePx(pane.RuntimeTop);
+        _dragStartLeft = ParsePx(pane.RuntimeLeft);
+        _dragOffsetX = e.ClientX;
+        _dragOffsetY = e.ClientY;
+    }
+
+    private void OnOverlayMouseMove(MouseEventArgs e)
+    {
+        if (_isDragging)
+        {
+            var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == _floatingDragPaneId);
+            if (pane == null) return;
+
+            var newTop = _dragStartTop + (e.ClientY - _dragOffsetY);
+            var newLeft = _dragStartLeft + (e.ClientX - _dragOffsetX);
+
+            pane.RuntimeTop = $"{Math.Max(0, newTop)}px";
+            pane.RuntimeLeft = $"{Math.Max(0, newLeft)}px";
+        }
+        else if (_isResizing)
+        {
+            HandleResizeMove(e);
+        }
+    }
+
+    private void OnOverlayMouseUp(MouseEventArgs e)
+    {
+        _isDragging = false;
+        _isResizing = false;
+        _floatingDragPaneId = null;
+        _resizeDirection = null;
+    }
+
+    // ── Floating pane resize ──────────────────────────────────────────
+
+    private void OnResizeMouseDown(MouseEventArgs e, string paneId, string direction)
+    {
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == paneId);
+        if (pane == null) return;
+
+        _isResizing = true;
+        _floatingDragPaneId = paneId;
+        _resizeDirection = direction;
+        _resizeStartMouseX = e.ClientX;
+        _resizeStartMouseY = e.ClientY;
+        _resizeStartTop = ParsePx(pane.RuntimeTop);
+        _resizeStartLeft = ParsePx(pane.RuntimeLeft);
+        _resizeStartWidth = ParsePx(pane.RuntimeWidth);
+        _resizeStartHeight = ParsePx(pane.RuntimeHeight);
+    }
+
+    private void HandleResizeMove(MouseEventArgs e)
+    {
+        var pane = _panes.FirstOrDefault(p => (p.Id ?? p.Title) == _floatingDragPaneId);
+        if (pane == null || _resizeDirection == null) return;
+
+        var dx = e.ClientX - _resizeStartMouseX;
+        var dy = e.ClientY - _resizeStartMouseY;
+        var minW = ParsePx(pane.MinWidth);
+        var minH = ParsePx(pane.MinHeight);
+        if (minW <= 0) minW = 100;
+        if (minH <= 0) minH = 100;
+
+        var newTop = _resizeStartTop;
+        var newLeft = _resizeStartLeft;
+        var newWidth = _resizeStartWidth;
+        var newHeight = _resizeStartHeight;
+
+        if (_resizeDirection.Contains('e'))
+            newWidth = Math.Max(minW, _resizeStartWidth + dx);
+        if (_resizeDirection.Contains('w'))
+        {
+            newWidth = Math.Max(minW, _resizeStartWidth - dx);
+            newLeft = _resizeStartLeft + (_resizeStartWidth - newWidth);
+        }
+        if (_resizeDirection.Contains('s'))
+            newHeight = Math.Max(minH, _resizeStartHeight + dy);
+        if (_resizeDirection.Contains('n'))
+        {
+            newHeight = Math.Max(minH, _resizeStartHeight - dy);
+            newTop = _resizeStartTop + (_resizeStartHeight - newHeight);
+        }
+
+        pane.RuntimeTop = $"{newTop}px";
+        pane.RuntimeLeft = $"{newLeft}px";
+        pane.RuntimeWidth = $"{newWidth}px";
+        pane.RuntimeHeight = $"{newHeight}px";
+    }
+}

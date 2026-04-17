@@ -1,0 +1,68 @@
+@inherits SunfishComponentBase
+
+@* Content is rendered by the parent SunfishSplitter, not directly here *@
+
+@code {
+    [CascadingParameter] private SunfishSplitter? ParentSplitter { get; set; }
+
+    /// <summary>Initial size of this pane (CSS value, e.g. "50%", "300px").</summary>
+    [Parameter] public string? Size { get; set; }
+
+    /// <summary>Minimum size constraint (CSS value).</summary>
+    [Parameter] public string? Min { get; set; }
+
+    /// <summary>Maximum size constraint (CSS value).</summary>
+    [Parameter] public string? Max { get; set; }
+
+    /// <summary>Whether this pane is collapsed.</summary>
+    [Parameter] public bool Collapsed { get; set; }
+
+    /// <summary>Whether this pane is collapsible.</summary>
+    [Parameter] public bool Collapsible { get; set; } = true;
+
+    /// <summary>Whether this pane is resizable.</summary>
+    [Parameter] public bool Resizable { get; set; } = true;
+
+    /// <summary>Pane content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // Internal state managed by the parent SunfishSplitter to avoid BL0005 warnings.
+    // These override the [Parameter] values when set by the parent.
+    private string? _internalSize;
+    private bool? _internalCollapsed;
+    private string? _prevSize;
+    private bool _prevCollapsed;
+
+    internal string? EffectiveSize => _internalSize ?? Size;
+    internal bool EffectiveCollapsed => _internalCollapsed ?? Collapsed;
+
+    internal void SetSize(string? size) => _internalSize = size;
+    internal void SetCollapsed(bool collapsed) => _internalCollapsed = collapsed;
+
+    protected override void OnParametersSet()
+    {
+        // Only reset internal state when the parameter value actually changed,
+        // so that drag-applied sizes are not discarded on re-render.
+        if (Size != _prevSize)
+        {
+            _internalSize = null;
+            _prevSize = Size;
+        }
+        if (Collapsed != _prevCollapsed)
+        {
+            _internalCollapsed = null;
+            _prevCollapsed = Collapsed;
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ParentSplitter?.RegisterPane(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) ParentSplitter?.UnregisterPane(this);
+        base.Dispose(disposing);
+    }
+}

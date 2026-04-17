@@ -1,0 +1,435 @@
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@inherits SunfishComponentBase
+
+@{
+    var isVertical = TabPosition == TabPosition.Left || TabPosition == TabPosition.Right;
+    var tabsClass  = CombineClasses(CssProvider.TabsClass(TabPosition, TabAlignment, Size));
+    var dimensionStyle = StyleBuilder.Clear()
+        .AddStyle("width",  Width!,  !string.IsNullOrEmpty(Width))
+        .AddStyle("height", Height!, !string.IsNullOrEmpty(Height))
+        .Build();
+    var rootStyle = CombineStyles(dimensionStyle);
+
+    var visibleTabs = _tabs.Where(t => t.Visible).ToList();
+    var isMenuOverflow = OverflowMode == TabStripOverflowMode.Menu;
+    var maxVisible = MaxVisibleTabs.HasValue && MaxVisibleTabs.Value >= 0
+        ? MaxVisibleTabs.Value
+        : (isMenuOverflow ? int.MaxValue : int.MaxValue);
+}
+
+<div class="@tabsClass" style="@rootStyle" @attributes="AdditionalAttributes">
+    @if (TabPosition == TabPosition.Bottom)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    }
+
+    <div role="tablist"
+         class="sf-tabs__list"
+         aria-orientation="@(isVertical ? "vertical" : "horizontal")">
+
+        @{
+            var visibleIndex = 0;
+        }
+        @for (var i = 0; i < _tabs.Count; i++)
+        {
+            var index = i;
+            var tab   = _tabs[i];
+
+            if (!tab.Visible) continue;
+
+            @* When Menu overflow is active and MaxVisibleTabs is set, hide overflow tabs *@
+            if (isMenuOverflow && MaxVisibleTabs.HasValue && visibleIndex >= MaxVisibleTabs.Value)
+            {
+                visibleIndex++;
+                continue;
+            }
+
+            var tabId   = tab.GetTabId();
+            var panelId = tab.GetPanelId();
+            var isActive = IsTabActive(tab);
+            var currentVisibleIndex = visibleIndex;
+
+            <button role="tab"
+                    id="@tabId"
+                    class="@CssProvider.TabClass(isActive, tab.Disabled)"
+                    aria-selected="@isActive.ToString().ToLower()"
+                    aria-controls="@panelId"
+                    disabled="@tab.Disabled"
+                    @onclick="() => SetActiveAsync(currentVisibleIndex, tab)">
+                @if (tab.HeaderTemplate != null)
+                {
+                    @tab.HeaderTemplate
+                }
+                else
+                {
+                    @tab.Title
+                }
+                @if (tab.Closeable)
+                {
+                    <button type="button"
+                            class="sf-tab__close"
+                            aria-label="Close @tab.Title"
+                            @onclick:stopPropagation="true"
+                            @onclick="() => CloseTabAsync(tab)">&#x2715;</button>
+                }
+            </button>
+
+            visibleIndex++;
+        }
+
+        @* Overflow menu button when OverflowMode is Menu *@
+        @if (isMenuOverflow)
+        {
+            var overflowTabs = MaxVisibleTabs.HasValue
+                ? visibleTabs.Skip(MaxVisibleTabs.Value).ToList()
+                : visibleTabs;
+            var hasOverflow = MaxVisibleTabs.HasValue
+                ? overflowTabs.Any()
+                : visibleTabs.Count > 0;
+
+            @if (hasOverflow)
+            {
+                <div style="position: relative; display: inline-block;">
+                    <button type="button"
+                            class="sf-tabs__overflow-btn"
+                            aria-haspopup="true"
+                            aria-expanded="@_overflowMenuOpen.ToString().ToLower()"
+                            @onclick="ToggleOverflowMenu"
+                            @onclick:stopPropagation="true">
+                        @OverflowButtonText
+                    </button>
+
+                    @if (_overflowMenuOpen)
+                    {
+                        <div class="sf-tabs__overflow-menu" role="menu">
+                            @foreach (var tab in (MaxVisibleTabs.HasValue ? overflowTabs : visibleTabs))
+                            {
+                                var overflowTab = tab;
+                                var isActive = IsTabActive(overflowTab);
+                                var ovi = visibleTabs.IndexOf(overflowTab);
+                                <button type="button"
+                                        role="menuitem"
+                                        class="@CssProvider.TabClass(isActive, overflowTab.Disabled)"
+                                        disabled="@overflowTab.Disabled"
+                                        @onclick="() => SelectOverflowTab(ovi, overflowTab)">
+                                    @(overflowTab.Title)
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    @if (TabStripSuffixTemplate != null)
+    {
+        <div class="sf-tabs__suffix">
+            @TabStripSuffixTemplate
+        </div>
+    }
+
+    @if (TabPosition != TabPosition.Bottom)
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    }
+</div>
+
+@code {
+    private readonly List<TabStripTab> _tabs = [];
+    private bool _stateInitFired;
+    private bool _overflowMenuOpen;
+
+    // -------------------------------------------------------------------------
+    // Active tab
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// The index of the currently active tab. Supports two-way binding.
+    /// </summary>
+    /// <remarks>Obsolete — use <see cref="ActiveTabId"/> instead.</remarks>
+    [Obsolete("Use ActiveTabId with ActiveTabIdChanged instead.")]
+    [Parameter] public int ActiveTabIndex { get; set; }
+
+    /// <summary>Fires when the active tab index changes.</summary>
+    /// <remarks>Obsolete — use <see cref="ActiveTabIdChanged"/> instead.</remarks>
+    [Obsolete("Use ActiveTabIdChanged instead.")]
+    [Parameter] public EventCallback<int> ActiveTabIndexChanged { get; set; }
+
+    /// <summary>
+    /// The ID of the currently active tab. If not set, the first tab is active.
+    /// Supports two-way binding.
+    /// </summary>
+    [Parameter] public string? ActiveTabId { get; set; }
+
+    /// <summary>Fires when the active tab ID changes.</summary>
+    [Parameter] public EventCallback<string> ActiveTabIdChanged { get; set; }
+
+    // -------------------------------------------------------------------------
+    // Tab behaviour
+    // -------------------------------------------------------------------------
+
+    /// <summary>Controls the position of the tab list relative to the content.</summary>
+    [Parameter] public TabPosition TabPosition { get; set; } = TabPosition.Top;
+
+    /// <summary>Controls the alignment of the tabs within the tab list.</summary>
+    [Parameter] public TabAlignment TabAlignment { get; set; } = TabAlignment.Start;
+
+    /// <summary>Controls the size of the tabs.</summary>
+    [Parameter] public TabSize Size { get; set; } = TabSize.Medium;
+
+    /// <summary>
+    /// Whether to keep inactive tab content in the DOM (hidden with CSS)
+    /// instead of removing it.
+    /// </summary>
+    [Parameter] public bool PersistTabContent { get; set; }
+
+    /// <summary>Whether users can reorder tabs via drag-and-drop.</summary>
+    [Parameter] public bool EnableTabReorder { get; set; }
+
+    /// <summary>
+    /// Controls tab overflow behaviour when tabs exceed available space.
+    /// </summary>
+    [Parameter] public TabStripOverflowMode OverflowMode { get; set; } = TabStripOverflowMode.None;
+
+    /// <summary>
+    /// When <see cref="OverflowMode"/> is <see cref="TabStripOverflowMode.Menu"/>,
+    /// specifies the maximum number of tabs visible in the tab bar.
+    /// Tabs beyond this count are shown in the overflow dropdown.
+    /// When null, all tabs are listed in the dropdown menu.
+    /// </summary>
+    [Parameter] public int? MaxVisibleTabs { get; set; }
+
+    /// <summary>
+    /// The text displayed on the overflow menu button. Defaults to a down-pointing triangle.
+    /// </summary>
+    [Parameter] public string OverflowButtonText { get; set; } = "\u25BE";
+
+    /// <summary>
+    /// Obsolete. Use <c>OverflowMode="@TabStripOverflowMode.Scroll"</c> instead.
+    /// </summary>
+    [Obsolete("Use OverflowMode=\"@TabStripOverflowMode.Scroll\" instead.")]
+    [Parameter] public bool Scrollable { get; set; }
+
+    /// <summary>Position of scroll buttons when <see cref="OverflowMode"/> is Scroll.</summary>
+    [Parameter] public TabStripScrollButtonsPosition ScrollButtonsPosition { get; set; } = TabStripScrollButtonsPosition.Split;
+
+    /// <summary>Visibility of scroll buttons when <see cref="OverflowMode"/> is Scroll.</summary>
+    [Parameter] public TabStripScrollButtonsVisibility ScrollButtonsVisibility { get; set; } = TabStripScrollButtonsVisibility.Visible;
+
+    // -------------------------------------------------------------------------
+    // Dimensions
+    // -------------------------------------------------------------------------
+
+    /// <summary>The width of the component (e.g. "300px", "100%").</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>The height of the component (e.g. "400px", "100%").</summary>
+    [Parameter] public string? Height { get; set; }
+
+    // -------------------------------------------------------------------------
+    // Templates
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Content of the TabStrip, typically <see cref="TabStripTab"/> components.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Rendered after the tab list inside the TabStrip container. Use this to add
+    /// custom content such as action buttons. When using
+    /// <see cref="TabStripOverflowMode.Menu"/>, include the overflow menu component
+    /// inside this template.
+    /// </summary>
+    [Parameter] public RenderFragment? TabStripSuffixTemplate { get; set; }
+
+    // -------------------------------------------------------------------------
+    // Events
+    // -------------------------------------------------------------------------
+
+    /// <summary>
+    /// Fires during <c>OnAfterRenderAsync</c> on first render when the TabStrip
+    /// initialises its state. Use this to inspect or restore the initial state.
+    /// </summary>
+    [Parameter] public EventCallback<TabStripStateEventArgs> OnStateInit { get; set; }
+
+    /// <summary>
+    /// Fires whenever the TabStrip state changes (active tab, visibility, pin state,
+    /// or tab order).
+    /// </summary>
+    [Parameter] public EventCallback<TabStripStateEventArgs> OnStateChanged { get; set; }
+
+    /// <summary>
+    /// Fires when the user completes a drag-and-drop tab reorder.
+    /// Requires <see cref="EnableTabReorder"/> to be <c>true</c>.
+    /// </summary>
+    [Parameter] public EventCallback<TabStripTabReorderEventArgs> OnTabReorder { get; set; }
+
+    // -------------------------------------------------------------------------
+    // Internal surface used by TabStripTab
+    // -------------------------------------------------------------------------
+
+    internal bool PersistContent => PersistTabContent;
+
+    internal void RegisterTab(TabStripTab tab)
+    {
+        if (!_tabs.Contains(tab))
+        {
+            _tabs.Add(tab);
+            StateHasChanged();
+        }
+    }
+
+    internal void UnregisterTab(TabStripTab tab)
+    {
+        _tabs.Remove(tab);
+        StateHasChanged();
+    }
+
+    internal bool IsTabActive(TabStripTab tab)
+    {
+        if (!string.IsNullOrEmpty(ActiveTabId))
+            return tab.GetEffectiveId() == ActiveTabId;
+
+#pragma warning disable CS0618
+        var visibleIndex = 0;
+        foreach (var t in _tabs)
+        {
+            if (!t.Visible) continue;
+            if (t == tab) return visibleIndex == ActiveTabIndex;
+            visibleIndex++;
+        }
+#pragma warning restore CS0618
+        return false;
+    }
+
+    // -------------------------------------------------------------------------
+    // Public methods (accessible via @ref)
+    // -------------------------------------------------------------------------
+
+    /// <summary>Returns the current state of the TabStrip.</summary>
+    public TabStripState GetState()
+    {
+        return new TabStripState
+        {
+            ActiveTabId = ActiveTabId ?? GetFirstVisibleId(),
+            TabStates   = _tabs.Select(t => new TabStripTabState
+            {
+                Id      = t.GetEffectiveId(),
+                Visible = t.Visible,
+                Pinned  = t.Pinned
+            }).ToList()
+        };
+    }
+
+    /// <summary>Applies the supplied state to the TabStrip.</summary>
+    public async Task SetState(TabStripState state)
+    {
+        ActiveTabId = state.ActiveTabId;
+        await ActiveTabIdChanged.InvokeAsync(ActiveTabId);
+
+        // Reorder _tabs to match the order in state.TabStates
+        var ordered = state.TabStates
+            .Select(ts => _tabs.FirstOrDefault(t => t.GetEffectiveId() == ts.Id))
+            .Where(t => t is not null)
+            .Cast<TabStripTab>()
+            .ToList();
+
+        // Apply visible/pinned from state
+        foreach (var ts in state.TabStates)
+        {
+            var tab = _tabs.FirstOrDefault(t => t.GetEffectiveId() == ts.Id);
+            if (tab is null) continue;
+            if (tab.Visible != ts.Visible)  await tab.CloseAsync();
+            if (tab.Pinned  != ts.Pinned)   await tab.SetPinnedAsync(ts.Pinned);
+        }
+
+        _tabs.Clear();
+        _tabs.AddRange(ordered);
+
+        await NotifyStateChangedAsync();
+        StateHasChanged();
+    }
+
+    /// <summary>Forces the component to re-render.</summary>
+    public void Refresh() => StateHasChanged();
+
+    // -------------------------------------------------------------------------
+    // Lifecycle
+    // -------------------------------------------------------------------------
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_stateInitFired)
+        {
+            _stateInitFired = true;
+            if (OnStateInit.HasDelegate)
+            {
+                var args = new TabStripStateEventArgs { TabStripState = GetState() };
+                await OnStateInit.InvokeAsync(args);
+
+                // Allow the handler to modify state (e.g. restore active tab)
+                if (args.TabStripState.ActiveTabId != ActiveTabId)
+                {
+                    ActiveTabId = args.TabStripState.ActiveTabId;
+                    StateHasChanged();
+                }
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private async Task SetActiveAsync(int visibleIndex, TabStripTab tab)
+    {
+        if (tab.Disabled) return;
+
+        if (!string.IsNullOrEmpty(ActiveTabId) || ActiveTabIdChanged.HasDelegate)
+        {
+            ActiveTabId = tab.GetEffectiveId();
+            await ActiveTabIdChanged.InvokeAsync(ActiveTabId);
+        }
+
+#pragma warning disable CS0618
+        ActiveTabIndex = visibleIndex;
+        await ActiveTabIndexChanged.InvokeAsync(visibleIndex);
+#pragma warning restore CS0618
+
+        await NotifyStateChangedAsync();
+    }
+
+    private async Task CloseTabAsync(TabStripTab tab)
+    {
+        await tab.CloseAsync();
+        await NotifyStateChangedAsync();
+        StateHasChanged();
+    }
+
+    private void ToggleOverflowMenu()
+    {
+        _overflowMenuOpen = !_overflowMenuOpen;
+    }
+
+    private async Task SelectOverflowTab(int visibleIndex, TabStripTab tab)
+    {
+        _overflowMenuOpen = false;
+        await SetActiveAsync(visibleIndex, tab);
+    }
+
+    private async Task NotifyStateChangedAsync()
+    {
+        if (OnStateChanged.HasDelegate)
+            await OnStateChanged.InvokeAsync(new TabStripStateEventArgs { TabStripState = GetState() });
+    }
+
+    private string GetFirstVisibleId() =>
+        _tabs.FirstOrDefault(t => t.Visible)?.GetEffectiveId() ?? string.Empty;
+}
