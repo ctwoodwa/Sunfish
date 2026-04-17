@@ -14,17 +14,22 @@
 
 This migration spans 9 independent subsystems. This document is the **master strategy plan**. Each phase should be executed as a separate ICM pipeline run with its own implementation plan.
 
-| Phase | Subsystem | ICM Variant | Blocked by |
-|-------|-----------|-------------|------------|
-| 1 | Foundation package | sunfish-api-change | — |
-| 2 | UI Core contracts | sunfish-api-change | Phase 1 |
-| 3 | Blazor adapter (components + providers + icons) | sunfish-feature-change | Phase 2 |
-| 4 | App Shell | sunfish-feature-change | Phase 3 |
-| 5 | Domain blocks (forms, tasks, scheduling, assets) | sunfish-feature-change × 4 | Phase 3 |
-| 6 | compat-telerik | sunfish-feature-change | Phase 3 |
-| 7 | Kitchen-sink demo | sunfish-feature-change | Phase 3 |
-| 8 | Documentation migration | sunfish-docs-change | Phase 7 |
-| 9 | Bridge Solution Accelerator | sunfish-feature-change | Phase 3 |
+| Phase | Subsystem | Status | Plan doc |
+|-------|-----------|--------|----------|
+| 1 | Foundation package (117 files, 3 tests) | ✅ Complete (local branch, unpushed) | *(this doc, Tasks 1–8)* |
+| 2 | UI Core contracts (8 files, 13 tests) | ✅ Merged to main (PR #7) | `2026-04-16-sunfish-phase2-ui-core.md` |
+| 3a | Blazor adapter infrastructure (6 tests) | ✅ Complete, PR open | `2026-04-16-sunfish-phase3a-blazor-infra.md` |
+| 3b | Blazor component migration (329 files, 29 adapter tests) | ✅ Complete, pushed | *plan doc lost during branch transitions — regenerate if needed* |
+| 3c | Providers (FluentUI/Bootstrap/Material) + SCSS/JS rename | 📄 Planned | `2026-04-17-sunfish-phase3c-providers-scss.md` |
+| 3d | Icon packages (Tabler + legacy `[Obsolete]`) | 📄 Planned | `2026-04-17-sunfish-phase3d-icons.md` |
+| 4 | App Shell (15 files) | 📄 Planned | `2026-04-17-sunfish-phase4-app-shell.md` |
+| 5 | Domain blocks (forms, tasks, scheduling, assets — all greenfield) | 📄 Planned | `2026-04-17-sunfish-phase5-domain-blocks.md` |
+| 6 | compat-telerik (12 wrappers, policy-gated) | 📄 Planned | `2026-04-17-sunfish-phase6-compat-telerik.md` |
+| 7 | Kitchen-sink demo (~160 pages) | 📄 Planned | `2026-04-17-sunfish-phase7-kitchen-sink.md` |
+| 8 | Documentation migration (107 specs, DocFX) | 📄 Planned | `2026-04-17-sunfish-phase8-docs.md` |
+| 9 | Bridge Solution Accelerator (PmDemo rebrand) | 📄 Planned | `2026-04-17-sunfish-phase9-bridge-accelerator.md` |
+
+**Critical path through complete:** Phase 1 → 2 → 3a → 3b done. 3c and 3d unlock visual completeness. Phases 4–9 depend only on 3 (any sub-phase that provides the needed surface).
 
 **Critical path:** Phase 1 → Phase 2 → Phase 3. All other phases depend only on Phase 3.
 Phase 9 can run in parallel with Phases 4–8 once Phase 3 is complete.
