@@ -1,4 +1,4 @@
-using Sunfish.Components.Blazor.Components.DataGrid.Sizing;
+// using Sunfish.Components.Blazor.Components.DataGrid.Sizing; — removed: Sizing types now flat in DataDisplay namespace
 using Sunfish.Foundation.Base;
 using Sunfish.Components.Blazor.Base;
 using Sunfish.Foundation.BusinessLogic.Enums;

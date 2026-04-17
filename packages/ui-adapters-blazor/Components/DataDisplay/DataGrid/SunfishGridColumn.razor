@@ -1,0 +1,100 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@typeparam TItem
+@inherits SunfishComponentBase
+
+@code {
+    [CascadingParameter] private SunfishDataGrid<TItem>? ParentGrid { get; set; }
+
+    /// <summary>The property name on TItem to bind to this column.</summary>
+    [Parameter] public string Field { get; set; } = "";
+
+    /// <summary>Header text. Defaults to Field if not set.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>CSS width for the column (e.g. "200px", "25%").</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Runtime width set by column resize interop. Takes precedence over the Width parameter.</summary>
+    internal string? RuntimeWidth { get; set; }
+
+    /// <summary>Gets the effective width (runtime override or parameter value).</summary>
+    internal string? EffectiveWidth => RuntimeWidth ?? Width;
+
+    /// <summary>Whether this column is sortable. Defaults to true.</summary>
+    [Parameter] public bool Sortable { get; set; } = true;
+
+    /// <summary>Whether this column is filterable. Defaults to true.</summary>
+    [Parameter] public bool Filterable { get; set; } = true;
+
+    /// <summary>Whether this column is visible. Defaults to true.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>Custom cell template. Receives the row item as context.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    /// <summary>Custom header template.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Custom editor template for inline/popup editing. Receives the row item as context.</summary>
+    [Parameter] public RenderFragment<TItem>? EditorTemplate { get; set; }
+
+    /// <summary>Custom footer template for column aggregates.</summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>Text alignment for the column (e.g. "left", "center", "right").</summary>
+    [Parameter] public string? TextAlign { get; set; }
+
+    /// <summary>Format string for displaying the cell value (e.g. "C2", "yyyy-MM-dd").</summary>
+    [Parameter] public string? Format { get; set; }
+
+    /// <summary>Callback for per-cell render customization (CSS classes, styles).</summary>
+    [Parameter] public Action<GridCellRenderEventArgs<TItem>>? OnCellRender { get; set; }
+
+    /// <summary>Whether this column is editable in edit mode. Defaults to true.</summary>
+    [Parameter] public bool Editable { get; set; } = true;
+
+    /// <summary>Whether this column can be used for grouping. Defaults to true.</summary>
+    [Parameter] public bool Groupable { get; set; } = true;
+
+    /// <summary>When true, the column is frozen and sticks during horizontal scroll.</summary>
+    [Parameter] public bool Locked { get; set; }
+
+    /// <summary>When Locked=true, the side to pin to. Default: Start (left in LTR).</summary>
+    [Parameter] public GridColumnFrozenPosition FrozenPosition { get; set; } = GridColumnFrozenPosition.Start;
+
+    /// <summary>Composite format string for display (e.g. "{0:C2}"). Takes precedence over Format.</summary>
+    [Parameter] public string? DisplayFormat { get; set; }
+
+    /// <summary>Gets the display title for the column header.</summary>
+    internal string DisplayTitle => Title ?? Field;
+
+    /// <summary>Gets the value of this column's field from the given item.</summary>
+    internal object? GetValue(TItem item)
+    {
+        if (item is null || string.IsNullOrEmpty(Field)) return null;
+        return typeof(TItem).GetProperty(Field)?.GetValue(item);
+    }
+
+    /// <summary>Gets the formatted display string for the given item.</summary>
+    internal string GetDisplayValue(TItem item)
+    {
+        var value = GetValue(item);
+        if (value is null) return string.Empty;
+        if (!string.IsNullOrEmpty(DisplayFormat) && value is IFormattable)
+            return string.Format(null, DisplayFormat, value);
+        if (!string.IsNullOrEmpty(Format) && value is IFormattable formattable)
+            return formattable.ToString(Format, null);
+        return value.ToString() ?? string.Empty;
+    }
+
+    protected override void OnInitialized()
+    {
+        ParentGrid?.RegisterColumn(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) ParentGrid?.UnregisterColumn(this);
+        base.Dispose(disposing);
+    }
+}

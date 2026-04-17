@@ -1,0 +1,17 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Components.Blazor.Components.DataDisplay.Map
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+@implements IMapLayerHost
+
+<div class="@CombineClasses("mar-map")"
+     style="@CombineStyles($"width:{Width};height:{Height}")"
+     @attributes="AdditionalAttributes">
+
+    @* Layer definitions (hidden, registers via CascadingValue) *@
+    <CascadingValue Value="(IMapLayerHost)this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+
+    <div @ref="_containerRef" id="@_containerId" style="width:100%;height:100%;"></div>
+</div>

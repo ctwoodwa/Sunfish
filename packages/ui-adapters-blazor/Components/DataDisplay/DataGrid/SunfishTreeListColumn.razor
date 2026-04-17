@@ -1,0 +1,23 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishColumnBase
+
+@code {
+    [CascadingParameter] private IColumnHost? ParentHost { get; set; }
+
+    /// <summary>Custom cell template. Receives the row item as context.</summary>
+    [Parameter] public RenderFragment<object>? Template { get; set; }
+
+    /// <summary>Custom header template.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentHost?.RegisterColumn(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) ParentHost?.UnregisterColumn(this);
+        base.Dispose(disposing);
+    }
+}

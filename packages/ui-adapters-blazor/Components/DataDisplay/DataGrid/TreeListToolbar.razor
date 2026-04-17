@@ -1,0 +1,15 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-treelist__toolbar")"
+     style="@CombineStyles()"
+     role="toolbar"
+     aria-label="TreeList toolbar"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>Toolbar content. Can include TreeListToolbarButton or any custom content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
