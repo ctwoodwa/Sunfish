@@ -1,0 +1,24 @@
+@* ChartCategoryAxis — configures the category axis for cartesian charts. *@
+
+@code {
+    [CascadingParameter] internal SunfishChart? ParentChart { get; set; }
+
+    /// <summary>Explicit category values for the axis.</summary>
+    [Parameter] public string[]? Categories { get; set; }
+
+    /// <summary>Axis name (for multi-axis support).</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Axis title text.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Color of the axis line and labels.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentChart is null)
+            throw new InvalidOperationException("ChartCategoryAxis must be placed inside a SunfishChart.");
+        ParentChart.SetCategoryAxis(this);
+    }
+}
