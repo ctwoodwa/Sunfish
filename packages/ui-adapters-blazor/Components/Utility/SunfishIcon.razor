@@ -1,0 +1,70 @@
+@inherits SunfishComponentBase
+
+<span class="@CombineClasses(CssProvider.IconClass(Name ?? string.Empty, Size, Flip, ThemeColor))"
+      style="@CombineStyles()"
+      role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")"
+      aria-label="@AriaLabel"
+      aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)"
+      @attributes="AdditionalAttributes">
+    @if (Icon != null)
+    {
+        @Icon
+    }
+    else if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else if (!string.IsNullOrEmpty(Name))
+    {
+        @IconProvider.GetIcon(Name, Size)
+    }
+</span>
+
+@code {
+    /// <summary>
+    /// The name of a predefined icon from the icon set.
+    /// When set, the icon provider renders the corresponding SVG.
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>
+    /// A predefined icon render fragment. Takes precedence over Name and ChildContent.
+    /// Equivalent to Telerik's ISvgIcon-based Icon parameter.
+    /// </summary>
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>
+    /// Custom SVG markup to render as the icon content.
+    /// Used when neither Name nor Icon is provided.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The size of the icon. Default is Medium.
+    /// </summary>
+    [Parameter] public IconSize Size { get; set; } = IconSize.Medium;
+
+    /// <summary>
+    /// The flip direction of the icon. Default is None.
+    /// </summary>
+    [Parameter] public IconFlip Flip { get; set; } = IconFlip.None;
+
+    /// <summary>
+    /// The theme color of the icon. Default is Base (inherits current color).
+    /// </summary>
+    [Parameter] public IconThemeColor ThemeColor { get; set; } = IconThemeColor.Base;
+
+    /// <summary>
+    /// Accessible label for the icon. When set, role="img" is used instead of role="presentation".
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Icon == null && ChildContent == null && string.IsNullOrEmpty(Name))
+        {
+            throw new InvalidOperationException(
+                "SunfishIcon requires at least one of: Name, Icon, or ChildContent.");
+        }
+    }
+}
