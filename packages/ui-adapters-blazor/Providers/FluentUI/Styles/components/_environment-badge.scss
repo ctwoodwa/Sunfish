@@ -1,0 +1,41 @@
+// =============================================================================
+// Component: EnvironmentBadge
+// =============================================================================
+
+.sf-env-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: var(--sf-space-xxs) var(--sf-space-sm);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-xs);
+    font-weight: var(--sf-font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-radius: var(--sf-radius-full);
+    border: 1px solid transparent;
+}
+
+.sf-env-badge--development {
+    background: var(--sf-color-info-light);
+    color: var(--sf-color-info);
+    border-color: var(--sf-color-info);
+}
+
+.sf-env-badge--staging {
+    background: var(--sf-color-warning-light);
+    color: var(--sf-color-on-warning, #986400); // dark text for readability on warning-light
+    border-color: var(--sf-color-warning);
+}
+
+.sf-env-badge--production {
+    background: var(--sf-color-danger-light);
+    color: var(--sf-color-danger);
+    border-color: var(--sf-color-danger);
+}
+
+.sf-env-badge--local {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-secondary);
+    border-color: var(--sf-color-border);
+}

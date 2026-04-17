@@ -1,0 +1,32 @@
+// =============================================================================
+// Component: Tooltip
+// =============================================================================
+
+.sf-tooltip {
+    position: absolute;
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    background: var(--sf-color-on-background);
+    color: var(--sf-color-background);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-md);
+    white-space: nowrap;
+    z-index: var(--sf-z-tooltip);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+}
+
+.sf-tooltip-trigger:hover > .sf-tooltip {
+    opacity: 1;
+}
+
+.sf-tooltip--top { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: var(--sf-space-xs); }
+.sf-tooltip--bottom { top: 100%; left: 50%; transform: translateX(-50%); margin-top: var(--sf-space-xs); }
+.sf-tooltip--left { right: 100%; top: 50%; transform: translateY(-50%); margin-right: var(--sf-space-xs); }
+.sf-tooltip--right { left: 100%; top: 50%; transform: translateY(-50%); margin-left: var(--sf-space-xs); }
+
+// Phase 3 ShowOn variants — behavior handled by component JS/Blazor logic
+.sf-tooltip--show-click,
+.sf-tooltip--show-focus { }

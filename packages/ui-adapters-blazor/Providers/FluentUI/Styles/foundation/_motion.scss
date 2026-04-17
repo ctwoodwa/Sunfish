@@ -1,0 +1,11 @@
+// =============================================================================
+// Foundation: Motion
+// Transition/animation CSS custom properties
+// =============================================================================
+
+:root {
+    /* Transitions */
+    --sf-transition-fast: 120ms ease;
+    --sf-transition-normal: 200ms ease;
+    --sf-transition-slow: 300ms ease;
+}

@@ -1,0 +1,22 @@
+// =============================================================================
+// Component: Accordion
+// =============================================================================
+
+.sf-accordion {
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+}
+
+.sf-accordion-item {
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-accordion-item:last-child { border-bottom: none; }
+.sf-accordion-item--expanded { background: var(--sf-color-surface); }
+
+.sf-accordion-item__header { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: var(--sf-space-md) var(--sf-space-lg); background: none; border: none; cursor: pointer; font-family: var(--sf-font-family); font-size: var(--sf-font-size-base); font-weight: var(--sf-font-weight-semibold); text-align: left; color: var(--sf-color-on-background); }
+.sf-accordion-item__header:hover { background: var(--sf-color-surface); }
+.sf-accordion-item__chevron { transition: transform var(--sf-transition-fast); }
+.sf-accordion-item--expanded .sf-accordion-item__chevron { transform: rotate(180deg); }
+.sf-accordion-item__content { padding: 0 var(--sf-space-lg) var(--sf-space-lg); }

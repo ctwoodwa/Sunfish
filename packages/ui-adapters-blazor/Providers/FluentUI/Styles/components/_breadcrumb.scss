@@ -1,0 +1,38 @@
+// =============================================================================
+// Component: Breadcrumb
+// =============================================================================
+
+.sf-breadcrumb {
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-text-secondary);
+}
+
+.sf-breadcrumb ol {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: var(--sf-space-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sf-breadcrumb-item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    white-space: nowrap;
+}
+
+.sf-breadcrumb-item a {
+    color: var(--sf-color-primary);
+    text-decoration: none;
+}
+
+.sf-breadcrumb-item a:hover { text-decoration: underline; }
+
+// Phase 2 additions
+.sf-breadcrumb-item::before { content: '/'; color: var(--sf-color-text-secondary); }
+.sf-breadcrumb-item:first-child::before { content: none; }
+.sf-breadcrumb-item--active { color: var(--sf-color-on-background); font-weight: var(--sf-font-weight-semibold); }

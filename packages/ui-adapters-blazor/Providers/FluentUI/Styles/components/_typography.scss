@@ -1,0 +1,22 @@
+// =============================================================================
+// Component: Typography
+// =============================================================================
+
+.sf-typography {
+    font-family: var(--sf-font-family);
+    color: var(--sf-color-on-background);
+    margin: 0;
+}
+
+.sf-typography--h1 { font-size: 2.5rem; font-weight: var(--sf-font-weight-bold); line-height: 1.2; margin: 0 0 var(--sf-space-md); }
+.sf-typography--h2 { font-size: 2rem; font-weight: var(--sf-font-weight-bold); line-height: 1.25; margin: 0 0 var(--sf-space-md); }
+.sf-typography--h3 { font-size: 1.75rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.3; margin: 0 0 var(--sf-space-sm); }
+.sf-typography--h4 { font-size: 1.5rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.35; margin: 0 0 var(--sf-space-sm); }
+.sf-typography--h5 { font-size: 1.25rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.4; margin: 0 0 var(--sf-space-sm); }
+.sf-typography--h6 { font-size: 1rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.5; margin: 0 0 var(--sf-space-xs); }
+.sf-typography--subtitle1 { font-size: 1rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.5; color: var(--sf-color-text-secondary); margin: 0; }
+.sf-typography--subtitle2 { font-size: 0.875rem; font-weight: var(--sf-font-weight-semibold); line-height: 1.5; color: var(--sf-color-text-secondary); margin: 0; }
+.sf-typography--body1 { font-size: var(--sf-font-size-base); line-height: 1.5; margin: 0 0 var(--sf-space-sm); }
+.sf-typography--body2 { font-size: var(--sf-font-size-sm); line-height: 1.5; margin: 0 0 var(--sf-space-sm); }
+.sf-typography--caption { font-size: var(--sf-font-size-xs); line-height: 1.4; color: var(--sf-color-text-secondary); }
+.sf-typography--overline { font-size: var(--sf-font-size-xs); line-height: 1.4; text-transform: uppercase; letter-spacing: 0.08em; color: var(--sf-color-text-secondary); margin: 0; }

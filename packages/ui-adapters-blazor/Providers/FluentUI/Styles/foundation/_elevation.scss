@@ -1,0 +1,31 @@
+// =============================================================================
+// Foundation: Elevation
+// Shadow/elevation CSS custom properties + Fluent elevation shadows
+// =============================================================================
+
+:root {
+    /* Shadows */
+    --sf-shadow-sm: 0 1.6px 3.6px rgba(0, 0, 0, 0.132), 0 0.3px 0.9px rgba(0, 0, 0, 0.108);
+    --sf-shadow-md: 0 3.2px 7.2px rgba(0, 0, 0, 0.132), 0 0.6px 1.8px rgba(0, 0, 0, 0.108);
+    --sf-shadow-lg: 0 6.4px 14.4px rgba(0, 0, 0, 0.132), 0 1.2px 3.6px rgba(0, 0, 0, 0.108);
+    --sf-shadow-xl: 0 25.6px 57.6px rgba(0, 0, 0, 0.22), 0 4.8px 14.4px rgba(0, 0, 0, 0.18);
+
+    /* Fluent Elevation Shadows */
+    --elevation-shadow-card-rest: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+    --elevation-shadow-card-hover: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+    --elevation-shadow-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+    --elevation-shadow-flyout: 0 0 2px rgba(0, 0, 0, 0.2), 0 16px 32px rgba(0, 0, 0, 0.24);
+    --elevation-shadow-dialog: 0 0 2px rgba(0, 0, 0, 0.2), 0 64px 128px rgba(0, 0, 0, 0.24);
+
+    /* Fluent Focus */
+    --focus-stroke-outer: #000000;
+    --focus-stroke-inner: #ffffff;
+    --focus-stroke-width: 2;
+}
+
+[data-sf-theme="dark"] {
+    --sf-shadow-sm: 0 1.6px 3.6px rgba(0, 0, 0, 0.4), 0 0.3px 0.9px rgba(0, 0, 0, 0.32);
+    --sf-shadow-md: 0 3.2px 7.2px rgba(0, 0, 0, 0.4), 0 0.6px 1.8px rgba(0, 0, 0, 0.32);
+    --sf-shadow-lg: 0 6.4px 14.4px rgba(0, 0, 0, 0.4), 0 1.2px 3.6px rgba(0, 0, 0, 0.32);
+    --sf-shadow-xl: 0 25.6px 57.6px rgba(0, 0, 0, 0.55), 0 4.8px 14.4px rgba(0, 0, 0, 0.45);
+}

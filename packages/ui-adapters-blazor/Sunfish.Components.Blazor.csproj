@@ -10,6 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
+    <!-- Providers live in their own Razor class library projects under Providers/<Name>/ -->
+    <Compile Remove="Providers/**/*.cs" />
+    <Content Remove="Providers/**/*" />
+    <None Remove="Providers/**/*" />
+    <EmbeddedResource Remove="Providers/**/*" />
   </ItemGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />

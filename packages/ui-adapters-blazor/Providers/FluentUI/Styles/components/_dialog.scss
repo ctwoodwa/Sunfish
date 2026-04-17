@@ -1,0 +1,59 @@
+// =============================================================================
+// Component: Dialog
+// =============================================================================
+
+.sf-dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--sf-color-background);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-xl);
+    padding: var(--sf-space-xl);
+    min-width: 320px;
+    max-width: 600px;
+    z-index: var(--sf-z-modal);
+    animation: sf-fade-in var(--sf-transition-normal);
+}
+
+.sf-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--sf-color-overlay);
+    z-index: var(--sf-z-modal-overlay);
+    animation: sf-fade-in var(--sf-transition-fast);
+}
+
+// Dialog inner structure (Phase 3)
+.sf-dialog-title {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-md);
+    margin-bottom: var(--sf-space-lg);
+    font-size: var(--sf-font-size-lg);
+    font-weight: var(--sf-font-weight-semibold);
+}
+
+.sf-dialog-body { margin-bottom: var(--sf-space-xl); color: var(--sf-color-text-secondary); }
+.sf-dialog-body p { margin: 0; }
+
+.sf-dialog-actions { display: flex; justify-content: flex-end; gap: var(--sf-space-sm); }
+
+// Draggable dialog (Phase 3)
+.sf-dialog--draggable {
+    .sf-dialog-header { cursor: grab; user-select: none; }
+    .sf-dialog-header:active { cursor: grabbing; }
+}
+
+/* === Dialog Size Variants === */
+
+.sf-dialog--small  .sf-dialog__panel { max-width: var(--sf-dialog-sm-max-width, 400px); }
+.sf-dialog--medium .sf-dialog__panel { max-width: var(--sf-dialog-md-max-width, 600px); } // default
+.sf-dialog--large  .sf-dialog__panel { max-width: var(--sf-dialog-lg-max-width, 900px); }
+.sf-dialog--full   .sf-dialog__panel {
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+}

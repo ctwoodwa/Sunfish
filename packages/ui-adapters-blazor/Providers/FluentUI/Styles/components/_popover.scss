@@ -1,0 +1,14 @@
+// =============================================================================
+// Component: Popover
+// =============================================================================
+
+// .sf-popover is the inline host wrapper; .sf-popover__content is the floating layer
+.sf-popover {
+    position: relative;
+    display: inline-block;
+}
+.sf-popover__content { position: absolute; z-index: var(--sf-z-popover); background: var(--sf-color-background); border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md); box-shadow: var(--sf-shadow-lg); padding: var(--sf-space-md); min-width: 200px; }
+.sf-popover__content--top { bottom: 100%; left: 50%; transform: translateX(-50%); margin-bottom: var(--sf-space-sm); }
+.sf-popover__content--bottom { top: 100%; left: 50%; transform: translateX(-50%); margin-top: var(--sf-space-sm); }
+.sf-popover__content--left { right: 100%; top: 50%; transform: translateY(-50%); margin-right: var(--sf-space-sm); }
+.sf-popover__content--right { left: 100%; top: 50%; transform: translateY(-50%); margin-left: var(--sf-space-sm); }

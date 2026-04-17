@@ -1,0 +1,33 @@
+// =============================================================================
+// Component: Progress Bar & Progress Circle
+// =============================================================================
+
+.sf-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--sf-color-surface);
+    border-radius: var(--sf-radius-full);
+    overflow: hidden;
+}
+
+.sf-progress-bar > div {
+    height: 100%;
+    background: var(--sf-color-primary);
+    border-radius: var(--sf-radius-full);
+    transition: width var(--sf-transition-normal);
+}
+
+// Progress Circle
+.sf-progress-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+// Phase 2 extended
+.sf-progress-circle { display: inline-block; }
+.sf-progress-circle svg { transform: rotate(-90deg); }
+.sf-progress-circle__track { fill: none; stroke: var(--sf-color-surface); }
+.sf-progress-circle__fill { fill: none; stroke: var(--sf-color-primary); stroke-linecap: round; transition: stroke-dashoffset var(--sf-transition-normal); }
+.sf-progress-circle--indeterminate svg { animation: sf-spin 1.4s linear infinite; }

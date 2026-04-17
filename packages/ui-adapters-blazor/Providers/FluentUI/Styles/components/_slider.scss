@@ -1,0 +1,176 @@
+// =============================================================================
+// Component: Slider / RangeSlider
+// =============================================================================
+
+.sf-slider {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    position: relative;
+    width: 100%;
+}
+
+// Explicit horizontal modifier — mirrors default layout
+.sf-slider--horizontal {
+    flex-direction: row;
+    width: 100%;
+    height: auto;
+}
+
+.sf-slider--vertical {
+    flex-direction: column;
+    width: auto;
+    height: var(--sf-slider-vertical-height, 200px);
+}
+
+// QUALITY FIX: explicit color tokens for disabled, not opacity
+.sf-slider--disabled {
+    color: var(--sf-color-text-disabled);
+    pointer-events: none;
+
+    input[type="range"] {
+        cursor: not-allowed;
+    }
+}
+
+.sf-slider--disabled input[type="range"] {
+    background: var(--sf-color-border); // track stays muted
+
+    &::-webkit-slider-thumb {
+        background: var(--sf-color-text-disabled);
+        border-color: var(--sf-color-border);
+        box-shadow: none;
+    }
+
+    &::-moz-range-thumb {
+        background: var(--sf-color-text-disabled);
+        border-color: var(--sf-color-border);
+        box-shadow: none;
+    }
+}
+
+// The native range input styled as Fluent
+.sf-slider input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: var(--sf-slider-track-height, 4px);
+    background: var(--sf-color-border);
+    border-radius: var(--sf-radius-full);
+    outline: none;
+    cursor: pointer;
+
+    // Thumb
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: var(--sf-slider-thumb-size, 16px);
+        height: var(--sf-slider-thumb-size, 16px);
+        background: var(--sf-color-primary);
+        border: 2px solid var(--sf-color-on-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: var(--sf-shadow-sm);
+        transition: background var(--sf-transition-fast), transform var(--sf-transition-fast);
+    }
+
+    &:hover::-webkit-slider-thumb {
+        background: var(--sf-color-primary-hover);
+        transform: scale(1.2);
+    }
+
+    &::-moz-range-thumb {
+        width: var(--sf-slider-thumb-size, 16px);
+        height: var(--sf-slider-thumb-size, 16px);
+        background: var(--sf-color-primary);
+        border: 2px solid var(--sf-color-on-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: var(--sf-shadow-sm);
+        transition: background var(--sf-transition-fast), transform var(--sf-transition-fast);
+    }
+
+    // Track fill (Webkit)
+    &::-webkit-slider-runnable-track {
+        height: var(--sf-slider-track-height, 4px);
+        background: var(--sf-color-border);
+        border-radius: var(--sf-radius-full);
+    }
+
+    &::-moz-range-track {
+        height: var(--sf-slider-track-height, 4px);
+        background: var(--sf-color-border);
+        border-radius: var(--sf-radius-full);
+    }
+
+    &:focus-visible::-webkit-slider-thumb {
+        box-shadow: var(--sf-focus-ring);
+    }
+}
+
+// Vertical range input
+.sf-slider--vertical input[type="range"] {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    width: var(--sf-slider-track-height, 4px);
+    height: 100%;
+}
+
+// Decrement / Increment buttons
+.sf-slider__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sf-slider-btn-size, 24px);
+    height: var(--sf-slider-btn-size, 24px);
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-sm);
+    cursor: pointer;
+    font-size: var(--sf-font-size-base);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-on-background);
+    flex-shrink: 0;
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface-hover);
+    }
+
+    // QUALITY FIX: explicit color tokens for disabled button
+    &:disabled {
+        background: var(--sf-color-surface);
+        color: var(--sf-color-text-disabled);
+        border-color: var(--sf-color-border);
+        cursor: not-allowed;
+    }
+}
+
+// Tick marks
+.sf-slider__ticks {
+    position: absolute;
+    bottom: var(--sf-slider-ticks-offset, -16px);
+    left: 0;
+    right: 0;
+    height: var(--sf-slider-ticks-height, 8px);
+}
+
+.sf-slider__tick {
+    position: absolute;
+    width: 1px; // border width — acceptable as-is
+    height: var(--sf-slider-tick-height, 6px);
+    background: var(--sf-color-border-strong);
+    transform: translateX(-50%);
+}
+
+// Label
+.sf-slider__label {
+    position: absolute;
+    bottom: var(--sf-slider-label-offset, -28px);
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--sf-font-size-xs);
+    color: var(--sf-color-text-secondary);
+}

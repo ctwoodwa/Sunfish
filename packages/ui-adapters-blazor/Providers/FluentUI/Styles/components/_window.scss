@@ -1,0 +1,47 @@
+// =============================================================================
+// Component: Window
+// =============================================================================
+
+.sf-window {
+    position: fixed;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-elevation-lg);
+    overflow: hidden;
+
+    &--modal { z-index: 1060; }
+}
+
+.sf-window-titlebar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    background: var(--sf-color-surface);
+    border-bottom: 1px solid var(--sf-color-border);
+    font-weight: var(--sf-font-weight-semibold);
+    user-select: none;
+}
+
+.sf-window-content {
+    flex: 1;
+    overflow: auto;
+    padding: var(--sf-space-md);
+}
+
+.sf-window-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-xxs);
+}
+
+.sf-window-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1055;
+    background: var(--sf-color-overlay);
+}

@@ -1,0 +1,130 @@
+// MariloDiagram — FluentUI Provider Styles
+// SVG-based diagram container, shapes, connections, labels
+
+.sf-diagram {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--sf-color-border, #c8c6c4);
+  border-radius: var(--sf-radius-md, 4px);
+  background: var(--sf-color-surface, #ffffff);
+  box-sizing: border-box;
+
+  &__canvas {
+    display: block;
+  }
+
+  &__shape {
+    cursor: pointer;
+    fill: var(--sf-diagram-shape-fill, color-mix(in srgb, var(--sf-color-primary, #0078d4) 12%, var(--sf-color-surface, #ffffff)));
+    stroke: var(--sf-diagram-shape-stroke, var(--sf-color-primary, #0078d4));
+    stroke-width: 2;
+    transition: fill 0.15s ease, stroke 0.15s ease, filter 0.15s ease;
+
+    &:hover {
+      fill: var(--sf-diagram-shape-hover-fill, color-mix(in srgb, var(--sf-color-primary, #0078d4) 24%, var(--sf-color-surface, #ffffff)));
+      filter: drop-shadow(0 1px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--sf-color-primary, #0078d4);
+      outline-offset: 2px;
+    }
+
+    &--selected {
+      fill: var(--sf-diagram-shape-selected-fill, color-mix(in srgb, var(--sf-color-primary, #0078d4) 36%, var(--sf-color-surface, #ffffff)));
+      stroke: var(--sf-color-primary, #0078d4);
+      stroke-width: 3;
+      filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+    }
+  }
+
+  &__shape-label {
+    fill: var(--sf-color-text, #242424);
+    font-size: 14px;
+    font-family: var(--sf-font-family, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  &__connection {
+    stroke: var(--sf-diagram-connection-stroke, var(--sf-color-text-secondary, #605e5c));
+    stroke-width: 2;
+    fill: none;
+    transition: stroke 0.15s ease;
+
+    &:hover {
+      stroke: var(--sf-color-primary, #0078d4);
+      stroke-width: 3;
+    }
+
+    &--active {
+      stroke: var(--sf-color-primary, #0078d4);
+      stroke-width: 3;
+    }
+  }
+
+  &__connection-label {
+    fill: var(--sf-color-text-secondary, #605e5c);
+    font-size: 12px;
+    font-family: var(--sf-font-family, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+    pointer-events: none;
+    user-select: none;
+  }
+  // ── Zoom/Pan cursor states ──────────────────────────────────────────
+  &--pannable {
+    cursor: grab;
+  }
+
+  &--panning {
+    cursor: grabbing;
+  }
+
+  &__shape-group {
+    cursor: pointer;
+  }
+}
+
+// ── Dark Theme Patches ───────────────────────────────────────────────
+[data-sf-theme="dark"] {
+  .sf-diagram {
+    --sf-diagram-shape-fill: color-mix(in srgb, var(--sf-color-primary, #0078d4) 15%, var(--sf-color-surface, #252423));
+    --sf-diagram-shape-hover-fill: color-mix(in srgb, var(--sf-color-primary, #0078d4) 28%, var(--sf-color-surface, #252423));
+    --sf-diagram-shape-stroke: var(--sf-color-primary, #2899f5);
+    --sf-diagram-connection-stroke: var(--sf-color-text-secondary, #a19f9d);
+    --sf-diagram-shape-selected-fill: color-mix(in srgb, var(--sf-color-primary, #2899f5) 40%, var(--sf-color-surface, #252423));
+  }
+}
+
+// ── Accessibility: reduced motion ─────────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sf-diagram,
+  .sf-diagram * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Accessibility: high contrast ──────────────────────────────────
+@media (forced-colors: active) {
+  .sf-diagram {
+    border-color: ButtonText;
+  }
+
+  .sf-diagram__shape {
+    fill: Canvas;
+    stroke: ButtonText;
+  }
+
+  .sf-diagram__shape-label {
+    fill: ButtonText;
+  }
+
+  .sf-diagram__connection {
+    stroke: ButtonText;
+  }
+
+  .sf-diagram__connection-label {
+    fill: ButtonText;
+  }
+}

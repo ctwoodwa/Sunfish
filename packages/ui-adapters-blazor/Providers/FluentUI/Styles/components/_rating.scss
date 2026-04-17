@@ -1,0 +1,77 @@
+// =============================================================================
+// Component: Rating
+// =============================================================================
+
+.sf-rating {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xxs);
+    line-height: 1;
+}
+
+.sf-rating__star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--sf-color-border-strong);
+    font-size: 1.25rem; // relative unit — intentional default star size
+    transition: color var(--sf-transition-fast), transform var(--sf-transition-fast);
+    user-select: none;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+
+    svg {
+        width: 1.25em;
+        height: 1.25em;
+    }
+}
+
+.sf-rating__star--filled {
+    color: var(--sf-color-warning);
+}
+
+.sf-rating__star--half {
+    // Half-star support is not yet implemented in MariloRating.razor (Value is integer-only).
+    // When half-star rendering is added to the component, use the overflow-clip approach:
+    //   render a filled-star icon inside a width:50% overflow:hidden container overlaid on an
+    //   outline-star icon, and use this class only as the container context (position: relative).
+    // The previous ::after rectangle overlay bled through transparent star-point cutouts and
+    // has been removed.
+    position: relative;
+    color: var(--sf-color-border-strong);
+}
+
+// QUALITY FIX: explicit color tokens for disabled, not opacity
+.sf-rating--disabled {
+    pointer-events: none;
+
+    .sf-rating__star {
+        color: var(--sf-color-text-disabled);
+        // cursor: not-allowed is unreachable — parent has pointer-events: none
+    }
+
+    .sf-rating__star--filled,
+    .sf-rating__star--half {
+        color: var(--sf-color-text-disabled);
+    }
+}
+
+// Read-only (display only)
+.sf-rating--readonly {
+    pointer-events: none;
+
+    .sf-rating__star {
+        cursor: default;
+
+        &:hover {
+            transform: none;
+        }
+    }
+}
+
+// Size variants
+.sf-rating--small .sf-rating__star { font-size: 1rem; }
+.sf-rating--large .sf-rating__star { font-size: 1.75rem; }

@@ -1,0 +1,291 @@
+// =============================================================================
+// Component: TreeView — FluentUI Provider
+// =============================================================================
+// BEM Block: .sf-treeview (container <ul>)
+// BEM Block: .sf-tree-item (each <li> tree item)
+// =============================================================================
+
+// ── Density custom properties ─────────────────────────────────────────────
+// Set --sf-treeview-density on the container or ancestor to switch sizes.
+// The Size parameter on MariloTreeView maps "sm"/"lg" to inline font-size;
+// these selectors hook that plus an explicit CSS-class alternative.
+
+:root {
+  --sf-treeview-item-padding-y: var(--sf-space-xxs, 2px);
+  --sf-treeview-item-padding-x: var(--sf-space-sm, 8px);
+  --sf-treeview-item-gap: var(--sf-space-xs, 4px);
+  --sf-treeview-indent: var(--sf-space-lg, 24px);
+  --sf-treeview-icon-size: 16px;
+  --sf-treeview-font-size: var(--sf-font-size-md, 14px);
+  --sf-treeview-line-height: var(--sf-line-height-md, 20px);
+}
+
+// ── Container ───────────────────────────────────────────────────────────────
+
+.sf-treeview {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  outline: none;
+
+  // VP-001: Focus-visible ring on the tree container when navigating by keyboard
+  &:focus-visible {
+    outline: 2px solid var(--sf-color-primary);
+    outline-offset: -2px;
+    border-radius: var(--sf-radius-sm);
+  }
+
+  // ── Density: small ────────────────────────────────────────────────────
+  &[style*="font-size:sm"],
+  &.sf-treeview--sm {
+    --sf-treeview-item-padding-y: 1px;
+    --sf-treeview-item-padding-x: 4px;
+    --sf-treeview-item-gap: 2px;
+    --sf-treeview-indent: 16px;
+    --sf-treeview-icon-size: 14px;
+    --sf-treeview-font-size: var(--sf-font-size-sm, 12px);
+    --sf-treeview-line-height: var(--sf-line-height-sm, 16px);
+  }
+
+  // ── Density: large ────────────────────────────────────────────────────
+  &[style*="font-size:lg"],
+  &.sf-treeview--lg {
+    --sf-treeview-item-padding-y: var(--sf-space-xs, 4px);
+    --sf-treeview-item-padding-x: var(--sf-space-md, 12px);
+    --sf-treeview-item-gap: var(--sf-space-sm, 8px);
+    --sf-treeview-indent: 32px;
+    --sf-treeview-icon-size: 20px;
+    --sf-treeview-font-size: var(--sf-font-size-lg, 16px);
+    --sf-treeview-line-height: var(--sf-line-height-lg, 24px);
+  }
+}
+
+// Nested <ul> groups (direct or via .sf-tree-item__children)
+.sf-treeview ul {
+  list-style: none;
+  padding-left: var(--sf-treeview-indent);
+  margin: 0;
+}
+
+// ── Tree Item (li) ──────────────────────────────────────────────────────────
+
+.sf-tree-item {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sf-tree-item--selected > .sf-tree-item__header {
+  background: var(--sf-color-primary-light);
+  color: var(--sf-color-primary);
+}
+
+.sf-tree-item--expanded {}
+
+// VP-001: Focus-visible ring on focused tree item
+.sf-tree-item--focused > .sf-tree-item__header {
+  outline: 2px solid var(--sf-color-primary);
+  outline-offset: -2px;
+  border-radius: var(--sf-radius-md);
+}
+
+// VP-003: Disabled visual treatment via aria-disabled
+.sf-tree-item[aria-disabled="true"],
+.sf-treeview[aria-disabled="true"] .sf-tree-item {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+// VP-007: ReadOnly modifier — shows state but prevents interaction cues
+.sf-tree-item--readonly > .sf-tree-item__header {
+  cursor: default;
+}
+.sf-tree-item--readonly .sf-tree-item__toggle,
+.sf-tree-item--readonly .sf-tree-item__checkbox {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+// Filter match highlight
+.sf-tree-item--filter-match > .sf-tree-item__header {
+  background: var(--sf-color-warning-light, rgba(255, 235, 59, 0.15));
+}
+
+// ── VP-012: Header row (flex container for toggle + checkbox + icon + title) ─
+
+.sf-tree-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-treeview-item-gap);
+  padding: var(--sf-treeview-item-padding-y) var(--sf-treeview-item-padding-x);
+  border-radius: var(--sf-radius-md);
+  cursor: pointer;
+  transition: background var(--sf-transition-fast),
+              outline-color 0.15s ease;
+
+  // VP-006: Unified hover token
+  &:hover {
+    background: var(--sf-color-surface-hover);
+  }
+}
+
+// Drag-over indicator on header
+.sf-tree-item__header--dragover {
+  outline: 2px dashed var(--sf-color-primary);
+  outline-offset: -2px;
+  background: var(--sf-color-primary-light);
+}
+
+// ── VP-014: Toggle button ───────────────────────────────────────────────────
+
+.sf-tree-item__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  font-size: 0.65rem;
+  transition: transform var(--sf-transition-fast);
+}
+
+.sf-tree-item--expanded > .sf-tree-item__header .sf-tree-item__toggle {
+  transform: rotate(90deg);
+}
+
+.sf-tree-item__toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+// ── VP-008: Checkbox styling ────────────────────────────────────────────────
+
+.sf-tree-item__checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--sf-color-primary);
+  cursor: pointer;
+}
+
+.sf-tree-item__checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.sf-tree-item__checkbox--indeterminate {
+  opacity: 0.7;
+}
+
+// ── VP-010: Icon alignment ──────────────────────────────────────────────────
+
+.sf-tree-item__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: var(--sf-treeview-icon-size);
+  height: var(--sf-treeview-icon-size);
+  font-size: var(--sf-treeview-icon-size);
+  color: var(--sf-color-text-secondary, var(--sf-color-text));
+  transition: color var(--sf-transition-fast);
+}
+
+// ── VP-011: Title typography ────────────────────────────────────────────────
+
+.sf-tree-item__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--sf-treeview-font-size);
+  line-height: var(--sf-treeview-line-height);
+  color: inherit;
+  text-decoration: none;
+  user-select: none;
+}
+
+a.sf-tree-item__title {
+  color: var(--sf-color-primary);
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// ── Inline edit input ───────────────────────────────────────────────────────
+
+.sf-tree-item__edit-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--sf-treeview-font-size);
+  line-height: var(--sf-treeview-line-height);
+  padding: 0 var(--sf-space-xs);
+  border: 1px solid var(--sf-color-primary);
+  border-radius: var(--sf-radius-sm);
+  outline: none;
+  transition: border-color var(--sf-transition-fast);
+
+  &:focus {
+    border-color: var(--sf-color-primary);
+    box-shadow: 0 0 0 1px var(--sf-color-primary);
+  }
+}
+
+// ── Loading indicator ───────────────────────────────────────────────────────
+
+.sf-tree-item__loading {
+  padding: var(--sf-space-xs) var(--sf-space-sm);
+  padding-left: calc(var(--sf-treeview-indent) + 20px);
+  font-size: var(--sf-font-size-sm, 12px);
+  color: var(--sf-color-text-secondary, var(--sf-color-text));
+  font-style: italic;
+}
+
+// ── VP-013: Children container (indentation) ────────────────────────────────
+
+.sf-tree-item__children {
+  list-style: none;
+  padding-left: var(--sf-treeview-indent);
+  margin: 0;
+}
+
+// ── VP-009: Dark mode overrides ─────────────────────────────────────────────
+
+[data-sf-theme="dark"] {
+  .sf-tree-item--selected > .sf-tree-item__header {
+    background: rgba(var(--sf-color-primary-rgb, 0, 120, 212), 0.2);
+    color: var(--sf-color-primary);
+  }
+
+  .sf-tree-item__header:hover {
+    background: var(--sf-color-surface-hover, rgba(255, 255, 255, 0.05));
+  }
+
+  .sf-tree-item--focused > .sf-tree-item__header {
+    outline-color: var(--sf-color-primary);
+  }
+
+  .sf-tree-item__icon {
+    color: var(--sf-color-text-secondary, rgba(255, 255, 255, 0.6));
+  }
+
+  .sf-tree-item__loading {
+    color: var(--sf-color-text-secondary, rgba(255, 255, 255, 0.6));
+  }
+
+  .sf-tree-item--filter-match > .sf-tree-item__header {
+    background: rgba(255, 235, 59, 0.1);
+  }
+
+  .sf-tree-item__edit-input {
+    background: var(--sf-color-surface, #252423);
+    color: var(--sf-color-text, #f3f2f1);
+    border-color: var(--sf-color-primary);
+  }
+}
