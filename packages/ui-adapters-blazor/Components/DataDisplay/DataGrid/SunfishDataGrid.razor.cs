@@ -407,7 +407,7 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
 
         var side = column.FrozenPosition == GridColumnFrozenPosition.Start ? "left" : "right";
         var zIndex = isHeader ? 3 : 2;
-        return $"position:sticky;{side}:{offset}px;z-index:{zIndex};background:var(--marilo-color-surface);";
+        return $"position:sticky;{side}:{offset}px;z-index:{zIndex};background:var(--sf-color-surface);";
     }
 
     private void GenerateColumnsFromModel()

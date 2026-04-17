@@ -311,7 +311,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         let dragSourceIndex = -1;
 
         tbody.addEventListener('dragstart', (e) => {
-            const cell = e.target.closest('.mar-datagrid-drag-cell');
+            const cell = e.target.closest('.sf-datagrid-drag-cell');
             if (!cell) return;
             e.stopPropagation();
             dragSourceIndex = parseInt(cell.dataset.rowIndex, 10);
@@ -327,7 +327,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             if (!tr) return;
             const rect = tr.getBoundingClientRect();
             const midY = rect.top + rect.height / 2;
-            tbody.querySelectorAll('.mar-datagrid-row--drop-before, .mar-datagrid-row--drop-after')
+            tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after')
                 .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after'));
             tr.classList.add(e.clientY < midY ? 'mar-datagrid-row--drop-before' : 'mar-datagrid-row--drop-after');
         });
@@ -344,13 +344,13 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             const tr = e.target.closest('tr');
             if (!tr || dragSourceIndex < 0) return;
 
-            const destCell = tr.querySelector('.mar-datagrid-drag-cell');
+            const destCell = tr.querySelector('.sf-datagrid-drag-cell');
             const destIndex = destCell ? parseInt(destCell.dataset.rowIndex, 10) : -1;
 
             const rect = tr.getBoundingClientRect();
             const dropPosition = e.clientY < (rect.top + rect.height / 2) ? 'before' : 'after';
 
-            tbody.querySelectorAll('.mar-datagrid-row--drop-before, .mar-datagrid-row--drop-after, .mar-datagrid-row--dragging')
+            tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after, .sf-datagrid-row--dragging')
                 .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after', 'mar-datagrid-row--dragging'));
 
             if (destIndex >= 0 && destIndex !== dragSourceIndex) {
@@ -360,7 +360,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         });
 
         tbody.addEventListener('dragend', () => {
-            tbody.querySelectorAll('.mar-datagrid-row--drop-before, .mar-datagrid-row--drop-after, .mar-datagrid-row--dragging')
+            tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after, .sf-datagrid-row--dragging')
                 .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after', 'mar-datagrid-row--dragging'));
             dragSourceIndex = -1;
         });

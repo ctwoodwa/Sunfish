@@ -50,7 +50,7 @@
                             <div class="sf-editor-overflow-popup"
                                  role="menu"
                                  tabindex="-1"
-                                 style="position:absolute;top:100%;left:0;z-index:10;background:var(--marilo-color-surface,#fff);border:1px solid var(--marilo-color-border,#ccc);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:4px;display:flex;flex-wrap:wrap;gap:2px;"
+                                 style="position:absolute;top:100%;left:0;z-index:10;background:var(--sf-color-surface,#fff);border:1px solid var(--sf-color-border,#ccc);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:4px;display:flex;flex-wrap:wrap;gap:2px;"
                                  @onfocusout="HandleOverflowFocusOut">
                                 @foreach (var item in overflowItems)
                                 {
@@ -726,8 +726,8 @@
             const img = e.target.closest('img');
             if (img && editorEl && editorEl.contains(img)) {
                 showImageHandles(img);
-            } else if (!e.target.closest('.mar-editor-img-resize-handle') &&
-                       !e.target.closest('.mar-editor-img-resize-wrapper')) {
+            } else if (!e.target.closest('.sf-editor-img-resize-handle') &&
+                       !e.target.closest('.sf-editor-img-resize-wrapper')) {
                 hideImageHandles();
             }
         }
