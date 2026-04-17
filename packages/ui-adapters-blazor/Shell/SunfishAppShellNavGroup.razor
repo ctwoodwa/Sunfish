@@ -1,0 +1,15 @@
+@namespace Sunfish.Components.Blazor.Shell
+@inherits ComponentBase
+
+<div class="sf-appshell__nav-group">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <div class="sf-appshell__nav-group-title">@Title</div>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

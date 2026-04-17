@@ -1,0 +1,439 @@
+/* ══════════════════════════════════════════════════════════════
+   SunfishAccountMenu — Perplexity-inspired account dropdown
+   Scoped via Blazor CSS isolation.
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu {
+    --mam-bg: var(--sf-color-surface, #ffffff);
+    --mam-border: color-mix(in srgb, var(--sf-color-text, #1f2328) 10%, transparent);
+    --mam-text: var(--sf-color-text, #1f2328);
+    --mam-text-muted: color-mix(in srgb, var(--sf-color-text, #1f2328) 55%, transparent);
+    --mam-primary: var(--sf-color-primary, #5b6cff);
+    --mam-hover: color-mix(in srgb, var(--sf-color-text, #1f2328) 5%, transparent);
+    --mam-active: color-mix(in srgb, var(--sf-color-text, #1f2328) 8%, transparent);
+    --mam-radius: var(--sf-radius-md, 8px);
+    --mam-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+    --mam-width: 280px;
+    --mam-row-h: 36px;
+    --mam-icon-size: 18px;
+    --mam-font-size: 13.5px;
+
+    --mam-disabled-content-opacity: 0.38;
+    --mam-disabled-text: color-mix(
+        in srgb,
+        var(--sf-color-text, #1f2328) calc(var(--mam-disabled-content-opacity) * 100%),
+        transparent
+    );
+
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* ── Dark Mode ── */
+:global([data-sf-theme="dark"]) .sf-account-menu {
+    --mam-shadow: 0 8px 32px rgba(0, 0, 0, 0.32), 0 2px 8px rgba(0, 0, 0, 0.16);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRIGGER
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px 6px 6px;
+    background: transparent;
+    border: none;
+    border-radius: var(--mam-radius);
+    color: var(--mam-text);
+    font-size: var(--mam-font-size);
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: 1.2;
+    transition: background-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sf-account-menu__trigger:hover {
+    background: var(--mam-hover);
+}
+
+.sf-account-menu__trigger:active {
+    background: var(--mam-active);
+}
+
+.sf-account-menu__trigger:focus-visible {
+    outline: 2px solid var(--mam-primary);
+    outline-offset: 2px;
+    border-radius: var(--mam-radius);
+}
+
+.sf-account-menu__trigger--compact {
+    padding: 4px;
+    gap: 0;
+}
+
+.sf-account-menu__trigger-wrap {
+    cursor: pointer;
+}
+
+.sf-account-menu__trigger-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 130px;
+}
+
+/* ── Trigger Avatar ── */
+
+.sf-account-menu__avatar {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--mam-primary);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+}
+
+.sf-account-menu__avatar-img {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SCRIM (click-outside overlay)
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__scrim {
+    position: fixed;
+    inset: 0;
+    background: transparent;
+    z-index: 999;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PANEL
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__panel {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    z-index: 1000;
+    width: var(--mam-width);
+    background: var(--mam-bg);
+    border: 1px solid var(--mam-border);
+    border-radius: 12px;
+    box-shadow: var(--mam-shadow);
+    color: var(--mam-text);
+    padding: 4px;
+    max-height: 80vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    animation: mam-panel-in 0.15s ease-out;
+}
+
+@keyframes mam-panel-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Scrollbar styling */
+.sf-account-menu__panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sf-account-menu__panel::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--sf-color-text, #1f2328) 15%, transparent);
+    border-radius: 3px;
+}
+
+.sf-account-menu__panel--submenu {
+    /* Reserved for submenu transition if needed */
+}
+
+/* ══════════════════════════════════════════════════════════════
+   HEADER (avatar + identity)
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 10px;
+}
+
+.sf-account-menu__header-avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--mam-primary);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0.02em;
+}
+
+.sf-account-menu__header-avatar-img {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.sf-account-menu__header-info {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.sf-account-menu__header-name {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.3;
+}
+
+.sf-account-menu__header-badge {
+    display: inline-flex;
+    align-items: center;
+    background: var(--mam-primary);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    border-radius: 4px;
+    padding: 1px 5px;
+    line-height: 1.4;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.sf-account-menu__header-email {
+    font-size: 12px;
+    color: var(--mam-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SEPARATOR
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__separator {
+    height: 1px;
+    background: var(--mam-border);
+    margin: 4px 8px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   GROUP
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__group {
+    display: flex;
+    flex-direction: column;
+    padding: 2px 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROW (menu item)
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: var(--mam-row-h);
+    padding: 0 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--mam-text);
+    font-size: var(--mam-font-size);
+    text-align: left;
+    cursor: pointer;
+    line-height: 1.2;
+    font-family: inherit;
+    transition: background-color 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.sf-account-menu__row:hover {
+    background: var(--mam-hover);
+}
+
+.sf-account-menu__row:active {
+    background: var(--mam-active);
+}
+
+.sf-account-menu__row.is-focused {
+    background: var(--mam-hover);
+    outline: 2px solid var(--mam-primary);
+    outline-offset: -2px;
+}
+
+.sf-account-menu__row:focus-visible {
+    outline: 2px solid var(--mam-primary);
+    outline-offset: -2px;
+}
+
+/* ── Row Modifiers ── */
+
+.sf-account-menu__row--back {
+    font-weight: 600;
+    gap: 8px;
+}
+
+.sf-account-menu__row--destructive {
+    color: var(--mam-text);
+}
+
+.sf-account-menu__row.is-selected {
+    color: var(--mam-primary);
+    font-weight: 500;
+}
+
+.sf-account-menu__row.is-selected .sf-account-menu__row-icon {
+    color: var(--mam-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ROW CHILDREN
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__row-icon {
+    flex-shrink: 0;
+    width: var(--mam-icon-size);
+    height: var(--mam-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--mam-text-muted);
+}
+
+.sf-account-menu__row-label {
+    flex: 1 1 auto;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-account-menu__row-value {
+    flex-shrink: 0;
+    color: var(--mam-text-muted);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.sf-account-menu__row-chevron {
+    flex-shrink: 0;
+    width: 14px;
+    display: flex;
+    align-items: center;
+    color: var(--mam-text-muted);
+    opacity: 0.5;
+}
+
+.sf-account-menu__row-chevron .sf-account-menu__icon {
+    width: 14px;
+    height: 14px;
+}
+
+.sf-account-menu__row-check {
+    flex-shrink: 0;
+    color: var(--mam-primary);
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+}
+
+.sf-account-menu__row-check .sf-account-menu__icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   ICON (SVG sprite element)
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__icon {
+    display: block;
+    width: var(--mam-icon-size);
+    height: var(--mam-icon-size);
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   DISABLED STATE
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__row.is-disabled {
+    color: var(--mam-disabled-text);
+    pointer-events: none;
+    cursor: default;
+}
+
+.sf-account-menu__row.is-disabled .sf-account-menu__row-icon,
+.sf-account-menu__row.is-disabled .sf-account-menu__row-chevron,
+.sf-account-menu__row.is-disabled .sf-account-menu__row-value {
+    color: var(--mam-disabled-text);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   FOOTER
+   ══════════════════════════════════════════════════════════════ */
+
+.sf-account-menu__footer {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--mam-text-muted);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+
+@media (max-width: 640px) {
+    .sf-account-menu__panel {
+        --mam-width: calc(100vw - 32px);
+        left: auto;
+        right: 0;
+        max-width: 320px;
+    }
+}

@@ -1,0 +1,44 @@
+@namespace Sunfish.Components.Blazor.Shell
+@inherits ComponentBase
+
+@if (!string.IsNullOrEmpty(Href))
+{
+    <NavLink class="sf-appshell__nav-link"
+             ActiveClass="active"
+             Match="@Match"
+             href="@Href"
+             title="@Label"
+             aria-label="@Label">
+        @RenderInner()
+    </NavLink>
+}
+else
+{
+    <button type="button"
+            class="sf-appshell__nav-link @(Active ? "active" : "")"
+            title="@Label"
+            aria-label="@Label"
+            @onclick="OnClick">
+        @RenderInner()
+    </button>
+}
+
+@code {
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string Label { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public string? Badge { get; set; }
+    [Parameter] public bool Active { get; set; }
+    [Parameter] public NavLinkMatch Match { get; set; } = NavLinkMatch.Prefix;
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private RenderFragment RenderInner() => __builder =>
+    {
+        <span class="sf-appshell__nav-link-icon">@Icon</span>
+        <span class="sf-appshell__nav-link-label">@Label</span>
+        @if (!string.IsNullOrEmpty(Badge))
+        {
+            <span class="sf-appshell__nav-link-badge">@Badge</span>
+        }
+    };
+}

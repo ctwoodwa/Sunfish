@@ -1,0 +1,112 @@
+@namespace Sunfish.Components.Blazor.Shell
+@inherits ComponentBase
+
+<div class="sf-usermenu @(Open ? "is-open" : "") @Class" style="@Style">
+    @if (Open)
+    {
+        <div class="sf-usermenu__scrim" @onclick="CloseAsync" aria-hidden="true"></div>
+    }
+
+    <div class="sf-usermenu__panel @(Open ? "is-open" : "")"
+         role="menu"
+         aria-hidden="@(Open ? "false" : "true")"
+         aria-label="@AriaLabel">
+
+        @if (Header is not null)
+        {
+            <div class="sf-usermenu__header">@Header</div>
+        }
+        else if (!string.IsNullOrEmpty(UserName))
+        {
+            <div class="sf-usermenu__header">
+                <span class="sf-usermenu__avatar">@GetInitials()</span>
+                <div class="sf-usermenu__identity">
+                    <div class="sf-usermenu__name">@UserName</div>
+                    @if (!string.IsNullOrEmpty(UserEmail))
+                    {
+                        <div class="sf-usermenu__email">@UserEmail</div>
+                    }
+                </div>
+            </div>
+            <div class="sf-usermenu__divider"></div>
+        }
+
+        @if (Items is not null)
+        {
+            @foreach (var item in Items)
+            {
+                <button type="button"
+                        class="sf-usermenu__row @(item.IsDisabled ? "is-disabled" : "")"
+                        role="menuitem"
+                        disabled="@item.IsDisabled"
+                        @onclick="() => HandleClick(item)">
+                    @if (!string.IsNullOrEmpty(item.Icon))
+                    {
+                        <span class="sf-usermenu__row-icon">@((MarkupString)item.Icon)</span>
+                    }
+                    <span class="sf-usermenu__row-label">@item.Label</span>
+                    @if (item.IsExpandable)
+                    {
+                        <span class="sf-usermenu__row-value">@item.CurrentValue</span>
+                        <svg class="sf-usermenu__row-chevron" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+                            <path d="M6 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    }
+                    else if (!string.IsNullOrEmpty(item.Shortcut))
+                    {
+                        <span class="sf-usermenu__row-shortcut">@item.Shortcut</span>
+                    }
+                </button>
+                @if (item.IsDividerAfter)
+                {
+                    <div class="sf-usermenu__divider"></div>
+                }
+            }
+        }
+
+        @if (Footer is not null)
+        {
+            <div class="sf-usermenu__divider"></div>
+            <div class="sf-usermenu__footer">@Footer</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+    [Parameter] public List<PopupMenuItem>? Items { get; set; }
+    [Parameter] public string? UserName { get; set; }
+    [Parameter] public string? UserEmail { get; set; }
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public string AriaLabel { get; set; } = "User menu";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public EventCallback<PopupMenuItem> OnItemClick { get; set; }
+
+    private async Task CloseAsync()
+    {
+        Open = false;
+        await OpenChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleClick(PopupMenuItem item)
+    {
+        if (item.IsDisabled) return;
+        item.OnClick?.Invoke();
+        await OnItemClick.InvokeAsync(item);
+        if (!item.IsExpandable)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private string GetInitials()
+    {
+        if (string.IsNullOrWhiteSpace(UserName)) return "?";
+        var parts = UserName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
+    }
+}

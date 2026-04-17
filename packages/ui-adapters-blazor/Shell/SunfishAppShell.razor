@@ -1,0 +1,192 @@
+@namespace Sunfish.Components.Blazor.Shell
+@inherits ComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+
+<CascadingValue Value="this" IsFixed="false">
+<div class="sf-appshell @(SidebarCollapsed ? "is-collapsed" : "is-expanded") @(_mobileOpen ? "mobile-open" : "") @Class"
+     data-sf-appshell
+     style="@Style"
+     @attributes="AdditionalAttributes">
+
+    @* Mobile scrim *@
+    <div class="sf-appshell__scrim" @onclick="CloseMobile" aria-hidden="true"></div>
+
+    <aside class="sf-appshell__sidebar" aria-label="Primary">
+        <div class="sf-appshell__brand">
+            @if (SidebarBrand is not null)
+            {
+                @SidebarBrand
+            }
+            else
+            {
+                <span class="sf-appshell__brand-fallback">@BrandText</span>
+            }
+            <button type="button"
+                    class="sf-appshell__collapse-btn"
+                    aria-label="@(SidebarCollapsed ? "Expand sidebar" : "Collapse sidebar")"
+                    title="@(SidebarCollapsed ? "Expand" : "Collapse")"
+                    @onclick="ToggleCollapsed">
+                <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true">
+                    <path d="@(SidebarCollapsed ? "M5 3l5 5-5 5" : "M11 3l-5 5 5 5")"
+                          fill="none" stroke="currentColor" stroke-width="1.6"
+                          stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+        </div>
+
+        <nav class="sf-appshell__nav" role="navigation">
+            @SidebarContent
+        </nav>
+
+        <div class="sf-appshell__footer">
+            @if (SidebarFooter is not null)
+            {
+                @SidebarFooter
+            }
+            else
+            {
+                <div class="sf-appshell__user-group">
+                    <button type="button"
+                            class="sf-appshell__avatar-btn"
+                            title="@(UserName ?? "Account")"
+                            aria-label="Account"
+                            @onclick="() => OnAvatarClick.InvokeAsync()">
+                        <span class="sf-appshell__avatar">
+                            @if (!string.IsNullOrEmpty(UserAvatarUrl))
+                            {
+                                <img src="@UserAvatarUrl" alt="" />
+                            }
+                            else
+                            {
+                                @GetInitials()
+                            }
+                            @if (!string.IsNullOrEmpty(UserBadge))
+                            {
+                                <span class="sf-appshell__avatar-badge">@UserBadge</span>
+                            }
+                        </span>
+                        <span class="sf-appshell__identity">
+                            <span class="sf-appshell__avatar-name">@UserName</span>
+                            @if (!string.IsNullOrEmpty(UserEmail))
+                            {
+                                <span class="sf-appshell__avatar-email">@UserEmail</span>
+                            }
+                        </span>
+                    </button>
+                    <button type="button"
+                            class="sf-appshell__notif-btn"
+                            title="Notifications"
+                            aria-label="Notifications"
+                            @onclick="() => OnNotificationsClick.InvokeAsync()">
+                        <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
+                            <path d="M10 2a5 5 0 0 0-5 5v3l-1.5 2.5h13L15 10V7a5 5 0 0 0-5-5zm-2 13a2 2 0 0 0 4 0"
+                                  fill="none" stroke="currentColor" stroke-width="1.5"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        @if (NotificationCount > 0)
+                        {
+                            <span class="sf-appshell__badge" aria-label="@NotificationCount unread">@(NotificationCount > 99 ? "99+" : NotificationCount.ToString())</span>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+    </aside>
+
+    <main class="sf-appshell__main">
+        <button type="button"
+                class="sf-appshell__mobile-toggle"
+                aria-label="Open navigation"
+                @onclick="OpenMobile">
+            <svg viewBox="0 0 20 20" width="20" height="20" aria-hidden="true">
+                <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+        </button>
+        <div class="sf-appshell__content">
+            @ChildContent
+        </div>
+    </main>
+
+    @if (ShowContextPanel && ContextPanel is not null)
+    {
+        <aside class="sf-appshell__context" aria-label="Context">
+            @ContextPanel
+        </aside>
+    }
+
+    @if (SlideOver is not null)
+    {
+        <div class="sf-appshell__slideover-host">
+            @SlideOver
+        </div>
+    }
+</div>
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? SidebarBrand { get; set; }
+    [Parameter] public RenderFragment? SidebarContent { get; set; }
+    [Parameter] public RenderFragment? SidebarFooter { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ContextPanel { get; set; }
+    [Parameter] public RenderFragment? SlideOver { get; set; }
+
+    [Parameter] public bool SidebarCollapsed { get; set; }
+    [Parameter] public EventCallback<bool> SidebarCollapsedChanged { get; set; }
+
+    [Parameter] public bool ShowContextPanel { get; set; }
+    [Parameter] public string BrandText { get; set; } = "Sunfish";
+    [Parameter] public string? UserName { get; set; }
+    [Parameter] public string? UserAvatarUrl { get; set; }
+    [Parameter] public string? UserEmail { get; set; }
+    [Parameter] public string? UserBadge { get; set; }
+    [Parameter] public int NotificationCount { get; set; }
+    [Parameter] public EventCallback OnNotificationsClick { get; set; }
+    [Parameter] public EventCallback OnAvatarClick { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool _mobileOpen;
+
+    /// <summary>The current absolute URI — exposed so nav links can compute active state.</summary>
+    public string CurrentUri { get; private set; } = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        CurrentUri = Nav.Uri;
+        Nav.LocationChanged += HandleLocationChanged;
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        CurrentUri = e.Location;
+        _mobileOpen = false;
+        StateHasChanged();
+    }
+
+    public async Task ToggleCollapsed()
+    {
+        SidebarCollapsed = !SidebarCollapsed;
+        await SidebarCollapsedChanged.InvokeAsync(SidebarCollapsed);
+    }
+
+    private void OpenMobile() => _mobileOpen = true;
+    private void CloseMobile() => _mobileOpen = false;
+
+    private string GetInitials()
+    {
+        if (string.IsNullOrWhiteSpace(UserName)) return "?";
+        var parts = UserName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= HandleLocationChanged;
+    }
+}
