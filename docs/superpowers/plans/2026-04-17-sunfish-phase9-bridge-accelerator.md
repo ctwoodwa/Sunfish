@@ -2,13 +2,50 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans` to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Migrate `C:/Projects/Marilo/samples/Marilo.PmDemo/` → `C:/Projects/Sunfish/accelerators/bridge/` as the first Sunfish **Solution Accelerator** — a full-stack Blazor Server + .NET Aspire application (Bridge) that showcases how Sunfish packages compose end-to-end: `foundation → ui-core → ui-adapters-blazor → blocks → real app`. The accelerator must build green, boot under Aspire, and preserve all 14 existing screens (dashboard, board, tasks, timeline, risk, budget, team, 7 account pages).
+---
 
-**Architecture context:** This is the *only* top-level tier with `accelerators/` — not `apps/`, not `samples/`. Master plan D6 locks this tier as a first-class Sunfish concept equivalent to `packages/`. The accelerator takes **project references** (not NuGet) to the Sunfish packages in the same repo — see D-PROJECT-REFERENCES below.
+## Platform Context
 
-**Source reference:** The master migration plan (`docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md`, `## Phase 9: Bridge Solution Accelerator`, lines ~711–1198) sketches Tasks 9-1 through 9-6. **This document is the authoritative Phase 9 plan**; the master plan's Phase 9 section should be reduced to a pointer to this file after merge.
+> **⚠ Read this before executing.** Bridge is not a stand-alone demo; it is the **property-management vertical reference implementation** of the Sunfish platform. Sunfish itself is a framework-agnostic suite of open-source and commercial building blocks for decentralized, multi-jurisdictional asset lifecycle and workflow systems — property management is one vertical of several (military bases, rail/subway, school districts, healthcare facilities are peer verticals).
+>
+> The authoritative platform specification is `docs/specifications/sunfish-platform-specification.md`. That document covers:
+>
+> 1. Executive Summary & market positioning (vs Aconex, Maximo, Appian/Pega, ServiceNow)
+> 2. Reference Architecture (decentralized governance, cryptographic ownership, delegation)
+> 3. Core Kernel primitives (entity storage, versioning, audit trails, schema registry, permissions, events)
+> 4. Phased Implementation Roadmap (5 spec phases covering current migration work + future verticals)
+> 5. Technical Specifications (multi-versioned entity schema, API contracts, authorization evaluation, asset hierarchy)
+> 6. Property Management MVP feature set
+> 7. Input Modalities (forms, spreadsheets, voice, sensors, drones, satellite imagery)
+> 8. Asset Evolution & Versioning Strategy
+> 9. BIM Integration approach
+> 10. Multi-Jurisdictional & Multi-Tenant design (delegated authority, federation)
+> 11. Container & Deployment Guide
+> 12. Risk Assessment
+> 13. Go-to-Market & Competitive Positioning
+>
+> **Where this Phase 9 plan fits:** The spec's **Roadmap Phase 4 (Property Management Bridge)** is what this document operationalizes. Spec Phases 1–3 (kernel + forms foundation, asset modeling, workflow orchestration) are a mix of already-shipped migration phases (Phase 1/2/3 foundation+ui-core+adapters) and still-to-come work (asset modeling is NEW — not in the current migration). Spec Phase 5 (secondary verticals) is future work beyond the current migration scope.
+>
+> **What makes Bridge the vertical reference (not just a PmDemo rebrand):**
+>
+> 1. Bridge exercises **every** Sunfish kernel primitive end-to-end — entity versioning on leases, audit trails on inspections, time-bound delegation for contractor access, event streams for maintenance workflows
+> 2. Bridge's data model demonstrates the **asset hierarchy** kernel primitive (property → unit → fixture → deficiency) as a concrete evolvable tree with temporal queries
+> 3. Bridge's auth model demonstrates the **multi-tenant + multi-jurisdictional** design (landlord, property manager, contractor, inspector, code-enforcement agency — each with different scopes and time-bound delegations)
+> 4. Bridge is the **first opinionated composition** of Sunfish primitives that a new vertical (e.g., school district facility management) can fork as a starting point
+>
+> The tasks below still perform the mechanical PmDemo → Bridge rename, but they are now executed **in service of** landing the property-management reference. The ROADMAP.md (task 9-6) should be expanded post-migration to capture how Bridge graduates from "renamed demo" to "canonical vertical reference" — see the spec's Section 6.
+
+---
+
+**Goal:** Migrate `C:/Projects/Marilo/samples/Marilo.PmDemo/` → `C:/Projects/Sunfish/accelerators/bridge/` as the first Sunfish **Solution Accelerator** — a full-stack Blazor Server + .NET Aspire application (Bridge) that showcases how Sunfish packages compose end-to-end: `foundation → ui-core → ui-adapters-blazor → blocks → real app`, AND serves as the **property-management vertical reference implementation** per the platform specification. The accelerator must build green, boot under Aspire, and preserve all 14 existing screens (dashboard, board, tasks, timeline, risk, budget, team, 7 account pages) as the starting baseline for property-management MVP feature expansion (leases, rent collection, inspections, maintenance workflows, vendor quotes, accounting, tax reporting — per spec Section 6).
+
+**Architecture context:** This is the *only* top-level tier with `accelerators/` — not `apps/`, not `samples/`. Master plan D6 locks this tier as a first-class Sunfish concept equivalent to `packages/`. The accelerator takes **project references** (not NuGet) to the Sunfish packages in the same repo — see D-PROJECT-REFERENCES below. Per the platform spec, additional accelerators will follow for each secondary vertical (military base, transit, school district, healthcare) — all siblings of `accelerators/bridge/`.
+
+**Source reference:** The master migration plan (`docs/superpowers/plans/2026-04-16-marilo-sunfish-migration.md`, `## Phase 9: Bridge Solution Accelerator`, lines ~711–1198) sketches Tasks 9-1 through 9-6. **This document is the authoritative Phase 9 plan**; the master plan's Phase 9 section should be reduced to a pointer to this file after merge. Platform-level framing lives in `docs/specifications/sunfish-platform-specification.md` (see Platform Context above).
 
 **Tech Stack:** .NET 10, C# 13, Blazor Server (interactive server components), .NET Aspire 13.2.1, EF Core 10 (Npgsql provider), PostgreSQL, Redis (output cache + SignalR backplane), RabbitMQ (via WolverineFx), Data API Builder (DAB) GraphQL, SignalR, xUnit 2.9.x.
+
+**Known gap vs. platform spec — decentralization primitives:** The current Sunfish repo does NOT yet have kernel-level cryptographic ownership, Macaroon-style delegation, or federation primitives (spec Sections 2, 10). Bridge as shipped by this phase plan uses conventional single-tenant auth (DemoTenantContext + MockOktaService). Spec-aligned decentralization work is a future migration phase — flagged explicitly in the updated ROADMAP.md and in Task 9-10 below.
 
 ---
 
@@ -1470,6 +1507,114 @@ git commit -m "docs: showcase Bridge accelerator as reference implementation in 
 
 ---
 
+## Task 9-10: Platform-Spec Alignment Roadmap (NEW)
+
+Bridge ships from Phase 9 as a **functional** property-management accelerator, but the platform specification (`docs/specifications/sunfish-platform-specification.md`) describes capabilities Bridge does not yet exercise — specifically the decentralization and federation primitives. This task produces the alignment roadmap document that tracks what exists post-Phase-9 vs. what Bridge needs to reach spec-aligned status.
+
+**Files:**
+- Create: `accelerators/bridge/PLATFORM_ALIGNMENT.md`
+
+The alignment doc is the companion to ROADMAP.md — ROADMAP captures **feature** work (new pages, new workflows), PLATFORM_ALIGNMENT captures **platform-primitive adoption** work (switching from DemoTenantContext to Macaroon-based delegation, adopting the cryptographic ownership kernel primitive when it exists, wiring federation).
+
+- [ ] **Step 1: Inventory current state vs spec**
+
+Create `accelerators/bridge/PLATFORM_ALIGNMENT.md` with this template:
+
+```markdown
+# Bridge Platform Alignment
+
+This document tracks Bridge's adoption of Sunfish platform primitives as defined in
+`docs/specifications/sunfish-platform-specification.md`. Bridge is the property-management
+vertical reference implementation — it should exercise every kernel primitive the platform
+defines. Gaps are tracked here with target phases.
+
+Legend: ✅ adopted · 🟡 partially adopted · 🔴 not adopted · ⚪ N/A
+
+## Spec Section 3 — Core Kernel Primitives
+
+| Kernel Primitive | Bridge Status | Notes |
+|---|---|---|
+| Entity storage (multi-versioned) | 🟡 | EF Core entities are versioned via audit columns (CreatedAt/UpdatedAt) but not temporal tables; spec calls for as-of queries |
+| Schema registry | 🔴 | Entities use compile-time types only; no runtime schema registry |
+| Permissions (ABAC/RBAC evaluator) | 🟡 | Basic RBAC via Permissions.cs + Roles.cs; no policy language or decision engine |
+| Audit trail | 🟡 | AuditRecord entity exists; not all mutations emit audit events |
+| Event stream | 🔴 | Wolverine handles workflow events but no canonical domain event stream for external consumers |
+
+## Spec Section 2 — Decentralized Primitives
+
+| Primitive | Bridge Status | Notes |
+|---|---|---|
+| Cryptographic ownership proofs | 🔴 | No crypto primitives in Foundation yet; DemoTenantContext uses tenant IDs as strings |
+| Macaroon-style delegation | 🔴 | Time-bound delegation not implemented |
+| Federation (peer-to-peer sync) | 🔴 | Single-server deployment; no federation endpoints |
+
+## Spec Section 6 — Property Management MVP Coverage
+
+| MVP Feature | Bridge Status | Notes |
+|---|---|---|
+| Tenant leases | 🔴 | Not modeled; Bridge currently uses generic TaskItem entities |
+| Rent collection | 🔴 | Not implemented |
+| Inspection scheduling & documentation | 🔴 | Bridge has generic tasks but no inspection-specific workflow |
+| Maintenance requests + vendor quotes | 🟡 | Generic task board covers request intake; quote flow not implemented |
+| Repair tracking + depreciation | 🔴 | Not implemented |
+| Tax reporting | 🔴 | Not implemented |
+| Contractor delegation | 🟡 | RBAC supports role-based access; time-bound delegation not implemented |
+| Compliance audit trails | 🟡 | Generic AuditRecord exists; not scoped per jurisdictional requirement |
+
+## Spec Section 7 — Input Modalities
+
+| Modality | Bridge Status | Notes |
+|---|---|---|
+| Forms | ✅ | SunfishForm + Inputs cover standard data entry |
+| Spreadsheet import/export | 🟡 | SunfishDataSheet renders spreadsheet UX; no CSV/XLSX import pipeline |
+| Voice transcription | 🔴 | Not implemented |
+| Sensor data ingestion | 🔴 | Not implemented |
+| Drone/robot imagery | 🔴 | Not implemented |
+| Satellite imagery | 🔴 | Not implemented |
+
+## Spec Section 8 — Asset Evolution & Versioning
+
+| Capability | Bridge Status | Notes |
+|---|---|---|
+| Hierarchy mutations (split/merge/re-parent) | 🔴 | Entity parent-child is static |
+| Temporal as-of queries | 🔴 | No point-in-time view support |
+| Metadata resolution improvements | 🔴 | No schema evolution story |
+
+## Spec Section 9 — BIM Integration
+
+| Capability | Bridge Status | Notes |
+|---|---|---|
+| IFC/Revit import | ⚪ | Not in scope for property management MVP; may apply in later verticals |
+
+## Spec Section 10 — Multi-Jurisdictional & Multi-Tenant
+
+| Capability | Bridge Status | Notes |
+|---|---|---|
+| Multi-tenant isolation | 🟡 | ITenantContext in Foundation; DemoTenantContext is single-tenant |
+| Time-bound access (Macaroons) | 🔴 | Not implemented |
+| Federation patterns | 🔴 | Not implemented |
+| Jurisdictional routing | 🔴 | Not implemented |
+
+## Next Steps (by target migration phase or future)
+
+- **Post-Phase 9 (immediate):** None — Bridge is a functional demo as shipped.
+- **Platform Phase A (asset modeling — new migration phase):** Expand kernel primitives for temporal entities + asset hierarchies; swap Bridge's generic TaskItem entity for a Property/Unit/Fixture hierarchy.
+- **Platform Phase B (decentralization — new migration phase):** Introduce crypto primitives in Foundation; adopt Macaroon-style delegation; rewire DemoTenantContext to use real claims.
+- **Platform Phase C (input modalities — new migration phase):** Build the ingestion pipeline per spec Section 7; wire voice/sensor/drone ingestion into Bridge as optional inputs.
+- **Platform Phase D (federation — new migration phase):** Define federation protocol; implement peer-to-peer sync; demonstrate a cross-jurisdictional scenario (landlord + code-enforcement agency share inspection data).
+
+These phases are future work beyond the current migration scope (Phases 1–9). They become concrete plan documents when prioritized.
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add accelerators/bridge/PLATFORM_ALIGNMENT.md
+git commit -m "docs(bridge): add PLATFORM_ALIGNMENT.md — current state vs spec kernel primitives"
+```
+
+---
+
 ## Phase 9 Summary — What This Produces
 
 | Deliverable | Location |
@@ -1487,6 +1632,7 @@ git commit -m "docs: showcase Bridge accelerator as reference implementation in 
 | Pending roadmap preserved | `accelerators/bridge/ROADMAP.md` |
 | Per-accelerator + root README | `accelerators/bridge/README.md`, `README.md` |
 | Repeatable rename script | `scripts/migrate-bridge-accelerator.sh` |
+| Platform-spec alignment inventory | `accelerators/bridge/PLATFORM_ALIGNMENT.md` (NEW — Task 9-10) |
 
 ---
 
@@ -1522,6 +1668,8 @@ git commit -m "docs: showcase Bridge accelerator as reference implementation in 
 - [ ] `dotnet test accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Sunfish.Bridge.Tests.Unit.csproj` = all green
 - [ ] `dotnet build packages/foundation/Sunfish.Foundation.csproj` = 0 warnings, 0 errors
 - [ ] `dotnet test packages/foundation/tests/tests.csproj` = all green (baseline 3 + new foundation notification tests)
+- [ ] `accelerators/bridge/PLATFORM_ALIGNMENT.md` exists and accurately captures current Bridge adoption of spec kernel primitives (Task 9-10)
+- [ ] Top-of-plan Platform Context section links to `docs/specifications/sunfish-platform-specification.md`
 
 ---
 
