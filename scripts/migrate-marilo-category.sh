@@ -23,7 +23,7 @@ find "$DST" -type f \( -name "Marilo*.razor" -o -name "Marilo*.cs" \) | while re
   mv "$f" "$new"
 done
 
-echo "→ Rewriting content (sed pass)"
+echo "→ Rewriting content (sed pass — code files)"
 find "$DST" -type f \( -name "*.razor" -o -name "*.cs" -o -name "*.razor.cs" \) -exec sed -i \
   -e 's/\bIMarilo/ISunfish/g' \
   -e 's/\bMarilo\.Core\.Contracts/Sunfish.UICore.Contracts/g' \
@@ -37,6 +37,15 @@ find "$DST" -type f \( -name "*.razor" -o -name "*.cs" -o -name "*.razor.cs" \) 
   -e 's/class="marilo-/class="sf-/g' \
   -e "s/class='mar-/class='sf-/g" \
   -e "s/class='marilo-/class='sf-/g" \
+  {} \;
+
+# Markdown research/gap-analysis files also ship with categories.
+# Narrow sed: rename identifier references; leave prose intact.
+echo "→ Rewriting content (sed pass — markdown docs)"
+find "$DST" -type f -name "*.md" -exec sed -i \
+  -e 's/\bIMarilo/ISunfish/g' \
+  -e 's/\bMariloResizeEdges\b/ResizeEdges/g' \
+  -e 's/\bMarilo/Sunfish/g' \
   {} \;
 
 echo "→ Grepping for leftover Marilo references"
