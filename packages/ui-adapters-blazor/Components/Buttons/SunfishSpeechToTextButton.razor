@@ -1,0 +1,56 @@
+@inherits SunfishComponentBase
+
+<button type="button"
+        class="@CombineClasses($"mar-button mar-button--speech {(IsListening ? "mar-button--listening" : "")} mar-button--{Variant.ToString().ToLowerInvariant()}")"
+        style="@CombineStyles()"
+        disabled="@(!Enabled)"
+        @onclick="ToggleListening"
+        @attributes="AdditionalAttributes">
+    <span class="sf-button__icon">
+        @if (IsListening)
+        {
+            <span class="sf-speech__pulse">&#9679;</span>
+        }
+        else
+        {
+            <span>&#127908;</span>
+        }
+    </span>
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <span>@(IsListening ? "Listening..." : "Speech to Text")</span>
+    }
+</button>
+
+@code {
+    /// <summary>Callback invoked when text is received from speech recognition.</summary>
+    [Parameter] public EventCallback<string> OnTextReceived { get; set; }
+
+    /// <summary>BCP-47 language code for speech recognition.</summary>
+    [Parameter] public string? Language { get; set; } = "en-US";
+
+    /// <summary>Whether the button is enabled.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Whether the component is currently listening for speech input.</summary>
+    [Parameter] public bool IsListening { get; set; }
+
+    /// <summary>Two-way binding callback for <see cref="IsListening"/>.</summary>
+    [Parameter] public EventCallback<bool> IsListeningChanged { get; set; }
+
+    /// <summary>Custom button label content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Visual variant of the button.</summary>
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Secondary;
+
+    private async Task ToggleListening()
+    {
+        IsListening = !IsListening;
+        await IsListeningChanged.InvokeAsync(IsListening);
+    }
+}

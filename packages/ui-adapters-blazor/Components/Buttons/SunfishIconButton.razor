@@ -1,0 +1,17 @@
+@inherits SunfishComponentBase
+
+<button class="@CombineClasses(CssProvider.IconButtonClass(Size))"
+        style="@CombineStyles()"
+        type="button"
+        disabled="@(!Enabled)"
+        @onclick="OnClick"
+        @attributes="AdditionalAttributes">
+    @IconProvider.GetIcon(Icon, IconSize.Medium)
+</button>
+
+@code {
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Medium;
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+}
