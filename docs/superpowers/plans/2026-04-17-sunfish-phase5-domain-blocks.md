@@ -151,6 +151,23 @@ Findings that anchor the greenfield claims in D-MARILO-LIFT:
 
 **Conclusion:** All four blocks are greenfield. `blocks-scheduling` references the existing view infrastructure but adds no Marilo-sourced orchestration code.
 
+## External Design References
+
+Per the research catalog in `docs/specifications/research-notes/external-references.md`, the following external systems inform the block designs (not adopted as dependencies — used as design references):
+
+**For `blocks-forms` (Task 1):**
+- **[Typeform AI](https://help.typeform.com/hc/en-us/articles/33777155298708-AI-with-Typeform-FAQ)** — AI-assisted form authoring is a 2026 baseline expectation. Task 1 ships a hand-authored `FormBlock`; AI-assisted schema generation is added to the parking lot (see below).
+- **[Formstack Workflows](https://www.formstack.com/features/workflows)** — approval-chain composition model. When `blocks-forms` combines with `blocks-tasks` in a later phase, the composition UX should match Formstack's expressiveness.
+- **[Feathery conditional logic catalog](https://docs.feathery.io/platform/build-forms/logic/available-conditions)** — baseline set of conditional-logic primitives (equal, contains, regex, numeric-compare, date-compare, is-empty, cross-field). `FormBlockState` rule support should cover at minimum this set; implementation via JSON Logic atop JSON Schema.
+
+**For `blocks-tasks` (Task 2):**
+- **[Pega case lifecycles and child cases](https://academy.pega.com/topic/child-cases/v5)** — the canonical reference for the parent/child-case vocabulary Sunfish tasks adopt. `TaskBoardState` models stages; future extension adds child-task relationships with inherited context and independent lifecycles (parent inspection → child deficiencies → child repairs). Phase 5 ships only the flat board; parent/child hierarchy is a parking-lot item.
+- **[Temporal durable execution](https://temporal.io/blog/durable-execution-in-distributed-systems-increasing-observability)** — durable-execution pattern for long-running workflows. The initial `blocks-tasks` implementation uses in-memory state; **Temporal .NET SDK (`Temporalio.Sdk`)** is the primary candidate for durable-execution backend when tasks cross process boundaries or span days/weeks. Alternative: Dapr Workflows (tighter .NET-ecosystem integration), Elsa Workflows 3 (.NET-native designer), Microsoft DurableTask. Evaluation is parking-lot work.
+
+**For `blocks-scheduling` (Task 3):** No new external references beyond those already informing `blocks-tasks`.
+
+**For `blocks-assets` (Task 4):** No new external references.
+
 ---
 
 ## Task 0: Branch setup
@@ -1113,5 +1130,9 @@ Tracked here so future phases don't lose sight of deferred work:
 6. **React adapter parity** — `blocks-react-*` equivalents once `ui-adapters-react` exists. Requires generalising D-BLOCK-ARCHITECTURE away from `Razor Class Library`.
 7. **Kitchen-sink demos** — one page per block in `apps/kitchen-sink` once that app is introduced.
 8. **Block versioning policy** — how blocks version relative to ui-adapters-blazor (they depend on it, so semver cascading rules need nailing down).
+9. **AI-assisted form authoring for `blocks-forms`** — Typeform-AI-style flow: user describes a form in natural language; system drafts a JSON Schema + layout. Depends on an LLM integration point in Sunfish; out of scope for initial block.
+10. **Form+workflow composition UX** — Formstack-Workflows-style editor for combining `blocks-forms` + `blocks-tasks` into approval chains with branching, parallelism, and escalation. Requires the `blocks-tasks` runtime to mature first.
+11. **Parent/child task hierarchy in `blocks-tasks`** — Pega-style child-case model: a parent inspection task spawns child deficiency tasks with inherited context and independent lifecycles. Phase 5 ships only the flat board.
+12. **Durable-execution backend for `blocks-tasks`** — evaluation between Temporal (`Temporalio.Sdk`), Dapr Workflows, Elsa Workflows 3, Microsoft DurableTask. Needed when tasks cross process boundaries or span long timescales. Initial Phase 5 uses in-memory state.
 
 Each of these deserves its own intake ticket at the time it's picked up — don't let them creep into Phase 5.

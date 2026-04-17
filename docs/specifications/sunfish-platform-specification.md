@@ -565,10 +565,34 @@ public record Schema(
 - `Migrations` are declarative JSON-to-JSON transforms (default: `jsonata`; pluggable).
 - Entity upgrades are **opt-in and lazy**: an entity sits at its original schema version until explicitly migrated.
 
+**Schema format — required:**
+
+Sunfish schemas **are JSON Schemas, draft 2020-12** ([spec](https://json-schema.org/specification)). Rationale: ubiquitous, language-agnostic, mature validator ecosystem in every platform, already the de-facto standard for OpenAPI / configuration / form builders. The registry stores each schema as a content-addressed blob (§3.7) — the CID is the canonical schema reference in entity metadata, giving reproducible, peer-verifiable schema resolution across federated nodes.
+
+Sunfish-specific extensions are namespaced under `x-sunfish` to remain JSON-Schema-valid:
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sunfish.pm.lease/1.1",
+  "x-sunfish": {
+    "entity_kind": "lease",
+    "parents": ["sunfish.pm.agreement/1.0"],
+    "migrations": { "from": "1.0", "script": "lease-1.0-to-1.1.jsonata" },
+    "permissions": { "read": ["tenant", "landlord", "pm"], "write": ["landlord", "pm"] }
+  },
+  "type": "object",
+  "required": ["tenant_id", "unit_id", "start_date", "rent_amount"],
+  "properties": { /* ... */ }
+}
+```
+
+**.NET reference parser:** `JsonSchema.Net` (Greg Dennis, MIT) is the recommended validator. `Newtonsoft.Json.Schema` is a viable alternative. Both support draft 2020-12 and arbitrary `$ref` resolution, which is required for the content-addressed schema-by-CID resolver.
+
 **Extension points:**
-- Schema language (JSON Schema default; OpenAPI, Protobuf, Avro pluggable).
-- Migration engine.
-- Validation engine (for complex cross-field rules beyond JSON Schema's reach).
+- Alternative schema languages (OpenAPI, Protobuf, Avro) via adapters that project to JSON Schema — JSON Schema remains the canonical internal form.
+- Migration engine (default: `jsonata`; pluggable).
+- Validation engine (for complex cross-field rules beyond JSON Schema's reach — e.g., "rent_amount must equal sum of unit_rent for all unit_ids in this multi-unit lease").
 
 **Property management example.** The `Lease` schema evolves from 1.0 to 1.1 to add an optional `rent_escalation_clause` field. Existing leases stay at 1.0. New leases are created at 1.1. A batch migration can be run to lazily upgrade 1.0 leases if/when renewals touch them.
 
@@ -602,10 +626,45 @@ public enum DecisionKind { Permit, Deny, Indeterminate }
 
 - Policies are authored in a declarative language (§5.5). The evaluator combines applicable policies using a configurable combining algorithm (deny-overrides by default).
 - **Obligations** are side effects the caller must fulfill (e.g., "log this read", "notify the data owner"). The kernel does not fulfill them; the caller does.
-- **Delegations** (§10) are first-class inputs: if the subject presents a valid delegation token with caveats that permit the action, the evaluator honors it.
+- **Delegations** (§10) are first-class inputs: if the subject is a member of a capability group that permits the action, the evaluator honors it.
+
+**Model — ReBAC over the Keyhive capability graph:**
+
+> **Revision note (v0.2):** the permission evaluator adopts a **Relationship-Based Access Control (ReBAC)** model, following [OpenFGA](https://openfga.dev)'s authorization-model DSL (which itself formalizes the Zanzibar-style ReBAC pattern). The evaluator queries relationships over the **Keyhive capability graph** (§10.2.1) — Keyhive stores the membership facts as a CRDT; the evaluator reasons over them. This is the recommended layered stack replacing earlier "pick a policy DSL" neutrality.
+
+Conceptual example (OpenFGA-style authorization model):
+
+```
+model
+  schema 1.1
+
+type user
+
+type inspection_firm
+  relations
+    define employee: [user]
+
+type property
+  relations
+    define landlord:     [user]
+    define pm_firm:      [inspection_firm]
+    define inspector:    [user, inspection_firm#employee]
+    define can_inspect:  inspector or employee from pm_firm
+
+type inspection
+  relations
+    define property:     [property]
+    define author:       [user]
+    define can_write:    author or can_inspect from property
+    define can_read:     author or can_inspect from property or landlord from property
+```
+
+With this model, the evaluator answers questions like `can user:jim inspect inspection:2026-04-17?` by traversing relationships in the Keyhive graph (`jim` is an employee of `inspection_firm:acme`, which is the `pm_firm` of `property:42`, which is the target's `property` → granted).
+
+The spec's earlier "PolicyL" design space is now formalized as **the OpenFGA authorization-model DSL, augmented with Sunfish-specific type primitives** (entity kinds from the schema registry become first-class types; audit obligations become decision side-effects).
 
 **Extension points:**
-- Policy language (OPA/Rego, Cedar, or Sunfish's own PolicyL — see §5.5).
+- Alternative policy engines — Open Policy Agent (Rego), AWS Cedar — remain pluggable via the same `IPermissionEvaluator` interface if a deployment prefers an attribute-based or hybrid model.
 - Combining algorithm.
 - External attribute providers (IAM directories, DID resolvers, tenant metadata services).
 
@@ -660,8 +719,31 @@ public record Event(
 - Events are **idempotent**: subscribers should tolerate re-delivery (exactly-once is not guaranteed at the kernel level).
 - Events are signed by the actor; subscribers can verify.
 
+**Transport backends — concrete .NET candidates:**
+
+| Backend | Role | When to choose |
+|---|---|---|
+| In-process channels | `IEventBus` default | Dev, tests, single-node |
+| [MassTransit](https://masstransit.io) | `IEventBus` transport over RabbitMQ / Azure Service Bus / Amazon SQS | Most-adopted .NET message bus; rich saga support; cross-team familiarity |
+| Wolverine (WolverineFx) | `IEventBus` transport over RabbitMQ / Kafka / Azure Service Bus | Tighter JasperFx/Marten integration; Bridge accelerator's current choice |
+| Kafka (via KafkaFlow or Confluent SDK) | `IEventBus` transport for high-throughput / log-compaction scenarios | Regulated-industry audit retention, analytics replay |
+| libp2p pubsub | `IEventBus` transport for peer-to-peer federation | Multi-jurisdictional deployments where events cross Sunfish node boundaries without a central broker |
+
+The kernel contract is transport-neutral; Sunfish deployments pick a backend based on operational profile. Bridge ships with Wolverine (§11); a production deployment choosing MassTransit is a backend swap at composition root, no kernel or block code changes.
+
+**Workflow execution vs event publishing — scope clarification:**
+
+The event bus handles **short-running transport** of domain events ("entity changed", "deficiency logged"). It does **not** run long-lived workflows ("wait 30 days for tenant response, then escalate"). Long-running workflows are a separate concern addressed by the Phase 5 `blocks-tasks` primitive.
+
+Candidate durable-execution engines for `blocks-tasks`:
+- **[Temporal](https://temporal.io)** — mature durable-execution platform; first-class .NET SDK (`Temporalio.Sdk`); persists every workflow step for crash recovery across workers; native support for timers, retries, compensation; see [durable execution blog post](https://temporal.io/blog/durable-execution-in-distributed-systems-increasing-observability)
+- **Dapr Workflows** — building block of the Dapr distributed application runtime; durable under the hood (DurableTask); tighter native .NET ecosystem integration
+- **Elsa Workflows 3** — .NET-native workflow engine with a designer UI
+- **Microsoft DurableTask / Azure Durable Functions** — the engine underlying Dapr Workflows; also available standalone
+
+The `blocks-tasks` primitive exposes a transport-neutral workflow interface; the deployment chooses which durable-execution engine runs underneath. See Phase 5 plan for the evaluation.
+
 **Extension points:**
-- Transport (local in-proc default; RabbitMQ/Wolverine for distributed; Kafka for high-throughput; libp2p for federated).
 - Serialization (System.Text.Json default; Protobuf optional).
 
 **Property management example.** When an inspector writes a deficiency:
@@ -1337,6 +1419,12 @@ query RenewalsDueIn90Days {
 
 The Property Management MVP is realized in the **Bridge accelerator**. This section defines each feature's entities, typical workflows, and acceptance criteria.
 
+**Design references for form UX and workflow composition:**
+- **[Typeform AI](https://help.typeform.com/hc/en-us/articles/33777155298708-AI-with-Typeform-FAQ)** — AI-assisted form authoring ("describe the form you want; get a draft schema + layout") as the baseline 2026 UX expectation for property-manager form authoring. Phase 5 `blocks-forms` targets this interaction as an optional companion to hand-authored JSON Schemas.
+- **[Formstack Workflows](https://www.formstack.com/features/workflows)** — approval-chain workflow editor with branching, parallelism, and escalation. Sets the bar for the UX of composing form submissions into multi-stage workflows (tenant request → PM review → contractor quote → PM approval). Bridge's approval flows should match this expressiveness.
+- **[Feathery conditional logic catalog](https://docs.feathery.io/platform/build-forms/logic/available-conditions)** — the reference catalog of conditional-logic primitives (equal, contains, matches-regex, in-set, numeric-compare, date-compare, is-empty, cross-field). Sunfish's JSON Schema + JSON Logic extensions should cover at minimum this set.
+- **[Pega child cases](https://academy.pega.com/topic/child-cases/v5)** — parent/child-case lifecycle model. Directly informs the inspection → deficiency → work-order → sub-repair hierarchy (§6.3, §6.4). Sunfish workflows are case-lifecycle-shaped, not linear flowcharts.
+
 ### 6.1 Leases
 
 **Entities involved:**
@@ -1697,18 +1785,26 @@ Rationale:
 - BIM models are proprietary and vendor-locked (Revit in particular). Sunfish should not be subordinate to a vendor tool.
 - Yet BIM models, when present, are extraordinarily rich and should absolutely be consumed.
 
-### 9.2 Import Path
+### 9.2 Canonical format — IFC 4.3.2
+
+Sunfish adopts **[IFC (Industry Foundation Classes) 4.3.2](https://technical.buildingsmart.org/standards/ifc/ifc-schema-specifications/)** as the canonical BIM interchange format. IFC is maintained by buildingSMART International, is the only open BIM format with broad industry traction (Revit, ArchiCAD, Allplan, Tekla, Bentley all export IFC), and has a published schema in multiple serializations (STEP, XML, JSON, ifcOWL).
+
+- **Serialization preference: IFC-JSON** for Sunfish-ingested artifacts — diff-friendly, streaming-parseable, directly consumable from .NET without a specialized EXPRESS parser. STEP and XML are accepted and converted on ingest.
+- **.NET parser — `Xbim Toolkit`** (MIT, actively maintained) is the canonical reference for reading IFC 2x3, 4.0, 4.1, 4.2, and 4.3 in Sunfish. Supports STEP (`.ifc`), XML (`.ifcXML`), and IFC-JSON. `IfcOpenShell` (Python) and Autodesk Forge (SaaS, proprietary) remain alternatives for non-.NET adapters or `.rvt`-specific needs.
+- **Storage:** each IFC artifact is stored as a content-addressed blob (§3.7); property / building / unit / fixture entities reference the BIM artifact by CID and carry `bim_guid` (the IFC GUID) for round-tripping.
+
+### 9.3 Import Path
 
 ```
 Source BIM (.ifc, .rvt) → BIM import adapter → candidate entities + edges → kernel
 ```
 
-- `.ifc` (open standard) parsed directly.
-- `.rvt` (proprietary) parsed via Autodesk Forge or open alternatives (xbim toolkit, IfcOpenShell).
-- Every BIM object (spaces, systems, equipment, fixtures) maps to a candidate entity; BIM GUIDs become idempotency keys so re-imports don't duplicate.
+- `.ifc` (open standard) parsed directly via Xbim Toolkit.
+- `.rvt` (proprietary) converted to IFC first via Revit's IFC export or Autodesk Forge; Sunfish never touches the proprietary binary format directly.
+- Every BIM object (spaces, systems, equipment, fixtures) maps to a candidate entity; IFC GUIDs become idempotency keys so re-imports don't duplicate.
 - Geometry and metadata attached as content-addressed blobs.
 
-### 9.3 Two-Way Sync
+### 9.4 Two-Way Sync
 
 Changes in Sunfish can flow **back** to BIM when the source project opts in. Use cases:
 - Field inspector updates a fixture's condition → Sunfish writes to entity → export job updates a Revit model's parameter.
@@ -1716,7 +1812,7 @@ Changes in Sunfish can flow **back** to BIM when the source project opts in. Use
 
 Two-way sync is opt-in per project; conflicts resolved with last-writer-wins + audit trail, or human review.
 
-### 9.4 BIM as Augmentation
+### 9.5 BIM as Augmentation
 
 When a BIM model is imported, every Sunfish entity that corresponds to a BIM object carries:
 
@@ -1726,11 +1822,11 @@ When a BIM model is imported, every Sunfish entity that corresponds to a BIM obj
 
 Removing the BIM source does not break Sunfish — the entities persist with their content; they just lose the geometry attachments.
 
-### 9.5 Why BIM is Not a Dependency
+### 9.6 Why BIM is Not a Dependency
 
 The kernel does not know about geometry, IFC, or BIM concepts. BIM adapters are optional packages (`packages/bim-ifc`, `packages/bim-forge`). Verticals like military base maintenance may use BIM heavily; property management for small multi-family will not use it at all. Sunfish runs identically in both.
 
-### 9.6 Competitive Note
+### 9.7 Competitive Note
 
 Oracle Aconex, Procore, and Autodesk Construction Cloud treat BIM as central. For construction project delivery, that's correct. For **long-lived operational asset management**, BIM-centricity is a liability: BIM models fall out of date the moment ribbon-cutting happens. Sunfish's operational-first, BIM-optional stance is a deliberate differentiator for the ops-phase market.
 
