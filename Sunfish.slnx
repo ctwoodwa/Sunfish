@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/foundation/">
+    <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
+    <Project Path="packages/foundation/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ui-core/">
+    <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
+    <Project Path="packages/ui-core/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ui-adapters-blazor/">
+    <Project Path="packages/ui-adapters-blazor/Sunfish.Components.Blazor.csproj" />
+    <Project Path="packages/ui-adapters-blazor/tests/tests.csproj" />
+  </Folder>
+</Solution>
