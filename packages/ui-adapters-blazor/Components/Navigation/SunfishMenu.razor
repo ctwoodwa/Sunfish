@@ -1,0 +1,21 @@
+@inherits SunfishComponentBase
+
+@if (IsOpen)
+{
+    <div class="sf-menu-overlay" @onclick="HandleClose"></div>
+    <div class="@CombineClasses(CssProvider.MenuClass())"
+         style="@CombineStyles()"
+         role="menu"
+         tabindex="-1"
+         @onkeydown="HandleKeyDown"
+         @attributes="AdditionalAttributes">
+        @if (Data != null)
+        {
+            @RenderMenuItems(BuildMenuTree())
+        }
+        else
+        {
+            @ChildContent
+        }
+    </div>
+}

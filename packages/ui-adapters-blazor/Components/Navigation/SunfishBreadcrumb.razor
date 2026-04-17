@@ -1,0 +1,67 @@
+@inherits SunfishComponentBase
+
+<nav class="@CombineClasses(CssProvider.BreadcrumbClass())"
+     style="@CombineStyles()"
+     aria-label="breadcrumb"
+     @attributes="AdditionalAttributes">
+    <ol>
+        @if (Data != null)
+        {
+            @foreach (var item in Data)
+            {
+                var text = GetPropertyValue(item, TextField);
+                var url = GetPropertyValue(item, UrlField);
+                var icon = GetPropertyValue(item, IconField);
+
+                <li class="sf-breadcrumb__item">
+                    @if (ItemTemplate != null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else if (!string.IsNullOrEmpty(url))
+                    {
+                        <a href="@url">
+                            @if (!string.IsNullOrEmpty(icon))
+                            {
+                                <span class="sf-breadcrumb__icon">@icon</span>
+                            }
+                            @text
+                        </a>
+                    }
+                    else
+                    {
+                        <span>
+                            @if (!string.IsNullOrEmpty(icon))
+                            {
+                                <span class="sf-breadcrumb__icon">@icon</span>
+                            }
+                            @text
+                        </span>
+                    }
+                </li>
+            }
+        }
+        else
+        {
+            @ChildContent
+        }
+    </ol>
+</nav>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Data source for breadcrumb items.</summary>
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public string UrlField { get; set; } = "Url";
+    [Parameter] public string IconField { get; set; } = "Icon";
+
+    /// <summary>Custom template for rendering each breadcrumb item.</summary>
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    private static string? GetPropertyValue(object item, string propertyName)
+    {
+        return item.GetType().GetProperty(propertyName)?.GetValue(item)?.ToString();
+    }
+}

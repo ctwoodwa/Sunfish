@@ -1,0 +1,51 @@
+@inherits SunfishComponentBase
+
+<li class="@CombineClasses(ItemClass)"
+    style="@CombineStyles()"
+    role="treeitem"
+    aria-expanded="@(HasChildren ? IsExpanded.ToString().ToLower() : null)"
+    aria-selected="@IsSelected.ToString().ToLower()"
+    @attributes="AdditionalAttributes">
+    <div class="sf-tree-item__header">
+        @if (HasChildren)
+        {
+            <button type="button"
+                    class="sf-tree-item__toggle"
+                    aria-label="@(IsExpanded ? "Collapse" : "Expand")"
+                    tabindex="-1"
+                    disabled="@(TreeView?.Disabled == true || TreeView?.ReadOnly == true)"
+                    @onclick="ToggleExpanded">
+                @(IsExpanded ? "\u25BC" : "\u25B6")
+            </button>
+        }
+        @if (TreeView?.ShowCheckboxes == true)
+        {
+            var checkState = TreeView.GetCheckState(Id ?? Title);
+            <input type="checkbox"
+                   class="@CheckboxClass(checkState)"
+                   checked="@(checkState == true)"
+                   disabled="@(TreeView.Disabled || TreeView.ReadOnly)"
+                   tabindex="-1"
+                   aria-checked="@(checkState switch { true => "true", false => "false", _ => "mixed" })"
+                   @onchange="OnCheckboxChanged" />
+        }
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-tree-item__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+        }
+        @if (!string.IsNullOrEmpty(Url))
+        {
+            <a class="sf-tree-item__title" href="@Url">@Title</a>
+        }
+        else
+        {
+            <span class="sf-tree-item__title" @onclick="HandleClick">@Title</span>
+        }
+    </div>
+    @if (ChildContent != null && IsExpanded)
+    {
+        <ul role="group" class="sf-tree-item__children">
+            @ChildContent
+        </ul>
+    }
+</li>

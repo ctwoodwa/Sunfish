@@ -1,0 +1,31 @@
+@inherits SunfishComponentBase
+
+@if (string.IsNullOrEmpty(Selector))
+{
+    <div class="sf-context-menu-trigger"
+         @oncontextmenu="OnContextMenu"
+         @oncontextmenu:preventDefault="true"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}
+
+@if (_isOpen)
+{
+    <div class="sf-menu-overlay" @onclick="Close" @oncontextmenu="CloseOnContext" @oncontextmenu:preventDefault="true"></div>
+    <div class="@CombineClasses(CssProvider.ContextMenuClass())"
+         style="@CombineStyles($"position:fixed;left:{_x}px;top:{_y}px")"
+         role="menu"
+         aria-label="Context menu"
+         @onkeydown="HandleKeyDown"
+         tabindex="-1">
+        @if (Data != null)
+        {
+            @RenderItems(Data)
+        }
+        else
+        {
+            @MenuContent
+        }
+    </div>
+}

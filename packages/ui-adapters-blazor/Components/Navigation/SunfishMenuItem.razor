@@ -1,0 +1,68 @@
+@inherits SunfishComponentBase
+
+@if (!string.IsNullOrEmpty(Url))
+{
+    <a class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
+       style="@CombineStyles()"
+       href="@Url"
+       role="menuitem"
+       aria-disabled="@(IsDisabled ? "true" : null)"
+       @onclick="HandleClick"
+       @attributes="AdditionalAttributes">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-menu-item__icon">@Icon</span>
+        }
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            @Text
+        }
+        @ChildContent
+    </a>
+}
+else
+{
+    <button type="button"
+            class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
+            style="@CombineStyles()"
+            role="menuitem"
+            disabled="@IsDisabled"
+            @onclick="HandleClick"
+            @attributes="AdditionalAttributes">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-menu-item__icon">@Icon</span>
+        }
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            @Text
+        }
+        @ChildContent
+    </button>
+}
+
+@code {
+    /// <summary>Display text for the menu item.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Navigation URL. When set, renders as <c>&lt;a&gt;</c> instead of <c>&lt;button&gt;</c>.</summary>
+    [Parameter] public string? Url { get; set; }
+
+    /// <summary>Fires when the item is clicked.</summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>Whether this item is disabled.</summary>
+    [Parameter] public bool IsDisabled { get; set; }
+
+    /// <summary>Icon class or name.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Item content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (!IsDisabled && OnClick.HasDelegate)
+            await OnClick.InvokeAsync();
+    }
+}

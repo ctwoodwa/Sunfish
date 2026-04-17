@@ -1,0 +1,12 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ToolbarGroupClass())"
+     style="@CombineStyles()"
+     role="group"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
