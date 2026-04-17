@@ -28,7 +28,7 @@ Sunfish is organized into layers:
 - **Solution Accelerators**  
   Opinionated, ready-to-extend “starter solutions” (e.g., asset management, project operations) composed from Sunfish building blocks.
 
-## Repository layout (planned)
+## Repository layout
 
 ```text
 sunfish/
@@ -45,11 +45,18 @@ sunfish/
   apps/
     docs/                # documentation site + live examples
     kitchen-sink/        # playground for all components and blocks
+  accelerators/
+    bridge/              # first solution accelerator — Bridge (in progress)
   tooling/
     scaffolding-cli/     # Sunfish CLI for scaffolding apps and modules
+  _shared/
+    design/              # component principles, token guidelines
+    engineering/         # coding standards, package conventions, testing strategy
+    product/             # vision, architecture principles, compatibility policy
+  icm/                   # ICM pipeline — workflow artifacts only, not code
 ```
 
-> Note: This structure is aspirational and will evolve as the project matures.
+> The directory structure is scaffolded. Packages are being built incrementally as the design matures.
 
 ## Example use cases
 
@@ -59,7 +66,9 @@ sunfish/
 
 ## Status
 
-Sunfish is currently in early design and prototyping.  
+Sunfish is in active early development. The repository structure and ICM pipeline are in place;
+package implementations are being built incrementally.
+
 APIs, package names, and structure are subject to change until a 1.0 release is tagged.
 
 Planned milestones:
@@ -76,6 +85,13 @@ Contributions, ideas, and discussion are very welcome—even at this early stage
 - Open an issue to propose new building blocks, adapters, or solution accelerators.  
 - Share real-world scenarios where a compatibility or abstraction layer would simplify your stack.  
 - Help refine the API design so Sunfish is pleasant to use from multiple frameworks.
+
+### Development process
+
+Sunfish uses an ICM (Integrated Change Management) pipeline to stage work from intake through release.
+All changes flow through deliberate phases with review gates, keeping design decisions traceable.
+See [`/icm/CONTEXT.md`](icm/CONTEXT.md) for an overview, and [`CLAUDE.md`](CLAUDE.md) for
+AI-assisted development guidance including the tool boundaries between ICM, OpenWolf, and Serena.
 
 ## License
 

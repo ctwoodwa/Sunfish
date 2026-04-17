@@ -73,6 +73,7 @@ BenchmarkDotNet.Artifacts/
 project.lock.json
 project.fragment.lock.json
 artifacts/
+_site/
 
 # ASP.NET Scaffolding
 ScaffoldingReadMe.txt
@@ -213,12 +214,10 @@ PublishScripts/
 # NuGet Symbol Packages
 *.snupkg
 # The packages folder can be ignored because of Package Restore
-**/[Pp]ackages/*
+# (scoped to nested paths only; /packages/ at the repo root is Sunfish source code)
+*/**/[Pp]ackages/*
 # except build/, which is used as an MSBuild target.
-!**/[Pp]ackages/build/
-# Sunfish source packages at repo root (override the NuGet-cache ignore above)
-!/packages/
-!/packages/**
+!*/**/[Pp]ackages/build/
 # Uncomment if necessary however generally it will be regenerated when needed
 #!**/[Pp]ackages/repositories.config
 # NuGet v3's project.json files produces more ignorable files
@@ -419,3 +418,23 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# ─── Sunfish project-specific ─────────────────────────────────────────────────
+
+# JetBrains Rider
+.idea/
+*.sln.iml
+
+# Playwright (Phase 3+ component testing)
+playwright-report/
+test-results/
+/playwright/.cache/
+
+# OpenWolf runtime state — volatile, generated per-session.
+# Knowledge files (anatomy.md, cerebrum.md, buglog.json, memory.md, hooks, config) stay tracked.
+.wolf/token-ledger.json
+.wolf/cron-state.json
+.wolf/designqc-report.json
+.wolf/suggestions.json
+.wolf/hooks/_session.json
+.wolf/designqc-captures/
