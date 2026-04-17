@@ -19,7 +19,7 @@ public class ButtonsTests
         var expected = new[]
         {
             typeof(SunfishButton), typeof(SunfishButtonGroup), typeof(SunfishChip),
-            typeof(SunfishChipSet), typeof(SunfishFab), typeof(SunfishIconButton),
+            typeof(SunfishChipSet<>), typeof(SunfishFab), typeof(SunfishIconButton),
             typeof(SunfishSegmentedControl), typeof(SunfishSmartPasteButton),
             typeof(SunfishSpeechToTextButton), typeof(SunfishSplitButton),
             typeof(SunfishToggleButton),
