@@ -1,0 +1,69 @@
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.SignalRPopupClass())"
+     role="dialog"
+     aria-labelledby="signalr-popup-header"
+     @onkeydown="HandleKeyDown"
+     tabindex="-1">
+    <div class="sf-signalr-popup__header">
+        <h3 id="signalr-popup-header" class="sf-signalr-popup__title">@Title</h3>
+        <span class="sf-signalr-popup__summary">@GetSummaryText()</span>
+        <button type="button" class="sf-signalr-popup__close" aria-label="Close" @onclick="OnClose">&#x2715;</button>
+    </div>
+    <div class="sf-signalr-popup__body">
+        @{
+            var critical = Items.Where(i => i.IsCritical)
+                .OrderBy(i => i.Health == ConnectionHealthState.Healthy ? 1 : 0)
+                .ToList();
+            var nonCritical = Items.Where(i => !i.IsCritical)
+                .OrderBy(i => i.Health == ConnectionHealthState.Healthy ? 1 : 0)
+                .ToList();
+        }
+        @if (critical.Count > 0)
+        {
+            <div class="sf-signalr-popup__group">
+                <span class="sf-signalr-popup__group-label">Critical</span>
+                @foreach (var item in critical)
+                {
+                    <HubConnectionRow Item="item" OnRetry="OnRetry" />
+                }
+            </div>
+        }
+        @if (nonCritical.Count > 0)
+        {
+            <div class="sf-signalr-popup__group">
+                <span class="sf-signalr-popup__group-label">Optional</span>
+                @foreach (var item in nonCritical)
+                {
+                    <HubConnectionRow Item="item" OnRetry="OnRetry" />
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string Title { get; set; } = "Real-time connections";
+    [Parameter] public IReadOnlyList<HubConnectionStatusItem> Items { get; set; } = [];
+    [Parameter] public AggregateConnectionState AggregateState { get; set; }
+    [Parameter] public ConnectionPopupPlacement Placement { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public EventCallback<string> OnRetry { get; set; }
+
+    private string GetSummaryText()
+    {
+        var healthy = Items.Count(i => i.Health == ConnectionHealthState.Healthy);
+        return $"{healthy} of {Items.Count} hubs healthy";
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+}

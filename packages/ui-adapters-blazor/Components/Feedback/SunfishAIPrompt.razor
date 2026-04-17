@@ -1,0 +1,115 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-aiprompt")"
+     style="@CombineStyles(WidthStyle(), HeightStyle())"
+     @attributes="AdditionalAttributes">
+
+    @if (HeaderContent != null)
+    {
+        <div class="sf-aiprompt__header">@HeaderContent</div>
+    }
+
+    @if (Suggestions is { Count: > 0 })
+    {
+        <div class="sf-aiprompt__suggestions">
+            @foreach (var suggestion in Suggestions)
+            {
+                <button type="button"
+                        class="sf-aiprompt__chip"
+                        @onclick="() => ApplySuggestion(suggestion)">
+                    @suggestion
+                </button>
+            }
+        </div>
+    }
+
+    <div class="sf-aiprompt__input-area">
+        <textarea class="sf-aiprompt__textarea"
+                  placeholder="@Placeholder"
+                  @bind="_promptText"
+                  @bind:event="oninput"
+                  disabled="@IsProcessing"></textarea>
+        <button type="button"
+                class="sf-aiprompt__submit"
+                disabled="@(IsProcessing || string.IsNullOrWhiteSpace(_promptText))"
+                @onclick="HandleSubmit">
+            @if (IsProcessing)
+            {
+                <span class="sf-aiprompt__spinner"></span>
+            }
+            @ButtonText
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_lastOutput))
+    {
+        <div class="sf-aiprompt__output">
+            @if (OutputTemplate != null)
+            {
+                @OutputTemplate(_lastOutput)
+            }
+            else
+            {
+                <p>@_lastOutput</p>
+            }
+        </div>
+    }
+
+    @if (FooterContent != null)
+    {
+        <div class="sf-aiprompt__footer">@FooterContent</div>
+    }
+</div>
+
+@code {
+    /// <summary>Callback invoked when the user submits a prompt.</summary>
+    [Parameter] public EventCallback<string> OnPromptSubmit { get; set; }
+
+    /// <summary>Placeholder text for the input area.</summary>
+    [Parameter] public string? Placeholder { get; set; } = "Ask me anything...";
+
+    /// <summary>Text displayed on the submit button.</summary>
+    [Parameter] public string ButtonText { get; set; } = "Generate";
+
+    /// <summary>Optional suggestion chips displayed above the input.</summary>
+    [Parameter] public List<string>? Suggestions { get; set; }
+
+    /// <summary>When true, the input is disabled and a spinner is shown.</summary>
+    [Parameter] public bool IsProcessing { get; set; }
+
+    /// <summary>Template for rendering output content.</summary>
+    [Parameter] public RenderFragment<string>? OutputTemplate { get; set; }
+
+    /// <summary>Optional header content above the prompt area.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Optional footer content below the output area.</summary>
+    [Parameter] public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>CSS width of the component.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>CSS height of the component.</summary>
+    [Parameter] public string? Height { get; set; }
+
+    private string _promptText = "";
+    private string _lastOutput = "";
+
+    private string WidthStyle() => Width != null ? $"width:{Width}" : "";
+    private string HeightStyle() => Height != null ? $"height:{Height}" : "";
+
+    private async Task HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(_promptText)) return;
+        _lastOutput = _promptText;
+        var text = _promptText;
+        _promptText = "";
+        await OnPromptSubmit.InvokeAsync(text);
+    }
+
+    private async Task ApplySuggestion(string suggestion)
+    {
+        _promptText = suggestion;
+        await HandleSubmit();
+    }
+}

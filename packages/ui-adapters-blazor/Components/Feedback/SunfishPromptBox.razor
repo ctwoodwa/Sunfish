@@ -1,0 +1,122 @@
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    @if (Modal)
+    {
+        <div class="sf-promptbox-overlay" @onclick="HandleOverlayClick">
+            @RenderPrompt()
+        </div>
+    }
+    else
+    {
+        @RenderPrompt()
+    }
+}
+
+@code {
+    /// <summary>Whether the prompt box is visible. Supports two-way binding.</summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>Callback fired when Visible changes.</summary>
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>The dialog title.</summary>
+    [Parameter] public string? Title { get; set; } = "Input Required";
+
+    /// <summary>The label for the text input field.</summary>
+    [Parameter] public string? InputLabel { get; set; }
+
+    /// <summary>The current input value. Supports two-way binding.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Callback fired when Value changes.</summary>
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>Placeholder text for the input field.</summary>
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>The width of the dialog. Default is "400px".</summary>
+    [Parameter] public string? Width { get; set; } = "400px";
+
+    /// <summary>Whether the prompt is modal. Default is true.</summary>
+    [Parameter] public bool Modal { get; set; } = true;
+
+    /// <summary>The text for the confirm button.</summary>
+    [Parameter] public string ConfirmText { get; set; } = "OK";
+
+    /// <summary>The text for the cancel button.</summary>
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+
+    /// <summary>Fired when the user confirms with the current input value.</summary>
+    [Parameter] public EventCallback<string?> OnConfirm { get; set; }
+
+    /// <summary>Fired when the user cancels.</summary>
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string? _internalValue;
+
+    protected override void OnParametersSet()
+    {
+        _internalValue = Value;
+    }
+
+    private RenderFragment RenderPrompt() => __builder =>
+    {
+        <div class="@CombineClasses("mar-promptbox")"
+             style="@CombineStyles($"width: {Width};")"
+             role="dialog"
+             aria-modal="@Modal.ToString().ToLower()"
+             @onclick:stopPropagation="true"
+             @attributes="AdditionalAttributes">
+            <div class="sf-promptbox__header">
+                <span class="sf-promptbox__title">@Title</span>
+                <button type="button" class="sf-promptbox__close" aria-label="Close" @onclick="HandleCancel">&times;</button>
+            </div>
+            <div class="sf-promptbox__body">
+                @if (!string.IsNullOrEmpty(InputLabel))
+                {
+                    <label class="sf-promptbox__input-label">@InputLabel</label>
+                }
+                <input type="text"
+                       class="sf-promptbox__input"
+                       placeholder="@Placeholder"
+                       value="@_internalValue"
+                       @oninput="HandleInput" />
+            </div>
+            <div class="sf-promptbox__actions">
+                <button type="button" class="sf-btn mar-btn--flat" @onclick="HandleCancel">@CancelText</button>
+                <button type="button" class="sf-btn mar-btn--primary" @onclick="HandleConfirm">@ConfirmText</button>
+            </div>
+        </div>
+    };
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        _internalValue = e.Value?.ToString();
+    }
+
+    private async Task HandleConfirm()
+    {
+        await ValueChanged.InvokeAsync(_internalValue);
+        await OnConfirm.InvokeAsync(_internalValue);
+        await CloseAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnCancel.InvokeAsync();
+        await CloseAsync();
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        await HandleCancel();
+    }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+}

@@ -1,0 +1,28 @@
+@inherits SunfishComponentBase
+
+@if (Alerts.Any())
+{
+    <div class="@CombineClasses(CssProvider.AlertStripClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+        @foreach (var alert in Alerts)
+        {
+            <div class="sf-alert-strip-item @CssProvider.AlertClass(alert.Severity)">
+                @if (alert.Title is not null)
+                {
+                    <strong>@alert.Title</strong>
+                }
+                @if (alert.Detail is not null)
+                {
+                    <span>@alert.Detail</span>
+                }
+                @if (alert.Module is not null)
+                {
+                    <span class="sf-alert-strip-module">@alert.Module</span>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<AlertItem> Alerts { get; set; } = Array.Empty<AlertItem>();
+}

@@ -1,0 +1,116 @@
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    <div class="@CombineClasses(CssProvider.DialogOverlayClass())" @onclick="HandleOverlayClick">
+        <div class="@CssProvider.DialogClass()" style="@BuildStyles()" role="alertdialog" aria-modal="true" @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
+            <div class="sf-dialog-title">
+                <span>@Title</span>
+                @if (ShowCloseButton)
+                {
+                    <button type="button" class="sf-dialog-close" aria-label="Close" @onclick="CancelAsync">&times;</button>
+                }
+            </div>
+            <div class="sf-dialog-body">
+                @if (DialogContent != null)
+                {
+                    @DialogContent
+                }
+                else
+                {
+                    @Message
+                }
+            </div>
+            <div class="sf-dialog-actions">
+                <button type="button" class="sf-btn mar-btn--flat" @onclick="CancelAsync">@CancelText</button>
+                <button type="button"
+                        class="@(IsDangerous ? "mar-btn mar-btn--danger" : "mar-btn mar-btn--primary")"
+                        @onclick="ConfirmAsync">
+                    @ConfirmText
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Whether the dialog is visible. Supports two-way binding via @bind-Visible.
+    /// </summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>
+    /// Callback fired when Visible changes. Enables two-way binding.
+    /// </summary>
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    [Parameter] public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Simple text message. Used when DialogContent is not set.
+    /// </summary>
+    [Parameter] public string Message { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Rich content for the dialog body. Overrides Message when set.
+    /// </summary>
+    [Parameter] public RenderFragment? DialogContent { get; set; }
+
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public bool IsDangerous { get; set; }
+
+    /// <summary>
+    /// The width of the dialog (CSS value).
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>
+    /// The height of the dialog (CSS value).
+    /// </summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>
+    /// Whether to show a close button in the title bar. Default is true.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// Whether clicking the overlay cancels the dialog. Default is true.
+    /// </summary>
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
+
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private async Task ConfirmAsync()
+    {
+        await OnConfirm.InvokeAsync();
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task CancelAsync()
+    {
+        await OnCancel.InvokeAsync();
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+        {
+            await CancelAsync();
+        }
+    }
+
+    private string BuildStyles()
+    {
+        return new StyleBuilder()
+            .AddStyle("width", Width!, !string.IsNullOrEmpty(Width))
+            .AddStyle("height", Height!, !string.IsNullOrEmpty(Height))
+            .AddStyle(Style)
+            .Build();
+    }
+}

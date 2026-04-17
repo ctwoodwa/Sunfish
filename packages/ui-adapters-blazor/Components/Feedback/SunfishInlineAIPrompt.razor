@@ -1,0 +1,82 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-inline-aiprompt")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-inline-aiprompt__bar">
+        <input type="text"
+               class="sf-inline-aiprompt__input"
+               placeholder="@Placeholder"
+               @bind="_promptText"
+               @bind:event="oninput"
+               disabled="@IsProcessing"
+               @onkeydown="HandleKeyDown" />
+        <button type="button"
+                class="sf-inline-aiprompt__send"
+                disabled="@(IsProcessing || string.IsNullOrWhiteSpace(_promptText))"
+                @onclick="HandleSubmit">
+            @if (IsProcessing)
+            {
+                <span class="sf-inline-aiprompt__spinner"></span>
+            }
+            else
+            {
+                <span>&#10148;</span>
+            }
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_lastOutput))
+    {
+        <div class="sf-inline-aiprompt__output">
+            @if (OutputTemplate != null)
+            {
+                @OutputTemplate(_lastOutput)
+            }
+            else
+            {
+                <span>@_lastOutput</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Callback invoked when the user submits a prompt.</summary>
+    [Parameter] public EventCallback<string> OnPromptSubmit { get; set; }
+
+    /// <summary>Placeholder text for the inline input.</summary>
+    [Parameter] public string? Placeholder { get; set; } = "Type your prompt...";
+
+    /// <summary>When true, the input is disabled and a spinner is shown.</summary>
+    [Parameter] public bool IsProcessing { get; set; }
+
+    /// <summary>CSS width of the component.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Template for rendering output content.</summary>
+    [Parameter] public RenderFragment<string>? OutputTemplate { get; set; }
+
+    private string _promptText = "";
+    private string _lastOutput = "";
+
+    private string WidthStyle() => Width != null ? $"width:{Width}" : "";
+
+    private async Task HandleSubmit()
+    {
+        if (string.IsNullOrWhiteSpace(_promptText)) return;
+        _lastOutput = _promptText;
+        var text = _promptText;
+        _promptText = "";
+        await OnPromptSubmit.InvokeAsync(text);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await HandleSubmit();
+        }
+    }
+}

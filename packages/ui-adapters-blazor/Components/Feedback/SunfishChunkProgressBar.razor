@@ -1,0 +1,64 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-chunk-progressbar", OrientationClass, EnabledClass)"
+     style="@CombineStyles()"
+     role="progressbar"
+     aria-valuenow="@(Indeterminate ? null : Value)"
+     aria-valuemin="0"
+     aria-valuemax="@Max"
+     aria-label="@Label"
+     @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="sf-chunk-progressbar__label">@Label</span>
+    }
+    <div class="sf-chunk-progressbar__track">
+        @for (int i = 0; i < ChunkCount; i++)
+        {
+            var chunkClass = GetChunkClass(i);
+            <div class="sf-chunk-progressbar__chunk @chunkClass"></div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The current progress value.</summary>
+    [Parameter] public double Value { get; set; }
+
+    /// <summary>The maximum value. Default is 100.</summary>
+    [Parameter] public double Max { get; set; } = 100;
+
+    /// <summary>The number of visual chunks to display. Default is 5.</summary>
+    [Parameter] public int ChunkCount { get; set; } = 5;
+
+    /// <summary>The orientation of the progress bar.</summary>
+    [Parameter] public SliderOrientation Orientation { get; set; } = SliderOrientation.Horizontal;
+
+    /// <summary>Whether the progress bar shows an indeterminate state.</summary>
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>Whether the progress bar is enabled.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>An optional label describing the progress.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    private double Percentage => Max > 0 ? Math.Clamp(Value / Max * 100, 0, 100) : 0;
+
+    private string OrientationClass => Orientation == SliderOrientation.Vertical
+        ? "mar-chunk-progressbar--vertical"
+        : "mar-chunk-progressbar--horizontal";
+
+    private string EnabledClass => Enabled ? "" : "mar-chunk-progressbar--disabled";
+
+    private string GetChunkClass(int index)
+    {
+        if (Indeterminate)
+            return "mar-chunk-progressbar__chunk--indeterminate";
+
+        var filledChunks = (int)Math.Round(Percentage / 100.0 * ChunkCount);
+        return index < filledChunks
+            ? "mar-chunk-progressbar__chunk--filled"
+            : "mar-chunk-progressbar__chunk--empty";
+    }
+}

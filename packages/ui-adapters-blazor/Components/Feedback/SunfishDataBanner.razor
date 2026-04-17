@@ -1,0 +1,28 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("marilo-data-banner")"
+     style="@CombineStyles()"
+     role="alert"
+     @attributes="AdditionalAttributes">
+    @if (ContentTemplate != null)
+    {
+        @ContentTemplate
+    }
+    else
+    {
+        <span class="sf-data-banner__message">@PendingChanges.Count pending change(s)</span>
+    }
+    <div class="sf-data-banner__actions">
+        <button type="button" @onclick="OnRefreshRequested">Refresh</button>
+        <button type="button" @onclick="OnDismiss">Dismiss</button>
+    </div>
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<DataChangeInfo> PendingChanges { get; set; } = Array.Empty<DataChangeInfo>();
+    [Parameter] public EventCallback OnRefreshRequested { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+
+    /// <summary>Custom content template to replace the default message.</summary>
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+}
