@@ -1,0 +1,77 @@
+@inherits SunfishComponentBase
+
+@{
+    var pct = (Max - Min) > 0 ? (Value - Min) / (Max - Min) : 0;
+    pct = Math.Clamp(pct, 0, 1);
+    var angle = StartAngle + pct * (EndAngle - StartAngle);
+    var radius = (Size / 2.0) - StrokeWidth;
+    var cx = Size / 2.0;
+    var cy = Size / 2.0;
+}
+
+<div class="@CombineClasses("mar-arc-gauge")"
+     style="@CombineStyles()"
+     role="meter"
+     aria-valuenow="@Value"
+     aria-valuemin="@Min"
+     aria-valuemax="@Max"
+     @attributes="AdditionalAttributes">
+    <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
+        @* Background arc *@
+        <path d="@DescribeArc(cx, cy, radius, StartAngle, EndAngle)"
+              fill="none" stroke="#e0e0e0" stroke-width="@StrokeWidth" stroke-linecap="round" />
+        @* Value arc *@
+        @if (pct > 0)
+        {
+            <path d="@DescribeArc(cx, cy, radius, StartAngle, angle)"
+                  fill="none" stroke="@GetColor()" stroke-width="@StrokeWidth" stroke-linecap="round" />
+        }
+        @* Center label *@
+        @if (ShowLabel)
+        {
+            <svg:text x="@cx" y="@(cy + 6)" text-anchor="middle" font-size="@(Size / 6)"
+                  fill="currentColor" class="sf-arc-gauge__label">
+                @Value.ToString(Format ?? "F0")
+            </svg:text>
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public int Size { get; set; } = 200;
+    [Parameter] public int StrokeWidth { get; set; } = 16;
+    [Parameter] public double StartAngle { get; set; } = -135;
+    [Parameter] public double EndAngle { get; set; } = 135;
+    [Parameter] public bool ShowLabel { get; set; } = true;
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    private string GetColor()
+    {
+        if (Ranges != null)
+        {
+            foreach (var range in Ranges)
+            {
+                if (Value >= range.From && Value <= range.To)
+                    return range.Color;
+            }
+        }
+        return Color ?? "var(--mar-primary, #1976d2)";
+    }
+
+    private static string DescribeArc(double cx, double cy, double r, double startAngle, double endAngle)
+    {
+        var startRad = startAngle * Math.PI / 180;
+        var endRad = endAngle * Math.PI / 180;
+        var x1 = cx + r * Math.Cos(startRad);
+        var y1 = cy + r * Math.Sin(startRad);
+        var x2 = cx + r * Math.Cos(endRad);
+        var y2 = cy + r * Math.Sin(endRad);
+        var largeArc = Math.Abs(endAngle - startAngle) > 180 ? 1 : 0;
+        return $"M {x1:F2} {y1:F2} A {r:F2} {r:F2} 0 {largeArc} 1 {x2:F2} {y2:F2}";
+    }
+}

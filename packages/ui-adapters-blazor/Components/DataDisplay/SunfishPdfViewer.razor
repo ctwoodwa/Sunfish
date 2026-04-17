@@ -1,0 +1,144 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-pdfviewer")"
+     style="@CombineStyles($"width:{Width};height:{Height};display:flex;flex-direction:column")"
+     @attributes="AdditionalAttributes">
+
+    @if (ShowToolbar)
+    {
+        <div class="sf-pdfviewer__toolbar"
+             style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f5f5f5;border-bottom:1px solid #e0e0e0;flex-shrink:0;">
+            <button type="button"
+                    class="sf-pdfviewer__btn"
+                    style="@ToolbarBtnStyle"
+                    disabled="@(Page <= 1)"
+                    @onclick="PreviousPage">
+                &#9664; Prev
+            </button>
+
+            <span class="sf-pdfviewer__page-info" style="font-size:13px;min-width:100px;text-align:center;">
+                Page @Page @(PageCount > 0 ? $" of {PageCount}" : "")
+            </span>
+
+            <button type="button"
+                    class="sf-pdfviewer__btn"
+                    style="@ToolbarBtnStyle"
+                    disabled="@(PageCount > 0 && Page >= PageCount)"
+                    @onclick="NextPage">
+                Next &#9654;
+            </button>
+
+            <span style="flex:1;"></span>
+
+            <button type="button"
+                    class="sf-pdfviewer__btn"
+                    style="@ToolbarBtnStyle"
+                    @onclick="ZoomOut">
+                &minus;
+            </button>
+
+            <span class="sf-pdfviewer__zoom-info" style="font-size:13px;min-width:60px;text-align:center;">
+                @((int)(Zoom * 100))%
+            </span>
+
+            <button type="button"
+                    class="sf-pdfviewer__btn"
+                    style="@ToolbarBtnStyle"
+                    @onclick="ZoomIn">
+                +
+            </button>
+        </div>
+    }
+
+    <div class="sf-pdfviewer__content" style="flex:1;overflow:auto;background:#e0e0e0;">
+        @if (!string.IsNullOrEmpty(Url))
+        {
+            <iframe src="@PdfSource"
+                    style="width:100%;height:100%;border:none;transform:scale(@Zoom);transform-origin:top left;"
+                    title="PDF Document"></iframe>
+        }
+        else if (Data != null && Data.Length > 0)
+        {
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;color:#666;">
+                <div>
+                    <p style="font-size:48px;margin-bottom:16px;">&#128196;</p>
+                    <p style="font-weight:600;">PDF data loaded (@Data.Length bytes)</p>
+                    <p style="font-size:13px;margin-top:8px;">Prototype-ready API surface; full PDF rendering from byte arrays requires JS interop with a PDF library (e.g., PDF.js).</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;color:#999;">
+                <div>
+                    <p style="font-size:48px;margin-bottom:16px;">&#128196;</p>
+                    <p>No PDF loaded. Set the <code>Url</code> or <code>Data</code> parameter to display a document.</p>
+                    <p style="font-size:12px;margin-top:12px;color:#bbb;">Prototype-ready API surface; full PDF rendering uses browser native PDF support.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>URL of the PDF document to display.</summary>
+    [Parameter] public string? Url { get; set; }
+
+    /// <summary>PDF document as a byte array.</summary>
+    [Parameter] public byte[]? Data { get; set; }
+
+    /// <summary>Current page number (1-based). Supports two-way binding.</summary>
+    [Parameter] public int Page { get; set; } = 1;
+
+    /// <summary>Two-way binding callback for <see cref="Page"/>.</summary>
+    [Parameter] public EventCallback<int> PageChanged { get; set; }
+
+    /// <summary>Total number of pages in the document (set internally).</summary>
+    [Parameter] public int PageCount { get; set; }
+
+    /// <summary>Current zoom level (1.0 = 100%). Supports two-way binding.</summary>
+    [Parameter] public double Zoom { get; set; } = 1.0;
+
+    /// <summary>Two-way binding callback for <see cref="Zoom"/>.</summary>
+    [Parameter] public EventCallback<double> ZoomChanged { get; set; }
+
+    /// <summary>CSS height of the viewer.</summary>
+    [Parameter] public string? Height { get; set; } = "600px";
+
+    /// <summary>CSS width of the viewer.</summary>
+    [Parameter] public string? Width { get; set; } = "100%";
+
+    /// <summary>Whether to display the toolbar with page and zoom controls.</summary>
+    [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    private string PdfSource => Url != null ? $"{Url}#page={Page}" : "";
+
+    private const string ToolbarBtnStyle = "padding:4px 10px;border:1px solid #ccc;background:white;border-radius:4px;cursor:pointer;font-size:12px;";
+
+    private async Task PreviousPage()
+    {
+        if (Page > 1)
+        {
+            Page--;
+            await PageChanged.InvokeAsync(Page);
+        }
+    }
+
+    private async Task NextPage()
+    {
+        Page++;
+        await PageChanged.InvokeAsync(Page);
+    }
+
+    private async Task ZoomIn()
+    {
+        Zoom = Math.Min(Zoom + 0.25, 3.0);
+        await ZoomChanged.InvokeAsync(Zoom);
+    }
+
+    private async Task ZoomOut()
+    {
+        Zoom = Math.Max(Zoom - 0.25, 0.25);
+        await ZoomChanged.InvokeAsync(Zoom);
+    }
+}

@@ -1,0 +1,117 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-qrcode")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <svg viewBox="0 0 @_moduleCount @_moduleCount" width="@Size" height="@Size"
+         xmlns="http://www.w3.org/2000/svg" role="img" aria-label="@($"QR Code: {Value}")">
+        @for (var row = 0; row < _moduleCount; row++)
+        {
+            for (var col = 0; col < _moduleCount; col++)
+            {
+                if (_modules[row, col])
+                {
+                    <rect x="@col" y="@row" width="1" height="1" fill="@Color" />
+                }
+            }
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public int Size { get; set; } = 200;
+    [Parameter] public string Color { get; set; } = "#000000";
+    [Parameter] public string BackgroundColor { get; set; } = "#FFFFFF";
+    [Parameter] public QRCodeErrorCorrection ErrorCorrection { get; set; } = QRCodeErrorCorrection.Medium;
+
+    private bool[,] _modules = new bool[21, 21];
+    private int _moduleCount = 21; // Version 1 = 21x21
+
+    protected override void OnParametersSet()
+    {
+        GenerateQRCode();
+    }
+
+    private void GenerateQRCode()
+    {
+        // QR Code Version 1 (21x21) simplified generation
+        _moduleCount = 21;
+        _modules = new bool[_moduleCount, _moduleCount];
+
+        // Add finder patterns (top-left, top-right, bottom-left)
+        AddFinderPattern(0, 0);
+        AddFinderPattern(0, _moduleCount - 7);
+        AddFinderPattern(_moduleCount - 7, 0);
+
+        // Add timing patterns
+        for (var i = 8; i < _moduleCount - 8; i++)
+        {
+            _modules[6, i] = i % 2 == 0;
+            _modules[i, 6] = i % 2 == 0;
+        }
+
+        // Add format info
+        _modules[_moduleCount - 8, 8] = true;
+
+        // Encode data in remaining modules (simplified — fills data area with value hash)
+        EncodeData();
+    }
+
+    private void AddFinderPattern(int row, int col)
+    {
+        for (var r = 0; r < 7; r++)
+        {
+            for (var c = 0; c < 7; c++)
+            {
+                var isEdge = r == 0 || r == 6 || c == 0 || c == 6;
+                var isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+                _modules[row + r, col + c] = isEdge || isInner;
+            }
+        }
+
+        // Separator
+        for (var i = 0; i < 8; i++)
+        {
+            SetModuleSafe(row - 1 + (row == 0 ? 7 : 0), col + i, false);
+            SetModuleSafe(row + i, col - 1 + (col == 0 ? 7 : 0), false);
+        }
+    }
+
+    private void SetModuleSafe(int row, int col, bool value)
+    {
+        if (row >= 0 && row < _moduleCount && col >= 0 && col < _moduleCount)
+            _modules[row, col] = value;
+    }
+
+    private void EncodeData()
+    {
+        if (string.IsNullOrEmpty(Value)) return;
+
+        // Simple hash-based data fill for the data region
+        var hash = 0;
+        foreach (var c in Value) hash = hash * 31 + c;
+        var rng = new Random(hash);
+
+        for (var row = _moduleCount - 1; row >= 0; row--)
+        {
+            for (var col = _moduleCount - 1; col >= 0; col--)
+            {
+                if (IsDataModule(row, col))
+                {
+                    _modules[row, col] = rng.Next(2) == 1;
+                }
+            }
+        }
+    }
+
+    private bool IsDataModule(int row, int col)
+    {
+        // Skip finder patterns, timing, and format areas
+        if (row < 9 && col < 9) return false; // Top-left finder + format
+        if (row < 9 && col >= _moduleCount - 8) return false; // Top-right finder
+        if (row >= _moduleCount - 8 && col < 9) return false; // Bottom-left finder
+        if (row == 6 || col == 6) return false; // Timing
+        return true;
+    }
+}

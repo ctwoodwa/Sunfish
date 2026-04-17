@@ -1,0 +1,225 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-sankey")"
+     style="@CombineStyles($"width:{Width};height:{Height}")"
+     @attributes="AdditionalAttributes">
+
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <div class="sf-sankey__title" style="text-align:center;font-weight:600;padding:8px 0;">@Title</div>
+    }
+
+    @if (Data == null || Data.Nodes.Count == 0)
+    {
+        <div class="sf-sankey__empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;">
+            <p>No data to display. Provide SankeyData with Nodes and Links.</p>
+        </div>
+    }
+    else
+    {
+        <svg class="sf-sankey__canvas" width="100%" height="@SvgHeight" viewBox="0 0 @_viewWidth @_viewHeight" preserveAspectRatio="xMidYMid meet">
+            @* Render links first (behind nodes) *@
+            @foreach (var linkInfo in _linkPositions)
+            {
+                <path d="@linkInfo.Path"
+                      fill="@(linkInfo.Link.Color ?? "rgba(100,150,200,0.3)")"
+                      stroke="none" />
+            }
+
+            @* Render nodes *@
+            @foreach (var nodeInfo in _nodePositions)
+            {
+                <rect x="@nodeInfo.X" y="@nodeInfo.Y"
+                      width="@NodeWidth" height="@nodeInfo.Height"
+                      fill="@(nodeInfo.Node.Color ?? "#1976d2")"
+                      rx="2" ry="2"
+                      style="cursor:pointer"
+                      @onclick="() => HandleNodeClick(nodeInfo.Node)" />
+
+                @if (NodeTemplate != null)
+                {
+                    <foreignObject x="@(nodeInfo.X + NodeWidth + 4)" y="@nodeInfo.Y"
+                                   width="120" height="@nodeInfo.Height">
+                        @NodeTemplate(nodeInfo.Node)
+                    </foreignObject>
+                }
+                else
+                {
+                    <g>
+                        <text x="@(nodeInfo.Column == 0 ? nodeInfo.X + NodeWidth + 6 : nodeInfo.X - 6)"
+                              y="@(nodeInfo.Y + nodeInfo.Height / 2 + 4)"
+                              text-anchor="@(nodeInfo.Column == 0 ? "start" : "end")"
+                              font-size="12" fill="#333">
+                            @(nodeInfo.Node.Label ?? nodeInfo.Node.Id)
+                        </text>
+                    </g>
+                }
+            }
+        </svg>
+    }
+</div>
+
+@code {
+    /// <summary>Sankey diagram data containing nodes and links.</summary>
+    [Parameter] public SankeyData? Data { get; set; }
+
+    /// <summary>CSS width of the diagram.</summary>
+    [Parameter] public string? Width { get; set; } = "100%";
+
+    /// <summary>CSS height of the diagram.</summary>
+    [Parameter] public string? Height { get; set; } = "400px";
+
+    /// <summary>Callback invoked when a node is clicked.</summary>
+    [Parameter] public EventCallback<SankeyNode> OnNodeClick { get; set; }
+
+    /// <summary>Custom template for rendering node labels.</summary>
+    [Parameter] public RenderFragment<SankeyNode>? NodeTemplate { get; set; }
+
+    /// <summary>Title displayed above the diagram.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    private const int NodeWidth = 20;
+    private const int Padding = 60;
+    private int _viewWidth = 600;
+    private int _viewHeight = 300;
+    private string SvgHeight => "calc(100% - 40px)";
+
+    private record NodePosition(SankeyNode Node, double X, double Y, double Height, int Column);
+    private record LinkPosition(SankeyLink Link, string Path);
+
+    private List<NodePosition> _nodePositions = new();
+    private List<LinkPosition> _linkPositions = new();
+
+    protected override void OnParametersSet()
+    {
+        CalculateLayout();
+    }
+
+    private void CalculateLayout()
+    {
+        _nodePositions.Clear();
+        _linkPositions.Clear();
+
+        if (Data == null || Data.Nodes.Count == 0) return;
+
+        // Determine columns: source nodes (have outgoing links) on left, target nodes on right
+        var sourceIds = Data.Links.Select(l => l.SourceId).ToHashSet();
+        var targetIds = Data.Links.Select(l => l.TargetId).ToHashSet();
+
+        var leftNodes = Data.Nodes.Where(n => sourceIds.Contains(n.Id) && !targetIds.Contains(n.Id)).ToList();
+        var rightNodes = Data.Nodes.Where(n => targetIds.Contains(n.Id) && !sourceIds.Contains(n.Id)).ToList();
+        var middleNodes = Data.Nodes.Where(n => sourceIds.Contains(n.Id) && targetIds.Contains(n.Id)).ToList();
+
+        // If no clear separation, put first half left, second half right
+        if (leftNodes.Count == 0 && rightNodes.Count == 0)
+        {
+            var half = Data.Nodes.Count / 2;
+            leftNodes = Data.Nodes.Take(half).ToList();
+            rightNodes = Data.Nodes.Skip(half).ToList();
+        }
+
+        var totalValue = Data.Links.Sum(l => l.Value);
+        if (totalValue <= 0) totalValue = 1;
+
+        _viewHeight = 300;
+        _viewWidth = 600;
+
+        // Position left column nodes
+        var leftTotal = leftNodes.Sum(n => Data.Links.Where(l => l.SourceId == n.Id).Sum(l => l.Value));
+        if (leftTotal <= 0) leftTotal = leftNodes.Count;
+        var availableHeight = _viewHeight - Padding * 2;
+        var yOffset = (double)Padding;
+        var nodeYMap = new Dictionary<string, (double y, double height)>();
+
+        foreach (var node in leftNodes)
+        {
+            var val = Data.Links.Where(l => l.SourceId == node.Id).Sum(l => l.Value);
+            if (val <= 0) val = 1;
+            var height = Math.Max(val / leftTotal * availableHeight, 10);
+            _nodePositions.Add(new NodePosition(node, Padding, yOffset, height, 0));
+            nodeYMap[node.Id] = (yOffset, height);
+            yOffset += height + 4;
+        }
+
+        // Position middle column nodes
+        if (middleNodes.Count > 0)
+        {
+            var midX = _viewWidth / 2.0 - NodeWidth / 2.0;
+            yOffset = Padding;
+            var midTotal = middleNodes.Sum(n =>
+                Math.Max(Data.Links.Where(l => l.SourceId == n.Id || l.TargetId == n.Id).Sum(l => l.Value), 1));
+            foreach (var node in middleNodes)
+            {
+                var val = Math.Max(Data.Links.Where(l => l.SourceId == node.Id || l.TargetId == node.Id).Sum(l => l.Value), 1);
+                var height = Math.Max(val / midTotal * availableHeight, 10);
+                _nodePositions.Add(new NodePosition(node, midX, yOffset, height, 1));
+                nodeYMap[node.Id] = (yOffset, height);
+                yOffset += height + 4;
+            }
+        }
+
+        // Position right column nodes
+        var rightX = _viewWidth - Padding - NodeWidth;
+        yOffset = Padding;
+        var rightTotal = rightNodes.Sum(n => Data.Links.Where(l => l.TargetId == n.Id).Sum(l => l.Value));
+        if (rightTotal <= 0) rightTotal = rightNodes.Count;
+
+        foreach (var node in rightNodes)
+        {
+            var val = Data.Links.Where(l => l.TargetId == node.Id).Sum(l => l.Value);
+            if (val <= 0) val = 1;
+            var height = Math.Max(val / rightTotal * availableHeight, 10);
+            _nodePositions.Add(new NodePosition(node, rightX, yOffset, height, middleNodes.Count > 0 ? 2 : 1));
+            nodeYMap[node.Id] = (yOffset, height);
+            yOffset += height + 4;
+        }
+
+        // Build link paths
+        var sourceOffsets = new Dictionary<string, double>();
+        var targetOffsets = new Dictionary<string, double>();
+
+        foreach (var link in Data.Links)
+        {
+            if (!nodeYMap.ContainsKey(link.SourceId) || !nodeYMap.ContainsKey(link.TargetId)) continue;
+
+            var (srcY, srcH) = nodeYMap[link.SourceId];
+            var (tgtY, tgtH) = nodeYMap[link.TargetId];
+
+            if (!sourceOffsets.ContainsKey(link.SourceId)) sourceOffsets[link.SourceId] = 0;
+            if (!targetOffsets.ContainsKey(link.TargetId)) targetOffsets[link.TargetId] = 0;
+
+            var srcNodePos = _nodePositions.FirstOrDefault(n => n.Node.Id == link.SourceId);
+            var tgtNodePos = _nodePositions.FirstOrDefault(n => n.Node.Id == link.TargetId);
+
+            if (srcNodePos == null || tgtNodePos == null) continue;
+
+            var srcNodeTotal = Data.Links.Where(l => l.SourceId == link.SourceId).Sum(l => l.Value);
+            var tgtNodeTotal = Data.Links.Where(l => l.TargetId == link.TargetId).Sum(l => l.Value);
+
+            var linkSrcHeight = srcNodeTotal > 0 ? link.Value / srcNodeTotal * srcH : srcH;
+            var linkTgtHeight = tgtNodeTotal > 0 ? link.Value / tgtNodeTotal * tgtH : tgtH;
+
+            var sy1 = srcY + sourceOffsets[link.SourceId];
+            var sy2 = sy1 + linkSrcHeight;
+            var ty1 = tgtY + targetOffsets[link.TargetId];
+            var ty2 = ty1 + linkTgtHeight;
+
+            var sx = srcNodePos.X + NodeWidth;
+            var tx = tgtNodePos.X;
+            var mx = (sx + tx) / 2;
+
+            var path = $"M{sx},{sy1:F1} C{mx},{sy1:F1} {mx},{ty1:F1} {tx},{ty1:F1} " +
+                       $"L{tx},{ty2:F1} C{mx},{ty2:F1} {mx},{sy2:F1} {sx},{sy2:F1} Z";
+
+            _linkPositions.Add(new LinkPosition(link, path));
+
+            sourceOffsets[link.SourceId] += linkSrcHeight;
+            targetOffsets[link.TargetId] += linkTgtHeight;
+        }
+    }
+
+    private async Task HandleNodeClick(SankeyNode node)
+    {
+        await OnNodeClick.InvokeAsync(node);
+    }
+}

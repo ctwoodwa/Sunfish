@@ -1,0 +1,306 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(ListRootClass)"
+     style="@CombineStyles(RootStyle)"
+     role="listbox"
+     aria-label="@AriaLabel"
+     aria-labelledby="@AriaLabelledBy"
+     aria-multiselectable="@(SelectionMode == GridSelectionMode.Multiple ? "true" : null)"
+     aria-activedescendant="@(_focusedIndex >= 0 ? $"{_listId}-item-{_focusedIndex}" : null)"
+     tabindex="0"
+     @onkeydown="HandleKeyDown"
+     @attributes="AdditionalAttributes">
+
+    @if (ShowToolbar && ToolbarPosition is ListToolbarPosition.Top or ListToolbarPosition.Left)
+    {
+        @RenderToolbar()
+    }
+
+    <div class="sf-list__content">
+        @if (Data != null && _dataList.Count > 0)
+        {
+            <ul class="sf-list__items">
+                @for (var i = 0; i < _dataList.Count; i++)
+                {
+                    var index = i;
+                    var item = _dataList[i];
+                    var isSelected = _selectedItems.Contains(item);
+                    var isFocused = _focusedIndex == index;
+                    var isDisabled = !Enabled;
+
+                    <li id="@($"{_listId}-item-{index}")"
+                        class="sf-list__item @(isSelected ? "mar-list__item--selected" : "") @(isFocused ? "mar-list__item--focused" : "") @(isDisabled ? "mar-list__item--disabled" : "")"
+                        role="option"
+                        aria-selected="@isSelected"
+                        aria-disabled="@(isDisabled ? "true" : null)"
+                        @onclick="() => HandleItemClick(item, index)">
+                        @if (ItemTemplate != null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            @GetTextValue(item)
+                        }
+                    </li>
+                }
+            </ul>
+        }
+        else if (ChildContent != null)
+        {
+            <ul class="sf-list__items">
+                @ChildContent
+            </ul>
+        }
+        else
+        {
+            <div class="sf-list__empty">No items.</div>
+        }
+    </div>
+
+    @if (ShowToolbar && ToolbarPosition is ListToolbarPosition.Bottom or ListToolbarPosition.Right)
+    {
+        @RenderToolbar()
+    }
+</div>
+
+@code {
+    private string _listId = $"mar-list-{Guid.NewGuid():N}";
+    private HashSet<object> _selectedItems = [];
+    private List<object> _dataList = [];
+    private int _focusedIndex = -1;
+
+    /// <summary>Data source for the list items.</summary>
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+
+    /// <summary>The property name on object to display as text.</summary>
+    [Parameter] public string TextField { get; set; } = "Text";
+
+    /// <summary>The property name on object to use as value.</summary>
+    [Parameter] public string ValueField { get; set; } = "Value";
+
+    /// <summary>Selection mode (None, Single, Multiple).</summary>
+    [Parameter] public GridSelectionMode SelectionMode { get; set; } = GridSelectionMode.None;
+
+    /// <summary>The currently selected items. Supports two-way binding.</summary>
+    [Parameter] public IEnumerable<object>? SelectedItems { get; set; }
+
+    /// <summary>Fires when the selected items change.</summary>
+    [Parameter] public EventCallback<IEnumerable<object>> SelectedItemsChanged { get; set; }
+
+    /// <summary>Whether the list is enabled for interaction. Defaults to true.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Width of the list container.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Height of the list container (enables scrolling).</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>The size variant of the list (sm, md, lg). Controls padding and font size. Defaults to "md".</summary>
+    [Parameter] public string Size { get; set; } = "md";
+
+    /// <summary>Whether items can be dragged for reordering. Defaults to false.</summary>
+    [Parameter] public bool Draggable { get; set; }
+
+    /// <summary>Fires when items are reordered via drag-and-drop or toolbar.</summary>
+    [Parameter] public EventCallback<ListReorderEventArgs> OnReorder { get; set; }
+
+    /// <summary>Whether to show the toolbar with move/remove buttons. Defaults to false.</summary>
+    [Parameter] public bool ShowToolbar { get; set; }
+
+    /// <summary>Position of the toolbar relative to the list. Defaults to Right.</summary>
+    [Parameter] public ListToolbarPosition ToolbarPosition { get; set; } = ListToolbarPosition.Right;
+
+    /// <summary>Custom template for rendering each item.</summary>
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    /// <summary>Manual child content (SunfishListItem components).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Accessible label for the listbox.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>ID of an element that labels the listbox.</summary>
+    [Parameter] public string? AriaLabelledBy { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    private string ListRootClass
+    {
+        get
+        {
+            var cls = CssProvider.ListClass();
+            cls += $" mar-list--{Size}";
+            if (ShowToolbar && ToolbarPosition is ListToolbarPosition.Left or ListToolbarPosition.Right)
+                cls += " mar-list--horizontal";
+            return cls;
+        }
+    }
+
+    private string? RootStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};overflow:auto;");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedItems != null)
+            _selectedItems = new HashSet<object>(SelectedItems);
+
+        _dataList = Data?.ToList() ?? [];
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Forces the list to re-render with current data.</summary>
+    public void Rebind()
+    {
+        _dataList = Data?.ToList() ?? [];
+        StateHasChanged();
+    }
+
+    // ── Toolbar ─────────────────────────────────────────────────────────
+
+    private RenderFragment RenderToolbar() => __builder =>
+    {
+        <div class="sf-list__toolbar mar-list__toolbar--@ToolbarPosition.ToString().ToLowerInvariant()"
+             role="toolbar"
+             aria-label="List actions">
+            <button class="sf-list__toolbar-btn" title="Move Up" disabled="@(!CanMoveUp)" @onclick="MoveSelectedUp"
+                    aria-label="Move selected item up">
+                ▲
+            </button>
+            <button class="sf-list__toolbar-btn" title="Move Down" disabled="@(!CanMoveDown)" @onclick="MoveSelectedDown"
+                    aria-label="Move selected item down">
+                ▼
+            </button>
+            <button class="sf-list__toolbar-btn" title="Remove" disabled="@(!HasSelection)" @onclick="RemoveSelected"
+                    aria-label="Remove selected items">
+                ✕
+            </button>
+        </div>
+    };
+
+    private bool HasSelection => _selectedItems.Count > 0;
+    private bool CanMoveUp => _selectedItems.Count == 1 && _dataList.IndexOf(_selectedItems.First()) > 0;
+    private bool CanMoveDown => _selectedItems.Count == 1 && _dataList.IndexOf(_selectedItems.First()) < _dataList.Count - 1;
+
+    private async Task MoveSelectedUp()
+    {
+        if (!CanMoveUp) return;
+        var item = _selectedItems.First();
+        var idx = _dataList.IndexOf(item);
+        _dataList.RemoveAt(idx);
+        _dataList.Insert(idx - 1, item);
+        _focusedIndex = idx - 1;
+        await NotifyReorder(idx, idx - 1, item);
+    }
+
+    private async Task MoveSelectedDown()
+    {
+        if (!CanMoveDown) return;
+        var item = _selectedItems.First();
+        var idx = _dataList.IndexOf(item);
+        _dataList.RemoveAt(idx);
+        _dataList.Insert(idx + 1, item);
+        _focusedIndex = idx + 1;
+        await NotifyReorder(idx, idx + 1, item);
+    }
+
+    private async Task RemoveSelected()
+    {
+        if (!HasSelection) return;
+        foreach (var item in _selectedItems.ToList())
+        {
+            _dataList.Remove(item);
+        }
+        _selectedItems.Clear();
+        _focusedIndex = -1;
+        await SelectedItemsChanged.InvokeAsync(_selectedItems.ToList());
+    }
+
+    private async Task NotifyReorder(int oldIndex, int newIndex, object item)
+    {
+        if (OnReorder.HasDelegate)
+        {
+            await OnReorder.InvokeAsync(new ListReorderEventArgs
+            {
+                Item = item,
+                OldIndex = oldIndex,
+                NewIndex = newIndex
+            });
+        }
+    }
+
+    // ── Keyboard navigation ─────────────────────────────────────────────
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (!Enabled || _dataList.Count == 0) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _focusedIndex = Math.Min(_focusedIndex + 1, _dataList.Count - 1);
+                break;
+            case "ArrowUp":
+                _focusedIndex = Math.Max(_focusedIndex - 1, 0);
+                break;
+            case "Home":
+                _focusedIndex = 0;
+                break;
+            case "End":
+                _focusedIndex = _dataList.Count - 1;
+                break;
+            case " ":
+            case "Enter":
+                if (_focusedIndex >= 0 && _focusedIndex < _dataList.Count)
+                {
+                    await HandleItemClick(_dataList[_focusedIndex], _focusedIndex);
+                }
+                break;
+            default:
+                return;
+        }
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task HandleItemClick(object item, int index)
+    {
+        if (!Enabled || SelectionMode == GridSelectionMode.None) return;
+
+        _focusedIndex = index;
+
+        if (SelectionMode == GridSelectionMode.Single)
+        {
+            _selectedItems.Clear();
+            _selectedItems.Add(item);
+        }
+        else if (SelectionMode == GridSelectionMode.Multiple)
+        {
+            if (!_selectedItems.Remove(item))
+                _selectedItems.Add(item);
+        }
+
+        await SelectedItemsChanged.InvokeAsync(_selectedItems.ToList());
+    }
+
+    // ── Helpers ─────────────────────────────────────────────────────────
+
+    private string GetTextValue(object item)
+    {
+        if (item is null) return string.Empty;
+        var prop = item.GetType().GetProperty(TextField);
+        return prop?.GetValue(item)?.ToString() ?? item.ToString() ?? string.Empty;
+    }
+}

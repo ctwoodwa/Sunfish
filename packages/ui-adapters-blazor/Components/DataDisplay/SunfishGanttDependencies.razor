@@ -1,0 +1,40 @@
+@typeparam TItem where TItem : class
+@implements IDisposable
+
+@code {
+    [CascadingParameter] private SunfishGantt<TItem>? Parent { get; set; }
+
+    /// <summary>Collection of dependency records. Uses GanttDependency when field mapping is not configured.</summary>
+    [Parameter] public IEnumerable<GanttDependency> Data { get; set; } = Enumerable.Empty<GanttDependency>();
+
+    /// <summary>Property name for the unique dependency identifier.</summary>
+    [Parameter] public string IdField { get; set; } = nameof(GanttDependency.Id);
+
+    /// <summary>Property name for the predecessor task ID.</summary>
+    [Parameter] public string PredecessorIdField { get; set; } = nameof(GanttDependency.PredecessorId);
+
+    /// <summary>Property name for the successor task ID.</summary>
+    [Parameter] public string SuccessorIdField { get; set; } = nameof(GanttDependency.SuccessorId);
+
+    /// <summary>Property name for the dependency type (GanttDependencyType).</summary>
+    [Parameter] public string TypeField { get; set; } = nameof(GanttDependency.Type);
+
+    /// <summary>Fires when a new dependency is created (e.g. by dragging between tasks).</summary>
+    [Parameter] public EventCallback<GanttDependencyCreateEventArgs> OnCreate { get; set; }
+
+    /// <summary>Fires when a dependency is deleted.</summary>
+    [Parameter] public EventCallback<GanttDependencyDeleteEventArgs> OnDelete { get; set; }
+
+    /// <summary>Gets the dependency records as a list for internal consumption.</summary>
+    internal IReadOnlyList<GanttDependency> GetDependencies() => (Data ?? Enumerable.Empty<GanttDependency>()).ToList();
+
+    protected override void OnInitialized()
+    {
+        Parent?.RegisterDependencies(this);
+    }
+
+    public void Dispose()
+    {
+        Parent?.UnregisterDependencies(this);
+    }
+}

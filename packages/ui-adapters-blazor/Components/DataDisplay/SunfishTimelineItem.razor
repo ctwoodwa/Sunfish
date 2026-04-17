@@ -1,0 +1,28 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.TimelineItemClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <div class="sf-timeline-item__dot">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            @IconProvider.GetIcon(Icon, IconSize.Small)
+        }
+    </div>
+    <div class="sf-timeline-item__content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="sf-timeline-item__title">@Title</div>
+        }
+        @if (!string.IsNullOrEmpty(Timestamp))
+        {
+            <div class="sf-timeline-item__timestamp">@Timestamp</div>
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Timestamp { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

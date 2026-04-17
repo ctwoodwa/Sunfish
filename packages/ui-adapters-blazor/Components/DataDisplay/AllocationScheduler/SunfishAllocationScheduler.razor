@@ -1,0 +1,403 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@typeparam TResource
+@inherits SunfishComponentBase
+
+<CascadingValue Value="this" IsFixed="true">
+    <div @ref="_gridRef"
+         class="@CombineClasses(CssProvider.AllocationSchedulerClass())"
+         style="@CombineStyles(SizeStyle)"
+         role="grid"
+         aria-label="Allocation Scheduler"
+         data-min-left-pane="@MinLeftPaneWidth"
+         data-min-right-pane="@MinRightPaneWidth"
+         data-allow-collapse="@(AllowSplitterCollapse ? "true" : "false")"
+         @onclick="HandleGridClick"
+         @attributes="AdditionalAttributes">
+
+        @* Scenario Strip *@
+        @if (_allocationSets?.Any() == true && _allocationSets.Count() > 1)
+        {
+            <div class="@CssProvider.AllocationSchedulerScenarioStripClass()" role="toolbar" aria-label="Scenario selection">
+                @foreach (var set in _allocationSets)
+                {
+                    <button class="@CssProvider.AllocationSchedulerScenarioChipClass(set.SetId == ActiveSetId, set.IsLocked)"
+                            @onclick="() => HandleScenarioSwitch(set.SetId)"
+                            aria-pressed="@(set.SetId == ActiveSetId ? "true" : "false")"
+                            aria-label="@GetScenarioLabel(set)">
+                        @GetScenarioLabel(set)
+                        @if (set.IsLocked)
+                        {
+                            <span aria-hidden="true">&#x1f512;</span>
+                        }
+                    </button>
+                }
+            </div>
+        }
+
+        @* Toolbar *@
+        <div class="@CssProvider.AllocationSchedulerToolbarClass()" role="toolbar" aria-label="Scheduler toolbar">
+            <button @onclick="HandleNavigateBack" aria-label="Navigate back">&lt;</button>
+            <button @onclick="HandleNavigateToToday" aria-label="Navigate to today">Today</button>
+            <button @onclick="HandleNavigateForward" aria-label="Navigate forward">&gt;</button>
+            <select value="@_currentViewGrain" @onchange="HandleViewGrainChange" aria-label="Time range zoom"
+                    class="sf-allocation-scheduler__grain-select">
+                <option value="Day">Day</option>
+                <option value="Week">Week</option>
+                <option value="Month">Month</option>
+                <option value="Quarter">Quarter</option>
+                <option value="Year">Year</option>
+            </select>
+            @if (ShowJumpToDate)
+            {
+                <input type="date"
+                       class="sf-allocation-scheduler__jump-date-input"
+                       value="@_jumpToDate.ToString("yyyy-MM-dd")"
+                       @onchange="@((ChangeEventArgs e) => { if (DateTime.TryParse(e.Value?.ToString(), out var d)) _jumpToDate = d; })"
+                       aria-label="Jump to date" />
+                <button class="sf-allocation-scheduler__jump-date-btn"
+                        @onclick="HandleJumpToDate"
+                        aria-label="Jump to selected date">Go</button>
+            }
+            @ToolbarTemplate
+        </div>
+
+        @* Loading state *@
+        @if (_isLoading && EnableLoaderContainer)
+        {
+            <div class="@CssProvider.AllocationSchedulerLoaderClass()" role="status" aria-label="Loading">
+                Loading...
+            </div>
+        }
+        else if (_effectiveAllocations?.Any() != true && EmptyTemplate is not null)
+        {
+            @* Empty state *@
+            <div class="@CssProvider.AllocationSchedulerEmptyClass()">
+                @EmptyTemplate
+            </div>
+        }
+        else
+        {
+            @* Split-panel layout: fixed resource panel (left) + splitter + scrollable timeline panel (right) *@
+            <div class="sf-allocation-scheduler__grid" role="grid">
+                @* ── Restore zone (left collapsed) ───────────────────── *@
+                @if (_collapsedSide == SplitterSide.Left)
+                {
+                    <div class="@CssProvider.AllocationSchedulerSplitterRestoreClass(SplitterSide.Left)"
+                         role="button"
+                         tabindex="0"
+                         aria-label="Restore resource columns"
+                         @onclick="HandleRestoreClick"
+                         @onkeydown="HandleSplitterKeyDown">
+                        <span aria-hidden="true">&#x25B6;</span>
+                    </div>
+                }
+
+                @* ── Left panel: resource columns ─────────────────────── *@
+                <div class="sf-allocation-scheduler__resource-panel @(_collapsedSide == SplitterSide.Left ? "mar-allocation-scheduler__pane--collapsed" : "")"
+                     style="@GetLeftPaneStyle()">
+                    <table class="sf-allocation-scheduler__table" style="table-layout:fixed">
+                        <colgroup>
+                            @foreach (var col in _columns.Where(c => c.Visible))
+                            {
+                                <col style="@GetColumnWidthStyle(col)"
+                                     data-col-id="@(_columnSizingIds.TryGetValue(col, out var _cid) ? _cid : string.Empty)" />
+                            }
+                        </colgroup>
+                        <thead>
+                            @if (HasTimelineHeaderGroups)
+                            {
+                                <tr class="sf-allocation-scheduler__header-group-row" role="row">
+                                    @foreach (var col in _columns.Where(c => c.Visible))
+                                    {
+                                        <th rowspan="2"
+                                            class="@($"{CssProvider.AllocationSchedulerResourceColumnClass(false)} mar-allocation-scheduler__resource-col--spanning")"
+                                            role="columnheader">
+                                            @if (col.HeaderTemplate is not null)
+                                            {
+                                                @col.HeaderTemplate
+                                            }
+                                            else
+                                            {
+                                                @col.Title
+                                            }
+                                            @if (col.AllowResize && _columnSizingIds.TryGetValue(col, out var _rszId))
+                                            {
+                                                <div class="sf-allocation-scheduler__col-resize-handle"
+                                                     data-col-id="@_rszId"
+                                                     aria-hidden="true"></div>
+                                            }
+                                        </th>
+                                    }
+                                </tr>
+                                <tr class="sf-allocation-scheduler__header-row" role="row">
+                                    @* Empty — cells from the group row span into this row via rowspan="2" *@
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr class="sf-allocation-scheduler__header-row" role="row">
+                                    @foreach (var col in _columns.Where(c => c.Visible))
+                                    {
+                                        <th class="@CssProvider.AllocationSchedulerResourceColumnClass(false)"
+                                            role="columnheader">
+                                            @if (col.HeaderTemplate is not null)
+                                            {
+                                                @col.HeaderTemplate
+                                            }
+                                            else
+                                            {
+                                                @col.Title
+                                            }
+                                            @if (col.AllowResize && _columnSizingIds.TryGetValue(col, out var _rszId))
+                                            {
+                                                <div class="sf-allocation-scheduler__col-resize-handle"
+                                                     data-col-id="@_rszId"
+                                                     aria-hidden="true"></div>
+                                            }
+                                        </th>
+                                    }
+                                </tr>
+                            }
+                        </thead>
+                        <tbody>
+                            @if (Resources is not null)
+                            {
+                                var _resRowIdx = 0;
+                                @foreach (var resource in Resources)
+                                {
+                                    var resourceKey = GetResourceKey(resource);
+                                    var isOverAllocated = IsResourceOverAllocated(resourceKey);
+                                    var isRowSelected = IsResourceRowSelected(resourceKey);
+                                    var isStripe = StripedRows && _resRowIdx % 2 == 1;
+                                    _resRowIdx++;
+
+                                    <tr class="@CssProvider.AllocationSchedulerRowClass(isRowSelected, isOverAllocated, isStripe)"
+                                        role="row"
+                                        aria-label="@GetResourceLabel(resource)">
+                                        @foreach (var col in _columns.Where(c => c.Visible))
+                                        {
+                                            <td class="@CssProvider.AllocationSchedulerResourceColumnClass(false)"
+                                                role="gridcell">
+                                                @if (col.Template is not null)
+                                                {
+                                                    @col.Template(resource)
+                                                }
+                                                else if (ResourceRowTemplate is not null)
+                                                {
+                                                    @ResourceRowTemplate(resource)
+                                                }
+                                                else
+                                                {
+                                                    @GetFieldValue(resource, col.Field)
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* ── Splitter handle ──────────────────────────────────── *@
+                @if (_collapsedSide is null)
+                {
+                    <div class="@($"{CssProvider.AllocationSchedulerSplitterClass(_isDraggingSplitter, _isSplitterFocused)} {SplitterCssClass}{(HasResizableColumn ? "" : " mar-allocation-scheduler__splitter--locked")}".TrimEnd())"
+                         role="separator"
+                         aria-orientation="vertical"
+                         aria-valuenow="@((int)ComputeColumnWidthSum())"
+                         aria-valuemin="@((int)MinLeftPaneWidth)"
+                         aria-valuemax="9999"
+                         aria-label="Resize resource columns"
+                         tabindex="@(HasResizableColumn ? 0 : -1)"
+                         data-locked="@(!HasResizableColumn ? "true" : "false")"
+                         @onfocus="HandleSplitterFocus"
+                         @onblur="HandleSplitterBlur"
+                         @onkeydown="HandleSplitterKeyDown"
+                         @onkeydown:preventDefault="HasResizableColumn">
+                    </div>
+                }
+
+                @* ── Right panel: timeline buckets (horizontally scrollable) *@
+                <div id="@_rightPaneId"
+                     class="sf-allocation-scheduler__timeline-panel @(_collapsedSide == SplitterSide.Right ? "mar-allocation-scheduler__pane--collapsed" : "")"
+                     style="@GetRightPaneStyle()">
+                    <table class="sf-allocation-scheduler__table" style="@GetTimelineTableStyle()">
+                        <colgroup>
+                            @{ var bucketIdx = 0; }
+                            @foreach (var bucket in _visibleBuckets)
+                            {
+                                <col style="@GetBucketWidthStyle(bucketIdx)" />
+                                bucketIdx++;
+                            }
+                        </colgroup>
+                        <thead>
+                            @if (HasTimelineHeaderGroups)
+                            {
+                                <tr class="sf-allocation-scheduler__header-group-row" role="row">
+                                    @foreach (var group in _headerGroups)
+                                    {
+                                        <th colspan="@group.ColumnSpan"
+                                            class="sf-allocation-scheduler__header-group-cell"
+                                            role="columnheader"
+                                            aria-label="@group.Text">
+                                            @group.Text
+                                        </th>
+                                    }
+                                </tr>
+                            }
+                            <tr class="sf-allocation-scheduler__header-row" role="row">
+                                @{ var _thIdx = 0; }
+                                @foreach (var bucket in _visibleBuckets)
+                                {
+                                    var _isCurrent = IsCurrentPeriod(bucket);
+                                    <th class="@($"{CssProvider.AllocationSchedulerTimeHeaderClass(_currentViewGrain)}{(_isCurrent ? " mar-allocation-scheduler__col-current" : "")}")"
+                                        role="columnheader"
+                                        data-bucket-col-idx="@_thIdx"
+                                        aria-label="@FormatBucketHeader(bucket)"
+                                        aria-current="@(_isCurrent ? "date" : null)">
+                                        @FormatBucketHeader(bucket)
+                                        @if (AllowTimeColumnResize)
+                                        {
+                                            <div class="sf-allocation-scheduler__time-resize-handle"
+                                                 data-bucket-col-idx="@_thIdx"
+                                                 aria-hidden="true"></div>
+                                        }
+                                    </th>
+                                    _thIdx++;
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Resources is not null)
+                            {
+                                var _tlRowIdx = 0;
+                                @foreach (var resource in Resources)
+                                {
+                                    var resourceKey = GetResourceKey(resource);
+                                    var isOverAllocated = IsResourceOverAllocated(resourceKey);
+                                    var isRowSelected = IsResourceRowSelected(resourceKey);
+                                    var isTlStripe = StripedRows && _tlRowIdx % 2 == 1;
+                                    _tlRowIdx++;
+
+                                    <tr class="@CssProvider.AllocationSchedulerRowClass(isRowSelected, isOverAllocated, isTlStripe)"
+                                        role="row">
+                                        @foreach (var bucket in _visibleBuckets)
+                                        {
+                                            var record = GetRecord(resourceKey, bucket);
+                                            var isEditable = IsCellEditable(bucket);
+                                            var isSelected = IsCellSelected(resourceKey, bucket);
+                                            var isActive = IsCellActive(resourceKey, bucket);
+                                            var isConflict = IsCellConflict(resourceKey, bucket);
+                                            var isDisabled = IsCellDisabled(bucket);
+                                            var isBucketCurrent = IsCurrentPeriod(bucket);
+
+                                            var isCellEditing = _editMode && Equals(_editResourceKey, resourceKey) && _editBucket?.Start == bucket.Start;
+
+                                            <td class="@($"{CssProvider.AllocationSchedulerCellClass(isEditable, isSelected, isConflict, isDisabled, false)}{(isActive ? " mar-allocation-scheduler__cell--active" : "")}{(isCellEditing ? " mar-allocation-scheduler__cell--editing" : "")}{(isBucketCurrent ? " mar-allocation-scheduler__col-current" : "")}")"
+                                                role="gridcell"
+                                                tabindex="@(isEditable ? 0 : -1)"
+                                                data-resource-key="@resourceKey"
+                                                data-bucket-start="@bucket.Start.ToString("o")"
+                                                aria-selected="@(isSelected ? "true" : "false")"
+                                                aria-disabled="@(isDisabled ? "true" : "false")"
+                                                aria-readonly="@(!isEditable ? "true" : "false")"
+                                                aria-label="@GetCellAriaLabel(resource, bucket, record)"
+                                                @onclick="() => HandleCellClick(resourceKey, bucket)"
+                                                @ondblclick="() => HandleCellDoubleClick(resourceKey, bucket)"
+                                                @oncontextmenu="(e) => HandleCellContextMenu(e, resourceKey, bucket)"
+                                                @oncontextmenu:preventDefault="EnableContextMenu">
+                                                @if (_editMode && Equals(_editResourceKey, resourceKey) && _editBucket?.Start == bucket.Start)
+                                                {
+                                                    <input type="text"
+                                                           value="@_editValue"
+                                                           @onchange="HandleEditCommit"
+                                                           @onblur="HandleEditBlur"
+                                                           @onkeydown="HandleEditKeyDown"
+                                                           aria-label="@($"Edit value for {GetCellAriaLabel(resource, bucket, record)}")" />
+                                                }
+                                                else if (CellTemplate is not null)
+                                                {
+                                                    @CellTemplate(new AllocationCellContext
+                                                    {
+                                                        Record = record,
+                                                        ResourceKey = resourceKey,
+                                                        BucketStart = bucket.Start,
+                                                        BucketEnd = bucket.End,
+                                                        IsEditable = isEditable,
+                                                        IsSelected = isSelected,
+                                                        IsConflict = isConflict
+                                                    })
+                                                }
+                                                else if (record is not null)
+                                                {
+                                                    @if (ShowBaselineDiff && _baselineRecord(resourceKey, bucket) is { } baseline)
+                                                    {
+                                                        <span class="@CssProvider.AllocationSchedulerGhostBarClass()">@baseline.Value</span>
+                                                    }
+                                                    <span class="@CssProvider.AllocationSchedulerCellValueClass(ValueMode)">
+                                                        @FormatValue(record.Value)
+                                                    </span>
+                                                    @if (ShowDeltas && GetDelta(resourceKey, bucket) is { } delta)
+                                                    {
+                                                        <span class="@CssProvider.AllocationSchedulerDeltaClass(DeltaDisplayMode, delta > 0, delta < 0)">
+                                                            @FormatDelta(delta)
+                                                        </span>
+                                                    }
+                                                }
+                                                @if (AllowDragFill && isActive && isEditable && !isDisabled && !isCellEditing)
+                                                {
+                                                    <div class="sf-allocation-scheduler__fill-handle" aria-hidden="true"></div>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* ── Restore zone (right collapsed) ──────────────────── *@
+                @if (_collapsedSide == SplitterSide.Right)
+                {
+                    <div class="@CssProvider.AllocationSchedulerSplitterRestoreClass(SplitterSide.Right)"
+                         role="button"
+                         tabindex="0"
+                         aria-label="Restore timeline"
+                         @onclick="HandleRestoreClick"
+                         @onkeydown="HandleSplitterKeyDown">
+                        <span aria-hidden="true">&#x25C0;</span>
+                    </div>
+                }
+            </div>
+        }
+
+        @* Context Menu *@
+        @if (EnableContextMenu && _contextMenuVisible)
+        {
+            <div class="@CssProvider.AllocationSchedulerContextMenuClass()"
+                 style="position:absolute;left:@(_contextMenuX)px;top:@(_contextMenuY)px;z-index:1000"
+                 @onclick:stopPropagation="true">
+                <button @onclick="@(() => HandleContextMenuCommand("set-values"))">Set values</button>
+                <button @onclick="@(() => HandleContextMenuCommand("clear-values"))">Clear values</button>
+                <button @onclick="@(() => HandleContextMenuCommand("shift-forward"))">Shift forward</button>
+                <button @onclick="@(() => HandleContextMenuCommand("shift-backward"))">Shift backward</button>
+                <button @onclick="@(() => HandleContextMenuCommand("distribute"))">Distribute to sub-buckets</button>
+                @if (ContextMenuItems is not null)
+                {
+                    @foreach (var item in ContextMenuItems)
+                    {
+                        <button @onclick="@(() => HandleContextMenuCommand(item.Name))"
+                                disabled="@(!item.IsEnabled)">
+                            @item.Text
+                        </button>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+    @* Column declarations *@
+    @AllocationResourceColumns
+</CascadingValue>
