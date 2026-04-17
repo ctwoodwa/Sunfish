@@ -1,0 +1,16 @@
+@* WindowActions — container for WindowAction child components in a SunfishWindow. *@
+
+@ChildContent
+
+@code {
+    [CascadingParameter] internal SunfishWindow? ParentWindow { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentWindow is null)
+            throw new InvalidOperationException("WindowActions must be placed inside a SunfishWindow.");
+        ParentWindow.SetUsingChildActions(true);
+    }
+}

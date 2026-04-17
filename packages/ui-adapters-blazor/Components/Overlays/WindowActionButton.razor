@@ -1,0 +1,92 @@
+@* WindowActionButton — individual action button within WindowActions. *@
+
+@if (!Hidden)
+{
+    <button type="button"
+            class="sf-window__action-btn @ActionCssClass"
+            title="@Title"
+            aria-label="@(Title ?? Name)"
+            @onclick="HandleClick">
+        @if (IconTemplate != null)
+        {
+            @IconTemplate
+        }
+        else if (!string.IsNullOrEmpty(Icon))
+        {
+            <SunfishIcon Name="@Icon" />
+        }
+        else
+        {
+            @DefaultIconContent
+        }
+    </button>
+}
+
+@code {
+    [CascadingParameter] internal SunfishWindow? ParentWindow { get; set; }
+
+    /// <summary>The action name (e.g., "Close", "Minimize", "Maximize", or a custom name).</summary>
+    [Parameter] public string Name { get; set; } = "";
+
+    /// <summary>Whether this action button is hidden.</summary>
+    [Parameter] public bool Hidden { get; set; }
+
+    /// <summary>Tooltip/title text for the button.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Icon name for the action button.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Custom icon template.</summary>
+    [Parameter] public RenderFragment? IconTemplate { get; set; }
+
+    /// <summary>Fires when this action button is clicked.</summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    private string ActionCssClass => Name?.ToLowerInvariant() switch
+    {
+        "close" => "mar-window__action-btn--close",
+        "minimize" => "mar-window__action-btn--minimize",
+        "maximize" => "mar-window__action-btn--maximize",
+        _ => "mar-window__action-btn--custom"
+    };
+
+    private MarkupString DefaultIconContent => Name?.ToLowerInvariant() switch
+    {
+        "close" => (MarkupString)"&#x2715;",
+        "minimize" => (MarkupString)"&#x2212;",
+        "maximize" => ParentWindow?.State == WindowDisplayState.Maximized
+            ? (MarkupString)"\u29C9"
+            : (MarkupString)"\u25A1",
+        _ => (MarkupString)(Name ?? "")
+    };
+
+    private async Task HandleClick()
+    {
+        if (OnClick.HasDelegate)
+        {
+            await OnClick.InvokeAsync();
+        }
+        else if (ParentWindow is not null)
+        {
+            // Default built-in behavior when no custom handler
+            switch (Name?.ToLowerInvariant())
+            {
+                case "close":
+                    await ParentWindow.HandleCloseFromAction();
+                    break;
+                case "minimize":
+                    await ParentWindow.HandleMinimizeFromAction();
+                    break;
+                case "maximize":
+                    await ParentWindow.HandleMaximizeRestoreFromAction();
+                    break;
+            }
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        ParentWindow?.RegisterActionButton(this);
+    }
+}

@@ -1,0 +1,687 @@
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+@using Sunfish.Components.Blazor.Internal.Interop
+
+@if (Visible)
+{
+    @if (Modal)
+    {
+        <div class="@CssProvider.WindowOverlayClass()" @onclick="HandleOverlayClick"></div>
+    }
+
+    <div @ref="_windowRef"
+         class="@CombineClasses(WindowRootClass)"
+         style="@BuildWindowStyle()"
+         role="dialog"
+         aria-modal="@(Modal ? "true" : null)"
+         aria-labelledby="@_titleId"
+         tabindex="-1"
+         @onkeydown="HandleKeyDown"
+         @attributes="AdditionalAttributes">
+
+        <CascadingValue Value="this" IsFixed="true">
+            @* Render ChildContent to let child components register *@
+            <div style="display:none;">@ChildContent</div>
+        </CascadingValue>
+
+        @* Title Bar *@
+        <div class="@CssProvider.WindowTitleBarClass()"
+             @ref="_titleBarRef"
+             @onpointerdown="HandleTitleBarPointerDown">
+            <span class="sf-window__title" id="@_titleId">
+                @if (_titleFragment != null)
+                {
+                    @_titleFragment
+                }
+                else
+                {
+                    @Title
+                }
+            </span>
+            <div class="@CssProvider.WindowActionsClass()">
+                @if (_useChildActions)
+                {
+                    @* Re-render the WindowActions child content so buttons appear *@
+                    <CascadingValue Value="this" IsFixed="true">
+                        @_actionsChildContent
+                    </CascadingValue>
+                }
+                else
+                {
+                    @if (Actions.HasFlag(WindowAction.Minimize))
+                    {
+                        <button type="button"
+                                class="sf-window__action-btn mar-window__action-btn--minimize"
+                                aria-label="Minimize"
+                                @onclick="HandleMinimize">
+                            &#x2212;
+                        </button>
+                    }
+                    @if (Actions.HasFlag(WindowAction.Maximize))
+                    {
+                        <button type="button"
+                                class="sf-window__action-btn mar-window__action-btn--maximize"
+                                aria-label="@(State == WindowDisplayState.Maximized ? "Restore" : "Maximize")"
+                                @onclick="HandleMaximizeRestore">
+                            @(State == WindowDisplayState.Maximized ? "\u29C9" : "\u25A1")
+                        </button>
+                    }
+                    @if (Actions.HasFlag(WindowAction.Close))
+                    {
+                        <button type="button"
+                                class="sf-window__action-btn mar-window__action-btn--close"
+                                aria-label="Close"
+                                @onclick="HandleClose">
+                            &#x2715;
+                        </button>
+                    }
+                }
+            </div>
+        </div>
+
+        @* Content *@
+        @if (State != WindowDisplayState.Minimized || PersistContent)
+        {
+            <div class="@CssProvider.WindowContentClass()"
+                 style="@(State == WindowDisplayState.Minimized ? "display:none" : null)">
+                @if (_contentFragment != null)
+                {
+                    @_contentFragment
+                }
+                else
+                {
+                    @ContentTemplate
+                }
+            </div>
+        }
+
+        @* Footer *@
+        @if (State != WindowDisplayState.Minimized)
+        {
+            @if (_footerFragment != null || FooterTemplate != null)
+            {
+                <div class="@CssProvider.WindowFooterClass()" style="@FooterAlignStyle">
+                    @if (_footerFragment != null)
+                    {
+                        @_footerFragment
+                    }
+                    else
+                    {
+                        @FooterTemplate
+                    }
+                </div>
+            }
+        }
+
+        @* Resize handles *@
+        @if (Resizable && State == WindowDisplayState.Normal)
+        {
+            <div class="sf-window__resize-handle mar-window__resize-handle--n" @onpointerdown="@(e => HandleResizePointerDown(e, "n"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--e" @onpointerdown="@(e => HandleResizePointerDown(e, "e"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--s" @onpointerdown="@(e => HandleResizePointerDown(e, "s"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--w" @onpointerdown="@(e => HandleResizePointerDown(e, "w"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--ne" @onpointerdown="@(e => HandleResizePointerDown(e, "ne"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--se" @onpointerdown="@(e => HandleResizePointerDown(e, "se"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--sw" @onpointerdown="@(e => HandleResizePointerDown(e, "sw"))"></div>
+            <div class="sf-window__resize-handle mar-window__resize-handle--nw" @onpointerdown="@(e => HandleResizePointerDown(e, "nw"))"></div>
+        }
+    </div>
+}
+
+@code {
+    // Shared interop services — injected for future migration from inline JS to shared modules.
+    // These will replace the per-component JS in GetWindowScript() in a subsequent pass.
+    [Inject] private IElementMeasurementService? MeasurementService { get; set; }
+    [Inject] private IDragService? SharedDragService { get; set; }
+    [Inject] private IResizeInteractionService? SharedResizeService { get; set; }
+
+    private readonly string _titleId = $"mar-window-title-{Guid.NewGuid():N}";
+    private ElementReference _windowRef;
+    private ElementReference _titleBarRef;
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<SunfishWindow>? _dotNetRef;
+
+    // Child component fragments
+    private RenderFragment? _contentFragment;
+    private RenderFragment? _titleFragment;
+    private RenderFragment? _footerFragment;
+    private bool _useChildActions;
+    private RenderFragment? _actionsChildContent;
+    private readonly List<WindowActionButton> _actionButtons = [];
+
+    // State before maximize (for restore)
+    private string? _preMaxTop;
+    private string? _preMaxLeft;
+    private string? _preMaxWidth;
+    private string? _preMaxHeight;
+
+    // ── Parameters ─────────────────────────────────────────────────────
+
+    /// <summary>The window title text (used when WindowTitle child component is not provided).</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Whether the window is visible. Supports two-way binding.</summary>
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>Whether the window is modal (shows overlay backdrop).</summary>
+    [Parameter] public bool Modal { get; set; }
+
+    /// <summary>The current window state (Normal, Minimized, Maximized). Supports two-way binding.</summary>
+    [Parameter] public WindowDisplayState State { get; set; } = WindowDisplayState.Normal;
+    [Parameter] public EventCallback<WindowDisplayState> StateChanged { get; set; }
+
+    /// <summary>Whether the window can be dragged by the title bar.</summary>
+    [Parameter] public bool Draggable { get; set; } = true;
+
+    /// <summary>Whether the window can be resized via handles.</summary>
+    [Parameter] public bool Resizable { get; set; } = true;
+
+    /// <summary>Whether clicking the overlay closes a modal window.</summary>
+    [Parameter] public bool CloseOnOverlayClick { get; set; }
+
+    /// <summary>CSS selector to constrain dragging/resizing within a container.</summary>
+    [Parameter] public string? ContainmentSelector { get; set; }
+
+    /// <summary>Width of the window (CSS value). Supports two-way binding.</summary>
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public EventCallback<string?> WidthChanged { get; set; }
+
+    /// <summary>Height of the window (CSS value). Supports two-way binding.</summary>
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public EventCallback<string?> HeightChanged { get; set; }
+
+    /// <summary>Top position (CSS value). Supports two-way binding.</summary>
+    [Parameter] public string? Top { get; set; }
+    [Parameter] public EventCallback<string?> TopChanged { get; set; }
+
+    /// <summary>Left position (CSS value). Supports two-way binding.</summary>
+    [Parameter] public string? Left { get; set; }
+    [Parameter] public EventCallback<string?> LeftChanged { get; set; }
+
+    /// <summary>Minimum width constraint.</summary>
+    [Parameter] public string? MinWidth { get; set; }
+
+    /// <summary>Maximum width constraint.</summary>
+    [Parameter] public string? MaxWidth { get; set; }
+
+    /// <summary>Minimum height constraint.</summary>
+    [Parameter] public string? MinHeight { get; set; }
+
+    /// <summary>Maximum height constraint.</summary>
+    [Parameter] public string? MaxHeight { get; set; }
+
+    /// <summary>Predefined window size.</summary>
+    [Parameter] public WindowSize? Size { get; set; }
+
+    /// <summary>Theme color for the title bar.</summary>
+    [Parameter] public string? ThemeColor { get; set; }
+
+    /// <summary>Animation type for open/close transitions.</summary>
+    [Parameter] public WindowAnimationType AnimationType { get; set; } = WindowAnimationType.None;
+
+    /// <summary>Animation duration in milliseconds.</summary>
+    [Parameter] public int AnimationDuration { get; set; } = 300;
+
+    /// <summary>Whether minimized window content stays in the DOM.</summary>
+    [Parameter] public bool PersistContent { get; set; }
+
+    /// <summary>Horizontal alignment of footer content.</summary>
+    [Parameter] public WindowFooterLayoutAlign FooterLayoutAlign { get; set; } = WindowFooterLayoutAlign.End;
+
+    /// <summary>Which title bar action buttons to show (enum-based API).</summary>
+    [Parameter] public WindowAction Actions { get; set; } = WindowAction.Close;
+
+    /// <summary>Window body content (legacy flat RenderFragment, prefer WindowContent child).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Alternative body content template (when not using WindowContent child).</summary>
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    /// <summary>Custom title bar template (legacy, prefer WindowTitle child).</summary>
+    [Parameter] public RenderFragment? TitleBarTemplate { get; set; }
+
+    /// <summary>Optional footer template (legacy, prefer WindowFooter child).</summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    // ── Events ─────────────────────────────────────────────────────────
+
+    /// <summary>Fires when an action button is clicked.</summary>
+    [Parameter] public EventCallback<WindowAction> OnAction { get; set; }
+
+    /// <summary>Fires after the window is moved (position changed).</summary>
+    [Parameter] public EventCallback OnMove { get; set; }
+
+    /// <summary>Fires after the window is resized.</summary>
+    [Parameter] public EventCallback OnResize { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    private string WindowRootClass
+    {
+        get
+        {
+            var cls = CssProvider.WindowClass(Modal);
+            if (State == WindowDisplayState.Maximized) cls += " mar-window--maximized";
+            if (State == WindowDisplayState.Minimized) cls += " mar-window--minimized";
+            if (Draggable) cls += " mar-window--draggable";
+            if (Resizable) cls += " mar-window--resizable";
+            if (AnimationType != WindowAnimationType.None) cls += $" mar-window--anim-{AnimationType.ToString().ToLowerInvariant()}";
+            if (Size.HasValue) cls += $" mar-window--{Size.Value.ToString().ToLowerInvariant()}";
+            return cls;
+        }
+    }
+
+    private string BuildWindowStyle()
+    {
+        var sb = StyleBuilder.Clear();
+
+        if (State == WindowDisplayState.Maximized)
+        {
+            sb.AddStyle(Style);
+            if (AnimationType != WindowAnimationType.None)
+                sb.AddStyle($"--mar-window-anim-duration:{AnimationDuration}ms");
+            return sb.Build();
+        }
+
+        // Position — auto-center if Top/Left are not set
+        if (!string.IsNullOrEmpty(Top))
+            sb.AddStyle($"top:{Top}");
+        if (!string.IsNullOrEmpty(Left))
+            sb.AddStyle($"left:{Left}");
+        if (string.IsNullOrEmpty(Top) && string.IsNullOrEmpty(Left))
+        {
+            sb.AddStyle("top:50%");
+            sb.AddStyle("left:50%");
+            sb.AddStyle("transform:translate(-50%,-50%)");
+        }
+
+        // Size
+        var effectiveWidth = Width ?? GetSizeWidth();
+        if (!string.IsNullOrEmpty(effectiveWidth)) sb.AddStyle($"width:{effectiveWidth}");
+        if (!string.IsNullOrEmpty(Height)) sb.AddStyle($"height:{Height}");
+
+        // Constraints
+        if (!string.IsNullOrEmpty(MinWidth)) sb.AddStyle($"min-width:{MinWidth}");
+        if (!string.IsNullOrEmpty(MaxWidth)) sb.AddStyle($"max-width:{MaxWidth}");
+        if (!string.IsNullOrEmpty(MinHeight)) sb.AddStyle($"min-height:{MinHeight}");
+        if (!string.IsNullOrEmpty(MaxHeight)) sb.AddStyle($"max-height:{MaxHeight}");
+
+        // Theme color
+        if (!string.IsNullOrEmpty(ThemeColor))
+            sb.AddStyle($"--mar-window-theme-color:{ThemeColor}");
+
+        // Animation
+        if (AnimationType != WindowAnimationType.None)
+            sb.AddStyle($"--mar-window-anim-duration:{AnimationDuration}ms");
+
+        sb.AddStyle(Style);
+        return sb.Build();
+    }
+
+    private string? GetSizeWidth() => Size switch
+    {
+        WindowSize.Small => "300px",
+        WindowSize.Medium => "600px",
+        WindowSize.Large => "900px",
+        _ => null
+    };
+
+    private string? FooterAlignStyle => FooterLayoutAlign switch
+    {
+        WindowFooterLayoutAlign.Start => "justify-content:flex-start",
+        WindowFooterLayoutAlign.Center => "justify-content:center",
+        WindowFooterLayoutAlign.End => "justify-content:flex-end",
+        WindowFooterLayoutAlign.Stretch => "justify-content:stretch",
+        _ => null
+    };
+
+    // ── Child component registration ───────────────────────────────────
+
+    internal void SetContentFragment(RenderFragment? fragment) => _contentFragment = fragment;
+    internal void SetTitleFragment(RenderFragment? fragment) => _titleFragment = fragment;
+    internal void SetFooterFragment(RenderFragment? fragment) => _footerFragment = fragment;
+    internal void SetActionsChildContent(RenderFragment? fragment) => _actionsChildContent = fragment;
+    internal void SetUsingChildActions(bool value) => _useChildActions = value;
+    internal void RegisterActionButton(WindowActionButton button)
+    {
+        if (!_actionButtons.Contains(button))
+            _actionButtons.Add(button);
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Shows the window.</summary>
+    public async Task ShowAsync()
+    {
+        Visible = true;
+        await VisibleChanged.InvokeAsync(true);
+        StateHasChanged();
+    }
+
+    /// <summary>Hides the window.</summary>
+    public async Task HideAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        StateHasChanged();
+    }
+
+    /// <summary>Sets the window state programmatically.</summary>
+    public async Task SetStateAsync(WindowDisplayState state)
+    {
+        await ChangeStateAsync(state);
+    }
+
+    /// <summary>Forces a re-render of the component.</summary>
+    public void Refresh() => StateHasChanged();
+
+    // ── JS Interop ─────────────────────────────────────────────────────
+
+    private static string GetWindowScript() => """
+    (() => {
+        const mod = {};
+        let windowEl = null;
+        let titleBarEl = null;
+        let dotNetRef = null;
+        let isDragging = false;
+        let isResizing = false;
+        let resizeDir = '';
+        let startX = 0, startY = 0;
+        let startTop = 0, startLeft = 0;
+        let startW = 0, startH = 0;
+        let containment = null;
+
+        mod.init = (winEl, titleEl, ref, containmentSel) => {
+            windowEl = winEl;
+            titleBarEl = titleEl;
+            dotNetRef = ref;
+            containment = containmentSel ? document.querySelector(containmentSel) : null;
+        };
+
+        mod.startDrag = (clientX, clientY) => {
+            if (!windowEl) return;
+            isDragging = true;
+            const rect = windowEl.getBoundingClientRect();
+            startX = clientX;
+            startY = clientY;
+            startTop = rect.top;
+            startLeft = rect.left;
+            // Remove centering transform during drag
+            windowEl.style.transform = 'none';
+
+            document.addEventListener('pointermove', onDragMove);
+            document.addEventListener('pointerup', onDragEnd);
+        };
+
+        function clampPosition(top, left, w, h) {
+            if (!containment) return { top, left };
+            const cRect = containment.getBoundingClientRect();
+            top = Math.max(cRect.top, Math.min(top, cRect.bottom - h));
+            left = Math.max(cRect.left, Math.min(left, cRect.right - w));
+            return { top, left };
+        }
+
+        function onDragMove(e) {
+            if (!isDragging || !windowEl) return;
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            let newTop = startTop + dy;
+            let newLeft = startLeft + dx;
+            const rect = windowEl.getBoundingClientRect();
+            const clamped = clampPosition(newTop, newLeft, rect.width, rect.height);
+            windowEl.style.top = clamped.top + 'px';
+            windowEl.style.left = clamped.left + 'px';
+        }
+
+        function onDragEnd(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            document.removeEventListener('pointermove', onDragMove);
+            document.removeEventListener('pointerup', onDragEnd);
+            if (windowEl && dotNetRef) {
+                const rect = windowEl.getBoundingClientRect();
+                dotNetRef.invokeMethodAsync('OnDragEndFromJs', rect.top, rect.left);
+            }
+        }
+
+        mod.startResize = (clientX, clientY, direction) => {
+            if (!windowEl) return;
+            isResizing = true;
+            resizeDir = direction;
+            const rect = windowEl.getBoundingClientRect();
+            startX = clientX;
+            startY = clientY;
+            startTop = rect.top;
+            startLeft = rect.left;
+            startW = rect.width;
+            startH = rect.height;
+            // Remove centering transform during resize
+            windowEl.style.transform = 'none';
+
+            document.addEventListener('pointermove', onResizeMove);
+            document.addEventListener('pointerup', onResizeEnd);
+        };
+
+        function onResizeMove(e) {
+            if (!isResizing || !windowEl) return;
+            e.preventDefault();
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            let newW = startW, newH = startH, newTop = startTop, newLeft = startLeft;
+
+            if (resizeDir.includes('e')) newW = startW + dx;
+            if (resizeDir.includes('w')) { newW = startW - dx; newLeft = startLeft + dx; }
+            if (resizeDir.includes('s')) newH = startH + dy;
+            if (resizeDir.includes('n')) { newH = startH - dy; newTop = startTop + dy; }
+
+            // Enforce min size
+            newW = Math.max(newW, 200);
+            newH = Math.max(newH, 100);
+
+            windowEl.style.width = newW + 'px';
+            windowEl.style.height = newH + 'px';
+            if (resizeDir.includes('n')) windowEl.style.top = newTop + 'px';
+            if (resizeDir.includes('w')) windowEl.style.left = newLeft + 'px';
+        }
+
+        function onResizeEnd(e) {
+            if (!isResizing) return;
+            isResizing = false;
+            document.removeEventListener('pointermove', onResizeMove);
+            document.removeEventListener('pointerup', onResizeEnd);
+            if (windowEl && dotNetRef) {
+                const rect = windowEl.getBoundingClientRect();
+                dotNetRef.invokeMethodAsync('OnResizeEndFromJs',
+                    rect.top, rect.left, rect.width, rect.height);
+            }
+        }
+
+        mod.focusWindow = () => {
+            if (windowEl) windowEl.focus();
+        };
+
+        mod.dispose = () => {
+            document.removeEventListener('pointermove', onDragMove);
+            document.removeEventListener('pointerup', onDragEnd);
+            document.removeEventListener('pointermove', onResizeMove);
+            document.removeEventListener('pointerup', onResizeEnd);
+            windowEl = null;
+            titleBarEl = null;
+            dotNetRef = null;
+        };
+
+        return mod;
+    })()
+    """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && Visible)
+        {
+            await InitJsModule();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Visible && _jsModule is null && _dotNetRef is null)
+        {
+            // Will be initialized in OnAfterRenderAsync
+        }
+    }
+
+    private async Task InitJsModule()
+    {
+        if (_jsModule is not null) return;
+        _dotNetRef = DotNetObjectReference.Create(this);
+        _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetWindowScript());
+        await _jsModule.InvokeVoidAsync("init", _windowRef, _titleBarRef, _dotNetRef, ContainmentSelector);
+        await _jsModule.InvokeVoidAsync("focusWindow");
+    }
+
+    // ── JS Callbacks ───────────────────────────────────────────────────
+
+    [JSInvokable]
+    public async Task OnDragEndFromJs(double top, double left)
+    {
+        Top = $"{top}px";
+        Left = $"{left}px";
+        await TopChanged.InvokeAsync(Top);
+        await LeftChanged.InvokeAsync(Left);
+        await OnMove.InvokeAsync();
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnResizeEndFromJs(double top, double left, double width, double height)
+    {
+        Top = $"{top}px";
+        Left = $"{left}px";
+        Width = $"{width}px";
+        Height = $"{height}px";
+        await TopChanged.InvokeAsync(Top);
+        await LeftChanged.InvokeAsync(Left);
+        await WidthChanged.InvokeAsync(Width);
+        await HeightChanged.InvokeAsync(Height);
+        await OnResize.InvokeAsync();
+        StateHasChanged();
+    }
+
+    // ── Event handlers ─────────────────────────────────────────────────
+
+    private async Task HandleTitleBarPointerDown(PointerEventArgs e)
+    {
+        if (!Draggable || State != WindowDisplayState.Normal) return;
+        if (_jsModule is null) await InitJsModule();
+        if (_jsModule is not null)
+            await _jsModule.InvokeVoidAsync("startDrag", e.ClientX, e.ClientY);
+    }
+
+    private async Task HandleResizePointerDown(PointerEventArgs e, string direction)
+    {
+        if (!Resizable || State != WindowDisplayState.Normal) return;
+        if (_jsModule is null) await InitJsModule();
+        if (_jsModule is not null)
+            await _jsModule.InvokeVoidAsync("startResize", e.ClientX, e.ClientY, direction);
+    }
+
+    internal async Task HandleCloseFromAction()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnAction.InvokeAsync(WindowAction.Close);
+    }
+
+    internal async Task HandleMinimizeFromAction()
+    {
+        await ChangeStateAsync(WindowDisplayState.Minimized);
+        await OnAction.InvokeAsync(WindowAction.Minimize);
+    }
+
+    internal async Task HandleMaximizeRestoreFromAction()
+    {
+        var newState = State == WindowDisplayState.Maximized ? WindowDisplayState.Normal : WindowDisplayState.Maximized;
+        await ChangeStateAsync(newState);
+        await OnAction.InvokeAsync(WindowAction.Maximize);
+    }
+
+    private async Task HandleClose()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnAction.InvokeAsync(WindowAction.Close);
+    }
+
+    private async Task HandleMinimize()
+    {
+        await ChangeStateAsync(WindowDisplayState.Minimized);
+        await OnAction.InvokeAsync(WindowAction.Minimize);
+    }
+
+    private async Task HandleMaximizeRestore()
+    {
+        var newState = State == WindowDisplayState.Maximized ? WindowDisplayState.Normal : WindowDisplayState.Maximized;
+        await ChangeStateAsync(newState);
+        await OnAction.InvokeAsync(WindowAction.Maximize);
+    }
+
+    private async Task ChangeStateAsync(WindowDisplayState newState)
+    {
+        if (newState == WindowDisplayState.Maximized && State == WindowDisplayState.Normal)
+        {
+            // Save pre-maximize state for restore
+            _preMaxTop = Top;
+            _preMaxLeft = Left;
+            _preMaxWidth = Width;
+            _preMaxHeight = Height;
+        }
+        else if (newState == WindowDisplayState.Normal && State == WindowDisplayState.Maximized)
+        {
+            // Restore pre-maximize state
+            Top = _preMaxTop;
+            Left = _preMaxLeft;
+            Width = _preMaxWidth;
+            Height = _preMaxHeight;
+        }
+
+        State = newState;
+        await StateChanged.InvokeAsync(State);
+        StateHasChanged();
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+            await HandleClose();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "Escape":
+                if (Actions.HasFlag(WindowAction.Close) || _actionButtons.Any(b => b.Name == "Close"))
+                    await HandleClose();
+                break;
+        }
+    }
+
+    // ── Disposal ───────────────────────────────────────────────────────
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try
+            {
+                await _jsModule.InvokeVoidAsync("dispose");
+                await _jsModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { }
+        }
+        _dotNetRef?.Dispose();
+    }
+}

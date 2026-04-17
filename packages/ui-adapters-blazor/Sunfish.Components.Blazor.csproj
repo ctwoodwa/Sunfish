@@ -6,6 +6,7 @@
     <PackageTags>blazor;components;razor-class-library;ui-framework;sunfish</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

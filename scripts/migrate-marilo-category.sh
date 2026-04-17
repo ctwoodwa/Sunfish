@@ -49,6 +49,18 @@ find "$DST" -type f -name "*.md" -exec sed -i \
   -e 's/\bMarilo/Sunfish/g' \
   {} \;
 
+# Component code-behind (.razor.cs) files that inherit SunfishComponentBase
+# need an explicit using for Sunfish.Components.Blazor.Base (where that type
+# lives — NOT Foundation.Base, which holds the framework-agnostic CssClassBuilder).
+# Marilo had both in Marilo.Core.Base, so the original only needed one using.
+# Insert after the (already renamed) Sunfish.Foundation.Base line if missing.
+echo "→ Patching code-behind usings for SunfishComponentBase"
+find "$DST" -name "*.razor.cs" | while read -r f; do
+  if grep -q "SunfishComponentBase" "$f" && ! grep -q "using Sunfish\.Components\.Blazor\.Base;" "$f"; then
+    sed -i '0,/^using Sunfish\.Foundation\.Base;/{s//using Sunfish.Foundation.Base;\nusing Sunfish.Components.Blazor.Base;/}' "$f"
+  fi
+done
+
 echo "→ Grepping for leftover Marilo references"
 if grep -rE '\bMarilo[A-Za-z]|Marilo\.(Core|Components)' "$DST"; then
   echo "FAIL: 'Marilo' identifiers remain in $DST"

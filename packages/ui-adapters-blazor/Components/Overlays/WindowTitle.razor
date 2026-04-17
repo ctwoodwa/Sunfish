@@ -1,0 +1,16 @@
+@* WindowTitle — semantic child component for SunfishWindow title content. *@
+
+@ChildContent
+
+@code {
+    [CascadingParameter] internal SunfishWindow? ParentWindow { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentWindow is null)
+            throw new InvalidOperationException("WindowTitle must be placed inside a SunfishWindow.");
+        ParentWindow.SetTitleFragment(ChildContent);
+    }
+}
