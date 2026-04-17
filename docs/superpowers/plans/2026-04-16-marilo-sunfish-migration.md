@@ -19,7 +19,7 @@ This migration spans 9 independent subsystems. This document is the **master str
 | 1 | Foundation package (117 files, 3 tests) | ✅ Complete (local branch, unpushed) | *(this doc, Tasks 1–8)* |
 | 2 | UI Core contracts (8 files, 13 tests) | ✅ Merged to main (PR #7) | `2026-04-16-sunfish-phase2-ui-core.md` |
 | 3a | Blazor adapter infrastructure (6 tests) | ✅ Complete, PR open | `2026-04-16-sunfish-phase3a-blazor-infra.md` |
-| 3b | Blazor component migration (329 files, 29 adapter tests) | ✅ Complete, pushed | *plan doc lost during branch transitions — regenerate if needed* |
+| 3b | Blazor component migration (329 files, 29 adapter tests) | ✅ Complete, pushed | `2026-04-16-sunfish-phase3b-blazor-components.md` (reconstructed as-shipped) |
 | 3c | Providers (FluentUI/Bootstrap/Material) + SCSS/JS rename | 📄 Planned | `2026-04-17-sunfish-phase3c-providers-scss.md` |
 | 3d | Icon packages (Tabler + legacy `[Obsolete]`) | 📄 Planned | `2026-04-17-sunfish-phase3d-icons.md` |
 | 4 | App Shell (15 files) | 📄 Planned | `2026-04-17-sunfish-phase4-app-shell.md` |
