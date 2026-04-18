@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Ingestion.Core</PackageId>
+    <Description>Shared ingestion pipeline contract, middleware, and error model for Sunfish modality adapters (spec §7).</Description>
+    <PackageTags>sunfish;ingestion;pipeline;middleware</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Core.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Forms.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Spreadsheets.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Voice.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Sensors.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Imagery.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Satellite.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+
+</Project>
