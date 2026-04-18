@@ -1,4 +1,22 @@
-# PM Demo — Settings Area & Account Pages Status
+# Bridge Accelerator — Roadmap
+
+> **Migration note:** This document was preserved from `Marilo.PmDemo/SETTINGS_STATUS.md`
+> during the Phase 9 Sunfish migration. Sections 1–2 (canonical notification pipeline,
+> shell footer) and Section 3 (MainLayout) are **DONE**. Sections 4–12 (Account pages,
+> shared settings components, services, data model, build order) document the original
+> roadmap and are **NOT completed** as part of the migration. These remain as the
+> forward work plan for the Bridge accelerator.
+>
+> The canonical notification pipeline has been promoted to `packages/foundation/Notifications/`
+> (see Phase 9, Task 9-5). References to `IUserNotificationService` in this doc now
+> resolve to `Sunfish.Foundation.Notifications.IUserNotificationService`.
+>
+> Demo-only auth seams (`DemoTenantContext`, `MockOktaService`) remain in place with
+> explicit annotations and startup warnings; replace before production deployment.
+
+---
+
+# Bridge — Settings Area & Account Pages Status
 
 > Generated from the current design session. Tracks what exists, what's planned, and what the desired end result looks like.
 
