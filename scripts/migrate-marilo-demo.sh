@@ -18,10 +18,12 @@ fi
 
 echo "→ Copying Marilo.Demo → apps/kitchen-sink"
 mkdir -p "$DST"
-# Copy everything except bin, obj, and csproj (we'll write the csproj fresh)
-rsync -a \
-  --exclude="bin/" --exclude="obj/" --exclude="Marilo.Demo.csproj" \
-  "$SRC/" "$DST/"
+# Copy everything except bin, obj, and csproj (we'll write the csproj fresh).
+# Use cp -r (rsync is unavailable in Windows Git Bash), then prune excludes post-copy.
+cp -r "$SRC/." "$DST/"
+rm -rf "$DST/bin" "$DST/obj"
+find "$DST" -type d \( -name "bin" -o -name "obj" \) -prune -exec rm -rf {} +
+rm -f "$DST/Marilo.Demo.csproj"
 
 echo "→ Removing backup/scratch files"
 find "$DST" -type f \( -name "*.bak" -o -name "*.orig" -o -name "*~" \) -delete
