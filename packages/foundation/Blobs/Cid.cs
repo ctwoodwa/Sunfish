@@ -51,6 +51,60 @@ public readonly record struct Cid(string Value)
         return new Cid(MultibasePrefix + Base32.Encode(cidBytes));
     }
 
+    /// <summary>
+    /// Parses a CID string (as emitted by <see cref="FromBytes"/> or an external IPFS implementation)
+    /// and returns a <see cref="Cid"/> value. Performs shape validation only — it does not re-derive
+    /// the digest from any bytes. Intended for round-tripping CID strings (e.g. across HTTP calls
+    /// to a Kubo daemon) back into Sunfish's type system.
+    /// </summary>
+    /// <exception cref="FormatException">
+    /// Thrown when <paramref name="value"/> is null, empty, missing the base32-lowercase multibase
+    /// prefix (<see cref="MultibasePrefix"/>), has an unexpected length for a CID v1 / raw /
+    /// SHA-256 encoding, or contains characters outside the base32-lowercase alphabet.
+    /// </exception>
+    /// <remarks>
+    /// A CID v1 / raw / SHA-256 binary payload is 36 bytes, which base32-encodes to 58 characters;
+    /// together with the <c>'b'</c> multibase prefix the canonical string length is 59. This method
+    /// validates that exact shape — it does not attempt to decode alternative multibase encodings
+    /// or different multihash algorithms.
+    /// </remarks>
+    public static Cid Parse(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new FormatException("CID value is null or empty.");
+        }
+
+        // 1 (multibase) + ceil(36 * 8 / 5) = 1 + 58 = 59 characters for CID v1 / raw / SHA-256.
+        const int expectedLength = 59;
+        if (value.Length != expectedLength)
+        {
+            throw new FormatException(
+                $"CID '{value}' has length {value.Length}; expected {expectedLength} characters " +
+                "(base32-lowercase, CID v1, raw codec, SHA-256).");
+        }
+
+        if (value[0] != MultibasePrefix)
+        {
+            throw new FormatException(
+                $"CID '{value}' is missing the base32-lowercase multibase prefix '{MultibasePrefix}'.");
+        }
+
+        for (int i = 1; i < value.Length; i++)
+        {
+            var c = value[i];
+            var isLower = c >= 'a' && c <= 'z';
+            var isDigit = c >= '2' && c <= '7';
+            if (!isLower && !isDigit)
+            {
+                throw new FormatException(
+                    $"CID '{value}' contains character '{c}' at index {i} outside the base32-lowercase alphabet.");
+            }
+        }
+
+        return new Cid(value);
+    }
+
     /// <summary>Returns the string form — the canonical wire representation.</summary>
     public override string ToString() => Value;
 

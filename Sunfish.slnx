@@ -87,6 +87,10 @@
     <Project Path="packages/federation-capability-sync/Sunfish.Federation.CapabilitySync.csproj" />
     <Project Path="packages/federation-capability-sync/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/federation/blob-replication/">
+    <Project Path="packages/federation-blob-replication/Sunfish.Federation.BlobReplication.csproj" />
+    <Project Path="packages/federation-blob-replication/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/accelerators/bridge/">
     <Project Path="accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj" />
     <Project Path="accelerators/bridge/Sunfish.Bridge.AppHost/Sunfish.Bridge.AppHost.csproj" />
