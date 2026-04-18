@@ -1,6 +1,7 @@
-using Sunfish.Components.Blazor.Layout.AppShell;
+using Sunfish.Components.Blazor.Shell;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
+using Sunfish.Foundation.Notifications;
 using Sunfish.Foundation.Services;
 
 namespace Sunfish.Bridge.Client.Notifications;

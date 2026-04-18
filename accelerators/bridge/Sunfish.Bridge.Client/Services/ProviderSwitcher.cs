@@ -72,7 +72,7 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     }
 
     // ── ISunfishIconProvider ──
-    public MarkupString GetIcon(string name, IconSize size = IconSize.Medium) => Icons.GetIcon(name, size);
+    public string GetIcon(string name, IconSize size = IconSize.Medium) => Icons.GetIcon(name, size);
     public string GetIconSpriteUrl() => Icons.GetIconSpriteUrl();
     public IconRenderMode RenderMode => Icons.RenderMode;
     public string LibraryName => Icons.LibraryName;
@@ -81,8 +81,7 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     public ValueTask InitializeAsync() => JsInterop.InitializeAsync();
     public ValueTask<bool> ShowModalAsync(string modalId) => JsInterop.ShowModalAsync(modalId);
     public ValueTask HideModalAsync(string modalId) => JsInterop.HideModalAsync(modalId);
-    public ValueTask<BoundingBox> GetElementBoundsAsync(ElementReference element) => JsInterop.GetElementBoundsAsync(element);
-    public ValueTask ObserveScrollAsync(ElementReference element, DotNetObjectReference<object> callback) => JsInterop.ObserveScrollAsync(element, callback);
+    public ValueTask<BoundingBox> GetElementBoundsAsync(string elementId) => JsInterop.GetElementBoundsAsync(elementId);
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
     // ── ISunfishCssProvider — Layout ──
@@ -333,7 +332,7 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     // ── ResizableContainer ──
     public string ResizableContainerClass(bool isResizing, bool isDisabled) => Css.ResizableContainerClass(isResizing, isDisabled);
     public string ResizableContainerContentClass() => Css.ResizableContainerContentClass();
-    public string ResizableContainerHandleClass(SunfishResizeEdges edge, bool isActive, bool isFocused) => Css.ResizableContainerHandleClass(edge, isActive, isFocused);
+    public string ResizableContainerHandleClass(ResizeEdges edge, bool isActive, bool isFocused) => Css.ResizableContainerHandleClass(edge, isActive, isFocused);
 
     // ── Utility ──
     public string IconClass(string iconName, IconSize size, IconFlip flip = IconFlip.None, IconThemeColor themeColor = IconThemeColor.Base) => Css.IconClass(iconName, size, flip, themeColor);

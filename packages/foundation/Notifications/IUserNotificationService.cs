@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sunfish.Bridge.Client.Notifications;
+namespace Sunfish.Foundation.Notifications;
 
 /// <summary>
-/// Canonical notification pipeline for the PM Demo. Owns creation, persistence,
-/// querying, read-state, dedupe, and change notification for every notification
-/// the user sees in the bell, the inbox, or as a toast.
+/// Canonical notification pipeline. Owns creation, persistence, querying, read-state,
+/// dedupe, and change notification for every notification the user sees in the bell,
+/// the inbox, or as a toast.
 ///
 /// <para>
-/// <see cref="Sunfish.Foundation.Services.ISunfishNotificationService"/> remains a presentation
-/// channel only — toast forwarding goes through this service via the registered
-/// <see cref="IUserNotificationToastForwarder"/>.
+/// Accelerators register a concrete implementation (in-memory, database-backed, etc.).
+/// Toast presentation is reached through the registered <see cref="IUserNotificationToastForwarder"/>.
 /// </para>
 /// </summary>
 public interface IUserNotificationService
@@ -50,16 +49,4 @@ public interface IUserNotificationService
 
     /// <summary>Replace the entire store, e.g. for seeding or test reset.</summary>
     Task ReplaceAllAsync(IEnumerable<UserNotification> items, CancellationToken ct = default);
-}
-
-/// <summary>
-/// Side-channel adapter that the canonical service calls when a notification's delivery
-/// policy includes <see cref="NotificationDelivery.ToastOnly"/>. Implementations forward
-/// the canonical record to the existing Sunfish presentation host. Kept as a separate
-/// interface so the canonical service has no compile-time dependency on
-/// <see cref="Sunfish.Foundation.Services.ISunfishNotificationService"/>.
-/// </summary>
-public interface IUserNotificationToastForwarder
-{
-    void Forward(UserNotification notification);
 }

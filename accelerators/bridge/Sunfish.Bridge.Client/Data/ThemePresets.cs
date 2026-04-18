@@ -1,4 +1,4 @@
-using Sunfish.Core.Configuration;
+using Sunfish.Foundation.Configuration;
 
 namespace Sunfish.Bridge.Client.Data;
 

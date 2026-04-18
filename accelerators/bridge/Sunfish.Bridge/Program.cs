@@ -9,8 +9,8 @@ using Sunfish.Providers.Material.Extensions;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
+using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.Data;
-using Sunfish.Bridge.Data.Authorization;
 using Sunfish.Bridge.Data.Seeding;
 using Sunfish.Bridge.Hubs;
 using Microsoft.EntityFrameworkCore;
@@ -78,7 +78,7 @@ builder.Services.AddCors();
 builder.Services.AddAuthorization();
 
 // Sunfish component services with provider switching (FluentUI, Bootstrap, Material)
-builder.Services.AddSunfish().AddSunfishCoreServices();
+builder.Services.AddSunfish();
 builder.Services.AddSingleton(new FluentUIOptions());
 builder.Services.AddSingleton(new BootstrapOptions());
 builder.Services.AddSingleton(new MaterialOptions());
@@ -100,9 +100,9 @@ builder.Services.AddScoped<ISunfishJsInterop>(sp => sp.GetRequiredService<Provid
 // user-facing notifications (bell, inbox, toast). The canonical service owns
 // lifecycle; ISunfishNotificationService is a downstream toast presentation channel
 // reached via the IUserNotificationToastForwarder adapter.
-builder.Services.AddScoped<Sunfish.Bridge.Client.Notifications.IUserNotificationToastForwarder,
+builder.Services.AddScoped<Sunfish.Foundation.Notifications.IUserNotificationToastForwarder,
                             Sunfish.Bridge.Client.Notifications.SunfishToastUserNotificationForwarder>();
-builder.Services.AddScoped<Sunfish.Bridge.Client.Notifications.IUserNotificationService,
+builder.Services.AddScoped<Sunfish.Foundation.Notifications.IUserNotificationService,
                             Sunfish.Bridge.Client.Notifications.InMemoryUserNotificationService>();
 
 builder.Services.AddRazorComponents()

@@ -5,10 +5,11 @@
 @inject Sunfish.Foundation.Services.ISunfishThemeService ThemeService
 @inject ProviderSwitcher ProviderSwitcher
 @inject IJSRuntime JS
+@using Sunfish.Foundation.Notifications
 @using Sunfish.Bridge.Client.Notifications
 @using Sunfish.Bridge.Client.Data
 @using Sunfish.Bridge.Client.Services
-@using Sunfish.Components.Blazor.Feedback
+@using Sunfish.Components.Blazor.Components.Feedback
 
 <SunfishThemeProvider Theme="@_selectedPreset.Theme">
 <SunfishAppShell @bind-SidebarCollapsed="_collapsed"

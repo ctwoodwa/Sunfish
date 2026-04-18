@@ -1,5 +1,5 @@
 using Sunfish.Bridge.Data;
-using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.MigrationService;
 using Microsoft.EntityFrameworkCore;
 

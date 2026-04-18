@@ -3,6 +3,7 @@
 	<PropertyGroup>
 		<AssemblyName>MockOktaService</AssemblyName>
 		<RootNamespace>MockOktaService</RootNamespace>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<ItemGroup>

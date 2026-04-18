@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sunfish.Bridge.Client.Notifications;
+namespace Sunfish.Foundation.Notifications;
 
 /// <summary>
-/// Canonical PM Demo notification record.
+/// Canonical user-notification record used across Sunfish accelerators.
 ///
 /// This is the single source of truth for notifications surfaced to a user from any
-/// PM Demo source (task assignment, due-date change, comment, risk update, budget,
+/// domain source (task assignment, due-date change, comment, risk update, budget,
 /// milestone, mention, file upload, …). It is persistence- and feed-friendly and
 /// deliberately contains <b>no</b> UI/toast presentation concerns such as auto-close
 /// duration, closeability, or theme colour — those live on
@@ -64,54 +64,4 @@ public sealed record UserNotification
     /// renderers without forcing per-source schemas. Kept off the hot path.
     /// </summary>
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
-}
-
-/// <summary>Origin subsystem of a <see cref="UserNotification"/>. Drives icon + grouping.</summary>
-public enum NotificationSource
-{
-    System,
-    Tasks,
-    Risks,
-    Budget,
-    Comments,
-    Milestones,
-    Files,
-    Mentions,
-    Assistant,
-}
-
-/// <summary>Coarse user-facing category for inbox filtering.</summary>
-public enum NotificationCategory
-{
-    Activity,
-    Assignment,
-    Mention,
-    DueDate,
-    Risk,
-    Budget,
-    Milestone,
-    Comment,
-    File,
-    System,
-}
-
-/// <summary>Importance hint that the toast adapter maps to a <see cref="Sunfish.Foundation.Enums.ToastSeverity"/>.</summary>
-public enum NotificationImportance
-{
-    Low,
-    Normal,
-    High,
-    Critical,
-}
-
-/// <summary>
-/// Where a canonical notification should appear. Flags so a single record can be both
-/// persisted to the feed and surfaced as a transient toast in one create call.
-/// </summary>
-[Flags]
-public enum NotificationDelivery
-{
-    FeedOnly = 1,
-    ToastOnly = 2,
-    FeedAndToast = FeedOnly | ToastOnly,
 }

@@ -1,4 +1,4 @@
-using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Foundation.Authorization;
 
 namespace Sunfish.Bridge.Authorization;
 

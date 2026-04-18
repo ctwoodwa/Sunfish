@@ -1,6 +1,6 @@
 using Sunfish.Bridge.Data;
-using Sunfish.Bridge.Data.Authorization;
 using Sunfish.Bridge.Data.Seeding;
+using Sunfish.Foundation.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;

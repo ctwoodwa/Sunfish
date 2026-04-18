@@ -1,4 +1,4 @@
-using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Foundation.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
