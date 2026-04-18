@@ -3,6 +3,10 @@
     <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
     <Project Path="packages/foundation/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/assets-postgres/">
+    <Project Path="packages/foundation-assets-postgres/Sunfish.Foundation.Assets.Postgres.csproj" />
+    <Project Path="packages/foundation-assets-postgres/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/ui-core/">
     <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
     <Project Path="packages/ui-core/tests/tests.csproj" />
