@@ -68,6 +68,11 @@ dotnet run --project apps/kitchen-sink
 
 Open https://localhost:5301 and browse the sidebar. Every Sunfish Blazor component has a demo page. The theme picker (top-right) switches providers and dark/light mode.
 
+## Documentation
+
+- **Published site:** https://ctwoodwa.github.io/sunfish/ (published via `.github/workflows/docs.yml` on merges to `main`)
+- **Edit docs:** see [`apps/docs/README.md`](apps/docs/README.md) for local preview + edit workflow
+
 ## Example use cases
 
 - Quickly prototype a line-of-business app using open-source Sunfish components, then selectively replace specific grids or charts with commercial equivalents.  
