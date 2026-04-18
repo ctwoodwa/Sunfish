@@ -1,0 +1,36 @@
+.settings-toggle-row {
+    --local-text: var(--marilo-color-text, #1f2328);
+    --local-text-muted: var(--marilo-color-text-muted, #6b7280);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+:global([data-marilo-theme="dark"]) .settings-toggle-row {
+    --local-text: var(--marilo-color-text, #f3f3ef);
+    --local-text-muted: var(--marilo-color-text-muted, #9a9a92);
+}
+
+.settings-toggle-row__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--local-text);
+}
+
+.settings-toggle-row__description {
+    font-size: 13px;
+    color: var(--local-text-muted);
+    margin-top: 2px;
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    .settings-toggle-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

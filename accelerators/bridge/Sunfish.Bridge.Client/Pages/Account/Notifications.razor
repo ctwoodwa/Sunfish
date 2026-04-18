@@ -1,0 +1,40 @@
+@page "/account/notifications"
+@layout AccountLayout
+
+<PageTitle>Notifications · Marilo PM</PageTitle>
+
+<SettingsPageHeader Title="Notifications"
+                    Description="Choose how and when you want to be notified." />
+
+<SettingsSection Title="In-app notifications">
+    <SettingsCard>
+        <SettingsToggleRow Label="Task assignments" Description="When a task is assigned to you." @bind-Value="_taskAssignments" />
+        <SettingsToggleRow Label="Milestone alerts" Description="When a milestone is approaching or overdue." @bind-Value="_milestoneAlerts" />
+        <SettingsToggleRow Label="Risk alerts" Description="When a risk is escalated or status changes." @bind-Value="_riskAlerts" />
+        <SettingsToggleRow Label="Budget alerts" Description="When budget thresholds are reached." @bind-Value="_budgetAlerts" />
+        <SettingsToggleRow Label="Team updates" Description="When team members join, leave, or change roles." @bind-Value="_teamUpdates" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Email notifications">
+    <SettingsCard>
+        <SettingsToggleRow Label="Email notifications" Description="Receive email summaries of important updates." @bind-Value="_emailEnabled" />
+        <SettingsSelectRow Label="Digest frequency" Description="How often to receive email digests.">
+            <select @bind="_digestFrequency">
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="never">Never</option>
+            </select>
+        </SettingsSelectRow>
+    </SettingsCard>
+</SettingsSection>
+
+@code {
+    private bool _taskAssignments = true;
+    private bool _milestoneAlerts = true;
+    private bool _riskAlerts = true;
+    private bool _budgetAlerts = true;
+    private bool _teamUpdates = true;
+    private bool _emailEnabled = true;
+    private string _digestFrequency = "daily";
+}

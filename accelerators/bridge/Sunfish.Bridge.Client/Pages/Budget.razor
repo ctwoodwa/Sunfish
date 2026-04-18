@@ -1,0 +1,80 @@
+@page "/budget"
+
+<PageTitle>Budget · Marilo PM</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0 0 4px;">Budget</h1>
+        <p style="margin:0;color:#6b7280;">FY2026 project spend tracking</p>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    <MariloCard>
+        <MariloCardBody>
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Total Budget</div>
+            <div style="font-size:28px;font-weight:700;">$2,000,000</div>
+        </MariloCardBody>
+    </MariloCard>
+    <MariloCard>
+        <MariloCardBody>
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Spent to Date</div>
+            <div style="font-size:28px;font-weight:700;color:#5b6cff;">$1,240,000</div>
+            <div style="background:#e5e7eb;border-radius:999px;height:6px;margin-top:8px;overflow:hidden;">
+                <div style="background:#5b6cff;height:100%;width:62%;border-radius:999px;"></div>
+            </div>
+            <div style="font-size:12px;color:#6b7280;margin-top:4px;">62% utilised</div>
+        </MariloCardBody>
+    </MariloCard>
+    <MariloCard>
+        <MariloCardBody>
+            <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Remaining</div>
+            <div style="font-size:28px;font-weight:700;color:#10b981;">$760,000</div>
+        </MariloCardBody>
+    </MariloCard>
+</div>
+
+<MariloCard>
+    <MariloCardHeader>Budget Lines</MariloCardHeader>
+    <MariloCardBody>
+        <MariloDataGrid TItem="BudgetLine"
+                        Data="@_lines"
+                        Sortable="true"
+                        Striped="true"
+                        Pageable="true"
+                        PageSize="8">
+            <MariloGridColumn TItem="BudgetLine" Field="Category" Width="160px" />
+            <MariloGridColumn TItem="BudgetLine" Field="Description" />
+            <MariloGridColumn TItem="BudgetLine" Field="Allocated" Format="C0" TextAlign="right" Width="130px" />
+            <MariloGridColumn TItem="BudgetLine" Field="Spent" Format="C0" TextAlign="right" Width="120px" />
+            <MariloGridColumn TItem="BudgetLine" Field="Remaining" Format="C0" TextAlign="right" Width="120px" />
+            <MariloGridColumn TItem="BudgetLine" Field="Utilisation" Title="%" Format="P0" TextAlign="right" Width="70px" />
+        </MariloDataGrid>
+    </MariloCardBody>
+</MariloCard>
+
+@code {
+    record BudgetLine(string Category, string Description, decimal Allocated, decimal Spent)
+    {
+        public decimal Remaining => Allocated - Spent;
+        public double Utilisation => Allocated == 0 ? 0 : (double)(Spent / Allocated);
+    }
+
+    readonly BudgetLine[] _lines =
+    [
+        new("Personnel",    "Engineering salaries Q1–Q2",   800_000, 520_000),
+        new("Personnel",    "Design & UX contractors",       200_000, 110_000),
+        new("Personnel",    "QA & test automation",          120_000,  48_000),
+        new("Infrastructure","Cloud hosting & CDN",          150_000,  92_000),
+        new("Infrastructure","CI/CD & monitoring tools",      60_000,  34_000),
+        new("Software",     "SaaS licences & APIs",           80_000,  61_000),
+        new("Software",     "Security scanning suite",        40_000,  22_000),
+        new("Professional", "Legal & compliance review",      90_000,  55_000),
+        new("Professional", "External audit",                 80_000,   0),
+        new("Contingency",  "Risk reserve",                  150_000, 140_000),
+        new("Travel",       "Stakeholder on-site sessions",   50_000,  38_000),
+        new("Training",     "Team upskilling programme",      40_000,  20_000),
+        new("Marketing",    "Beta launch campaign",           80_000,  40_000),
+        new("Miscellaneous","Other approved spend",           60_000,  60_000),
+    ];
+}

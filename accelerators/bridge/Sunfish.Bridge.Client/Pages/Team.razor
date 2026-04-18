@@ -1,0 +1,47 @@
+@page "/team"
+
+<PageTitle>Team Resource · Marilo PM</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0 0 4px;">Team Resource</h1>
+        <p style="margin:0;color:#6b7280;">@_members.Length team members across @_members.Select(m => m.Team).Distinct().Count() teams</p>
+    </div>
+    <MariloButton Variant="ButtonVariant.Primary">+ Add Member</MariloButton>
+</div>
+
+<MariloDataGrid TItem="TeamMember"
+                Data="@_members"
+                Sortable="true"
+                Striped="true"
+                Pageable="true"
+                PageSize="10"
+                FilterMode="GridFilterMode.FilterRow">
+    <MariloGridColumn TItem="TeamMember" Field="Name" Width="180px" />
+    <MariloGridColumn TItem="TeamMember" Field="Role" Width="180px" />
+    <MariloGridColumn TItem="TeamMember" Field="Team" Width="140px" />
+    <MariloGridColumn TItem="TeamMember" Field="Location" Width="140px" />
+    <MariloGridColumn TItem="TeamMember" Field="Allocation" Title="Allocation %" Format="P0" TextAlign="right" Width="120px" />
+    <MariloGridColumn TItem="TeamMember" Field="TasksOpen" Title="Open Tasks" TextAlign="right" Width="110px" />
+    <MariloGridColumn TItem="TeamMember" Field="AvailableFrom" Title="Available" Format="MMM d" Width="110px" />
+</MariloDataGrid>
+
+@code {
+    record TeamMember(string Name, string Role, string Team, string Location, double Allocation, int TasksOpen, DateTime AvailableFrom);
+
+    readonly TeamMember[] _members =
+    [
+        new("Avery Chen",    "Project Manager",        "Governance",  "New York",    1.0,  3, new DateTime(2026, 4, 8)),
+        new("Jamie Park",    "Lead Engineer",          "Platform",    "San Francisco", 1.0, 4, new DateTime(2026, 4, 14)),
+        new("Taylor Smith",  "Senior Engineer",        "Platform",    "Remote",      0.8,  3, new DateTime(2026, 4, 12)),
+        new("Luna Gomez",    "UX Designer",            "Design",      "Austin",      0.9,  2, new DateTime(2026, 4, 10)),
+        new("Rohan Patel",   "QA Engineer",            "QA",          "London",      0.7,  2, new DateTime(2026, 5, 1)),
+        new("Sam Okonkwo",   "DevOps Engineer",        "Platform",    "Remote",      0.6,  1, new DateTime(2026, 4, 21)),
+        new("Mei Lin",       "Frontend Developer",     "Design",      "Singapore",   1.0,  3, new DateTime(2026, 4, 18)),
+        new("Diego Reyes",   "Backend Developer",      "Platform",    "Mexico City", 0.9,  2, new DateTime(2026, 4, 15)),
+        new("Priya Nair",    "Business Analyst",       "Governance",  "Remote",      0.8,  2, new DateTime(2026, 4, 22)),
+        new("Alex Fontaine", "Security Engineer",      "Platform",    "Toronto",     0.5,  1, new DateTime(2026, 5, 8)),
+        new("Yuki Tanaka",   "Data Engineer",          "Platform",    "Tokyo",       0.7,  2, new DateTime(2026, 4, 28)),
+        new("Chloe Martin",  "Product Designer",       "Design",      "Paris",       0.8,  1, new DateTime(2026, 5, 5)),
+    ];
+}

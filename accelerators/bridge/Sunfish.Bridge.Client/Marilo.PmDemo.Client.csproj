@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Marilo.PmDemo.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Marilo.Core\Marilo.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Marilo.Components\Marilo.Components.csproj" />
+    <ProjectReference Include="..\..\..\src\Marilo.Components.Shell\Marilo.Components.Shell.csproj" />
+    <ProjectReference Include="..\..\..\src\Marilo.Providers.FluentUI\Marilo.Providers.FluentUI.csproj" />
+    <ProjectReference Include="..\..\..\src\Marilo.Providers.Bootstrap\Marilo.Providers.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\..\src\Marilo.Providers.Material\Marilo.Providers.Material.csproj" />
+  </ItemGroup>
+
+</Project>

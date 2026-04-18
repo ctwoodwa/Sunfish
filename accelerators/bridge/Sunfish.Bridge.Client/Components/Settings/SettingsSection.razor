@@ -1,0 +1,18 @@
+<section class="settings-section">
+    <div class="settings-section__header">
+        <h2 class="settings-section__title">@Title</h2>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="settings-section__description">@Description</p>
+        }
+    </div>
+    <div class="settings-section__body">
+        @ChildContent
+    </div>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

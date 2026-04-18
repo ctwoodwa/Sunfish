@@ -1,0 +1,6 @@
+.settings-card {
+    background: var(--marilo-color-surface, #ffffff);
+    border: 1px solid color-mix(in srgb, var(--marilo-color-text, #1f2328) 8%, transparent);
+    border-radius: var(--marilo-radius-lg, 12px);
+    padding: 20px;
+}

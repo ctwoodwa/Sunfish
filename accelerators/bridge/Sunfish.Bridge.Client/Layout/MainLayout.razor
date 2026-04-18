@@ -1,0 +1,248 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject IUserNotificationService UserNotifications
+@inject Marilo.Core.Services.IMariloThemeService ThemeService
+@inject ProviderSwitcher ProviderSwitcher
+@inject IJSRuntime JS
+@using Marilo.PmDemo.Client.Notifications
+@using Marilo.PmDemo.Client.Data
+@using Marilo.PmDemo.Client.Services
+@using Marilo.Components.Feedback
+
+<MariloThemeProvider Theme="@_selectedPreset.Theme">
+<MariloAppShell @bind-SidebarCollapsed="_collapsed"
+                BrandText="Marilo PM"
+                UserName="Avery Chen"
+                NotificationCount="@UserNotifications.UnreadCount">
+    <SidebarBrand>
+        <span style="display:inline-flex;align-items:center;gap:10px;">
+            <span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#5b6cff,#9b6bff);display:inline-block;"></span>
+            <span>Marilo PM</span>
+        </span>
+    </SidebarBrand>
+
+    <SidebarContent>
+        <MariloAppShellNavGroup Title="Overview">
+            <MariloAppShellNavLink Href="/" Match="NavLinkMatch.All" Label="Dashboard">
+                <Icon><MariloIcon Name="home" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+        </MariloAppShellNavGroup>
+
+        <MariloAppShellNavGroup Title="Planning">
+            <MariloAppShellNavLink Href="/board" Label="Task Board" Badge="12">
+                <Icon><MariloIcon Name="layout-kanban" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+            <MariloAppShellNavLink Href="/tasks" Label="Task List">
+                <Icon><MariloIcon Name="list" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+            <MariloAppShellNavLink Href="/timeline" Label="Timeline">
+                <Icon><MariloIcon Name="timeline" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+        </MariloAppShellNavGroup>
+
+        <MariloAppShellNavGroup Title="Governance">
+            <MariloAppShellNavLink Href="/budget" Label="Budget">
+                <Icon><MariloIcon Name="chart-bar" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+            <MariloAppShellNavLink Href="/team" Label="Team Resource">
+                <Icon><MariloIcon Name="users" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+            <MariloAppShellNavLink Href="/risk" Label="Risk Register" Badge="!">
+                <Icon><MariloIcon Name="alert-triangle" Size="IconSize.Small" /></Icon>
+            </MariloAppShellNavLink>
+        </MariloAppShellNavGroup>
+        <MariloAppShellNavGroup Title="Design System">
+            <div style="padding: 4px 12px; display: flex; flex-direction: column; gap: 4px;">
+                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.FluentUI ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.FluentUI)">Fluent UI</button>
+                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.Bootstrap ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Bootstrap)">Bootstrap</button>
+                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.Material ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Material)">Material 3</button>
+            </div>
+        </MariloAppShellNavGroup>
+    </SidebarContent>
+
+    <ChildContent>
+        @Body
+        <MariloSnackbarHost />
+    </ChildContent>
+
+    <SidebarFooter>
+        <div class="sidebar-footer @(_collapsed ? "sidebar-footer--collapsed" : "sidebar-footer--expanded")">
+            @if (_collapsed)
+            {
+                @* Collapsed: bell above, avatar below, centered *@
+                <button type="button"
+                        class="sidebar-footer__bell"
+                        title="Notifications"
+                        aria-label="Notifications"
+                        aria-haspopup="dialog"
+                        aria-expanded="@_bellOpen.ToString().ToLowerInvariant()"
+                        @onclick="() => _bellOpen = !_bellOpen">
+                    <MariloIcon Name="bell" Size="IconSize.Small" />
+                    @if (UserNotifications.UnreadCount > 0)
+                    {
+                        <span class="mar-appshell__badge">@UserNotifications.UnreadCount</span>
+                    }
+                </button>
+
+                <MariloAccountMenu UserName="Avery Chen"
+                                   UserEmail="avery.chen@example.com"
+                                   CompactTrigger="true"
+                                   OnSignOut="HandleSignOut"
+                                   OnAppearanceChange="HandleAppearance" />
+            }
+            else
+            {
+                @* Expanded: button group row — [ avatar + name | bell ] *@
+                <div class="sidebar-footer__group">
+                    <MariloAccountMenu UserName="Avery Chen"
+                                       UserEmail="avery.chen@example.com"
+                                       CompactTrigger="false"
+                                       OnSignOut="HandleSignOut"
+                                       OnAppearanceChange="HandleAppearance" />
+
+                    <button type="button"
+                            class="sidebar-footer__bell sidebar-footer__bell--grouped"
+                            title="Notifications"
+                            aria-label="Notifications"
+                            aria-haspopup="dialog"
+                            aria-expanded="@_bellOpen.ToString().ToLowerInvariant()"
+                            @onclick="() => _bellOpen = !_bellOpen">
+                        <MariloIcon Name="bell" Size="IconSize.Small" />
+                        @if (UserNotifications.UnreadCount > 0)
+                        {
+                            <span class="mar-appshell__badge">@UserNotifications.UnreadCount</span>
+                        }
+                    </button>
+                </div>
+            }
+
+            <MariloNotificationBell @bind-Open="_bellOpen"
+                                    Items="_feedItems"
+                                    OnItemClick="HandleItemClick"
+                                    OnMarkAllRead="HandleMarkAllRead"
+                                    OnDeleteAllRead="HandleDeleteAllRead"
+                                    OnSettingsClick="GoToNotificationSettings" />
+        </div>
+    </SidebarFooter>
+</MariloAppShell>
+</MariloThemeProvider>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private bool _collapsed;
+    private bool _bellOpen;
+    private bool _isDark;
+    private DesignProvider _activeProvider = DesignProvider.FluentUI;
+    private IJSObjectReference? _providerModule;
+    private ThemePresets.ThemePreset _selectedPreset = ThemePresets.All[0];
+
+    // Bell view shape — projected from the canonical store on every change. The bell
+    // never owns notification state; this list is rebuilt from UserNotifications.All.
+    private List<NotificationItem> _feedItems = new();
+
+    protected override void OnInitialized()
+    {
+        _isDark = ThemeService.IsDarkMode;
+        UserNotifications.Changed += OnNotificationsChanged;
+        RefreshFeed();
+    }
+
+    private void HandleSignOut() => Nav.NavigateTo("/");
+
+    private async Task HandleAppearance(string mode)
+    {
+        var dark = string.Equals(mode, "Dark", StringComparison.OrdinalIgnoreCase);
+        var system = string.Equals(mode, "System", StringComparison.OrdinalIgnoreCase);
+        if (system)
+        {
+            // System mode: could check prefers-color-scheme, default to light
+            dark = false;
+        }
+        if (_isDark != dark)
+        {
+            _isDark = dark;
+            await ThemeService.SetDarkModeAsync(dark);
+        }
+    }
+
+    private void OnNotificationsChanged()
+    {
+        RefreshFeed();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void RefreshFeed()
+    {
+        _feedItems = UserNotifications.All
+            .Select(NotificationFeedProjection.ToFeedItem)
+            .ToList();
+    }
+
+    private async Task HandleItemClick(NotificationItem item)
+    {
+        await UserNotifications.MarkReadAsync(item.Id);
+    }
+
+    private async Task HandleMarkAllRead()
+    {
+        await UserNotifications.MarkAllReadAsync();
+    }
+
+    private async Task HandleDeleteAllRead()
+    {
+        await UserNotifications.DeleteAllReadAsync();
+    }
+
+    private void GoToNotificationSettings() => Nav.NavigateTo("/account/notifications");
+
+    private async Task SwitchProvider(DesignProvider provider)
+    {
+        if (_activeProvider == provider) return;
+        try
+        {
+            _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+            var key = provider switch
+            {
+                DesignProvider.Bootstrap => "bootstrap",
+                DesignProvider.Material => "material",
+                _ => "fluentui",
+            };
+            await _providerModule.InvokeVoidAsync("setProvider", key);
+        }
+        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+            var storedProvider = await _providerModule.InvokeAsync<string>("getStoredProvider");
+            if (storedProvider == "bootstrap")
+            {
+                _activeProvider = DesignProvider.Bootstrap;
+                ProviderSwitcher.SetProvider(DesignProvider.Bootstrap);
+                await _providerModule.InvokeVoidAsync("applyProvider", "bootstrap");
+            }
+            else if (storedProvider == "material")
+            {
+                _activeProvider = DesignProvider.Material;
+                ProviderSwitcher.SetProvider(DesignProvider.Material);
+                await _providerModule.InvokeVoidAsync("applyProvider", "material");
+            }
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        UserNotifications.Changed -= OnNotificationsChanged;
+    }
+}

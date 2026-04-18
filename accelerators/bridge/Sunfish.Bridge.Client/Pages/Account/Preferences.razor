@@ -1,0 +1,131 @@
+@page "/account/preferences"
+@layout AccountLayout
+@inject Marilo.Core.Services.IMariloThemeService ThemeService
+@using Marilo.PmDemo.Client.Data
+
+<PageTitle>Preferences · Marilo PM</PageTitle>
+
+<SettingsPageHeader Title="Preferences"
+                    Description="Appearance, behavior, and display settings." />
+
+<SettingsSection Title="Theme">
+    <SettingsCard>
+        <div class="theme-grid">
+            @foreach (var preset in ThemePresets.All)
+            {
+                var p = preset;
+                var isActive = p.Name == _selectedPreset.Name;
+                <button type="button"
+                        class="theme-grid__item @(isActive ? "theme-grid__item--active" : "")"
+                        @onclick="() => SelectTheme(p)">
+                    <span class="theme-grid__swatch" style="background: @p.Theme.Colors.Primary;"></span>
+                    <span class="theme-grid__name">@p.Name</span>
+                    @if (isActive)
+                    {
+                        <MariloIcon Name="check" Size="IconSize.Small" Class="theme-grid__check" />
+                    }
+                </button>
+            }
+        </div>
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Mode">
+    <SettingsCard>
+        <div class="mode-toggle">
+            <button type="button"
+                    class="mode-toggle__option @(!_isDark ? "mode-toggle__option--active" : "")"
+                    @onclick="() => SetDarkMode(false)">
+                <MariloIcon Name="sun" Size="IconSize.Small" />
+                <span>Light</span>
+            </button>
+            <button type="button"
+                    class="mode-toggle__option @(_isDark ? "mode-toggle__option--active" : "")"
+                    @onclick="() => SetDarkMode(true)">
+                <MariloIcon Name="moon" Size="IconSize.Small" />
+                <span>Dark</span>
+            </button>
+        </div>
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Display">
+    <SettingsCard>
+        <SettingsSelectRow Label="Density" Description="Adjust spacing and sizing.">
+            <select @bind="_density">
+                <option value="comfortable">Comfortable</option>
+                <option value="compact">Compact</option>
+            </select>
+        </SettingsSelectRow>
+        <SettingsToggleRow Label="Reduced motion"
+                          Description="Minimize animations throughout the interface."
+                          @bind-Value="_reducedMotion" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Regional">
+    <SettingsCard>
+        <SettingsSelectRow Label="Date format" Description="How dates appear across the app.">
+            <select @bind="_dateFormat">
+                <option value="dd/MM/yyyy">DD/MM/YYYY</option>
+                <option value="MM/dd/yyyy">MM/DD/YYYY</option>
+                <option value="yyyy-MM-dd">YYYY-MM-DD</option>
+            </select>
+        </SettingsSelectRow>
+        <SettingsSelectRow Label="Time format">
+            <select @bind="_timeFormat">
+                <option value="24h">24-hour</option>
+                <option value="12h">12-hour</option>
+            </select>
+        </SettingsSelectRow>
+        <SettingsSelectRow Label="Language">
+            <select @bind="_language">
+                <option value="en-AU">English (Australia)</option>
+                <option value="en-US">English (US)</option>
+                <option value="en-GB">English (UK)</option>
+            </select>
+        </SettingsSelectRow>
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Navigation">
+    <SettingsCard>
+        <SettingsSelectRow Label="Default landing page" Description="Page shown when you open Marilo PM.">
+            <select @bind="_landingPage">
+                <option value="/">Dashboard</option>
+                <option value="/board">Task Board</option>
+                <option value="/tasks">Task List</option>
+                <option value="/timeline">Timeline</option>
+            </select>
+        </SettingsSelectRow>
+    </SettingsCard>
+</SettingsSection>
+
+@code {
+    private bool _isDark;
+    private ThemePresets.ThemePreset _selectedPreset = ThemePresets.All[0];
+    private string _density = "comfortable";
+    private bool _reducedMotion = false;
+    private string _dateFormat = "dd/MM/yyyy";
+    private string _timeFormat = "24h";
+    private string _language = "en-AU";
+    private string _landingPage = "/";
+
+    protected override void OnInitialized()
+    {
+        _isDark = ThemeService.IsDarkMode;
+    }
+
+    private async Task SelectTheme(ThemePresets.ThemePreset preset)
+    {
+        _selectedPreset = preset;
+        await ThemeService.SetThemeAsync(preset.Theme);
+    }
+
+    private async Task SetDarkMode(bool dark)
+    {
+        if (_isDark == dark) return;
+        _isDark = dark;
+        await ThemeService.SetDarkModeAsync(dark);
+    }
+}

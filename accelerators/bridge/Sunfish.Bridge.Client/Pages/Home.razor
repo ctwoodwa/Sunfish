@@ -1,0 +1,76 @@
+@page "/"
+
+<PageTitle>Dashboard · Marilo PM</PageTitle>
+
+<h1 style="margin:0 0 4px;">Dashboard</h1>
+<p style="color:#6b7280;margin:0 0 24px;">Welcome to the Marilo PM demo.</p>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
+    @foreach (var kpi in _kpis)
+    {
+        <MariloCard>
+            <MariloCardBody>
+                <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">@kpi.Label</div>
+                <div style="font-size:30px;font-weight:700;line-height:1;">@kpi.Value</div>
+                @if (kpi.Sub is not null)
+                {
+                    <div style="font-size:12px;color:#6b7280;margin-top:4px;">@kpi.Sub</div>
+                }
+            </MariloCardBody>
+        </MariloCard>
+    }
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <MariloCard>
+        <MariloCardHeader>Recent Milestones</MariloCardHeader>
+        <MariloCardBody>
+            <MariloDataGrid TItem="MilestoneRow" Data="@_milestones" Striped="true">
+                <MariloGridColumn TItem="MilestoneRow" Field="Name" Title="Milestone" />
+                <MariloGridColumn TItem="MilestoneRow" Field="DueDate" Title="Due" Format="MMM d" />
+                <MariloGridColumn TItem="MilestoneRow" Field="Status" />
+            </MariloDataGrid>
+        </MariloCardBody>
+    </MariloCard>
+
+    <MariloCard>
+        <MariloCardHeader>Top Risks</MariloCardHeader>
+        <MariloCardBody>
+            <MariloDataGrid TItem="RiskRow" Data="@_risks" Striped="true">
+                <MariloGridColumn TItem="RiskRow" Field="Title" />
+                <MariloGridColumn TItem="RiskRow" Field="Severity" />
+                <MariloGridColumn TItem="RiskRow" Field="Owner" />
+            </MariloDataGrid>
+        </MariloCardBody>
+    </MariloCard>
+</div>
+
+@code {
+    record KpiCard(string Label, string Value, string? Sub = null);
+    record MilestoneRow(string Name, DateTime DueDate, string Status);
+    record RiskRow(string Title, string Severity, string Owner);
+
+    readonly KpiCard[] _kpis =
+    [
+        new("Active Projects", "12", "+2 this month"),
+        new("Open Risks", "4", "1 critical"),
+        new("Budget Used", "62%", "$1.24M of $2M"),
+        new("On-Track Tasks", "184", "of 201 total"),
+    ];
+
+    readonly MilestoneRow[] _milestones =
+    [
+        new("Alpha Release",     new DateTime(2026, 4, 15), "On Track"),
+        new("UX Review",         new DateTime(2026, 4, 22), "At Risk"),
+        new("Beta Launch",       new DateTime(2026, 5, 1),  "Planned"),
+        new("Stakeholder Demo",  new DateTime(2026, 5, 10), "Planned"),
+    ];
+
+    readonly RiskRow[] _risks =
+    [
+        new("Vendor delivery delay", "High",   "J. Park"),
+        new("Scope creep – Phase 2", "Medium", "A. Chen"),
+        new("Key resource on leave",  "Medium", "T. Smith"),
+        new("Budget overrun",         "Low",    "A. Chen"),
+    ];
+}
