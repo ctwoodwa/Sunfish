@@ -40,4 +40,8 @@
     <Project Path="packages/blocks-assets/Sunfish.Blocks.Assets.csproj" />
     <Project Path="packages/blocks-assets/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/compat/telerik/">
+    <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
+    <Project Path="packages/compat-telerik/tests/tests.csproj" />
+  </Folder>
 </Solution>
