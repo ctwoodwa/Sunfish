@@ -31,9 +31,11 @@ public static class CanonicalJson
     };
 
     /// <summary>Serializes an arbitrary CLR value to canonical-JSON UTF-8 bytes.</summary>
+    /// <remarks>Uses the runtime type of <paramref name="value"/> when non-null so abstract or
+    /// polymorphic payloads serialize their concrete properties, not just the base surface.</remarks>
     public static byte[] Serialize<T>(T value)
     {
-        var node = JsonSerializer.SerializeToNode(value, SerializerOptions);
+        var node = SerializeToNodeByRuntimeType(value);
         var sorted = SortKeys(node);
         return NodeToBytes(sorted);
     }
@@ -48,7 +50,7 @@ public static class CanonicalJson
         DateTimeOffset issuedAt,
         Guid nonce)
     {
-        var payloadNode = JsonSerializer.SerializeToNode(payload, SerializerOptions);
+        var payloadNode = SerializeToNodeByRuntimeType(payload);
 
         var envelope = new JsonObject
         {
@@ -60,6 +62,18 @@ public static class CanonicalJson
 
         var sorted = SortKeys(envelope);
         return NodeToBytes(sorted);
+    }
+
+    /// <summary>
+    /// Serializes using the runtime type of <paramref name="value"/> so abstract/polymorphic
+    /// payloads include their concrete members. Falls back to the compile-time type T only
+    /// when <paramref name="value"/> is <c>null</c>.
+    /// </summary>
+    private static JsonNode? SerializeToNodeByRuntimeType<T>(T value)
+    {
+        if (value is null)
+            return JsonSerializer.SerializeToNode<T>(value, SerializerOptions);
+        return JsonSerializer.SerializeToNode(value, value.GetType(), SerializerOptions);
     }
 
     /// <summary>
