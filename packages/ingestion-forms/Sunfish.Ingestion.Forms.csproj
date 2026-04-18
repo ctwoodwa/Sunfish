@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Ingestion.Forms</PackageId>
+    <Description>Form submission ingestion for Sunfish — wraps FormBlock&lt;TModel&gt; submissions into kernel entity updates.</Description>
+    <PackageTags>sunfish;ingestion;forms</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Forms.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ingestion-core\Sunfish.Ingestion.Core.csproj" />
+    <ProjectReference Include="..\blocks-forms\Sunfish.Blocks.Forms.csproj" />
+  </ItemGroup>
+</Project>
