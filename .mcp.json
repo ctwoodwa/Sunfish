@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "bridge-dab-sql": {
+      "type": "http",
+      "url": "http://localhost:5000/mcp",
+      "description": "Data API Builder MCP SQL server for the Bridge accelerator. Exposes 6 DML tools (describe_entities, create_record, read_records, update_record, delete_record, execute_entity) against the PostgreSQL PM-demo schema, with RBAC enforced per-role (Owner, Admin, ProjectManager, TeamMember, Viewer). Requires Aspire AppHost to be running — the DAB container is bound to localhost:5000 via Aspire's endpoint discovery; adjust the URL if the Aspire-assigned port differs (check dashboard)."
+    }
+  }
+}
