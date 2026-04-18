@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marilo.PmDemo.Client\Marilo.PmDemo.Client.csproj" />
-    <ProjectReference Include="..\Marilo.PmDemo.Data\Marilo.PmDemo.Data.csproj" />
-    <ProjectReference Include="..\Marilo.PmDemo.ServiceDefaults\Marilo.PmDemo.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Sunfish.Bridge.Client\Sunfish.Bridge.Client.csproj" />
+    <ProjectReference Include="..\Sunfish.Bridge.Data\Sunfish.Bridge.Data.csproj" />
+    <ProjectReference Include="..\Sunfish.Bridge.ServiceDefaults\Sunfish.Bridge.ServiceDefaults.csproj" />
   </ItemGroup>
 
   <ItemGroup>

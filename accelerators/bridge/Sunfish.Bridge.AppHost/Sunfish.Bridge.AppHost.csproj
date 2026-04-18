@@ -21,8 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Marilo.PmDemo\Marilo.PmDemo.csproj" />
-    <ProjectReference Include="..\Marilo.PmDemo.MigrationService\Marilo.PmDemo.MigrationService.csproj" />
+    <ProjectReference Include="..\Sunfish.Bridge\Sunfish.Bridge.csproj" />
+    <ProjectReference Include="..\Sunfish.Bridge.MigrationService\Sunfish.Bridge.MigrationService.csproj" />
     <ProjectReference Include="..\MockOktaService\MockOktaService.csproj" />
   </ItemGroup>
 

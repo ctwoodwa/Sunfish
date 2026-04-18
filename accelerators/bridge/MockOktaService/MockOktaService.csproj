@@ -6,7 +6,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Marilo.PmDemo.ServiceDefaults\Marilo.PmDemo.ServiceDefaults.csproj" />
+		<ProjectReference Include="..\Sunfish.Bridge.ServiceDefaults\Sunfish.Bridge.ServiceDefaults.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

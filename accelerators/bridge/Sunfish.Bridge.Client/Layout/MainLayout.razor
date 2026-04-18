@@ -2,68 +2,68 @@
 @implements IDisposable
 @inject NavigationManager Nav
 @inject IUserNotificationService UserNotifications
-@inject Marilo.Core.Services.IMariloThemeService ThemeService
+@inject Sunfish.Foundation.Services.ISunfishThemeService ThemeService
 @inject ProviderSwitcher ProviderSwitcher
 @inject IJSRuntime JS
-@using Marilo.PmDemo.Client.Notifications
-@using Marilo.PmDemo.Client.Data
-@using Marilo.PmDemo.Client.Services
-@using Marilo.Components.Feedback
+@using Sunfish.Bridge.Client.Notifications
+@using Sunfish.Bridge.Client.Data
+@using Sunfish.Bridge.Client.Services
+@using Sunfish.Components.Blazor.Feedback
 
-<MariloThemeProvider Theme="@_selectedPreset.Theme">
-<MariloAppShell @bind-SidebarCollapsed="_collapsed"
-                BrandText="Marilo PM"
+<SunfishThemeProvider Theme="@_selectedPreset.Theme">
+<SunfishAppShell @bind-SidebarCollapsed="_collapsed"
+                BrandText="Sunfish PM"
                 UserName="Avery Chen"
                 NotificationCount="@UserNotifications.UnreadCount">
     <SidebarBrand>
         <span style="display:inline-flex;align-items:center;gap:10px;">
             <span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#5b6cff,#9b6bff);display:inline-block;"></span>
-            <span>Marilo PM</span>
+            <span>Sunfish PM</span>
         </span>
     </SidebarBrand>
 
     <SidebarContent>
-        <MariloAppShellNavGroup Title="Overview">
-            <MariloAppShellNavLink Href="/" Match="NavLinkMatch.All" Label="Dashboard">
-                <Icon><MariloIcon Name="home" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-        </MariloAppShellNavGroup>
+        <SunfishAppShellNavGroup Title="Overview">
+            <SunfishAppShellNavLink Href="/" Match="NavLinkMatch.All" Label="Dashboard">
+                <Icon><SunfishIcon Name="home" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+        </SunfishAppShellNavGroup>
 
-        <MariloAppShellNavGroup Title="Planning">
-            <MariloAppShellNavLink Href="/board" Label="Task Board" Badge="12">
-                <Icon><MariloIcon Name="layout-kanban" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-            <MariloAppShellNavLink Href="/tasks" Label="Task List">
-                <Icon><MariloIcon Name="list" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-            <MariloAppShellNavLink Href="/timeline" Label="Timeline">
-                <Icon><MariloIcon Name="timeline" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-        </MariloAppShellNavGroup>
+        <SunfishAppShellNavGroup Title="Planning">
+            <SunfishAppShellNavLink Href="/board" Label="Task Board" Badge="12">
+                <Icon><SunfishIcon Name="layout-kanban" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/tasks" Label="Task List">
+                <Icon><SunfishIcon Name="list" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/timeline" Label="Timeline">
+                <Icon><SunfishIcon Name="timeline" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+        </SunfishAppShellNavGroup>
 
-        <MariloAppShellNavGroup Title="Governance">
-            <MariloAppShellNavLink Href="/budget" Label="Budget">
-                <Icon><MariloIcon Name="chart-bar" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-            <MariloAppShellNavLink Href="/team" Label="Team Resource">
-                <Icon><MariloIcon Name="users" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-            <MariloAppShellNavLink Href="/risk" Label="Risk Register" Badge="!">
-                <Icon><MariloIcon Name="alert-triangle" Size="IconSize.Small" /></Icon>
-            </MariloAppShellNavLink>
-        </MariloAppShellNavGroup>
-        <MariloAppShellNavGroup Title="Design System">
+        <SunfishAppShellNavGroup Title="Governance">
+            <SunfishAppShellNavLink Href="/budget" Label="Budget">
+                <Icon><SunfishIcon Name="chart-bar" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/team" Label="Team Resource">
+                <Icon><SunfishIcon Name="users" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+            <SunfishAppShellNavLink Href="/risk" Label="Risk Register" Badge="!">
+                <Icon><SunfishIcon Name="alert-triangle" Size="IconSize.Small" /></Icon>
+            </SunfishAppShellNavLink>
+        </SunfishAppShellNavGroup>
+        <SunfishAppShellNavGroup Title="Design System">
             <div style="padding: 4px 12px; display: flex; flex-direction: column; gap: 4px;">
-                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.FluentUI ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.FluentUI)">Fluent UI</button>
-                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.Bootstrap ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Bootstrap)">Bootstrap</button>
-                <button type="button" class="mar-btn mar-btn--sm @(_activeProvider == DesignProvider.Material ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Material)">Material 3</button>
+                <button type="button" class="sf-btn mar-btn--sm @(_activeProvider == DesignProvider.FluentUI ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.FluentUI)">Fluent UI</button>
+                <button type="button" class="sf-btn mar-btn--sm @(_activeProvider == DesignProvider.Bootstrap ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Bootstrap)">Bootstrap</button>
+                <button type="button" class="sf-btn mar-btn--sm @(_activeProvider == DesignProvider.Material ? "mar-btn--primary" : "mar-btn--flat")" style="width:100%;justify-content:flex-start;" @onclick="() => SwitchProvider(DesignProvider.Material)">Material 3</button>
             </div>
-        </MariloAppShellNavGroup>
+        </SunfishAppShellNavGroup>
     </SidebarContent>
 
     <ChildContent>
         @Body
-        <MariloSnackbarHost />
+        <SunfishSnackbarHost />
     </ChildContent>
 
     <SidebarFooter>
@@ -78,14 +78,14 @@
                         aria-haspopup="dialog"
                         aria-expanded="@_bellOpen.ToString().ToLowerInvariant()"
                         @onclick="() => _bellOpen = !_bellOpen">
-                    <MariloIcon Name="bell" Size="IconSize.Small" />
+                    <SunfishIcon Name="bell" Size="IconSize.Small" />
                     @if (UserNotifications.UnreadCount > 0)
                     {
-                        <span class="mar-appshell__badge">@UserNotifications.UnreadCount</span>
+                        <span class="sf-appshell__badge">@UserNotifications.UnreadCount</span>
                     }
                 </button>
 
-                <MariloAccountMenu UserName="Avery Chen"
+                <SunfishAccountMenu UserName="Avery Chen"
                                    UserEmail="avery.chen@example.com"
                                    CompactTrigger="true"
                                    OnSignOut="HandleSignOut"
@@ -95,7 +95,7 @@
             {
                 @* Expanded: button group row — [ avatar + name | bell ] *@
                 <div class="sidebar-footer__group">
-                    <MariloAccountMenu UserName="Avery Chen"
+                    <SunfishAccountMenu UserName="Avery Chen"
                                        UserEmail="avery.chen@example.com"
                                        CompactTrigger="false"
                                        OnSignOut="HandleSignOut"
@@ -108,16 +108,16 @@
                             aria-haspopup="dialog"
                             aria-expanded="@_bellOpen.ToString().ToLowerInvariant()"
                             @onclick="() => _bellOpen = !_bellOpen">
-                        <MariloIcon Name="bell" Size="IconSize.Small" />
+                        <SunfishIcon Name="bell" Size="IconSize.Small" />
                         @if (UserNotifications.UnreadCount > 0)
                         {
-                            <span class="mar-appshell__badge">@UserNotifications.UnreadCount</span>
+                            <span class="sf-appshell__badge">@UserNotifications.UnreadCount</span>
                         }
                     </button>
                 </div>
             }
 
-            <MariloNotificationBell @bind-Open="_bellOpen"
+            <SunfishNotificationBell @bind-Open="_bellOpen"
                                     Items="_feedItems"
                                     OnItemClick="HandleItemClick"
                                     OnMarkAllRead="HandleMarkAllRead"
@@ -125,8 +125,8 @@
                                     OnSettingsClick="GoToNotificationSettings" />
         </div>
     </SidebarFooter>
-</MariloAppShell>
-</MariloThemeProvider>
+</SunfishAppShell>
+</SunfishThemeProvider>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

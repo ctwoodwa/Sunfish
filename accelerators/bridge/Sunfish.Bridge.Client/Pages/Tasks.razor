@@ -1,16 +1,16 @@
 @page "/tasks"
 
-<PageTitle>Task List · Marilo PM</PageTitle>
+<PageTitle>Task List · Sunfish PM</PageTitle>
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <h1 style="margin:0 0 4px;">Task List</h1>
         <p style="margin:0;color:#6b7280;">@_tasks.Length tasks across all projects</p>
     </div>
-    <MariloButton Variant="ButtonVariant.Primary">+ New Task</MariloButton>
+    <SunfishButton Variant="ButtonVariant.Primary">+ New Task</SunfishButton>
 </div>
 
-<MariloDataGrid TItem="TaskRow"
+<SunfishDataGrid TItem="TaskRow"
                 Data="@_tasks"
                 Sortable="true"
                 Striped="true"
@@ -18,14 +18,14 @@
                 PageSize="10"
                 FilterMode="GridFilterMode.FilterRow"
                 ShowCheckboxColumn="true">
-    <MariloGridColumn TItem="TaskRow" Field="Title" Title="Task" Width="280px" />
-    <MariloGridColumn TItem="TaskRow" Field="Project" Width="160px" />
-    <MariloGridColumn TItem="TaskRow" Field="Assignee" Width="140px" />
-    <MariloGridColumn TItem="TaskRow" Field="Priority" Width="100px" />
-    <MariloGridColumn TItem="TaskRow" Field="Status" Width="120px" />
-    <MariloGridColumn TItem="TaskRow" Field="DueDate" Title="Due Date" Format="yyyy-MM-dd" Width="110px" />
-    <MariloGridColumn TItem="TaskRow" Field="Progress" Title="%" Format="P0" TextAlign="right" Width="70px" />
-</MariloDataGrid>
+    <SunfishGridColumn TItem="TaskRow" Field="Title" Title="Task" Width="280px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Project" Width="160px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Assignee" Width="140px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Priority" Width="100px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Status" Width="120px" />
+    <SunfishGridColumn TItem="TaskRow" Field="DueDate" Title="Due Date" Format="yyyy-MM-dd" Width="110px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Progress" Title="%" Format="P0" TextAlign="right" Width="70px" />
+</SunfishDataGrid>
 
 @code {
     record TaskRow(string Title, string Project, string Assignee, string Priority, string Status, DateTime DueDate, double Progress);

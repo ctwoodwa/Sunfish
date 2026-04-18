@@ -1,17 +1,17 @@
-using Marilo.PmDemo.Data.Entities;
+using Sunfish.Bridge.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Marilo.PmDemo.Data.Seeding;
+namespace Sunfish.Bridge.Data.Seeding;
 
-public sealed class PmDemoSeeder : IHostedService
+public sealed class BridgeSeeder : IHostedService
 {
     private readonly IServiceProvider _services;
-    private readonly ILogger<PmDemoSeeder> _logger;
+    private readonly ILogger<BridgeSeeder> _logger;
 
-    public PmDemoSeeder(IServiceProvider services, ILogger<PmDemoSeeder> logger)
+    public BridgeSeeder(IServiceProvider services, ILogger<BridgeSeeder> logger)
     {
         _services = services;
         _logger = logger;
@@ -20,13 +20,13 @@ public sealed class PmDemoSeeder : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var scope = _services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<PmDemoDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<SunfishBridgeDbContext>();
 
-        // Schema migrations are owned by Marilo.PmDemo.MigrationService — the seeder
+        // Schema migrations are owned by Sunfish.Bridge.MigrationService — the seeder
         // assumes the schema already exists. It only inserts demo data.
         if (await db.Projects.IgnoreQueryFilters().AnyAsync(cancellationToken))
         {
-            _logger.LogInformation("PmDemo data already present; skipping seed.");
+            _logger.LogInformation("Bridge data already present; skipping seed.");
             return;
         }
 
@@ -145,7 +145,7 @@ public sealed class PmDemoSeeder : IHostedService
         }
 
         await db.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("PmDemo seed complete: 1 project, 20 tasks, 3 milestones, 8 risks, 4 budget lines, 15 audits, 10 comments.");
+        _logger.LogInformation("Bridge seed complete: 1 project, 20 tasks, 3 milestones, 8 risks, 4 budget lines, 15 audits, 10 comments.");
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

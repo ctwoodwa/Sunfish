@@ -1,6 +1,6 @@
-using Marilo.PmDemo.Data;
-using Marilo.PmDemo.Data.Authorization;
-using Marilo.PmDemo.MigrationService;
+using Sunfish.Bridge.Data;
+using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Bridge.MigrationService;
 using Microsoft.EntityFrameworkCore;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -10,9 +10,9 @@ builder.AddServiceDefaults();
 // Migration runner doesn't need a real tenant — it never queries through filters.
 builder.Services.AddScoped<ITenantContext, MigrationTenantContext>();
 
-builder.Services.AddDbContext<PmDemoDbContext>(options =>
+builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("pmdemodb")));
-builder.EnrichNpgsqlDbContext<PmDemoDbContext>();
+builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
 
 builder.Services.AddHostedService<MigrationWorker>();
 

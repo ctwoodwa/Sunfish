@@ -1,38 +1,38 @@
-using Marilo.Core.Contracts;
-using Marilo.Core.Enums;
+using Sunfish.UICore.Contracts;
+using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Marilo.PmDemo.Client.Services;
+namespace Sunfish.Bridge.Client.Services;
 
 public enum DesignProvider { FluentUI, Bootstrap, Material }
 
-public class ProviderSwitcher : IMariloCssProvider, IMariloIconProvider, IMariloJsInterop
+public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunfishJsInterop
 {
-    private readonly IMariloCssProvider _fluentCss;
-    private readonly IMariloCssProvider _bootstrapCss;
-    private readonly IMariloCssProvider _materialCss;
-    private readonly IMariloIconProvider _fluentIcons;
-    private readonly IMariloIconProvider _bootstrapIcons;
-    private readonly IMariloIconProvider _materialIcons;
-    private readonly IMariloJsInterop _fluentJs;
-    private readonly IMariloJsInterop _bootstrapJs;
-    private readonly IMariloJsInterop _materialJs;
+    private readonly ISunfishCssProvider _fluentCss;
+    private readonly ISunfishCssProvider _bootstrapCss;
+    private readonly ISunfishCssProvider _materialCss;
+    private readonly ISunfishIconProvider _fluentIcons;
+    private readonly ISunfishIconProvider _bootstrapIcons;
+    private readonly ISunfishIconProvider _materialIcons;
+    private readonly ISunfishJsInterop _fluentJs;
+    private readonly ISunfishJsInterop _bootstrapJs;
+    private readonly ISunfishJsInterop _materialJs;
 
     public DesignProvider ActiveProvider { get; private set; } = DesignProvider.FluentUI;
 
     public event Action? OnProviderChanged;
 
     public ProviderSwitcher(
-        Marilo.Providers.FluentUI.FluentUICssProvider fluentCss,
-        Marilo.Providers.Bootstrap.BootstrapCssProvider bootstrapCss,
-        Marilo.Providers.Material.MaterialCssProvider materialCss,
-        Marilo.Providers.FluentUI.FluentUIIconProvider fluentIcons,
-        Marilo.Providers.Bootstrap.BootstrapIconProvider bootstrapIcons,
-        Marilo.Providers.Material.MaterialIconProvider materialIcons,
-        Marilo.Providers.FluentUI.FluentUIJsInterop fluentJs,
-        Marilo.Providers.Bootstrap.BootstrapJsInterop bootstrapJs,
-        Marilo.Providers.Material.MaterialJsInterop materialJs)
+        Sunfish.Components.Blazor.Providers.FluentUI.FluentUICssProvider fluentCss,
+        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapCssProvider bootstrapCss,
+        Sunfish.Components.Blazor.Providers.Material.MaterialCssProvider materialCss,
+        Sunfish.Components.Blazor.Providers.FluentUI.FluentUIIconProvider fluentIcons,
+        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapIconProvider bootstrapIcons,
+        Sunfish.Components.Blazor.Providers.Material.MaterialIconProvider materialIcons,
+        Sunfish.Components.Blazor.Providers.FluentUI.FluentUIJsInterop fluentJs,
+        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapJsInterop bootstrapJs,
+        Sunfish.Components.Blazor.Providers.Material.MaterialJsInterop materialJs)
     {
         _fluentCss = fluentCss;
         _bootstrapCss = bootstrapCss;
@@ -45,19 +45,19 @@ public class ProviderSwitcher : IMariloCssProvider, IMariloIconProvider, IMarilo
         _materialJs = materialJs;
     }
 
-    private IMariloCssProvider Css => ActiveProvider switch
+    private ISunfishCssProvider Css => ActiveProvider switch
     {
         DesignProvider.Bootstrap => _bootstrapCss,
         DesignProvider.Material => _materialCss,
         _ => _fluentCss,
     };
-    private IMariloIconProvider Icons => ActiveProvider switch
+    private ISunfishIconProvider Icons => ActiveProvider switch
     {
         DesignProvider.Bootstrap => _bootstrapIcons,
         DesignProvider.Material => _materialIcons,
         _ => _fluentIcons,
     };
-    private IMariloJsInterop JsInterop => ActiveProvider switch
+    private ISunfishJsInterop JsInterop => ActiveProvider switch
     {
         DesignProvider.Bootstrap => _bootstrapJs,
         DesignProvider.Material => _materialJs,
@@ -71,13 +71,13 @@ public class ProviderSwitcher : IMariloCssProvider, IMariloIconProvider, IMarilo
         OnProviderChanged?.Invoke();
     }
 
-    // ── IMariloIconProvider ──
+    // ── ISunfishIconProvider ──
     public MarkupString GetIcon(string name, IconSize size = IconSize.Medium) => Icons.GetIcon(name, size);
     public string GetIconSpriteUrl() => Icons.GetIconSpriteUrl();
     public IconRenderMode RenderMode => Icons.RenderMode;
     public string LibraryName => Icons.LibraryName;
 
-    // ── IMariloJsInterop ──
+    // ── ISunfishJsInterop ──
     public ValueTask InitializeAsync() => JsInterop.InitializeAsync();
     public ValueTask<bool> ShowModalAsync(string modalId) => JsInterop.ShowModalAsync(modalId);
     public ValueTask HideModalAsync(string modalId) => JsInterop.HideModalAsync(modalId);
@@ -85,7 +85,7 @@ public class ProviderSwitcher : IMariloCssProvider, IMariloIconProvider, IMarilo
     public ValueTask ObserveScrollAsync(ElementReference element, DotNetObjectReference<object> callback) => JsInterop.ObserveScrollAsync(element, callback);
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 
-    // ── IMariloCssProvider — Layout ──
+    // ── ISunfishCssProvider — Layout ──
     public string ContainerClass(string? size = null) => Css.ContainerClass(size);
     public string GridClass() => Css.GridClass();
     public string RowClass() => Css.RowClass();
@@ -333,7 +333,7 @@ public class ProviderSwitcher : IMariloCssProvider, IMariloIconProvider, IMarilo
     // ── ResizableContainer ──
     public string ResizableContainerClass(bool isResizing, bool isDisabled) => Css.ResizableContainerClass(isResizing, isDisabled);
     public string ResizableContainerContentClass() => Css.ResizableContainerContentClass();
-    public string ResizableContainerHandleClass(MariloResizeEdges edge, bool isActive, bool isFocused) => Css.ResizableContainerHandleClass(edge, isActive, isFocused);
+    public string ResizableContainerHandleClass(SunfishResizeEdges edge, bool isActive, bool isFocused) => Css.ResizableContainerHandleClass(edge, isActive, isFocused);
 
     // ── Utility ──
     public string IconClass(string iconName, IconSize size, IconFlip flip = IconFlip.None, IconThemeColor themeColor = IconThemeColor.Base) => Css.IconClass(iconName, size, flip, themeColor);

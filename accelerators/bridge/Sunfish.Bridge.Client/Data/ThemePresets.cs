@@ -1,18 +1,18 @@
-using Marilo.Core.Configuration;
+using Sunfish.Core.Configuration;
 
-namespace Marilo.PmDemo.Client.Data;
+namespace Sunfish.Bridge.Client.Data;
 
 public static class ThemePresets
 {
-    public record ThemePreset(string Name, MariloTheme Theme);
+    public record ThemePreset(string Name, SunfishTheme Theme);
 
     public static readonly ThemePreset[] All =
     [
-        new("Default", new MariloTheme
+        new("Default", new SunfishTheme
         {
-            Colors = new MariloColorPalette
+            Colors = new SunfishColorPalette
             {
-                Dark = new MariloColorPalette
+                Dark = new SunfishColorPalette
                 {
                     Primary = "#60cdff",
                     Secondary = "#6bd18a",
@@ -29,9 +29,9 @@ public static class ThemePresets
             }
         }),
 
-        new("Ocean", new MariloTheme
+        new("Ocean", new SunfishTheme
         {
-            Colors = new MariloColorPalette
+            Colors = new SunfishColorPalette
             {
                 Primary = "#0077b6",
                 Secondary = "#00b4d8",
@@ -44,7 +44,7 @@ public static class ThemePresets
                 Surface = "#f0f4f8",
                 OnPrimary = "#ffffff",
                 OnBackground = "#1d3557",
-                Dark = new MariloColorPalette
+                Dark = new SunfishColorPalette
                 {
                     Primary = "#48cae4",
                     Secondary = "#90e0ef",
@@ -59,12 +59,12 @@ public static class ThemePresets
                     OnBackground = "#e0e1dd"
                 }
             },
-            Shape = new MariloShape { BorderRadius = "6px", BorderRadiusLarge = "12px" }
+            Shape = new SunfishShape { BorderRadius = "6px", BorderRadiusLarge = "12px" }
         }),
 
-        new("Forest", new MariloTheme
+        new("Forest", new SunfishTheme
         {
-            Colors = new MariloColorPalette
+            Colors = new SunfishColorPalette
             {
                 Primary = "#2d6a4f",
                 Secondary = "#52b788",
@@ -77,7 +77,7 @@ public static class ThemePresets
                 Surface = "#f1f7f0",
                 OnPrimary = "#ffffff",
                 OnBackground = "#1b4332",
-                Dark = new MariloColorPalette
+                Dark = new SunfishColorPalette
                 {
                     Primary = "#52b788",
                     Secondary = "#95d5b2",
@@ -92,12 +92,12 @@ public static class ThemePresets
                     OnBackground = "#d8f3dc"
                 }
             },
-            Shape = new MariloShape { BorderRadius = "8px", BorderRadiusLarge = "16px" }
+            Shape = new SunfishShape { BorderRadius = "8px", BorderRadiusLarge = "16px" }
         }),
 
-        new("Sunset", new MariloTheme
+        new("Sunset", new SunfishTheme
         {
-            Colors = new MariloColorPalette
+            Colors = new SunfishColorPalette
             {
                 Primary = "#e76f51",
                 Secondary = "#f4a261",
@@ -110,7 +110,7 @@ public static class ThemePresets
                 Surface = "#fdf6f0",
                 OnPrimary = "#ffffff",
                 OnBackground = "#3d2c2c",
-                Dark = new MariloColorPalette
+                Dark = new SunfishColorPalette
                 {
                     Primary = "#f4845f",
                     Secondary = "#f4a261",
@@ -125,12 +125,12 @@ public static class ThemePresets
                     OnBackground = "#f2e8de"
                 }
             },
-            Shape = new MariloShape { BorderRadius = "12px", BorderRadiusLarge = "20px" }
+            Shape = new SunfishShape { BorderRadius = "12px", BorderRadiusLarge = "20px" }
         }),
 
-        new("Minimal", new MariloTheme
+        new("Minimal", new SunfishTheme
         {
-            Colors = new MariloColorPalette
+            Colors = new SunfishColorPalette
             {
                 Primary = "#333333",
                 Secondary = "#666666",
@@ -143,7 +143,7 @@ public static class ThemePresets
                 Surface = "#fafafa",
                 OnPrimary = "#ffffff",
                 OnBackground = "#111111",
-                Dark = new MariloColorPalette
+                Dark = new SunfishColorPalette
                 {
                     Primary = "#cccccc",
                     Secondary = "#999999",
@@ -158,12 +158,12 @@ public static class ThemePresets
                     OnBackground = "#eeeeee"
                 }
             },
-            Typography = new MariloTypographyScale
+            Typography = new SunfishTypographyScale
             {
                 FontFamily = "'Inter', system-ui, sans-serif",
                 FontSizeBase = "14px"
             },
-            Shape = new MariloShape { BorderRadius = "2px", BorderRadiusLarge = "4px" }
+            Shape = new SunfishShape { BorderRadius = "2px", BorderRadiusLarge = "4px" }
         })
     ];
 

@@ -1,4 +1,4 @@
-namespace Marilo.PmDemo.Data.Entities;
+namespace Sunfish.Bridge.Data.Entities;
 
 public enum ProjectStatus { Planning, Active, OnHold, Completed, Cancelled }
 public enum TaskStatus { Backlog, ToDo, InProgress, InReview, Done }

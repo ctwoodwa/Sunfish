@@ -1,6 +1,6 @@
-using Marilo.PmDemo.Data.Authorization;
+using Sunfish.Bridge.Data.Authorization;
 
-namespace Marilo.PmDemo.MigrationService;
+namespace Sunfish.Bridge.MigrationService;
 
 /// <summary>
 /// Placeholder ITenantContext for the migration runner. Migrations don't query

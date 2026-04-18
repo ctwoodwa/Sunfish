@@ -12,11 +12,11 @@ The unified notification architecture is implemented and wired.
 
 | File | Purpose |
 |---|---|
-| `Marilo.PmDemo.Client/Notifications/UserNotification.cs` | Canonical record + enums (Source, Category, Importance, Delivery) |
-| `Marilo.PmDemo.Client/Notifications/IUserNotificationService.cs` | Service interface + `IUserNotificationToastForwarder` seam |
-| `Marilo.PmDemo.Client/Notifications/InMemoryUserNotificationService.cs` | In-memory impl with dedupe, seed data (8 PM events), Changed event |
-| `Marilo.PmDemo.Client/Notifications/NotificationProjections.cs` | `NotificationFeedProjection` (canonical → bell `NotificationItem`) + `MariloToastUserNotificationForwarder` (canonical → `NotificationModel` toast) |
-| `tests/Marilo.Tests.Unit/PmDemo/UserNotificationServiceTests.cs` | 8 focused tests: create, dedupe, mark read, mark all read, delete all read, toast forwarding, feed projection, critical severity mapping |
+| `Sunfish.Bridge.Client/Notifications/UserNotification.cs` | Canonical record + enums (Source, Category, Importance, Delivery) |
+| `Sunfish.Bridge.Client/Notifications/IUserNotificationService.cs` | Service interface + `IUserNotificationToastForwarder` seam |
+| `Sunfish.Bridge.Client/Notifications/InMemoryUserNotificationService.cs` | In-memory impl with dedupe, seed data (8 PM events), Changed event |
+| `Sunfish.Bridge.Client/Notifications/NotificationProjections.cs` | `NotificationFeedProjection` (canonical → bell `NotificationItem`) + `SunfishToastUserNotificationForwarder` (canonical → `NotificationModel` toast) |
+| `tests/Sunfish.Tests.Unit/Bridge/UserNotificationServiceTests.cs` | 8 focused tests: create, dedupe, mark read, mark all read, delete all read, toast forwarding, feed projection, critical severity mapping |
 
 ### Architecture
 
@@ -34,15 +34,15 @@ The unified notification architecture is implemented and wired.
   (→ NotificationItem for bell)   (→ NotificationModel for toast)
                 │                              │
                 ▼                              ▼
-       MariloNotificationBell          IMariloNotificationService
+       SunfishNotificationBell          ISunfishNotificationService
        (sidebar bell / inbox)          (existing toast/snackbar host)
 ```
 
 - `UserNotification` has no toast-only properties (no CloseAfterMs, Closeable, ThemeColor).
-- `NotificationModel` (Marilo.Core) remains a presentation-only concern, untouched.
-- `NotificationItem` (Marilo.Components.Shell) remains the bell's view DTO, populated only via the feed projection mapper.
+- `NotificationModel` (Sunfish.Core) remains a presentation-only concern, untouched.
+- `NotificationItem` (Sunfish.Components.Blazor.Shell) remains the bell's view DTO, populated only via the feed projection mapper.
 - The bell component is strictly presentational — it never mutates state, only fires event callbacks.
-- `MariloSnackbarHost` is mounted once in `MainLayout.razor`.
+- `SunfishSnackbarHost` is mounted once in `MainLayout.razor`.
 
 ### Seed data sources
 
@@ -54,7 +54,7 @@ Task assigned, due date changed, comment added, risk severity escalated, budget 
 
 ### What exists now
 
-`MariloAppShell.razor` parameters added this session:
+`SunfishAppShell.razor` parameters added this session:
 
 | Parameter | Type | Purpose |
 |---|---|---|
@@ -66,7 +66,7 @@ Task assigned, due date changed, comment added, risk severity escalated, budget 
 
 Footer default rendering: bordered button group — left side has avatar + identity stack (name + email), right side has bell with divider. Collapsed sidebar shows avatar only.
 
-### MariloNotificationBell enhancements (DONE)
+### SunfishNotificationBell enhancements (DONE)
 
 - "More options" button (···) with tooltip "More options" in the panel header.
 - Dropdown menu with "Settings" and "Delete all read" actions.
@@ -82,7 +82,7 @@ Footer default rendering: bordered button group — left side has avatar + ident
 - No local `_notifs` field — all reads go through `UserNotifications.All` → projected to `_feedItems` via `NotificationFeedProjection.ToFeedItem`.
 - Badge count reads `UserNotifications.UnreadCount`.
 - Bell wired: `OnItemClick` → `MarkReadAsync`, `OnMarkAllRead` → `MarkAllReadAsync`, `OnDeleteAllRead` → `DeleteAllReadAsync`, `OnSettingsClick` → `Nav.NavigateTo("/account/details")`.
-- `<MariloSnackbarHost />` mounted in `ChildContent`.
+- `<SunfishSnackbarHost />` mounted in `ChildContent`.
 - User menu items: Profile, Settings (⌘,), Theme (expandable), Help & docs, Keyboard shortcuts (?), Sign out.
 
 ---
@@ -114,7 +114,7 @@ No other account pages exist. No `SettingsLayout`, `SettingsNav`, or shared sett
 
 ### Desired end result — layout
 
-`SettingsLayout.razor` renders only the inner settings frame (not MariloAppShell). Declares `@layout MainLayout` so the outer shell renders once. Contains:
+`SettingsLayout.razor` renders only the inner settings frame (not SunfishAppShell). Declares `@layout MainLayout` so the outer shell renders once. Contains:
 
 - `SettingsNav` — left rail (~240px) with NavLink items grouped under "You" / "Workspace" / "Plan" headings.
 - Content panel to the right for `@Body`.
@@ -128,48 +128,48 @@ No other account pages exist. No `SettingsLayout`, `SettingsNav`, or shared sett
 
 | Component | Purpose | Based on |
 |---|---|---|
-| `SettingsCard` | Titled card with description, content slot, optional footer/actions | Thin wrapper around existing `MariloCard` + `MariloCardHeader` + `MariloCardBody` |
+| `SettingsCard` | Titled card with description, content slot, optional footer/actions | Thin wrapper around existing `SunfishCard` + `SunfishCardHeader` + `SunfishCardBody` |
 | `SettingsHeader` | Page-level title + description + optional actions slot | Simple component |
 | `DangerZone` | Red-bordered card for destructive actions (deactivate, delete) | `SettingsCard` variant |
 
-### Input components — existing Marilo library (USE, don't rebuild)
+### Input components — existing Sunfish library (USE, don't rebuild)
 
 | Need | Existing component | Path |
 |---|---|---|
-| Text input | `MariloTextBox` | `Forms/Inputs/MariloTextBox.razor` |
-| Text area | `MariloTextArea` | `Forms/Inputs/MariloTextArea.razor` |
-| Select/dropdown | `MariloSelect` | `Forms/Inputs/MariloSelect.razor` |
-| Toggle switch | `MariloSwitch` | `Forms/Inputs/MariloSwitch.razor` |
-| Checkbox | `MariloCheckbox` | `Forms/Inputs/MariloCheckbox.razor` |
-| Slider | `MariloSlider` | `Forms/Inputs/MariloSlider.razor` |
-| Range slider | `MariloRangeSlider` | `Forms/Inputs/MariloRangeSlider.razor` |
-| Segmented toggle | `MariloSegmentedControl` | `Buttons/MariloSegmentedControl.razor` |
-| Chip multi-select | `MariloChipSet` + `MariloChip` | `Buttons/MariloChipSet.razor` |
-| Time range | `MariloTimeRangeSelector` | `Navigation/MariloTimeRangeSelector.razor` (verify fit for quiet-hours) |
+| Text input | `SunfishTextBox` | `Forms/Inputs/SunfishTextBox.razor` |
+| Text area | `SunfishTextArea` | `Forms/Inputs/SunfishTextArea.razor` |
+| Select/dropdown | `SunfishSelect` | `Forms/Inputs/SunfishSelect.razor` |
+| Toggle switch | `SunfishSwitch` | `Forms/Inputs/SunfishSwitch.razor` |
+| Checkbox | `SunfishCheckbox` | `Forms/Inputs/SunfishCheckbox.razor` |
+| Slider | `SunfishSlider` | `Forms/Inputs/SunfishSlider.razor` |
+| Range slider | `SunfishRangeSlider` | `Forms/Inputs/SunfishRangeSlider.razor` |
+| Segmented toggle | `SunfishSegmentedControl` | `Buttons/SunfishSegmentedControl.razor` |
+| Chip multi-select | `SunfishChipSet` + `SunfishChip` | `Buttons/SunfishChipSet.razor` |
+| Time range | `SunfishTimeRangeSelector` | `Navigation/SunfishTimeRangeSelector.razor` (verify fit for quiet-hours) |
 
-### Form containers — existing Marilo library (USE)
-
-| Component | Purpose |
-|---|---|
-| `MariloField` | Wraps input + label + validation state |
-| `MariloLabel` | Standalone label |
-| `MariloForm` | EditContext wrapper |
-| `MariloValidation` / `MariloValidationMessage` / `MariloValidationSummary` | Validation display |
-
-### Toast/dialog — existing Marilo library (USE)
+### Form containers — existing Sunfish library (USE)
 
 | Component | Purpose |
 |---|---|
-| `MariloSnackbarHost` | Toast host (already mounted in MainLayout) |
-| `IMariloNotificationService.ShowToast(...)` | Trigger toasts from settings save actions |
-| `MariloDialog` / `MariloConfirmDialog` | Confirm destructive actions (deactivate account, delete data) |
-| `MariloDrawer` | Slide-over for connector config |
+| `SunfishField` | Wraps input + label + validation state |
+| `SunfishLabel` | Standalone label |
+| `SunfishForm` | EditContext wrapper |
+| `SunfishValidation` / `SunfishValidationMessage` / `SunfishValidationSummary` | Validation display |
+
+### Toast/dialog — existing Sunfish library (USE)
+
+| Component | Purpose |
+|---|---|
+| `SunfishSnackbarHost` | Toast host (already mounted in MainLayout) |
+| `ISunfishNotificationService.ShowToast(...)` | Trigger toasts from settings save actions |
+| `SunfishDialog` / `SunfishConfirmDialog` | Confirm destructive actions (deactivate account, delete data) |
+| `SunfishDrawer` | Slide-over for connector config |
 
 ### Net-new upstream components
 
 | Component | Purpose | Priority |
 |---|---|---|
-| `MariloKeyRecorder` | Captures keyboard chord for shortcut rebinding | When Shortcuts page is built |
+| `SunfishKeyRecorder` | Captures keyboard chord for shortcut rebinding | When Shortcuts page is built |
 
 ---
 
@@ -180,10 +180,10 @@ No other account pages exist. No `SettingsLayout`, `SettingsNav`, or shared sett
 | Service | Registration | Source |
 |---|---|---|
 | `IUserNotificationService` → `InMemoryUserNotificationService` | Scoped | This session |
-| `IUserNotificationToastForwarder` → `MariloToastUserNotificationForwarder` | Scoped | This session |
-| `IMariloThemeService` → `ThemeService` | Scoped | `AddMariloCoreServices()` via `UseFluentUI()` |
-| `IMariloNotificationService` → `MariloNotificationService` | Scoped | `AddMariloCoreServices()` via `UseFluentUI()` |
-| `IMariloCssProvider` → `FluentUICssProvider` | Scoped | `UseFluentUI()` |
+| `IUserNotificationToastForwarder` → `SunfishToastUserNotificationForwarder` | Scoped | This session |
+| `ISunfishThemeService` → `ThemeService` | Scoped | `AddSunfishCoreServices()` via `UseFluentUI()` |
+| `ISunfishNotificationService` → `SunfishNotificationService` | Scoped | `AddSunfishCoreServices()` via `UseFluentUI()` |
+| `ISunfishCssProvider` → `FluentUICssProvider` | Scoped | `UseFluentUI()` |
 
 ### Needed (not yet created)
 
@@ -191,7 +191,7 @@ No other account pages exist. No `SettingsLayout`, `SettingsNav`, or shared sett
 |---|---|---|
 | `ICurrentUserContext` / `DemoCurrentUserContext` | Mock user identity, plan tier, admin flag. All plan/admin gating routes through this. Annotated "DEMO ONLY". | Step 2 (before any settings page touches permissions) |
 | `IAccountService` | Profile CRUD, sessions, account deletion | AccountDetails page |
-| `IPreferencesService` | Theme mode, density, defaults, a11y flags; live-applies via `IMariloThemeService` | PreferencesPage |
+| `IPreferencesService` | Theme mode, density, defaults, a11y flags; live-applies via `ISunfishThemeService` | PreferencesPage |
 | `INotificationPreferencesService` | Channel × event matrix, quiet hours, digest, per-project overrides | NotificationsPage |
 | `IPersonalizationService` | Work profile, focus hours, followed items, dashboard widgets | PersonalizationPage |
 | `IAssistantSettingsService` | Tone, length, recap, risk sensitivity, context sources | AssistantPage |
@@ -228,11 +228,11 @@ To live in `Models/Settings/ViewModels/`. Carry dirty-tracking, validation attri
 
 ## 8. Implementation Guardrails (Agreed)
 
-1. **Nested layouts**: `MainLayout` is the only component that renders `MariloAppShell`. `SettingsLayout` renders only its inner frame.
+1. **Nested layouts**: `MainLayout` is the only component that renders `SunfishAppShell`. `SettingsLayout` renders only its inner frame.
 2. **Shared state via services**: Theme and notification state live in scoped services. Consumers implement `IDisposable` and unsubscribe in `Dispose`.
 3. **Demo auth seams**: `ICurrentUserContext` annotated "DEMO ONLY" with explicit replacement guidance.
 4. **DTO vs VM separation**: Transport DTOs in dedicated files, mapped to page VMs. UI never binds to DAB/GraphQL types directly.
-5. **Marilo-native inputs only**: If a form control is missing, create a new Marilo component upstream rather than pulling in another library.
+5. **Sunfish-native inputs only**: If a form control is missing, create a new Sunfish component upstream rather than pulling in another library.
 6. **Ctrl+, / Cmd+,**: Reserved globally for opening settings.
 7. **Serilog + OTEL + DAB**: Confirmed as the intended stack. No drift.
 
@@ -242,17 +242,17 @@ To live in `Models/Settings/ViewModels/`. Carry dirty-tracking, validation attri
 
 | Step | Scope | Status |
 |---|---|---|
-| 1. Upstream component audit | Confirmed 7 of 9 inputs exist; only MariloKeyRecorder is net-new; MariloTimeRangeSelector needs quiet-hours fit check | **DONE** (audit) |
+| 1. Upstream component audit | Confirmed 7 of 9 inputs exist; only SunfishKeyRecorder is net-new; SunfishTimeRangeSelector needs quiet-hours fit check | **DONE** (audit) |
 | 2. Shared infra | `ICurrentUserContext`, `INotificationFeedService` → replaced by canonical `IUserNotificationService`, toast host mount, MainLayout refactor | **DONE** (canonical pipeline) |
 | 3. DAB migrations | `user_preferences`, `notification_preferences` tables + DAB entity config | Pending |
 | 4. Settings shell | `SettingsLayout`, `SettingsNav`, `SettingsCard`, `SettingsHeader`, `DangerZone` | Pending |
 | 5. Account page | `/account/details` — profile, locale, plan, sessions, danger zone | Pending (stub exists) |
-| 6. Preferences page | `/account/preferences` — live theme broadcast via `IMariloThemeService` | Pending |
+| 6. Preferences page | `/account/preferences` — live theme broadcast via `ISunfishThemeService` | Pending |
 | 7. Notifications page | `/account/notifications` — matrix, quiet hours; shares `IUserNotificationService` with bell | Pending |
-| 8. Connectors page | Card grid + MariloDrawer config | Pending |
+| 8. Connectors page | Card grid + SunfishDrawer config | Pending |
 | 9. Assistant page | Live preview pane | Pending |
 | 10. Personalization page | Followed items, focus hours, dashboard widgets | Pending |
-| 11. Shortcuts page | MariloKeyRecorder + conflict detection | Pending |
+| 11. Shortcuts page | SunfishKeyRecorder + conflict detection | Pending |
 | 12. Stretch | Security, Billing, Workspace admin | Pending |
 
 ---
@@ -261,9 +261,9 @@ To live in `Models/Settings/ViewModels/`. Carry dirty-tracking, validation attri
 
 | Surface | Model used | Source of truth | Status |
 |---|---|---|---|
-| Sidebar bell (MariloNotificationBell) | `NotificationItem` (Shell view DTO) | Projected from `IUserNotificationService.All` via `NotificationFeedProjection.ToFeedItem` | Clean — no local state |
+| Sidebar bell (SunfishNotificationBell) | `NotificationItem` (Shell view DTO) | Projected from `IUserNotificationService.All` via `NotificationFeedProjection.ToFeedItem` | Clean — no local state |
 | Bell badge count | `int` from `IUserNotificationService.UnreadCount` | Canonical service | Clean |
-| MariloAppShell `NotificationCount` param | `int` passed from MainLayout | Reads `UserNotifications.UnreadCount` | Clean |
-| Toast display | `NotificationModel` (Marilo.Core) | Forwarded from canonical via `MariloToastUserNotificationForwarder` | Clean — presentation only |
+| SunfishAppShell `NotificationCount` param | `int` passed from MainLayout | Reads `UserNotifications.UnreadCount` | Clean |
+| Toast display | `NotificationModel` (Sunfish.Core) | Forwarded from canonical via `SunfishToastUserNotificationForwarder` | Clean — presentation only |
 | `/account/details` stub page | Hardcoded inline HTML | No service binding | **Temporary** — will be replaced when Account page is fully built (step 5) |
 | User menu items | `List<PopupMenuItem>` in MainLayout | Private field, no service | **Temporary** — menu item click handlers (Settings, Profile, Sign out) need wiring to nav/auth in later steps |

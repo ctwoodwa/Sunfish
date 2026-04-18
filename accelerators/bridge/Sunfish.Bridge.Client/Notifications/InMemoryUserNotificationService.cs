@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Marilo.PmDemo.Client.Notifications;
+namespace Sunfish.Bridge.Client.Notifications;
 
 /// <summary>
 /// In-memory implementation of <see cref="IUserNotificationService"/> for the PM Demo.

@@ -1,48 +1,48 @@
 @page "/"
 
-<PageTitle>Dashboard · Marilo PM</PageTitle>
+<PageTitle>Dashboard · Sunfish PM</PageTitle>
 
 <h1 style="margin:0 0 4px;">Dashboard</h1>
-<p style="color:#6b7280;margin:0 0 24px;">Welcome to the Marilo PM demo.</p>
+<p style="color:#6b7280;margin:0 0 24px;">Welcome to the Sunfish PM demo.</p>
 
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;">
     @foreach (var kpi in _kpis)
     {
-        <MariloCard>
-            <MariloCardBody>
+        <SunfishCard>
+            <SunfishCardBody>
                 <div style="font-size:12px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">@kpi.Label</div>
                 <div style="font-size:30px;font-weight:700;line-height:1;">@kpi.Value</div>
                 @if (kpi.Sub is not null)
                 {
                     <div style="font-size:12px;color:#6b7280;margin-top:4px;">@kpi.Sub</div>
                 }
-            </MariloCardBody>
-        </MariloCard>
+            </SunfishCardBody>
+        </SunfishCard>
     }
 </div>
 
 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-    <MariloCard>
-        <MariloCardHeader>Recent Milestones</MariloCardHeader>
-        <MariloCardBody>
-            <MariloDataGrid TItem="MilestoneRow" Data="@_milestones" Striped="true">
-                <MariloGridColumn TItem="MilestoneRow" Field="Name" Title="Milestone" />
-                <MariloGridColumn TItem="MilestoneRow" Field="DueDate" Title="Due" Format="MMM d" />
-                <MariloGridColumn TItem="MilestoneRow" Field="Status" />
-            </MariloDataGrid>
-        </MariloCardBody>
-    </MariloCard>
+    <SunfishCard>
+        <SunfishCardHeader>Recent Milestones</SunfishCardHeader>
+        <SunfishCardBody>
+            <SunfishDataGrid TItem="MilestoneRow" Data="@_milestones" Striped="true">
+                <SunfishGridColumn TItem="MilestoneRow" Field="Name" Title="Milestone" />
+                <SunfishGridColumn TItem="MilestoneRow" Field="DueDate" Title="Due" Format="MMM d" />
+                <SunfishGridColumn TItem="MilestoneRow" Field="Status" />
+            </SunfishDataGrid>
+        </SunfishCardBody>
+    </SunfishCard>
 
-    <MariloCard>
-        <MariloCardHeader>Top Risks</MariloCardHeader>
-        <MariloCardBody>
-            <MariloDataGrid TItem="RiskRow" Data="@_risks" Striped="true">
-                <MariloGridColumn TItem="RiskRow" Field="Title" />
-                <MariloGridColumn TItem="RiskRow" Field="Severity" />
-                <MariloGridColumn TItem="RiskRow" Field="Owner" />
-            </MariloDataGrid>
-        </MariloCardBody>
-    </MariloCard>
+    <SunfishCard>
+        <SunfishCardHeader>Top Risks</SunfishCardHeader>
+        <SunfishCardBody>
+            <SunfishDataGrid TItem="RiskRow" Data="@_risks" Striped="true">
+                <SunfishGridColumn TItem="RiskRow" Field="Title" />
+                <SunfishGridColumn TItem="RiskRow" Field="Severity" />
+                <SunfishGridColumn TItem="RiskRow" Field="Owner" />
+            </SunfishDataGrid>
+        </SunfishCardBody>
+    </SunfishCard>
 </div>
 
 @code {

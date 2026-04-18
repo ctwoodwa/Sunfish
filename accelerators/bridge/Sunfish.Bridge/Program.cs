@@ -1,18 +1,18 @@
-using Marilo.Core.Contracts;
-using Marilo.Core.Extensions;
-using Marilo.Providers.Bootstrap;
-using Marilo.Providers.Bootstrap.Extensions;
-using Marilo.Providers.FluentUI;
-using Marilo.Providers.FluentUI.Extensions;
-using Marilo.Providers.Material;
-using Marilo.Providers.Material.Extensions;
-using Marilo.PmDemo.Client.Services;
-using Marilo.PmDemo.Authorization;
-using Marilo.PmDemo.Components;
-using Marilo.PmDemo.Data;
-using Marilo.PmDemo.Data.Authorization;
-using Marilo.PmDemo.Data.Seeding;
-using Marilo.PmDemo.Hubs;
+using Sunfish.UICore.Contracts;
+using Sunfish.Foundation.Extensions;
+using Sunfish.Components.Blazor.Providers.Bootstrap;
+using Sunfish.Components.Blazor.Providers.Bootstrap.Extensions;
+using Sunfish.Components.Blazor.Providers.FluentUI;
+using Sunfish.Components.Blazor.Providers.FluentUI.Extensions;
+using Sunfish.Components.Blazor.Providers.Material;
+using Sunfish.Components.Blazor.Providers.Material.Extensions;
+using Sunfish.Bridge.Client.Services;
+using Sunfish.Bridge.Authorization;
+using Sunfish.Bridge.Components;
+using Sunfish.Bridge.Data;
+using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Bridge.Data.Seeding;
+using Sunfish.Bridge.Hubs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Wolverine;
@@ -25,7 +25,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Tenant context — demo stub in development. Registered BEFORE the DbContext
-// because PmDemoDbContext takes ITenantContext as a constructor dependency.
+// because SunfishBridgeDbContext takes ITenantContext as a constructor dependency.
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<ITenantContext, DemoTenantContext>();
@@ -35,9 +35,9 @@ if (builder.Environment.IsDevelopment())
 // ITenantContext in its constructor — Aspire's AddNpgsqlDbContext uses DbContextPool
 // which forbids scoped constructor dependencies. EnrichNpgsqlDbContext layers
 // Aspire's instrumentation, health checks, and retry on top.
-builder.Services.AddDbContext<PmDemoDbContext>(options =>
+builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("pmdemodb")));
-builder.EnrichNpgsqlDbContext<PmDemoDbContext>();
+builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
 
 builder.AddRedisOutputCache("pmdemo-redis");
 
@@ -70,15 +70,15 @@ builder.Host.UseWolverine(opts =>
 // Dev-only data seed.
 if (builder.Environment.IsDevelopment())
 {
-    builder.Services.AddHostedService<PmDemoSeeder>();
+    builder.Services.AddHostedService<BridgeSeeder>();
 }
 
 // CORS + antiforgery scaffold (no policies yet).
 builder.Services.AddCors();
 builder.Services.AddAuthorization();
 
-// Marilo component services with provider switching (FluentUI, Bootstrap, Material)
-builder.Services.AddMarilo().AddMariloCoreServices();
+// Sunfish component services with provider switching (FluentUI, Bootstrap, Material)
+builder.Services.AddSunfish().AddSunfishCoreServices();
 builder.Services.AddSingleton(new FluentUIOptions());
 builder.Services.AddSingleton(new BootstrapOptions());
 builder.Services.AddSingleton(new MaterialOptions());
@@ -92,18 +92,18 @@ builder.Services.AddScoped<MaterialCssProvider>();
 builder.Services.AddScoped<MaterialIconProvider>();
 builder.Services.AddScoped<MaterialJsInterop>();
 builder.Services.AddScoped<ProviderSwitcher>();
-builder.Services.AddScoped<IMariloCssProvider>(sp => sp.GetRequiredService<ProviderSwitcher>());
-builder.Services.AddScoped<IMariloIconProvider>(sp => sp.GetRequiredService<ProviderSwitcher>());
-builder.Services.AddScoped<IMariloJsInterop>(sp => sp.GetRequiredService<ProviderSwitcher>());
+builder.Services.AddScoped<ISunfishCssProvider>(sp => sp.GetRequiredService<ProviderSwitcher>());
+builder.Services.AddScoped<ISunfishIconProvider>(sp => sp.GetRequiredService<ProviderSwitcher>());
+builder.Services.AddScoped<ISunfishJsInterop>(sp => sp.GetRequiredService<ProviderSwitcher>());
 
 // PM Demo canonical notification pipeline. Single source of truth for all
 // user-facing notifications (bell, inbox, toast). The canonical service owns
-// lifecycle; IMariloNotificationService is a downstream toast presentation channel
+// lifecycle; ISunfishNotificationService is a downstream toast presentation channel
 // reached via the IUserNotificationToastForwarder adapter.
-builder.Services.AddScoped<Marilo.PmDemo.Client.Notifications.IUserNotificationToastForwarder,
-                            Marilo.PmDemo.Client.Notifications.MariloToastUserNotificationForwarder>();
-builder.Services.AddScoped<Marilo.PmDemo.Client.Notifications.IUserNotificationService,
-                            Marilo.PmDemo.Client.Notifications.InMemoryUserNotificationService>();
+builder.Services.AddScoped<Sunfish.Bridge.Client.Notifications.IUserNotificationToastForwarder,
+                            Sunfish.Bridge.Client.Notifications.SunfishToastUserNotificationForwarder>();
+builder.Services.AddScoped<Sunfish.Bridge.Client.Notifications.IUserNotificationService,
+                            Sunfish.Bridge.Client.Notifications.InMemoryUserNotificationService>();
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -123,11 +123,11 @@ app.UseAuthorization();
 
 app.MapDefaultEndpoints();
 app.MapHealthChecks("/health");
-app.MapHub<PmDemoHub>("/hubs/pmdemo");
+app.MapHub<BridgeHub>("/hubs/pmdemo");
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
-    .AddAdditionalAssemblies(typeof(Marilo.PmDemo.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(Sunfish.Bridge.Client._Imports).Assembly);
 
 app.Run();

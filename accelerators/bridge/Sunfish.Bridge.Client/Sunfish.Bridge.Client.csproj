@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sunfish.Bridge.Client</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\Sunfish.Core\Sunfish.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor\Sunfish.Components.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Shell\Sunfish.Components.Blazor.Shell.csproj" />
+    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.FluentUI\Sunfish.Components.Blazor.Providers.FluentUI.csproj" />
+    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.Bootstrap\Sunfish.Components.Blazor.Providers.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.Material\Sunfish.Components.Blazor.Providers.Material.csproj" />
+  </ItemGroup>
+
+</Project>

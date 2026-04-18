@@ -1,46 +1,46 @@
 @page "/risk"
 
-<PageTitle>Risk Register · Marilo PM</PageTitle>
+<PageTitle>Risk Register · Sunfish PM</PageTitle>
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <h1 style="margin:0 0 4px;">Risk Register</h1>
         <p style="margin:0;color:#6b7280;">@_risks.Count(r => r.Severity == "High") high · @_risks.Count(r => r.Severity == "Medium") medium · @_risks.Count(r => r.Severity == "Low") low severity risks</p>
     </div>
-    <MariloButton Variant="ButtonVariant.Primary">+ Log Risk</MariloButton>
+    <SunfishButton Variant="ButtonVariant.Primary">+ Log Risk</SunfishButton>
 </div>
 
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
     @foreach (var (sev, color, count) in new[] { ("High", "#ef4444", _risks.Count(r => r.Severity == "High")), ("Medium", "#f59e0b", _risks.Count(r => r.Severity == "Medium")), ("Low", "#10b981", _risks.Count(r => r.Severity == "Low")) })
     {
-        <MariloCard>
-            <MariloCardBody>
+        <SunfishCard>
+            <SunfishCardBody>
                 <div style="display:flex;align-items:center;gap:10px;">
                     <span style="width:12px;height:12px;border-radius:50%;background:@color;flex-shrink:0;"></span>
                     <span style="font-size:13px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">@sev</span>
                 </div>
                 <div style="font-size:36px;font-weight:700;color:@color;margin-top:4px;">@count</div>
-            </MariloCardBody>
-        </MariloCard>
+            </SunfishCardBody>
+        </SunfishCard>
     }
 </div>
 
-<MariloDataGrid TItem="RiskItem"
+<SunfishDataGrid TItem="RiskItem"
                 Data="@_risks"
                 Sortable="true"
                 Striped="true"
                 Pageable="true"
                 PageSize="8"
                 FilterMode="GridFilterMode.FilterRow">
-    <MariloGridColumn TItem="RiskItem" Field="Id" Title="ID" Width="70px" />
-    <MariloGridColumn TItem="RiskItem" Field="Title" Width="260px" />
-    <MariloGridColumn TItem="RiskItem" Field="Category" Width="120px" />
-    <MariloGridColumn TItem="RiskItem" Field="Severity" Width="100px" />
-    <MariloGridColumn TItem="RiskItem" Field="Probability" Title="Prob." Width="80px" />
-    <MariloGridColumn TItem="RiskItem" Field="Status" Width="110px" />
-    <MariloGridColumn TItem="RiskItem" Field="Owner" Width="130px" />
-    <MariloGridColumn TItem="RiskItem" Field="ReviewDate" Title="Review" Format="MMM d" Width="100px" />
-</MariloDataGrid>
+    <SunfishGridColumn TItem="RiskItem" Field="Id" Title="ID" Width="70px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Title" Width="260px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Category" Width="120px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Severity" Width="100px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Probability" Title="Prob." Width="80px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Status" Width="110px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Owner" Width="130px" />
+    <SunfishGridColumn TItem="RiskItem" Field="ReviewDate" Title="Review" Format="MMM d" Width="100px" />
+</SunfishDataGrid>
 
 @code {
     record RiskItem(string Id, string Title, string Category, string Severity, string Probability, string Status, string Owner, DateTime ReviewDate);

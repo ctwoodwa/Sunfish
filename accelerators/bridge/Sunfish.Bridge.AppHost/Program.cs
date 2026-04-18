@@ -10,12 +10,14 @@ var redis = builder.AddRedis("pmdemo-redis");
 var rabbit = builder.AddRabbitMQ("pmdemo-rabbit")
     .WithManagementPlugin();
 
-// Mock OIDC dependency
+// DEMO ONLY. MockOktaService is a minimal OIDC mock for local development.
+// Replace with real Okta / Entra ID / Auth0 configuration before production.
+// See accelerators/bridge/ROADMAP.md §Auth.
 var okta = builder.AddProject<Projects.MockOktaService>("mock-okta");
 
 // One-shot migration runner. Applies EF Core migrations and exits. DAB and the
 // web project WaitForCompletion on this so the schema exists before either reads it.
-var migrations = builder.AddProject<Projects.Marilo_PmDemo_MigrationService>("pmdemo-migrations")
+var migrations = builder.AddProject<Projects.Sunfish_Bridge_MigrationService>("pmdemo-migrations")
     .WithReference(postgres)
     .WaitFor(postgres);
 
@@ -32,7 +34,7 @@ var dab = builder.AddContainer("pmdemo-dab", "mcr.microsoft.com/azure-databases/
     .WaitForCompletion(migrations);
 
 // Server project
-builder.AddProject<Projects.Marilo_PmDemo>("pmdemo-web")
+builder.AddProject<Projects.Sunfish_Bridge>("pmdemo-web")
     .WithReference(postgres)
     .WithReference(redis)
     .WithReference(rabbit)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Marilo.PmDemo.Client.Notifications;
+namespace Sunfish.Bridge.Client.Notifications;
 
 /// <summary>
 /// Canonical notification pipeline for the PM Demo. Owns creation, persistence,
@@ -11,7 +11,7 @@ namespace Marilo.PmDemo.Client.Notifications;
 /// the user sees in the bell, the inbox, or as a toast.
 ///
 /// <para>
-/// <see cref="Marilo.Core.Services.IMariloNotificationService"/> remains a presentation
+/// <see cref="Sunfish.Foundation.Services.ISunfishNotificationService"/> remains a presentation
 /// channel only — toast forwarding goes through this service via the registered
 /// <see cref="IUserNotificationToastForwarder"/>.
 /// </para>
@@ -55,9 +55,9 @@ public interface IUserNotificationService
 /// <summary>
 /// Side-channel adapter that the canonical service calls when a notification's delivery
 /// policy includes <see cref="NotificationDelivery.ToastOnly"/>. Implementations forward
-/// the canonical record to the existing Marilo presentation host. Kept as a separate
+/// the canonical record to the existing Sunfish presentation host. Kept as a separate
 /// interface so the canonical service has no compile-time dependency on
-/// <see cref="Marilo.Core.Services.IMariloNotificationService"/>.
+/// <see cref="Sunfish.Foundation.Services.ISunfishNotificationService"/>.
 /// </summary>
 public interface IUserNotificationToastForwarder
 {

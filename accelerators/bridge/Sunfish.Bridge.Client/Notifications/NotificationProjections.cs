@@ -1,13 +1,13 @@
-using Marilo.Components.Layout.AppShell;
-using Marilo.Core.Enums;
-using Marilo.Core.Models;
-using Marilo.Core.Services;
+using Sunfish.Components.Blazor.Layout.AppShell;
+using Sunfish.Foundation.Enums;
+using Sunfish.Foundation.Models;
+using Sunfish.Foundation.Services;
 
-namespace Marilo.PmDemo.Client.Notifications;
+namespace Sunfish.Bridge.Client.Notifications;
 
 /// <summary>
 /// Maps a canonical <see cref="UserNotification"/> to the bell/feed view shape
-/// (<see cref="NotificationItem"/>, owned by Marilo.Components.Shell).
+/// (<see cref="NotificationItem"/>, owned by Sunfish.Components.Blazor.Shell).
 ///
 /// This is a one-way projection — the bell never mutates the canonical store directly;
 /// "mark read" / "delete read" actions go through <see cref="IUserNotificationService"/>
@@ -42,18 +42,18 @@ public static class NotificationFeedProjection
 
 /// <summary>
 /// Adapts the canonical notification record into a transient toast on the existing
-/// Marilo presentation host. The toast model owns close-after, severity colour, etc.;
+/// Sunfish presentation host. The toast model owns close-after, severity colour, etc.;
 /// the canonical record stays free of presentation concerns.
 ///
 /// Registered as <see cref="IUserNotificationToastForwarder"/> in DI; the canonical
 /// service calls <see cref="Forward"/> only when delivery policy includes
 /// <see cref="NotificationDelivery.ToastOnly"/>.
 /// </summary>
-public sealed class MariloToastUserNotificationForwarder : IUserNotificationToastForwarder
+public sealed class SunfishToastUserNotificationForwarder : IUserNotificationToastForwarder
 {
-    private readonly IMariloNotificationService _toastHost;
+    private readonly ISunfishNotificationService _toastHost;
 
-    public MariloToastUserNotificationForwarder(IMariloNotificationService toastHost)
+    public SunfishToastUserNotificationForwarder(ISunfishNotificationService toastHost)
     {
         _toastHost = toastHost;
     }

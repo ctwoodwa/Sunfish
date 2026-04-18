@@ -1,4 +1,4 @@
-namespace Marilo.PmDemo.Features;
+namespace Sunfish.Bridge.Features;
 
 public static class FeatureFlags
 {

@@ -1,15 +1,15 @@
 @page "/timeline"
 
-<PageTitle>Timeline · Marilo PM</PageTitle>
+<PageTitle>Timeline · Sunfish PM</PageTitle>
 
 <h1 style="margin:0 0 4px;">Timeline</h1>
 <p style="margin:0 0 20px;color:#6b7280;">Project milestones and phase schedule</p>
 
-<MariloCard>
-    <MariloCardBody>
-        <MariloGantt TItem="GanttTask" Data="@_tasks" TaskListWidth="240" DayWidth="28" />
-    </MariloCardBody>
-</MariloCard>
+<SunfishCard>
+    <SunfishCardBody>
+        <SunfishGantt TItem="GanttTask" Data="@_tasks" TaskListWidth="240" DayWidth="28" />
+    </SunfishCardBody>
+</SunfishCard>
 
 @code {
     readonly GanttTask[] _tasks =

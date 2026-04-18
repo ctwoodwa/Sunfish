@@ -1,4 +1,4 @@
-namespace Marilo.PmDemo.Messages;
+namespace Sunfish.Bridge.Messages;
 
 public record TaskStatusChangedEvent(
     Guid TaskId,

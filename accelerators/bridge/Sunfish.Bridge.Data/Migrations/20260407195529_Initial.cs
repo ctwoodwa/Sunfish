@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Marilo.PmDemo.Data.Migrations
+namespace Sunfish.Bridge.Data.Migrations
 {
     /// <inheritdoc />
     public partial class Initial : Migration

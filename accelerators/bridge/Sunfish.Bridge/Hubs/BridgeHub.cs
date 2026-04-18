@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.SignalR;
 
-namespace Marilo.PmDemo.Hubs;
+namespace Sunfish.Bridge.Hubs;
 
-public sealed class PmDemoHub : Hub<IPmDemoHubClient>
+public sealed class BridgeHub : Hub<IBridgeHubClient>
 {
     public Task JoinProject(string projectId)
         => Groups.AddToGroupAsync(Context.ConnectionId, GroupName(projectId));

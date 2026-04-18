@@ -1,11 +1,11 @@
 @inherits LayoutComponentBase
-@inject Marilo.Core.Services.IMariloThemeService ThemeService
+@inject Sunfish.Foundation.Services.ISunfishThemeService ThemeService
 
-<MariloThemeProvider Theme="@ThemeService.CurrentTheme">
+<SunfishThemeProvider Theme="@ThemeService.CurrentTheme">
 <div class="account-layout @(_mobileOpen ? "mobile-open" : "")" @onkeydown="HandleKeyDown">
     <div class="account-layout__scrim" @onclick="CloseMobile" aria-hidden="true"></div>
     <button type="button" class="account-layout__mobile-toggle" aria-label="Open settings navigation" @onclick="OpenMobile">
-        <MariloIcon Name="menu-2" Size="IconSize.Medium" />
+        <SunfishIcon Name="menu-2" Size="IconSize.Medium" />
     </button>
     <aside class="account-layout__sidebar" aria-label="Settings navigation">
         <SettingsHomeLink Href="/" Label="Home" />
@@ -17,7 +17,7 @@
         </div>
     </main>
 </div>
-</MariloThemeProvider>
+</SunfishThemeProvider>
 
 @code {
     private bool _mobileOpen;

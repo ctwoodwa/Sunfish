@@ -13,7 +13,7 @@ using Serilog.Sinks.OpenTelemetry;
 
 namespace Microsoft.Extensions.Hosting;
 
-public static class MariloPmDemoServiceDefaultsExtensions
+public static class SunfishBridgeServiceDefaultsExtensions
 {
     private const string HealthEndpointPath = "/health";
     private const string AlivenessEndpointPath = "/alive";
@@ -37,7 +37,7 @@ public static class MariloPmDemoServiceDefaultsExtensions
 
     public static TBuilder ConfigureSerilog<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        // Serilog is the logging provider for all PmDemo projects. The OpenTelemetry
+        // Serilog is the logging provider for all Bridge projects. The OpenTelemetry
         // sink ships logs to whatever OTLP endpoint Aspire injects, so they show up
         // in the Aspire dashboard alongside traces and metrics.
         var serviceName = builder.Environment.ApplicationName;

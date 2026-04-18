@@ -1,15 +1,15 @@
-using Marilo.PmDemo.Data;
-using Marilo.PmDemo.Data.Entities;
-using Marilo.PmDemo.Messages;
+using Sunfish.Bridge.Data;
+using Sunfish.Bridge.Data.Entities;
+using Sunfish.Bridge.Messages;
 using Wolverine;
 
-namespace Marilo.PmDemo.Handlers;
+namespace Sunfish.Bridge.Handlers;
 
 public static class TaskStatusChangedHandler
 {
     public static async Task<NotificationRequested> Handle(
         TaskStatusChangedEvent evt,
-        PmDemoDbContext db,
+        SunfishBridgeDbContext db,
         CancellationToken ct)
     {
         db.AuditRecords.Add(new AuditRecord

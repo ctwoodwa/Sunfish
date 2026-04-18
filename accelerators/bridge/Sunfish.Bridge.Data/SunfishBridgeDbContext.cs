@@ -1,14 +1,14 @@
-using Marilo.PmDemo.Data.Authorization;
-using Marilo.PmDemo.Data.Entities;
+using Sunfish.Bridge.Data.Authorization;
+using Sunfish.Bridge.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace Marilo.PmDemo.Data;
+namespace Sunfish.Bridge.Data;
 
-public class PmDemoDbContext : DbContext
+public class SunfishBridgeDbContext : DbContext
 {
     private readonly string _currentTenantId;
 
-    public PmDemoDbContext(DbContextOptions<PmDemoDbContext> options, ITenantContext tenant)
+    public SunfishBridgeDbContext(DbContextOptions<SunfishBridgeDbContext> options, ITenantContext tenant)
         : base(options)
     {
         _currentTenantId = tenant.TenantId;

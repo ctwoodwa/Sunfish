@@ -1,10 +1,10 @@
-using Marilo.PmDemo.Data;
+using Sunfish.Bridge.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Marilo.PmDemo.MigrationService;
+namespace Sunfish.Bridge.MigrationService;
 
 /// <summary>
-/// One-shot worker that applies EF Core migrations to the PmDemo database, then
+/// One-shot worker that applies EF Core migrations to the Bridge database, then
 /// stops the host. Aspire AppHost wires DAB and the web project to
 /// WaitForCompletion on this resource so the schema exists before they read it.
 /// </summary>
@@ -32,7 +32,7 @@ public sealed class MigrationWorker : BackgroundService
         try
         {
             using var scope = _services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<PmDemoDbContext>();
+            var db = scope.ServiceProvider.GetRequiredService<SunfishBridgeDbContext>();
 
             // In development, drop the existing schema before migrating. The data
             // volume persists across F5 cycles, and any change to entity → table
@@ -40,17 +40,17 @@ public sealed class MigrationWorker : BackgroundService
             // that the current Initial migration has no knowledge of.
             if (_env.IsDevelopment())
             {
-                _logger.LogInformation("Development environment: dropping existing PmDemo schema before migrate.");
+                _logger.LogInformation("Development environment: dropping existing Bridge schema before migrate.");
                 await db.Database.EnsureDeletedAsync(stoppingToken);
             }
 
-            _logger.LogInformation("Applying PmDemo database migrations...");
+            _logger.LogInformation("Applying Bridge database migrations...");
             await db.Database.MigrateAsync(stoppingToken);
-            _logger.LogInformation("PmDemo database migrations complete.");
+            _logger.LogInformation("Bridge database migrations complete.");
         }
         catch (Exception ex)
         {
-            _logger.LogCritical(ex, "PmDemo migration failed.");
+            _logger.LogCritical(ex, "Bridge migration failed.");
             Environment.ExitCode = 1;
         }
         finally

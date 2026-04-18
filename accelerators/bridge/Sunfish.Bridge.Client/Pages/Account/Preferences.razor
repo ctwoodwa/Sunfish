@@ -1,9 +1,9 @@
 @page "/account/preferences"
 @layout AccountLayout
-@inject Marilo.Core.Services.IMariloThemeService ThemeService
-@using Marilo.PmDemo.Client.Data
+@inject Sunfish.Foundation.Services.ISunfishThemeService ThemeService
+@using Sunfish.Bridge.Client.Data
 
-<PageTitle>Preferences · Marilo PM</PageTitle>
+<PageTitle>Preferences · Sunfish PM</PageTitle>
 
 <SettingsPageHeader Title="Preferences"
                     Description="Appearance, behavior, and display settings." />
@@ -22,7 +22,7 @@
                     <span class="theme-grid__name">@p.Name</span>
                     @if (isActive)
                     {
-                        <MariloIcon Name="check" Size="IconSize.Small" Class="theme-grid__check" />
+                        <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-grid__check" />
                     }
                 </button>
             }
@@ -36,13 +36,13 @@
             <button type="button"
                     class="mode-toggle__option @(!_isDark ? "mode-toggle__option--active" : "")"
                     @onclick="() => SetDarkMode(false)">
-                <MariloIcon Name="sun" Size="IconSize.Small" />
+                <SunfishIcon Name="sun" Size="IconSize.Small" />
                 <span>Light</span>
             </button>
             <button type="button"
                     class="mode-toggle__option @(_isDark ? "mode-toggle__option--active" : "")"
                     @onclick="() => SetDarkMode(true)">
-                <MariloIcon Name="moon" Size="IconSize.Small" />
+                <SunfishIcon Name="moon" Size="IconSize.Small" />
                 <span>Dark</span>
             </button>
         </div>
@@ -90,7 +90,7 @@
 
 <SettingsSection Title="Navigation">
     <SettingsCard>
-        <SettingsSelectRow Label="Default landing page" Description="Page shown when you open Marilo PM.">
+        <SettingsSelectRow Label="Default landing page" Description="Page shown when you open Sunfish PM.">
             <select @bind="_landingPage">
                 <option value="/">Dashboard</option>
                 <option value="/board">Task Board</option>

@@ -1,8 +1,8 @@
 using NBomber.CSharp;
 using NBomber.Http.CSharp;
 
-// Smoke load test against the running PmDemo web service.
-// Usage: dotnet run --project Marilo.PmDemo.Tests.Performance -- https://localhost:7101
+// Smoke load test against the running Bridge web service.
+// Usage: dotnet run --project Sunfish.Bridge.Tests.Performance -- https://localhost:7101
 var baseUrl = args.Length > 0 ? args[0] : "https://localhost:7101";
 
 using var http = new HttpClient { BaseAddress = new Uri(baseUrl) };

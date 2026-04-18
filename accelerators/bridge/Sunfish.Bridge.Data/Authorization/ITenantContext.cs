@@ -1,4 +1,4 @@
-namespace Marilo.PmDemo.Data.Authorization;
+namespace Sunfish.Bridge.Data.Authorization;
 
 public interface ITenantContext
 {

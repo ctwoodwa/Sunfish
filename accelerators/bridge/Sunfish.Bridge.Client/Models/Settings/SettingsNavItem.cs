@@ -1,4 +1,4 @@
-namespace Marilo.PmDemo.Client.Models.Settings;
+namespace Sunfish.Bridge.Client.Models.Settings;
 
 public sealed record SettingsNavItem(
     string Label,

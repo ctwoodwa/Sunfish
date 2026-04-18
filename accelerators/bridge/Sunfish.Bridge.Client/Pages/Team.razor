@@ -1,30 +1,30 @@
 @page "/team"
 
-<PageTitle>Team Resource · Marilo PM</PageTitle>
+<PageTitle>Team Resource · Sunfish PM</PageTitle>
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <h1 style="margin:0 0 4px;">Team Resource</h1>
         <p style="margin:0;color:#6b7280;">@_members.Length team members across @_members.Select(m => m.Team).Distinct().Count() teams</p>
     </div>
-    <MariloButton Variant="ButtonVariant.Primary">+ Add Member</MariloButton>
+    <SunfishButton Variant="ButtonVariant.Primary">+ Add Member</SunfishButton>
 </div>
 
-<MariloDataGrid TItem="TeamMember"
+<SunfishDataGrid TItem="TeamMember"
                 Data="@_members"
                 Sortable="true"
                 Striped="true"
                 Pageable="true"
                 PageSize="10"
                 FilterMode="GridFilterMode.FilterRow">
-    <MariloGridColumn TItem="TeamMember" Field="Name" Width="180px" />
-    <MariloGridColumn TItem="TeamMember" Field="Role" Width="180px" />
-    <MariloGridColumn TItem="TeamMember" Field="Team" Width="140px" />
-    <MariloGridColumn TItem="TeamMember" Field="Location" Width="140px" />
-    <MariloGridColumn TItem="TeamMember" Field="Allocation" Title="Allocation %" Format="P0" TextAlign="right" Width="120px" />
-    <MariloGridColumn TItem="TeamMember" Field="TasksOpen" Title="Open Tasks" TextAlign="right" Width="110px" />
-    <MariloGridColumn TItem="TeamMember" Field="AvailableFrom" Title="Available" Format="MMM d" Width="110px" />
-</MariloDataGrid>
+    <SunfishGridColumn TItem="TeamMember" Field="Name" Width="180px" />
+    <SunfishGridColumn TItem="TeamMember" Field="Role" Width="180px" />
+    <SunfishGridColumn TItem="TeamMember" Field="Team" Width="140px" />
+    <SunfishGridColumn TItem="TeamMember" Field="Location" Width="140px" />
+    <SunfishGridColumn TItem="TeamMember" Field="Allocation" Title="Allocation %" Format="P0" TextAlign="right" Width="120px" />
+    <SunfishGridColumn TItem="TeamMember" Field="TasksOpen" Title="Open Tasks" TextAlign="right" Width="110px" />
+    <SunfishGridColumn TItem="TeamMember" Field="AvailableFrom" Title="Available" Format="MMM d" Width="110px" />
+</SunfishDataGrid>
 
 @code {
     record TeamMember(string Name, string Role, string Team, string Location, double Allocation, int TasksOpen, DateTime AvailableFrom);

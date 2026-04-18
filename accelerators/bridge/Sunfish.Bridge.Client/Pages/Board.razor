@@ -1,13 +1,13 @@
 @page "/board"
 
-<PageTitle>Task Board · Marilo PM</PageTitle>
+<PageTitle>Task Board · Sunfish PM</PageTitle>
 
 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
         <h1 style="margin:0 0 4px;">Task Board</h1>
         <p style="margin:0;color:#6b7280;">Sprint 14 · Apr 1 – Apr 15, 2026</p>
     </div>
-    <MariloButton Variant="ButtonVariant.Primary">+ Add Task</MariloButton>
+    <SunfishButton Variant="ButtonVariant.Primary">+ Add Task</SunfishButton>
 </div>
 
 <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
@@ -21,19 +21,19 @@
             <div style="display:flex;flex-direction:column;gap:10px;">
                 @foreach (var item in col.Items)
                 {
-                    <MariloCard>
-                        <MariloCardBody>
+                    <SunfishCard>
+                        <SunfishCardBody>
                             <div style="font-size:14px;font-weight:500;margin-bottom:8px;">@item.Title</div>
                             <div style="display:flex;align-items:center;justify-content:space-between;">
-                                <MariloChip Variant="@PriorityVariant(item.Priority)" Text="@item.Priority" />
+                                <SunfishChip Variant="@PriorityVariant(item.Priority)" Text="@item.Priority" />
                                 <span style="font-size:12px;color:#6b7280;">@item.Assignee</span>
                             </div>
                             @if (item.DueDate.HasValue)
                             {
                                 <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Due @item.DueDate.Value.ToString("MMM d")</div>
                             }
-                        </MariloCardBody>
-                    </MariloCard>
+                        </SunfishCardBody>
+                    </SunfishCard>
                 }
             </div>
         </div>

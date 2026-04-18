@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Marilo.PmDemo.Client.Notifications;
+namespace Sunfish.Bridge.Client.Notifications;
 
 /// <summary>
 /// Canonical PM Demo notification record.
@@ -11,7 +11,7 @@ namespace Marilo.PmDemo.Client.Notifications;
 /// milestone, mention, file upload, …). It is persistence- and feed-friendly and
 /// deliberately contains <b>no</b> UI/toast presentation concerns such as auto-close
 /// duration, closeability, or theme colour — those live on
-/// <see cref="Marilo.Core.Models.NotificationModel"/>, which is a presentation channel
+/// <see cref="Sunfish.Foundation.Models.NotificationModel"/>, which is a presentation channel
 /// driven from this model via an explicit adapter.
 /// </summary>
 public sealed record UserNotification
@@ -95,7 +95,7 @@ public enum NotificationCategory
     System,
 }
 
-/// <summary>Importance hint that the toast adapter maps to a <see cref="Marilo.Core.Enums.ToastSeverity"/>.</summary>
+/// <summary>Importance hint that the toast adapter maps to a <see cref="Sunfish.Foundation.Enums.ToastSeverity"/>.</summary>
 public enum NotificationImportance
 {
     Low,
