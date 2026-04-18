@@ -111,14 +111,87 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
     }
 
     /// <summary>
-    /// Placeholder for Task 4. Returns <see cref="MutationResult.Accepted"/> unconditionally
-    /// so the skeleton can be exercised end-to-end. Task 4 will enforce that the issuer has
-    /// delegate rights / group-admin rights / mint authority as appropriate.
+    /// Enforces the Phase B authority model over the current <c>_principals</c> and
+    /// <c>_opLog</c> snapshot. Must be called with <c>_sync</c> held; reads the shared state
+    /// but does not mutate it.
     /// </summary>
-    private static MutationResult ValidateAuthority(SignedOperation<CapabilityOp> op)
+    /// <remarks>
+    /// <list type="bullet">
+    ///   <item><description><see cref="MintPrincipal"/>: always accepted (Phase B is open-mint;
+    ///     Phase E will gate minting).</description></item>
+    ///   <item><description><see cref="Delegate"/>: accepted when bootstrapping the resource
+    ///     (no prior Delegate on the resource) OR when the issuer transitively holds the
+    ///     <see cref="CapabilityAction.Delegate"/> capability on the resource at
+    ///     <c>op.IssuedAt</c>.</description></item>
+    ///   <item><description><see cref="Revoke"/>: only the original Delegate issuer may revoke
+    ///     their own grant.</description></item>
+    ///   <item><description><see cref="AddMember"/> / <see cref="RemoveMember"/>: accepted on
+    ///     bootstrap (no prior membership op for the group) OR when the issuer holds
+    ///     <see cref="CapabilityAction.Delegate"/> on the synthetic resource
+    ///     <c>group:&lt;groupId&gt;</c>.</description></item>
+    /// </list>
+    /// </remarks>
+    private MutationResult ValidateAuthority(SignedOperation<CapabilityOp> op)
     {
-        _ = op;
-        return MutationResult.Accepted;
+        switch (op.Payload)
+        {
+            case MintPrincipal:
+                return MutationResult.Accepted;
+
+            case Delegate d:
+                // Bootstrap: the first Delegate on a resource establishes the root owner.
+                if (!_opLog.Any(existing => existing.Payload is Delegate ed && ed.Resource == d.Resource))
+                    return MutationResult.Accepted;
+                if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, d.Resource, CapabilityAction.Delegate, op.IssuedAt))
+                    return MutationResult.Accepted;
+                return MutationResult.Rejected("Issuer lacks Delegate capability on resource");
+
+            case Revoke r:
+            {
+                var originalDelegate = _opLog.LastOrDefault(existing =>
+                    existing.Payload is Delegate ed
+                    && ed.Subject.Equals(r.Subject)
+                    && ed.Resource == r.Resource
+                    && ed.Action == r.Action);
+                if (originalDelegate is null)
+                    return MutationResult.Rejected("No matching delegate to revoke");
+                if (!originalDelegate.IssuerId.Equals(op.IssuerId))
+                    return MutationResult.Rejected("Only the original issuer may revoke");
+                return MutationResult.Accepted;
+            }
+
+            case AddMember am:
+            {
+                var groupResource = new Resource($"group:{am.Group.ToBase64Url()}");
+                // Bootstrap: first member-op for the group is allowed (group creator manages it).
+                if (!HasPriorMembershipOp(am.Group))
+                    return MutationResult.Accepted;
+                if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, groupResource, CapabilityAction.Delegate, op.IssuedAt))
+                    return MutationResult.Accepted;
+                return MutationResult.Rejected("Issuer lacks Delegate capability on group");
+            }
+
+            case RemoveMember rm:
+            {
+                var groupResource = new Resource($"group:{rm.Group.ToBase64Url()}");
+                if (!HasPriorMembershipOp(rm.Group))
+                    return MutationResult.Accepted;
+                if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, groupResource, CapabilityAction.Delegate, op.IssuedAt))
+                    return MutationResult.Accepted;
+                return MutationResult.Rejected("Issuer lacks Delegate capability on group");
+            }
+        }
+        return MutationResult.Rejected("Unknown op kind");
+    }
+
+    private bool HasPriorMembershipOp(PrincipalId group)
+    {
+        foreach (var existing in _opLog)
+        {
+            if (existing.Payload is AddMember ae && ae.Group.Equals(group)) return true;
+            if (existing.Payload is RemoveMember re && re.Group.Equals(group)) return true;
+        }
+        return false;
     }
 
     private void ApplyOp(SignedOperation<CapabilityOp> op)
