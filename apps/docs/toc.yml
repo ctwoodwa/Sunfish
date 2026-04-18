@@ -1,0 +1,22 @@
+- name: Getting Started
+  href: articles/getting-started/
+- name: Components
+  href: articles/components/
+- name: Theming
+  href: articles/theming/
+- name: Accessibility
+  href: articles/accessibility/
+- name: Common Features
+  href: articles/common-features/
+- name: Security
+  href: articles/security/
+- name: Testing
+  href: articles/testing/
+- name: Globalization
+  href: articles/globalization/
+- name: Troubleshooting
+  href: articles/troubleshooting/
+- name: Component Specs
+  href: component-specs/toc.yml
+- name: API Reference
+  href: api/
