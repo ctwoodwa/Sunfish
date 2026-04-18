@@ -1,0 +1,71 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<TelerikTooltip> Logger
+
+<SunfishTooltip TargetSelector="TargetSelector"
+                Position="_position"
+                ShowOn="_showOn"
+                Text="@(Content ?? string.Empty)"
+                @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishTooltip>
+
+@code {
+    [Parameter] public string? TargetSelector { get; set; }
+
+    /// <summary>Telerik-shaped Position: "top", "bottom", "left", "right".</summary>
+    [Parameter] public string? Position { get; set; }
+
+    /// <summary>Telerik-shaped ShowOn: "Hover", "Click", "Focus".</summary>
+    [Parameter] public string? ShowOn { get; set; }
+
+    /// <summary>Tooltip body text. Takes precedence over ChildContent if set.</summary>
+    [Parameter] public string? Content { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.TooltipPosition _position;
+    private FoundationEnums.TooltipShowOn _showOn;
+
+    protected override void OnParametersSet()
+    {
+        _position = Position switch
+        {
+            null or "" or "top" or "Top" => FoundationEnums.TooltipPosition.Top,
+            "bottom" or "Bottom" => FoundationEnums.TooltipPosition.Bottom,
+            "left" or "Left" => FoundationEnums.TooltipPosition.Left,
+            "right" or "Right" => FoundationEnums.TooltipPosition.Right,
+            _ => LogPositionFallback(Position!)
+        };
+
+        _showOn = ShowOn switch
+        {
+            null or "" or "Hover" or "hover" => FoundationEnums.TooltipShowOn.Hover,
+            "Click" or "click" => FoundationEnums.TooltipShowOn.Click,
+            "Focus" or "focus" => FoundationEnums.TooltipShowOn.Focus,
+            _ => LogShowOnFallback(ShowOn!)
+        };
+    }
+
+    private FoundationEnums.TooltipPosition LogPositionFallback(string received)
+    {
+        Logger.LogWarning(
+            "compat-telerik: Unrecognized Position '{Value}' on TelerikTooltip. Falling back to Top. See docs/compat-telerik-mapping.md.",
+            received);
+        return FoundationEnums.TooltipPosition.Top;
+    }
+
+    private FoundationEnums.TooltipShowOn LogShowOnFallback(string received)
+    {
+        Logger.LogWarning(
+            "compat-telerik: Unrecognized ShowOn '{Value}' on TelerikTooltip. Falling back to Hover. See docs/compat-telerik-mapping.md.",
+            received);
+        return FoundationEnums.TooltipShowOn.Hover;
+    }
+}

@@ -1,0 +1,47 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.Overlays
+@using Sunfish.Compat.Telerik.Internal
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Telerik.Enums
+@inject ILogger<TelerikWindow> Logger
+
+<SunfishWindow Visible="Visible"
+               VisibleChanged="VisibleChanged"
+               Title="Title"
+               Width="Width"
+               Height="Height"
+               Modal="Modal"
+               State="_state"
+               @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishWindow>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool Modal { get; set; }
+    [Parameter] public CompatEnums.WindowState State { get; set; } = CompatEnums.WindowState.Default;
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.WindowDisplayState _state;
+
+    protected override void OnParametersSet()
+    {
+        _state = State switch
+        {
+            CompatEnums.WindowState.Default => FoundationEnums.WindowDisplayState.Normal,
+            CompatEnums.WindowState.Maximized => FoundationEnums.WindowDisplayState.Maximized,
+            CompatEnums.WindowState.Minimized => FoundationEnums.WindowDisplayState.Minimized,
+            _ => throw UnsupportedParam.Throw(nameof(State), State.ToString(), "Unknown WindowState value.")
+        };
+    }
+}
