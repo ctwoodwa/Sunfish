@@ -11,7 +11,7 @@ namespace Sunfish.Federation.Common;
 /// <see cref="IDisposable"/> returned from <see cref="RegisterHandler"/> removes the handler from
 /// the routing map.
 /// </remarks>
-public sealed class InMemorySyncTransport : ISyncTransport
+public sealed class InMemorySyncTransport : ISyncTransport, ILocalHandlerDispatcher
 {
     private readonly ConcurrentDictionary<PeerId, Func<SyncEnvelope, ValueTask<SyncEnvelope>>> _handlers = new();
 
@@ -37,6 +37,18 @@ public sealed class InMemorySyncTransport : ISyncTransport
             throw new InvalidOperationException($"Peer {local} already registered.");
 
         return new Unregister(() => _handlers.TryRemove(local, out _));
+    }
+
+    /// <inheritdoc />
+    public ValueTask<SyncEnvelope> DispatchAsync(SyncEnvelope incoming, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(incoming);
+        ct.ThrowIfCancellationRequested();
+
+        if (!_handlers.TryGetValue(incoming.ToPeer, out var handler))
+            throw new InvalidOperationException($"No handler registered for peer {incoming.ToPeer}.");
+
+        return handler(incoming);
     }
 
     private sealed class Unregister(Action onDispose) : IDisposable
