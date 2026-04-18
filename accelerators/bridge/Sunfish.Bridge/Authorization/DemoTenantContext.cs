@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Sunfish.Foundation.Authorization;
 
 namespace Sunfish.Bridge.Authorization;
@@ -10,6 +11,21 @@ namespace Sunfish.Bridge.Authorization;
 /// </summary>
 public sealed class DemoTenantContext : ITenantContext
 {
+    private static int _warningLogged; // emit once per process
+
+    public DemoTenantContext(ILogger<DemoTenantContext> logger)
+    {
+        if (System.Threading.Interlocked.CompareExchange(ref _warningLogged, 1, 0) == 0)
+        {
+            logger.LogWarning(
+                "DEMO AUTH SEAM ACTIVE: DemoTenantContext is registered. " +
+                "TenantId='{TenantId}', UserId='{UserId}'. " +
+                "This is for local development only. Replace with a real ITenantContext implementation " +
+                "before production deployment. See accelerators/bridge/ROADMAP.md \u00A7Auth.",
+                TenantId, UserId);
+        }
+    }
+
     public string TenantId => "demo-tenant";
     public string UserId => "demo-user";
     public IReadOnlyList<string> Roles { get; } = [Authorization.Roles.ProjectManager];

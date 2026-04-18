@@ -29,6 +29,7 @@ builder.AddServiceDefaults();
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<ITenantContext, DemoTenantContext>();
+    builder.Services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, DemoAuthWarningFilter>();
 }
 
 // EF Core DbContext registered manually (not pooled) so it can accept the scoped
