@@ -12,12 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Sunfish.Core\Sunfish.Core.csproj" />
-    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor\Sunfish.Components.Blazor.csproj" />
-    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Shell\Sunfish.Components.Blazor.Shell.csproj" />
-    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.FluentUI\Sunfish.Components.Blazor.Providers.FluentUI.csproj" />
-    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.Bootstrap\Sunfish.Components.Blazor.Providers.Bootstrap.csproj" />
-    <ProjectReference Include="..\..\..\src\Sunfish.Components.Blazor.Providers.Material\Sunfish.Components.Blazor.Providers.Material.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.Components.Blazor.csproj" />
   </ItemGroup>
 
 </Project>

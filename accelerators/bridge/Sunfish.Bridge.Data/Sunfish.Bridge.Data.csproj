@@ -18,4 +18,8 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+
 </Project>

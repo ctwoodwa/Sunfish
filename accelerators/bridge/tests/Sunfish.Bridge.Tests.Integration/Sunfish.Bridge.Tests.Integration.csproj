@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sunfish.Bridge.AppHost\Sunfish.Bridge.AppHost.csproj" />
+    <ProjectReference Include="..\..\Sunfish.Bridge.AppHost\Sunfish.Bridge.AppHost.csproj" />
   </ItemGroup>
 
 </Project>
