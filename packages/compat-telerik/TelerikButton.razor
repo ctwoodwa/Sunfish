@@ -1,0 +1,128 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.Buttons
+@using Sunfish.Compat.Telerik.Internal
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Telerik.Enums
+@inject ILogger<TelerikButton> Logger
+
+<SunfishButton Variant="_variant"
+               Size="_size"
+               FillMode="_fillMode"
+               Rounded="_rounded"
+               Enabled="Enabled"
+               ButtonType="_buttonType"
+               Form="Form"
+               OnClick="OnClick"
+               Icon="_iconFragment"
+               @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishButton>
+
+@code {
+    // --- Telerik-shaped public parameters ---
+    [Parameter] public string? ThemeColor { get; set; }
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public string? FillMode { get; set; }
+    [Parameter] public string? Rounded { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Telerik-shaped <see cref="CompatEnums.ButtonType"/>.
+    /// <c>Reset</c> throws <see cref="System.NotSupportedException"/> — Sunfish has no Reset semantics.
+    /// </summary>
+    [Parameter] public CompatEnums.ButtonType ButtonType { get; set; } = CompatEnums.ButtonType.Button;
+
+    [Parameter] public string? Form { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    /// <summary>Accepts a <see cref="RenderFragment"/> directly, or a Telerik-shaped icon object.</summary>
+    [Parameter] public object? Icon { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Mapped Sunfish values ---
+    private FoundationEnums.ButtonVariant _variant;
+    private FoundationEnums.ButtonSize _size;
+    private FoundationEnums.FillMode _fillMode;
+    private FoundationEnums.RoundedMode _rounded;
+    private FoundationEnums.ButtonType _buttonType;
+    private RenderFragment? _iconFragment;
+
+    protected override void OnParametersSet()
+    {
+        _variant = MapVariant(ThemeColor);
+        _size = MapSize(Size);
+        _fillMode = MapFillMode(FillMode);
+        _rounded = MapRounded(Rounded);
+        _buttonType = MapButtonType(ButtonType);
+        _iconFragment = SvgIconAdapter.ToRenderFragment(Icon);
+    }
+
+    private FoundationEnums.ButtonVariant MapVariant(string? s) => s switch
+    {
+        null or "" or "primary" => FoundationEnums.ButtonVariant.Primary,
+        "secondary" => FoundationEnums.ButtonVariant.Secondary,
+        "info" => FoundationEnums.ButtonVariant.Info,
+        "success" => FoundationEnums.ButtonVariant.Success,
+        "warning" => FoundationEnums.ButtonVariant.Warning,
+        "error" => FoundationEnums.ButtonVariant.Danger,
+        // Sunfish ButtonVariant lacks Tertiary/Dark/Light/Inverse/Base — collapse to Secondary.
+        "tertiary" or "dark" or "light" or "inverse" or "base"
+            => LogAndFallback(s, FoundationEnums.ButtonVariant.Secondary, nameof(ThemeColor),
+                "Sunfish ButtonVariant lacks this value; falling back to Secondary."),
+        _ => LogAndFallback(s, FoundationEnums.ButtonVariant.Primary, nameof(ThemeColor), null)
+    };
+
+    private FoundationEnums.ButtonSize MapSize(string? s) => s switch
+    {
+        null or "" or "md" => FoundationEnums.ButtonSize.Medium,
+        "sm" => FoundationEnums.ButtonSize.Small,
+        "lg" => FoundationEnums.ButtonSize.Large,
+        _ => LogAndFallback(s, FoundationEnums.ButtonSize.Medium, nameof(Size), null)
+    };
+
+    private FoundationEnums.FillMode MapFillMode(string? s) => s switch
+    {
+        null or "" or "solid" => FoundationEnums.FillMode.Solid,
+        "flat" => FoundationEnums.FillMode.Flat,
+        "outline" => FoundationEnums.FillMode.Outline,
+        "link" => FoundationEnums.FillMode.Link,
+        "clear" => FoundationEnums.FillMode.Clear,
+        _ => LogAndFallback(s, FoundationEnums.FillMode.Solid, nameof(FillMode), null)
+    };
+
+    private FoundationEnums.RoundedMode MapRounded(string? s) => s switch
+    {
+        null or "" or "medium" => FoundationEnums.RoundedMode.Medium,
+        "small" => FoundationEnums.RoundedMode.Small,
+        "large" => FoundationEnums.RoundedMode.Large,
+        "full" => FoundationEnums.RoundedMode.Full,
+        "none" => FoundationEnums.RoundedMode.None,
+        _ => LogAndFallback(s, FoundationEnums.RoundedMode.Medium, nameof(Rounded), null)
+    };
+
+    private FoundationEnums.ButtonType MapButtonType(CompatEnums.ButtonType t) => t switch
+    {
+        CompatEnums.ButtonType.Button => FoundationEnums.ButtonType.Button,
+        CompatEnums.ButtonType.Submit => FoundationEnums.ButtonType.Submit,
+        CompatEnums.ButtonType.Reset => throw UnsupportedParam.Throw(
+            nameof(ButtonType), "Reset",
+            "Sunfish has no Reset button type. Use an OnClick handler that resets form state explicitly."),
+        _ => throw UnsupportedParam.Throw(nameof(ButtonType), t.ToString(), "Unknown ButtonType value.")
+    };
+
+    private T LogAndFallback<T>(string? received, T fallback, string paramName, string? extraHint)
+    {
+        Logger.LogWarning(
+            "compat-telerik: Unrecognized value '{Value}' for parameter '{Param}' on TelerikButton. " +
+            "Falling back to '{Fallback}'. {Hint}See docs/compat-telerik-mapping.md.",
+            received, paramName, fallback, extraHint is null ? "" : extraHint + " ");
+        return fallback;
+    }
+}
