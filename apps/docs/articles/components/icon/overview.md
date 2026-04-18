@@ -50,4 +50,4 @@ The `SunfishIcon` component renders an SVG icon inside a `<span>` element. It su
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Utility.SunfishIcon)
+- [API Reference](xref:Sunfish.Components.Blazor.Components.Utility.SunfishIcon)

@@ -4,9 +4,9 @@
       "src": [
         {
           "files": [
-            "foundation/Sunfish.Foundation.csproj",
-            "ui-core/Sunfish.UICore.csproj",
-            "ui-adapters-blazor/Sunfish.Components.Blazor.csproj"
+            "foundation/bin/Debug/net10.0/Sunfish.Foundation.dll",
+            "ui-core/bin/Debug/net10.0/Sunfish.UICore.dll",
+            "ui-adapters-blazor/bin/Debug/net10.0/Sunfish.Components.Blazor.dll"
           ],
           "src": "../../packages"
         }

@@ -47,4 +47,4 @@ The `SunfishButton` component renders a `<button>` element styled through the ac
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Buttons.SunfishButton)
+- [API Reference](xref:Sunfish.Components.Blazor.Components.Buttons.SunfishButton)

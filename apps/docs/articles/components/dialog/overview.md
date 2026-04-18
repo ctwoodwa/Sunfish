@@ -48,4 +48,4 @@ The `SunfishDialog` component renders a modal dialog over an overlay backdrop. I
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Feedback.SunfishDialog)
+- [API Reference](xref:Sunfish.Components.Blazor.Components.Feedback.SunfishDialog)

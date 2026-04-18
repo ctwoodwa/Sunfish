@@ -43,4 +43,4 @@ The `SunfishSelect` component renders a native HTML `<select>` element with prov
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Forms.Inputs.SunfishSelect)
+- [API Reference](xref:Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishSelect)

@@ -36,4 +36,4 @@ The `SunfishAlert` component renders a banner that communicates a message to the
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Feedback.SunfishAlert)
+- [API Reference](xref:Sunfish.Components.Blazor.Components.Feedback.SunfishAlert)

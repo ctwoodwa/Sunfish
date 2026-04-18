@@ -87,9 +87,4 @@ Include the SVG sprite (required for icon rendering):
 
 ## Icon browser
 
-Search, filter by category, and copy ready-to-use Blazor or SVG snippets.
-
-<div id="sunfish-icon-browser"></div>
-
-<script>window.MARILO_ICONS_URL = '../sunfish-icons.json';</script>
-<script src="../sunfish-icon-browser.js"></script>
+> Note: The interactive icon browser is planned for a future release. For now, refer to the `Sunfish.Icons` namespace API reference or the kitchen-sink icon demo.

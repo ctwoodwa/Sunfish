@@ -126,7 +126,7 @@ private async Task ReloadFromServer()
 
 ## OnRead-style Server Paging
 
-The AllocationScheduler does not currently expose an `OnRead` event the way `SunfishDataGrid` does. Server-side data loading is handled at the host-page level: fetch into a local collection, then use one of the three approaches above. Track [datagrid OnRead parity](../datagrid/refresh-data.md) for the pattern — if server-paging is added, it will follow the same `GridReadEventArgs<T>` shape with `Filter`, `CancellationToken`, `Data`, and `Total` properties.
+The AllocationScheduler does not currently expose an `OnRead` event the way `SunfishDataGrid` does. Server-side data loading is handled at the host-page level: fetch into a local collection, then use one of the three approaches above. Track [grid OnRead parity](../grid/refresh-data.md) for the pattern — if server-paging is added, it will follow the same `GridReadEventArgs<T>` shape with `Filter`, `CancellationToken`, `Data`, and `Total` properties.
 
 ## Entity Framework Data
 
