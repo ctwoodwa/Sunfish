@@ -23,5 +23,8 @@
          sibling test assembly so chain-computation and parser coverage can be asserted
          directly. -->
     <InternalsVisibleTo Include="tests" />
+    <!-- Pattern C worked-example test assembly needs MacaroonCodec for wire-format
+         encode/decode of bearer credentials across HTTP (spec §10.4, Issue #11). -->
+    <InternalsVisibleTo Include="Sunfish.Federation.PatternC.Tests" />
   </ItemGroup>
 </Project>
