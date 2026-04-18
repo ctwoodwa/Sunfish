@@ -13,9 +13,10 @@
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
+    <PackageVersion Include="NSec.Cryptography" Version="25.4.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.6" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.4.0" />
   </ItemGroup>
 </Project>
