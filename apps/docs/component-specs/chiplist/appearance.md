@@ -1,0 +1,201 @@
+---
+title: Appearance
+page_title: ChipList - Appearance
+description: Appearance settings of the ChipList for Blazor.
+slug: chiplist-appearance
+tags: sunfish,blazor,chiplist,appearance
+published: True
+position: 35
+components: ["chiplist"]
+---
+# ChipList Appearance Settings
+
+You can control the appearance of the chips in the ChipList by setting the following parameters:
+
+* [`FillMode`](#fillmode)
+* [`Rounded`](#rounded)
+* [`Size`](#size)
+
+You can use all of them together to achieve the desired appearance. This article will explain their effect one by one.
+
+Also see how to set [`ThemeColor`](slug:chip-appearance#themecolor) and [`FillMode`](slug:chip-appearance#fillmode) separately for each [chip in the ChipList](slug:chiplist-bound).
+
+## FillMode
+
+The `FillMode` controls how all the chips are filled. You can set it to a member of the `Sunfish.Blazor.ThemeConstants.Chip.FillMode` class:
+
+| Class members | Manual declarations |
+|------------|--------|
+|`Solid` <br /> default value|`solid`|
+|`Outline`|`outline`|
+
+You can also set `FillMode` separately for each chip in the ChipList through a [property of the data item](slug:chiplist-bound).
+
+>caption Using ChipList FillMode
+
+````RAZOR
+@* These are all built-in fill modes *@
+
+@{
+    var fields = typeof(Sunfish.Blazor.ThemeConstants.Chip.FillMode)
+        .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+        | System.Reflection.BindingFlags.FlattenHierarchy)
+        .Where(field => field.IsLiteral && !field.IsInitOnly).ToList();
+
+    foreach (var field in fields)
+    {
+        string fillmode = field.GetValue(null).ToString();
+
+        <div style="float:left; margin: 20px;">
+            <SunfishChipList Data="@ChipListSource"
+                     FillMode="@fillmode">
+            </SunfishChipList>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<ChipModel> ChipListSelectedItems { get; set; } = new List<ChipModel>();
+
+    private List<ChipModel> ChipListSource { get; set; } = new List<ChipModel>()
+    {
+        new ChipModel()
+        {
+            Text = "Audio",
+            Icon = SvgIcon.FileAudio
+        },
+        new ChipModel()
+        {
+            Text = "Video",
+            Icon = SvgIcon.FileVideo
+        }
+    };
+
+    public class ChipModel
+    {
+        public string Text { get; set; }
+        public ISvgIcon Icon { get; set; }
+    }
+}
+````
+
+## Rounded
+
+The `Rounded` parameter applies the `border-radius` CSS rule to the chip to achieve curving of the edges. You can set it to a member of the `Sunfish.Blazor.ThemeConstants.Chip.Rounded` class:
+
+| Class members | Manual declarations |
+|------------|--------|
+|`Small` |`sm`|
+|`Medium` <br /> default value |`md`|
+|`Large`|`lg`|
+|`Full`|`full`|
+
+>caption Using ChipList Rounded
+
+````RAZOR
+@* The built-in rounded edges of the chip.  *@
+
+@{
+    var fields = typeof(Sunfish.Blazor.ThemeConstants.Chip.Rounded)
+        .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+        | System.Reflection.BindingFlags.FlattenHierarchy)
+        .Where(field => field.IsLiteral && !field.IsInitOnly).ToList();
+
+    foreach (var field in fields)
+    {
+        string rounded = field.GetValue(null).ToString();
+
+        <div style="float:left; margin: 20px;">
+            <SunfishChipList Data="@ChipListSource"
+                     Rounded="@rounded">
+            </SunfishChipList>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<ChipModel> ChipListSelectedItems { get; set; } = new List<ChipModel>();
+
+    private List<ChipModel> ChipListSource { get; set; } = new List<ChipModel>()
+    {
+        new ChipModel()
+        {
+            Text = "Audio",
+            Icon = SvgIcon.FileAudio
+        },
+        new ChipModel()
+        {
+            Text = "Video",
+            Icon = SvgIcon.FileVideo
+        }
+    };
+
+    public class ChipModel
+    {
+        public string Text { get; set; }
+        public ISvgIcon Icon { get; set; }
+    }
+}
+````
+
+## Size
+
+You can increase or decrease the size of the chips by setting the `Size` parameter to a member of the `Sunfish.Blazor.ThemeConstants.Chip.Size` class:
+
+| Class members | Manual declarations |
+|---------------|--------|
+| `Small`   |`sm`|
+| `Medium` <br /> default value  |`md`|
+| `Large`   |`lg`|
+
+>caption Using ChipList Size
+
+````RAZOR
+@{
+    var fields = typeof(Sunfish.Blazor.ThemeConstants.Chip.Size)
+        .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+        | System.Reflection.BindingFlags.FlattenHierarchy)
+        .Where(field => field.IsLiteral && !field.IsInitOnly).ToList();
+
+    foreach (var field in fields)
+    {
+        string size = field.GetValue(null).ToString();
+
+        <div style="float:left; margin: 20px;">
+            <SunfishChipList Data="@ChipListSource"
+                     Size="@size">
+            </SunfishChipList>
+        </div>
+    }
+}
+
+@code {
+    private IEnumerable<ChipModel> ChipListSelectedItems { get; set; } = new List<ChipModel>();
+
+    private List<ChipModel> ChipListSource { get; set; } = new List<ChipModel>()
+    {
+        new ChipModel()
+        {
+            Text = "Audio",
+            Icon = SvgIcon.FileAudio
+        },
+        new ChipModel()
+        {
+            Text = "Video",
+            Icon = SvgIcon.FileVideo
+        }
+    };
+
+    public class ChipModel
+    {
+        public string Text { get; set; }
+        public ISvgIcon Icon { get; set; }
+    }
+}
+````
+
+@[template](/_contentTemplates/common/themebuilder-section.md#appearance-themebuilder)
+
+## See Also
+
+* [Set ThemeColor for each chip in the ChipList](slug:chiplist-bound)
