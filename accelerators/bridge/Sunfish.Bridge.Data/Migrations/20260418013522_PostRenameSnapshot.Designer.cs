@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Sunfish.Bridge.Data;
@@ -11,9 +12,11 @@ using Sunfish.Bridge.Data;
 namespace Sunfish.Bridge.Data.Migrations
 {
     [DbContext(typeof(SunfishBridgeDbContext))]
-    partial class SunfishBridgeDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260418013522_PostRenameSnapshot")]
+    partial class PostRenameSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
