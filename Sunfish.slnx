@@ -44,6 +44,37 @@
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
     <Project Path="packages/compat-telerik/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/ingestion/core/">
+    <Project Path="packages/ingestion-core/Sunfish.Ingestion.Core.csproj" />
+    <Project Path="packages/ingestion-core/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/forms/">
+    <Project Path="packages/ingestion-forms/Sunfish.Ingestion.Forms.csproj" />
+    <Project Path="packages/ingestion-forms/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/spreadsheets/">
+    <Project Path="packages/ingestion-spreadsheets/Sunfish.Ingestion.Spreadsheets.csproj" />
+    <Project Path="packages/ingestion-spreadsheets/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/voice/">
+    <Project Path="packages/ingestion-voice/Sunfish.Ingestion.Voice.csproj" />
+    <Project Path="packages/ingestion-voice/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/sensors/">
+    <Project Path="packages/ingestion-sensors/Sunfish.Ingestion.Sensors.csproj" />
+    <Project Path="packages/ingestion-sensors/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/imagery/">
+    <Project Path="packages/ingestion-imagery/Sunfish.Ingestion.Imagery.csproj" />
+    <Project Path="packages/ingestion-imagery/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/satellite/">
+    <Project Path="packages/ingestion-satellite/Sunfish.Ingestion.Satellite.csproj" />
+    <Project Path="packages/ingestion-satellite/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/integration-tests/">
+    <Project Path="packages/ingestion-integration-tests/tests.csproj" />
+  </Folder>
   <Folder Name="/apps/">
     <Project Path="apps/kitchen-sink/Sunfish.KitchenSink.csproj" />
   </Folder>
