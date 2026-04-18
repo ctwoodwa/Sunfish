@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="NSec.Cryptography" />
   </ItemGroup>
   <ItemGroup>
     <!-- Exclude the sibling test project from library compilation -->
