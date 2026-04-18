@@ -132,6 +132,58 @@ public class CapabilityGraphTransitiveMembershipTests
     }
 
     [Fact]
+    public async Task ResourceRootOwner_CanIssueMultipleDelegates()
+    {
+        // The resource root owner (first Delegate issuer) must retain delegation authority
+        // across subsequent Delegate ops on the same resource.
+        var h = BuildGraph();
+        using var root = KeyPair.Generate();
+        using var alice = KeyPair.Generate();
+        using var bob = KeyPair.Generate();
+        var rootSigner = new Ed25519Signer(root);
+        var now = DateTimeOffset.UtcNow;
+
+        var resource = new Resource("r:multi");
+
+        // First delegate (bootstrap) establishes root as the owner.
+        var first = await h.Graph.MutateAsync(await rootSigner.SignAsync<CapabilityOp>(
+            new Sunfish.Foundation.Capabilities.Delegate(alice.PrincipalId, resource, CapabilityAction.Read),
+            now, Guid.NewGuid()));
+        Assert.Equal(MutationKind.Accepted, first.Kind);
+
+        // Second delegate by the same root must be accepted via root-owner continuation.
+        var second = await h.Graph.MutateAsync(await rootSigner.SignAsync<CapabilityOp>(
+            new Sunfish.Foundation.Capabilities.Delegate(bob.PrincipalId, resource, CapabilityAction.Write),
+            now, Guid.NewGuid()));
+        Assert.Equal(MutationKind.Accepted, second.Kind);
+    }
+
+    [Fact]
+    public async Task NonOwner_CannotDelegateAfterBootstrap()
+    {
+        // After the bootstrap delegate, a stranger (non-owner, non-delegate-holder) must be
+        // rejected when attempting to delegate the same resource.
+        var h = BuildGraph();
+        using var root = KeyPair.Generate();
+        using var stranger = KeyPair.Generate();
+        using var victim = KeyPair.Generate();
+        var rootSigner = new Ed25519Signer(root);
+        var strangerSigner = new Ed25519Signer(stranger);
+        var now = DateTimeOffset.UtcNow;
+
+        var resource = new Resource("r:auth");
+
+        await h.Graph.MutateAsync(await rootSigner.SignAsync<CapabilityOp>(
+            new Sunfish.Foundation.Capabilities.Delegate(victim.PrincipalId, resource, CapabilityAction.Read),
+            now, Guid.NewGuid()));
+
+        var attempt = await h.Graph.MutateAsync(await strangerSigner.SignAsync<CapabilityOp>(
+            new Sunfish.Foundation.Capabilities.Delegate(stranger.PrincipalId, resource, CapabilityAction.Write),
+            now, Guid.NewGuid()));
+        Assert.Equal(MutationKind.Rejected, attempt.Kind);
+    }
+
+    [Fact]
     public async Task Individual_HasCapability_OnDelegateToIndividualDirectly()
     {
         // When the delegate target is an Individual (not a group) and the subject equals the

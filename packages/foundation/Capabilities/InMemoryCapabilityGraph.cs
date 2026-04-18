@@ -120,13 +120,15 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
     ///   <item><description><see cref="MintPrincipal"/>: always accepted (Phase B is open-mint;
     ///     Phase E will gate minting).</description></item>
     ///   <item><description><see cref="Delegate"/>: accepted when bootstrapping the resource
-    ///     (no prior Delegate on the resource) OR when the issuer transitively holds the
+    ///     (no prior Delegate on the resource), when the issuer is the resource's root owner
+    ///     (issuer of the first Delegate), OR when the issuer transitively holds the
     ///     <see cref="CapabilityAction.Delegate"/> capability on the resource at
     ///     <c>op.IssuedAt</c>.</description></item>
     ///   <item><description><see cref="Revoke"/>: only the original Delegate issuer may revoke
     ///     their own grant.</description></item>
     ///   <item><description><see cref="AddMember"/> / <see cref="RemoveMember"/>: accepted on
-    ///     bootstrap (no prior membership op for the group) OR when the issuer holds
+    ///     bootstrap (no prior membership op for the group), when the issuer is the group's
+    ///     root admin (issuer of the first membership op), OR when the issuer holds
     ///     <see cref="CapabilityAction.Delegate"/> on the synthetic resource
     ///     <c>group:&lt;groupId&gt;</c>.</description></item>
     /// </list>
@@ -141,6 +143,9 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
             case Delegate d:
                 // Bootstrap: the first Delegate on a resource establishes the root owner.
                 if (!_opLog.Any(existing => existing.Payload is Delegate ed && ed.Resource == d.Resource))
+                    return MutationResult.Accepted;
+                // Root owner (issuer of the first Delegate on the resource) can always delegate.
+                if (IsResourceRootOwner(op.IssuerId, d.Resource))
                     return MutationResult.Accepted;
                 if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, d.Resource, CapabilityAction.Delegate, op.IssuedAt))
                     return MutationResult.Accepted;
@@ -166,6 +171,9 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
                 // Bootstrap: first member-op for the group is allowed (group creator manages it).
                 if (!HasPriorMembershipOp(am.Group))
                     return MutationResult.Accepted;
+                // Group root owner (issuer of the first membership op) retains admin rights.
+                if (IsGroupRootOwner(op.IssuerId, am.Group))
+                    return MutationResult.Accepted;
                 if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, groupResource, CapabilityAction.Delegate, op.IssuedAt))
                     return MutationResult.Accepted;
                 return MutationResult.Rejected("Issuer lacks Delegate capability on group");
@@ -175,6 +183,8 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
             {
                 var groupResource = new Resource($"group:{rm.Group.ToBase64Url()}");
                 if (!HasPriorMembershipOp(rm.Group))
+                    return MutationResult.Accepted;
+                if (IsGroupRootOwner(op.IssuerId, rm.Group))
                     return MutationResult.Accepted;
                 if (CapabilityClosure.HasCapability(_principals, _opLog, op.IssuerId, groupResource, CapabilityAction.Delegate, op.IssuedAt))
                     return MutationResult.Accepted;
@@ -190,6 +200,36 @@ public sealed class InMemoryCapabilityGraph(IOperationVerifier verifier) : ICapa
         {
             if (existing.Payload is AddMember ae && ae.Group.Equals(group)) return true;
             if (existing.Payload is RemoveMember re && re.Group.Equals(group)) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Phase B heuristic: the issuer of the first Delegate on a resource is its root owner and
+    /// retains unbounded delegation authority. Phase E will replace this with an explicit mint.
+    /// </summary>
+    private bool IsResourceRootOwner(PrincipalId candidate, Resource resource)
+    {
+        foreach (var existing in _opLog)
+        {
+            if (existing.Payload is Delegate d && d.Resource == resource)
+                return existing.IssuerId.Equals(candidate);
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Phase B heuristic: the issuer of the first membership op on a group is its root admin
+    /// and retains unbounded membership-management authority.
+    /// </summary>
+    private bool IsGroupRootOwner(PrincipalId candidate, PrincipalId group)
+    {
+        foreach (var existing in _opLog)
+        {
+            if (existing.Payload is AddMember ae && ae.Group.Equals(group))
+                return existing.IssuerId.Equals(candidate);
+            if (existing.Payload is RemoveMember re && re.Group.Equals(group))
+                return existing.IssuerId.Equals(candidate);
         }
         return false;
     }
