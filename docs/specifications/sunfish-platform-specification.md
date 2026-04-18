@@ -2,8 +2,20 @@
 
 **Document type:** Strategic platform specification
 **Audience:** Architects, senior engineers, product leadership, executive stakeholders, partner ecosystem
-**Status:** Draft v0.2 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
-**Last updated:** 2026-04-17
+**Status:** Draft v0.3 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
+**Last updated:** 2026-04-18
+
+**v0.3 changes** — reconciliation pass applied after Platform Phases A / B-blobs / B / C / D shipped in consolidation PR #8. Eighteen tensions between v0.2 spec and the implementation-bound plan artifacts were surfaced during phase execution; each is addressed below with a "v0.3 note" in the affected section, and the full list is captured in **Appendix D — v0.3 Revisions Applied from Shipped Platform Phases**. Summary:
+- §2.4 + §10.2 — canonical-JSON coverage requires string-shaped identity fields; `PrincipalId` and `Signature` now carry JsonConverter round-trippers.
+- §2.5 — federation shipped at the entity level via signed-envelope + head-announcement + change-exchange protocol; spec cross-references the shipped `SyncEnvelope` and `ChangeRecord` shapes.
+- §3.1 + §3.2 + §3.3 — Version DTO shape clarified (structured `VersionId(Entity, Sequence, Hash)`); `AuditAppend` write operation distinguished from `AuditRecord` read shape; `CreateAsync` idempotency rule stated.
+- §3.5 — `Action` renamed to `ActionType` to avoid `System.Action` collision; Obligations are caller-fulfilled (standardized sinks are future work); policy-language fluent API is the shipped authoring surface (parser targets the same `PolicyModel` when added).
+- §3.5 + §10.2 — capability-graph and ReBAC tuple-store are independent primitives; application-layer write-through documented.
+- §3.7 + §7 — blob-boundary threshold pinned at 64 KiB default with per-schema override hint.
+- §8 — hierarchy uses closure-table materialization (vs adjacency list); `SupersededBy` edge semantics on Split added.
+- §10.2.1 — group `PrincipalId` derivation specified (KeyPair-derived or SHA-256 of MintPrincipal op's canonical JSON).
+- §10.2.2 — macaroon `IRootKeyStore` contract names the key-ring primitive.
+- §10.4 — three canonical federation patterns (PM + city, base command + air-gap, contractor portal + macaroon) ship as worked examples; Pattern C is code-ready, A/B gated on IPFS blob-replication (follow-up issues #10, #11).
 
 **v0.2 changes:**
 - §10.2 delegation model revised from Macaroon-primary to Keyhive-inspired group-membership (primary) + Macaroon-style tokens (supplementary). Driven by research in `docs/specifications/research-notes/automerge-evaluation.md`.
@@ -2424,6 +2436,76 @@ Intentionally left open for the RFC process as the kernel implementation progres
 5. Mobile (native iOS/Android) strategy — MAUI, React Native, Flutter, or PWA-first?
 6. React adapter scope and timeline (currently a gap; see §4.9 item 7).
 7. Compliance pack economics — can community-authored packs qualify for paid distribution, or is that reserved for Sunfish + certified partners?
+
+---
+
+## Appendix D — v0.3 Revisions Applied from Shipped Platform Phases
+
+This appendix reconciles the v0.2 spec against what actually shipped in the consolidation PR (#8) spanning Platform Phases A (asset modeling), B-blobs (content-addressed blob store), B (decentralization), C (ingestion pipeline), and D (federation — first wave). Each tension below was flagged by the implementer during phase execution and resolved tactically in code. The resolution is now canonical.
+
+Format: **T{n}** — short title. _Spec section:_ where to look. _Shipped shape:_ the code-authoritative answer. _Rationale:_ the reason.
+
+### Phase A tensions (asset modeling — `Sunfish.Foundation.Assets.*`)
+
+**T1 — Version identity is structured.** _Spec §3.2._ _Shipped shape:_ `VersionId(EntityId Entity, long Sequence, string Hash)` — not a plain GUID wrapper. The sequence is monotonic-per-entity and the hash is the canonical-JSON digest of the version payload. _Rationale:_ version identity participates in both the audit chain (Hash links Prev) and the federation head-announcement protocol (Sequence gives efficient diff-discovery); both require structured fields that a simple GUID wouldn't provide.
+
+**T2 — Branch/Merge deferred to CRDT layer.** _Spec §3.2._ _Shipped shape:_ Phase A in-memory + Postgres backends do not implement `BranchAsync` / `MergeAsync` as first-class operations. Concurrent writes produce divergent lineages reconciled by Phase D's entity-sync protocol (signed change records with parent pointers) plus a consumer-chosen merge operator at the payload level. _Rationale:_ true CRDT merge semantics belong to the capability-aware layer that Phase D federates. The version store is the append-only log; merge is a downstream concern.
+
+**T3 — `AuditAppend` vs `AuditRecord` separation.** _Spec §3.3._ _Shipped shape:_ `IAuditLog.AppendAsync(Instant, string actor, string kind, object payload)` is the write operation; `AuditRecord(AuditId, Instant, Actor, Kind, Payload, Prev, Hash)` is the read record shape. v0.2 spec conflated the two. _Rationale:_ the writer doesn't supply `Prev` or `Hash` — those are computed by the log. Separating call-site ergonomics from stored-record shape matches the spec's §3.3 hash-chain invariant.
+
+**T4 — `CreateAsync` rejects duplicate IDs.** _Spec §3.1._ _Shipped shape:_ `IEntityStore.CreateAsync(EntityId, body)` throws `EntityAlreadyExistsException` if the ID is already present. Callers needing upsert use `PutAsync`. _Rationale:_ silent idempotency on create hides ID collisions; loud failure is easier to reason about at API boundaries.
+
+**T5 — Hierarchy uses temporal closure-table.** _Spec §8, §5.6._ _Shipped shape:_ `hierarchy_edges(ancestor_id, descendant_id, depth, valid_from, valid_to)` — every ancestor-descendant pair at every depth, with interval bounds for temporal queries. _Rationale:_ closure-table is O(1) for "is A an ancestor of B at time T?" whereas an adjacency list requires recursive CTEs. The cost is edge-count blow-up for deep trees (n² in the worst case); Phase A accepts this for the single-node deployments where hierarchies are bounded.
+
+**T6 — `SupersededBy` edge on Split.** _Spec §8.2._ _Shipped shape:_ a building split into Building A and Building B retains the original entity with `SupersededBy = {A, B}` plus two new entities. Queries at time T < split see the original; queries at T ≥ split see the successors. _Rationale:_ the spec mentions "entity A splits into A₁ + A₂" but doesn't define what happens to the original ID. Preserving the original with a forwarding edge lets audit/federation clients look up historical references without following a chain of renames.
+
+### Phase B tensions (decentralization — `Sunfish.Foundation.{Crypto,Capabilities,Macaroons,PolicyEvaluator}`)
+
+**T7 — `ActionType` replaces `Action`.** _Spec §3.5._ _Shipped shape:_ `public readonly record struct ActionType(string Name)` in `Sunfish.Foundation.PolicyEvaluator`; the shipped kernel interface is `IPermissionEvaluator.EvaluateAsync(Subject, ActionType, PolicyResource, ContextEnvelope, CancellationToken)`. _Rationale:_ the v0.2 spec's `Action` type name collides with `System.Action`. Renaming avoided a forest of `using Action = Sunfish.Action;` aliases in consumer code.
+
+**T8 — Root-owner bootstrap is "first-delegator-wins".** _Spec §2.4, §10.2._ _Shipped shape:_ `InMemoryCapabilityGraph.ValidateAuthority` treats the issuer of the first `Delegate` op on a resource as the root owner; subsequent delegates by that issuer are authorized without explicit Delegate-on-Delegate capability chains. This is a Phase B heuristic; Phase E (entity-store integration) will replace it with the resource's entity mint-op as the authoritative root. _Rationale:_ the v0.2 spec implies a root owner exists but doesn't define how ownership is bootstrapped before any delegations. Phase B ships a working heuristic; the long-term answer lives in entity-layer ownership chains.
+
+**T9 — Group `PrincipalId` derivation.** _Spec §10.2.1._ _Shipped shape:_ a group's 32-byte PrincipalId is either (a) a fresh Ed25519 keypair's public key whose private half is discarded, or (b) SHA-256 of the canonical-JSON of the `MintPrincipal(kind=Group)` op. Both shapes produce a 32-byte identifier that fits the same slot as an individual's public key, preserving the "every principal is a 32-byte identity" invariant. Phase B ships (a); (b) is tracked as a future refinement. _Rationale:_ the v0.2 spec says groups have PrincipalIds but doesn't specify derivation. Keeping the 32-byte shape uniform with individuals means consumers don't need to switch on principal-kind.
+
+**T10 — Obligations are caller-fulfilled.** _Spec §3.5._ _Shipped shape:_ `Decision(Kind, Reason, MatchedPolicies, Obligations)` returns obligations; `ReBACPolicyEvaluator` emits empty obligations today. The caller is responsible for fulfilling obligations before acting on the decision. Standardized obligation sinks (notify-owner, log-read, require-2FA) are a future platform phase. _Rationale:_ obligation fulfillment is inherently domain-specific (what does "log-read" mean without a log target?). Returning them in the decision leaves the contract extensible without forcing the evaluator to own delivery.
+
+**T11 — `IRootKeyStore` names the macaroon key-ring.** _Spec §10.2.2._ _Shipped shape:_ `IRootKeyStore.GetRootKeyAsync(location)` returns the 32-byte HMAC root key for a given macaroon location. In-memory dev implementation ships in Phase B; production consumers plug KMS / HSM / OS-keyring. Rotation is by writing a new location (not by swapping keys under a location). _Rationale:_ the v0.2 spec referenced a "key ring" without defining its shape; the `IRootKeyStore` contract makes the primitive concrete.
+
+**T12 — Policy authoring: fluent API first, DSL parser later.** _Spec §3.5, §5.5._ _Shipped shape:_ `PolicyModel.Create().Type("user").Type("property", t => t.Relation("landlord", r => r.DirectUsers("user")))...Build()` is the authoring surface. A future parser targets the same `PolicyModel` type. _Rationale:_ the DSL text in §3.5 is aspirational documentation. Building a parser + model-validation + error messages is 3–5× the work of a fluent API and not on the Phase B critical path. Adding the parser is a non-breaking additive change later.
+
+### Phase C tensions (ingestion pipeline — `Sunfish.Ingestion.*`)
+
+**T13 — The canonical stream shape.** _Spec §7.7._ _Shipped shape:_ every modality's `IIngestionPipeline<TInput>.IngestAsync` returns `IngestionResult<IngestedEntity>` where `IngestedEntity(EntityId, SchemaId, Body, Events, BlobCids)` carries the minted entity + per-operation events + attached blob CIDs. The kernel consumes `(entity, event[])` pairs identically regardless of source. _Rationale:_ the "single canonical stream" promise in §7.7 is realized by the six modality adapters all producing `IngestedEntity`. Forms, spreadsheets, voice, sensors, imagery, and satellite all normalize through this shape.
+
+**T14 — Spreadsheet atomic-batch via CorrelationId.** _Spec §7.2._ _Shipped shape:_ `SpreadsheetIngestionPipeline` produces one `IngestedEntity` per upload whose Events list contains every row. The entity + events share the `IngestionContext.CorrelationId`. True kernel-level transactional batching (spec §7.2's "1,200 units atomically") requires an `entity.create-batch` kernel API that hasn't shipped yet. Until then, atomicity is signaled by CorrelationId; downstream consumers that require full atomicity reject partial applies via correlation-id-gated transactions. _Rationale:_ decoupling the ingestion-layer "batch shape" from the kernel-layer "transaction primitive" lets each ship independently.
+
+**T15 — Blob-boundary default is 64 KiB.** _Spec §3.7, §7._ _Shipped shape:_ binaries larger than 64 KiB route through `IBlobStore.PutAsync` and the entity body carries the resulting `Cid`; smaller binaries stay inline in entity JSON. The threshold is configurable per-schema via a (future) schema-registry descriptor hint; 64 KiB is the default. _Rationale:_ matches the Postgres JSONB page-size heuristic; avoids blob-store churn for small values while ensuring drone imagery and sensor batches always route through content-addressed storage. Voice recordings, images, and sensor batches routinely exceed the threshold; forms and single-field values stay inline.
+
+### Phase D tensions (federation — `Sunfish.Federation.*`)
+
+**T16 — Federation envelope shape.** _Spec §2.5._ _Shipped shape:_ every peer-to-peer message is a `SyncEnvelope(Id, FromPeer, ToPeer, Kind, SentAt, Nonce, Payload, Signature)` signed by the sender's Ed25519 key. The `Payload` often carries a `SignedOperation<T>` from Phase B, producing "double signing" (the payload proves authorship; the envelope proves the transport hop). Entity deltas travel as `SignedOperation<ChangeRecord>`; capability deltas travel as `SignedOperation<CapabilityOp>`. _Rationale:_ v0.2 spec §2.5 says federation is "at the entity level" but didn't specify wire format. The double-signed envelope with enumerated `SyncMessageKind` lets federation libraries route without parsing payloads they don't understand.
+
+**T17 — Capability-graph and ReBAC tuple-store are independent primitives.** _Spec §3.5, §10.2._ _Shipped shape:_ Phase B ships `ICapabilityGraph` (signed capability ops, cryptographic delegation) AND `IRelationTupleStore` (OpenFGA-style ReBAC tuples). Applications that need both keep them in sync via write-through at the application layer — e.g., `RemoveMember(group, member)` on the graph triggers `tupleStore.RemoveAsync(member, "employee", groupResource)`. A future unified bridge (`ICapabilityTupleBridge`) that auto-mirrors graph mutations to tuple deltas is a non-goal for Phase B. _Rationale:_ keeping them independent lets the capability graph focus on cryptographic authorization while the tuple store focuses on relation-based policy evaluation. Coupling them prematurely would force the capability graph to know about OpenFGA tuple semantics.
+
+**T18 — Temporal asymmetry between graph and policy evaluator.** _Spec §3.5._ _Shipped shape:_ `ICapabilityGraph.QueryAsync(subject, resource, action, asOf)` enforces delegation expirations at query-time against `asOf`. `IPermissionEvaluator.EvaluateAsync(..., ContextEnvelope(Now, ...))` receives `Now` but doesn't filter tuples by expiry (tuples currently have no expiry field). Apps that need time-bound ReBAC tuples add an `ExpiresAt` to their tuple shape and filter before calling the evaluator. A future tuple-store enhancement may add first-class `ValidUntil` fields and teach the evaluator to filter on `context.Now`. _Rationale:_ a simple ReBAC model doesn't need temporal semantics; the capability graph's cryptographic delegations do. Decoupling keeps the simple case simple.
+
+### Cross-phase tension
+
+**T-X — Canonical-JSON signature coverage requires string-shaped identity.** _Spec §2.4, §10.2.1._ _Shipped shape:_ `PrincipalId` and `Signature` are `readonly record struct` wrappers over private `byte[]` fields. `System.Text.Json` skips private fields, so `JsonSerializer.SerializeToNode(principalId, typeof(PrincipalId))` returned `{}` under v0.2's shipped code — meaning an attacker could swap a `PrincipalId` inside a `SignedOperation` payload and the outer signature would still verify. Commit `a2cda39` in the consolidation PR added `[JsonConverter]` attributes emitting base64url strings. Canonical JSON now covers the full bytes of every principal and signature field. _Rationale:_ any identity primitive used inside signable payloads must serialize to a stable, content-covering form. `readonly record struct` with only a private byte array is a footgun; the `JsonConverter` pattern is the canonical fix for this shape.
+
+### What this appendix does not revise
+
+- Strategic Phase 4 (Property Management vertical) and Phase 5 (secondary verticals) — no code shipped in these yet; v0.2 text stands.
+- §6 Property Management MVP feature set — unchanged (Bridge accelerator migration is a Phase-9 tactical execution, not a spec revision).
+- §11 Deployment Topology and §12 Risk Assessment — unchanged by the shipped work.
+
+### Open questions deferred to v0.4+
+
+1. Entity-layer ownership chain (Phase E) that replaces Phase B's "first-delegator-wins" root-owner heuristic (T8). Requires entity mint-op primitive with cryptographic ownership attestation.
+2. Schema-registry primitive (alluded to in T15) for per-schema blob-boundary + per-schema validation. Currently schemas are C# classes; runtime-registered JSON-Schema is Phase-E-or-later work.
+3. Obligation fulfillment standardized sinks (T10).
+4. Federation libp2p transport (§3.6 parking lot) — HTTP + TLS is Phase D first pass.
+5. BeeKEM group key agreement (Keyhive confidentiality track) for encrypted federation between peers.
 
 ---
 
