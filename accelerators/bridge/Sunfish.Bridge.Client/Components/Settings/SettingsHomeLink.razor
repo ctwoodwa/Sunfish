@@ -1,0 +1,16 @@
+@inject NavigationManager Nav
+
+<a class="settings-home-link" href="@Href" @onclick="Navigate" @onclick:preventDefault>
+    <SunfishIcon Name="chevron-left" Size="IconSize.Small" Class="settings-home-link__icon" />
+    <span class="settings-home-link__label">@Label</span>
+</a>
+
+@code {
+    [Parameter] public string Href { get; set; } = "/";
+    [Parameter] public string Label { get; set; } = "Home";
+
+    private void Navigate()
+    {
+        Nav.NavigateTo(Href);
+    }
+}

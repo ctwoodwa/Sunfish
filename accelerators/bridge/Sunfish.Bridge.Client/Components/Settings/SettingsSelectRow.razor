@@ -1,0 +1,18 @@
+<div class="settings-select-row">
+    <div class="settings-select-row__text">
+        <div class="settings-select-row__label">@Label</div>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <div class="settings-select-row__description">@Description</div>
+        }
+    </div>
+    <div class="settings-select-row__control">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

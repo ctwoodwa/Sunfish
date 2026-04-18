@@ -1,0 +1,96 @@
+/* ── Theme preset grid ──────────────────────────────────────────────── */
+
+.theme-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.theme-grid__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--marilo-color-text, #1f2328);
+    text-align: left;
+    cursor: pointer;
+}
+
+.theme-grid__item:hover {
+    background: color-mix(in srgb, var(--marilo-color-text, #1f2328) 6%, transparent);
+}
+
+.theme-grid__item--active {
+    background: color-mix(in srgb, var(--marilo-color-primary, #5b6cff) 10%, transparent);
+    font-weight: 500;
+}
+
+.theme-grid__item--active:hover {
+    background: color-mix(in srgb, var(--marilo-color-primary, #5b6cff) 14%, transparent);
+}
+
+.theme-grid__swatch {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.theme-grid__name {
+    flex: 1 1 auto;
+}
+
+.theme-grid__check {
+    flex-shrink: 0;
+    color: var(--marilo-color-primary, #5b6cff);
+}
+
+/* ── Mode toggle ───────────────────────────────────────────────────── */
+
+.mode-toggle {
+    display: flex;
+    gap: 8px;
+}
+
+.mode-toggle__option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: transparent;
+    border: 1px solid var(--marilo-color-border, rgba(0,0,0,0.08));
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--marilo-color-text, #1f2328);
+    cursor: pointer;
+}
+
+.mode-toggle__option:hover {
+    background: color-mix(in srgb, var(--marilo-color-text, #1f2328) 4%, transparent);
+}
+
+.mode-toggle__option--active {
+    background: color-mix(in srgb, var(--marilo-color-primary, #5b6cff) 10%, transparent);
+    border-color: var(--marilo-color-primary, #5b6cff);
+    color: var(--marilo-color-primary, #5b6cff);
+    font-weight: 500;
+}
+
+.mode-toggle__option:focus-visible {
+    outline: 2px solid var(--marilo-color-primary, #5b6cff);
+    outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+    .mode-toggle {
+        flex-direction: column;
+    }
+}

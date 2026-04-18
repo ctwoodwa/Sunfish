@@ -1,0 +1,63 @@
+@page "/risk"
+
+<PageTitle>Risk Register · Sunfish PM</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0 0 4px;">Risk Register</h1>
+        <p style="margin:0;color:#6b7280;">@_risks.Count(r => r.Severity == "High") high · @_risks.Count(r => r.Severity == "Medium") medium · @_risks.Count(r => r.Severity == "Low") low severity risks</p>
+    </div>
+    <SunfishButton Variant="ButtonVariant.Primary">+ Log Risk</SunfishButton>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    @foreach (var (sev, color, count) in new[] { ("High", "#ef4444", _risks.Count(r => r.Severity == "High")), ("Medium", "#f59e0b", _risks.Count(r => r.Severity == "Medium")), ("Low", "#10b981", _risks.Count(r => r.Severity == "Low")) })
+    {
+        <SunfishCard>
+            <SunfishCardBody>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <span style="width:12px;height:12px;border-radius:50%;background:@color;flex-shrink:0;"></span>
+                    <span style="font-size:13px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">@sev</span>
+                </div>
+                <div style="font-size:36px;font-weight:700;color:@color;margin-top:4px;">@count</div>
+            </SunfishCardBody>
+        </SunfishCard>
+    }
+</div>
+
+<SunfishDataGrid TItem="RiskItem"
+                Data="@_risks"
+                Sortable="true"
+                Striped="true"
+                Pageable="true"
+                PageSize="8"
+                FilterMode="GridFilterMode.FilterRow">
+    <SunfishGridColumn TItem="RiskItem" Field="Id" Title="ID" Width="70px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Title" Width="260px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Category" Width="120px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Severity" Width="100px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Probability" Title="Prob." Width="80px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Status" Width="110px" />
+    <SunfishGridColumn TItem="RiskItem" Field="Owner" Width="130px" />
+    <SunfishGridColumn TItem="RiskItem" Field="ReviewDate" Title="Review" Format="MMM d" Width="100px" />
+</SunfishDataGrid>
+
+@code {
+    record RiskItem(string Id, string Title, string Category, string Severity, string Probability, string Status, string Owner, DateTime ReviewDate);
+
+    readonly RiskItem[] _risks =
+    [
+        new("R-201", "Vendor delivery delay impacts Phase 2 start",    "Vendor",     "High",   "Likely",   "Open",     "J. Park",  new DateTime(2026, 4, 15)),
+        new("R-202", "Key architect resigns mid-project",              "Personnel",  "High",   "Unlikely", "Mitigated","A. Chen",  new DateTime(2026, 4, 22)),
+        new("R-203", "Scope creep erodes Phase 2 budget",             "Financial",  "High",   "Possible", "Open",     "A. Chen",  new DateTime(2026, 4, 18)),
+        new("R-204", "Cloud outage during UAT window",                "Technical",  "Medium", "Unlikely", "Open",     "T. Smith", new DateTime(2026, 5, 1)),
+        new("R-205", "Compliance certification delayed",              "Regulatory", "Medium", "Possible", "Open",     "Priya N.", new DateTime(2026, 4, 28)),
+        new("R-206", "Integration API rate limits in production",      "Technical",  "Medium", "Likely",   "Open",     "J. Park",  new DateTime(2026, 4, 20)),
+        new("R-207", "UX contractor capacity reduced",                "Personnel",  "Medium", "Possible", "Mitigated","L. Gomez", new DateTime(2026, 4, 25)),
+        new("R-208", "Data migration errors corrupt seed data",       "Technical",  "Medium", "Unlikely", "Closed",   "T. Smith", new DateTime(2026, 4, 10)),
+        new("R-209", "Third-party library security vulnerability",    "Security",   "Low",    "Unlikely", "Open",     "S. Okonkwo",new DateTime(2026, 5, 8)),
+        new("R-210", "Stakeholder sign-off delayed past go-live",     "Governance", "Low",    "Possible", "Open",     "A. Chen",  new DateTime(2026, 5, 15)),
+        new("R-211", "Browser compatibility issues in legacy env.",   "Technical",  "Low",    "Unlikely", "Open",     "L. Gomez", new DateTime(2026, 5, 5)),
+        new("R-212", "Marketing campaign launch not aligned",         "Marketing",  "Low",    "Possible", "Mitigated","A. Chen",  new DateTime(2026, 5, 20)),
+    ];
+}

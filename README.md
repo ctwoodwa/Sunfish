@@ -25,8 +25,14 @@ Sunfish is organized into layers:
 - **Blocks & Modules**  
   Higher-level building blocks such as dynamic forms, data grids, task boards, and schedulers that encapsulate patterns and cross-cutting logic.
 
-- **Solution Accelerators**  
-  Opinionated, ready-to-extend “starter solutions” (e.g., asset management, project operations) composed from Sunfish building blocks.
+- **Solution Accelerators**
+  Opinionated, ready-to-extend starter solutions composed from Sunfish building blocks.
+  [Bridge](accelerators/bridge/README.md) is the reference implementation - a
+  full-stack property-management app that demonstrates the whole Sunfish stack
+  end-to-end (Blazor Server, .NET Aspire, EF Core + Postgres, DAB, SignalR,
+  Wolverine messaging). See also
+  [accelerators/bridge/ROADMAP.md](accelerators/bridge/ROADMAP.md) and
+  [accelerators/bridge/PLATFORM_ALIGNMENT.md](accelerators/bridge/PLATFORM_ALIGNMENT.md).
 
 ## Repository layout
 
@@ -46,7 +52,7 @@ sunfish/
     docs/                # documentation site + live examples
     kitchen-sink/        # playground for all components and blocks
   accelerators/
-    bridge/              # first solution accelerator — Bridge (in progress)
+    bridge/              # Bridge — reference solution accelerator (full-stack PM app)
   tooling/
     scaffolding-cli/     # Sunfish CLI for scaffolding apps and modules
   _shared/

@@ -1,0 +1,35 @@
+@page "/timeline"
+
+<PageTitle>Timeline · Sunfish PM</PageTitle>
+
+<h1 style="margin:0 0 4px;">Timeline</h1>
+<p style="margin:0 0 20px;color:#6b7280;">Project milestones and phase schedule</p>
+
+<SunfishCard>
+    <SunfishCardBody>
+        <SunfishGantt TItem="GanttTask" Data="@_tasks" TaskListWidth="240" DayWidth="28" />
+    </SunfishCardBody>
+</SunfishCard>
+
+@code {
+    readonly GanttTask[] _tasks =
+    [
+        new() { Title = "Phase 1 – Foundation",   Start = new DateTime(2026, 3, 10), End = new DateTime(2026, 4, 15), PercentComplete = 85, Level = 0 },
+        new() { Title = "API design & contracts",  Start = new DateTime(2026, 3, 10), End = new DateTime(2026, 3, 28), PercentComplete = 100, Level = 1 },
+        new() { Title = "Auth integration",        Start = new DateTime(2026, 3, 20), End = new DateTime(2026, 4, 10), PercentComplete = 70,  Level = 1 },
+        new() { Title = "Data layer + tests",      Start = new DateTime(2026, 3, 25), End = new DateTime(2026, 4, 15), PercentComplete = 40,  Level = 1 },
+
+        new() { Title = "Phase 2 – Features",     Start = new DateTime(2026, 4, 8),  End = new DateTime(2026, 5, 15), PercentComplete = 10, Level = 0, Color = "#6366f1" },
+        new() { Title = "Dashboard UI",            Start = new DateTime(2026, 4, 8),  End = new DateTime(2026, 4, 25), PercentComplete = 20, Level = 1 },
+        new() { Title = "Risk & budget modules",   Start = new DateTime(2026, 4, 15), End = new DateTime(2026, 5, 5),  PercentComplete = 0,  Level = 1 },
+        new() { Title = "Reporting & exports",     Start = new DateTime(2026, 4, 28), End = new DateTime(2026, 5, 15), PercentComplete = 0,  Level = 1 },
+
+        new() { Title = "Alpha Release",           Start = new DateTime(2026, 4, 15), End = new DateTime(2026, 4, 15), PercentComplete = 0, IsMilestone = true, Level = 0, Color = "#f59e0b" },
+        new() { Title = "Beta Launch",             Start = new DateTime(2026, 5, 1),  End = new DateTime(2026, 5, 1),  PercentComplete = 0, IsMilestone = true, Level = 0, Color = "#f59e0b" },
+
+        new() { Title = "Phase 3 – Hardening",    Start = new DateTime(2026, 5, 8),  End = new DateTime(2026, 5, 30), PercentComplete = 0, Level = 0, Color = "#10b981" },
+        new() { Title = "UAT",                     Start = new DateTime(2026, 5, 8),  End = new DateTime(2026, 5, 18), PercentComplete = 0, Level = 1 },
+        new() { Title = "Performance + security",  Start = new DateTime(2026, 5, 15), End = new DateTime(2026, 5, 25), PercentComplete = 0, Level = 1 },
+        new() { Title = "Go-live",                 Start = new DateTime(2026, 5, 30), End = new DateTime(2026, 5, 30), PercentComplete = 0, IsMilestone = true, Level = 0, Color = "#ef4444" },
+    ];
+}
