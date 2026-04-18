@@ -2,8 +2,17 @@
 
 **Document type:** Strategic platform specification
 **Audience:** Architects, senior engineers, product leadership, executive stakeholders, partner ecosystem
-**Status:** Draft v0.3 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
+**Status:** Draft v0.4 — strategic context document (tactical execution tracked in `/docs/superpowers/plans/`)
 **Last updated:** 2026-04-18
+
+**v0.4 changes** — multi-platform host strategy pivot. React adapter dropped; Blazor MAUI Hybrid adopted as the single component surface across web, desktop, and mobile. New Phase 2.5 (multi-platform host family) inserted in the roadmap. `ui-core` gains six opt-in contracts derived from Iced (Rust GUI library) lessons learned. Full detail in **Appendix E** and companion research note `docs/specifications/research-notes/multi-platform-host-evaluation.md`. Summary:
+- §2.3 package architecture revised — `ui-adapters-react` removed; `Sunfish.Hosts.*` family added (web, desktop-maui, desktop-photino, mobile-maui, native-maui).
+- §4.4 Phase 2 deliverable list — React adapter item removed; host-family cross-reference added.
+- §4.5 — NEW — Phase 2.5 Multi-Platform Host Family inserted between current Phase 2 (asset modeling) and Phase 3 (workflow orchestration); section numbers below shift accordingly.
+- §4.10 item 7 — "React adapter absent" gap reframed as "multi-platform hosts not yet shipped; Blazor MAUI Hybrid is the strategy".
+- Appendix C open questions #5 and #6 closed; #5 slot reclaimed for edge/embedded-device UX as a deferred follow-up (Iced-in-Rust is the candidate there).
+- Adoption of six Iced lessons as opt-in `ui-core` contracts (non-breaking, additive): `ISunfishRenderer`, `IClientTask<TMessage>` / `IClientSubscription<TMessage>`, per-widget `Style` records, `StateMachineComponent<TState, TMessage>`, `ISunfishOperation`, `SunfishElement<TMessage>`.
+- OSS gap-filler catalog codified in the research note: Fluxor (state mgmt), CommunityToolkit.Maui (native interop), Shiny.NET (push), SQLite-net-pcl (offline storage), Axe-core-blazor (a11y CI), Photino.Blazor (lightweight desktop shell), MudBlazor / Radzen.Blazor / Blazorise (data-grid depth).
 
 **v0.3 changes** — reconciliation pass applied after Platform Phases A / B-blobs / B / C / D shipped in consolidation PR #8. Eighteen tensions between v0.2 spec and the implementation-bound plan artifacts were surfaced during phase execution; each is addressed below with a "v0.3 note" in the affected section, and the full list is captured in **Appendix D — v0.3 Revisions Applied from Shipped Platform Phases**. Summary:
 - §2.4 + §10.2 — canonical-JSON coverage requires string-shaped identity fields; `PrincipalId` and `Signature` now carry JsonConverter round-trippers.
@@ -93,7 +102,7 @@ Sunfish is to asset management what Linux is to operating systems: a shared kern
 | **Government / regulator** | Receive inspection and compliance reports from regulated entities via federation without mandating a specific vendor; verify cryptographic chain-of-custody |
 | **Systems integrator / consultancy** | Build verticalized solution accelerators on top of Sunfish; charge for domain expertise, not plumbing |
 | **Enterprise architect** | Single substrate for disparate domains (properties, vehicles, equipment, IT assets) with uniform audit and permission semantics |
-| **Developer** | Framework-agnostic contracts (Blazor + React adapters); extend the kernel via well-defined extension points; no proprietary runtime |
+| **Developer** | Framework-agnostic contracts implemented by the Blazor adapter, rendered across web / desktop / mobile via the `Sunfish.Hosts.*` family (Blazor MAUI Hybrid + Photino); extend the kernel via well-defined extension points; no proprietary runtime |
 | **Executive** | Lower TCO vs. Maximo/ServiceNow class systems; avoid vendor lock-in via OSS kernel; defensible data sovereignty story |
 
 ### 1.5 Why Now
@@ -109,7 +118,7 @@ Three forces make 2026–2028 the right window for Sunfish:
 | Capability | Sunfish | Maximo | Pega/Appian | ServiceNow | Aconex | Property SaaS (Yardi/AppFolio) |
 |---|---|---|---|---|---|---|
 | Open-source kernel | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
-| Framework-agnostic UI (Blazor + React) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Multi-platform UI (Blazor MAUI Hybrid across web + desktop + mobile) | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Cryptographic ownership proofs | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Federated authority (no central server) | ✓ | ✗ | ✗ | ✗ | partial | ✗ |
 | Multi-vertical primitives | ✓ | partial | ✓ (generic BPM) | partial | ✗ | ✗ |
@@ -133,7 +142,7 @@ Sunfish is an open-source kernel and a set of composable building blocks for ass
 Sunfish's architecture is governed by seven principles, each chosen to make the kernel survive decades of use across verticals:
 
 1. **Minimal kernel.** The kernel owns six concerns — entity storage, versioning, audit, schema, permissions, events — and nothing else. Workflows, forms, UI, domain logic, and verticalization all extend the kernel; none of them live inside it.
-2. **Framework-agnostic contracts.** Every kernel contract and every composable building block is defined in framework-agnostic C# (the `foundation` and `ui-core` packages). Adapters (Blazor, React, future Angular/Vue) implement the contracts; they do not drive the design.
+2. **Framework-agnostic contracts.** Every kernel contract and every composable building block is defined in framework-agnostic C# (the `foundation` and `ui-core` packages). The Blazor adapter implements the contracts; hosts (`Sunfish.Hosts.Web`, `.Desktop.Maui`, `.Desktop.Photino`, `.Mobile.Maui`) render the same components across web, desktop, and mobile via Blazor MAUI Hybrid. The contracts do not privilege any single renderer — `ISunfishRenderer` (v0.4) is the extension point for future native-widget backends (Avalonia, pure MAUI XAML, Uno Platform).
 3. **Decentralized governance with cryptographic proofs.** Ownership and authority are not centrally recorded. Each entity carries a cryptographic chain of custody that any participant can verify without calling a central server.
 4. **Federated authority.** The kernel does not require a single validation server. A landlord's Sunfish node and a code-enforcement agency's Sunfish node can exchange inspection records and verify them independently.
 5. **Temporal by default.** Every entity is versioned; every edge in the asset hierarchy is time-bounded; every query can be asked "as of" a historical point.
@@ -206,9 +215,9 @@ Sunfish's package architecture is already in motion (Phase 1 complete, Phase 3b 
   Layer 4  FEDERATION              packages/federation        [FUTURE]
            (peer sync, gossip, pull-requests, attestations)
 
-  Layer 5  UI-ADAPTERS             packages/ui-adapters-blazor
-                                   packages/ui-adapters-react [FUTURE]
-           (228 Blazor components today; React adapter gap-analysed)
+  Layer 5  UI-ADAPTER              packages/ui-adapters-blazor
+           (228 Blazor components — single adapter across web + desktop + mobile
+            via Blazor MAUI Hybrid; see Layer 8 Hosts)
 
   Layer 6  BLOCKS                  packages/blocks-forms
                                    packages/blocks-tasks
@@ -221,13 +230,21 @@ Sunfish's package architecture is already in motion (Phase 1 complete, Phase 3b 
   Layer 7  COMPAT                  packages/compat-telerik
            (Telerik-shaped shim; policy-gated)
 
-  Layer 8  ACCELERATORS            accelerators/bridge (PM)
+  Layer 8  HOSTS                   packages/hosts-web                    [renamed in v0.4]
+                                   packages/hosts-desktop-maui           [FUTURE — Phase 2.5]
+                                   packages/hosts-desktop-photino        [FUTURE — Phase 2.5]
+                                   packages/hosts-mobile-maui            [FUTURE — Phase 2.5]
+                                   packages/hosts-native-maui            [FUTURE — optional, pure-MAUI for perf-critical views]
+           (thin platform entry points; Blazor MAUI Hybrid renders the
+            same ui-adapters-blazor components on web, desktop, and mobile)
+
+  Layer 9  ACCELERATORS            accelerators/bridge (PM)
                                    accelerators/base       [FUTURE — military]
                                    accelerators/transit    [FUTURE — rail]
                                    accelerators/schools    [FUTURE]
                                    accelerators/health     [FUTURE]
 
-  Layer 9  APPS                    apps/kitchen-sink
+  Layer 10 APPS                    apps/kitchen-sink
                                    apps/docs
 ```
 
@@ -936,7 +953,47 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 - Two local Sunfish nodes can federate a single entity with signature verification.
 - Attachments (e.g., a 50MB drone tile) are stored content-addressed and deduplicated.
 
-### 4.5 Phase 3 — Workflow Orchestration
+### 4.5 Phase 2.5 — Multi-Platform Host Family (NEW in v0.4)
+
+**Duration estimate:** 3–4 months (after Phase 4 PM-vertical completes; can run in parallel with Phase 3 workflow orchestration).
+
+**Rationale.** v0.2 spec assumed a React adapter would parallel the Blazor adapter to cover non-web UX. v0.4 replaces that with **Blazor MAUI Hybrid**: a single Blazor component codebase hosted via platform-specific entry points for web, Windows, macOS, iOS, and Android. No per-platform component ports, no parity tests, no duplication. Companion research: `docs/specifications/research-notes/multi-platform-host-evaluation.md`.
+
+**In scope:**
+
+- `packages/hosts-web/` — rename and re-home the existing Blazor Server + WASM host for explicit topology. Zero new code.
+- `packages/hosts-desktop-maui/` — MAUI Blazor Hybrid, Windows (WinUI 3, MSIX-packaged) + macOS (Mac Catalyst, .dmg signed). ~100 LOC entry point + DI configuration; all UI from `ui-adapters-blazor`.
+- `packages/hosts-desktop-photino/` — Photino.Blazor variant for lightweight desktop deployments (~30 MB vs MAUI's ~200 MB). Shares `ui-adapters-blazor`; different shell.
+- `packages/hosts-mobile-maui/` — MAUI Blazor Hybrid, iOS (App Store) + Android (Play Store). Entry point + DI + push notification wiring (Shiny.NET or Plugin.Firebase).
+- `packages/hosts-native-maui/` — **optional** — pure MAUI XAML views for performance-critical surfaces (AR camera preview, real-time imagery composite, hardware-integrated views). Does NOT render via WebView; directly consumes `foundation` + `ui-core` services.
+- **`ui-core` additive contracts** — derived from Iced lessons learned, opt-in, non-breaking: `ISunfishRenderer` (pluggable rendering backend alongside CSS class builder), `IClientTask<TMessage>` + `IClientSubscription<TMessage>` (first-class async primitives), per-widget `Style` records (typed replacement for string-based CSS class building), `StateMachineComponent<TState, TMessage>` (opt-in base for complex flows), `ISunfishOperation` (tree-walking focus / scroll / validation queries), `SunfishElement<TMessage>` (typed composition target).
+- **OSS integrations** — Fluxor (Redux-pattern state management); CommunityToolkit.Maui (native-control interop when Blazor-in-WebView isn't enough); Shiny.NET (cross-platform push); SQLite-net-pcl (offline-first storage); Axe-core-blazor (accessibility CI regression). Each ships as a Sunfish-integration adapter package where a thin wrapper improves ergonomics.
+- **Offline-first mobile wiring**: local `IBlobStore` + entity mutations queued for replay via Phase D `SyncEnvelope` on reconnect.
+- **Accessibility CI**: Axe-core regression tests gating the 228 components on every PR.
+- **App-store packaging pipelines**: iOS (TestFlight → App Store) + Android (Internal testing → Play Store). Windows MSIX signing. macOS notarization + .dmg.
+
+**Deliverables:**
+
+- NuGet: `Sunfish.Hosts.Web`, `Sunfish.Hosts.Desktop.Maui`, `Sunfish.Hosts.Desktop.Photino`, `Sunfish.Hosts.Mobile.Maui`, `Sunfish.Hosts.Native.Maui` (optional).
+- Kitchen-sink demo builds and runs on all 5 platforms from one invocation per platform.
+- Bridge accelerator's PM inspection workflow works end-to-end on an iPad + a Windows laptop + a web browser, all peering through Phase D federation.
+- Docs: per-host getting-started guides in `apps/docs/`.
+
+**Exit criteria:**
+
+- All 228 Blazor components render correctly on all 5 platforms; visual regression baseline established against web.
+- Axe-core accessibility CI green on all platforms.
+- Offline-first mobile: inspector can create + edit inspection entities while offline; reconnecting syncs via Phase D without manual intervention.
+- App-store compliance verified (iOS in particular — NSec / libsodium native binary validated).
+
+**Explicit non-goals for Phase 2.5:**
+
+- React / Angular / Vue adapters (dropped — Blazor covers every platform).
+- Rust UI adapter (a Rust kernel crate for mobile-native primitives + canonical-JSON is a separate research track; a Rust UI adapter parallel to Blazor is not warranted — see Appendix C #8).
+- GPU-native rendering in Blazor (if needed, delegate to `hosts-native-maui` views).
+- Edge / embedded-device UX (see Appendix C #8).
+
+### 4.6 Phase 3 — Workflow Orchestration
 
 **Duration estimate:** 3–4 months.
 
@@ -960,7 +1017,7 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 - Workflows survive process restarts (persisted to kernel).
 - Workflow mutations appear in entity audit trails.
 
-### 4.6 Phase 4 — Property Management Vertical
+### 4.7 Phase 4 — Property Management Vertical
 
 **Duration estimate:** 4–6 months after Phase 3.
 
@@ -981,7 +1038,7 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 - All MVP features from §6 pass acceptance criteria.
 - External auditor can verify a 12-month audit trail cryptographically.
 
-### 4.7 Phase 5 — Secondary Verticals (NEW)
+### 4.8 Phase 5 — Secondary Verticals (NEW)
 
 **Duration estimate:** 6–12 months per vertical, parallelizable.
 
@@ -1003,7 +1060,7 @@ Each vertical:
 - Compliance reporting pack.
 - Reference deployment guide.
 
-### 4.8 Roadmap Dependency Graph
+### 4.9 Roadmap Dependency Graph
 
 ```
   Phase 1 (kernel + forms)  ─────┬──────────────────────┐
@@ -1022,7 +1079,7 @@ Each vertical:
                           (parallelizable once core verticals prove the pattern)
 ```
 
-### 4.9 Tensions Between Spec Vision and Current Repo
+### 4.10 Tensions Between Spec Vision and Current Repo
 
 Called out explicitly so readers can calibrate:
 
@@ -1032,7 +1089,7 @@ Called out explicitly so readers can calibrate:
 4. **No declarative schema registry.** Current models are C# classes. The spec envisions JSON-Schema (or similar) registered at runtime with migration scripts.
 5. **The Bridge accelerator is a Blazor demo, not an asset-management system.** It has 14 screens (board, tasks, timeline, etc.) inherited from PmDemo. Turning it into a genuine PM system (§6) requires substantial new work.
 6. **`BusinessLogic/BusinessRuleEngine` exists** in foundation but is not yet an event-driven workflow engine integrated with a kernel event bus. It's a starting scaffold.
-7. **React adapter absent.** Spec assumes Blazor + React parity; repo is Blazor-only. This is already logged as a gap in the migration plan.
+7. **Multi-platform hosts not yet shipped.** v0.2 spec assumed a parallel React adapter for non-Blazor UI contexts. v0.4 closes that gap by dropping React entirely: Blazor MAUI Hybrid covers web + Windows + macOS + iOS + Android from one component codebase, rendered via the `Sunfish.Hosts.*` family (web shipped; desktop-maui / desktop-photino / mobile-maui are Phase 2.5). The work itself is not yet shipped, but the strategy is locked. See §4.5 and `docs/specifications/research-notes/multi-platform-host-evaluation.md`.
 
 These tensions are not blockers — they are the work items that Phases 2, 3, 4, and 5 of this roadmap address. Readers should understand that as of April 2026 the repo is solidly in "Phase 1 execution, late-stage" with the kernel still to come.
 
@@ -1608,7 +1665,7 @@ Sunfish accepts entity data and events from many sources. Each modality is an **
 
 ### 7.1 Traditional Forms
 
-**Mechanism:** A schema-driven form (Blazor via `blocks-forms`; React planned) renders from a JSON Schema + layout descriptor. On submit, the client POSTs a JSON body to `/api/v1/entities`.
+**Mechanism:** A schema-driven form (Blazor via `blocks-forms`, hosted on web / desktop / mobile per Phase 2.5) renders from a JSON Schema + layout descriptor. On submit, the client POSTs a JSON body to `/api/v1/entities`.
 
 **Normalization:** the form block validates against the schema, the kernel re-validates server-side, mints/updates the entity.
 
@@ -2310,7 +2367,7 @@ Segmentation in priority order:
 | `kernel` | MIT / Apache-2.0 | Core substrate; must be fully open for trust |
 | `crypto` | MIT / Apache-2.0 | Security primitives must be auditable |
 | `federation` | MIT / Apache-2.0 | Interoperability depends on openness |
-| `ui-adapters-blazor`, `ui-adapters-react` | MIT | Commoditized surface |
+| `ui-adapters-blazor`, `hosts-*` | MIT | Commoditized surface |
 | `blocks-forms`, `blocks-tasks`, `blocks-scheduling`, `blocks-assets`, `blocks-workflow` | MIT | Standard building blocks |
 | `compat-telerik` | MIT (if policy allows) | Compatibility shim |
 | `blocks-leases`, `blocks-inspections`, `blocks-maintenance` | MIT baseline + commercial compliance packs | Core is open; regulated compliance packs are paid |
@@ -2433,8 +2490,9 @@ Intentionally left open for the RFC process as the kernel implementation progres
 2. Kernel module format — is it an Assembly + manifest (like ASP.NET), an OCI artifact, or a plain NuGet package?
 3. Event bus distribution semantics — Sunfish default (at-least-once) or opt-in stronger (exactly-once via Kafka transactions)?
 4. Post-quantum signature algorithm migration plan.
-5. Mobile (native iOS/Android) strategy — MAUI, React Native, Flutter, or PWA-first?
-6. React adapter scope and timeline (currently a gap; see §4.9 item 7).
+5. ~~Mobile (native iOS/Android) strategy — MAUI, React Native, Flutter, or PWA-first?~~ **Closed in v0.4:** Blazor MAUI Hybrid via `Sunfish.Hosts.Mobile.Maui`. See §4.5.
+6. ~~React adapter scope and timeline (currently a gap; see §4.10 item 7).~~ **Closed in v0.4:** React adapter dropped. Blazor covers all platforms. See §4.5 + v0.4 changes.
+8. Edge / embedded-device UX strategy (rugged field scanners, IoT gateways with small screens, kiosk devices without a full OS). Candidates include Iced-in-Rust (cross-compiled to embedded targets) and Avalonia. Deferred to when an accelerator surfaces concrete requirements; research note `multi-platform-host-evaluation.md` §5 captures the landscape.
 7. Compliance pack economics — can community-authored packs qualify for paid distribution, or is that reserved for Sunfish + certified partners?
 
 ---
@@ -2506,6 +2564,79 @@ Format: **T{n}** — short title. _Spec section:_ where to look. _Shipped shape:
 3. Obligation fulfillment standardized sinks (T10).
 4. Federation libp2p transport (§3.6 parking lot) — HTTP + TLS is Phase D first pass.
 5. BeeKEM group key agreement (Keyhive confidentiality track) for encrypted federation between peers.
+
+---
+
+## Appendix E — v0.4 Multi-Platform Host Strategy
+
+This appendix records the v0.4 pivot in one place, with cross-links to the companion research note. Where the v0.3 appendix (Appendix D) was retroactive — reconciling spec with what shipped — this appendix is prospective: codifying the host strategy before Phase 2.5 ships so the implementation has an authoritative target.
+
+### E.1 — Why React was dropped
+
+v0.2 spec framed the UI layer as "Blazor + React adapters with parity tests". v0.4 deletes the React adapter and all parity language. Reasons, in order of weight:
+
+1. **Duplication is the cost center, not the safety net.** Parity tests guarantee React and Blazor produce identical behavior. They cannot guarantee that identical effort was spent. Every new feature cost 2× developer time; every bug fix cost 2× review. The parity invariant forced the duplication to be equally fresh, not less fresh.
+2. **Blazor MAUI Hybrid eliminates the "React unique" platform targets.** The v0.2 rationale for React was "some hosts want React." After .NET 10 MAUI, a single Blazor component codebase runs on web + Windows + macOS + iOS + Android. The only remaining "React unique" argument is team-hiring (teams with React expertise) — which is a staffing question, not an architecture question. Teams with React skill can consume Sunfish's HTTP + SignalR surface directly from any React app; they don't need a Sunfish-authored React adapter.
+3. **The UI-core contracts stay framework-agnostic in form, not in practice.** `foundation` and `ui-core` remain C# and deliberately shape-neutral. A future Angular / Vue / Svelte / Rust UI adapter could land against those contracts without re-architecting. v0.4 does not foreclose that future — it just stops paying the dual-adapter tax today.
+
+### E.2 — Why Blazor MAUI Hybrid
+
+Three alternatives were evaluated and rejected for Phase 2.5's primary path:
+
+- **Pure MAUI XAML** — maximum performance, maximum platform fidelity, but requires porting all 228 Blazor components to XAML. Unacceptable cost. Retained as `hosts-native-maui` for performance-critical surfaces only.
+- **Avalonia** — cross-platform Skia-based rendering, excellent fidelity, but same porting cost as pure MAUI (no Blazor component hosting out of the box). Stays as a 2027 evaluation candidate if MAUI fidelity proves inadequate.
+- **Uno Platform** — can host Blazor components via its Skia / HTML backends, but adds a third rendering story on top of MAUI + Photino. Phase 2.5 keeps scope tight; Uno is a follow-up if Photino + MAUI together leave gaps.
+
+Blazor MAUI Hybrid wins on: reuses the 228 shipped components verbatim; Microsoft-supported long-term (.NET 10 is an LTS); WebView runtime is universally available; minimal per-host code (~100 LOC entry points); existing FluentUI / Bootstrap / Material providers continue to work identically.
+
+### E.3 — Iced lessons learned applied to ui-core
+
+Six patterns from Iced (Rust GUI library, Elm-architecture-inspired) adopted as additive, opt-in contracts in `ui-core`:
+
+| Contract | Purpose | Iced analog |
+|---|---|---|
+| `ISunfishRenderer` | Pluggable rendering backend alongside `ISunfishCssClassBuilder`. Enables future MAUI-native / Avalonia / Uno renderers without rewriting components. | Iced's `Renderer` type parameter (`wgpu` vs `tiny-skia`) |
+| `IClientTask<TMessage>` | First-class fire-and-report async primitive returnable from component state transitions. | Iced's `Task<Message>` |
+| `IClientSubscription<TMessage>` | Long-running stream-of-messages for real-time UI (sensor feeds, voice transcripts, federation events). | Iced's `Subscription<Message>` |
+| Per-widget `Style` records | Typed replacement for string-based CSS class building. Each widget declares `Sunfish<Widget>Style` with typed fields. | Iced's `TextInput::Style`, `Button::Style` structs |
+| `StateMachineComponent<TState, TMessage>` | Opt-in base component enforcing exhaustive-match message discipline for complex flows. | Iced's `Application` trait + `update(state, message)` |
+| `ISunfishOperation` | Tree-walking operation API for cross-cutting queries (focus, scroll, validation collection). | Iced's `Operation` trait |
+| `SunfishElement<TMessage>` | Typed composition target carrying the message-type parameter. | Iced's `Element<Message, Theme, Renderer>` |
+
+All seven are additive to `ui-core`. The 228 shipped components are not touched. New complex flows (inspection wizards, multi-step forms, real-time dashboards) opt in; simple components stay idiomatic Blazor.
+
+Explicitly **not** adopted: Iced's 11-method `Widget` trait (Blazor's `ComponentBase` already covers it); Iced's `wgpu` GPU rendering (delegate to `hosts-native-maui` if needed).
+
+### E.4 — OSS gap-filler catalog
+
+Phase 2.5 does not re-implement capabilities where mature OSS libraries already solve the problem. The canonical list of dependencies (with integration shape):
+
+| Gap | OSS library | Integration |
+|---|---|---|
+| Lightweight desktop shell | **Photino.Blazor** | Ships as `hosts-desktop-photino`, parallel to `hosts-desktop-maui` |
+| Native-control interop in Blazor Hybrid | **CommunityToolkit.Maui** | Used inline from `hosts-mobile-maui` / `hosts-desktop-maui` for map, biometric, AR surfaces |
+| Redux-pattern state management | **Fluxor** | Sunfish-integration adapter `Sunfish.UICore.Fluxor` wraps Fluxor dispatchers as `IClientTask` / `IClientSubscription` producers |
+| Data-grid depth (pivot, virtualization) | **MudBlazor**, **Radzen.Blazor**, **Blazorise** | Provider pattern — consumers register their choice at DI time, Sunfish's DataGrid delegates |
+| Code / rich-text editing | **BlazorMonaco**, **TinyMCE-Blazor** | Composable into Sunfish form blocks |
+| Desktop hardware APIs | **Microsoft.Maui.Essentials** + **CommunityToolkit.Maui** | Direct use in MAUI hosts |
+| Push notifications | **Shiny.NET** or **Plugin.Firebase** | Paired with Phase D federation for kernel-initiated pushes |
+| Offline-first storage | **SQLite-net-pcl** + local `IBlobStore` | Mobile entity mutations queue for Phase D `SyncEnvelope` replay |
+| Accessibility CI regression | **Axe-core-blazor** | GitHub Actions workflow on every PR against the 228 components |
+
+### E.5 — What v0.4 does NOT do
+
+- **Does not add a Rust UI adapter.** A Rust kernel crate for mobile-native / browser-WASM canonical-JSON + crypto + CID + policy evaluation is a separate research track (see Appendix C #8). A Rust UI adapter parallel to Blazor is not warranted.
+- **Does not foreclose Angular / Vue / Svelte adapters.** The `foundation` + `ui-core` contracts remain framework-agnostic in shape. Phase 2.5 just stops actively maintaining a second adapter.
+- **Does not ship `hosts-native-maui` eagerly.** Pure-MAUI-XAML views are the fallback for performance-critical surfaces; ship them when a concrete need arises, not speculatively.
+- **Does not prescribe the edge / embedded-device story.** Appendix C #8 captures that as a deferred open question.
+
+### E.6 — Open v0.5+ follow-ups
+
+1. **Rust kernel crate** (Appendix C #8) — if mobile-native crypto / canonical-JSON parity with server becomes a concrete pain point, a portable Rust crate compiling to UniFFI (for Swift/Kotlin) and wasm-bindgen (for potential future JS consumers) is the natural next step. Does NOT include UI. Stage 1 cost is ~2 weeks.
+2. **Avalonia / Uno evaluation** — if MAUI fidelity proves inadequate on specific controls or platforms, Avalonia and Uno are the next candidates. Phase 2.5 ships MAUI-primary and defers this.
+3. **Embedded / edge UX** (Appendix C #8) — Iced-in-Rust for rugged field scanners, kiosk devices, IoT gateways with small displays. Parked until an accelerator requires it.
+4. **Mobile-specific auth flows** — biometric + OAuth + device-trust attestation beyond what MAUI Essentials ships. Bridge accelerator will surface concrete requirements.
+5. **Blazor WASM AOT compilation** — .NET 10 AOT is stable but bundle-size + cold-start need benchmarking against production PM-vertical workloads. Phase 2.5 includes this benchmarking as part of the host-web deliverable.
 
 ---
 
