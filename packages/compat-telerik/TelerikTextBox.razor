@@ -1,0 +1,57 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.Forms.Inputs
+@inject ILogger<TelerikTextBox> Logger
+
+<SunfishTextBox Value="@(Value ?? string.Empty)"
+                ValueChanged="OnSunfishValueChanged"
+                Placeholder="Placeholder"
+                Disabled="!Enabled"
+                DebounceDelay="DebounceDelay"
+                @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>Telerik's Label parameter. Sunfish TextBox has no Label surface; forwarded as Placeholder when Placeholder is null.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Debounce delay in ms. Passthrough to Sunfish.</summary>
+    [Parameter] public int DebounceDelay { get; set; }
+
+    /// <summary>Telerik's Width parameter (CSS length). Forwarded via inline style on the outer element.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // If Placeholder is not set but Label is, forward Label as Placeholder (Sunfish has no Label).
+        if (string.IsNullOrEmpty(Placeholder) && !string.IsNullOrEmpty(Label))
+        {
+            Placeholder = Label;
+        }
+
+        if (!string.IsNullOrEmpty(Width))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            var existingStyle = AdditionalAttributes.TryGetValue("style", out var s) ? s?.ToString() ?? "" : "";
+            var merged = string.IsNullOrEmpty(existingStyle)
+                ? $"width: {Width}"
+                : $"{existingStyle}; width: {Width}";
+            AdditionalAttributes["style"] = merged;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(string v)
+    {
+        Value = v;
+        await ValueChanged.InvokeAsync(v);
+    }
+}

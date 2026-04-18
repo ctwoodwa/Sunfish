@@ -1,0 +1,35 @@
+@namespace Sunfish.Compat.Telerik
+@typeparam TItem
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Components.Blazor.Components.Forms.Inputs
+
+<SunfishComboBox TItem="TItem"
+                 TValue="TValue"
+                 Data="Data"
+                 TextField="TextField"
+                 ValueField="ValueField"
+                 Value="Value"
+                 ValueChanged="ValueChanged"
+                 Placeholder="Placeholder"
+                 Enabled="Enabled"
+                 AllowCustom="AllowCustom"
+                 @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public IEnumerable<TItem> Data { get; set; } = Enumerable.Empty<TItem>();
+    [Parameter] public string? TextField { get; set; }
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Telerik's Filterable parameter. Sunfish ComboBox defaults to filterable; retained on the shim for API-shape compatibility.</summary>
+    [Parameter] public bool Filterable { get; set; } = true;
+
+    [Parameter] public bool AllowCustom { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}
