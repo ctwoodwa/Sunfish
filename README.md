@@ -58,6 +58,16 @@ sunfish/
 
 > The directory structure is scaffolded. Packages are being built incrementally as the design matures.
 
+## Try the Kitchen Sink
+
+The fastest way to see Sunfish in action:
+
+```bash
+dotnet run --project apps/kitchen-sink
+```
+
+Open https://localhost:5301 and browse the sidebar. Every Sunfish Blazor component has a demo page. The theme picker (top-right) switches providers and dark/light mode.
+
 ## Example use cases
 
 - Quickly prototype a line-of-business app using open-source Sunfish components, then selectively replace specific grids or charts with commercial equivalents.  
