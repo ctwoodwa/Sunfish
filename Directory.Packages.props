@@ -23,5 +23,9 @@
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="MetadataExtractor" Version="2.9.3" />
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.6" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.6" />
+    <PackageVersion Include="Testcontainers" Version="4.4.0" />
   </ItemGroup>
 </Project>
