@@ -113,7 +113,7 @@ Load all three stylesheets in `App.razor`. The inactive ones start with `disable
     // Apply stored provider immediately to prevent flash of wrong styles (FOUC).
     // This runs synchronously before any Blazor rendering.
     try {
-        var p = localStorage.getItem('marilo:provider');
+        var p = localStorage.getItem('sunfish:provider');
         if (p === 'bootstrap') {
             document.getElementById('sunfish-provider-fluentui').disabled = true;
             document.getElementById('sunfish-provider-bootstrap').disabled = false;
@@ -135,14 +135,14 @@ A small ES module handles persistence and the actual reload:
 // wwwroot/js/provider-switcher.js
 export function setProvider(provider) {
     try {
-        localStorage.setItem('marilo:provider', provider);
+        localStorage.setItem('sunfish:provider', provider);
     } catch { }
     location.reload();
 }
 
 export function getStoredProvider() {
     try {
-        return localStorage.getItem('marilo:provider') || 'fluentui';
+        return localStorage.getItem('sunfish:provider') || 'fluentui';
     } catch {
         return 'fluentui';
     }
