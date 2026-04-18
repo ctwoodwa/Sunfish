@@ -897,6 +897,11 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 
 **Duration estimate:** 4–6 months.
 
+**Status annotations:**
+- **Platform Phase A (asset-modeling primitives)**: SHIPPED 2026-04-17 — `Sunfish.Foundation.Assets` (entity/version stores, hash-chained audit log, temporal hierarchy with Split/Merge/Reparent). Pg-backed reference implementation deferred (follow-up when Docker/Podman is available locally). See `docs/superpowers/plans/2026-04-18-platform-phase-A-asset-modeling.md`.
+- **Platform Phase B (decentralization primitives)**: SHIPPED 2026-04-18 — `Sunfish.Foundation.Crypto` (Ed25519 signer/verifier + `SignedOperation<T>` envelope + canonical-JSON), `Sunfish.Foundation.Capabilities` (Keyhive-inspired capability graph with transitive closure / expiration / cycle safety), `Sunfish.Foundation.Macaroons` (HMAC-SHA256 bearer tokens with first-party caveats and attenuation), `Sunfish.Foundation.PolicyEvaluator` (OpenFGA-style ReBAC with fluent `PolicyModel` builder and `IRelationTupleStore` bridge), plus `AddSunfishDecentralization()` DI extension with dev-key-material gate. `IOperationSigner` is production consumer's responsibility (KMS/HSM/OS-keyring). Federation (peer sync), BeeKEM group-key agreement, signed entity writes, and parsed OpenFGA DSL are deferred. See `docs/superpowers/plans/2026-04-18-platform-phase-B-decentralization.md`.
+- **Platform Phase B-blobs (content-addressed blob store)**: SHIPPED 2026-04-17 — `Sunfish.Foundation.Blobs` (`Cid` v1 / raw / SHA-256 / base32-lowercase + `IBlobStore` + `FileSystemBlobStore` with two-level sharding and atomic writes). S3/IPFS backends are follow-ups.
+
 **In scope:**
 - **Asset hierarchy primitive**: temporal parent-child edges, splits, merges, re-parenting (§8).
 - **Hierarchy block** (`packages/blocks-assets`): tree/graph UI for browsing and editing asset hierarchies.
