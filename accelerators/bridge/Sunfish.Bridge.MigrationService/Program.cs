@@ -11,7 +11,7 @@ builder.AddServiceDefaults();
 builder.Services.AddScoped<ITenantContext, MigrationTenantContext>();
 
 builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("pmdemodb")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("sunfishbridgedb")));
 builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
 
 builder.Services.AddHostedService<MigrationWorker>();

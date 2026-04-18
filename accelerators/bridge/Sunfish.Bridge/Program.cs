@@ -1,11 +1,11 @@
 using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Extensions;
-using Sunfish.Components.Blazor.Providers.Bootstrap;
-using Sunfish.Components.Blazor.Providers.Bootstrap.Extensions;
-using Sunfish.Components.Blazor.Providers.FluentUI;
-using Sunfish.Components.Blazor.Providers.FluentUI.Extensions;
-using Sunfish.Components.Blazor.Providers.Material;
-using Sunfish.Components.Blazor.Providers.Material.Extensions;
+using Sunfish.Providers.Bootstrap;
+using Sunfish.Providers.Bootstrap.Extensions;
+using Sunfish.Providers.FluentUI;
+using Sunfish.Providers.FluentUI.Extensions;
+using Sunfish.Providers.Material;
+using Sunfish.Providers.Material.Extensions;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
@@ -36,14 +36,14 @@ if (builder.Environment.IsDevelopment())
 // which forbids scoped constructor dependencies. EnrichNpgsqlDbContext layers
 // Aspire's instrumentation, health checks, and retry on top.
 builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("pmdemodb")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("sunfishbridgedb")));
 builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
 
-builder.AddRedisOutputCache("pmdemo-redis");
+builder.AddRedisOutputCache("bridge-redis");
 
 // SignalR with Redis backplane.
 builder.Services.AddSignalR()
-    .AddStackExchangeRedis(builder.Configuration.GetConnectionString("pmdemo-redis") ?? "localhost");
+    .AddStackExchangeRedis(builder.Configuration.GetConnectionString("bridge-redis") ?? "localhost");
 
 // Feature flags.
 builder.Services.AddFeatureManagement();
@@ -51,13 +51,13 @@ builder.Services.AddFeatureManagement();
 // Wolverine messaging — RabbitMQ transport, Postgres outbox.
 builder.Host.UseWolverine(opts =>
 {
-    var rabbitConn = builder.Configuration.GetConnectionString("pmdemo-rabbit");
+    var rabbitConn = builder.Configuration.GetConnectionString("bridge-rabbit");
     if (!string.IsNullOrWhiteSpace(rabbitConn))
     {
         opts.UseRabbitMq(rabbitConn).AutoProvision();
     }
 
-    var pgConn = builder.Configuration.GetConnectionString("pmdemodb");
+    var pgConn = builder.Configuration.GetConnectionString("sunfishbridgedb");
     if (!string.IsNullOrWhiteSpace(pgConn))
     {
         opts.PersistMessagesWithPostgresql(pgConn, "wolverine");
@@ -123,7 +123,7 @@ app.UseAuthorization();
 
 app.MapDefaultEndpoints();
 app.MapHealthChecks("/health");
-app.MapHub<BridgeHub>("/hubs/pmdemo");
+app.MapHub<BridgeHub>("/hubs/bridge");
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()

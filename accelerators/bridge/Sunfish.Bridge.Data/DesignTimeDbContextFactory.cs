@@ -22,7 +22,7 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Sun
     public SunfishBridgeDbContext CreateDbContext(string[] args)
     {
         var options = new DbContextOptionsBuilder<SunfishBridgeDbContext>()
-            .UseNpgsql("Host=localhost;Database=pmdemodb;Username=postgres;Password=postgres")
+            .UseNpgsql("Host=localhost;Database=sunfishbridgedb;Username=postgres;Password=postgres")
             .Options;
         return new SunfishBridgeDbContext(options, new DesignTimeTenant());
     }

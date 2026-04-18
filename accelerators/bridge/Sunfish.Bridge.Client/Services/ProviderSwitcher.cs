@@ -24,15 +24,15 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     public event Action? OnProviderChanged;
 
     public ProviderSwitcher(
-        Sunfish.Components.Blazor.Providers.FluentUI.FluentUICssProvider fluentCss,
-        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapCssProvider bootstrapCss,
-        Sunfish.Components.Blazor.Providers.Material.MaterialCssProvider materialCss,
-        Sunfish.Components.Blazor.Providers.FluentUI.FluentUIIconProvider fluentIcons,
-        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapIconProvider bootstrapIcons,
-        Sunfish.Components.Blazor.Providers.Material.MaterialIconProvider materialIcons,
-        Sunfish.Components.Blazor.Providers.FluentUI.FluentUIJsInterop fluentJs,
-        Sunfish.Components.Blazor.Providers.Bootstrap.BootstrapJsInterop bootstrapJs,
-        Sunfish.Components.Blazor.Providers.Material.MaterialJsInterop materialJs)
+        Sunfish.Providers.FluentUI.FluentUICssProvider fluentCss,
+        Sunfish.Providers.Bootstrap.BootstrapCssProvider bootstrapCss,
+        Sunfish.Providers.Material.MaterialCssProvider materialCss,
+        Sunfish.Providers.FluentUI.FluentUIIconProvider fluentIcons,
+        Sunfish.Providers.Bootstrap.BootstrapIconProvider bootstrapIcons,
+        Sunfish.Providers.Material.MaterialIconProvider materialIcons,
+        Sunfish.Providers.FluentUI.FluentUIJsInterop fluentJs,
+        Sunfish.Providers.Bootstrap.BootstrapJsInterop bootstrapJs,
+        Sunfish.Providers.Material.MaterialJsInterop materialJs)
     {
         _fluentCss = fluentCss;
         _bootstrapCss = bootstrapCss;

@@ -8,7 +8,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsAspireHost>true</IsAspireHost>
-    <UserSecretsId>marilo-pmdemo-apphost</UserSecretsId>
+    <UserSecretsId>sunfish-bridge-apphost</UserSecretsId>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsPackable>false</IsPackable>
   </PropertyGroup>

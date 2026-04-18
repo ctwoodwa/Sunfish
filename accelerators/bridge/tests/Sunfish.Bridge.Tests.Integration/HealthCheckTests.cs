@@ -17,8 +17,8 @@ public class HealthCheckTests
         await using var app = await appHost.BuildAsync();
         await app.StartAsync();
 
-        var http = app.CreateHttpClient("pmdemo-web");
-        await app.ResourceNotifications.WaitForResourceHealthyAsync("pmdemo-web");
+        var http = app.CreateHttpClient("bridge-web");
+        await app.ResourceNotifications.WaitForResourceHealthyAsync("bridge-web");
 
         var response = await http.GetAsync("/health");
         Assert.True(response.IsSuccessStatusCode);
