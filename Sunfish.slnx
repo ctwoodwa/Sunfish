@@ -44,4 +44,7 @@
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
     <Project Path="packages/compat-telerik/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/apps/">
+    <Project Path="apps/kitchen-sink/Sunfish.KitchenSink.csproj" />
+  </Folder>
 </Solution>
