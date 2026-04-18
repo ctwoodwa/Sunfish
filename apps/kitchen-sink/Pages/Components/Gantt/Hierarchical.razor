@@ -1,0 +1,135 @@
+@page "/components/gantt/hierarchical"
+@layout ComponentDemoLayout
+
+<PageSection Title="Hierarchical Data">
+    <DemoSection Title="Three-Level Hierarchy" Description="Demonstrates three levels of nesting: projects contain phases, and phases contain individual tasks. Use the expand/collapse chevrons to navigate the tree. The ParentId field links children to parents at any depth." Code="@_hierarchicalCode">
+        <div class="demo-row">
+            <SunfishGantt TItem="HierarchicalTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="520px"
+                         Width="100%"
+                         @bind-View="_currentView">
+                <GanttColumns>
+                    <GanttColumn TItem="HierarchicalTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="250px"
+                                 Title="Name" />
+                    <GanttColumn TItem="HierarchicalTask"
+                                 Field="PercentComplete"
+                                 Width="70px"
+                                 Title="Progress"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right" />
+                    <GanttColumn TItem="HierarchicalTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="HierarchicalTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Month;
+
+    private class HierarchicalTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<HierarchicalTask> _tasks = GenerateData();
+
+    private static List<HierarchicalTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<HierarchicalTask>
+        {
+            // Project A
+            new() { Id = "A", Title = "Website Redesign", Start = today, End = today.AddDays(45), PercentComplete = 35 },
+
+            // Phase A.1
+            new() { Id = "A.1", ParentId = "A", Title = "Research Phase", Start = today, End = today.AddDays(14), PercentComplete = 90 },
+            new() { Id = "A.1.1", ParentId = "A.1", Title = "User Interviews", Start = today, End = today.AddDays(5), PercentComplete = 100 },
+            new() { Id = "A.1.2", ParentId = "A.1", Title = "Competitor Analysis", Start = today.AddDays(3), End = today.AddDays(8), PercentComplete = 100 },
+            new() { Id = "A.1.3", ParentId = "A.1", Title = "Analytics Review", Start = today.AddDays(8), End = today.AddDays(14), PercentComplete = 70 },
+
+            // Phase A.2
+            new() { Id = "A.2", ParentId = "A", Title = "Design Phase", Start = today.AddDays(14), End = today.AddDays(30), PercentComplete = 20 },
+            new() { Id = "A.2.1", ParentId = "A.2", Title = "Information Architecture", Start = today.AddDays(14), End = today.AddDays(18), PercentComplete = 60 },
+            new() { Id = "A.2.2", ParentId = "A.2", Title = "Visual Design", Start = today.AddDays(18), End = today.AddDays(25), PercentComplete = 10 },
+            new() { Id = "A.2.3", ParentId = "A.2", Title = "Prototype", Start = today.AddDays(25), End = today.AddDays(30), PercentComplete = 0 },
+
+            // Phase A.3
+            new() { Id = "A.3", ParentId = "A", Title = "Build Phase", Start = today.AddDays(30), End = today.AddDays(45), PercentComplete = 0 },
+            new() { Id = "A.3.1", ParentId = "A.3", Title = "Frontend Build", Start = today.AddDays(30), End = today.AddDays(38), PercentComplete = 0 },
+            new() { Id = "A.3.2", ParentId = "A.3", Title = "CMS Integration", Start = today.AddDays(36), End = today.AddDays(42), PercentComplete = 0 },
+            new() { Id = "A.3.3", ParentId = "A.3", Title = "QA and Launch", Start = today.AddDays(42), End = today.AddDays(45), PercentComplete = 0 },
+
+            // Project B
+            new() { Id = "B", Title = "Mobile App v2", Start = today.AddDays(5), End = today.AddDays(50), PercentComplete = 10 },
+
+            // Phase B.1
+            new() { Id = "B.1", ParentId = "B", Title = "Planning", Start = today.AddDays(5), End = today.AddDays(15), PercentComplete = 50 },
+            new() { Id = "B.1.1", ParentId = "B.1", Title = "Feature Prioritization", Start = today.AddDays(5), End = today.AddDays(10), PercentComplete = 100 },
+            new() { Id = "B.1.2", ParentId = "B.1", Title = "Technical Spike", Start = today.AddDays(10), End = today.AddDays(15), PercentComplete = 0 },
+
+            // Phase B.2
+            new() { Id = "B.2", ParentId = "B", Title = "Development", Start = today.AddDays(15), End = today.AddDays(40), PercentComplete = 0 },
+            new() { Id = "B.2.1", ParentId = "B.2", Title = "Core Features", Start = today.AddDays(15), End = today.AddDays(28), PercentComplete = 0 },
+            new() { Id = "B.2.2", ParentId = "B.2", Title = "Push Notifications", Start = today.AddDays(28), End = today.AddDays(35), PercentComplete = 0 },
+            new() { Id = "B.2.3", ParentId = "B.2", Title = "Offline Mode", Start = today.AddDays(33), End = today.AddDays(40), PercentComplete = 0 },
+
+            // Phase B.3
+            new() { Id = "B.3", ParentId = "B", Title = "Release", Start = today.AddDays(40), End = today.AddDays(50), PercentComplete = 0 },
+            new() { Id = "B.3.1", ParentId = "B.3", Title = "Beta Testing", Start = today.AddDays(40), End = today.AddDays(46), PercentComplete = 0 },
+            new() { Id = "B.3.2", ParentId = "B.3", Title = "App Store Submission", Start = today.AddDays(46), End = today.AddDays(50), PercentComplete = 0 },
+        };
+    }
+
+    private const string _hierarchicalCode = @"<SunfishGantt TItem=""HierarchicalTask""
+             Data=""@_tasks""
+             IdField=""Id""
+             ParentIdField=""ParentId""
+             Height=""520px""
+             @bind-View=""_currentView"">
+    <GanttColumns>
+        <GanttColumn TItem=""HierarchicalTask""
+                     Field=""Title""
+                     Expandable=""true""
+                     Width=""250px""
+                     Title=""Name"" />
+        <GanttColumn TItem=""HierarchicalTask""
+                     Field=""PercentComplete""
+                     Width=""70px""
+                     Title=""Progress""
+                     DisplayFormat=""{0:N0}%""
+                     TextAlign=""right"" />
+    </GanttColumns>
+    <GanttViews>
+        <GanttWeekView />
+        <GanttMonthView />
+    </GanttViews>
+</SunfishGantt>
+
+// Model uses string ParentId — any depth is supported.
+// Level 1: Project (ParentId = null)
+// Level 2: Phase (ParentId = project Id)
+// Level 3: Task (ParentId = phase Id)";
+}

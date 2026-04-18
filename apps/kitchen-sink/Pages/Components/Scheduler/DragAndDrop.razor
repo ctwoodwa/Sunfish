@@ -1,0 +1,105 @@
+@page "/components/scheduler/drag-and-drop"
+@layout ComponentDemoLayout
+
+<PageSection Title="Drag & Drop">
+    <DemoSection Title="Drag-to-Create" Description="Click and drag on empty time slots in Day or Week view to create a new appointment. The selected range highlights as you drag.">
+        <SunfishScheduler @bind-CurrentDate="_createDate"
+                         View="SchedulerView.Day"
+                         Appointments="_createAppointments"
+                         Editable="true"
+                         StartHour="8"
+                         EndHour="18"
+                         OnAppointmentCreate="HandleCreate"
+                         Height="500px" />
+        @if (!string.IsNullOrEmpty(_createMessage))
+        {
+            <p style="margin-top: 8px; color: var(--sf-color-text-secondary);">@_createMessage</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Drag-to-Reschedule" Description="Drag an existing appointment to a new time slot to reschedule it. The appointment's duration is preserved.">
+        <SunfishScheduler @bind-CurrentDate="_rescheduleDate"
+                         View="SchedulerView.Day"
+                         Appointments="_rescheduleAppointments"
+                         Editable="true"
+                         StartHour="8"
+                         EndHour="18"
+                         OnUpdate="HandleReschedule"
+                         Height="500px" />
+        @if (!string.IsNullOrEmpty(_rescheduleMessage))
+        {
+            <p style="margin-top: 8px; color: var(--sf-color-text-secondary);">@_rescheduleMessage</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="All-Day Drag" Description="All-day appointments can be dragged to other days within the all-day row. They cannot be dropped on timed slots.">
+        <SunfishScheduler @bind-CurrentDate="_allDayDate"
+                         View="SchedulerView.Week"
+                         Appointments="_allDayAppointments"
+                         Editable="true"
+                         StartHour="8"
+                         EndHour="18"
+                         OnUpdate="HandleAllDayReschedule"
+                         Height="500px" />
+        @if (!string.IsNullOrEmpty(_allDayMessage))
+        {
+            <p style="margin-top: 8px; color: var(--sf-color-text-secondary);">@_allDayMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    // ── Drag-to-Create ──────────────────────────────────────────────
+    private DateTime _createDate = new(2026, 4, 13);
+    private string? _createMessage;
+    private List<SchedulerAppointment> _createAppointments = new()
+    {
+        new() { Title = "Existing Meeting", Start = new(2026, 4, 13, 10, 0, 0), End = new(2026, 4, 13, 11, 0, 0), Color = "#0078d4" }
+    };
+
+    private void HandleCreate(SchedulerAppointment appt)
+    {
+        appt.Title = $"New ({appt.Start:HH:mm}-{appt.End:HH:mm})";
+        appt.Color = "#107c10";
+        _createAppointments = new(_createAppointments) { appt };
+        _createMessage = $"Created: {appt.Title} on {appt.Start:MMM d}";
+    }
+
+    // ── Drag-to-Reschedule ──────────────────────────────────────────
+    private DateTime _rescheduleDate = new(2026, 4, 13);
+    private string? _rescheduleMessage;
+    private List<SchedulerAppointment> _rescheduleAppointments = GenerateRescheduleData();
+
+    private void HandleReschedule(SchedulerAppointment updated)
+    {
+        _rescheduleAppointments = _rescheduleAppointments
+            .Select(a => a.Id == updated.Id ? updated : a)
+            .ToList();
+        _rescheduleMessage = $"Moved '{updated.Title}' to {updated.Start:HH:mm}-{updated.End:HH:mm}";
+    }
+
+    private static List<SchedulerAppointment> GenerateRescheduleData() => new()
+    {
+        new() { Title = "Sprint Planning", Start = new(2026, 4, 13, 9, 0, 0), End = new(2026, 4, 13, 11, 0, 0), Color = "#0078d4" },
+        new() { Title = "Design Review", Start = new(2026, 4, 13, 14, 0, 0), End = new(2026, 4, 13, 15, 30, 0), Color = "#d83b01" },
+        new() { Title = "Standup", Start = new(2026, 4, 13, 8, 0, 0), End = new(2026, 4, 13, 8, 30, 0), Color = "#107c10" }
+    };
+
+    // ── All-Day Drag ────────────────────────────────────────────────
+    private DateTime _allDayDate = new(2026, 4, 13);
+    private string? _allDayMessage;
+    private List<SchedulerAppointment> _allDayAppointments = new()
+    {
+        new() { Title = "Conference", Start = new(2026, 4, 14), End = new(2026, 4, 15), IsAllDay = true, Color = "#0078d4" },
+        new() { Title = "Team Offsite", Start = new(2026, 4, 16), End = new(2026, 4, 17), IsAllDay = true, Color = "#d83b01" },
+        new() { Title = "Morning Sync", Start = new(2026, 4, 14, 9, 0, 0), End = new(2026, 4, 14, 9, 30, 0), Color = "#107c10" }
+    };
+
+    private void HandleAllDayReschedule(SchedulerAppointment updated)
+    {
+        _allDayAppointments = _allDayAppointments
+            .Select(a => a.Id == updated.Id ? updated : a)
+            .ToList();
+        _allDayMessage = $"Moved '{updated.Title}' to {updated.Start:MMM d}";
+    }
+}

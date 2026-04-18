@@ -1,0 +1,71 @@
+@page "/components/Alert"
+@page "/components/Alert/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Alerts display brief, important messages to the user." Code="@_basicCode">
+        <SunfishAlert Severity="AlertSeverity.Info">This is an informational alert.</SunfishAlert>
+    </DemoSection>
+
+    <DemoSection Title="Dismissible" Description="Alerts can be made dismissible to let users close them." Code="@_dismissibleCode">
+        <SunfishAlert Severity="AlertSeverity.Info" IsDismissible="true" OnDismiss="@(() => {})">
+            This alert can be dismissed.
+        </SunfishAlert>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Severities" Description="Alerts support multiple severity levels to convey the importance of the message." Code="@_severitiesCode">
+        <SunfishAlert Severity="AlertSeverity.Info">This is an info alert.</SunfishAlert>
+        <SunfishAlert Severity="AlertSeverity.Success">Operation completed successfully.</SunfishAlert>
+        <SunfishAlert Severity="AlertSeverity.Warning">Please review your settings.</SunfishAlert>
+        <SunfishAlert Severity="AlertSeverity.Critical">A critical error has occurred.</SunfishAlert>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private const string _basicCode =
+        "<SunfishAlert Severity=\"AlertSeverity.Info\">This is an informational alert.</SunfishAlert>";
+
+    private const string _dismissibleCode =
+        "<SunfishAlert Severity=\"AlertSeverity.Info\" IsDismissible=\"true\" OnDismiss=\"@(() => {})\">\n" +
+        "    This alert can be dismissed.\n" +
+        "</SunfishAlert>";
+
+    // Appearance
+    private const string _severitiesCode =
+        "<SunfishAlert Severity=\"AlertSeverity.Info\">This is an info alert.</SunfishAlert>\n" +
+        "<SunfishAlert Severity=\"AlertSeverity.Success\">Operation completed successfully.</SunfishAlert>\n" +
+        "<SunfishAlert Severity=\"AlertSeverity.Warning\">Please review your settings.</SunfishAlert>\n" +
+        "<SunfishAlert Severity=\"AlertSeverity.Critical\">A critical error has occurred.</SunfishAlert>";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the dismiss button if the alert is dismissible"),
+        ("Enter", "Activates the dismiss button to close the alert"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"alert\"", "Applied for critical alerts that require immediate attention"),
+        ("role=\"status\"", "Applied for informational alerts that do not require immediate action"),
+        ("aria-live=\"assertive\"", "Used with role=\"alert\" to interrupt screen reader announcements"),
+        ("aria-live=\"polite\"", "Used with role=\"status\" to announce at the next pause"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Alerts with role=\"alert\" are announced immediately when they appear.",
+        "Dismissible alerts have a close button announced as \"Close\" or \"Dismiss\".",
+        "The severity level is conveyed through the alert content, not just color.",
+    ];
+}

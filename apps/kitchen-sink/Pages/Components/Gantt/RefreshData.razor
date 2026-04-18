@@ -1,0 +1,144 @@
+@page "/components/gantt/refresh-data"
+@layout ComponentDemoLayout
+
+<PageSection Title="Refresh Data">
+    <DemoSection Title="Rebind and Reference Change" Description="The Gantt detects data changes via reference equality. Assign a new list to trigger automatic refresh, or call Rebind() after in-place mutations. Both buttons below add a task: 'Add (New Reference)' creates a new list, while 'Add (Rebind)' mutates the existing list and calls Rebind()." Code="@_refreshCode">
+        <div class="demo-controls" style="margin-bottom: 8px;">
+            <button class="sf-btn" @onclick="AddTaskNewRef">+ Add Task (New Reference)</button>
+            <button class="sf-btn" @onclick="AddTaskRebind">+ Add Task (Rebind)</button>
+            <button class="sf-btn" @onclick="RemoveFirst">- Remove First Task</button>
+            <span style="margin-left: 16px; color: var(--sf-text-secondary);">
+                Tasks: <strong>@_tasks.Count</strong> | Last action: <strong>@_lastAction</strong>
+            </span>
+        </div>
+        <div class="demo-row">
+            <SunfishGantt @ref="_ganttRef"
+                         TItem="RefreshTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="400px"
+                         Width="100%"
+                         @bind-View="_currentView">
+                <GanttColumns>
+                    <GanttColumn TItem="RefreshTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task" />
+                    <GanttColumn TItem="RefreshTask"
+                                 Field="PercentComplete"
+                                 Width="80px"
+                                 Title="Progress"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right" />
+                    <GanttColumn TItem="RefreshTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="RefreshTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private SunfishGantt<RefreshTask>? _ganttRef;
+    private GanttView _currentView = GanttView.Week;
+    private string _lastAction = "(none)";
+    private int _nextId = 100;
+
+    private class RefreshTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<RefreshTask> _tasks = GenerateData();
+
+    private static List<RefreshTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<RefreshTask>
+        {
+            new() { Id = "1", Title = "Sprint 1", Start = today, End = today.AddDays(14), PercentComplete = 70 },
+            new() { Id = "1.1", ParentId = "1", Title = "Setup", Start = today, End = today.AddDays(3), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Core Module", Start = today.AddDays(3), End = today.AddDays(10), PercentComplete = 50 },
+            new() { Id = "1.3", ParentId = "1", Title = "Code Review", Start = today.AddDays(10), End = today.AddDays(14), PercentComplete = 0 },
+
+            new() { Id = "2", Title = "Sprint 2", Start = today.AddDays(14), End = today.AddDays(28), PercentComplete = 0 },
+            new() { Id = "2.1", ParentId = "2", Title = "Feature A", Start = today.AddDays(14), End = today.AddDays(21), PercentComplete = 0 },
+            new() { Id = "2.2", ParentId = "2", Title = "Feature B", Start = today.AddDays(21), End = today.AddDays(28), PercentComplete = 0 },
+        };
+    }
+
+    private void AddTaskNewRef()
+    {
+        var id = (_nextId++).ToString();
+        var today = DateTime.Today;
+        _tasks.Add(new RefreshTask
+        {
+            Id = id,
+            Title = $"New Task {id}",
+            Start = today.AddDays(30),
+            End = today.AddDays(37),
+            PercentComplete = 0
+        });
+        // Create a new reference -- Gantt detects this automatically
+        _tasks = new List<RefreshTask>(_tasks);
+        _lastAction = $"Added task {id} (new list reference)";
+    }
+
+    private async Task AddTaskRebind()
+    {
+        var id = (_nextId++).ToString();
+        var today = DateTime.Today;
+        _tasks.Add(new RefreshTask
+        {
+            Id = id,
+            Title = $"New Task {id}",
+            Start = today.AddDays(30),
+            End = today.AddDays(37),
+            PercentComplete = 0
+        });
+        // Same list reference -- must call Rebind
+        if (_ganttRef is not null)
+            await _ganttRef.Rebind();
+        _lastAction = $"Added task {id} (Rebind)";
+    }
+
+    private async Task RemoveFirst()
+    {
+        if (_tasks.Count == 0) return;
+        var removed = _tasks[0];
+        _tasks.RemoveAll(t => t.Id == removed.Id || t.ParentId == removed.Id);
+        if (_ganttRef is not null)
+            await _ganttRef.Rebind();
+        _lastAction = $"Removed \"{removed.Title}\" and children (Rebind)";
+    }
+
+    private const string _refreshCode = @"// Method 1: New reference (automatic)
+_tasks.Add(newTask);
+_tasks = new List<RefreshTask>(_tasks);
+
+// Method 2: Rebind (in-place mutation)
+_tasks.Add(newTask);
+await _ganttRef.Rebind();
+
+// The Gantt detects reference changes via
+// ReferenceEquals in OnParametersSetAsync.
+// For in-place mutations, call Rebind() to
+// force a tree rebuild and timeline recompute.";
+}

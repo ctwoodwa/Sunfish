@@ -1,0 +1,235 @@
+@page "/components/DataGrid/appearance"
+@layout ComponentDemoLayout
+
+<PageSection Title="Striped Rows">
+    <DemoSection Title="Striped Row Styling"
+                 Description="Set Striped to true to alternate row background colors for easier reading."
+                 Code="@_stripedCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" Striped="true">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Column Width & Alignment">
+    <DemoSection Title="Fixed Column Widths"
+                 Description="Set Width on columns using CSS units (px, %, etc.) and TextAlign for alignment."
+                 Code="@_widthCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" Width="250px" />
+            <SunfishGridColumn TItem="Employee" Field="Department" Width="150px" TextAlign="center" />
+            <SunfishGridColumn TItem="Employee" Field="HireDate" Title="Hire Date" Format="yyyy-MM-dd" Width="150px" TextAlign="center" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" Width="120px" TextAlign="right" />
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Grid Sizing">
+    <DemoSection Title="Height & Scrolling"
+                 Description="Set Height to enable vertical scrolling within a fixed area."
+                 Code="@_heightCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" Height="200px">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="HireDate" Title="Hire Date" Format="yyyy-MM-dd" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+    </DemoSection>
+
+    <DemoSection Title="Fixed Width"
+                 Description="Set Width on the grid to constrain its overall width."
+                 Code="@_fixedWidthCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" Width="600px" Striped="true">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Column Visibility">
+    <DemoSection Title="Show / Hide Columns"
+                 Description="Use the Visible parameter on columns to control which columns are displayed. Toggle columns dynamically."
+                 Code="@_visibilityCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="HireDate" Title="Hire Date" Format="yyyy-MM-dd" Visible="@_showHireDate" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" Visible="@_showSalary" />
+        </SunfishDataGrid>
+        <div style="margin-top:8px;">
+            <label><input type="checkbox" checked="@_showHireDate" @onchange="@(e => _showHireDate = (bool)(e.Value ?? false))" /> Show Hire Date</label>
+            <label style="margin-left:16px;"><input type="checkbox" checked="@_showSalary" @onchange="@(e => _showSalary = (bool)(e.Value ?? false))" /> Show Salary</label>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Row Rendering">
+    <DemoSection Title="OnRowRender"
+                 Description="Use OnRowRender to conditionally apply CSS classes or styles to rows."
+                 Code="@_rowRenderCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" OnRowRender="@OnRowRender">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p style="margin-top:4px;font-size:0.85em;color:#888;">Rows with salary >= $90,000 are highlighted with a green background.</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Cell Rendering">
+    <DemoSection Title="OnCellRender"
+                 Description="Use OnCellRender on a column to conditionally style individual cells."
+                 Code="@_cellRenderCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right"
+                              OnCellRender="@OnSalaryCellRender" />
+        </SunfishDataGrid>
+        <p style="margin-top:4px;font-size:0.85em;color:#888;">Salary cells are color-coded: green >= $90k, orange $70k-$90k, red &lt; $70k.</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Row Template">
+    <DemoSection Title="RowTemplate"
+                 Description="Replace the default row rendering entirely with a custom RowTemplate."
+                 Code="@_rowTemplateCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees">
+            <RowTemplate>
+                <tr style="border-bottom:1px solid #eee;">
+                    <td style="padding:8px;">
+                        <div style="font-weight:bold;">@context.Name</div>
+                        <div style="font-size:0.85em;color:#666;">@context.Department</div>
+                    </td>
+                    <td style="padding:8px;text-align:right;">
+                        @context.Salary.ToString("C0")
+                    </td>
+                </tr>
+            </RowTemplate>
+            <ChildContent>
+                <SunfishGridColumn TItem="Employee" Field="Name" Title="Employee" />
+                <SunfishGridColumn TItem="Employee" Field="Salary" Title="Salary" TextAlign="right" />
+            </ChildContent>
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private List<Employee> _employees =
+    [
+        new("Alice Johnson", "Engineering", new DateTime(2019, 3, 15), 95000m),
+        new("Bob Smith", "Marketing", new DateTime(2020, 7, 1), 72000m),
+        new("Carol White", "Engineering", new DateTime(2018, 1, 10), 105000m),
+        new("David Brown", "Sales", new DateTime(2021, 11, 20), 68000m),
+        new("Eve Davis", "Engineering", new DateTime(2022, 5, 5), 88000m),
+        new("Frank Miller", "Marketing", new DateTime(2017, 9, 12), 78000m),
+        new("Grace Lee", "Sales", new DateTime(2023, 2, 28), 65000m),
+    ];
+
+    public record Employee(string Name, string Department, DateTime HireDate, decimal Salary);
+
+    // ── Column Visibility ──────────────────────────────────────────────
+    private bool _showHireDate = true;
+    private bool _showSalary = true;
+
+    // ── Row Render ─────────────────────────────────────────────────────
+    private void OnRowRender(GridRowRenderEventArgs<Employee> args)
+    {
+        if (args.Item.Salary >= 90000m)
+            args.Style = "background-color:rgba(76,175,80,0.12);";
+    }
+
+    // ── Cell Render ────────────────────────────────────────────────────
+    private void OnSalaryCellRender(GridCellRenderEventArgs<Employee> args)
+    {
+        args.Style = args.Item.Salary switch
+        {
+            >= 90000m => "color:#2e7d32;font-weight:600;",
+            >= 70000m => "color:#e65100;font-weight:600;",
+            _ => "color:#c62828;font-weight:600;"
+        };
+    }
+
+    // ── Code Samples ───────────────────────────────────────────────────
+    private const string _stripedCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\" Striped=\"true\">\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Name\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Department\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Format=\"C2\" />\n" +
+        "</SunfishDataGrid>";
+
+    private const string _widthCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\">\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Name\" Width=\"250px\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Department\" Width=\"150px\" TextAlign=\"center\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"HireDate\" Format=\"yyyy-MM-dd\" Width=\"150px\" TextAlign=\"center\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Format=\"C2\" Width=\"120px\" TextAlign=\"right\" />\n" +
+        "</SunfishDataGrid>";
+
+    private const string _heightCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\" Height=\"200px\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _fixedWidthCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\" Width=\"600px\" Striped=\"true\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _visibilityCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\">\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Name\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Department\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"HireDate\" Visible=\"@_showHireDate\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Visible=\"@_showSalary\" />\n" +
+        "</SunfishDataGrid>\n" +
+        "<label><input type=\"checkbox\" @bind=\"_showHireDate\" /> Show Hire Date</label>\n" +
+        "<label><input type=\"checkbox\" @bind=\"_showSalary\" /> Show Salary</label>";
+
+    private const string _rowRenderCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\" OnRowRender=\"@OnRowRender\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>\n\n" +
+        "@code {\n" +
+        "    private void OnRowRender(GridRowRenderEventArgs<Employee> args)\n" +
+        "    {\n" +
+        "        if (args.Item.Salary >= 90000m)\n" +
+        "            args.Style = \"background-color:rgba(76,175,80,0.12);\";\n" +
+        "    }\n" +
+        "}";
+
+    private const string _cellRenderCode =
+        "<SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Format=\"C2\"\n" +
+        "                  OnCellRender=\"@OnSalaryCellRender\" />\n\n" +
+        "@code {\n" +
+        "    private void OnSalaryCellRender(GridCellRenderEventArgs<Employee> args)\n" +
+        "    {\n" +
+        "        args.Style = args.Item.Salary switch\n" +
+        "        {\n" +
+        "            >= 90000m => \"color:#2e7d32;font-weight:600;\",\n" +
+        "            >= 70000m => \"color:#e65100;font-weight:600;\",\n" +
+        "            _ => \"color:#c62828;font-weight:600;\"\n" +
+        "        };\n" +
+        "    }\n" +
+        "}";
+
+    private const string _rowTemplateCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\">\n" +
+        "    <RowTemplate>\n" +
+        "        <tr>\n" +
+        "            <td>\n" +
+        "                <div style=\"font-weight:bold;\">@context.Name</div>\n" +
+        "                <div style=\"font-size:0.85em;\">@context.Department</div>\n" +
+        "            </td>\n" +
+        "            <td style=\"text-align:right;\">@context.Salary.ToString(\"C0\")</td>\n" +
+        "        </tr>\n" +
+        "    </RowTemplate>\n" +
+        "    <ChildContent>\n" +
+        "        <SunfishGridColumn TItem=\"Employee\" Field=\"Name\" Title=\"Employee\" />\n" +
+        "        <SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Title=\"Salary\" />\n" +
+        "    </ChildContent>\n" +
+        "</SunfishDataGrid>";
+}

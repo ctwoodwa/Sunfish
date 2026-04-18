@@ -1,0 +1,179 @@
+@page "/components/Autocomplete"
+@page "/components/Autocomplete/overview"
+@layout ComponentDemoLayout
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic String Usage" Code="@_basicCode">
+        <SunfishField>
+            <SunfishLabel>Search a fruit</SunfishLabel>
+            <SunfishAutocomplete TItem="string"
+                                Items="@_fruits"
+                                Value="@_selectedFruit"
+                                ValueChanged="@(v => _selectedFruit = v)"
+                                Placeholder="Type to search..." />
+        </SunfishField>
+        @if (!string.IsNullOrEmpty(_selectedFruit))
+        {
+            <p><strong>Selected:</strong> @_selectedFruit</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Generic TItem with Country Model" Code="@_genericCode">
+        <SunfishField>
+            <SunfishLabel>Search a country</SunfishLabel>
+            <SunfishAutocomplete TItem="Country"
+                                Data="@_countries"
+                                TextField="Name"
+                                ValueField="Code"
+                                Value="@_selectedCountry"
+                                ValueChanged="@(v => _selectedCountry = v)"
+                                Placeholder="Type a country name..."
+                                ShowClearButton="true" />
+        </SunfishField>
+        @if (!string.IsNullOrEmpty(_selectedCountry))
+        {
+            <p><strong>Selected code:</strong> @_selectedCountry</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Custom Item Template" Code="@_templateCode">
+        <SunfishField>
+            <SunfishLabel>Country with flag</SunfishLabel>
+            <SunfishAutocomplete TItem="Country"
+                                Data="@_countries"
+                                TextField="Name"
+                                ValueField="Code"
+                                Value="@_templateValue"
+                                ValueChanged="@(v => _templateValue = v)"
+                                Placeholder="Search countries...">
+                <ItemTemplate>
+                    <span>@context.Flag @context.Name (@context.Code)</span>
+                </ItemTemplate>
+                <HeaderTemplate>
+                    <em style="padding: 4px 8px; display: block; color: gray;">Select a country</em>
+                </HeaderTemplate>
+            </SunfishAutocomplete>
+        </SunfishField>
+    </DemoSection>
+
+    <DemoSection Title="Filter Operator: StartsWith" Code="@_filterCode">
+        <SunfishField>
+            <SunfishLabel>Starts with filter</SunfishLabel>
+            <SunfishAutocomplete TItem="string"
+                                Items="@_fruits"
+                                Value="@_startsWithValue"
+                                ValueChanged="@(v => _startsWithValue = v)"
+                                FilterOperator="FilterOperator.StartsWith"
+                                Placeholder="Type to filter..." />
+        </SunfishField>
+    </DemoSection>
+
+    <DemoSection Title="Debounce Delay (300ms)" Code="@_debounceCode">
+        <SunfishField>
+            <SunfishLabel>Debounced input</SunfishLabel>
+            <SunfishAutocomplete TItem="string"
+                                Items="@_fruits"
+                                Value="@_debounceValue"
+                                ValueChanged="@(v => _debounceValue = v)"
+                                DebounceDelay="300"
+                                Placeholder="Type slowly..." />
+        </SunfishField>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private string _selectedFruit = "";
+    private string _selectedCountry = "";
+    private string _templateValue = "";
+    private string _startsWithValue = "";
+    private string _debounceValue = "";
+
+    private readonly string[] _fruits = ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Date", "Fig", "Grape", "Kiwi", "Lemon", "Mango", "Orange", "Peach", "Pear", "Plum", "Raspberry", "Strawberry"];
+
+    private readonly List<Country> _countries =
+    [
+        new("US", "United States", "\U0001F1FA\U0001F1F8"),
+        new("GB", "United Kingdom", "\U0001F1EC\U0001F1E7"),
+        new("FR", "France", "\U0001F1EB\U0001F1F7"),
+        new("DE", "Germany", "\U0001F1E9\U0001F1EA"),
+        new("JP", "Japan", "\U0001F1EF\U0001F1F5"),
+        new("CA", "Canada", "\U0001F1E8\U0001F1E6"),
+        new("AU", "Australia", "\U0001F1E6\U0001F1FA"),
+        new("BR", "Brazil", "\U0001F1E7\U0001F1F7"),
+    ];
+
+    public record Country(string Code, string Name, string Flag);
+
+    private const string _basicCode =
+        "<SunfishAutocomplete TItem=\"string\"\n" +
+        "                    Items=\"@_fruits\"\n" +
+        "                    Value=\"@_selected\"\n" +
+        "                    ValueChanged=\"@(v => _selected = v)\"\n" +
+        "                    Placeholder=\"Type to search...\" />";
+
+    private const string _genericCode =
+        "<SunfishAutocomplete TItem=\"Country\"\n" +
+        "                    Data=\"@_countries\"\n" +
+        "                    TextField=\"Name\"\n" +
+        "                    ValueField=\"Code\"\n" +
+        "                    Value=\"@_selected\"\n" +
+        "                    ValueChanged=\"@(v => _selected = v)\"\n" +
+        "                    ShowClearButton=\"true\" />\n\n" +
+        "@code {\n" +
+        "    public record Country(string Code, string Name, string Flag);\n" +
+        "}";
+
+    private const string _templateCode =
+        "<SunfishAutocomplete TItem=\"Country\" Data=\"@_countries\"\n" +
+        "                    TextField=\"Name\" ValueField=\"Code\">\n" +
+        "    <ItemTemplate>\n" +
+        "        <span>@context.Flag @context.Name (@context.Code)</span>\n" +
+        "    </ItemTemplate>\n" +
+        "</SunfishAutocomplete>";
+
+    private const string _filterCode =
+        "<SunfishAutocomplete TItem=\"string\"\n" +
+        "                    Items=\"@_fruits\"\n" +
+        "                    FilterOperator=\"FilterOperator.StartsWith\" />";
+
+    private const string _debounceCode =
+        "<SunfishAutocomplete TItem=\"string\"\n" +
+        "                    Items=\"@_fruits\"\n" +
+        "                    DebounceDelay=\"300\" />";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Arrow Down", "Highlights the next suggestion in the list"),
+        ("Arrow Up", "Highlights the previous suggestion in the list"),
+        ("Enter", "Selects the currently highlighted suggestion"),
+        ("Escape", "Closes the suggestion dropdown"),
+        ("Tab", "Moves focus to the next element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"combobox\"", "Applied to the text input"),
+        ("aria-expanded", "Indicates whether the suggestion list is open"),
+        ("aria-autocomplete=\"list\"", "Indicates suggestions are provided in a list"),
+        ("aria-activedescendant", "References the currently highlighted suggestion"),
+        ("role=\"listbox\"", "Applied to the suggestion list"),
+        ("role=\"option\"", "Applied to each suggestion item"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The input announces its role as a combo box with autocomplete behavior.",
+        "Suggestions are announced as the user navigates with arrow keys.",
+        "The clear button is labeled for screen readers.",
+    ];
+}

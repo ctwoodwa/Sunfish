@@ -1,0 +1,480 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject SiteLinks Links
+@inject FavoritesService Favorites
+@inject ISunfishThemeService ThemeService
+@inject ProviderSwitcher ProviderSwitcher
+@inject IJSRuntime JS
+@using Sunfish.KitchenSink.Data
+
+<div class="app-root @(_isDark ? "app-dark" : "")" style="@(_settingsLoaded ? "" : "visibility:hidden")">
+    <header class="top-navbar">
+        <nav class="top-navbar-inner">
+            <a class="demo-navbar-brand" href="/">
+                <svg width="20" height="20" viewBox="0 0 28 28" fill="none" class="demo-navbar-logo">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="currentColor" stroke-width="2" />
+                    <path d="M9 9l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M15 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                <span>Sunfish</span>
+            </a>
+
+            <SunfishNavMenu Class="demo-navbar-nav">
+                <SunfishNavItem Href="@Links.GettingStarted">Getting Started</SunfishNavItem>
+                <SunfishNavItem Href="/components"
+                               IsActive="@(IsNavActive("components") || IsNavActive("icons"))">Components</SunfishNavItem>
+                <SunfishNavItem Href="@Links.Theming">Theming</SunfishNavItem>
+                <SunfishNavItem Href="@Links.ApiReference">API Reference</SunfishNavItem>
+            </SunfishNavMenu>
+
+            <div class="demo-navbar-actions">
+                <div class="demo-navbar-search">
+                    <SunfishSearchBox Value="@_search"
+                                     ValueChanged="OnSearchChanged"
+                                     Placeholder="Search components..."
+                                     OnEscape="ClearSearch"
+                                     OnSearch="@((_) => NavigateFirstResult())" />
+                </div>
+                <div class="theme-picker-wrapper">
+                    <button class="theme-picker-trigger" @onclick="ToggleThemePicker"
+                            title="Change theme">
+                        <SunfishIcon Name="palette" Size="IconSize.Small" />
+                        <span class="theme-picker-label">@(ProviderLabel(_activeProvider)) · @(_isDark ? "Dark" : _selectedPreset.Name)</span>
+                        <SunfishIcon Name="chevron-down" Size="IconSize.Small" />
+                    </button>
+                    @if (_showThemePicker)
+                    {
+                        <div class="theme-picker-overlay" @onclick="CloseThemePicker"></div>
+                        <div class="theme-picker-dropdown">
+                            <div class="theme-picker-section-title">Theme</div>
+                            @foreach (var preset in ThemePresets.All)
+                            {
+                                var p = preset;
+                                <button class="theme-picker-option @(p.Name == _selectedPreset.Name ? "active" : "")"
+                                        @onclick="() => SelectTheme(p)">
+                                    <span class="theme-picker-swatch" style="background: @p.Theme.Colors.Primary;"></span>
+                                    <span>@p.Name</span>
+                                    @if (p.Name == _selectedPreset.Name)
+                                    {
+                                        <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                    }
+                                </button>
+                            }
+                            <div class="theme-picker-divider"></div>
+                            <div class="theme-picker-section-title">Design System</div>
+                            <button class="theme-picker-option @(_activeProvider == DesignProvider.FluentUI ? "active" : "")"
+                                    @onclick="() => SwitchProvider(DesignProvider.FluentUI)">
+                                <span class="theme-picker-swatch" style="background: #0078d4;"></span>
+                                <span>Fluent UI</span>
+                                @if (_activeProvider == DesignProvider.FluentUI)
+                                {
+                                    <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                }
+                            </button>
+                            @if (BootstrapAvailable)
+                            {
+                                <button class="theme-picker-option @(_activeProvider == DesignProvider.Bootstrap ? "active" : "")"
+                                        @onclick="() => SwitchProvider(DesignProvider.Bootstrap)">
+                                    <span class="theme-picker-swatch" style="background: #7952b3;"></span>
+                                    <span>Bootstrap</span>
+                                    @if (_activeProvider == DesignProvider.Bootstrap)
+                                    {
+                                        <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                    }
+                                </button>
+                            }
+                            @if (MaterialAvailable)
+                            {
+                                <button class="theme-picker-option @(_activeProvider == DesignProvider.Material ? "active" : "")"
+                                        @onclick="() => SwitchProvider(DesignProvider.Material)">
+                                    <span class="theme-picker-swatch" style="background: #6750A4;"></span>
+                                    <span>Material 3</span>
+                                    @if (_activeProvider == DesignProvider.Material)
+                                    {
+                                        <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                    }
+                                </button>
+                            }
+                            <div class="theme-picker-divider"></div>
+                            <div class="theme-picker-section-title">Mode</div>
+                            <button class="theme-picker-option @(!_isDark ? "active" : "")"
+                                    @onclick="() => SetDarkMode(false)">
+                                <SunfishIcon Name="sun" Size="IconSize.Small" />
+                                <span>Light</span>
+                                @if (!_isDark)
+                                {
+                                    <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                }
+                            </button>
+                            <button class="theme-picker-option @(_isDark ? "active" : "")"
+                                    @onclick="() => SetDarkMode(true)">
+                                <SunfishIcon Name="moon" Size="IconSize.Small" />
+                                <span>Dark</span>
+                                @if (_isDark)
+                                {
+                                    <SunfishIcon Name="check" Size="IconSize.Small" Class="theme-picker-check" />
+                                }
+                            </button>
+                        </div>
+                    }
+                </div>
+                <button class="theme-toggle" @onclick="ToggleDarkMode"
+                        title="@(_isDark ? "Switch to light mode" : "Switch to dark mode")">
+                    @if (_isDark)
+                    {
+                        <SunfishIcon Name="sun" Size="IconSize.Small" />
+                    }
+                    else
+                    {
+                        <SunfishIcon Name="moon" Size="IconSize.Small" />
+                    }
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(_search))
+    {
+        <div class="search-overlay" @onclick="ClearSearch">
+            <div class="search-results-panel" @onclick:stopPropagation>
+                @if (_filteredItems.Count > 0)
+                {
+                    @foreach (var item in _filteredItems)
+                    {
+                        <button class="search-result @(IsActive(item.Href) ? "active" : "")"
+                                @onclick="() => NavigateFromSearch(item.Href)">
+                            <span class="search-result-label">@item.Label</span>
+                            <span class="search-result-group">@item.Group</span>
+                        </button>
+                    }
+                }
+                else
+                {
+                    <div class="search-no-results">No results for "@_search"</div>
+                }
+            </div>
+        </div>
+    }
+
+    <main class="main-container">
+        @if (ShowSidebar())
+        {
+            <SunfishSplitter Orientation="SplitterOrientation.Horizontal"
+                            Width="100%"
+                            Height="100%">
+                <SunfishSplitterPane Size="260px" Min="180px" Max="400px">
+                    <aside class="toc-sidebar">
+                        <nav class="toc-nav">
+                            @if (Favorites.Favorites.Count > 0)
+                            {
+                                <div class="toc-section-title favorites-section-title">
+                                    <SunfishIcon Name="star-filled" Size="IconSize.Small" style="vertical-align: -2px; margin-right: 4px;" />
+                                    Favorites
+                                </div>
+                                @foreach (var fav in Favorites.Favorites)
+                                {
+                                    <div class="toc-fav-item">
+                                        <a class="toc-link @(IsActive(fav.Url.TrimStart('/').TrimEnd('/')) ? "active" : "")"
+                                           href="@fav.Url">@fav.Title</a>
+                                        <button class="toc-fav-remove" title="Remove favorite"
+                                                @onclick="() => RemoveFavorite(fav.Id)"
+                                                @onclick:stopPropagation>
+                                            <SunfishIcon Name="x" Size="IconSize.Small" />
+                                        </button>
+                                    </div>
+                                }
+                                <div class="toc-fav-divider"></div>
+                            }
+                            @if (IsComponentDetailView())
+                            {
+                                var comp = GetCurrentComponent();
+                                @if (comp is not null)
+                                {
+                                    <div class="toc-section-title">@comp.Category</div>
+                                    @foreach (var sibling in ComponentRegistry.GetByCategory(comp.CategorySlug))
+                                    {
+                                        var isCurrent = sibling.Slug == comp.Slug;
+                                        <div class="toc-item @(isCurrent ? "expanded" : "")">
+                                            <a class="toc-link @(isCurrent ? "active" : "")"
+                                               href="/components/@sibling.Slug">@sibling.Name</a>
+                                        </div>
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                @foreach (var category in ComponentRegistry.GetCategories())
+                                {
+                                    var components = ComponentRegistry.GetByCategory(category.Slug);
+                                    <div class="toc-section-title">@category.Name</div>
+                                    @foreach (var comp in components)
+                                    {
+                                        <a class="toc-link @(IsComponentActive(comp.Slug) ? "active" : "")"
+                                           href="/components/@comp.Slug">@comp.Name</a>
+                                    }
+                                }
+                                <div class="toc-section-title">Resources</div>
+                                <a class="toc-link @(IsActive("icons") ? "active" : "")" href="/icons">Icons</a>
+                            }
+                        </nav>
+                    </aside>
+                </SunfishSplitterPane>
+
+                <SunfishSplitterPane>
+                    <div class="content-area">
+                        <CascadingValue Value="_isDark" Name="IsDarkMode">
+                            <SunfishThemeProvider Theme="@_selectedPreset.Theme">
+                                @Body
+                            </SunfishThemeProvider>
+                        </CascadingValue>
+                    </div>
+                </SunfishSplitterPane>
+            </SunfishSplitter>
+        }
+        else
+        {
+            <div class="content-area content-full">
+                <CascadingValue Value="_isDark" Name="IsDarkMode">
+                    <SunfishThemeProvider Theme="@_selectedPreset.Theme">
+                        @Body
+                    </SunfishThemeProvider>
+                </CascadingValue>
+            </div>
+        }
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            Sunfish Kitchen Sink &middot; @DateTime.UtcNow.Year &middot; see LICENSE
+        </div>
+    </footer>
+</div>
+
+@code {
+    private const bool BootstrapAvailable =
+#if BOOTSTRAP_PROVIDER
+        true;
+#else
+        false;
+#endif
+    private const bool MaterialAvailable =
+#if MATERIAL_PROVIDER
+        true;
+#else
+        false;
+#endif
+
+    private bool _isDark;
+    private bool _settingsLoaded;
+    private string _search = "";
+    private bool _showThemePicker;
+    private ThemePresets.ThemePreset _selectedPreset = ThemePresets.All[0];
+    private DesignProvider _activeProvider = DesignProvider.FluentUI;
+    private IJSObjectReference? _providerModule;
+
+    private record NavEntry(string Label, string Href, string Group);
+
+    private static readonly NavEntry[] _allItems =
+        ComponentRegistry.All
+            .Select(c => new NavEntry(c.Name, $"components/{c.Slug}", c.Category))
+            .Prepend(new NavEntry("Home", "", "Pages"))
+            .Append(new NavEntry("Icons", "icons", "Icons"))
+            .ToArray();
+
+    private List<NavEntry> _filteredItems = new();
+
+    private void OnSearchChanged(string value)
+    {
+        _search = value;
+        if (string.IsNullOrWhiteSpace(_search))
+        {
+            _filteredItems.Clear();
+            return;
+        }
+        var q = _search.Trim().ToLower();
+        _filteredItems = _allItems
+            .Where(i => i.Label.ToLower().Contains(q) || i.Group.ToLower().Contains(q))
+            .ToList();
+    }
+
+    private void ClearSearch()
+    {
+        _search = "";
+        _filteredItems.Clear();
+    }
+
+    private void NavigateFirstResult()
+    {
+        if (_filteredItems.Count == 1)
+            NavigateFromSearch(_filteredItems[0].Href);
+    }
+
+    private void NavigateFromSearch(string path)
+    {
+        ClearSearch();
+        Nav.NavigateTo($"/{path}");
+    }
+
+    private async Task ToggleDarkMode()
+    {
+        _isDark = !_isDark;
+        await ThemeService.SetDarkModeAsync(_isDark);
+        await PersistDarkMode();
+    }
+
+    private async Task SetDarkMode(bool dark)
+    {
+        if (_isDark == dark) return;
+        _isDark = dark;
+        await ThemeService.SetDarkModeAsync(dark);
+        await PersistDarkMode();
+        _showThemePicker = false;
+    }
+
+    private async Task SelectTheme(ThemePresets.ThemePreset preset)
+    {
+        _selectedPreset = preset;
+        await ThemeService.SetThemeAsync(preset.Theme);
+        _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+        await _providerModule.InvokeVoidAsync("setTheme", preset.Name);
+        _showThemePicker = false;
+    }
+
+    private async Task PersistDarkMode()
+    {
+        try
+        {
+            _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+            await _providerModule.InvokeVoidAsync("setDarkMode", _isDark);
+        }
+        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task SwitchProvider(DesignProvider provider)
+    {
+        if (_activeProvider == provider) return;
+
+        try
+        {
+            _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+            var key = provider switch
+            {
+                DesignProvider.Bootstrap => "bootstrap",
+                DesignProvider.Material => "material",
+                _ => "fluentui",
+            };
+            await _providerModule.InvokeVoidAsync("setProvider", key);
+        }
+        catch (TaskCanceledException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    private static string ProviderLabel(DesignProvider provider) => provider switch
+    {
+        DesignProvider.Bootstrap => "Bootstrap",
+        DesignProvider.Material => "Material",
+        _ => "Fluent",
+    };
+
+    private void ToggleThemePicker() => _showThemePicker = !_showThemePicker;
+    private void CloseThemePicker() => _showThemePicker = false;
+
+    private string GetRelativeUri() => Nav.ToBaseRelativePath(Nav.Uri).TrimEnd('/');
+
+    private bool IsActive(string path) =>
+        GetRelativeUri().Equals(path, StringComparison.OrdinalIgnoreCase);
+
+    private bool IsNavActive(string prefix) =>
+        GetRelativeUri().StartsWith(prefix, StringComparison.OrdinalIgnoreCase);
+
+    private bool IsComponentActive(string slug)
+    {
+        var uri = GetRelativeUri();
+        return uri.Equals($"components/{slug}", StringComparison.OrdinalIgnoreCase)
+            || uri.StartsWith($"components/{slug}/", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool ShowSidebar()
+    {
+        var uri = GetRelativeUri();
+        return uri.StartsWith("components", StringComparison.OrdinalIgnoreCase)
+            || uri.Equals("icons", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private bool IsComponentDetailView()
+    {
+        var segments = GetRelativeUri().Split('/');
+        return segments.Length >= 2
+            && segments[0].Equals("components", StringComparison.OrdinalIgnoreCase)
+            && ComponentRegistry.GetBySlug(segments[1]) is not null;
+    }
+
+    private ComponentRegistry.ComponentInfo? GetCurrentComponent()
+    {
+        var segments = GetRelativeUri().Split('/');
+        return segments.Length >= 2 ? ComponentRegistry.GetBySlug(segments[1]) : null;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Favorites.EnsureInitializedAsync();
+            Favorites.OnChanged += OnFavoritesChanged;
+
+            // Restore all settings from localStorage
+            _providerModule ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/provider-switcher.js");
+
+            var storedProvider = await _providerModule.InvokeAsync<string>("getStoredProvider");
+            if (storedProvider == "bootstrap")
+            {
+                _activeProvider = DesignProvider.Bootstrap;
+                ProviderSwitcher.SetProvider(DesignProvider.Bootstrap);
+                await _providerModule.InvokeVoidAsync("applyProvider", "bootstrap");
+            }
+            else if (storedProvider == "material")
+            {
+                _activeProvider = DesignProvider.Material;
+                ProviderSwitcher.SetProvider(DesignProvider.Material);
+                await _providerModule.InvokeVoidAsync("applyProvider", "material");
+            }
+
+            var storedTheme = await _providerModule.InvokeAsync<string>("getStoredTheme");
+            var preset = ThemePresets.GetByName(storedTheme);
+            if (preset.Name != _selectedPreset.Name)
+            {
+                _selectedPreset = preset;
+                await ThemeService.SetThemeAsync(preset.Theme);
+            }
+
+            var storedDark = await _providerModule.InvokeAsync<bool>("getStoredDarkMode");
+            _isDark = storedDark;
+            await ThemeService.SetDarkModeAsync(storedDark);
+
+            _settingsLoaded = true;
+            StateHasChanged();
+        }
+    }
+
+    private void OnFavoritesChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task RemoveFavorite(string id)
+    {
+        await Favorites.RemoveAsync(id);
+    }
+
+    public void Dispose()
+    {
+        Favorites.OnChanged -= OnFavoritesChanged;
+        if (_providerModule is not null)
+        {
+            _ = _providerModule.DisposeAsync();
+        }
+    }
+
+}

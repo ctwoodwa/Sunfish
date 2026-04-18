@@ -1,0 +1,193 @@
+@page "/components/allocation-scheduler/theming"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Dark / Light Toggle">
+    <DemoSection Title="Dark / Light Toggle"
+                 Description="Click the toggle to switch between dark and light themes. The AllocationScheduler re-renders using the dark-mode token overrides defined in the FluentUI provider SCSS."
+                 Code="@_toggleCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center">
+            <button @onclick="ToggleTheme" class="btn btn-outline-primary">
+                Switch to @(_isDark ? "Light" : "Dark") Mode
+            </button>
+            <span>Current: <strong>@(_isDark ? "Dark" : "Light")</strong></span>
+        </div>
+
+        <div data-sunfish-theme="@(_isDark ? "dark" : "light")"
+             style="border-radius:4px;padding:1px">
+            <SunfishAllocationScheduler TResource="StaffResource"
+                                       Resources="@_resources"
+                                       Allocations="@_allocations"
+                                       AuthoritativeLevel="TimeGranularity.Week"
+                                       ViewGrain="TimeGranularity.Week"
+                                       ValueMode="AllocationValueMode.Hours"
+                                       VisibleStart="@_demoStart"
+                                       MinVisibleColumns="2"
+                                       DefaultRangeUnit="TimeGranularity.Month"
+                                       Height="280px">
+                <AllocationResourceColumns>
+                    <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                    <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+                </AllocationResourceColumns>
+            </SunfishAllocationScheduler>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Provider Swap">
+    <DemoSection Title="FluentUI vs Bootstrap Provider"
+                 Description="The same data rendered under two different CSS providers. FluentUI uses the mar-allocation-scheduler BEM block; Bootstrap uses mar-bs-allocation-scheduler with Bootstrap utility mappings. Switch between providers to see how design tokens and class names differ."
+                 Code="@_providerSwapCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center">
+            <label>
+                Provider:
+                <select @bind="_selectedProvider">
+                    <option value="FluentUI">FluentUI</option>
+                    <option value="Bootstrap">Bootstrap</option>
+                </select>
+            </label>
+            <span>Active: <strong>@_selectedProvider</strong></span>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Token Overrides">
+    <DemoSection Title="Custom Token Overrides"
+                 Description="Override Sunfish design tokens with inline styles to create a branded theme. The example below changes the primary color, surface background, and border color."
+                 Code="@_customTokenCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <label>
+                Primary:
+                <input type="color" @bind="_customPrimary" />
+            </label>
+            <label>
+                Surface:
+                <input type="color" @bind="_customSurface" />
+            </label>
+            <label>
+                Border:
+                <input type="color" @bind="_customBorder" />
+            </label>
+            <button @onclick="ResetTokens" class="btn btn-outline-secondary btn-sm">Reset</button>
+        </div>
+
+        <div style="@CustomTokenStyle">
+            <SunfishAllocationScheduler TResource="StaffResource"
+                                       Resources="@_resources"
+                                       Allocations="@_allocations"
+                                       AuthoritativeLevel="TimeGranularity.Week"
+                                       ViewGrain="TimeGranularity.Week"
+                                       ValueMode="AllocationValueMode.Hours"
+                                       VisibleStart="@_demoStart"
+                                       MinVisibleColumns="2"
+                                       DefaultRangeUnit="TimeGranularity.Month"
+                                       Height="280px">
+                <AllocationResourceColumns>
+                    <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                    <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+                </AllocationResourceColumns>
+            </SunfishAllocationScheduler>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private bool _isDark;
+    private string _selectedProvider = "FluentUI";
+    private string _customPrimary = "#0f6cbd";
+    private string _customSurface = "#ffffff";
+    private string _customBorder = "#d1d1d1";
+
+    private string CustomTokenStyle =>
+        $"--sf-color-primary: {_customPrimary}; " +
+        $"--sf-color-surface: {_customSurface}; " +
+        $"--sf-color-border: {_customBorder};";
+
+    private void ToggleTheme() => _isDark = !_isDark;
+
+    private void ResetTokens()
+    {
+        _customPrimary = "#0f6cbd";
+        _customSurface = "#ffffff";
+        _customBorder = "#d1d1d1";
+    }
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" },
+        new() { Id = 4, Name = "David Kim",   Role = "Manager", Department = "PMO"        }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 4, TaskId = 104, TaskName = "Release Plan", BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 8,  Unit = AllocationUnit.Hours }
+    };
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    private const string _toggleCode =
+        "<div data-sunfish-theme=\"@(_isDark ? \"dark\" : \"light\")\">\n" +
+        "    <SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                               Resources=\"@_resources\"\n" +
+        "                               Allocations=\"@_allocations\"\n" +
+        "                               Height=\"280px\" />\n" +
+        "</div>\n" +
+        "\n" +
+        "// Toggle data-sunfish-theme between \"dark\" and \"light\"\n" +
+        "// Dark-mode token overrides are applied automatically by the provider SCSS";
+
+    private const string _providerSwapCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Height=\"280px\" />\n" +
+        "\n" +
+        "// FluentUI: uses mar-allocation-scheduler BEM block\n" +
+        "// Bootstrap: uses mar-bs-allocation-scheduler with BS utility classes\n" +
+        "// Provider is configured at the SunfishProviderConfiguration level";
+
+    private const string _customTokenCode =
+        "<div style=\"--sf-color-primary: #8b5cf6;\n" +
+        "            --sf-color-surface: #faf5ff;\n" +
+        "            --sf-color-border: #c4b5fd;\">\n" +
+        "    <SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                               Resources=\"@_resources\"\n" +
+        "                               Allocations=\"@_allocations\"\n" +
+        "                               Height=\"280px\" />\n" +
+        "</div>\n" +
+        "\n" +
+        "// Override CSS custom properties to brand the component\n" +
+        "// --sf-color-primary: accent color for selections, active chips\n" +
+        "// --sf-color-surface: cell and pane backgrounds\n" +
+        "// --sf-color-border: separators and outlines";
+}

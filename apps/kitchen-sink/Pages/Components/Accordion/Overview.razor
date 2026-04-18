@@ -1,0 +1,244 @@
+@page "/components/Accordion"
+@page "/components/Accordion/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="What is Sunfish?">
+                <p>Sunfish is a provider-first Blazor component library that lets you write markup once and swap CSS frameworks without changing your Razor code.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="How do providers work?">
+                <p>Providers implement the CSS mapping interface and translate abstract component tokens into framework-specific class names at render time.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Which providers are available?">
+                <p>Sunfish currently ships with a Fluent UI provider, with Material and Bootstrap providers on the roadmap.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Single Expand Mode" Description="ExpandMode.Single restricts the accordion so only one item can be open at a time." Code="@_singleCode">
+        <SunfishAccordion ExpandMode="AccordionExpandMode.Single">
+            <SunfishAccordionItem Title="Section A">
+                <p>Expanding this item will collapse any other open item.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section B">
+                <p>Content for section B.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section C">
+                <p>Content for section C.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Multiple Expand Mode" Description="ExpandMode.Multiple (default) allows any number of items to be open simultaneously." Code="@_multipleCode">
+        <SunfishAccordion ExpandMode="AccordionExpandMode.Multiple">
+            <SunfishAccordionItem Title="Section A">
+                <p>Content for section A.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section B">
+                <p>Content for section B.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section C">
+                <p>Content for section C.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Default Expanded" Description="Set IsExpanded on an item to expand it on initial render." Code="@_expandedCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Expanded by default" IsExpanded="true">
+                <p>This item starts expanded.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Collapsed by default">
+                <p>This item starts collapsed.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Disabled Item" Description="Set Disabled on a SunfishAccordionItem to prevent it from being expanded or collapsed." Code="@_disabledCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Active item">
+                <p>This item can be expanded and collapsed normally.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Disabled item" Disabled="true" IsExpanded="true">
+                <p>This item is disabled — it stays in its current state and ignores user interaction.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Another active item">
+                <p>This item is also interactive.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Item with Icon" Description="Provide an Icon on SunfishAccordionItem to show a visual indicator in the header." Code="@_iconCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Home" Icon="🏠">
+                <p>Home section content.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Reports" Icon="📊">
+                <p>Reports section content.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Settings" Icon="⚙️">
+                <p>Settings section content.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Data Binding" Description="Provide a Data collection and use TextField/IconField to render accordion items from a list." Code="@_dataCode">
+        <SunfishAccordion Data="@_faqItems" TextField="Question" IconField="Icon">
+            <ContentTemplate Context="item">
+                @{
+                    var faq = (FaqItem)item;
+                }
+                <p>@faq.Answer</p>
+            </ContentTemplate>
+        </SunfishAccordion>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="IsExpandedChanged" Description="Handle expand and collapse events on individual accordion items." Code="@_eventCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Click to expand" IsExpanded="@_isExpanded" IsExpandedChanged="@OnExpandedChanged">
+                <p>This item tracks its expanded state via IsExpandedChanged.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+        <p>Expanded: <strong>@_isExpanded</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="ExpandedItems Binding" Description="Track all currently expanded items using two-way binding on ExpandedItems." Code="@_expandedItemsCode">
+        <SunfishAccordion ExpandMode="AccordionExpandMode.Multiple"
+                         Data="@_faqItems" TextField="Question"
+                         @bind-ExpandedItems="_expandedFaqs">
+            <ContentTemplate Context="item">
+                @{
+                    var faq = (FaqItem)item;
+                }
+                <p>@faq.Answer</p>
+            </ContentTemplate>
+        </SunfishAccordion>
+        <p style="margin-top:8px;">@_expandedFaqs?.Count() open item(s)</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private record FaqItem(string Question, string Answer, string Icon);
+
+    private FaqItem[] _faqItems =
+    [
+        new("What is Blazor?", "Blazor is a framework for building interactive web UIs using C# instead of JavaScript.", "💡"),
+        new("What is Sunfish?", "Sunfish is a provider-first Blazor component library.", "🧩"),
+        new("Is Sunfish open source?", "Yes, Sunfish is open source and available on GitHub.", "🔓"),
+    ];
+
+    private bool _isExpanded;
+    private IEnumerable<object>? _expandedFaqs;
+
+    private void OnExpandedChanged(bool expanded)
+    {
+        _isExpanded = expanded;
+    }
+
+    private const string _basicCode =
+        "<SunfishAccordion>\n" +
+        "    <SunfishAccordionItem Title=\"What is Sunfish?\">\n" +
+        "        <p>Sunfish is a provider-first Blazor component library...</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"How do providers work?\">\n" +
+        "        <p>Providers implement the CSS mapping interface...</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _singleCode =
+        "<SunfishAccordion ExpandMode=\"AccordionExpandMode.Single\">\n" +
+        "    <SunfishAccordionItem Title=\"Section A\"><p>...</p></SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"Section B\"><p>...</p></SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _multipleCode =
+        "<SunfishAccordion ExpandMode=\"AccordionExpandMode.Multiple\">\n" +
+        "    <SunfishAccordionItem Title=\"Section A\"><p>...</p></SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"Section B\"><p>...</p></SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _expandedCode =
+        "<SunfishAccordion>\n" +
+        "    <SunfishAccordionItem Title=\"Expanded by default\" IsExpanded=\"true\">\n" +
+        "        <p>This item starts expanded.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _disabledCode =
+        "<SunfishAccordionItem Title=\"Disabled\" Disabled=\"true\" IsExpanded=\"true\">\n" +
+        "    <p>Ignores user interaction.</p>\n" +
+        "</SunfishAccordionItem>";
+
+    private const string _iconCode =
+        "<SunfishAccordionItem Title=\"Home\" Icon=\"🏠\"><p>...</p></SunfishAccordionItem>\n" +
+        "<SunfishAccordionItem Title=\"Reports\" Icon=\"📊\"><p>...</p></SunfishAccordionItem>";
+
+    private const string _dataCode =
+        "<SunfishAccordion Data=\"@_faqItems\" TextField=\"Question\" IconField=\"Icon\">\n" +
+        "    <ContentTemplate Context=\"item\">\n" +
+        "        @{ var faq = (FaqItem)item; }\n" +
+        "        <p>@faq.Answer</p>\n" +
+        "    </ContentTemplate>\n" +
+        "</SunfishAccordion>";
+
+    private const string _eventCode =
+        "<SunfishAccordionItem Title=\"Click to expand\"\n" +
+        "    IsExpanded=\"@_isExpanded\" IsExpandedChanged=\"@OnExpandedChanged\">\n" +
+        "    <p>Tracks expanded state.</p>\n" +
+        "</SunfishAccordionItem>\n" +
+        "<p>Expanded: @_isExpanded</p>\n\n" +
+        "@code {\n" +
+        "    private bool _isExpanded;\n" +
+        "    private void OnExpandedChanged(bool v) => _isExpanded = v;\n" +
+        "}";
+
+    private const string _expandedItemsCode =
+        "<SunfishAccordion Data=\"@_items\" TextField=\"Question\"\n" +
+        "                 @bind-ExpandedItems=\"_expandedItems\">\n" +
+        "    <ContentTemplate Context=\"item\">\n" +
+        "        <p>@((FaqItem)item).Answer</p>\n" +
+        "    </ContentTemplate>\n" +
+        "</SunfishAccordion>\n" +
+        "<p>@_expandedItems?.Count() open item(s)</p>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter / Space", "Expands or collapses the focused accordion item"),
+        ("Arrow Down", "Moves focus to the next accordion header"),
+        ("Arrow Up", "Moves focus to the previous accordion header"),
+        ("Home", "Moves focus to the first accordion header"),
+        ("End", "Moves focus to the last accordion header"),
+        ("Tab", "Moves focus to the next focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"button\"", "Applied to each accordion header to indicate it is activatable"),
+        ("aria-expanded=\"true/false\"", "Indicates whether the accordion item content is visible"),
+        ("aria-controls", "Links the header to its corresponding content panel"),
+        ("role=\"region\"", "Applied to the content panel of each accordion item"),
+        ("aria-labelledby", "Links the content panel back to its controlling header"),
+        ("aria-disabled=\"true\"", "Applied to accordion items with Disabled=\"true\""),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Accordion headers are announced with their title and expanded or collapsed state.",
+        "When an item is expanded, the content panel is announced as a region labeled by the header.",
+        "Screen readers announce the position of each header (e.g., \"1 of 3\").",
+        "Disabled items are announced as \"dimmed\" or \"unavailable\".",
+    ];
+}

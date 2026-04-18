@@ -1,0 +1,27 @@
+@page "/components/popover"
+@page "/components/popover/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Popover displays rich content in a floating panel anchored to a trigger element." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishButton OnClick="@(() => _showPopover = !_showPopover)">Toggle Popover</SunfishButton>
+            @if (_showPopover)
+            {
+                <SunfishPopover>
+                    <p>Popover content goes here.</p>
+                </SunfishPopover>
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _showPopover;
+
+    private const string _basicCode =
+        "<SunfishButton OnClick=\"@(() => _show = !_show)\">Toggle Popover</SunfishButton>\n" +
+        "<SunfishPopover>\n" +
+        "    <p>Popover content goes here.</p>\n" +
+        "</SunfishPopover>";
+}

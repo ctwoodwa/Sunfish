@@ -1,0 +1,153 @@
+@page "/components/DatePicker"
+@page "/components/DatePicker/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishField>
+            <SunfishLabel>Select a date</SunfishLabel>
+            <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" />
+        </SunfishField>
+        @if (_date.HasValue)
+        {
+            <p><strong>Selected date:</strong> @_date.Value.ToString("yyyy-MM-dd")</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Disabled" Description="A disabled date picker prevents user interaction." Code="@_disabledCode">
+        <SunfishField>
+            <SunfishLabel>Select a date</SunfishLabel>
+            <SunfishDatePicker Value="@(new DateOnly(2025, 1, 15))" Disabled="true" />
+        </SunfishField>
+    </DemoSection>
+
+    <DemoSection Title="With Min/Max Range" Description="Restrict selectable dates to a range. Days outside the range appear disabled in the calendar." Code="@_rangeCode">
+        <SunfishField>
+            <SunfishLabel>Date (Jan 2025 only)</SunfishLabel>
+            <SunfishDatePicker Value="@_rangeDate"
+                              ValueChanged="@(v => _rangeDate = v)"
+                              Min="@(new DateOnly(2025, 1, 1))"
+                              Max="@(new DateOnly(2025, 1, 31))" />
+        </SunfishField>
+        @if (_rangeDate.HasValue)
+        {
+            <p><strong>Selected:</strong> @_rangeDate.Value.ToString("yyyy-MM-dd")</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="With Disabled Dates" Description="Specific dates can be disabled (e.g., holidays or weekends)." Code="@_disabledDatesCode">
+        <SunfishField>
+            <SunfishLabel>No weekends in Jan 2025</SunfishLabel>
+            <SunfishDatePicker Value="@_noWeekendDate"
+                              ValueChanged="@(v => _noWeekendDate = v)"
+                              DisabledDates="@_disabledDates" />
+        </SunfishField>
+        @if (_noWeekendDate.HasValue)
+        {
+            <p><strong>Selected:</strong> @_noWeekendDate.Value.ToString("yyyy-MM-dd")</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle date selection with the ValueChanged callback." Code="@_interactiveCode">
+        <SunfishField>
+            <SunfishLabel>Select a date</SunfishLabel>
+            <SunfishDatePicker Value="@_evDate" ValueChanged="@(v => _evDate = v)" />
+        </SunfishField>
+        @if (_evDate.HasValue)
+        {
+            <p><strong>Selected date:</strong> @_evDate.Value.ToString("yyyy-MM-dd")</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private DateOnly? _date;
+    private DateOnly? _evDate;
+    private DateOnly? _rangeDate;
+    private DateOnly? _noWeekendDate;
+
+    private List<DateOnly> _disabledDates = Enumerable.Range(1, 31)
+        .Select(d => new DateOnly(2025, 1, d))
+        .Where(d => d.DayOfWeek == DayOfWeek.Saturday || d.DayOfWeek == DayOfWeek.Sunday)
+        .ToList();
+
+    private const string _basicCode =
+        "<SunfishField>\n" +
+        "    <SunfishLabel>Select a date</SunfishLabel>\n" +
+        "    <SunfishDatePicker Value=\"@_date\" ValueChanged=\"@(v => _date = v)\" />\n" +
+        "</SunfishField>\n" +
+        "@if (_date.HasValue)\n" +
+        "{\n" +
+        "    <p><strong>Selected date:</strong> @_date.Value.ToString(\"yyyy-MM-dd\")</p>\n" +
+        "}\n\n" +
+        "@code {\n" +
+        "    private DateOnly? _date;\n" +
+        "}";
+
+    private const string _disabledCode =
+        "<SunfishField>\n" +
+        "    <SunfishLabel>Select a date</SunfishLabel>\n" +
+        "    <SunfishDatePicker Value=\"@(new DateOnly(2025, 1, 15))\" Disabled=\"true\" />\n" +
+        "</SunfishField>";
+
+    private const string _rangeCode =
+        "<SunfishDatePicker Value=\"@_date\"\n" +
+        "                  ValueChanged=\"@(v => _date = v)\"\n" +
+        "                  Min=\"@(new DateOnly(2025, 1, 1))\"\n" +
+        "                  Max=\"@(new DateOnly(2025, 1, 31))\" />";
+
+    private const string _disabledDatesCode =
+        "<SunfishDatePicker Value=\"@_date\"\n" +
+        "                  ValueChanged=\"@(v => _date = v)\"\n" +
+        "                  DisabledDates=\"@_weekends\" />";
+
+    private const string _interactiveCode =
+        "<SunfishDatePicker Value=\"@_date\" ValueChanged=\"@(v => _date = v)\" />\n" +
+        "@if (_date.HasValue)\n" +
+        "{\n" +
+        "    <p><strong>Selected date:</strong> @_date.Value.ToString(\"yyyy-MM-dd\")</p>\n" +
+        "}\n\n" +
+        "@code {\n" +
+        "    private DateOnly? _date;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the date picker input"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Enter", "Opens the calendar popup or selects the focused date"),
+        ("Escape", "Closes the calendar popup"),
+        ("Arrow Up", "Moves to the same day in the previous week"),
+        ("Arrow Down", "Moves to the same day in the next week"),
+        ("Arrow Left", "Moves to the previous day"),
+        ("Arrow Right", "Moves to the next day"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"dialog\"", "Applied to the calendar popup"),
+        ("aria-label", "Provides an accessible name for the date picker"),
+        ("aria-disabled=\"true\"", "Applied when the Disabled parameter is set"),
+        ("aria-invalid=\"true\"", "Applied when the IsInvalid parameter is set"),
+        ("aria-expanded", "Indicates whether the calendar popup is open or closed"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The date picker input announces its label and current selected date.",
+        "The calendar popup is announced as a dialog with the current month and year.",
+        "Individual dates are announced with their full date and selection state.",
+        "Disabled date pickers are announced as \"dimmed\" or \"unavailable\" depending on the screen reader.",
+    ];
+}

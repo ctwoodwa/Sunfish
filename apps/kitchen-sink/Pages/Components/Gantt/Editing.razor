@@ -1,0 +1,164 @@
+@page "/components/gantt/editing"
+@layout ComponentDemoLayout
+
+<PageSection Title="Editing">
+    <DemoSection Title="Inline Editing" Description="Double-click any task row to enter inline edit mode. The OnUpdate, OnDelete, and OnCreate handlers capture each action and display the last operation below the chart." Code="@_editingCode">
+        <div class="demo-row" style="margin-bottom: 8px;">
+            <button class="sf-btn" @onclick="AddTask">+ Add Task</button>
+            <span style="margin-left: 16px; color: var(--sf-text-secondary);">
+                Last action: <strong>@_lastAction</strong>
+            </span>
+        </div>
+        <div class="demo-row">
+            <SunfishGantt TItem="EditTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="420px"
+                         Width="100%"
+                         @bind-View="_currentView"
+                         OnUpdate="@OnUpdate"
+                         OnDelete="@OnDelete"
+                         OnCreate="@OnCreate">
+                <GanttColumns>
+                    <GanttColumn TItem="EditTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task"
+                                 Editable="true" />
+                    <GanttColumn TItem="EditTask"
+                                 Field="PercentComplete"
+                                 Width="70px"
+                                 Title="% Done"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right"
+                                 Editable="true" />
+                    <GanttColumn TItem="EditTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}"
+                                 Editable="true" />
+                    <GanttColumn TItem="EditTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}"
+                                 Editable="true" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Week;
+    private string _lastAction = "(none)";
+    private int _nextId = 100;
+
+    private class EditTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<EditTask> _tasks = GenerateData();
+
+    private static List<EditTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<EditTask>
+        {
+            new() { Id = "1", Title = "Backend Services", Start = today, End = today.AddDays(20), PercentComplete = 40 },
+            new() { Id = "1.1", ParentId = "1", Title = "API Design", Start = today, End = today.AddDays(5), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Implementation", Start = today.AddDays(5), End = today.AddDays(15), PercentComplete = 30 },
+            new() { Id = "1.3", ParentId = "1", Title = "Load Testing", Start = today.AddDays(15), End = today.AddDays(20), PercentComplete = 0 },
+
+            new() { Id = "2", Title = "Frontend App", Start = today.AddDays(8), End = today.AddDays(30), PercentComplete = 15 },
+            new() { Id = "2.1", ParentId = "2", Title = "Component Library", Start = today.AddDays(8), End = today.AddDays(16), PercentComplete = 50 },
+            new() { Id = "2.2", ParentId = "2", Title = "Page Integration", Start = today.AddDays(16), End = today.AddDays(25), PercentComplete = 0 },
+            new() { Id = "2.3", ParentId = "2", Title = "E2E Tests", Start = today.AddDays(25), End = today.AddDays(30), PercentComplete = 0 },
+        };
+    }
+
+    private void OnUpdate(GanttUpdateEventArgs args)
+    {
+        var item = args.Item as EditTask;
+        if (item is null) return;
+        var found = _tasks.FirstOrDefault(t => t.Id == item.Id);
+        if (found is not null)
+        {
+            found.Title = item.Title;
+            found.Start = item.Start;
+            found.End = item.End;
+            found.PercentComplete = item.PercentComplete;
+        }
+        _lastAction = $"Updated \"{item.Title}\"";
+    }
+
+    private void OnDelete(GanttDeleteEventArgs args)
+    {
+        var item = args.Item as EditTask;
+        if (item is null) return;
+        _tasks.RemoveAll(t => t.Id == item.Id || t.ParentId == item.Id);
+        _lastAction = $"Deleted \"{item.Title}\"";
+    }
+
+    private void OnCreate(GanttCreateEventArgs args)
+    {
+        var item = args.Item as EditTask;
+        if (item is null) return;
+        item.Id = (_nextId++).ToString();
+        _tasks.Add(item);
+        _lastAction = $"Created \"{item.Title}\"";
+    }
+
+    private void AddTask()
+    {
+        var today = DateTime.Today;
+        var newTask = new EditTask
+        {
+            Id = (_nextId++).ToString(),
+            Title = "New Task",
+            Start = today,
+            End = today.AddDays(7),
+            PercentComplete = 0
+        };
+        _tasks.Add(newTask);
+        _lastAction = $"Created \"{newTask.Title}\" (Id {newTask.Id})";
+    }
+
+    private const string _editingCode = @"<SunfishGantt TItem=""EditTask""
+             Data=""@_tasks""
+             IdField=""Id""
+             ParentIdField=""ParentId""
+             Height=""420px""
+             @bind-View=""_currentView""
+             OnUpdate=""@OnUpdate""
+             OnDelete=""@OnDelete""
+             OnCreate=""@OnCreate"">
+    <GanttColumns>
+        <GanttColumn TItem=""EditTask"" Field=""Title"" Expandable=""true"" Width=""200px"" Editable=""true"" />
+        <GanttColumn TItem=""EditTask"" Field=""PercentComplete"" Width=""70px"" Title=""% Done"" Editable=""true"" />
+        <GanttColumn TItem=""EditTask"" Field=""Start"" Width=""100px"" Editable=""true"" />
+        <GanttColumn TItem=""EditTask"" Field=""End"" Width=""100px"" Editable=""true"" />
+    </GanttColumns>
+    <GanttViews>
+        <GanttWeekView />
+        <GanttMonthView />
+    </GanttViews>
+</SunfishGantt>
+
+// Double-click a row to edit inline.
+// Handlers receive typed event args:
+private void OnUpdate(GanttUpdateEventArgs args) { ... }
+private void OnDelete(GanttDeleteEventArgs args) { ... }
+private void OnCreate(GanttCreateEventArgs args) { ... }";
+}

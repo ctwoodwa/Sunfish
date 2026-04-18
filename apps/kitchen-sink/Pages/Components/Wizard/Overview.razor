@@ -1,0 +1,229 @@
+@page "/components/wizard"
+@page "/components/wizard/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Wizard" Description="A step-by-step wizard with back/next navigation. Steps progress linearly by default.">
+        <SunfishWizard @bind-Value="_basicStep">
+            <WizardStep Label="Account">
+                <div style="padding:16px;">
+                    <p>Enter your account information.</p>
+                    <label>Email: <input type="email" placeholder="user@example.com" style="width:250px;" /></label>
+                </div>
+            </WizardStep>
+            <WizardStep Label="Profile">
+                <div style="padding:16px;">
+                    <p>Set up your profile.</p>
+                    <label>Name: <input type="text" placeholder="Your name" style="width:250px;" /></label>
+                </div>
+            </WizardStep>
+            <WizardStep Label="Confirm">
+                <div style="padding:16px;">
+                    <p>Review your information and click Finish.</p>
+                </div>
+            </WizardStep>
+        </SunfishWizard>
+        <p class="demo-info">Current step: <strong>@(_basicStep + 1) of 3</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Non-Linear Navigation" Description="Set Linear=false to allow clicking any step in the stepper, not just the next one.">
+        <SunfishWizard @bind-Value="_nonLinearStep" Linear="false">
+            <WizardStep Label="Step 1">
+                <div style="padding:16px;">Click any step header above to jump directly.</div>
+            </WizardStep>
+            <WizardStep Label="Step 2">
+                <div style="padding:16px;">You can navigate to any step in any order.</div>
+            </WizardStep>
+            <WizardStep Label="Step 3">
+                <div style="padding:16px;">Non-linear mode is useful for review workflows.</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Step Configuration">
+    <DemoSection Title="Icons & Optional Steps" Description="Steps can have icons and be marked as optional (skippable).">
+        <SunfishWizard @bind-Value="_iconStep">
+            <WizardStep Label="Personal Info" Icon="user">
+                <div style="padding:16px;">Required: Enter personal details.</div>
+            </WizardStep>
+            <WizardStep Label="Preferences" Icon="settings" Optional="true">
+                <div style="padding:16px;">Optional: Configure your preferences (can be skipped).</div>
+            </WizardStep>
+            <WizardStep Label="Review" Icon="check">
+                <div style="padding:16px;">Review and submit.</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+
+    <DemoSection Title="Disabled Steps" Description="Disabled steps cannot be navigated to until enabled.">
+        <div class="demo-controls">
+            <label><input type="checkbox" @bind="_enableStep2" /> Enable Step 2</label>
+        </div>
+        <SunfishWizard @bind-Value="_disabledStep" Linear="false">
+            <WizardStep Label="Start">
+                <div style="padding:16px;">Step 1 is always enabled.</div>
+            </WizardStep>
+            <WizardStep Label="Locked" Disabled="@(!_enableStep2)">
+                <div style="padding:16px;">This step was locked until you enabled it.</div>
+            </WizardStep>
+            <WizardStep Label="Finish">
+                <div style="padding:16px;">Final step.</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+
+    <DemoSection Title="Step Validation" Description="Use the Valid parameter to show validation state (checkmark/error) on step headers.">
+        <SunfishWizard @bind-Value="_validStep">
+            <WizardStep Label="Name" Valid="true">
+                <div style="padding:16px;">This step is valid (green checkmark on header).</div>
+            </WizardStep>
+            <WizardStep Label="Address" Valid="false">
+                <div style="padding:16px;">This step has errors (red indicator on header).</div>
+            </WizardStep>
+            <WizardStep Label="Payment" Valid="@null">
+                <div style="padding:16px;">This step has not been validated yet (neutral).</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Layout & Appearance">
+    <DemoSection Title="Stepper Position" Description="Control where the step indicator appears: Top, Bottom, Left, or Right.">
+        <div class="demo-controls">
+            <label>
+                <input type="radio" name="stepperPos" checked="@(_stepperPos == WizardStepperPosition.Top)"
+                       @onchange="@(() => _stepperPos = WizardStepperPosition.Top)" /> Top
+            </label>
+            <label style="margin-left:12px;">
+                <input type="radio" name="stepperPos" checked="@(_stepperPos == WizardStepperPosition.Bottom)"
+                       @onchange="@(() => _stepperPos = WizardStepperPosition.Bottom)" /> Bottom
+            </label>
+            <label style="margin-left:12px;">
+                <input type="radio" name="stepperPos" checked="@(_stepperPos == WizardStepperPosition.Left)"
+                       @onchange="@(() => _stepperPos = WizardStepperPosition.Left)" /> Left
+            </label>
+            <label style="margin-left:12px;">
+                <input type="radio" name="stepperPos" checked="@(_stepperPos == WizardStepperPosition.Right)"
+                       @onchange="@(() => _stepperPos = WizardStepperPosition.Right)" /> Right
+            </label>
+        </div>
+        <SunfishWizard @bind-Value="_posStep" StepperPosition="@_stepperPos" Height="250px">
+            <WizardStep Label="First">
+                <div style="padding:16px;">Content area adjusts based on stepper position.</div>
+            </WizardStep>
+            <WizardStep Label="Second">
+                <div style="padding:16px;">Try each position option above.</div>
+            </WizardStep>
+            <WizardStep Label="Third">
+                <div style="padding:16px;">Left and Right positions stack vertically.</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+
+    <DemoSection Title="Custom Button Text & Pager" Description="Customize Previous/Next/Finish button labels and show a step pager.">
+        <SunfishWizard @bind-Value="_customStep"
+                      PreviousText="Back"
+                      NextText="Continue"
+                      FinishText="Submit"
+                      ShowPager="true">
+            <WizardStep Label="Details">
+                <div style="padding:16px;">Custom button text and step pager shown below.</div>
+            </WizardStep>
+            <WizardStep Label="Review">
+                <div style="padding:16px;">The pager shows "Step X of Y".</div>
+            </WizardStep>
+            <WizardStep Label="Submit">
+                <div style="padding:16px;">Click Submit to finish.</div>
+            </WizardStep>
+        </SunfishWizard>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnFinish & OnStepChange" Description="OnFinish fires when the final step's button is clicked. OnStepChange fires on every navigation.">
+        <SunfishWizard @bind-Value="_eventStep"
+                      OnFinish="@OnWizardFinish"
+                      OnStepChange="@OnStepChanged">
+            <WizardStep Label="Step 1">
+                <div style="padding:16px;">Navigate through steps to see events fire.</div>
+            </WizardStep>
+            <WizardStep Label="Step 2">
+                <div style="padding:16px;">Almost there...</div>
+            </WizardStep>
+            <WizardStep Label="Step 3">
+                <div style="padding:16px;">Click Finish to trigger OnFinish.</div>
+            </WizardStep>
+        </SunfishWizard>
+        <p class="demo-info">Step changes: <strong>@_stepChangeCount</strong> | Finished: <strong>@(_wizardFinished ? "Yes" : "No")</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Custom Buttons" Description="Use the WizardButtons template to replace the default navigation with custom controls.">
+        <SunfishWizard @bind-Value="_customBtnStep">
+            <ChildContent>
+                <WizardStep Label="Start">
+                    <div style="padding:16px;">Custom button template replaces default navigation.</div>
+                </WizardStep>
+                <WizardStep Label="Middle">
+                    <div style="padding:16px;">The template receives the current step index as context.</div>
+                </WizardStep>
+                <WizardStep Label="End">
+                    <div style="padding:16px;">You control all navigation logic.</div>
+                </WizardStep>
+            </ChildContent>
+            <WizardButtons>
+                <div style="display:flex;gap:8px;justify-content:flex-end;padding:8px 16px;">
+                    @if (context > 0)
+                    {
+                        <button class="sf-btn mar-btn--secondary" @onclick="@(() => _customBtnStep--)">Go Back</button>
+                    }
+                    @if (context < 2)
+                    {
+                        <button class="sf-btn mar-btn--primary" @onclick="@(() => _customBtnStep++)">Proceed</button>
+                    }
+                    else
+                    {
+                        <button class="sf-btn mar-btn--success" @onclick="@(() => _customBtnAction = "Wizard completed!")">Complete</button>
+                    }
+                </div>
+            </WizardButtons>
+        </SunfishWizard>
+        <p class="demo-info">@_customBtnAction</p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    // ── Basic ────────────────────────────────────────────────────────
+    private int _basicStep;
+    private int _nonLinearStep;
+
+    // ── Step Configuration ───────────────────────────────────────────
+    private int _iconStep;
+    private int _disabledStep;
+    private bool _enableStep2;
+    private int _validStep;
+
+    // ── Layout ───────────────────────────────────────────────────────
+    private int _posStep;
+    private WizardStepperPosition _stepperPos = WizardStepperPosition.Top;
+    private int _customStep;
+
+    // ── Events ───────────────────────────────────────────────────────
+    private int _eventStep;
+    private int _stepChangeCount;
+    private bool _wizardFinished;
+
+    private void OnStepChanged(int newStep)
+    {
+        _stepChangeCount++;
+    }
+
+    private void OnWizardFinish()
+    {
+        _wizardFinished = true;
+    }
+
+    // ── Custom Buttons ───────────────────────────────────────────────
+    private int _customBtnStep;
+    private string _customBtnAction = "";
+}

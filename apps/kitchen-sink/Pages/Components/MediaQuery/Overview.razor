@@ -1,0 +1,20 @@
+@page "/components/mediaquery"
+@page "/components/mediaquery/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="MediaQuery detects viewport breakpoints and provides responsive rendering context." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishMediaQuery>
+                <SunfishAlert Severity="AlertSeverity.Info">Responsive content area</SunfishAlert>
+            </SunfishMediaQuery>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishMediaQuery>\n" +
+        "    <!-- Content adapts to viewport size -->\n" +
+        "</SunfishMediaQuery>";
+}

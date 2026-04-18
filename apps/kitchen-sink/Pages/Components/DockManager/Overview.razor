@@ -1,0 +1,196 @@
+@page "/components/dockmanager"
+@page "/components/dockmanager/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Dock Manager provides a tabbed panel layout with pin, float, and close actions for each pane." Code="@_basicCode">
+        <SunfishDockManager Height="300px" Width="100%"
+                           OnPaneClosed="HandleClose"
+                           OnPanePin="HandlePin"
+                           OnPaneFloat="HandleFloat"
+                           OnPaneActivated="HandleActivated"
+                           OnLayoutChanged="HandleLayoutChanged">
+            <SunfishDockPane Id="explorer" Title="Explorer">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Project Explorer</p>
+                    <ul style="list-style:none;padding:0;margin:8px 0;">
+                        <li>📁 src/</li>
+                        <li>📁 tests/</li>
+                        <li>📄 README.md</li>
+                    </ul>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="properties" Title="Properties">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Properties Panel</p>
+                    <p>Select an item to view its properties.</p>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="output" Title="Output">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Output Console</p>
+                    <pre style="background:#f5f5f5;padding:8px;border-radius:4px;font-size:12px;">Build succeeded.
+    0 Warning(s)
+    0 Error(s)</pre>
+                </div>
+            </SunfishDockPane>
+        </SunfishDockManager>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Non-Closable Panes" Description="Set Closable to false to prevent a pane from being closed." Code="@_nonClosableCode">
+        <SunfishDockManager Height="250px">
+            <SunfishDockPane Id="main" Title="Main Editor" Closable="false">
+                <div style="padding:12px;">
+                    <p>This pane cannot be closed.</p>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="tools" Title="Tools">
+                <div style="padding:12px;">
+                    <p>This pane can be closed.</p>
+                </div>
+            </SunfishDockPane>
+        </SunfishDockManager>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Floating Panes">
+    <DemoSection Title="Floating Panes" Description="Panes can be toggled between docked and floating states. Floating panes render as overlays with a title bar, dock button, and close button. Click the float arrow on a docked tab or the dock arrow on a floating pane to toggle." Code="@_floatingCode">
+        <SunfishDockManager @ref="_floatingManager" Height="400px" Width="100%"
+                           OnPaneFloat="HandleFloat"
+                           OnPaneClosed="HandleClose">
+            <SunfishDockPane Id="editor" Title="Editor">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Code Editor</p>
+                    <pre style="background:#f5f5f5;padding:8px;border-radius:4px;font-size:12px;">public class Hello
+{
+    public void World() => Console.WriteLine("Hello!");
+}</pre>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="terminal" Title="Terminal">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Terminal</p>
+                    <pre style="background:#f5f5f5;padding:8px;border-radius:4px;font-size:12px;">$ dotnet build
+Build succeeded.</pre>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="floating-preview" Title="Preview"
+                            IsFloating="true"
+                            FloatingTop="80px"
+                            FloatingLeft="250px"
+                            FloatingWidth="300px"
+                            FloatingHeight="200px">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Live Preview</p>
+                    <p>This pane starts floating. Click the dock arrow to re-dock it.</p>
+                </div>
+            </SunfishDockPane>
+        </SunfishDockManager>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Cross-Pane Tab Move">
+    <DemoSection Title="Cross-Pane Tab Move" Description="Tabs can be dragged between tab groups. Set TabGroupId on each pane to define logical groups. Drop a tab on another group's header strip to move it. The OnPaneMoved event fires with source/target group IDs." Code="@_crossPaneMoveCode">
+        <SunfishDockManager Height="300px" Width="100%"
+                           OnPaneMoved="HandlePaneMoved"
+                           OnLayoutChanged="HandleLayoutChanged">
+            <SunfishDockPane Id="left-1" Title="Left 1" TabGroupId="left-group">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Left Group - Pane 1</p>
+                    <p>Drag this tab to the right group.</p>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="left-2" Title="Left 2" TabGroupId="left-group">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Left Group - Pane 2</p>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="right-1" Title="Right 1" TabGroupId="right-group">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Right Group - Pane 1</p>
+                    <p>Drag this tab to the left group.</p>
+                </div>
+            </SunfishDockPane>
+            <SunfishDockPane Id="right-2" Title="Right 2" TabGroupId="right-group">
+                <div style="padding:12px;">
+                    <p style="font-weight:600;">Right Group - Pane 2</p>
+                </div>
+            </SunfishDockPane>
+        </SunfishDockManager>
+    </DemoSection>
+</PageSection>
+
+@if (!string.IsNullOrEmpty(_lastAction))
+{
+    <div style="margin-top:12px;padding:8px;background:#f5f5f5;border-radius:4px;font-size:13px;">
+        Last action: @_lastAction
+    </div>
+}
+
+@code {
+    private string _lastAction = "";
+    private SunfishDockManager? _floatingManager;
+
+    private Task HandleClose(string id) { _lastAction = $"Closed pane: {id}"; return Task.CompletedTask; }
+    private Task HandlePin(string id) { _lastAction = $"Pinned pane: {id}"; return Task.CompletedTask; }
+    private Task HandleFloat(string id) { _lastAction = $"Floated pane: {id}"; return Task.CompletedTask; }
+    private Task HandleActivated(string id) { _lastAction = $"Activated pane: {id}"; return Task.CompletedTask; }
+    private Task HandleLayoutChanged() { _lastAction = $"Layout changed"; return Task.CompletedTask; }
+    private Task HandlePaneMoved(DockPaneMoveEventArgs args) { _lastAction = $"Moved pane {args.PaneId} from {args.SourceGroupId} to {args.TargetGroupId}"; return Task.CompletedTask; }
+
+    private const string _basicCode =
+        "<SunfishDockManager Height=\"300px\">\n" +
+        "    <SunfishDockPane Id=\"explorer\" Title=\"Explorer\">\n" +
+        "        <p>Project Explorer content</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"properties\" Title=\"Properties\">\n" +
+        "        <p>Properties content</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"output\" Title=\"Output\">\n" +
+        "        <p>Output console content</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "</SunfishDockManager>";
+
+    private const string _floatingCode =
+        "<SunfishDockManager Height=\"400px\" Width=\"100%\">\n" +
+        "    <SunfishDockPane Id=\"editor\" Title=\"Editor\">\n" +
+        "        <p>Code Editor content</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"terminal\" Title=\"Terminal\">\n" +
+        "        <p>Terminal content</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"preview\" Title=\"Preview\"\n" +
+        "                    IsFloating=\"true\"\n" +
+        "                    FloatingTop=\"80px\"\n" +
+        "                    FloatingLeft=\"250px\"\n" +
+        "                    FloatingWidth=\"300px\"\n" +
+        "                    FloatingHeight=\"200px\">\n" +
+        "        <p>This pane starts floating.</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "</SunfishDockManager>";
+
+    private const string _crossPaneMoveCode =
+        "<SunfishDockManager Height=\"300px\" OnPaneMoved=\"HandlePaneMoved\">\n" +
+        "    <SunfishDockPane Id=\"left-1\" Title=\"Left 1\" TabGroupId=\"left-group\">\n" +
+        "        <p>Left Group - Pane 1</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"left-2\" Title=\"Left 2\" TabGroupId=\"left-group\">\n" +
+        "        <p>Left Group - Pane 2</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"right-1\" Title=\"Right 1\" TabGroupId=\"right-group\">\n" +
+        "        <p>Right Group - Pane 1</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "</SunfishDockManager>";
+
+    private const string _nonClosableCode =
+        "<SunfishDockManager Height=\"250px\">\n" +
+        "    <SunfishDockPane Id=\"main\" Title=\"Main Editor\" Closable=\"false\">\n" +
+        "        <p>This pane cannot be closed.</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "    <SunfishDockPane Id=\"tools\" Title=\"Tools\">\n" +
+        "        <p>This pane can be closed.</p>\n" +
+        "    </SunfishDockPane>\n" +
+        "</SunfishDockManager>";
+}

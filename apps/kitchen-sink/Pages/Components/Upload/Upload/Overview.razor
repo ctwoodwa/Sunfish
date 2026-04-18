@@ -1,0 +1,127 @@
+@page "/components/Upload"
+@page "/components/Upload/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.Forms.Inputs
+
+<PageSection Title="Overview">
+
+    <DemoSection Title="Basic Upload (AutoUpload)" Code="@_basicCode">
+        <SunfishUpload SaveUrl="/api/upload"
+                      OnSuccess="HandleSuccess"
+                      OnError="HandleError" />
+        @if (!string.IsNullOrEmpty(_uploadStatus))
+        {
+            <p class="demo-status">@_uploadStatus</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Restricted File Types" Code="@_restrictedCode">
+        <SunfishUpload SaveUrl="/api/upload"
+                      Accept=".jpg,.png,.gif"
+                      AllowedExtensions='@(new List<string> { ".jpg", ".png", ".gif" })'
+                      MaxFileSize="@(5 * 1024 * 1024)"
+                      MinFileSize="@(1024L)"
+                      OnError="HandleError" />
+    </DemoSection>
+
+    <DemoSection Title="Manual Upload (AutoUpload=false)" Code="@_manualCode">
+        <SunfishUpload SaveUrl="/api/upload"
+                      RemoveUrl="/api/upload/remove"
+                      Multiple="true"
+                      AutoUpload="false"
+                      OnSuccess="HandleSuccess"
+                      OnError="HandleError" />
+    </DemoSection>
+
+    <DemoSection Title="Chunk Upload" Code="@_chunkCode">
+        <SunfishUpload SaveUrl="/api/upload/chunk"
+                      ChunkSize="@(512 * 1024)"
+                      OnSuccess="HandleSuccess"
+                      OnProgress="HandleProgress"
+                      OnError="HandleError" />
+        @if (_progress > 0)
+        {
+            <p class="demo-status">Progress: @_progress%</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Custom Drop Zone Content" Code="@_customCode">
+        <SunfishUpload SaveUrl="/api/upload"
+                      RemoveUrl="/api/upload/remove"
+                      Multiple="true"
+                      AutoUpload="false">
+            <p>Drop your documents here or click Browse files.</p>
+        </SunfishUpload>
+    </DemoSection>
+
+    <DemoSection Title="With Initial Files" Code="@_initialCode">
+        <SunfishUpload SaveUrl="/api/upload"
+                      RemoveUrl="/api/upload/remove"
+                      Files="@_initialFiles" />
+    </DemoSection>
+
+</PageSection>
+
+@code {
+    private string? _uploadStatus;
+    private int _progress;
+
+    private void HandleSuccess(UploadSuccessEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        _uploadStatus = file != null
+            ? $"Uploaded: {file.Name} ({args.Operation})"
+            : "Upload succeeded.";
+    }
+
+    private void HandleError(UploadErrorEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        _uploadStatus = file != null
+            ? $"Error with {file.Name}: {args.Request.StatusText}"
+            : "Upload error.";
+    }
+
+    private void HandleProgress(UploadProgressEventArgs args)
+    {
+        _progress = args.Progress;
+    }
+
+    private readonly List<UploadFileInfo> _initialFiles =
+    [
+        new UploadFileInfo { Id = "1", Name = "report.pdf", Extension = ".pdf", Size = 2 * 1024 * 1024, Status = UploadFileStatus.Uploaded },
+        new UploadFileInfo { Id = "2", Name = "image.jpg", Extension = ".jpg", Size = 512 * 1024, Status = UploadFileStatus.Uploaded }
+    ];
+
+    private const string _basicCode =
+        "<SunfishUpload SaveUrl=\"/api/upload\"\n" +
+        "              OnSuccess=\"HandleSuccess\"\n" +
+        "              OnError=\"HandleError\" />";
+
+    private const string _restrictedCode =
+        "<SunfishUpload SaveUrl=\"/api/upload\"\n" +
+        "              Accept=\".jpg,.png,.gif\"\n" +
+        "              AllowedExtensions='@(new List<string> { \".jpg\", \".png\", \".gif\" })'\n" +
+        "              MaxFileSize=\"@(5 * 1024 * 1024)\"\n" +
+        "              MinFileSize=\"@(1024L)\" />";
+
+    private const string _manualCode =
+        "<SunfishUpload SaveUrl=\"/api/upload\"\n" +
+        "              RemoveUrl=\"/api/upload/remove\"\n" +
+        "              Multiple=\"true\"\n" +
+        "              AutoUpload=\"false\" />";
+
+    private const string _chunkCode =
+        "<SunfishUpload SaveUrl=\"/api/upload/chunk\"\n" +
+        "              ChunkSize=\"@(512 * 1024)\" />";
+
+    private const string _customCode =
+        "<SunfishUpload SaveUrl=\"/api/upload\" AutoUpload=\"false\">\n" +
+        "    <p>Drop your documents here or click Browse files.</p>\n" +
+        "</SunfishUpload>";
+
+    private const string _initialCode =
+        "<SunfishUpload SaveUrl=\"/api/upload\"\n" +
+        "              RemoveUrl=\"/api/upload/remove\"\n" +
+        "              Files=\"@_initialFiles\" />";
+}

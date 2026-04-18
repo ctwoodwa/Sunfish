@@ -1,0 +1,51 @@
+@using Sunfish.KitchenSink.Data
+@inject SiteLinks Links
+
+<div class="component-footer">
+    <div class="component-footer-desc">
+        <h2>@Component.Name Component</h2>
+        <p>@Component.Description</p>
+        <p>This component is part of <strong>Sunfish</strong>, a provider-first Blazor component library.</p>
+    </div>
+
+    <div class="component-footer-resources">
+        <h3>Resources</h3>
+        <ul>
+            <li><a href="@Links.ApiPage(Component.ApiPath)">API Reference</a></li>
+            <li><a href="https://github.com/sunfish-dev/sunfish" target="_blank">GitHub Repository</a></li>
+        </ul>
+    </div>
+
+    @{ var (prev, next) = GetAdjacentComponents(); }
+    <nav class="next-prev-nav">
+        @if (prev is not null)
+        {
+            <a class="next-prev-link prev" href="/components/@prev.Slug">
+                <span class="next-prev-label">Previous</span>
+                <span class="next-prev-title">@prev.Name</span>
+            </a>
+        }
+        @if (next is not null)
+        {
+            <a class="next-prev-link next" href="/components/@next.Slug">
+                <span class="next-prev-label">Next</span>
+                <span class="next-prev-title">@next.Name</span>
+            </a>
+        }
+    </nav>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public ComponentRegistry.ComponentInfo Component { get; set; } = default!;
+
+    private (ComponentRegistry.ComponentInfo? Prev, ComponentRegistry.ComponentInfo? Next) GetAdjacentComponents()
+    {
+        var all = ComponentRegistry.All;
+        var idx = Array.FindIndex(all, c => c.Slug == Component.Slug);
+        if (idx < 0) return (null, null);
+        var prev = idx > 0 ? all[idx - 1] : null;
+        var next = idx < all.Length - 1 ? all[idx + 1] : null;
+        return (prev, next);
+    }
+}

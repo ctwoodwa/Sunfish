@@ -1,0 +1,373 @@
+@page "/components/allocation-scheduler/advanced-features"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@using Sunfish.Foundation.BusinessLogic.Enums
+
+<PageSection Title="Critical Path, Loader & Sizing">
+    <DemoSection Title="Critical Path, Loader & Sizing"
+                 Description="Toggle ShowCriticalPath, EnableLoaderContainer, and bind Width/Class for layout control."
+                 Code="@_criticalPathCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center">
+            <label>
+                <input type="checkbox" @bind="_showCriticalPath" />
+                Show Critical Path
+            </label>
+            <label>
+                <input type="checkbox" @bind="_enableLoader" />
+                Enable Loader Container
+            </label>
+            <label>
+                Width:
+                <select @bind="_width">
+                    <option value="">Auto</option>
+                    <option value="600px">600px</option>
+                    <option value="100%">100%</option>
+                </select>
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   ShowCriticalPath="@_showCriticalPath"
+                                   EnableLoaderContainer="@_enableLoader"
+                                   Height="250px"
+                                   Width="@_width"
+                                   Class="demo-custom-class"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Context Menu Gating">
+    <DemoSection Title="CanExecuteAction"
+                 Description="Use CanExecuteAction to conditionally disable context menu commands. Shift commands are disabled for QA resources."
+                 Code="@_canExecuteCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="true"
+                                   CanExecuteAction="@HandleCanExecute"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="1"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="200px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_canExecuteMessage))
+        {
+            <p><strong>CanExecuteAction:</strong> @_canExecuteMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Scenario Lifecycle Events">
+    <DemoSection Title="Scenario Lifecycle"
+                 Description="Wire OnAllocationOverridden, OnScenarioStatusChanged, and OnScenarioPromoted to observe scenario lifecycle transitions."
+                 Code="@_lifecycleCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AllocationSets="@_sets"
+                                   ScenarioOverrides="@_overrides"
+                                   ActiveSetId="@_scenarioId"
+                                   CompareSetId="@_baselineId"
+                                   BaselineDateFormat="MMM d, yyyy"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnAllocationOverridden="@HandleOverridden"
+                                   OnScenarioStatusChanged="@HandleStatusChanged"
+                                   OnScenarioPromoted="@HandlePromoted"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_overriddenMessage))
+        {
+            <p><strong>Overridden:</strong> @_overriddenMessage</p>
+        }
+        @if (!string.IsNullOrEmpty(_statusMessage))
+        {
+            <p><strong>Status changed:</strong> @_statusMessage</p>
+        }
+        @if (!string.IsNullOrEmpty(_promotedMessage))
+        {
+            <p><strong>Promoted:</strong> @_promotedMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Explicit Date Range">
+    <DemoSection Title="Explicit Date Range & Two-Way Binding"
+                 Description="Bind VisibleStart and VisibleEnd explicitly. VisibleStartChanged fires when navigation occurs."
+                 Code="@_dateRangeCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center">
+            <label>
+                Visible Start:
+                <input type="date" @bind="_visibleStart" />
+            </label>
+            <span>Current: <strong>@_visibleStart.ToString("MMM d, yyyy")</strong></span>
+            @if (_visibleEnd.HasValue)
+            {
+                <span>End: <strong>@_visibleEnd.Value.ToString("MMM d, yyyy")</strong></span>
+            }
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_visibleStart"
+                                   VisibleStartChanged="@(d => _visibleStart = d)"
+                                   VisibleEnd="@_visibleEnd"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Column Width Control">
+    <DemoSection Title="Fixed-Width Time Columns with Resize"
+                 Description="Time columns use a fixed pixel width (TimeColumnWidth) instead of fluid layout, preventing content compression. Enable AllowTimeColumnResize for drag-to-resize, or double-click a header border to auto-fit to content (like Excel Alt+H, O, I)."
+                 Code="@_colWidthCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+            <label>
+                Column Width:
+                <select @bind="_colWidthPx">
+                    <option value="60">60px (compact)</option>
+                    <option value="80">80px (default)</option>
+                    <option value="100">100px (wide)</option>
+                    <option value="120">120px (extra wide)</option>
+                </select>
+            </label>
+            <label>
+                <input type="checkbox" @bind="_colWidthResizable" />
+                AllowTimeColumnResize
+            </label>
+            <label>
+                <input type="checkbox" @bind="_colWidthAutoFit" />
+                AutoFitOnDoubleClick
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   TimeColumnWidth="@_colWidthPx"
+                                   AllowTimeColumnResize="@_colWidthResizable"
+                                   AutoFitOnDoubleClick="@_colWidthAutoFit"
+                                   MinTimeColumnWidth="48"
+                                   MaxTimeColumnWidth="200"
+                                   OnTimeColumnResized="@HandleTimeColumnResized"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_colWidthMessage))
+        {
+            <p><strong>Column resized:</strong> @_colWidthMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private DateTime _visibleStart = new(2026, 4, 6);
+    private DateTime? _visibleEnd = new DateTime(2026, 6, 1);
+    private bool _showCriticalPath;
+    private bool _enableLoader = true;
+    private string? _width;
+    private string _canExecuteMessage = string.Empty;
+    private string _overriddenMessage = string.Empty;
+    private string _statusMessage = string.Empty;
+    private string _promotedMessage = string.Empty;
+
+    private static readonly Guid _baselineId = Guid.NewGuid();
+    private static readonly Guid _scenarioId = Guid.NewGuid();
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationSet> _sets = new()
+    {
+        new()
+        {
+            SetId = _baselineId, Name = "Baseline", Type = AllocationSetType.Baseline,
+            Status = ScenarioStatus.Approved, IsLocked = true, CreatedBy = "PM", CreatedDate = new(2026, 3, 1)
+        },
+        new()
+        {
+            SetId = _scenarioId, Name = "Scenario A", Type = AllocationSetType.Scenario,
+            Status = ScenarioStatus.Draft, ParentBaselineId = _baselineId, CreatedBy = "PM", CreatedDate = new(2026, 4, 1)
+        }
+    };
+
+    private List<ScenarioOverride> _overrides = new()
+    {
+        new()
+        {
+            OverrideId = Guid.NewGuid(), SetId = _scenarioId,
+            Override = new()
+            {
+                AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",
+                BucketStart = new(2026, 4, 6), BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours
+            },
+            OverrideReason = "Reduced for onboarding"
+        }
+    };
+
+    private async Task HandleCanExecute(CanExecuteActionArgs args)
+    {
+        if (args.CommandName.Contains("shift", StringComparison.OrdinalIgnoreCase))
+        {
+            args.IsEnabled = false;
+            _canExecuteMessage = $"Disabled '{args.CommandName}' for selected cells";
+        }
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleOverridden(AllocationOverriddenArgs args)
+    {
+        _overriddenMessage = $"Override in set {args.SetId}: {args.Override.Override.Value}h ({args.Override.OverrideReason})";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleStatusChanged(ScenarioStatusChangedArgs args)
+    {
+        _statusMessage = $"Set {args.SetId}: {args.OldStatus} -> {args.NewStatus}";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandlePromoted(ScenarioPromotedArgs args)
+    {
+        _promotedMessage = $"Set {args.PromotedSetId} promoted; new baseline is {args.NewBaselineSetId}";
+        await Task.CompletedTask;
+    }
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    // ── Column Width Control ─────────────────────────────────────────────
+
+    private int _colWidthPx = 80;
+    private bool _colWidthResizable = true;
+    private bool _colWidthAutoFit = true;
+    private string _colWidthMessage = string.Empty;
+
+    private Task HandleTimeColumnResized(Dictionary<int, int> widths)
+    {
+        foreach (var kv in widths)
+            _colWidthMessage = $"Column {kv.Key} → {kv.Value}px";
+        return Task.CompletedTask;
+    }
+
+    private const string _colWidthCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           TimeColumnWidth=\"80\"\n" +
+        "                           AllowTimeColumnResize=\"true\"\n" +
+        "                           AutoFitOnDoubleClick=\"true\"\n" +
+        "                           MinTimeColumnWidth=\"48\"\n" +
+        "                           MaxTimeColumnWidth=\"200\"\n" +
+        "                           OnTimeColumnResized=\"@HandleTimeColumnResized\"\n" +
+        "                           Height=\"400px\" />\n" +
+        "\n" +
+        "// TimeColumnWidth: fixed pixel width (analogous to Excel Set Specific Width)\n" +
+        "// AllowTimeColumnResize: drag column borders to resize\n" +
+        "// AutoFitOnDoubleClick: double-click border to snap to widest content\n" +
+        "// OnTimeColumnResized: persist per-user column width preferences";
+
+    private const string _criticalPathCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           ShowCriticalPath=\"@_showCriticalPath\"\n" +
+        "                           EnableLoaderContainer=\"@_enableLoader\"\n" +
+        "                           Width=\"@_width\"\n" +
+        "                           Class=\"demo-custom-class\"\n" +
+        "                           Height=\"250px\" />";
+
+    private const string _canExecuteCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           EnableContextMenu=\"true\"\n" +
+        "                           CanExecuteAction=\"@HandleCanExecute\"\n" +
+        "                           Height=\"200px\" />";
+
+    private const string _lifecycleCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AllocationSets=\"@_sets\"\n" +
+        "                           ScenarioOverrides=\"@_overrides\"\n" +
+        "                           OnAllocationOverridden=\"@HandleOverridden\"\n" +
+        "                           OnScenarioStatusChanged=\"@HandleStatusChanged\"\n" +
+        "                           OnScenarioPromoted=\"@HandlePromoted\"\n" +
+        "                           Height=\"280px\" />";
+
+    private const string _dateRangeCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           VisibleStart=\"@_visibleStart\"\n" +
+        "                           VisibleStartChanged=\"@(d => _visibleStart = d)\"\n" +
+        "                           VisibleEnd=\"@_visibleEnd\"\n" +
+        "                           Height=\"250px\" />";
+}

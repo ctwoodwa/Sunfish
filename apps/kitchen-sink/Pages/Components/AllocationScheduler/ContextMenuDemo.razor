@@ -1,0 +1,282 @@
+@page "/components/allocation-scheduler/context-menu"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Built-in Context Menu">
+    <DemoSection Title="Default Menu Commands"
+                 Description="Right-click any cell to access built-in commands (set, clear, shift, distribute). Toggle the menu on/off."
+                 Code="@_builtInMenuCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                <input type="checkbox" @bind="_enableMenu" />
+                Enable Context Menu
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="@_enableMenu"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnContextMenuAction="@HandleContextMenu"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_menuMessage))
+        {
+            <p><strong>Menu action:</strong> @_menuMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Commands">
+    <DemoSection Title="Custom Context Menu Items"
+                 Description="Append custom commands using ContextMenuItems. The OnContextMenuAction event fires for both built-in and custom commands."
+                 Code="@_customMenuCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="true"
+                                   ContextMenuItems="@_customMenuItems"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnContextMenuAction="@HandleCustomMenuAction"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_customMenuMessage))
+        {
+            <p><strong>Custom action:</strong> @_customMenuMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Distribution Policy">
+    <DemoSection Title="Distribution Modes"
+                 Description="Set DefaultDistributionMode and intercept with OnDistributeRequested to inspect or override proposed distributions."
+                 Code="@_distributionCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                Distribution Mode:
+                <select @bind="_distributionMode">
+                    <option value="@DistributionMode.EvenSpread">Even Spread</option>
+                    <option value="@DistributionMode.FrontLoaded">Front Loaded</option>
+                    <option value="@DistributionMode.BackLoaded">Back Loaded</option>
+                    <option value="@DistributionMode.WorkingDaysWeighted">Working Days Weighted</option>
+                    <option value="@DistributionMode.ProportionalToExisting">Proportional to Existing</option>
+                </select>
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Month"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="true"
+                                   DefaultDistributionMode="@_distributionMode"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnDistributeRequested="@HandleDistribute"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_distributeMessage))
+        {
+            <p><strong>Distribution:</strong> @_distributeMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Shift and Move Operations">
+    <DemoSection Title="Shift and Move Values"
+                 Description="Right-click to shift values forward/backward or move values between resources/tasks. Events fire on confirmation."
+                 Code="@_shiftMoveCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_shiftAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="true"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnShiftValues="@HandleShift"
+                                   OnMoveValues="@HandleMove"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_shiftMessage))
+        {
+            <p><strong>Shift:</strong> @_shiftMessage</p>
+        }
+        @if (!string.IsNullOrEmpty(_moveMessage))
+        {
+            <p><strong>Move:</strong> @_moveMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private bool _enableMenu = true;
+    private DistributionMode _distributionMode = DistributionMode.EvenSpread;
+    private string _menuMessage = string.Empty;
+    private string _customMenuMessage = string.Empty;
+    private string _distributeMessage = string.Empty;
+    private string _shiftMessage = string.Empty;
+    private string _moveMessage = string.Empty;
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 40, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationRecord> _shiftAllocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 20, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 30, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 24, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationMenuDescriptor> _customMenuItems = new()
+    {
+        new() { Name = "export-csv", Text = "Export to CSV", Icon = "download" },
+        new() { Name = "add-note", Text = "Add Note", Icon = "note" }
+    };
+
+    private async Task HandleContextMenu(ContextMenuActionArgs args)
+    {
+        _menuMessage = $"Command: {args.CommandName}";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleCustomMenuAction(ContextMenuActionArgs args)
+    {
+        _customMenuMessage = $"Custom command '{args.CommandName}' on {args.TargetCells.Count} cell(s)";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleDistribute(DistributeArgs args)
+    {
+        _distributeMessage = $"Distributing {args.TargetValue}h across {args.ProposedDistribution.Count} buckets using {args.Mode}";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleShift(ShiftValuesArgs args)
+    {
+        _shiftMessage = $"Shifted values by {args.Periods} period(s) (direction: {args.Direction}) for {args.AffectedRecords.Count} records";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleMove(MoveValuesArgs args)
+    {
+        _moveMessage = $"Moved {args.AffectedRecords.Count} records from resource {args.SourceResourceKey} to {args.TargetResourceKey}";
+        await Task.CompletedTask;
+    }
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    // ── Code Snippets ───────────────────────────────────────────────────
+
+    private const string _builtInMenuCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           EnableContextMenu=\"@_enableMenu\"\n" +
+        "                           OnContextMenuAction=\"@HandleContextMenu\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _customMenuCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           EnableContextMenu=\"true\"\n" +
+        "                           ContextMenuItems=\"@_customMenuItems\"\n" +
+        "                           OnContextMenuAction=\"@HandleCustomMenuAction\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _distributionCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           EnableContextMenu=\"true\"\n" +
+        "                           DefaultDistributionMode=\"@_distributionMode\"\n" +
+        "                           ViewGrain=\"TimeGranularity.Month\"\n" +
+        "                           OnDistributeRequested=\"@HandleDistribute\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _shiftMoveCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           EnableContextMenu=\"true\"\n" +
+        "                           AllowKeyboardEdit=\"true\"\n" +
+        "                           OnShiftValues=\"@HandleShift\"\n" +
+        "                           OnMoveValues=\"@HandleMove\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+}

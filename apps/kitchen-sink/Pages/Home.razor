@@ -1,0 +1,114 @@
+@page "/"
+@implements IDisposable
+@inject SiteLinks Links
+@inject ProviderSwitcher ProviderSwitcher
+
+<div class="landing-page">
+    <div class="landing-hero">
+        <h1>Sunfish Component Gallery</h1>
+        <p>Sunfish is a framework-agnostic suite of open-source and commercial building blocks
+           that helps scaffold, prototype, and ship real-world applications with interchangeable
+           UI and domain components. This gallery renders every component in the Blazor adapter;
+           use the theme picker to switch providers.</p>
+    </div>
+
+    <div class="landing-links">
+        <a class="landing-link primary" href="/components">Browse Components</a>
+        <a class="landing-link" href="@Links.GettingStarted">Getting Started</a>
+        <a class="landing-link" href="@Links.Theming">Theming</a>
+        <a class="landing-link" href="@Links.ApiReference">API Reference</a>
+    </div>
+
+    <div class="landing-section">
+        <h2>Quick Preview</h2>
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
+            <SunfishButton IsOutline="true">Outline</SunfishButton>
+        </div>
+        <div class="demo-row">
+            <SunfishChip Label="Default" />
+            <SunfishChip Variant="ChipVariant.Primary" Label="Primary" />
+            <SunfishChip Variant="ChipVariant.Success" Label="Success" IsSelected="true" />
+        </div>
+        <div class="demo-row">
+            <SunfishBadge Variant="BadgeVariant.Primary">New</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Danger">3</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Success">Active</SunfishBadge>
+        </div>
+        <SunfishAlert Severity="AlertSeverity.Info">
+            This gallery is running with the <strong>@_providerName</strong> provider. All styles come from <code>@_providerCss</code>. Use the theme picker in the toolbar to switch providers.
+        </SunfishAlert>
+    </div>
+
+    <div class="landing-section">
+        <h2>Architecture</h2>
+        <div class="landing-arch">Sunfish.Core          - Contracts, base classes, enums, configuration
+Sunfish.Components.Blazor    - Provider-agnostic Razor components
+Sunfish.Icons         - Custom SVG icon set + icon provider
+Sunfish.Providers.*   - Provider implementations (FluentUI, Bootstrap, etc.)</div>
+    </div>
+
+    <div class="landing-section">
+        <h2>Current Providers</h2>
+        <table class="landing-providers">
+            <thead>
+                <tr>
+                    <th>Provider</th>
+                    <th>Package</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Fluent UI</td>
+                    <td><code>Sunfish.Providers.FluentUI</code></td>
+                    <td><span class="status-badge available">Available</span></td>
+                </tr>
+                <tr>
+                    <td>Bootstrap 5</td>
+                    <td><code>Sunfish.Providers.Bootstrap</code></td>
+                    <td><span class="status-badge available">Available</span></td>
+                </tr>
+                <tr>
+                    <td>Material Design 3</td>
+                    <td><code>Sunfish.Providers.Material</code></td>
+                    <td><span class="status-badge planned">Planned</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private string _providerName => ProviderSwitcher.ActiveProvider switch
+    {
+        DesignProvider.Bootstrap => "Bootstrap",
+        DesignProvider.Material => "Material 3",
+        _ => "Fluent UI",
+    };
+    private string _providerCss => ProviderSwitcher.ActiveProvider switch
+    {
+        DesignProvider.Bootstrap => "sunfish-bootstrap.css",
+        DesignProvider.Material => "sunfish-material.css",
+        _ => "sunfish-fluentui.css",
+    };
+
+    protected override void OnInitialized()
+    {
+        ProviderSwitcher.OnProviderChanged += OnProviderChanged;
+    }
+
+    private void OnProviderChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ProviderSwitcher.OnProviderChanged -= OnProviderChanged;
+    }
+}

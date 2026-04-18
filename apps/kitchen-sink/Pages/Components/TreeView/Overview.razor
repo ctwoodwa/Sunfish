@@ -1,0 +1,994 @@
+@page "/components/TreeView"
+@page "/components/TreeView/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage (ChildContent)" Code="@_basicCode">
+        <SunfishTreeView>
+            <SunfishTreeItem Title="Documents" IsExpanded="true">
+                <SunfishTreeItem Title="Reports">
+                    <SunfishTreeItem Title="Q1" />
+                    <SunfishTreeItem Title="Q2" />
+                </SunfishTreeItem>
+                <SunfishTreeItem Title="Images" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Downloads" />
+            <SunfishTreeItem Title="Desktop" />
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="Data-Driven (Flat Data)" Description="Provide flat data with IdField and ParentIdField to auto-build the tree." Code="@_flatDataCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name" />
+    </DemoSection>
+
+    <DemoSection Title="Data-Driven (Hierarchical)" Description="Provide hierarchical data with ItemsField to render nested trees." Code="@_hierarchicalCode">
+        <SunfishTreeView Data="@_hierarchicalData"
+                        IdField="Id"
+                        TextField="Name"
+                        ItemsField="Children" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="With Icons" Description="Tree items can display icons for visual identification." Code="@_iconsCode">
+        <SunfishTreeView>
+            <SunfishTreeItem Title="Documents" Icon="folder" IsExpanded="true">
+                <SunfishTreeItem Title="Reports" Icon="folder">
+                    <SunfishTreeItem Title="Q1.pdf" Icon="document" />
+                    <SunfishTreeItem Title="Q2.pdf" Icon="document" />
+                </SunfishTreeItem>
+                <SunfishTreeItem Title="Images" Icon="folder" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Downloads" Icon="folder" />
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="Selection" Description="Tree items can be selectable to indicate the current selection." Code="@_selectionCode">
+        <SunfishTreeView SelectionMode="TreeSelectionMode.Single">
+            <SunfishTreeItem Title="Option A" />
+            <SunfishTreeItem Title="Option B" />
+            <SunfishTreeItem Title="Option C" />
+        </SunfishTreeView>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Size / Density">
+    <DemoSection Title="Size Parameter (sm / lg)" Description="Use the Size parameter to switch between small, medium (default), and large density presets." Code="@_sizeParameterCode">
+        <div style="display: flex; gap: 32px; align-items: flex-start;">
+            <div>
+                <h4>Small (Size=&quot;sm&quot;)</h4>
+                <SunfishTreeView Size="sm">
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                </SunfishTreeView>
+            </div>
+            <div>
+                <h4>Medium (default)</h4>
+                <SunfishTreeView>
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                </SunfishTreeView>
+            </div>
+            <div>
+                <h4>Large (Size=&quot;lg&quot;)</h4>
+                <SunfishTreeView Size="lg">
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                </SunfishTreeView>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="CSS Custom Property Density" Description="Override CSS custom properties directly for fine-grained density control without changing the Size parameter. This is useful for custom density presets or matching specific layout requirements." Code="@_cssDensityCode">
+        <div style="display: flex; gap: 32px; align-items: flex-start;">
+            <div>
+                <h4>Compact (custom props)</h4>
+                <SunfishTreeView style="--mar-treeview-item-padding-y: 0px; --mar-treeview-item-padding-x: 4px; --mar-treeview-item-gap: 2px; --mar-treeview-indent: 12px; --mar-treeview-font-size: 11px; --mar-treeview-line-height: 14px; --mar-treeview-icon-size: 12px;">
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                </SunfishTreeView>
+            </div>
+            <div>
+                <h4>Spacious (custom props)</h4>
+                <SunfishTreeView style="--mar-treeview-item-padding-y: 6px; --mar-treeview-item-padding-x: 16px; --mar-treeview-item-gap: 10px; --mar-treeview-indent: 36px; --mar-treeview-font-size: 18px; --mar-treeview-line-height: 28px; --mar-treeview-icon-size: 22px;">
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                </SunfishTreeView>
+            </div>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="SelectedItemsChanged" Description="Wire the SelectedItemsChanged callback to react when the user clicks a node. The log below updates on every selection change." Code="@_selectedItemsChangedCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        SelectionMode="TreeSelectionMode.Single"
+                        SelectedItems="_eventSelectedIds"
+                        SelectedItemsChanged="OnSelectedItemsChanged" />
+        <p><strong>Last selection event:</strong> @_selectedEventLog</p>
+    </DemoSection>
+
+    <DemoSection Title="OnItemClick" Description="OnItemClick fires on every click, providing the data item. Distinct from SelectedItemsChanged — fires even when clicking the already-selected node." Code="@_onItemClickCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        OnItemClick="OnTreeItemClicked" />
+        <p><strong>Last click:</strong> @_itemClickLog</p>
+    </DemoSection>
+
+    <DemoSection Title="ExpandedItemsChanged" Description="Wire the ExpandedItemsChanged callback to track which nodes are expanded. Expand or collapse nodes to see the event fire." Code="@_expandedItemsChangedCode">
+        <SunfishTreeView ExpandedItems="_eventExpandedIds"
+                        ExpandedItemsChanged="OnExpandedItemsChanged">
+            <SunfishTreeItem Title="Folder A">
+                <SunfishTreeItem Title="File 1" />
+                <SunfishTreeItem Title="File 2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Folder B">
+                <SunfishTreeItem Title="File 3" />
+            </SunfishTreeItem>
+        </SunfishTreeView>
+        <p><strong>Expanded IDs:</strong> @(string.Join(", ", _eventExpandedIds ?? []))</p>
+    </DemoSection>
+
+    <DemoSection Title="ExpandedItems (Two-Way Bind)" Description="Bind ExpandedItems for programmatic control of expansion state. Use the buttons to expand or collapse specific nodes." Code="@_expandedItemsBindCode">
+        <SunfishTreeView @bind-ExpandedItems="_boundExpandedIds">
+            <SunfishTreeItem Title="Section A" Id="sec-a">
+                <SunfishTreeItem Title="Item A1" />
+                <SunfishTreeItem Title="Item A2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Section B" Id="sec-b">
+                <SunfishTreeItem Title="Item B1" />
+                <SunfishTreeItem Title="Item B2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Section C" Id="sec-c">
+                <SunfishTreeItem Title="Item C1" />
+            </SunfishTreeItem>
+        </SunfishTreeView>
+        <div style="margin-top: 8px;">
+            <button @onclick="ExpandSectionA">Expand Section A</button>
+            <button @onclick="ExpandSectionB">Expand Section B</button>
+            <button @onclick="CollapseAllBound">Collapse All</button>
+        </div>
+        <p><strong>Bound expanded IDs:</strong> @(string.Join(", ", _boundExpandedIds ?? []))</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Checkboxes">
+    <DemoSection Title="CheckBoxMode (Multiple)" Description="Enable tri-state checkboxes with cascade. Checking a parent checks all children; children update parent state." Code="@_checkboxMultipleCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        CheckBoxMode="CheckBoxMode.Multiple"
+                        @bind-CheckedItems="_checkedIds" />
+        <p><strong>Checked IDs:</strong> @(string.Join(", ", _checkedIds ?? []))</p>
+    </DemoSection>
+
+    <DemoSection Title="CheckBoxMode (Single)" Description="Only one item can be checked at a time. Checking a new item unchecks the previous one." Code="@_checkboxSingleCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        CheckBoxMode="CheckBoxMode.Single"
+                        @bind-CheckedItems="_singleCheckedIds" />
+        <p><strong>Checked ID:</strong> @(string.Join(", ", _singleCheckedIds ?? []))</p>
+    </DemoSection>
+
+    <DemoSection Title="AllowCheckChildren / AllowCheckParents" Description="Disable cascade behavior. Parent checks do not cascade to children, and child checks do not update parent state." Code="@_noCascadeCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        CheckBoxMode="CheckBoxMode.Multiple"
+                        AllowCheckChildren="false"
+                        AllowCheckParents="false"
+                        @bind-CheckedItems="_noCascadeCheckedIds" />
+        <p><strong>Checked IDs:</strong> @(string.Join(", ", _noCascadeCheckedIds ?? []))</p>
+    </DemoSection>
+
+    <DemoSection Title="CheckedItemsChanged Event" Description="React to checkbox changes via the CheckedItemsChanged event callback." Code="@_checkedEventCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        CheckBoxMode="CheckBoxMode.Multiple"
+                        CheckedItems="_eventCheckedIds"
+                        CheckedItemsChanged="OnCheckedItemsChanged" />
+        <p><strong>Last event:</strong> @_checkedEventLog</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Expansion Behavior">
+    <DemoSection Title="ExpandOnClick" Description="Expand or collapse a node by clicking anywhere on the item, not just the expand arrow." Code="@_expandOnClickCode">
+        <SunfishTreeView ExpandOnClick="true">
+            <SunfishTreeItem Title="Folder A">
+                <SunfishTreeItem Title="File 1" />
+                <SunfishTreeItem Title="File 2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Folder B">
+                <SunfishTreeItem Title="File 3" />
+                <SunfishTreeItem Title="File 4" />
+            </SunfishTreeItem>
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="ExpandOnDoubleClick" Description="Expand or collapse a node by double-clicking the item header. Single clicks do not toggle expansion." Code="@_expandOnDoubleClickCode">
+        <SunfishTreeView ExpandOnDoubleClick="true">
+            <SunfishTreeItem Title="Projects">
+                <SunfishTreeItem Title="Alpha" />
+                <SunfishTreeItem Title="Beta" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Archive">
+                <SunfishTreeItem Title="2024" />
+                <SunfishTreeItem Title="2025" />
+            </SunfishTreeItem>
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="SingleExpand (Accordion)" Description="Only one node at each level can be expanded at a time. Expanding a sibling collapses the others." Code="@_singleExpandCode">
+        <SunfishTreeView SingleExpand="true">
+            <SunfishTreeItem Title="Section A">
+                <SunfishTreeItem Title="Item A1" />
+                <SunfishTreeItem Title="Item A2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Section B">
+                <SunfishTreeItem Title="Item B1" />
+                <SunfishTreeItem Title="Item B2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Section C">
+                <SunfishTreeItem Title="Item C1" />
+            </SunfishTreeItem>
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="AutoExpand (Interactive)" Description="Automatically expand ancestor nodes when an item is selected. Click the buttons to programmatically select a deeply nested item and watch its ancestors expand." Code="@_autoExpandCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        AutoExpand="true"
+                        SelectionMode="TreeSelectionMode.Single"
+                        SelectedItems="@_autoExpandSelectedIds" />
+        <div style="margin-top: 8px;">
+            <button @onclick="SelectNestedForAutoExpand">Select Q1 Report (nested)</button>
+            <button @onclick="SelectRootForAutoExpand">Select Downloads (root)</button>
+            <button @onclick="ClearAutoExpandSelection">Clear Selection</button>
+        </div>
+        <p><strong>Selected:</strong> @(string.Join(", ", _autoExpandSelectedIds ?? []))</p>
+    </DemoSection>
+
+    <DemoSection Title="ExpandAllAsync / CollapseAllAsync" Description="Programmatically expand or collapse all nodes using public methods." Code="@_expandCollapseAllCode">
+        <SunfishTreeView @ref="_expandCollapseTree"
+                        Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name" />
+        <div style="margin-top: 8px;">
+            <button @onclick="ExpandAll">Expand All</button>
+            <button @onclick="CollapseAll">Collapse All</button>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Drag and Drop">
+    <DemoSection Title="EnableDragDrop + OnItemDrop" Description="Enable drag-and-drop reordering. Drag an item and drop it onto another to trigger the OnItemDrop event." Code="@_dragDropCode">
+        <SunfishTreeView EnableDragDrop="true"
+                        OnItemDrop="OnItemDropped">
+            <SunfishTreeItem Title="Task 1" />
+            <SunfishTreeItem Title="Task 2" />
+            <SunfishTreeItem Title="Task 3" />
+            <SunfishTreeItem Title="Task 4" />
+        </SunfishTreeView>
+        <p><strong>Last drop:</strong> @_dragDropLog</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Lazy Loading">
+    <DemoSection Title="LoadChildrenAsync" Description="Load child nodes on demand when a parent is expanded for the first time. Useful for large or remote data sets." Code="@_lazyLoadCode">
+        <SunfishTreeView Data="@_lazyRootData"
+                        IdField="Id"
+                        TextField="Name"
+                        HasChildrenField="HasChildren"
+                        LoadChildrenAsync="LoadChildrenOnDemand" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Filtering and Editing">
+    <DemoSection Title="FilterFunc" Description="Filter visible nodes with a predicate. Ancestor nodes of matching items remain visible to preserve hierarchy." Code="@_filterFuncCode">
+        <div style="margin-bottom: 8px;">
+            <input type="text" placeholder="Type to filter..." @oninput="OnFilterTextChanged" />
+        </div>
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        FilterFunc="@_currentFilter" />
+    </DemoSection>
+
+    <DemoSection Title="AllowEditing + OnItemEdit" Description="Double-click or press F2 on a node to edit its text inline. Press Enter to confirm or Escape to cancel." Code="@_editingCode">
+        <SunfishTreeView Data="@_editableData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        AllowEditing="true"
+                        OnItemEdit="OnNodeEdited" />
+        <p><strong>Last edit:</strong> @_editLog</p>
+    </DemoSection>
+
+    <DemoSection Title="ItemTemplate" Description="Customize the rendering of each tree node using a template. The template receives the data item." Code="@_itemTemplateCode">
+        <SunfishTreeView Data="@_templateData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name">
+            <ItemTemplate>
+                @{ var item = (TemplateNode)context; }
+                <span style="color: @item.Color; font-weight: bold;">@item.Name</span>
+                <span style="color: gray; font-size: 0.85em; margin-left: 8px;">(@item.Badge)</span>
+            </ItemTemplate>
+        </SunfishTreeView>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="State">
+    <DemoSection Title="Disabled" Description="A disabled tree prevents all user interaction including selection, expansion, and checkbox changes." Code="@_disabledCode">
+        <SunfishTreeView Disabled="true">
+            <SunfishTreeItem Title="Item A" IsExpanded="true">
+                <SunfishTreeItem Title="Item A1" />
+                <SunfishTreeItem Title="Item A2" />
+            </SunfishTreeItem>
+            <SunfishTreeItem Title="Item B" />
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="ReadOnly" Description="A read-only tree displays current state but prevents any changes. Items remain visually interactive but mutations are blocked." Code="@_readOnlyCode">
+        <SunfishTreeView ReadOnly="true"
+                        CheckBoxMode="CheckBoxMode.Multiple"
+                        CheckedItems="@(new[] { "opt-a" })">
+            <SunfishTreeItem Title="Item A" Id="opt-a" />
+            <SunfishTreeItem Title="Item B" Id="opt-b" />
+            <SunfishTreeItem Title="Item C" Id="opt-c" />
+        </SunfishTreeView>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Edge Cases">
+    <DemoSection Title="Empty Data" Description="When Data is an empty collection, the tree renders gracefully with no items. Useful for verifying empty-state behavior." Code="@_emptyDataCode">
+        <SunfishTreeView Data="@_emptyData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name" />
+        <p style="color: gray; font-style: italic;">The tree above is intentionally empty.</p>
+    </DemoSection>
+
+    <DemoSection Title="Single-Root Tree" Description="A tree with a single root node and no children. The minimum viable tree structure." Code="@_singleRootCode">
+        <SunfishTreeView>
+            <SunfishTreeItem Title="Only Node" />
+        </SunfishTreeView>
+    </DemoSection>
+
+    <DemoSection Title="Selection + Checkboxes Combined" Description="Selection and checkboxes can be active simultaneously. Selection highlights the clicked node, while checkboxes independently track checked state." Code="@_selectionCheckboxCode">
+        <SunfishTreeView Data="@_flatData"
+                        IdField="Id"
+                        ParentIdField="ParentId"
+                        TextField="Name"
+                        SelectionMode="TreeSelectionMode.Single"
+                        @bind-SelectedItems="_comboSelectedIds"
+                        CheckBoxMode="CheckBoxMode.Multiple"
+                        @bind-CheckedItems="_comboCheckedIds" />
+        <p><strong>Selected:</strong> @(string.Join(", ", _comboSelectedIds ?? []))</p>
+        <p><strong>Checked:</strong> @(string.Join(", ", _comboCheckedIds ?? []))</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Flat data model
+    private record FlatNode(string Id, string? ParentId, string Name);
+    private readonly List<object> _flatData =
+    [
+        new FlatNode("1", null, "Documents"),
+        new FlatNode("2", "1", "Reports"),
+        new FlatNode("3", "1", "Images"),
+        new FlatNode("4", "2", "Q1 Report"),
+        new FlatNode("5", "2", "Q2 Report"),
+        new FlatNode("6", null, "Downloads"),
+        new FlatNode("7", null, "Desktop"),
+    ];
+
+    // Hierarchical data model
+    private record TreeData(string Id, string Name, List<TreeData>? Children = null);
+    private readonly List<object> _hierarchicalData =
+    [
+        new TreeData("1", "Documents", [
+            new TreeData("2", "Reports", [
+                new TreeData("4", "Q1 Report"),
+                new TreeData("5", "Q2 Report"),
+            ]),
+            new TreeData("3", "Images"),
+        ]),
+        new TreeData("6", "Downloads"),
+        new TreeData("7", "Desktop"),
+    ];
+
+    // ── New demo state ───────────────────────────────────────────────────
+
+    // Selection event demos
+    private IEnumerable<string>? _eventSelectedIds;
+    private string _selectedEventLog = "(none)";
+
+    private void OnSelectedItemsChanged(IEnumerable<string> ids)
+    {
+        _eventSelectedIds = ids;
+        _selectedEventLog = $"Selected {ids.Count()} item(s): {string.Join(", ", ids)}";
+    }
+
+    // OnItemClick demo
+    private string _itemClickLog = "(none)";
+
+    private void OnTreeItemClicked(object item)
+    {
+        var node = (FlatNode)item;
+        _itemClickLog = $"Clicked: {node.Name} (Id={node.Id})";
+    }
+
+    // ExpandedItemsChanged event demo
+    private IEnumerable<string>? _eventExpandedIds;
+
+    private void OnExpandedItemsChanged(IEnumerable<string> ids)
+    {
+        _eventExpandedIds = ids;
+    }
+
+    // ExpandedItems two-way bind demo
+    private IEnumerable<string>? _boundExpandedIds;
+
+    private void ExpandSectionA()
+    {
+        _boundExpandedIds = new List<string> { "sec-a" };
+    }
+
+    private void ExpandSectionB()
+    {
+        _boundExpandedIds = new List<string> { "sec-b" };
+    }
+
+    private void CollapseAllBound()
+    {
+        _boundExpandedIds = new List<string>();
+    }
+
+    // Checkbox demos
+    private IEnumerable<string>? _checkedIds;
+    private IEnumerable<string>? _singleCheckedIds;
+    private IEnumerable<string>? _noCascadeCheckedIds;
+    private IEnumerable<string>? _eventCheckedIds;
+    private string _checkedEventLog = "(none)";
+
+    private void OnCheckedItemsChanged(IEnumerable<string> ids)
+    {
+        _eventCheckedIds = ids;
+        _checkedEventLog = $"Checked {ids.Count()} item(s): {string.Join(", ", ids)}";
+    }
+
+    // Drag-and-drop demo
+    private string _dragDropLog = "(none)";
+
+    private void OnItemDropped((string DraggedId, string TargetId) e)
+    {
+        _dragDropLog = $"Dragged \"{e.DraggedId}\" onto \"{e.TargetId}\"";
+    }
+
+    // Lazy loading demo
+    private record LazyNode(string Id, string Name, bool HasChildren = false);
+    private readonly List<object> _lazyRootData =
+    [
+        new LazyNode("r1", "Remote Folder A", HasChildren: true),
+        new LazyNode("r2", "Remote Folder B", HasChildren: true),
+        new LazyNode("r3", "Local File"),
+    ];
+
+    private async Task<IEnumerable<object>> LoadChildrenOnDemand(object parent)
+    {
+        await Task.Delay(500); // simulate network delay
+        var node = (LazyNode)parent;
+        return new List<object>
+        {
+            new LazyNode($"{node.Id}-c1", $"{node.Name} — Child 1"),
+            new LazyNode($"{node.Id}-c2", $"{node.Name} — Child 2"),
+        };
+    }
+
+    // Expand / Collapse all
+    private SunfishTreeView? _expandCollapseTree;
+
+    private async Task ExpandAll()
+    {
+        if (_expandCollapseTree != null)
+            await _expandCollapseTree.ExpandAllAsync();
+    }
+
+    private async Task CollapseAll()
+    {
+        if (_expandCollapseTree != null)
+            await _expandCollapseTree.CollapseAllAsync();
+    }
+
+    // Filter demo
+    private string _filterText = "";
+    private Func<object, bool>? _currentFilter;
+
+    private void OnFilterTextChanged(ChangeEventArgs e)
+    {
+        _filterText = e.Value?.ToString() ?? "";
+        _currentFilter = string.IsNullOrWhiteSpace(_filterText)
+            ? null
+            : item => ((FlatNode)item).Name.Contains(_filterText, StringComparison.OrdinalIgnoreCase);
+    }
+
+    // Editing demo
+    private record EditableNode(string Id, string? ParentId, string Name);
+    private readonly List<object> _editableData =
+    [
+        new EditableNode("e1", null, "Rename Me"),
+        new EditableNode("e2", null, "Double-Click to Edit"),
+        new EditableNode("e3", null, "Press F2 to Edit"),
+    ];
+    private string _editLog = "(none)";
+
+    private void OnNodeEdited(TreeItemEditEventArgs args)
+    {
+        _editLog = $"Node \"{args.ItemId}\" renamed to \"{args.NewText}\"";
+    }
+
+    // ItemTemplate demo
+    private record TemplateNode(string Id, string? ParentId, string Name, string Color, string Badge);
+    private readonly List<object> _templateData =
+    [
+        new TemplateNode("t1", null, "High Priority", "#d32f2f", "3 items"),
+        new TemplateNode("t2", null, "Medium Priority", "#f57c00", "5 items"),
+        new TemplateNode("t3", null, "Low Priority", "#388e3c", "2 items"),
+    ];
+
+    // AutoExpand interactive demo
+    private IEnumerable<string>? _autoExpandSelectedIds;
+
+    private void SelectNestedForAutoExpand() => _autoExpandSelectedIds = new[] { "4" };
+    private void SelectRootForAutoExpand() => _autoExpandSelectedIds = new[] { "6" };
+    private void ClearAutoExpandSelection() => _autoExpandSelectedIds = Array.Empty<string>();
+
+    // Edge case demos
+    private readonly List<object> _emptyData = new();
+    private IEnumerable<string>? _comboSelectedIds;
+    private IEnumerable<string>? _comboCheckedIds;
+
+    // Code samples
+    private const string _basicCode =
+        "<SunfishTreeView>\n" +
+        "    <SunfishTreeItem Title=\"Documents\" IsExpanded=\"true\">\n" +
+        "        <SunfishTreeItem Title=\"Reports\">\n" +
+        "            <SunfishTreeItem Title=\"Q1\" />\n" +
+        "            <SunfishTreeItem Title=\"Q2\" />\n" +
+        "        </SunfishTreeItem>\n" +
+        "        <SunfishTreeItem Title=\"Images\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Downloads\" />\n" +
+        "    <SunfishTreeItem Title=\"Desktop\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _flatDataCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\" />\n\n" +
+        "@code {\n" +
+        "    record FlatNode(string Id, string? ParentId, string Name);\n" +
+        "    List<object> _data = [\n" +
+        "        new FlatNode(\"1\", null, \"Documents\"),\n" +
+        "        new FlatNode(\"2\", \"1\", \"Reports\"),\n" +
+        "        new FlatNode(\"3\", \"1\", \"Images\"),\n" +
+        "    ];\n" +
+        "}";
+
+    private const string _hierarchicalCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                ItemsField=\"Children\" />\n\n" +
+        "@code {\n" +
+        "    record TreeData(string Id, string Name, List<TreeData>? Children = null);\n" +
+        "    List<object> _data = [\n" +
+        "        new TreeData(\"1\", \"Documents\", [\n" +
+        "            new TreeData(\"2\", \"Reports\"),\n" +
+        "        ]),\n" +
+        "    ];\n" +
+        "}";
+
+    private const string _sizeParameterCode =
+        "<div style=\"display: flex; gap: 32px;\">\n" +
+        "    <div>\n" +
+        "        <h4>Small</h4>\n" +
+        "        <SunfishTreeView Size=\"sm\">\n" +
+        "            <SunfishTreeItem Title=\"Documents\" IsExpanded=\"true\">\n" +
+        "                <SunfishTreeItem Title=\"Reports\" />\n" +
+        "            </SunfishTreeItem>\n" +
+        "        </SunfishTreeView>\n" +
+        "    </div>\n" +
+        "    <div>\n" +
+        "        <h4>Large</h4>\n" +
+        "        <SunfishTreeView Size=\"lg\">\n" +
+        "            <SunfishTreeItem Title=\"Documents\" IsExpanded=\"true\">\n" +
+        "                <SunfishTreeItem Title=\"Reports\" />\n" +
+        "            </SunfishTreeItem>\n" +
+        "        </SunfishTreeView>\n" +
+        "    </div>\n" +
+        "</div>";
+
+    private const string _cssDensityCode =
+        "<!-- Override CSS custom properties for custom density -->\n" +
+        "<SunfishTreeView style=\"--mar-treeview-item-padding-y: 0px;\n" +
+        "                       --mar-treeview-item-padding-x: 4px;\n" +
+        "                       --mar-treeview-indent: 12px;\n" +
+        "                       --mar-treeview-font-size: 11px;\n" +
+        "                       --mar-treeview-line-height: 14px;\">\n" +
+        "    <SunfishTreeItem Title=\"Compact Item\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _iconsCode =
+        "<SunfishTreeView>\n" +
+        "    <SunfishTreeItem Title=\"Documents\" Icon=\"folder\" IsExpanded=\"true\">\n" +
+        "        <SunfishTreeItem Title=\"Reports\" Icon=\"folder\">\n" +
+        "            <SunfishTreeItem Title=\"Q1.pdf\" Icon=\"document\" />\n" +
+        "            <SunfishTreeItem Title=\"Q2.pdf\" Icon=\"document\" />\n" +
+        "        </SunfishTreeItem>\n" +
+        "        <SunfishTreeItem Title=\"Images\" Icon=\"folder\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Downloads\" Icon=\"folder\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _selectionCode =
+        "<SunfishTreeView SelectionMode=\"TreeSelectionMode.Single\">\n" +
+        "    <SunfishTreeItem Title=\"Option A\" />\n" +
+        "    <SunfishTreeItem Title=\"Option B\" />\n" +
+        "    <SunfishTreeItem Title=\"Option C\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _selectedItemsChangedCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                SelectionMode=\"TreeSelectionMode.Single\"\n" +
+        "                SelectedItems=\"_selectedIds\"\n" +
+        "                SelectedItemsChanged=\"OnSelectionChanged\" />\n\n" +
+        "@code {\n" +
+        "    IEnumerable<string>? _selectedIds;\n" +
+        "    void OnSelectionChanged(IEnumerable<string> ids)\n" +
+        "    {\n" +
+        "        _selectedIds = ids;\n" +
+        "        // react to selection change\n" +
+        "    }\n" +
+        "}";
+
+    private const string _onItemClickCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                OnItemClick=\"OnClicked\" />\n\n" +
+        "@code {\n" +
+        "    void OnClicked(object item)\n" +
+        "    {\n" +
+        "        var node = (MyNode)item;\n" +
+        "        Console.WriteLine($\"Clicked: {node.Name}\");\n" +
+        "    }\n" +
+        "}";
+
+    private const string _expandedItemsChangedCode =
+        "<SunfishTreeView ExpandedItems=\"_expandedIds\"\n" +
+        "                ExpandedItemsChanged=\"OnExpandedChanged\">\n" +
+        "    <SunfishTreeItem Title=\"Folder A\">\n" +
+        "        <SunfishTreeItem Title=\"File 1\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "</SunfishTreeView>\n\n" +
+        "@code {\n" +
+        "    IEnumerable<string>? _expandedIds;\n" +
+        "    void OnExpandedChanged(IEnumerable<string> ids)\n" +
+        "    {\n" +
+        "        _expandedIds = ids;\n" +
+        "    }\n" +
+        "}";
+
+    private const string _expandedItemsBindCode =
+        "<SunfishTreeView @bind-ExpandedItems=\"_expandedIds\">\n" +
+        "    <SunfishTreeItem Title=\"Section A\" Id=\"sec-a\">\n" +
+        "        <SunfishTreeItem Title=\"Item A1\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Section B\" Id=\"sec-b\">\n" +
+        "        <SunfishTreeItem Title=\"Item B1\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "</SunfishTreeView>\n\n" +
+        "<button @onclick=\"ExpandA\">Expand A</button>\n" +
+        "<button @onclick=\"CollapseAll\">Collapse All</button>\n\n" +
+        "@code {\n" +
+        "    IEnumerable<string>? _expandedIds;\n" +
+        "    void ExpandA() => _expandedIds = [\"sec-a\"];\n" +
+        "    void CollapseAll() => _expandedIds = [];\n" +
+        "}";
+
+    // ── New demo code samples ─────────────────────────────────────────
+
+    private const string _checkboxMultipleCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Multiple\"\n" +
+        "                @bind-CheckedItems=\"_checkedIds\" />\n" +
+        "<p>Checked IDs: @(string.Join(\", \", _checkedIds ?? []))</p>";
+
+    private const string _checkboxSingleCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Single\"\n" +
+        "                @bind-CheckedItems=\"_singleCheckedIds\" />\n" +
+        "<p>Checked ID: @(string.Join(\", \", _singleCheckedIds ?? []))</p>";
+
+    private const string _noCascadeCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Multiple\"\n" +
+        "                AllowCheckChildren=\"false\"\n" +
+        "                AllowCheckParents=\"false\"\n" +
+        "                @bind-CheckedItems=\"_checkedIds\" />";
+
+    private const string _checkedEventCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Multiple\"\n" +
+        "                CheckedItems=\"_checkedIds\"\n" +
+        "                CheckedItemsChanged=\"OnCheckedChanged\" />\n\n" +
+        "@code {\n" +
+        "    IEnumerable<string>? _checkedIds;\n" +
+        "    void OnCheckedChanged(IEnumerable<string> ids)\n" +
+        "    {\n" +
+        "        _checkedIds = ids;\n" +
+        "        // react to change\n" +
+        "    }\n" +
+        "}";
+
+    private const string _expandOnClickCode =
+        "<SunfishTreeView ExpandOnClick=\"true\">\n" +
+        "    <SunfishTreeItem Title=\"Folder A\">\n" +
+        "        <SunfishTreeItem Title=\"File 1\" />\n" +
+        "        <SunfishTreeItem Title=\"File 2\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Folder B\">\n" +
+        "        <SunfishTreeItem Title=\"File 3\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "</SunfishTreeView>";
+
+    private const string _singleExpandCode =
+        "<SunfishTreeView SingleExpand=\"true\">\n" +
+        "    <SunfishTreeItem Title=\"Section A\">\n" +
+        "        <SunfishTreeItem Title=\"Item A1\" />\n" +
+        "        <SunfishTreeItem Title=\"Item A2\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Section B\">\n" +
+        "        <SunfishTreeItem Title=\"Item B1\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "</SunfishTreeView>";
+
+    private const string _autoExpandCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                AutoExpand=\"true\"\n" +
+        "                SelectionMode=\"TreeSelectionMode.Single\"\n" +
+        "                SelectedItems=\"@(new[] { \\\"4\\\" })\" />";
+
+    private const string _expandCollapseAllCode =
+        "<SunfishTreeView @ref=\"_tree\" Data=\"@_data\" ... />\n\n" +
+        "<button @onclick=\"ExpandAll\">Expand All</button>\n" +
+        "<button @onclick=\"CollapseAll\">Collapse All</button>\n\n" +
+        "@code {\n" +
+        "    SunfishTreeView? _tree;\n" +
+        "    async Task ExpandAll() => await _tree!.ExpandAllAsync();\n" +
+        "    async Task CollapseAll() => await _tree!.CollapseAllAsync();\n" +
+        "}";
+
+    private const string _dragDropCode =
+        "<SunfishTreeView EnableDragDrop=\"true\"\n" +
+        "                OnItemDrop=\"OnItemDropped\">\n" +
+        "    <SunfishTreeItem Title=\"Task 1\" />\n" +
+        "    <SunfishTreeItem Title=\"Task 2\" />\n" +
+        "    <SunfishTreeItem Title=\"Task 3\" />\n" +
+        "</SunfishTreeView>\n\n" +
+        "@code {\n" +
+        "    void OnItemDropped((string DraggedId, string TargetId) e)\n" +
+        "    {\n" +
+        "        Console.WriteLine($\"Dragged {e.DraggedId} onto {e.TargetId}\");\n" +
+        "    }\n" +
+        "}";
+
+    private const string _lazyLoadCode =
+        "<SunfishTreeView Data=\"@_roots\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                HasChildrenField=\"HasChildren\"\n" +
+        "                LoadChildrenAsync=\"LoadChildren\" />\n\n" +
+        "@code {\n" +
+        "    record LazyNode(string Id, string Name, bool HasChildren = false);\n" +
+        "    List<object> _roots = [\n" +
+        "        new LazyNode(\"1\", \"Remote Folder\", HasChildren: true),\n" +
+        "    ];\n\n" +
+        "    async Task<IEnumerable<object>> LoadChildren(object parent)\n" +
+        "    {\n" +
+        "        await Task.Delay(500);\n" +
+        "        var node = (LazyNode)parent;\n" +
+        "        return [\n" +
+        "            new LazyNode($\"{node.Id}-1\", \"Child 1\"),\n" +
+        "            new LazyNode($\"{node.Id}-2\", \"Child 2\"),\n" +
+        "        ];\n" +
+        "    }\n" +
+        "}";
+
+    private const string _filterFuncCode =
+        "<input @oninput=\"OnFilter\" placeholder=\"Type to filter...\" />\n\n" +
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                FilterFunc=\"@_filter\" />\n\n" +
+        "@code {\n" +
+        "    Func<object, bool>? _filter;\n" +
+        "    void OnFilter(ChangeEventArgs e)\n" +
+        "    {\n" +
+        "        var text = e.Value?.ToString() ?? \"\";\n" +
+        "        _filter = string.IsNullOrWhiteSpace(text)\n" +
+        "            ? null\n" +
+        "            : item => ((MyNode)item).Name.Contains(text, StringComparison.OrdinalIgnoreCase);\n" +
+        "    }\n" +
+        "}";
+
+    private const string _editingCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                AllowEditing=\"true\"\n" +
+        "                OnItemEdit=\"OnEdited\" />\n\n" +
+        "@code {\n" +
+        "    void OnEdited(TreeItemEditEventArgs args)\n" +
+        "    {\n" +
+        "        Console.WriteLine($\"Node {args.ItemId} → {args.NewText}\");\n" +
+        "    }\n" +
+        "}";
+
+    private const string _itemTemplateCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\">\n" +
+        "    <ItemTemplate>\n" +
+        "        @{ var item = (MyNode)context; }\n" +
+        "        <span style=\"color: @item.Color\">@item.Name</span>\n" +
+        "        <span style=\"color: gray\">(@item.Badge)</span>\n" +
+        "    </ItemTemplate>\n" +
+        "</SunfishTreeView>";
+
+    private const string _disabledCode =
+        "<SunfishTreeView Disabled=\"true\">\n" +
+        "    <SunfishTreeItem Title=\"Item A\" IsExpanded=\"true\">\n" +
+        "        <SunfishTreeItem Title=\"Item A1\" />\n" +
+        "        <SunfishTreeItem Title=\"Item A2\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Item B\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _readOnlyCode =
+        "<SunfishTreeView ReadOnly=\"true\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Multiple\"\n" +
+        "                CheckedItems=\"@(new[] { \\\"opt-a\\\" })\">\n" +
+        "    <SunfishTreeItem Title=\"Item A\" Id=\"opt-a\" />\n" +
+        "    <SunfishTreeItem Title=\"Item B\" Id=\"opt-b\" />\n" +
+        "    <SunfishTreeItem Title=\"Item C\" Id=\"opt-c\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _expandOnDoubleClickCode =
+        "<SunfishTreeView ExpandOnDoubleClick=\"true\">\n" +
+        "    <SunfishTreeItem Title=\"Projects\">\n" +
+        "        <SunfishTreeItem Title=\"Alpha\" />\n" +
+        "        <SunfishTreeItem Title=\"Beta\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "    <SunfishTreeItem Title=\"Archive\">\n" +
+        "        <SunfishTreeItem Title=\"2024\" />\n" +
+        "        <SunfishTreeItem Title=\"2025\" />\n" +
+        "    </SunfishTreeItem>\n" +
+        "</SunfishTreeView>";
+
+    private const string _emptyDataCode =
+        "<SunfishTreeView Data=\"@_emptyData\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\" />\n\n" +
+        "@code {\n" +
+        "    List<object> _emptyData = new();\n" +
+        "}";
+
+    private const string _singleRootCode =
+        "<SunfishTreeView>\n" +
+        "    <SunfishTreeItem Title=\"Only Node\" />\n" +
+        "</SunfishTreeView>";
+
+    private const string _selectionCheckboxCode =
+        "<SunfishTreeView Data=\"@_data\"\n" +
+        "                IdField=\"Id\"\n" +
+        "                ParentIdField=\"ParentId\"\n" +
+        "                TextField=\"Name\"\n" +
+        "                SelectionMode=\"TreeSelectionMode.Single\"\n" +
+        "                @bind-SelectedItems=\"_selectedIds\"\n" +
+        "                CheckBoxMode=\"CheckBoxMode.Multiple\"\n" +
+        "                @bind-CheckedItems=\"_checkedIds\" />\n" +
+        "<p>Selected: @(string.Join(\", \", _selectedIds ?? []))</p>\n" +
+        "<p>Checked: @(string.Join(\", \", _checkedIds ?? []))</p>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Up Arrow", "Moves focus to the previous visible tree item"),
+        ("Down Arrow", "Moves focus to the next visible tree item"),
+        ("Right Arrow", "Expands a collapsed item, or moves focus to the first child"),
+        ("Left Arrow", "Collapses an expanded item, or moves focus to the parent"),
+        ("Enter", "Activates or selects the focused tree item"),
+        ("Space", "Toggles selection of the focused tree item"),
+        ("Home", "Moves focus to the first tree item"),
+        ("End", "Moves focus to the last visible tree item"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"tree\"", "Applied to the tree view container to identify it as a tree widget"),
+        ("role=\"treeitem\"", "Applied to each tree item within the tree"),
+        ("aria-expanded=\"true/false\"", "Indicates whether a parent tree item is expanded or collapsed"),
+        ("aria-selected=\"true/false\"", "Indicates whether a tree item is selected"),
+        ("aria-level", "Indicates the nesting level of the tree item"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The tree view is announced with its role and accessible name when focus enters it.",
+        "Each tree item announces its title, level, position in set, and expanded/collapsed state.",
+        "Arrow keys navigate between visible items while respecting the hierarchical structure.",
+        "Expanding or collapsing an item announces the new state to the screen reader.",
+    ];
+}

@@ -1,0 +1,24 @@
+@page "/components"
+@using Sunfish.KitchenSink.Data
+
+<div class="components-landing">
+    <h1>Components</h1>
+    <p>Explore the full Sunfish component library. Select a component to see live demos, appearance options, events, and accessibility information.</p>
+
+    <div class="components-landing-grid">
+        @foreach (var category in ComponentRegistry.GetCategories())
+        {
+            var components = ComponentRegistry.GetByCategory(category.Slug);
+            <div class="component-category-card">
+                <h2>@category.Name</h2>
+                <div class="category-count">@components.Length components</div>
+                <ul>
+                    @foreach (var comp in components)
+                    {
+                        <li><a href="/components/@comp.Slug">@comp.Name</a></li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>

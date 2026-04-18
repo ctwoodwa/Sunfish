@@ -1,0 +1,109 @@
+@layout MainLayout
+@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+@using Sunfish.KitchenSink.Data
+@using Sunfish.KitchenSink.Components
+
+@if (_component is not null)
+{
+    <div class="content-with-affix">
+        <div class="content-page">
+            <SunfishBreadcrumb Class="demo-breadcrumb">
+                <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+                <SunfishBreadcrumbItem IsActive="true">@_component.Name</SunfishBreadcrumbItem>
+            </SunfishBreadcrumb>
+
+            <article>
+                <div class="article-header">
+                    <h1>@_component.Name</h1>
+                    <FavoriteToggle PageId="@_component.Slug"
+                                    PageTitle="@_component.Name"
+                                    PageUrl="@($"/components/{_component.Slug}")" />
+                </div>
+                <p class="article-description">@_component.Description</p>
+
+                <CascadingValue Value="_sectionTracker">
+                    @Body
+                </CascadingValue>
+            </article>
+
+            <ComponentFooter Component="_component" />
+        </div>
+
+        @if (_sectionTracker.Sections.Count > 0)
+        {
+            <aside class="affix-sidebar">
+                <nav class="affix-nav">
+                    <div class="affix-title">IN THIS ARTICLE</div>
+                    @foreach (var sectionItem in _sectionTracker.Sections)
+                    {
+                        var sectionId = sectionItem.Id;
+                        <a class="affix-link" href="javascript:void(0)"
+                           @onclick="() => ScrollToSection(sectionId)"
+                           @onclick:preventDefault>@sectionItem.Title</a>
+                        @foreach (var sub in sectionItem.SubSections.OrderBy(s => s.Order))
+                        {
+                            var subId = sub.Id;
+                            <a class="affix-link affix-link--sub" href="javascript:void(0)"
+                               @onclick="() => ScrollToSection(subId)"
+                               @onclick:preventDefault>@sub.Title</a>
+                        }
+                    }
+                </nav>
+            </aside>
+        }
+    </div>
+}
+
+@code {
+    private ComponentRegistry.ComponentInfo? _component;
+    private PageSectionTracker _sectionTracker = new();
+
+    protected override void OnParametersSet()
+    {
+        ParseRoute();
+    }
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        _sectionTracker.OnChanged += OnSectionsChanged;
+        ParseRoute();
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _sectionTracker.Clear();
+        ParseRoute();
+        StateHasChanged();
+    }
+
+    private void OnSectionsChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void ParseRoute()
+    {
+        var uri = Nav.ToBaseRelativePath(Nav.Uri).TrimEnd('/');
+        var segments = uri.Split('/');
+
+        if (segments.Length >= 2 && segments[0].Equals("components", StringComparison.OrdinalIgnoreCase))
+        {
+            _component = ComponentRegistry.GetBySlug(segments[1]);
+        }
+    }
+
+    private async Task ScrollToSection(string id)
+    {
+        await JS.InvokeVoidAsync("Sunfish.scrollToElement", id);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+        _sectionTracker.OnChanged -= OnSectionsChanged;
+    }
+}

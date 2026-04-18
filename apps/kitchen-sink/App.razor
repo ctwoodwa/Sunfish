@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sunfish Component Gallery</title>
+    <base href="/" />
+    <link id="sunfish-provider-fluentui" rel="stylesheet" href="_content/Sunfish.Providers.FluentUI/css/sunfish-fluentui.css" />
+    <link id="sunfish-provider-bootstrap" rel="stylesheet" href="_content/Sunfish.Providers.Bootstrap/css/sunfish-bootstrap.css" disabled />
+    <link id="sunfish-provider-material" rel="stylesheet" href="_content/Sunfish.Providers.Material/css/sunfish-material.css" disabled />
+    <script>
+        // Apply stored provider immediately to prevent flash of wrong styles
+        try {
+            var p = localStorage.getItem('sunfish:provider');
+            if (p === 'bootstrap') {
+                document.getElementById('sunfish-provider-fluentui').disabled = true;
+                document.getElementById('sunfish-provider-bootstrap').disabled = false;
+            } else if (p === 'material') {
+                document.getElementById('sunfish-provider-fluentui').disabled = true;
+                document.getElementById('sunfish-provider-material').disabled = false;
+            }
+        } catch(e) {}
+    </script>
+    <link rel="stylesheet" href="css/app.css" />
+    <link rel="stylesheet" href="Sunfish.KitchenSink.styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+    <script>
+        window.Sunfish = {
+            scrollToElement: function(id) {
+                var el = document.getElementById(id);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        };
+    </script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.1/dist/pmtiles.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markup.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-csharp.min.js"></script>
+</body>
+</html>

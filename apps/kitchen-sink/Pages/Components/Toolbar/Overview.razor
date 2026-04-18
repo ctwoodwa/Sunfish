@@ -1,0 +1,116 @@
+@page "/components/Toolbar"
+@page "/components/Toolbar/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishToolbar>
+            <SunfishToolbarGroup>
+                <SunfishToolbarToggleButton IsSelected="@_bold" IsSelectedChanged="@((bool v) => _bold = v)">Bold</SunfishToolbarToggleButton>
+                <SunfishToolbarToggleButton IsSelected="@_italic" IsSelectedChanged="@((bool v) => _italic = v)">Italic</SunfishToolbarToggleButton>
+                <SunfishToolbarToggleButton IsSelected="@_underline" IsSelectedChanged="@((bool v) => _underline = v)">Underline</SunfishToolbarToggleButton>
+            </SunfishToolbarGroup>
+            <SunfishToolbarSeparator />
+            <SunfishToolbarGroup>
+                <SunfishToolbarButton>Cut</SunfishToolbarButton>
+                <SunfishToolbarButton>Copy</SunfishToolbarButton>
+                <SunfishToolbarButton>Paste</SunfishToolbarButton>
+            </SunfishToolbarGroup>
+            <SunfishToolbarSeparator />
+            <SunfishToolbarButton Disabled="true">Undo</SunfishToolbarButton>
+        </SunfishToolbar>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Vertical Orientation" Description="Toolbars can be arranged vertically." Code="@_verticalCode">
+        <SunfishToolbar Orientation="Orientation.Vertical">
+            <SunfishToolbarButton>Cut</SunfishToolbarButton>
+            <SunfishToolbarButton>Copy</SunfishToolbarButton>
+            <SunfishToolbarButton>Paste</SunfishToolbarButton>
+        </SunfishToolbar>
+    </DemoSection>
+
+    <DemoSection Title="Sizes" Description="Toolbar buttons support different sizes." Code="@_sizesCode">
+        <SunfishToolbar Size="ToolbarSize.Small">
+            <SunfishToolbarButton>Small A</SunfishToolbarButton>
+            <SunfishToolbarButton>Small B</SunfishToolbarButton>
+        </SunfishToolbar>
+        <SunfishToolbar Size="ToolbarSize.Medium">
+            <SunfishToolbarButton>Medium A</SunfishToolbarButton>
+            <SunfishToolbarButton>Medium B</SunfishToolbarButton>
+        </SunfishToolbar>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private bool _bold, _italic, _underline;
+
+    private const string _basicCode =
+        "<SunfishToolbar>\n" +
+        "    <SunfishToolbarGroup>\n" +
+        "        <SunfishToolbarToggleButton IsSelected=\"@_bold\" IsSelectedChanged=\"@(v => _bold = v)\">Bold</SunfishToolbarToggleButton>\n" +
+        "        <SunfishToolbarToggleButton IsSelected=\"@_italic\" IsSelectedChanged=\"@(v => _italic = v)\">Italic</SunfishToolbarToggleButton>\n" +
+        "        <SunfishToolbarToggleButton IsSelected=\"@_underline\" IsSelectedChanged=\"@(v => _underline = v)\">Underline</SunfishToolbarToggleButton>\n" +
+        "    </SunfishToolbarGroup>\n" +
+        "    <SunfishToolbarSeparator />\n" +
+        "    <SunfishToolbarGroup>\n" +
+        "        <SunfishToolbarButton>Cut</SunfishToolbarButton>\n" +
+        "        <SunfishToolbarButton>Copy</SunfishToolbarButton>\n" +
+        "        <SunfishToolbarButton>Paste</SunfishToolbarButton>\n" +
+        "    </SunfishToolbarGroup>\n" +
+        "    <SunfishToolbarSeparator />\n" +
+        "    <SunfishToolbarButton Disabled=\"true\">Undo</SunfishToolbarButton>\n" +
+        "</SunfishToolbar>\n\n" +
+        "@code {\n" +
+        "    private bool _bold, _italic, _underline;\n" +
+        "}";
+
+    private const string _verticalCode =
+        "<SunfishToolbar Orientation=\"Orientation.Vertical\">\n" +
+        "    <SunfishToolbarButton>Cut</SunfishToolbarButton>\n" +
+        "    <SunfishToolbarButton>Copy</SunfishToolbarButton>\n" +
+        "    <SunfishToolbarButton>Paste</SunfishToolbarButton>\n" +
+        "</SunfishToolbar>";
+
+    private const string _sizesCode =
+        "<SunfishToolbar Size=\"ToolbarSize.Small\">\n" +
+        "    <SunfishToolbarButton>Small A</SunfishToolbarButton>\n" +
+        "    <SunfishToolbarButton>Small B</SunfishToolbarButton>\n" +
+        "</SunfishToolbar>\n" +
+        "<SunfishToolbar Size=\"ToolbarSize.Medium\">\n" +
+        "    <SunfishToolbarButton>Medium A</SunfishToolbarButton>\n" +
+        "    <SunfishToolbarButton>Medium B</SunfishToolbarButton>\n" +
+        "</SunfishToolbar>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Left Arrow", "Moves focus to the previous toolbar item"),
+        ("Right Arrow", "Moves focus to the next toolbar item"),
+        ("Home", "Moves focus to the first toolbar item"),
+        ("End", "Moves focus to the last toolbar item"),
+        ("Tab", "Moves focus out of the toolbar to the next focusable element"),
+        ("Shift + Tab", "Moves focus out of the toolbar to the previous focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"toolbar\"", "Applied to the toolbar container to identify it as a toolbar widget"),
+        ("aria-label", "Provides an accessible name for the toolbar"),
+        ("aria-orientation", "Indicates whether the toolbar is horizontal or vertical"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The toolbar is announced with its role and accessible name when focus enters it.",
+        "Arrow keys move between items within the toolbar, while Tab moves focus out of the toolbar entirely.",
+        "Toggle buttons announce their pressed state as \"pressed\" or \"not pressed\".",
+    ];
+}

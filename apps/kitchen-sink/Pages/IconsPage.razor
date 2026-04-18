@@ -1,0 +1,391 @@
+@page "/icons"
+@using Sunfish.Icons.Tabler
+@inject IWebHostEnvironment Env
+@inject IJSRuntime JS
+
+<div class="icons-page">
+
+    <!-- Header -->
+    <header class="icons-header">
+        <div class="icons-header-left">
+            <span class="icons-logo" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                    <rect x="2" y="2" width="24" height="24" rx="6" stroke="currentColor" stroke-width="2" />
+                    <path d="M9 9l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M15 14h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                </svg>
+            </span>
+            <span class="icons-site-title">Icons</span>
+            <span class="icons-count-badge">@_allCount</span>
+        </div>
+        <div class="icons-header-right">
+            <button class="icons-header-btn" @onclick="DownloadAll" title="Download sprite.svg">
+                <SunfishIcon Name="download" Size="IconSize.Small" />
+                <span>Download All</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="icons-hero">
+        <h2 class="icons-hero-title">Hand-crafted SVG icons<br />for modern interfaces</h2>
+        <p class="icons-hero-sub">@_allCount essential icons across @_categories.Count categories. 24×24 grid, 2px stroke, round joins. Uses <code>currentColor</code> for effortless theming.</p>
+    </section>
+
+    <!-- Tabler Icons Showcase -->
+    <section class="icons-hero" style="border-top: 1px solid var(--mar-color-border, #e0e0e0); padding-top: 2rem;">
+        <h2 class="icons-hero-title">Tabler Icons</h2>
+        <p class="icons-hero-sub">
+            5,000+ MIT-licensed icons via <code>Sunfish.Icons.Tabler</code>.
+            Icon names use Tabler kebab-case (e.g. "home", "calendar-event", "user").
+            Browse the full set at <a href="https://tabler.io/icons" target="_blank" rel="noopener">tabler.io/icons</a>.
+        </p>
+        <div class="icons-grid icons-grid--m" style="max-width: 900px; margin: 1.5rem auto 0;">
+            @foreach (var name in _tablerSamples)
+            {
+                <div class="icons-card" title="@name">
+                    <div class="icons-card-icon">@_tablerProvider.GetIcon(name, IconSize.Medium)</div>
+                    <span class="icons-card-name">@name</span>
+                </div>
+            }
+        </div>
+        <h3 style="margin-top: 1.5rem; font-size: 0.875rem; opacity: 0.7;">Size variants</h3>
+        <div style="display: flex; gap: 2rem; justify-content: center; align-items: end; margin-top: 0.75rem; flex-wrap: wrap;">
+            @foreach (var size in new[] { IconSize.Small, IconSize.Medium, IconSize.Large, IconSize.ExtraLarge })
+            {
+                <div style="text-align: center;">
+                    @_tablerProvider.GetIcon("home", size)
+                    <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.6;">@size</div>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- Sticky toolbar -->
+    <div class="icons-toolbar">
+        <div class="icons-toolbar-inner">
+            <SunfishSearchBox Value="@_search"
+                            ValueChanged="OnSearchChanged"
+                            Placeholder="@($"Search {_allCount} icons…")"
+                            KbdHint="/"
+                            OnEscape="ClearSearch"
+                            class="icons-search-wrap" />
+            <div class="icons-size-controls">
+                <span class="icons-size-label">Preview</span>
+                <div class="icons-size-btns" role="radiogroup" aria-label="Grid density">
+                    @foreach (var (key, label) in new[] { ("s", "S"), ("m", "M"), ("l", "L"), ("xl", "XL") })
+                    {
+                        var k = key;
+                        <button class="icons-size-btn @(_gridSize == k ? "active" : "")"
+                                @onclick="@(() => _gridSize = k)"
+                                aria-pressed="@(_gridSize == k)">@label</button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="icons-cat-tabs" role="tablist" aria-label="Icon categories">
+            <button class="icons-cat-tab @(_category == null ? "active" : "")"
+                    @onclick="@(() => SetCategory(null))"
+                    role="tab" aria-selected="@(_category == null)">
+                All <span class="icons-cat-count">@_allCount</span>
+            </button>
+            @foreach (var (cat, names) in _categories)
+            {
+                var catName = cat;
+                var count = names.Count(n => _icons.ContainsKey(n));
+                if (count == 0) continue;
+                <button class="icons-cat-tab @(_category == catName ? "active" : "")"
+                        @onclick="@(() => SetCategory(catName))"
+                        role="tab" aria-selected="@(_category == catName)">
+                    @FormatCategoryLabel(catName) <span class="icons-cat-count">@count</span>
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Icon grid -->
+    <main class="icons-grid-section">
+        @if (_filtered.Count == 0)
+        {
+            <div class="icons-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" /></svg>
+                <p>No icons match "@_search"</p>
+            </div>
+        }
+        else if (ShowCategoryHeaders)
+        {
+            <div class="icons-grid icons-grid--@_gridSize">
+                @foreach (var (cat, names) in _categories)
+                {
+                    var catIcons = names.Where(n => _icons.ContainsKey(n)).ToList();
+                    if (catIcons.Count == 0) continue;
+                    <div class="icons-category-header">
+                        <h3>@FormatCategoryLabel(cat) <span class="icons-cat-badge">@catIcons.Count</span></h3>
+                    </div>
+                    @foreach (var name in catIcons)
+                    {
+                        var iconName = name;
+                        <button class="icons-card @(_selected == iconName ? "selected" : "")"
+                                @onclick="@(() => SelectIcon(iconName))"
+                                title="@iconName">
+                            <div class="icons-card-icon">@RenderIcon(iconName, 24)</div>
+                            <span class="icons-card-name">@iconName</span>
+                        </button>
+                    }
+                }
+            </div>
+        }
+        else
+        {
+            <div class="icons-grid icons-grid--@_gridSize">
+                @foreach (var name in _filtered)
+                {
+                    var iconName = name;
+                    <button class="icons-card @(_selected == iconName ? "selected" : "")"
+                            @onclick="@(() => SelectIcon(iconName))"
+                            title="@iconName">
+                        <div class="icons-card-icon">@RenderIcon(iconName, 24)</div>
+                        <span class="icons-card-name">@iconName</span>
+                    </button>
+                }
+            </div>
+        }
+    </main>
+
+    <footer class="icons-footer">
+        <p>Sunfish Icons &mdash; @_allCount hand-crafted SVG icons &mdash; The Unlicense</p>
+    </footer>
+
+    <!-- Detail panel -->
+    @if (_selected != null)
+    {
+        <div class="icons-detail-panel" @onclick="CloseDetail" role="dialog" aria-modal="true" aria-label="@_selected icon details">
+            <div class="icons-detail-backdrop"></div>
+            <div class="icons-detail-card" @onclick:stopPropagation="true">
+                <button class="icons-detail-close" @onclick="CloseDetail" aria-label="Close">
+                    <SunfishIcon Name="x" Size="IconSize.Small" />
+                </button>
+                <div class="icons-detail-preview">@RenderIcon(_selected, 48)</div>
+                <h3 class="icons-detail-name">@_selected</h3>
+                <p class="icons-detail-category">@FormatCategoryLabel(GetCategory(_selected))</p>
+                <div class="icons-detail-sizes">
+                    @foreach (var sz in new[] { 16, 24, 32, 48, 64 })
+                    {
+                        <div class="icons-detail-size-item">
+                            <div class="icons-detail-size-icon">@RenderIcon(_selected, sz)</div>
+                            <span>@sz</span>
+                        </div>
+                    }
+                </div>
+                <div class="icons-detail-actions">
+                    <button class="icons-action-btn icons-action-btn--primary" @onclick="CopySvg">
+                        <SunfishIcon Name="copy" Size="IconSize.Small" />
+                        Copy SVG
+                    </button>
+                    <button class="icons-action-btn" @onclick="CopyBlazor">
+                        <SunfishIcon Name="code" Size="IconSize.Small" />
+                        Copy Blazor
+                    </button>
+                    <button class="icons-action-btn" @onclick="DownloadSvg">
+                        <SunfishIcon Name="download" Size="IconSize.Small" />
+                        Download
+                    </button>
+                </div>
+                <div class="icons-code-block">
+                    <div class="icons-code-header">
+                        <span>Blazor</span>
+                        <button class="icons-code-copy" @onclick="CopyBlazor" aria-label="Copy Blazor">
+                            <SunfishIcon Name="copy" Size="IconSize.Small" />
+                        </button>
+                    </div>
+                    <pre><code>@GetBlazorSnippet(_selected)</code></pre>
+                </div>
+                <div class="icons-code-block" style="margin-top:8px">
+                    <div class="icons-code-header">
+                        <span>SVG</span>
+                        <button class="icons-code-copy" @onclick="CopySvg" aria-label="Copy SVG">
+                            <SunfishIcon Name="copy" Size="IconSize.Small" />
+                        </button>
+                    </div>
+                    <pre><code>@GetFullSvg(_selected)</code></pre>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Toast -->
+    @if (_toast != null)
+    {
+        <div class="icons-toast icons-toast--show">@_toast</div>
+    }
+
+</div>
+
+@code {
+    private readonly SunfishTablerIconProvider _tablerProvider = new();
+    private static readonly string[] _tablerSamples = [
+        "home", "search", "user", "settings", "calendar-event", "bell",
+        "mail", "heart", "star", "folder", "lock", "chart-bar"
+    ];
+
+    private Dictionary<string, string> _icons = new();
+    private Dictionary<string, List<string>> _categories = new();
+    private Dictionary<string, string> _iconCategoryMap = new();
+
+    private string _search = "";
+    private string? _category;
+    private string _gridSize = "m";
+    private string? _selected;
+    private string? _toast;
+    private System.Threading.CancellationTokenSource? _toastCts;
+
+    private List<string> _filtered = new();
+    private int _allCount;
+
+    private bool ShowCategoryHeaders => _category == null && string.IsNullOrEmpty(_search);
+
+    protected override async Task OnInitializedAsync()
+    {
+        var path = Path.Combine(Env.WebRootPath, "icons", "sunfish-icons.json");
+        var json = await File.ReadAllTextAsync(path);
+        var doc = System.Text.Json.JsonDocument.Parse(json);
+
+        foreach (var prop in doc.RootElement.GetProperty("icons").EnumerateObject())
+            _icons[prop.Name] = prop.Value.GetString() ?? "";
+
+        foreach (var prop in doc.RootElement.GetProperty("categories").EnumerateObject())
+        {
+            var names = prop.Value.EnumerateArray().Select(e => e.GetString()!).ToList();
+            _categories[prop.Name] = names;
+            foreach (var n in names)
+                _iconCategoryMap.TryAdd(n, prop.Name);
+        }
+
+        _allCount = _icons.Count;
+        ApplyFilter();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("eval",
+                "(function(){" +
+                "document.addEventListener('keydown',function(e){" +
+                "if(e.key==='/'&&document.activeElement.tagName!=='INPUT'&&document.activeElement.tagName!=='TEXTAREA'){" +
+                "var el=document.querySelector('.icons-search-wrap input[type=search]');if(el){e.preventDefault();el.focus();}" +
+                "}});" +
+                "})();");
+        }
+    }
+
+    private void ApplyFilter()
+    {
+        var q = _search.Trim().ToLower();
+        IEnumerable<string> source = _category != null
+            ? (_categories.TryGetValue(_category, out var cats) ? cats.Where(_icons.ContainsKey) : Enumerable.Empty<string>())
+            : _icons.Keys;
+
+        _filtered = (string.IsNullOrEmpty(q)
+            ? source
+            : source.Where(n => n.Contains(q))).ToList();
+    }
+
+    private void OnSearchChanged(string value)
+    {
+        _search = value;
+        ApplyFilter();
+    }
+
+    private void ClearSearch() { _search = ""; ApplyFilter(); }
+
+    private void SetCategory(string? cat) { _category = cat; ApplyFilter(); }
+
+    private void SelectIcon(string name) => _selected = _selected == name ? null : name;
+
+    private void CloseDetail() => _selected = null;
+
+    private MarkupString RenderIcon(string name, int size)
+    {
+        if (!_icons.TryGetValue(name, out var paths)) return new MarkupString("");
+        return new MarkupString(
+            $"""<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{paths}</svg>""");
+    }
+
+    private string GetFullSvg(string name)
+    {
+        if (!_icons.TryGetValue(name, out var paths)) return "";
+        return $"""<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{paths}</svg>""";
+    }
+
+    private string GetBlazorSnippet(string? name)
+    {
+        if (name == null) return "";
+        return $$$"""
+<SunfishIcon Name="{name}" />
+
+{{/* with size */}}
+<SunfishIcon Name="{name}" Size="IconSize.Large" />
+
+{{/* with color */}}
+<SunfishIcon Name="{name}" ThemeColor="IconThemeColor.Primary" />
+
+{{/* inside a button */}}
+<SunfishButton>
+    <SunfishIcon Name="{name}" /> Label
+</SunfishButton>
+""";
+    }
+
+    private string GetCategory(string? name) =>
+        name != null && _iconCategoryMap.TryGetValue(name, out var cat) ? cat : "";
+
+    private string FormatCategoryLabel(string? cat) =>
+        cat == null ? "" : System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cat.Replace('-', ' '));
+
+    private async Task CopySvg()
+    {
+        if (_selected == null) return;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", GetFullSvg(_selected));
+        await ShowToast("SVG copied");
+    }
+
+    private async Task CopyBlazor()
+    {
+        if (_selected == null) return;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", $"<SunfishIcon Name=\"{_selected}\" />");
+        await ShowToast("Blazor markup copied");
+    }
+
+    private async Task DownloadSvg()
+    {
+        if (_selected == null) return;
+        var svg = GetFullSvg(_selected);
+        var encoded = Uri.EscapeDataString(svg);
+        await JS.InvokeVoidAsync("eval",
+            $"(function(){{var a=document.createElement('a');a.href='data:image/svg+xml,{encoded}';a.download='{_selected}.svg';a.click();}})()");
+        await ShowToast("Downloaded");
+    }
+
+    private async Task DownloadAll()
+    {
+        await JS.InvokeVoidAsync("eval",
+            "(function(){var a=document.createElement('a');a.href='_content/Sunfish.Icons/icons/sprite.svg';a.download='sunfish-icons-sprite.svg';a.click();})()" );
+        await ShowToast("Downloading sprite.svg");
+    }
+
+    private async Task ShowToast(string message)
+    {
+        _toastCts?.Cancel();
+        _toastCts = new System.Threading.CancellationTokenSource();
+        _toast = message;
+        StateHasChanged();
+        try
+        {
+            await Task.Delay(2200, _toastCts.Token);
+            _toast = null;
+            StateHasChanged();
+        }
+        catch (TaskCanceledException) { }
+    }
+}

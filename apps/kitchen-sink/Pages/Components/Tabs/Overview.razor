@@ -1,0 +1,325 @@
+@page "/components/TabStrip"
+@page "/components/TabStrip/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.Layout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_activeTabId">
+            <TabStripTab Id="overview" Title="Overview">
+                <p>This is the overview content.</p>
+            </TabStripTab>
+            <TabStripTab Id="details" Title="Details">
+                <p>This is the details content.</p>
+            </TabStripTab>
+            <TabStripTab Id="settings" Title="Settings">
+                <SunfishField>
+                    <SunfishLabel>Display Name</SunfishLabel>
+                    <SunfishTextBox Placeholder="Enter a name" />
+                </SunfishField>
+                <SunfishField>
+                    <SunfishSwitch Label="Enable notifications" />
+                </SunfishField>
+            </TabStripTab>
+        </SunfishTabStrip>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Tab Positions" Description="Control where the tab strip renders relative to its content panels." Code="@_positionCode">
+        <div style="display:flex;flex-direction:column;gap:24px;">
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Bottom</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_posBottomId" TabPosition="TabPosition.Bottom">
+                    <TabStripTab Id="a" Title="Tab A"><p>Content A (tabs at bottom)</p></TabStripTab>
+                    <TabStripTab Id="b" Title="Tab B"><p>Content B</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Left</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_posLeftId" TabPosition="TabPosition.Left">
+                    <TabStripTab Id="a" Title="Tab A"><p>Content A (tabs on left)</p></TabStripTab>
+                    <TabStripTab Id="b" Title="Tab B"><p>Content B</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Right</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_posRightId" TabPosition="TabPosition.Right">
+                    <TabStripTab Id="a" Title="Tab A"><p>Content A (tabs on right)</p></TabStripTab>
+                    <TabStripTab Id="b" Title="Tab B"><p>Content B</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Tab Alignment" Description="Control how tabs are aligned within the tab strip." Code="@_alignmentCode">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Center</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_alignCenterId" TabAlignment="TabAlignment.Center">
+                    <TabStripTab Id="x" Title="Alpha"><p>Alpha</p></TabStripTab>
+                    <TabStripTab Id="y" Title="Beta"><p>Beta</p></TabStripTab>
+                    <TabStripTab Id="z" Title="Gamma"><p>Gamma</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Stretched</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_alignStretchId" TabAlignment="TabAlignment.Stretched">
+                    <TabStripTab Id="x" Title="Alpha"><p>Alpha</p></TabStripTab>
+                    <TabStripTab Id="y" Title="Beta"><p>Beta</p></TabStripTab>
+                    <TabStripTab Id="z" Title="Gamma"><p>Gamma</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Tab Sizes" Description="Adjust the visual size of the tabs with the Size parameter." Code="@_sizeCode">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Small</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_sizeSmId" Size="TabSize.Small">
+                    <TabStripTab Id="a" Title="Tab A"><p>Small tabs</p></TabStripTab>
+                    <TabStripTab Id="b" Title="Tab B"><p>Small tabs</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+            <div>
+                <p style="font-size:0.875em;margin-bottom:4px;"><strong>Large</strong></p>
+                <SunfishTabStrip @bind-ActiveTabId="@_sizeLgId" Size="TabSize.Large">
+                    <TabStripTab Id="a" Title="Tab A"><p>Large tabs</p></TabStripTab>
+                    <TabStripTab Id="b" Title="Tab B"><p>Large tabs</p></TabStripTab>
+                </SunfishTabStrip>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Disabled Tab" Description="Set Disabled on a TabStripTab to prevent users from activating it." Code="@_disabledTabCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_disabledTabId">
+            <TabStripTab Id="active" Title="Active"><p>This tab is active.</p></TabStripTab>
+            <TabStripTab Id="disabled" Title="Disabled" Disabled="true"><p>This content is inaccessible while disabled.</p></TabStripTab>
+            <TabStripTab Id="another" Title="Another"><p>Another accessible tab.</p></TabStripTab>
+        </SunfishTabStrip>
+    </DemoSection>
+
+    <DemoSection Title="Closeable Tabs" Description="Set Closeable on individual tabs to render a close button." Code="@_closeableCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_closeableActiveId">
+            @foreach (var tab in _closeableTabs)
+            {
+                <TabStripTab Id="@tab.Id" Title="@tab.Title" Closeable="true">
+                    <p>Content for @tab.Title</p>
+                </TabStripTab>
+            }
+        </SunfishTabStrip>
+        <p style="margin-top:8px;font-size:0.875em;">Open tabs: @string.Join(", ", _closeableTabs.Select(t => t.Title))</p>
+    </DemoSection>
+
+    <DemoSection Title="Pinnable Tabs" Description="Set Pinnable on a tab to allow users to pin it to the start of the strip." Code="@_pinnableCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_pinnableActiveId">
+            <TabStripTab Id="p1" Title="Pinnable" Pinnable="true"><p>This tab can be pinned.</p></TabStripTab>
+            <TabStripTab Id="p2" Title="Regular"><p>Regular tab content.</p></TabStripTab>
+            <TabStripTab Id="p3" Title="Also Pinnable" Pinnable="true"><p>Also pinnable.</p></TabStripTab>
+        </SunfishTabStrip>
+    </DemoSection>
+
+    <DemoSection Title="Tab Strip Suffix" Description="Use TabStripSuffixTemplate to render extra content (e.g. actions) at the end of the tab strip." Code="@_suffixCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_suffixActiveId">
+            <ChildContent>
+                <TabStripTab Id="s1" Title="Tab 1"><p>Tab 1 content.</p></TabStripTab>
+                <TabStripTab Id="s2" Title="Tab 2"><p>Tab 2 content.</p></TabStripTab>
+            </ChildContent>
+            <TabStripSuffixTemplate>
+                <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary">+ Add Tab</SunfishButton>
+            </TabStripSuffixTemplate>
+        </SunfishTabStrip>
+    </DemoSection>
+
+    <DemoSection Title="Persist Tab Content" Description="PersistTabContent keeps inactive tab content in the DOM, preserving component state when switching tabs." Code="@_persistCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_persistActiveId" PersistTabContent="true">
+            <TabStripTab Id="counter" Title="Counter">
+                <p>Counter: <strong>@_persistCount</strong></p>
+                <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _persistCount++)">Increment</SunfishButton>
+            </TabStripTab>
+            <TabStripTab Id="other" Title="Other Tab">
+                <p>Switch back to the Counter tab — the count is preserved because PersistTabContent is true.</p>
+            </TabStripTab>
+        </SunfishTabStrip>
+    </DemoSection>
+
+    <DemoSection Title="Overflow Menu Mode" Description="When OverflowMode is Menu with MaxVisibleTabs, tabs beyond that count are placed in a dropdown." Code="@_overflowCode">
+        <SunfishTabStrip @bind-ActiveTabId="@_overflowActiveId"
+                        OverflowMode="TabStripOverflowMode.Menu"
+                        MaxVisibleTabs="3">
+            <TabStripTab Id="tab1" Title="Dashboard"><p>Dashboard content.</p></TabStripTab>
+            <TabStripTab Id="tab2" Title="Reports"><p>Reports content.</p></TabStripTab>
+            <TabStripTab Id="tab3" Title="Analytics"><p>Analytics content.</p></TabStripTab>
+            <TabStripTab Id="tab4" Title="Settings"><p>Settings (overflow).</p></TabStripTab>
+            <TabStripTab Id="tab5" Title="Users"><p>Users (overflow).</p></TabStripTab>
+            <TabStripTab Id="tab6" Title="Billing"><p>Billing (overflow).</p></TabStripTab>
+        </SunfishTabStrip>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ActiveTabIdChanged" Description="Handle tab selection changes with the ActiveTabIdChanged callback." Code="@_eventCode">
+        <SunfishTabStrip ActiveTabId="@_evActiveTabId" ActiveTabIdChanged="@OnTabChanged">
+            <TabStripTab Id="first" Title="First"><p>First tab content.</p></TabStripTab>
+            <TabStripTab Id="second" Title="Second"><p>Second tab content.</p></TabStripTab>
+            <TabStripTab Id="third" Title="Third"><p>Third tab content.</p></TabStripTab>
+        </SunfishTabStrip>
+        <p>Active tab ID: <code>@_evActiveTabId</code></p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private record TabItem(string Id, string Title);
+
+    private List<TabItem> _closeableTabs = [new("c1", "Alpha"), new("c2", "Beta"), new("c3", "Gamma")];
+
+    // Overview
+    private string _activeTabId = "overview";
+
+    // Position
+    private string _posBottomId = "a";
+    private string _posLeftId = "a";
+    private string _posRightId = "a";
+
+    // Alignment
+    private string _alignCenterId = "x";
+    private string _alignStretchId = "x";
+
+    // Sizes
+    private string _sizeSmId = "a";
+    private string _sizeLgId = "a";
+
+    // Individual tab features
+    private string _disabledTabId = "active";
+    private string _closeableActiveId = "c1";
+    private string _pinnableActiveId = "p1";
+    private string _suffixActiveId = "s1";
+
+    // Persist
+    private string _persistActiveId = "counter";
+    private int _persistCount;
+
+    // Overflow
+    private string _overflowActiveId = "tab1";
+
+    // Events
+    private string _evActiveTabId = "first";
+    private void OnTabChanged(string tabId) => _evActiveTabId = tabId;
+
+    private const string _basicCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_activeTabId\">\n" +
+        "    <TabStripTab Id=\"overview\" Title=\"Overview\">\n" +
+        "        <p>This is the overview content.</p>\n" +
+        "    </TabStripTab>\n" +
+        "    <TabStripTab Id=\"details\" Title=\"Details\">\n" +
+        "        <p>This is the details content.</p>\n" +
+        "    </TabStripTab>\n" +
+        "</SunfishTabStrip>\n\n" +
+        "@code { private string _activeTabId = \"overview\"; }";
+
+    private const string _positionCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" TabPosition=\"TabPosition.Bottom\">\n" +
+        "    <TabStripTab Id=\"a\" Title=\"Tab A\">...</TabStripTab>\n" +
+        "</SunfishTabStrip>\n\n" +
+        "<!-- Also: TabPosition.Left, TabPosition.Right, TabPosition.Top (default) -->";
+
+    private const string _alignmentCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" TabAlignment=\"TabAlignment.Center\">...</SunfishTabStrip>\n" +
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" TabAlignment=\"TabAlignment.Stretched\">...</SunfishTabStrip>\n\n" +
+        "<!-- Also: TabAlignment.Start (default), TabAlignment.End, TabAlignment.Justify -->";
+
+    private const string _sizeCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" Size=\"TabSize.Small\">...</SunfishTabStrip>\n" +
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" Size=\"TabSize.Large\">...</SunfishTabStrip>\n\n" +
+        "<!-- Also: TabSize.Medium (default) -->";
+
+    private const string _disabledTabCode =
+        "<TabStripTab Id=\"disabled\" Title=\"Disabled\" Disabled=\"true\">\n" +
+        "    <p>Cannot be activated.</p>\n" +
+        "</TabStripTab>";
+
+    private const string _closeableCode =
+        "@foreach (var tab in _tabs)\n" +
+        "{\n" +
+        "    <TabStripTab Id=\"@tab.Id\" Title=\"@tab.Title\" Closeable=\"true\">\n" +
+        "        <p>Content for @tab.Title</p>\n" +
+        "    </TabStripTab>\n" +
+        "}";
+
+    private const string _pinnableCode =
+        "<TabStripTab Id=\"p1\" Title=\"Pinnable\" Pinnable=\"true\">\n" +
+        "    <p>This tab can be pinned to the start.</p>\n" +
+        "</TabStripTab>";
+
+    private const string _suffixCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\">\n" +
+        "    <TabStripTab Id=\"s1\" Title=\"Tab 1\">...</TabStripTab>\n" +
+        "    <TabStripSuffixTemplate>\n" +
+        "        <SunfishButton Size=\"ButtonSize.Small\">+ Add Tab</SunfishButton>\n" +
+        "    </TabStripSuffixTemplate>\n" +
+        "</SunfishTabStrip>";
+
+    private const string _persistCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_id\" PersistTabContent=\"true\">\n" +
+        "    <TabStripTab Id=\"counter\" Title=\"Counter\">\n" +
+        "        <p>Counter: @_count</p>\n" +
+        "        <SunfishButton OnClick=\"@(() => _count++)\">Increment</SunfishButton>\n" +
+        "    </TabStripTab>\n" +
+        "    <TabStripTab Id=\"other\" Title=\"Other Tab\">...</TabStripTab>\n" +
+        "</SunfishTabStrip>";
+
+    private const string _overflowCode =
+        "<SunfishTabStrip @bind-ActiveTabId=\"@_activeTabId\"\n" +
+        "                OverflowMode=\"TabStripOverflowMode.Menu\"\n" +
+        "                MaxVisibleTabs=\"3\">\n" +
+        "    <TabStripTab Id=\"tab1\" Title=\"Dashboard\">...</TabStripTab>\n" +
+        "    <!-- more tabs collapsed into overflow menu -->\n" +
+        "</SunfishTabStrip>";
+
+    private const string _eventCode =
+        "<SunfishTabStrip ActiveTabId=\"@_activeTabId\" ActiveTabIdChanged=\"@OnTabChanged\">\n" +
+        "    <TabStripTab Id=\"first\" Title=\"First\">...</TabStripTab>\n" +
+        "    <TabStripTab Id=\"second\" Title=\"Second\">...</TabStripTab>\n" +
+        "</SunfishTabStrip>\n" +
+        "<p>Active tab ID: @_activeTabId</p>\n\n" +
+        "@code {\n" +
+        "    private string _activeTabId = \"first\";\n" +
+        "    private void OnTabChanged(string tabId) => _activeTabId = tabId;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Arrow Left", "Moves focus to the previous tab"),
+        ("Arrow Right", "Moves focus to the next tab"),
+        ("Tab", "Moves focus from the tab list into the active tab panel content"),
+        ("Enter / Space", "Activates the focused tab"),
+        ("Home", "Moves focus to the first tab"),
+        ("End", "Moves focus to the last tab"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"tablist\"", "Applied to the tab strip container"),
+        ("role=\"tab\"", "Applied to each individual tab element"),
+        ("role=\"tabpanel\"", "Applied to the content area associated with each tab"),
+        ("aria-selected=\"true\"", "Indicates the currently active tab"),
+        ("aria-controls", "Links each tab to its corresponding tab panel"),
+        ("aria-labelledby", "Links each tab panel back to its controlling tab"),
+        ("aria-disabled=\"true\"", "Applied when Disabled is true on a tab"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Tabs are announced with their title, position in the list (e.g., \"tab 2 of 3\"), and selected state.",
+        "Disabled tabs are announced as \"dimmed\" or \"unavailable\".",
+        "Tab panel content is announced when a new tab is activated.",
+    ];
+}

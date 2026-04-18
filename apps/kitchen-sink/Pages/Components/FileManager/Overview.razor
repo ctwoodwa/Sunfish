@@ -1,0 +1,231 @@
+@page "/components/filemanager"
+@page "/components/filemanager/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic File Browser" Description="FileManager with sample data, folder navigation, and breadcrumb path display.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="400px"
+                           @bind-Path="_currentPath" />
+        <p class="demo-info">Current path: <strong>@_currentPath</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="View Modes" Description="Toggle between List (details table) and Grid (thumbnail) views.">
+        <div class="demo-controls">
+            <label>
+                <input type="radio" name="viewMode" checked="@(_viewMode == FileManagerViewType.ListView)"
+                       @onchange="@(() => _viewMode = FileManagerViewType.ListView)" /> List View
+            </label>
+            <label style="margin-left:16px;">
+                <input type="radio" name="viewMode" checked="@(_viewMode == FileManagerViewType.Grid)"
+                       @onchange="@(() => _viewMode = FileManagerViewType.Grid)" /> Grid View
+            </label>
+        </div>
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="350px"
+                           @bind-View="_viewMode" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Selection & Events">
+    <DemoSection Title="File Selection" Description="Click a file to select it. The selected item's name is displayed below.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="350px"
+                           OnSelect="@OnItemSelected" />
+        <p class="demo-info">Selected: <strong>@(_selectedItemName ?? "(none)")</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="CRUD Operations" Description="Create folders, rename files, and delete items. Toggle the Allow switches to enable each operation.">
+        <div class="demo-controls">
+            <label><input type="checkbox" @bind="_allowCreate" /> Allow Create</label>
+            <label style="margin-left:16px;"><input type="checkbox" @bind="_allowRename" /> Allow Rename</label>
+            <label style="margin-left:16px;"><input type="checkbox" @bind="_allowDelete" /> Allow Delete</label>
+        </div>
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_crudData"
+                           Height="350px"
+                           AllowCreate="@_allowCreate"
+                           AllowRename="@_allowRename"
+                           AllowDelete="@_allowDelete"
+                           OnCreate="@OnCreateFolder"
+                           OnDelete="@OnDeleteItem"
+                           OnUpdate="@OnUpdateItem" />
+        <p class="demo-info">Last action: <strong>@_lastCrudAction</strong></p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Layout Options">
+    <DemoSection Title="Folder Tree & Preview Pane" Description="Toggle the folder tree sidebar and the file preview/details pane.">
+        <div class="demo-controls">
+            <label><input type="checkbox" @bind="_showTree" /> Show Folder Tree</label>
+            <label style="margin-left:16px;"><input type="checkbox" @bind="_showPreview" /> Show Preview Pane</label>
+        </div>
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="400px"
+                           ShowFolderTree="@_showTree"
+                           ShowPreviewPane="@_showPreview" />
+    </DemoSection>
+
+    <DemoSection Title="Sizing" Description="Set custom Height and Width for the file manager.">
+        <div class="demo-controls">
+            <label>Height: <input type="text" @bind="_customHeight" style="width:80px;" /></label>
+            <label style="margin-left:16px;">Width: <input type="text" @bind="_customWidth" style="width:80px;" /></label>
+        </div>
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="@_customHeight"
+                           Width="@_customWidth" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Data Loading">
+    <DemoSection Title="Server-Side Data (OnRead)" Description="Load data on-demand via the OnRead event. The handler receives the current path and populates the result.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Height="350px"
+                           OnRead="@OnReadData"
+                           EnableLoaderContainer="true" />
+    </DemoSection>
+
+    <DemoSection Title="Empty State" Description="When no data is provided, the file manager shows an empty state.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@(Array.Empty<FileManagerEntry>())"
+                           Height="250px" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="File Upload" Description="Enable file upload with allowed extensions and size limits via UploadSettings.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="350px"
+                           UploadSettings="@_uploadSettings" />
+    </DemoSection>
+
+    <DemoSection Title="Context Menu & Download" Description="Right-click on files to see the context menu with Rename, Download, and Delete options.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="350px"
+                           AllowRename="true"
+                           AllowDelete="true"
+                           OnDownload="@OnDownloadFile" />
+        <p class="demo-info">Last download: <strong>@(_lastDownloadName ?? "(none)")</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Custom Toolbar" Description="Replace the default toolbar with a custom template.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="350px">
+            <ToolBarTemplate>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid var(--sf-color-border,#ddd);">
+                    <strong>My Files</strong>
+                    <span style="flex:1;"></span>
+                    <button type="button" class="sf-btn mar-btn--sm" @onclick="@(() => _customToolbarAction = "Refresh clicked")">Refresh</button>
+                    <button type="button" class="sf-btn mar-btn--sm" @onclick="@(() => _customToolbarAction = "Settings clicked")">Settings</button>
+                </div>
+            </ToolBarTemplate>
+        </SunfishFileManager>
+        <p class="demo-info">@_customToolbarAction</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Disabled & Readonly States">
+    <DemoSection Title="Disabled File Manager" Description="All CRUD operations are disabled. The user can browse files but cannot create, rename, or delete.">
+        <SunfishFileManager TItem="FileManagerEntry"
+                           Data="@_sampleData"
+                           Height="300px"
+                           AllowCreate="false"
+                           AllowRename="false"
+                           AllowDelete="false" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    // ── Sample data ──────────────────────────────────────────────────
+    private string _currentPath = "/";
+    private FileManagerViewType _viewMode = FileManagerViewType.ListView;
+    private string? _selectedItemName;
+    private string _lastCrudAction = "(none)";
+    private bool _allowCreate = true;
+    private bool _allowRename = true;
+    private bool _allowDelete = true;
+    private bool _showTree = true;
+    private bool _showPreview = false;
+    private string _customHeight = "300px";
+    private string _customWidth = "100%";
+    private string? _lastDownloadName;
+    private string _customToolbarAction = "";
+
+    private FileManagerUploadSettings _uploadSettings = new()
+    {
+        SaveUrl = "/api/upload",
+        AllowedExtensions = new[] { ".jpg", ".png", ".pdf", ".docx" },
+        MaxFileSize = 10 * 1024 * 1024,
+        Multiple = true
+    };
+
+    private List<FileManagerEntry> _sampleData = GenerateSampleData();
+    private List<FileManagerEntry> _crudData = GenerateSampleData();
+
+    private static List<FileManagerEntry> GenerateSampleData() => new()
+    {
+        new() { Id = "1", Name = "Documents", Path = "/Documents", IsDirectory = true, HasDirectories = true, DateModified = new DateTime(2026, 3, 15) },
+        new() { Id = "2", Name = "Images", Path = "/Images", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 3, 20) },
+        new() { Id = "3", Name = "Downloads", Path = "/Downloads", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 4, 1) },
+        new() { Id = "4", Name = "readme.md", Path = "/readme.md", IsDirectory = false, Extension = ".md", Size = 2048, DateModified = new DateTime(2026, 4, 5) },
+        new() { Id = "5", Name = "budget.xlsx", Path = "/budget.xlsx", IsDirectory = false, Extension = ".xlsx", Size = 15360, DateModified = new DateTime(2026, 4, 8) },
+        new() { Id = "6", Name = "presentation.pptx", Path = "/presentation.pptx", IsDirectory = false, Extension = ".pptx", Size = 5242880, DateModified = new DateTime(2026, 3, 28) },
+        new() { Id = "7", Name = "notes.txt", Path = "/notes.txt", IsDirectory = false, Extension = ".txt", Size = 512, DateModified = new DateTime(2026, 4, 10) },
+        // Nested items for Documents folder
+        new() { Id = "10", ParentId = "1", Name = "Reports", Path = "/Documents/Reports", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 3, 10) },
+        new() { Id = "11", ParentId = "1", Name = "Contracts", Path = "/Documents/Contracts", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 2, 20) },
+        new() { Id = "12", ParentId = "1", Name = "invoice.pdf", Path = "/Documents/invoice.pdf", IsDirectory = false, Extension = ".pdf", Size = 102400, DateModified = new DateTime(2026, 3, 12) },
+        // Nested items for Images folder
+        new() { Id = "20", ParentId = "2", Name = "photo.jpg", Path = "/Images/photo.jpg", IsDirectory = false, Extension = ".jpg", Size = 2097152, DateModified = new DateTime(2026, 3, 22) },
+        new() { Id = "21", ParentId = "2", Name = "logo.png", Path = "/Images/logo.png", IsDirectory = false, Extension = ".png", Size = 51200, DateModified = new DateTime(2026, 3, 25) },
+        new() { Id = "22", ParentId = "2", Name = "banner.svg", Path = "/Images/banner.svg", IsDirectory = false, Extension = ".svg", Size = 8192, DateModified = new DateTime(2026, 4, 1) },
+    };
+
+    // ── Event handlers ───────────────────────────────────────────────
+
+    private void OnItemSelected(FileManagerEntry item)
+    {
+        _selectedItemName = item.Name;
+    }
+
+    private void OnCreateFolder(FileManagerCreateEventArgs<FileManagerEntry> args)
+    {
+        _lastCrudAction = $"Created folder: {args.Item?.Name ?? "unknown"}";
+    }
+
+    private void OnDeleteItem(FileManagerDeleteEventArgs<FileManagerEntry> args)
+    {
+        _lastCrudAction = $"Deleted: {args.Item?.Name ?? "unknown"}";
+        if (args.Item != null)
+            _crudData.RemoveAll(x => x.Id == args.Item.Id);
+    }
+
+    private void OnUpdateItem(FileManagerUpdateEventArgs<FileManagerEntry> args)
+    {
+        _lastCrudAction = $"Renamed to: {args.Item?.Name ?? "unknown"}";
+    }
+
+    private Task OnReadData(FileManagerReadEventArgs args)
+    {
+        // Simulate server-side data loading
+        var items = GenerateSampleData()
+            .Where(f => f.ParentId == null && args.Path == "/" ||
+                         f.Path.StartsWith(args.Path) && f.Path != args.Path)
+            .ToList();
+        args.Data = items;
+        return Task.CompletedTask;
+    }
+
+    private void OnDownloadFile(FileManagerDownloadEventArgs<FileManagerEntry> args)
+    {
+        _lastDownloadName = args.Item?.Name ?? "unknown";
+    }
+}

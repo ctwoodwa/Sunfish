@@ -1,0 +1,80 @@
+@page "/components/inlineaiprompt"
+@page "/components/inlineaiprompt/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Inline AI Prompt provides a compact input bar for embedding AI prompt functionality within other content." Code="@_basicCode">
+        <SunfishInlineAIPrompt Placeholder="Type your prompt..."
+                              OnPromptSubmit="HandlePrompt"
+                              IsProcessing="_isProcessing" />
+    </DemoSection>
+
+    <DemoSection Title="Custom Width" Description="Control the width of the inline prompt to fit your layout." Code="@_widthCode">
+        <SunfishInlineAIPrompt Placeholder="Ask a question..."
+                              OnPromptSubmit="HandlePrompt"
+                              IsProcessing="_isProcessing"
+                              Width="400px" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Custom Output Template" Description="Use OutputTemplate to render responses in a custom format." Code="@_outputCode">
+        <SunfishInlineAIPrompt Placeholder="Generate a summary..."
+                              OnPromptSubmit="HandlePrompt"
+                              Width="500px">
+            <OutputTemplate Context="output">
+                <span style="color:#1976d2;font-style:italic;">Result: @output</span>
+            </OutputTemplate>
+        </SunfishInlineAIPrompt>
+    </DemoSection>
+
+    <DemoSection Title="Embedded in Content" Description="The inline prompt is designed to be embedded naturally within paragraphs or card content." Code="@_embeddedCode">
+        <div style="padding:16px;border:1px solid #e0e0e0;border-radius:8px;max-width:600px;">
+            <h4 style="margin-top:0;">Product Description</h4>
+            <p>Enter a few keywords and let the AI generate a description for you:</p>
+            <SunfishInlineAIPrompt Placeholder="e.g., lightweight, waterproof, hiking boots"
+                                  OnPromptSubmit="HandlePrompt"
+                                  IsProcessing="_isProcessing" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _isProcessing;
+
+    private async Task HandlePrompt(string prompt)
+    {
+        _isProcessing = true;
+        StateHasChanged();
+        await Task.Delay(800);
+        _isProcessing = false;
+    }
+
+    private const string _basicCode =
+        "<SunfishInlineAIPrompt Placeholder=\"Type your prompt...\"\n" +
+        "                      OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                      IsProcessing=\"_isProcessing\" />";
+
+    private const string _widthCode =
+        "<SunfishInlineAIPrompt Placeholder=\"Ask a question...\"\n" +
+        "                      OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                      IsProcessing=\"_isProcessing\"\n" +
+        "                      Width=\"400px\" />";
+
+    private const string _outputCode =
+        "<SunfishInlineAIPrompt Placeholder=\"Generate a summary...\"\n" +
+        "                      OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                      Width=\"500px\">\n" +
+        "    <OutputTemplate Context=\"output\">\n" +
+        "        <span style=\"color:#1976d2;\">Result: @output</span>\n" +
+        "    </OutputTemplate>\n" +
+        "</SunfishInlineAIPrompt>";
+
+    private const string _embeddedCode =
+        "<div style=\"padding:16px;border:1px solid #e0e0e0;border-radius:8px;\">\n" +
+        "    <h4>Product Description</h4>\n" +
+        "    <p>Enter keywords and let AI generate a description:</p>\n" +
+        "    <SunfishInlineAIPrompt Placeholder=\"e.g., lightweight, waterproof\"\n" +
+        "                          OnPromptSubmit=\"HandlePrompt\" />\n" +
+        "</div>";
+}

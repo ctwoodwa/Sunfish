@@ -1,0 +1,79 @@
+@page "/components/Fab"
+@page "/components/Fab/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishFab Icon="plus" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Sizes" Description="FABs come in small, medium, and large sizes." Code="@_sizesCode">
+        <div class="demo-row">
+            <SunfishFab Icon="plus" Size="FabSize.Small" />
+            <SunfishFab Icon="plus" Size="FabSize.Medium" />
+            <SunfishFab Icon="plus" Size="FabSize.Large" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnClick" Description="Handle FAB click events to trigger the primary action." Code="@_clickCode">
+        <div class="demo-row">
+            <SunfishFab Icon="plus" OnClick="@OnClickHandler" />
+            <span style="align-self: center;">Clicked @_clickCount times</span>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private int _clickCount;
+    private void OnClickHandler() => _clickCount++;
+
+    private const string _basicCode =
+        "<SunfishFab Icon=\"plus\" />";
+
+    private const string _sizesCode =
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Small\" />\n" +
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Medium\" />\n" +
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Large\" />";
+
+    private const string _clickCode =
+        "<SunfishFab Icon=\"plus\" OnClick=\"@OnClickHandler\" />\n\n" +
+        "@code {\n" +
+        "    private int _clickCount;\n" +
+        "    private void OnClickHandler() => _clickCount++;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter", "Activates the FAB"),
+        ("Space", "Activates the FAB"),
+        ("Tab", "Moves focus to the next focusable element"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"button\"", "Implicitly set by the <button> element"),
+        ("aria-label", "Should be set to describe the FAB action since it typically only shows an icon"),
+        ("aria-disabled=\"true\"", "Applied when the FAB is disabled"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "FABs should always have an aria-label since they typically contain only an icon.",
+        "The FAB is announced as a button with its aria-label text.",
+        "Disabled FABs are announced as \"dimmed\" or \"unavailable\" depending on the screen reader.",
+    ];
+}

@@ -1,0 +1,152 @@
+@page "/components/promptbox"
+@page "/components/promptbox/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A prompt box collects text input from the user via a modal dialog." Code="@_basicCode">
+        <SunfishButton OnClick="@(() => _promptOpen = true)">Open Prompt</SunfishButton>
+        <SunfishPromptBox @bind-Visible="_promptOpen"
+                         Title="Enter Your Name"
+                         InputLabel="Full Name"
+                         Placeholder="e.g. John Doe"
+                         OnConfirm="@HandleBasicConfirm"
+                         OnCancel="@HandleBasicCancel" />
+        @if (!string.IsNullOrEmpty(_basicResult))
+        {
+            <p style="margin-top: 8px;">Result: <strong>@_basicResult</strong></p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Two-Way Value Binding" Description="Bind the input value to track changes in real time." Code="@_bindingCode">
+        <SunfishButton OnClick="@(() => _bindingOpen = true)">Enter Project Name</SunfishButton>
+        <SunfishPromptBox @bind-Visible="_bindingOpen"
+                         Title="New Project"
+                         InputLabel="Project Name"
+                         @bind-Value="_projectName"
+                         Placeholder="My Project"
+                         OnConfirm="@((val) => _bindingResult = $"Created: {val}")" />
+        @if (!string.IsNullOrEmpty(_projectName))
+        {
+            <p style="margin-top: 8px;">Current value: <strong>@_projectName</strong></p>
+        }
+        @if (!string.IsNullOrEmpty(_bindingResult))
+        {
+            <p>Confirmed: <strong>@_bindingResult</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Custom Width" Description="Set the width of the prompt dialog." Code="@_widthCode">
+        <SunfishButton OnClick="@(() => _wideOpen = true)">Wide Prompt (600px)</SunfishButton>
+        <SunfishPromptBox @bind-Visible="_wideOpen"
+                         Title="Feedback"
+                         InputLabel="Your feedback"
+                         Placeholder="Tell us what you think..."
+                         Width="600px"
+                         OnConfirm="@((val) => _wideResult = val ?? "")" />
+        @if (!string.IsNullOrEmpty(_wideResult))
+        {
+            <p style="margin-top: 8px;">Feedback: <strong>@_wideResult</strong></p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Custom Button Text" Description="Customize the confirm and cancel button labels." Code="@_buttonsCode">
+        <SunfishButton OnClick="@(() => _customBtnOpen = true)">Rename Item</SunfishButton>
+        <SunfishPromptBox @bind-Visible="_customBtnOpen"
+                         Title="Rename"
+                         InputLabel="New name"
+                         ConfirmText="Rename"
+                         CancelText="Discard"
+                         OnConfirm="@((val) => _renameResult = val ?? "")" />
+        @if (!string.IsNullOrEmpty(_renameResult))
+        {
+            <p style="margin-top: 8px;">Renamed to: <strong>@_renameResult</strong></p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Non-Modal" Description="A non-modal prompt allows interaction with content behind it." Code="@_nonModalCode">
+        <SunfishButton OnClick="@(() => _nonModalOpen = true)">Non-Modal Prompt</SunfishButton>
+        <SunfishPromptBox @bind-Visible="_nonModalOpen"
+                         Title="Quick Note"
+                         InputLabel="Note"
+                         Placeholder="Add a note..."
+                         Modal="false"
+                         OnConfirm="@((val) => _noteResult = val ?? "")" />
+        @if (!string.IsNullOrEmpty(_noteResult))
+        {
+            <p style="margin-top: 8px;">Note: <strong>@_noteResult</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _promptOpen;
+    private string? _basicResult;
+
+    private bool _bindingOpen;
+    private string? _projectName;
+    private string? _bindingResult;
+
+    private bool _wideOpen;
+    private string? _wideResult;
+
+    private bool _customBtnOpen;
+    private string? _renameResult;
+
+    private bool _nonModalOpen;
+    private string? _noteResult;
+
+    private void HandleBasicConfirm(string? value)
+    {
+        _basicResult = $"Confirmed: {value}";
+    }
+
+    private void HandleBasicCancel()
+    {
+        _basicResult = "Cancelled.";
+    }
+
+    private const string _basicCode =
+        "<SunfishButton OnClick=\"@(() => _promptOpen = true)\">Open Prompt</SunfishButton>\n" +
+        "<SunfishPromptBox @bind-Visible=\"_promptOpen\"\n" +
+        "                 Title=\"Enter Your Name\"\n" +
+        "                 InputLabel=\"Full Name\"\n" +
+        "                 Placeholder=\"e.g. John Doe\"\n" +
+        "                 OnConfirm=\"@HandleConfirm\"\n" +
+        "                 OnCancel=\"@HandleCancel\" />\n\n" +
+        "@code {\n" +
+        "    private bool _promptOpen;\n" +
+        "    private void HandleConfirm(string? value) { /* use value */ }\n" +
+        "    private void HandleCancel() { /* cancelled */ }\n" +
+        "}";
+
+    private const string _bindingCode =
+        "<SunfishPromptBox @bind-Visible=\"_open\"\n" +
+        "                 Title=\"New Project\"\n" +
+        "                 InputLabel=\"Project Name\"\n" +
+        "                 @bind-Value=\"_projectName\"\n" +
+        "                 OnConfirm=\"@((val) => _result = val)\" />\n\n" +
+        "@code {\n" +
+        "    private bool _open;\n" +
+        "    private string? _projectName;\n" +
+        "}";
+
+    private const string _widthCode =
+        "<SunfishPromptBox @bind-Visible=\"_open\"\n" +
+        "                 Title=\"Feedback\"\n" +
+        "                 InputLabel=\"Your feedback\"\n" +
+        "                 Width=\"600px\" />";
+
+    private const string _buttonsCode =
+        "<SunfishPromptBox @bind-Visible=\"_open\"\n" +
+        "                 Title=\"Rename\"\n" +
+        "                 InputLabel=\"New name\"\n" +
+        "                 ConfirmText=\"Rename\"\n" +
+        "                 CancelText=\"Discard\" />";
+
+    private const string _nonModalCode =
+        "<SunfishPromptBox @bind-Visible=\"_open\"\n" +
+        "                 Title=\"Quick Note\"\n" +
+        "                 Modal=\"false\" />";
+}

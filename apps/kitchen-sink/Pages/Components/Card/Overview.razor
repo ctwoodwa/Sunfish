@@ -1,0 +1,206 @@
+@page "/components/Card"
+@page "/components/Card/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <div class="demo-card-grid">
+            @for (var i = 1; i <= 3; i++)
+            {
+                var idx = i;
+                <SunfishCard>
+                    <SunfishCardHeader>Card @idx</SunfishCardHeader>
+                    <SunfishCardBody>Card body content for item @idx. This shows the basic card structure.</SunfishCardBody>
+                    <SunfishCardActions>
+                        <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Action</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Full Structure" Description="A card can include a header, body, footer, and actions using the dedicated building-block components." Code="@_fullCode">
+        <SunfishCard Width="360px">
+            <SunfishCardHeader>Project Alpha</SunfishCardHeader>
+            <SunfishCardBody>
+                <p>This card shows the complete building-block structure: header, body, footer, and actions.</p>
+            </SunfishCardBody>
+            <SunfishCardFooter>Last updated: April 2026</SunfishCardFooter>
+            <SunfishCardActions>
+                <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Open</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Archive</SunfishButton>
+            </SunfishCardActions>
+        </SunfishCard>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Horizontal Orientation" Description="Set Orientation to horizontal to lay the card content side by side." Code="@_horizontalCode">
+        <SunfishCard Orientation="horizontal" Width="480px">
+            <SunfishCardBody>
+                <strong>Horizontal Card</strong>
+                <p>Content flows horizontally instead of stacking vertically. Useful for media + text layouts.</p>
+            </SunfishCardBody>
+            <SunfishCardActions>
+                <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">View</SunfishButton>
+            </SunfishCardActions>
+        </SunfishCard>
+    </DemoSection>
+
+    <DemoSection Title="Fixed Dimensions" Description="Control card size with the Width and Height parameters." Code="@_dimensionsCode">
+        <div class="demo-row">
+            <SunfishCard Width="200px" Height="180px">
+                <SunfishCardHeader>Small</SunfishCardHeader>
+                <SunfishCardBody>Fixed 200×180px card.</SunfishCardBody>
+            </SunfishCard>
+            <SunfishCard Width="320px" Height="180px">
+                <SunfishCardHeader>Wide</SunfishCardHeader>
+                <SunfishCardBody>Fixed 320×180px card with the same height.</SunfishCardBody>
+            </SunfishCard>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Card with Image" Description="Use SunfishCardImage to include an image at the top of the card." Code="@_imageCode">
+        <div class="demo-row">
+            <SunfishCard Width="220px">
+                <SunfishCardImage Src="https://picsum.photos/220/120?grayscale" Alt="Landscape" />
+                <SunfishCardHeader>Nature</SunfishCardHeader>
+                <SunfishCardBody>A landscape photograph.</SunfishCardBody>
+                <SunfishCardActions>
+                    <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Learn More</SunfishButton>
+                </SunfishCardActions>
+            </SunfishCard>
+            <SunfishCard Width="220px">
+                <SunfishCardImage Src="https://picsum.photos/220/120?random=2" Alt="Abstract" />
+                <SunfishCardHeader>Abstract</SunfishCardHeader>
+                <SunfishCardBody>An abstract image.</SunfishCardBody>
+                <SunfishCardActions>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">View</SunfishButton>
+                </SunfishCardActions>
+            </SunfishCard>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Card Deck (Grid Layout)" Description="Use a CSS grid or flexbox wrapper to lay out multiple cards in a deck." Code="@_deckCode">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+            @foreach (var item in _deckItems)
+            {
+                <SunfishCard>
+                    <SunfishCardHeader>@item.Title</SunfishCardHeader>
+                    <SunfishCardBody>@item.Description</SunfishCardBody>
+                    <SunfishCardActions>
+                        <SunfishButton Size="ButtonSize.Small">Details</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Compact Card" Description="Cards with minimal content for quick display." Code="@_compactCode">
+        <SunfishCard>
+            <SunfishCardBody>A simple compact card with body content only.</SunfishCardBody>
+        </SunfishCard>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private record DeckItem(string Title, string Description);
+
+    private DeckItem[] _deckItems =
+    [
+        new("Feature A", "Describe the first feature in a short sentence."),
+        new("Feature B", "Describe the second feature in a short sentence."),
+        new("Feature C", "Describe the third feature in a short sentence."),
+    ];
+
+    // Overview
+    private const string _basicCode =
+        "<SunfishCard>\n" +
+        "    <SunfishCardHeader>Title</SunfishCardHeader>\n" +
+        "    <SunfishCardBody>Card body content.</SunfishCardBody>\n" +
+        "    <SunfishCardActions>\n" +
+        "        <SunfishButton Variant=\"ButtonVariant.Primary\" Size=\"ButtonSize.Small\">Action</SunfishButton>\n" +
+        "    </SunfishCardActions>\n" +
+        "</SunfishCard>";
+
+    private const string _fullCode =
+        "<SunfishCard Width=\"360px\">\n" +
+        "    <SunfishCardHeader>Project Alpha</SunfishCardHeader>\n" +
+        "    <SunfishCardBody>Body content here.</SunfishCardBody>\n" +
+        "    <SunfishCardFooter>Last updated: April 2026</SunfishCardFooter>\n" +
+        "    <SunfishCardActions>\n" +
+        "        <SunfishButton Variant=\"ButtonVariant.Primary\" Size=\"ButtonSize.Small\">Open</SunfishButton>\n" +
+        "        <SunfishButton Variant=\"ButtonVariant.Secondary\" Size=\"ButtonSize.Small\">Archive</SunfishButton>\n" +
+        "    </SunfishCardActions>\n" +
+        "</SunfishCard>";
+
+    // Appearance
+    private const string _horizontalCode =
+        "<SunfishCard Orientation=\"horizontal\" Width=\"480px\">\n" +
+        "    <SunfishCardBody>Horizontal content.</SunfishCardBody>\n" +
+        "    <SunfishCardActions>\n" +
+        "        <SunfishButton Size=\"ButtonSize.Small\">View</SunfishButton>\n" +
+        "    </SunfishCardActions>\n" +
+        "</SunfishCard>";
+
+    private const string _dimensionsCode =
+        "<SunfishCard Width=\"200px\" Height=\"180px\">\n" +
+        "    <SunfishCardHeader>Small</SunfishCardHeader>\n" +
+        "    <SunfishCardBody>Fixed dimensions.</SunfishCardBody>\n" +
+        "</SunfishCard>";
+
+    private const string _imageCode =
+        "<SunfishCard Width=\"220px\">\n" +
+        "    <SunfishCardImage Src=\"https://picsum.photos/220/120\" Alt=\"Landscape\" />\n" +
+        "    <SunfishCardHeader>Nature</SunfishCardHeader>\n" +
+        "    <SunfishCardBody>A landscape photograph.</SunfishCardBody>\n" +
+        "    <SunfishCardActions>\n" +
+        "        <SunfishButton Size=\"ButtonSize.Small\">Learn More</SunfishButton>\n" +
+        "    </SunfishCardActions>\n" +
+        "</SunfishCard>";
+
+    private const string _deckCode =
+        "<div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:16px;\">\n" +
+        "    @foreach (var item in _items)\n" +
+        "    {\n" +
+        "        <SunfishCard>\n" +
+        "            <SunfishCardHeader>@item.Title</SunfishCardHeader>\n" +
+        "            <SunfishCardBody>@item.Description</SunfishCardBody>\n" +
+        "        </SunfishCard>\n" +
+        "    }\n" +
+        "</div>";
+
+    private const string _compactCode =
+        "<SunfishCard>\n" +
+        "    <SunfishCardBody>A simple compact card with body content only.</SunfishCardBody>\n" +
+        "</SunfishCard>";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the next focusable element within or after the card"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Enter", "Activates a focused interactive element inside the card"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"article\"", "Can be applied to cards representing self-contained content"),
+        ("role=\"region\"", "Can be applied to cards that group related content with a heading"),
+        ("aria-label", "Provides an accessible name when the card has no visible heading"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Cards with a heading are announced by their heading text when using landmark navigation.",
+        "Interactive cards (clickable) should convey their interactive nature to assistive technology.",
+        "Action buttons within cards are announced individually when focused.",
+    ];
+}

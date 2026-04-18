@@ -1,0 +1,104 @@
+@page "/components/sankey"
+@page "/components/sankey/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Sankey Diagram visualizes flow quantities between nodes using proportionally weighted paths." Code="@_basicCode">
+        <SunfishSankey Data="_basicData"
+                      Title="Energy Flow"
+                      Height="350px"
+                      OnNodeClick="HandleNodeClick" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Custom Colors" Description="Nodes and links can be individually colored to represent different categories." Code="@_colorCode">
+        <SunfishSankey Data="_colorData"
+                      Title="Website Traffic Sources"
+                      Height="350px" />
+    </DemoSection>
+
+    <DemoSection Title="Custom Node Template" Description="Use NodeTemplate to customize how node labels are rendered." Code="@_templateCode">
+        <SunfishSankey Data="_basicData"
+                      Height="350px">
+            <NodeTemplate Context="node">
+                <span style="font-weight:600;font-size:11px;color:#1976d2;">@(node.Label ?? node.Id)</span>
+            </NodeTemplate>
+        </SunfishSankey>
+    </DemoSection>
+</PageSection>
+
+@if (_selectedNode != null)
+{
+    <div style="margin-top:12px;padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
+        Selected node: <strong>@(_selectedNode.Label ?? _selectedNode.Id)</strong>
+    </div>
+}
+
+@code {
+    private SankeyNode? _selectedNode;
+
+    private Task HandleNodeClick(SankeyNode node)
+    {
+        _selectedNode = node;
+        return Task.CompletedTask;
+    }
+
+    private SankeyData _basicData = new()
+    {
+        Nodes = new()
+        {
+            new SankeyNode { Id = "solar", Label = "Solar" },
+            new SankeyNode { Id = "wind", Label = "Wind" },
+            new SankeyNode { Id = "coal", Label = "Coal" },
+            new SankeyNode { Id = "electricity", Label = "Electricity" },
+            new SankeyNode { Id = "heat", Label = "Heat" },
+        },
+        Links = new()
+        {
+            new SankeyLink { SourceId = "solar", TargetId = "electricity", Value = 120 },
+            new SankeyLink { SourceId = "wind", TargetId = "electricity", Value = 80 },
+            new SankeyLink { SourceId = "coal", TargetId = "electricity", Value = 200 },
+            new SankeyLink { SourceId = "coal", TargetId = "heat", Value = 100 },
+        }
+    };
+
+    private SankeyData _colorData = new()
+    {
+        Nodes = new()
+        {
+            new SankeyNode { Id = "organic", Label = "Organic Search", Color = "#4caf50" },
+            new SankeyNode { Id = "paid", Label = "Paid Ads", Color = "#f44336" },
+            new SankeyNode { Id = "social", Label = "Social Media", Color = "#2196f3" },
+            new SankeyNode { Id = "landing", Label = "Landing Page", Color = "#ff9800" },
+            new SankeyNode { Id = "signup", Label = "Sign Up", Color = "#9c27b0" },
+        },
+        Links = new()
+        {
+            new SankeyLink { SourceId = "organic", TargetId = "landing", Value = 500, Color = "rgba(76,175,80,0.3)" },
+            new SankeyLink { SourceId = "paid", TargetId = "landing", Value = 300, Color = "rgba(244,67,54,0.3)" },
+            new SankeyLink { SourceId = "social", TargetId = "landing", Value = 200, Color = "rgba(33,150,243,0.3)" },
+            new SankeyLink { SourceId = "organic", TargetId = "signup", Value = 100, Color = "rgba(76,175,80,0.3)" },
+            new SankeyLink { SourceId = "paid", TargetId = "signup", Value = 150, Color = "rgba(244,67,54,0.3)" },
+        }
+    };
+
+    private const string _basicCode =
+        "<SunfishSankey Data=\"_data\"\n" +
+        "              Title=\"Energy Flow\"\n" +
+        "              Height=\"350px\"\n" +
+        "              OnNodeClick=\"HandleNodeClick\" />";
+
+    private const string _colorCode =
+        "<SunfishSankey Data=\"_colorData\"\n" +
+        "              Title=\"Website Traffic Sources\"\n" +
+        "              Height=\"350px\" />\n\n" +
+        "// Nodes and Links use Color property for custom colors";
+
+    private const string _templateCode =
+        "<SunfishSankey Data=\"_data\" Height=\"350px\">\n" +
+        "    <NodeTemplate Context=\"node\">\n" +
+        "        <span style=\"font-weight:600;\">@node.Label</span>\n" +
+        "    </NodeTemplate>\n" +
+        "</SunfishSankey>";
+}

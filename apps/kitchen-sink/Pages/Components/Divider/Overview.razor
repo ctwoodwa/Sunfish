@@ -1,0 +1,46 @@
+@page "/components/Divider"
+@page "/components/Divider/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Horizontal" Code="@_horizontalCode">
+        <p>Content above the divider.</p>
+        <SunfishDivider />
+        <p>Content below the divider.</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Vertical" Description="Use the Vertical parameter for side-by-side content separation." Code="@_verticalCode">
+        <div style="display:flex;align-items:center;gap:12px;height:40px;">
+            <span>Left</span>
+            <SunfishDivider Vertical="true" />
+            <span>Right</span>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="With Text" Description="Dividers can include inline text to label sections." Code="@_textCode">
+        <p>Content above</p>
+        <SunfishDivider Text="OR" />
+        <p>Content below</p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _horizontalCode =
+        "<p>Content above the divider.</p>\n" +
+        "<SunfishDivider />\n" +
+        "<p>Content below the divider.</p>";
+
+    private const string _verticalCode =
+        "<div style=\"display:flex;align-items:center;gap:12px;height:40px;\">\n" +
+        "    <span>Left</span>\n" +
+        "    <SunfishDivider Vertical=\"true\" />\n" +
+        "    <span>Right</span>\n" +
+        "</div>";
+
+    private const string _textCode =
+        "<p>Content above</p>\n" +
+        "<SunfishDivider Text=\"OR\" />\n" +
+        "<p>Content below</p>";
+}

@@ -1,0 +1,76 @@
+@page "/components/dropdownbutton"
+@page "/components/dropdownbutton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <SunfishAlert Severity="AlertSeverity.Info" style="margin-bottom:16px;">
+        The DropDownButton functionality is provided by the <strong>SunfishSplitButton</strong> component, which combines a primary action button with a dropdown menu for secondary actions.
+    </SunfishAlert>
+
+    <DemoSection Title="Basic Split Button" Description="SunfishSplitButton shows a primary action button alongside a dropdown chevron that reveals additional menu items." Code="@_basicCode">
+        <SunfishSplitButton OnClick="@(() => _lastAction = "Primary clicked")">
+            <ChildContent>Save</ChildContent>
+            <MenuContent>
+                <div role="menuitem" style="padding:8px 16px; cursor:pointer;" @onclick="@(() => _lastAction = "Save as Draft")">Save as Draft</div>
+                <div role="menuitem" style="padding:8px 16px; cursor:pointer;" @onclick="@(() => _lastAction = "Save and Close")">Save and Close</div>
+                <div role="menuitem" style="padding:8px 16px; cursor:pointer;" @onclick="@(() => _lastAction = "Save and New")">Save and New</div>
+            </MenuContent>
+        </SunfishSplitButton>
+        <p style="margin-top:8px;">Last action: <strong>@_lastAction</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Variants and Sizes" Description="Customize the visual style and size of the split button using Variant and Size parameters." Code="@_variantsCode">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
+            <SunfishSplitButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">
+                <ChildContent>Primary Small</ChildContent>
+                <MenuContent>
+                    <div role="menuitem" style="padding:8px 16px;">Option A</div>
+                </MenuContent>
+            </SunfishSplitButton>
+            <SunfishSplitButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Medium">
+                <ChildContent>Secondary Medium</ChildContent>
+                <MenuContent>
+                    <div role="menuitem" style="padding:8px 16px;">Option B</div>
+                </MenuContent>
+            </SunfishSplitButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Disabled" Description="Set Enabled to false to disable both the primary button and the dropdown toggle." Code="@_disabledCode">
+        <SunfishSplitButton Enabled="false">
+            <ChildContent>Disabled</ChildContent>
+            <MenuContent>
+                <div role="menuitem" style="padding:8px 16px;">Unreachable</div>
+            </MenuContent>
+        </SunfishSplitButton>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private string _lastAction = "(none)";
+
+    private const string _basicCode =
+        "<SunfishSplitButton OnClick=\"@(() => _action = \\\"Primary clicked\\\")\">\n" +
+        "    <ChildContent>Save</ChildContent>\n" +
+        "    <MenuContent>\n" +
+        "        <div role=\"menuitem\">Save as Draft</div>\n" +
+        "        <div role=\"menuitem\">Save and Close</div>\n" +
+        "    </MenuContent>\n" +
+        "</SunfishSplitButton>";
+
+    private const string _variantsCode =
+        "<SunfishSplitButton Variant=\"ButtonVariant.Primary\" Size=\"ButtonSize.Small\">\n" +
+        "    <ChildContent>Primary Small</ChildContent>\n" +
+        "    <MenuContent>...</MenuContent>\n" +
+        "</SunfishSplitButton>\n\n" +
+        "<SunfishSplitButton Variant=\"ButtonVariant.Secondary\" Size=\"ButtonSize.Medium\">\n" +
+        "    <ChildContent>Secondary Medium</ChildContent>\n" +
+        "    <MenuContent>...</MenuContent>\n" +
+        "</SunfishSplitButton>";
+
+    private const string _disabledCode =
+        "<SunfishSplitButton Enabled=\"false\">\n" +
+        "    <ChildContent>Disabled</ChildContent>\n" +
+        "    <MenuContent>...</MenuContent>\n" +
+        "</SunfishSplitButton>";
+}

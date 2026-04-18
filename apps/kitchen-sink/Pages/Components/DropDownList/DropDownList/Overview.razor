@@ -1,0 +1,88 @@
+@page "/components/DropDownList"
+@page "/components/DropDownList/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishField>
+            <SunfishLabel>Country</SunfishLabel>
+            <SunfishDropDownList TItem="Country"
+                                TValue="int?"
+                                Data="@_countries"
+                                TextField="Name"
+                                ValueField="Id"
+                                Value="@_selectedValue"
+                                ValueChanged="@(v => _selectedValue = v)"
+                                Placeholder="Select a country..." />
+        </SunfishField>
+        <p><strong>Selected ID:</strong> @_selectedValue</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Filterable" Description="Enable type-to-filter with the Filterable parameter." Code="@_filterableCode">
+        <SunfishField>
+            <SunfishLabel>Country</SunfishLabel>
+            <SunfishDropDownList TItem="Country"
+                                TValue="int?"
+                                Data="@_countries"
+                                TextField="Name"
+                                ValueField="Id"
+                                Value="@_filterValue"
+                                ValueChanged="@(v => _filterValue = v)"
+                                Filterable="true"
+                                Placeholder="Search countries..." />
+        </SunfishField>
+    </DemoSection>
+
+    <DemoSection Title="Default Text" Description="Display custom text when no item is selected." Code="@_defaultTextCode">
+        <SunfishDropDownList TItem="Country"
+                            TValue="int?"
+                            Data="@_countries"
+                            TextField="Name"
+                            ValueField="Id"
+                            Value="@_defaultTextValue"
+                            ValueChanged="@(v => _defaultTextValue = v)"
+                            DefaultText="-- Pick a country --" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private int? _selectedValue;
+    private int? _filterValue;
+    private int? _defaultTextValue;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+        new(7, "Australia", "AU"),
+        new(8, "Brazil", "BR"),
+    };
+
+    private const string _basicCode =
+        "<SunfishDropDownList TItem=\"Country\" TValue=\"int\"\n" +
+        "                    Data=\"@_countries\"\n" +
+        "                    TextField=\"Name\" ValueField=\"Id\"\n" +
+        "                    Value=\"@_selected\" ValueChanged=\"@(v => _selected = v)\"\n" +
+        "                    Placeholder=\"Select a country...\" />";
+
+    private const string _filterableCode =
+        "<SunfishDropDownList TItem=\"Country\" TValue=\"int\"\n" +
+        "                    Data=\"@_countries\"\n" +
+        "                    TextField=\"Name\" ValueField=\"Id\"\n" +
+        "                    Filterable=\"true\"\n" +
+        "                    Placeholder=\"Search countries...\" />";
+
+    private const string _defaultTextCode =
+        "<SunfishDropDownList TItem=\"Country\" TValue=\"int\"\n" +
+        "                    Data=\"@_countries\"\n" +
+        "                    TextField=\"Name\" ValueField=\"Id\"\n" +
+        "                    DefaultText=\"-- Pick a country --\" />";
+}

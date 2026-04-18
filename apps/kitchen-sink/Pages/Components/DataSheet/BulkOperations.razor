@@ -1,0 +1,496 @@
+@page "/components/DataSheet/bulk-operations"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models.DataSheet
+@using Sunfish.Components.Blazor.Components.DataDisplay
+
+<PageSection Title="Bulk Operations">
+    <p>
+        This page demonstrates bulk operations on <code>SunfishDataSheet</code>:
+        adding and deleting rows, clipboard paste with type coercion and
+        error handling, and virtualization for large datasets. Each scenario
+        below is independent — interact with them in any order.
+    </p>
+</PageSection>
+
+<PageSection Title="A — Add Row and Save">
+    <DemoSection Title="Add Row, Edit, Save"
+                 Description="Click '+ Add Row' to insert a blank row at the top. Edit its cells and click 'Save All'. The save handler receives the new row in DataSheetSaveArgs.DirtyRows along with any other edited rows.">
+        <SunfishDataSheet @ref="_addSheet"
+                         TItem="ProductRow"
+                         Data="@_addRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleAddSaveAll"
+                         IsSaving="@_addIsSaving"
+                         AllowAddRow="true"
+                         EmptyStateMessage="No products. Click + Add Row to begin.">
+            <SunfishDataSheetColumn TItem="ProductRow"
+                                   Field="ProductName" Title="Product" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Required="true" Width="240px" />
+            <SunfishDataSheetColumn TItem="ProductRow"
+                                   Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="120px" />
+            <SunfishDataSheetColumn TItem="ProductRow"
+                                   Field="InStock" Title="In Stock" ColumnType="DataSheetColumnType.Checkbox"
+                                   Editable="true" Width="100px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_addLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No save yet. Add a row, edit, then click Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _addLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="B — Delete and Undo Delete Toggle">
+    <DemoSection Title="Mark for Delete / Undo"
+                 Description="Click the delete button on a row. The row becomes struck-through and grayed out, but is not actually removed yet. Click the delete button again to undo. Only rows that remain marked as deleted when you click Save All are committed to DataSheetSaveArgs.DeletedRows.">
+        <SunfishDataSheet @ref="_deleteSheet"
+                         TItem="InventoryRow"
+                         Data="@_deleteRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleDeleteSaveAll"
+                         IsSaving="@_deleteIsSaving"
+                         AllowDeleteRow="true">
+            <SunfishDataSheetColumn TItem="InventoryRow"
+                                   Field="Item" Title="Item" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="260px" />
+            <SunfishDataSheetColumn TItem="InventoryRow"
+                                   Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="120px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_deleteLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No save yet. Click a row's delete button, then click Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _deleteLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="C — Bulk Select and Multi-Row Delete">
+    <DemoSection Title="Select All + Delete Selected"
+                 Description="Tick individual row checkboxes, or use the header checkbox to select every visible row. When at least one row is selected, the grid reveals a bulk action bar with 'Delete Selected' and 'Reset Selected' buttons. Deletions are staged until you click Save All.">
+        <SunfishDataSheet @ref="_bulkSheet"
+                         TItem="TaskRow"
+                         Data="@_bulkRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleBulkSaveAll"
+                         IsSaving="@_bulkIsSaving"
+                         AllowDeleteRow="true">
+            <SunfishDataSheetColumn TItem="TaskRow"
+                                   Field="Title" Title="Task" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="280px" />
+            <SunfishDataSheetColumn TItem="TaskRow"
+                                   Field="Priority" Title="Priority" ColumnType="DataSheetColumnType.Select"
+                                   Editable="true" Width="140px"
+                                   Options="@_priorityOptions" />
+            <SunfishDataSheetColumn TItem="TaskRow"
+                                   Field="Done" Title="Done" ColumnType="DataSheetColumnType.Checkbox"
+                                   Editable="true" Width="80px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_bulkLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No save yet. Select rows, click Delete Selected in the bulk bar, then click Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _bulkLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="D — Clipboard Paste with Type Coercion">
+    <DemoSection Title="Ctrl+V Paste from TSV"
+                 Description="Copy the tab-separated block below, click a cell in the first row of the grid to activate it, then press Ctrl+V. Valid values commit as dirty cells. Unparseable values (like 'abc' for a number or 'invalid-date' for a date) commit in the Invalid cell state and are highlighted.">
+        <p><strong>Copy this block:</strong></p>
+        <pre class="ds-demo-tsv">Widget A	100	2025-03-15
+Widget B	abc	2025-04-01
+Widget C	50	invalid-date</pre>
+
+        <ol class="ds-demo-steps">
+            <li>Click the <em>Product Name</em> cell on row 1 to activate it.</li>
+            <li>Select and copy the TSV block above (Ctrl+C).</li>
+            <li>Press Ctrl+V to paste.</li>
+            <li>Observe: row 2's Qty cell and row 3's Order Date cell turn red (invalid). Other cells show the dirty border.</li>
+        </ol>
+
+        <SunfishDataSheet @ref="_pasteSheet"
+                         TItem="PasteRow"
+                         Data="@_pasteRows"
+                         KeyField="Id"
+                         AllowBulkPaste="true">
+            <SunfishDataSheetColumn TItem="PasteRow"
+                                   Field="ProductName" Title="Product Name" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="240px" />
+            <SunfishDataSheetColumn TItem="PasteRow"
+                                   Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Required="true" Width="120px" />
+            <SunfishDataSheetColumn TItem="PasteRow"
+                                   Field="OrderDate" Title="Order Date" ColumnType="DataSheetColumnType.Date"
+                                   Editable="true" Width="160px" />
+        </SunfishDataSheet>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="E — Virtualization Performance">
+    <DemoSection Title="Virtualization Off vs On"
+                 Description="The left grid (50 rows) renders every row in the DOM. The right grid (500 rows) uses Blazor's Virtualize component and only renders the rows within the viewport (approximately 10-15 at a time). Scroll both grids — the virtualized grid should remain responsive as the dataset grows.">
+        <div class="ds-demo-side-by-side">
+            <div class="ds-demo-side-panel">
+                <h4>50 rows — virtualization OFF</h4>
+                <SunfishDataSheet TItem="MetricRow"
+                                 Data="@_smallRows"
+                                 KeyField="Id"
+                                 Height="400px"
+                                 EnableVirtualization="false">
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Id" Title="Id" ColumnType="DataSheetColumnType.Text"
+                                           Editable="false" Width="80px" />
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Name" Title="Name" ColumnType="DataSheetColumnType.Text"
+                                           Editable="true" Width="160px" />
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Value" Title="Value" ColumnType="DataSheetColumnType.Number"
+                                           Editable="true" Width="120px" />
+                </SunfishDataSheet>
+            </div>
+
+            <div class="ds-demo-side-panel">
+                <h4>500 rows — virtualization ON</h4>
+                <SunfishDataSheet TItem="MetricRow"
+                                 Data="@_largeRows"
+                                 KeyField="Id"
+                                 Height="400px"
+                                 EnableVirtualization="true">
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Id" Title="Id" ColumnType="DataSheetColumnType.Text"
+                                           Editable="false" Width="80px" />
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Name" Title="Name" ColumnType="DataSheetColumnType.Text"
+                                           Editable="true" Width="160px" />
+                    <SunfishDataSheetColumn TItem="MetricRow"
+                                           Field="Value" Title="Value" ColumnType="DataSheetColumnType.Number"
+                                           Editable="true" Width="120px" />
+                </SunfishDataSheet>
+            </div>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="F -- Copy-Paste Round-Trip (Format Preservation)">
+    <DemoSection Title="data-raw-value Contract"
+                 Description="This grid has formatted columns (Currency and Date). When you copy cells (Ctrl+C), the copy handler reads the data-raw-value attribute instead of the formatted display text. Pasting back (Ctrl+V) round-trips the raw value faithfully. Try: select a currency cell, copy, paste into another row — the raw decimal survives, not the '$42.00' display string.">
+        <SunfishDataSheet TItem="FormatRow"
+                         Data="@_formatRows"
+                         KeyField="Id"
+                         EnableVirtualization="false"
+                         OnSaveAll="@HandleFormatSave"
+                         EmptyStateMessage="No data.">
+            <SunfishDataSheetColumn TItem="FormatRow"
+                                   Field="Label" Title="Label" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="160px" />
+            <SunfishDataSheetColumn TItem="FormatRow"
+                                   Field="Price" Title="Price (Currency)"
+                                   ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="160px"
+                                   Format='@(row => ((FormatRow)row).Price.ToString("C2"))' />
+            <SunfishDataSheetColumn TItem="FormatRow"
+                                   Field="OrderDate" Title="Order Date"
+                                   ColumnType="DataSheetColumnType.Date"
+                                   Editable="true" Width="180px"
+                                   Format='@(row => ((FormatRow)row).OrderDate?.ToString("MMMM dd, yyyy") ?? "")' />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-roundtrip-note" style="margin-top:12px; padding:8px 12px; border-left:3px solid var(--mar-color-primary,#0078d4); background:var(--mar-color-surface-alt,#f5f5f5);">
+            <strong>Raw value preserved through round-trip.</strong>
+            The <code>data-raw-value</code> attribute on each formatted cell carries the
+            InvariantCulture-formatted raw value (e.g. <code>42.00</code> or
+            <code>04/10/2026 00:00:00</code>). The JS copy handler reads this
+            attribute instead of the display text, so paste always writes the
+            correct typed value back to the model.
+        </div>
+    </DemoSection>
+</PageSection>
+
+<style>
+    .ds-demo-log {
+        margin-top: 16px;
+        padding: 12px;
+        border: 1px solid var(--mar-color-border, #ccc);
+        border-radius: 4px;
+        max-height: 200px;
+        overflow: auto;
+    }
+    .ds-demo-log h4 {
+        margin: 0 0 8px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .ds-demo-log-empty {
+        margin: 0;
+        color: var(--mar-color-text-secondary, #888);
+        font-style: italic;
+    }
+    .ds-demo-log-entry {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        padding: 2px 0;
+    }
+    .ds-demo-tsv {
+        padding: 12px;
+        background: var(--mar-color-surface-alt, #f5f5f5);
+        border: 1px solid var(--mar-color-border, #ccc);
+        border-radius: 4px;
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.9em;
+        white-space: pre;
+        user-select: all;
+    }
+    .ds-demo-steps {
+        margin: 8px 0 16px 20px;
+        padding: 0;
+    }
+    .ds-demo-steps li {
+        margin-bottom: 4px;
+    }
+    .ds-demo-side-by-side {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    .ds-demo-side-panel h4 {
+        margin: 0 0 8px;
+        font-size: 0.9em;
+    }
+    @@media (max-width: 900px) {
+        .ds-demo-side-by-side {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+@code {
+    // ── Scenario A — Add Row + Save ───────────────────────────────────
+    private SunfishDataSheet<ProductRow>? _addSheet;
+    private bool _addIsSaving;
+    private readonly List<string> _addLog = [];
+    private readonly HashSet<Guid> _addSeededIds = [];
+
+    private List<ProductRow> _addRows = new()
+    {
+        new() { ProductName = "Keyboard", Quantity = 12, InStock = true },
+        new() { ProductName = "Mouse",    Quantity = 30, InStock = true },
+    };
+
+    private async Task HandleAddSaveAll(DataSheetSaveArgs<ProductRow> args)
+    {
+        _addIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(600);
+        _addIsSaving = false;
+
+        var newCount = args.DirtyRows.Count(r => !_addSeededIds.Contains(r.Id));
+        AddLog(_addLog, $"Saved {args.DirtyRows.Count} rows ({newCount} new, {args.DirtyRows.Count - newCount} edited).");
+
+        // Update the seeded-id set so the next save can identify a fresh new row.
+        foreach (var row in args.DirtyRows)
+        {
+            _addSeededIds.Add(row.Id);
+        }
+        // SaveAllAsync Step 7 clears dirty state automatically.
+    }
+
+    // ── Scenario B — Delete / Undo Delete ─────────────────────────────
+    private SunfishDataSheet<InventoryRow>? _deleteSheet;
+    private bool _deleteIsSaving;
+    private readonly List<string> _deleteLog = [];
+
+    private List<InventoryRow> _deleteRows = new()
+    {
+        new() { Item = "Blue paint (1 gal)", Quantity = 8 },
+        new() { Item = "Masking tape",       Quantity = 25 },
+        new() { Item = "Drop cloth",         Quantity = 4 },
+        new() { Item = "Roller refill",      Quantity = 12 },
+        new() { Item = "Brush set",          Quantity = 6 },
+    };
+
+    private async Task HandleDeleteSaveAll(DataSheetSaveArgs<InventoryRow> args)
+    {
+        _deleteIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(600);
+        _deleteIsSaving = false;
+
+        AddLog(_deleteLog, $"Deleted {args.DeletedRows.Count} row(s), updated {args.DirtyRows.Count}.");
+        // Note: SunfishDataSheet's SaveAllAsync finalizes the deletion and
+        // clears dirty state internally — no ResetAsync needed here.
+    }
+
+    // ── Scenario C — Bulk Select + Multi-Row Delete ───────────────────
+    private SunfishDataSheet<TaskRow>? _bulkSheet;
+    private bool _bulkIsSaving;
+    private readonly List<string> _bulkLog = [];
+
+    private static readonly List<DataSheetSelectOption> _priorityOptions =
+    [
+        new() { Value = "High",   Label = "High" },
+        new() { Value = "Medium", Label = "Medium" },
+        new() { Value = "Low",    Label = "Low" },
+    ];
+
+    private List<TaskRow> _bulkRows = new()
+    {
+        new() { Title = "Write spec",           Priority = "High",   Done = true },
+        new() { Title = "Review PR #512",       Priority = "Medium", Done = false },
+        new() { Title = "Update demo page",     Priority = "Medium", Done = false },
+        new() { Title = "Fix flaky test",       Priority = "High",   Done = false },
+        new() { Title = "Draft release notes",  Priority = "Low",    Done = false },
+        new() { Title = "Archive old branch",   Priority = "Low",    Done = false },
+    };
+
+    private async Task HandleBulkSaveAll(DataSheetSaveArgs<TaskRow> args)
+    {
+        _bulkIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(600);
+        _bulkIsSaving = false;
+
+        AddLog(_bulkLog, $"Bulk save: {args.DeletedRows.Count} deleted, {args.DirtyRows.Count} updated.");
+        // Note: SunfishDataSheet's SaveAllAsync finalizes the deletion and
+        // clears dirty state internally — no ResetAsync needed here.
+    }
+
+    // ── Scenario D — Clipboard Paste ──────────────────────────────────
+    private SunfishDataSheet<PasteRow>? _pasteSheet;
+
+    private List<PasteRow> _pasteRows = new()
+    {
+        new(),
+        new(),
+        new(),
+    };
+
+    // ── Scenario E — Virtualization ───────────────────────────────────
+    private List<MetricRow> _smallRows = [];
+    private List<MetricRow> _largeRows = [];
+
+    protected override void OnInitialized()
+    {
+        _smallRows = Enumerable.Range(1, 50)
+            .Select(i => new MetricRow
+            {
+                Id = $"S-{i:000}",
+                Name = $"Row {i}",
+                Value = i * 10m
+            })
+            .ToList();
+
+        _largeRows = Enumerable.Range(1, 500)
+            .Select(i => new MetricRow
+            {
+                Id = $"L-{i:0000}",
+                Name = $"Row {i}",
+                Value = i * 10m
+            })
+            .ToList();
+
+        // Seed the "new row" detector for Scenario A so that the initial
+        // seeded rows are not counted as new on the first save.
+        foreach (var row in _addRows)
+        {
+            _addSeededIds.Add(row.Id);
+        }
+    }
+
+    // ── Shared log helper ─────────────────────────────────────────────
+    private static void AddLog(List<string> log, string message)
+    {
+        log.Insert(0, $"{DateTime.Now:HH:mm:ss} {message}");
+        if (log.Count > 10) log.RemoveAt(10);
+    }
+
+    // ── Row types ─────────────────────────────────────────────────────
+    public record ProductRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string ProductName { get; set; } = "";
+        public decimal Quantity { get; set; }
+        public bool InStock { get; set; }
+    }
+
+    public record InventoryRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Item { get; set; } = "";
+        public decimal Quantity { get; set; }
+    }
+
+    public record TaskRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Title { get; set; } = "";
+        public string Priority { get; set; } = "";
+        public bool Done { get; set; }
+    }
+
+    public record PasteRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string ProductName { get; set; } = "";
+        public decimal Quantity { get; set; }
+        public DateTime? OrderDate { get; set; }
+    }
+
+    public record MetricRow
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public decimal Value { get; set; }
+    }
+
+    // ── Scenario F — Copy-Paste Round-Trip ───────────────────────────
+    private List<FormatRow> _formatRows = new()
+    {
+        new() { Label = "Widget A", Price = 42.00m, OrderDate = new DateTime(2026, 4, 10) },
+        new() { Label = "Widget B", Price = 135.50m, OrderDate = new DateTime(2026, 3, 15) },
+        new() { Label = "Widget C", Price = 7.99m, OrderDate = new DateTime(2026, 2, 1) },
+    };
+
+    private Task HandleFormatSave(DataSheetSaveArgs<FormatRow> args) => Task.CompletedTask;
+
+    public record FormatRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Label { get; set; } = "";
+        public decimal Price { get; set; }
+        public DateTime? OrderDate { get; set; }
+    }
+}

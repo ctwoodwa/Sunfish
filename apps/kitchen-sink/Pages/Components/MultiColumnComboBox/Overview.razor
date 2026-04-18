@@ -1,0 +1,97 @@
+@page "/components/multicolumncombobox"
+@page "/components/multicolumncombobox/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A combo box with a tabular multi-column dropdown for richer data selection." Code="@_basicCode">
+        <SunfishMultiColumnComboBox Data="@_employees"
+                                   TextField="Name"
+                                   ValueField="Id"
+                                   @bind-Value="_selectedValue"
+                                   Placeholder="Select an employee"
+                                   Width="320px" />
+        <p><strong>Selected:</strong> @(_selectedValue ?? "none")</p>
+    </DemoSection>
+
+    <DemoSection Title="Filterable" Description="Enable filtering to search across the data while the dropdown is open." Code="@_filterCode">
+        <SunfishMultiColumnComboBox Data="@_employees"
+                                   TextField="Name"
+                                   ValueField="Id"
+                                   Filterable="true"
+                                   FilterFields="Name,Department"
+                                   Placeholder="Type to search..."
+                                   Width="320px" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Custom Popup Size" Description="Control the dropdown size with PopupHeight and PopupWidth." Code="@_sizeCode">
+        <SunfishMultiColumnComboBox Data="@_employees"
+                                   TextField="Name"
+                                   ValueField="Id"
+                                   PopupHeight="250px"
+                                   PopupWidth="500px"
+                                   Width="320px" />
+    </DemoSection>
+
+    <DemoSection Title="Disabled" Description="A disabled combo box prevents interaction." Code="@_disabledCode">
+        <SunfishMultiColumnComboBox Data="@_employees"
+                                   TextField="Name"
+                                   ValueField="Id"
+                                   Enabled="false"
+                                   Width="320px" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private object? _selectedValue;
+
+    private readonly List<object> _employees = new()
+    {
+        new Employee { Id = "1", Name = "Alice Johnson", Department = "Engineering", Title = "Senior Developer" },
+        new Employee { Id = "2", Name = "Bob Smith", Department = "Design", Title = "UX Lead" },
+        new Employee { Id = "3", Name = "Carol Williams", Department = "Engineering", Title = "Staff Engineer" },
+        new Employee { Id = "4", Name = "David Brown", Department = "Marketing", Title = "Product Manager" },
+        new Employee { Id = "5", Name = "Eve Davis", Department = "Engineering", Title = "Junior Developer" },
+    };
+
+    private class Employee
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Title { get; set; } = "";
+    }
+
+    private const string _basicCode =
+        "<SunfishMultiColumnComboBox Data=\"@_employees\"\n" +
+        "                           TextField=\"Name\"\n" +
+        "                           ValueField=\"Id\"\n" +
+        "                           @bind-Value=\"_selectedValue\"\n" +
+        "                           Placeholder=\"Select an employee\"\n" +
+        "                           Width=\"320px\" />\n\n" +
+        "@code {\n" +
+        "    private object? _selectedValue;\n" +
+        "    private List<object> _employees = new()\n" +
+        "    {\n" +
+        "        new Employee { Id = \"1\", Name = \"Alice\", Department = \"Engineering\" },\n" +
+        "    };\n" +
+        "}";
+
+    private const string _filterCode =
+        "<SunfishMultiColumnComboBox Data=\"@_employees\"\n" +
+        "                           TextField=\"Name\"\n" +
+        "                           ValueField=\"Id\"\n" +
+        "                           Filterable=\"true\"\n" +
+        "                           FilterFields=\"Name,Department\"\n" +
+        "                           Placeholder=\"Type to search...\" />";
+
+    private const string _sizeCode =
+        "<SunfishMultiColumnComboBox Data=\"@_employees\"\n" +
+        "                           PopupHeight=\"250px\"\n" +
+        "                           PopupWidth=\"500px\" />";
+
+    private const string _disabledCode =
+        "<SunfishMultiColumnComboBox Data=\"@_employees\"\n" +
+        "                           Enabled=\"false\" />";
+}

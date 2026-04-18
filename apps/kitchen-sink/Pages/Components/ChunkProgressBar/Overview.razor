@@ -1,0 +1,82 @@
+@page "/components/chunkprogressbar"
+@page "/components/chunkprogressbar/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A chunk progress bar displays progress as discrete filled segments." Code="@_basicCode">
+        <div style="margin-bottom: 16px;">
+            <p>Progress: @_progress%</p>
+            <SunfishChunkProgressBar Value="@_progress" />
+        </div>
+        <div class="demo-row">
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="With Label" Description="Provide a label to describe what the progress represents." Code="@_labelCode">
+        <SunfishChunkProgressBar Value="60" Label="Uploading files..." />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Chunk Counts" Description="Adjust the number of visual chunks to change the granularity of the progress display." Code="@_chunksCode">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div>
+                <p style="font-size: 0.875em;">3 chunks (Value=50)</p>
+                <SunfishChunkProgressBar Value="50" ChunkCount="3" />
+            </div>
+            <div>
+                <p style="font-size: 0.875em;">5 chunks (Value=50)</p>
+                <SunfishChunkProgressBar Value="50" ChunkCount="5" />
+            </div>
+            <div>
+                <p style="font-size: 0.875em;">10 chunks (Value=50)</p>
+                <SunfishChunkProgressBar Value="50" ChunkCount="10" />
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Indeterminate" Description="An indeterminate chunk progress bar indicates an ongoing process without a known duration." Code="@_indeterminateCode">
+        <SunfishChunkProgressBar Indeterminate="true" />
+    </DemoSection>
+
+    <DemoSection Title="Vertical Orientation" Description="Display the chunk progress bar vertically." Code="@_verticalCode">
+        <div style="height: 200px;">
+            <SunfishChunkProgressBar Value="70" Orientation="SliderOrientation.Vertical" ChunkCount="8" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Disabled" Description="A disabled chunk progress bar appears dimmed and non-interactive." Code="@_disabledCode">
+        <SunfishChunkProgressBar Value="40" Enabled="false" Label="Disabled" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private double _progress = 40;
+
+    private const string _basicCode =
+        "<SunfishChunkProgressBar Value=\"@_progress\" />\n\n" +
+        "<SunfishButton Size=\"ButtonSize.Small\" OnClick=\"@(() => _progress = Math.Max(0, _progress - 10))\">-10</SunfishButton>\n" +
+        "<SunfishButton Size=\"ButtonSize.Small\" OnClick=\"@(() => _progress = Math.Min(100, _progress + 10))\">+10</SunfishButton>\n\n" +
+        "@code { private double _progress = 40; }";
+
+    private const string _labelCode =
+        "<SunfishChunkProgressBar Value=\"60\" Label=\"Uploading files...\" />";
+
+    private const string _chunksCode =
+        "<SunfishChunkProgressBar Value=\"50\" ChunkCount=\"3\" />\n" +
+        "<SunfishChunkProgressBar Value=\"50\" ChunkCount=\"5\" />\n" +
+        "<SunfishChunkProgressBar Value=\"50\" ChunkCount=\"10\" />";
+
+    private const string _indeterminateCode =
+        "<SunfishChunkProgressBar Indeterminate=\"true\" />";
+
+    private const string _verticalCode =
+        "<div style=\"height: 200px;\">\n" +
+        "    <SunfishChunkProgressBar Value=\"70\" Orientation=\"SliderOrientation.Vertical\" ChunkCount=\"8\" />\n" +
+        "</div>";
+
+    private const string _disabledCode =
+        "<SunfishChunkProgressBar Value=\"40\" Enabled=\"false\" Label=\"Disabled\" />";
+}

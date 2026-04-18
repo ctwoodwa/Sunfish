@@ -1,0 +1,465 @@
+@page "/components/DataSheet/editing-and-validation"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models.DataSheet
+@using Sunfish.Components.Blazor.Components.DataDisplay
+
+<PageSection Title="Editing and Validation">
+    <p>
+        This page demonstrates how <code>SunfishDataSheet</code> validates
+        user input at three levels: column <code>Required</code>/<code>Validate</code>
+        rules, cross-row <code>OnValidate</code> aggregation, and runtime
+        state transitions such as <code>IsLoading</code> and
+        <code>ResetAsync</code>. Each scenario is independent.
+    </p>
+</PageSection>
+
+<PageSection Title="A — Required Field Validation">
+    <DemoSection Title="Required columns block Save All"
+                 Description="The Name and Amount columns are marked Required. Clear one of the cells, then click Save All — the save is blocked and the offending cells are highlighted. Re-enter a value to unblock the save.">
+        <SunfishDataSheet @ref="_requiredSheet"
+                         TItem="RequiredRow"
+                         Data="@_requiredRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleRequiredSaveAll"
+                         OnValidate="@HandleRequiredValidate"
+                         IsSaving="@_requiredIsSaving">
+            <SunfishDataSheetColumn TItem="RequiredRow"
+                                   Field="Name" Title="Name" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Required="true" Width="200px" />
+            <SunfishDataSheetColumn TItem="RequiredRow"
+                                   Field="Amount" Title="Amount" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Required="true" Width="140px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_requiredLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No events yet. Clear a cell and try Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _requiredLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="B — Column-Level Validators">
+    <DemoSection Title="Inline Validate callbacks per column"
+                 Description="The Amount column rejects negative values and the Trade Date column rejects dates outside 2025. Edit a cell with an invalid value and click Save All — the grid blocks the save and marks the offending cell.">
+        <SunfishDataSheet @ref="_columnSheet"
+                         TItem="ColumnRow"
+                         Data="@_columnRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleColumnSaveAll"
+                         IsSaving="@_columnIsSaving">
+            <SunfishDataSheetColumn TItem="ColumnRow"
+                                   Field="Label" Title="Label" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="200px" />
+            <SunfishDataSheetColumn TItem="ColumnRow"
+                                   Field="Amount" Title="Amount" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="140px"
+                                   Validate="@(r => r.Amount < 0 ? "Must be >= 0" : null)" />
+            <SunfishDataSheetColumn TItem="ColumnRow"
+                                   Field="TradeDate" Title="Trade Date" ColumnType="DataSheetColumnType.Date"
+                                   Editable="true" Width="160px"
+                                   Validate="@(r => r.TradeDate is { } d && (d.Year < 2025 || d.Year > 2025) ? "Must be in 2025" : null)" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_columnLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No events yet. Edit a cell with an invalid value and click Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _columnLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="C — Cross-Row OnValidate">
+    <DemoSection Title="Aggregate validation across dirty rows"
+                 Description="This grid enforces a batch rule: the total Quantity across all edited rows must not exceed 1000. Edit several rows so the sum exceeds 1000, then click Save All. The OnValidate handler populates args.Errors with a message per offending row and the save is blocked.">
+        <SunfishDataSheet @ref="_crossSheet"
+                         TItem="CrossRow"
+                         Data="@_crossRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleCrossSaveAll"
+                         OnValidate="@HandleCrossValidate"
+                         IsSaving="@_crossIsSaving">
+            <SunfishDataSheetColumn TItem="CrossRow"
+                                   Field="Sku" Title="SKU" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="160px" />
+            <SunfishDataSheetColumn TItem="CrossRow"
+                                   Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="140px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_crossLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No events yet. Edit several Qty cells so the sum exceeds 1000, then click Save All.</p>
+            }
+            else
+            {
+                @foreach (var entry in _crossLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="D — Loading State">
+    <DemoSection Title="IsLoading skeleton rows"
+                 Description="When IsLoading is true, the grid renders skeleton placeholder rows instead of data. Click Load Data to simulate an async fetch — the skeleton shows for 1.5s, then the grid populates. Click Clear Data to return to the empty state.">
+        <div class="ds-demo-toolbar">
+            <button class="ds-demo-btn" type="button" @onclick="LoadLoadingDataAsync" disabled="@_loadingInFlight">Load Data</button>
+            <button class="ds-demo-btn" type="button" @onclick="ClearLoadingData" disabled="@_loadingInFlight">Clear Data</button>
+            <span class="ds-demo-status">
+                @if (_loadingInFlight)
+                {
+                    <text>Loading…</text>
+                }
+                else if (_loadingRows.Count == 0)
+                {
+                    <text>Empty</text>
+                }
+                else
+                {
+                    <text>@_loadingRows.Count rows loaded</text>
+                }
+            </span>
+        </div>
+
+        <SunfishDataSheet @ref="_loadingSheet"
+                         TItem="LoadingRow"
+                         Data="@_loadingRows"
+                         KeyField="Id"
+                         IsLoading="@_loadingInFlight"
+                         EmptyStateMessage="No data yet. Click Load Data to fetch."
+                         Height="320px"
+                         EnableVirtualization="false">
+            <SunfishDataSheetColumn TItem="LoadingRow"
+                                   Field="Symbol" Title="Symbol" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="140px" />
+            <SunfishDataSheetColumn TItem="LoadingRow"
+                                   Field="Price" Title="Price" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="140px" />
+        </SunfishDataSheet>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="E — Reset / Discard All Changes">
+    <DemoSection Title="ResetAsync discards dirty state"
+                 Description="Edit a few cells so they turn dirty, then click Discard All Changes. The grid calls ResetAsync() on the component, which clears every pending cell edit and returns the grid to its pristine state. The event log records how many rows were dirty at the moment of discard.">
+        <div class="ds-demo-toolbar">
+            <button class="ds-demo-btn" type="button" @onclick="DiscardChangesAsync">Discard All Changes</button>
+            <span class="ds-demo-status">Dirty rows tracked by the grid will be cleared.</span>
+        </div>
+
+        <SunfishDataSheet @ref="_resetSheet"
+                         TItem="ResetRow"
+                         Data="@_resetRows"
+                         KeyField="Id"
+                         OnRowChanged="@HandleResetRowChanged">
+            <SunfishDataSheetColumn TItem="ResetRow"
+                                   Field="Name" Title="Name" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="200px" />
+            <SunfishDataSheetColumn TItem="ResetRow"
+                                   Field="Department" Title="Department" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="200px" />
+            <SunfishDataSheetColumn TItem="ResetRow"
+                                   Field="Level" Title="Level" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="120px" />
+        </SunfishDataSheet>
+
+        <div class="ds-demo-log">
+            <h4>Event log</h4>
+            @if (_resetLog.Count == 0)
+            {
+                <p class="ds-demo-log-empty">No events yet. Edit a cell, then click Discard All Changes.</p>
+            }
+            else
+            {
+                @foreach (var entry in _resetLog)
+                {
+                    <div class="ds-demo-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<style>
+    .ds-demo-log {
+        margin-top: 16px;
+        padding: 12px;
+        border: 1px solid var(--mar-color-border, #ccc);
+        border-radius: 4px;
+        max-height: 200px;
+        overflow: auto;
+    }
+    .ds-demo-log h4 {
+        margin: 0 0 8px;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+    .ds-demo-log-empty {
+        margin: 0;
+        color: var(--mar-color-text-secondary, #888);
+        font-style: italic;
+    }
+    .ds-demo-log-entry {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        padding: 2px 0;
+    }
+    .ds-demo-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .ds-demo-btn {
+        padding: 6px 12px;
+        border: 1px solid var(--mar-color-border, #ccc);
+        border-radius: 4px;
+        background: var(--mar-color-surface, #fff);
+        cursor: pointer;
+        font-size: 0.9em;
+    }
+    .ds-demo-btn:hover:not(:disabled) {
+        background: var(--mar-color-surface-alt, #f5f5f5);
+    }
+    .ds-demo-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    .ds-demo-status {
+        color: var(--mar-color-text-secondary, #666);
+        font-size: 0.85em;
+    }
+</style>
+
+@code {
+    // ── Scenario A — Required field validation ────────────────────────
+    private SunfishDataSheet<RequiredRow>? _requiredSheet;
+    private bool _requiredIsSaving;
+    private readonly List<string> _requiredLog = [];
+
+    private List<RequiredRow> _requiredRows = new()
+    {
+        new() { Name = "Alpha",   Amount = 100m },
+        new() { Name = "Bravo",   Amount = 250m },
+        new() { Name = "Charlie", Amount =  50m },
+    };
+
+    private void HandleRequiredValidate(DataSheetValidateArgs<RequiredRow> args)
+    {
+        foreach (var row in args.DirtyRows)
+        {
+            if (string.IsNullOrWhiteSpace(row.Name))
+            {
+                args.Errors.Add(new DataSheetValidationError<RequiredRow>
+                {
+                    Row = row, Field = "Name", Message = "Name is required."
+                });
+            }
+        }
+
+        if (args.Errors.Count > 0)
+        {
+            AddLog(_requiredLog, $"Save blocked: {args.Errors.Count} validation error(s).");
+        }
+    }
+
+    private async Task HandleRequiredSaveAll(DataSheetSaveArgs<RequiredRow> args)
+    {
+        _requiredIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _requiredIsSaving = false;
+
+        AddLog(_requiredLog, $"Saved {args.DirtyRows.Count} rows.");
+    }
+
+    // ── Scenario B — Column-level validators ──────────────────────────
+    private SunfishDataSheet<ColumnRow>? _columnSheet;
+    private bool _columnIsSaving;
+    private readonly List<string> _columnLog = [];
+
+    private List<ColumnRow> _columnRows = new()
+    {
+        new() { Label = "Trade A", Amount = 1500m, TradeDate = new DateTime(2025, 3, 15) },
+        new() { Label = "Trade B", Amount =  850m, TradeDate = new DateTime(2025, 4, 2)  },
+        new() { Label = "Trade C", Amount = 2200m, TradeDate = new DateTime(2025, 5, 20) },
+        new() { Label = "Trade D", Amount =  400m, TradeDate = new DateTime(2025, 6, 8)  },
+    };
+
+    private async Task HandleColumnSaveAll(DataSheetSaveArgs<ColumnRow> args)
+    {
+        _columnIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _columnIsSaving = false;
+
+        AddLog(_columnLog, $"Saved {args.DirtyRows.Count} rows.");
+    }
+
+    // ── Scenario C — Cross-row OnValidate ─────────────────────────────
+    private SunfishDataSheet<CrossRow>? _crossSheet;
+    private bool _crossIsSaving;
+    private readonly List<string> _crossLog = [];
+
+    private List<CrossRow> _crossRows = new()
+    {
+        new() { Sku = "SKU-001", Quantity = 100m },
+        new() { Sku = "SKU-002", Quantity = 200m },
+        new() { Sku = "SKU-003", Quantity = 150m },
+        new() { Sku = "SKU-004", Quantity = 300m },
+        new() { Sku = "SKU-005", Quantity =  75m },
+    };
+
+    private void HandleCrossValidate(DataSheetValidateArgs<CrossRow> args)
+    {
+        var total = args.DirtyRows.Sum(r => r.Quantity);
+        if (total > 1000m)
+        {
+            foreach (var row in args.DirtyRows)
+            {
+                args.Errors.Add(new DataSheetValidationError<CrossRow>
+                {
+                    Row = row,
+                    Field = "Quantity",
+                    Message = $"Total qty across dirty rows is {total} (limit 1000). This row contributes {row.Quantity}."
+                });
+            }
+            AddLog(_crossLog, $"Save blocked: total qty {total} exceeds 1000 across {args.DirtyRows.Count} dirty rows.");
+        }
+    }
+
+    private async Task HandleCrossSaveAll(DataSheetSaveArgs<CrossRow> args)
+    {
+        _crossIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _crossIsSaving = false;
+
+        AddLog(_crossLog, $"Saved {args.DirtyRows.Count} rows.");
+    }
+
+    // ── Scenario D — IsLoading skeleton state ─────────────────────────
+    private SunfishDataSheet<LoadingRow>? _loadingSheet;
+    private bool _loadingInFlight;
+    private List<LoadingRow> _loadingRows = new();
+
+    private async Task LoadLoadingDataAsync()
+    {
+        _loadingInFlight = true;
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        _loadingRows = new List<LoadingRow>
+        {
+            new() { Symbol = "AAPL", Price = 178.50m },
+            new() { Symbol = "MSFT", Price = 415.20m },
+            new() { Symbol = "NVDA", Price = 875.30m },
+            new() { Symbol = "AMZN", Price = 187.40m },
+            new() { Symbol = "META", Price = 502.60m },
+        };
+        _loadingInFlight = false;
+        StateHasChanged();
+    }
+
+    private void ClearLoadingData()
+    {
+        _loadingRows = new List<LoadingRow>();
+    }
+
+    // ── Scenario E — Reset / Discard all changes ──────────────────────
+    private SunfishDataSheet<ResetRow>? _resetSheet;
+    private readonly List<string> _resetLog = [];
+
+    private List<ResetRow> _resetRows = new()
+    {
+        new() { Name = "Ada Lovelace",    Department = "Engineering", Level = 5 },
+        new() { Name = "Grace Hopper",    Department = "Engineering", Level = 6 },
+        new() { Name = "Katherine Johnson", Department = "Research",  Level = 5 },
+        new() { Name = "Hedy Lamarr",     Department = "Design",      Level = 4 },
+    };
+
+    private void HandleResetRowChanged(DataSheetRowChangedArgs<ResetRow> args)
+    {
+        AddLog(_resetLog, $"Edited [{args.Row.Name}] {args.Field}: {args.OldValue} -> {args.NewValue}");
+    }
+
+    private async Task DiscardChangesAsync()
+    {
+        if (_resetSheet is null) return;
+
+        var dirtyCount = _resetSheet.GetDirtyRows().Count;
+        await _resetSheet.ResetAsync();
+        AddLog(_resetLog, $"Discarded {dirtyCount} dirty row(s) via ResetAsync.");
+    }
+
+    // ── Shared log helper ─────────────────────────────────────────────
+    private static void AddLog(List<string> log, string message)
+    {
+        log.Insert(0, $"{DateTime.Now:HH:mm:ss} {message}");
+        if (log.Count > 10) log.RemoveAt(10);
+    }
+
+    // ── Row types ─────────────────────────────────────────────────────
+    public record RequiredRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Name { get; set; } = "";
+        public decimal Amount { get; set; }
+    }
+
+    public record ColumnRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Label { get; set; } = "";
+        public decimal Amount { get; set; }
+        public DateTime? TradeDate { get; set; }
+    }
+
+    public record CrossRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Sku { get; set; } = "";
+        public decimal Quantity { get; set; }
+    }
+
+    public record LoadingRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Symbol { get; set; } = "";
+        public decimal Price { get; set; }
+    }
+
+    public record ResetRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public int Level { get; set; }
+    }
+}

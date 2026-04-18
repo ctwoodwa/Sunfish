@@ -1,0 +1,24 @@
+@page "/components/animationcontainer"
+@page "/components/animationcontainer/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="AnimationContainer wraps content and applies entry/exit animations." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishButton OnClick="@(() => _show = !_show)">Toggle</SunfishButton>
+            <SunfishAnimationContainer @bind-Visible="_show">
+                <SunfishAlert Severity="AlertSeverity.Info">Animated content</SunfishAlert>
+            </SunfishAnimationContainer>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _show = true;
+
+    private const string _basicCode =
+        "<SunfishButton OnClick=\"@(() => _show = !_show)\">Toggle</SunfishButton>\n" +
+        "<SunfishAnimationContainer @bind-Visible=\"_show\">\n" +
+        "    <SunfishAlert Severity=\"AlertSeverity.Info\">Animated content</SunfishAlert>\n" +
+        "</SunfishAnimationContainer>";
+}

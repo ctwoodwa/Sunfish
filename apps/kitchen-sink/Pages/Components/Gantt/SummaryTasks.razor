@@ -1,0 +1,140 @@
+@page "/components/gantt/summary-tasks"
+@layout ComponentDemoLayout
+
+<PageSection Title="Summary Tasks">
+    <DemoSection Title="Automatic Aggregation" Description="Parent tasks with children are automatically treated as summary tasks. The Gantt computes summary values bottom-up: Start = min of children starts, End = max of children ends, PercentComplete = duration-weighted average. Summary bars render with a distinct style (mar-gantt__bar--summary). You do not need to maintain parent dates manually." Code="@_summaryCode">
+        <div class="demo-row">
+            <SunfishGantt TItem="SummaryTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="500px"
+                         Width="100%"
+                         @bind-View="_currentView"
+                         OnUpdate="@UpdateItem">
+                <GanttColumns>
+                    <GanttColumn TItem="SummaryTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="220px"
+                                 Title="Task" />
+                    <GanttColumn TItem="SummaryTask"
+                                 Field="PercentComplete"
+                                 Width="80px"
+                                 Title="Progress"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right" />
+                    <GanttColumn TItem="SummaryTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="SummaryTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+        <p class="demo-info">
+            Notice how "Q1 Release" and "Q2 Release" summary bars automatically span from their earliest child start to their latest child end, and their progress is a duration-weighted average.
+        </p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Month;
+
+    private class SummaryTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<SummaryTask> _tasks = GenerateData();
+
+    private static List<SummaryTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<SummaryTask>
+        {
+            // Summary: Q1 Release (parent dates will be computed from children)
+            new() { Id = "q1", Title = "Q1 Release", Start = today, End = today.AddDays(60), PercentComplete = 0 },
+
+            // Phase: Backend (summary of its children)
+            new() { Id = "q1.be", ParentId = "q1", Title = "Backend Services", Start = today, End = today.AddDays(30), PercentComplete = 0 },
+            new() { Id = "q1.be.1", ParentId = "q1.be", Title = "API Design", Start = today, End = today.AddDays(7), PercentComplete = 100 },
+            new() { Id = "q1.be.2", ParentId = "q1.be", Title = "Core Implementation", Start = today.AddDays(7), End = today.AddDays(21), PercentComplete = 60 },
+            new() { Id = "q1.be.3", ParentId = "q1.be", Title = "Performance Tuning", Start = today.AddDays(21), End = today.AddDays(28), PercentComplete = 0 },
+
+            // Phase: Frontend (summary of its children)
+            new() { Id = "q1.fe", ParentId = "q1", Title = "Frontend App", Start = today.AddDays(14), End = today.AddDays(45), PercentComplete = 0 },
+            new() { Id = "q1.fe.1", ParentId = "q1.fe", Title = "Component Library", Start = today.AddDays(14), End = today.AddDays(25), PercentComplete = 80 },
+            new() { Id = "q1.fe.2", ParentId = "q1.fe", Title = "Page Integration", Start = today.AddDays(25), End = today.AddDays(35), PercentComplete = 20 },
+            new() { Id = "q1.fe.3", ParentId = "q1.fe", Title = "E2E Tests", Start = today.AddDays(35), End = today.AddDays(42), PercentComplete = 0 },
+
+            // Phase: QA
+            new() { Id = "q1.qa", ParentId = "q1", Title = "QA Sign-Off", Start = today.AddDays(42), End = today.AddDays(55), PercentComplete = 0 },
+            new() { Id = "q1.qa.1", ParentId = "q1.qa", Title = "Regression Suite", Start = today.AddDays(42), End = today.AddDays(48), PercentComplete = 0 },
+            new() { Id = "q1.qa.2", ParentId = "q1.qa", Title = "UAT", Start = today.AddDays(48), End = today.AddDays(55), PercentComplete = 0 },
+
+            // Summary: Q2 Release
+            new() { Id = "q2", Title = "Q2 Release", Start = today.AddDays(60), End = today.AddDays(120), PercentComplete = 0 },
+            new() { Id = "q2.1", ParentId = "q2", Title = "Feature A", Start = today.AddDays(60), End = today.AddDays(80), PercentComplete = 0 },
+            new() { Id = "q2.2", ParentId = "q2", Title = "Feature B", Start = today.AddDays(75), End = today.AddDays(95), PercentComplete = 0 },
+            new() { Id = "q2.3", ParentId = "q2", Title = "Stabilization", Start = today.AddDays(95), End = today.AddDays(115), PercentComplete = 0 },
+        };
+    }
+
+    private void UpdateItem(GanttUpdateEventArgs args)
+    {
+        var item = args.Item as SummaryTask;
+        if (item is null) return;
+        var found = _tasks.FirstOrDefault(t => t.Id == item.Id);
+        if (found is not null)
+        {
+            found.Title = item.Title;
+            found.Start = item.Start;
+            found.End = item.End;
+            found.PercentComplete = item.PercentComplete;
+        }
+    }
+
+    private const string _summaryCode = @"// Any task with children is automatically a summary task.
+// The Gantt computes:
+//   Start = min(children.Start)
+//   End = max(children.End)
+//   PercentComplete = duration-weighted average
+//
+// Summary bars render with the CSS class
+// 'mar-gantt__bar--summary'.
+//
+// You do NOT need to manually maintain parent dates.
+
+<SunfishGantt TItem=""SummaryTask""
+             Data=""@_tasks""
+             IdField=""Id""
+             ParentIdField=""ParentId""
+             Height=""500px""
+             @bind-View=""_currentView"">
+    <GanttColumns>
+        <GanttColumn TItem=""SummaryTask""
+                     Field=""Title"" Expandable=""true""
+                     Width=""220px"" Title=""Task"" />
+        <GanttColumn TItem=""SummaryTask""
+                     Field=""PercentComplete""
+                     Width=""80px"" Title=""Progress"" />
+    </GanttColumns>
+    <GanttViews>
+        <GanttWeekView />
+        <GanttMonthView />
+    </GanttViews>
+</SunfishGantt>";
+}

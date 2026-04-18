@@ -1,0 +1,110 @@
+@page "/components/gridlayout"
+@page "/components/gridlayout/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Grid Layout">
+    <DemoSection Title="Basic CSS Grid" Code="@_basicCode">
+        <SunfishGridLayout Columns="200px 1fr 200px" Rows="auto 1fr auto" ColumnSpacing="16px" RowSpacing="8px">
+            <SunfishGridLayoutItem Row="1" Column="1" ColumnSpan="3">
+                <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Header (spans 3 columns)</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="1">
+                <div style="background:var(--sf-color-info-light);padding:12px;border-radius:4px;">Sidebar</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="2">
+                <div style="background:var(--sf-color-success-light);padding:12px;border-radius:4px;">Content</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="3">
+                <div style="background:var(--sf-color-info-light);padding:12px;border-radius:4px;">Aside</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="3" Column="1" ColumnSpan="3">
+                <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Footer (spans 3 columns)</div>
+            </SunfishGridLayoutItem>
+        </SunfishGridLayout>
+    </DemoSection>
+
+    <DemoSection Title="Declarative Column/Row Definitions" Code="@_declarativeCode">
+        <SunfishGridLayout ColumnSpacing="12px" RowSpacing="12px">
+            <ColumnDefinitions>
+                <SunfishGridLayoutColumn Width="1fr" />
+                <SunfishGridLayoutColumn Width="2fr" />
+                <SunfishGridLayoutColumn Width="1fr" />
+            </ColumnDefinitions>
+            <RowDefinitions>
+                <SunfishGridLayoutRow Height="auto" />
+                <SunfishGridLayoutRow Height="auto" />
+            </RowDefinitions>
+            <ChildContent>
+                <SunfishGridLayoutItem Row="1" Column="1" ColumnSpan="3">
+                    <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Full width header</div>
+                </SunfishGridLayoutItem>
+                <SunfishGridLayoutItem Row="2" Column="1">
+                    <div style="background:var(--sf-color-secondary-light);padding:12px;border-radius:4px;">Left</div>
+                </SunfishGridLayoutItem>
+                <SunfishGridLayoutItem Row="2" Column="2">
+                    <div style="background:var(--sf-color-secondary-light);padding:12px;border-radius:4px;">Center (2fr)</div>
+                </SunfishGridLayoutItem>
+                <SunfishGridLayoutItem Row="2" Column="3">
+                    <div style="background:var(--sf-color-secondary-light);padding:12px;border-radius:4px;">Right</div>
+                </SunfishGridLayoutItem>
+            </ChildContent>
+        </SunfishGridLayout>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishGridLayout Columns=\"200px 1fr 200px\" Rows=\"auto 1fr auto\"\n" +
+        "                  ColumnSpacing=\"16px\" RowSpacing=\"8px\">\n" +
+        "    <SunfishGridLayoutItem Row=\"1\" Column=\"1\" ColumnSpan=\"3\">\n" +
+        "        Header\n" +
+        "    </SunfishGridLayoutItem>\n" +
+        "    <SunfishGridLayoutItem Row=\"2\" Column=\"1\">Sidebar</SunfishGridLayoutItem>\n" +
+        "    <SunfishGridLayoutItem Row=\"2\" Column=\"2\">Content</SunfishGridLayoutItem>\n" +
+        "    <SunfishGridLayoutItem Row=\"2\" Column=\"3\">Aside</SunfishGridLayoutItem>\n" +
+        "    <SunfishGridLayoutItem Row=\"3\" Column=\"1\" ColumnSpan=\"3\">\n" +
+        "        Footer\n" +
+        "    </SunfishGridLayoutItem>\n" +
+        "</SunfishGridLayout>";
+
+    private const string _declarativeCode =
+        "<SunfishGridLayout>\n" +
+        "    <ColumnDefinitions>\n" +
+        "        <SunfishGridLayoutColumn Width=\"1fr\" />\n" +
+        "        <SunfishGridLayoutColumn Width=\"2fr\" />\n" +
+        "        <SunfishGridLayoutColumn Width=\"1fr\" />\n" +
+        "    </ColumnDefinitions>\n" +
+        "    <RowDefinitions>\n" +
+        "        <SunfishGridLayoutRow Height=\"auto\" />\n" +
+        "    </RowDefinitions>\n" +
+        "    <ChildContent>\n" +
+        "        <SunfishGridLayoutItem Row=\"1\" Column=\"1\" ColumnSpan=\"3\">Header</SunfishGridLayoutItem>\n" +
+        "        <SunfishGridLayoutItem Row=\"2\" Column=\"1\">Left</SunfishGridLayoutItem>\n" +
+        "        <SunfishGridLayoutItem Row=\"2\" Column=\"2\">Center</SunfishGridLayoutItem>\n" +
+        "        <SunfishGridLayoutItem Row=\"2\" Column=\"3\">Right</SunfishGridLayoutItem>\n" +
+        "    </ChildContent>\n" +
+        "</SunfishGridLayout>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus through interactive content within grid layout items"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role", "Not required; the grid layout uses CSS Grid for visual arrangement only"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The grid layout uses CSS Grid for positioning. Content is read in document order.",
+        "Ensure content within grid layout items has proper heading hierarchy for screen reader navigation.",
+    ];
+}

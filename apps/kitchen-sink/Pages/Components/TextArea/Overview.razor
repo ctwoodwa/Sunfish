@@ -1,0 +1,84 @@
+@page "/components/TextArea"
+@page "/components/TextArea/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishField>
+            <SunfishLabel>Description</SunfishLabel>
+            <SunfishTextArea Value="@_description" ValueChanged="@(v => _description = v)" Rows="4" Placeholder="Enter a description" />
+        </SunfishField>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Disabled" Description="A disabled text area prevents user interaction." Code="@_disabledCode">
+        <SunfishField>
+            <SunfishLabel>Disabled</SunfishLabel>
+            <SunfishTextArea Value="This text area is disabled" Disabled="true" Rows="4" />
+        </SunfishField>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle text changes with the ValueChanged callback." Code="@_interactiveCode">
+        <SunfishField>
+            <SunfishLabel>Type something</SunfishLabel>
+            <SunfishTextArea Value="@_evDescription" ValueChanged="@(v => _evDescription = v)" Rows="4" Placeholder="Enter a description" />
+        </SunfishField>
+        <p><strong>Value:</strong> @_evDescription</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private string _description = "";
+    private string _evDescription = "";
+
+    private const string _basicCode =
+        "<SunfishField>\n" +
+        "    <SunfishLabel>Description</SunfishLabel>\n" +
+        "    <SunfishTextArea Value=\"@_description\" ValueChanged=\"@(v => _description = v)\" Rows=\"4\" Placeholder=\"Enter a description\" />\n" +
+        "</SunfishField>";
+
+    private const string _disabledCode =
+        "<SunfishField>\n" +
+        "    <SunfishLabel>Disabled</SunfishLabel>\n" +
+        "    <SunfishTextArea Value=\"This text area is disabled\" Disabled=\"true\" Rows=\"4\" />\n" +
+        "</SunfishField>";
+
+    private const string _interactiveCode =
+        "<SunfishTextArea Value=\"@_description\" ValueChanged=\"@(v => _description = v)\" Rows=\"4\" Placeholder=\"Enter a description\" />\n" +
+        "<p><strong>Value:</strong> @_description</p>\n\n" +
+        "@code {\n" +
+        "    private string _description = \"\";\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the text area"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Escape", "Clears focus from the text area"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"textbox\"", "Implicitly set by the <textarea> element"),
+        ("aria-multiline=\"true\"", "Implicitly set by the <textarea> element"),
+        ("aria-invalid=\"true\"", "Applied when the IsInvalid parameter is set"),
+        ("aria-disabled=\"true\"", "Applied when the Disabled parameter is set"),
+        ("aria-label", "Can be set to provide an accessible name when no visible label is present"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Text areas are announced with their label and the \"edit text\" role with multi-line support.",
+        "Disabled text areas are announced as \"dimmed\" or \"unavailable\" depending on the screen reader.",
+    ];
+}
