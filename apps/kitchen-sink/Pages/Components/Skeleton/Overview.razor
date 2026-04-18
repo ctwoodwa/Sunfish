@@ -1,0 +1,31 @@
+@page "/components/Skeleton"
+@page "/components/Skeleton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Skeletons provide a low-fidelity preview of content before it loads." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishSkeleton Variant="SkeletonVariant.Text" Width="200px" Height="16px" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Variants" Description="Skeletons support text, circular, and rectangular shapes." Code="@_variantsCode">
+        <div class="demo-row">
+            <SunfishSkeleton Variant="SkeletonVariant.Text" Width="200px" Height="16px" />
+            <SunfishSkeleton Variant="SkeletonVariant.Circular" Width="48px" Height="48px" />
+            <SunfishSkeleton Variant="SkeletonVariant.Rectangular" Width="200px" Height="120px" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishSkeleton Variant=\"SkeletonVariant.Text\" Width=\"200px\" Height=\"16px\" />";
+
+    private const string _variantsCode =
+        "<SunfishSkeleton Variant=\"SkeletonVariant.Text\" Width=\"200px\" Height=\"16px\" />\n" +
+        "<SunfishSkeleton Variant=\"SkeletonVariant.Circular\" Width=\"48px\" Height=\"48px\" />\n" +
+        "<SunfishSkeleton Variant=\"SkeletonVariant.Rectangular\" Width=\"200px\" Height=\"120px\" />";
+}

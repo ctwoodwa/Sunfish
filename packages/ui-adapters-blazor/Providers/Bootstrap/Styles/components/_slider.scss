@@ -1,0 +1,12 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Slider
+// =================================================================
+// From _bridge-forms.scss: .sf-bs-slider--vertical
+// =================================================================
+
+.sf-bs-slider--vertical {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  width: 1rem;
+  min-height: 200px;
+}

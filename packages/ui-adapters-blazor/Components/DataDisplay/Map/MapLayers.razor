@@ -1,0 +1,8 @@
+@* Optional ergonomic wrapper for MapLayer children. Simply passes through its content. *@
+
+@ChildContent
+
+@code {
+    /// <summary>The child MapLayer components.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

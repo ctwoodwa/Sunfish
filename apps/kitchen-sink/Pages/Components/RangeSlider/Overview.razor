@@ -1,0 +1,20 @@
+@page "/components/rangeslider"
+@page "/components/rangeslider/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="RangeSlider allows selection of a value range with two draggable handles." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishRangeSlider @bind-StartValue="_start" @bind-EndValue="_end" Min="0" Max="100" />
+            <span>@_start — @_end</span>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private double _start = 20;
+    private double _end = 80;
+
+    private const string _basicCode =
+        "<SunfishRangeSlider @bind-StartValue=\"_start\" @bind-EndValue=\"_end\" Min=\"0\" Max=\"100\" />";
+}

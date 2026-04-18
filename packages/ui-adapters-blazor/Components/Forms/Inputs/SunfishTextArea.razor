@@ -1,0 +1,33 @@
+@inherits SunfishComponentBase
+
+<textarea class="@CombineClasses(CssProvider.TextAreaClass(IsInvalid))"
+          style="@CombineStyles()"
+          rows="@Rows"
+          value="@Value"
+          placeholder="@Placeholder"
+          maxlength="@MaxLength"
+          disabled="@(!Enabled)"
+          readonly="@ReadOnly"
+          autocomplete="@AutoComplete"
+          spellcheck="@SpellCheck"
+          @oninput="OnInputChanged"
+          @attributes="AdditionalAttributes"></textarea>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public int Rows { get; set; } = 3;
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public int? MaxLength { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? AutoComplete { get; set; }
+    [Parameter] public string? SpellCheck { get; set; }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

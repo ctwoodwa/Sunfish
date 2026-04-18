@@ -1,0 +1,21 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@implements IDisposable
+
+@code {
+    /// <summary>
+    /// The height of this grid row (CSS value, e.g., "auto", "1fr", "200px", "minmax(100px, auto)").
+    /// </summary>
+    [Parameter] public string Height { get; set; } = "auto";
+
+    [CascadingParameter] private SunfishGridLayout? ParentGrid { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentGrid?.AddRowDefinition(this);
+    }
+
+    public void Dispose()
+    {
+        ParentGrid?.RemoveRowDefinition(this);
+    }
+}

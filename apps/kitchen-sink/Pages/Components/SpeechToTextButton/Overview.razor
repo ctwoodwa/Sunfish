@@ -1,0 +1,101 @@
+@page "/components/speechtotextbutton"
+@page "/components/speechtotextbutton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Speech to Text Button provides a toggle button for starting and stopping speech recognition input." Code="@_basicCode">
+        <SunfishSpeechToTextButton IsListening="_isListening"
+                                  IsListeningChanged="ListeningChanged"
+                                  OnTextReceived="HandleText" />
+    </DemoSection>
+
+    <DemoSection Title="Button Variants" Description="The speech button supports different visual variants." Code="@_variantsCode">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <SunfishSpeechToTextButton Variant="ButtonVariant.Primary"
+                                      IsListening="_isListening"
+                                      IsListeningChanged="ListeningChanged" />
+            <SunfishSpeechToTextButton Variant="ButtonVariant.Secondary"
+                                      IsListening="_isListening2"
+                                      IsListeningChanged="ListeningChanged2" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Custom Label" Description="Override the default button content with a custom label." Code="@_customCode">
+        <SunfishSpeechToTextButton IsListening="_isListening3"
+                                  IsListeningChanged="ListeningChanged3"
+                                  Variant="ButtonVariant.Primary">
+            @(_isListening3 ? "Stop Recording" : "Start Recording")
+        </SunfishSpeechToTextButton>
+    </DemoSection>
+
+    <DemoSection Title="With Text Output" Description="Combine with a text area to show the speech recognition workflow." Code="@_outputCode">
+        <div style="max-width:500px;display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+                <SunfishSpeechToTextButton IsListening="_isListeningDemo"
+                                          IsListeningChanged="ListeningChangedDemo"
+                                          Variant="ButtonVariant.Primary" />
+                <span style="font-size:13px;color:#666;">@(_isListeningDemo ? "Listening... (simulated)" : "Click to start")</span>
+            </div>
+            <textarea style="width:100%;height:80px;padding:8px;border:1px solid #ccc;border-radius:4px;"
+                      readonly
+                      value="@_recognizedText"></textarea>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _isListening;
+    private bool _isListening2;
+    private bool _isListening3;
+    private bool _isListeningDemo;
+    private string _recognizedText = "";
+
+    private void ListeningChanged(bool value) => _isListening = value;
+    private void ListeningChanged2(bool value) => _isListening2 = value;
+    private void ListeningChanged3(bool value) => _isListening3 = value;
+
+    private async Task ListeningChangedDemo(bool value)
+    {
+        _isListeningDemo = value;
+        if (value)
+        {
+            StateHasChanged();
+            await Task.Delay(2000);
+            _recognizedText = "This is simulated speech recognition output.";
+            _isListeningDemo = false;
+        }
+    }
+
+    private Task HandleText(string text)
+    {
+        _recognizedText = text;
+        return Task.CompletedTask;
+    }
+
+    private const string _basicCode =
+        "<SunfishSpeechToTextButton IsListening=\"_isListening\"\n" +
+        "                          IsListeningChanged=\"ListeningChanged\"\n" +
+        "                          OnTextReceived=\"HandleText\" />";
+
+    private const string _variantsCode =
+        "<SunfishSpeechToTextButton Variant=\"ButtonVariant.Primary\"\n" +
+        "                          IsListening=\"_isListening\"\n" +
+        "                          IsListeningChanged=\"ListeningChanged\" />\n" +
+        "<SunfishSpeechToTextButton Variant=\"ButtonVariant.Secondary\"\n" +
+        "                          IsListening=\"_isListening2\"\n" +
+        "                          IsListeningChanged=\"ListeningChanged2\" />";
+
+    private const string _customCode =
+        "<SunfishSpeechToTextButton IsListening=\"_isListening\"\n" +
+        "                          IsListeningChanged=\"ListeningChanged\"\n" +
+        "                          Variant=\"ButtonVariant.Primary\">\n" +
+        "    @(_isListening ? \"Stop Recording\" : \"Start Recording\")\n" +
+        "</SunfishSpeechToTextButton>";
+
+    private const string _outputCode =
+        "<SunfishSpeechToTextButton IsListening=\"_isListeningDemo\"\n" +
+        "                          IsListeningChanged=\"ListeningChangedDemo\" />\n" +
+        "<textarea readonly value=\"@_recognizedText\"></textarea>";
+}

@@ -1,0 +1,740 @@
+@page "/components/allocation-scheduler"
+@page "/components/allocation-scheduler/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+@* ─── 1. Overview ────────────────────────────────────────────────────────── *@
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Resource Grid"
+                 Description="Twelve resources with pre-populated weekly project allocations in read-only mode. Drag-fill and bulk edit are disabled."
+                 Code="@_basicCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_basicAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   AllowDragFill="false"
+                                   AllowBulkEdit="false"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@* ─── 2. Granularity Modes ───────────────────────────────────────────────── *@
+<PageSection Title="Granularity Modes">
+    <DemoSection Title="Month Rollup View"
+                 Description="Set AuthoritativeLevel to Week and ViewGrain to Month. Month-level cells display read-only sum rollups. Switching to Week view makes cells editable."
+                 Code="@_monthRollupCode">
+        <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+            <span>Grain:</span>
+            @foreach (var grain in new[] { TimeGranularity.Day, TimeGranularity.Week, TimeGranularity.Month, TimeGranularity.Quarter })
+            {
+                var g = grain;
+                <button style="padding:0.25rem 0.75rem" @onclick="@(() => _rollupGrain = g)">@g</button>
+            }
+            <span style="color:#666;margin-left:0.5rem">Current: <strong>@_rollupGrain</strong></span>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_editableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="@_rollupGrain"
+                                   ViewGrainChanged="@(g => _rollupGrain = g)"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnVisibleRangeChanged="@HandleRollupRangeChanged"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_rollupRangeLabel))
+        {
+            <p><strong>Visible:</strong> @_rollupRangeLabel</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@* ─── 3. Editing ─────────────────────────────────────────────────────────── *@
+<PageSection Title="Editing">
+    <DemoSection Title="Interactive Allocation"
+                 Description="Full project team with 12 weeks of pre-loaded hours. Edit cells directly, drag-fill across date ranges, use Tab/Enter for keyboard traversal, or right-click for context menu commands."
+                 Code="@_interactiveCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_editableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   AllowDragFill="true"
+                                   AllowKeyboardEdit="true"
+                                   AllowBulkEdit="true"
+                                   EnableContextMenu="true"
+                                   OnCellEdited="@HandleCellEdited"
+                                   OnRangeEdited="@HandleRangeEdited"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_lastEditMessage))
+        {
+            <p><strong>Last edit:</strong> @_lastEditMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@* ─── 4. Conflict Detection ──────────────────────────────────────────────── *@
+<PageSection Title="Conflict Detection">
+    <DemoSection Title="Overlapping Allocations"
+                 Description="Alice Chen and James Wright are double-booked — two tasks in the same week push them above 40h capacity. Over-allocated cells receive conflict styling."
+                 Code="@_conflictCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_conflictAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="1"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Department" Title="Dept" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@* ─── 5. Grouped Timeline Headers ───────────────────────────────────────── *@
+<PageSection Title="Grouped Timeline Headers">
+    <DemoSection Title="Grouped Month/Year Headers"
+                 Description="Grouped timeline headers add a top row showing month-year context above the leaf week labels. This eliminates ambiguity when weeks cross Dec/Jan — the group row clearly shows 'Dec 2025' and 'Jan 2026'. Switch granularity to see how groups adapt: Day groups by month, Month/Quarter groups by year."
+                 Code="@_groupedHeaderCode">
+        <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+            <span>Granularity:</span>
+            @foreach (var grain in new[] { TimeGranularity.Day, TimeGranularity.Week, TimeGranularity.Month, TimeGranularity.Quarter })
+            {
+                var g = grain;
+                <button style="padding:0.25rem 0.75rem;@(_groupedGrain == g ? "font-weight:bold;text-decoration:underline" : "")"
+                        @onclick="@(() => _groupedGrain = g)">@g</button>
+            }
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_yearBoundaryAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="@_groupedGrain"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_yearBoundaryStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@* ─── 6. Analysis & Targets ─────────────────────────────────────────────── *@
+<PageSection Title="Analysis &amp; Targets">
+    <DemoSection Title="Delta View"
+                 Description="Set desired totals per resource using AllocationTarget records, enable ShowTargets and ShowDeltas, and see variance highlighted. Resources over target are flagged red; under target are flagged yellow."
+                 Code="@_deltaCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap">
+            <label>
+                <input type="checkbox" @bind="_showDeltas" />
+                Show Deltas
+            </label>
+            <label>
+                Delta Mode:
+                <select @bind="_deltaMode">
+                    <option value="@DeltaDisplayMode.Value">Value</option>
+                    <option value="@DeltaDisplayMode.Percentage">Percentage</option>
+                    <option value="@DeltaDisplayMode.StatusIcon">Status Icon</option>
+                </select>
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_basicAllocations"
+                                   Targets="@_targets"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   ShowTargets="true"
+                                   ShowDeltas="@_showDeltas"
+                                   DeltaDisplayMode="@_deltaMode"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnTargetChanged="@HandleTargetChanged"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_targetMessage))
+        {
+            <p><strong>Target changed:</strong> @_targetMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@* ─── 7. Layout & Splitter ──────────────────────────────────────────────── *@
+<PageSection Title="Layout &amp; Splitter">
+    <DemoSection Title="Programmatic Splitter Control"
+                 Description="Drag the vertical splitter to resize the resource grid vs timeline panes. Use the buttons below to set the splitter position programmatically, or collapse/restore either pane."
+                 Code="@_splitterCode">
+        <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+            <button @onclick="SetSplitterNarrow">Narrow Grid (200px)</button>
+            <button @onclick="SetSplitterDefault">Default Width</button>
+            <button @onclick="SetSplitterWide">Wide Grid (500px)</button>
+            <button @onclick="CollapseSplitterLeft">Collapse Left</button>
+            <button @onclick="RestoreSplitterPane">Restore</button>
+        </div>
+
+        <SunfishAllocationScheduler @ref="_splitterScheduler"
+                                   TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_editableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowSplitterCollapse="true"
+                                   SplitterPosition="@_splitterPos"
+                                   SplitterPositionChanged="@HandleSplitterPosChanged"
+                                   OnSplitterCollapsed="@HandleSplitterCollapsed"
+                                   OnSplitterRestored="@HandleSplitterRestored"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        <p style="margin-top:0.5rem;font-size:0.875rem;color:#555">
+            Splitter position: <strong>@(_splitterPos.HasValue ? $"{_splitterPos:F0}px" : "auto")</strong>
+            @if (!string.IsNullOrEmpty(_lastSplitterEvent))
+            {
+                <span> | Last event: @_lastSplitterEvent</span>
+            }
+        </p>
+    </DemoSection>
+</PageSection>
+
+@* ─── 8. Navigation ──────────────────────────────────────────────────────── *@
+<PageSection Title="Navigation">
+    <DemoSection Title="Navigation Controls"
+                 Description="Use a component reference to call NavigateTo, NavigateForward, NavigateBack, and NavigateToToday programmatically. The visible range label updates via OnVisibleRangeChanged."
+                 Code="@_navCode">
+        <div style="margin-bottom:1rem;display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap">
+            <button @onclick="NavBack">&#9664; Back</button>
+            <button @onclick="NavToday">Today</button>
+            <button @onclick="NavForward">Forward &#9654;</button>
+            <input type="date" @bind="_navDate" @bind:format="yyyy-MM-dd"
+                   style="padding:0.25rem 0.5rem;border:1px solid #ccc;border-radius:4px" />
+            <button @onclick="JumpToDate">Jump to Date</button>
+        </div>
+
+        <SunfishAllocationScheduler @ref="_navScheduler"
+                                   TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_editableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnVisibleRangeChanged="@HandleNavRangeChanged"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_navRangeLabel))
+        {
+            <p><strong>Showing:</strong> @_navRangeLabel</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    // ── Week Normalisation ───────────────────────────────────────────────
+
+    private static DateTime GetCurrentMonday()
+    {
+        var today = DateTime.Today;
+        int diff = ((int)today.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return today.AddDays(-diff);
+    }
+
+    private DateTime _demoStart = GetCurrentMonday();
+
+    // ── Shared Resources ─────────────────────────────────────────────────
+
+    private List<StaffResource> _allResources = new()
+    {
+        new() { Id = 1,  Name = "Alice Chen",    Role = "Senior Developer",   Department = "Engineering"    },
+        new() { Id = 2,  Name = "Bob Torres",    Role = "Senior Developer",   Department = "Engineering"    },
+        new() { Id = 3,  Name = "Carol Singh",   Role = "QA Engineer",        Department = "Engineering"    },
+        new() { Id = 4,  Name = "David Kim",     Role = "Project Manager",    Department = "PMO"            },
+        new() { Id = 5,  Name = "Elena Vasquez", Role = "Frontend Developer", Department = "Engineering"    },
+        new() { Id = 6,  Name = "Frank Okafor",  Role = "Backend Developer",  Department = "Engineering"    },
+        new() { Id = 7,  Name = "Grace Liu",     Role = "UX Designer",        Department = "Design"         },
+        new() { Id = 8,  Name = "Henry Patel",   Role = "DevOps Engineer",    Department = "Infrastructure" },
+        new() { Id = 9,  Name = "Isabel Moreau", Role = "Business Analyst",   Department = "PMO"            },
+        new() { Id = 10, Name = "James Wright",  Role = "Tech Lead",          Department = "Engineering"    },
+        new() { Id = 11, Name = "Karen Osei",    Role = "Database Developer", Department = "Engineering"    },
+        new() { Id = 12, Name = "Liam Nakamura", Role = "Security Engineer",  Department = "Infrastructure" }
+    };
+
+    private List<StaffResource> _tenResources = new();
+
+    // ── Allocation Data ──────────────────────────────────────────────────
+
+    private List<AllocationRecord> _basicAllocations    = new();
+    private List<AllocationRecord> _editableAllocations = new();
+    private List<AllocationRecord> _conflictAllocations = new();
+    private List<AllocationRecord> _yearBoundaryAllocations = new();
+
+    // ── Targets ──────────────────────────────────────────────────────────
+
+    private List<AllocationTarget> _targets = new();
+
+    // ── Section 5 — Grouped Headers ─────────────────────────────────────
+
+    // Start in early December so the range crosses into January
+    private DateTime _yearBoundaryStart = new DateTime(DateTime.Today.Year, 12, 1);
+    private TimeGranularity _groupedGrain = TimeGranularity.Week;
+
+    // ── Section 3 — Editing ──────────────────────────────────────────────
+
+    private string _lastEditMessage = string.Empty;
+
+    // ── Section 6 — Delta View ───────────────────────────────────────────
+
+    private bool _showDeltas = true;
+    private DeltaDisplayMode _deltaMode = DeltaDisplayMode.Value;
+    private string _targetMessage = string.Empty;
+
+    // ── Section 2 — Granularity Modes ────────────────────────────────────
+
+    private TimeGranularity _rollupGrain = TimeGranularity.Month;
+    private string _rollupRangeLabel = string.Empty;
+
+    // ── Section 7 — Splitter ─────────────────────────────────────────────
+
+    private double? _splitterPos;
+    private string _lastSplitterEvent = string.Empty;
+    private SunfishAllocationScheduler<StaffResource>? _splitterScheduler;
+
+    // ── Section 8 — Navigation ───────────────────────────────────────────
+
+    private DateTime _navDate = DateTime.Today;
+    private string _navRangeLabel = string.Empty;
+    private SunfishAllocationScheduler<StaffResource>? _navScheduler;
+
+    // ── Lifecycle ────────────────────────────────────────────────────────
+
+    protected override void OnInitialized()
+    {
+        _tenResources = _allResources.Take(10).ToList();
+        BuildBasicAllocations();
+        BuildEditableAllocations();
+        BuildConflictAllocations();
+        BuildTargets();
+        BuildYearBoundaryAllocations();
+    }
+
+    // ── Data Builders ────────────────────────────────────────────────────
+
+    private void BuildBasicAllocations()
+    {
+        var w = _demoStart;
+        _basicAllocations = new();
+        _basicAllocations.AddRange(BuildWeeklyAllocations(1,  101, "Backend API Development",     w, new[] { 40m, 40m, 36m, 32m, 40m, 40m, 24m, 40m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(2,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(3,  103, "QA & Test Automation",        w, new[] { 16m, 24m, 32m, 40m, 40m, 36m, 40m, 24m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(4,  108, "Project Coordination",        w, new[] { 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(5,  102, "Frontend UI Build",           w, new[] { 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(6,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 32m, 40m, 40m, 36m, 40m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(7,  105, "UX Research & Design",        w, new[] { 24m, 32m, 36m, 40m, 32m, 24m,  0m, 24m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(8,  104, "Infrastructure & CI/CD",      w, new[] { 20m, 32m, 24m, 16m, 32m, 40m, 32m, 40m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(9,  108, "Project Coordination",        w, new[] { 16m, 16m, 20m, 16m, 20m, 24m, 16m, 20m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 40m, 36m, 40m, 40m, 40m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(11, 106, "Database Schema & Migration", w, new[] { 32m, 36m, 40m, 40m, 32m, 36m, 40m, 32m }));
+        _basicAllocations.AddRange(BuildWeeklyAllocations(12, 107, "Security Audit & Hardening",  w, new[] { 16m, 24m, 32m, 24m, 16m, 24m, 32m, 24m }));
+    }
+
+    private void BuildEditableAllocations()
+    {
+        var w = _demoStart;
+        _editableAllocations = new();
+        _editableAllocations.AddRange(BuildWeeklyAllocations(1,  101, "Backend API Development",     w, new[] { 40m, 40m, 36m, 32m, 40m, 40m, 24m, 40m, 36m,  0m, 32m, 40m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(2,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m,  0m, 40m, 36m, 40m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(3,  103, "QA & Test Automation",        w, new[] { 16m, 24m, 32m, 40m, 40m, 36m, 40m, 24m, 32m, 40m, 36m, 40m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(4,  108, "Project Coordination",        w, new[] { 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m, 20m, 24m, 20m, 20m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(5,  102, "Frontend UI Build",           w, new[] { 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m, 40m, 40m, 24m, 32m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(6,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 32m, 40m, 40m, 36m, 40m, 40m, 32m, 40m, 36m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(7,  105, "UX Research & Design",        w, new[] { 24m, 32m, 36m, 40m, 32m, 24m,  0m, 24m, 32m, 40m, 32m, 24m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(8,  104, "Infrastructure & CI/CD",      w, new[] { 20m, 32m, 24m, 16m, 32m, 40m, 32m, 40m, 24m, 32m, 40m, 32m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(9,  108, "Project Coordination",        w, new[] { 16m, 16m, 20m, 16m, 20m, 24m, 16m, 20m, 16m, 20m, 24m, 16m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 40m, 36m, 40m, 40m, 40m, 32m, 40m, 40m, 36m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(11, 106, "Database Schema & Migration", w, new[] { 32m, 36m, 40m, 40m, 32m, 36m, 40m, 32m, 24m, 40m, 40m, 32m }));
+        _editableAllocations.AddRange(BuildWeeklyAllocations(12, 107, "Security Audit & Hardening",  w, new[] { 16m, 24m, 32m, 24m, 16m, 24m, 32m, 24m, 40m, 32m, 24m, 16m }));
+    }
+
+    private void BuildConflictAllocations()
+    {
+        var w = _demoStart;
+        _conflictAllocations = new();
+
+        // Alice: double-booked weeks 1–3 (Backend API + Frontend UI > 40h)
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(1, 101, "Backend API Development", w, new[] { 32m, 36m, 32m, 40m }));
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(1, 102, "Frontend UI Build",       w, new[] { 24m, 20m, 16m,  0m }));
+
+        // Bob: normal
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(2, 101, "Backend API Development", w, new[] { 32m, 40m, 40m, 36m }));
+
+        // Carol
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(3, 103, "QA & Test Automation",    w, new[] { 24m, 32m, 40m, 40m }));
+
+        // David
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(4, 108, "Project Coordination",    w, new[] { 20m, 20m, 24m, 20m }));
+
+        // Elena
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(5, 102, "Frontend UI Build",       w, new[] { 40m, 36m, 40m, 32m }));
+
+        // Frank
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(6, 101, "Backend API Development", w, new[] { 32m, 40m, 40m, 36m }));
+
+        // Grace
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(7, 105, "UX Research & Design",    w, new[] { 24m, 32m, 36m, 40m }));
+
+        // Henry
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(8, 104, "Infrastructure & CI/CD",  w, new[] { 20m, 32m, 24m, 16m }));
+
+        // Isabel
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(9, 108, "Project Coordination",    w, new[] { 16m, 20m, 16m, 20m }));
+
+        // James: double-booked weeks 1–2 (Backend API + Coordination > 40h)
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development", w, new[] { 40m, 40m, 40m, 36m }));
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(10, 108, "Project Coordination",    w, new[] { 16m, 16m,  0m,  0m }));
+
+        // Karen
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(11, 106, "Database Schema & Migration", w, new[] { 32m, 40m, 40m, 32m }));
+
+        // Liam
+        _conflictAllocations.AddRange(BuildWeeklyAllocations(12, 107, "Security Audit & Hardening",  w, new[] { 16m, 24m, 32m, 24m }));
+    }
+
+    private void BuildTargets()
+    {
+        _targets = new();
+
+        for (int res = 1; res <= 12; res++)
+        {
+            for (int wk = 0; wk < 8; wk++)
+            {
+                var start = _demoStart.AddDays(7 * wk);
+                var end   = start.AddDays(7);
+                _targets.Add(new AllocationTarget
+                {
+                    TargetId     = Guid.NewGuid(),
+                    ResourceId   = res,
+                    PeriodStart  = start,
+                    PeriodEnd    = end,
+                    TargetValue  = 40m          // 40h per week target
+                });
+            }
+        }
+    }
+
+    private void BuildYearBoundaryAllocations()
+    {
+        // Allocations starting early December, crossing into January
+        // to demonstrate grouped headers across year boundaries
+        var w = _yearBoundaryStart;
+
+        // Normalize to Monday of the week containing Dec 1
+        int diff = ((int)w.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        w = w.AddDays(-diff);
+
+        _yearBoundaryAllocations = new();
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(1,  101, "Backend API Development",     w, new[] { 40m, 36m, 32m, 40m, 40m, 24m, 40m, 36m, 32m, 40m, 40m, 36m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(2,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m, 40m, 32m, 40m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(3,  103, "QA & Test Automation",        w, new[] { 16m, 24m, 32m, 40m, 40m, 36m, 40m, 24m, 32m, 40m, 36m, 40m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(4,  108, "Project Coordination",        w, new[] { 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m, 24m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(5,  102, "Frontend UI Build",           w, new[] { 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m, 40m, 40m, 32m, 40m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(6,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(7,  105, "UX Research & Design",        w, new[] { 24m, 32m, 36m, 40m, 32m, 24m,  0m, 24m, 32m, 40m, 32m, 24m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(8,  104, "Infrastructure & CI/CD",      w, new[] { 20m, 32m, 24m, 16m, 32m, 40m, 32m, 40m, 24m, 32m, 40m, 32m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(9,  108, "Project Coordination",        w, new[] { 16m, 16m, 20m, 16m, 20m, 24m, 16m, 20m, 16m, 20m, 24m, 16m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 40m, 36m, 40m, 40m, 40m, 32m, 40m, 40m, 36m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(11, 106, "Database Schema & Migration", w, new[] { 32m, 36m, 40m, 40m, 32m, 36m, 40m, 32m, 24m, 40m, 40m, 32m }));
+        _yearBoundaryAllocations.AddRange(BuildWeeklyAllocations(12, 107, "Security Audit & Hardening",  w, new[] { 16m, 24m, 32m, 24m, 16m, 24m, 32m, 24m, 40m, 32m, 24m, 16m }));
+    }
+
+    // ── Helper ───────────────────────────────────────────────────────────
+
+    private static List<AllocationRecord> BuildWeeklyAllocations(
+        int resourceId, int taskId, string taskName,
+        DateTime weekStart, decimal[] hoursPerWeek)
+    {
+        var result = new List<AllocationRecord>();
+        for (int i = 0; i < hoursPerWeek.Length; i++)
+        {
+            if (hoursPerWeek[i] == 0m) continue;
+            var start = weekStart.AddDays(7 * i);
+            result.Add(new AllocationRecord
+            {
+                AllocationId = Guid.NewGuid(),
+                ResourceId   = resourceId,
+                TaskId       = taskId,
+                TaskName     = taskName,
+                BucketStart  = start,
+                BucketEnd    = start.AddDays(7),
+                Value        = hoursPerWeek[i],
+                Unit         = AllocationUnit.Hours
+            });
+        }
+        return result;
+    }
+
+    // ── Event Handlers: Section 3 ────────────────────────────────────────
+
+    private Task HandleCellEdited(CellEditedArgs args)
+    {
+        _lastEditMessage = $"Resource {args.ResourceKey}, {args.BucketStart:MMM d}–{args.BucketEnd:MMM d}: {args.OldValue}h → {args.NewValue}h";
+
+        var record = _editableAllocations.FirstOrDefault(r =>
+            Equals(r.ResourceId, args.ResourceKey) && r.BucketStart == args.BucketStart);
+
+        if (record is not null)
+            record.Value = args.NewValue;
+        else
+            _editableAllocations.Add(new AllocationRecord
+            {
+                AllocationId = Guid.NewGuid(),
+                ResourceId   = args.ResourceKey,
+                TaskId       = args.TaskId,
+                BucketStart  = args.BucketStart,
+                BucketEnd    = args.BucketEnd,
+                Value        = args.NewValue,
+                Unit         = AllocationUnit.Hours
+            });
+
+        return Task.CompletedTask;
+    }
+
+    private Task HandleRangeEdited(RangeEditedArgs args)
+    {
+        _lastEditMessage = $"Bulk update: {args.AffectedRecords.Count} cell(s) → {args.Value}h each";
+        foreach (var r in args.AffectedRecords)
+            r.Value = args.Value;
+        return Task.CompletedTask;
+    }
+
+    // ── Event Handlers: Section 6 ────────────────────────────────────────
+
+    private Task HandleTargetChanged(TargetChangedArgs args)
+    {
+        _targetMessage = $"Resource {args.ResourceKey}: target set to {args.TargetValue}h";
+        return Task.CompletedTask;
+    }
+
+    // ── Event Handlers: Section 2 ────────────────────────────────────────
+
+    private Task HandleRollupRangeChanged(VisibleRangeChangedArgs args)
+    {
+        _rollupRangeLabel = $"{args.NewStart:MMM d} — {args.NewEnd:MMM d, yyyy} ({args.ViewGrain})";
+        return Task.CompletedTask;
+    }
+
+    // ── Event Handlers: Section 7 — Splitter ─────────────────────────────
+
+    private void HandleSplitterPosChanged(double v)
+    {
+        _splitterPos      = v;
+        _lastSplitterEvent = $"Moved to {v:F0}px";
+    }
+
+    private void HandleSplitterCollapsed(SplitterSide side) =>
+        _lastSplitterEvent = $"Collapsed: {side}";
+
+    private void HandleSplitterRestored(double pos)
+    {
+        _splitterPos       = pos;
+        _lastSplitterEvent = $"Restored to {pos:F0}px";
+    }
+
+    private async Task SetSplitterNarrow()   => await (_splitterScheduler?.SetSplitterPosition(200) ?? Task.CompletedTask);
+    private async Task SetSplitterDefault()  => await (_splitterScheduler?.SetSplitterPosition(300) ?? Task.CompletedTask);
+    private async Task SetSplitterWide()     => await (_splitterScheduler?.SetSplitterPosition(500) ?? Task.CompletedTask);
+    private async Task CollapseSplitterLeft()  => await (_splitterScheduler?.CollapseSplitter(SplitterSide.Left) ?? Task.CompletedTask);
+    private async Task RestoreSplitterPane() => await (_splitterScheduler?.RestoreSplitter() ?? Task.CompletedTask);
+
+    // ── Event Handlers: Section 8 — Navigation ───────────────────────────
+
+    private Task HandleNavRangeChanged(VisibleRangeChangedArgs args)
+    {
+        _navRangeLabel = $"{args.NewStart:MMM d} — {args.NewEnd:MMM d, yyyy}";
+        return Task.CompletedTask;
+    }
+
+    private async Task JumpToDate() => await (_navScheduler?.NavigateTo(_navDate)     ?? Task.CompletedTask);
+    private async Task NavBack()    => await (_navScheduler?.NavigateBack()            ?? Task.CompletedTask);
+    private async Task NavToday()   => await (_navScheduler?.NavigateToToday()         ?? Task.CompletedTask);
+    private async Task NavForward() => await (_navScheduler?.NavigateForward()         ?? Task.CompletedTask);
+
+    // ── Model ─────────────────────────────────────────────────────────────
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    // ── Code Snippets ─────────────────────────────────────────────────────
+
+    private const string _basicCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_basicAllocations\"\n" +
+        "    AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "    ViewGrain=\"TimeGranularity.Week\"\n" +
+        "    AllowDragFill=\"false\"\n" +
+        "    AllowBulkEdit=\"false\"\n" +
+        "    Height=\"400px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\"  Title=\"Role\"     Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _monthRollupCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_editableAllocations\"\n" +
+        "    AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "    ViewGrain=\"@_rollupGrain\"\n" +
+        "    ViewGrainChanged=\"@(g => _rollupGrain = g)\"\n" +
+        "    OnVisibleRangeChanged=\"@HandleRollupRangeChanged\"\n" +
+        "    Height=\"400px\" />";
+
+    private const string _interactiveCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_editableAllocations\"\n" +
+        "    AllowDragFill=\"true\"\n" +
+        "    AllowKeyboardEdit=\"true\"\n" +
+        "    AllowBulkEdit=\"true\"\n" +
+        "    EnableContextMenu=\"true\"\n" +
+        "    OnCellEdited=\"@HandleCellEdited\"\n" +
+        "    OnRangeEdited=\"@HandleRangeEdited\"\n" +
+        "    Height=\"400px\" />";
+
+    private const string _conflictCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_conflictAllocations\"\n" +
+        "    AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "    Height=\"400px\" />\n" +
+        "\n" +
+        "// Alice: 32h task-101 + 24h task-102 = 56h in week 1 (conflict)\n" +
+        "// James: 40h task-101 + 16h task-108 = 56h in week 1 (conflict)";
+
+    private const string _groupedHeaderCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_yearBoundaryAllocations\"\n" +
+        "    AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "    ViewGrain=\"@_groupedGrain\"\n" +
+        "    VisibleStart=\"new DateTime(2025, 12, 1)\"\n" +
+        "    MinVisibleColumns=\"3\"\n" +
+        "    DefaultRangeUnit=\"TimeGranularity.Month\"\n" +
+        "    Height=\"400px\" />\n" +
+        "\n" +
+        "// Grouped headers are automatic:\n" +
+        "// Day/Week → top row groups by Month-Year (e.g., Dec 2025, Jan 2026)\n" +
+        "// Month/Quarter → top row groups by Year\n" +
+        "// Year → single row (no parent grouping)\n" +
+        "// The left resource header mirrors the group row height for alignment.";
+
+    private const string _deltaCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    Allocations=\"@_basicAllocations\"\n" +
+        "    Targets=\"@_targets\"\n" +
+        "    ShowTargets=\"true\"\n" +
+        "    ShowDeltas=\"@_showDeltas\"\n" +
+        "    DeltaDisplayMode=\"@_deltaMode\"\n" +
+        "    OnTargetChanged=\"@HandleTargetChanged\"\n" +
+        "    Height=\"400px\" />\n" +
+        "\n" +
+        "// Targets: one AllocationTarget per resource per week, TargetValue = 40m";
+
+    private const string _splitterCode =
+        "<SunfishAllocationScheduler @ref=\"_splitterScheduler\"\n" +
+        "    TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    AllowSplitterCollapse=\"true\"\n" +
+        "    SplitterPositionChanged=\"@HandleSplitterPosChanged\"\n" +
+        "    OnSplitterCollapsed=\"@HandleSplitterCollapsed\"\n" +
+        "    OnSplitterRestored=\"@HandleSplitterRestored\"\n" +
+        "    Height=\"400px\" />\n" +
+        "\n" +
+        "// Programmatic control:\n" +
+        "// await _splitterScheduler.SetSplitterPosition(300);\n" +
+        "// await _splitterScheduler.CollapseSplitter(SplitterSide.Left);\n" +
+        "// await _splitterScheduler.RestoreSplitter();";
+
+    private const string _navCode =
+        "<SunfishAllocationScheduler @ref=\"_navScheduler\"\n" +
+        "    TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_allResources\"\n" +
+        "    OnVisibleRangeChanged=\"@HandleNavRangeChanged\"\n" +
+        "    Height=\"400px\" />\n" +
+        "\n" +
+        "// Programmatic navigation:\n" +
+        "// await _navScheduler.NavigateTo(date);\n" +
+        "// await _navScheduler.NavigateBack();\n" +
+        "// await _navScheduler.NavigateToToday();\n" +
+        "// await _navScheduler.NavigateForward();";
+}

@@ -1,0 +1,30 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-image" + (IsRounded ? " mar-image--rounded" : ""))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <img src="@Src"
+         alt="@Alt"
+         width="@Width"
+         height="@Height"
+         @onerror="OnImageError" />
+</div>
+
+@code {
+    [Parameter] public string Src { get; set; } = string.Empty;
+    [Parameter] public string? Alt { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public string? FallbackSrc { get; set; }
+    [Parameter] public bool IsRounded { get; set; }
+
+    private bool _usedFallback;
+
+    private void OnImageError()
+    {
+        if (!_usedFallback && !string.IsNullOrEmpty(FallbackSrc))
+        {
+            Src = FallbackSrc;
+            _usedFallback = true;
+            StateHasChanged();
+        }
+    }
+}

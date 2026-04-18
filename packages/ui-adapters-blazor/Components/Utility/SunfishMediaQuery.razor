@@ -1,0 +1,95 @@
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Media { get; set; }
+    [Parameter] public Breakpoint? BreakpointUp { get; set; }
+    [Parameter] public Breakpoint? BreakpointDown { get; set; }
+    [Parameter] public EventCallback<bool> OnMatch { get; set; }
+    [Parameter] public EventCallback<BreakpointChangedEventArgs> OnBreakpointChanged { get; set; }
+
+    public bool IsMatched { get; private set; }
+
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<SunfishMediaQuery>? _dotNetRef;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            var query = GetMediaQuery();
+            if (!string.IsNullOrEmpty(query))
+            {
+                _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetScript());
+                await _jsModule.InvokeVoidAsync("init", query, _dotNetRef);
+            }
+        }
+    }
+
+    private string GetMediaQuery()
+    {
+        if (!string.IsNullOrEmpty(Media)) return Media;
+
+        if (BreakpointUp.HasValue)
+        {
+            var minWidth = GetBreakpointPx(BreakpointUp.Value);
+            return $"(min-width: {minWidth}px)";
+        }
+
+        if (BreakpointDown.HasValue)
+        {
+            var maxWidth = GetBreakpointPx(BreakpointDown.Value) - 0.02;
+            return $"(max-width: {maxWidth}px)";
+        }
+
+        return string.Empty;
+    }
+
+    private static int GetBreakpointPx(Breakpoint bp) => bp switch
+    {
+        Breakpoint.ExtraSmall => 0,
+        Breakpoint.Small => 576,
+        Breakpoint.Medium => 768,
+        Breakpoint.Large => 992,
+        Breakpoint.ExtraLarge => 1200,
+        Breakpoint.ExtraExtraLarge => 1400,
+        _ => 0
+    };
+
+    [JSInvokable]
+    public async Task OnMediaChanged(bool matches)
+    {
+        IsMatched = matches;
+        await OnMatch.InvokeAsync(matches);
+        StateHasChanged();
+    }
+
+    private static string GetScript() => """
+    (() => {
+        const mod = {};
+        let mql, handler;
+        mod.init = (query, dotNetRef) => {
+            mql = window.matchMedia(query);
+            handler = (e) => dotNetRef.invokeMethodAsync('OnMediaChanged', e.matches);
+            mql.addEventListener('change', handler);
+            dotNetRef.invokeMethodAsync('OnMediaChanged', mql.matches);
+        };
+        mod.dispose = () => { if (mql && handler) mql.removeEventListener('change', handler); };
+        return mod;
+    })()
+    """;
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try { await _jsModule.InvokeVoidAsync("dispose"); } catch { }
+            await _jsModule.DisposeAsync();
+        }
+        _dotNetRef?.Dispose();
+    }
+}

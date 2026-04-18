@@ -1,0 +1,21 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@implements IDisposable
+
+@code {
+    /// <summary>
+    /// The width of this grid column (CSS value, e.g., "200px", "1fr", "auto", "minmax(100px, 1fr)").
+    /// </summary>
+    [Parameter] public string Width { get; set; } = "1fr";
+
+    [CascadingParameter] private SunfishGridLayout? ParentGrid { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentGrid?.AddColumnDefinition(this);
+    }
+
+    public void Dispose()
+    {
+        ParentGrid?.RemoveColumnDefinition(this);
+    }
+}

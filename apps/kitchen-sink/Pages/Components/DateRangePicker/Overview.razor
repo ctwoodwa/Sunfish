@@ -1,0 +1,20 @@
+@page "/components/daterangepicker"
+@page "/components/daterangepicker/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="DateRangePicker allows selection of a start and end date." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishDateRangePicker @bind-StartDate="_start" @bind-EndDate="_end" />
+            <span>@_start?.ToString("d") — @_end?.ToString("d")</span>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateOnly? _start = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? _end = DateOnly.FromDateTime(DateTime.Today.AddDays(7));
+
+    private const string _basicCode =
+        "<SunfishDateRangePicker @bind-StartDate=\"_start\" @bind-EndDate=\"_end\" />";
+}

@@ -1,0 +1,203 @@
+@page "/components/allocation-scheduler/templates"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Resource Row Template">
+    <DemoSection Title="ResourceRowTemplate"
+                 Description="Use ResourceRowTemplate as a fallback template for resource metadata cells when no column-level Template is set."
+                 Code="@_resourceRowCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="1"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="200px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="220px" />
+            </AllocationResourceColumns>
+            <ResourceRowTemplate>
+                <div style="display:flex;align-items:center;gap:0.5rem">
+                    <span style="width:28px;height:28px;border-radius:50%;background:#0f6cbd;color:white;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600">
+                        @context.Name[0]@context.Name.Split(' ').Last()[0]
+                    </span>
+                    <div>
+                        <div style="font-weight:600">@context.Name</div>
+                        <div style="font-size:0.75rem;color:#666">@context.Role — @context.Department</div>
+                    </div>
+                </div>
+            </ResourceRowTemplate>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Cell Template">
+    <DemoSection Title="CellTemplate"
+                 Description="Use CellTemplate to customise individual allocation cell rendering. Conflict cells are highlighted."
+                 Code="@_cellCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="1"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="200px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+            <CellTemplate>
+                @if (context.Record is not null)
+                {
+                    <div style="text-align:center;padding:2px 4px;border-radius:4px;@(context.IsConflict ? "background:#fde7e9;color:#b10e1c" : "background:#e8f5e9;color:#1b5e20")">
+                        @context.Record.Value h
+                    </div>
+                }
+            </CellTemplate>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Toolbar Template">
+    <DemoSection Title="ToolbarTemplate"
+                 Description="Append custom controls to the built-in toolbar using ToolbarTemplate."
+                 Code="@_toolbarCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+            <ToolbarTemplate>
+                <button @onclick="@(() => _exportMessage = $"Exported at {DateTime.Now:HH:mm:ss}")">Export</button>
+                <button @onclick="@(() => _exportMessage = $"Printed at {DateTime.Now:HH:mm:ss}")">Print</button>
+            </ToolbarTemplate>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_exportMessage))
+        {
+            <p><strong>Action:</strong> @_exportMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Empty State">
+    <DemoSection Title="Empty State"
+                 Description="When no allocations are bound, the EmptyTemplate renders a placeholder message. Toggle data on/off."
+                 Code="@_emptyCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                <input type="checkbox" @bind="_hasData" />
+                Has Allocation Data
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@(_hasData ? _allocations : _emptyAllocations)"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="1"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="200px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+            <EmptyTemplate>
+                <div style="text-align:center;padding:2rem;color:#666">
+                    <p style="font-size:1.25rem;margin-bottom:0.5rem">No allocations yet</p>
+                    <p>Click a cell to start planning, or import data from your project management tool.</p>
+                </div>
+            </EmptyTemplate>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private bool _hasData = true;
+    private string _exportMessage = string.Empty;
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 40, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationRecord> _emptyAllocations = new();
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    private const string _resourceRowCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Height=\"200px\">\n" +
+        "    <ResourceRowTemplate>\n" +
+        "        <div>@context.Name — @context.Role</div>\n" +
+        "    </ResourceRowTemplate>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _cellCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Height=\"200px\">\n" +
+        "    <CellTemplate>\n" +
+        "        @if (context.Record is not null)\n" +
+        "        {\n" +
+        "            <div>@context.Record.Value h</div>\n" +
+        "        }\n" +
+        "    </CellTemplate>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _toolbarCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <ToolbarTemplate>\n" +
+        "        <button @onclick=\"Export\">Export</button>\n" +
+        "    </ToolbarTemplate>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _emptyCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_emptyAllocations\"\n" +
+        "                           Height=\"200px\">\n" +
+        "    <EmptyTemplate>\n" +
+        "        <div>No allocations yet</div>\n" +
+        "    </EmptyTemplate>\n" +
+        "</SunfishAllocationScheduler>";
+}

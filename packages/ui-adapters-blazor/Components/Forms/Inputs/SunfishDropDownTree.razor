@@ -1,0 +1,155 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-dropdowntree")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+    <div class="sf-dropdowntree__control"
+         @onclick="ToggleDropdown"
+         tabindex="0"
+         role="combobox"
+         aria-expanded="@_isOpen.ToString().ToLowerInvariant()">
+        <span class="sf-dropdowntree__value">
+            @if (_selectedItem is not null)
+            {
+                @GetFieldValue(_selectedItem, TextField)
+            }
+            else
+            {
+                <span class="sf-dropdowntree__placeholder">@(Placeholder ?? "Select...")</span>
+            }
+        </span>
+        <span class="sf-dropdowntree__arrow" aria-hidden="true">&#9660;</span>
+    </div>
+
+    @if (_isOpen && Enabled)
+    {
+        <div class="sf-dropdowntree__popup"
+             style="@PopupStyles()">
+
+            @if (Filterable)
+            {
+                <input type="text"
+                       class="sf-dropdowntree__filter"
+                       value="@_filterText"
+                       placeholder="Search..."
+                       @oninput="OnFilterInput"
+                       @onclick:stopPropagation="true" />
+            }
+
+            <div class="sf-dropdowntree__tree" role="tree">
+                @if (Data != null)
+                {
+                    @RenderNodes(Data, 0)
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public string ValueField { get; set; } = "Value";
+    [Parameter] public string ItemsField { get; set; } = "Items";
+    [Parameter] public string HasChildrenField { get; set; } = "HasChildren";
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Filterable { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? PopupHeight { get; set; } = "200px";
+    [Parameter] public string? PopupWidth { get; set; }
+    [Parameter] public EventCallback<object?> OnChange { get; set; }
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    private bool _isOpen;
+    private string _filterText = string.Empty;
+    private object? _selectedItem;
+
+    private string? WidthStyle()
+    {
+        return !string.IsNullOrEmpty(Width) ? $"width:{Width}" : null;
+    }
+
+    private string PopupStyles()
+    {
+        var styles = new List<string>();
+        if (!string.IsNullOrEmpty(PopupHeight)) styles.Add($"max-height:{PopupHeight}");
+        if (!string.IsNullOrEmpty(PopupWidth)) styles.Add($"width:{PopupWidth}");
+        styles.Add("overflow-y:auto");
+        return string.Join(";", styles);
+    }
+
+    private void ToggleDropdown()
+    {
+        if (!Enabled) return;
+        _isOpen = !_isOpen;
+        if (_isOpen)
+        {
+            _filterText = string.Empty;
+        }
+    }
+
+    private void OnFilterInput(ChangeEventArgs e)
+    {
+        _filterText = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private RenderFragment RenderNodes(IEnumerable<object> items, int depth) => __builder =>
+    {
+        foreach (var item in items)
+        {
+            var text = GetFieldValue(item, TextField);
+
+            if (Filterable && !string.IsNullOrEmpty(_filterText) &&
+                !text.Contains(_filterText, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            <div class="sf-dropdowntree__node"
+                 style="@($"padding-left:{depth * 20}px")"
+                 role="treeitem"
+                 @onclick="() => SelectItem(item)"
+                 @onclick:stopPropagation="true">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(item)
+                }
+                else
+                {
+                    <span>@text</span>
+                }
+            </div>
+
+            var children = GetChildren(item);
+            if (children != null)
+            {
+                @RenderNodes(children, depth + 1)
+            }
+        }
+    };
+
+    private async Task SelectItem(object item)
+    {
+        var value = GetFieldValue(item, ValueField);
+        Value = value;
+        _selectedItem = item;
+        _isOpen = false;
+        await ValueChanged.InvokeAsync(value);
+        await OnChange.InvokeAsync(value);
+    }
+
+    private string GetFieldValue(object item, string fieldName)
+    {
+        var prop = item.GetType().GetProperty(fieldName);
+        return prop?.GetValue(item)?.ToString() ?? "";
+    }
+
+    private IEnumerable<object>? GetChildren(object item)
+    {
+        var prop = item.GetType().GetProperty(ItemsField);
+        return prop?.GetValue(item) as IEnumerable<object>;
+    }
+}

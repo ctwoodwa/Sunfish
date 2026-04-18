@@ -1,0 +1,201 @@
+@page "/components/Tooltip"
+@page "/components/Tooltip/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Tooltips display informative text on hover or focus." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="This is a tooltip">
+                <SunfishButton Variant="ButtonVariant.Secondary">Hover me</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Custom Template" Description="Use TooltipTemplate to render rich content instead of plain text." Code="@_templateCode">
+        <div class="demo-row">
+            <SunfishTooltip>
+                <ChildContent>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Hover for rich tip</SunfishButton>
+                </ChildContent>
+                <TooltipTemplate>
+                    <div style="text-align:center;">
+                        <strong>Rich Tooltip</strong><br />
+                        <span>Supports <em>any</em> HTML content.</span>
+                    </div>
+                </TooltipTemplate>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="All Positions" Description="Tooltips can be positioned at the top, bottom, left, or right of the trigger element." Code="@_positionsCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="Top tooltip" Position="TooltipPosition.Top">
+                <SunfishButton Variant="ButtonVariant.Secondary">Top</SunfishButton>
+            </SunfishTooltip>
+            <SunfishTooltip Text="Bottom tooltip" Position="TooltipPosition.Bottom">
+                <SunfishButton Variant="ButtonVariant.Secondary">Bottom</SunfishButton>
+            </SunfishTooltip>
+            <SunfishTooltip Text="Left tooltip" Position="TooltipPosition.Left">
+                <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
+            </SunfishTooltip>
+            <SunfishTooltip Text="Right tooltip" Position="TooltipPosition.Right">
+                <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Callout Arrow" Description="Set ShowCallout to render a small arrow pointing from the tooltip to its trigger." Code="@_calloutCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="With callout arrow" ShowCallout="true" Position="TooltipPosition.Top">
+                <SunfishButton Variant="ButtonVariant.Secondary">With Arrow</SunfishButton>
+            </SunfishTooltip>
+            <SunfishTooltip Text="Without callout arrow" ShowCallout="false" Position="TooltipPosition.Top">
+                <SunfishButton Variant="ButtonVariant.Secondary">No Arrow</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Custom Width" Description="Control the tooltip width with the Width parameter." Code="@_widthCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="This tooltip has a fixed 200px width so the text wraps nicely." Width="200px" Position="TooltipPosition.Top">
+                <SunfishButton Variant="ButtonVariant.Secondary">Fixed Width (200px)</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Trigger Behavior">
+    <DemoSection Title="ShowOn Hover (default)" Description="The tooltip appears when the user hovers over the trigger element." Code="@_hoverCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="Shown on hover" ShowOn="TooltipShowOn.Hover">
+                <SunfishButton Variant="ButtonVariant.Secondary">Hover me</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="ShowOn Focus" Description="The tooltip appears when the trigger element receives keyboard or programmatic focus." Code="@_focusCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="Shown on focus — try tabbing here" ShowOn="TooltipShowOn.Focus">
+                <SunfishButton Variant="ButtonVariant.Secondary">Tab to me</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="ShowOn Click" Description="The tooltip appears and stays visible when the trigger is clicked." Code="@_clickCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="Click outside to dismiss" ShowOn="TooltipShowOn.Click">
+                <SunfishButton Variant="ButtonVariant.Secondary">Click me</SunfishButton>
+            </SunfishTooltip>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnShow and OnHide" Description="React to tooltip visibility changes with OnShow and OnHide callbacks." Code="@_eventsCode">
+        <div class="demo-row">
+            <SunfishTooltip Text="Watch the log below" OnShow="@OnTooltipShow" OnHide="@OnTooltipHide">
+                <SunfishButton Variant="ButtonVariant.Secondary">Hover me</SunfishButton>
+            </SunfishTooltip>
+        </div>
+        @if (_tooltipLog.Count > 0)
+        {
+            <ul style="margin-top:8px;list-style:none;padding:0;">
+                @foreach (var entry in _tooltipLog)
+                {
+                    <li><small>@entry</small></li>
+                }
+            </ul>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private List<string> _tooltipLog = new();
+
+    private void OnTooltipShow() => _tooltipLog.Insert(0, $"Shown at {DateTime.Now:HH:mm:ss}");
+    private void OnTooltipHide() => _tooltipLog.Insert(0, $"Hidden at {DateTime.Now:HH:mm:ss}");
+
+    private const string _basicCode =
+        "<SunfishTooltip Text=\"This is a tooltip\">\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Hover me</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _templateCode =
+        "<SunfishTooltip>\n" +
+        "    <ChildContent>\n" +
+        "        <SunfishButton>Hover me</SunfishButton>\n" +
+        "    </ChildContent>\n" +
+        "    <TooltipTemplate>\n" +
+        "        <strong>Rich Tooltip</strong><br />\n" +
+        "        Supports <em>any</em> HTML content.\n" +
+        "    </TooltipTemplate>\n" +
+        "</SunfishTooltip>";
+
+    private const string _positionsCode =
+        "<SunfishTooltip Text=\"Top\" Position=\"TooltipPosition.Top\"><SunfishButton>Top</SunfishButton></SunfishTooltip>\n" +
+        "<SunfishTooltip Text=\"Bottom\" Position=\"TooltipPosition.Bottom\"><SunfishButton>Bottom</SunfishButton></SunfishTooltip>\n" +
+        "<SunfishTooltip Text=\"Left\" Position=\"TooltipPosition.Left\"><SunfishButton>Left</SunfishButton></SunfishTooltip>\n" +
+        "<SunfishTooltip Text=\"Right\" Position=\"TooltipPosition.Right\"><SunfishButton>Right</SunfishButton></SunfishTooltip>";
+
+    private const string _calloutCode =
+        "<SunfishTooltip Text=\"With callout arrow\" ShowCallout=\"true\" Position=\"TooltipPosition.Top\">\n" +
+        "    <SunfishButton>With Arrow</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _widthCode =
+        "<SunfishTooltip Text=\"This tooltip has a fixed width so the text wraps.\" Width=\"200px\">\n" +
+        "    <SunfishButton>Fixed Width</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _hoverCode =
+        "<SunfishTooltip Text=\"Shown on hover\" ShowOn=\"TooltipShowOn.Hover\">\n" +
+        "    <SunfishButton>Hover me</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _focusCode =
+        "<SunfishTooltip Text=\"Shown on focus\" ShowOn=\"TooltipShowOn.Focus\">\n" +
+        "    <SunfishButton>Tab to me</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _clickCode =
+        "<SunfishTooltip Text=\"Click outside to dismiss\" ShowOn=\"TooltipShowOn.Click\">\n" +
+        "    <SunfishButton>Click me</SunfishButton>\n" +
+        "</SunfishTooltip>";
+
+    private const string _eventsCode =
+        "<SunfishTooltip Text=\"Watch the log\" OnShow=\"@OnTooltipShow\" OnHide=\"@OnTooltipHide\">\n" +
+        "    <SunfishButton>Hover me</SunfishButton>\n" +
+        "</SunfishTooltip>\n\n" +
+        "@code {\n" +
+        "    private void OnTooltipShow() { /* fires when shown */ }\n" +
+        "    private void OnTooltipHide() { /* fires when hidden */ }\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the tooltip trigger, showing the tooltip"),
+        ("Escape", "Dismisses the tooltip when it is visible"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("aria-describedby", "Links the trigger element to the tooltip content"),
+        ("role=\"tooltip\"", "Applied to the tooltip popup to identify it as a tooltip"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Tooltip content is announced when the trigger element receives focus.",
+        "The tooltip text is associated with the trigger via aria-describedby.",
+        "Tooltips should not contain interactive content; use a popover for interactive elements.",
+    ];
+}

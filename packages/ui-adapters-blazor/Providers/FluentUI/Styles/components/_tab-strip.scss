@@ -1,0 +1,22 @@
+// =============================================================================
+// Component: Tab Strip (Tabs)
+// =============================================================================
+
+.sf-tabs {
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-tab-panel {
+    display: none;
+    padding: var(--sf-space-lg) 0;
+}
+
+.sf-tab-panel--active { display: block; }
+
+// Phase 2 extended
+.sf-tabs__list { display: flex; border-bottom: 1px solid var(--sf-color-border); gap: 0; }
+.sf-tab { padding: var(--sf-space-sm) var(--sf-space-lg); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; font-family: var(--sf-font-family); font-size: var(--sf-font-size-base); color: var(--sf-color-text-secondary); transition: all var(--sf-transition-fast); }
+.sf-tab:hover { color: var(--sf-color-on-background); background: var(--sf-color-surface); }
+.sf-tab--active { color: var(--sf-color-primary); border-bottom-color: var(--sf-color-primary); font-weight: var(--sf-font-weight-semibold); }
+.sf-tabs__content { padding: var(--sf-space-lg) 0; }

@@ -1,0 +1,20 @@
+@inherits SunfishComponentBase
+@inject IConfiguration Configuration
+
+<span class="@CombineClasses(CssProvider.EnvironmentBadgeClass(EnvironmentName))"
+      style="@CombineStyles()"
+      title="Environment: @EnvironmentName"
+      @attributes="AdditionalAttributes">
+    @EnvironmentName.ToUpper()
+</span>
+
+@code {
+    private string EnvironmentName { get; set; } = "DEV";
+
+    protected override void OnInitialized()
+    {
+        EnvironmentName = Configuration["CommandCenter:Environment"]
+            ?? Configuration["ASPNETCORE_ENVIRONMENT"]
+            ?? "DEV";
+    }
+}

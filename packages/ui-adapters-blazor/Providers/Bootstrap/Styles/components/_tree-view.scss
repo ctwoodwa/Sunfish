@@ -1,0 +1,201 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Tree View
+// =================================================================
+// The Bootstrap TreeView uses Bootstrap list-group classes from the
+// CssProvider plus structural sf-tree-item__* BEM classes from Razor.
+// =================================================================
+
+.sf-bs-treeview {
+  // Children container toggle via expanded modifier
+  .sf-bs-tree-item--expanded > .sf-tree-item__children {
+    display: block;
+  }
+
+  .list-group-item {
+    border-left: 0;
+    border-right: 0;
+    cursor: pointer;
+  }
+}
+
+// ── Structural BEM classes (emitted directly from Razor markup) ─────────────
+
+// VP-012: Header row flex container
+.sf-tree-item__header {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  cursor: pointer;
+  border-radius: var(--bs-border-radius, 0.375rem);
+  transition: background-color 0.15s ease-in-out;
+
+  &:hover {
+    background-color: var(--bs-tertiary-bg, rgba(0, 0, 0, 0.04));
+  }
+}
+
+// Drag-over indicator
+.sf-tree-item__header--dragover {
+  outline: 2px dashed var(--bs-primary, #0d6efd);
+  outline-offset: -2px;
+}
+
+// VP-014: Toggle button
+.sf-tree-item__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: inherit;
+  font-size: 0.65rem;
+  transition: transform 0.15s ease-in-out;
+}
+
+.sf-bs-tree-item--expanded > .sf-tree-item__header .sf-tree-item__toggle,
+.sf-tree-item--expanded > .sf-tree-item__header .sf-tree-item__toggle {
+  transform: rotate(90deg);
+}
+
+.sf-tree-item__toggle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+// VP-008: Checkbox
+.sf-tree-item__checkbox {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--bs-primary, #0d6efd);
+  cursor: pointer;
+}
+
+.sf-tree-item__checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.sf-tree-item__checkbox--indeterminate {
+  opacity: 0.7;
+}
+
+// VP-010: Icon
+.sf-tree-item__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+// VP-011: Title
+.sf-tree-item__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  color: inherit;
+  text-decoration: none;
+  user-select: none;
+}
+
+a.sf-tree-item__title {
+  color: var(--bs-link-color, #0d6efd);
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// Inline edit input
+.sf-tree-item__edit-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  padding: 0 0.25rem;
+  border: 1px solid var(--bs-primary, #0d6efd);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  outline: none;
+}
+
+// Loading indicator
+.sf-tree-item__loading {
+  padding: 0.25rem 0.5rem;
+  padding-left: calc(1.5rem + 20px);
+  font-size: 0.75rem;
+  color: var(--bs-secondary-color, #6c757d);
+  font-style: italic;
+}
+
+// VP-013: Children container
+.sf-tree-item__children {
+  list-style: none;
+  padding-left: 1.5rem;
+  margin: 0;
+  display: none;
+}
+
+// Show children when parent is expanded (both Fluent and Bootstrap modifiers)
+.sf-bs-tree-item--expanded > .sf-tree-item__children,
+.sf-tree-item--expanded > .sf-tree-item__children,
+[aria-expanded="true"] > .sf-tree-item__children {
+  display: block;
+}
+
+// VP-001: Focus-visible ring
+.sf-tree-item--focused > .sf-tree-item__header {
+  outline: 2px solid var(--bs-primary, #0d6efd);
+  outline-offset: -2px;
+  border-radius: var(--bs-border-radius, 0.375rem);
+}
+
+// VP-003: Disabled state
+[aria-disabled="true"] .sf-tree-item__header {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+// VP-007: ReadOnly modifier
+.sf-tree-item--readonly .sf-tree-item__header {
+  cursor: default;
+}
+.sf-tree-item--readonly .sf-tree-item__toggle,
+.sf-tree-item--readonly .sf-tree-item__checkbox {
+  pointer-events: none;
+  opacity: 0.65;
+}
+
+// VP-009: Dark mode overrides
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+  .sf-tree-item__header:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+
+  .sf-tree-item__icon {
+    color: var(--bs-secondary-color, rgba(255, 255, 255, 0.6));
+  }
+
+  .sf-tree-item__loading {
+    color: var(--bs-secondary-color, rgba(255, 255, 255, 0.6));
+  }
+
+  .sf-tree-item__edit-input {
+    background: var(--bs-body-bg, #212529);
+    color: var(--bs-body-color, #dee2e6);
+    border-color: var(--bs-primary, #0d6efd);
+  }
+}

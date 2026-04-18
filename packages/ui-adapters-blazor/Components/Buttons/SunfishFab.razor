@@ -1,0 +1,58 @@
+@inherits SunfishComponentBase
+
+<button class="@CombineClasses(FabClass)"
+        style="@CombineStyles(PositionStyle)"
+        disabled="@(!Enabled)"
+        @onclick="OnClick"
+        @attributes="AdditionalAttributes">
+    @IconProvider.GetIcon(Icon, IconSize.Medium)
+    @if (ChildContent != null)
+    {
+        <span class="sf-fab__text">@ChildContent</span>
+    }
+</button>
+
+@code {
+    [Parameter] public FabSize Size { get; set; } = FabSize.Medium;
+    [Parameter] public string Icon { get; set; } = string.Empty;
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Horizontal alignment (left/right). Defaults to right.</summary>
+    [Parameter] public string HorizontalAlign { get; set; } = "right";
+
+    /// <summary>Vertical alignment (top/bottom). Defaults to bottom.</summary>
+    [Parameter] public string VerticalAlign { get; set; } = "bottom";
+
+    /// <summary>Horizontal offset from the edge (e.g. "16px").</summary>
+    [Parameter] public string HorizontalOffset { get; set; } = "16px";
+
+    /// <summary>Vertical offset from the edge (e.g. "16px").</summary>
+    [Parameter] public string VerticalOffset { get; set; } = "16px";
+
+    /// <summary>Position mode (fixed/absolute/static). Defaults to fixed.</summary>
+    [Parameter] public string PositionMode { get; set; } = "fixed";
+
+    private string FabClass
+    {
+        get
+        {
+            var cls = CssProvider.FabClass(Size);
+            if (!Enabled) cls += " mar-fab--disabled";
+            return cls;
+        }
+    }
+
+    private string? PositionStyle
+    {
+        get
+        {
+            if (PositionMode == "static") return null;
+            var parts = new List<string> { $"position:{PositionMode};" };
+            parts.Add(HorizontalAlign == "left" ? $"left:{HorizontalOffset};" : $"right:{HorizontalOffset};");
+            parts.Add(VerticalAlign == "top" ? $"top:{VerticalOffset};" : $"bottom:{VerticalOffset};");
+            return string.Join("", parts);
+        }
+    }
+}

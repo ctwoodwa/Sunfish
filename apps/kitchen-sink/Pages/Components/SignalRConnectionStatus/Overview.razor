@@ -1,0 +1,62 @@
+@page "/components/signalr-connection-status"
+@page "/components/signalr-connection-status/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Displays aggregate SignalR hub health as a toolbar icon. Click to open a popup listing every registered hub connection." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishAlert Severity="AlertSeverity.Info">
+                <strong>SignalR Connection Status</strong> requires a running SignalR backend. Register hubs via <code>ISignalRConnectionRegistry</code> in Program.cs.
+            </SunfishAlert>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Configuration">
+    <DemoSection Title="Compact Mode" Description="Use Compact for toolbar or header placement with smaller visual density." Code="@_compactCode">
+        <div class="demo-row">
+            <SunfishAlert Severity="AlertSeverity.Info">
+                <code>&lt;SunfishSignalRConnectionStatus Compact="true" ShowCounts="true" /&gt;</code>
+            </SunfishAlert>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishSignalRConnectionStatus />";
+
+    private const string _compactCode =
+        "<SunfishSignalRConnectionStatus Compact=\"true\"\n" +
+        "                                ShowCounts=\"true\"\n" +
+        "                                Title=\"Hub connections\" />";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter / Space", "Toggle popup open/close"),
+        ("Escape", "Close popup"),
+        ("Tab", "Move focus through popup rows"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("aria-label", "\"SignalR connection status\" on the trigger button"),
+        ("aria-haspopup=\"dialog\"", "Indicates the button opens a dialog popup"),
+        ("aria-expanded", "Bound to popup open state (true/false)"),
+        ("role=\"dialog\"", "Applied to the popup container"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The trigger button announces aggregate connection state via its tooltip text.",
+        "Each hub row exposes textual health status (Healthy, Offline, etc.), not color alone.",
+        "The popup is announced as a dialog with a labeled header.",
+    ];
+}

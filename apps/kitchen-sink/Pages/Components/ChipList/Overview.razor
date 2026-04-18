@@ -1,0 +1,104 @@
+@page "/components/chiplist"
+@page "/components/chiplist/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic ChipSet (Data-Driven)" Description="SunfishChipSet renders a collection of chips from a data source. Use the TextField parameter to specify which property to display." Code="@_basicCode">
+        <SunfishChipSet TItem="ChipItem" Data="@_basicItems" TextField="Text" />
+    </DemoSection>
+
+    <DemoSection Title="Selectable Chips" Description="Set SelectionMode to enable single or multiple selection on chips within the set." Code="@_selectableCode">
+        <SunfishChipSet TItem="ChipItem"
+                       Data="@_selectableItems"
+                       TextField="Text"
+                       SelectionMode="GridSelectionMode.Multiple"
+                       SelectedItems="@_selectedItems"
+                       SelectedItemsChanged="@(items => _selectedItems = items)" />
+        <p style="margin-top:8px;">Selected: <strong>@string.Join(", ", _selectedItems.Cast<ChipItem>().Select(i => i.Text))</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Removable Chips" Description="Set Removable to show a remove button on each chip. Handle OnRemove to update your data source." Code="@_removableCode">
+        <SunfishChipSet TItem="ChipItem"
+                       Data="@_removableItems"
+                       TextField="Text"
+                       Removable="true"
+                       OnRemove="@HandleRemove" />
+        @if (!_removableItems.Any())
+        {
+            <p style="margin-top:8px;font-style:italic;">All chips removed. <button @onclick="ResetRemovable">Reset</button></p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    private class ChipItem
+    {
+        public string Text { get; set; } = "";
+    }
+
+    private List<ChipItem> _basicItems =
+    [
+        new() { Text = "Blazor" },
+        new() { Text = "C#" },
+        new() { Text = ".NET 10" },
+        new() { Text = "WASM" },
+    ];
+
+    private List<ChipItem> _selectableItems =
+    [
+        new() { Text = "Design" },
+        new() { Text = "Development" },
+        new() { Text = "Testing" },
+        new() { Text = "Deployment" },
+    ];
+
+    private IEnumerable<ChipItem> _selectedItems = Enumerable.Empty<ChipItem>();
+
+    private List<ChipItem> _removableItems =
+    [
+        new() { Text = "TypeScript" },
+        new() { Text = "React" },
+        new() { Text = "Angular" },
+        new() { Text = "Vue" },
+    ];
+
+    private void HandleRemove(ChipItem item) => _removableItems.Remove(item);
+
+    private void ResetRemovable()
+    {
+        _removableItems =
+        [
+            new() { Text = "TypeScript" },
+            new() { Text = "React" },
+            new() { Text = "Angular" },
+            new() { Text = "Vue" },
+        ];
+    }
+
+    private const string _basicCode =
+        "<SunfishChipSet TItem=\"ChipItem\"\n" +
+        "               Data=\"@_items\"\n" +
+        "               TextField=\"Text\" />\n\n" +
+        "@code {\n" +
+        "    private class ChipItem { public string Text { get; set; } = \"\"; }\n" +
+        "    private List<ChipItem> _items = [ new() { Text = \"Blazor\" }, new() { Text = \"C#\" } ];\n" +
+        "}";
+
+    private const string _selectableCode =
+        "<SunfishChipSet TItem=\"ChipItem\"\n" +
+        "               Data=\"@_items\"\n" +
+        "               TextField=\"Text\"\n" +
+        "               SelectionMode=\"GridSelectionMode.Multiple\"\n" +
+        "               SelectedItems=\"@_selected\"\n" +
+        "               SelectedItemsChanged=\"@(items => _selected = items)\" />";
+
+    private const string _removableCode =
+        "<SunfishChipSet TItem=\"ChipItem\"\n" +
+        "               Data=\"@_items\"\n" +
+        "               TextField=\"Text\"\n" +
+        "               Removable=\"true\"\n" +
+        "               OnRemove=\"@HandleRemove\" />\n\n" +
+        "@code {\n" +
+        "    private void HandleRemove(ChipItem item) => _items.Remove(item);\n" +
+        "}";
+}

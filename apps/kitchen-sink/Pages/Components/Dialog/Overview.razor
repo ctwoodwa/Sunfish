@@ -1,0 +1,302 @@
+@page "/components/Dialog"
+@page "/components/Dialog/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Click the button to open a simple dialog." Code="@_basicCode">
+        <SunfishButton OnClick="@(() => _dialogOpen = true)">Open Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_dialogOpen" Title="Example Dialog">
+            <p>This is a dialog component rendered with pure HTML and CSS.</p>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _dialogOpen = false)">Close</SunfishButton>
+        </SunfishDialog>
+    </DemoSection>
+
+    <DemoSection Title="DialogContent and DialogActions" Description="Use the DialogContent and DialogActions render fragments to separate body and footer concerns." Code="@_contentActionsCode">
+        <SunfishButton OnClick="@(() => _structuredOpen = true)">Open Structured Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_structuredOpen" Title="Confirm Delete" Width="400px">
+            <DialogContent>
+                <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+            </DialogContent>
+            <DialogActions>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _structuredOpen = false)">Cancel</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Danger" OnClick="@(() => _structuredOpen = false)">Delete</SunfishButton>
+            </DialogActions>
+        </SunfishDialog>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Predefined Button Sets" Description="Use the Buttons parameter for common dialog patterns without custom DialogActions." Code="@_buttonsCode">
+        <div class="demo-row" style="flex-wrap:wrap;">
+            <SunfishButton OnClick="@(() => _okOpen = true)">Ok</SunfishButton>
+            <SunfishDialog @bind-Visible="_okOpen" Title="Information" Buttons="DialogButtons.Ok" OnButtonClick="@(r => OnButtonResult("Ok", r))">
+                <DialogContent><p>Your changes have been saved.</p></DialogContent>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _okCancelOpen = true)">OkCancel</SunfishButton>
+            <SunfishDialog @bind-Visible="_okCancelOpen" Title="Confirm" Buttons="DialogButtons.OkCancel" OnButtonClick="@(r => OnButtonResult("OkCancel", r))">
+                <DialogContent><p>Do you want to continue?</p></DialogContent>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _yesNoOpen = true)">YesNo</SunfishButton>
+            <SunfishDialog @bind-Visible="_yesNoOpen" Title="Question" Buttons="DialogButtons.YesNo" OnButtonClick="@(r => OnButtonResult("YesNo", r))">
+                <DialogContent><p>Would you like to save before closing?</p></DialogContent>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _yesNoCancelOpen = true)">YesNoCancel</SunfishButton>
+            <SunfishDialog @bind-Visible="_yesNoCancelOpen" Title="Save Changes" Buttons="DialogButtons.YesNoCancel" OnButtonClick="@(r => OnButtonResult("YesNoCancel", r))">
+                <DialogContent><p>There are unsaved changes. Save before closing?</p></DialogContent>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _retryCancelOpen = true)">RetryCancel</SunfishButton>
+            <SunfishDialog @bind-Visible="_retryCancelOpen" Title="Connection Failed" Buttons="DialogButtons.RetryCancel" OnButtonClick="@(r => OnButtonResult("RetryCancel", r))">
+                <DialogContent><p>Could not connect to the server. Retry?</p></DialogContent>
+            </SunfishDialog>
+        </div>
+        @if (!string.IsNullOrEmpty(_buttonResult))
+        {
+            <p style="margin-top:8px;">Result: <strong>@_buttonResult</strong></p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Width and Height" Description="Control dialog dimensions with the Width and Height parameters." Code="@_dimensionsCode">
+        <div class="demo-row">
+            <SunfishButton OnClick="@(() => _narrowOpen = true)">Narrow (320px)</SunfishButton>
+            <SunfishDialog @bind-Visible="_narrowOpen" Title="Narrow Dialog" Width="320px">
+                <p>This dialog has a fixed 320px width.</p>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _narrowOpen = false)">Close</SunfishButton>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _wideOpen = true)">Wide (640px)</SunfishButton>
+            <SunfishDialog @bind-Visible="_wideOpen" Title="Wide Dialog" Width="640px">
+                <p>This dialog has a fixed 640px width, useful for forms or rich content.</p>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _wideOpen = false)">Close</SunfishButton>
+            </SunfishDialog>
+
+            <SunfishButton OnClick="@(() => _tallerOpen = true)">Fixed Height</SunfishButton>
+            <SunfishDialog @bind-Visible="_tallerOpen" Title="Fixed Height Dialog" Width="400px" Height="300px">
+                <p>This dialog has Width=400px and Height=300px.</p>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _tallerOpen = false)">Close</SunfishButton>
+            </SunfishDialog>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Draggable" Description="Set Draggable to allow users to reposition the dialog." Code="@_draggableCode">
+        <SunfishButton OnClick="@(() => _draggableOpen = true)">Open Draggable Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_draggableOpen" Title="Draggable Dialog" Draggable="true" Width="360px">
+            <p>Drag this dialog by its title bar to reposition it on the screen.</p>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _draggableOpen = false)">Close</SunfishButton>
+        </SunfishDialog>
+    </DemoSection>
+
+    <DemoSection Title="Non-Modal" Description="Set Modal to false to allow interaction with the page while the dialog is open." Code="@_nonModalCode">
+        <SunfishButton OnClick="@(() => _nonModalOpen = true)">Open Non-Modal Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_nonModalOpen" Title="Non-Modal Dialog" Modal="false" Width="340px">
+            <p>This dialog does not block the rest of the page.</p>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _nonModalOpen = false)">Close</SunfishButton>
+        </SunfishDialog>
+    </DemoSection>
+
+    <DemoSection Title="Hide Close Button" Description="Set ShowCloseButton to false to remove the built-in close button from the title bar." Code="@_noCloseCode">
+        <SunfishButton OnClick="@(() => _noCloseOpen = true)">Open Dialog (No Close Button)</SunfishButton>
+        <SunfishDialog @bind-Visible="_noCloseOpen" Title="No Close Button" ShowCloseButton="false" Buttons="DialogButtons.OkCancel" OnButtonClick="@(r => _noCloseOpen = false)">
+            <DialogContent><p>This dialog has no &times; button. Use the action buttons to dismiss it.</p></DialogContent>
+        </SunfishDialog>
+    </DemoSection>
+
+    <DemoSection Title="Prevent Overlay Close" Description="Set CloseOnOverlayClick to false to prevent dismissing the dialog by clicking the backdrop." Code="@_noOverlayCode">
+        <SunfishButton OnClick="@(() => _noOverlayOpen = true)">Open (Click Overlay to Test)</SunfishButton>
+        <SunfishDialog @bind-Visible="_noOverlayOpen" Title="Overlay Locked" CloseOnOverlayClick="false" Width="360px">
+            <p>Clicking the backdrop overlay will not close this dialog. Use the button below.</p>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _noOverlayOpen = false)">Close</SunfishButton>
+        </SunfishDialog>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnClose" Description="Handle the dialog close event with the OnClose callback." Code="@_closeCode">
+        <SunfishButton OnClick="@(() => _evDialogOpen = true)">Open Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_evDialogOpen" Title="Close Event Demo" OnClose="@OnDialogClose">
+            <p>Close this dialog to see the OnClose callback fire.</p>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _evDialogOpen = false)">Close</SunfishButton>
+        </SunfishDialog>
+        @if (!string.IsNullOrEmpty(_closeMessage))
+        {
+            <p style="margin-top: 8px;">@_closeMessage</p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="OnButtonClick" Description="Receive the DialogResult from predefined button sets via the OnButtonClick callback." Code="@_onButtonClickCode">
+        <SunfishButton OnClick="@(() => _resultDialogOpen = true)">Open Dialog</SunfishButton>
+        <SunfishDialog @bind-Visible="_resultDialogOpen" Title="Result Demo"
+                      Buttons="DialogButtons.YesNoCancel"
+                      OnButtonClick="@OnDialogButtonClick">
+            <DialogContent>
+                <p>Click a button to see the <code>DialogResult</code> value returned.</p>
+            </DialogContent>
+        </SunfishDialog>
+        @if (!string.IsNullOrEmpty(_dialogResultMessage))
+        {
+            <p style="margin-top:8px;">@_dialogResultMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private bool _dialogOpen;
+    private bool _structuredOpen;
+
+    // Appearance
+    private bool _okOpen;
+    private bool _okCancelOpen;
+    private bool _yesNoOpen;
+    private bool _yesNoCancelOpen;
+    private bool _retryCancelOpen;
+    private string? _buttonResult;
+
+    private bool _narrowOpen;
+    private bool _wideOpen;
+    private bool _tallerOpen;
+    private bool _draggableOpen;
+    private bool _nonModalOpen;
+    private bool _noCloseOpen;
+    private bool _noOverlayOpen;
+
+    // Events
+    private bool _evDialogOpen;
+    private string? _closeMessage;
+
+    private bool _resultDialogOpen;
+    private string? _dialogResultMessage;
+
+    private void OnButtonResult(string set, DialogResult result)
+    {
+        _buttonResult = $"{set}: {result}";
+    }
+
+    private void OnDialogClose()
+    {
+        _evDialogOpen = false;
+        _closeMessage = $"Dialog closed at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private void OnDialogButtonClick(DialogResult result)
+    {
+        _dialogResultMessage = $"Button clicked — DialogResult: {result} at {DateTime.Now:HH:mm:ss}";
+    }
+
+    // Code snippets
+    private const string _basicCode =
+        "<SunfishButton OnClick=\"@(() => _dialogOpen = true)\">Open Dialog</SunfishButton>\n" +
+        "<SunfishDialog @bind-Visible=\"_dialogOpen\" Title=\"Example Dialog\">\n" +
+        "    <p>Dialog content here.</p>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Primary\" OnClick=\"@(() => _dialogOpen = false)\">Close</SunfishButton>\n" +
+        "</SunfishDialog>\n\n" +
+        "@code { private bool _dialogOpen; }";
+
+    private const string _contentActionsCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Confirm Delete\" Width=\"400px\">\n" +
+        "    <DialogContent>\n" +
+        "        <p>Are you sure you want to delete this item?</p>\n" +
+        "    </DialogContent>\n" +
+        "    <DialogActions>\n" +
+        "        <SunfishButton Variant=\"ButtonVariant.Secondary\" OnClick=\"@(() => _open = false)\">Cancel</SunfishButton>\n" +
+        "        <SunfishButton Variant=\"ButtonVariant.Danger\" OnClick=\"@(() => _open = false)\">Delete</SunfishButton>\n" +
+        "    </DialogActions>\n" +
+        "</SunfishDialog>";
+
+    private const string _buttonsCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Confirm\"\n" +
+        "              Buttons=\"DialogButtons.YesNoCancel\"\n" +
+        "              OnButtonClick=\"@OnButtonClick\">\n" +
+        "    <DialogContent><p>Save changes before closing?</p></DialogContent>\n" +
+        "</SunfishDialog>\n\n" +
+        "@code {\n" +
+        "    void OnButtonClick(DialogResult result) { /* Ok, Yes, No, Cancel, Retry */ }\n" +
+        "}";
+
+    private const string _dimensionsCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Wide\" Width=\"640px\">\n" +
+        "    ...\n" +
+        "</SunfishDialog>\n\n" +
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Fixed\" Width=\"400px\" Height=\"300px\">\n" +
+        "    ...\n" +
+        "</SunfishDialog>";
+
+    private const string _draggableCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Draggable\" Draggable=\"true\">\n" +
+        "    <p>Drag by the title bar to reposition.</p>\n" +
+        "</SunfishDialog>";
+
+    private const string _nonModalCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Non-Modal\" Modal=\"false\">\n" +
+        "    <p>Does not block the rest of the page.</p>\n" +
+        "</SunfishDialog>";
+
+    private const string _noCloseCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"No Close Button\"\n" +
+        "              ShowCloseButton=\"false\"\n" +
+        "              Buttons=\"DialogButtons.OkCancel\">\n" +
+        "    <DialogContent><p>No &times; button in the header.</p></DialogContent>\n" +
+        "</SunfishDialog>";
+
+    private const string _noOverlayCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Overlay Locked\"\n" +
+        "              CloseOnOverlayClick=\"false\">\n" +
+        "    <p>Clicking the backdrop does not close this dialog.</p>\n" +
+        "</SunfishDialog>";
+
+    private const string _closeCode =
+        "<SunfishDialog @bind-Visible=\"_dialogOpen\" Title=\"Close Event Demo\" OnClose=\"@OnDialogClose\">\n" +
+        "    <p>Close this dialog to see the OnClose callback fire.</p>\n" +
+        "    <SunfishButton OnClick=\"@(() => _dialogOpen = false)\">Close</SunfishButton>\n" +
+        "</SunfishDialog>\n\n" +
+        "@code {\n" +
+        "    private bool _dialogOpen;\n" +
+        "    private void OnDialogClose() { /* fires on close */ }\n" +
+        "}";
+
+    private const string _onButtonClickCode =
+        "<SunfishDialog @bind-Visible=\"_open\" Title=\"Result Demo\"\n" +
+        "              Buttons=\"DialogButtons.YesNoCancel\"\n" +
+        "              OnButtonClick=\"@OnDialogButtonClick\">\n" +
+        "    <DialogContent><p>Click a button to see the DialogResult.</p></DialogContent>\n" +
+        "</SunfishDialog>\n\n" +
+        "@code {\n" +
+        "    private void OnDialogButtonClick(DialogResult result)\n" +
+        "    {\n" +
+        "        // result is Yes, No, Ok, Cancel, or Retry\n" +
+        "    }\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Escape", "Closes the dialog and returns focus to the triggering element"),
+        ("Tab", "Moves focus to the next focusable element within the dialog (focus is trapped)"),
+        ("Shift + Tab", "Moves focus to the previous focusable element within the dialog"),
+        ("Enter", "Activates the focused button or interactive element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"dialog\"", "Applied to the dialog container to identify it as a dialog"),
+        ("aria-modal=\"true\"", "Indicates the dialog is modal and blocks interaction with content behind it"),
+        ("aria-labelledby", "References the dialog title element for an accessible name"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "When the dialog opens, focus moves to the first focusable element inside the dialog.",
+        "The dialog title is announced when the dialog opens via aria-labelledby.",
+        "Focus is trapped within the dialog until it is closed.",
+        "When the dialog closes, focus returns to the element that triggered it.",
+    ];
+}

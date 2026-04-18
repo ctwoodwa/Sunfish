@@ -1,0 +1,31 @@
+<!-- apps/kitchen-sink/Sunfish.KitchenSink.csproj -->
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Sunfish.KitchenSink</RootNamespace>
+    <AssemblyName>Sunfish.KitchenSink</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Kitchen-sink is an app, not a library: disable XML-doc generation and its missing-comment warnings. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj')">$(DefineConstants);BOOTSTRAP_PROVIDER</DefineConstants>
+    <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj')">$(DefineConstants);MATERIAL_PROVIDER</DefineConstants>
+    <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Icons\Tabler\Sunfish.Icons.Tabler.csproj')">$(DefineConstants);TABLER_ICONS</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\packages\ui-adapters-blazor\Sunfish.Components.Blazor.csproj" />
+    <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
+    <!-- Conditional: only if Phase 3c/Bootstrap provider exists -->
+    <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj"
+                      Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj')" />
+    <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj"
+                      Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj')" />
+    <!-- Optional Tabler icons (Phase 3d) -->
+    <ProjectReference Include="..\..\packages\ui-adapters-blazor\Icons\Tabler\Sunfish.Icons.Tabler.csproj"
+                      Condition="Exists('..\..\packages\ui-adapters-blazor\Icons\Tabler\Sunfish.Icons.Tabler.csproj')" />
+  </ItemGroup>
+
+</Project>

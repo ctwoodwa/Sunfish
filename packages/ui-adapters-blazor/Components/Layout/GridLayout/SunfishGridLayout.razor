@@ -1,0 +1,132 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@inherits SunfishComponentBase
+
+<CascadingValue Value="this" IsFixed="true">
+    @ColumnDefinitions
+    @RowDefinitions
+</CascadingValue>
+
+<div class="@CombineClasses(CssProvider.GridClass())"
+     style="@BuildGridStyles()"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// The grid column template as a CSS grid-template-columns value (e.g., "200px 1fr 200px").
+    /// When set, overrides any GridLayoutColumn child definitions.
+    /// </summary>
+    [Parameter] public string? Columns { get; set; }
+
+    /// <summary>
+    /// The grid row template as a CSS grid-template-rows value (e.g., "auto 1fr auto").
+    /// When set, overrides any GridLayoutRow child definitions.
+    /// </summary>
+    [Parameter] public string? Rows { get; set; }
+
+    /// <summary>
+    /// The spacing between grid columns (CSS value, e.g., "16px", "1rem").
+    /// </summary>
+    [Parameter] public string? ColumnSpacing { get; set; }
+
+    /// <summary>
+    /// The spacing between grid rows (CSS value, e.g., "16px", "1rem").
+    /// </summary>
+    [Parameter] public string? RowSpacing { get; set; }
+
+    /// <summary>
+    /// The width of the grid container (CSS value, e.g., "100%", "800px").
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>
+    /// Horizontal alignment of grid items within their cells.
+    /// </summary>
+    [Parameter] public StackAlignment HorizontalAlign { get; set; } = StackAlignment.Stretch;
+
+    /// <summary>
+    /// Vertical alignment of grid items within their cells.
+    /// </summary>
+    [Parameter] public StackAlignment VerticalAlign { get; set; } = StackAlignment.Stretch;
+
+    /// <summary>
+    /// Column definition child components (rendered in a hidden CascadingValue to register with the grid).
+    /// Use GridLayoutColumn children here to define columns declaratively.
+    /// </summary>
+    [Parameter] public RenderFragment? ColumnDefinitions { get; set; }
+
+    /// <summary>
+    /// Row definition child components (rendered in a hidden CascadingValue to register with the grid).
+    /// Use GridLayoutRow children here to define rows declaratively.
+    /// </summary>
+    [Parameter] public RenderFragment? RowDefinitions { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private readonly List<SunfishGridLayoutColumn> _columns = [];
+    private readonly List<SunfishGridLayoutRow> _rows = [];
+
+    private bool IsGridMode =>
+        !string.IsNullOrWhiteSpace(Columns) ||
+        !string.IsNullOrWhiteSpace(Rows) ||
+        _columns.Count > 0 ||
+        _rows.Count > 0;
+
+    internal void AddColumnDefinition(SunfishGridLayoutColumn column)
+    {
+        _columns.Add(column);
+        StateHasChanged();
+    }
+
+    internal void RemoveColumnDefinition(SunfishGridLayoutColumn column)
+    {
+        _columns.Remove(column);
+    }
+
+    internal void AddRowDefinition(SunfishGridLayoutRow row)
+    {
+        _rows.Add(row);
+        StateHasChanged();
+    }
+
+    internal void RemoveRowDefinition(SunfishGridLayoutRow row)
+    {
+        _rows.Remove(row);
+    }
+
+    private string BuildGridStyles()
+    {
+        if (!IsGridMode)
+        {
+            // Flex container mode (backward-compatible with SunfishRow/SunfishColumn)
+            return CombineStyles();
+        }
+
+        var columnsTemplate = Columns ?? string.Join(" ", _columns.Select(c => c.Width));
+        var rowsTemplate = Rows ?? string.Join(" ", _rows.Select(r => r.Height));
+
+        return new StyleBuilder()
+            .AddStyle("display", "grid")
+            .AddStyle("grid-template-columns", columnsTemplate, !string.IsNullOrWhiteSpace(columnsTemplate))
+            .AddStyle("grid-template-rows", rowsTemplate, !string.IsNullOrWhiteSpace(rowsTemplate))
+            .AddStyle("column-gap", ColumnSpacing!, !string.IsNullOrWhiteSpace(ColumnSpacing))
+            .AddStyle("row-gap", RowSpacing!, !string.IsNullOrWhiteSpace(RowSpacing))
+            .AddStyle("width", Width!, !string.IsNullOrWhiteSpace(Width))
+            .AddStyle("justify-items", ToGridAlignValue(HorizontalAlign), HorizontalAlign != StackAlignment.Stretch)
+            .AddStyle("align-items", ToGridAlignValue(VerticalAlign), VerticalAlign != StackAlignment.Stretch)
+            .AddStyle(Style)
+            .Build();
+    }
+
+    private static string ToGridAlignValue(StackAlignment alignment) => alignment switch
+    {
+        StackAlignment.Start => "start",
+        StackAlignment.Center => "center",
+        StackAlignment.End => "end",
+        StackAlignment.Stretch => "stretch",
+        StackAlignment.SpaceBetween => "start",
+        StackAlignment.SpaceAround => "center",
+        _ => "stretch"
+    };
+}

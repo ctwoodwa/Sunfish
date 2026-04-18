@@ -1,0 +1,38 @@
+// =============================================================================
+// Component: Pagination
+// =============================================================================
+
+.sf-pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sf-pagination-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-on-background);
+    background: var(--sf-color-background);
+    cursor: pointer;
+    transition: all var(--sf-transition-fast);
+}
+
+.sf-pagination-item:hover { background: var(--sf-color-surface-hover); }
+.sf-pagination-item--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+
+// Phase 2 pagination aliases
+.sf-pagination__item { min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md); background: var(--sf-color-background); cursor: pointer; font-family: var(--sf-font-family); font-size: var(--sf-font-size-sm); color: var(--sf-color-on-background); transition: all var(--sf-transition-fast); }
+.sf-pagination__item:hover { background: var(--sf-color-surface); border-color: var(--sf-color-primary); }
+.sf-pagination__item--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+.sf-pagination__item:disabled { opacity: 0.5; cursor: not-allowed; }

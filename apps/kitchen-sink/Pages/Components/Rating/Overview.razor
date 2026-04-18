@@ -1,0 +1,116 @@
+@page "/components/Rating"
+@page "/components/Rating/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishRating @bind-Value="_rating" Max="5" />
+        <p><strong>@_rating of 5 stars</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="With Label" Description="Provide a Label to describe the rating to users and assistive technology." Code="@_labelCode">
+        <SunfishRating @bind-Value="_labelRating" Max="5" Label="Product quality" />
+        <p><strong>Rating:</strong> @_labelRating / 5</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Custom Max Stars" Description="Change the number of stars with the Max parameter." Code="@_maxCode">
+        <div style="display:flex;flex-direction:column;gap:8px;">
+            <div>
+                <span style="display:inline-block;width:80px;font-size:0.875em;">3 stars:</span>
+                <SunfishRating @bind-Value="_rating3" Max="3" />
+            </div>
+            <div>
+                <span style="display:inline-block;width:80px;font-size:0.875em;">7 stars:</span>
+                <SunfishRating @bind-Value="_rating7" Max="7" />
+            </div>
+            <div>
+                <span style="display:inline-block;width:80px;font-size:0.875em;">10 stars:</span>
+                <SunfishRating @bind-Value="_rating10" Max="10" />
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Read Only" Description="IsReadOnly displays a value without allowing user interaction." Code="@_readOnlyCode">
+        <SunfishRating Value="4" Max="5" IsReadOnly="true" />
+    </DemoSection>
+
+    <DemoSection Title="Disabled" Description="A disabled rating prevents user interaction." Code="@_disabledCode">
+        <SunfishRating Value="3" Max="5" Enabled="false" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle rating changes with the ValueChanged callback or use two-way binding." Code="@_interactiveCode">
+        <SunfishRating Value="@_evRating" ValueChanged="@(v => _evRating = v)" Max="5" />
+        <p><strong>Rating:</strong> @_evRating of 5 stars</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private int _rating = 3;
+    private int _labelRating = 4;
+    private int _rating3 = 2;
+    private int _rating7 = 5;
+    private int _rating10 = 7;
+    private int _evRating = 3;
+
+    private const string _basicCode =
+        "<SunfishRating @bind-Value=\"_rating\" Max=\"5\" />\n\n" +
+        "@code { private int _rating = 3; }";
+
+    private const string _labelCode =
+        "<SunfishRating @bind-Value=\"_rating\" Max=\"5\" Label=\"Product quality\" />";
+
+    private const string _maxCode =
+        "<SunfishRating @bind-Value=\"_rating3\" Max=\"3\" />\n" +
+        "<SunfishRating @bind-Value=\"_rating7\" Max=\"7\" />\n" +
+        "<SunfishRating @bind-Value=\"_rating10\" Max=\"10\" />";
+
+    private const string _readOnlyCode =
+        "<SunfishRating Value=\"4\" Max=\"5\" IsReadOnly=\"true\" />";
+
+    private const string _disabledCode =
+        "<SunfishRating Value=\"3\" Max=\"5\" Enabled=\"false\" />";
+
+    private const string _interactiveCode =
+        "<SunfishRating Value=\"@_rating\" ValueChanged=\"@(v => _rating = v)\" Max=\"5\" />\n" +
+        "<p><strong>Rating:</strong> @_rating of 5 stars</p>\n\n" +
+        "@code {\n" +
+        "    private int _rating = 3;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the rating component"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Arrow Right / Arrow Up", "Increases the rating by one star"),
+        ("Arrow Left / Arrow Down", "Decreases the rating by one star"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"radiogroup\"", "Groups the individual star elements as a rating control"),
+        ("aria-label", "Provided by the Label parameter"),
+        ("aria-valuenow", "Reflects the current rating value"),
+        ("aria-valuemin", "Reflects the minimum rating value"),
+        ("aria-valuemax", "Reflects the maximum rating value set by Max"),
+        ("aria-disabled=\"true\"", "Applied when Enabled is false"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The rating component is announced as a group with its current value and maximum.",
+        "Individual stars are announced as radio buttons with their position (e.g., \"3 of 5\").",
+        "Value changes are announced as the user navigates with arrow keys.",
+        "Read-only and disabled ratings are announced with their respective states.",
+    ];
+}

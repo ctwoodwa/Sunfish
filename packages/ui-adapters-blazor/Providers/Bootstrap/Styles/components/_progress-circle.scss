@@ -1,0 +1,18 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Progress Circle
+// =================================================================
+// From _bridge-feedback.scss: .sf-bs-progress-circle
+// =================================================================
+
+.sf-bs-progress-circle {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  position: relative;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+}

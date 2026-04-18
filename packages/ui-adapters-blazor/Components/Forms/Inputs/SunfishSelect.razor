@@ -1,0 +1,54 @@
+@inherits SunfishComponentBase
+
+@if (Filterable)
+{
+    <div style="display: inline-flex; flex-direction: column; @CombineStyles()">
+        <input type="text"
+               class="sf-select__filter"
+               placeholder="Filter..."
+               value="@_filterText"
+               @oninput="OnFilterChanged" />
+        <div class="@CombineClasses(CssProvider.SelectClass(IsInvalid))">
+            <select value="@Value"
+                    @onchange="OnSelectionChanged"
+                    @attributes="AdditionalAttributes">
+                @ChildContent
+            </select>
+        </div>
+    </div>
+}
+else
+{
+    <div class="@CombineClasses(CssProvider.SelectClass(IsInvalid))"
+         style="@CombineStyles()"
+         @attributes="AdditionalAttributes">
+        <select value="@Value"
+                @onchange="OnSelectionChanged">
+            @ChildContent
+        </select>
+    </div>
+}
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool Filterable { get; set; }
+    [Parameter] public EventCallback<string> OnFilterTextChanged { get; set; }
+
+    private string _filterText = string.Empty;
+
+    private async Task OnSelectionChanged(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task OnFilterChanged(ChangeEventArgs e)
+    {
+        _filterText = e.Value?.ToString() ?? string.Empty;
+        await OnFilterTextChanged.InvokeAsync(_filterText);
+    }
+}

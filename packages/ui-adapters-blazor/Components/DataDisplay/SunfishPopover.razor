@@ -1,0 +1,227 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.PopoverClass())"
+     style="@CombineStyles(RootStyle)"
+     @attributes="AdditionalAttributes"
+     @onkeydown="OnKeyDown">
+
+    @* Inline trigger (used when no AnchorSelector is set) *@
+    @if (string.IsNullOrEmpty(AnchorSelector))
+    {
+        <div class="sf-popover__trigger"
+             @onclick="OnTriggerClick"
+             @onmouseenter="OnTriggerMouseEnter"
+             @onmouseleave="OnTriggerMouseLeave"
+             aria-haspopup="true"
+             aria-expanded="@IsOpen"
+             aria-controls="@(IsOpen ? _popoverId : null)">
+            @ChildContent
+        </div>
+    }
+
+    @if (IsOpen)
+    {
+        <div id="@_popoverId"
+             class="@PopoverContentClasses"
+             style="@PopoverContentStyle"
+             role="@(HasFocusableContent ? "dialog" : "tooltip")"
+             aria-modal="false"
+             aria-labelledby="@(HeaderContent != null ? _headerId : null)"
+             aria-describedby="@_bodyId"
+             tabindex="-1">
+            @if (ShowCallout)
+            {
+                <div class="sf-popover__callout"></div>
+            }
+            @if (HeaderContent != null)
+            {
+                <div id="@_headerId" class="sf-popover__header">
+                    @HeaderContent
+                </div>
+            }
+            <div id="@_bodyId" class="sf-popover__body">
+                @PopoverContent
+            </div>
+            @if (ActionsContent != null)
+            {
+                <div class="sf-popover__actions mar-popover__actions--@ActionsLayout.ToString().ToLowerInvariant()">
+                    @ActionsContent
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private string _popoverId = $"mar-popover-{Guid.NewGuid():N}";
+    private string _headerId = $"mar-popover-header-{Guid.NewGuid():N}";
+    private string _bodyId = $"mar-popover-body-{Guid.NewGuid():N}";
+
+    /// <summary>Whether the popover is open. Supports two-way binding.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Fires when the open state changes.</summary>
+    [Parameter] public EventCallback<bool> IsOpenChanged { get; set; }
+
+    /// <summary>The position of the popover relative to the anchor.</summary>
+    [Parameter] public TooltipPosition Position { get; set; } = TooltipPosition.Bottom;
+
+    /// <summary>
+    /// CSS selector for an external anchor element. When set, the inline trigger (ChildContent) is not rendered
+    /// and the popover positions relative to the matched element.
+    /// </summary>
+    [Parameter] public string? AnchorSelector { get; set; }
+
+    /// <summary>The trigger that shows the popover. Defaults to <see cref="PopoverShowOn.Click"/>.</summary>
+    [Parameter] public PopoverShowOn ShowOn { get; set; } = PopoverShowOn.Click;
+
+    /// <summary>The collision behavior when the popover would overflow the viewport.</summary>
+    [Parameter] public PopoverCollision Collision { get; set; } = PopoverCollision.None;
+
+    /// <summary>Offset in pixels from the anchor element.</summary>
+    [Parameter] public int Offset { get; set; }
+
+    /// <summary>Whether to show a callout arrow pointing to the anchor.</summary>
+    [Parameter] public bool ShowCallout { get; set; }
+
+    /// <summary>The width of the popover (e.g. "300px").</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>The height of the popover (e.g. "200px").</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>The layout direction for the actions region.</summary>
+    [Parameter] public ActionsLayout ActionsLayout { get; set; } = ActionsLayout.End;
+
+    /// <summary>The animation type for show/hide transitions. Defaults to <see cref="PopoverAnimationType.SlideDown"/>.</summary>
+    [Parameter] public PopoverAnimationType AnimationType { get; set; } = PopoverAnimationType.SlideDown;
+
+    /// <summary>The duration of the show/hide animation in milliseconds. Defaults to 300.</summary>
+    [Parameter] public int AnimationDuration { get; set; } = 300;
+
+    /// <summary>The trigger content (rendered as an inline anchor when <see cref="AnchorSelector"/> is not set).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The main body content of the popover.</summary>
+    [Parameter] public RenderFragment? PopoverContent { get; set; }
+
+    /// <summary>Optional header region content.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Optional actions region content (buttons, links).</summary>
+    [Parameter] public RenderFragment? ActionsContent { get; set; }
+
+    // ── Computed values ────────────────────────────────────────────────
+
+    /// <summary>Whether the popover content has focusable elements (actions), used to determine ARIA role.</summary>
+    private bool HasFocusableContent => ActionsContent != null;
+
+    private string? RootStyle => null;
+
+    private string PopoverContentClasses
+    {
+        get
+        {
+            var position = Position.ToString().ToLowerInvariant();
+            var animation = AnimationType != PopoverAnimationType.None
+                ? $" mar-popover__content--anim-{AnimationType.ToString().ToLowerInvariant()}"
+                : "";
+            var collision = Collision != PopoverCollision.None
+                ? $" mar-popover__content--collision-{Collision.ToString().ToLowerInvariant()}"
+                : "";
+            return $"mar-popover__content mar-popover__content--{position}{animation}{collision}";
+        }
+    }
+
+    private string? PopoverContentStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};");
+            if (Offset > 0)
+            {
+                var offsetPx = $"{Offset}px";
+                var margin = Position switch
+                {
+                    TooltipPosition.Top => $"margin-bottom:{offsetPx};",
+                    TooltipPosition.Bottom => $"margin-top:{offsetPx};",
+                    TooltipPosition.Left => $"margin-right:{offsetPx};",
+                    TooltipPosition.Right => $"margin-left:{offsetPx};",
+                    _ => null
+                };
+                if (margin != null) parts.Add(margin);
+            }
+            if (AnimationType != PopoverAnimationType.None && AnimationDuration > 0)
+            {
+                parts.Add($"animation-duration:{AnimationDuration}ms;");
+            }
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+
+    // ── Public programmatic API ─────────────────────────────────────────
+
+    /// <summary>Shows the popover programmatically.</summary>
+    public async Task Show()
+    {
+        if (!IsOpen)
+        {
+            IsOpen = true;
+            await IsOpenChanged.InvokeAsync(true);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Hides the popover programmatically.</summary>
+    public async Task Hide()
+    {
+        if (IsOpen)
+        {
+            IsOpen = false;
+            await IsOpenChanged.InvokeAsync(false);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Refreshes the popover position (e.g. after content size changes).</summary>
+    public void Refresh()
+    {
+        StateHasChanged();
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task OnTriggerClick()
+    {
+        if (ShowOn == PopoverShowOn.Click)
+        {
+            if (IsOpen) await Hide(); else await Show();
+        }
+    }
+
+    private async Task OnTriggerMouseEnter()
+    {
+        if (ShowOn == PopoverShowOn.MouseEnter)
+        {
+            await Show();
+        }
+    }
+
+    private async Task OnTriggerMouseLeave()
+    {
+        if (ShowOn == PopoverShowOn.MouseEnter)
+        {
+            await Hide();
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && IsOpen)
+        {
+            await Hide();
+        }
+    }
+}

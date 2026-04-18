@@ -1,0 +1,111 @@
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div class="@CombineClasses("mar-signature")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <canvas @ref="_canvasRef"
+            width="@Width"
+            height="@Height"
+            class="sf-signature__canvas @(ReadOnly ? "mar-signature__canvas--readonly" : "")"
+            aria-label="Signature pad" />
+    @if (!ReadOnly)
+    {
+        <div class="sf-signature__actions">
+            <button type="button" class="sf-btn mar-btn--flat mar-btn--sm" @onclick="Clear">
+                Clear
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int Width { get; set; } = 400;
+    [Parameter] public int Height { get; set; } = 200;
+    [Parameter] public string StrokeColor { get; set; } = "#000000";
+    [Parameter] public int StrokeWidth { get; set; } = 2;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public EventCallback OnChange { get; set; }
+
+    private ElementReference _canvasRef;
+    private IJSObjectReference? _jsModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetScript());
+            await _jsModule.InvokeVoidAsync("init", _canvasRef, StrokeColor, StrokeWidth, ReadOnly,
+                DotNetObjectReference.Create(this));
+            if (!string.IsNullOrEmpty(Value))
+            {
+                await _jsModule.InvokeVoidAsync("loadImage", Value);
+            }
+        }
+    }
+
+    [JSInvokable]
+    public async Task OnStrokeEnd(string dataUrl)
+    {
+        Value = dataUrl;
+        await ValueChanged.InvokeAsync(dataUrl);
+        await OnChange.InvokeAsync();
+    }
+
+    public async Task Clear()
+    {
+        if (_jsModule is not null)
+        {
+            await _jsModule.InvokeVoidAsync("clear");
+            Value = null;
+            await ValueChanged.InvokeAsync(null);
+            await OnChange.InvokeAsync();
+        }
+    }
+
+    public async Task<string?> GetDataUrl(string format = "image/png")
+    {
+        if (_jsModule is not null)
+            return await _jsModule.InvokeAsync<string>("toDataURL", format);
+        return null;
+    }
+
+    private static string GetScript() => """
+    (() => {
+        const mod = {};
+        let canvas, ctx, drawing = false, dotNetRef, readOnly;
+        mod.init = (canvasEl, color, width, ro, ref) => {
+            canvas = canvasEl; ctx = canvas.getContext('2d');
+            readOnly = ro; dotNetRef = ref;
+            ctx.strokeStyle = color; ctx.lineWidth = width;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            if (readOnly) return;
+            canvas.addEventListener('pointerdown', e => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX, e.offsetY); });
+            canvas.addEventListener('pointermove', e => { if (drawing) { ctx.lineTo(e.offsetX, e.offsetY); ctx.stroke(); } });
+            canvas.addEventListener('pointerup', () => { drawing = false; dotNetRef.invokeMethodAsync('OnStrokeEnd', canvas.toDataURL()); });
+            canvas.addEventListener('pointerleave', () => { if (drawing) { drawing = false; dotNetRef.invokeMethodAsync('OnStrokeEnd', canvas.toDataURL()); } });
+        };
+        mod.clear = () => { ctx.clearRect(0, 0, canvas.width, canvas.height); };
+        mod.toDataURL = (fmt) => canvas.toDataURL(fmt);
+        mod.loadImage = (dataUrl) => {
+            const img = new Image();
+            img.onload = () => { ctx.drawImage(img, 0, 0); };
+            img.src = dataUrl;
+        };
+        mod.dispose = () => {};
+        return mod;
+    })()
+    """;
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try { await _jsModule.InvokeVoidAsync("dispose"); } catch { }
+            await _jsModule.DisposeAsync();
+        }
+    }
+}

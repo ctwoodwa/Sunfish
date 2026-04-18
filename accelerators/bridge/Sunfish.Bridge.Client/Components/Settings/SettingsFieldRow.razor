@@ -1,0 +1,24 @@
+<div class="settings-field-row">
+    <div class="settings-field-row__label">@Label</div>
+    <div class="settings-field-row__value">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <span>@Value</span>
+        }
+    </div>
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <div class="settings-field-row__description">@Description</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Description { get; set; }
+}

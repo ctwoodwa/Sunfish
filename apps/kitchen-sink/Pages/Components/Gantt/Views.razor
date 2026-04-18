@@ -1,0 +1,90 @@
+@page "/components/gantt/views"
+@layout ComponentDemoLayout
+
+<PageSection Title="Timeline Views">
+    <DemoSection Title="All Four Views" Description="SunfishGantt supports four timeline granularities: Day, Week, Month, and Year. Each view can have its own SlotWidth to control how wide each time unit renders. Use the buttons below to switch between views." Code="@_viewsCode">
+        <div class="demo-row" style="margin-bottom: 12px;">
+            <button class="sf-btn @(_currentView == GanttView.Day ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Day))">Day</button>
+            <button class="sf-btn @(_currentView == GanttView.Week ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Week))">Week</button>
+            <button class="sf-btn @(_currentView == GanttView.Month ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Month))">Month</button>
+            <button class="sf-btn @(_currentView == GanttView.Year ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Year))">Year</button>
+            <span style="margin-left: 16px; color: var(--sf-text-secondary);">Current: <strong>@_currentView</strong></span>
+        </div>
+        <div class="demo-row">
+            <SunfishGantt TItem="GanttTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="360px"
+                         Width="100%"
+                         @bind-View="_currentView">
+                <GanttColumns>
+                    <GanttColumn TItem="GanttTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task" />
+                    <GanttColumn TItem="GanttTask"
+                                 Field="Start"
+                                 Width="90px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="GanttTask"
+                                 Field="End"
+                                 Width="90px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttDayView SlotWidth="40" />
+                    <GanttWeekView SlotWidth="60" />
+                    <GanttMonthView SlotWidth="90" />
+                    <GanttYearView SlotWidth="120" />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Week;
+
+    private void SetView(GanttView view)
+    {
+        _currentView = view;
+    }
+
+    private List<GanttTask> _tasks = new()
+    {
+        new() { Id = "1", Title = "Sprint 1", Start = DateTime.Today, End = DateTime.Today.AddDays(14), PercentComplete = 70 },
+        new() { Id = "1.1", ParentId = "1", Title = "Setup CI/CD", Start = DateTime.Today, End = DateTime.Today.AddDays(3), PercentComplete = 100 },
+        new() { Id = "1.2", ParentId = "1", Title = "Core Module", Start = DateTime.Today.AddDays(3), End = DateTime.Today.AddDays(10), PercentComplete = 60 },
+        new() { Id = "1.3", ParentId = "1", Title = "Code Review", Start = DateTime.Today.AddDays(10), End = DateTime.Today.AddDays(14), PercentComplete = 0 },
+
+        new() { Id = "2", Title = "Sprint 2", Start = DateTime.Today.AddDays(14), End = DateTime.Today.AddDays(28), PercentComplete = 0 },
+        new() { Id = "2.1", ParentId = "2", Title = "Feature A", Start = DateTime.Today.AddDays(14), End = DateTime.Today.AddDays(21), PercentComplete = 0 },
+        new() { Id = "2.2", ParentId = "2", Title = "Feature B", Start = DateTime.Today.AddDays(21), End = DateTime.Today.AddDays(28), PercentComplete = 0 },
+
+        new() { Id = "3", Title = "Release Prep", Start = DateTime.Today.AddDays(28), End = DateTime.Today.AddDays(35), PercentComplete = 0 },
+        new() { Id = "3.1", ParentId = "3", Title = "Regression Tests", Start = DateTime.Today.AddDays(28), End = DateTime.Today.AddDays(32), PercentComplete = 0 },
+        new() { Id = "3.2", ParentId = "3", Title = "Release Notes", Start = DateTime.Today.AddDays(32), End = DateTime.Today.AddDays(35), PercentComplete = 0 },
+    };
+
+    private const string _viewsCode = @"<SunfishGantt TItem=""GanttTask""
+             Data=""@_tasks""
+             IdField=""Id""
+             ParentIdField=""ParentId""
+             Height=""360px""
+             @bind-View=""_currentView"">
+    <GanttColumns>
+        <GanttColumn TItem=""GanttTask"" Field=""Title"" Expandable=""true"" Width=""200px"" Title=""Task"" />
+    </GanttColumns>
+    <GanttViews>
+        <GanttDayView SlotWidth=""40"" />
+        <GanttWeekView SlotWidth=""60"" />
+        <GanttMonthView SlotWidth=""90"" />
+        <GanttYearView SlotWidth=""120"" />
+    </GanttViews>
+</SunfishGantt>
+
+// Switch views programmatically:
+private void SetView(GanttView view) => _currentView = view;";
+}

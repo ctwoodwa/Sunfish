@@ -1,0 +1,20 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Upload / File Upload
+// =================================================================
+// From _bridge-overlays.scss: .sf-bs-upload
+// From _bridge-utility.scss: .sf-bs-file-upload-list
+// =================================================================
+
+.sf-bs-upload {
+  .sf-bs-upload-dropzone {
+    transition: border-color var(--sf-transition-normal),
+                background-color var(--sf-transition-normal);
+    cursor: pointer;
+  }
+}
+
+.sf-bs-file-upload-list {
+  .list-group-item {
+    font-size: var(--sf-font-size-sm);
+  }
+}

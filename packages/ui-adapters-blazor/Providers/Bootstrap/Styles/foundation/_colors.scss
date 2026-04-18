@@ -1,0 +1,84 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Color Tokens (light + dark)
+// =================================================================
+// Derived from Bootstrap Sass variables. Bootstrap variables ($primary,
+// $body-bg, etc.) are available globally via @import in the entrypoint.
+// =================================================================
+
+:root {
+  // Primary palette
+  --sf-color-primary: #{$primary};
+  --sf-color-primary-hover: #{shade-color($primary, 20%)};
+  --sf-color-primary-active: #{shade-color($primary, 25%)};
+  --sf-color-primary-light: #{tint-color($primary, 80%)};
+
+  // Semantic palette
+  --sf-color-secondary: #{$secondary};
+  --sf-color-success: #{$success};
+  --sf-color-success-light: #{tint-color($success, 80%)};
+  --sf-color-warning: #{$warning};
+  --sf-color-warning-light: #{tint-color($warning, 80%)};
+  --sf-color-danger: #{$danger};
+  --sf-color-danger-light: #{tint-color($danger, 80%)};
+  --sf-color-info: #{$info};
+  --sf-color-info-light: #{tint-color($info, 80%)};
+
+  // Neutral palette
+  --sf-color-bg: #{$body-bg};
+  --sf-color-surface: #{$gray-100};
+  --sf-color-text: #{$body-color};
+  --sf-color-text-secondary: #{$gray-600};
+  --sf-color-text-disabled: #{$gray-500};
+  --sf-color-border: #{$border-color};
+  --sf-color-border-strong: #{$gray-500};
+}
+
+// Bootstrap color-mode(dark) — used when [data-bs-theme="dark"] is applied
+@include color-mode(dark) {
+  --sf-color-primary: #{tint-color($primary, 40%)};
+  --sf-color-primary-hover: #{tint-color($primary, 50%)};
+  --sf-color-primary-active: #{tint-color($primary, 60%)};
+  --sf-color-primary-light: #{shade-color($primary, 80%)};
+
+  --sf-color-success: #{tint-color($success, 40%)};
+  --sf-color-success-light: #{shade-color($success, 80%)};
+  --sf-color-warning: #{tint-color($warning, 40%)};
+  --sf-color-warning-light: #{shade-color($warning, 80%)};
+  --sf-color-danger: #{tint-color($danger, 40%)};
+  --sf-color-danger-light: #{shade-color($danger, 80%)};
+  --sf-color-info: #{tint-color($info, 40%)};
+  --sf-color-info-light: #{shade-color($info, 80%)};
+
+  --sf-color-bg: #{$gray-900};
+  --sf-color-surface: #{mix($gray-800, $gray-900, 50%)};
+  --sf-color-text: #{$gray-300};
+  --sf-color-text-secondary: #{$gray-500};
+  --sf-color-text-disabled: #{$gray-600};
+  --sf-color-border: #{$gray-700};
+  --sf-color-border-strong: #{$gray-600};
+}
+
+// Sunfish's own theme attribute — identical overrides for dark mode
+[data-sf-theme="dark"] {
+  --sf-color-primary: #{tint-color($primary, 40%)};
+  --sf-color-primary-hover: #{tint-color($primary, 50%)};
+  --sf-color-primary-active: #{tint-color($primary, 60%)};
+  --sf-color-primary-light: #{shade-color($primary, 80%)};
+
+  --sf-color-success: #{tint-color($success, 40%)};
+  --sf-color-success-light: #{shade-color($success, 80%)};
+  --sf-color-warning: #{tint-color($warning, 40%)};
+  --sf-color-warning-light: #{shade-color($warning, 80%)};
+  --sf-color-danger: #{tint-color($danger, 40%)};
+  --sf-color-danger-light: #{shade-color($danger, 80%)};
+  --sf-color-info: #{tint-color($info, 40%)};
+  --sf-color-info-light: #{shade-color($info, 80%)};
+
+  --sf-color-bg: #{$gray-900};
+  --sf-color-surface: #{mix($gray-800, $gray-900, 50%)};
+  --sf-color-text: #{$gray-300};
+  --sf-color-text-secondary: #{$gray-500};
+  --sf-color-text-disabled: #{$gray-600};
+  --sf-color-border: #{$gray-700};
+  --sf-color-border-strong: #{$gray-600};
+}

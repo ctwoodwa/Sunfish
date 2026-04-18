@@ -1,0 +1,436 @@
+@page "/components/ResizableContainer"
+@page "/components/ResizableContainer/overview"
+@layout ComponentDemoLayout
+
+@using Sunfish.Components.Blazor.Components.Layout.ResizableContainer
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Bottom-Right Resizing"
+                 Description="Drag the bottom-right handle to resize the container. Min width 200px, min height 120px."
+                 Code="@_basicCode">
+        <SunfishResizableContainer Width="400px" Height="250px" MinWidth="200px" MinHeight="120px" MaxWidth="800px" MaxHeight="500px"
+                                  OnResizeEnd="@OnBasicResizeEnd">
+            <div style="padding: 1rem;">
+                <h4>Resizable Content</h4>
+                <p>Width: @_basicWidth | Height: @_basicHeight</p>
+                <p>Drag the bottom-right corner grip to resize this container. The content reflows naturally.</p>
+            </div>
+        </SunfishResizableContainer>
+    </DemoSection>
+
+    <DemoSection Title="Grid Host Example"
+                 Description="A resizable container hosting a data-grid-like surface. The grid responds to container size changes via normal layout."
+                 Code="@_gridHostCode">
+        <SunfishResizableContainer Width="100%" Height="320px" MinHeight="180px"
+                                  ObserveSizeChanges="true"
+                                  OnObservedSizeChanged="@OnGridSizeChanged">
+            <div style="height: 100%; overflow: auto;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: var(--sf-color-surface-subtle, #f5f5f5); position: sticky; top: 0;">
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;">Name</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;">Department</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;">Hours</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;">Budget</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var row in _gridData)
+                        {
+                            <tr style="border-bottom: 1px solid #eee;">
+                                <td style="padding: 0.5rem;">@row.Name</td>
+                                <td style="padding: 0.5rem;">@row.Department</td>
+                                <td style="padding: 0.5rem; text-align: right;">@row.Hours</td>
+                                <td style="padding: 0.5rem; text-align: right;">@row.Budget.ToString("C0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </SunfishResizableContainer>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+            Observed size: @_gridObservedWidth x @_gridObservedHeight
+        </p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Scheduler Host">
+    <DemoSection Title="AllocationScheduler Host Example"
+                 Description="Wrapping a scheduler-like surface. The wrapper handles resize; the scheduler content responds to the new dimensions."
+                 Code="@_schedulerHostCode">
+        <SunfishResizableContainer Width="100%" Height="300px" MinHeight="200px"
+                                  OnObservedSizeChanged="@OnSchedulerSizeChanged">
+            <div style="display: flex; height: 100%;">
+                <div style="width: 180px; min-width: 180px; border-right: 2px solid #ccc; overflow-y: auto;">
+                    <div style="padding: 0.5rem; font-weight: 600; border-bottom: 1px solid #eee;">Resources</div>
+                    @foreach (var r in _resources)
+                    {
+                        <div style="padding: 0.5rem; border-bottom: 1px solid #f0f0f0;">@r</div>
+                    }
+                </div>
+                <div style="flex: 1; overflow: auto;">
+                    <div style="display: flex; border-bottom: 2px solid #ccc;">
+                        @for (int w = 1; w <= 12; w++)
+                        {
+                            <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; font-weight: 600; border-right: 1px solid #eee;">
+                                Wk @w
+                            </div>
+                        }
+                    </div>
+                    @foreach (var r in _resources)
+                    {
+                        <div style="display: flex; border-bottom: 1px solid #f0f0f0;">
+                            @for (int w = 1; w <= 12; w++)
+                            {
+                                <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; border-right: 1px solid #f5f5f5;">
+                                    @(Random.Shared.Next(0, 40))
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </SunfishResizableContainer>
+        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+            Container observed: @_schedulerObservedWidth x @_schedulerObservedHeight —
+            The wrapper owns the resize handle; the scheduler content scrolls and reflows.
+        </p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Chart Host">
+    <DemoSection Title="Chart Host with OnObservedSizeChanged"
+                 Description="A chart placeholder that responds to container size changes. In production, the chart would redraw on OnObservedSizeChanged."
+                 Code="@_chartHostCode">
+        <SunfishResizableContainer Width="500px" Height="300px" MinWidth="250px" MinHeight="150px"
+                                  OnObservedSizeChanged="@OnChartSizeChanged">
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 1.1rem;">
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                    <div>Chart Area</div>
+                    <div style="font-size: 0.85rem; opacity: 0.8;">@_chartObservedWidth x @_chartObservedHeight</div>
+                </div>
+            </div>
+        </SunfishResizableContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Edge Options">
+    <DemoSection Title="Right-Only Resize"
+                 Description="Only the right edge has a resize handle."
+                 Code="@_rightOnlyCode">
+        <SunfishResizableContainer Width="300px" Height="120px" ResizeEdges="ResizeEdges.Right">
+            <div style="padding: 1rem;">Right-edge resize only</div>
+        </SunfishResizableContainer>
+    </DemoSection>
+
+    <DemoSection Title="Bottom-Only Resize"
+                 Description="Only the bottom edge has a resize handle."
+                 Code="@_bottomOnlyCode">
+        <SunfishResizableContainer Width="100%" Height="120px" ResizeEdges="ResizeEdges.Bottom">
+            <div style="padding: 1rem;">Bottom-edge resize only</div>
+        </SunfishResizableContainer>
+    </DemoSection>
+
+    <DemoSection Title="All Edges"
+                 Description="All edges and corners have resize handles."
+                 Code="@_allEdgesCode">
+        <SunfishResizableContainer Width="400px" Height="200px" ResizeEdges="ResizeEdges.All" MinWidth="150px" MinHeight="80px">
+            <div style="padding: 1rem;">All edges and corners are resizable. Try dragging any edge or corner.</div>
+        </SunfishResizableContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Keyboard Resizing">
+    <DemoSection Title="Keyboard Resize"
+                 Description="Tab to the resize handle and use Arrow keys (small step) or Shift+Arrow (large step) to resize."
+                 Code="@_keyboardCode">
+        <SunfishResizableContainer Width="350px" Height="180px" KeyboardResizeEnabled="true"
+                                  OnResizeEnd="@OnKeyboardResizeEnd">
+            <div style="padding: 1rem;">
+                <p>Focus the resize handle with Tab, then use arrow keys.</p>
+                <p>Size: @_keyboardWidth x @_keyboardHeight</p>
+            </div>
+        </SunfishResizableContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Persisted Size">
+    <DemoSection Title="Persisted Dimensions"
+                 Description="When PersistSize is enabled with a PersistKey, the container remembers its size across page reloads using localStorage."
+                 Code="@_persistCode">
+        <SunfishResizableContainer Width="400px" Height="200px" PersistSize="true" PersistKey="demo-persist-1">
+            <div style="padding: 1rem;">
+                <p>Resize this container, then reload the page — the size is restored from localStorage.</p>
+            </div>
+        </SunfishResizableContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Disabled State">
+    <DemoSection Title="Disabled State"
+                 Description="Enabled=&quot;false&quot; prevents resize via drag, keyboard, and SetSizeAsync. The handle renders but is visually inert. Use to lock dimensions at runtime."
+                 Code="@_disabledCode">
+        <SunfishResizableContainer @bind-Width="_disabledWidth" @bind-Height="_disabledHeight"
+                                  Enabled="@_disabledEnabled"
+                                  MinWidth="200px" MinHeight="120px">
+            <div style="padding: 1rem; height: 100%;">
+                <p>Resize is currently <strong>@(_disabledEnabled ? "enabled" : "disabled")</strong>.</p>
+                <p>Size: @_disabledWidth × @_disabledHeight</p>
+            </div>
+        </SunfishResizableContainer>
+        <div style="margin-top: 0.75rem;">
+            <button @onclick="ToggleEnabled"
+                    style="padding: 0.4rem 1rem; cursor: pointer;">
+                @(_disabledEnabled ? "Lock (disable resize)" : "Unlock (enable resize)")
+            </button>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Programmatic Control">
+    <DemoSection Title="Programmatic Control"
+                 Description="SetSizeAsync, ResetSizeAsync, and FocusHandleAsync allow external code to drive resize."
+                 Code="@_programmaticCode">
+        <SunfishResizableContainer @ref="_programmaticRef"
+                                  @bind-Width="_programmaticWidth" @bind-Height="_programmaticHeight"
+                                  MinWidth="150px" MinHeight="100px">
+            <div style="padding: 1rem;">
+                <p>Size: @_programmaticWidth × @_programmaticHeight</p>
+                <p>Use the buttons below to control this container programmatically.</p>
+            </div>
+        </SunfishResizableContainer>
+        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button @onclick="SetSize400x300" style="padding: 0.4rem 1rem; cursor: pointer;">Set 400×300</button>
+            <button @onclick="ResetSize" style="padding: 0.4rem 1rem; cursor: pointer;">Reset to initial</button>
+            <button @onclick="FocusHandle" style="padding: 0.4rem 1rem; cursor: pointer;">Focus handle</button>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Usage Guidance">
+    <div style="padding: 1rem; border: 1px solid #e0e0e0; border-radius: 6px; background: #fafafa;">
+        <h4>When to use SunfishResizableContainer</h4>
+        <ul>
+            <li>Resizing a single hosted component (grid, scheduler, chart, editor, dashboard tile)</li>
+            <li>Giving users control over a content area's dimensions</li>
+            <li>Persisting user-chosen panel sizes</li>
+        </ul>
+
+        <h4 style="margin-top: 1rem;">When NOT to use it</h4>
+        <ul>
+            <li><strong>Multi-pane layouts</strong> where adjacent panels resize against each other — use <code>SunfishSplitter</code> instead</li>
+            <li><strong>IDE-style layouts</strong> with file explorers and tool panels — use a splitter/panel-group pattern</li>
+            <li><strong>Highly virtualized content</strong> that needs bespoke resize orchestration beyond container observation</li>
+        </ul>
+
+        <h4 style="margin-top: 1rem;">Integration pattern for hosted components</h4>
+        <p>Hosted components should:</p>
+        <ul>
+            <li>Accept Width/Height parameters or respond to parent container sizing</li>
+            <li>Observe container changes or rerender on parent resize</li>
+            <li>NOT embed their own resize handles — let the wrapper handle it</li>
+        </ul>
+    </div>
+</PageSection>
+
+@code {
+    // ── Basic demo state ──
+    private string _basicWidth = "400px";
+    private string _basicHeight = "250px";
+
+    private Task OnBasicResizeEnd(SunfishResizeEventArgs args)
+    {
+        _basicWidth = args.Width;
+        _basicHeight = args.Height;
+        return Task.CompletedTask;
+    }
+
+    // ── Grid host demo ──
+    private string _gridObservedWidth = "—";
+    private string _gridObservedHeight = "—";
+
+    private record GridRow(string Name, string Department, int Hours, decimal Budget);
+    private readonly List<GridRow> _gridData =
+    [
+        new("Alice Chen", "Engineering", 40, 12000m),
+        new("Bob Martinez", "Design", 32, 9600m),
+        new("Carol Singh", "Product", 38, 11400m),
+        new("Dave Kim", "Engineering", 40, 12000m),
+        new("Eva Johansson", "QA", 36, 10800m),
+        new("Frank Osei", "Engineering", 40, 12000m),
+        new("Grace Liu", "Design", 28, 8400m),
+        new("Hiro Tanaka", "Product", 40, 12000m),
+    ];
+
+    private Task OnGridSizeChanged(SunfishObservedSizeChangedEventArgs args)
+    {
+        _gridObservedWidth = $"{args.WidthPixels:F0}px";
+        _gridObservedHeight = $"{args.HeightPixels:F0}px";
+        return Task.CompletedTask;
+    }
+
+    // ── Scheduler host demo ──
+    private string _schedulerObservedWidth = "—";
+    private string _schedulerObservedHeight = "—";
+    private readonly string[] _resources = ["Alice Chen", "Bob Martinez", "Carol Singh", "Dave Kim", "Eva Johansson"];
+
+    private Task OnSchedulerSizeChanged(SunfishObservedSizeChangedEventArgs args)
+    {
+        _schedulerObservedWidth = $"{args.WidthPixels:F0}px";
+        _schedulerObservedHeight = $"{args.HeightPixels:F0}px";
+        return Task.CompletedTask;
+    }
+
+    // ── Chart host demo ──
+    private string _chartObservedWidth = "—";
+    private string _chartObservedHeight = "—";
+
+    private Task OnChartSizeChanged(SunfishObservedSizeChangedEventArgs args)
+    {
+        _chartObservedWidth = $"{args.WidthPixels:F0}px";
+        _chartObservedHeight = $"{args.HeightPixels:F0}px";
+        return Task.CompletedTask;
+    }
+
+    // ── Keyboard demo ──
+    private string _keyboardWidth = "350px";
+    private string _keyboardHeight = "180px";
+
+    private Task OnKeyboardResizeEnd(SunfishResizeEventArgs args)
+    {
+        _keyboardWidth = args.Width;
+        _keyboardHeight = args.Height;
+        return Task.CompletedTask;
+    }
+
+    // ── Disabled demo state ──
+    private bool _disabledEnabled = true;
+    private string _disabledWidth = "400px";
+    private string _disabledHeight = "200px";
+
+    private void ToggleEnabled() => _disabledEnabled = !_disabledEnabled;
+
+    // ── Programmatic control demo state ──
+    private SunfishResizableContainer _programmaticRef = default!;
+    private string _programmaticWidth = "300px";
+    private string _programmaticHeight = "200px";
+
+    private async Task SetSize400x300() => await _programmaticRef.SetSizeAsync("400px", "300px");
+    private async Task ResetSize() => await _programmaticRef.ResetSizeAsync();
+    private async Task FocusHandle() => await _programmaticRef.FocusHandleAsync();
+
+    // ── Code samples ──
+    private const string _basicCode = @"<SunfishResizableContainer Width=""400px"" Height=""250px""
+                          MinWidth=""200px"" MinHeight=""120px""
+                          MaxWidth=""800px"" MaxHeight=""500px""
+                          OnResizeEnd=""@OnResizeEnd"">
+    <div style=""padding: 1rem;"">
+        <h4>Resizable Content</h4>
+        <p>Drag the corner to resize.</p>
+    </div>
+</SunfishResizableContainer>";
+
+    private const string _gridHostCode = @"<SunfishResizableContainer Width=""100%"" Height=""320px""
+                          MinHeight=""180px""
+                          ObserveSizeChanges=""true""
+                          OnObservedSizeChanged=""@OnSizeChanged"">
+    <SunfishDataGrid TItem=""Employee"" Data=""@_employees"">
+        <SunfishGridColumn Field=""Name"" Title=""Full Name"" />
+        <SunfishGridColumn Field=""Department"" />
+        <SunfishGridColumn Field=""Hours"" TextAlign=""right"" />
+    </SunfishDataGrid>
+</SunfishResizableContainer>";
+
+    private const string _schedulerHostCode = @"<SunfishResizableContainer Width=""100%"" Height=""300px""
+                          MinHeight=""200px""
+                          OnObservedSizeChanged=""@OnSizeChanged"">
+    <SunfishAllocationScheduler Resources=""@_resources""
+                               Allocations=""@_allocations""
+                               Height=""100%"" />
+</SunfishResizableContainer>";
+
+    private const string _chartHostCode = @"<SunfishResizableContainer Width=""500px"" Height=""300px""
+                          MinWidth=""250px"" MinHeight=""150px""
+                          OnObservedSizeChanged=""@OnChartSizeChanged"">
+    <SunfishChart Data=""@_chartData"" />
+</SunfishResizableContainer>
+
+@code {
+    private Task OnChartSizeChanged(SunfishObservedSizeChangedEventArgs args)
+    {
+        // Chart redraws based on new container size
+        return Task.CompletedTask;
+    }
+}";
+
+    private const string _rightOnlyCode = @"<SunfishResizableContainer Width=""300px"" Height=""120px""
+                          ResizeEdges=""ResizeEdges.Right"">
+    <div style=""padding: 1rem;"">Right-edge resize only</div>
+</SunfishResizableContainer>";
+
+    private const string _bottomOnlyCode = @"<SunfishResizableContainer Width=""100%"" Height=""120px""
+                          ResizeEdges=""ResizeEdges.Bottom"">
+    <div style=""padding: 1rem;"">Bottom-edge resize only</div>
+</SunfishResizableContainer>";
+
+    private const string _allEdgesCode = @"<SunfishResizableContainer Width=""400px"" Height=""200px""
+                          ResizeEdges=""ResizeEdges.All""
+                          MinWidth=""150px"" MinHeight=""80px"">
+    <div style=""padding: 1rem;"">All edges and corners are resizable.</div>
+</SunfishResizableContainer>";
+
+    private const string _keyboardCode = @"<SunfishResizableContainer Width=""350px"" Height=""180px""
+                          KeyboardResizeEnabled=""true""
+                          OnResizeEnd=""@OnResizeEnd"">
+    <div style=""padding: 1rem;"">
+        Focus the handle with Tab, use Arrow keys to resize.
+    </div>
+</SunfishResizableContainer>";
+
+    private const string _persistCode = @"<SunfishResizableContainer Width=""400px"" Height=""200px""
+                          PersistSize=""true""
+                          PersistKey=""my-panel-1"">
+    <div style=""padding: 1rem;"">
+        Size is saved to localStorage and restored on reload.
+    </div>
+</SunfishResizableContainer>";
+
+    private const string _disabledCode = @"<SunfishResizableContainer @bind-Width=""_width"" @bind-Height=""_height""
+                          Enabled=""@_enabled""
+                          MinWidth=""200px"" MinHeight=""120px"">
+    <div style=""padding: 1rem;"">
+        <p>Resize is currently @(_enabled ? ""enabled"" : ""disabled"").</p>
+    </div>
+</SunfishResizableContainer>
+<button @onclick=""() => _enabled = !_enabled"">
+    @(_enabled ? ""Lock"" : ""Unlock"")
+</button>
+
+@code {
+    private bool _enabled = true;
+    private string _width = ""400px"";
+    private string _height = ""200px"";
+}";
+
+    private const string _programmaticCode = @"<SunfishResizableContainer @ref=""_ref""
+                          @bind-Width=""_width"" @bind-Height=""_height""
+                          Width=""300px"" Height=""200px""
+                          MinWidth=""150px"" MinHeight=""100px"">
+    <div style=""padding: 1rem;"">
+        <p>Size: @_width × @_height</p>
+    </div>
+</SunfishResizableContainer>
+
+<button @onclick=""async () => await _ref.SetSizeAsync(&quot;400px&quot;, &quot;300px&quot;)"">Set 400×300</button>
+<button @onclick=""async () => await _ref.ResetSizeAsync()"">Reset to initial</button>
+<button @onclick=""async () => await _ref.FocusHandleAsync()"">Focus handle</button>
+
+@code {
+    private SunfishResizableContainer _ref = default!;
+    private string _width = ""300px"";
+    private string _height = ""200px"";
+}";
+}

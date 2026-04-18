@@ -1,0 +1,27 @@
+@* ChartValueAxis — configures the value (numeric) axis for cartesian charts. *@
+
+@code {
+    [CascadingParameter] internal SunfishChart? ParentChart { get; set; }
+
+    /// <summary>Axis name (for multi-axis support).</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Axis title text.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Minimum value for the axis.</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>Maximum value for the axis.</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Color of the axis line and labels.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentChart is null)
+            throw new InvalidOperationException("ChartValueAxis must be placed inside a SunfishChart.");
+        ParentChart.SetValueAxis(this);
+    }
+}

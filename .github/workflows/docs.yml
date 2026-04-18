@@ -1,0 +1,61 @@
+name: Docs
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'apps/docs/**'
+      - 'packages/**/*.cs'
+      - 'packages/**/*.csproj'
+      - '.config/dotnet-tools.json'
+      - '.github/workflows/docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore tools
+        run: dotnet tool restore
+
+      - name: Restore packages
+        run: dotnet restore Sunfish.slnx
+
+      - name: Build solution (to emit DLLs + XML doc comments for metadata)
+        run: dotnet build Sunfish.slnx --configuration Debug --no-restore
+
+      - name: Build docs
+        run: dotnet docfx apps/docs/docfx.json --warningsAsErrors
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/docs/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

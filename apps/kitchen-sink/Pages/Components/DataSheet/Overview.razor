@@ -1,0 +1,208 @@
+@page "/components/DataSheet"
+@page "/components/DataSheet/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models.DataSheet
+@using Sunfish.Components.Blazor.Components.DataDisplay
+
+<PageSection Title="Overview">
+    <DemoSection Title="Investment Position Editor"
+                 Description="A spreadsheet-like editable grid for managing investment positions. Edit cells inline, paste from Excel, and save all changes in bulk.">
+
+        <SunfishDataSheet @ref="_grid"
+                                TItem="PositionRow"
+                                Data="@_rows"
+                                KeyField="Id"
+                                OnSaveAll="@HandleSaveAll"
+                                OnRowChanged="@HandleRowChanged"
+                                OnValidate="@HandleValidate"
+                                IsSaving="@_isSaving"
+                                AllowAddRow="true"
+                                AllowDeleteRow="true"
+                                AllowBulkPaste="true"
+                                EmptyStateMessage="No positions. Click + Add Row to begin."
+                                Height="500px"
+                                EnableVirtualization="false">
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="Ticker" Title="Ticker" ColumnType="DataSheetColumnType.Text"
+                Editable="true" Required="true" Width="120px" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="AssetClass" Title="Asset Class" ColumnType="DataSheetColumnType.Select"
+                Editable="true" Width="140px"
+                Options="@_assetClassOptions" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                Editable="true" Required="true" Width="100px"
+                Validate="@(r => r.Quantity < 0 ? "Must be >= 0" : null)" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="Price" Title="Price" ColumnType="DataSheetColumnType.Number"
+                Editable="true" Required="true" Width="100px"
+                Format="@(r => r.Price.ToString("C2"))"
+                Validate="@(r => r.Price <= 0 ? "Must be > 0" : null)" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="TradeDate" Title="Trade Date" ColumnType="DataSheetColumnType.Date"
+                Editable="true" Width="140px" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="IsHedge" Title="Hedge?" ColumnType="DataSheetColumnType.Checkbox"
+                Editable="true" Width="80px" />
+
+            <SunfishDataSheetColumn TItem="PositionRow"
+                Field="MarketValue" Title="Mkt Value" ColumnType="DataSheetColumnType.Computed"
+                Editable="false" Width="120px"
+                Format="@(r => r.MarketValue.ToString("C2"))" />
+        </SunfishDataSheet>
+
+        @* Event log panel *@
+        <div class="sf-datasheet-demo-log" style="margin-top:16px; padding:12px; border:1px solid var(--mar-color-border, #ccc); border-radius:4px; max-height:200px; overflow:auto;">
+            <h4 style="margin:0 0 8px;">Event Log (last 10)</h4>
+            @if (_eventLog.Count == 0)
+            {
+                <p style="color:var(--mar-color-text-secondary, #888);">No events yet. Edit a cell to see events here.</p>
+            }
+            else
+            {
+                @foreach (var entry in _eventLog)
+                {
+                    <div style="font-family:monospace; font-size:0.85em;">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private SunfishDataSheet<PositionRow>? _grid;
+    private bool _isSaving;
+    private readonly List<string> _eventLog = [];
+
+    private static readonly List<DataSheetSelectOption> _assetClassOptions =
+    [
+        new() { Value = "Equity", Label = "Equity" },
+        new() { Value = "Fixed Income", Label = "Fixed Income" },
+        new() { Value = "Derivative", Label = "Derivative" },
+        new() { Value = "Cash", Label = "Cash" },
+    ];
+
+    private List<PositionRow> _rows = new()
+    {
+        new() { Ticker = "AAPL",  AssetClass = "Equity",       Quantity = 500,   Price = 178.50m, TradeDate = new(2024, 6, 15), IsHedge = false },
+        new() { Ticker = "MSFT",  AssetClass = "Equity",       Quantity = 300,   Price = 415.20m, TradeDate = new(2024, 5, 10), IsHedge = false },
+        new() { Ticker = "NVDA",  AssetClass = "Equity",       Quantity = 200,   Price = 875.30m, TradeDate = new(2024, 7, 1),  IsHedge = false },
+        new() { Ticker = "AMZN",  AssetClass = "Equity",       Quantity = 150,   Price = 187.40m, TradeDate = new(2024, 4, 20), IsHedge = false },
+        new() { Ticker = "META",  AssetClass = "Equity",       Quantity = 250,   Price = 502.60m, TradeDate = new(2024, 3, 12), IsHedge = false },
+        new() { Ticker = "TLT",   AssetClass = "Fixed Income", Quantity = 1000,  Price = 92.15m,  TradeDate = new(2024, 6, 5),  IsHedge = true },
+        new() { Ticker = "GLD",   AssetClass = "Derivative",   Quantity = 400,   Price = 215.80m, TradeDate = new(2024, 5, 28), IsHedge = true },
+        new() { Ticker = "SPY",   AssetClass = "Equity",       Quantity = 800,   Price = 540.25m, TradeDate = new(2024, 7, 8),  IsHedge = false },
+        new() { Ticker = "QQQ",   AssetClass = "Equity",       Quantity = 600,   Price = 470.90m, TradeDate = new(2024, 6, 22), IsHedge = false },
+        new() { Ticker = "BRK.B", AssetClass = "Equity",       Quantity = 100,   Price = 412.00m, TradeDate = new(2024, 2, 14), IsHedge = false },
+        new() { Ticker = "JPM",   AssetClass = "Equity",       Quantity = 350,   Price = 198.75m, TradeDate = new(2024, 4, 3),  IsHedge = false },
+        new() { Ticker = "XOM",   AssetClass = "Equity",       Quantity = 50000, Price = 5.10m,   TradeDate = new(2024, 1, 30), IsHedge = true },
+    };
+
+    private async Task HandleSaveAll(DataSheetSaveArgs<PositionRow> args)
+    {
+        _isSaving = true;
+        StateHasChanged();
+
+        // Simulate API call
+        await Task.Delay(1500);
+
+        _isSaving = false;
+        AddLogEntry($"Saved {args.DirtyRows.Count} rows, deleted {args.DeletedRows.Count} rows");
+
+        // Note: do NOT call ResetAsync() here — SunfishDataSheet.SaveAllAsync
+        // cleans up dirty state automatically after this handler returns
+        // (see Step 6/7 in SaveAllAsync). Calling ResetAsync() from within
+        // the handler would clobber the component's deletion cleanup and
+        // silently drop pending deletions.
+    }
+
+    private void HandleRowChanged(DataSheetRowChangedArgs<PositionRow> args)
+    {
+        AddLogEntry($"[{args.Row.Ticker}] {args.Field}: {args.OldValue} -> {args.NewValue}");
+    }
+
+    private void HandleValidate(DataSheetValidateArgs<PositionRow> args)
+    {
+        foreach (var row in args.DirtyRows)
+        {
+            if (string.IsNullOrWhiteSpace(row.Ticker))
+            {
+                args.Errors.Add(new DataSheetValidationError<PositionRow>
+                {
+                    Row = row, Field = "Ticker", Message = "Ticker is required."
+                });
+            }
+            if (row.Quantity < 0)
+            {
+                args.Errors.Add(new DataSheetValidationError<PositionRow>
+                {
+                    Row = row, Field = "Quantity", Message = "Quantity must be >= 0."
+                });
+            }
+        }
+    }
+
+    private void AddLogEntry(string message)
+    {
+        _eventLog.Insert(0, $"{DateTime.Now:HH:mm:ss} {message}");
+        if (_eventLog.Count > 10) _eventLog.RemoveAt(10);
+    }
+
+    public record PositionRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Ticker { get; set; } = "";
+        public string AssetClass { get; set; } = "";
+        public decimal Quantity { get; set; }
+        public decimal Price { get; set; }
+        public DateTime? TradeDate { get; set; }
+        public bool IsHedge { get; set; }
+        public decimal MarketValue => Math.Round(Quantity * Price, 2);
+    }
+
+    // Accessibility info
+    private static readonly (string Key, string Action)[] _keyboard = new[]
+    {
+        ("Tab / Shift+Tab", "Move focus right/left between cells"),
+        ("Enter", "Commit cell edit and move down"),
+        ("Escape", "Cancel current edit and restore value"),
+        ("F2", "Enter edit mode on focused cell"),
+        ("Arrow keys", "Navigate non-editing cells"),
+        ("Ctrl+S", "Save all changes"),
+        ("Ctrl+Z", "Undo last cell change"),
+        ("Ctrl+C / Ctrl+V", "Copy/paste cells as TSV"),
+        ("Delete", "Clear selected cell(s)"),
+        ("Ctrl+D", "Fill selected range down from anchor"),
+    };
+
+    private static readonly (string Attribute, string Description)[] _aria = new[]
+    {
+        ("role=\"grid\"", "Grid container has grid role"),
+        ("role=\"row\"", "Each data row has row role"),
+        ("role=\"gridcell\"", "Each cell has gridcell role"),
+        ("aria-readonly", "Applied to computed/non-editable cells"),
+        ("aria-invalid", "Applied to cells with validation errors"),
+        ("aria-live=\"polite\"", "Announcements for save success/failure"),
+    };
+
+    private static readonly string[] _screenReader = new[]
+    {
+        "The grid announces save status changes via an aria-live polite region.",
+        "Invalid cells include a title attribute with the error message, read as a tooltip.",
+        "Computed columns are marked aria-readonly to indicate they cannot be edited.",
+    };
+}

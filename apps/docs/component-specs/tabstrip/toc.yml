@@ -1,0 +1,29 @@
+- name: Overview
+  href: overview.md
+- name: Active Tab Index
+  href: active-tab-index.md
+- name: Events
+  href: events.md
+- name: Header Template
+  href: header-template.md
+- name: Persist Content
+  href: persist-content.md
+- name: Scrollable Tabs
+  href: scrollable-tabs.md
+- name: Sizing
+  href: sizing.md
+- name: State
+  href: state.md
+- name: Tab Reorder
+  href: tab-reorder.md
+- name: Tabs Alignment
+  href: tabs-alignment.md
+- name: Tabs Collection
+  href: tabs-collection.md
+- name: Tabs Configuration
+  href: tabs-configuration.md
+- name: Tabs Position
+  href: tabs-position.md
+- name: Accessibility
+  href: accessibility/
+

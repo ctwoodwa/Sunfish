@@ -1,0 +1,460 @@
+@page "/components/allocation-scheduler/selection-and-editing"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Selection Modes">
+    <DemoSection Title="Cell and Range Selection"
+                 Description="Toggle between None, Cell, and Range selection. Click cells to see selection behaviour change."
+                 Code="@_selectionCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                Selection Mode:
+                <select @bind="_selectionMode">
+                    <option value="@AllocationSelectionMode.None">None</option>
+                    <option value="@AllocationSelectionMode.Cell">Cell</option>
+                    <option value="@AllocationSelectionMode.Range">Range</option>
+                </select>
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   SelectionMode="@_selectionMode"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnSelectionChanged="@HandleSelectionChanged"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (_selectedCount > 0)
+        {
+            <p><strong>Selected cells:</strong> @_selectedCount</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Bulk Range Editing">
+    <DemoSection Title="Drag-Fill and Keyboard Edit"
+                 Description="Enable AllowBulkEdit and SelectionMode=Range. Select a range of cells and apply a value. The OnRangeEdited event fires on commit."
+                 Code="@_bulkEditCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_editableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   SelectionMode="AllocationSelectionMode.Range"
+                                   AllowBulkEdit="true"
+                                   AllowDragFill="true"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnRangeEdited="@HandleRangeEdited"
+                                   OnCellEdited="@HandleCellEdited"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_rangeEditMessage))
+        {
+            <p><strong>Range edit:</strong> @_rangeEditMessage</p>
+        }
+        @if (!string.IsNullOrEmpty(_cellEditMessage))
+        {
+            <p><strong>Cell edit:</strong> @_cellEditMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Custom Context Menu">
+    <DemoSection Title="Custom Commands"
+                 Description="Extend the built-in context menu with custom commands using ContextMenuItems. 'Flag for Review' fires OnContextMenuAction. 'Copy Row to Clipboard' is disabled for Project Manager resources via CanExecuteAction."
+                 Code="@_customMenuCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_allResources"
+                                   Allocations="@_allEditableAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   EnableContextMenu="true"
+                                   ContextMenuItems="@_customMenuItems"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnContextMenuAction="@HandleCustomMenuAction"
+                                   CanExecuteAction="@HandleCanExecute"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_customMenuMessage))
+        {
+            <p><strong>Last action:</strong> @_customMenuMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Day-Level Editing">
+    <DemoSection Title="Daily Allocation Editing"
+                 Description="Set AuthoritativeLevel and ViewGrain to TimeGranularity.Day for fine-grained daily allocation editing. Useful for short-sprint or operational scheduling. Ten resources across 4 weeks (Mon–Fri only)."
+                 Code="@_dayCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_tenResources"
+                                   Allocations="@_dailyAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Day"
+                                   ViewGrain="TimeGranularity.Day"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Week"
+                                   Height="380px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Disabled Slots">
+    <DemoSection Title="Non-Editable Date Ranges"
+                 Description="Configure disabled slot ranges (public holidays, company blackout periods) to render specific cells as locked and non-interactive. Define a list of DateRange objects and bind to DisabledSlots."
+                 Code="@_disabledSlotsCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_tenResources"
+                                   Allocations="@_allBasicAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="380px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private AllocationSelectionMode _selectionMode = AllocationSelectionMode.Range;
+    private int _selectedCount;
+    private string _rangeEditMessage = string.Empty;
+    private string _cellEditMessage = string.Empty;
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    // ── Shared large resource list (for custom menu / day / disabled sections) ──
+
+    private static DateTime GetCurrentMonday()
+    {
+        var today = DateTime.Today;
+        int diff = ((int)today.DayOfWeek - (int)DayOfWeek.Monday + 7) % 7;
+        return today.AddDays(-diff);
+    }
+
+    private List<StaffResource> _allResources = new()
+    {
+        new() { Id = 1,  Name = "Alice Chen",    Role = "Senior Developer",   Department = "Engineering"    },
+        new() { Id = 2,  Name = "Bob Torres",    Role = "Senior Developer",   Department = "Engineering"    },
+        new() { Id = 3,  Name = "Carol Singh",   Role = "QA Engineer",        Department = "Engineering"    },
+        new() { Id = 4,  Name = "David Kim",     Role = "Project Manager",    Department = "PMO"            },
+        new() { Id = 5,  Name = "Elena Vasquez", Role = "Frontend Developer", Department = "Engineering"    },
+        new() { Id = 6,  Name = "Frank Okafor",  Role = "Backend Developer",  Department = "Engineering"    },
+        new() { Id = 7,  Name = "Grace Liu",     Role = "UX Designer",        Department = "Design"         },
+        new() { Id = 8,  Name = "Henry Patel",   Role = "DevOps Engineer",    Department = "Infrastructure" },
+        new() { Id = 9,  Name = "Isabel Moreau", Role = "Business Analyst",   Department = "PMO"            },
+        new() { Id = 10, Name = "James Wright",  Role = "Tech Lead",          Department = "Engineering"    },
+        new() { Id = 11, Name = "Karen Osei",    Role = "Database Developer", Department = "Engineering"    },
+        new() { Id = 12, Name = "Liam Nakamura", Role = "Security Engineer",  Department = "Infrastructure" }
+    };
+
+    private List<StaffResource> _tenResources = new();
+
+    private List<AllocationRecord> _allBasicAllocations  = new();
+    private List<AllocationRecord> _allEditableAllocations = new();
+    private List<AllocationRecord> _dailyAllocations      = new();
+
+    // ── Custom menu state ────────────────────────────────────────────────
+
+    private string _customMenuMessage = string.Empty;
+
+    private List<AllocationMenuDescriptor> _customMenuItems = new()
+    {
+        new() { Name = "flag-review", Text = "Flag for Review",       Icon = "flag",   IsEnabled = true },
+        new() { Name = "copy-row",    Text = "Copy Row to Clipboard", Icon = "copy",   IsEnabled = true }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationRecord> _editableAllocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 20, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 20, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 16, Unit = AllocationUnit.Hours }
+    };
+
+    protected override void OnInitialized()
+    {
+        _tenResources = _allResources.Take(10).ToList();
+        BuildAllBasicAllocations();
+        BuildAllEditableAllocations();
+        BuildDailyAllocations();
+    }
+
+    private void BuildAllBasicAllocations()
+    {
+        var w = GetCurrentMonday();
+        _allBasicAllocations = new();
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(1,  101, "Backend API Development",     w, new[] { 40m, 40m, 36m, 32m, 40m, 40m, 24m, 40m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(2,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(3,  103, "QA & Test Automation",        w, new[] { 16m, 24m, 32m, 40m, 40m, 36m, 40m, 24m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(4,  108, "Project Coordination",        w, new[] { 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(5,  102, "Frontend UI Build",           w, new[] { 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(6,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 32m, 40m, 40m, 36m, 40m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(7,  105, "UX Research & Design",        w, new[] { 24m, 32m, 36m, 40m, 32m, 24m,  0m, 24m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(8,  104, "Infrastructure & CI/CD",      w, new[] { 20m, 32m, 24m, 16m, 32m, 40m, 32m, 40m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(9,  108, "Project Coordination",        w, new[] { 16m, 16m, 20m, 16m, 20m, 24m, 16m, 20m }));
+        _allBasicAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 40m, 36m, 40m, 40m, 40m }));
+    }
+
+    private void BuildAllEditableAllocations()
+    {
+        var w = GetCurrentMonday();
+        _allEditableAllocations = new();
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(1,  101, "Backend API Development",     w, new[] { 40m, 40m, 36m, 32m, 40m, 40m, 24m, 40m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(2,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 36m, 40m, 32m, 40m, 40m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(3,  103, "QA & Test Automation",        w, new[] { 16m, 24m, 32m, 40m, 40m, 36m, 40m, 24m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(4,  108, "Project Coordination",        w, new[] { 20m, 20m, 24m, 20m, 20m, 24m, 20m, 20m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(5,  102, "Frontend UI Build",           w, new[] { 40m, 40m, 36m, 40m, 32m, 40m, 40m, 36m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(6,  101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 32m, 40m, 40m, 36m, 40m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(7,  105, "UX Research & Design",        w, new[] { 24m, 32m, 36m, 40m, 32m, 24m,  0m, 24m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(8,  104, "Infrastructure & CI/CD",      w, new[] { 20m, 32m, 24m, 16m, 32m, 40m, 32m, 40m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(9,  108, "Project Coordination",        w, new[] { 16m, 16m, 20m, 16m, 20m, 24m, 16m, 20m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(10, 101, "Backend API Development",     w, new[] { 32m, 40m, 40m, 40m, 36m, 40m, 40m, 40m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(11, 106, "Database Schema & Migration", w, new[] { 32m, 36m, 40m, 40m, 32m, 36m, 40m, 32m }));
+        _allEditableAllocations.AddRange(BuildWeeklyAllocations(12, 107, "Security Audit & Hardening",  w, new[] { 16m, 24m, 32m, 24m, 16m, 24m, 32m, 24m }));
+    }
+
+    private void BuildDailyAllocations()
+    {
+        _dailyAllocations = new();
+        var start = GetCurrentMonday();
+        var rangeEnd = start.AddDays(28); // 4 weeks
+
+        var assignments = new (int ResId, int TaskId, string TaskName, decimal HoursPerDay)[]
+        {
+            (1,  101, "Backend API Development",    8m),
+            (2,  101, "Backend API Development",    8m),
+            (3,  103, "QA & Test Automation",       6m),
+            (4,  108, "Project Coordination",        4m),
+            (5,  102, "Frontend UI Build",           8m),
+            (6,  101, "Backend API Development",    8m),
+            (7,  105, "UX Research & Design",        6m),
+            (8,  104, "Infrastructure & CI/CD",      7m),
+            (9,  108, "Project Coordination",        5m),
+            (10, 101, "Backend API Development",    8m),
+        };
+
+        foreach (var (resId, taskId, taskName, hours) in assignments)
+        {
+            for (var day = start; day < rangeEnd; day = day.AddDays(1))
+            {
+                if (day.DayOfWeek == DayOfWeek.Saturday || day.DayOfWeek == DayOfWeek.Sunday)
+                    continue;
+
+                _dailyAllocations.Add(new AllocationRecord
+                {
+                    AllocationId = Guid.NewGuid(),
+                    ResourceId   = resId,
+                    TaskId       = taskId,
+                    TaskName     = taskName,
+                    BucketStart  = day,
+                    BucketEnd    = day.AddDays(1),
+                    Value        = hours,
+                    Unit         = AllocationUnit.Hours
+                });
+            }
+        }
+    }
+
+    private static List<AllocationRecord> BuildWeeklyAllocations(
+        int resourceId, int taskId, string taskName,
+        DateTime weekStart, decimal[] hoursPerWeek)
+    {
+        var result = new List<AllocationRecord>();
+        for (int i = 0; i < hoursPerWeek.Length; i++)
+        {
+            if (hoursPerWeek[i] == 0m) continue;
+            var s = weekStart.AddDays(7 * i);
+            result.Add(new AllocationRecord
+            {
+                AllocationId = Guid.NewGuid(),
+                ResourceId   = resourceId,
+                TaskId       = taskId,
+                TaskName     = taskName,
+                BucketStart  = s,
+                BucketEnd    = s.AddDays(7),
+                Value        = hoursPerWeek[i],
+                Unit         = AllocationUnit.Hours
+            });
+        }
+        return result;
+    }
+
+    private Task HandleCustomMenuAction(ContextMenuActionArgs args)
+    {
+        _customMenuMessage = args.CommandName switch
+        {
+            "flag-review" => $"Flagged {args.TargetCells.Count} cell(s) for review",
+            "copy-row"    => $"Copied row for resource {args.TargetCells.FirstOrDefault()?.ResourceKey}",
+            _             => $"Command: {args.CommandName} on {args.TargetCells.Count} cell(s)"
+        };
+        return Task.CompletedTask;
+    }
+
+    private Task HandleCanExecute(CanExecuteActionArgs args)
+    {
+        if (args.CommandName == "copy-row")
+        {
+            var key      = args.TargetCells.FirstOrDefault()?.ResourceKey;
+            var resource = _allResources.FirstOrDefault(r => Equals(r.Id, key));
+            if (resource?.Role == "Project Manager")
+                args.IsEnabled = false;
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleSelectionChanged(SelectionChangedArgs args)
+    {
+        _selectedCount = args.SelectedCells?.Count ?? 0;
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleRangeEdited(RangeEditedArgs args)
+    {
+        _rangeEditMessage = $"{args.AffectedRecords.Count} cells updated to {args.Value}h";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleCellEdited(CellEditedArgs args)
+    {
+        _cellEditMessage = $"Resource {args.ResourceKey}, {args.BucketStart:MMM d}: {args.OldValue}h -> {args.NewValue}h";
+        await Task.CompletedTask;
+    }
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    // ── Code Snippets ───────────────────────────────────────────────────
+
+    private const string _selectionCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           SelectionMode=\"@_selectionMode\"\n" +
+        "                           OnSelectionChanged=\"@HandleSelectionChanged\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _customMenuCode =
+        "// Custom menu items\n" +
+        "private List<AllocationMenuDescriptor> _customMenuItems = new()\n" +
+        "{\n" +
+        "    new() { Name = \"flag-review\", Text = \"Flag for Review\",       Icon = \"flag\" },\n" +
+        "    new() { Name = \"copy-row\",    Text = \"Copy Row to Clipboard\", Icon = \"copy\" }\n" +
+        "};\n" +
+        "\n" +
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    EnableContextMenu=\"true\"\n" +
+        "    ContextMenuItems=\"@_customMenuItems\"\n" +
+        "    OnContextMenuAction=\"@HandleCustomMenuAction\"\n" +
+        "    CanExecuteAction=\"@HandleCanExecute\"\n" +
+        "    Height=\"400px\" />";
+
+    private const string _dayCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    Resources=\"@_tenResources\"\n" +
+        "    Allocations=\"@_dailyAllocations\"\n" +
+        "    AuthoritativeLevel=\"TimeGranularity.Day\"\n" +
+        "    ViewGrain=\"TimeGranularity.Day\"\n" +
+        "    MinVisibleColumns=\"2\"\n" +
+        "    DefaultRangeUnit=\"TimeGranularity.Week\"\n" +
+        "    Height=\"380px\" />\n" +
+        "\n" +
+        "// Daily records: BucketStart = date, BucketEnd = date.AddDays(1)\n" +
+        "// Weekends skipped in BuildDailyAllocations()";
+
+    private const string _disabledSlotsCode =
+        "// Define non-editable date ranges\n" +
+        "private List<DateRange> _disabledSlots = new()\n" +
+        "{\n" +
+        "    new() { Start = _demoStart.AddDays(7),  End = _demoStart.AddDays(14) }, // holiday week\n" +
+        "    new() { Start = _demoStart.AddDays(28), End = _demoStart.AddDays(35) }  // company blackout\n" +
+        "};\n" +
+        "\n" +
+        "// Bind via DisabledSlots parameter:\n" +
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "    DisabledSlots=\"@_disabledSlots\"\n" +
+        "    Height=\"380px\" />";
+
+    private const string _bulkEditCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           SelectionMode=\"AllocationSelectionMode.Range\"\n" +
+        "                           AllowBulkEdit=\"true\"\n" +
+        "                           AllowDragFill=\"true\"\n" +
+        "                           AllowKeyboardEdit=\"true\"\n" +
+        "                           OnRangeEdited=\"@HandleRangeEdited\"\n" +
+        "                           OnCellEdited=\"@HandleCellEdited\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+}

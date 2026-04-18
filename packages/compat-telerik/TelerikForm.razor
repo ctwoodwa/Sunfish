@@ -1,0 +1,75 @@
+@namespace Sunfish.Compat.Telerik
+@typeparam TModel
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.Forms
+@using Sunfish.Foundation.Enums
+@inject ILogger<TelerikForm<TModel>> Logger
+
+<SunfishForm TModel="TModel"
+             Model="Model"
+             OnValidSubmit="OnValidSubmitAdapter"
+             Orientation="_orientation"
+             @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishForm>
+
+@code {
+    [Parameter] public TModel? Model { get; set; }
+    [Parameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>Telerik's OnSubmit — invoked regardless of validity. Approximated via OnValidSubmit.</summary>
+    [Parameter] public EventCallback OnSubmit { get; set; }
+
+    [Parameter] public EventCallback<EditContext> OnValidSubmit { get; set; }
+    [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+
+    /// <summary>Form layout orientation. Maps to Sunfish <see cref="FormOrientation"/>.</summary>
+    [Parameter] public string? Orientation { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FormOrientation _orientation;
+
+    protected override void OnParametersSet()
+    {
+        _orientation = Orientation switch
+        {
+            null or "" or "Vertical" or "vertical" => FormOrientation.Vertical,
+            "Horizontal" or "horizontal" => FormOrientation.Horizontal,
+            _ => FormOrientationLogAndFallback(Orientation!)
+        };
+
+        if (EditContext is not null)
+        {
+            Logger.LogWarning(
+                "compat-telerik: TelerikForm.EditContext is not forwarded to SunfishForm in Phase 6. " +
+                "Use Model for binding. See docs/compat-telerik-mapping.md.");
+        }
+    }
+
+    private FormOrientation FormOrientationLogAndFallback(string received)
+    {
+        Logger.LogWarning(
+            "compat-telerik: Unrecognized Orientation '{Value}' on TelerikForm. Falling back to Vertical. " +
+            "See docs/compat-telerik-mapping.md.", received);
+        return FormOrientation.Vertical;
+    }
+
+    private async Task OnValidSubmitAdapter(TModel model)
+    {
+        // Telerik's OnValidSubmit emits EditContext; Sunfish's emits TModel. Bridge both.
+        if (OnValidSubmit.HasDelegate && EditContext is not null)
+        {
+            await OnValidSubmit.InvokeAsync(EditContext);
+        }
+        if (OnSubmit.HasDelegate)
+        {
+            await OnSubmit.InvokeAsync();
+        }
+    }
+}

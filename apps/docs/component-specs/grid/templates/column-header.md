@@ -1,0 +1,93 @@
+---
+title: Column Header
+page_title: Grid - Column Header Template
+description: Use custom column header templates in Grid for Blazor.
+slug: grid-templates-column-header
+tags: sunfish,blazor,grid,templates,column,header
+published: True
+position: 20
+components: ["grid"]
+---
+# Column Header Template
+
+Bound columns render the name of the field or their `Title` in their header. Through the `HeaderTemplate`, you can define custom content there instead of the title text.
+
+>tip If you only want to center or wrap the column header text, you can achieve that with some custom CSS. You can try one of the following approaches depending on the desired result - [Center Grid Column Header content](slug:grid-kb-center-column-header-content) or [Wrap and center the Grid column header text](slug:grid-kb-wrap-and-center-column-header-text).
+
+>caption Sample Header Template
+
+````RAZOR
+@* Header templates override the built-in title but leave sorting indicators and filter menu icons *@
+
+<SunfishDataGrid Data="@MyData" Height="300px" Pageable="true" Sortable="true" FilterMode="@GridFilterMode.FilterMenu">
+        <SunfishGridColumn Field="@(nameof(SampleData.Id))" Title="This title will not be rendered">
+            <HeaderTemplate>
+                <span>Employee ID</span>
+            </HeaderTemplate>
+        </SunfishGridColumn>
+        <SunfishGridColumn Field="@(nameof(SampleData.Name))">
+            <HeaderTemplate>
+                Employee<br /><strong>Name</strong>
+            </HeaderTemplate>
+        </SunfishGridColumn>
+        <SunfishGridColumn Field="HireDate" Width="350px">
+            <HeaderTemplate>
+                <span @onclick:stopPropagation>
+                    Hire date<br />
+                    <SunfishButton OnClick="@DoSomething">Do something</SunfishButton>
+                </span>
+                <br />
+                @{
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        <span style="color:red;">@result</span>
+                    }
+                    else
+                    {
+                        <div>something will appear here if you click the button</div>
+                    }
+                }
+            </HeaderTemplate>
+        </SunfishGridColumn>
+        <SunfishGridColumn>
+            <HeaderTemplate>
+                <span>
+                    <SunfishSvgIcon Icon="@SvgIcon.Image" />
+                    Column with Icon
+                </span>
+            </HeaderTemplate>
+        </SunfishGridColumn>
+</SunfishDataGrid>
+
+@code {
+    string result { get; set; }
+    void DoSomething()
+    {
+        result = $"button in header template clicked on {DateTime.Now}, something happened";
+    }
+
+    public class SampleData
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public DateTime HireDate { get; set; }
+    }
+
+    public IEnumerable<SampleData> MyData = Enumerable.Range(1, 50).Select(x => new SampleData
+    {
+        Id = x,
+        Name = "name " + x,
+        HireDate = DateTime.Now.AddDays(-x)
+    });
+}
+````
+
+>caption The result from the code snippet above
+
+![Blazor Grid Header Template](images/header-template.png)
+
+## See Also
+
+ * [Live Demo: Grid Templates](https://demos.sunfish.dev/blazor-ui/grid/templates)
+ * [Live Demo: Grid Custom Editor Template](https://demos.sunfish.dev/blazor-ui/grid/custom-editor)
+ * [Blazor Grid](slug:grid-overview)

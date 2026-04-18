@@ -1,0 +1,187 @@
+---
+title: Events
+page_title: TimePicker - Events
+description: Events in the TimePicker for Blazor.
+slug: components/timepicker/events
+tags: sunfish,blazor,TimePicker,events
+published: true
+position: 20
+components: ["timepicker"]
+---
+# Events
+
+This article explains the events available in the Sunfish TimePicker for Blazor:
+
+* [ValueChanged](#valuechanged)
+* [OnChange](#onchange)
+* [OnOpen](#onopen)
+* [OnClose](#onclose)
+* [OnBlur](#onblur)
+
+## ValueChanged
+
+The `ValueChanged` event fires upon every change (for example, keystroke) in the input, and upon clicking the `Set` or `Now` buttons in the dropdown.
+
+The event handler receives the new value as an argument and you must update the component `Value` programmatically for the user changes to take effect.
+
+>caption Handle the TimePicker ValueChanged event
+
+````RAZOR
+@Result
+<br />
+TimePicker Value: @TimePickerValue
+<br />
+
+<SunfishTimePicker Value="@TimePickerValue"
+                   ValueChanged="@( (DateTime d) => TimePickerValueChanged(d) )">
+</SunfishTimePicker>
+
+@code {
+    private string Result { get; set; } = string.Empty;
+
+    private DateTime TimePickerValue { get; set; } = DateTime.Now;
+
+    private void TimePickerValueChanged(DateTime newValue)
+    {
+        Result = $"The user entered: {newValue}";
+
+        TimePickerValue = newValue;
+    }
+}
+````
+
+## OnChange
+
+The `OnChange` event represents a user action that confirms the current value. It fires when the user:
+
+* Presses `Enter` while the textbox is focused.
+* Clicks **Set** in the time selection popup.
+* Blurs the component.
+
+The event handler receives an `object` argument that you need to cast to the actual `Value` type. The argument can hold a value or be `null`, depending on the user input and the `Value` type.
+
+The TimePicker is a generic component, so you must either provide a `Value`, or a type to the `T` parameter of the component.
+
+>caption Handle DateTimePicker OnChange and use two-way Value binding
+
+````RAZOR
+<SunfishTimePicker @bind-Value="@TimePickerValue"
+                   OnChange="@TimePickerValueChanged"
+                   Width="150px">
+</SunfishTimePicker>
+
+<span><code>OnChange</code> fired at <strong>@LastOnChange?.ToString("HH:mm:ss.fff")</strong></span>
+
+@code {
+    private DateTime? TimePickerValue { get; set; }
+    private DateTime? LastOnChange { get; set; }
+
+    private void TimePickerValueChanged(object currentValue)
+    {
+        LastOnChange = DateTime.Now;
+        Console.WriteLine($"The current Value is {(DateTime?)currentValue}");
+    }
+}
+````
+
+@[template](/_contentTemplates/common/general-info.md#event-callback-can-be-async)
+
+>tip The `OnChange` event is a custom event and does not interfere with bindings, so you can use it together with models and forms.
+
+## OnOpen
+
+The `OnOpen` event fires before the TimePicker popup renders. 
+
+The event handler receives as an argument an `TimePickerOpenEventArgs` object that contains:
+
+@[template](/_contentTemplates/common/parameters-table-styles.md#table-layout)
+
+| Property | Description |
+| --- | --- |
+| `IsCancelled` | Set the `IsCancelled` property to `true` to cancel the opening of the popup. |
+
+````RAZOR
+<SunfishTimePicker Min="@Min"
+                   OnOpen="@OnTimePickerPopupOpen"
+                   Max="@Max"
+                   Format="hh:mm:ss tt"
+                   @bind-Value="@TimePickerValue">
+</SunfishTimePicker>
+
+@code {
+    private DateTime? TimePickerValue = DateTime.Now;
+    private DateTime Min = new DateTime(1900, 1, 1, 8, 15, 0);
+    private DateTime Max = new DateTime(1900, 1, 1, 19, 30, 45);
+
+    private void OnTimePickerPopupOpen(TimePickerOpenEventArgs args)
+    {
+        //set the IsCancelled to true to cancel the OnOpen event
+        args.IsCancelled = false;
+    }
+}
+````
+
+## OnClose
+
+The `OnClose` event fires before the TimePicker popup closes.
+
+The event handler receives as an argument an `TimePickerCloseEventArgs` object that contains:
+
+| Property | Description |
+| --- | --- |
+| `IsCancelled` | Set the `IsCancelled` property to `true` to cancel the closing of the popup. |
+
+````RAZOR
+@* Cancel the OnClose event based on a condition *@
+
+<SunfishTimePicker Min="@Min"
+                   OnClose="@OnTimePickerPopupClose"
+                   Max="@Max"
+                   Format="hh:mm:ss tt"
+                   @bind-Value="@TimePickerValue">
+</SunfishTimePicker>
+
+@code {
+    private DateTime? TimePickerValue = DateTime.Now;
+    private DateTime Min = new DateTime(1900, 1, 1, 8, 15, 0);
+    private DateTime Max = new DateTime(1900, 1, 1, 19, 30, 45);
+
+    private void OnTimePickerPopupClose(TimePickerCloseEventArgs args)
+    {
+        //cancel the OnClose event based on a condition
+        if (TimePickerValue > DateTime.Now.AddHours(1))
+        {
+            args.IsCancelled = true;
+        }
+    }
+}
+````
+
+## OnBlur
+
+The `OnBlur` event fires when the component loses focus.
+
+>caption Handle the OnBlur event
+
+````RAZOR
+@* You do not have to use OnChange to react to loss of focus *@
+
+<SunfishTimePicker @bind-Value="@TheTime"
+                   OnBlur="@OnBlurHandler">
+</SunfishTimePicker>
+
+@code{
+    async Task OnBlurHandler()
+    {
+        Console.WriteLine($"BLUR fired, current value is {TheTime}.");
+    }
+
+    DateTime? TheTime { get; set; } = DateTime.Now;
+}
+````
+
+
+## See Also
+
+* [ValueChanged and Validation](slug:value-changed-validation-model)
+* [Fire OnChange Only Once](slug:ddl-kb-onchange-fires-twice)

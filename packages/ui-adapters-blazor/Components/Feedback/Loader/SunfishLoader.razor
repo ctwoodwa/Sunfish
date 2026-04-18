@@ -1,0 +1,59 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    @if (ChildContent != null)
+    {
+        <div class="@CombineClasses("mar-loader-wrapper")" style="@CombineStyles()" @attributes="AdditionalAttributes">
+            <div class="sf-loader-wrapper__content">
+                @ChildContent
+            </div>
+            <div class="sf-loader-wrapper__overlay">
+                <div class="sf-loader__indicator">
+                    <SunfishSpinner Size="@Size" />
+                    @if (!string.IsNullOrEmpty(Text))
+                    {
+                        <span class="sf-loader__text" style="@ThemeColorStyle">@Text</span>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="@CombineClasses("mar-loader")" style="@CombineStyles()" @attributes="AdditionalAttributes">
+            <div class="sf-loader__indicator">
+                <SunfishSpinner Size="@Size" />
+                @if (!string.IsNullOrEmpty(Text))
+                {
+                    <span class="sf-loader__text" style="@ThemeColorStyle">@Text</span>
+                }
+            </div>
+        </div>
+    }
+}
+
+@code {
+    /// <summary>Whether the loader is visible. Default is true.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>The size of the loading spinner.</summary>
+    [Parameter] public SpinnerSize Size { get; set; } = SpinnerSize.Medium;
+
+    /// <summary>The type of loading animation.</summary>
+    [Parameter] public LoaderType Type { get; set; } = LoaderType.Pulsing;
+
+    /// <summary>Optional text displayed below the spinner.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Optional content to overlay the loader on top of.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional theme color for the loader text.</summary>
+    [Parameter] public string? ThemeColor { get; set; }
+
+    private string ThemeColorStyle => !string.IsNullOrEmpty(ThemeColor)
+        ? $"color: {ThemeColor};"
+        : "";
+}

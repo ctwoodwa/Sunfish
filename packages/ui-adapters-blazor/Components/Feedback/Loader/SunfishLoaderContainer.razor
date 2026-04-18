@@ -1,0 +1,42 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-loader-container")" style="@CombineStyles("position: relative;")" @attributes="AdditionalAttributes">
+    @ChildContent
+    @if (Loading)
+    {
+        <div class="sf-loader-container__overlay">
+            @if (LoaderTemplate != null)
+            {
+                @LoaderTemplate
+            }
+            else
+            {
+                <div class="sf-loader-container__indicator">
+                    <SunfishSpinner Size="@Size" />
+                    @if (!string.IsNullOrEmpty(Text))
+                    {
+                        <span class="sf-loader-container__text">@Text</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Whether the loading overlay is shown.</summary>
+    [Parameter] public bool Loading { get; set; }
+
+    /// <summary>The content to display (always rendered).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional custom template to use instead of the default spinner.</summary>
+    [Parameter] public RenderFragment? LoaderTemplate { get; set; }
+
+    /// <summary>Optional text displayed below the spinner. Default is "Loading...".</summary>
+    [Parameter] public string? Text { get; set; } = "Loading...";
+
+    /// <summary>The size of the default loading spinner.</summary>
+    [Parameter] public SpinnerSize Size { get; set; } = SpinnerSize.Medium;
+}

@@ -1,0 +1,34 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ProgressBarClass())"
+     style="@CombineStyles()"
+     role="progressbar"
+     aria-valuenow="@(IsIndeterminate ? null : Value)"
+     aria-valuemin="0"
+     aria-valuemax="@Max"
+     aria-label="@Label"
+     @attributes="AdditionalAttributes">
+    @if (!IsIndeterminate)
+    {
+        <div class="sf-progressbar__fill" style="width:@(Percentage)%"></div>
+    }
+    else
+    {
+        <div class="sf-progressbar__fill mar-progressbar__fill--indeterminate"></div>
+    }
+    @if (ShowLabel && !IsIndeterminate)
+    {
+        <span class="sf-progressbar__label">@(Label ?? $"{Percentage:F0}%")</span>
+    }
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public bool IsIndeterminate { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool ShowLabel { get; set; }
+
+    private double Percentage => Max > 0 ? Math.Clamp(Value / Max * 100, 0, 100) : 0;
+}

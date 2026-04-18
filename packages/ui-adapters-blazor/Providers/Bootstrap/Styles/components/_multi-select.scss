@@ -1,0 +1,31 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Multi Select
+// =================================================================
+// From _bridge-utility.scss: .sf-bs-multiselect, .sf-bs-multiselect-tag, .sf-bs-item--highlighted
+// =================================================================
+
+.sf-bs-multiselect {
+  position: relative;
+
+  .form-control,
+  .form-select {
+    cursor: pointer;
+  }
+
+  &--open .dropdown-menu {
+    display: block;
+  }
+}
+
+.sf-bs-multiselect-tag {
+  cursor: pointer;
+  font-weight: 400;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.sf-bs-item--highlighted {
+  background-color: var(--sf-color-surface);
+}

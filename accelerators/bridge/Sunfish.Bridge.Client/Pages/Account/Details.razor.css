@@ -1,0 +1,18 @@
+.btn-danger {
+    background: var(--marilo-color-danger, #ef4444);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.btn-danger:hover {
+    background: color-mix(in srgb, var(--marilo-color-danger, #ef4444) 85%, black);
+}
+
+.btn-danger:focus-visible {
+    outline: 2px solid var(--marilo-color-danger, #ef4444);
+    outline-offset: 2px;
+}

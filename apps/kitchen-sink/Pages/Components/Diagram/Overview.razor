@@ -1,0 +1,237 @@
+@page "/components/diagram"
+@page "/components/diagram/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Diagram displays shapes and connections from flat descriptor lists." Code="@_basicCode">
+        <SunfishDiagram Shapes="_shapes"
+                       Connections="_connections"
+                       Height="350px"
+                       AriaLabel="Flowchart diagram"
+                       OnShapeClick="HandleShapeClick" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Shape Types" Description="Shapes support Rectangle, Ellipse, Diamond, Triangle, and Circle types." Code="@_shapesCode">
+        <SunfishDiagram Shapes="_shapeTypeShapes"
+                       Connections="_shapeTypeConnections"
+                       Height="300px"
+                       AriaLabel="Shape types showcase" />
+    </DemoSection>
+
+    <DemoSection Title="Tooltips" Description="Shapes can display tooltips on hover via the TooltipText property." Code="@_tooltipsCode">
+        <SunfishDiagram Shapes="_tooltipShapes"
+                       Connections="_tooltipConnections"
+                       Height="250px"
+                       AriaLabel="Diagram with tooltips" />
+    </DemoSection>
+
+    <DemoSection Title="Connection Labels" Description="Connections can display text labels at their midpoints." Code="@_connectionLabelsCode">
+        <SunfishDiagram Shapes="_labelShapes"
+                       Connections="_labelConnections"
+                       Height="280px"
+                       AriaLabel="Diagram with connection labels" />
+    </DemoSection>
+
+    <DemoSection Title="Events" Description="OnShapeClick fires when a shape is clicked. Click a shape to see the event output." Code="@_eventsCode">
+        <SunfishDiagram Shapes="_eventShapes"
+                       Height="200px"
+                       AriaLabel="Interactive diagram"
+                       OnShapeClick="HandleShapeClick" />
+        @if (_clickedShape != null)
+        {
+            <div style="margin-top:8px;padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
+                Clicked: <strong>@_clickedShape.Text</strong> (ID: @_clickedShape.Id, Type: @_clickedShape.Type) at (@_clickedShape.X, @_clickedShape.Y)
+            </div>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Interactive Controls" Description="Add and remove shapes dynamically." Code="@_interactiveCode">
+        <div style="margin-bottom:8px;display:flex;gap:8px;">
+            <button class="btn btn-sm btn-primary" @onclick="AddShape">Add Shape</button>
+            <button class="btn btn-sm btn-outline-danger" @onclick="RemoveLastShape" disabled="@(_dynamicShapes.Count == 0)">Remove Last</button>
+        </div>
+        <SunfishDiagram Shapes="_dynamicShapes"
+                       Connections="_dynamicConnections"
+                       Height="300px"
+                       AriaLabel="Dynamic diagram" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DiagramShapeDescriptor? _clickedShape;
+
+    private void HandleShapeClick(DiagramShapeClickEventArgs args)
+    {
+        _clickedShape = args.Shape;
+    }
+
+    // ── Basic usage data ────────────────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _shapes = new()
+    {
+        new() { Id = "start", Text = "Start", Type = DiagramShapeType.Rectangle, X = 50, Y = 40, Width = 100, Height = 50, TooltipText = "Process entry point" },
+        new() { Id = "process", Text = "Process Data", Type = DiagramShapeType.Rectangle, X = 220, Y = 40, Width = 120, Height = 50, TooltipText = "Data processing step" },
+        new() { Id = "decision", Text = "Valid?", Type = DiagramShapeType.Diamond, X = 410, Y = 30, Width = 100, Height = 70, TooltipText = "Validation decision" },
+        new() { Id = "success", Text = "Save", Type = DiagramShapeType.Rectangle, X = 330, Y = 160, Width = 100, Height = 50, TooltipText = "Save to database" },
+        new() { Id = "error", Text = "Retry", Type = DiagramShapeType.Rectangle, X = 490, Y = 160, Width = 100, Height = 50, TooltipText = "Retry failed operation" },
+    };
+
+    private List<DiagramConnectionDescriptor> _connections = new()
+    {
+        new() { Id = "e1", FromShapeId = "start", ToShapeId = "process" },
+        new() { Id = "e2", FromShapeId = "process", ToShapeId = "decision" },
+        new() { Id = "e3", FromShapeId = "decision", ToShapeId = "success", Text = "Yes" },
+        new() { Id = "e4", FromShapeId = "decision", ToShapeId = "error", Text = "No" },
+        new() { Id = "e5", FromShapeId = "error", ToShapeId = "process" },
+    };
+
+    // ── Shape types data ────────────────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _shapeTypeShapes = new()
+    {
+        new() { Id = "t1", Text = "Rectangle", Type = DiagramShapeType.Rectangle, X = 20, Y = 100, Width = 100, Height = 50 },
+        new() { Id = "t2", Text = "Ellipse", Type = DiagramShapeType.Ellipse, X = 160, Y = 90, Width = 110, Height = 60 },
+        new() { Id = "t3", Text = "Diamond", Type = DiagramShapeType.Diamond, X = 310, Y = 80, Width = 90, Height = 80 },
+        new() { Id = "t4", Text = "Triangle", Type = DiagramShapeType.Triangle, X = 440, Y = 80, Width = 100, Height = 80 },
+        new() { Id = "t5", Text = "Circle", Type = DiagramShapeType.Circle, X = 580, Y = 90, Width = 60, Height = 60 },
+    };
+
+    private List<DiagramConnectionDescriptor> _shapeTypeConnections = new()
+    {
+        new() { Id = "tc1", FromShapeId = "t1", ToShapeId = "t2" },
+        new() { Id = "tc2", FromShapeId = "t2", ToShapeId = "t3" },
+        new() { Id = "tc3", FromShapeId = "t3", ToShapeId = "t4" },
+        new() { Id = "tc4", FromShapeId = "t4", ToShapeId = "t5" },
+    };
+
+    // ── Tooltip data ────────────────────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _tooltipShapes = new()
+    {
+        new() { Id = "tt1", Text = "Hover Me", Type = DiagramShapeType.Rectangle, X = 50, Y = 80, Width = 120, Height = 50, TooltipText = "This is a rectangle with a tooltip" },
+        new() { Id = "tt2", Text = "Me Too", Type = DiagramShapeType.Ellipse, X = 230, Y = 75, Width = 120, Height = 60, TooltipText = "Ellipse shape tooltip" },
+        new() { Id = "tt3", Text = "And Me", Type = DiagramShapeType.Circle, X = 410, Y = 80, Width = 60, Height = 60, TooltipText = "Circle shape tooltip" },
+    };
+
+    private List<DiagramConnectionDescriptor> _tooltipConnections = new()
+    {
+        new() { Id = "ttc1", FromShapeId = "tt1", ToShapeId = "tt2", Text = "Link" },
+        new() { Id = "ttc2", FromShapeId = "tt2", ToShapeId = "tt3" },
+    };
+
+    // ── Connection labels data ──────────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _labelShapes = new()
+    {
+        new() { Id = "l1", Text = "Source", Type = DiagramShapeType.Rectangle, X = 50, Y = 100, Width = 100, Height = 50 },
+        new() { Id = "l2", Text = "Transform", Type = DiagramShapeType.Ellipse, X = 250, Y = 40, Width = 120, Height = 50 },
+        new() { Id = "l3", Text = "Sink", Type = DiagramShapeType.Rectangle, X = 450, Y = 100, Width = 100, Height = 50 },
+        new() { Id = "l4", Text = "Error", Type = DiagramShapeType.Diamond, X = 250, Y = 160, Width = 80, Height = 60 },
+    };
+
+    private List<DiagramConnectionDescriptor> _labelConnections = new()
+    {
+        new() { Id = "lc1", FromShapeId = "l1", ToShapeId = "l2", Text = "Extract" },
+        new() { Id = "lc2", FromShapeId = "l2", ToShapeId = "l3", Text = "Load" },
+        new() { Id = "lc3", FromShapeId = "l2", ToShapeId = "l4", Text = "On Error" },
+    };
+
+    // ── Events data ─────────────────────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _eventShapes = new()
+    {
+        new() { Id = "ev1", Text = "Click Me", Type = DiagramShapeType.Rectangle, X = 50, Y = 60, Width = 110, Height = 50 },
+        new() { Id = "ev2", Text = "Or Me", Type = DiagramShapeType.Ellipse, X = 220, Y = 55, Width = 110, Height = 60 },
+        new() { Id = "ev3", Text = "Or Me!", Type = DiagramShapeType.Diamond, X = 390, Y = 50, Width = 90, Height = 70 },
+    };
+
+    // ── Interactive controls data ───────────────────────────────────
+
+    private List<DiagramShapeDescriptor> _dynamicShapes = new()
+    {
+        new() { Id = "d1", Text = "Node 1", X = 50, Y = 100, Width = 100, Height = 50 },
+    };
+
+    private List<DiagramConnectionDescriptor> _dynamicConnections = new();
+
+    private int _nextDynamicId = 2;
+
+    private void AddShape()
+    {
+        var prevId = _dynamicShapes[^1].Id;
+        var newId = $"d{_nextDynamicId++}";
+        var newShape = new DiagramShapeDescriptor
+        {
+            Id = newId,
+            Text = $"Node {_nextDynamicId - 1}",
+            X = 50 + (_dynamicShapes.Count) * 140,
+            Y = 100,
+            Width = 100,
+            Height = 50
+        };
+        _dynamicShapes.Add(newShape);
+        _dynamicConnections.Add(new DiagramConnectionDescriptor
+        {
+            Id = $"dc{_nextDynamicId - 1}",
+            FromShapeId = prevId,
+            ToShapeId = newId
+        });
+    }
+
+    private void RemoveLastShape()
+    {
+        if (_dynamicShapes.Count == 0) return;
+
+        var removedId = _dynamicShapes[^1].Id;
+        _dynamicShapes.RemoveAt(_dynamicShapes.Count - 1);
+        _dynamicConnections.RemoveAll(c => c.FromShapeId == removedId || c.ToShapeId == removedId);
+    }
+
+    // ── Code snippets ───────────────────────────────────────────────
+
+    private const string _basicCode =
+        "<SunfishDiagram Shapes=\"_shapes\"\n" +
+        "               Connections=\"_connections\"\n" +
+        "               Height=\"350px\"\n" +
+        "               AriaLabel=\"Flowchart diagram\"\n" +
+        "               OnShapeClick=\"HandleShapeClick\" />";
+
+    private const string _shapesCode =
+        "<SunfishDiagram Shapes=\"_shapeTypeShapes\"\n" +
+        "               Connections=\"_shapeTypeConnections\"\n" +
+        "               Height=\"300px\" />\n\n" +
+        "// Shapes with Type = Rectangle, Ellipse, Diamond, Triangle, Circle";
+
+    private const string _tooltipsCode =
+        "new DiagramShapeDescriptor\n" +
+        "{\n" +
+        "    Id = \"s1\", Text = \"Hover Me\",\n" +
+        "    TooltipText = \"This is a tooltip\",\n" +
+        "    X = 50, Y = 80, Width = 120, Height = 50\n" +
+        "}";
+
+    private const string _connectionLabelsCode =
+        "new DiagramConnectionDescriptor\n" +
+        "{\n" +
+        "    Id = \"c1\",\n" +
+        "    FromShapeId = \"source\", ToShapeId = \"target\",\n" +
+        "    Text = \"Label at midpoint\"\n" +
+        "}";
+
+    private const string _eventsCode =
+        "<SunfishDiagram Shapes=\"_shapes\"\n" +
+        "               OnShapeClick=\"HandleShapeClick\" />\n\n" +
+        "void HandleShapeClick(DiagramShapeClickEventArgs args)\n" +
+        "{\n" +
+        "    Console.WriteLine(args.Shape.Text);\n" +
+        "}";
+
+    private const string _interactiveCode =
+        "<button @onclick=\"AddShape\">Add Shape</button>\n" +
+        "<button @onclick=\"RemoveLastShape\">Remove Last</button>\n\n" +
+        "<SunfishDiagram Shapes=\"_dynamicShapes\"\n" +
+        "               Connections=\"_dynamicConnections\"\n" +
+        "               Height=\"300px\" />";
+}

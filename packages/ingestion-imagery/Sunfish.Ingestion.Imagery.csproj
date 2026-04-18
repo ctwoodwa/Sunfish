@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Ingestion.Imagery</PackageId>
+    <Description>Drone/robot imagery ingestion for Sunfish — EXIF + GPS extraction via MetadataExtractor, blob-first storage (spec §7.5).</Description>
+    <PackageTags>sunfish;ingestion;imagery;exif;drone</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <Content Remove="tests/**/*" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Ingestion.Imagery.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="MetadataExtractor" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ingestion-core\Sunfish.Ingestion.Core.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>

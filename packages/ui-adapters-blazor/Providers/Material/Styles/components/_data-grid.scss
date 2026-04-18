@@ -1,0 +1,448 @@
+// =============================================================================
+// Component: DataGrid — Material 3
+// =============================================================================
+
+.sf-datagrid {
+    width: 100%;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+}
+
+.sf-datagrid-content > table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+// --- Header ---
+
+.sf-datagrid-header {
+    background: var(--sf-color-surface-container);
+    font-weight: var(--sf-font-weight-semibold);
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-datagrid-header-cell {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-weight: var(--sf-font-weight-semibold);
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+
+    &--sortable { cursor: pointer; }
+    &--sortable:hover { background: var(--sf-color-surface-container-high); }
+    &--sorted { color: var(--sf-color-primary); }
+}
+
+.sf-datagrid-sort-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.25rem;
+    color: var(--sf-color-primary);
+    font-size: 0.75rem;
+}
+
+// --- Rows ---
+
+.sf-datagrid-row {
+    border-bottom: 1px solid var(--sf-color-border);
+    transition: background var(--sf-transition-fast);
+}
+
+.sf-datagrid-row:last-child { border-bottom: none; }
+.sf-datagrid-row:hover { background: var(--sf-color-surface-container-high); }
+.sf-datagrid-row--selected { background: var(--sf-color-primary-light); }
+.sf-datagrid-row--selected:hover { background: var(--sf-color-primary-light); }
+.sf-datagrid-row--striped:nth-child(even) { background: var(--sf-color-surface-container); }
+
+// --- Cells ---
+
+.sf-datagrid-cell {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-datagrid-cell--selected {
+    background: var(--sf-color-primary-light);
+    outline: 2px solid var(--sf-color-primary);
+    outline-offset: -2px;
+    position: relative;
+    z-index: 1;
+}
+
+// --- Toolbar & search ---
+
+.sf-datagrid-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-datagrid-searchbox {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-xs) var(--sf-space-md);
+    border-bottom: 1px solid var(--sf-color-border);
+
+    input {
+        flex: 1;
+        border: 1px solid var(--sf-color-border);
+        border-radius: var(--sf-radius-sm);
+        padding: 0.3rem 0.6rem;
+        font-size: var(--sf-font-size-base);
+        background: var(--sf-color-surface);
+        color: var(--sf-color-text);
+
+        &::placeholder { color: var(--sf-color-text-muted); }
+        &:focus { outline: none; border-color: var(--sf-color-primary); }
+    }
+}
+
+// --- Filter row ---
+
+.sf-datagrid-filter-row {
+    background: var(--sf-color-surface-container);
+}
+
+.sf-datagrid-filter-cell {
+    padding: var(--sf-space-xs) var(--sf-space-md);
+}
+
+// --- Filter menu ---
+
+.sf-datagrid .sf-datagrid-header-cell,
+.sf-datagrid .sf-datagrid-header-cell--sortable,
+.sf-datagrid .sf-datagrid-header-cell--sorted {
+    position: relative;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.35rem;
+    border: 1px solid var(--sf-color-border);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-muted);
+    border-radius: 4px;
+    line-height: 1;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn:hover {
+    border-color: var(--sf-color-primary);
+    color: var(--sf-color-primary);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn--active {
+    border-color: var(--sf-color-primary);
+    background: color-mix(in srgb, var(--sf-color-primary) 10%, var(--sf-color-surface, #ffffff));
+    color: var(--sf-color-primary);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--sf-color-primary) 35%, transparent);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn--active::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--sf-color-primary);
+}
+
+.sf-datagrid .sf-datagrid-filter-popup {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    z-index: 30;
+    min-width: 260px;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--sf-color-border);
+    border-radius: 8px;
+    background: var(--sf-color-surface);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sf-color-text);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-operator,
+.sf-datagrid .sf-datagrid-filter-menu-value {
+    width: 100%;
+    border: 1px solid var(--sf-color-border);
+    border-radius: 4px;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.9rem;
+    background: var(--sf-color-surface);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+    border: 1px solid var(--sf-color-border);
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    background: var(--sf-color-surface);
+    cursor: pointer;
+}
+
+// --- Empty, loading, group, detail ---
+
+.sf-datagrid-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sf-space-xl) var(--sf-space-md);
+    color: var(--sf-color-text-muted);
+    font-size: var(--sf-font-size-base);
+}
+
+.sf-datagrid-group-header {
+    font-weight: var(--sf-font-weight-semibold);
+    background: var(--sf-color-surface-container);
+    padding: var(--sf-space-xs) var(--sf-space-md);
+}
+
+.sf-datagrid-detail-row {
+    background: var(--sf-color-surface);
+    border-bottom: 1px solid var(--sf-color-border);
+
+    > td, > .sf-datagrid-cell {
+        padding: var(--sf-space-sm) var(--sf-space-md);
+    }
+}
+
+.sf-datagrid-loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--sf-color-surface) 70%, transparent);
+    z-index: 10;
+}
+
+// --- Footer ---
+
+.sf-datagrid-footer-row {
+    background: var(--sf-color-surface-container);
+    border-top: 1px solid var(--sf-color-border);
+    font-weight: var(--sf-font-weight-semibold);
+}
+
+.sf-datagrid-footer-cell {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+}
+
+// --- Frozen / locked columns ---
+
+.sf-datagrid-col--locked {
+    position: sticky;
+    z-index: 2;
+    background: var(--sf-color-surface);
+    border-right: 2px solid var(--sf-color-border);
+}
+
+// --- Pager ---
+
+.sf-datagrid-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-top: 1px solid var(--sf-color-border);
+    background: var(--sf-color-surface-container);
+}
+
+.sf-datagrid-pager-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 var(--sf-space-xs);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+
+    &:hover { background: var(--sf-color-surface-container-high); }
+    &--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+    &:disabled { color: var(--sf-color-text-muted); cursor: not-allowed; }
+}
+
+.sf-datagrid-pager-ellipsis {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 var(--sf-space-xs);
+    color: var(--sf-color-text-secondary);
+}
+
+.sf-datagrid-pager-info {
+    font-size: var(--sf-font-size-sm);
+    color: var(--sf-color-text-secondary);
+}
+
+.sf-datagrid-pagesize-select {
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    padding: 0.2rem 0.4rem;
+    font-size: var(--sf-font-size-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+}
+
+// --- Popup edit ---
+
+.sf-datagrid-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sf-datagrid-popup-dialog {
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    min-width: 320px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.sf-datagrid-popup-header {
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    border-bottom: 1px solid var(--sf-color-border);
+    font-weight: var(--sf-font-weight-semibold);
+    font-size: var(--sf-font-size-base);
+}
+
+.sf-datagrid-popup-body {
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--sf-space-md);
+}
+
+.sf-datagrid-popup-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm) var(--sf-space-lg) var(--sf-space-md);
+    border-top: 1px solid var(--sf-color-border);
+}
+
+.sf-datagrid-popup-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sf-space-xs);
+
+    label {
+        font-size: var(--sf-font-size-sm);
+        font-weight: var(--sf-font-weight-semibold);
+        color: var(--sf-color-on-surface-variant);
+    }
+}
+
+// --- Validation ---
+
+.sf-datagrid-validation-summary {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border: 1px solid var(--sf-color-danger);
+    border-radius: var(--sf-radius-sm);
+    background: color-mix(in srgb, var(--sf-color-danger) 8%, var(--sf-color-surface));
+    color: var(--sf-color-danger);
+    font-size: var(--sf-font-size-sm);
+}
+
+// --- Command buttons ---
+
+.sf-datagrid-cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: 0.25rem var(--sf-space-sm);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+    font-size: var(--sf-font-size-sm);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast);
+
+    &:hover { background: var(--sf-color-surface-container-high); }
+}
+
+.sf-datagrid-command-header {
+    text-align: center;
+}
+
+.sf-datagrid-checkbox-cell {
+    width: 2.5rem;
+    text-align: center;
+    padding: var(--sf-space-xs);
+}
+
+.sf-datagrid-drag-header {
+    width: 2rem;
+    text-align: center;
+    cursor: grab;
+}
+
+.sf-datagrid-detail-cell {
+    padding: 0;
+}
+
+// --- Focus rings ---
+
+.sf-datagrid-cell:focus-visible,
+.sf-datagrid-header-cell:focus-visible {
+    box-shadow: var(--sf-focus-ring);
+    outline: none;
+    position: relative;
+    z-index: 1;
+}
+
+.sf-datagrid-row--focused {
+    box-shadow: var(--sf-focus-ring);
+    outline: none;
+    position: relative;
+    z-index: 1;
+}

@@ -1,0 +1,371 @@
+@page "/components/DataSheet/keyboard-and-accessibility"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models.DataSheet
+@using Sunfish.Components.Blazor.Components.DataDisplay
+
+<PageSection Title="Keyboard and Accessibility">
+    <p>
+        This page demonstrates how <code>SunfishDataSheet</code> supports
+        full keyboard-driven editing and screen-reader accessibility.
+        The grid itself implements all navigation, edit-mode, and command
+        shortcuts — the scenarios below teach the key set and let you
+        observe presses as you work. Each scenario is independent.
+    </p>
+</PageSection>
+
+<PageSection Title="A — Navigation Keys">
+    <DemoSection Title="Tab, Shift+Tab, Arrow keys, and Enter"
+                 Description="Click any cell to focus it, then use the keys below to move around. Tab and Shift+Tab move right and left. Arrow keys navigate non-editing cells. Enter commits the current edit and moves focus down one row.">
+        <div class="ks-instructions">
+            <strong>Try it:</strong>
+            <ul>
+                <li><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> — move focus right / left</li>
+                <li><kbd>&#8592;</kbd> <kbd>&#8593;</kbd> <kbd>&#8594;</kbd> <kbd>&#8595;</kbd> — navigate between cells</li>
+                <li><kbd>Enter</kbd> — commit current edit and move down</li>
+            </ul>
+        </div>
+
+        <div @onkeydown="HandleNavKey" tabindex="-1" class="ks-capture">
+            <SunfishDataSheet TItem="NavRow"
+                             Data="@_navRows"
+                             KeyField="Id"
+                             Height="200px"
+                             EnableVirtualization="false">
+                <SunfishDataSheetColumn TItem="NavRow"
+                                       Field="Label" Title="Label" ColumnType="DataSheetColumnType.Text"
+                                       Editable="true" Width="180px" />
+                <SunfishDataSheetColumn TItem="NavRow"
+                                       Field="Amount" Title="Amount" ColumnType="DataSheetColumnType.Number"
+                                       Editable="true" Width="140px" />
+                <SunfishDataSheetColumn TItem="NavRow"
+                                       Field="TradeDate" Title="Trade Date" ColumnType="DataSheetColumnType.Date"
+                                       Editable="true" Width="160px" />
+            </SunfishDataSheet>
+        </div>
+
+        <div class="ks-observer">
+            <strong>Last key observed:</strong>
+            <code>@(_navLastKey ?? "(none yet)")</code>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="B — Edit Mode Shortcuts">
+    <DemoSection Title="F2 to enter, Enter to commit, Escape to cancel"
+                 Description="Press F2 on any focused cell to begin editing. Type a new value. Press Enter to commit and move down one row. Press Escape to cancel and restore the prior value.">
+        <div class="ks-instructions">
+            <strong>Try it:</strong>
+            <ul>
+                <li><kbd>F2</kbd> — enter edit mode on the focused cell</li>
+                <li><kbd>Enter</kbd> — commit and move down</li>
+                <li><kbd>Escape</kbd> — cancel and restore the prior value</li>
+            </ul>
+        </div>
+
+        <div @onkeydown="HandleEditKey" tabindex="-1" class="ks-capture">
+            <SunfishDataSheet TItem="EditRow"
+                             Data="@_editRows"
+                             KeyField="Id"
+                             Height="200px"
+                             EnableVirtualization="false">
+                <SunfishDataSheetColumn TItem="EditRow"
+                                       Field="Name" Title="Name" ColumnType="DataSheetColumnType.Text"
+                                       Editable="true" Width="180px" />
+                <SunfishDataSheetColumn TItem="EditRow"
+                                       Field="Score" Title="Score" ColumnType="DataSheetColumnType.Number"
+                                       Editable="true" Width="120px" />
+            </SunfishDataSheet>
+        </div>
+
+        <div class="ks-observer">
+            <strong>Edit-mode keys seen:</strong>
+            @if (_editKeyLog.Count == 0)
+            {
+                <span class="ks-observer-empty">(none yet — press F2 / Enter / Escape inside the grid)</span>
+            }
+            else
+            {
+                @foreach (var entry in _editKeyLog)
+                {
+                    <div class="ks-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="C — Command Keys">
+    <DemoSection Title="Ctrl+S, Ctrl+C, Ctrl+V, Ctrl+D, Ctrl+Z"
+                 Description="Focus a cell and use the command combinations below. Ctrl+C and Ctrl+V move TSV (tab-separated) data to and from the system clipboard and are fully handled by SunfishDataSheet when AllowBulkPaste is enabled. Ctrl+D fills the selected range down from the anchor cell. Ctrl+Z undoes the last edit. Ctrl+S triggers Save All and is observed by the event log below.">
+        <div class="ks-instructions">
+            <strong>Try it:</strong>
+            <ul>
+                <li><kbd>Ctrl+S</kbd> — save all pending changes</li>
+                <li><kbd>Ctrl+C</kbd> / <kbd>Ctrl+V</kbd> — copy / paste selection as TSV</li>
+                <li><kbd>Ctrl+D</kbd> — fill the selected range down from the anchor</li>
+                <li><kbd>Ctrl+Z</kbd> — undo the last cell change</li>
+            </ul>
+        </div>
+
+        <SunfishDataSheet @ref="_cmdSheet"
+                         TItem="CmdRow"
+                         Data="@_cmdRows"
+                         KeyField="Id"
+                         OnSaveAll="@HandleCmdSaveAll"
+                         IsSaving="@_cmdIsSaving"
+                         AllowBulkPaste="true"
+                         Height="220px"
+                         EnableVirtualization="false">
+            <SunfishDataSheetColumn TItem="CmdRow"
+                                   Field="Sku" Title="SKU" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="160px" />
+            <SunfishDataSheetColumn TItem="CmdRow"
+                                   Field="Quantity" Title="Qty" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="120px" />
+            <SunfishDataSheetColumn TItem="CmdRow"
+                                   Field="Price" Title="Price" ColumnType="DataSheetColumnType.Number"
+                                   Editable="true" Width="120px" />
+        </SunfishDataSheet>
+
+        <div class="ks-observer">
+            <strong>Save event log:</strong>
+            @if (_cmdLog.Count == 0)
+            {
+                <span class="ks-observer-empty">(none yet — edit a cell then press Ctrl+S)</span>
+            }
+            else
+            {
+                @foreach (var entry in _cmdLog)
+                {
+                    <div class="ks-log-entry">@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="D — Space Toggles Checkbox">
+    <DemoSection Title="Space on checkbox cells toggles state"
+                 Description="Arrow-navigate to a Checkbox cell and press Space to toggle its state. On a non-checkbox cell, Space follows the printable-character behavior and enters edit mode with the space as the first keystroke.">
+        <div class="ks-instructions">
+            <strong>Try it:</strong>
+            <ul>
+                <li>Focus a <strong>Checkbox</strong> cell, press <kbd>Space</kbd> — the value toggles.</li>
+                <li>Focus a <strong>Text</strong> cell, press <kbd>Space</kbd> — the cell enters edit mode.</li>
+            </ul>
+        </div>
+
+        <SunfishDataSheet TItem="SpaceRow"
+                         Data="@_spaceRows"
+                         KeyField="Id"
+                         Height="180px"
+                         EnableVirtualization="false">
+            <SunfishDataSheetColumn TItem="SpaceRow"
+                                   Field="Label" Title="Label" ColumnType="DataSheetColumnType.Text"
+                                   Editable="true" Width="220px" />
+            <SunfishDataSheetColumn TItem="SpaceRow"
+                                   Field="IsActive" Title="Active?" ColumnType="DataSheetColumnType.Checkbox"
+                                   Editable="true" Width="100px" />
+        </SunfishDataSheet>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="E — ARIA and Screen Reader Support">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+<style>
+    /* ks-* prefix scopes these styles to the Keyboard scenarios so they
+       don't collide with the .ds-demo-log / .ds-demo-* classes used by
+       the sibling DataSheet demo pages (Editing-and-Validation,
+       BulkOperations, Overview). */
+    .ks-instructions {
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        background: var(--mar-color-surface-alt, #f5f5f5);
+        border: 1px solid var(--mar-color-border, #ddd);
+        border-radius: 4px;
+        font-size: 0.88em;
+    }
+    .ks-instructions ul {
+        margin: 4px 0 0 16px;
+    }
+    .ks-capture {
+        outline: none;
+    }
+    .ks-observer {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid var(--mar-color-border, #ccc);
+        border-radius: 4px;
+        font-size: 0.85em;
+        max-height: 160px;
+        overflow: auto;
+    }
+    .ks-observer-empty {
+        color: var(--mar-color-text-secondary, #888);
+        font-style: italic;
+        margin-left: 6px;
+    }
+    .ks-log-entry {
+        font-family: ui-monospace, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+        padding: 2px 0;
+    }
+</style>
+
+@code {
+    // ── Scenario A — Navigation keys ──────────────────────────────────
+    private string? _navLastKey;
+
+    private List<NavRow> _navRows = new()
+    {
+        new() { Label = "Row 1", Amount = 100m, TradeDate = new DateTime(2025, 1, 15) },
+        new() { Label = "Row 2", Amount = 250m, TradeDate = new DateTime(2025, 2, 10) },
+        new() { Label = "Row 3", Amount =  75m, TradeDate = new DateTime(2025, 3, 5)  },
+    };
+
+    private void HandleNavKey(KeyboardEventArgs e)
+    {
+        _navLastKey = FormatKey(e);
+    }
+
+    // ── Scenario B — Edit-mode shortcuts ──────────────────────────────
+    private readonly List<string> _editKeyLog = [];
+
+    private List<EditRow> _editRows = new()
+    {
+        new() { Name = "Alpha",   Score = 42 },
+        new() { Name = "Bravo",   Score = 87 },
+        new() { Name = "Charlie", Score = 65 },
+    };
+
+    private void HandleEditKey(KeyboardEventArgs e)
+    {
+        if (e.Key is "F2" or "Enter" or "Escape" or "Esc")
+        {
+            AddLog(_editKeyLog, $"{e.Key} pressed");
+        }
+    }
+
+    // ── Scenario C — Command keys ─────────────────────────────────────
+    private SunfishDataSheet<CmdRow>? _cmdSheet;
+    private bool _cmdIsSaving;
+    private readonly List<string> _cmdLog = [];
+
+    private List<CmdRow> _cmdRows = new()
+    {
+        new() { Sku = "SKU-001", Quantity = 10, Price = 5.25m },
+        new() { Sku = "SKU-002", Quantity = 20, Price = 7.50m },
+        new() { Sku = "SKU-003", Quantity = 15, Price = 3.10m },
+        new() { Sku = "SKU-004", Quantity =  5, Price = 9.00m },
+    };
+
+    private async Task HandleCmdSaveAll(DataSheetSaveArgs<CmdRow> args)
+    {
+        _cmdIsSaving = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _cmdIsSaving = false;
+
+        AddLog(_cmdLog, $"Ctrl+S triggered Save All ({args.DirtyRows.Count} dirty rows).");
+    }
+
+    // ── Scenario D — Space toggles checkbox ───────────────────────────
+    private List<SpaceRow> _spaceRows = new()
+    {
+        new() { Label = "Enable notifications", IsActive = true  },
+        new() { Label = "Auto-save drafts",     IsActive = false },
+        new() { Label = "Dark mode",            IsActive = false },
+    };
+
+    // ── Shared helpers ────────────────────────────────────────────────
+    private static string FormatKey(KeyboardEventArgs e)
+    {
+        var parts = new List<string>();
+        if (e.CtrlKey) parts.Add("Ctrl");
+        if (e.ShiftKey) parts.Add("Shift");
+        if (e.AltKey) parts.Add("Alt");
+        parts.Add(string.IsNullOrEmpty(e.Key) ? "?" : e.Key);
+        return string.Join("+", parts);
+    }
+
+    private static void AddLog(List<string> log, string message)
+    {
+        log.Insert(0, $"{DateTime.Now:HH:mm:ss} {message}");
+        if (log.Count > 10) log.RemoveAt(10);
+    }
+
+    // ── Row types ─────────────────────────────────────────────────────
+    public record NavRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Label { get; set; } = "";
+        public decimal Amount { get; set; }
+        public DateTime? TradeDate { get; set; }
+    }
+
+    public record EditRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Name { get; set; } = "";
+        public int Score { get; set; }
+    }
+
+    public record CmdRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Sku { get; set; } = "";
+        public int Quantity { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    public record SpaceRow
+    {
+        public Guid Id { get; init; } = Guid.NewGuid();
+        public string Label { get; set; } = "";
+        public bool IsActive { get; set; }
+    }
+
+    // ── AccessibilityInfo data ────────────────────────────────────────
+    private static readonly (string Key, string Action)[] _keyboard = new[]
+    {
+        ("Tab / Shift+Tab",  "Move focus right / left between cells"),
+        ("Arrow keys",       "Navigate non-editing cells in any direction"),
+        ("Enter",            "Commit current edit and move focus down"),
+        ("F2",               "Enter edit mode on the focused cell"),
+        ("Escape",           "Cancel current edit and restore the prior value"),
+        ("Ctrl+S",           "Save all pending changes (triggers OnSaveAll)"),
+        ("Ctrl+Z",           "Undo the last cell change"),
+        ("Ctrl+C / Ctrl+V",  "Copy / paste selection as TSV via the system clipboard"),
+        ("Ctrl+D",           "Fill the selected range down from the anchor cell"),
+        ("Space",            "Toggle checkbox cells; enter edit mode on other editable cells"),
+        ("Delete",           "Clear the value of the selected cell(s)"),
+        ("Printable chars",  "Enter edit mode with the typed character as the first keystroke"),
+    };
+
+    private static readonly (string Attribute, string Description)[] _aria = new[]
+    {
+        ("role=\"grid\"",          "Applied to the root grid container"),
+        ("role=\"row\"",           "Applied to each data row"),
+        ("role=\"gridcell\"",      "Applied to each data cell"),
+        ("aria-rowindex",          "Each row reports its 1-based row index for virtualization-safe navigation"),
+        ("aria-colindex",          "Each cell reports its 1-based column index"),
+        ("aria-readonly",          "Applied to computed / non-editable cells so assistive tech can skip them"),
+        ("aria-invalid",           "Applied to cells with validation errors"),
+        ("aria-busy",              "Applied to the grid while IsLoading or IsSaving is true"),
+        ("aria-live=\"polite\"",   "Announcements for save success / failure and bulk-operation status"),
+        ("aria-describedby",       "Links invalid cells to their error-message region for screen readers"),
+    };
+
+    private static readonly string[] _screenReader = new[]
+    {
+        "Cell movements announce the row index, column title, and current value so the user can orient without a mouse.",
+        "Validation errors surface via a title attribute and aria-invalid so screen readers read the error as the user lands on the offending cell.",
+        "Save status changes are announced through a polite aria-live region rather than interrupting the user's edit flow.",
+    };
+}

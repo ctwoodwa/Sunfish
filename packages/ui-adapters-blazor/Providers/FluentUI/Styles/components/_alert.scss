@@ -1,0 +1,38 @@
+// =============================================================================
+// Component: Alert
+// =============================================================================
+
+.sf-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sf-space-md);
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    border-radius: var(--sf-radius-md);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    border: 1px solid transparent;
+    animation: sf-fade-in var(--sf-transition-normal);
+}
+
+.sf-alert--info { background: var(--sf-color-info-light); border-color: var(--sf-color-info); color: var(--sf-color-on-background); }
+.sf-alert--success { background: var(--sf-color-success-light); border-color: var(--sf-color-success); color: var(--sf-color-on-background); }
+.sf-alert--warning { background: var(--sf-color-warning-light); border-color: var(--sf-color-warning); color: var(--sf-color-on-background); }
+.sf-alert--critical { background: var(--sf-color-danger-light); border-color: var(--sf-color-danger); color: var(--sf-color-on-background); }
+
+// Alert Strip (Phase 3)
+.sf-alert-strip { display: flex; flex-direction: column; gap: var(--sf-space-sm); margin-bottom: var(--sf-space-xl); }
+
+.sf-alert-strip-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-md);
+    padding: var(--sf-space-sm) var(--sf-space-lg);
+    border-radius: var(--sf-radius-md);
+    border-left: 4px solid transparent;
+}
+
+.sf-alert-strip-item.sf-alert--critical { background: rgba(209, 52, 56, 0.12); border-left-color: var(--sf-color-danger); }
+.sf-alert-strip-item.sf-alert--warning  { background: rgba(255, 185, 0, 0.12);   border-left-color: var(--sf-color-warning); }
+.sf-alert-strip-item.sf-alert--info     { background: rgba(0, 120, 212, 0.08);   border-left-color: var(--sf-color-primary); }
+
+.sf-alert-strip-module { color: var(--sf-color-text-secondary); }

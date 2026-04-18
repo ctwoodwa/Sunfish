@@ -1,0 +1,56 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@inherits SunfishComponentBase
+
+<div class="@CssProvider.SignalRRowClass(Item.Health)" role="listitem">
+    <span class="@CssProvider.SignalRBadgeClass(Item.Health)">@GetHealthLabel()</span>
+    <div class="sf-signalr-row__info">
+        <span class="sf-signalr-row__name">@Item.Name</span>
+        <span class="sf-signalr-row__endpoint">@Item.Endpoint</span>
+    </div>
+    <div class="sf-signalr-row__details">
+        @if (Item.LastConnectedAt.HasValue)
+        {
+            <span class="sf-signalr-row__timestamp" title="Last connected">@Item.LastConnectedAt.Value.ToString("HH:mm:ss")</span>
+        }
+        @if (Item.RetryCount.HasValue)
+        {
+            <span class="sf-signalr-row__retry">Retry @Item.RetryCount</span>
+        }
+        @if (Item.LastError is not null)
+        {
+            <span class="sf-signalr-row__error" title="@Item.LastError">@TruncateForDisplay(Item.LastError)</span>
+        }
+        @if (Item.ConnectionId is not null)
+        {
+            <span class="sf-signalr-row__connid" title="Connection ID">@Item.ConnectionId[..Math.Min(8, Item.ConnectionId.Length)]...</span>
+        }
+    </div>
+    @if (Item.Health == ConnectionHealthState.Offline && OnRetry.HasDelegate)
+    {
+        <button type="button" class="sf-signalr-row__action" @onclick="HandleRetry" aria-label="Reconnect @Item.Name">
+            Reconnect
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public HubConnectionStatusItem Item { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnRetry { get; set; }
+
+    private string GetHealthLabel() => Item.Health switch
+    {
+        ConnectionHealthState.Healthy => "Healthy",
+        ConnectionHealthState.Connecting => "Starting",
+        ConnectionHealthState.Recovering => "Recovering",
+        ConnectionHealthState.Degraded => "Degraded",
+        ConnectionHealthState.Offline => "Offline",
+        _ => "Unknown"
+    };
+
+    private static string TruncateForDisplay(string value) =>
+        value.Length <= 60 ? value : string.Concat(value.AsSpan(0, 57), "...");
+
+    private async Task HandleRetry() => await OnRetry.InvokeAsync(Item.Name);
+}

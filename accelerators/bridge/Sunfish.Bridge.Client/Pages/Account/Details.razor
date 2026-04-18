@@ -1,0 +1,36 @@
+@page "/account/details"
+@layout AccountLayout
+
+<PageTitle>Account details · Sunfish PM</PageTitle>
+
+<SettingsPageHeader Title="Account"
+                    Description="Profile, workspace identity, and sign-in details." />
+
+<SettingsSection Title="Profile">
+    <SettingsCard>
+        <SettingsFieldRow Label="Full name" Value="Avery Chen" />
+        <SettingsFieldRow Label="Email" Value="avery.chen@example.com" />
+        <SettingsFieldRow Label="Job title" Value="Program Manager" />
+        <SettingsFieldRow Label="Timezone" Value="Australia/Melbourne (AEDT)" />
+        <SettingsFieldRow Label="Locale" Value="English (Australia)" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Plan">
+    <SettingsCard>
+        <SettingsFieldRow Label="Plan" Value="Team · 14 seats · renews 2026-12-01" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Sign-in">
+    <SettingsCard>
+        <SettingsFieldRow Label="Method" Value="SSO (Microsoft Entra ID)" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsDangerZone>
+    <SettingsActionRow Label="Sign out of all sessions"
+                       Description="This will end all active sessions on every device.">
+        <button type="button" class="btn-danger">Sign out everywhere</button>
+    </SettingsActionRow>
+</SettingsDangerZone>

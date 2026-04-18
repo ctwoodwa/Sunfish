@@ -1,0 +1,38 @@
+@inherits SunfishComponentBase
+
+<input type="text"
+       class="@CombineClasses(CssProvider.TextBoxClass(IsInvalid, !Enabled))"
+       style="@CombineStyles()"
+       value="@Value"
+       placeholder="@(Placeholder ?? Mask)"
+       disabled="@(!Enabled)"
+       readonly="@ReadOnly"
+       aria-label="@AriaLabel"
+       aria-describedby="@AriaDescribedBy"
+       @oninput="OnInputChanged"
+       @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Mask { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    /// <summary>Whether to include mask literal characters in the Value.</summary>
+    [Parameter] public bool IncludeLiterals { get; set; }
+
+    /// <summary>The prompt character shown for unfilled mask positions.</summary>
+    [Parameter] public char Prompt { get; set; } = '_';
+
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public string? AriaDescribedBy { get; set; }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString() ?? string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

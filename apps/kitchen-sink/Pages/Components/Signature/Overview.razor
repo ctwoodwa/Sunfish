@@ -1,0 +1,16 @@
+@page "/components/signature"
+@page "/components/signature/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Signature captures a handwritten signature via mouse or touch input." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishSignature Style="width:400px;height:200px;border:1px solid #ccc;" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishSignature Style=\"width:400px;height:200px;border:1px solid #ccc;\" />";
+}

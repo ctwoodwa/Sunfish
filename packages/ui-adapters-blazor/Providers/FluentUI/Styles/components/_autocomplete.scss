@@ -1,0 +1,86 @@
+// =============================================================================
+// Component: Autocomplete
+// =============================================================================
+
+.sf-autocomplete {
+    display: inline-flex;
+    flex-direction: column;
+    position: relative;
+    min-width: 200px;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+}
+
+// Trigger input — shares .sf-textbox chrome via the inner input
+.sf-autocomplete > .sf-textbox {
+    width: 100%;
+}
+
+// Popup
+.sf-autocomplete__popup {
+    display: none;
+    position: absolute;
+    top: calc(100% + var(--sf-space-xxs));
+    left: 0;
+    right: 0;
+    max-height: 280px;
+    overflow-y: auto;
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-md);
+    z-index: var(--sf-z-dropdown);
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: var(--sf-space-xs) 0;
+    }
+}
+
+.sf-autocomplete--open .sf-autocomplete__popup {
+    display: block;
+}
+
+// QUALITY FIX: Use explicit color tokens for disabled — NOT opacity
+.sf-autocomplete--disabled {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-disabled);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sf-autocomplete--invalid > .sf-textbox {
+    border-color: var(--sf-color-danger);
+}
+
+// Items
+.sf-autocomplete-item {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    cursor: pointer;
+    color: var(--sf-color-on-background);
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface);
+    }
+
+    // Highlighted match text within suggestion
+    mark {
+        background: var(--sf-color-primary-light);
+        color: var(--sf-color-primary);
+        font-weight: var(--sf-font-weight-semibold);
+        border-radius: var(--sf-radius-sm);
+        padding: 0 var(--sf-space-xxs);
+    }
+}
+
+.sf-autocomplete-item--highlighted {
+    background: var(--sf-color-surface);
+}
+
+.sf-autocomplete-item--selected {
+    background: var(--sf-color-primary-light);
+    color: var(--sf-color-primary);
+    font-weight: var(--sf-font-weight-semibold);
+}

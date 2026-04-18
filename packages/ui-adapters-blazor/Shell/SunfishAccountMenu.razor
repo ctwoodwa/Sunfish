@@ -1,0 +1,833 @@
+@namespace Sunfish.Components.Blazor.Shell
+@inherits ComponentBase
+@inject NavigationManager NavigationManager
+
+<div class="sf-account-menu @Class" style="@Style">
+    @* ── Trigger ── *@
+    @if (TriggerTemplate is not null)
+    {
+        <div class="sf-account-menu__trigger-wrap" @onclick="ToggleMenu">
+            @TriggerTemplate
+        </div>
+    }
+    else
+    {
+        <button type="button"
+                class="sf-account-menu__trigger @(CompactTrigger ? "sf-account-menu__trigger--compact" : "")"
+                aria-haspopup="menu"
+                aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+                aria-controls="sf-account-menu-panel"
+                aria-label="@GetAriaLabel()"
+                @onclick="ToggleMenu">
+            @if (!string.IsNullOrEmpty(UserAvatarUrl))
+            {
+                <img class="sf-account-menu__avatar-img" src="@UserAvatarUrl" alt="" aria-hidden="true" />
+            }
+            else
+            {
+                <span class="sf-account-menu__avatar" aria-hidden="true">@GetInitials()</span>
+            }
+            @if (!CompactTrigger)
+            {
+                <span class="sf-account-menu__trigger-name">@UserName</span>
+            }
+        </button>
+    }
+
+    @if (_isOpen)
+    {
+        <div class="sf-account-menu__scrim" @onclick="CloseMenu" aria-hidden="true"></div>
+
+        <div id="sf-account-menu-panel"
+             class="sf-account-menu__panel @(_activeSubmenu is not null ? "sf-account-menu__panel--submenu" : "")"
+             role="menu"
+             aria-label="Account menu"
+             tabindex="-1"
+             @onkeydown="HandleKeyDown">
+
+            @if (_activeSubmenu is null)
+            {
+                @* ── Root Menu ── *@
+
+                @* Header *@
+                @if (HeaderTemplate is not null)
+                {
+                    <div class="sf-account-menu__header">@HeaderTemplate</div>
+                }
+                else
+                {
+                    <div class="sf-account-menu__header">
+                        @if (!string.IsNullOrEmpty(UserAvatarUrl))
+                        {
+                            <img class="sf-account-menu__header-avatar-img" src="@UserAvatarUrl" alt="" aria-hidden="true" />
+                        }
+                        else
+                        {
+                            <span class="sf-account-menu__header-avatar" aria-hidden="true">@GetInitials()</span>
+                        }
+                        <div class="sf-account-menu__header-info">
+                            <div class="sf-account-menu__header-name">
+                                @UserName
+                                @if (!string.IsNullOrEmpty(UserBadge))
+                                {
+                                    <span class="sf-account-menu__header-badge">@UserBadge</span>
+                                }
+                            </div>
+                            @if (!string.IsNullOrEmpty(UserEmail))
+                            {
+                                <div class="sf-account-menu__header-email">@UserEmail</div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* ── Group 1: Core Settings ── *@
+                @if (IsGroupVisible(_group1))
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    <div class="sf-account-menu__group" role="group" aria-label="Settings">
+                        @foreach (var item in _group1)
+                        {
+                            if (!item.IsVisible) continue;
+                            var idx = _flatVisibleItems.IndexOf(item);
+                            <button type="button"
+                                    class="sf-account-menu__row @(idx == _focusedIndex ? "is-focused" : "") @(item.IsDisabled ? "is-disabled" : "")"
+                                    role="menuitem"
+                                    aria-disabled="@(item.IsDisabled ? "true" : null)"
+                                    data-testid="@item.TestId"
+                                    @onclick="() => HandleItemClick(item)">
+                                <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                                <span class="sf-account-menu__row-label">@item.Label</span>
+                            </button>
+                        }
+                    </div>
+                    @if (AfterSettingsSection is not null)
+                    {
+                        @AfterSettingsSection
+                    }
+                }
+
+                @* ── Group 2: Upgrade ── *@
+                @if (IsGroupVisible(_group2))
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    <div class="sf-account-menu__group" role="group" aria-label="Upgrade">
+                        @foreach (var item in _group2)
+                        {
+                            if (!item.IsVisible) continue;
+                            var idx = _flatVisibleItems.IndexOf(item);
+                            <button type="button"
+                                    class="sf-account-menu__row @(idx == _focusedIndex ? "is-focused" : "") @(item.IsDisabled ? "is-disabled" : "")"
+                                    role="menuitem"
+                                    aria-disabled="@(item.IsDisabled ? "true" : null)"
+                                    data-testid="@item.TestId"
+                                    @onclick="() => HandleItemClick(item)">
+                                <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                                <span class="sf-account-menu__row-label">@item.Label</span>
+                            </button>
+                        }
+                    </div>
+                    @if (AfterUpgradeSection is not null)
+                    {
+                        @AfterUpgradeSection
+                    }
+                }
+
+                @* ── Group 3: Install ── *@
+                @if (IsGroupVisible(_group3))
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    <div class="sf-account-menu__group" role="group" aria-label="Install">
+                        @foreach (var item in _group3)
+                        {
+                            if (!item.IsVisible) continue;
+                            var idx = _flatVisibleItems.IndexOf(item);
+                            <button type="button"
+                                    class="sf-account-menu__row @(idx == _focusedIndex ? "is-focused" : "") @(item.IsDisabled ? "is-disabled" : "")"
+                                    role="menuitem"
+                                    aria-disabled="@(item.IsDisabled ? "true" : null)"
+                                    data-testid="@item.TestId"
+                                    @onclick="() => HandleItemClick(item)">
+                                <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                                <span class="sf-account-menu__row-label">@item.Label</span>
+                            </button>
+                        }
+                    </div>
+                    @if (AfterInstallSection is not null)
+                    {
+                        @AfterInstallSection
+                    }
+                }
+
+                @* ── Group 4: Preferences & Help (Submenus) ── *@
+                @if (IsGroupVisible(_group4))
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    <div class="sf-account-menu__group" role="group" aria-label="Preferences and help">
+                        @foreach (var item in _group4)
+                        {
+                            if (!item.IsVisible) continue;
+                            var idx = _flatVisibleItems.IndexOf(item);
+                            <button type="button"
+                                    class="sf-account-menu__row @(idx == _focusedIndex ? "is-focused" : "") @(item.IsDisabled ? "is-disabled" : "")"
+                                    role="menuitem"
+                                    aria-haspopup="true"
+                                    aria-expanded="@(_activeSubmenu == item.Id ? "true" : "false")"
+                                    aria-disabled="@(item.IsDisabled ? "true" : null)"
+                                    data-testid="@item.TestId"
+                                    @onclick="() => HandleItemClick(item)">
+                                <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                                <span class="sf-account-menu__row-label">@item.Label</span>
+                                @if (!string.IsNullOrEmpty(item.RightValueText))
+                                {
+                                    <span class="sf-account-menu__row-value">@item.RightValueText</span>
+                                }
+                                <span class="sf-account-menu__row-chevron">@RenderIcon("chevron-right")</span>
+                            </button>
+                        }
+                    </div>
+                }
+
+                @* ── Group 5: Sign Out ── *@
+                @if (IsGroupVisible(_group5))
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    @if (BeforeSignOutSection is not null)
+                    {
+                        @BeforeSignOutSection
+                    }
+                    <div class="sf-account-menu__group" role="group" aria-label="Sign out">
+                        @foreach (var item in _group5)
+                        {
+                            if (!item.IsVisible) continue;
+                            var idx = _flatVisibleItems.IndexOf(item);
+                            <button type="button"
+                                    class="sf-account-menu__row @(idx == _focusedIndex ? "is-focused" : "") @(item.IsDisabled ? "is-disabled" : "")"
+                                    role="menuitem"
+                                    aria-disabled="@(item.IsDisabled ? "true" : null)"
+                                    data-testid="@item.TestId"
+                                    @onclick="() => HandleItemClick(item)">
+                                <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                                <span class="sf-account-menu__row-label">@item.Label</span>
+                            </button>
+                        }
+                    </div>
+                }
+
+                @* Footer *@
+                @if (FooterTemplate is not null)
+                {
+                    <div class="sf-account-menu__separator"></div>
+                    <div class="sf-account-menu__footer">@FooterTemplate</div>
+                }
+            }
+            else if (_activeSubmenu == "appearance")
+            {
+                @* ── Appearance Submenu ── *@
+                @if (AppearanceTemplate is not null)
+                {
+                    @AppearanceTemplate(new AppearanceMenuContext(
+                        _currentAppearance,
+                        _effectiveOptions.AppearanceModes.AsReadOnly(),
+                        SelectAppearance,
+                        GoBackToRoot,
+                        CloseMenuAsync))
+                }
+                else
+                {
+                    <button type="button"
+                            class="sf-account-menu__row sf-account-menu__row--back @(0 == _focusedIndex ? "is-focused" : "")"
+                            role="menuitem"
+                            @onclick="GoBackToRoot">
+                        <span class="sf-account-menu__row-icon">@RenderIcon("chevron-left")</span>
+                        <span class="sf-account-menu__row-label">Appearance</span>
+                    </button>
+                    <div class="sf-account-menu__separator"></div>
+                    @for (var appIdx = 0; appIdx < _effectiveOptions.AppearanceModes.Count; appIdx++)
+                    {
+                        var mode = _effectiveOptions.AppearanceModes[appIdx];
+                        var focusIdx = appIdx + 1;
+                        var isSelected = mode == _currentAppearance;
+                        <button type="button"
+                                class="sf-account-menu__row @(focusIdx == _focusedIndex ? "is-focused" : "") @(isSelected ? "is-selected" : "")"
+                                role="menuitem"
+                                @onclick="() => SelectAppearance(mode)">
+                            <span class="sf-account-menu__row-icon">@RenderAppearanceIcon(mode)</span>
+                            <span class="sf-account-menu__row-label">@mode</span>
+                            @if (isSelected)
+                            {
+                                <span class="sf-account-menu__row-check">@RenderIcon("check")</span>
+                            }
+                        </button>
+                    }
+                }
+            }
+            else if (_activeSubmenu == "language")
+            {
+                @* ── Language Submenu ── *@
+                @if (LanguageTemplate is not null)
+                {
+                    @LanguageTemplate(new LanguageMenuContext(
+                        _currentLanguage,
+                        _effectiveOptions.Languages.AsReadOnly(),
+                        SelectLanguage,
+                        GoBackToRoot,
+                        CloseMenuAsync))
+                }
+                else
+                {
+                    <button type="button"
+                            class="sf-account-menu__row sf-account-menu__row--back @(0 == _focusedIndex ? "is-focused" : "")"
+                            role="menuitem"
+                            @onclick="GoBackToRoot">
+                        <span class="sf-account-menu__row-icon">@RenderIcon("chevron-left")</span>
+                        <span class="sf-account-menu__row-label">Language</span>
+                    </button>
+                    <div class="sf-account-menu__separator"></div>
+                    @for (var langIdx = 0; langIdx < _effectiveOptions.Languages.Count; langIdx++)
+                    {
+                        var lang = _effectiveOptions.Languages[langIdx];
+                        var focusIdx = langIdx + 1;
+                        var isSelected = lang == _currentLanguage;
+                        <button type="button"
+                                class="sf-account-menu__row @(focusIdx == _focusedIndex ? "is-focused" : "") @(isSelected ? "is-selected" : "")"
+                                role="menuitem"
+                                @onclick="() => SelectLanguage(lang)">
+                            <span class="sf-account-menu__row-icon">@RenderIcon("globe")</span>
+                            <span class="sf-account-menu__row-label">@lang</span>
+                            @if (isSelected)
+                            {
+                                <span class="sf-account-menu__row-check">@RenderIcon("check")</span>
+                            }
+                        </button>
+                    }
+                }
+            }
+            else if (_activeSubmenu == "help")
+            {
+                @* ── Help Submenu ── *@
+                @if (HelpTemplate is not null)
+                {
+                    @HelpTemplate(new HelpMenuContext(
+                        _helpItems.AsReadOnly(),
+                        InvokeHelpItem,
+                        GoBackToRoot,
+                        CloseMenuAsync))
+                }
+                else
+                {
+                    <button type="button"
+                            class="sf-account-menu__row sf-account-menu__row--back @(0 == _focusedIndex ? "is-focused" : "")"
+                            role="menuitem"
+                            @onclick="GoBackToRoot">
+                        <span class="sf-account-menu__row-icon">@RenderIcon("chevron-left")</span>
+                        <span class="sf-account-menu__row-label">Help</span>
+                    </button>
+                    <div class="sf-account-menu__separator"></div>
+                    @for (var helpIdx = 0; helpIdx < _helpItems.Count; helpIdx++)
+                    {
+                        var item = _helpItems[helpIdx];
+                        var focusIdx = helpIdx + 1;
+                        <button type="button"
+                                class="sf-account-menu__row @(focusIdx == _focusedIndex ? "is-focused" : "")"
+                                role="menuitem"
+                                @onclick="() => InvokeHelpItem(item)">
+                            <span class="sf-account-menu__row-icon">@RenderIcon(item.Icon)</span>
+                            <span class="sf-account-menu__row-label">@item.Label</span>
+                        </button>
+                    }
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    // ── Identity Parameters ──
+    [Parameter] public string UserName { get; set; } = "";
+    [Parameter] public string? UserEmail { get; set; }
+    [Parameter] public string? UserAvatarUrl { get; set; }
+    [Parameter] public string? UserBadge { get; set; }
+
+    // ── Configuration ──
+    [Parameter] public AccountMenuOptions? Options { get; set; }
+    [Parameter] public bool CompactTrigger { get; set; }
+
+    // ── Events ──
+    [Parameter] public EventCallback<string> OnNavigate { get; set; }
+    [Parameter] public EventCallback OnSignOut { get; set; }
+    [Parameter] public EventCallback<string> OnAppearanceChange { get; set; }
+    [Parameter] public EventCallback<string> OnLanguageChange { get; set; }
+
+    // ── Render Fragment Slots ──
+    [Parameter] public RenderFragment? TriggerTemplate { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? AfterSettingsSection { get; set; }
+    [Parameter] public RenderFragment? AfterUpgradeSection { get; set; }
+    [Parameter] public RenderFragment? AfterInstallSection { get; set; }
+    [Parameter] public RenderFragment<AppearanceMenuContext>? AppearanceTemplate { get; set; }
+    [Parameter] public RenderFragment<LanguageMenuContext>? LanguageTemplate { get; set; }
+    [Parameter] public RenderFragment<HelpMenuContext>? HelpTemplate { get; set; }
+    [Parameter] public RenderFragment? BeforeSignOutSection { get; set; }
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    // ── Standard ──
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    // ── Internal State ──
+    private bool _isOpen;
+    private string? _activeSubmenu;
+    private int _focusedIndex;
+    private string _currentAppearance = "System";
+    private string _currentLanguage = "Default";
+    private bool _initialized;
+
+    // ── Effective Options & Computed Groups ──
+    private AccountMenuOptions _effectiveOptions = new();
+    private List<AccountMenuItemModel> _group1 = new();
+    private List<AccountMenuItemModel> _group2 = new();
+    private List<AccountMenuItemModel> _group3 = new();
+    private List<AccountMenuItemModel> _group4 = new();
+    private List<AccountMenuItemModel> _group5 = new();
+    private List<AccountMenuItemModel> _flatVisibleItems = new();
+    private List<AccountMenuItemModel> _helpItems = new();
+
+    // ── Lifecycle ──
+
+    protected override void OnParametersSet()
+    {
+        _effectiveOptions = Options ?? new AccountMenuOptions();
+
+        if (!_initialized)
+        {
+            _currentAppearance = _effectiveOptions.DefaultAppearanceMode;
+            _currentLanguage = _effectiveOptions.DefaultLanguage;
+            _initialized = true;
+        }
+
+        BuildGroups();
+        BuildFlatVisibleItems();
+        BuildHelpItems();
+    }
+
+    // ── Group Building ──
+
+    private void BuildGroups()
+    {
+        var opts = _effectiveOptions;
+
+        _group1 = new List<AccountMenuItemModel>
+        {
+            MapOption(opts.Account, "account"),
+            MapOption(opts.Preferences, "preferences"),
+            MapOption(opts.Personalization, "personalization"),
+            MapOption(opts.Shortcuts, "shortcuts"),
+            MapOption(opts.UsageAndCredits, "usage-credits"),
+            MapOption(opts.Connectors, "connectors"),
+            MapOption(opts.AllSettings, "all-settings"),
+        };
+
+        _group2 = new List<AccountMenuItemModel>
+        {
+            MapOption(opts.UpgradePlan, "upgrade-plan"),
+        };
+
+        _group3 = new List<AccountMenuItemModel>
+        {
+            MapOption(opts.InstallApps, "install-apps"),
+        };
+
+        _group4 = new List<AccountMenuItemModel>
+        {
+            MapSubmenuOption(opts.Appearance, "appearance", _currentAppearance),
+            MapSubmenuOption(opts.Language, "language", _currentLanguage),
+            MapSubmenuOption(opts.Help, "help", null),
+        };
+
+        _group5 = new List<AccountMenuItemModel>
+        {
+            MapOption(opts.SignOut, "sign-out", isDestructive: true),
+        };
+    }
+
+    private static AccountMenuItemModel MapOption(AccountMenuItemOptions src, string id, bool isDestructive = false) => new()
+    {
+        Id = id,
+        Label = src.Label,
+        Icon = src.Icon,
+        Href = src.Href,
+        Action = src.Action,
+        IsVisible = src.Visible,
+        IsDisabled = src.Disabled,
+        IsDestructive = isDestructive,
+        TestId = src.TestId,
+    };
+
+    private static AccountMenuItemModel MapSubmenuOption(AccountMenuItemOptions src, string id, string? rightValue) => new()
+    {
+        Id = id,
+        Label = src.Label,
+        Icon = src.Icon,
+        IsVisible = src.Visible,
+        IsDisabled = src.Disabled,
+        IsSubmenu = true,
+        RightValueText = rightValue ?? src.CurrentValue,
+        TestId = src.TestId,
+    };
+
+    private void BuildFlatVisibleItems()
+    {
+        _flatVisibleItems = new List<AccountMenuItemModel>();
+        AddVisibleItems(_group1);
+        AddVisibleItems(_group2);
+        AddVisibleItems(_group3);
+        AddVisibleItems(_group4);
+        AddVisibleItems(_group5);
+    }
+
+    private void AddVisibleItems(List<AccountMenuItemModel> group)
+    {
+        foreach (var item in group)
+        {
+            if (item.IsVisible)
+                _flatVisibleItems.Add(item);
+        }
+    }
+
+    private void BuildHelpItems()
+    {
+        _helpItems = new List<AccountMenuItemModel>
+        {
+            new() { Id = "help-docs", Label = "Help & docs", Icon = "book-open", Href = "/help" },
+            new() { Id = "help-shortcuts", Label = "Keyboard shortcuts", Icon = "keyboard", Href = "/help/shortcuts" },
+            new() { Id = "help-contact", Label = "Contact support", Icon = "message-circle", Href = "/help/contact" },
+        };
+    }
+
+    // ── Menu Open / Close ──
+
+    private void ToggleMenu()
+    {
+        if (_isOpen)
+            CloseMenu();
+        else
+            OpenMenu();
+    }
+
+    private void OpenMenu()
+    {
+        _isOpen = true;
+        _activeSubmenu = null;
+        _focusedIndex = FindNextFocusable(-1, 1);
+    }
+
+    private void CloseMenu()
+    {
+        _isOpen = false;
+        _activeSubmenu = null;
+        _focusedIndex = -1;
+    }
+
+    private Task CloseMenuAsync()
+    {
+        CloseMenu();
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    // ── Item Click Handling ──
+
+    private async Task HandleItemClick(AccountMenuItemModel item)
+    {
+        if (item.IsDisabled) return;
+
+        // Submenu items open their submenu
+        if (item.IsSubmenu)
+        {
+            OpenSubmenu(item.Id);
+            return;
+        }
+
+        // Sign out
+        if (item.Id == "sign-out")
+        {
+            CloseMenu();
+            await OnSignOut.InvokeAsync();
+            return;
+        }
+
+        // Navigation items (Href takes precedence over Action)
+        if (!string.IsNullOrEmpty(item.Href))
+        {
+            var href = item.Href;
+            CloseMenu();
+            NavigationManager.NavigateTo(href);
+            await OnNavigate.InvokeAsync(href);
+            return;
+        }
+
+        // Action items
+        if (item.Action is not null)
+        {
+            CloseMenu();
+            await item.Action();
+            return;
+        }
+    }
+
+    // ── Submenu Navigation ──
+
+    private void OpenSubmenu(string submenuId)
+    {
+        _activeSubmenu = submenuId;
+        _focusedIndex = 0; // Focus first submenu item (back button)
+    }
+
+    private Task GoBackToRoot()
+    {
+        var parentId = _activeSubmenu;
+        _activeSubmenu = null;
+        // Focus the submenu parent row in the root menu
+        _focusedIndex = parentId is not null
+            ? _flatVisibleItems.FindIndex(i => i.Id == parentId)
+            : -1;
+        if (_focusedIndex < 0) _focusedIndex = 0;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task SelectAppearance(string mode)
+    {
+        _currentAppearance = mode;
+
+        // Update the right-value text on the appearance submenu item
+        var appItem = _group4.FirstOrDefault(i => i.Id == "appearance");
+        if (appItem is not null)
+            appItem.RightValueText = mode;
+
+        _activeSubmenu = null;
+        _focusedIndex = -1;
+        await OnAppearanceChange.InvokeAsync(mode);
+    }
+
+    private async Task SelectLanguage(string lang)
+    {
+        _currentLanguage = lang;
+
+        // Update the right-value text on the language submenu item
+        var langItem = _group4.FirstOrDefault(i => i.Id == "language");
+        if (langItem is not null)
+            langItem.RightValueText = lang;
+
+        _activeSubmenu = null;
+        _focusedIndex = -1;
+        await OnLanguageChange.InvokeAsync(lang);
+    }
+
+    private async Task InvokeHelpItem(AccountMenuItemModel item)
+    {
+        if (!string.IsNullOrEmpty(item.Href))
+        {
+            var href = item.Href;
+            CloseMenu();
+            NavigationManager.NavigateTo(href);
+            await OnNavigate.InvokeAsync(href);
+            return;
+        }
+
+        if (item.Action is not null)
+        {
+            CloseMenu();
+            await item.Action();
+        }
+    }
+
+    // ── Keyboard Navigation ──
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (_activeSubmenu is null)
+            await HandleRootKeyDown(e);
+        else
+            await HandleSubmenuKeyDown(e);
+    }
+
+    private async Task HandleRootKeyDown(KeyboardEventArgs e)
+    {
+        var visibleCount = _flatVisibleItems.Count;
+        if (visibleCount == 0) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _focusedIndex = FindNextFocusable(_focusedIndex, 1);
+                break;
+
+            case "ArrowUp":
+                _focusedIndex = FindNextFocusable(_focusedIndex, -1);
+                break;
+
+            case "Home":
+                _focusedIndex = FindNextFocusable(-1, 1);
+                break;
+
+            case "End":
+                _focusedIndex = FindNextFocusable(visibleCount, -1);
+                break;
+
+            case "Enter":
+            case " ":
+                if (_focusedIndex >= 0 && _focusedIndex < visibleCount)
+                    await HandleItemClick(_flatVisibleItems[_focusedIndex]);
+                break;
+
+            case "ArrowRight":
+                if (_focusedIndex >= 0 && _focusedIndex < visibleCount)
+                {
+                    var item = _flatVisibleItems[_focusedIndex];
+                    if (item.IsSubmenu)
+                        OpenSubmenu(item.Id);
+                }
+                break;
+
+            case "Escape":
+                CloseMenu();
+                break;
+        }
+    }
+
+    private async Task HandleSubmenuKeyDown(KeyboardEventArgs e)
+    {
+        var itemCount = GetSubmenuItemCount();
+        if (itemCount == 0) return;
+
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _focusedIndex = FindNextSubmenuFocusable(_focusedIndex, 1, itemCount);
+                break;
+
+            case "ArrowUp":
+                _focusedIndex = FindNextSubmenuFocusable(_focusedIndex, -1, itemCount);
+                break;
+
+            case "Home":
+                _focusedIndex = 0;
+                break;
+
+            case "End":
+                _focusedIndex = itemCount - 1;
+                break;
+
+            case "Enter":
+            case " ":
+                await ActivateSubmenuItem();
+                break;
+
+            case "ArrowLeft":
+            case "Escape":
+                await GoBackToRoot();
+                break;
+        }
+    }
+
+    private int GetSubmenuItemCount()
+    {
+        return _activeSubmenu switch
+        {
+            // back button + modes
+            "appearance" => 1 + _effectiveOptions.AppearanceModes.Count,
+            // back button + languages
+            "language" => 1 + _effectiveOptions.Languages.Count,
+            // back button + help items
+            "help" => 1 + _helpItems.Count,
+            _ => 0,
+        };
+    }
+
+    private async Task ActivateSubmenuItem()
+    {
+        if (_focusedIndex < 0) return;
+
+        // Index 0 is always the back button
+        if (_focusedIndex == 0)
+        {
+            await GoBackToRoot();
+            return;
+        }
+
+        var dataIndex = _focusedIndex - 1;
+
+        switch (_activeSubmenu)
+        {
+            case "appearance":
+                if (dataIndex < _effectiveOptions.AppearanceModes.Count)
+                    await SelectAppearance(_effectiveOptions.AppearanceModes[dataIndex]);
+                break;
+
+            case "language":
+                if (dataIndex < _effectiveOptions.Languages.Count)
+                    await SelectLanguage(_effectiveOptions.Languages[dataIndex]);
+                break;
+
+            case "help":
+                if (dataIndex < _helpItems.Count)
+                    await InvokeHelpItem(_helpItems[dataIndex]);
+                break;
+        }
+    }
+
+    // ── Helpers ──
+
+    private static bool IsGroupVisible(List<AccountMenuItemModel> group) =>
+        group.Any(i => i.IsVisible);
+
+    private int FindNextFocusable(int current, int direction)
+    {
+        var count = _flatVisibleItems.Count;
+        if (count == 0) return -1;
+        var next = current;
+        for (var i = 0; i < count; i++)
+        {
+            next += direction;
+            if (next >= count) next = 0;
+            if (next < 0) next = count - 1;
+            if (!_flatVisibleItems[next].IsDisabled)
+                return next;
+        }
+        return current; // all disabled
+    }
+
+    private int FindNextSubmenuFocusable(int current, int direction, int itemCount)
+    {
+        if (itemCount == 0) return -1;
+        var next = current + direction;
+        if (next >= itemCount) next = 0;
+        if (next < 0) next = itemCount - 1;
+        return next;
+    }
+
+    private string GetInitials()
+    {
+        if (string.IsNullOrWhiteSpace(UserName)) return "?";
+        var parts = UserName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length == 1) return parts[0][..1].ToUpperInvariant();
+        return (parts[0][..1] + parts[^1][..1]).ToUpperInvariant();
+    }
+
+    private string GetAriaLabel() =>
+        string.IsNullOrWhiteSpace(UserName) ? "Account menu" : $"Account menu for {UserName}";
+
+    private static MarkupString RenderIcon(string name) =>
+        new($"""<svg class="sf-account-menu__icon" width="20" height="20" aria-hidden="true"><use href="_content/Sunfish.Icons/icons/sprite.svg#marilo-{name}"></use></svg>""");
+
+    private static MarkupString RenderAppearanceIcon(string mode) => mode switch
+    {
+        "Light" => RenderIcon("sun"),
+        "Dark" => RenderIcon("moon"),
+        "System" => RenderIcon("monitor"),
+        _ => RenderIcon("sun"),
+    };
+
+}

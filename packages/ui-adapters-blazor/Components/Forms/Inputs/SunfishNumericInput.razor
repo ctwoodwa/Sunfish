@@ -1,0 +1,74 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.NumericInputClass())"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Small, false, Disabled)"
+            disabled="@Disabled"
+            aria-label="Decrease"
+            @onclick="Decrement">
+        @IconProvider.GetIcon("minus", IconSize.Small)
+    </button>
+    <input type="number"
+           class="@CssProvider.TextBoxClass(IsInvalid, Disabled)"
+           value="@Value"
+           min="@Min"
+           max="@Max"
+           step="@Step"
+           placeholder="@Placeholder"
+           disabled="@Disabled"
+           @oninput="OnInputChanged" />
+    <button class="@CssProvider.ButtonClass(ButtonVariant.Secondary, ButtonSize.Small, false, Disabled)"
+            disabled="@Disabled"
+            aria-label="Increase"
+            @onclick="Increment">
+        @IconProvider.GetIcon("plus", IconSize.Small)
+    </button>
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+    [Parameter] public double? Min { get; set; }
+    [Parameter] public double? Max { get; set; }
+    [Parameter] public double Step { get; set; } = 1;
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public int? Decimals { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+
+    /// <summary>Specifies the adaptive rendering mode for the popup on mobile devices. Defaults to <see cref="AdaptiveMode.None"/>.</summary>
+    [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
+
+    private double Clamp(double value)
+    {
+        if (Min.HasValue && value < Min.Value) return Min.Value;
+        if (Max.HasValue && value > Max.Value) return Max.Value;
+        return value;
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var val))
+        {
+            Value = Clamp(val);
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+
+    private async Task Increment()
+    {
+        Value = Clamp(Value + Step);
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task Decrement()
+    {
+        Value = Clamp(Value - Step);
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

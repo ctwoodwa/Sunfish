@@ -1,0 +1,10 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.CardHeaderClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

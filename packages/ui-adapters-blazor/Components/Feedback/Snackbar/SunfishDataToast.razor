@@ -1,0 +1,31 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("marilo-data-toast-container")"
+     style="@CombineStyles()"
+     aria-live="polite"
+     @attributes="AdditionalAttributes">
+    @foreach (var change in Changes.Take(MaxVisible))
+    {
+        <div class="sf-data-toast" role="alert">
+            @if (ItemTemplate != null)
+            {
+                @ItemTemplate(change)
+            }
+            else
+            {
+                <span>@change.Summary</span>
+            }
+            <button type="button" aria-label="Dismiss" @onclick="() => OnDismiss.InvokeAsync(change)">&#x2715;</button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IReadOnlyList<DataChangeInfo> Changes { get; set; } = Array.Empty<DataChangeInfo>();
+    [Parameter] public int MaxVisible { get; set; } = 5;
+    [Parameter] public EventCallback<DataChangeInfo> OnDismiss { get; set; }
+
+    /// <summary>Custom template for rendering each data toast item.</summary>
+    [Parameter] public RenderFragment<DataChangeInfo>? ItemTemplate { get; set; }
+}

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Assets</PackageId>
+    <Description>Asset-catalog block for Sunfish — composes SunfishDataGrid and SunfishFileManager for a read-display asset view.</Description>
+    <PackageTags>blazor;assets;catalog;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Assets.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.Components.Blazor.csproj" />
+  </ItemGroup>
+</Project>

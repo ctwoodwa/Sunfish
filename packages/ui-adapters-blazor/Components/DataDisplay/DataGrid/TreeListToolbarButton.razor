@@ -1,0 +1,40 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@inherits SunfishComponentBase
+
+<button type="button"
+        class="@CombineClasses("mar-treelist__toolbar-btn")"
+        style="@CombineStyles()"
+        @onclick="HandleClick"
+        @attributes="AdditionalAttributes">
+    @ChildContent
+</button>
+
+@code {
+    /// <summary>The toolbar command to invoke on the parent TreeList.</summary>
+    [Parameter] public TreeListToolbarCommand Command { get; set; }
+
+    /// <summary>Button content (text/icon).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Reference to the parent TreeList's edit interface, set via CascadingParameter.</summary>
+    [CascadingParameter] private ITreeListEditController? EditController { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (EditController is null) return;
+
+        switch (Command)
+        {
+            case TreeListToolbarCommand.Add:
+                await EditController.BeginAddAsync();
+                break;
+            case TreeListToolbarCommand.Save:
+                await EditController.SaveEditAsync();
+                break;
+            case TreeListToolbarCommand.Cancel:
+                await EditController.CancelEditAsync();
+                break;
+        }
+    }
+}

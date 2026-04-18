@@ -1,0 +1,125 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(PanelClass)"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    @if (HeaderTemplate != null || !string.IsNullOrEmpty(Title))
+    {
+        <div class="sf-panel__header" @onclick="ToggleExpanded">
+            @if (Collapsible)
+            {
+                <button type="button"
+                        class="sf-panel__toggle"
+                        aria-expanded="@Expanded.ToString().ToLower()"
+                        aria-label="@(Expanded ? "Collapse" : "Expand")">
+                    @(Expanded ? "\u25BC" : "\u25B6")
+                </button>
+            }
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <span class="sf-panel__title">@Title</span>
+            }
+        </div>
+    }
+
+    @if (Expanded)
+    {
+        <div class="sf-panel__content">
+            @if (ContentTemplate != null)
+            {
+                @ContentTemplate
+            }
+            else
+            {
+                @ChildContent
+            }
+        </div>
+
+        @if (FooterTemplate != null)
+        {
+            <div class="sf-panel__footer">
+                @FooterTemplate
+            </div>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>Title text for the panel header.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Whether the panel is expanded. Defaults to true. Supports two-way binding.</summary>
+    [Parameter] public bool Expanded { get; set; } = true;
+
+    /// <summary>Fires when the expanded state changes.</summary>
+    [Parameter] public EventCallback<bool> ExpandedChanged { get; set; }
+
+    /// <summary>Whether the panel can be collapsed/expanded. Defaults to false.</summary>
+    [Parameter] public bool Collapsible { get; set; }
+
+    /// <summary>Whether the panel is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Custom header template.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Custom content template.</summary>
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    /// <summary>Custom footer template.</summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    /// <summary>Panel body content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    private string PanelClass
+    {
+        get
+        {
+            var cls = CssProvider.PanelClass();
+            if (!Expanded) cls += " mar-panel--collapsed";
+            if (Disabled) cls += " mar-panel--disabled";
+            return cls;
+        }
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Expands the panel.</summary>
+    public async Task ExpandAsync()
+    {
+        if (!Expanded)
+        {
+            Expanded = true;
+            await ExpandedChanged.InvokeAsync(true);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Collapses the panel.</summary>
+    public async Task CollapseAsync()
+    {
+        if (Expanded)
+        {
+            Expanded = false;
+            await ExpandedChanged.InvokeAsync(false);
+            StateHasChanged();
+        }
+    }
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task ToggleExpanded()
+    {
+        if (!Collapsible || Disabled) return;
+        Expanded = !Expanded;
+        await ExpandedChanged.InvokeAsync(Expanded);
+    }
+}

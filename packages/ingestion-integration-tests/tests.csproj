@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Ingestion.IntegrationTests</AssemblyName>
+    <RootNamespace>Sunfish.Ingestion.IntegrationTests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ingestion-core\Sunfish.Ingestion.Core.csproj" />
+    <ProjectReference Include="..\ingestion-forms\Sunfish.Ingestion.Forms.csproj" />
+    <ProjectReference Include="..\ingestion-spreadsheets\Sunfish.Ingestion.Spreadsheets.csproj" />
+    <ProjectReference Include="..\ingestion-voice\Sunfish.Ingestion.Voice.csproj" />
+    <ProjectReference Include="..\ingestion-sensors\Sunfish.Ingestion.Sensors.csproj" />
+    <ProjectReference Include="..\ingestion-imagery\Sunfish.Ingestion.Imagery.csproj" />
+    <ProjectReference Include="..\ingestion-satellite\Sunfish.Ingestion.Satellite.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>

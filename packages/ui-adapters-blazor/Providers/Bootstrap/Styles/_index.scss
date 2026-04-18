@@ -1,0 +1,109 @@
+// =============================================================================
+// Sunfish Bootstrap Provider — Style Index
+// Import order: Foundation → Patterns → Components (alphabetical)
+//
+// NOTE: Uses @import (not @forward) because Bootstrap variables ($primary,
+// $border-color, etc.) are loaded globally via @import in sunfish-bootstrap.scss.
+// @forward creates module scope which blocks access to these globals.
+// =============================================================================
+
+// A. Foundation (in dependency order)
+@import 'foundation/colors';
+@import 'foundation/spacing';
+@import 'foundation/typography';
+@import 'foundation/radius';
+@import 'foundation/elevation';
+@import 'foundation/motion';
+@import 'foundation/functions';
+@import 'foundation/mixins';
+@import 'foundation/tokens';
+
+// B. Patterns
+@import 'patterns/interactive-states';
+@import 'patterns/field-base';
+@import 'patterns/overlay';
+@import 'patterns/validation';
+@import 'patterns/density';
+
+// C. Components (alphabetical by file name)
+@import 'components/accordion';
+@import 'components/alert';
+@import 'components/alert-strip';
+@import 'components/allocation-scheduler';
+@import 'components/animation';
+@import 'components/app-bar';
+@import 'components/autocomplete';
+@import 'components/avatar';
+@import 'components/badge';
+@import 'components/breadcrumb';
+@import 'components/button';
+@import 'components/button-group';
+@import 'components/callout';
+@import 'components/card';
+@import 'components/carousel';
+@import 'components/chart';
+@import 'components/checkbox';
+@import 'components/color-picker';
+@import 'components/combo-box';
+@import 'components/container';
+@import 'components/context-menu';
+@import 'components/data-banner';
+@import 'components/data-grid';
+@import 'components/data-sheet';
+@import 'components/date-picker';
+@import 'components/dialog';
+@import 'components/divider';
+@import 'components/dock-manager';
+@import 'components/drag-drop';
+@import 'components/drawer';
+@import 'components/dropdown-list';
+@import 'components/editor';
+@import 'components/environment-badge';
+@import 'components/gantt';
+@import 'components/highlighter';
+@import 'components/icon';
+@import 'components/icon-button';
+@import 'components/image';
+@import 'components/link';
+@import 'components/list';
+@import 'components/list-view';
+@import 'components/map';
+@import 'components/menu';
+@import 'components/modal';
+@import 'components/multi-select';
+@import 'components/nav-bar';
+@import 'components/pagination';
+@import 'components/panel';
+@import 'components/popover';
+@import 'components/progress-bar';
+@import 'components/progress-circle';
+@import 'components/radio';
+@import 'components/rating';
+@import 'components/resizable-container';
+@import 'components/scheduler';
+@import 'components/scroll-view';
+@import 'components/search-box';
+@import 'components/select';
+@import 'components/signalr-status';
+@import 'components/skeleton';
+@import 'components/slider';
+@import 'components/snackbar';
+@import 'components/spinner';
+@import 'components/splitter';
+@import 'components/stack';
+@import 'components/stepper';
+@import 'components/switch';
+@import 'components/table';
+@import 'components/tab-strip';
+@import 'components/text-area';
+@import 'components/text-field';
+@import 'components/timeline';
+@import 'components/time-range-selector';
+@import 'components/toast';
+@import 'components/toolbar';
+@import 'components/tooltip';
+@import 'components/treelist';
+@import 'components/tree-view';
+@import 'components/typography';
+@import 'components/upload';
+@import 'components/window';

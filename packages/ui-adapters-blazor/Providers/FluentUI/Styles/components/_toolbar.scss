@@ -1,0 +1,72 @@
+// =============================================================================
+// Component: Toolbar
+// =============================================================================
+
+.sf-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm);
+    background: var(--sf-color-surface);
+    border-radius: var(--sf-radius-md);
+}
+
+.sf-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    background: var(--sf-color-surface, #f3f2f1);
+    border: 1px solid var(--sf-color-border, #e1dfdd);
+    border-radius: var(--sf-radius-lg);
+    padding: 3px;
+    flex-shrink: 0;
+}
+
+.sf-toolbar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: 5px 14px;
+    border: none;
+    border-radius: var(--sf-radius-md);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: var(--sf-font-family);
+    line-height: 1.5;
+    cursor: pointer;
+    color: var(--sf-color-text-secondary, #605e5c);
+    background: transparent;
+    transition: background var(--sf-transition-fast), color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.sf-toolbar-btn:hover:not(.sf-toolbar-btn--disabled):not(.sf-toolbar-btn--active) {
+    background: var(--sf-color-surface-hover, #edebe9);
+    color: var(--sf-color-on-background, #323130);
+}
+
+.sf-toolbar-btn--active {
+    background: var(--sf-color-background, #ffffff);
+    color: var(--sf-color-primary, #0078d4);
+    box-shadow: var(--sf-shadow-sm);
+}
+
+.sf-toolbar-btn--disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sf-toolbar-btn:focus-visible {
+    outline: none;
+    box-shadow: var(--sf-focus-ring);
+}
+
+.sf-toolbar-sep {
+    width: 1px;
+    align-self: stretch;
+    background: var(--sf-color-border, #e1dfdd);
+    margin: 2px var(--sf-space-xs);
+    flex-shrink: 0;
+}

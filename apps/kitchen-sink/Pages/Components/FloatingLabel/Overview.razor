@@ -1,0 +1,22 @@
+@page "/components/floatinglabel"
+@page "/components/floatinglabel/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="FloatingLabel wraps inputs to provide an animated label that floats above the field when focused or filled." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishFloatingLabel Text="Enter your name">
+                <SunfishTextBox @bind-Value="_name" />
+            </SunfishFloatingLabel>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private string? _name;
+
+    private const string _basicCode =
+        "<SunfishFloatingLabel Text=\"Enter your name\">\n" +
+        "    <SunfishTextBox @bind-Value=\"_name\" />\n" +
+        "</SunfishFloatingLabel>";
+}

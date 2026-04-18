@@ -1,0 +1,71 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.StackClass(Orientation))"
+     style="@BuildStackStyles()"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// The layout direction of the stack. Default is Horizontal.
+    /// </summary>
+    [Parameter] public StackDirection Orientation { get; set; } = StackDirection.Horizontal;
+
+    /// <summary>
+    /// Alignment of items along the horizontal axis.
+    /// For horizontal stacks, this controls the main axis (justify-content).
+    /// For vertical stacks, this controls the cross axis (align-items).
+    /// </summary>
+    [Parameter] public StackAlignment HorizontalAlign { get; set; } = StackAlignment.Start;
+
+    /// <summary>
+    /// Alignment of items along the vertical axis.
+    /// For horizontal stacks, this controls the cross axis (align-items).
+    /// For vertical stacks, this controls the main axis (justify-content).
+    /// </summary>
+    [Parameter] public StackAlignment VerticalAlign { get; set; } = StackAlignment.Start;
+
+    /// <summary>
+    /// The spacing between child items (CSS gap value, e.g., "8px", "1rem").
+    /// </summary>
+    [Parameter] public string? Spacing { get; set; }
+
+    /// <summary>
+    /// The width of the stack container (CSS value, e.g., "100%", "400px").
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>
+    /// The height of the stack container (CSS value, e.g., "100%", "300px").
+    /// </summary>
+    [Parameter] public string? Height { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildStackStyles()
+    {
+        var justifyContent = Orientation == StackDirection.Horizontal ? HorizontalAlign : VerticalAlign;
+        var alignItems = Orientation == StackDirection.Horizontal ? VerticalAlign : HorizontalAlign;
+
+        return new StyleBuilder()
+            .AddStyle("justify-content", ToFlexValue(justifyContent), justifyContent != StackAlignment.Start)
+            .AddStyle("align-items", ToFlexValue(alignItems), alignItems != StackAlignment.Start)
+            .AddStyle("gap", Spacing!, !string.IsNullOrWhiteSpace(Spacing))
+            .AddStyle("width", Width!, !string.IsNullOrWhiteSpace(Width))
+            .AddStyle("height", Height!, !string.IsNullOrWhiteSpace(Height))
+            .AddStyle(Style)
+            .Build();
+    }
+
+    private static string ToFlexValue(StackAlignment alignment) => alignment switch
+    {
+        StackAlignment.Start => "flex-start",
+        StackAlignment.Center => "center",
+        StackAlignment.End => "flex-end",
+        StackAlignment.Stretch => "stretch",
+        StackAlignment.SpaceBetween => "space-between",
+        StackAlignment.SpaceAround => "space-around",
+        _ => "flex-start"
+    };
+}

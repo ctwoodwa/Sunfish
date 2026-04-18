@@ -1,0 +1,49 @@
+// =============================================================================
+// Patterns: Field Base
+// Cross-browser form control normalization for Marilo components.
+//
+// Scoped to .sf-* containers so it does not leak into consumer markup.
+// Addresses Firefox/Safari differences: line-height, font inheritance,
+// ::-moz-focus-inner padding, appearance, and box-sizing.
+// =============================================================================
+
+// Firefox adds 2px padding + 1px border inside <button> via ::-moz-focus-inner.
+// This inflates button dimensions and breaks flex alignment in toolbars/headers.
+[class^="sf-"] button::-moz-focus-inner,
+[class*=" sf-"] button::-moz-focus-inner {
+  border: 0;
+  padding: 0;
+}
+
+// Normalize form controls inside Marilo component containers.
+// Ensures consistent height, font metrics, and box model across browsers.
+[class^="sf-"] input,
+[class^="sf-"] select,
+[class^="sf-"] textarea,
+[class^="sf-"] button,
+[class*=" sf-"] input,
+[class*=" sf-"] select,
+[class*=" sf-"] textarea,
+[class*=" sf-"] button {
+  font: inherit;
+  line-height: var(--sf-line-height-base, 1.5);
+  box-sizing: border-box;
+  margin: 0;
+}
+
+// Search inputs: suppress platform-native clear/cancel controls that
+// interfere with the Marilo clear button. Also reset appearance for Firefox.
+[class^="sf-"] input[type="search"],
+[class*=" sf-"] input[type="search"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  &::-webkit-search-decoration,
+  &::-webkit-search-cancel-button,
+  &::-webkit-search-results-button,
+  &::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+    display: none;
+  }
+}

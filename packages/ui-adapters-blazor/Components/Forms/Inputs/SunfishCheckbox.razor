@@ -1,0 +1,47 @@
+@inherits SunfishComponentBase
+
+<label class="@GetCheckboxClass()" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <input type="checkbox"
+           checked="@Checked"
+           disabled="@(!Enabled)"
+           aria-checked="@GetAriaChecked()"
+           @onchange="OnCheckChanged" />
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="@(LabelPosition == "before" ? "mar-checkbox__label--before" : "")">@Label</span>
+    }
+</label>
+
+@code {
+    [Parameter] public bool Checked { get; set; }
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Indeterminate { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Label position relative to checkbox ("before" or "after"). Defaults to "after".</summary>
+    [Parameter] public string LabelPosition { get; set; } = "after";
+
+    private string GetCheckboxClass()
+    {
+        return ClassBuilder.Clear()
+            .AddClass(CssProvider.CheckboxClass(Checked))
+            .AddClass("mar-checkbox--indeterminate", Indeterminate)
+            .AddClass("mar-checkbox--disabled", !Enabled)
+            .AddClass(Class)
+            .Build();
+    }
+
+    private string GetAriaChecked()
+    {
+        if (Indeterminate) return "mixed";
+        return Checked ? "true" : "false";
+    }
+
+    private async Task OnCheckChanged(ChangeEventArgs e)
+    {
+        if (!Enabled) return;
+        Checked = (bool)(e.Value ?? false);
+        await CheckedChanged.InvokeAsync(Checked);
+    }
+}

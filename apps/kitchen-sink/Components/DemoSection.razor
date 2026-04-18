@@ -1,0 +1,118 @@
+@using Sunfish.Components.Blazor.Components.Layout.ResizableContainer
+@using Sunfish.Components.Blazor.Components.Buttons
+@inject IJSRuntime JS
+
+<div class="demo-panel" id="@_anchorId">
+    <div class="demo-panel-header">
+        <h3 class="demo-panel-title">@Title</h3>
+        @if (!string.IsNullOrEmpty(Description))
+        {
+            <p class="demo-panel-desc">@Description</p>
+        }
+    </div>
+    <div class="demo-panel-card">
+        <div class="demo-panel-tabs">
+            <div class="demo-panel-tab-group">
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ShowExample">EXAMPLE</SunfishButton>
+                    @if (!string.IsNullOrEmpty(Code))
+                    {
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ShowSource">VIEW SOURCE</SunfishButton>
+                    }
+                </SunfishButtonGroup>
+            </div>
+            <div class="demo-panel-actions">
+                @if (_showCode)
+                {
+                    <SunfishButton Class="demo-panel-action" Variant="ButtonVariant.Info" Size="ButtonSize.Small" @OnClick="CopyCode" title="Copy code">
+                        @if (_copied)
+                        {
+                            <SunfishIcon Name="check" Size="IconSize.Small" />
+                            <span>Copied!</span>
+                        }
+                        else
+                        {
+                            <SunfishIcon Name="copy" Size="IconSize.Small" />
+                            <span>Copy</span>
+                        }
+                    </SunfishButton>
+                }
+            </div>
+        </div>
+
+        @if (_showCode && !string.IsNullOrEmpty(Code))
+        {
+            <div class="demo-panel-source">
+                <pre class="demo-panel-pre"><code class="language-html" @ref="_codeEl">@Code</code></pre>
+            </div>
+        }
+        else
+        {
+            @* <SunfishResizableContainer> *@
+            <div class="demo-panel-preview">
+                @ChildContent
+            </div>
+            @* </SunfishResizableContainer> *@
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Code { get; set; }
+
+    [CascadingParameter] public PageSectionTracker? SectionTracker { get; set; }
+    [CascadingParameter(Name = "ActiveSectionId")] public string? ActiveSectionId { get; set; }
+
+    private string _anchorId = "";
+    private int _order;
+    private bool _showCode;
+    private bool _copied;
+    private bool _needsHighlight;
+    private ElementReference _codeEl;
+
+    protected override void OnInitialized()
+    {
+        _order = SectionTracker?.NextOrder() ?? 0;
+    }
+
+    protected override void OnParametersSet()
+    {
+        _anchorId = PageSectionTracker.ToAnchorId(Title);
+        if (ActiveSectionId is not null)
+            SectionTracker?.RegisterSubSection(ActiveSectionId, _anchorId, Title, _order);
+        else
+            SectionTracker?.RegisterSection(_anchorId, Title, _order);
+    }
+
+    private void ShowExample() => _showCode = false;
+
+    private void ShowSource()
+    {
+        _showCode = true;
+        _needsHighlight = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_needsHighlight)
+        {
+            _needsHighlight = false;
+            try { await JS.InvokeVoidAsync("Prism.highlightElement", _codeEl); }
+            catch { /* Prism not yet loaded */ }
+        }
+    }
+
+    private async Task CopyCode()
+    {
+        if (string.IsNullOrEmpty(Code)) return;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", Code);
+        _copied = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        _copied = false;
+        StateHasChanged();
+    }
+}

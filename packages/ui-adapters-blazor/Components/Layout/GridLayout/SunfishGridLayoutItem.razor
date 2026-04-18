@@ -1,0 +1,41 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-grid-item")"
+     style="@BuildItemStyles()"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// The 1-based row position in the grid.
+    /// </summary>
+    [Parameter] public int Row { get; set; } = 1;
+
+    /// <summary>
+    /// The 1-based column position in the grid.
+    /// </summary>
+    [Parameter] public int Column { get; set; } = 1;
+
+    /// <summary>
+    /// The number of rows this item spans. Default is 1.
+    /// </summary>
+    [Parameter] public int RowSpan { get; set; } = 1;
+
+    /// <summary>
+    /// The number of columns this item spans. Default is 1.
+    /// </summary>
+    [Parameter] public int ColumnSpan { get; set; } = 1;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildItemStyles()
+    {
+        return new StyleBuilder()
+            .AddStyle("grid-row", RowSpan > 1 ? $"{Row} / span {RowSpan}" : Row.ToString())
+            .AddStyle("grid-column", ColumnSpan > 1 ? $"{Column} / span {ColumnSpan}" : Column.ToString())
+            .AddStyle(Style)
+            .Build();
+    }
+}

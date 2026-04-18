@@ -1,0 +1,183 @@
+@typeparam TModel
+@inherits SunfishComponentBase
+
+<EditForm Model="@Model" OnValidSubmit="HandleValidSubmit" class="@CombineClasses("mar-form")" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <DataAnnotationsValidator />
+
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @* Auto-generate fields from TModel properties *@
+        <div class="sf-form__fields" style="@GetColumnsStyle()">
+            @foreach (var prop in GetFormProperties())
+            {
+                <div class="sf-form__field">
+                    <label class="sf-form__label">@GetDisplayName(prop)</label>
+                    @RenderField(prop)
+                    <ValidationMessage For="@CreateFieldExpression(prop)" />
+                </div>
+            }
+        </div>
+    }
+
+    <div class="sf-form__actions">
+        @if (ActionsTemplate != null)
+        {
+            @ActionsTemplate
+        }
+        else
+        {
+            <button type="submit" class="sf-btn mar-btn--primary">
+                @(SubmitText ?? "Submit")
+            </button>
+        }
+    </div>
+</EditForm>
+
+@code {
+    [Parameter] public TModel? Model { get; set; }
+    [Parameter] public EventCallback<TModel> OnValidSubmit { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ActionsTemplate { get; set; }
+    [Parameter] public string? SubmitText { get; set; }
+    [Parameter] public int Columns { get; set; } = 1;
+    [Parameter] public FormOrientation Orientation { get; set; } = FormOrientation.Vertical;
+
+    private string GetColumnsStyle()
+    {
+        if (Columns <= 1) return "";
+        return $"display: grid; grid-template-columns: repeat({Columns}, 1fr); gap: 16px;";
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (Model != null)
+            await OnValidSubmit.InvokeAsync(Model);
+    }
+
+    private IEnumerable<System.Reflection.PropertyInfo> GetFormProperties()
+    {
+        if (Model is null) return Enumerable.Empty<System.Reflection.PropertyInfo>();
+
+        return typeof(TModel).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+            .Where(p => p.CanRead && p.CanWrite && !IsIgnored(p));
+    }
+
+    private static bool IsIgnored(System.Reflection.PropertyInfo prop)
+    {
+        // Skip properties with [EditorBrowsable(Never)] or complex types
+        var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+        if (type.IsClass && type != typeof(string)) return true;
+        if (type.IsArray) return true;
+        return false;
+    }
+
+    private static string GetDisplayName(System.Reflection.PropertyInfo prop)
+    {
+        var displayAttr = prop.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), true)
+            .FirstOrDefault() as System.ComponentModel.DataAnnotations.DisplayAttribute;
+        if (displayAttr?.Name != null) return displayAttr.Name;
+
+        // Convert PascalCase to spaced name
+        return System.Text.RegularExpressions.Regex.Replace(prop.Name, "([a-z])([A-Z])", "$1 $2");
+    }
+
+    private RenderFragment RenderField(System.Reflection.PropertyInfo prop) => builder =>
+    {
+        var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+
+        if (type == typeof(bool))
+        {
+            var val = (bool?)prop.GetValue(Model) ?? false;
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "checkbox");
+            builder.AddAttribute(2, "class", "mar-checkbox");
+            builder.AddAttribute(3, "checked", val);
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e =>
+            {
+                prop.SetValue(Model, bool.TryParse(e.Value?.ToString(), out var b) && b);
+            }));
+            builder.CloseElement();
+        }
+        else if (type == typeof(DateTime) || type == typeof(DateOnly))
+        {
+            var val = prop.GetValue(Model)?.ToString() ?? "";
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "date");
+            builder.AddAttribute(2, "class", "mar-textfield");
+            builder.AddAttribute(3, "value", val);
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e =>
+            {
+                if (DateTime.TryParse(e.Value?.ToString(), out var dt))
+                {
+                    if (type == typeof(DateOnly))
+                        prop.SetValue(Model, DateOnly.FromDateTime(dt));
+                    else
+                        prop.SetValue(Model, dt);
+                }
+            }));
+            builder.CloseElement();
+        }
+        else if (type.IsEnum)
+        {
+            var val = prop.GetValue(Model)?.ToString() ?? "";
+            builder.OpenElement(0, "select");
+            builder.AddAttribute(1, "class", "mar-select");
+            builder.AddAttribute(2, "value", val);
+            builder.AddAttribute(3, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e =>
+            {
+                if (Enum.TryParse(type, e.Value?.ToString(), out var parsed))
+                    prop.SetValue(Model, parsed);
+            }));
+            foreach (var enumValue in Enum.GetValues(type))
+            {
+                builder.OpenElement(10, "option");
+                builder.AddAttribute(11, "value", enumValue.ToString());
+                builder.AddContent(12, enumValue.ToString());
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+        }
+        else if (type == typeof(int) || type == typeof(long) || type == typeof(double) || type == typeof(decimal) || type == typeof(float))
+        {
+            var val = prop.GetValue(Model)?.ToString() ?? "";
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "number");
+            builder.AddAttribute(2, "class", "mar-textfield");
+            builder.AddAttribute(3, "value", val);
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e =>
+            {
+                var str = e.Value?.ToString();
+                if (type == typeof(int) && int.TryParse(str, out var i)) prop.SetValue(Model, i);
+                else if (type == typeof(long) && long.TryParse(str, out var l)) prop.SetValue(Model, l);
+                else if (type == typeof(double) && double.TryParse(str, out var d)) prop.SetValue(Model, d);
+                else if (type == typeof(decimal) && decimal.TryParse(str, out var dc)) prop.SetValue(Model, dc);
+                else if (type == typeof(float) && float.TryParse(str, out var f)) prop.SetValue(Model, f);
+            }));
+            builder.CloseElement();
+        }
+        else
+        {
+            // Default: text input
+            var val = prop.GetValue(Model)?.ToString() ?? "";
+            builder.OpenElement(0, "input");
+            builder.AddAttribute(1, "type", "text");
+            builder.AddAttribute(2, "class", "mar-textfield");
+            builder.AddAttribute(3, "value", val);
+            builder.AddAttribute(4, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, e =>
+            {
+                prop.SetValue(Model, e.Value?.ToString());
+            }));
+            builder.CloseElement();
+        }
+    };
+
+    private static System.Linq.Expressions.Expression<Func<object>> CreateFieldExpression(System.Reflection.PropertyInfo prop)
+    {
+        // Create a simple expression for ValidationMessage
+        return () => prop.Name;
+    }
+}

@@ -1,0 +1,176 @@
+@page "/components/allocation-scheduler/accessibility"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Keyboard Navigation">
+    <DemoSection Title="Keyboard Navigation Walkthrough"
+                 Description="Tab through the toolbar, grain selector, resource panel, and timeline cells. Arrow keys move cell focus. Enter or F2 enters edit mode. Escape cancels. The context-menu key opens the context menu on the focused cell."
+                 Code="@_keyboardCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowKeyboardEdit="true"
+                                   EnableContextMenu="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="ARIA Roles and Landmarks">
+    <DemoSection Title="ARIA Roles and Landmarks"
+                 Description="The AllocationScheduler renders with role='grid' on the timeline table, role='gridcell' on allocation cells, role='columnheader' on time headers, and role='rowheader' on resource cells. The root element carries an aria-label. Selected cells have aria-selected='true' and disabled cells have aria-readonly='true'."
+                 Code="@_ariaCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   SelectionMode="AllocationSelectionMode.Range"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Screen-Reader Live Region">
+    <DemoSection Title="Screen-Reader Live Region"
+                 Description="Enable EnableLiveRegion to have cell edits, navigation, and scenario switches announced via an aria-live='polite' region. Edit a cell value below and observe the live region announcement in your screen reader."
+                 Code="@_liveRegionCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowKeyboardEdit="true"
+                                   EnableLiveRegion="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="High-Contrast Mode">
+    <DemoSection Title="High-Contrast Mode"
+                 Description="The AllocationScheduler supports the forced-colors media query for Windows High Contrast mode. Borders, focus indicators, and selection outlines use system colors. Test by enabling Windows High Contrast (Settings > Accessibility > Contrast themes) and verifying that all interactive elements remain visible and distinguishable."
+                 Code="@_highContrastCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   SelectionMode="AllocationSelectionMode.Range"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" },
+        new() { Id = 4, Name = "David Kim",   Role = "Manager", Department = "PMO"        }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 4, TaskId = 104, TaskName = "Release Plan", BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 8,  Unit = AllocationUnit.Hours }
+    };
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    private const string _keyboardCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AllowKeyboardEdit=\"true\"\n" +
+        "                           EnableContextMenu=\"true\"\n" +
+        "                           Height=\"280px\" />\n" +
+        "\n" +
+        "// Tab: move between toolbar, grain selector, resource panel, timeline cells\n" +
+        "// Arrow keys: move cell focus within the timeline grid\n" +
+        "// Enter/F2: enter edit mode on the focused cell\n" +
+        "// Escape: cancel edit mode\n" +
+        "// Context menu key: open the right-click menu on the focused cell";
+
+    private const string _ariaCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           SelectionMode=\"AllocationSelectionMode.Range\"\n" +
+        "                           Height=\"280px\" />\n" +
+        "\n" +
+        "// role=\"grid\" on the timeline table\n" +
+        "// role=\"gridcell\" on allocation cells\n" +
+        "// role=\"columnheader\" on time headers\n" +
+        "// role=\"rowheader\" on resource cells\n" +
+        "// aria-selected=\"true\" on selected cells\n" +
+        "// aria-readonly=\"true\" on disabled cells";
+
+    private const string _liveRegionCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           EnableLiveRegion=\"true\"\n" +
+        "                           AllowKeyboardEdit=\"true\"\n" +
+        "                           Height=\"280px\" />\n" +
+        "\n" +
+        "// EnableLiveRegion adds an aria-live=\"polite\" region\n" +
+        "// Cell edits, navigation events, and scenario switches are announced";
+
+    private const string _highContrastCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           SelectionMode=\"AllocationSelectionMode.Range\"\n" +
+        "                           AllowKeyboardEdit=\"true\"\n" +
+        "                           Height=\"280px\" />\n" +
+        "\n" +
+        "// Supports @media (forced-colors: active) for Windows High Contrast\n" +
+        "// Borders, focus rings, and selections use system colors";
+}

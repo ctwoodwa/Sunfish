@@ -1,0 +1,12 @@
+@namespace Sunfish.Components.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+<nav class="@CombineClasses(CssProvider.NavMenuClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <ul role="list">
+        @ChildContent
+    </ul>
+</nav>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

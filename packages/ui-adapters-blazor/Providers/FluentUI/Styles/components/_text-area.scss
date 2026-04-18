@@ -1,0 +1,90 @@
+// =============================================================================
+// Component: TextArea
+// =============================================================================
+
+.sf-textarea {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    background: var(--sf-color-background);
+    transition: border-color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+
+    &:hover {
+        border-color: var(--sf-color-on-background);
+    }
+
+    &:focus-within {
+        border-color: var(--sf-color-primary);
+        box-shadow: var(--sf-focus-ring);
+    }
+
+    textarea {
+        flex: 1;
+        min-width: 0;
+        width: 100%;
+        padding: var(--sf-space-sm) var(--sf-space-sm);
+        font-family: var(--sf-font-family);
+        font-size: var(--sf-font-size-base);
+        line-height: var(--sf-line-height-base);
+        color: var(--sf-color-on-background);
+        background: transparent;
+        border: none;
+        outline: none;
+        resize: vertical;
+        min-height: var(--sf-textarea-min-height, 80px);
+
+        &::placeholder {
+            color: var(--sf-color-text-secondary);
+        }
+    }
+}
+
+.sf-textarea--invalid {
+    border-color: var(--sf-color-danger);
+    box-shadow: 0 0 0 1px var(--sf-color-danger); // danger state, not focus ring
+}
+
+// QUALITY FIX: explicit color tokens for disabled, not opacity
+.sf-textarea--disabled {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-disabled);
+    border-color: var(--sf-color-border);
+    pointer-events: none;
+
+    textarea {
+        color: var(--sf-color-text-disabled);
+        background: transparent;
+        cursor: not-allowed;
+    }
+}
+
+.sf-textarea--no-resize textarea {
+    resize: none;
+}
+
+// Size variants
+.sf-textarea--small textarea {
+    padding: var(--sf-space-xs);
+    font-size: var(--sf-font-size-sm);
+    min-height: var(--sf-textarea-sm-min-height, 56px);
+}
+
+.sf-textarea--large textarea {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-size: var(--sf-font-size-md);
+    min-height: var(--sf-textarea-lg-min-height, 120px);
+}
+
+// Character counter
+.sf-textarea__counter {
+    align-self: flex-end;
+    padding: var(--sf-space-xxs) var(--sf-space-sm) var(--sf-space-xs);
+    font-size: var(--sf-font-size-xs);
+    color: var(--sf-color-text-secondary);
+}
+
+.sf-textarea__counter--over-limit {
+    color: var(--sf-color-danger);
+    font-weight: var(--sf-font-weight-semibold);
+}

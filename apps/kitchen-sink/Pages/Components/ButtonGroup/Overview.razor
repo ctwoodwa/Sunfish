@@ -1,0 +1,96 @@
+@page "/components/ButtonGroup"
+@page "/components/ButtonGroup/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishButtonGroup>
+            <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Center</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
+        </SunfishButtonGroup>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="With Primary" Description="Mix variant styles within a button group to highlight the primary action." Code="@_withPrimaryCode">
+        <SunfishButtonGroup>
+            <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+        </SunfishButtonGroup>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnClick" Description="Handle click events on individual buttons within the group." Code="@_clickCode">
+        <SunfishButtonGroup>
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _selected = "Left")">Left</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _selected = "Center")">Center</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _selected = "Right")">Right</SunfishButton>
+        </SunfishButtonGroup>
+        <p><strong>Selected:</strong> @_selected</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private const string _basicCode =
+        "<SunfishButtonGroup>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Left</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Center</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Right</SunfishButton>\n" +
+        "</SunfishButtonGroup>";
+
+    // Appearance
+    private const string _withPrimaryCode =
+        "<SunfishButtonGroup>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Primary\">Primary</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Secondary</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\">Secondary</SunfishButton>\n" +
+        "</SunfishButtonGroup>";
+
+    // Events
+    private string _selected = "Left";
+
+    private const string _clickCode =
+        "<SunfishButtonGroup>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Primary\" OnClick=\"@(() => _selected = \"Left\")\">Left</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\" OnClick=\"@(() => _selected = \"Center\")\">Center</SunfishButton>\n" +
+        "    <SunfishButton Variant=\"ButtonVariant.Secondary\" OnClick=\"@(() => _selected = \"Right\")\">Right</SunfishButton>\n" +
+        "</SunfishButtonGroup>\n" +
+        "<p><strong>Selected:</strong> @_selected</p>\n\n" +
+        "@code {\n" +
+        "    private string _selected = \"Left\";\n" +
+        "}";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the next button in the group"),
+        ("Shift + Tab", "Moves focus to the previous button in the group"),
+        ("Enter", "Activates the focused button"),
+        ("Space", "Activates the focused button"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"group\"", "Applied to the button group container to indicate related buttons"),
+        ("aria-label", "Can be set on the group to describe its purpose"),
+        ("aria-disabled=\"true\"", "Applied to individual buttons when disabled"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The button group is announced as a \"group\" containing related buttons.",
+        "Each button within the group is announced individually with its text content.",
+        "Use aria-label on the group to provide context about the grouped actions.",
+    ];
+}

@@ -1,0 +1,36 @@
+.settings-home-link {
+    --shl-text: var(--marilo-color-text-muted, #6b7280);
+    --shl-hover: var(--marilo-color-text, #1f2328);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--shl-text);
+    text-decoration: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+    user-select: none;
+}
+
+.settings-home-link:hover {
+    color: var(--shl-hover);
+    background: color-mix(in srgb, var(--shl-hover) 6%, transparent);
+}
+
+.settings-home-link__icon {
+    flex-shrink: 0;
+    opacity: 0.7;
+}
+
+.settings-home-link__label {
+    line-height: 1;
+}
+
+:global([data-marilo-theme="dark"]) .settings-home-link {
+    --shl-text: var(--marilo-color-text-muted, #9a9a92);
+    --shl-hover: var(--marilo-color-text, #f3f3ef);
+}

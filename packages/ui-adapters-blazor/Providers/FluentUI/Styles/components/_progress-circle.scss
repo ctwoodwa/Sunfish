@@ -1,0 +1,56 @@
+// =============================================================================
+// Component: ProgressCircle (Circular Progress Bar)
+// =============================================================================
+
+.sf-progress-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.sf-progress-circle svg {
+    display: block;
+    transform: rotate(-90deg); // SVG circles start at 3 o'clock; rotate to start at 12 o'clock
+}
+
+.sf-progress-circle__track {
+    fill: none;
+    stroke: var(--sf-color-border);
+}
+
+.sf-progress-circle__fill {
+    fill: none;
+    stroke: var(--sf-color-primary);
+    stroke-linecap: round;
+    transition: stroke-dashoffset var(--sf-transition-normal, 0.2s) ease;
+}
+
+// Theme color variants
+.sf-progress-circle--success .sf-progress-circle__fill { stroke: var(--sf-color-success); }
+.sf-progress-circle--danger  .sf-progress-circle__fill { stroke: var(--sf-color-danger); }
+.sf-progress-circle--warning .sf-progress-circle__fill { stroke: var(--sf-color-warning); }
+.sf-progress-circle--info    .sf-progress-circle__fill { stroke: var(--sf-color-info); }
+
+// Center label
+.sf-progress-circle__label {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-on-background);
+}
+
+// Indeterminate / animated state
+.sf-progress-circle--indeterminate .sf-progress-circle__fill {
+    animation: sf-progress-circle-spin 1.5s linear infinite;
+}
+
+@keyframes sf-progress-circle-spin {
+    0%   { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: -283; } // circumference of r=45 circle (2π×45 ≈ 282.7)
+}

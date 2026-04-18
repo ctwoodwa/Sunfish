@@ -1,0 +1,23 @@
+// =============================================================================
+// Component: Callout
+// =============================================================================
+
+.sf-callout {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sf-space-md);
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    border-radius: var(--sf-radius-md);
+    border-left: 4px solid;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+}
+
+.sf-callout--info { background: var(--sf-color-info-light); border-left-color: var(--sf-color-info); }
+.sf-callout--warning { background: var(--sf-color-warning-light); border-left-color: var(--sf-color-warning); }
+.sf-callout--danger { background: var(--sf-color-danger-light); border-left-color: var(--sf-color-danger); }
+.sf-callout--success { background: var(--sf-color-success-light); border-left-color: var(--sf-color-success); }
+.sf-callout--note { background: var(--sf-color-surface); border-left-color: var(--sf-color-border-strong); }
+.sf-callout__icon { flex-shrink: 0; }
+.sf-callout__content { flex: 1; }
+.sf-callout__title { font-weight: var(--sf-font-weight-semibold); margin-bottom: var(--sf-space-xxs); }

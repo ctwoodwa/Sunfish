@@ -1,0 +1,18 @@
+@page "/components/tilelayout"
+@page "/components/tilelayout/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="TileLayout arranges content tiles in a responsive grid with drag-and-drop reordering." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishTileLayout Style="min-height:300px;" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishTileLayout>\n" +
+        "    <!-- Tile items -->\n" +
+        "</SunfishTileLayout>";
+}

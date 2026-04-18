@@ -1,0 +1,39 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Components.Blazor.Components.Forms.Inputs
+
+@* Note: Telerik uses "CheckBox" (two words) and "Value"; Sunfish uses "Checkbox" and "Checked".
+   The wrapper keeps the Telerik spelling on the outside. *@
+<SunfishCheckbox Checked="Value"
+                 CheckedChanged="ValueChanged"
+                 Enabled="Enabled"
+                 Indeterminate="Indeterminate"
+                 @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>Telerik's Id parameter. Forwarded via <c>AdditionalAttributes["id"]</c>.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Telerik's TabIndex parameter. Forwarded via <c>AdditionalAttributes["tabindex"]</c>.</summary>
+    [Parameter] public int? TabIndex { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Id is not null || TabIndex is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Id is not null && !AdditionalAttributes.ContainsKey("id"))
+                AdditionalAttributes["id"] = Id;
+            if (TabIndex is not null && !AdditionalAttributes.ContainsKey("tabindex"))
+                AdditionalAttributes["tabindex"] = TabIndex.Value;
+        }
+    }
+}

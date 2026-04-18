@@ -1,0 +1,78 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+@{
+    var pct = (Max - Min) > 0 ? (Value - Min) / (Max - Min) : 0;
+    pct = Math.Clamp(pct, 0, 1);
+    var angle = StartAngle + pct * SweepAngle;
+    var radius = (Size / 2.0) - 20;
+    var cx = Size / 2.0;
+    var cy = Size / 2.0;
+    var pointerLength = radius * 0.75;
+    var pointerRad = angle * Math.PI / 180;
+    var px = cx + pointerLength * Math.Cos(pointerRad);
+    var py = cy + pointerLength * Math.Sin(pointerRad);
+}
+
+<div class="@CombineClasses("mar-radial-gauge")"
+     style="@CombineStyles()"
+     role="meter"
+     aria-valuenow="@Value"
+     aria-valuemin="@Min"
+     aria-valuemax="@Max"
+     @attributes="AdditionalAttributes">
+    <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
+        @* Background arc *@
+        <path d="@DescribeArc(cx, cy, radius, StartAngle, StartAngle + SweepAngle)"
+              fill="none" stroke="#e0e0e0" stroke-width="8" stroke-linecap="round" />
+        @* Color ranges *@
+        @if (Ranges != null)
+        {
+            @foreach (var range in Ranges)
+            {
+                var fromPct = Math.Clamp((range.From - Min) / (Max - Min), 0, 1);
+                var toPct = Math.Clamp((range.To - Min) / (Max - Min), 0, 1);
+                var fromAngle = StartAngle + fromPct * SweepAngle;
+                var toAngle = StartAngle + toPct * SweepAngle;
+                <path d="@DescribeArc(cx, cy, radius, fromAngle, toAngle)"
+                      fill="none" stroke="@range.Color" stroke-width="8" stroke-linecap="round" />
+            }
+        }
+        @* Needle *@
+        <line x1="@cx" y1="@cy" x2="@px" y2="@py"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+        <circle cx="@cx" cy="@cy" r="5" fill="currentColor" />
+        @* Label *@
+        @if (ShowLabel)
+        {
+            <svg:text x="@cx" y="@(cy + radius * 0.35)" text-anchor="middle" font-size="@(Size / 7)"
+                  fill="currentColor">
+                @Value.ToString(Format ?? "F0")
+            </svg:text>
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public int Size { get; set; } = 200;
+    [Parameter] public double StartAngle { get; set; } = -135;
+    [Parameter] public double SweepAngle { get; set; } = 270;
+    [Parameter] public bool ShowLabel { get; set; } = true;
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    private static string DescribeArc(double cx, double cy, double r, double startAngle, double endAngle)
+    {
+        var startRad = startAngle * Math.PI / 180;
+        var endRad = endAngle * Math.PI / 180;
+        var x1 = cx + r * Math.Cos(startRad);
+        var y1 = cy + r * Math.Sin(startRad);
+        var x2 = cx + r * Math.Cos(endRad);
+        var y2 = cy + r * Math.Sin(endRad);
+        var largeArc = Math.Abs(endAngle - startAngle) > 180 ? 1 : 0;
+        return $"M {x1:F2} {y1:F2} A {r:F2} {r:F2} 0 {largeArc} 1 {x2:F2} {y2:F2}";
+    }
+}

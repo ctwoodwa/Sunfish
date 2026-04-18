@@ -1,0 +1,31 @@
+// =============================================================================
+// Foundation: Radius — Material 3 Shape System
+// Source: https://m3.material.io/styles/shape/shape-scale-tokens
+// =============================================================================
+
+// ----------------------------------------------------------------------------
+// M3 Shape Scale — Sass map for reference / tooling use
+// ----------------------------------------------------------------------------
+
+$material-shape: (
+  none:        0,
+  extra-small: 4px,
+  small:       8px,
+  medium:      12px,
+  large:       16px,
+  extra-large: 28px,
+  full:        9999px,
+);
+
+// ----------------------------------------------------------------------------
+// Sunfish radius tokens — mapped to M3 shape scale
+// ----------------------------------------------------------------------------
+
+:root {
+  --sf-radius-none: 0;
+  --sf-radius-sm:   4px;      // M3 extra-small
+  --sf-radius-md:   12px;     // M3 medium
+  --sf-radius-lg:   16px;     // M3 large
+  --sf-radius-xl:   28px;     // M3 extra-large
+  --sf-radius-full: 9999px;
+}

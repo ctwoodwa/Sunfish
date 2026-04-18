@@ -1,0 +1,186 @@
+@page "/components/Chip"
+@page "/components/Chip/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Chips are compact elements that represent an input, attribute, or action." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishChip Label="Default chip" />
+            <SunfishChip Variant="ChipVariant.Primary" Label="Primary chip" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="With Icon" Description="Use the Icon render fragment to prepend an icon to the chip." Code="@_iconCode">
+        <div class="demo-row">
+            <SunfishChip Variant="ChipVariant.Primary">
+                <Icon>★</Icon>
+                <ChildContent>Featured</ChildContent>
+            </SunfishChip>
+            <SunfishChip Variant="ChipVariant.Success">
+                <Icon>✓</Icon>
+                <ChildContent>Verified</ChildContent>
+            </SunfishChip>
+            <SunfishChip Variant="ChipVariant.Danger">
+                <Icon>⚠</Icon>
+                <ChildContent>Error</ChildContent>
+            </SunfishChip>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="All Variants" Description="Chips support all standard color variants." Code="@_variantsCode">
+        <div class="demo-row" style="flex-wrap:wrap;">
+            <SunfishChip Label="Default" />
+            <SunfishChip Variant="ChipVariant.Primary" Label="Primary" />
+            <SunfishChip Variant="ChipVariant.Secondary" Label="Secondary" />
+            <SunfishChip Variant="ChipVariant.Danger" Label="Danger" />
+            <SunfishChip Variant="ChipVariant.Warning" Label="Warning" />
+            <SunfishChip Variant="ChipVariant.Info" Label="Info" />
+            <SunfishChip Variant="ChipVariant.Success" Label="Success" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Selected State" Description="Use IsSelected to highlight a chip as active or chosen." Code="@_selectedCode">
+        <div class="demo-row">
+            <SunfishChip Variant="ChipVariant.Primary" Label="Selected" IsSelected="true" />
+            <SunfishChip Variant="ChipVariant.Primary" Label="Unselected" IsSelected="false" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Selectable" Description="Set Selectable to allow users to toggle the chip's selection state." Code="@_selectableCode">
+        <div class="demo-row">
+            @foreach (var tag in _tags)
+            {
+                <SunfishChip Variant="ChipVariant.Primary"
+                            Label="@tag.Label"
+                            Selectable="true"
+                            IsSelected="@tag.Selected"
+                            SelectedChanged="@(v => tag.Selected = v)" />
+            }
+        </div>
+        <p style="margin-top:8px;">Selected: <strong>@string.Join(", ", _tags.Where(t => t.Selected).Select(t => t.Label))</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Removable" Description="Set Removable to show a remove button. Handle OnRemove to react when it is clicked." Code="@_removableCode">
+        <div class="demo-row" style="flex-wrap:wrap;">
+            @foreach (var chip in _removableChips)
+            {
+                <SunfishChip Variant="ChipVariant.Secondary"
+                            Label="@chip"
+                            Removable="true"
+                            OnRemove="@(() => _removableChips.Remove(chip))" />
+            }
+        </div>
+        @if (_removableChips.Count == 0)
+        {
+            <p style="margin-top:8px;font-style:italic;">All chips removed.</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnClick" Description="Handle chip click events to toggle selection or trigger actions." Code="@_clickCode">
+        <div class="demo-row">
+            <SunfishChip Variant="ChipVariant.Primary"
+                        Label="@(_isSelected ? "Selected" : "Click me")"
+                        IsSelected="@_isSelected"
+                        OnClick="@(() => _isSelected = !_isSelected)" />
+        </div>
+        <p style="margin-top:8px;"><strong>Selected:</strong> @_isSelected</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private class Tag
+    {
+        public string Label { get; set; } = "";
+        public bool Selected { get; set; }
+    }
+
+    private List<Tag> _tags =
+    [
+        new Tag { Label = "Blazor" },
+        new Tag { Label = "C#" },
+        new Tag { Label = ".NET" },
+        new Tag { Label = "UI" },
+    ];
+
+    private List<string> _removableChips = ["TypeScript", "React", "CSS", "HTML"];
+
+    private bool _isSelected;
+
+    private const string _basicCode =
+        "<SunfishChip Label=\"Default chip\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Primary\" Label=\"Primary chip\" />";
+
+    private const string _iconCode =
+        "<SunfishChip Variant=\"ChipVariant.Primary\">\n" +
+        "    <Icon>★</Icon>\n" +
+        "    <ChildContent>Featured</ChildContent>\n" +
+        "</SunfishChip>";
+
+    private const string _variantsCode =
+        "<SunfishChip Label=\"Default\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Primary\" Label=\"Primary\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Secondary\" Label=\"Secondary\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Danger\" Label=\"Danger\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Warning\" Label=\"Warning\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Info\" Label=\"Info\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Success\" Label=\"Success\" />";
+
+    private const string _selectedCode =
+        "<SunfishChip Variant=\"ChipVariant.Primary\" Label=\"Selected\" IsSelected=\"true\" />\n" +
+        "<SunfishChip Variant=\"ChipVariant.Primary\" Label=\"Unselected\" IsSelected=\"false\" />";
+
+    private const string _selectableCode =
+        "<SunfishChip Variant=\"ChipVariant.Primary\" Label=\"Blazor\"\n" +
+        "    Selectable=\"true\" IsSelected=\"@_blazor\" SelectedChanged=\"@(v => _blazor = v)\" />";
+
+    private const string _removableCode =
+        "@foreach (var chip in _chips)\n" +
+        "{\n" +
+        "    <SunfishChip Variant=\"ChipVariant.Secondary\" Label=\"@chip\"\n" +
+        "        Removable=\"true\" OnRemove=\"@(() => _chips.Remove(chip))\" />\n" +
+        "}";
+
+    private const string _clickCode =
+        "<SunfishChip Variant=\"ChipVariant.Primary\"\n" +
+        "    Label=\"@(_isSelected ? \\\"Selected\\\" : \\\"Click me\\\")\"\n" +
+        "    IsSelected=\"@_isSelected\"\n" +
+        "    OnClick=\"@(() => _isSelected = !_isSelected)\" />\n\n" +
+        "@code {\n" +
+        "    private bool _isSelected;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter", "Selects or deselects the chip"),
+        ("Space", "Selects or deselects the chip"),
+        ("Delete", "Removes the chip if Removable is true"),
+        ("Backspace", "Removes the chip if Removable is true"),
+        ("Tab", "Moves focus to the next focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"option\"", "Applied to selectable chips to indicate they are options"),
+        ("aria-selected=\"true\"", "Applied when the chip is in a selected state"),
+        ("aria-disabled=\"true\"", "Applied when the chip is disabled"),
+        ("aria-label", "Can be set for chips with icons only"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Chips are announced with their label text and current selection state.",
+        "Removable chips announce the availability of the delete action.",
+        "Selected chips are announced as \"selected\" by screen readers.",
+    ];
+}

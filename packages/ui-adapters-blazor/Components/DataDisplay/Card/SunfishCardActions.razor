@@ -1,0 +1,15 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(ActionsClass)" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Layout alignment for action buttons (Start, Center, End, Stretch).</summary>
+    [Parameter] public ActionsLayout Layout { get; set; } = ActionsLayout.End;
+
+    private string ActionsClass => $"{CssProvider.CardActionsClass()} mar-card-actions--{Layout.ToString().ToLowerInvariant()}";
+}

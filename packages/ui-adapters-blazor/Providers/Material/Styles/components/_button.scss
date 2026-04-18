@@ -1,0 +1,188 @@
+// =============================================================================
+// Component: Button — Material 3 Reference Implementation
+// Demonstrates the full M3 token consumption pattern for Sunfish components.
+// Source: https://m3.material.io/components/buttons
+//
+// M3 Button variants:
+//   Filled      → .sf-button (default)
+//   Tonal       → .sf-button--tonal
+//   Outlined    → .sf-button--outlined
+//   Text        → .sf-button--text
+//   Elevated    → .sf-button--elevated
+// =============================================================================
+
+// ----------------------------------------------------------------------------
+// Base — Filled Button (M3 "Filled" variant)
+// The highest-emphasis button. Used for the primary action.
+// ----------------------------------------------------------------------------
+
+.sf-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sf-space-sm);
+  height: 40px;
+  padding: 0 var(--sf-space-xl);
+  border: none;
+  border-radius: var(--sf-radius-full);  // M3 pill shape for buttons
+  background: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+  font-family: var(--sf-font-family);
+  font-size: var(--sf-font-size-base);   // label-large
+  font-weight: 500;
+  letter-spacing: 0.00625rem;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  transition: box-shadow var(--sf-transition-fast);
+
+  // M3 state layer — on-primary color for state feedback on a filled surface
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background-color: var(--sf-color-on-primary);
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover {
+    box-shadow: var(--sf-elevation-1);
+
+    &::before { opacity: var(--sf-state-hover-opacity); }
+  }
+
+  &:focus-visible {
+    box-shadow: var(--sf-focus-ring);
+
+    &::before { opacity: var(--sf-state-focus-opacity); }
+  }
+
+  &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-color: color-mix(in srgb, var(--sf-color-on-surface) 12%, transparent);
+    color: color-mix(in srgb, var(--sf-color-on-surface) 38%, transparent);
+    cursor: default;
+    box-shadow: none;
+
+    &::before { display: none; }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Tonal Button — secondary emphasis using secondary container colors
+// ----------------------------------------------------------------------------
+
+.sf-button--tonal {
+  background-color: var(--sf-color-secondary-container);
+  color: var(--sf-color-on-secondary-container);
+
+  &::before {
+    background-color: var(--sf-color-on-secondary-container);
+  }
+
+  &:hover { box-shadow: var(--sf-elevation-1); }
+}
+
+// ----------------------------------------------------------------------------
+// Elevated Button — low emphasis, sits above the surface
+// ----------------------------------------------------------------------------
+
+.sf-button--elevated {
+  background-color: var(--sf-color-surface-container-low);
+  color: var(--sf-color-primary);
+  box-shadow: var(--sf-elevation-1);
+
+  &::before {
+    background-color: var(--sf-color-primary);
+  }
+
+  &:hover { box-shadow: var(--sf-elevation-2); }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    box-shadow: none;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Outlined Button — medium emphasis
+// ----------------------------------------------------------------------------
+
+.sf-button--outlined {
+  background-color: transparent;
+  color: var(--sf-color-primary);
+  border: 1px solid var(--sf-color-outline);
+  box-shadow: none;
+
+  &::before {
+    background-color: var(--sf-color-primary);
+  }
+
+  &:hover { box-shadow: none; }
+
+  &:focus-visible {
+    border-color: var(--sf-color-primary);
+    box-shadow: var(--sf-focus-ring);
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    border-color: color-mix(in srgb, var(--sf-color-on-surface) 12%, transparent);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Text Button — lowest emphasis, no fill or border
+// ----------------------------------------------------------------------------
+
+.sf-button--text {
+  background-color: transparent;
+  color: var(--sf-color-primary);
+  padding: 0 var(--sf-space-sm);
+  box-shadow: none;
+
+  &::before {
+    background-color: var(--sf-color-primary);
+  }
+
+  &:hover { box-shadow: none; }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-color: transparent;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Icon-only variant
+// ----------------------------------------------------------------------------
+
+.sf-button--icon-only {
+  width: 40px;
+  padding: 0;
+}
+
+// ----------------------------------------------------------------------------
+// Size modifiers
+// ----------------------------------------------------------------------------
+
+.sf-button--sm {
+  height: 32px;
+  font-size: var(--sf-font-size-sm);
+  padding: 0 var(--sf-space-lg);
+}
+
+.sf-button--lg {
+  height: 48px;
+  font-size: var(--sf-font-size-md);
+  padding: 0 var(--sf-space-2xl);
+}

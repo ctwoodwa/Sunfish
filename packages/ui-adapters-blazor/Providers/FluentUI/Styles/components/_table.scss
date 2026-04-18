@@ -1,0 +1,25 @@
+// =============================================================================
+// Component: Table
+// =============================================================================
+
+.sf-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+}
+
+.sf-table th,
+.sf-table td {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    text-align: start;
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-table th {
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-text-secondary);
+    background: var(--sf-color-surface);
+}
+
+.sf-table tbody tr:hover { background: var(--sf-color-surface); }

@@ -1,0 +1,205 @@
+@page "/components/allocation-scheduler/budget-and-targets"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Budget Planning">
+    <DemoSection Title="Currency Mode"
+                 Description="Switch ValueMode to display cost allocations instead of hours. Use the toggle to compare modes."
+                 Code="@_budgetCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                <input type="checkbox" @bind="_useCurrency" />
+                Show as Currency
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_budgetAllocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="@(_useCurrency ? AllocationValueMode.Currency : AllocationValueMode.Hours)"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Targets Overlay">
+    <DemoSection Title="Target Totals"
+                 Description="Bind Targets and enable ShowTargets to display desired totals alongside actuals."
+                 Code="@_targetsCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                <input type="checkbox" @bind="_showTargets" />
+                Show Targets
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_budgetAllocations"
+                                   Targets="@_targets"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   ShowTargets="@_showTargets"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Variance Analysis">
+    <DemoSection Title="Delta Display"
+                 Description="Enable ShowDeltas and toggle DeltaDisplayMode between Value, Percentage, and StatusIcon."
+                 Code="@_varianceCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center">
+            <label>
+                <input type="checkbox" @bind="_showDeltas" />
+                Show Deltas
+            </label>
+            <label>
+                Delta Mode:
+                <select @bind="_deltaMode">
+                    <option value="@DeltaDisplayMode.Value">Value</option>
+                    <option value="@DeltaDisplayMode.Percentage">Percentage</option>
+                    <option value="@DeltaDisplayMode.StatusIcon">Status Icon</option>
+                </select>
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_budgetAllocations"
+                                   Targets="@_targets"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   ShowTargets="true"
+                                   ShowDeltas="@_showDeltas"
+                                   DeltaDisplayMode="@_deltaMode"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnTargetChanged="@HandleTargetChanged"
+                                   Height="280px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_targetMessage))
+        {
+            <p><strong>Target changed:</strong> @_targetMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private bool _useCurrency;
+    private bool _showTargets = true;
+    private bool _showDeltas = true;
+    private DeltaDisplayMode _deltaMode = DeltaDisplayMode.Value;
+    private string _targetMessage = string.Empty;
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    private List<AllocationRecord> _budgetAllocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 40, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours }
+    };
+
+    private List<AllocationTarget> _targets = new()
+    {
+        new() { ResourceId = 1, TaskId = 101, PeriodStart = new(2026, 4, 6),  PeriodEnd = new(2026, 4, 13), TargetValue = 40 },
+        new() { ResourceId = 1, TaskId = 101, PeriodStart = new(2026, 4, 13), PeriodEnd = new(2026, 4, 20), TargetValue = 40 },
+        new() { ResourceId = 2, TaskId = 102, PeriodStart = new(2026, 4, 6),  PeriodEnd = new(2026, 4, 13), TargetValue = 32 },
+        new() { ResourceId = 3, TaskId = 103, PeriodStart = new(2026, 4, 13), PeriodEnd = new(2026, 4, 20), TargetValue = 20 }
+    };
+
+    private async Task HandleTargetChanged(TargetChangedArgs args)
+    {
+        _targetMessage = $"Resource {args.ResourceKey}: target set to {args.TargetValue}";
+        await Task.CompletedTask;
+    }
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    // ── Code Snippets ───────────────────────────────────────────────────
+
+    private const string _budgetCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_budgetAllocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           ViewGrain=\"TimeGranularity.Week\"\n" +
+        "                           ValueMode=\"@(_useCurrency ? AllocationValueMode.Currency : AllocationValueMode.Hours)\"\n" +
+        "                           VisibleStart=\"@_demoStart\"\n" +
+        "                           MinVisibleColumns=\"2\"\n" +
+        "                           DefaultRangeUnit=\"TimeGranularity.Month\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _targetsCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Targets=\"@_targets\"\n" +
+        "                           ShowTargets=\"@_showTargets\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           Height=\"250px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+
+    private const string _varianceCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           Targets=\"@_targets\"\n" +
+        "                           ShowTargets=\"true\"\n" +
+        "                           ShowDeltas=\"@_showDeltas\"\n" +
+        "                           DeltaDisplayMode=\"@_deltaMode\"\n" +
+        "                           OnTargetChanged=\"@HandleTargetChanged\"\n" +
+        "                           Height=\"280px\">\n" +
+        "    <AllocationResourceColumns>\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Name\" Title=\"Resource\" Width=\"180px\" />\n" +
+        "        <AllocationResourceColumn TResource=\"StaffResource\" Field=\"Role\" Title=\"Role\" Width=\"120px\" />\n" +
+        "    </AllocationResourceColumns>\n" +
+        "</SunfishAllocationScheduler>";
+}

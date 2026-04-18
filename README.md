@@ -25,10 +25,16 @@ Sunfish is organized into layers:
 - **Blocks & Modules**  
   Higher-level building blocks such as dynamic forms, data grids, task boards, and schedulers that encapsulate patterns and cross-cutting logic.
 
-- **Solution Accelerators**  
-  Opinionated, ready-to-extend “starter solutions” (e.g., asset management, project operations) composed from Sunfish building blocks.
+- **Solution Accelerators**
+  Opinionated, ready-to-extend starter solutions composed from Sunfish building blocks.
+  [Bridge](accelerators/bridge/README.md) is the reference implementation - a
+  full-stack property-management app that demonstrates the whole Sunfish stack
+  end-to-end (Blazor Server, .NET Aspire, EF Core + Postgres, DAB, SignalR,
+  Wolverine messaging). See also
+  [accelerators/bridge/ROADMAP.md](accelerators/bridge/ROADMAP.md) and
+  [accelerators/bridge/PLATFORM_ALIGNMENT.md](accelerators/bridge/PLATFORM_ALIGNMENT.md).
 
-## Repository layout (planned)
+## Repository layout
 
 ```text
 sunfish/
@@ -45,11 +51,33 @@ sunfish/
   apps/
     docs/                # documentation site + live examples
     kitchen-sink/        # playground for all components and blocks
+  accelerators/
+    bridge/              # Bridge — reference solution accelerator (full-stack PM app)
   tooling/
     scaffolding-cli/     # Sunfish CLI for scaffolding apps and modules
+  _shared/
+    design/              # component principles, token guidelines
+    engineering/         # coding standards, package conventions, testing strategy
+    product/             # vision, architecture principles, compatibility policy
+  icm/                   # ICM pipeline — workflow artifacts only, not code
 ```
 
-> Note: This structure is aspirational and will evolve as the project matures.
+> The directory structure is scaffolded. Packages are being built incrementally as the design matures.
+
+## Try the Kitchen Sink
+
+The fastest way to see Sunfish in action:
+
+```bash
+dotnet run --project apps/kitchen-sink
+```
+
+Open https://localhost:5301 and browse the sidebar. Every Sunfish Blazor component has a demo page. The theme picker (top-right) switches providers and dark/light mode.
+
+## Documentation
+
+- **Published site:** https://ctwoodwa.github.io/sunfish/ (published via `.github/workflows/docs.yml` on merges to `main`)
+- **Edit docs:** see [`apps/docs/README.md`](apps/docs/README.md) for local preview + edit workflow
 
 ## Example use cases
 
@@ -59,7 +87,9 @@ sunfish/
 
 ## Status
 
-Sunfish is currently in early design and prototyping.  
+Sunfish is in active early development. The repository structure and ICM pipeline are in place;
+package implementations are being built incrementally.
+
 APIs, package names, and structure are subject to change until a 1.0 release is tagged.
 
 Planned milestones:
@@ -76,6 +106,13 @@ Contributions, ideas, and discussion are very welcome—even at this early stage
 - Open an issue to propose new building blocks, adapters, or solution accelerators.  
 - Share real-world scenarios where a compatibility or abstraction layer would simplify your stack.  
 - Help refine the API design so Sunfish is pleasant to use from multiple frameworks.
+
+### Development process
+
+Sunfish uses an ICM (Integrated Change Management) pipeline to stage work from intake through release.
+All changes flow through deliberate phases with review gates, keeping design decisions traceable.
+See [`/icm/CONTEXT.md`](icm/CONTEXT.md) for an overview, and [`CLAUDE.md`](CLAUDE.md) for
+AI-assisted development guidance including the tool boundaries between ICM, OpenWolf, and Serena.
 
 ## License
 

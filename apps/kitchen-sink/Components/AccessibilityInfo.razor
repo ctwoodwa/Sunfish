@@ -1,0 +1,91 @@
+<div class="accessibility-info">
+    @if (KeyboardInteractions?.Length > 0)
+    {
+        <h3 id="keyboard-navigation" class="a11y-heading">Keyboard Navigation</h3>
+        <table class="a11y-table">
+            <thead>
+                <tr>
+                    <th>Key</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (key, action) in KeyboardInteractions)
+                {
+                    <tr>
+                        <td><kbd>@key</kbd></td>
+                        <td>@action</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (AriaAttributes?.Length > 0)
+    {
+        <h3 id="aria-attributes" class="a11y-heading">ARIA Attributes</h3>
+        <table class="a11y-table">
+            <thead>
+                <tr>
+                    <th>Attribute</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var (attr, desc) in AriaAttributes)
+                {
+                    <tr>
+                        <td><code>@attr</code></td>
+                        <td>@desc</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (ScreenReaderNotes?.Length > 0)
+    {
+        <h3 id="screen-reader-notes" class="a11y-heading">Screen Reader Notes</h3>
+        <ul>
+            @foreach (var note in ScreenReaderNotes)
+            {
+                <li>@note</li>
+            }
+        </ul>
+    }
+
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [CascadingParameter] public PageSectionTracker? SectionTracker { get; set; }
+    [CascadingParameter(Name = "ActiveSectionId")] public string? ActiveSectionId { get; set; }
+
+    [Parameter]
+    public (string Key, string Action)[]? KeyboardInteractions { get; set; }
+
+    [Parameter]
+    public (string Attribute, string Description)[]? AriaAttributes { get; set; }
+
+    [Parameter]
+    public string[]? ScreenReaderNotes { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ActiveSectionId is not null)
+        {
+            if (KeyboardInteractions?.Length > 0)
+                SectionTracker?.RegisterSubSection(ActiveSectionId, "keyboard-navigation", "Keyboard Navigation", SectionTracker.NextOrder());
+            if (AriaAttributes?.Length > 0)
+                SectionTracker?.RegisterSubSection(ActiveSectionId, "aria-attributes", "ARIA Attributes", SectionTracker.NextOrder());
+            if (ScreenReaderNotes?.Length > 0)
+                SectionTracker?.RegisterSubSection(ActiveSectionId, "screen-reader-notes", "Screen Reader Notes", SectionTracker.NextOrder());
+        }
+    }
+}

@@ -1,0 +1,351 @@
+# Claude Instructions for Sunfish
+
+## Overview
+
+Sunfish is a framework-agnostic suite of open-source and commercial building blocks that helps
+scaffold, prototype, and ship real-world applications with interchangeable UI and domain components.
+
+This document explains how to work with Claude on Sunfish, including how to use the Integrated
+Change Management (ICM) pipeline system.
+
+---
+
+## Tool Boundaries
+
+Sunfish uses three complementary tools for AI-assisted development. Each has a distinct responsibility.
+Do not duplicate one system's role inside another.
+
+| Tool | Responsibility | Owns |
+|---|---|---|
+| **ICM** | Pipeline/process orchestration | Stage artifacts, routing, deliverables, workflow handoffs |
+| **OpenWolf** | Repo memory and context middleware | `.wolf/anatomy.md`, `.wolf/cerebrum.md`, `.wolf/buglog.json`, token-aware context enrichment |
+| **Serena** | Semantic code tooling | Symbol discovery, semantic navigation, precise code edits via LSP |
+
+### When to Use Each Tool
+
+**Use ICM when:**
+- Managing the lifecycle of a change (intake → release)
+- Deciding which stages to run or skip
+- Creating or reviewing workflow artifacts (design docs, ADRs, implementation plans)
+- Tracking review gates and approvals
+
+**Use OpenWolf when:**
+- Checking what files exist and their token cost (`.wolf/anatomy.md`)
+- Looking up known bugs and fixes (`.wolf/buglog.json`)
+- Reading or updating learned preferences and conventions (`.wolf/cerebrum.md`)
+- Building or refreshing project context at the start of a session
+
+**Use Serena when:**
+- Navigating symbols, classes, functions, or types by name
+- Finding all callers or references to a symbol
+- Making precise, symbol-targeted code edits
+- Exploring package structure semantically without reading whole files
+
+### What Not to Do
+
+- Do not store code navigation results in ICM artifacts — that is Serena's job
+- Do not duplicate OpenWolf memory concepts (anatomy, buglog, cerebrum) in ICM stage notes
+- Do not use ICM for ad-hoc context enrichment — use OpenWolf hooks for that
+- ICM may reference Serena and OpenWolf operationally, but does not replace either
+
+---
+
+## Sunfish ICM Pipeline System
+
+Sunfish uses a filesystem-based orchestration system called ICM (Integrated Change Management) to
+manage work through deliberate stages, ensuring quality, clarity, and traceability.
+
+### What is /icm?
+
+`/icm` is the Sunfish ICM pipeline — a staging system for work that flows through 9 numbered stages:
+
+- **00_intake** — Classify and scope the request
+- **01_discovery** — Research dependencies and impact
+- **02_architecture** — Design the solution
+- **03_package-design** — Define per-package APIs
+- **04_scaffolding** — Build generators/templates (if needed)
+- **05_implementation-plan** — Create task list
+- **06_build** — Implement code
+- **07_review** — Quality gates and approval
+- **08_release** — Publish and announce
+
+Each stage has a `CONTEXT.md` file explaining its purpose, inputs, outputs, and exit criteria.
+See [`/icm/CONTEXT.md`](icm/CONTEXT.md) for complete overview.
+
+### What are Pipeline Variants?
+
+Under `/icm/pipelines/`, Sunfish maintains **7 reusable pipeline variant overlays** for recurring
+work types:
+
+1. **sunfish-feature-change** — New features, blocks, enhancements
+2. **sunfish-api-change** — Breaking changes, public contracts
+3. **sunfish-scaffolding** — Generator/CLI/template changes
+4. **sunfish-docs-change** — Docs site, examples, API docs
+5. **sunfish-quality-control** — Audits, review gates, consistency checks
+6. **sunfish-test-expansion** — Test coverage, regression, parity
+7. **sunfish-gap-analysis** — Missing capabilities, parity gaps
+
+Pipeline variants are **NOT separate stage trees**. They are **routing overlays** that guide how
+work moves through the default 9 stages.
+
+Each variant includes:
+- `README.md` — When to use this variant, key responsibilities
+- `routing.md` — How to navigate the default stages
+- `deliverables.md` — Standard outputs expected at each stage
+
+### Terminology
+
+**Important:** In this repository, terminology is strict:
+
+- **pipeline** = The numbered ICM flow (00_intake through 08_release, or a variant routing)
+- **pipeline variant** = A reusable overlay for recurring work types (lives in /icm/pipelines/)
+- **workspace** = VS Code only — NEVER used for ICM concepts in this repo
+
+If documentation mentions "workspace" in an ICM context, replace it with "pipeline".
+
+---
+
+## How to Use Sunfish's ICM
+
+### When Starting a Request
+
+1. **Start in stage 00_intake** (unless reusing a prior output)
+   - Describe the request
+   - Identify affected Sunfish packages
+   - Choose a pipeline variant using [`/icm/_config/routing.md`](icm/_config/routing.md)
+   - Create `00_intake/output/intake-note.md`
+
+2. **Use the variant's routing guide** (e.g., `pipelines/sunfish-feature-change/routing.md`)
+   - Each variant explains how to navigate the 9 stages
+   - Which stages to emphasize
+   - Which stages to skip
+
+3. **Follow the stage guidance** (e.g., `01_discovery/CONTEXT.md`)
+   - Each stage has a CONTEXT.md explaining purpose, process, outputs, and exit criteria
+   - Each stage also has expected deliverables (see variant's `deliverables.md`)
+
+4. **Review before advancing**
+   - Each stage's `output/` folder is a review gate
+   - Don't advance until the output is reviewed and approved
+
+### Key Files
+
+| File | Purpose |
+|---|---|
+| `/icm/CONTEXT.md` | Overview of the ICM pipeline system |
+| `/icm/_config/routing.md` | How to classify requests and choose pipeline variants |
+| `/icm/_config/stage-map.md` | Quick reference table of all stages |
+| `/icm/_config/deliverable-templates.md` | Standard artifact templates |
+| `/icm/[00-08]_*/CONTEXT.md` | Purpose, inputs, process, outputs, exit criteria for each stage |
+| `/icm/pipelines/[variant]/README.md` | When to use this variant, key responsibilities |
+| `/icm/pipelines/[variant]/routing.md` | How to navigate default stages for this variant |
+| `/icm/pipelines/[variant]/deliverables.md` | Standard outputs for this variant |
+
+---
+
+## Real Code vs. Workflow Artifacts
+
+### ICM is Workflow Only
+
+The `/icm` directory contains workflow orchestration artifacts only:
+- Stage context files
+- Design decisions and ADRs
+- Implementation plans
+- Audit reports
+- Release checklists
+
+Do NOT put implementation code in `/icm`. ICM is not a code folder.
+
+### Real Code Lives Here
+
+- `/packages/` — Framework-agnostic and adapter implementations
+- `/apps/` — Demo and documentation applications
+- `/tooling/` — Developer tools (CLI, generators, build tools)
+- `/_shared/` — Project documentation and standards
+
+When working through ICM stages, reference these locations but don't move code into `/icm`.
+
+---
+
+## Sunfish-Specific Considerations
+
+### Package Architecture
+
+Sunfish has a layered package structure:
+
+```
+foundation (no dependencies)
+  ↓ (depends on)
+ui-core (framework-agnostic contracts)
+  ↓ (depend on)
+ui-adapters-blazor (Blazor implementation)
+ui-adapters-react (React implementation)
+  ↓ (depend on)
+blocks-* (composition layer)
+  ↓ (depend on)
+apps/kitchen-sink (playground/demo)
+apps/docs (documentation)
+  ↓
+tooling/scaffolding-cli (generator tool)
+
+compat-telerik (compatibility shim, depends on foundation + ui-core + ui-adapters-blazor)
+```
+
+### Framework-Agnostic Design Principle
+
+When designing features:
+1. **Define the contract in foundation/ui-core** (framework-agnostic types, interfaces)
+2. **Then implement in adapters** (Blazor and React, framework-specific)
+3. **Compose in blocks** (using adapters)
+4. **Don't let adapters drive the design** — contracts should be framework-agnostic
+
+### Adapter Parity
+
+- All features available in all adapters (Blazor + React) unless explicitly approved otherwise
+- Write parity tests to verify equivalence
+- Document any intentional differences and get sign-off
+
+### compat-telerik Policy
+
+- compat-telerik provides a Telerik-compatible surface over Sunfish
+- It is NOT the source of truth; ui-core and adapters are
+- compat-telerik changes are policy-gated (expect to justify them in review)
+- If a Sunfish feature can't map to Telerik, that's OK (but document it)
+
+### User-Facing Changes
+
+If your change is user-facing:
+- **kitchen-sink demo is mandatory** (stage 06 deliverable)
+- **apps/docs updates are mandatory** (stage 06 deliverable)
+- **JSDoc/XML comments on all public APIs** (stage 06 deliverable)
+- **Changelog entry with user-focused description** (stage 08 deliverable)
+
+---
+
+## Pipeline Variant Decision Tree
+
+Choose a pipeline variant using this heuristic:
+
+**Is it a new feature, block, or demo?**
+→ **sunfish-feature-change**
+
+**Is it a breaking API change?**
+→ **sunfish-api-change**
+
+**Is it a generator, CLI, or template change?**
+→ **sunfish-scaffolding**
+
+**Is it docs, examples, or kitchen-sink?**
+→ **sunfish-docs-change**
+
+**Is it an audit, review gate, or consistency check?**
+→ **sunfish-quality-control**
+
+**Is it test coverage, regression, or parity testing?**
+→ **sunfish-test-expansion**
+
+**Is it finding or scoping a missing capability?**
+→ **sunfish-gap-analysis**
+
+See `/icm/_config/routing.md` for detailed heuristics and examples.
+
+---
+
+## Common Workflows
+
+### Add a New Feature (Feature Block, Component, etc.)
+
+1. Intake: Describe the feature, identify affected packages
+2. Choose: **sunfish-feature-change** variant
+3. Follow: `/icm/pipelines/sunfish-feature-change/routing.md`
+4. Output: New code in packages/, new demo in kitchen-sink, new docs in apps/docs
+5. Release: MINOR version bump
+
+### Make a Breaking API Change
+
+1. Intake: Clearly state what is breaking and why
+2. Choose: **sunfish-api-change** variant
+3. Follow: `/icm/pipelines/sunfish-api-change/routing.md`
+4. Output: Updated APIs, migration guide, updated all consumers
+5. Release: MAJOR version bump, migration guide in release notes
+
+### Update Docs/Examples
+
+1. Intake: Describe what docs need updating
+2. Choose: **sunfish-docs-change** variant
+3. Follow: `/icm/pipelines/sunfish-docs-change/routing.md`
+4. Output: Updated markdown files, verified examples
+5. Release: Publish docs site updates (may be independent of code release)
+
+### Improve Test Coverage
+
+1. Intake: Identify coverage gaps and target coverage %
+2. Choose: **sunfish-test-expansion** variant
+3. Follow: `/icm/pipelines/sunfish-test-expansion/routing.md`
+4. Output: New test files, improved coverage metrics
+5. Release: Merge to main (no version bump needed if no code changes)
+
+---
+
+## Accelerating or Skipping Stages
+
+### When You Can Skip Stages
+
+- **docs-change:** Skip architecture and package-design (go straight from intake to implementation-plan)
+- **quality-control:** Skip scaffolding (go straight from implementation-plan to build)
+- **test-expansion:** Skip architecture and package-design (scope is clear)
+
+### When You Can Fast-Track
+
+- **Trivial bug fixes:** Go from intake straight to 06_build (get 00_intake approval first)
+- **Reusing prior discovery:** If you have a discovery document from related work, reference it in
+  intake and go straight to architecture
+
+Always document acceleration decisions in the current stage's notes.
+
+---
+
+## Review Gates and Approvals
+
+Each stage is a review gate. Before advancing:
+
+- ✓ Current stage's output is complete
+- ✓ Output artifact(s) have been reviewed and approved
+- ✓ Any blockers from prior stages are resolved
+
+If a stage is blocked or has issues:
+- Document the issue clearly
+- Return to relevant earlier stage
+- Fix the issue
+- Re-review
+
+This is normal and expected. Catching issues early is better than discovering them late.
+
+---
+
+## Questions?
+
+For questions about the ICM pipeline:
+- See `/icm/CONTEXT.md` for pipeline overview
+- See the specific stage CONTEXT.md (e.g., `/icm/06_build/CONTEXT.md`)
+- See the variant README and routing guide
+- See `/icm/_config/routing.md` for request classification
+
+For questions about Sunfish architecture or package structure:
+- See `/_shared/product/architecture-principles.md`
+- See individual package README files (e.g., `/packages/foundation/README.md`)
+- See `/packages/ui-core/README.md` for component contracts
+- See `/_shared/engineering/coding-standards.md` for style guidelines
+
+---
+
+## Summary
+
+The Sunfish ICM pipeline is a structured, stage-gated approach to managing work. It emphasizes:
+- **Clarity** — every stage has clear inputs, outputs, and exit criteria
+- **Quality** — review gates before advancing
+- **Traceability** — all decisions and plans are documented
+- **Sunfish-specific guidance** — package architecture, adapter parity, user-facing requirements
+
+Use the pipeline variant routing guides to navigate the default 9 stages based on the type of work.
+Always document assumptions and decisions at each stage.

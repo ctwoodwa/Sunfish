@@ -1,0 +1,27 @@
+@namespace Sunfish.Components.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(ToolbarClass)"
+     style="@CombineStyles()"
+     role="toolbar"
+     aria-label="Toolbar"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Whether all toolbar items are enabled.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private string ToolbarClass
+    {
+        get
+        {
+            var cls = CssProvider.ToolbarClass();
+            if (!Enabled) cls += " mar-toolbar--disabled";
+            return cls;
+        }
+    }
+}

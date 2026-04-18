@@ -1,0 +1,28 @@
+// =============================================================================
+// Component: DataBanner
+// =============================================================================
+
+.sf-data-banner {
+    display: inline-flex;
+    flex-direction: column;
+    gap: var(--sf-space-xxs);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    font-family: var(--sf-font-family);
+}
+
+.sf-data-banner__label {
+    font-size: var(--sf-font-size-xs);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sf-data-banner__value {
+    font-size: var(--sf-font-size-md);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-on-background);
+}

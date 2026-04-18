@@ -1,0 +1,106 @@
+// =============================================================================
+// Sunfish Material 3 Provider — Style Index
+// Import order: Foundation → Patterns → Components (alphabetical)
+//
+// Foundation files are forwarded individually so each file is a clean,
+// standalone partial. _tokens.scss emits the M3 base design-system
+// variables, z-index, focus ring, and the box-sizing reset.
+// =============================================================================
+
+// A. Foundation (in dependency order; tokens last as it depends on color vars)
+@forward 'foundation/colors';
+@forward 'foundation/spacing';
+@forward 'foundation/typography';
+@forward 'foundation/radius';
+@forward 'foundation/elevation';
+@forward 'foundation/motion';
+@forward 'foundation/functions';
+@forward 'foundation/mixins';
+@forward 'foundation/tokens';
+
+// B. Patterns
+@forward 'patterns/interactive-states';
+@forward 'patterns/field-base';
+@forward 'patterns/overlay';
+@forward 'patterns/validation';
+@forward 'patterns/density';
+
+// C. Components (alphabetical by file name)
+@forward 'components/accordion';
+@forward 'components/alert';
+@forward 'components/alert-strip';
+@forward 'components/allocation-scheduler';
+@forward 'components/animation';
+@forward 'components/app-bar';
+@forward 'components/autocomplete';
+@forward 'components/avatar';
+@forward 'components/badge';
+@forward 'components/breadcrumb';
+@forward 'components/button';
+@forward 'components/button-group';
+@forward 'components/callout';
+@forward 'components/card';
+@forward 'components/carousel';
+@forward 'components/chart';
+@forward 'components/checkbox';
+@forward 'components/color-picker';
+@forward 'components/combo-box';
+@forward 'components/container';
+@forward 'components/context-menu';
+@forward 'components/data-banner';
+@forward 'components/data-grid';
+@forward 'components/data-sheet';
+@forward 'components/date-picker';
+@forward 'components/dialog';
+@forward 'components/divider';
+@forward 'components/drag-drop';
+@forward 'components/drawer';
+@forward 'components/dropdown-list';
+@forward 'components/editor';
+@forward 'components/environment-badge';
+@forward 'components/gantt';
+@forward 'components/highlighter';
+@forward 'components/icon';
+@forward 'components/icon-button';
+@forward 'components/image';
+@forward 'components/link';
+@forward 'components/list';
+@forward 'components/list-view';
+@forward 'components/menu';
+@forward 'components/modal';
+@forward 'components/multi-select';
+@forward 'components/nav-bar';
+@forward 'components/pagination';
+@forward 'components/panel';
+@forward 'components/popover';
+@forward 'components/progress-bar';
+@forward 'components/progress-circle';
+@forward 'components/radio';
+@forward 'components/rating';
+@forward 'components/resizable-container';
+@forward 'components/scheduler';
+@forward 'components/scroll-view';
+@forward 'components/search-box';
+@forward 'components/select';
+@forward 'components/signalr-status';
+@forward 'components/skeleton';
+@forward 'components/slider';
+@forward 'components/snackbar';
+@forward 'components/spinner';
+@forward 'components/splitter';
+@forward 'components/stack';
+@forward 'components/stepper';
+@forward 'components/switch';
+@forward 'components/tab-strip';
+@forward 'components/table';
+@forward 'components/text-area';
+@forward 'components/text-field';
+@forward 'components/time-range-selector';
+@forward 'components/timeline';
+@forward 'components/toast';
+@forward 'components/toolbar';
+@forward 'components/tooltip';
+@forward 'components/tree-view';
+@forward 'components/typography';
+@forward 'components/upload';
+@forward 'components/window';

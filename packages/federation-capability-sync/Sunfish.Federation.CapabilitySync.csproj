@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Federation.CapabilitySync</PackageId>
+    <Description>Sunfish federation capability-graph reconciliation — RIBLT set sync (first-pass) + full-set fallback (spec §2.5, §10.2).</Description>
+    <PackageTags>sunfish;federation;sync;capability;riblt;keyhive</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Federation.CapabilitySync.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
+  </ItemGroup>
+</Project>

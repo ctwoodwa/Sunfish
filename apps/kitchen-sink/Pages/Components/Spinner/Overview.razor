@@ -1,0 +1,31 @@
+@page "/components/Spinner"
+@page "/components/Spinner/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Spinners indicate an ongoing loading process." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishSpinner Size="SpinnerSize.Medium" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Sizes" Description="Spinners are available in small, medium, and large sizes." Code="@_sizesCode">
+        <div class="demo-row">
+            <SunfishSpinner Size="SpinnerSize.Small" />
+            <SunfishSpinner Size="SpinnerSize.Medium" />
+            <SunfishSpinner Size="SpinnerSize.Large" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishSpinner Size=\"SpinnerSize.Medium\" />";
+
+    private const string _sizesCode =
+        "<SunfishSpinner Size=\"SpinnerSize.Small\" />\n" +
+        "<SunfishSpinner Size=\"SpinnerSize.Medium\" />\n" +
+        "<SunfishSpinner Size=\"SpinnerSize.Large\" />";
+}

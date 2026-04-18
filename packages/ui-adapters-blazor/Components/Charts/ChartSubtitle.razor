@@ -1,0 +1,18 @@
+@using Sunfish.Foundation.Enums
+
+@code {
+    [CascadingParameter] internal ChartTitle? ParentTitle { get; set; }
+
+    /// <summary>The subtitle text.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Position of the subtitle relative to the title.</summary>
+    [Parameter] public ChartPosition Position { get; set; } = ChartPosition.Bottom;
+
+    protected override void OnInitialized()
+    {
+        if (ParentTitle is null)
+            throw new InvalidOperationException("ChartSubtitle must be placed inside a ChartTitle.");
+        ParentTitle.SetSubtitle(this);
+    }
+}

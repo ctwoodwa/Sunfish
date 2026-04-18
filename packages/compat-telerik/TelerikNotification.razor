@@ -1,0 +1,95 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.Feedback
+@using Sunfish.Foundation.Models
+@using Sunfish.Foundation.Services
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<TelerikNotification> Logger
+@inject ISunfishNotificationService NotificationService
+
+@*
+    Divergences:
+    - Telerik exposes imperative Show(NotificationModel) / Hide(Guid) via @ref. We mirror
+      these as method shims that delegate to ISunfishNotificationService.
+    - Telerik's NotificationModel is NOT the same as Sunfish's NotificationModel. The shim
+      accepts the Sunfish model directly in Phase 6; consumers migrating imperative call
+      sites must update the model type.
+*@
+<SunfishSnackbarHost VerticalPosition="_vertical"
+                     HorizontalPosition="_horizontal"
+                     AnimationType="_animation"
+                     @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>Telerik-shaped HorizontalPosition: "left", "center", "right".</summary>
+    [Parameter] public string? HorizontalPosition { get; set; }
+
+    /// <summary>Telerik-shaped VerticalPosition: "top", "bottom".</summary>
+    [Parameter] public string? VerticalPosition { get; set; }
+
+    /// <summary>Telerik-shaped AnimationType: "None", "Fade", "SlideIn".</summary>
+    [Parameter] public string? AnimationType { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.NotificationVerticalPosition _vertical;
+    private FoundationEnums.NotificationHorizontalPosition _horizontal;
+    private FoundationEnums.NotificationAnimation _animation;
+
+    protected override void OnParametersSet()
+    {
+        _vertical = VerticalPosition switch
+        {
+            null or "" or "bottom" or "Bottom" => FoundationEnums.NotificationVerticalPosition.Bottom,
+            "top" or "Top" => FoundationEnums.NotificationVerticalPosition.Top,
+            _ => LogVerticalFallback(VerticalPosition!)
+        };
+        _horizontal = HorizontalPosition switch
+        {
+            null or "" or "right" or "Right" => FoundationEnums.NotificationHorizontalPosition.Right,
+            "left" or "Left" => FoundationEnums.NotificationHorizontalPosition.Left,
+            "center" or "Center" => FoundationEnums.NotificationHorizontalPosition.Center,
+            _ => LogHorizontalFallback(HorizontalPosition!)
+        };
+        _animation = AnimationType switch
+        {
+            null or "" or "Fade" or "fade" => FoundationEnums.NotificationAnimation.Fade,
+            "None" or "none" => FoundationEnums.NotificationAnimation.None,
+            "SlideIn" or "slidein" or "slide-in" => FoundationEnums.NotificationAnimation.SlideIn,
+            _ => LogAnimationFallback(AnimationType!)
+        };
+    }
+
+    /// <summary>
+    /// Imperative show — forwards to <see cref="ISunfishNotificationService.Show"/>.
+    /// Telerik-shaped method: consumers calling <c>notificationRef.Show(model)</c> keep the
+    /// same call site after migration (with Sunfish's <see cref="NotificationModel"/>).
+    /// </summary>
+    public void Show(NotificationModel model) => NotificationService.Show(model);
+
+    /// <summary>Imperative hide — forwards to <see cref="ISunfishNotificationService.Hide"/>.</summary>
+    public void Hide(string id) => NotificationService.Hide(id);
+
+    /// <summary>Imperative hide-all — forwards to <see cref="ISunfishNotificationService.HideAll"/>.</summary>
+    public void HideAll() => NotificationService.HideAll();
+
+    private FoundationEnums.NotificationVerticalPosition LogVerticalFallback(string received)
+    {
+        Logger.LogWarning("compat-telerik: Unrecognized VerticalPosition '{Value}'. Falling back to Bottom.", received);
+        return FoundationEnums.NotificationVerticalPosition.Bottom;
+    }
+
+    private FoundationEnums.NotificationHorizontalPosition LogHorizontalFallback(string received)
+    {
+        Logger.LogWarning("compat-telerik: Unrecognized HorizontalPosition '{Value}'. Falling back to Right.", received);
+        return FoundationEnums.NotificationHorizontalPosition.Right;
+    }
+
+    private FoundationEnums.NotificationAnimation LogAnimationFallback(string received)
+    {
+        Logger.LogWarning("compat-telerik: Unrecognized AnimationType '{Value}'. Falling back to Fade.", received);
+        return FoundationEnums.NotificationAnimation.Fade;
+    }
+}

@@ -1,0 +1,119 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@using Sunfish.UICore.Contracts
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@inherits SunfishComponentBase
+
+<div class="sf-signalr-status-root" style="position:relative;display:inline-block">
+    <button type="button"
+            class="@CombineClasses(CssProvider.SignalRStatusClass(_aggregateState, Compact))"
+            style="@CombineStyles()"
+            aria-label="@_tooltipSummary"
+            aria-haspopup="dialog"
+            aria-expanded="@(_isOpen ? "true" : "false")"
+            title="@_tooltipSummary"
+            @onclick="TogglePopup"
+            @attributes="AdditionalAttributes">
+        @if (_aggregateState is AggregateConnectionState.Offline)
+        {
+            @IconProvider.GetIcon("wifi-off", Compact ? IconSize.Small : IconSize.Medium)
+        }
+        else
+        {
+            @IconProvider.GetIcon("wifi", Compact ? IconSize.Small : IconSize.Medium)
+        }
+        @if (ShowCounts)
+        {
+            <span class="sf-signalr-status__count">@_healthyCount/@_totalCount</span>
+        }
+    </button>
+
+    @if (_isOpen)
+    {
+        <div class="sf-signalr-overlay" @onclick="ClosePopup"></div>
+        <SignalRConnectionPopup IsOpen="_isOpen"
+                                Title="@Title"
+                                Items="_filteredItems"
+                                AggregateState="_aggregateState"
+                                Placement="PopupPlacement"
+                                OnClose="ClosePopup"
+                                OnRetry="HandleRetry" />
+    }
+</div>
+
+@code {
+    private bool _isOpen;
+    private AggregateConnectionState _aggregateState;
+    private IReadOnlyList<HubConnectionStatusItem> _filteredItems = [];
+    private int _healthyCount;
+    private int _totalCount;
+    private string _tooltipSummary = "SignalR connections";
+
+    [Inject] private ISignalRConnectionRegistry Registry { get; set; } = default!;
+
+    /// <summary>Optionally show healthy/total count beside the icon.</summary>
+    [Parameter] public bool ShowCounts { get; set; } = true;
+
+    /// <summary>Determines whether optional hubs appear in the popup.</summary>
+    [Parameter] public bool IncludeNonCritical { get; set; } = true;
+
+    /// <summary>Controls flyout alignment relative to the trigger button.</summary>
+    [Parameter] public ConnectionPopupPlacement PopupPlacement { get; set; } = ConnectionPopupPlacement.BottomEnd;
+
+    /// <summary>Popup header text.</summary>
+    [Parameter] public string Title { get; set; } = "Real-time connections";
+
+    /// <summary>Smaller visual density for toolbar or header use.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Registry.Changed += HandleRegistryChanged;
+        RefreshState();
+    }
+
+    private void HandleRegistryChanged()
+    {
+        InvokeAsync(() =>
+        {
+            RefreshState();
+            StateHasChanged();
+        });
+    }
+
+    private void RefreshState()
+    {
+        var snapshot = Registry.GetSnapshot();
+        _aggregateState = Registry.AggregateState;
+
+        _filteredItems = IncludeNonCritical
+            ? snapshot
+            : snapshot.Where(i => i.IsCritical).ToList().AsReadOnly();
+
+        _healthyCount = snapshot.Count(i => i.Health == ConnectionHealthState.Healthy);
+        _totalCount = snapshot.Count;
+
+        var unhealthy = _totalCount - _healthyCount;
+        _tooltipSummary = unhealthy == 0
+            ? $"SignalR: all {_totalCount} hubs healthy"
+            : $"SignalR: {unhealthy} of {_totalCount} hubs unhealthy";
+    }
+
+    private void TogglePopup() => _isOpen = !_isOpen;
+
+    private void ClosePopup() => _isOpen = false;
+
+    private async Task HandleRetry(string hubName)
+    {
+        await Registry.RetryAsync(hubName);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            Registry.Changed -= HandleRegistryChanged;
+        }
+        base.Dispose(disposing);
+    }
+}

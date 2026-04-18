@@ -1,0 +1,212 @@
+@page "/components/allocation-scheduler/navigation-and-zoom"
+@layout ComponentDemoLayout
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageSection Title="Read-Only Rollup">
+    <DemoSection Title="Read-Only Rollup"
+                 Description="Set AuthoritativeLevel=Week and view at Month granularity. Month cells are read-only aggregate sums."
+                 Code="@_rollupCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Month"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Zoom Level Switching">
+    <DemoSection Title="Zoom Level Switching"
+                 Description="Use two-way binding on ViewGrain to switch between Day, Week, and Month at runtime."
+                 Code="@_zoomCode">
+        <div style="margin-bottom:1rem;display:flex;gap:1.5rem;align-items:center">
+            <label>
+                View Grain:
+                <select @bind="_viewGrain">
+                    <option value="@TimeGranularity.Day">Day</option>
+                    <option value="@TimeGranularity.Week">Week</option>
+                    <option value="@TimeGranularity.Month">Month</option>
+                    <option value="@TimeGranularity.Quarter">Quarter</option>
+                </select>
+            </label>
+            <span>Current: <strong>@_viewGrain</strong></span>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="@_viewGrain"
+                                   ViewGrainChanged="@(g => _viewGrain = g)"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnVisibleRangeChanged="@HandleRangeChanged"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_rangeMessage))
+        {
+            <p><strong>Visible range:</strong> @_rangeMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Editing at Coarser Zoom Levels">
+    <DemoSection Title="AllowZoomEdit"
+                 Description="Enable AllowZoomEdit to permit direct editing at zoom levels above AuthoritativeLevel. Values are distributed to sub-buckets."
+                 Code="@_zoomEditCode">
+        <div style="margin-bottom:1rem">
+            <label>
+                <input type="checkbox" @bind="_allowZoomEdit" />
+                Allow Zoom Edit (Month cells editable)
+            </label>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Month"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   AllowZoomEdit="@_allowZoomEdit"
+                                   DefaultDistributionMode="DistributionMode.EvenSpread"
+                                   AllowKeyboardEdit="true"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="3"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   OnCellEdited="@HandleCellEdited"
+                                   Height="250px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @if (!string.IsNullOrEmpty(_editMessage))
+        {
+            <p><strong>Zoom edit:</strong> @_editMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Jump-to-Date Visibility">
+    <DemoSection Title="Jump-to-Date Hidden"
+                 Description="Set ShowJumpToDate=false to remove the built-in date picker from the toolbar. Use this when the host page already provides its own navigation UI or you want a minimal toolbar."
+                 Code="@_jumpToDateHiddenCode">
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                   Resources="@_resources"
+                                   Allocations="@_allocations"
+                                   AuthoritativeLevel="TimeGranularity.Week"
+                                   ViewGrain="TimeGranularity.Week"
+                                   ValueMode="AllocationValueMode.Hours"
+                                   ShowJumpToDate="false"
+                                   VisibleStart="@_demoStart"
+                                   MinVisibleColumns="2"
+                                   DefaultRangeUnit="TimeGranularity.Month"
+                                   Height="400px">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime _demoStart = new(2026, 4, 6);
+    private TimeGranularity _viewGrain = TimeGranularity.Week;
+    private bool _allowZoomEdit;
+    private string _rangeMessage = string.Empty;
+    private string _editMessage = string.Empty;
+
+    private List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev",     Department = "Engineering" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA",      Department = "Engineering" }
+    };
+
+    private List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 40, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 20), BucketEnd = new(2026, 4, 27), Value = 36, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 27), BucketEnd = new(2026, 5, 4),  Value = 40, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours }
+    };
+
+    private async Task HandleRangeChanged(VisibleRangeChangedArgs args)
+    {
+        _rangeMessage = $"{args.NewStart:MMM d, yyyy} — {args.NewEnd:MMM d, yyyy} ({args.ViewGrain})";
+        await Task.CompletedTask;
+    }
+
+    private async Task HandleCellEdited(CellEditedArgs args)
+    {
+        _editMessage = $"Resource {args.ResourceKey}, {args.BucketStart:MMM yyyy}: {args.OldValue}h -> {args.NewValue}h (distributed to weekly buckets)";
+        await Task.CompletedTask;
+    }
+
+    public class StaffResource
+    {
+        public int    Id         { get; set; }
+        public string Name       { get; set; } = string.Empty;
+        public string Role       { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
+    }
+
+    private const string _rollupCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           ViewGrain=\"TimeGranularity.Month\"\n" +
+        "                           Height=\"250px\" />";
+
+    private const string _zoomCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           ViewGrain=\"@_viewGrain\"\n" +
+        "                           ViewGrainChanged=\"@(g => _viewGrain = g)\"\n" +
+        "                           OnVisibleRangeChanged=\"@HandleRangeChanged\"\n" +
+        "                           Height=\"250px\" />";
+
+    private const string _jumpToDateHiddenCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           ViewGrain=\"TimeGranularity.Week\"\n" +
+        "                           ShowJumpToDate=\"false\"\n" +
+        "                           Height=\"400px\" />";
+
+    private const string _zoomEditCode =
+        "<SunfishAllocationScheduler TResource=\"StaffResource\"\n" +
+        "                           Resources=\"@_resources\"\n" +
+        "                           Allocations=\"@_allocations\"\n" +
+        "                           AuthoritativeLevel=\"TimeGranularity.Week\"\n" +
+        "                           ViewGrain=\"TimeGranularity.Month\"\n" +
+        "                           AllowZoomEdit=\"@_allowZoomEdit\"\n" +
+        "                           DefaultDistributionMode=\"DistributionMode.EvenSpread\"\n" +
+        "                           OnCellEdited=\"@HandleCellEdited\"\n" +
+        "                           Height=\"250px\" />";
+}

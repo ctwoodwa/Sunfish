@@ -1,0 +1,17 @@
+@namespace Sunfish.Components.Blazor.Components.Overlays
+@* WindowContent — semantic child component for SunfishWindow body content. *@
+
+@ChildContent
+
+@code {
+    [CascadingParameter] internal SunfishWindow? ParentWindow { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (ParentWindow is null)
+            throw new InvalidOperationException("WindowContent must be placed inside a SunfishWindow.");
+        ParentWindow.SetContentFragment(ChildContent);
+    }
+}

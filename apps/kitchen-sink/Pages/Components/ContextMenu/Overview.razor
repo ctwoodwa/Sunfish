@@ -1,0 +1,33 @@
+@page "/components/contextmenu"
+@page "/components/contextmenu/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Right-click the target area to open a context menu." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishContextMenu>
+                <ChildContent>
+                    <div style="padding:2rem;border:1px dashed #ccc;text-align:center;">Right-click here</div>
+                </ChildContent>
+                <MenuContent>
+                    <button type="button" class="sf-menu-item">Cut</button>
+                    <button type="button" class="sf-menu-item">Copy</button>
+                    <button type="button" class="sf-menu-item">Paste</button>
+                </MenuContent>
+            </SunfishContextMenu>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishContextMenu>\n" +
+        "    <ChildContent>\n" +
+        "        <div>Right-click here</div>\n" +
+        "    </ChildContent>\n" +
+        "    <MenuContent>\n" +
+        "        <button class=\"mar-menu-item\">Cut</button>\n" +
+        "        <button class=\"mar-menu-item\">Copy</button>\n" +
+        "    </MenuContent>\n" +
+        "</SunfishContextMenu>";
+}

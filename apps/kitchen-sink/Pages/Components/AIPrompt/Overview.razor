@@ -1,0 +1,100 @@
+@page "/components/aiprompt"
+@page "/components/aiprompt/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="AI Prompt provides a text input area with a submit button for sending prompts to an AI backend." Code="@_basicCode">
+        <SunfishAIPrompt Placeholder="Ask me anything..."
+                        ButtonText="Generate"
+                        OnPromptSubmit="HandlePrompt"
+                        IsProcessing="_isProcessing" />
+    </DemoSection>
+
+    <DemoSection Title="With Suggestions" Description="Display suggestion chips above the input to help users get started quickly." Code="@_suggestionsCode">
+        <SunfishAIPrompt Placeholder="Ask about our products..."
+                        ButtonText="Send"
+                        Suggestions="_suggestions"
+                        OnPromptSubmit="HandlePrompt"
+                        IsProcessing="_isProcessing" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Custom Output Template" Description="Use OutputTemplate to customize how generated results are displayed." Code="@_outputCode">
+        <SunfishAIPrompt Placeholder="Describe what you need..."
+                        ButtonText="Generate"
+                        OnPromptSubmit="HandlePrompt"
+                        Width="500px">
+            <OutputTemplate Context="output">
+                <div style="padding:12px;background:#e8f5e9;border-radius:4px;border-left:4px solid #4caf50;">
+                    <strong>AI Response:</strong> @output
+                </div>
+            </OutputTemplate>
+        </SunfishAIPrompt>
+    </DemoSection>
+
+    <DemoSection Title="With Header and Footer" Description="Add custom header and footer content to the prompt panel." Code="@_headerFooterCode">
+        <SunfishAIPrompt Placeholder="Enter your prompt..."
+                        ButtonText="Generate"
+                        OnPromptSubmit="HandlePrompt"
+                        Width="500px">
+            <HeaderContent>
+                <div style="font-weight:600;font-size:16px;">AI Assistant</div>
+                <div style="color:#666;font-size:13px;">Powered by Sunfish AI</div>
+            </HeaderContent>
+            <FooterContent>
+                <div style="font-size:11px;color:#999;">Responses are AI-generated and may not be accurate.</div>
+            </FooterContent>
+        </SunfishAIPrompt>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _isProcessing;
+    private List<string> _suggestions = new() { "Summarize this document", "Write a product description", "Generate test data" };
+
+    private async Task HandlePrompt(string prompt)
+    {
+        _isProcessing = true;
+        StateHasChanged();
+        await Task.Delay(1000);
+        _isProcessing = false;
+    }
+
+    private const string _basicCode =
+        "<SunfishAIPrompt Placeholder=\"Ask me anything...\"\n" +
+        "                ButtonText=\"Generate\"\n" +
+        "                OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                IsProcessing=\"_isProcessing\" />";
+
+    private const string _suggestionsCode =
+        "<SunfishAIPrompt Placeholder=\"Ask about our products...\"\n" +
+        "                ButtonText=\"Send\"\n" +
+        "                Suggestions=\"_suggestions\"\n" +
+        "                OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                IsProcessing=\"_isProcessing\" />";
+
+    private const string _outputCode =
+        "<SunfishAIPrompt Placeholder=\"Describe what you need...\"\n" +
+        "                ButtonText=\"Generate\"\n" +
+        "                OnPromptSubmit=\"HandlePrompt\"\n" +
+        "                Width=\"500px\">\n" +
+        "    <OutputTemplate Context=\"output\">\n" +
+        "        <div style=\"padding:12px;background:#e8f5e9;border-radius:4px;\">\n" +
+        "            <strong>AI Response:</strong> @output\n" +
+        "        </div>\n" +
+        "    </OutputTemplate>\n" +
+        "</SunfishAIPrompt>";
+
+    private const string _headerFooterCode =
+        "<SunfishAIPrompt Placeholder=\"Enter your prompt...\"\n" +
+        "                ButtonText=\"Generate\"\n" +
+        "                OnPromptSubmit=\"HandlePrompt\">\n" +
+        "    <HeaderContent>\n" +
+        "        <div style=\"font-weight:600;\">AI Assistant</div>\n" +
+        "    </HeaderContent>\n" +
+        "    <FooterContent>\n" +
+        "        <div style=\"font-size:11px;color:#999;\">AI-generated content.</div>\n" +
+        "    </FooterContent>\n" +
+        "</SunfishAIPrompt>";
+}

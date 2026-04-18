@@ -1,0 +1,10 @@
+@namespace Sunfish.Components.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+<nav class="@CombineClasses(CssProvider.NavBarClass())" style="@CombineStyles()" role="navigation" @attributes="AdditionalAttributes">
+    @ChildContent
+</nav>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

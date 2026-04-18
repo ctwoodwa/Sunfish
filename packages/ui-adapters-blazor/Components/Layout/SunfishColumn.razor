@@ -1,0 +1,11 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ColumnClass(Span, Offset))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public int? Span { get; set; }
+    [Parameter] public int? Offset { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

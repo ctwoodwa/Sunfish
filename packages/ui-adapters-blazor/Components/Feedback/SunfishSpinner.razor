@@ -1,0 +1,19 @@
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    <div class="@CombineClasses(CssProvider.SpinnerClass(Size))"
+         style="@CombineStyles()"
+         role="status"
+         aria-label="Loading"
+         @attributes="AdditionalAttributes">
+        <span class="sf-sr-only">Loading...</span>
+    </div>
+}
+
+@code {
+    [Parameter] public SpinnerSize Size { get; set; } = SpinnerSize.Medium;
+
+    /// <summary>Whether the spinner is visible.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+}

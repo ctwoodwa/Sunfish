@@ -1,0 +1,65 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+@{
+    var pct = (Max - Min) > 0 ? (Value - Min) / (Max - Min) * 100 : 0;
+    pct = Math.Clamp(pct, 0, 100);
+}
+
+<div class="@CombineClasses("mar-linear-gauge") @(Orientation == SliderOrientation.Vertical ? "mar-linear-gauge--vertical" : "")"
+     style="@CombineStyles()"
+     role="meter"
+     aria-valuenow="@Value"
+     aria-valuemin="@Min"
+     aria-valuemax="@Max"
+     aria-label="@(AriaLabel ?? "Gauge")"
+     @attributes="AdditionalAttributes">
+    <div class="sf-linear-gauge__track">
+        <div class="sf-linear-gauge__fill"
+             style="@(Orientation == SliderOrientation.Horizontal ? $"width:{pct:F1}%;" : $"height:{pct:F1}%;") background-color: @GetColor(pct);">
+        </div>
+        @if (ShowPointer)
+        {
+            <div class="sf-linear-gauge__pointer"
+                 style="@(Orientation == SliderOrientation.Horizontal ? $"left:{pct:F1}%;" : $"bottom:{pct:F1}%;")">
+            </div>
+        }
+    </div>
+    @if (ShowScale)
+    {
+        <div class="sf-linear-gauge__scale">
+            <span>@Min</span>
+            <span>@Max</span>
+        </div>
+    }
+    @if (ShowLabel)
+    {
+        <div class="sf-linear-gauge__label">@Value.ToString(Format ?? "F0")</div>
+    }
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public SliderOrientation Orientation { get; set; } = SliderOrientation.Horizontal;
+    [Parameter] public bool ShowPointer { get; set; } = true;
+    [Parameter] public bool ShowScale { get; set; } = true;
+    [Parameter] public bool ShowLabel { get; set; } = true;
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    private string GetColor(double pct)
+    {
+        if (Ranges != null)
+        {
+            foreach (var range in Ranges)
+            {
+                if (Value >= range.From && Value <= range.To)
+                    return range.Color;
+            }
+        }
+        return "var(--mar-primary, #1976d2)";
+    }
+}

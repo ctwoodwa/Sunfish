@@ -1,0 +1,125 @@
+@page "/components/gantt/templates"
+@layout ComponentDemoLayout
+
+<PageSection Title="Templates">
+    <DemoSection Title="Task Bar, Column, and Toolbar Templates" Description="Customize the Gantt chart appearance using TaskTemplate (content inside each timeline bar), column Template (custom cell rendering), and GanttToolBarTemplate (extra toolbar content). This example shows the task title inside the bar, a custom progress column with a colored badge, and a toolbar with a print button." Code="@_templatesCode">
+        <div class="demo-row">
+            <SunfishGantt TItem="TemplateTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="420px"
+                         Width="100%"
+                         @bind-View="_currentView">
+                <GanttToolBarTemplate>
+                    <button class="sf-btn" style="margin-left: auto;" @onclick="@(() => _message = "Print clicked!")">
+                        Print
+                    </button>
+                    @if (!string.IsNullOrEmpty(_message))
+                    {
+                        <span style="margin-left: 8px; color: var(--sf-text-secondary);">@_message</span>
+                    }
+                </GanttToolBarTemplate>
+                <GanttColumns>
+                    <GanttColumn TItem="TemplateTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task" />
+                    <GanttColumn TItem="TemplateTask"
+                                 Field="PercentComplete"
+                                 Width="100px"
+                                 Title="Progress">
+                        <Template>
+                            @{
+                                var pct = context.PercentComplete;
+                                var color = pct >= 100 ? "#4caf50" : pct >= 50 ? "#ff9800" : "#2196f3";
+                            }
+                            <span style="display:inline-block;padding:2px 8px;border-radius:10px;font-size:0.8em;color:#fff;background:@color;">
+                                @pct.ToString("N0")%
+                            </span>
+                        </Template>
+                    </GanttColumn>
+                    <GanttColumn TItem="TemplateTask"
+                                 Field="Start"
+                                 Width="90px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="TemplateTask"
+                                 Field="End"
+                                 Width="90px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <TaskTemplate>
+                    <div style="color:#fff;font-size:0.75em;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        @context.Title
+                    </div>
+                </TaskTemplate>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Week;
+    private string _message = "";
+
+    private class TemplateTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<TemplateTask> _tasks = GenerateData();
+
+    private static List<TemplateTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<TemplateTask>
+        {
+            new() { Id = "1", Title = "Research", Start = today, End = today.AddDays(14), PercentComplete = 100 },
+            new() { Id = "1.1", ParentId = "1", Title = "Market Analysis", Start = today, End = today.AddDays(7), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "User Surveys", Start = today.AddDays(7), End = today.AddDays(14), PercentComplete = 100 },
+
+            new() { Id = "2", Title = "Development", Start = today.AddDays(14), End = today.AddDays(35), PercentComplete = 55 },
+            new() { Id = "2.1", ParentId = "2", Title = "Core Engine", Start = today.AddDays(14), End = today.AddDays(24), PercentComplete = 80 },
+            new() { Id = "2.2", ParentId = "2", Title = "Plugin System", Start = today.AddDays(24), End = today.AddDays(35), PercentComplete = 30 },
+
+            new() { Id = "3", Title = "Launch", Start = today.AddDays(35), End = today.AddDays(42), PercentComplete = 0 },
+            new() { Id = "3.1", ParentId = "3", Title = "Beta Release", Start = today.AddDays(35), End = today.AddDays(38), PercentComplete = 0 },
+            new() { Id = "3.2", ParentId = "3", Title = "GA Release", Start = today.AddDays(38), End = today.AddDays(42), PercentComplete = 0 },
+        };
+    }
+
+    private const string _templatesCode = @"<SunfishGantt TItem=""TemplateTask"" Data=""@_tasks""
+             IdField=""Id"" ParentIdField=""ParentId""
+             Height=""420px"" @bind-View=""_currentView"">
+    <GanttToolBarTemplate>
+        <button class=""sf-btn"" @onclick=""..."">Print</button>
+    </GanttToolBarTemplate>
+    <GanttColumns>
+        <GanttColumn TItem=""TemplateTask"" Field=""Title"" Expandable=""true"" Width=""200px"" />
+        <GanttColumn TItem=""TemplateTask"" Field=""PercentComplete"" Width=""100px"" Title=""Progress"">
+            <Template>
+                <span style=""...background:@color"">@context.PercentComplete%</span>
+            </Template>
+        </GanttColumn>
+    </GanttColumns>
+    <TaskTemplate>
+        <div style=""color:#fff;font-size:0.75em;padding:0 6px;"">
+            @context.Title
+        </div>
+    </TaskTemplate>
+    <GanttViews>
+        <GanttWeekView />
+        <GanttMonthView />
+    </GanttViews>
+</SunfishGantt>";
+}

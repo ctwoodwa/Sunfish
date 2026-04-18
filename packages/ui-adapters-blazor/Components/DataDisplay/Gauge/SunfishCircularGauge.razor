@@ -1,0 +1,62 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+@{
+    var pct = (Max - Min) > 0 ? (Value - Min) / (Max - Min) : 0;
+    pct = Math.Clamp(pct, 0, 1);
+    var radius = (Size / 2.0) - StrokeWidth;
+    var circumference = 2 * Math.PI * radius;
+    var offset = circumference * (1 - pct);
+    var cx = Size / 2.0;
+    var cy = Size / 2.0;
+}
+
+<div class="@CombineClasses("mar-circular-gauge")"
+     style="@CombineStyles()"
+     role="meter"
+     aria-valuenow="@Value"
+     aria-valuemin="@Min"
+     aria-valuemax="@Max"
+     @attributes="AdditionalAttributes">
+    <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
+        <circle cx="@cx" cy="@cy" r="@radius"
+                fill="none" stroke="#e0e0e0" stroke-width="@StrokeWidth" />
+        <circle cx="@cx" cy="@cy" r="@radius"
+                fill="none" stroke="@GetColor()" stroke-width="@StrokeWidth"
+                stroke-dasharray="@circumference" stroke-dashoffset="@offset"
+                stroke-linecap="round"
+                transform="rotate(-90 @cx @cy)" />
+        @if (ShowLabel)
+        {
+            <svg:text x="@cx" y="@(cy + 6)" text-anchor="middle" font-size="@(Size / 5)"
+                  fill="currentColor">
+                @Value.ToString(Format ?? "F0")
+            </svg:text>
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public int Size { get; set; } = 200;
+    [Parameter] public int StrokeWidth { get; set; } = 16;
+    [Parameter] public bool ShowLabel { get; set; } = true;
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public string? Color { get; set; }
+    [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    private string GetColor()
+    {
+        if (Ranges != null)
+        {
+            foreach (var range in Ranges)
+            {
+                if (Value >= range.From && Value <= range.To)
+                    return range.Color;
+            }
+        }
+        return Color ?? "var(--mar-primary, #1976d2)";
+    }
+}

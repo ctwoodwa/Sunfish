@@ -1,0 +1,102 @@
+@page "/components/Stack"
+@page "/components/Stack/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Horizontal" Code="@_horizontalCode">
+        <SunfishStack VerticalAlign="StackAlignment.Center">
+            <SunfishBadge Variant="BadgeVariant.Primary">Primary</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Secondary">Secondary</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Success">Success</SunfishBadge>
+        </SunfishStack>
+    </DemoSection>
+
+    <DemoSection Title="Vertical" Code="@_verticalCode">
+        <SunfishStack Orientation="StackDirection.Vertical">
+            <SunfishButton Size="ButtonSize.Small">Button 1</SunfishButton>
+            <SunfishButton Size="ButtonSize.Small">Button 2</SunfishButton>
+            <SunfishButton Size="ButtonSize.Small">Button 3</SunfishButton>
+        </SunfishStack>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Spacing" Description="Control the gap between stack items with the Spacing parameter." Code="@_spacingCode">
+        <SunfishStack Spacing="24px">
+            <SunfishBadge Variant="BadgeVariant.Primary">Item 1</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Secondary">Item 2</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Success">Item 3</SunfishBadge>
+        </SunfishStack>
+    </DemoSection>
+
+    <DemoSection Title="Alignment" Description="Align items along the cross axis." Code="@_alignmentCode">
+        <SunfishStack VerticalAlign="StackAlignment.Start" Style="height:80px;background:var(--sf-color-surface);">
+            <SunfishBadge Variant="BadgeVariant.Primary">Start</SunfishBadge>
+        </SunfishStack>
+        <SunfishStack VerticalAlign="StackAlignment.Center" Style="height:80px;background:var(--sf-color-surface);">
+            <SunfishBadge Variant="BadgeVariant.Primary">Center</SunfishBadge>
+        </SunfishStack>
+        <SunfishStack VerticalAlign="StackAlignment.End" Style="height:80px;background:var(--sf-color-surface);">
+            <SunfishBadge Variant="BadgeVariant.Primary">End</SunfishBadge>
+        </SunfishStack>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _horizontalCode =
+        "<SunfishStack VerticalAlign=\"StackAlignment.Center\">\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Primary\">Primary</SunfishBadge>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Secondary\">Secondary</SunfishBadge>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Success\">Success</SunfishBadge>\n" +
+        "</SunfishStack>";
+
+    private const string _verticalCode =
+        "<SunfishStack Orientation=\"StackDirection.Vertical\">\n" +
+        "    <SunfishButton Size=\"ButtonSize.Small\">Button 1</SunfishButton>\n" +
+        "    <SunfishButton Size=\"ButtonSize.Small\">Button 2</SunfishButton>\n" +
+        "    <SunfishButton Size=\"ButtonSize.Small\">Button 3</SunfishButton>\n" +
+        "</SunfishStack>";
+
+    private const string _spacingCode =
+        "<SunfishStack Spacing=\"24px\">\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Primary\">Item 1</SunfishBadge>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Secondary\">Item 2</SunfishBadge>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Success\">Item 3</SunfishBadge>\n" +
+        "</SunfishStack>";
+
+    private const string _alignmentCode =
+        "<SunfishStack VerticalAlign=\"StackAlignment.Start\">\n" +
+        "    <SunfishBadge>Start</SunfishBadge>\n" +
+        "</SunfishStack>\n" +
+        "<SunfishStack VerticalAlign=\"StackAlignment.Center\">\n" +
+        "    <SunfishBadge>Center</SunfishBadge>\n" +
+        "</SunfishStack>\n" +
+        "<SunfishStack VerticalAlign=\"StackAlignment.End\">\n" +
+        "    <SunfishBadge>End</SunfishBadge>\n" +
+        "</SunfishStack>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus through interactive items within the stack"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"group\"", "Use when the stack contains related items that should be grouped semantically"),
+        ("aria-label", "Provides an accessible name for the group when role=\"group\" is applied"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Use role=\"group\" to associate related items so screen readers announce them as a group.",
+        "Content within the stack is read in document order regardless of visual direction.",
+        "Provide an aria-label when using role=\"group\" to describe the purpose of the grouped items.",
+    ];
+}

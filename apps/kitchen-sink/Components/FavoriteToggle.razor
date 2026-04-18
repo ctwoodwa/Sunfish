@@ -1,0 +1,39 @@
+@inject Services.FavoritesService Favorites
+
+<button class="favorite-toggle @(_active ? "active" : "")"
+        title="@(_active ? "Remove from favorites" : "Add to favorites")"
+        @onclick="Toggle">
+    @if (_active)
+    {
+        <SunfishIcon Name="star-filled" Size="IconSize.Small" />
+    }
+    else
+    {
+        <SunfishIcon Name="star" Size="IconSize.Small" />
+    }
+</button>
+
+@code {
+    [Parameter, EditorRequired] public string PageId { get; set; } = "";
+    [Parameter, EditorRequired] public string PageTitle { get; set; } = "";
+    [Parameter, EditorRequired] public string PageUrl { get; set; } = "";
+    [Parameter] public string? Icon { get; set; }
+
+    private bool _active;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Favorites.EnsureInitializedAsync();
+            _active = Favorites.IsFavorite(PageId);
+            StateHasChanged();
+        }
+    }
+
+    private async Task Toggle()
+    {
+        await Favorites.ToggleAsync(PageId, PageTitle, PageUrl, Icon);
+        _active = Favorites.IsFavorite(PageId);
+    }
+}

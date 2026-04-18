@@ -1,0 +1,14 @@
+// =============================================================================
+// Component: ScrollView
+// =============================================================================
+
+.sf-scrollview {
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sf-color-border-strong) transparent;
+}
+
+.sf-scrollview::-webkit-scrollbar { width: 6px; height: 6px; }
+.sf-scrollview::-webkit-scrollbar-track { background: transparent; }
+.sf-scrollview::-webkit-scrollbar-thumb { background: var(--sf-color-border-strong); border-radius: var(--sf-radius-full); }
+.sf-scrollview::-webkit-scrollbar-thumb:hover { background: var(--sf-color-text-secondary); }

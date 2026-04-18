@@ -1,0 +1,77 @@
+@page "/components/pivotgrid"
+@page "/components/pivotgrid/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Pivot Grid displays data in a cross-tabulated format with row and column grouping and aggregate values." Code="@_basicCode">
+        <SunfishPivotGrid Data="_salesData"
+                         AggregateFunction="PivotGridAggregateFunction.Sum"
+                         Height="300px">
+            <SunfishPivotGridRowField Field="Region" Title="Region" />
+            <SunfishPivotGridColumnField Field="Product" Title="Product" />
+            <SunfishPivotGridMeasureField Field="Revenue" Title="Revenue" />
+        </SunfishPivotGrid>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Aggregate Functions">
+    <DemoSection Title="Count Aggregation" Description="Switch between aggregate functions such as Sum, Count, Average, Min, and Max." Code="@_countCode">
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button @onclick='() => _selectedAgg = PivotGridAggregateFunction.Sum' style="@BtnStyle(PivotGridAggregateFunction.Sum)">Sum</button>
+            <button @onclick='() => _selectedAgg = PivotGridAggregateFunction.Count' style="@BtnStyle(PivotGridAggregateFunction.Count)">Count</button>
+            <button @onclick='() => _selectedAgg = PivotGridAggregateFunction.Average' style="@BtnStyle(PivotGridAggregateFunction.Average)">Average</button>
+            <button @onclick='() => _selectedAgg = PivotGridAggregateFunction.Min' style="@BtnStyle(PivotGridAggregateFunction.Min)">Min</button>
+            <button @onclick='() => _selectedAgg = PivotGridAggregateFunction.Max' style="@BtnStyle(PivotGridAggregateFunction.Max)">Max</button>
+        </div>
+        <SunfishPivotGrid Data="_salesData"
+                         AggregateFunction="_selectedAgg"
+                         Sortable="true"
+                         Height="300px">
+            <SunfishPivotGridRowField Field="Region" Title="Region" />
+            <SunfishPivotGridColumnField Field="Product" Title="Product" />
+            <SunfishPivotGridMeasureField Field="Revenue" Title="Revenue" />
+        </SunfishPivotGrid>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private PivotGridAggregateFunction _selectedAgg = PivotGridAggregateFunction.Sum;
+
+    private string BtnStyle(PivotGridAggregateFunction fn) =>
+        $"padding:4px 12px;border:1px solid #ccc;border-radius:4px;cursor:pointer;background:{(fn == _selectedAgg ? "#1976d2" : "white")};color:{(fn == _selectedAgg ? "white" : "#333")};";
+
+    private List<object> _salesData = new()
+    {
+        new SalesRecord("North", "Widget A", 1200),
+        new SalesRecord("North", "Widget B", 800),
+        new SalesRecord("South", "Widget A", 950),
+        new SalesRecord("South", "Widget B", 1100),
+        new SalesRecord("East", "Widget A", 700),
+        new SalesRecord("East", "Widget B", 1500),
+        new SalesRecord("West", "Widget A", 1300),
+        new SalesRecord("West", "Widget B", 600),
+        new SalesRecord("North", "Widget A", 400),
+        new SalesRecord("South", "Widget B", 350),
+    };
+
+    private record SalesRecord(string Region, string Product, double Revenue);
+
+    private const string _basicCode =
+        "<SunfishPivotGrid Data=\"_salesData\"\n" +
+        "                 AggregateFunction=\"PivotGridAggregateFunction.Sum\"\n" +
+        "                 Height=\"300px\">\n" +
+        "    <SunfishPivotGridRowField Field=\"Region\" Title=\"Region\" />\n" +
+        "    <SunfishPivotGridColumnField Field=\"Product\" Title=\"Product\" />\n" +
+        "    <SunfishPivotGridMeasureField Field=\"Revenue\" Title=\"Revenue\" />\n" +
+        "</SunfishPivotGrid>";
+
+    private const string _countCode =
+        "<SunfishPivotGrid Data=\"_salesData\"\n" +
+        "                 AggregateFunction=\"_selectedAgg\"\n" +
+        "                 Sortable=\"true\"\n" +
+        "                 Height=\"300px\">\n" +
+        "    <SunfishPivotGridRowField Field=\"Region\" Title=\"Region\" />\n" +
+        "    <SunfishPivotGridColumnField Field=\"Product\" Title=\"Product\" />\n" +
+        "    <SunfishPivotGridMeasureField Field=\"Revenue\" Title=\"Revenue\" />\n" +
+        "</SunfishPivotGrid>";
+}

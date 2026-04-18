@@ -1,0 +1,21 @@
+// =============================================================================
+// Component: Drag & Drop / Drop Zone
+// =============================================================================
+
+.sf-dragdrop {
+    position: relative;
+}
+
+.sf-dropzone {
+    padding: var(--sf-space-xl);
+    border: 2px dashed var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    background: var(--sf-color-surface);
+    transition: border-color var(--sf-transition-fast), background var(--sf-transition-fast);
+    text-align: center;
+}
+
+.sf-dropzone--active {
+    border-color: var(--sf-color-primary);
+    background: var(--sf-color-primary-light);
+}

@@ -1,0 +1,66 @@
+@inherits SunfishComponentBase
+
+<label class="@CombineClasses(SwitchClass)" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <input type="checkbox"
+           role="switch"
+           checked="@EffectiveValue"
+           disabled="@(!Enabled)"
+           @onchange="OnToggled" />
+    @if (EffectiveValue && !string.IsNullOrEmpty(OnLabel))
+    {
+        <span>@OnLabel</span>
+    }
+    else if (!EffectiveValue && !string.IsNullOrEmpty(OffLabel))
+    {
+        <span>@OffLabel</span>
+    }
+    else if (!string.IsNullOrEmpty(Label))
+    {
+        <span>@Label</span>
+    }
+</label>
+
+@code {
+    /// <summary>Whether the switch is on. Supports two-way binding via ValueChanged.</summary>
+    [Parameter] public bool Value { get; set; }
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    /// <summary>Backwards-compatible alias for Value. Supports two-way binding via IsOnChanged.</summary>
+    [Parameter] public bool IsOn { get; set; }
+    [Parameter] public EventCallback<bool> IsOnChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? OnLabel { get; set; }
+    [Parameter] public string? OffLabel { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Backwards-compatible: accepts Disabled as inverse of Enabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private bool EffectiveValue => IsOnChanged.HasDelegate ? IsOn : Value;
+    private bool IsEffectivelyEnabled => Enabled && !Disabled;
+
+    private string SwitchClass
+    {
+        get
+        {
+            var cls = CssProvider.SwitchClass(EffectiveValue);
+            if (!IsEffectivelyEnabled) cls += " mar-switch--disabled";
+            return cls;
+        }
+    }
+
+    private async Task OnToggled(ChangeEventArgs e)
+    {
+        if (!IsEffectivelyEnabled) return;
+        var newValue = (bool)(e.Value ?? false);
+
+        Value = newValue;
+        IsOn = newValue;
+
+        if (ValueChanged.HasDelegate)
+            await ValueChanged.InvokeAsync(newValue);
+        if (IsOnChanged.HasDelegate)
+            await IsOnChanged.InvokeAsync(newValue);
+    }
+}

@@ -1,0 +1,46 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.CalloutClass(Type))"
+     style="@CombineStyles()"
+     role="note"
+     @attributes="AdditionalAttributes">
+    <div class="sf-callout__icon">
+        @switch (Type)
+        {
+            case CalloutType.Info:
+                @IconProvider.GetIcon("info", IconSize.Medium)
+                break;
+            case CalloutType.Warning:
+                @IconProvider.GetIcon("warning", IconSize.Medium)
+                break;
+            case CalloutType.Danger:
+                @IconProvider.GetIcon("error", IconSize.Medium)
+                break;
+            case CalloutType.Success:
+                @IconProvider.GetIcon("check-circle", IconSize.Medium)
+                break;
+            case CalloutType.Note:
+                @IconProvider.GetIcon("note", IconSize.Medium)
+                break;
+        }
+    </div>
+    <div class="sf-callout__content">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <div class="sf-callout__title">@Title</div>
+        }
+        @ChildContent
+    </div>
+    @if (IsDismissible)
+    {
+        <button type="button" class="sf-callout__dismiss" aria-label="Dismiss" @onclick="OnDismiss">&times;</button>
+    }
+</div>
+
+@code {
+    [Parameter] public CalloutType Type { get; set; } = CalloutType.Info;
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public bool IsDismissible { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

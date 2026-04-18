@@ -1,0 +1,23 @@
+// =============================================================================
+// Component: Animation Keyframes & Utilities
+// =============================================================================
+
+@keyframes sf-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes sf-slide-in {
+    from { opacity: 0; transform: translateY(-16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sf-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes sf-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}

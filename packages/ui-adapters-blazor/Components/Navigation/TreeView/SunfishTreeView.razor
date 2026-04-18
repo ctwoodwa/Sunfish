@@ -1,0 +1,23 @@
+@namespace Sunfish.Components.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+<ul class="@CombineClasses(CssProvider.TreeViewClass())"
+    style="@CombineStyles(SizeStyle)"
+    role="tree"
+    tabindex="0"
+    aria-label="@AriaLabel"
+    aria-disabled="@(Disabled ? "true" : null)"
+    @onkeydown="HandleKeyDown"
+    @onkeydown:preventDefault="_preventKeyDefault"
+    @attributes="AdditionalAttributes">
+    @if (Data != null)
+    {
+        @RenderNodes(BuildTree())
+    }
+    else
+    {
+        <CascadingValue Value="this" IsFixed="true">
+            @ChildContent
+        </CascadingValue>
+    }
+</ul>

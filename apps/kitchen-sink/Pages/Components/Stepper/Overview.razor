@@ -1,0 +1,131 @@
+@page "/components/Stepper"
+@page "/components/Stepper/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishStepper ActiveStep="@_step">
+            <SunfishStep Title="Account" />
+            <SunfishStep Title="Profile" />
+            <SunfishStep Title="Review" />
+        </SunfishStepper>
+        <div class="demo-row">
+            <SunfishButton Disabled="@(_step <= 0)" OnClick="@(() => _step--)">Previous</SunfishButton>
+            <SunfishButton Disabled="@(_step >= 2)" OnClick="@(() => _step++)">Next</SunfishButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Vertical Orientation" Description="Display stepper steps in a vertical layout." Code="@_verticalCode">
+        <SunfishStepper ActiveStep="@_verticalStep" Orientation="StepperOrientation.Vertical">
+            <SunfishStep Title="Step 1" Description="First step description" />
+            <SunfishStep Title="Step 2" Description="Second step description" />
+            <SunfishStep Title="Step 3" Description="Third step description" />
+        </SunfishStepper>
+        <div class="demo-row">
+            <SunfishButton Disabled="@(_verticalStep <= 0)" OnClick="@(() => _verticalStep--)">Previous</SunfishButton>
+            <SunfishButton Disabled="@(_verticalStep >= 2)" OnClick="@(() => _verticalStep++)">Next</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="With Descriptions" Description="Steps can include descriptive text below the title." Code="@_descCode">
+        <SunfishStepper ActiveStep="1">
+            <SunfishStep Title="Completed" Description="This step is done" />
+            <SunfishStep Title="In Progress" Description="Currently active" />
+            <SunfishStep Title="Pending" Description="Not yet started" />
+        </SunfishStepper>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ActiveStepChanged" Description="Handle step changes with the ActiveStepChanged callback." Code="@_eventCode">
+        <SunfishStepper ActiveStep="@_evStep" ActiveStepChanged="@OnStepChanged">
+            <SunfishStep Title="Account" />
+            <SunfishStep Title="Profile" />
+            <SunfishStep Title="Review" />
+        </SunfishStepper>
+        <p>Current step: @_evStep</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private int _step;
+    private int _verticalStep;
+    private int _evStep;
+
+    private void OnStepChanged(int step)
+    {
+        _evStep = step;
+    }
+
+    private const string _basicCode =
+        "<SunfishStepper ActiveStep=\"@_step\">\n" +
+        "    <SunfishStep Title=\"Account\" />\n" +
+        "    <SunfishStep Title=\"Profile\" />\n" +
+        "    <SunfishStep Title=\"Review\" />\n" +
+        "</SunfishStepper>\n" +
+        "<SunfishButton Disabled=\"@(_step <= 0)\" OnClick=\"@(() => _step--)\">Previous</SunfishButton>\n" +
+        "<SunfishButton Disabled=\"@(_step >= 2)\" OnClick=\"@(() => _step++)\">Next</SunfishButton>\n\n" +
+        "@code {\n" +
+        "    private int _step;\n" +
+        "}";
+
+    private const string _verticalCode =
+        "<SunfishStepper ActiveStep=\"@_step\" Orientation=\"StepperOrientation.Vertical\">\n" +
+        "    <SunfishStep Title=\"Step 1\" Description=\"First step description\" />\n" +
+        "    <SunfishStep Title=\"Step 2\" Description=\"Second step description\" />\n" +
+        "    <SunfishStep Title=\"Step 3\" Description=\"Third step description\" />\n" +
+        "</SunfishStepper>";
+
+    private const string _descCode =
+        "<SunfishStepper ActiveStep=\"1\">\n" +
+        "    <SunfishStep Title=\"Completed\" Description=\"This step is done\" />\n" +
+        "    <SunfishStep Title=\"In Progress\" Description=\"Currently active\" />\n" +
+        "    <SunfishStep Title=\"Pending\" Description=\"Not yet started\" />\n" +
+        "</SunfishStepper>";
+
+    private const string _eventCode =
+        "<SunfishStepper ActiveStep=\"@_step\" ActiveStepChanged=\"@OnStepChanged\">\n" +
+        "    <SunfishStep Title=\"Account\" />\n" +
+        "    <SunfishStep Title=\"Profile\" />\n" +
+        "    <SunfishStep Title=\"Review\" />\n" +
+        "</SunfishStepper>\n" +
+        "<p>Current step: @_step</p>\n\n" +
+        "@code {\n" +
+        "    private int _step;\n" +
+        "    private void OnStepChanged(int step) => _step = step;\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Arrow Left / Arrow Up", "Moves focus to the previous step"),
+        ("Arrow Right / Arrow Down", "Moves focus to the next step"),
+        ("Enter", "Activates the focused step"),
+        ("Tab", "Moves focus to the next focusable element outside the stepper"),
+        ("Home", "Moves focus to the first step"),
+        ("End", "Moves focus to the last step"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("aria-current=\"step\"", "Indicates the currently active step in the sequence"),
+        ("aria-label", "Provides an accessible name for each step element"),
+        ("role=\"list\"", "Applied to the stepper container to convey the ordered sequence"),
+        ("role=\"listitem\"", "Applied to each step to convey its membership in the sequence"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Steps are announced with their title, position (e.g., \"step 2 of 3\"), and completion state.",
+        "The active step is identified by aria-current=\"step\".",
+        "Completed steps are announced as completed, and pending steps as not yet reached.",
+    ];
+}

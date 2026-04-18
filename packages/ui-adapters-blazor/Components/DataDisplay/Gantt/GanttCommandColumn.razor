@@ -1,0 +1,27 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@typeparam TItem where TItem : class
+@inherits SunfishComponentBase
+
+@code {
+    [CascadingParameter] private SunfishGantt<TItem>? ParentGantt { get; set; }
+
+    /// <summary>CSS width for the command column (e.g. "120px").</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Header text shown when ShowAddButton is false. Defaults to empty string.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>When true, an Add button is rendered in the column header instead of the Title text.</summary>
+    [Parameter] public bool ShowAddButton { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentGantt?.RegisterCommandColumn(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) ParentGantt?.UnregisterCommandColumn(this);
+        base.Dispose(disposing);
+    }
+}

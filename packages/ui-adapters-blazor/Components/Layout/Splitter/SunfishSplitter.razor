@@ -1,0 +1,501 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div @ref="_containerRef"
+     class="@CombineClasses(CssProvider.SplitterClass(Orientation))"
+     style="@CombineStyles(RootStyle)"
+     @attributes="AdditionalAttributes">
+
+    @if (_panes.Count > 0)
+    {
+        @for (var i = 0; i < _panes.Count; i++)
+        {
+            var pane = _panes[i];
+            var isCollapsed = pane.EffectiveCollapsed;
+            var isLast = i == _panes.Count - 1;
+            var paneStyle = BuildPaneStyle(pane, isLast);
+
+            <div class="sf-splitter__pane @(isCollapsed ? "mar-splitter__pane--collapsed" : "") @(isLast ? "mar-splitter__pane--fill" : "")"
+                 style="@paneStyle">
+                @pane.ChildContent
+            </div>
+
+            @if (i < _panes.Count - 1)
+            {
+                var idx = i;
+                var prevPane = _panes[idx];
+                var isCollapsible = Collapsible || prevPane.Collapsible;
+                <div class="sf-splitter__handle @(_activeSeparator == idx ? "mar-splitter__handle--active" : "")"
+                     role="separator"
+                     tabindex="0"
+                     aria-orientation="@(Orientation == SplitterOrientation.Horizontal ? "vertical" : "horizontal")"
+                     aria-label="@(AriaLabel ?? $"Resize pane {idx + 1} and {idx + 2}")"
+                     aria-valuenow="@GetPaneSizePercent(idx)"
+                     aria-valuemin="0"
+                     aria-valuemax="100"
+                     @onkeydown="(e) => HandleSeparatorKeyDown(e, idx)"
+                     @onmousedown="(e) => HandleMouseDown(e, idx)"
+                     @ondblclick="() => HandleSeparatorDoubleClick(idx)">
+                    @if (isCollapsible)
+                    {
+                        <button type="button"
+                                class="sf-splitter__collapse-btn"
+                                aria-label="@(prevPane.EffectiveCollapsed ? "Expand pane" : "Collapse pane")"
+                                @onclick="() => TogglePaneCollapse(idx)"
+                                @onclick:stopPropagation="true">
+                            @GetCollapseArrow(prevPane.EffectiveCollapsed)
+                        </button>
+                    }
+                </div>
+            }
+        }
+    }
+    else
+    {
+        <div class="sf-splitter__pane mar-splitter__pane--first" style="flex-basis:@FirstPaneSize">
+            @FirstPane
+        </div>
+        <div class="sf-splitter__handle"
+             role="separator"
+             aria-orientation="@(Orientation == SplitterOrientation.Horizontal ? "vertical" : "horizontal")">
+        </div>
+        <div class="sf-splitter__pane mar-splitter__pane--second mar-splitter__pane--fill">
+            @SecondPane
+        </div>
+    }
+
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+
+    @if (_isDragging)
+    {
+        <div class="sf-splitter__drag-overlay"
+             style="position:fixed;inset:0;z-index:9999;cursor:@(Orientation == SplitterOrientation.Horizontal ? "col-resize" : "row-resize")"
+             @onmousemove="HandleMouseMove"
+             @onmouseup="HandleMouseUp">
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<SunfishSplitterPane> _panes = [];
+    private int _activeSeparator = -1;
+    private bool _isDragging;
+    private double _dragStartPos;
+    private double _dragStartSizePx;
+    private double _containerSizePx;
+    private bool _dragStartedWithPercent;
+    private const double KeyboardResizeStep = 10.0;
+    private ElementReference _containerRef;
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<SunfishSplitter>? _dotNetRef;
+
+    [Parameter] public SplitterOrientation Orientation { get; set; } = SplitterOrientation.Horizontal;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool Collapsible { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public EventCallback<SplitterResizeEventArgs> OnResize { get; set; }
+    [Parameter] public EventCallback<SplitterResizeEventArgs> OnResizeStart { get; set; }
+    [Parameter] public EventCallback<SplitterResizeEventArgs> OnResizeEnd { get; set; }
+    [Parameter] public EventCallback<SplitterCollapseEventArgs> OnCollapse { get; set; }
+    [Parameter] public EventCallback<SplitterCollapseEventArgs> OnExpand { get; set; }
+
+    // Legacy 2-pane parameters
+    [Parameter] public string? FirstPaneSize { get; set; } = "50%";
+    [Parameter] public RenderFragment? FirstPane { get; set; }
+    [Parameter] public RenderFragment? SecondPane { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string? RootStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+
+    // ── JS Interop ──────────────────────────────────────────────────────
+
+    private static string GetSplitterScript() => """
+    (() => {
+        const mod = {};
+        let containerEl = null;
+        let dotNetRef = null;
+        let activeIndex = -1;
+        let orientation = 'horizontal';
+        let startPos = 0;
+
+        mod.init = (el, ref) => {
+            containerEl = el;
+            dotNetRef = ref;
+        };
+
+        mod.getContainerSize = (orient) => {
+            if (!containerEl) return 0;
+            const rect = containerEl.getBoundingClientRect();
+            return orient === 'horizontal' ? rect.width : rect.height;
+        };
+
+        mod.startPointerCapture = (handleEl, orient, sepIndex) => {
+            if (!handleEl) return;
+            orientation = orient;
+            activeIndex = sepIndex;
+
+            const onMove = (e) => {
+                e.preventDefault();
+                const pos = orientation === 'horizontal' ? e.clientX : e.clientY;
+                if (dotNetRef) {
+                    dotNetRef.invokeMethodAsync('OnPointerMoveFromJs', pos);
+                }
+            };
+
+            const onUp = (e) => {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                if (dotNetRef) {
+                    dotNetRef.invokeMethodAsync('OnPointerUpFromJs');
+                }
+            };
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+        };
+
+        mod.dispose = () => {
+            containerEl = null;
+            dotNetRef = null;
+        };
+
+        return mod;
+    })()
+    """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _dotNetRef = DotNetObjectReference.Create(this);
+            _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetSplitterScript());
+            await _jsModule.InvokeVoidAsync("init", _containerRef, _dotNetRef);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try
+            {
+                await _jsModule.InvokeVoidAsync("dispose");
+                await _jsModule.DisposeAsync();
+            }
+            catch (JSDisconnectedException) { }
+        }
+        _dotNetRef?.Dispose();
+    }
+
+    private async Task<double> GetContainerSizePx()
+    {
+        if (_jsModule is null) return 1000; // fallback
+        var orient = Orientation == SplitterOrientation.Horizontal ? "horizontal" : "vertical";
+        return await _jsModule.InvokeAsync<double>("getContainerSize", orient);
+    }
+
+    // ── Pane style building ─────────────────────────────────────────────
+
+    private string BuildPaneStyle(SunfishSplitterPane pane, bool isLast)
+    {
+        if (pane.EffectiveCollapsed)
+            return "flex:0 0 0;overflow:hidden;min-width:0;min-height:0;";
+
+        var parts = new List<string>();
+        var dim = Orientation == SplitterOrientation.Horizontal ? "width" : "height";
+
+        if (isLast)
+        {
+            parts.Add("flex:1 1 0;");
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(pane.EffectiveSize))
+                parts.Add($"flex:0 0 {pane.EffectiveSize};");
+            if (!string.IsNullOrEmpty(pane.Min))
+                parts.Add($"min-{dim}:{pane.Min};");
+            if (!string.IsNullOrEmpty(pane.Max))
+                parts.Add($"max-{dim}:{pane.Max};");
+        }
+
+        return string.Join("", parts);
+    }
+
+    private int GetPaneSizePercent(int index)
+    {
+        if (index < 0 || index >= _panes.Count) return 50;
+        var size = _panes[index].EffectiveSize;
+        if (size != null && size.EndsWith('%') && double.TryParse(size.TrimEnd('%'), out var pct))
+            return (int)pct;
+        return 50;
+    }
+
+    // ── State management ────────────────────────────────────────────────
+
+    public SplitterState GetState() => new()
+    {
+        PaneSizes = _panes.Select(p => p.EffectiveSize ?? "").ToList(),
+        CollapsedPanes = _panes.Select(p => p.EffectiveCollapsed).ToList()
+    };
+
+    public void SetState(SplitterState state)
+    {
+        for (int i = 0; i < Math.Min(_panes.Count, state.PaneSizes.Count); i++)
+            _panes[i].SetSize(state.PaneSizes[i]);
+        for (int i = 0; i < Math.Min(_panes.Count, state.CollapsedPanes.Count); i++)
+            _panes[i].SetCollapsed(state.CollapsedPanes[i]);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    internal void RegisterPane(SunfishSplitterPane pane)
+    {
+        if (!_panes.Contains(pane))
+        {
+            _panes.Add(pane);
+            StateHasChanged();
+        }
+    }
+
+    internal void UnregisterPane(SunfishSplitterPane pane)
+    {
+        _panes.Remove(pane);
+        StateHasChanged();
+    }
+
+    // ── Drag-to-resize ──────────────────────────────────────────────────
+
+    private async Task HandleMouseDown(MouseEventArgs e, int separatorIndex)
+    {
+        if (!_panes[separatorIndex].Resizable) return;
+
+        _activeSeparator = separatorIndex;
+        _isDragging = true;
+        _dragStartPos = Orientation == SplitterOrientation.Horizontal ? e.ClientX : e.ClientY;
+
+        // Measure container for accurate percent conversion
+        _containerSizePx = await GetContainerSizePx();
+
+        var currentSize = _panes[separatorIndex].EffectiveSize;
+        _dragStartedWithPercent = currentSize != null && currentSize.EndsWith('%');
+        _dragStartSizePx = ResolveToPx(currentSize, _containerSizePx);
+
+        await NotifyResizeStart(separatorIndex);
+    }
+
+    private async Task HandleMouseMove(MouseEventArgs e)
+    {
+        if (!_isDragging || _activeSeparator < 0) return;
+        await ApplyDrag(Orientation == SplitterOrientation.Horizontal ? e.ClientX : e.ClientY);
+    }
+
+    private async Task HandleMouseUp(MouseEventArgs e)
+    {
+        await FinishDrag();
+    }
+
+    // ── JS pointer event callbacks ──────────────────────────────────────
+
+    [JSInvokable]
+    public async Task OnPointerMoveFromJs(double position)
+    {
+        if (!_isDragging || _activeSeparator < 0) return;
+        await ApplyDrag(position);
+        StateHasChanged();
+    }
+
+    [JSInvokable]
+    public async Task OnPointerUpFromJs()
+    {
+        await FinishDrag();
+        StateHasChanged();
+    }
+
+    private async Task ApplyDrag(double currentPos)
+    {
+        var deltaPx = currentPos - _dragStartPos;
+        var newSizePx = _dragStartSizePx + deltaPx;
+
+        // Clamp to min/max
+        var minPx = ResolveToPx(_panes[_activeSeparator].Min, _containerSizePx, 0);
+        var maxPx = ResolveToPx(_panes[_activeSeparator].Max, _containerSizePx, _containerSizePx);
+        newSizePx = Math.Clamp(newSizePx, minPx, maxPx);
+
+        // Preserve the original unit: if the pane started with %, keep it in %
+        if (_dragStartedWithPercent && _containerSizePx > 0)
+        {
+            var pct = newSizePx / _containerSizePx * 100;
+            pct = Math.Clamp(pct, 1, 99);
+            _panes[_activeSeparator].SetSize($"{pct:F1}%");
+        }
+        else
+        {
+            _panes[_activeSeparator].SetSize($"{newSizePx:F0}px");
+        }
+
+        await NotifyResize(_activeSeparator);
+    }
+
+    private async Task FinishDrag()
+    {
+        if (_isDragging && _activeSeparator >= 0)
+            await NotifyResizeEnd(_activeSeparator);
+
+        _isDragging = false;
+        _activeSeparator = -1;
+        StateHasChanged();
+    }
+
+    // ── Keyboard resize ─────────────────────────────────────────────────
+
+    private async Task HandleSeparatorKeyDown(KeyboardEventArgs e, int index)
+    {
+        if (!_panes[index].Resizable) return;
+
+        var isHorizontal = Orientation == SplitterOrientation.Horizontal;
+        var growKey = isHorizontal ? "ArrowRight" : "ArrowDown";
+        var shrinkKey = isHorizontal ? "ArrowLeft" : "ArrowUp";
+
+        if (e.Key == growKey || e.Key == shrinkKey)
+        {
+            var direction = e.Key == growKey ? 1.0 : -1.0;
+            var stepPx = e.ShiftKey ? KeyboardResizeStep * 5 : KeyboardResizeStep;
+
+            var containerSize = await GetContainerSizePx();
+            var currentSize = _panes[index].EffectiveSize;
+            var isPercent = currentSize != null && currentSize.EndsWith('%');
+            var currentPx = ResolveToPx(currentSize, containerSize);
+            var minPx = ResolveToPx(_panes[index].Min, containerSize, 0);
+            var maxPx = ResolveToPx(_panes[index].Max, containerSize, containerSize);
+            var newPx = Math.Clamp(currentPx + direction * stepPx, minPx, maxPx);
+
+            if (isPercent && containerSize > 0)
+            {
+                var pct = newPx / containerSize * 100;
+                _panes[index].SetSize($"{pct:F1}%");
+            }
+            else
+            {
+                _panes[index].SetSize($"{newPx:F0}px");
+            }
+
+            await NotifyResize(index);
+        }
+        else if (e.Key == "Enter" && (Collapsible || _panes[index].Collapsible))
+        {
+            await TogglePaneCollapse(index);
+        }
+    }
+
+    // ── Collapse ────────────────────────────────────────────────────────
+
+    private async Task TogglePaneCollapse(int index)
+    {
+        if (index < 0 || index >= _panes.Count) return;
+
+        var wasCollapsed = _panes[index].EffectiveCollapsed;
+        _panes[index].SetCollapsed(!wasCollapsed);
+
+        var args = new SplitterCollapseEventArgs { PaneIndex = index };
+
+        if (wasCollapsed)
+        {
+            if (OnExpand.HasDelegate)
+                await OnExpand.InvokeAsync(args);
+        }
+        else
+        {
+            if (OnCollapse.HasDelegate)
+                await OnCollapse.InvokeAsync(args);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task HandleSeparatorDoubleClick(int index)
+    {
+        if (Collapsible || (index < _panes.Count && _panes[index].Collapsible))
+            await TogglePaneCollapse(index);
+    }
+
+    // ── Event notifications ─────────────────────────────────────────────
+
+    private async Task NotifyResizeStart(int index)
+    {
+        if (OnResizeStart.HasDelegate)
+        {
+            await OnResizeStart.InvokeAsync(new SplitterResizeEventArgs
+            {
+                PaneIndex = index,
+                NewSize = _panes[index].EffectiveSize ?? "",
+                AdjacentSize = index + 1 < _panes.Count ? _panes[index + 1].EffectiveSize ?? "" : ""
+            });
+        }
+    }
+
+    private async Task NotifyResize(int index)
+    {
+        if (OnResize.HasDelegate)
+        {
+            await OnResize.InvokeAsync(new SplitterResizeEventArgs
+            {
+                PaneIndex = index,
+                NewSize = _panes[index].EffectiveSize ?? "",
+                AdjacentSize = index + 1 < _panes.Count ? _panes[index + 1].EffectiveSize ?? "" : ""
+            });
+        }
+    }
+
+    private async Task NotifyResizeEnd(int index)
+    {
+        if (OnResizeEnd.HasDelegate)
+        {
+            await OnResizeEnd.InvokeAsync(new SplitterResizeEventArgs
+            {
+                PaneIndex = index,
+                NewSize = _panes[index].EffectiveSize ?? "",
+                AdjacentSize = index + 1 < _panes.Count ? _panes[index + 1].EffectiveSize ?? "" : ""
+            });
+        }
+    }
+
+    // ── Collapse arrow helper ───────────────────────────────────────────
+
+    private string GetCollapseArrow(bool isCollapsed)
+    {
+        if (Orientation == SplitterOrientation.Horizontal)
+            return isCollapsed ? "\u25B6" : "\u25C0"; // ▶ / ◀
+        else
+            return isCollapsed ? "\u25BC" : "\u25B2"; // ▼ / ▲
+    }
+
+    // ── Size parsing helpers ────────────────────────────────────────────
+
+    /// <summary>
+    /// Resolve a CSS size value to pixels, using the container size for percent conversion.
+    /// </summary>
+    private static double ResolveToPx(string? size, double containerSizePx, double fallback = 200)
+    {
+        if (string.IsNullOrEmpty(size)) return fallback;
+        if (size.EndsWith("px") && double.TryParse(size.AsSpan(0, size.Length - 2), out var px))
+            return px;
+        if (size.EndsWith('%') && double.TryParse(size.AsSpan(0, size.Length - 1), out var pct))
+            return pct / 100.0 * containerSizePx;
+        if (double.TryParse(size, out var raw))
+            return raw;
+        return fallback;
+    }
+}

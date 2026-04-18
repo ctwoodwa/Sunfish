@@ -1,0 +1,90 @@
+@inherits SunfishComponentBase
+
+@{
+    var range = Max - Min;
+    var startPct = range > 0 ? (StartValue - Min) / range * 100 : 0;
+    var endPct = range > 0 ? (EndValue - Min) / range * 100 : 100;
+}
+
+<div class="@CombineClasses(CssProvider.SliderClass(Orientation)) mar-range-slider"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <div class="sf-range-slider__track">
+        <div class="sf-range-slider__fill"
+             style="@(Orientation == SliderOrientation.Horizontal
+                 ? $"left: {startPct:F2}%; width: {(endPct - startPct):F2}%;"
+                 : $"bottom: {startPct:F2}%; height: {(endPct - startPct):F2}%;")">
+        </div>
+    </div>
+    <input type="range"
+           class="sf-range-slider__input mar-range-slider__input--start"
+           value="@StartValue"
+           min="@Min"
+           max="@Max"
+           step="@Step"
+           aria-label="Range start"
+           @oninput="OnStartChanged" />
+    <input type="range"
+           class="sf-range-slider__input mar-range-slider__input--end"
+           value="@EndValue"
+           min="@Min"
+           max="@Max"
+           step="@Step"
+           aria-label="Range end"
+           @oninput="OnEndChanged" />
+    @if (LargeStep.HasValue)
+    {
+        <div class="sf-slider__ticks">
+            @{
+                var tickValue = Min;
+                while (tickValue <= Max)
+                {
+                    var pct = (tickValue - Min) / range * 100;
+                    <span class="sf-slider__tick" style="@(Orientation == SliderOrientation.Horizontal ? $"left: {pct}%;" : $"bottom: {pct}%;")"></span>
+                    tickValue += LargeStep.Value;
+                }
+            }
+        </div>
+    }
+    @if (LabelTemplate != null)
+    {
+        <div class="sf-range-slider__labels">
+            <span class="sf-range-slider__label--start">@LabelTemplate(StartValue)</span>
+            <span class="sf-range-slider__label--end">@LabelTemplate(EndValue)</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public double StartValue { get; set; }
+    [Parameter] public EventCallback<double> StartValueChanged { get; set; }
+    [Parameter] public double EndValue { get; set; }
+    [Parameter] public EventCallback<double> EndValueChanged { get; set; }
+    [Parameter] public double Min { get; set; } = 0;
+    [Parameter] public double Max { get; set; } = 100;
+    [Parameter] public double Step { get; set; } = 1;
+    [Parameter] public SliderOrientation Orientation { get; set; } = SliderOrientation.Horizontal;
+    [Parameter] public double? LargeStep { get; set; }
+    [Parameter] public RenderFragment<double>? LabelTemplate { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    private async Task OnStartChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var val))
+        {
+            if (val > EndValue) val = EndValue;
+            StartValue = val;
+            await StartValueChanged.InvokeAsync(StartValue);
+        }
+    }
+
+    private async Task OnEndChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), out var val))
+        {
+            if (val < StartValue) val = StartValue;
+            EndValue = val;
+            await EndValueChanged.InvokeAsync(EndValue);
+        }
+    }
+}

@@ -1,0 +1,97 @@
+@page "/components/calendar"
+@page "/components/calendar/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A standalone calendar for browsing and selecting dates." Code="@_basicCode">
+        <SunfishCalendar @bind-Value="_selectedDate" />
+        @if (_selectedDate.HasValue)
+        {
+            <p style="margin-top: 8px;">Selected: <strong>@_selectedDate.Value.ToString("dddd, MMMM d, yyyy")</strong></p>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Date Click Event" Description="Respond to date clicks with the OnDateClick callback." Code="@_clickCode">
+        <SunfishCalendar Value="@_clickDate" OnDateClick="@HandleDateClick" />
+        @if (!string.IsNullOrEmpty(_clickMessage))
+        {
+            <p style="margin-top: 8px;">@_clickMessage</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Week Numbers" Description="Display ISO week numbers alongside the calendar grid." Code="@_weekNumbersCode">
+        <SunfishCalendar @bind-Value="_weekNumDate" ShowWeekNumbers="true" />
+    </DemoSection>
+
+    <DemoSection Title="Hide Other Month Days" Description="Hide days from adjacent months for a cleaner month view." Code="@_hideOtherCode">
+        <SunfishCalendar @bind-Value="_hideOtherDate" ShowOtherMonthDays="false" />
+    </DemoSection>
+
+    <DemoSection Title="Min and Max Dates" Description="Restrict selectable dates to a specific range." Code="@_minMaxCode">
+        <SunfishCalendar @bind-Value="_rangeDate"
+                        Min="@_minDate"
+                        Max="@_maxDate" />
+        <p style="margin-top: 8px; font-size: 0.875em; color: #666;">
+            Range: @_minDate.ToString("MMM d, yyyy") to @_maxDate.ToString("MMM d, yyyy")
+        </p>
+    </DemoSection>
+
+    <DemoSection Title="Year and Decade Views" Description="Navigate through year and decade views by clicking the header title." Code="@_viewsCode">
+        <SunfishCalendar @bind-Value="_viewDate" @bind-View="_currentView" />
+        <p style="margin-top: 8px; font-size: 0.875em;">Current view: <strong>@_currentView</strong></p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private DateTime? _selectedDate = DateTime.Today;
+
+    private DateTime? _clickDate;
+    private string? _clickMessage;
+
+    private DateTime? _weekNumDate;
+    private DateTime? _hideOtherDate;
+
+    private DateTime? _rangeDate = DateTime.Today;
+    private DateTime _minDate = DateTime.Today.AddDays(-14);
+    private DateTime _maxDate = DateTime.Today.AddDays(14);
+
+    private DateTime? _viewDate;
+    private CalendarView _currentView = CalendarView.Month;
+
+    private void HandleDateClick(DateTime date)
+    {
+        _clickDate = date;
+        _clickMessage = $"Clicked: {date:MMMM d, yyyy} at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private const string _basicCode =
+        "<SunfishCalendar @bind-Value=\"_selectedDate\" />\n\n" +
+        "@code { private DateTime? _selectedDate = DateTime.Today; }";
+
+    private const string _clickCode =
+        "<SunfishCalendar Value=\"@_date\" OnDateClick=\"@HandleDateClick\" />\n\n" +
+        "@code {\n" +
+        "    private DateTime? _date;\n" +
+        "    private void HandleDateClick(DateTime date) { /* handle click */ }\n" +
+        "}";
+
+    private const string _weekNumbersCode =
+        "<SunfishCalendar @bind-Value=\"_date\" ShowWeekNumbers=\"true\" />";
+
+    private const string _hideOtherCode =
+        "<SunfishCalendar @bind-Value=\"_date\" ShowOtherMonthDays=\"false\" />";
+
+    private const string _minMaxCode =
+        "<SunfishCalendar @bind-Value=\"_date\"\n" +
+        "                Min=\"@DateTime.Today.AddDays(-14)\"\n" +
+        "                Max=\"@DateTime.Today.AddDays(14)\" />";
+
+    private const string _viewsCode =
+        "<SunfishCalendar @bind-Value=\"_date\" @bind-View=\"_view\" />\n\n" +
+        "@code {\n" +
+        "    private DateTime? _date;\n" +
+        "    private CalendarView _view = CalendarView.Month;\n" +
+        "}";
+}

@@ -1,0 +1,163 @@
+/* SunfishUserMenu — Perplexity-style sidebar popup menu
+   Anchored relative to its trigger; render this component inside a positioned parent. */
+
+.sf-usermenu {
+    --mum-bg: var(--sf-color-background, #f7f7f3);
+    --mum-border: var(--sf-color-border, #e5e5e0);
+    --mum-radius: 12px;
+    --mum-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+    --mum-row-h: 38px;
+    --mum-muted: var(--sf-color-text-secondary, #888880);
+    --mum-text: var(--sf-color-text, #1f2328);
+    --mum-hover: rgba(0, 0, 0, 0.045);
+    --mum-avatar-size: 32px;
+    --mum-width: 248px;
+
+    position: relative;
+    display: block;
+}
+
+:global([data-sf-theme="dark"]) .sf-usermenu {
+    --mum-bg: var(--sf-color-background, #1f1f1d);
+    --mum-border: var(--sf-color-border, #2e2e2c);
+    --mum-text: var(--sf-color-text, #f3f3ef);
+    --mum-muted: var(--sf-color-text-secondary, #9a9a92);
+    --mum-hover: rgba(255, 255, 255, 0.06);
+    --mum-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+}
+
+.sf-usermenu__scrim {
+    position: fixed;
+    top: 0; right: 0; bottom: 0; left: 0;
+    inset: 0;
+    background: transparent;
+    z-index: 60;
+}
+
+.sf-usermenu__panel {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    width: var(--mum-width);
+    background: var(--mum-bg);
+    border: 1px solid var(--mum-border);
+    border-radius: var(--mum-radius);
+    box-shadow: var(--mum-shadow);
+    color: var(--mum-text);
+    padding: 6px;
+    z-index: 61;
+    transform-origin: bottom left;
+    opacity: 0;
+    transform: scale(0.96) translateY(4px);
+    pointer-events: none;
+    visibility: hidden;
+}
+
+.sf-usermenu__panel.is-open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .sf-usermenu__panel { transition: opacity 150ms ease-out, transform 150ms ease-out; }
+}
+
+.sf-usermenu__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px 8px;
+}
+.sf-usermenu__avatar {
+    flex: 0 0 var(--mum-avatar-size);
+    width: var(--mum-avatar-size);
+    height: var(--mum-avatar-size);
+    border-radius: 50%;
+    background: var(--sf-color-primary, #5b6cff);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.sf-usermenu__identity { min-width: 0; flex: 1 1 auto; }
+.sf-usermenu__name {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sf-usermenu__email {
+    font-size: 12px;
+    color: var(--mum-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sf-usermenu__divider {
+    height: 1px;
+    background: var(--mum-border);
+    margin: 4px 0;
+}
+
+.sf-usermenu__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: var(--mum-row-h);
+    padding: 0 10px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--mum-text);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+}
+.sf-usermenu__row:hover { background: var(--mum-hover); }
+.sf-usermenu__row:focus-visible {
+    outline: 2px solid var(--sf-color-primary, #5b6cff);
+    outline-offset: -2px;
+}
+.sf-usermenu__row.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sf-usermenu__row-icon {
+    flex: 0 0 18px;
+    width: 18px;
+    height: 18px;
+    color: var(--mum-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.sf-usermenu__row-label {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.sf-usermenu__row-value,
+.sf-usermenu__row-shortcut {
+    flex: 0 0 auto;
+    font-size: 12px;
+    color: var(--mum-muted);
+}
+.sf-usermenu__row-chevron {
+    flex: 0 0 14px;
+    color: var(--mum-muted);
+}
+
+.sf-usermenu__footer {
+    padding: 8px 10px 6px;
+    font-size: 12px;
+    color: var(--mum-muted);
+}

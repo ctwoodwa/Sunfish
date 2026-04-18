@@ -1,0 +1,187 @@
+@page "/components/Badge"
+@page "/components/Badge/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="Badges display short labels or counts." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishBadge>Default</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Primary">Primary</SunfishBadge>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Notification Dot" Description="Omit child content to render a small dot badge — useful for unread indicators." Code="@_dotCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Inbox</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Danger" Position="edge" />
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Messages</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Primary" Position="edge">4</SunfishBadge>
+            </div>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Variants" Description="Badges support multiple color variants to convey meaning." Code="@_variantsCode">
+        <div class="demo-row">
+            <SunfishBadge Variant="BadgeVariant.Default">Default</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Primary">Primary</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Secondary">Secondary</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Danger">Danger</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Warning">Warning</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Info">Info</SunfishBadge>
+            <SunfishBadge Variant="BadgeVariant.Success">Success</SunfishBadge>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Position" Description="Control where the badge is anchored relative to its parent using the Position parameter." Code="@_positionCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Edge (default)</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Danger" Position="edge">3</SunfishBadge>
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Inline</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Primary" Position="inline">5</SunfishBadge>
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Inside</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Success" Position="inside">7</SunfishBadge>
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Outside</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Warning" Position="outside">2</SunfishBadge>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Horizontal Alignment" Description="Adjust the badge's horizontal anchor point with HorizontalAlign." Code="@_hAlignCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Start</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Primary" HorizontalAlign="start">New</SunfishBadge>
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">End (default)</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Primary" HorizontalAlign="end">New</SunfishBadge>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Vertical Alignment" Description="Adjust the badge's vertical anchor point with VerticalAlign." Code="@_vAlignCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Top (default)</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Danger" VerticalAlign="top">!</SunfishBadge>
+            </div>
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Bottom</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Danger" VerticalAlign="bottom">!</SunfishBadge>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Cutout Border" Description="ShowCutoutBorder adds a ring around the badge to visually separate it from the element underneath." Code="@_cutoutCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;background:#1565c0;padding:8px;border-radius:4px;">
+                <span style="color:#fff;font-size:1.5em;">🔔</span>
+                <SunfishBadge Variant="BadgeVariant.Danger" ShowCutoutBorder="true">3</SunfishBadge>
+            </div>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Visibility Toggle" Description="Control badge visibility dynamically with the Visible parameter." Code="@_visibleCode">
+        <div class="demo-row">
+            <div style="position:relative;display:inline-flex;">
+                <SunfishButton Variant="ButtonVariant.Secondary">Notifications</SunfishButton>
+                <SunfishBadge Variant="BadgeVariant.Danger" Visible="@_badgeVisible">9</SunfishBadge>
+            </div>
+            <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary"
+                          OnClick="@(() => _badgeVisible = !_badgeVisible)">
+                @(_badgeVisible ? "Hide Badge" : "Show Badge")
+            </SunfishButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private bool _badgeVisible = true;
+
+    // Overview
+    private const string _basicCode =
+        "<SunfishBadge>Default</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Primary\">Primary</SunfishBadge>";
+
+    private const string _dotCode =
+        "<div style=\"position:relative;display:inline-flex;\">\n" +
+        "    <SunfishButton>Inbox</SunfishButton>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Danger\" Position=\"edge\" />\n" +
+        "</div>\n" +
+        "<div style=\"position:relative;display:inline-flex;\">\n" +
+        "    <SunfishButton>Messages</SunfishButton>\n" +
+        "    <SunfishBadge Variant=\"BadgeVariant.Primary\" Position=\"edge\">4</SunfishBadge>\n" +
+        "</div>";
+
+    // Appearance
+    private const string _variantsCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Default\">Default</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Primary\">Primary</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Secondary\">Secondary</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\">Danger</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Warning\">Warning</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Info\">Info</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Success\">Success</SunfishBadge>";
+
+    private const string _positionCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\" Position=\"edge\">3</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Primary\" Position=\"inline\">5</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Success\" Position=\"inside\">7</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Warning\" Position=\"outside\">2</SunfishBadge>";
+
+    private const string _hAlignCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Primary\" HorizontalAlign=\"start\">New</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Primary\" HorizontalAlign=\"end\">New</SunfishBadge>";
+
+    private const string _vAlignCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\" VerticalAlign=\"top\">!</SunfishBadge>\n" +
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\" VerticalAlign=\"bottom\">!</SunfishBadge>";
+
+    private const string _cutoutCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\" ShowCutoutBorder=\"true\">3</SunfishBadge>";
+
+    private const string _visibleCode =
+        "<SunfishBadge Variant=\"BadgeVariant.Danger\" Visible=\"@_badgeVisible\">9</SunfishBadge>\n" +
+        "<SunfishButton OnClick=\"@(() => _badgeVisible = !_badgeVisible)\">\n" +
+        "    @(_badgeVisible ? \"Hide\" : \"Show\")\n" +
+        "</SunfishButton>\n\n" +
+        "@code { private bool _badgeVisible = true; }";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Badges are not typically focusable unless they are interactive"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("aria-label", "Provides an accessible description for the badge count or label"),
+        ("role=\"status\"", "Applied for badges that display live-updating information"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Badges with counts should include an aria-label describing the count context (e.g., \"3 unread messages\").",
+        "Live-updating badges use role=\"status\" so changes are announced automatically.",
+        "Decorative badges that duplicate visible text can use aria-hidden=\"true\".",
+    ];
+}

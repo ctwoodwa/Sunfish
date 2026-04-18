@@ -1,0 +1,18 @@
+@namespace Sunfish.Components.Blazor.Components.Overlays
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@if (IsOpen)
+{
+    <div class="@GetRootClass()"
+         style="@GetPopupStyle()"
+         role="@(FocusTrap ? "dialog" : null)"
+         aria-modal="@(FocusTrap ? "true" : null)"
+         tabindex="-1"
+         @ref="_popupRef"
+         @onkeydown="HandleKeyDown"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}

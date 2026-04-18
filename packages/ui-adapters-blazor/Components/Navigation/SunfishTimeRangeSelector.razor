@@ -1,0 +1,35 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.TimeRangeSelectorClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @foreach (var range in _ranges)
+    {
+        <button type="button"
+                class="@(SelectedRange == range.Key ? "marilo-time-range--active" : "")"
+                title="@range.Value"
+                @onclick="@(() => SelectRange(range.Key))">
+            @range.Key
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public string SelectedRange { get; set; } = "24h";
+    [Parameter] public EventCallback<string> SelectedRangeChanged { get; set; }
+    [Parameter] public EventCallback<string> OnRangeChanged { get; set; }
+
+    private readonly Dictionary<string, string> _ranges = new()
+    {
+        ["Now"] = "Live / real-time",
+        ["1h"] = "Last 1 hour",
+        ["24h"] = "Last 24 hours",
+        ["7d"] = "Last 7 days",
+        ["30d"] = "Last 30 days"
+    };
+
+    private async Task SelectRange(string range)
+    {
+        SelectedRange = range;
+        await SelectedRangeChanged.InvokeAsync(range);
+        await OnRangeChanged.InvokeAsync(range);
+    }
+}

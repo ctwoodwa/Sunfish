@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Components.Blazor</PackageId>
+    <Description>Blazor component implementations for Sunfish.</Description>
+    <PackageTags>blazor;components;razor-class-library;ui-framework;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <!-- Providers live in their own Razor class library projects under Providers/<Name>/ -->
+    <Compile Remove="Providers/**/*.cs" />
+    <Content Remove="Providers/**/*" />
+    <None Remove="Providers/**/*" />
+    <EmbeddedResource Remove="Providers/**/*" />
+    <!-- Icon packages live in their own projects under Icons/<Name>/ -->
+    <Compile Remove="Icons/**/*.cs" />
+    <Content Remove="Icons/**/*" />
+    <None Remove="Icons/**/*" />
+    <EmbeddedResource Remove="Icons/**/*" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Components.Blazor.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Markdig" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+  </ItemGroup>
+</Project>

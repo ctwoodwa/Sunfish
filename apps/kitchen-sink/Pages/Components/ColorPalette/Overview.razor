@@ -1,0 +1,53 @@
+@page "/components/colorpalette"
+@page "/components/colorpalette/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="SunfishColorPalette displays a grid of color swatches for quick selection. It defaults to the Office preset palette." Code="@_basicCode">
+        <SunfishColorPalette @bind-Value="_selectedColor" />
+        <p style="margin-top:8px;">Selected: <strong style="color:@_selectedColor;">@_selectedColor</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Custom Colors" Description="Provide your own set of colors via the Colors parameter." Code="@_customCode">
+        <SunfishColorPalette @bind-Value="_customColor" Colors="@_customColors" Columns="5" />
+        <p style="margin-top:8px;">Selected: <strong style="color:@_customColor;">@_customColor</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Tile Sizing" Description="Adjust tile dimensions with TileWidth and TileHeight for different layouts." Code="@_tileSizeCode">
+        <SunfishColorPalette @bind-Value="_sizedColor" TileWidth="32px" TileHeight="32px" Columns="8" />
+        <p style="margin-top:8px;">Selected: <strong>@_sizedColor</strong></p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private string? _selectedColor;
+    private string? _customColor;
+    private string? _sizedColor;
+
+    private readonly List<string> _customColors =
+    [
+        "#F44336", "#E91E63", "#9C27B0", "#673AB7", "#3F51B5",
+        "#2196F3", "#03A9F4", "#00BCD4", "#009688", "#4CAF50",
+        "#8BC34A", "#CDDC39", "#FFEB3B", "#FFC107", "#FF9800",
+    ];
+
+    private const string _basicCode =
+        "<SunfishColorPalette @bind-Value=\"_selectedColor\" />\n\n" +
+        "@code {\n" +
+        "    private string? _selectedColor;\n" +
+        "}";
+
+    private const string _customCode =
+        "<SunfishColorPalette @bind-Value=\"_color\"\n" +
+        "                    Colors=\"@_colors\"\n" +
+        "                    Columns=\"5\" />\n\n" +
+        "@code {\n" +
+        "    private List<string> _colors = [\"#F44336\", \"#E91E63\", \"#9C27B0\", ...];\n" +
+        "}";
+
+    private const string _tileSizeCode =
+        "<SunfishColorPalette @bind-Value=\"_color\"\n" +
+        "                    TileWidth=\"32px\"\n" +
+        "                    TileHeight=\"32px\"\n" +
+        "                    Columns=\"8\" />";
+}

@@ -1,0 +1,22 @@
+{
+  "name": "sunfish",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Sunfish — framework-agnostic UI building blocks",
+  "scripts": {
+    "scss:build:fluentui": "sass packages/ui-adapters-blazor/Providers/FluentUI/Styles/sunfish-fluentui.scss:packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css --style=expanded --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=legacy-js-api",
+    "scss:build:bootstrap": "sass packages/ui-adapters-blazor/Providers/Bootstrap/Styles/sunfish-bootstrap.scss:packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css --style=expanded --no-source-map --load-path=node_modules --silence-deprecation=color-functions --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=if-function --silence-deprecation=legacy-js-api",
+    "scss:build:material": "sass packages/ui-adapters-blazor/Providers/Material/Styles/sunfish-material.scss:packages/ui-adapters-blazor/Providers/Material/wwwroot/css/sunfish-material.css --style=expanded --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=legacy-js-api",
+    "scss:build": "run-p scss:build:fluentui scss:build:bootstrap scss:build:material",
+    "scss:watch:fluentui": "npm run scss:build:fluentui -- --watch",
+    "scss:watch:bootstrap": "npm run scss:build:bootstrap -- --watch",
+    "scss:watch:material": "npm run scss:build:material -- --watch",
+    "scss:watch": "run-p scss:watch:fluentui scss:watch:bootstrap scss:watch:material"
+  },
+  "devDependencies": {
+    "bootstrap": "^5.3.3",
+    "npm-run-all": "^4.1.5",
+    "sass": "^1.98.0"
+  }
+}

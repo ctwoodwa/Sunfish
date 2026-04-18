@@ -1,0 +1,39 @@
+@page "/components/SnackbarHost"
+@page "/components/SnackbarHost/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Services
+@using Sunfish.Foundation.Enums
+
+<PageSection Title="Overview">
+    <DemoSection Title="Notification Service" Description="Trigger notifications programmatically using ISunfishNotificationService." Code="@_basicCode">
+        <SunfishButton OnClick="ShowInfo">Show Info</SunfishButton>
+        <SunfishButton OnClick="ShowSuccess">Show Success</SunfishButton>
+        <SunfishButton OnClick="ShowWarning">Show Warning</SunfishButton>
+        <SunfishButton OnClick="ShowError">Show Error</SunfishButton>
+        <SunfishButton OnClick="ClearAll">Clear All</SunfishButton>
+    </DemoSection>
+</PageSection>
+
+<SunfishSnackbarHost VerticalPosition="NotificationVerticalPosition.Bottom"
+                    HorizontalPosition="NotificationHorizontalPosition.Right" />
+
+@code {
+    [Inject] private ISunfishNotificationService NotificationService { get; set; } = default!;
+
+    private void ShowInfo() => NotificationService.ShowToast("This is an info notification.", ToastSeverity.Info);
+    private void ShowSuccess() => NotificationService.ShowToast("Operation succeeded!", ToastSeverity.Success);
+    private void ShowWarning() => NotificationService.ShowToast("Something needs your attention.", ToastSeverity.Warning);
+    private void ShowError() => NotificationService.ShowToast("An error occurred.", ToastSeverity.Error, 5000);
+    private void ClearAll() => NotificationService.HideAll();
+
+    private const string _basicCode =
+        "@inject ISunfishNotificationService NotificationService\n\n" +
+        "<SunfishButton OnClick=\"ShowInfo\">Show Info</SunfishButton>\n" +
+        "<SunfishButton OnClick=\"ShowSuccess\">Show Success</SunfishButton>\n\n" +
+        "<SunfishSnackbarHost VerticalPosition=\"NotificationVerticalPosition.Bottom\"\n" +
+        "                    HorizontalPosition=\"NotificationHorizontalPosition.Right\" />\n\n" +
+        "@code {\n" +
+        "    void ShowInfo() => NotificationService.ShowToast(\"Info!\", ToastSeverity.Info);\n" +
+        "    void ShowSuccess() => NotificationService.ShowToast(\"Success!\", ToastSeverity.Success);\n" +
+        "}";
+}

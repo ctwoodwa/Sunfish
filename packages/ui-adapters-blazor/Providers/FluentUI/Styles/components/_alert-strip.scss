@@ -1,0 +1,88 @@
+// =============================================================================
+// Component: Alert / AlertStrip
+// =============================================================================
+
+.sf-alert,
+.sf-alert-strip {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-radius: var(--sf-radius-md);
+    border-left: 4px solid currentColor;
+    background: var(--sf-color-surface);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-on-background);
+}
+
+// Alert strip goes full-width with no border-radius
+.sf-alert-strip {
+    border-radius: 0;
+    border-left-width: 0;
+    border-bottom: 1px solid currentColor;
+}
+
+// Severity variants
+.sf-alert--success,
+.sf-alert-strip--success {
+    color: var(--sf-color-success);
+    background: var(--sf-color-success-light);
+    border-color: var(--sf-color-success);
+}
+
+.sf-alert--warning,
+.sf-alert-strip--warning {
+    color: var(--sf-color-on-warning, #986400); // dark text on warning-light background
+    background: var(--sf-color-warning-light);
+    border-color: var(--sf-color-warning);
+}
+
+.sf-alert--danger,
+.sf-alert-strip--danger {
+    color: var(--sf-color-danger);
+    background: var(--sf-color-danger-light);
+    border-color: var(--sf-color-danger);
+}
+
+.sf-alert--info,
+.sf-alert-strip--info {
+    color: var(--sf-color-info);
+    background: var(--sf-color-info-light);
+    border-color: var(--sf-color-info);
+}
+
+.sf-alert__icon,
+.sf-alert-strip__icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 1em;
+}
+
+.sf-alert__message,
+.sf-alert-strip__message {
+    flex: 1;
+    line-height: var(--sf-line-height-base);
+}
+
+.sf-alert__close,
+.sf-alert-strip__close {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sf-alert-close-size, 20px);
+    height: var(--sf-alert-close-size, 20px);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7; // intentional: close button dimmed relative to alert content
+    border-radius: var(--sf-radius-sm);
+    transition: opacity var(--sf-transition-fast), background var(--sf-transition-fast);
+
+    &:hover {
+        opacity: 1;
+        background: rgba(0, 0, 0, 0.08); // semi-transparent overlay on light alert bg
+    }
+}

@@ -1,0 +1,321 @@
+@page "/components/map"
+@page "/components/map/overview"
+@layout ComponentDemoLayout
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Components.Blazor.Components.DataDisplay.Map
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Tile Layer" Description="A map with a single tile layer. The MapLayers wrapper groups child MapLayer components." Code="@_tileLayerCode">
+        <div class="demo-row" style="height:400px;">
+            <SunfishMap Center="@_dcCenter"
+                       Zoom="12"
+                       Height="100%"
+                       Width="100%"
+                       OnClick="@HandleMapClick">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+
+        @if (_clickLocation != null)
+        {
+            <div style="margin-top:12px;padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
+                Clicked: (@_clickLocation.Latitude.ToString("F4"), @_clickLocation.Longitude.ToString("F4"))
+            </div>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Zoom and Pan Controls" Description="Use Zoomable and Pannable parameters to control user interaction. Adjust the controls below to see the effect." Code="@_controlsCode">
+        <div style="margin-bottom:1rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+            <label>
+                <input type="checkbox" @bind="_zoomable" /> Zoomable
+            </label>
+            <label>
+                <input type="checkbox" @bind="_pannable" /> Pannable
+            </label>
+            <label>
+                Zoom: <input type="range" min="1" max="18" @bind="_zoom" style="width:120px;" /> @_zoom
+            </label>
+        </div>
+        <div class="demo-row" style="height:350px;">
+            <SunfishMap Center="@_dcCenter"
+                       Zoom="@_zoom"
+                       MinZoom="1"
+                       MaxZoom="18"
+                       Zoomable="@_zoomable"
+                       Pannable="@_pannable"
+                       Width="100%"
+                       Height="100%">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Multiple Layers">
+    <DemoSection Title="Tile + Marker Layers" Description="Stack a tile base layer with a marker layer. Click markers to see their details." Code="@_multiLayerCode">
+        <div class="demo-row" style="height:450px;">
+            <SunfishMap Center="@_dcCenter"
+                       Zoom="13"
+                       Width="100%"
+                       Height="100%"
+                       OnMarkerClick="@HandleMarkerClick">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                    <MapLayer Type="@MapLayerType.Marker"
+                              Data="@_dcLandmarks"
+                              LocationField="@nameof(MarkerModel.LatLng)"
+                              TitleField="@nameof(MarkerModel.Title)"
+                              LayerId="dc-markers" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+
+        @if (_selectedMarkerTitle != null)
+        {
+            <div style="margin-top:12px;padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
+                Selected: <strong>@_selectedMarkerTitle</strong>
+            </div>
+        }
+    </DemoSection>
+
+    <DemoSection Title="Shape Layer (GeoJSON)" Description="Render GeoJSON polygons using a Shape layer. Shapes overlay the tile base." Code="@_shapeLayerCode">
+        <div class="demo-row" style="height:400px;">
+            <SunfishMap Center="@_usCenter"
+                       Zoom="4"
+                       Width="100%"
+                       Height="100%">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                    <MapLayer Type="@MapLayerType.Shape"
+                              Data="@_geoJson"
+                              Opacity="0.4"
+                              LayerId="sample-shape" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Bubble Layer" Description="Bubble layers render sized circles at geographic coordinates. Radius is proportional to the value." Code="@_bubbleLayerCode">
+        <div class="demo-row" style="height:400px;">
+            <SunfishMap Center="@_usCenter"
+                       Zoom="4"
+                       Width="100%"
+                       Height="100%">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                    <MapLayer Type="@MapLayerType.Bubble"
+                              Data="@_bubbleData"
+                              LocationField="@nameof(BubbleModel.LatLng)"
+                              ValueField="@nameof(BubbleModel.Revenue)"
+                              Opacity="0.6"
+                              LayerId="revenue-bubbles" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="All Layer Types Combined" Description="Tile + Shape + Marker + Bubble layers stacked in order. Each layer has an explicit LayerId for identification." Code="@_allLayersCode">
+        <div class="demo-row" style="height:450px;">
+            <SunfishMap Center="@_usCenter"
+                       Zoom="4"
+                       Width="100%"
+                       Height="100%"
+                       OnClick="@HandleMapClick"
+                       OnZoomEnd="@HandleZoomEnd"
+                       OnPanEnd="@HandlePanEnd">
+                <MapLayers>
+                    <MapLayer Type="@MapLayerType.Tile"
+                              UrlTemplate="@_tileUrl"
+                              Attribution="@_tileAttribution"
+                              Subdomains="@_subdomains" />
+                    <MapLayer Type="@MapLayerType.Shape"
+                              Data="@_geoJson"
+                              Opacity="0.3"
+                              LayerId="combo-shape" />
+                    <MapLayer Type="@MapLayerType.Bubble"
+                              Data="@_bubbleData"
+                              LocationField="@nameof(BubbleModel.LatLng)"
+                              ValueField="@nameof(BubbleModel.Revenue)"
+                              Opacity="0.6"
+                              MinZoom="3"
+                              MaxZoom="22"
+                              LayerId="combo-bubbles" />
+                    <MapLayer Type="@MapLayerType.Marker"
+                              Data="@_dcLandmarks"
+                              LocationField="@nameof(MarkerModel.LatLng)"
+                              TitleField="@nameof(MarkerModel.Title)"
+                              LayerId="combo-markers" />
+                </MapLayers>
+            </SunfishMap>
+        </div>
+        <div style="margin-top:0.5rem; font-size:0.85rem; color:var(--sf-color-text-secondary, #605e5c);">
+            <strong>Last event:</strong> @_lastEvent
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    // --- Shared tile config ---
+    private readonly string[] _subdomains = ["a", "b", "c"];
+    private const string _tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    private const string _tileAttribution = "&copy; <a href='https://osm.org/copyright'>OpenStreetMap contributors</a>";
+
+    // --- Centers ---
+    private readonly MapCenter _dcCenter = new() { Latitude = 38.8977, Longitude = -77.0365 };
+    private readonly MapCenter _usCenter = new() { Latitude = 39.8283, Longitude = -98.5795 };
+
+    // --- Controls demo ---
+    private bool _zoomable = true;
+    private bool _pannable = true;
+    private int _zoom = 5;
+
+    // --- State ---
+    private MapLocation? _clickLocation;
+    private string? _selectedMarkerTitle;
+    private string _lastEvent = "(none)";
+
+    // --- Marker data ---
+    private readonly List<MarkerModel> _dcLandmarks =
+    [
+        new() { LatLng = [38.8977, -77.0365], Title = "The White House" },
+        new() { LatLng = [38.8899, -77.0091], Title = "U.S. Capitol" },
+        new() { LatLng = [38.8893, -77.0502], Title = "Lincoln Memorial" },
+        new() { LatLng = [38.8895, -77.0353], Title = "Washington Monument" },
+        new() { LatLng = [38.8891, -77.0261], Title = "Smithsonian National Mall" },
+        new() { LatLng = [38.9025, -77.0635], Title = "Georgetown Waterfront" },
+        new() { LatLng = [38.8973, -77.0063], Title = "Union Station" },
+    ];
+
+    // --- Bubble data ---
+    private readonly List<BubbleModel> _bubbleData =
+    [
+        new() { LatLng = [40.7128, -74.0060], Revenue = 8336 },
+        new() { LatLng = [34.0522, -118.2437], Revenue = 3979 },
+        new() { LatLng = [41.8781, -87.6298], Revenue = 2693 },
+        new() { LatLng = [29.7604, -95.3698], Revenue = 2320 },
+        new() { LatLng = [33.4484, -112.0740], Revenue = 1681 }
+    ];
+
+    // --- GeoJSON shape ---
+    private static readonly string _geoJson = """{"type":"FeatureCollection","features":[{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[-104.05,48.99],[-97.22,48.98],[-96.56,45.94],[-104.05,45.94],[-104.05,48.99]]]},"properties":{"name":"Sample Region"}}]}""";
+
+    // --- Event handlers ---
+    private void HandleMapClick(MapClickEventArgs args)
+    {
+        _clickLocation = args.Location;
+        _lastEvent = $"OnClick at [{args.Location?.Latitude:F4}, {args.Location?.Longitude:F4}]";
+    }
+
+    private void HandleMarkerClick(MapMarkerClickEventArgs args)
+    {
+        _selectedMarkerTitle = args.DataItem?.Title;
+    }
+
+    private void HandleZoomEnd(MapZoomEndEventArgs args)
+    {
+        _lastEvent = $"OnZoomEnd: zoom={args.Zoom:F1}, center=[{args.Center?.Latitude:F4}, {args.Center?.Longitude:F4}]";
+    }
+
+    private void HandlePanEnd(MapPanEndEventArgs args)
+    {
+        _lastEvent = $"OnPanEnd: center=[{args.Center?.Latitude:F4}, {args.Center?.Longitude:F4}]";
+    }
+
+    // --- Inner models ---
+    public class MarkerModel
+    {
+        public double[] LatLng { get; set; } = [];
+        public string Title { get; set; } = string.Empty;
+    }
+
+    public class BubbleModel
+    {
+        public double[] LatLng { get; set; } = [];
+        public int Revenue { get; set; }
+    }
+
+    // --- Code snippets ---
+    private const string _tileLayerCode = """
+        <SunfishMap Center="@center" Zoom="12" OnClick="@HandleMapClick">
+            <MapLayers>
+                <MapLayer Type="@MapLayerType.Tile"
+                          UrlTemplate="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          Attribution="&copy; OSM contributors"
+                          Subdomains="@subdomains" />
+            </MapLayers>
+        </SunfishMap>
+        """;
+
+    private const string _controlsCode = """
+        <SunfishMap Center="@center" Zoom="@zoom"
+                   Zoomable="@zoomable" Pannable="@pannable"
+                   MinZoom="1" MaxZoom="18">
+            <MapLayers>
+                <MapLayer Type="@MapLayerType.Tile" ... />
+            </MapLayers>
+        </SunfishMap>
+        """;
+
+    private const string _multiLayerCode = """
+        <SunfishMap Center="@center" Zoom="13" OnMarkerClick="@OnMarkerClick">
+            <MapLayers>
+                <MapLayer Type="@MapLayerType.Tile" ... />
+                <MapLayer Type="@MapLayerType.Marker"
+                          Data="@markers" LocationField="LatLng"
+                          TitleField="Title" LayerId="dc-markers" />
+            </MapLayers>
+        </SunfishMap>
+        """;
+
+    private const string _shapeLayerCode = """
+        <MapLayer Type="@MapLayerType.Shape"
+                  Data="@geoJsonString"
+                  Opacity="0.4"
+                  LayerId="my-shape" />
+        """;
+
+    private const string _bubbleLayerCode = """
+        <MapLayer Type="@MapLayerType.Bubble"
+                  Data="@bubbles"
+                  LocationField="LatLng"
+                  ValueField="Revenue"
+                  Opacity="0.6"
+                  LayerId="revenue-bubbles" />
+        """;
+
+    private const string _allLayersCode = """
+        <SunfishMap Center="@center" Zoom="4"
+                   OnClick="@OnClick" OnZoomEnd="@OnZoomEnd" OnPanEnd="@OnPanEnd">
+            <MapLayers>
+                <MapLayer Type="@MapLayerType.Tile" ... />
+                <MapLayer Type="@MapLayerType.Shape" Data="@geoJson" Opacity="0.3" />
+                <MapLayer Type="@MapLayerType.Bubble" Data="@bubbles"
+                          LocationField="LatLng" ValueField="Revenue"
+                          MinZoom="3" MaxZoom="22" />
+                <MapLayer Type="@MapLayerType.Marker" Data="@markers"
+                          LocationField="LatLng" TitleField="Title" />
+            </MapLayers>
+        </SunfishMap>
+        """;
+}

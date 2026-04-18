@@ -1,0 +1,187 @@
+@inject IJSRuntime JS
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+
+@{
+    var tooltipStyle = StyleBuilder.Clear()
+        .AddStyle("width", Width!, !string.IsNullOrEmpty(Width))
+        .AddStyle("height", Height!, !string.IsNullOrEmpty(Height))
+        .Build();
+    var showOnClass = ShowOn switch
+    {
+        TooltipShowOn.Click => "marilo-tooltip-trigger--click",
+        TooltipShowOn.Focus => "marilo-tooltip-trigger--focus",
+        _ => ""
+    };
+    var calloutClass = ShowCallout ? "marilo-tooltip--callout" : "";
+}
+
+@if (string.IsNullOrEmpty(TargetSelector))
+{
+    <div class="sf-tooltip-trigger @showOnClass" style="position:relative;display:inline-block;@CombineStyles()"
+         @onmouseenter="HandleShow" @onmouseleave="HandleHide"
+         @onfocusin="HandleFocusShow" @onfocusout="HandleFocusHide"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+        @RenderTooltipContent(tooltipStyle, calloutClass)
+    </div>
+}
+else
+{
+    @* Detached tooltip positioned via JS relative to TargetSelector elements *@
+    <div @ref="_tooltipRef" class="sf-tooltip--detached @(CombineClasses(CssProvider.TooltipClass(Position, ShowOn))) @calloutClass"
+         style="display:none;position:fixed;z-index:9999;@tooltipStyle"
+         @attributes="AdditionalAttributes">
+        @if (TooltipTemplate != null)
+        {
+            @TooltipTemplate
+        }
+        else
+        {
+            @Text
+        }
+        @if (ShowCallout)
+        {
+            <span class="sf-tooltip__callout marilo-tooltip__callout--@Position.ToString().ToLowerInvariant()"></span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public TooltipPosition Position { get; set; } = TooltipPosition.Top;
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? TooltipTemplate { get; set; }
+    [Parameter] public TooltipShowOn ShowOn { get; set; } = TooltipShowOn.Hover;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public EventCallback OnShow { get; set; }
+    [Parameter] public EventCallback OnHide { get; set; }
+    [Parameter] public bool ShowCallout { get; set; }
+
+    /// <summary>
+    /// CSS selector to attach the tooltip to external element(s).
+    /// When set, the tooltip is detached and positioned via JS interop
+    /// relative to matching elements on hover/focus/click.
+    /// </summary>
+    [Parameter] public string? TargetSelector { get; set; }
+
+    private ElementReference _tooltipRef;
+    private IJSObjectReference? _jsModule;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !string.IsNullOrEmpty(TargetSelector))
+        {
+            _jsModule = await JS.InvokeAsync<IJSObjectReference>(
+                "eval", GetTooltipScript());
+            await _jsModule.InvokeVoidAsync("init", TargetSelector, _tooltipRef,
+                ShowOn.ToString().ToLowerInvariant(), Position.ToString().ToLowerInvariant());
+        }
+    }
+
+    private static string GetTooltipScript() => """
+    (() => {
+        const mod = {};
+        let cleanups = [];
+        mod.init = (selector, tooltipEl, showOn, position) => {
+            const targets = document.querySelectorAll(selector);
+            const showTip = (target) => {
+                const rect = target.getBoundingClientRect();
+                tooltipEl.style.display = 'block';
+                const tipRect = tooltipEl.getBoundingClientRect();
+                let top = 0, left = 0;
+                switch (position) {
+                    case 'top':
+                        top = rect.top - tipRect.height - 8;
+                        left = rect.left + (rect.width - tipRect.width) / 2;
+                        break;
+                    case 'bottom':
+                        top = rect.bottom + 8;
+                        left = rect.left + (rect.width - tipRect.width) / 2;
+                        break;
+                    case 'left':
+                        top = rect.top + (rect.height - tipRect.height) / 2;
+                        left = rect.left - tipRect.width - 8;
+                        break;
+                    case 'right':
+                        top = rect.top + (rect.height - tipRect.height) / 2;
+                        left = rect.right + 8;
+                        break;
+                }
+                tooltipEl.style.top = top + 'px';
+                tooltipEl.style.left = left + 'px';
+            };
+            const hideTip = () => { tooltipEl.style.display = 'none'; };
+            targets.forEach(t => {
+                if (showOn === 'hover') {
+                    t.addEventListener('mouseenter', () => showTip(t));
+                    t.addEventListener('mouseleave', hideTip);
+                    cleanups.push(() => { t.removeEventListener('mouseenter', showTip); t.removeEventListener('mouseleave', hideTip); });
+                } else if (showOn === 'focus') {
+                    t.addEventListener('focusin', () => showTip(t));
+                    t.addEventListener('focusout', hideTip);
+                    cleanups.push(() => { t.removeEventListener('focusin', showTip); t.removeEventListener('focusout', hideTip); });
+                } else if (showOn === 'click') {
+                    const toggle = () => { tooltipEl.style.display === 'none' ? showTip(t) : hideTip(); };
+                    t.addEventListener('click', toggle);
+                    cleanups.push(() => t.removeEventListener('click', toggle));
+                }
+            });
+        };
+        mod.dispose = () => { cleanups.forEach(fn => fn()); cleanups = []; };
+        return mod;
+    })()
+    """;
+
+    private RenderFragment RenderTooltipContent(string tooltipStyle, string calloutClass) => __builder =>
+    {
+        <div class="@CombineClasses(CssProvider.TooltipClass(Position, ShowOn)) @calloutClass" style="@tooltipStyle">
+            @if (TooltipTemplate != null)
+            {
+                @TooltipTemplate
+            }
+            else
+            {
+                @Text
+            }
+            @if (ShowCallout)
+            {
+                <span class="sf-tooltip__callout marilo-tooltip__callout--@Position.ToString().ToLowerInvariant()"></span>
+            }
+        </div>
+    };
+
+    private async Task HandleShow()
+    {
+        if (ShowOn == TooltipShowOn.Hover)
+            await OnShow.InvokeAsync();
+    }
+
+    private async Task HandleHide()
+    {
+        if (ShowOn == TooltipShowOn.Hover)
+            await OnHide.InvokeAsync();
+    }
+
+    private async Task HandleFocusShow()
+    {
+        if (ShowOn == TooltipShowOn.Focus)
+            await OnShow.InvokeAsync();
+    }
+
+    private async Task HandleFocusHide()
+    {
+        if (ShowOn == TooltipShowOn.Focus)
+            await OnHide.InvokeAsync();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try { await _jsModule.InvokeVoidAsync("dispose"); } catch { }
+            await _jsModule.DisposeAsync();
+        }
+    }
+}

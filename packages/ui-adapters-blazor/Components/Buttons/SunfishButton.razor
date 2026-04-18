@@ -1,0 +1,35 @@
+@inherits SunfishComponentBase
+
+<button class="@CombineClasses(CssProvider.ButtonClass(Variant, Size, FillMode, Rounded, !Enabled))"
+        style="@CombineStyles()"
+        type="@ButtonType.ToString().ToLowerInvariant()"
+        disabled="@(!Enabled)"
+        form="@Form"
+        @onclick="OnClick"
+        @attributes="AdditionalAttributes">
+    @if (Icon != null)
+    {
+        <span class="sf-button__icon">@Icon</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Medium;
+    [Parameter] public FillMode FillMode { get; set; } = FillMode.Solid;
+    [Parameter] public RoundedMode Rounded { get; set; } = RoundedMode.Medium;
+
+    /// <summary>Whether the button is enabled. Defaults to true.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>The HTML button type (Button, Submit, Reset). Defaults to Button.</summary>
+    [Parameter] public ButtonType ButtonType { get; set; } = ButtonType.Button;
+
+    /// <summary>Associates the button with a form element by id.</summary>
+    [Parameter] public string? Form { get; set; }
+
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+}

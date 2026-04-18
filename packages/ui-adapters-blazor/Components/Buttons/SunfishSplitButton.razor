@@ -1,0 +1,48 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.SplitButtonClass())"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <button class="@CssProvider.ButtonClass(Variant, Size, FillMode.Solid, RoundedMode.Medium, !Enabled)"
+            type="button"
+            disabled="@(!Enabled)"
+            aria-label="@AriaLabel"
+            @onclick="OnClick">
+        @if (Icon != null)
+        {
+            <span class="sf-button__icon">@Icon</span>
+        }
+        @ChildContent
+    </button>
+    <button class="@CssProvider.ButtonClass(Variant, Size, FillMode.Solid, RoundedMode.Medium, !Enabled)"
+            type="button"
+            disabled="@(!Enabled)"
+            aria-haspopup="true"
+            aria-expanded="@_menuOpen.ToString().ToLowerInvariant()"
+            @onclick="ToggleMenu">
+        @IconProvider.GetIcon("chevron-down", IconSize.Small)
+    </button>
+    @if (_menuOpen)
+    {
+        <div class="sf-splitbutton__overlay" @onclick="CloseMenu"></div>
+        <div class="@CssProvider.MenuClass()" role="menu">
+            @MenuContent
+        </div>
+    }
+</div>
+
+@code {
+    private bool _menuOpen;
+
+    [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Primary;
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Medium;
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string? AriaLabel { get; set; }
+    [Parameter] public RenderFragment? Icon { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? MenuContent { get; set; }
+
+    private void ToggleMenu() { if (Enabled) _menuOpen = !_menuOpen; }
+    private void CloseMenu() { _menuOpen = false; }
+}

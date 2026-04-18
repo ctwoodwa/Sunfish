@@ -1,0 +1,282 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-calendar", OrientationClass)"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    @if (View == CalendarView.Month)
+    {
+        @RenderMonthView()
+    }
+    else if (View == CalendarView.Year)
+    {
+        @RenderYearView()
+    }
+    else if (View == CalendarView.Decade)
+    {
+        @RenderDecadeView()
+    }
+</div>
+
+@code {
+    /// <summary>The currently selected date. Supports two-way binding.</summary>
+    [Parameter] public DateTime? Value { get; set; }
+
+    /// <summary>Callback fired when Value changes.</summary>
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    /// <summary>The minimum selectable date.</summary>
+    [Parameter] public DateTime Min { get; set; } = DateTime.MinValue;
+
+    /// <summary>The maximum selectable date.</summary>
+    [Parameter] public DateTime Max { get; set; } = DateTime.MaxValue;
+
+    /// <summary>The current calendar view level.</summary>
+    [Parameter] public CalendarView View { get; set; } = CalendarView.Month;
+
+    /// <summary>Callback fired when the View changes.</summary>
+    [Parameter] public EventCallback<CalendarView> ViewChanged { get; set; }
+
+    /// <summary>Whether to show ISO week numbers.</summary>
+    [Parameter] public bool ShowWeekNumbers { get; set; }
+
+    /// <summary>Whether to show days from adjacent months. Default is true.</summary>
+    [Parameter] public bool ShowOtherMonthDays { get; set; } = true;
+
+    /// <summary>Number of selectable dates. Default is 1.</summary>
+    [Parameter] public int SelectionCount { get; set; } = 1;
+
+    /// <summary>Optional custom template for rendering individual day cells.</summary>
+    [Parameter] public RenderFragment<DateTime>? CellTemplate { get; set; }
+
+    /// <summary>Optional custom template for the calendar header.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>The calendar orientation.</summary>
+    [Parameter] public CalendarOrientation Orientation { get; set; } = CalendarOrientation.Horizontal;
+
+    /// <summary>Fired when a date cell is clicked.</summary>
+    [Parameter] public EventCallback<DateTime> OnDateClick { get; set; }
+
+    private DateTime _displayDate = DateTime.Today;
+
+    protected override void OnParametersSet()
+    {
+        if (Value.HasValue && _displayDate.Year == DateTime.Today.Year && _displayDate.Month == DateTime.Today.Month)
+        {
+            _displayDate = new DateTime(Value.Value.Year, Value.Value.Month, 1);
+        }
+    }
+
+    private string OrientationClass => Orientation == CalendarOrientation.Vertical
+        ? "mar-calendar--vertical"
+        : "mar-calendar--horizontal";
+
+    private static readonly string[] DayHeaders = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    private RenderFragment RenderMonthView() => __builder =>
+    {
+        <div class="sf-calendar__header">
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <button type="button" class="sf-calendar__nav-btn" @onclick="PreviousMonth" aria-label="Previous month">&lsaquo;</button>
+                <button type="button" class="sf-calendar__title" @onclick="SwitchToYearView">
+                    @_displayDate.ToString("MMMM yyyy")
+                </button>
+                <button type="button" class="sf-calendar__nav-btn" @onclick="NextMonth" aria-label="Next month">&rsaquo;</button>
+            }
+        </div>
+        <table class="sf-calendar__grid" role="grid">
+            <thead>
+                <tr>
+                    @if (ShowWeekNumbers)
+                    {
+                        <th class="sf-calendar__weeknum-header">Wk</th>
+                    }
+                    @foreach (var day in DayHeaders)
+                    {
+                        <th class="sf-calendar__day-header" scope="col">@day</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var week in GetWeeks())
+                {
+                    <tr>
+                        @if (ShowWeekNumbers)
+                        {
+                            <td class="sf-calendar__weeknum">@GetWeekNumber(week[0])</td>
+                        }
+                        @foreach (var date in week)
+                        {
+                            var isCurrentMonth = date.Month == _displayDate.Month;
+                            var isSelected = Value.HasValue && date.Date == Value.Value.Date;
+                            var isToday = date.Date == DateTime.Today;
+                            var isDisabled = date < Min.Date || date > Max.Date;
+
+                            if (!isCurrentMonth && !ShowOtherMonthDays)
+                            {
+                                <td class="sf-calendar__cell mar-calendar__cell--empty"></td>
+                            }
+                            else
+                            {
+                                var cellClasses = "mar-calendar__cell";
+                                if (!isCurrentMonth) cellClasses += " mar-calendar__cell--other-month";
+                                if (isSelected) cellClasses += " mar-calendar__cell--selected";
+                                if (isToday) cellClasses += " mar-calendar__cell--today";
+                                if (isDisabled) cellClasses += " mar-calendar__cell--disabled";
+
+                                var capturedDate = date;
+                                var disabled = isDisabled;
+                                <td class="@cellClasses"
+                                    @onclick="@(() => OnCellClick(capturedDate, disabled))"
+                                    role="gridcell"
+                                    aria-selected="@isSelected.ToString().ToLower()">
+                                    @if (CellTemplate != null)
+                                    {
+                                        @CellTemplate(capturedDate)
+                                    }
+                                    else
+                                    {
+                                        <span class="sf-calendar__day">@capturedDate.Day</span>
+                                    }
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    };
+
+    private RenderFragment RenderYearView() => __builder =>
+    {
+        <div class="sf-calendar__header">
+            <button type="button" class="sf-calendar__nav-btn" @onclick="PreviousYear" aria-label="Previous year">&lsaquo;</button>
+            <button type="button" class="sf-calendar__title" @onclick="SwitchToDecadeView">
+                @_displayDate.Year
+            </button>
+            <button type="button" class="sf-calendar__nav-btn" @onclick="NextYear" aria-label="Next year">&rsaquo;</button>
+        </div>
+        <div class="sf-calendar__year-grid">
+            @for (int m = 1; m <= 12; m++)
+            {
+                var month = m;
+                var monthDate = new DateTime(_displayDate.Year, month, 1);
+                var isSelected = Value.HasValue && Value.Value.Year == _displayDate.Year && Value.Value.Month == month;
+                var isCurrent = DateTime.Today.Year == _displayDate.Year && DateTime.Today.Month == month;
+                var cellClass = "mar-calendar__month-cell";
+                if (isSelected) cellClass += " mar-calendar__month-cell--selected";
+                if (isCurrent) cellClass += " mar-calendar__month-cell--current";
+
+                <button type="button" class="@cellClass" @onclick="@(() => SelectMonth(month))">
+                    @monthDate.ToString("MMM")
+                </button>
+            }
+        </div>
+    };
+
+    private RenderFragment RenderDecadeView() => __builder =>
+    {
+        var decadeStart = _displayDate.Year / 10 * 10;
+        <div class="sf-calendar__header">
+            <button type="button" class="sf-calendar__nav-btn" @onclick="PreviousDecade" aria-label="Previous decade">&lsaquo;</button>
+            <span class="sf-calendar__title">@decadeStart - @(decadeStart + 9)</span>
+            <button type="button" class="sf-calendar__nav-btn" @onclick="NextDecade" aria-label="Next decade">&rsaquo;</button>
+        </div>
+        <div class="sf-calendar__decade-grid">
+            @for (int y = decadeStart; y < decadeStart + 10; y++)
+            {
+                var year = y;
+                var isSelected = Value.HasValue && Value.Value.Year == year;
+                var isCurrent = DateTime.Today.Year == year;
+                var cellClass = "mar-calendar__year-cell";
+                if (isSelected) cellClass += " mar-calendar__year-cell--selected";
+                if (isCurrent) cellClass += " mar-calendar__year-cell--current";
+
+                <button type="button" class="@cellClass" @onclick="@(() => SelectYear(year))">
+                    @year
+                </button>
+            }
+        </div>
+    };
+
+    private List<DateTime[]> GetWeeks()
+    {
+        var weeks = new List<DateTime[]>();
+        var firstOfMonth = new DateTime(_displayDate.Year, _displayDate.Month, 1);
+        var startDate = firstOfMonth.AddDays(-(int)firstOfMonth.DayOfWeek);
+
+        for (int w = 0; w < 6; w++)
+        {
+            var week = new DateTime[7];
+            for (int d = 0; d < 7; d++)
+            {
+                week[d] = startDate.AddDays(w * 7 + d);
+            }
+
+            // Skip the last week if it's entirely in the next month
+            if (w == 5 && week[0].Month != _displayDate.Month)
+                break;
+
+            weeks.Add(week);
+        }
+
+        return weeks;
+    }
+
+    private static int GetWeekNumber(DateTime date)
+    {
+        return System.Globalization.CultureInfo.InvariantCulture.Calendar
+            .GetWeekOfYear(date, System.Globalization.CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Monday);
+    }
+
+    private async Task OnCellClick(DateTime date, bool disabled)
+    {
+        if (disabled) return;
+        await SelectDate(date);
+    }
+
+    private async Task SelectDate(DateTime date)
+    {
+        Value = date;
+        await ValueChanged.InvokeAsync(date);
+        await OnDateClick.InvokeAsync(date);
+    }
+
+    private async Task SelectMonth(int month)
+    {
+        _displayDate = new DateTime(_displayDate.Year, month, 1);
+        View = CalendarView.Month;
+        await ViewChanged.InvokeAsync(View);
+    }
+
+    private async Task SelectYear(int year)
+    {
+        _displayDate = new DateTime(year, _displayDate.Month, 1);
+        View = CalendarView.Year;
+        await ViewChanged.InvokeAsync(View);
+    }
+
+    private void PreviousMonth() => _displayDate = _displayDate.AddMonths(-1);
+    private void NextMonth() => _displayDate = _displayDate.AddMonths(1);
+    private void PreviousYear() => _displayDate = _displayDate.AddYears(-1);
+    private void NextYear() => _displayDate = _displayDate.AddYears(1);
+    private void PreviousDecade() => _displayDate = _displayDate.AddYears(-10);
+    private void NextDecade() => _displayDate = _displayDate.AddYears(10);
+
+    private async Task SwitchToYearView()
+    {
+        View = CalendarView.Year;
+        await ViewChanged.InvokeAsync(View);
+    }
+
+    private async Task SwitchToDecadeView()
+    {
+        View = CalendarView.Decade;
+        await ViewChanged.InvokeAsync(View);
+    }
+}

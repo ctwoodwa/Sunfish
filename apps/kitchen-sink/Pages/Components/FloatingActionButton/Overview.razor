@@ -1,0 +1,67 @@
+@page "/components/floatingactionbutton"
+@page "/components/floatingactionbutton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <SunfishAlert Severity="AlertSeverity.Info" style="margin-bottom:16px;">
+        The FloatingActionButton (FAB) is provided by the <strong>SunfishFab</strong> component.
+    </SunfishAlert>
+
+    <DemoSection Title="Basic FAB" Description="SunfishFab renders a floating action button. By default it is fixed-positioned at the bottom-right of the viewport. Set PositionMode to static for inline placement in demos." Code="@_basicCode">
+        <div style="position:relative; height:120px; border:1px dashed #ccc; border-radius:8px;">
+            <SunfishFab Icon="plus"
+                       PositionMode="absolute"
+                       HorizontalAlign="right"
+                       VerticalAlign="bottom"
+                       HorizontalOffset="16px"
+                       VerticalOffset="16px"
+                       OnClick="@(() => _clickCount++)" />
+        </div>
+        <p style="margin-top:8px;">Click count: <strong>@_clickCount</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Extended FAB" Description="Add child content to create an extended FAB with a text label alongside the icon." Code="@_extendedCode">
+        <div style="position:relative; height:120px; border:1px dashed #ccc; border-radius:8px;">
+            <SunfishFab Icon="plus"
+                       PositionMode="absolute"
+                       HorizontalAlign="right"
+                       VerticalAlign="bottom"
+                       HorizontalOffset="16px"
+                       VerticalOffset="16px">
+                Add Item
+            </SunfishFab>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Sizes" Description="SunfishFab supports Small, Medium, and Large sizes via the Size parameter." Code="@_sizesCode">
+        <div style="display:flex; gap:16px; align-items:center;">
+            <SunfishFab Icon="plus" Size="FabSize.Small" PositionMode="static" />
+            <SunfishFab Icon="plus" Size="FabSize.Medium" PositionMode="static" />
+            <SunfishFab Icon="plus" Size="FabSize.Large" PositionMode="static" />
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private int _clickCount;
+
+    private const string _basicCode =
+        "<SunfishFab Icon=\"plus\"\n" +
+        "           PositionMode=\"absolute\"\n" +
+        "           HorizontalAlign=\"right\"\n" +
+        "           VerticalAlign=\"bottom\"\n" +
+        "           OnClick=\"@(() => _clickCount++)\" />";
+
+    private const string _extendedCode =
+        "<SunfishFab Icon=\"plus\"\n" +
+        "           PositionMode=\"absolute\"\n" +
+        "           HorizontalAlign=\"right\"\n" +
+        "           VerticalAlign=\"bottom\">\n" +
+        "    Add Item\n" +
+        "</SunfishFab>";
+
+    private const string _sizesCode =
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Small\" PositionMode=\"static\" />\n" +
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Medium\" PositionMode=\"static\" />\n" +
+        "<SunfishFab Icon=\"plus\" Size=\"FabSize.Large\" PositionMode=\"static\" />";
+}

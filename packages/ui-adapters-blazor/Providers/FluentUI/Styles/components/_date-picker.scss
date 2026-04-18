@@ -1,0 +1,259 @@
+// =============================================================================
+// Component: DatePicker / TimePicker / DateRangePicker / DateTimePicker
+// =============================================================================
+
+// Shared input-with-icon chrome
+.sf-datepicker,
+.sf-timepicker,
+.sf-date-range-picker,
+.sf-datetime-picker {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    min-width: var(--sf-input-min-width, 200px);
+    min-height: var(--sf-input-min-height, 32px);
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    transition: border-color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+
+    &:hover {
+        border-color: var(--sf-color-on-background);
+    }
+
+    &:focus-within {
+        border-color: var(--sf-color-primary);
+        box-shadow: var(--sf-focus-ring);
+    }
+
+    input {
+        flex: 1;
+        min-width: 0;
+        padding: var(--sf-space-xs) var(--sf-space-xs) var(--sf-space-xs) var(--sf-space-sm);
+        font-family: var(--sf-font-family);
+        font-size: var(--sf-font-size-base);
+        line-height: var(--sf-line-height-base);
+        color: var(--sf-color-on-background);
+        background: transparent;
+        border: none;
+        outline: none;
+        cursor: pointer;
+
+        &::placeholder {
+            color: var(--sf-color-text-secondary);
+        }
+    }
+}
+
+// Calendar/clock toggle button
+.sf-datepicker__toggle,
+.sf-timepicker__toggle,
+.sf-date-range-picker__toggle,
+.sf-datetime-picker__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--sf-input-min-height, 32px);
+    height: 100%;
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--sf-color-border);
+    cursor: pointer;
+    color: var(--sf-color-text-secondary);
+    transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface);
+        color: var(--sf-color-on-background);
+    }
+}
+
+// Popup containers
+.sf-timepicker__popup,
+.sf-date-range-picker__popup,
+.sf-datetime-picker__popup {
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-lg);
+    z-index: var(--sf-z-dropdown);
+    overflow: hidden;
+}
+
+// Invalid state
+.sf-datepicker--invalid,
+.sf-timepicker--invalid,
+.sf-date-range-picker--invalid,
+.sf-datetime-picker--invalid {
+    border-color: var(--sf-color-danger);
+}
+
+// QUALITY FIX: explicit color tokens for disabled, not opacity
+.sf-datepicker--disabled,
+.sf-timepicker--disabled,
+.sf-date-range-picker--disabled,
+.sf-datetime-picker--disabled {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-disabled);
+    border-color: var(--sf-color-border);
+    pointer-events: none;
+}
+
+// Calendar header navigation
+.sf-calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-calendar-title {
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-on-background);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+        color: var(--sf-color-primary);
+    }
+}
+
+.sf-calendar-nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sf-space-xl);
+    height: var(--sf-space-xl);
+    background: transparent;
+    border: none;
+    border-radius: var(--sf-radius-sm);
+    cursor: pointer;
+    color: var(--sf-color-text-secondary);
+
+    &:hover {
+        background: var(--sf-color-surface);
+        color: var(--sf-color-on-background);
+    }
+}
+
+// Calendar grid
+.sf-calendar-grid {
+    padding: var(--sf-space-sm);
+}
+
+.sf-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    padding: var(--sf-space-xs) 0;
+}
+
+.sf-calendar-weekday {
+    font-size: var(--sf-font-size-xs);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-text-secondary);
+    text-align: center;
+}
+
+.sf-calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: var(--sf-space-xxs);
+}
+
+.sf-calendar-day {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--sf-calendar-day-size, 32px);
+    height: var(--sf-calendar-day-size, 32px);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    border: none;
+    border-radius: var(--sf-radius-sm);
+    background: transparent;
+    cursor: pointer;
+    color: var(--sf-color-on-background);
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface);
+    }
+
+    &--today {
+        font-weight: var(--sf-font-weight-semibold);
+        color: var(--sf-color-primary);
+    }
+
+    &--selected {
+        background: var(--sf-color-primary);
+        color: var(--sf-color-on-primary);
+
+        &:hover {
+            background: var(--sf-color-primary-hover);
+        }
+    }
+
+    &--in-range {
+        background: var(--sf-color-primary-light);
+        border-radius: 0;
+    }
+
+    &--other-month {
+        color: var(--sf-color-text-disabled);
+    }
+
+    // QUALITY FIX: explicit color token for disabled day, not opacity
+    &--disabled {
+        color: var(--sf-color-text-disabled);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Time picker clock list
+.sf-timepicker__list {
+    display: flex;
+    max-height: var(--sf-dropdown-max-height, 200px);
+    overflow-y: auto;
+}
+
+.sf-timepicker__column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    border-right: 1px solid var(--sf-color-border);
+
+    &:last-child {
+        border-right: none;
+    }
+}
+
+.sf-timepicker__item {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    text-align: center;
+    cursor: pointer;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface);
+    }
+
+    &--selected {
+        background: var(--sf-color-primary);
+        color: var(--sf-color-on-primary);
+        font-weight: var(--sf-font-weight-semibold);
+
+        &:hover {
+            background: var(--sf-color-primary-hover);
+        }
+    }
+}

@@ -1,0 +1,160 @@
+@inherits SunfishComponentBase
+@using CompositeFilterDescriptor = Sunfish.Foundation.Models.CompositeFilterDescriptor
+@using FilterDescriptor = Sunfish.Foundation.Models.FilterDescriptor
+@using FilterOperator = Sunfish.Foundation.Models.FilterOperator
+
+<div class="@CombineClasses("mar-filter")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-filter__header">
+        <span class="sf-filter__title">Filter</span>
+        <button type="button" class="sf-filter__add-btn" @onclick="AddRow">+ Add Filter</button>
+    </div>
+
+    <div class="sf-filter__rows">
+        @if (_descriptors.FilterDescriptors.Count == 0)
+        {
+            <div class="sf-filter__empty">No filters applied.</div>
+        }
+        else
+        {
+            @for (var i = 0; i < _descriptors.FilterDescriptors.Count; i++)
+            {
+                var index = i;
+                var descriptor = _descriptors.FilterDescriptors[index];
+
+                <div class="sf-filter__row">
+                    @if (index > 0)
+                    {
+                        <select class="sf-filter__logic"
+                                value="@_descriptors.LogicalOperator"
+                                @onchange="OnLogicChanged">
+                            <option value="@FilterCompositionLogicalOperator.And">AND</option>
+                            <option value="@FilterCompositionLogicalOperator.Or">OR</option>
+                        </select>
+                    }
+
+                    <input type="text"
+                           class="sf-filter__field"
+                           placeholder="Field"
+                           value="@descriptor.Field"
+                           @onchange="e => UpdateField(index, e)" />
+
+                    <select class="sf-filter__operator"
+                            value="@descriptor.Operator"
+                            @onchange="e => UpdateOperator(index, e)">
+                        @foreach (var op in Enum.GetValues<FilterOperator>())
+                        {
+                            <option value="@op">@FormatOperator(op)</option>
+                        }
+                    </select>
+
+                    <input type="text"
+                           class="sf-filter__value"
+                           placeholder="Value"
+                           value="@(descriptor.Value?.ToString() ?? "")"
+                           @onchange="e => UpdateValue(index, e)" />
+
+                    <button type="button"
+                            class="sf-filter__remove-btn"
+                            @onclick="() => RemoveRow(index)"
+                            aria-label="Remove filter">
+                        &times;
+                    </button>
+                </div>
+            }
+        }
+    </div>
+
+    <div class="sf-filter__actions">
+        <button type="button" class="sf-filter__apply-btn" @onclick="ApplyFilter">Apply</button>
+    </div>
+
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    [Parameter] public CompositeFilterDescriptor? Value { get; set; }
+    [Parameter] public EventCallback<CompositeFilterDescriptor?> ValueChanged { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnApply { get; set; }
+
+    private CompositeFilterDescriptor _descriptors = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Value is not null)
+        {
+            _descriptors = Value;
+        }
+    }
+
+    private void AddRow()
+    {
+        _descriptors.FilterDescriptors.Add(new FilterDescriptor
+        {
+            Operator = FilterOperator.Contains
+        });
+    }
+
+    private void RemoveRow(int index)
+    {
+        if (index >= 0 && index < _descriptors.FilterDescriptors.Count)
+        {
+            _descriptors.FilterDescriptors.RemoveAt(index);
+        }
+    }
+
+    private void UpdateField(int index, ChangeEventArgs e)
+    {
+        _descriptors.FilterDescriptors[index].Field = e.Value?.ToString() ?? "";
+    }
+
+    private void UpdateOperator(int index, ChangeEventArgs e)
+    {
+        if (Enum.TryParse<FilterOperator>(e.Value?.ToString(), out var op))
+        {
+            _descriptors.FilterDescriptors[index].Operator = op;
+        }
+    }
+
+    private void UpdateValue(int index, ChangeEventArgs e)
+    {
+        _descriptors.FilterDescriptors[index].Value = e.Value?.ToString();
+    }
+
+    private void OnLogicChanged(ChangeEventArgs e)
+    {
+        if (Enum.TryParse<FilterCompositionLogicalOperator>(e.Value?.ToString(), out var logic))
+        {
+            _descriptors.LogicalOperator = logic;
+        }
+    }
+
+    private async Task ApplyFilter()
+    {
+        await ValueChanged.InvokeAsync(_descriptors);
+        await OnApply.InvokeAsync();
+    }
+
+    private static string FormatOperator(FilterOperator op) => op switch
+    {
+        FilterOperator.IsEqualTo => "Is Equal To",
+        FilterOperator.IsNotEqualTo => "Is Not Equal To",
+        FilterOperator.Contains => "Contains",
+        FilterOperator.DoesNotContain => "Does Not Contain",
+        FilterOperator.StartsWith => "Starts With",
+        FilterOperator.EndsWith => "Ends With",
+        FilterOperator.IsGreaterThan => "Greater Than",
+        FilterOperator.IsLessThan => "Less Than",
+        FilterOperator.IsGreaterThanOrEqualTo => "Greater or Equal",
+        FilterOperator.IsLessThanOrEqualTo => "Less or Equal",
+        FilterOperator.IsNull => "Is Null",
+        FilterOperator.IsNotNull => "Is Not Null",
+        _ => op.ToString()
+    };
+}

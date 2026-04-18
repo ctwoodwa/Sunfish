@@ -1,0 +1,74 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+@if (IsOpen)
+{
+    <div class="@CombineClasses(CssProvider.SnackbarClass())" style="@CombineStyles()" role="status" aria-live="polite" @attributes="AdditionalAttributes">
+        @if (ContentTemplate != null)
+        {
+            @ContentTemplate
+        }
+        else
+        {
+            <span class="sf-snackbar__message">@Message</span>
+        }
+        @if (!string.IsNullOrEmpty(ActionText))
+        {
+            <button class="sf-snackbar__action" @onclick="OnAction">@ActionText</button>
+        }
+        <button class="sf-snackbar__dismiss" @onclick="HandleDismiss" aria-label="Dismiss">&#x2715;</button>
+    </div>
+}
+
+@code {
+    [Parameter] public string Message { get; set; } = string.Empty;
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public string? ActionText { get; set; }
+    [Parameter] public EventCallback OnAction { get; set; }
+    [Parameter] public EventCallback OnDismiss { get; set; }
+    [Parameter] public EventCallback ClosedCallback { get; set; }
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+    [Parameter] public int DurationMs { get; set; } = 3000;
+
+    private System.Timers.Timer? _timer;
+
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            _timer?.Stop();
+            _timer?.Dispose();
+            if (DurationMs > 0)
+            {
+                _timer = new System.Timers.Timer(DurationMs);
+                _timer.AutoReset = false;
+                _timer.Elapsed += async (_, _) => await InvokeAsync(async () =>
+                {
+                    await HandleDismiss();
+                    StateHasChanged();
+                });
+                _timer.Start();
+            }
+        }
+        else
+        {
+            _timer?.Stop();
+        }
+    }
+
+    private async Task HandleDismiss()
+    {
+        await OnDismiss.InvokeAsync();
+        await ClosedCallback.InvokeAsync();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _timer?.Stop();
+            _timer?.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+}

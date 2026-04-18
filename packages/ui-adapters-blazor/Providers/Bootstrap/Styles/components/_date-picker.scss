@@ -1,0 +1,297 @@
+// =================================================================
+// Sunfish Bootstrap Provider — DatePicker / DateRangePicker / DateTimePicker
+// =================================================================
+// From _bridge-forms.scss: .sf-datepicker, .sf-date-range-picker,
+//   .sf-datetime-picker and all calendar/popup sub-elements
+// =================================================================
+
+.sf-datepicker,
+.sf-date-range-picker,
+.sf-datetime-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.sf-datepicker__input-wrapper,
+.sf-date-range-picker__input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.sf-datepicker__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1049;
+  background: transparent;
+}
+
+.sf-datepicker__clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  border-radius: $border-radius-sm;
+  z-index: 1;
+
+  &:hover {
+    background: $gray-200;
+    color: $body-color;
+  }
+}
+
+// Calendar grid
+.sf-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0 0.5rem;
+}
+
+.sf-calendar__nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: $border-radius-sm;
+  color: $body-color;
+  font-size: 0.75rem;
+
+  &:hover:not(:disabled) {
+    background: $gray-200;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.sf-calendar__title {
+  font-weight: 600;
+  font-size: $font-size-sm;
+}
+
+.sf-calendar__grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.sf-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.25rem;
+}
+
+.sf-calendar__weekday {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $text-muted;
+  padding: 0.125rem 0;
+}
+
+.sf-calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.sf-calendar__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto;
+  background: none;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  color: $body-color;
+
+  &:hover:not(:disabled) {
+    background: $gray-200;
+  }
+
+  &--today {
+    font-weight: 700;
+    border: 1px solid $primary;
+  }
+
+  &--selected {
+    background: $primary !important;
+    color: $white !important;
+  }
+
+  &--disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  &--outside {
+    color: $text-muted;
+    opacity: 0.5;
+  }
+
+  &--placeholder {
+    pointer-events: none;
+  }
+
+  &--in-range {
+    background: rgba($primary, 0.12);
+    border-radius: 0;
+  }
+
+  &--range-start {
+    border-radius: $border-radius-sm 0 0 $border-radius-sm;
+  }
+
+  &--range-end {
+    border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  }
+}
+
+// DateRangePicker popup
+.sf-date-range-picker__popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1050;
+  background: $white;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-lg;
+  padding: 1rem;
+  min-width: 560px;
+
+  &--vertical {
+    min-width: 280px;
+
+    .sf-date-range-picker__calendars {
+      flex-direction: column;
+    }
+  }
+}
+
+.sf-date-range-picker__calendars {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.sf-date-range-picker__calendar {
+  flex: 1;
+  min-width: 240px;
+}
+
+.sf-date-range-picker__actions,
+.sf-datetime-picker__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: $border-width solid $border-color;
+}
+
+// DateTimePicker popup
+.sf-datetime-picker__popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1050;
+  background: $white;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-lg;
+  padding: 1rem;
+  min-width: 280px;
+}
+
+.sf-datetime-picker__divider {
+  height: 1px;
+  background: $border-color;
+  margin: 1rem 0;
+}
+
+.sf-datetime-picker__time-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.sf-datetime-picker__tumblers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.sf-datetime-picker__tumbler {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sf-datetime-picker__tumbler-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.125rem 0.75rem;
+  border-radius: $border-radius-sm;
+  color: $body-color;
+  font-size: 0.6rem;
+
+  &:hover {
+    background: $gray-200;
+  }
+}
+
+.sf-datetime-picker__tumbler-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $body-color;
+  min-width: 2rem;
+  text-align: center;
+  padding: 0.125rem 0.25rem;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-sm;
+}
+
+.sf-datetime-picker__tumbler-sep {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-muted;
+  padding-top: 0.5rem;
+}
+
+.sf-datetime-picker__icon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}

@@ -1,0 +1,108 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-chat")"
+     style="@CombineStyles(DimensionStyle)"
+     @attributes="AdditionalAttributes">
+    @if (HeaderContent != null)
+    {
+        <div class="sf-chat__header">
+            @HeaderContent
+        </div>
+    }
+    <div class="sf-chat__messages">
+        @foreach (var message in Messages)
+        {
+            var alignClass = message.IsUser ? "mar-chat__message--user" : "mar-chat__message--other";
+            <div class="sf-chat__message @alignClass">
+                @if (MessageTemplate != null)
+                {
+                    @MessageTemplate(message)
+                }
+                else
+                {
+                    <div class="sf-chat__bubble">
+                        <span class="sf-chat__author">@message.Author</span>
+                        <span class="sf-chat__text">@message.Text</span>
+                        @if (ShowTimestamp)
+                        {
+                            <span class="sf-chat__timestamp">@message.Timestamp.ToString("HH:mm")</span>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="sf-chat__input-area">
+        <input type="text"
+               class="sf-chat__input"
+               placeholder="@Placeholder"
+               value="@_inputText"
+               @oninput="HandleInput"
+               @onkeydown="HandleKeyDown" />
+        <button type="button" class="sf-btn mar-btn--primary mar-chat__send" @onclick="SendMessage">Send</button>
+    </div>
+</div>
+
+@code {
+    /// <summary>The list of chat messages to display.</summary>
+    [Parameter] public List<ChatMessage> Messages { get; set; } = new();
+
+    /// <summary>The current user's name.</summary>
+    [Parameter] public string? User { get; set; }
+
+    /// <summary>Placeholder text for the message input.</summary>
+    [Parameter] public string? Placeholder { get; set; } = "Type a message...";
+
+    /// <summary>The height of the chat panel.</summary>
+    [Parameter] public string? Height { get; set; } = "400px";
+
+    /// <summary>The width of the chat panel.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Fired when the user sends a message.</summary>
+    [Parameter] public EventCallback<string> OnSendMessage { get; set; }
+
+    /// <summary>Optional custom template for rendering individual messages.</summary>
+    [Parameter] public RenderFragment<ChatMessage>? MessageTemplate { get; set; }
+
+    /// <summary>Optional header content displayed at the top of the chat panel.</summary>
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+
+    /// <summary>Whether to show message timestamps. Default is true.</summary>
+    [Parameter] public bool ShowTimestamp { get; set; } = true;
+
+    private string? _inputText;
+
+    private string DimensionStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (!string.IsNullOrEmpty(Height)) parts.Add($"height: {Height}");
+            if (!string.IsNullOrEmpty(Width)) parts.Add($"width: {Width}");
+            return string.Join("; ", parts);
+        }
+    }
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        _inputText = e.Value?.ToString();
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !string.IsNullOrWhiteSpace(_inputText))
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task SendMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_inputText))
+            return;
+
+        await OnSendMessage.InvokeAsync(_inputText);
+        _inputText = "";
+    }
+}

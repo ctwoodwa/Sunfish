@@ -1,0 +1,166 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    @if (Modal)
+    {
+        <div class="@CombineClasses(CssProvider.DialogOverlayClass())" @onclick="HandleOverlayClick">
+            @RenderDialogContent()
+        </div>
+    }
+    else
+    {
+        @RenderDialogContent()
+    }
+}
+
+@code {
+    /// <summary>
+    /// Whether the dialog is visible. Supports two-way binding via @bind-Visible.
+    /// </summary>
+    [Parameter] public bool Visible { get; set; }
+
+    /// <summary>
+    /// Callback fired when Visible changes. Enables two-way binding.
+    /// </summary>
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>
+    /// The dialog title displayed in the header.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// The main content of the dialog. Can also use ChildContent for simple scenarios.
+    /// </summary>
+    [Parameter] public RenderFragment? DialogContent { get; set; }
+
+    /// <summary>
+    /// Custom buttons render fragment for the dialog footer. Overrides the Buttons enum.
+    /// </summary>
+    [Parameter] public RenderFragment? DialogActions { get; set; }
+
+    /// <summary>
+    /// Simple child content (used when DialogContent is not set).
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Fired when the dialog is closed (via close button, overlay click, or Cancel/No button).
+    /// </summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool Draggable { get; set; }
+    [Parameter] public bool Modal { get; set; } = true;
+
+    /// <summary>
+    /// Whether to show a close button in the title bar. Default is true.
+    /// </summary>
+    [Parameter] public bool ShowCloseButton { get; set; } = true;
+
+    /// <summary>
+    /// Whether clicking the modal overlay closes the dialog. Default is true.
+    /// </summary>
+    [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
+
+    /// <summary>
+    /// Predefined button set for the dialog footer. Ignored when DialogActions is set.
+    /// </summary>
+    [Parameter] public DialogButtons Buttons { get; set; } = DialogButtons.None;
+
+    /// <summary>
+    /// Fired when a predefined button is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<DialogResult> OnButtonClick { get; set; }
+
+    private RenderFragment RenderDialogContent() => __builder =>
+    {
+        var dimensionStyle = new StyleBuilder()
+            .AddStyle("width", Width!, !string.IsNullOrEmpty(Width))
+            .AddStyle("height", Height!, !string.IsNullOrEmpty(Height))
+            .AddStyle(Style)
+            .Build();
+
+        <div class="@CssProvider.DialogClass(Draggable)" style="@dimensionStyle" role="dialog" aria-modal="@Modal.ToString().ToLower()" @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
+            @if (!string.IsNullOrEmpty(Title) || ShowCloseButton)
+            {
+                <div class="sf-dialog-title">
+                    <span>@Title</span>
+                    @if (ShowCloseButton)
+                    {
+                        <button type="button" class="sf-dialog-close" aria-label="Close" @onclick="CloseAsync">&times;</button>
+                    }
+                </div>
+            }
+            <div class="sf-dialog-body">
+                @(DialogContent ?? ChildContent)
+            </div>
+            @if (DialogActions != null)
+            {
+                <div class="sf-dialog-actions">
+                    @DialogActions
+                </div>
+            }
+            else if (Buttons != DialogButtons.None)
+            {
+                <div class="sf-dialog-actions">
+                    @switch (Buttons)
+                    {
+                        case DialogButtons.Ok:
+                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                            break;
+                        case DialogButtons.OkCancel:
+                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                            break;
+                        case DialogButtons.YesNo:
+                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                            break;
+                        case DialogButtons.YesNoCancel:
+                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                            break;
+                        case DialogButtons.RetryCancel:
+                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Retry)">Retry</button>
+                            break;
+                    }
+                </div>
+            }
+        </div>
+    };
+
+    private async Task HandleButtonClick(DialogResult result)
+    {
+        await OnButtonClick.InvokeAsync(result);
+        if (result is DialogResult.Cancel or DialogResult.No)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+        {
+            await CloseAsync();
+        }
+    }
+
+    private async Task CloseAsync()
+    {
+        Visible = false;
+        await VisibleChanged.InvokeAsync(false);
+        await OnClose.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Triggers a re-render of the dialog content.
+    /// </summary>
+    public void Refresh() => StateHasChanged();
+}

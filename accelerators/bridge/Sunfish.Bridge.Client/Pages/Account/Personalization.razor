@@ -1,0 +1,42 @@
+@page "/account/personalization"
+@layout AccountLayout
+
+<PageTitle>Personalization · Sunfish PM</PageTitle>
+
+<SettingsPageHeader Title="Personalization"
+                    Description="Customize your workspace experience." />
+
+<SettingsSection Title="Work profile">
+    <SettingsCard>
+        <SettingsFieldRow Label="Department" Value="Engineering" />
+        <SettingsFieldRow Label="Role" Value="Program Manager" />
+        <SettingsFieldRow Label="Location" Value="Melbourne, AU" />
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Focus">
+    <SettingsCard>
+        <SettingsToggleRow Label="Focus mode" Description="Suppress non-critical notifications during focus hours." @bind-Value="_focusMode" />
+        <SettingsSelectRow Label="Focus hours">
+            <select @bind="_focusHours">
+                <option value="9-12">9:00 AM - 12:00 PM</option>
+                <option value="9-17">9:00 AM - 5:00 PM</option>
+                <option value="custom">Custom</option>
+            </select>
+        </SettingsSelectRow>
+    </SettingsCard>
+</SettingsSection>
+
+<SettingsSection Title="Dashboard">
+    <SettingsCard>
+        <SettingsToggleRow Label="Show recent projects" Description="Display recently accessed projects on the dashboard." @bind-Value="_showRecent" />
+        <SettingsToggleRow Label="Show activity feed" Description="Display team activity on the dashboard." @bind-Value="_showActivity" />
+    </SettingsCard>
+</SettingsSection>
+
+@code {
+    private bool _focusMode = false;
+    private string _focusHours = "9-12";
+    private bool _showRecent = true;
+    private bool _showActivity = true;
+}

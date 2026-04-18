@@ -1,0 +1,179 @@
+@namespace Sunfish.Components.Blazor.Components.Layout
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(StepperRootClass)"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <div class="sf-stepper__indicators">
+        @for (var i = 0; i < _steps.Count; i++)
+        {
+            var index = i;
+            var step = _steps[i];
+            var status = GetStepStatus(index, step);
+            var isClickable = !Linear || index <= _highestReachedStep;
+            var isDisabled = step.Disabled;
+
+            <div class="@CssProvider.StepClass(status) @(isDisabled ? "mar-step--disabled" : "")">
+                <div class="sf-step__indicator @(isClickable && !isDisabled ? "mar-step__indicator--clickable" : "")"
+                     @onclick="() => OnIndicatorClick(index, isClickable, isDisabled)">
+                    @if (step.Icon != null)
+                    {
+                        <span>@step.Icon</span>
+                    }
+                    else if (status == StepStatus.Completed)
+                    {
+                        <span>&#x2713;</span>
+                    }
+                    else if (status == StepStatus.Error)
+                    {
+                        <span>&#x2717;</span>
+                    }
+                    else
+                    {
+                        <span>@(index + 1)</span>
+                    }
+                </div>
+                <div class="sf-step__label">
+                    <div class="sf-step__title">@step.Title</div>
+                    @if (step.Optional)
+                    {
+                        <div class="sf-step__optional">Optional</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+    <div class="sf-stepper__content">
+        <CascadingValue Value="this">
+            @ChildContent
+        </CascadingValue>
+    </div>
+</div>
+
+@code {
+    private readonly List<SunfishStep> _steps = [];
+    private int _highestReachedStep;
+
+    /// <summary>The index of the active step (0-based). Supports two-way binding.</summary>
+    [Parameter] public int ActiveStep { get; set; }
+
+    /// <summary>Fires when the active step changes.</summary>
+    [Parameter] public EventCallback<int> ActiveStepChanged { get; set; }
+
+    /// <summary>Layout orientation. Defaults to Horizontal.</summary>
+    [Parameter] public StepperOrientation Orientation { get; set; } = StepperOrientation.Horizontal;
+
+    /// <summary>
+    /// When true, steps must be completed in order. Users can only navigate to
+    /// the current step or previously completed steps.
+    /// </summary>
+    [Parameter] public bool Linear { get; set; }
+
+    /// <summary>Fires when a step indicator is clicked, providing the target step index.</summary>
+    [Parameter] public EventCallback<int> OnStepClick { get; set; }
+
+    /// <summary>Child content (SunfishStep components).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    private string StepperRootClass
+    {
+        get
+        {
+            var cls = CssProvider.StepperClass();
+            if (Orientation == StepperOrientation.Vertical) cls += " mar-stepper--vertical";
+            return cls;
+        }
+    }
+
+    private StepStatus GetStepStatus(int index, SunfishStep step)
+    {
+        if (step.StepStatus.HasValue) return step.StepStatus.Value;
+        if (index < ActiveStep) return StepStatus.Completed;
+        if (index == ActiveStep) return StepStatus.Active;
+        return StepStatus.Pending;
+    }
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+
+    protected override void OnParametersSet()
+    {
+        if (ActiveStep > _highestReachedStep)
+            _highestReachedStep = ActiveStep;
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Navigates to the next step.</summary>
+    public async Task NextAsync()
+    {
+        if (ActiveStep < _steps.Count - 1)
+        {
+            ActiveStep++;
+            if (ActiveStep > _highestReachedStep)
+                _highestReachedStep = ActiveStep;
+            await ActiveStepChanged.InvokeAsync(ActiveStep);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Navigates to the previous step.</summary>
+    public async Task PreviousAsync()
+    {
+        if (ActiveStep > 0)
+        {
+            ActiveStep--;
+            await ActiveStepChanged.InvokeAsync(ActiveStep);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>Navigates to a specific step by index.</summary>
+    public async Task GoToStepAsync(int index)
+    {
+        if (index >= 0 && index < _steps.Count)
+        {
+            ActiveStep = index;
+            if (ActiveStep > _highestReachedStep)
+                _highestReachedStep = ActiveStep;
+            await ActiveStepChanged.InvokeAsync(ActiveStep);
+            StateHasChanged();
+        }
+    }
+
+    // ── Internal API for child steps ────────────────────────────────────
+
+    internal void RegisterStep(SunfishStep step)
+    {
+        if (!_steps.Contains(step))
+        {
+            _steps.Add(step);
+            StateHasChanged();
+        }
+    }
+
+    internal void UnregisterStep(SunfishStep step)
+    {
+        _steps.Remove(step);
+        StateHasChanged();
+    }
+
+    internal bool IsStepActive(SunfishStep step) => _steps.IndexOf(step) == ActiveStep;
+
+    // ── Event handlers ──────────────────────────────────────────────────
+
+    private async Task OnIndicatorClick(int index, bool isClickable, bool isDisabled)
+    {
+        if (isDisabled || !isClickable) return;
+
+        ActiveStep = index;
+        if (ActiveStep > _highestReachedStep)
+            _highestReachedStep = ActiveStep;
+
+        await ActiveStepChanged.InvokeAsync(ActiveStep);
+
+        if (OnStepClick.HasDelegate)
+            await OnStepClick.InvokeAsync(index);
+    }
+}

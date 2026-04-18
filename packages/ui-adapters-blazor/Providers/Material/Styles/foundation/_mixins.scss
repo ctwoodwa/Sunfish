@@ -1,0 +1,156 @@
+// =============================================================================
+// Foundation: Mixins — Reusable SCSS mixins for the Material 3 provider
+// Naming: sf-* (kebab-case)
+// =============================================================================
+
+@use 'sass:map';
+
+// ----------------------------------------------------------------------------
+// sf-type-role($role)
+// Apply all M3 type scale properties for a given role.
+// Usage: @include sf-type-role(body-medium);
+// NOTE: $material-type-scale must be in scope.
+// ----------------------------------------------------------------------------
+
+@mixin sf-type-role($role) {
+  $scale: map.get($material-type-scale, $role);
+
+  @if not $scale {
+    @error "sf-type-role(): unknown role '#{$role}'.";
+  }
+
+  font-size:      map.get($scale, font-size);
+  line-height:    map.get($scale, line-height);
+  font-weight:    map.get($scale, font-weight);
+  letter-spacing: map.get($scale, letter-spacing);
+}
+
+// ----------------------------------------------------------------------------
+// sf-elevation($level)
+// Apply M3 box-shadow for a given elevation level (0–5).
+// Usage: @include sf-elevation(2);
+// ----------------------------------------------------------------------------
+
+@mixin sf-elevation($level) {
+  @if $level == 0 {
+    box-shadow: none;
+  } @else if $level == 1 {
+    box-shadow: var(--sf-elevation-1);
+  } @else if $level == 2 {
+    box-shadow: var(--sf-elevation-2);
+  } @else if $level == 3 {
+    box-shadow: var(--sf-elevation-3);
+  } @else if $level == 4 {
+    box-shadow: var(--sf-elevation-4);
+  } @else if $level == 5 {
+    box-shadow: var(--sf-elevation-5);
+  } @else {
+    @error "sf-elevation(): level must be 0–5, got '#{$level}'.";
+  }
+}
+
+// ----------------------------------------------------------------------------
+// sf-shape($name)
+// Apply border-radius from the M3 shape scale.
+// Usage: @include sf-shape(medium);
+// NOTE: $material-shape must be in scope.
+// ----------------------------------------------------------------------------
+
+@mixin sf-shape($name) {
+  border-radius: map.get($material-shape, $name);
+}
+
+// ----------------------------------------------------------------------------
+// sf-focus-ring()
+// Standard M3-style keyboard focus ring.
+// Matches Sunfish's cross-provider focus token.
+// ----------------------------------------------------------------------------
+
+@mixin sf-focus-ring() {
+  outline: none;
+
+  &:focus-visible {
+    box-shadow: var(--sf-focus-ring);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// sf-truncate()
+// Single-line text truncation with ellipsis.
+// ----------------------------------------------------------------------------
+
+@mixin sf-truncate() {
+  overflow:      hidden;
+  white-space:   nowrap;
+  text-overflow: ellipsis;
+}
+
+// ----------------------------------------------------------------------------
+// sf-surface-tint($level)
+// Apply M3 surface tint at the given elevation level (1–5).
+// Uses color-mix() to blend primary color into the surface.
+// Usage: @include sf-surface-tint(2);
+// ----------------------------------------------------------------------------
+
+@mixin sf-surface-tint($level) {
+  $opacity-map: (
+    1: var(--sf-surface-tint-opacity-1),
+    2: var(--sf-surface-tint-opacity-2),
+    3: var(--sf-surface-tint-opacity-3),
+    4: var(--sf-surface-tint-opacity-4),
+    5: var(--sf-surface-tint-opacity-5),
+  );
+
+  // Note: color-mix() is used here as a forward reference to a CSS property.
+  // The actual opacity values are CSS custom properties, so we use a
+  // pseudo-element approach for consistent cross-browser behavior.
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: var(--sf-surface-tint);
+    opacity: map.get($opacity-map, $level);
+    pointer-events: none;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// sf-dark-mode()
+// Convenience mixin for dark-mode overrides.
+// Usage: @include sf-dark-mode() { color: white; }
+// ----------------------------------------------------------------------------
+
+@mixin sf-dark-mode() {
+  [data-sf-theme="dark"] & {
+    @content;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// sf-responsive-breakpoint($bp)
+// Simple max-width breakpoint helper.
+// Usage: @include sf-responsive-breakpoint(sm) { ... }
+// ----------------------------------------------------------------------------
+
+$material-breakpoints: (
+  xs: 480px,
+  sm: 600px,
+  md: 905px,
+  lg: 1240px,
+  xl: 1440px,
+);
+
+@mixin sf-responsive-breakpoint($bp) {
+  $value: map.get($material-breakpoints, $bp);
+
+  @if not $value {
+    @error "sf-responsive-breakpoint(): unknown breakpoint '#{$bp}'.";
+  }
+
+  @media (max-width: $value) {
+    @content;
+  }
+}

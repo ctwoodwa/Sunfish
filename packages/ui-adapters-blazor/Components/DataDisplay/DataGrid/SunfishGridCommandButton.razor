@@ -1,0 +1,84 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@typeparam TItem
+@inherits SunfishComponentBase
+
+<button type="button"
+        class="@CombineClasses($"mar-datagrid-cmd-btn {CommandClass}")"
+        style="@CombineStyles()"
+        disabled="@(!Enabled)"
+        aria-label="@(string.IsNullOrEmpty(Text) ? Command : Text)"
+        @onclick="HandleClick"
+        @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <span class="sf-datagrid-cmd-btn__icon">@Icon</span>
+    }
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <span class="sf-datagrid-cmd-btn__text">@Text</span>
+    }
+    @ChildContent
+</button>
+
+@code {
+    [CascadingParameter] private SunfishDataGrid<TItem>? ParentGrid { get; set; }
+
+    /// <summary>The built-in command to execute: "Add", "Edit", "Save", "Cancel", "Delete".</summary>
+    [Parameter] public string Command { get; set; } = "";
+
+    /// <summary>Custom command ID for user-defined commands (used with OnCommand event).</summary>
+    [Parameter] public string? CommandId { get; set; }
+
+    /// <summary>Display text for the button.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Icon for the button.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Whether the button is enabled. Defaults to true.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>The item this command operates on (for row-level commands).</summary>
+    [Parameter] public TItem? Item { get; set; }
+
+    /// <summary>Optional child content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string CommandClass => Command.ToLowerInvariant() switch
+    {
+        "delete" => "mar-datagrid-cmd-btn--delete",
+        "add" => "mar-datagrid-cmd-btn--add",
+        _ => ""
+    };
+
+    private async Task HandleClick()
+    {
+        if (ParentGrid == null) return;
+
+        switch (Command.ToLowerInvariant())
+        {
+            case "add":
+                await ParentGrid.BeginAdd();
+                break;
+            case "edit" when Item != null:
+                await ParentGrid.BeginEdit(Item);
+                break;
+            case "save":
+                await ParentGrid.SaveEdit();
+                break;
+            case "cancel":
+                await ParentGrid.CancelEdit();
+                break;
+            case "delete" when Item != null:
+                await ParentGrid.DeleteItem(Item);
+                break;
+            default:
+                // Custom command
+                if (!string.IsNullOrEmpty(CommandId))
+                {
+                    await ParentGrid.ExecuteCommand(CommandId, Item);
+                }
+                break;
+        }
+    }
+}

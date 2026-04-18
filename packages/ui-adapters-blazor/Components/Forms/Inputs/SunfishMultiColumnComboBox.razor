@@ -1,0 +1,193 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-multicolumncombobox")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-multicolumncombobox__input-wrapper">
+        <input type="text"
+               class="sf-multicolumncombobox__input"
+               value="@_inputText"
+               placeholder="@(Placeholder ?? "Select...")"
+               disabled="@(!Enabled)"
+               role="combobox"
+               aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+               @oninput="OnInput"
+               @onfocus="Open"
+               @onblur="CloseDelayed" />
+        <button type="button"
+                class="sf-multicolumncombobox__toggle"
+                tabindex="-1"
+                disabled="@(!Enabled)"
+                @onclick="Toggle"
+                @onclick:stopPropagation="true">
+            &#9660;
+        </button>
+    </div>
+
+    @if (_isOpen && Enabled)
+    {
+        <div class="sf-multicolumncombobox__popup"
+             style="@PopupStyles()">
+            <table class="sf-multicolumncombobox__table">
+                <thead>
+                    <tr>
+                        @if (Columns is not null)
+                        {
+                            @Columns
+                        }
+                        else if (_columnNames.Count > 0)
+                        {
+                            @foreach (var col in _columnNames)
+                            {
+                                <th>@col</th>
+                            }
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in FilteredData())
+                    {
+                        var isSelected = IsSelected(item);
+                        <tr class="@(isSelected ? "mar-multicolumncombobox__row--selected" : "")"
+                            @onmousedown="() => SelectItem(item)"
+                            @onmousedown:preventDefault="true">
+                            @foreach (var col in _columnNames)
+                            {
+                                <td>@GetFieldValue(item, col)</td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+    [Parameter] public object? Value { get; set; }
+    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public string ValueField { get; set; } = "Value";
+    [Parameter] public RenderFragment? Columns { get; set; }
+    [Parameter] public bool Filterable { get; set; }
+    [Parameter] public string? FilterFields { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? PopupHeight { get; set; } = "200px";
+    [Parameter] public string? PopupWidth { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public EventCallback<object?> OnChange { get; set; }
+
+    private bool _isOpen;
+    private string _inputText = string.Empty;
+    private List<string> _columnNames = new();
+    private object? _selectedItem;
+
+    protected override void OnParametersSet()
+    {
+        DetectColumns();
+
+        if (Value is not null && Data is not null)
+        {
+            var match = Data.FirstOrDefault(d => GetFieldValue(d, ValueField) == Value.ToString());
+            if (match is not null)
+            {
+                _selectedItem = match;
+                _inputText = GetFieldValue(match, TextField);
+            }
+        }
+    }
+
+    private void DetectColumns()
+    {
+        if (Data is null) return;
+        var first = Data.FirstOrDefault();
+        if (first is null) return;
+
+        _columnNames = first.GetType()
+            .GetProperties()
+            .Select(p => p.Name)
+            .ToList();
+    }
+
+    private string? WidthStyle()
+    {
+        return !string.IsNullOrEmpty(Width) ? $"width:{Width}" : null;
+    }
+
+    private string PopupStyles()
+    {
+        var styles = new List<string>();
+        if (!string.IsNullOrEmpty(PopupHeight)) styles.Add($"max-height:{PopupHeight}");
+        if (!string.IsNullOrEmpty(PopupWidth)) styles.Add($"width:{PopupWidth}");
+        styles.Add("overflow-y:auto");
+        return string.Join(";", styles);
+    }
+
+    private IEnumerable<object> FilteredData()
+    {
+        if (Data is null) return Enumerable.Empty<object>();
+        if (!Filterable || string.IsNullOrEmpty(_inputText)) return Data;
+
+        var fieldsToSearch = !string.IsNullOrEmpty(FilterFields)
+            ? FilterFields.Split(',').Select(f => f.Trim()).ToList()
+            : new List<string> { TextField };
+
+        return Data.Where(item =>
+            fieldsToSearch.Any(field =>
+                GetFieldValue(item, field)
+                    .Contains(_inputText, StringComparison.OrdinalIgnoreCase)));
+    }
+
+    private bool IsSelected(object item)
+    {
+        return _selectedItem is not null &&
+               GetFieldValue(_selectedItem, ValueField) == GetFieldValue(item, ValueField);
+    }
+
+    private void Toggle()
+    {
+        if (!Enabled) return;
+        _isOpen = !_isOpen;
+    }
+
+    private void Open()
+    {
+        if (!Enabled) return;
+        _isOpen = true;
+    }
+
+    private void CloseDelayed()
+    {
+        _ = Task.Delay(200).ContinueWith(_ =>
+        {
+            _isOpen = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _inputText = e.Value?.ToString() ?? string.Empty;
+        _isOpen = true;
+    }
+
+    private async Task SelectItem(object item)
+    {
+        _selectedItem = item;
+        var value = GetFieldValue(item, ValueField);
+        _inputText = GetFieldValue(item, TextField);
+        _isOpen = false;
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+        await OnChange.InvokeAsync(value);
+    }
+
+    private string GetFieldValue(object item, string fieldName)
+    {
+        var prop = item.GetType().GetProperty(fieldName);
+        return prop?.GetValue(item)?.ToString() ?? "";
+    }
+}

@@ -1,0 +1,91 @@
+// =============================================================================
+// Component: Splitter — Material 3
+// =============================================================================
+
+.sf-splitter {
+    --sf-splitter-bar-size: 5px;
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+}
+
+.sf-splitter--vertical {
+    flex-direction: column;
+}
+
+.sf-splitter__pane {
+    overflow: auto;
+    position: relative;
+    min-width: 0;
+    min-height: 0;
+}
+
+.sf-splitter__pane--fill {
+    flex: 1 1 0 !important;
+}
+
+.sf-splitter__pane--collapsed {
+    flex: 0 0 0 !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+.sf-splitter__handle {
+    flex: 0 0 var(--sf-splitter-bar-size);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sf-color-border);
+    cursor: col-resize;
+    transition: background-color 0.15s;
+    user-select: none;
+    touch-action: none;
+    z-index: 1;
+}
+
+.sf-splitter__handle:hover,
+.sf-splitter__handle--active {
+    background: var(--sf-color-primary);
+}
+
+.sf-splitter--vertical .sf-splitter__handle {
+    cursor: row-resize;
+}
+
+.sf-splitter__collapse-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 18px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-background);
+    color: var(--sf-color-text-secondary);
+    font-size: 8px;
+    cursor: pointer;
+    z-index: 2;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.sf-splitter--vertical .sf-splitter__collapse-btn {
+    width: 28px;
+    height: 18px;
+}
+
+.sf-splitter__handle:hover .sf-splitter__collapse-btn {
+    opacity: 1;
+}
+
+.sf-splitter__collapse-btn:hover {
+    background: var(--sf-color-surface-hover, var(--sf-color-surface-container-high));
+    color: var(--sf-color-on-background);
+}

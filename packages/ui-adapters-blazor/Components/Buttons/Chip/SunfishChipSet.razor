@@ -1,0 +1,84 @@
+@namespace Sunfish.Components.Blazor.Components.Buttons
+@typeparam TItem
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ChipSetClass())"
+     style="@CombineStyles()"
+     role="listbox"
+     aria-multiselectable="@(SelectionMode == GridSelectionMode.Multiple ? "true" : null)"
+     aria-label="@AriaLabel"
+     @attributes="AdditionalAttributes">
+
+    @if (Data != null)
+    {
+        @foreach (var item in Data)
+        {
+            var isSelected = _selectedItems.Contains(item);
+            var text = GetTextValue(item);
+            var clickItem = item;
+
+            if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+            else
+            {
+                <span class="@CssProvider.ChipClass(ChipVariant.Default, isSelected) @(Removable ? "mar-chip--removable" : "")"
+                      role="option"
+                      aria-selected="@isSelected"
+                      @onclick="() => HandleItemClick(clickItem)">
+                    <span class="sf-chip__text">@text</span>
+                    @if (Removable)
+                    {
+                        <button type="button" class="sf-chip__remove" aria-label="Remove @text"
+                                @onclick="() => HandleRemove(clickItem)" @onclick:stopPropagation="true">&times;</button>
+                    }
+                </span>
+            }
+        }
+    }
+    else
+    {
+        @ChildContent
+    }
+</div>
+
+@code {
+    private HashSet<TItem> _selectedItems = [];
+
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public GridSelectionMode SelectionMode { get; set; } = GridSelectionMode.None;
+    [Parameter] public IEnumerable<TItem>? SelectedItems { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
+    [Parameter] public bool Removable { get; set; }
+    [Parameter] public EventCallback<TItem> OnRemove { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? AriaLabel { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (SelectedItems != null) _selectedItems = new HashSet<TItem>(SelectedItems);
+    }
+
+    private async Task HandleItemClick(TItem item)
+    {
+        if (SelectionMode == GridSelectionMode.None) return;
+        if (SelectionMode == GridSelectionMode.Single) { _selectedItems.Clear(); _selectedItems.Add(item); }
+        else { if (!_selectedItems.Remove(item)) _selectedItems.Add(item); }
+        await SelectedItemsChanged.InvokeAsync(_selectedItems.ToList());
+    }
+
+    private async Task HandleRemove(TItem item)
+    {
+        if (OnRemove.HasDelegate) await OnRemove.InvokeAsync(item);
+    }
+
+    private string GetTextValue(TItem item)
+    {
+        if (item is null) return string.Empty;
+        var prop = typeof(TItem).GetProperty(TextField);
+        return prop?.GetValue(item)?.ToString() ?? item.ToString() ?? string.Empty;
+    }
+}

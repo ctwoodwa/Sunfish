@@ -1,0 +1,32 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Skeleton
+// =================================================================
+// From _bridge-feedback.scss: .sf-bs-skeleton
+// =================================================================
+
+.sf-bs-skeleton {
+  &--text {
+    height: 1em;
+    width: 100%;
+    border-radius: var(--sf-radius-sm);
+  }
+
+  &--rect {
+    height: 100px;
+    width: 100%;
+  }
+
+  &--circle {
+    width: 48px;
+    height: 48px;
+  }
+
+  &--rounded {
+    height: 100px;
+    width: 100%;
+  }
+
+  .placeholder {
+    background-color: var(--sf-color-surface);
+  }
+}

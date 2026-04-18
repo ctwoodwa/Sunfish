@@ -1,0 +1,564 @@
+@inherits SunfishComponentBase
+@typeparam TValue
+
+<div class="@CombineClasses(CssProvider.TimePickerClass())"
+     style="@CombineStyles(_widthStyle)"
+     @attributes="AdditionalAttributes"
+     @onclick:stopPropagation="true">
+
+    @* Input row *@
+    <div class="sf-timepicker__input-row">
+        <span class="sf-timepicker__icon" aria-hidden="true">
+            @IconProvider.GetIcon("clock", IconSize.Small)
+        </span>
+
+        <input type="text"
+               id="@Id"
+               class="sf-timepicker__text-input"
+               value="@_inputText"
+               placeholder="@(Placeholder ?? _formatPlaceholder)"
+               disabled="@(!IsEnabled)"
+               readonly="@(ReadOnly || _isOpen)"
+               tabindex="@TabIndex"
+               autocomplete="@(AutoComplete ?? "off")"
+               inputmode="@InputMode"
+               role="combobox"
+               aria-haspopup="dialog"
+               aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+               aria-controls="@(_isOpen ? _popupId : null)"
+               aria-label="@(Id is null ? "Time picker" : null)"
+               @oninput="OnTextInput"
+               @onfocus="OnInputFocus"
+               @onblur="OnInputBlur"
+               @onkeydown="OnKeyDown" />
+
+        @if (ShowClearButton && IsEnabled && !ReadOnly && HasValue)
+        {
+            <button type="button"
+                    class="sf-timepicker__clear"
+                    tabindex="-1"
+                    aria-label="Clear"
+                    @onclick="ClearValue"
+                    @onclick:stopPropagation="true">
+                &times;
+            </button>
+        }
+
+        <button type="button"
+                class="sf-timepicker__toggle"
+                tabindex="-1"
+                aria-label="@(_isOpen ? "Close time picker" : "Open time picker")"
+                disabled="@(!IsEnabled || ReadOnly)"
+                @onclick="ToggleDropdown"
+                @onclick:stopPropagation="true">
+            &#9660;
+        </button>
+    </div>
+
+    @* Tumbler dropdown *@
+    @if (_isOpen)
+    {
+        <div id="@_popupId"
+             class="@CssProvider.TimePickerPopupClass() @PopupClass"
+             role="dialog"
+             aria-label="Choose time"
+             @onclick:stopPropagation="true">
+
+            <div class="sf-timepicker__tumblers">
+
+                @* Hour tumbler *@
+                <div class="sf-timepicker__column" role="group" aria-label="Hours">
+                    <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--up"
+                            aria-label="Increase hours"
+                            @onclick="() => StepHour(1)">&#9650;</button>
+                    <div class="sf-timepicker__scroll-container"
+                         @onwheel="OnHourWheel">
+                        @for (int h = _minHourDisplay; h <= _maxHourDisplay; h += HourStep)
+                        {
+                            var hour = h;
+                            var display = _use12h ? (hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour)) : hour;
+                            var isSelected = hour == _pendingHour;
+                            <div class="sf-timepicker__cell @(isSelected ? "mar-timepicker__cell--selected" : "")"
+                                 role="option"
+                                 aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                                 @onclick="() => SelectHour(hour)">
+                                @display.ToString("D2")
+                            </div>
+                        }
+                    </div>
+                    <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--down"
+                            aria-label="Decrease hours"
+                            @onclick="() => StepHour(-1)">&#9660;</button>
+                </div>
+
+                <div class="sf-timepicker__separator" aria-hidden="true">:</div>
+
+                @* Minute tumbler *@
+                <div class="sf-timepicker__column" role="group" aria-label="Minutes">
+                    <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--up"
+                            aria-label="Increase minutes"
+                            @onclick="() => StepMinute(1)">&#9650;</button>
+                    <div class="sf-timepicker__scroll-container"
+                         @onwheel="OnMinuteWheel">
+                        @for (int m = 0; m <= 59; m += MinuteStep)
+                        {
+                            var minute = m;
+                            var isSelected = minute == _pendingMinute;
+                            <div class="sf-timepicker__cell @(isSelected ? "mar-timepicker__cell--selected" : "")"
+                                 role="option"
+                                 aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                                 @onclick="() => SelectMinute(minute)">
+                                @minute.ToString("D2")
+                            </div>
+                        }
+                    </div>
+                    <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--down"
+                            aria-label="Decrease minutes"
+                            @onclick="() => StepMinute(-1)">&#9660;</button>
+                </div>
+
+                @* Second tumbler *@
+                @if (_showSeconds)
+                {
+                    <div class="sf-timepicker__separator" aria-hidden="true">:</div>
+                    <div class="sf-timepicker__column" role="group" aria-label="Seconds">
+                        <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--up"
+                                aria-label="Increase seconds"
+                                @onclick="() => StepSecond(1)">&#9650;</button>
+                        <div class="sf-timepicker__scroll-container"
+                             @onwheel="OnSecondWheel">
+                            @for (int s = 0; s <= 59; s += SecondStep)
+                            {
+                                var second = s;
+                                var isSelected = second == _pendingSecond;
+                                <div class="sf-timepicker__cell @(isSelected ? "mar-timepicker__cell--selected" : "")"
+                                     role="option"
+                                     aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                                     @onclick="() => SelectSecond(second)">
+                                    @second.ToString("D2")
+                                </div>
+                            }
+                        </div>
+                        <button type="button" class="sf-timepicker__arrow mar-timepicker__arrow--down"
+                                aria-label="Decrease seconds"
+                                @onclick="() => StepSecond(-1)">&#9660;</button>
+                    </div>
+                }
+
+                @* AM/PM tumbler *@
+                @if (_use12h)
+                {
+                    <div class="sf-timepicker__column mar-timepicker__column--ampm" role="group" aria-label="AM or PM">
+                        <div class="sf-timepicker__cell @(_isPm ? "" : "mar-timepicker__cell--selected")"
+                             role="option"
+                             aria-selected="@(!_isPm).ToString().ToLowerInvariant()"
+                             @onclick="() => SetAmPm(false)">
+                            AM
+                        </div>
+                        <div class="sf-timepicker__cell @(_isPm ? "mar-timepicker__cell--selected" : "")"
+                             role="option"
+                             aria-selected="@_isPm.ToString().ToLowerInvariant()"
+                             @onclick="() => SetAmPm(true)">
+                            PM
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @* Action buttons *@
+            <div class="sf-timepicker__actions">
+                <button type="button"
+                        class="sf-timepicker__btn mar-timepicker__btn--now"
+                        @onclick="SetNow">
+                    NOW
+                </button>
+                <button type="button"
+                        class="sf-timepicker__btn mar-timepicker__btn--cancel"
+                        @onclick="Cancel">
+                    Cancel
+                </button>
+                <button type="button"
+                        class="sf-timepicker__btn mar-timepicker__btn--set"
+                        @onclick="Commit">
+                    Set
+                </button>
+            </div>
+        </div>
+
+        @* Click-away overlay *@
+        <div class="sf-timepicker__overlay" @onclick="Cancel" @onclick:stopPropagation="false"></div>
+    }
+</div>
+
+@code {
+    // ── Type parameter ────────────────────────────────────────────────────────
+    // TValue is DateTime, DateTime?, DateTimeOffset, or DateTimeOffset?
+
+    // ── Parameters ────────────────────────────────────────────────────────────
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<object?> OnChange { get; set; }
+    [Parameter] public EventCallback<PopupEventArgs> OnOpen { get; set; }
+    [Parameter] public EventCallback<PopupEventArgs> OnClose { get; set; }
+    [Parameter] public EventCallback OnBlur { get; set; }
+
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public DateTime Min { get; set; } = new DateTime(1900, 1, 1, 0, 0, 0);
+    [Parameter] public DateTime Max { get; set; } = new DateTime(2099, 12, 31, 23, 59, 59);
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public int DebounceDelay { get; set; } = 150;
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public int? TabIndex { get; set; }
+    [Parameter] public string? AutoComplete { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? PopupClass { get; set; }
+
+    /// <summary>Sets the inputmode HTML attribute on the text input. Use "text" for typed input or "none" to hide the keyboard on mobile (tumbler-only mode).</summary>
+    [Parameter] public string? InputMode { get; set; }
+
+    /// <summary>Controls when validation fires. Accepted values: "input", "blur", "change". Null means no automatic validation trigger.</summary>
+    [Parameter] public string? ValidateOn { get; set; }
+
+    /// <summary>Specifies the adaptive rendering mode for the popup on mobile devices.</summary>
+    [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
+
+    // Step parameters (matching TimePickerSteps child component concept)
+    [Parameter] public int HourStep { get; set; } = 1;
+    [Parameter] public int MinuteStep { get; set; } = 1;
+    [Parameter] public int SecondStep { get; set; } = 1;
+
+    // ── Private state ─────────────────────────────────────────────────────────
+    private bool _isOpen;
+    private string _inputText = string.Empty;
+    private readonly string _popupId = $"mar-tp-{Guid.NewGuid():N}";
+    private int _pendingHour;
+    private int _pendingMinute;
+    private int _pendingSecond;
+    private bool _isPm;
+    private bool _use12h;
+    private bool _showSeconds;
+    private int _minHourDisplay;
+    private int _maxHourDisplay = 23;
+    private TValue? _lastEmittedValue;
+
+    private string _widthStyle => Width is not null ? $"width:{Width}" : string.Empty;
+
+    private string _effectiveFormat => Format ?? (System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern);
+    private string _formatPlaceholder => _effectiveFormat;
+
+    private bool IsEnabled => Enabled;
+
+    private bool HasValue
+    {
+        get
+        {
+            if (Value is null) return false;
+            if (Value is DateTime dt) return dt != default;
+            if (Value is DateTimeOffset dto) return dto != default;
+            if (Value is TimeOnly to) return to != default;
+            if (Value is TimeSpan span) return span != default;
+            return false;
+        }
+    }
+
+    // ── Lifecycle ─────────────────────────────────────────────────────────────
+    protected override void OnParametersSet()
+    {
+        // Parse format to determine tumblers
+        var fmt = _effectiveFormat;
+        _use12h = fmt.Contains("h", StringComparison.Ordinal) && !fmt.Contains("HH", StringComparison.Ordinal)
+                  || fmt.Contains("tt", StringComparison.OrdinalIgnoreCase);
+        _showSeconds = fmt.Contains('s');
+
+        _minHourDisplay = Math.Max(0, Min.Hour);
+        _maxHourDisplay = Math.Min(23, Max.Hour);
+
+        // Sync input text from Value
+        var timeVal = ExtractTime(Value);
+        if (timeVal.HasValue)
+        {
+            _inputText = FormatTimeSpan(timeVal.Value);
+        }
+        else if (!_isOpen)
+        {
+            _inputText = string.Empty;
+        }
+    }
+
+    // ── Public methods ────────────────────────────────────────────────────────
+    public async Task Open()
+    {
+        if (!IsEnabled || ReadOnly) return;
+        await OpenDropdown();
+    }
+
+    public async Task Close()
+    {
+        await Cancel();
+    }
+
+    // ── Internal helpers ──────────────────────────────────────────────────────
+    private async Task OpenDropdown()
+    {
+        var args = new PopupEventArgs();
+        await OnOpen.InvokeAsync(args);
+        if (args.IsCancelled) return;
+
+        // Seed pending values from current value
+        var timeVal = ExtractTime(Value);
+        if (timeVal.HasValue)
+        {
+            _pendingHour = timeVal.Value.Hours;
+            _pendingMinute = timeVal.Value.Minutes;
+            _pendingSecond = timeVal.Value.Seconds;
+        }
+        else
+        {
+            var now = DateTime.Now.TimeOfDay;
+            _pendingHour = now.Hours;
+            _pendingMinute = now.Minutes;
+            _pendingSecond = 0;
+        }
+
+        _isPm = _pendingHour >= 12;
+        _isOpen = true;
+    }
+
+    private async Task Commit()
+    {
+        var closeArgs = new PopupEventArgs();
+        await OnClose.InvokeAsync(closeArgs);
+        if (closeArgs.IsCancelled) return;
+
+        var hour = _pendingHour;
+        var minute = ClampToStep(_pendingMinute, MinuteStep, 0, 59);
+        var second = _showSeconds ? ClampToStep(_pendingSecond, SecondStep, 0, 59) : 0;
+
+        var newTime = new TimeSpan(hour, minute, second);
+        _inputText = FormatTimeSpan(newTime);
+
+        var newValue = BuildValue(newTime);
+        Value = newValue;
+        _lastEmittedValue = newValue;
+        await ValueChanged.InvokeAsync(newValue);
+        await OnChange.InvokeAsync(newValue is null ? null : (object)newValue);
+
+        _isOpen = false;
+    }
+
+    private async Task Cancel()
+    {
+        var closeArgs = new PopupEventArgs();
+        await OnClose.InvokeAsync(closeArgs);
+        if (closeArgs.IsCancelled) return;
+
+        _isOpen = false;
+        // Restore input text from current committed value
+        var timeVal = ExtractTime(Value);
+        _inputText = timeVal.HasValue ? FormatTimeSpan(timeVal.Value) : string.Empty;
+    }
+
+    private async Task SetNow()
+    {
+        var now = DateTime.Now.TimeOfDay;
+        _pendingHour = now.Hours;
+        _pendingMinute = now.Minutes;
+        _pendingSecond = now.Seconds;
+        _isPm = _pendingHour >= 12;
+        await Commit();
+    }
+
+    private async Task ClearValue()
+    {
+        Value = default;
+        _lastEmittedValue = default;
+        _inputText = string.Empty;
+        await ValueChanged.InvokeAsync(default);
+        await OnChange.InvokeAsync(null);
+    }
+
+    // ── Tumbler interactions ──────────────────────────────────────────────────
+    private void SelectHour(int hour)
+    {
+        _pendingHour = Clamp(hour, _minHourDisplay, _maxHourDisplay);
+        _isPm = _pendingHour >= 12;
+    }
+
+    private void SelectMinute(int minute) => _pendingMinute = ClampToStep(minute, MinuteStep, 0, 59);
+    private void SelectSecond(int second) => _pendingSecond = ClampToStep(second, SecondStep, 0, 59);
+
+    private void StepHour(int direction)
+    {
+        var next = _pendingHour + direction * HourStep;
+        _pendingHour = Clamp(next, _minHourDisplay, _maxHourDisplay);
+        _isPm = _pendingHour >= 12;
+    }
+
+    private void StepMinute(int direction)
+    {
+        var next = _pendingMinute + direction * MinuteStep;
+        _pendingMinute = (next + 60) % 60;
+    }
+
+    private void StepSecond(int direction)
+    {
+        var next = _pendingSecond + direction * SecondStep;
+        _pendingSecond = (next + 60) % 60;
+    }
+
+    private void SetAmPm(bool isPm)
+    {
+        _isPm = isPm;
+        if (isPm && _pendingHour < 12)
+            _pendingHour += 12;
+        else if (!isPm && _pendingHour >= 12)
+            _pendingHour -= 12;
+
+        _pendingHour = Clamp(_pendingHour, _minHourDisplay, _maxHourDisplay);
+    }
+
+    private void OnHourWheel(WheelEventArgs e) => StepHour(e.DeltaY > 0 ? -1 : 1);
+    private void OnMinuteWheel(WheelEventArgs e) => StepMinute(e.DeltaY > 0 ? -1 : 1);
+    private void OnSecondWheel(WheelEventArgs e) => StepSecond(e.DeltaY > 0 ? -1 : 1);
+
+    // ── Text input ────────────────────────────────────────────────────────────
+    private CancellationTokenSource? _debounceCts;
+
+    private async Task OnTextInput(ChangeEventArgs e)
+    {
+        _inputText = e.Value?.ToString() ?? string.Empty;
+
+        _debounceCts?.Cancel();
+        _debounceCts = new CancellationTokenSource();
+        var token = _debounceCts.Token;
+
+        try
+        {
+            await Task.Delay(DebounceDelay, token);
+        }
+        catch (TaskCanceledException)
+        {
+            return;
+        }
+
+        if (TryParseInput(_inputText, out var ts))
+        {
+            _pendingHour = ts.Hours;
+            _pendingMinute = ts.Minutes;
+            _pendingSecond = ts.Seconds;
+            _isPm = _pendingHour >= 12;
+
+            var newValue = BuildValue(ts);
+            Value = newValue;
+            await ValueChanged.InvokeAsync(newValue);
+        }
+    }
+
+    private async Task OnInputFocus()
+    {
+        if (!IsEnabled || ReadOnly) return;
+        if (!_isOpen) await OpenDropdown();
+    }
+
+    private async Task OnInputBlur()
+    {
+        // Fire OnChange on blur if the value has changed since the last emitted change event.
+        // This satisfies the spec requirement that OnChange fires when the component loses focus.
+        if (!EqualityComparer<TValue?>.Default.Equals(Value, _lastEmittedValue))
+        {
+            _lastEmittedValue = Value;
+            await OnChange.InvokeAsync(Value is null ? null : (object)Value);
+        }
+        await OnBlur.InvokeAsync();
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (!IsEnabled) return;
+
+        switch (e.Key)
+        {
+            case "Enter":
+                if (_isOpen) await Commit();
+                else await OpenDropdown();
+                break;
+            case "Escape":
+                if (_isOpen) await Cancel();
+                break;
+            case "Tab":
+                if (_isOpen) await Commit();
+                break;
+        }
+    }
+
+    private async Task ToggleDropdown()
+    {
+        if (!IsEnabled || ReadOnly) return;
+        if (_isOpen) await Cancel();
+        else await OpenDropdown();
+    }
+
+    // ── Value type helpers ────────────────────────────────────────────────────
+    private TimeSpan? ExtractTime(TValue? value)
+    {
+        if (value is null) return null;
+        if (value is DateTime dt && dt != default) return dt.TimeOfDay;
+        if (value is DateTimeOffset dto && dto != default) return dto.TimeOfDay;
+        if (value is TimeOnly to) return to.ToTimeSpan();
+        if (value is TimeSpan span) return span;
+        return null;
+    }
+
+    private TValue? BuildValue(TimeSpan ts)
+    {
+        var type = typeof(TValue);
+        var underlying = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (underlying == typeof(TimeOnly))
+            return (TValue)(object)TimeOnly.FromTimeSpan(ts);
+        if (underlying == typeof(TimeSpan))
+            return (TValue)(object)ts;
+        if (underlying == typeof(DateTime))
+            return (TValue)(object)new DateTime(1900, 1, 1).Add(ts);
+        if (underlying == typeof(DateTimeOffset))
+            return (TValue)(object)(DateTimeOffset)new DateTime(1900, 1, 1).Add(ts);
+
+        return default;
+    }
+
+    private bool TryParseInput(string text, out TimeSpan ts)
+    {
+        ts = TimeSpan.Zero;
+        if (string.IsNullOrWhiteSpace(text)) return false;
+        if (TimeSpan.TryParse(text, out ts)) return true;
+        if (DateTime.TryParse(text, out var dt))
+        {
+            ts = dt.TimeOfDay;
+            return true;
+        }
+        return false;
+    }
+
+    private string FormatTimeSpan(TimeSpan ts)
+    {
+        var fmt = _effectiveFormat;
+        var dt = new DateTime(1900, 1, 1).Add(ts);
+        return dt.ToString(fmt, System.Globalization.CultureInfo.CurrentCulture);
+    }
+
+    private static int Clamp(int value, int min, int max) => Math.Max(min, Math.Min(max, value));
+    private static int ClampToStep(int value, int step, int min, int max)
+    {
+        var snapped = (value / step) * step;
+        return Clamp(snapped, min, max);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _debounceCts?.Dispose();
+        base.Dispose(disposing);
+    }
+}

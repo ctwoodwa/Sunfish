@@ -1,0 +1,55 @@
+@namespace Sunfish.Components.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+<li class="@CombineClasses(CssProvider.BreadcrumbItemClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @if (IsActive)
+    {
+        <span aria-current="page">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+            }
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                @Title
+            }
+            @ChildContent
+        </span>
+    }
+    else if (!string.IsNullOrEmpty(Href))
+    {
+        <a href="@Href">
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+            }
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                @Title
+            }
+            @ChildContent
+        </a>
+    }
+    else
+    {
+        <span>
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+            }
+            @if (!string.IsNullOrEmpty(Title))
+            {
+                @Title
+            }
+            @ChildContent
+        </span>
+    }
+</li>
+
+@code {
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public bool IsActive { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

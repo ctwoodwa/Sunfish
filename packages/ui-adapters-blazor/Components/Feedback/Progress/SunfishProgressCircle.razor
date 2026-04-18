@@ -1,0 +1,34 @@
+@namespace Sunfish.Components.Blazor.Components.Feedback
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ProgressCircleClass() + (IsIndeterminate ? " mar-progress-circle--indeterminate" : ""))"
+     style="@CombineStyles()"
+     role="progressbar"
+     aria-valuenow="@(IsIndeterminate ? null : Value)"
+     aria-valuemin="0"
+     aria-valuemax="100"
+     @attributes="AdditionalAttributes">
+    <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
+        <circle class="sf-progress-circle__track"
+                cx="@(Size / 2.0)" cy="@(Size / 2.0)" r="@Radius"
+                stroke-width="@StrokeWidth" />
+        <circle class="sf-progress-circle__fill"
+                cx="@(Size / 2.0)" cy="@(Size / 2.0)" r="@Radius"
+                stroke-width="@StrokeWidth"
+                stroke-dasharray="@Circumference.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                stroke-dashoffset="@DashOffset.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+    </svg>
+</div>
+
+@code {
+    [Parameter] public double Value { get; set; }
+    [Parameter] public int Size { get; set; } = 48;
+    [Parameter] public int StrokeWidth { get; set; } = 4;
+    [Parameter] public bool IsIndeterminate { get; set; }
+
+    private double Radius => (Size - StrokeWidth) / 2.0;
+    private double Circumference => 2 * Math.PI * Radius;
+    private double DashOffset => IsIndeterminate
+        ? Circumference * 0.75
+        : Circumference - (Circumference * Math.Clamp(Value, 0, 100) / 100.0);
+}

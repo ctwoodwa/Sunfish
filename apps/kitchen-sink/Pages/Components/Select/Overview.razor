@@ -1,0 +1,108 @@
+@page "/components/Select"
+@page "/components/Select/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishField>
+            <SunfishLabel>Framework</SunfishLabel>
+            <SunfishSelect Value="@_selected" ValueChanged="@(v => _selected = v)">
+                <option value="">Choose...</option>
+                <option value="fluent">Fluent UI</option>
+                <option value="bootstrap">Bootstrap</option>
+                <option value="tailwind">Tailwind</option>
+            </SunfishSelect>
+        </SunfishField>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Disabled" Description="A disabled select prevents user interaction." Code="@_disabledCode">
+        <SunfishField>
+            <SunfishLabel>Framework</SunfishLabel>
+            <SunfishSelect Value="fluent" Disabled="true">
+                <option value="fluent">Fluent UI</option>
+                <option value="bootstrap">Bootstrap</option>
+                <option value="tailwind">Tailwind</option>
+            </SunfishSelect>
+        </SunfishField>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle selection changes with the ValueChanged callback." Code="@_interactiveCode">
+        <SunfishField>
+            <SunfishLabel>Framework</SunfishLabel>
+            <SunfishSelect Value="@_evSelected" ValueChanged="@(v => _evSelected = v)">
+                <option value="">Choose...</option>
+                <option value="fluent">Fluent UI</option>
+                <option value="bootstrap">Bootstrap</option>
+                <option value="tailwind">Tailwind</option>
+            </SunfishSelect>
+        </SunfishField>
+        <p><strong>Selected:</strong> @_evSelected</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private string _selected = "";
+    private string _evSelected = "";
+
+    private const string _basicCode =
+        "<SunfishSelect Value=\"@_selected\" ValueChanged=\"@(v => _selected = v)\">\n" +
+        "    <option value=\"\">Choose...</option>\n" +
+        "    <option value=\"fluent\">Fluent UI</option>\n" +
+        "    <option value=\"bootstrap\">Bootstrap</option>\n" +
+        "    <option value=\"tailwind\">Tailwind</option>\n" +
+        "</SunfishSelect>";
+
+    private const string _disabledCode =
+        "<SunfishSelect Value=\"fluent\" Disabled=\"true\">\n" +
+        "    <option value=\"fluent\">Fluent UI</option>\n" +
+        "    <option value=\"bootstrap\">Bootstrap</option>\n" +
+        "    <option value=\"tailwind\">Tailwind</option>\n" +
+        "</SunfishSelect>";
+
+    private const string _interactiveCode =
+        "<SunfishSelect Value=\"@_selected\" ValueChanged=\"@(v => _selected = v)\">\n" +
+        "    <option value=\"\">Choose...</option>\n" +
+        "    <option value=\"fluent\">Fluent UI</option>\n" +
+        "    <option value=\"bootstrap\">Bootstrap</option>\n" +
+        "</SunfishSelect>\n" +
+        "<p><strong>Selected:</strong> @_selected</p>\n\n" +
+        "@code {\n" +
+        "    private string _selected = \"\";\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the select"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Arrow Up / Arrow Down", "Navigates through the options"),
+        ("Enter", "Selects the focused option"),
+        ("Escape", "Closes the dropdown"),
+        ("Space", "Opens the dropdown when focused"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"listbox\"", "Implicitly set by the <select> element"),
+        ("aria-disabled=\"true\"", "Applied when the Disabled parameter is set"),
+        ("aria-invalid=\"true\"", "Applied when the IsInvalid parameter is set"),
+        ("aria-label", "Can be set to provide an accessible name when no visible label is present"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The select is announced with its label, current value, and the \"pop-up button\" or \"combo box\" role.",
+        "Options are announced as the user navigates through them with arrow keys.",
+        "Disabled selects are announced as \"dimmed\" or \"unavailable\" depending on the screen reader.",
+    ];
+}

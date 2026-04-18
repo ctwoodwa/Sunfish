@@ -1,0 +1,10 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Context Menu
+// =================================================================
+// From _bridge-layout.scss: .sf-bs-context-menu
+// =================================================================
+
+.sf-bs-context-menu {
+  position: absolute;
+  z-index: var(--sf-z-dropdown);
+}

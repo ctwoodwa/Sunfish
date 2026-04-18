@@ -1,0 +1,102 @@
+@page "/components/popup"
+@page "/components/popup/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="SunfishPopup is a lightweight anchor-positioned container. Set AnchorId to the id of the target element and toggle IsOpen to show or hide it." Code="@_basicCode">
+        <div style="position:relative;">
+            <button id="popup-anchor-1" @onclick="@(() => _isOpen = !_isOpen)">
+                @(_isOpen ? "Close Popup" : "Open Popup")
+            </button>
+            <SunfishPopup @bind-IsOpen="_isOpen"
+                         AnchorId="popup-anchor-1"
+                         Placement="PopupPlacement.Bottom"
+                         Offset="4">
+                <div style="padding:16px; background:var(--sf-color-surface, #fff); border:1px solid #ddd; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15); min-width:200px;">
+                    <p style="margin:0 0 8px;">This is popup content anchored below the button.</p>
+                    <button @onclick="@(() => _isOpen = false)">Close</button>
+                </div>
+            </SunfishPopup>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Placement" Description="Control the position relative to the anchor element using the Placement parameter (Top, Bottom, Left, Right)." Code="@_placementCode">
+        <div style="display:flex; gap:12px; flex-wrap:wrap; position:relative;">
+            @foreach (var placement in new[] { PopupPlacement.Top, PopupPlacement.Bottom, PopupPlacement.Left, PopupPlacement.Right })
+            {
+                var p = placement;
+                var isOpen = _placements.Contains(p);
+                <div style="position:relative;">
+                    <button id="@($"popup-anchor-{p}")" @onclick="@(() => TogglePlacement(p))">
+                        @p
+                    </button>
+                    <SunfishPopup IsOpen="@isOpen"
+                                 IsOpenChanged="@(open => { if (!open) _placements.Remove(p); })"
+                                 AnchorId="@($"popup-anchor-{p}")"
+                                 Placement="@p"
+                                 Offset="4">
+                        <div style="padding:12px; background:var(--sf-color-surface, #fff); border:1px solid #ddd; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                            Placed @p.ToString().ToLower()
+                        </div>
+                    </SunfishPopup>
+                </div>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Focus Trap" Description="Set FocusTrap to true to trap keyboard focus inside the popup and apply dialog semantics (role=dialog, aria-modal=true)." Code="@_focusTrapCode">
+        <div style="position:relative;">
+            <button id="popup-anchor-focus" @onclick="@(() => _focusOpen = !_focusOpen)">
+                @(_focusOpen ? "Close" : "Open Dialog Popup")
+            </button>
+            <SunfishPopup @bind-IsOpen="_focusOpen"
+                         AnchorId="popup-anchor-focus"
+                         Placement="PopupPlacement.Bottom"
+                         FocusTrap="true"
+                         CloseOnEscape="true">
+                <div style="padding:16px; background:var(--sf-color-surface, #fff); border:1px solid #ddd; border-radius:8px; box-shadow:0 4px 16px rgba(0,0,0,0.2); min-width:240px;">
+                    <p style="margin:0 0 12px;"><strong>Focus is trapped here.</strong></p>
+                    <p style="margin:0 0 12px;">Press Escape or click Close to dismiss.</p>
+                    <button @onclick="@(() => _focusOpen = false)">Close</button>
+                </div>
+            </SunfishPopup>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private bool _isOpen;
+    private bool _focusOpen;
+    private HashSet<PopupPlacement> _placements = new();
+
+    private void TogglePlacement(PopupPlacement p)
+    {
+        if (!_placements.Remove(p))
+            _placements.Add(p);
+    }
+
+    private const string _basicCode =
+        "<button id=\"my-anchor\" @onclick=\"@(() => _isOpen = !_isOpen)\">\n" +
+        "    Toggle Popup\n" +
+        "</button>\n\n" +
+        "<SunfishPopup @bind-IsOpen=\"_isOpen\"\n" +
+        "             AnchorId=\"my-anchor\"\n" +
+        "             Placement=\"PopupPlacement.Bottom\"\n" +
+        "             Offset=\"4\">\n" +
+        "    <div>Popup content here.</div>\n" +
+        "</SunfishPopup>";
+
+    private const string _placementCode =
+        "<SunfishPopup IsOpen=\"@_isOpen\"\n" +
+        "             AnchorId=\"anchor-id\"\n" +
+        "             Placement=\"PopupPlacement.Top\" />\n\n" +
+        "<!-- Options: Top, Bottom, Left, Right -->";
+
+    private const string _focusTrapCode =
+        "<SunfishPopup @bind-IsOpen=\"_isOpen\"\n" +
+        "             AnchorId=\"anchor-id\"\n" +
+        "             FocusTrap=\"true\"\n" +
+        "             CloseOnEscape=\"true\">\n" +
+        "    <div>Focus is trapped inside.</div>\n" +
+        "</SunfishPopup>";
+}

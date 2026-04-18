@@ -1,0 +1,42 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CardClass)"
+     style="@CombineStyles(SizeStyle)"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Width of the card (e.g. "300px", "100%").</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Height of the card.</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Card orientation (horizontal/vertical). Defaults to vertical.</summary>
+    [Parameter] public string Orientation { get; set; } = "vertical";
+
+    private string CardClass
+    {
+        get
+        {
+            var cls = CssProvider.CardClass();
+            if (Orientation == "horizontal") cls += " mar-card--horizontal";
+            return cls;
+        }
+    }
+
+    private string? SizeStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+}

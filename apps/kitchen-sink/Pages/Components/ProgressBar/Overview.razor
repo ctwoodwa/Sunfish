@@ -1,0 +1,113 @@
+@page "/components/ProgressBar"
+@page "/components/ProgressBar/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Determinate" Description="A determinate progress bar shows a specific percentage of completion." Code="@_determinateCode">
+        <div style="margin-bottom: 16px;">
+            <p>Progress: @_progress%</p>
+            <SunfishProgressBar Value="@_progress" />
+        </div>
+        <div class="demo-row">
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Indeterminate" Description="An indeterminate progress bar indicates an ongoing process without a known duration." Code="@_indeterminateCode">
+        <SunfishProgressBar IsIndeterminate="true" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Progress Values" Description="Progress bars at various completion levels." Code="@_valuesCode">
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <SunfishProgressBar Value="0" />
+            <SunfishProgressBar Value="25" />
+            <SunfishProgressBar Value="50" />
+            <SunfishProgressBar Value="75" />
+            <SunfishProgressBar Value="100" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Custom Max" Description="Set Max to a value other than 100 when your progress is measured in custom units." Code="@_maxCode">
+        <div style="display:flex;flex-direction:column;gap:12px;">
+            <div>
+                <p style="font-size:0.875em;">Steps (Max=10): @_stepProgress / 10</p>
+                <SunfishProgressBar Value="@_stepProgress" Max="10" />
+            </div>
+            <div>
+                <p style="font-size:0.875em;">Files (Max=250): @_fileProgress / 250</p>
+                <SunfishProgressBar Value="@_fileProgress" Max="250" />
+            </div>
+        </div>
+        <div class="demo-row" style="margin-top:8px;">
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _stepProgress = Math.Min(10, _stepProgress + 1))">+1 Step</SunfishButton>
+            <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _fileProgress = Math.Min(250, _fileProgress + 25))">+25 Files</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Label" Description="Provide a Label to describe what the progress bar represents." Code="@_labelCode">
+        <SunfishProgressBar Value="65" Label="Uploading files..." ShowLabel="true" />
+        <SunfishProgressBar Value="30" Label="Processing data..." ShowLabel="true" />
+        <SunfishProgressBar IsIndeterminate="true" Label="Connecting to server..." ShowLabel="true" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private double _progress = 45;
+    private double _stepProgress = 3;
+    private double _fileProgress = 75;
+
+    private const string _determinateCode =
+        "<SunfishProgressBar Value=\"@_progress\" />\n\n" +
+        "<SunfishButton Size=\"ButtonSize.Small\" OnClick=\"@(() => _progress = Math.Max(0, _progress - 10))\">-10</SunfishButton>\n" +
+        "<SunfishButton Size=\"ButtonSize.Small\" OnClick=\"@(() => _progress = Math.Min(100, _progress + 10))\">+10</SunfishButton>\n\n" +
+        "@code { private double _progress = 45; }";
+
+    private const string _indeterminateCode =
+        "<SunfishProgressBar IsIndeterminate=\"true\" />";
+
+    private const string _valuesCode =
+        "<SunfishProgressBar Value=\"0\" />\n" +
+        "<SunfishProgressBar Value=\"25\" />\n" +
+        "<SunfishProgressBar Value=\"50\" />\n" +
+        "<SunfishProgressBar Value=\"75\" />\n" +
+        "<SunfishProgressBar Value=\"100\" />";
+
+    private const string _maxCode =
+        "<SunfishProgressBar Value=\"@_stepProgress\" Max=\"10\" />\n" +
+        "<SunfishProgressBar Value=\"@_fileProgress\" Max=\"250\" />";
+
+    private const string _labelCode =
+        "<SunfishProgressBar Value=\"65\" Label=\"Uploading files...\" ShowLabel=\"true\" />\n" +
+        "<SunfishProgressBar IsIndeterminate=\"true\" Label=\"Connecting to server...\" ShowLabel=\"true\" />";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Progress bars are not interactive and do not receive keyboard focus"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"progressbar\"", "Applied to indicate the element displays progress information"),
+        ("aria-valuenow", "Indicates the current progress value"),
+        ("aria-valuemin", "Indicates the minimum value (typically 0)"),
+        ("aria-valuemax", "Indicates the maximum value set by the Max parameter"),
+        ("aria-label", "Set via the Label parameter to describe what the progress represents"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Determinate progress bars announce their current percentage value.",
+        "Indeterminate progress bars are announced as \"busy\" or \"loading\" with no specific value.",
+        "Progress changes are announced when the value updates significantly.",
+    ];
+}

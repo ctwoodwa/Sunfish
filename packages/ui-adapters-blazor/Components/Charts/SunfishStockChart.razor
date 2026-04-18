@@ -1,0 +1,86 @@
+@inherits SunfishComponentBase
+
+@{
+    var candles = Data.ToList();
+    var allPrices = candles.SelectMany(c => new[] { c.High, c.Low }).ToList();
+    var minPrice = allPrices.Any() ? allPrices.Min() : 0;
+    var maxPrice = allPrices.Any() ? allPrices.Max() : 100;
+    var priceRange = maxPrice - minPrice;
+    if (priceRange == 0) priceRange = 1;
+    var candleWidth = candles.Count > 0 ? Math.Max(1, (Width - 60) / candles.Count * 0.8) : 10;
+    var candleSpacing = candles.Count > 0 ? (Width - 60.0) / candles.Count : 10;
+}
+
+<div class="@CombineClasses("mar-stockchart")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <svg width="@Width" height="@Height" viewBox="0 0 @Width @Height" xmlns="http://www.w3.org/2000/svg">
+        @* Y-axis labels *@
+        @for (var i = 0; i <= 5; i++)
+        {
+            var val = minPrice + priceRange * i / 5;
+            var y = ChartTop + ChartHeight - (ChartHeight * i / 5.0);
+            <line x1="55" y1="@y" x2="@Width" y2="@y" stroke="#e0e0e0" stroke-width="0.5" />
+            <svg:text x="50" y="@(y + 4)" text-anchor="end" font-size="10" fill="#666">@val.ToString("F0")</svg:text>
+        }
+
+        @* Candlesticks *@
+        @for (var i = 0; i < candles.Count; i++)
+        {
+            var c = candles[i];
+            var x = 60 + i * candleSpacing + candleSpacing / 2;
+            var highY = ChartTop + ChartHeight - ((c.High - minPrice) / priceRange * ChartHeight);
+            var lowY = ChartTop + ChartHeight - ((c.Low - minPrice) / priceRange * ChartHeight);
+            var openY = ChartTop + ChartHeight - ((c.Open - minPrice) / priceRange * ChartHeight);
+            var closeY = ChartTop + ChartHeight - ((c.Close - minPrice) / priceRange * ChartHeight);
+            var isBullish = c.Close >= c.Open;
+            var bodyTop = Math.Min(openY, closeY);
+            var bodyHeight = Math.Max(Math.Abs(openY - closeY), 1);
+
+            @* Wick *@
+            <line x1="@x" y1="@highY" x2="@x" y2="@lowY"
+                  stroke="@(isBullish ? BullColor : BearColor)" stroke-width="1" />
+            @* Body *@
+            <rect x="@(x - candleWidth / 2)" y="@bodyTop"
+                  width="@candleWidth" height="@bodyHeight"
+                  fill="@(isBullish ? BullColor : BearColor)"
+                  stroke="@(isBullish ? BullColor : BearColor)" />
+        }
+
+        @* Navigator *@
+        @if (ShowNavigator)
+        {
+            var navTop = Height - 40;
+            var navHeight = 30;
+            <rect x="60" y="@navTop" width="@(Width - 60)" height="@navHeight"
+                  fill="#f5f5f5" stroke="#ddd" />
+            @for (var i = 0; i < candles.Count; i++)
+            {
+                var c = candles[i];
+                var x = 60 + i * candleSpacing + candleSpacing / 2;
+                var closeY = navTop + navHeight - ((c.Close - minPrice) / priceRange * navHeight);
+                if (i > 0)
+                {
+                    var prev = candles[i - 1];
+                    var prevX = 60 + (i - 1) * candleSpacing + candleSpacing / 2;
+                    var prevY = navTop + navHeight - ((prev.Close - minPrice) / priceRange * navHeight);
+                    <line x1="@prevX" y1="@prevY" x2="@x" y2="@closeY"
+                          stroke="#1976d2" stroke-width="1" />
+                }
+            }
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<StockDataPoint> Data { get; set; } = Enumerable.Empty<StockDataPoint>();
+    [Parameter] public int Width { get; set; } = 800;
+    [Parameter] public int Height { get; set; } = 400;
+    [Parameter] public string BullColor { get; set; } = "#4caf50";
+    [Parameter] public string BearColor { get; set; } = "#f44336";
+    [Parameter] public bool ShowNavigator { get; set; } = true;
+    [Parameter] public bool ShowVolume { get; set; }
+
+    private double ChartTop => 10;
+    private double ChartHeight => Height - (ShowNavigator ? 80 : 30);
+}

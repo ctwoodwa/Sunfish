@@ -1,0 +1,24 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-floating-label") @(_isFocused || _hasValue ? "mar-floating-label--active" : "")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <label class="sf-floating-label__label">@Text</label>
+    <div class="sf-floating-label__content"
+         @onfocusin="HandleFocusIn"
+         @onfocusout="HandleFocusOut">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool HasValue { get; set; }
+
+    private bool _isFocused;
+    private bool _hasValue => HasValue;
+
+    private void HandleFocusIn() => _isFocused = true;
+    private void HandleFocusOut() => _isFocused = false;
+}

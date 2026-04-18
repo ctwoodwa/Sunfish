@@ -1,0 +1,68 @@
+@page "/components/pager"
+@page "/components/pager/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <SunfishAlert Severity="AlertSeverity.Info" style="margin-bottom:16px;">
+        The standalone Pager is provided by the <strong>SunfishPagination</strong> component.
+    </SunfishAlert>
+
+    <DemoSection Title="Basic Usage" Description="SunfishPagination renders page navigation buttons computed from Total and PageSize. It supports two-way binding on the Page parameter." Code="@_basicCode">
+        <SunfishPagination @bind-Page="_currentPage" Total="100" PageSize="10" />
+        <p style="margin-top:8px;">Current page: <strong>@_currentPage</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="With Page Info" Description="Set ShowInfo to true to display a text summary of the visible range (e.g., '1-10 of 100 items')." Code="@_infoCode">
+        <SunfishPagination @bind-Page="_infoPage" Total="250" PageSize="25" ShowInfo="true" />
+    </DemoSection>
+
+    <DemoSection Title="Page Size Selector" Description="Provide a PageSizes list to show a dropdown that lets users change the number of items per page." Code="@_pageSizeCode">
+        <SunfishPagination @bind-Page="_sizedPage"
+                          Total="200"
+                          PageSize="@_pageSize"
+                          PageSizeChanged="@(size => { _pageSize = size; _sizedPage = 1; })"
+                          PageSizes="@(new List<int> { 10, 25, 50 })"
+                          ShowInfo="true" />
+        <p style="margin-top:8px;">Page: <strong>@_sizedPage</strong>, Page size: <strong>@_pageSize</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Button Count" Description="The ButtonCount parameter controls how many page number buttons are visible at once." Code="@_buttonCountCode">
+        <SunfishPagination @bind-Page="_bcPage" Total="500" PageSize="10" ButtonCount="7" ShowInfo="true" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private int _currentPage = 1;
+    private int _infoPage = 1;
+    private int _sizedPage = 1;
+    private int _pageSize = 25;
+    private int _bcPage = 1;
+
+    private const string _basicCode =
+        "<SunfishPagination @bind-Page=\"_page\"\n" +
+        "                  Total=\"100\"\n" +
+        "                  PageSize=\"10\" />\n\n" +
+        "@code {\n" +
+        "    private int _page = 1;\n" +
+        "}";
+
+    private const string _infoCode =
+        "<SunfishPagination @bind-Page=\"_page\"\n" +
+        "                  Total=\"250\"\n" +
+        "                  PageSize=\"25\"\n" +
+        "                  ShowInfo=\"true\" />";
+
+    private const string _pageSizeCode =
+        "<SunfishPagination @bind-Page=\"_page\"\n" +
+        "                  Total=\"200\"\n" +
+        "                  PageSize=\"@_pageSize\"\n" +
+        "                  PageSizeChanged=\"@(size => _pageSize = size)\"\n" +
+        "                  PageSizes=\"@(new List<int> { 10, 25, 50 })\"\n" +
+        "                  ShowInfo=\"true\" />";
+
+    private const string _buttonCountCode =
+        "<SunfishPagination @bind-Page=\"_page\"\n" +
+        "                  Total=\"500\"\n" +
+        "                  PageSize=\"10\"\n" +
+        "                  ButtonCount=\"7\" />";
+}

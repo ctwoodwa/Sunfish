@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation</PackageId>
+    <Description>Core contracts, enums, models, and services for Sunfish.</Description>
+    <!-- TODO: Remove project-level CS1591 suppression before stable release.
+         Add per-file #pragma guards on files with genuinely undocumented members instead.
+         Tracked as Phase 1 migration accommodation. -->
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="NSec.Cryptography" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Expose internals (e.g. Macaroons.MacaroonCodec, FirstPartyCaveatParser) to the
+         sibling test assembly so chain-computation and parser coverage can be asserted
+         directly. -->
+    <InternalsVisibleTo Include="tests" />
+  </ItemGroup>
+</Project>

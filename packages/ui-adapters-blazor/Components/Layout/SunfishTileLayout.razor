@@ -1,0 +1,60 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-tilelayout")"
+     style="@CombineStyles() display: grid; grid-template-columns: repeat(@Columns, 1fr); gap: @(Gap)px; @(RowHeight != null ? $"grid-auto-rows: {RowHeight};" : "")"
+     @attributes="AdditionalAttributes">
+    @foreach (var tile in Items)
+    {
+        var t = tile;
+        <div class="sf-tilelayout__tile @(Reorderable ? "mar-tilelayout__tile--draggable" : "")"
+             style="grid-column: span @t.ColSpan; grid-row: span @t.RowSpan;"
+             draggable="@Reorderable.ToString().ToLowerInvariant()"
+             @ondragstart="() => _draggedTile = t"
+             @ondragover:preventDefault
+             @ondrop="() => HandleDrop(t)">
+            @if (!string.IsNullOrEmpty(t.Title))
+            {
+                <div class="sf-tilelayout__tile-header">
+                    <span class="sf-tilelayout__tile-title">@t.Title</span>
+                </div>
+            }
+            <div class="sf-tilelayout__tile-content">
+                @t.Content
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public List<TileLayoutItem> Items { get; set; } = new();
+    [Parameter] public int Columns { get; set; } = 3;
+    [Parameter] public int Gap { get; set; } = 16;
+    [Parameter] public string? RowHeight { get; set; }
+    [Parameter] public bool Reorderable { get; set; }
+    [Parameter] public bool Resizable { get; set; }
+    [Parameter] public EventCallback<TileReorderEventArgs> OnReorder { get; set; }
+
+    private TileLayoutItem? _draggedTile;
+
+    private async Task HandleDrop(TileLayoutItem target)
+    {
+        if (_draggedTile == null || _draggedTile == target) return;
+
+        var dragIdx = Items.IndexOf(_draggedTile);
+        var targetIdx = Items.IndexOf(target);
+
+        if (dragIdx >= 0 && targetIdx >= 0)
+        {
+            Items.RemoveAt(dragIdx);
+            Items.Insert(targetIdx, _draggedTile);
+            await OnReorder.InvokeAsync(new TileReorderEventArgs
+            {
+                Item = _draggedTile,
+                OldIndex = dragIdx,
+                NewIndex = targetIdx
+            });
+        }
+
+        _draggedTile = null;
+    }
+}

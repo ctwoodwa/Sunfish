@@ -1,4 +1,107 @@
 <Solution>
-  <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
-  <Project Path="packages/foundation/tests/tests.csproj" />
+  <Folder Name="/foundation/">
+    <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
+    <Project Path="packages/foundation/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ui-core/">
+    <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
+    <Project Path="packages/ui-core/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ui-adapters-blazor/">
+    <Project Path="packages/ui-adapters-blazor/Sunfish.Components.Blazor.csproj" />
+    <Project Path="packages/ui-adapters-blazor/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/providers/">
+    <Project Path="packages/ui-adapters-blazor/Providers/FluentUI/Sunfish.Providers.FluentUI.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Providers/Bootstrap/Sunfish.Providers.Bootstrap.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Providers/Material/Sunfish.Providers.Material.csproj" />
+  </Folder>
+  <Folder Name="/icons/tabler/">
+    <Project Path="packages/ui-adapters-blazor/Icons/Tabler/Sunfish.Icons.Tabler.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Icons/Tabler/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/icons/legacy/">
+    <Project Path="packages/ui-adapters-blazor/Icons/Legacy/Sunfish.Icons.Legacy.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Icons/Legacy/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/forms/">
+    <Project Path="packages/blocks-forms/Sunfish.Blocks.Forms.csproj" />
+    <Project Path="packages/blocks-forms/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/tasks/">
+    <Project Path="packages/blocks-tasks/Sunfish.Blocks.Tasks.csproj" />
+    <Project Path="packages/blocks-tasks/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/scheduling/">
+    <Project Path="packages/blocks-scheduling/Sunfish.Blocks.Scheduling.csproj" />
+    <Project Path="packages/blocks-scheduling/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/assets/">
+    <Project Path="packages/blocks-assets/Sunfish.Blocks.Assets.csproj" />
+    <Project Path="packages/blocks-assets/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/telerik/">
+    <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
+    <Project Path="packages/compat-telerik/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/core/">
+    <Project Path="packages/ingestion-core/Sunfish.Ingestion.Core.csproj" />
+    <Project Path="packages/ingestion-core/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/forms/">
+    <Project Path="packages/ingestion-forms/Sunfish.Ingestion.Forms.csproj" />
+    <Project Path="packages/ingestion-forms/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/spreadsheets/">
+    <Project Path="packages/ingestion-spreadsheets/Sunfish.Ingestion.Spreadsheets.csproj" />
+    <Project Path="packages/ingestion-spreadsheets/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/voice/">
+    <Project Path="packages/ingestion-voice/Sunfish.Ingestion.Voice.csproj" />
+    <Project Path="packages/ingestion-voice/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/sensors/">
+    <Project Path="packages/ingestion-sensors/Sunfish.Ingestion.Sensors.csproj" />
+    <Project Path="packages/ingestion-sensors/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/imagery/">
+    <Project Path="packages/ingestion-imagery/Sunfish.Ingestion.Imagery.csproj" />
+    <Project Path="packages/ingestion-imagery/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/satellite/">
+    <Project Path="packages/ingestion-satellite/Sunfish.Ingestion.Satellite.csproj" />
+    <Project Path="packages/ingestion-satellite/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/ingestion/integration-tests/">
+    <Project Path="packages/ingestion-integration-tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/federation/common/">
+    <Project Path="packages/federation-common/Sunfish.Federation.Common.csproj" />
+    <Project Path="packages/federation-common/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/federation/entity-sync/">
+    <Project Path="packages/federation-entity-sync/Sunfish.Federation.EntitySync.csproj" />
+    <Project Path="packages/federation-entity-sync/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/federation/capability-sync/">
+    <Project Path="packages/federation-capability-sync/Sunfish.Federation.CapabilitySync.csproj" />
+    <Project Path="packages/federation-capability-sync/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/accelerators/bridge/">
+    <Project Path="accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj" />
+    <Project Path="accelerators/bridge/Sunfish.Bridge.AppHost/Sunfish.Bridge.AppHost.csproj" />
+    <Project Path="accelerators/bridge/Sunfish.Bridge.Client/Sunfish.Bridge.Client.csproj" />
+    <Project Path="accelerators/bridge/Sunfish.Bridge.Data/Sunfish.Bridge.Data.csproj" />
+    <Project Path="accelerators/bridge/Sunfish.Bridge.MigrationService/Sunfish.Bridge.MigrationService.csproj" />
+    <Project Path="accelerators/bridge/Sunfish.Bridge.ServiceDefaults/Sunfish.Bridge.ServiceDefaults.csproj" />
+    <Project Path="accelerators/bridge/MockOktaService/MockOktaService.csproj" />
+  </Folder>
+  <Folder Name="/accelerators/bridge/tests/">
+    <Project Path="accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Sunfish.Bridge.Tests.Unit.csproj" />
+    <Project Path="accelerators/bridge/tests/Sunfish.Bridge.Tests.Integration/Sunfish.Bridge.Tests.Integration.csproj" />
+    <Project Path="accelerators/bridge/tests/Sunfish.Bridge.Tests.Performance/Sunfish.Bridge.Tests.Performance.csproj" />
+  </Folder>
+  <Folder Name="/apps/">
+    <Project Path="apps/kitchen-sink/Sunfish.KitchenSink.csproj" />
+  </Folder>
 </Solution>
