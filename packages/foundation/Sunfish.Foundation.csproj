@@ -16,4 +16,10 @@
     <!-- Exclude the sibling test project from library compilation -->
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- Expose internals (e.g. Macaroons.MacaroonCodec, FirstPartyCaveatParser) to the
+         sibling test assembly so chain-computation and parser coverage can be asserted
+         directly. -->
+    <InternalsVisibleTo Include="tests" />
+  </ItemGroup>
 </Project>
