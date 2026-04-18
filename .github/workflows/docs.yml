@@ -42,7 +42,7 @@ jobs:
         run: dotnet build Sunfish.slnx --configuration Debug --no-restore
 
       - name: Build docs
-        run: dotnet docfx apps/docs/docfx.json
+        run: dotnet docfx apps/docs/docfx.json --warningsAsErrors
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

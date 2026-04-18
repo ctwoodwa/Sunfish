@@ -11,9 +11,9 @@ public static class InteropServiceExtensions
     /// <summary>
     /// Adds the shared JS interop infrastructure used by complex Sunfish components
     /// (Window, Popover, Splitter, DataGrid, Chart, Editor, etc.).
-    /// Call after <c>AddMariloCoreServices()</c>.
+    /// Call after <c>AddSunfish()</c>.
     /// </summary>
-    public static SunfishBuilder AddMariloInteropServices(this SunfishBuilder builder)
+    public static SunfishBuilder AddSunfishInteropServices(this SunfishBuilder builder)
     {
         var services = builder.Services;
 

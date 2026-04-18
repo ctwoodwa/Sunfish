@@ -388,8 +388,8 @@
         if (converter is null)
             throw new InvalidOperationException(
                 $"No IEditorFormatConverter registered for format '{format}'. " +
-                "Register one via services.AddMariloEditorMarkdownSupport() or " +
-                "services.AddMariloEditorPlainTextSupport(), or add a custom implementation.");
+                "Register one via services.AddSunfishEditorMarkdownSupport() or " +
+                "services.AddSunfishEditorPlainTextSupport(), or add a custom implementation.");
         return converter;
     }
 

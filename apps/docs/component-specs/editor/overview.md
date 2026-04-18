@@ -24,7 +24,7 @@ The Blazor HTML Editor has a `Value` parameter, similar to other input component
 
 An empty string is a valid initial Editor `Value`, but after the user interacts with the component, the minimal component `Value` is at least an empty element (usually `"<p></p>"`). Note that [the Editor and the browser treat empty paragraphs differently](slug:editor-kb-missing-br-tags-in-value).
 
-The Editor manages its content and `Value` depending on a [customizable schema](#prosemirror-schema-and-plugins). The component strips all other tags and attributes for compliance and security reasons.
+The Editor manages its content and `Value` depending on a [customizable schema](#architecture). The component strips all other tags and attributes for compliance and security reasons.
 
 
 ## Security

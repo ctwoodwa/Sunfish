@@ -143,7 +143,7 @@ public static class SunfishEditorServiceExtensions
     /// Uses Markdig (MIT) for Markdown → HTML conversion. HTML → Markdown uses
     /// a basic built-in converter (best-effort, not full round-trip fidelity).
     /// </summary>
-    public static IServiceCollection AddMariloEditorMarkdownSupport(
+    public static IServiceCollection AddSunfishEditorMarkdownSupport(
         this IServiceCollection services)
     {
         services.AddSingleton<IEditorFormatConverter, MarkdownFormatConverter>();
@@ -155,7 +155,7 @@ public static class SunfishEditorServiceExtensions
     /// Converts between plain text and HTML via simple tag wrapping/stripping.
     /// No external dependencies.
     /// </summary>
-    public static IServiceCollection AddMariloEditorPlainTextSupport(
+    public static IServiceCollection AddSunfishEditorPlainTextSupport(
         this IServiceCollection services)
     {
         services.AddSingleton<IEditorFormatConverter, PlainTextFormatConverter>();

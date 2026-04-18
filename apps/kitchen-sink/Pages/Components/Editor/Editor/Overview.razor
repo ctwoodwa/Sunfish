@@ -266,7 +266,7 @@
         }
         catch (InvalidOperationException)
         {
-            _exportedText = "⚠ Markdown converter not registered. Call services.AddMariloEditorMarkdownSupport() in Program.cs.";
+            _exportedText = "⚠ Markdown converter not registered. Call services.AddSunfishEditorMarkdownSupport() in Program.cs.";
         }
     }
 
@@ -292,7 +292,7 @@
         }
         catch (InvalidOperationException)
         {
-            _exportedText = "⚠ Plain text converter not registered. Call services.AddMariloEditorPlainTextSupport() in Program.cs.";
+            _exportedText = "⚠ Plain text converter not registered. Call services.AddSunfishEditorPlainTextSupport() in Program.cs.";
         }
     }
 

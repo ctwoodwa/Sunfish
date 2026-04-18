@@ -15,7 +15,7 @@ The Drag and Drop functionality for the TreeList rows allows you to move a row o
 This article contains the following sections:
 
 * [Basics](#basics)
-* [OnRowDrop Event](#onrowdrop-event)
+* [OnRowDrop Event](#onrowdropped-event)
 * [TreeListRowDraggableSettings](#treelistrowdraggablesettings)
 * [Examples](#examples)
     * [Drag and Drop a Row in the same TreeList](#drag-and-drop-a-row-in-the-same-treelist)

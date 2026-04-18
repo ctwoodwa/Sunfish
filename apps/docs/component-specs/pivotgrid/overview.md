@@ -45,7 +45,7 @@ The PivotGrid is an integrated product that includes several Razor components:
 
 1. Add a `<SunfishPivotGrid>` tag to a Razor file.
 1. Set the `DataProviderType` parameter to a member of the `PivotGridDataProviderType` enum, according to your [data provider](slug:pivotgrid-data-binding#data-provider-type). The example below uses `Local` flat data for simplicity. In this case, the PivotGrid also needs a `Data` parameter, which points to an `IEnumerable<TItem>`.
-1. (optional) To show initial data, add at least one [row, column, and measure with a `Name` parameter](#row-column-and-measure-parameters) that points to a field name in the data:
+1. (optional) To show initial data, add at least one [row, column, and measure with a `Name` parameter](#row-column-and-measure-field-parameters) that points to a field name in the data:
     * One `<PivotGridColumn>` instance inside the `<PivotGridColumns>` tag.
     * One `<PivotGridRow>` instance inside the `<PivotGridRows>` tag.
     * One `<PivotGridMeasure>` instance inside the `<PivotGridMeasures>` tag. Set a `Name` and `Aggregate`.
@@ -145,7 +145,7 @@ In the simpler case, the PivotGrid supports fixed configuration of its rows, col
 The tables below list the parameters of [all components, which comprise the PivotGrid](#components):
 
 * [Grid](#grid-parameters)
-    * [Rows, columns and measures](#row-column-and-measure-parameters)
+    * [Rows, columns and measures](#row-column-and-measure-field-parameters)
 * [Configurator](#configurator-parameters)
 * [Button](#button-parameters)
 * [Container](#container-parameters)

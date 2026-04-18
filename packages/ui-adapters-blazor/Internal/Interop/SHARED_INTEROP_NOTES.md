@@ -99,13 +99,13 @@ tests/Sunfish.Tests/Interop/
 
 1. **Placement in `Internal/Interop`** rather than `Sunfish.Foundation`: The services depend on `IJSRuntime` and `IJSObjectReference` which are Blazor-specific. They also depend on the JS module files shipped with `Sunfish.Components.Blazor`. Keeping them in Components ensures the JS files and C# wrappers ship together.
 
-2. **Internal visibility**: All interfaces, DTOs, and implementations are `internal`. Only the `AddMariloInteropServices()` extension method is `public` (on `SunfishBuilder`). Components inject services via `[Inject]` which bypasses access modifiers.
+2. **Internal visibility**: All interfaces, DTOs, and implementations are `internal`. Only the `AddSunfishInteropServices()` extension method is `public` (on `SunfishBuilder`). Components inject services via `[Inject]` which bypasses access modifiers.
 
 3. **Module loader pattern**: `SunfishJsModuleLoader` centralizes all JS module imports with caching and disposal. This replaces the pattern where each component calls `JS.InvokeAsync<IJSObjectReference>("import", ...)` independently.
 
 4. **Observer handle pattern**: `IResizeObserverService` and `IIntersectionObserverService` return `IAsyncDisposable` handles. Disposing the handle stops the observation. This prevents leaked observers.
 
-5. **DI registration as explicit opt-in**: `AddMariloInteropServices()` is a separate call chained after `AddMariloCoreServices()` because providers don't reference `Sunfish.Components.Blazor` (to avoid circular dependencies).
+5. **DI registration as explicit opt-in**: `AddSunfishInteropServices()` is a separate call chained after `AddSunfish()` because providers don't reference `Sunfish.Components.Blazor` (to avoid circular dependencies).
 
 ---
 
@@ -121,9 +121,9 @@ tests/Sunfish.Tests/Interop/
 
 ```csharp
 // In Program.cs or startup:
-builder.Services.AddMarilo()
-    .AddMariloCoreServices()
-    .AddMariloInteropServices();  // ← New
+builder.Services.AddSunfish()
+    .AddSunfish()
+    .AddSunfishInteropServices();  // ← New
 ```
 
 ---

@@ -19,7 +19,7 @@ This article contains the following sections:
 <!-- Start Document Outline -->
 
 * [Phase 1 — Current Implementation](#phase-1--current-implementation)
-* [Phase 2 — Planned](#phase-2--planned)
+* [Phase 2 — Planned](#phase-2--partial-implementation)
 * [Basics](#basics)
 	* [Events](#events)
 	* [Methods](#methods)
