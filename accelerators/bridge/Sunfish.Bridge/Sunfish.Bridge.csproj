@@ -22,6 +22,12 @@
     <PackageReference Include="WolverineFx" />
     <PackageReference Include="WolverineFx.RabbitMQ" />
     <PackageReference Include="WolverineFx.Postgresql" />
+    <!-- Explicit pin: Aspire.Npgsql.EntityFrameworkCore.PostgreSQL 13.2.2's transitive
+         closure resolves EntityFrameworkCore.Relational to 10.0.5, which collides with
+         Sunfish.Bridge.Data.dll compiled against 10.0.6. Direct PackageReference lets
+         Central Package Management (Directory.Packages.props) enforce 10.0.6 globally,
+         silencing MSB3277. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
   </ItemGroup>
 
 </Project>
