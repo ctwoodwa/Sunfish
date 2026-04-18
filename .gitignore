@@ -438,3 +438,8 @@ test-results/
 .wolf/suggestions.json
 .wolf/hooks/_session.json
 .wolf/designqc-captures/
+
+# Docs (generated)
+apps/docs/_site/
+apps/docs/api/
+apps/docs/obj/
