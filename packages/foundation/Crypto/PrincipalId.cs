@@ -1,5 +1,7 @@
 using System.Buffers.Text;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sunfish.Foundation.Crypto;
 
@@ -22,6 +24,7 @@ namespace Sunfish.Foundation.Crypto;
 /// <see cref="FromBase64Url"/>, or <see cref="KeyPair.Generate"/> rather than default-initialize.
 /// </para>
 /// </remarks>
+[JsonConverter(typeof(PrincipalIdJsonConverter))]
 public readonly record struct PrincipalId
 {
     /// <summary>Ed25519 public-key length in bytes (32).</summary>
@@ -79,4 +82,18 @@ public readonly record struct PrincipalId
 
     /// <summary>String form for diagnostics — the base64url public key.</summary>
     public override string ToString() => ToBase64Url();
+}
+
+internal sealed class PrincipalIdJsonConverter : JsonConverter<PrincipalId>
+{
+    public override PrincipalId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var str = reader.GetString() ?? throw new JsonException("PrincipalId must be a base64url string.");
+        return PrincipalId.FromBase64Url(str);
+    }
+
+    public override void Write(Utf8JsonWriter writer, PrincipalId value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToBase64Url());
+    }
 }

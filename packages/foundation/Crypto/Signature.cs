@@ -1,5 +1,7 @@
 using System.Buffers.Text;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sunfish.Foundation.Crypto;
 
@@ -11,6 +13,7 @@ namespace Sunfish.Foundation.Crypto;
 /// throw <see cref="NullReferenceException"/> from members on a default-constructed instance.
 /// Construct via <see cref="FromBytes"/> or <see cref="IOperationSigner"/>.
 /// </remarks>
+[JsonConverter(typeof(SignatureJsonConverter))]
 public readonly record struct Signature
 {
     /// <summary>Ed25519 signature length in bytes (64).</summary>
@@ -68,4 +71,18 @@ public readonly record struct Signature
 
     /// <summary>String form for diagnostics — the base64url signature.</summary>
     public override string ToString() => ToBase64Url();
+}
+
+internal sealed class SignatureJsonConverter : JsonConverter<Signature>
+{
+    public override Signature Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var str = reader.GetString() ?? throw new JsonException("Signature must be a base64url string.");
+        return Signature.FromBase64Url(str);
+    }
+
+    public override void Write(Utf8JsonWriter writer, Signature value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToBase64Url());
+    }
 }
