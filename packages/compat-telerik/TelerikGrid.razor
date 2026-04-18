@@ -1,0 +1,89 @@
+@namespace Sunfish.Compat.Telerik
+@typeparam TItem
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Components.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Telerik.Internal
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Telerik.Enums
+@inject ILogger<TelerikGrid<TItem>> Logger
+
+<SunfishDataGrid TItem="TItem"
+                 Data="Data"
+                 Pageable="Pageable"
+                 PageSize="PageSize"
+                 Sortable="Sortable"
+                 SortMode="_sortMode"
+                 FilterMode="_filterMode"
+                 SelectionMode="_selectionMode"
+                 SelectedItems="SelectedItems"
+                 SelectedItemsChanged="SelectedItemsChanged"
+                 @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishDataGrid>
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public bool Pageable { get; set; }
+    [Parameter] public int PageSize { get; set; } = 10;
+    [Parameter] public bool Sortable { get; set; } = true;
+    [Parameter] public CompatEnums.SortMode SortMode { get; set; } = CompatEnums.SortMode.Multiple;
+    [Parameter] public bool Filterable { get; set; }
+    [Parameter] public CompatEnums.FilterMode FilterMode { get; set; } = CompatEnums.FilterMode.None;
+    [Parameter] public bool Selectable { get; set; }
+    [Parameter] public CompatEnums.SelectionMode SelectionMode { get; set; } = CompatEnums.SelectionMode.None;
+    [Parameter] public IEnumerable<TItem>? SelectedItems { get; set; }
+    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
+
+    /// <summary>
+    /// Telerik's OnRead manual-data callback. Not shimmed in Phase 6 — throws if a delegate is
+    /// registered. Use <see cref="Data"/> with an in-memory or server-bound collection instead.
+    /// </summary>
+    [Parameter] public EventCallback<object> OnRead { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.GridSortMode _sortMode;
+    private FoundationEnums.GridFilterMode _filterMode;
+    private FoundationEnums.GridSelectionMode _selectionMode;
+
+    protected override void OnParametersSet()
+    {
+        if (OnRead.HasDelegate)
+        {
+            throw UnsupportedParam.Throw(
+                nameof(OnRead), "<delegate>",
+                "Use `Data` with an in-memory or server-bound collection. " +
+                "Telerik's GridReadEventArgs is not shimmed in Phase 6.");
+        }
+
+        _sortMode = SortMode switch
+        {
+            CompatEnums.SortMode.None => FoundationEnums.GridSortMode.Single, // Sunfish has no "none" — represented via Sortable=false.
+            CompatEnums.SortMode.Single => FoundationEnums.GridSortMode.Single,
+            CompatEnums.SortMode.Multiple => FoundationEnums.GridSortMode.Multiple,
+            _ => throw UnsupportedParam.Throw(nameof(SortMode), SortMode.ToString(), "Unknown SortMode value.")
+        };
+
+        _filterMode = FilterMode switch
+        {
+            CompatEnums.FilterMode.None => FoundationEnums.GridFilterMode.None,
+            CompatEnums.FilterMode.FilterRow => FoundationEnums.GridFilterMode.FilterRow,
+            CompatEnums.FilterMode.FilterMenu => FoundationEnums.GridFilterMode.FilterMenu,
+            CompatEnums.FilterMode.CheckBoxList => FoundationEnums.GridFilterMode.CheckBoxList,
+            _ => throw UnsupportedParam.Throw(nameof(FilterMode), FilterMode.ToString(), "Unknown FilterMode value.")
+        };
+
+        _selectionMode = (Selectable, SelectionMode) switch
+        {
+            (false, _) => FoundationEnums.GridSelectionMode.None,
+            (true, CompatEnums.SelectionMode.None) => FoundationEnums.GridSelectionMode.None,
+            (true, CompatEnums.SelectionMode.Single) => FoundationEnums.GridSelectionMode.Single,
+            (true, CompatEnums.SelectionMode.Multiple) => FoundationEnums.GridSelectionMode.Multiple,
+            _ => throw UnsupportedParam.Throw(nameof(SelectionMode), SelectionMode.ToString(), "Unknown SelectionMode value.")
+        };
+    }
+}
