@@ -255,11 +255,30 @@
   }
 }
 
-.sf-bs-datagrid-col--locked {
+// B5: Frozen / locked columns — provider-agnostic class (mar- prefix, emitted by C# renderer)
+.mar-datagrid-col--locked {
   position: sticky;
+  z-index: 1;
+  background-color: var(--mar-datagrid-row-bg, var(--bs-body-bg, #fff));
+  inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+}
+
+// B5.6: header-level frozen cells sit above body-level frozen cells during horizontal scroll.
+th.mar-datagrid-col--locked {
   z-index: 2;
-  background-color: var(--bs-body-bg);
-  border-right: 2px solid var(--sf-color-border);
+  background-color: var(--mar-datagrid-header-bg, var(--bs-body-bg, #f8f9fa));
+}
+
+// B5.5: boundary shadow — indicates the frozen ↔ scrollable transition.
+.mar-datagrid-col--locked-end {
+  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+// Right-side boundary casts the shadow in the opposite direction.
+.mar-datagrid-col--locked-end[style*="inset-inline-end"],
+.mar-datagrid-col--locked-end[data-frozen-position="End"] {
+  box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
 .sf-bs-datagrid-searchbox {
