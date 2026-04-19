@@ -23,6 +23,26 @@
     <Project Path="packages/foundation-rule-engine-event-bridge/Sunfish.Foundation.RuleEngine.EventBridge.csproj" />
     <Project Path="packages/foundation-rule-engine-event-bridge/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/catalog/">
+    <Project Path="packages/foundation-catalog/Sunfish.Foundation.Catalog.csproj" />
+    <Project Path="packages/foundation-catalog/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/multitenancy/">
+    <Project Path="packages/foundation-multitenancy/Sunfish.Foundation.MultiTenancy.csproj" />
+    <Project Path="packages/foundation-multitenancy/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/feature-management/">
+    <Project Path="packages/foundation-featuremanagement/Sunfish.Foundation.FeatureManagement.csproj" />
+    <Project Path="packages/foundation-featuremanagement/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/local-first/">
+    <Project Path="packages/foundation-localfirst/Sunfish.Foundation.LocalFirst.csproj" />
+    <Project Path="packages/foundation-localfirst/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/foundation/integrations/">
+    <Project Path="packages/foundation-integrations/Sunfish.Foundation.Integrations.csproj" />
+    <Project Path="packages/foundation-integrations/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/ui-core/">
     <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
     <Project Path="packages/ui-core/tests/tests.csproj" />

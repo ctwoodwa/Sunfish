@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunfish.io/schemas/catalog/bundle-manifest/1.0.0",
+  "title": "Sunfish Business Case Bundle Manifest",
+  "description": "Meta-schema for Sunfish business-case bundle manifests. Every reference bundle seed shipped with Sunfish.Foundation.Catalog validates against this schema. See ADR 0007.",
+  "type": "object",
+  "required": ["key", "name", "version"],
+  "properties": {
+    "key": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z][a-z0-9-]*)+$",
+      "description": "Reverse-DNS-style stable identifier."
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[\\w.-]+)?(\\+[\\w.-]+)?$",
+      "description": "Semver 2.0.0 version string."
+    },
+    "description": { "type": "string" },
+    "category": {
+      "type": "string",
+      "enum": ["Operations", "Diligence", "Finance", "Platform"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["Draft", "Preview", "GA", "Deprecated"]
+    },
+    "maturity": { "type": "string" },
+    "requiredModules": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "optionalModules": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "featureDefaults": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "editionMappings": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      }
+    },
+    "deploymentModesSupported": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["Lite", "SelfHosted", "HostedSaaS"]
+      }
+    },
+    "providerRequirements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["category"],
+        "properties": {
+          "category": {
+            "type": "string",
+            "enum": [
+              "Billing",
+              "Payments",
+              "BankingFeed",
+              "FeatureFlags",
+              "ChannelManager",
+              "Messaging",
+              "Storage",
+              "IdentityProvider",
+              "Other"
+            ]
+          },
+          "required": { "type": "boolean" },
+          "purpose": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "integrationProfiles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "seedWorkspaces": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "personas": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "dataOwnership": { "type": "string" },
+    "complianceNotes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

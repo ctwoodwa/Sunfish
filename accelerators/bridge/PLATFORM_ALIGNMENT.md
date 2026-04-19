@@ -1,9 +1,21 @@
 # Bridge Platform Alignment
 
 This document tracks Bridge's adoption of Sunfish platform primitives as defined in
-`docs/specifications/sunfish-platform-specification.md`. Bridge is the property-management
-vertical reference implementation - it should exercise every kernel primitive the platform
-defines. Gaps are tracked here with target phases.
+`docs/specifications/sunfish-platform-specification.md`. Per
+[ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md), **Bridge is a generic
+multi-tenant SaaS shell, not a vertical reference implementation.** It hosts
+business-case bundles ([ADR 0007](../../docs/adrs/0007-bundle-manifest-schema.md));
+Property Management is its first reference bundle.
+
+**How to read this document:**
+
+- Rows under *Core Kernel Primitives* and *Decentralized Primitives* track
+  Bridge's own adoption — shell-level concerns.
+- Rows under *Property Management MVP Coverage* track the **Property Management
+  bundle's** completeness, not Bridge's. A Bridge tenant without the PM bundle
+  enabled is not expected to satisfy any PM-MVP row.
+
+Gaps are tracked here with target phases.
 
 Legend: 🟢 adopted | 🟡 partially adopted | 🔴 not adopted | ⚪ N/A
 
@@ -28,6 +40,9 @@ Legend: 🟢 adopted | 🟡 partially adopted | 🔴 not adopted | ⚪ N/A
 | Federation (peer-to-peer sync) | 🔴 | Single-server deployment; no federation endpoints. Candidate: Automerge-style sync protocol shape adapted for .NET; see evaluation doc for integration paths (sidecar vs native .NET rewrite) |
 
 ## Spec Section 6 - Property Management MVP Coverage
+
+> These rows track the **Property Management bundle** (Bridge's first reference
+> bundle), not Bridge itself. See ADR 0006.
 
 | MVP Feature | Bridge Status | Notes |
 |---|---|---|

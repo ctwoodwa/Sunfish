@@ -1019,6 +1019,17 @@ The repository has a separate tactical migration plan (`docs/superpowers/plans/2
 
 ### 4.7 Phase 4 — Property Management Vertical
 
+> **Reconciliation note (2026-04-19, ADR 0006 + ADR 0007).**
+> Per [ADR 0006](../adrs/0006-bridge-is-saas-shell.md), Bridge is a generic
+> multi-tenant SaaS shell — not a property-management vertical. This section's
+> technical content remains valid as the specification of the **Property
+> Management business-case bundle** (Bridge's first reference bundle, per
+> [ADR 0007](../adrs/0007-bundle-manifest-schema.md)). Read "vertical" and
+> "Bridge accelerator completion" in this section as describing the PM bundle
+> and the operational readiness of Bridge hosting that bundle. A full phrasing
+> pass will follow once the bundle provisioning service (P1) lands; no
+> technical content is being changed here.
+
 **Duration estimate:** 4–6 months after Phase 3.
 
 **In scope:**
@@ -1492,6 +1503,17 @@ query RenewalsDueIn90Days {
 ---
 
 ## 6. Property Management MVP Feature Set
+
+> **Reconciliation note (2026-04-19, ADR 0006 + ADR 0007).**
+> Per [ADR 0006](../adrs/0006-bridge-is-saas-shell.md), the "Property Management
+> MVP" specified below is the shape of the **Property Management business-case
+> bundle**. It is hosted by Bridge (a generic SaaS shell), not implemented
+> inside Bridge. See
+> [`packages/foundation-catalog/Manifests/Bundles/property-management.bundle.json`](../../packages/foundation-catalog/Manifests/Bundles/property-management.bundle.json)
+> for the declarative manifest built against this specification. Technical
+> content below is unchanged; terminology reconciliation ("Bridge accelerator"
+> → "PM bundle hosted on Bridge") follows once the bundle provisioning service
+> (P1) lands.
 
 The Property Management MVP is realized in the **Bridge accelerator**. This section defines each feature's entities, typical workflows, and acceptance criteria.
 

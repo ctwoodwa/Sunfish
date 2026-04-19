@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.LocalFirst</PackageId>
+    <Description>Offline-capable local operation primitives: offline store, outbound queue, sync engine, conflict resolver, data export/import. Contracts plus minimal in-memory references. See ADR 0012.</Description>
+    <PackageTags>sunfish;foundation;localfirst;offline;sync</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.LocalFirst.Tests" />
+  </ItemGroup>
+</Project>

@@ -16,6 +16,16 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0002](0002-kernel-module-format.md) | Kernel Module Format | Accepted | G32 |
 | [0003](0003-event-bus-distribution-semantics.md) | Event-Bus Distribution Semantics | Accepted | G33 |
 | [0004](0004-post-quantum-signature-migration.md) | Post-Quantum Signature Migration Plan | Accepted | G34 |
+| [0005](0005-type-customization-model.md) | Type-Customization Model (Typed vs. Dynamic Balance) | Accepted | — |
+| [0006](0006-bridge-is-saas-shell.md) | Bridge Is a Generic SaaS Shell, Not a Vertical App | Accepted | — |
+| [0007](0007-bundle-manifest-schema.md) | Bundle Manifest Schema | Accepted | — |
+| [0008](0008-foundation-multitenancy.md) | Foundation.MultiTenancy Contracts + Finbuckle Boundary | Accepted | — |
+| [0009](0009-foundation-featuremanagement.md) | Foundation.FeatureManagement (Flags vs. Entitlements vs. Editions) | Accepted | — |
+| [0010](0010-templates-boundary.md) | Templates Module Boundary (Foundation.Catalog vs. blocks-templating) | Accepted | — |
+| [0011](0011-bundle-versioning-upgrade-policy.md) | Bundle Versioning and Upgrade Policy | Accepted | — |
+| [0012](0012-foundation-localfirst.md) | Foundation.LocalFirst Contracts + Federation Relationship | Accepted | — |
+| [0013](0013-foundation-integrations.md) | Foundation.Integrations + Provider-Neutrality Policy | Accepted | — |
+| [0014](0014-adapter-parity-policy.md) | UI Adapter Parity Policy (Blazor ↔ React) | Accepted | — |
 
 ## Appendix C Resolution
 

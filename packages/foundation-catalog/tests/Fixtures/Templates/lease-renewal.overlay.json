@@ -1,0 +1,21 @@
+{
+  "id": "tenant://acme/lease-renewal",
+  "version": "1.0.0",
+  "baseRef": "https://sunfish.io/schemas/property-management/lease-renewal/1.0.0",
+  "dataSchemaPatch": {
+    "$id": "https://sunfish.io/schemas/property-management/lease-renewal/1.0.0/tenant/acme",
+    "properties": {
+      "petDeposit": {
+        "type": "number",
+        "minimum": 0,
+        "description": "Acme-specific optional pet deposit."
+      },
+      "renewalTermMonths": {
+        "maximum": 60
+      }
+    }
+  },
+  "uiSchemaPatch": {
+    "label": "Acme Lease Renewal"
+  }
+}

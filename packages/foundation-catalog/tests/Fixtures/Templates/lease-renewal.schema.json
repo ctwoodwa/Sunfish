@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunfish.io/schemas/property-management/lease-renewal/1.0.0",
+  "title": "Lease Renewal",
+  "description": "Canonical Sunfish Property Management lease-renewal form. Tenant overlays may add optional fields and widen numeric bounds; required fields and field types are invariant.",
+  "type": "object",
+  "required": ["tenantId", "currentLeaseEndDate", "renewalTermMonths", "proposedRent"],
+  "properties": {
+    "tenantId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Tenant (renter) identity."
+    },
+    "currentLeaseEndDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "renewalTermMonths": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 36
+    },
+    "proposedRent": {
+      "type": "number",
+      "minimum": 0
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 2000
+    }
+  },
+  "additionalProperties": false
+}

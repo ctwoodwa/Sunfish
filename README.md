@@ -27,11 +27,15 @@ Sunfish is organized into layers:
 
 - **Solution Accelerators**
   Opinionated, ready-to-extend starter solutions composed from Sunfish building blocks.
-  [Bridge](accelerators/bridge/README.md) is the reference implementation - a
-  full-stack property-management app that demonstrates the whole Sunfish stack
-  end-to-end (Blazor Server, .NET Aspire, EF Core + Postgres, DAB, SignalR,
-  Wolverine messaging). See also
-  [accelerators/bridge/ROADMAP.md](accelerators/bridge/ROADMAP.md) and
+  [Bridge](accelerators/bridge/README.md) is the reference implementation — a
+  **generic multi-tenant SaaS shell accelerator** that demonstrates the whole
+  Sunfish stack end-to-end (Blazor Server, .NET Aspire, EF Core + Postgres,
+  DAB, SignalR, Wolverine messaging). Bridge hosts **business-case bundles**;
+  Property Management is its first reference bundle. See
+  [ADR 0006](docs/adrs/0006-bridge-is-saas-shell.md) for the shell-vs-bundle
+  split, [ADR 0007](docs/adrs/0007-bundle-manifest-schema.md) for bundle
+  composition, and
+  [accelerators/bridge/ROADMAP.md](accelerators/bridge/ROADMAP.md) +
   [accelerators/bridge/PLATFORM_ALIGNMENT.md](accelerators/bridge/PLATFORM_ALIGNMENT.md).
 
 ## Repository layout

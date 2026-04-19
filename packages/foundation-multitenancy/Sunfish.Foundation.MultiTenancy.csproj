@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.MultiTenancy</PackageId>
+    <Description>Tenancy primitives: TenantMetadata, ITenantContext, ITenantResolver, ITenantCatalog, scoped markers, and an in-memory default. Does not reference Finbuckle — Bridge handles that adaptation in its host. See ADR 0008.</Description>
+    <PackageTags>sunfish;foundation;multitenancy;tenant</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.MultiTenancy.Tests" />
+  </ItemGroup>
+</Project>

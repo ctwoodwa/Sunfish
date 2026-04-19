@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Catalog</PackageId>
+    <Description>Customization catalog: extension-field registrations and template definitions with tenant overlays. Control plane for ADR 0005.</Description>
+    <PackageTags>sunfish;foundation;catalog;extensions;templates</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Manifests/**/*.json" />
+    <None Remove="Schemas/**/*.json" />
+    <EmbeddedResource Include="Manifests/Bundles/property-management.bundle.json">
+      <LogicalName>Bundles/property-management.bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Manifests/Bundles/asset-management.bundle.json">
+      <LogicalName>Bundles/asset-management.bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Manifests/Bundles/project-management.bundle.json">
+      <LogicalName>Bundles/project-management.bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Manifests/Bundles/facility-operations.bundle.json">
+      <LogicalName>Bundles/facility-operations.bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Manifests/Bundles/acquisition-underwriting.bundle.json">
+      <LogicalName>Bundles/acquisition-underwriting.bundle.json</LogicalName>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Schemas/bundle-manifest.schema.json">
+      <LogicalName>Schemas/bundle-manifest.schema.json</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Catalog.Tests" />
+  </ItemGroup>
+</Project>

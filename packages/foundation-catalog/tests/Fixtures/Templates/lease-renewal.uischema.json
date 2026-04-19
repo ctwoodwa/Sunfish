@@ -1,0 +1,10 @@
+{
+  "type": "VerticalLayout",
+  "elements": [
+    { "type": "Control", "scope": "#/properties/tenantId", "options": { "readonly": true } },
+    { "type": "Control", "scope": "#/properties/currentLeaseEndDate" },
+    { "type": "Control", "scope": "#/properties/renewalTermMonths" },
+    { "type": "Control", "scope": "#/properties/proposedRent" },
+    { "type": "Control", "scope": "#/properties/notes", "options": { "multi": true } }
+  ]
+}

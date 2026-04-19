@@ -1,9 +1,21 @@
 # Bridge - Solution Accelerator
 
-Bridge is the reference Sunfish solution accelerator: a full-stack
-project-management app that composes every tier of the Sunfish stack into a
-single working solution. It is also the **property-management vertical
-reference implementation** per `docs/specifications/sunfish-platform-specification.md`.
+Bridge is the Sunfish reference **SaaS shell accelerator**: a generic
+multi-tenant platform host that composes every tier of the Sunfish stack into
+a single working solution. Bridge is **not** a vertical app. Its job is shell
+concerns — tenant lifecycle, subscription and edition enforcement, bundle
+activation, per-tenant feature management, admin backoffice, integration
+configuration, and observability. Domain work lives in `blocks-*` modules,
+grouped and activated by **business-case bundles**.
+
+Property Management is Bridge's first reference bundle. Asset Management,
+Project Management, Facility Operations, and Acquisition / Underwriting
+follow as equal peers. See
+[ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md) for the shell-vs-bundle
+split and [ADR 0007](../../docs/adrs/0007-bundle-manifest-schema.md) for
+bundle composition semantics. `docs/specifications/sunfish-platform-specification.md`
+§6 remains the Property Management bundle specification (pending a phrasing
+reconciliation pass — the technical content stands).
 
 ## What Bridge demonstrates
 
