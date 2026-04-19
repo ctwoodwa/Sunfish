@@ -74,3 +74,21 @@ public enum GridSelectionUnit
     /// <summary>Selection operates on individual cells.</summary>
     Cell
 }
+
+/// <summary>
+/// Controls the visual density of a data grid — affects font size, cell padding, and row height.
+/// CSS class <c>mar-datagrid--size-{small|medium|large}</c> is applied to the grid's root element;
+/// each tier defines <c>--mar-datagrid-font-size</c>, <c>--mar-datagrid-cell-padding</c>, and
+/// <c>--mar-datagrid-row-height</c> CSS custom properties.
+/// </summary>
+public enum DataGridSize
+{
+    /// <summary>Compact layout: smaller font, tighter padding, shorter rows.</summary>
+    Small,
+
+    /// <summary>Standard layout (default).</summary>
+    Medium,
+
+    /// <summary>Spacious layout: larger font, more padding, taller rows.</summary>
+    Large
+}
