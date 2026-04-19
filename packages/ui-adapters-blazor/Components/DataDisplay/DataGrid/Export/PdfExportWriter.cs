@@ -8,8 +8,8 @@ namespace Sunfish.Components.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Pure (no-Blazor-dependency) PDF writer for <see cref="SunfishDataGrid{TItem}"/> export.
-/// Converts a <see cref="GridExportData{TItem}"/> snapshot into a <c>.pdf</c> byte array
-/// using QuestPDF 2023.12.8 (MIT-licensed; see <c>Directory.Packages.props</c> for the pin
+/// Converts a snapshot of visible columns and data rows into a <c>.pdf</c> byte array
+/// using QuestPDF 2023.12.6 (MIT-licensed; see <c>Directory.Packages.props</c> for the pin
 /// rationale).
 /// </summary>
 /// <remarks>
@@ -27,30 +27,44 @@ namespace Sunfish.Components.Blazor.Components.DataDisplay;
 /// </remarks>
 internal static class PdfExportWriter
 {
+    // QuestPDF 2023.12.x introduced a runtime license gate that requires this one-time
+    // acknowledgement even though the package itself is MIT-licensed at this version.
+    // LicenseType.Community is free for individuals, non-profits, and organisations with
+    // annual revenue below $1 M USD — see Directory.Packages.props for the full pin note.
+    static PdfExportWriter()
+    {
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+    }
+
     /// <summary>
     /// Generates a <c>.pdf</c> file from the supplied column/row snapshot and returns its
     /// raw bytes. The bytes can be transported to the browser via base64 or a stream.
     /// </summary>
     /// <typeparam name="TItem">Row data type.</typeparam>
-    /// <param name="data">
-    ///   Export snapshot produced by <see cref="SunfishDataGrid{TItem}.GetExportData"/>.
+    /// <param name="columns">
+    ///   Visible, ordered column descriptors (field name, display title, format string).
     /// </param>
+    /// <param name="items">Data rows to export.</param>
     /// <param name="options">PDF layout options. Must not be <c>null</c>.</param>
     /// <returns>Raw bytes of the generated PDF document.</returns>
     /// <exception cref="ArgumentException">
     ///   Thrown when <see cref="PdfExportOptions.PageSize"/> is not one of
     ///   <c>"Letter"</c>, <c>"A4"</c>, or <c>"Legal"</c>.
     /// </exception>
-    public static byte[] Write<TItem>(GridExportData<TItem> data, PdfExportOptions options)
+    public static byte[] Write<TItem>(
+        IReadOnlyList<ExportColumnDescriptor> columns,
+        IReadOnlyList<TItem> items,
+        PdfExportOptions options)
     {
-        ArgumentNullException.ThrowIfNull(data);
+        ArgumentNullException.ThrowIfNull(columns);
+        ArgumentNullException.ThrowIfNull(items);
         ArgumentNullException.ThrowIfNull(options);
 
         var pageSize = MapPageSize(options.PageSize, options.Landscape);
 
         // Build a per-column property cache once — avoids repeated reflection per row.
         var itemType = typeof(TItem);
-        var propCache = data.Columns
+        var propCache = columns
             .Select(c => string.IsNullOrEmpty(c.Field)
                 ? null
                 : itemType.GetProperty(c.Field, BindingFlags.Public | BindingFlags.Instance))
@@ -80,7 +94,7 @@ internal static class PdfExportWriter
                     // Equal-width relative columns
                     table.ColumnsDefinition(cols =>
                     {
-                        for (int c = 0; c < data.Columns.Count; c++)
+                        for (int c = 0; c < columns.Count; c++)
                             cols.RelativeColumn();
                     });
 
@@ -89,28 +103,23 @@ internal static class PdfExportWriter
                     {
                         table.Header(header =>
                         {
-                            foreach (var col in data.Columns)
+                            foreach (var col in columns)
                             {
-                                var title = data.Headers.TryGetValue(col.Field ?? "", out var h)
-                                    ? h
-                                    : col.Field ?? "";
-
                                 header.Cell()
                                     .Background(Colors.Grey.Lighten3)
                                     .Padding(4)
-                                    .Text(title)
+                                    .Text(col.Title)
                                     .Bold();
                             }
                         });
                     }
 
                     // Data rows
-                    foreach (var item in data.Items)
+                    foreach (var item in items)
                     {
-                        for (int c = 0; c < data.Columns.Count; c++)
+                        for (int c = 0; c < columns.Count; c++)
                         {
-                            var col = data.Columns[c];
-                            var text = ResolveCellText(item, propCache[c], col.Format);
+                            var text = ResolveCellText(item, propCache[c], columns[c].Format);
                             table.Cell().Padding(4).Text(text);
                         }
                     }
@@ -140,7 +149,7 @@ internal static class PdfExportWriter
     /// <summary>
     /// Maps a logical page-size name and orientation to a QuestPDF <see cref="PageSize"/>.
     /// </summary>
-    /// <param name="pageSizeName">Case-insensitive page size: <c>"Letter"</c>, <c>"A4"</c>, <c>"Legal"</c>.</param>
+    /// <param name="pageSizeName">Page size name: <c>"Letter"</c>, <c>"A4"</c>, <c>"Legal"</c>.</param>
     /// <param name="landscape">When <c>true</c>, returns the landscape variant.</param>
     /// <exception cref="ArgumentException">
     ///   Thrown when <paramref name="pageSizeName"/> is not a recognised value.

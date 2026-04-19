@@ -30,8 +30,9 @@ public partial class SunfishDataGrid<TItem>
     /// emitted.
     /// </para>
     /// <para>
-    /// <b>QuestPDF version:</b> this method uses QuestPDF 2023.12.8, which is MIT-licensed.
-    /// Versions 2024.3+ carry a Community license (see <c>Directory.Packages.props</c>).
+    /// <b>QuestPDF version:</b> this method uses QuestPDF 2023.12.6 (the highest MIT-licensed
+    /// release available on NuGet). Versions 2024.3+ carry a Community license
+    /// (see <c>Directory.Packages.props</c> for the pin rationale).
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
@@ -90,11 +91,31 @@ public partial class SunfishDataGrid<TItem>
             if (beforeArgs.IsCancelled) return;
         }
 
-        // ── Build export snapshot ───────────────────────────────────────
-        var data = GetExportData(options.ExportAllPages);
+        // ── Build column descriptors from visible columns ───────────────
+        var columns = _visibleColumns
+            .Select(c => new ExportColumnDescriptor(c.Field, c.DisplayTitle, c.Format))
+            .ToList();
+
+        // ── Resolve data rows ───────────────────────────────────────────
+        IEnumerable<TItem> items;
+        if (options.ExportAllPages && Data is not null)
+        {
+            items = Data;
+            if (!string.IsNullOrWhiteSpace(_searchText))
+                items = ApplySearch(items, _searchText);
+            foreach (var filter in _state.FilterDescriptors)
+                items = ApplyFilter(items, filter);
+            items = ApplySort(items);
+        }
+        else
+        {
+            items = _displayedItems;
+        }
+
+        var itemList = items.ToList();
 
         // ── Generate PDF bytes (pure C# — no Blazor dependency) ─────────
-        var bytes = PdfExportWriter.Write(data, options);
+        var bytes = PdfExportWriter.Write(columns, itemList, options);
 
         // ── Trigger browser download via IDownloadService ────────────────
         var fileName = string.IsNullOrWhiteSpace(options.FileName)
@@ -114,7 +135,7 @@ public partial class SunfishDataGrid<TItem>
             await OnAfterExport.InvokeAsync(new GridExportEventArgs
             {
                 Format = "pdf",
-                RowCount = data.Items.Count
+                RowCount = itemList.Count
             });
         }
     }
