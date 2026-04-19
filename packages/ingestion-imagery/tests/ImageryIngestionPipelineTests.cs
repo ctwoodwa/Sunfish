@@ -124,13 +124,43 @@ public class ImageryIngestionPipelineTests : IDisposable
         Assert.NotNull(result.Value.Body["imageBlobCid"]);
     }
 
-    [Fact(Skip = "Parking lot — streaming blob path deferred (currently buffers to memory)")]
+    [Fact]
     public async Task Ingest_100MbStream_StreamsWithoutMemoryExplosion()
     {
-        // Will exercise the spec §7.5 "streaming blob upload" path once IBlobStore grows a
-        // Stream-accepting overload. Currently the pipeline copies the stream into a MemoryStream
-        // before calling PutAsync, so a 100 MB upload peaks at 100 MB of managed memory.
-        await Task.CompletedTask;
+        // Spec §7.5 streaming blob upload path. FileSystemBlobStore.PutStreamingAsync streams
+        // directly to disk — the pipeline should not buffer the full 100 MiB payload in managed
+        // memory. The managed-allocation delta for the current thread is used as a soft guard.
+        const int payloadBytes = 100 * 1024 * 1024; // 100 MiB
+        const long memoryBudgetBytes = 8 * 1024 * 1024; // 8 MiB delta (generous: metadata + framing)
+
+        var payload = new byte[payloadBytes];
+        new Random(9876).NextBytes(payload);
+
+        var extractor = new StubExtractor(ImageryMetadata.Empty);
+        var pipeline = new ImageryIngestionPipeline(_blobs, extractor);
+
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+
+        long allocBefore = GC.GetAllocatedBytesForCurrentThread();
+
+        var upload = new ImageUpload(
+            Content: new MemoryStream(payload, writable: false),
+            Filename: "large.jpg",
+            ContentType: "image/jpeg",
+            SchemaId: "sunfish.imagery/1");
+
+        var result = await pipeline.IngestAsync(upload, Ctx());
+
+        long allocAfter = GC.GetAllocatedBytesForCurrentThread();
+        long delta = allocAfter - allocBefore;
+
+        Assert.True(result.IsSuccess, $"Ingest failed: {result.Failure?.Message}");
+        Assert.True(
+            delta < memoryBudgetBytes,
+            $"Managed-memory delta was {delta:N0} bytes (budget: {memoryBudgetBytes:N0}, " +
+            $"payload: {payloadBytes:N0}). The pipeline is likely still buffering the full payload.");
     }
 
     private sealed class StubExtractor(ImageryMetadata result) : IImageryMetadataExtractor
