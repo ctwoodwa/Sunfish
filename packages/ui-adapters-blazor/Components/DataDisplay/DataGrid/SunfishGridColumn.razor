@@ -113,6 +113,31 @@
     /// </summary>
     internal bool IsResizable(bool gridAllows) => gridAllows && Resizable;
 
+    /// <summary>
+    /// Whether this column can be dragged to a new position when the grid's
+    /// <c>AllowColumnReorder</c> is <c>true</c>. Defaults to <c>true</c>; set to <c>false</c>
+    /// to opt a specific column out of reordering.
+    /// </summary>
+    [Parameter] public bool Reorderable { get; set; } = true;
+
+    /// <summary>
+    /// Optional initial display order index. When set on one or more columns, the grid sorts
+    /// <c>_columns</c> by <c>(OrderIndex ?? declarationIndex)</c> before first render so that
+    /// columns appear in the specified order regardless of declaration sequence.
+    /// After a drag-reorder, the grid calls <see cref="SetOrderIndex"/> to keep this in sync.
+    /// </summary>
+    [Parameter] public int? OrderIndex { get; set; }
+
+    /// <summary>Updates <see cref="OrderIndex"/> after a drag-reorder.</summary>
+    internal void SetOrderIndex(int idx) => OrderIndex = idx;
+
+    /// <summary>
+    /// Returns <c>true</c> when this column participates in HTML5 drag-reorder.
+    /// A column is reorderable only when the grid opts in via <paramref name="gridAllows"/>
+    /// AND the column's own <see cref="Reorderable"/> is <c>true</c>.
+    /// </summary>
+    internal bool IsReorderable(bool gridAllows) => gridAllows && Reorderable;
+
     /// <summary>Whether this column can be used for grouping. Defaults to true.</summary>
     [Parameter] public bool Groupable { get; set; } = true;
 
