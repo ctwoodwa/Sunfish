@@ -224,6 +224,7 @@ public class CsvExportGridTests : BunitContext
         Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
         Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
         Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
+        Services.AddSingleton<Sunfish.Components.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
 
         // Set bUnit JS interop to strict mode so unhandled calls throw rather than silently
         // returning defaults. Then register the module import + downloadText call.
