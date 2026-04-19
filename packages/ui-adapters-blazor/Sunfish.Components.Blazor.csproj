@@ -28,6 +28,7 @@
     <InternalsVisibleTo Include="Sunfish.Components.Blazor.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ClosedXML" />
     <PackageReference Include="Markdig" />
   </ItemGroup>
   <ItemGroup>
