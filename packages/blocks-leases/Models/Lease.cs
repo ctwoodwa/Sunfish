@@ -1,0 +1,34 @@
+using Sunfish.Foundation.Assets.Common;
+
+namespace Sunfish.Blocks.Leases.Models;
+
+/// <summary>
+/// Canonical lease record. Intentionally thin for the first pass; full workflow surface
+/// (signature, execution, renewal, termination) is deferred to follow-up work.
+/// </summary>
+public sealed record Lease
+{
+    /// <summary>Unique identifier for this lease.</summary>
+    public required LeaseId Id { get; init; }
+
+    /// <summary>The unit covered by this lease.</summary>
+    public required EntityId UnitId { get; init; }
+
+    /// <summary>All tenant parties on this lease.</summary>
+    public required IReadOnlyList<PartyId> Tenants { get; init; }
+
+    /// <summary>The landlord party for this lease.</summary>
+    public required PartyId Landlord { get; init; }
+
+    /// <summary>Date the lease term begins (inclusive).</summary>
+    public required DateOnly StartDate { get; init; }
+
+    /// <summary>Date the lease term ends (inclusive).</summary>
+    public required DateOnly EndDate { get; init; }
+
+    /// <summary>Monthly rent amount in the base currency.</summary>
+    public required decimal MonthlyRent { get; init; }
+
+    /// <summary>Current lifecycle phase of the lease.</summary>
+    public required LeasePhase Phase { get; init; }
+}

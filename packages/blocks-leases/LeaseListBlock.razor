@@ -1,0 +1,67 @@
+@* Read-display lease list. Consumes ILeaseService via DI.
+   Editing, phase transitions, and DocuSign workflow are deferred to follow-up work. *@
+
+@inject ILeaseService LeaseService
+
+@if (_leases is null)
+{
+    <div class="sf-lease-list__loading">Loading leases…</div>
+}
+else if (_leases.Count == 0)
+{
+    <div class="sf-lease-list__empty">No leases</div>
+}
+else
+{
+    <table class="sf-lease-list">
+        <thead>
+            <tr>
+                <th class="sf-lease-list__col-phase">Phase</th>
+                <th class="sf-lease-list__col-unit">Unit</th>
+                <th class="sf-lease-list__col-tenants">Tenants</th>
+                <th class="sf-lease-list__col-start">Start date</th>
+                <th class="sf-lease-list__col-end">End date</th>
+                <th class="sf-lease-list__col-rent">Monthly rent</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var lease in _leases)
+            {
+                <tr class="sf-lease-list__row" data-lease-id="@lease.Id">
+                    <td class="sf-lease-list__col-phase">@lease.Phase</td>
+                    <td class="sf-lease-list__col-unit">@lease.UnitId</td>
+                    <td class="sf-lease-list__col-tenants">@string.Join(", ", lease.Tenants)</td>
+                    <td class="sf-lease-list__col-start">@lease.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-lease-list__col-end">@lease.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-lease-list__col-rent">@lease.MonthlyRent.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Lease>? _leases;
+
+    /// <summary>
+    /// Optional filter to pass when loading leases. Defaults to <see cref="ListLeasesQuery.Empty"/>
+    /// (returns all leases).
+    /// </summary>
+    [Parameter] public ListLeasesQuery Query { get; set; } = ListLeasesQuery.Empty;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var results = new List<Lease>();
+            await foreach (var lease in LeaseService.ListAsync(Query))
+                results.Add(lease);
+            _leases = results;
+        }
+        catch
+        {
+            _leases = [];
+        }
+    }
+}
