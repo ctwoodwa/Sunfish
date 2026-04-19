@@ -2,137 +2,801 @@
   "$schema": "https://github.com/Azure/data-api-builder/releases/latest/download/dab.draft.schema.json",
   "data-source": {
     "database-type": "postgresql",
-    "connection-string": "@env('ConnectionStrings__sunfishbridgedb')",
-    "options": {
-      "set-session-context": false
-    }
+    "connection-string": "@env('ConnectionStrings__sunfishbridgedb')"
   },
   "runtime": {
     "rest": {
       "enabled": false,
-      "path": "/api"
+      "path": "/api",
+      "request-body-strict": true
     },
     "graphql": {
       "enabled": true,
       "path": "/graphql",
       "allow-introspection": true
     },
+    "mcp": {
+      "enabled": true,
+      "path": "/mcp",
+      "dml-tools": {
+        "describe-entities": true,
+        "create-record": true,
+        "read-records": true,
+        "update-record": true,
+        "delete-record": true,
+        "execute-entity": true
+      }
+    },
     "host": {
-      "mode": "development",
       "cors": {
-        "origins": ["*"],
+        "origins": [
+          "*"
+        ],
         "allow-credentials": false
       },
       "authentication": {
         "provider": "StaticWebApps"
-      }
+      },
+      "mode": "development"
     }
   },
   "entities": {
     "Project": {
-      "source": { "object": "projects", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Project", "plural": "projects" } },
-      "rest": { "enabled": false },
+      "description": "Top-level unit of work in the Bridge PM demo. Owns tasks, milestones, risks, budget lines, and a member roster.",
+      "source": {
+        "object": "projects",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Project",
+          "plural": "projects"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["read"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "ProjectMember": {
-      "source": { "object": "project_members", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "ProjectMember", "plural": "projectMembers" } },
-      "rest": { "enabled": false },
+      "description": "Many-to-many join between Project and User. Carries the member's role on that project (Owner / Admin / ProjectManager / TeamMember / Viewer).",
+      "source": {
+        "object": "project_members",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "ProjectMember",
+          "plural": "projectMembers"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["read"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "Task": {
-      "source": { "object": "tasks", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Task", "plural": "tasks" } },
-      "rest": { "enabled": false },
+      "description": "Work item assigned to a project member. Carries status (Todo / InProgress / Done / Blocked), priority, due date, and optional parent-milestone reference. TeamMembers can create and update their own tasks but not delete them.",
+      "source": {
+        "object": "tasks",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Task",
+          "plural": "tasks"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["create", "read", "update"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "Subtask": {
-      "source": { "object": "subtasks", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Subtask", "plural": "subtasks" } },
-      "rest": { "enabled": false },
+      "description": "Child checklist item under a Task. TeamMembers have full CRUD on subtasks of tasks they can see.",
+      "source": {
+        "object": "subtasks",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Subtask",
+          "plural": "subtasks"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["create", "read", "update", "delete"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "Comment": {
-      "source": { "object": "comments", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Comment", "plural": "comments" } },
-      "rest": { "enabled": false },
+      "description": "Threaded discussion attached to a Project, Task, or Milestone. TeamMembers can create/edit/delete their own comments.",
+      "source": {
+        "object": "comments",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Comment",
+          "plural": "comments"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["create", "read", "update", "delete"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "Milestone": {
-      "source": { "object": "milestones", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Milestone", "plural": "milestones" } },
-      "rest": { "enabled": false },
+      "description": "Calendar-anchored checkpoint within a Project (e.g., kickoff, beta release, GA). Groups tasks and drives burndown reporting.",
+      "source": {
+        "object": "milestones",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Milestone",
+          "plural": "milestones"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["read"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "Risk": {
-      "source": { "object": "risks", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "Risk", "plural": "risks" } },
-      "rest": { "enabled": false },
+      "description": "Risk register entry for a Project. Carries likelihood / impact / mitigation text. TeamMembers can read and update (e.g., raise likelihood) but cannot create or delete.",
+      "source": {
+        "object": "risks",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "Risk",
+          "plural": "risks"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["read", "update"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "BudgetLine": {
-      "source": { "object": "budget_lines", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "BudgetLine", "plural": "budgetLines" } },
-      "rest": { "enabled": false },
+      "description": "Single line on a Project budget — category, budgeted amount, actual spend, variance. Non-PM roles are read-only.",
+      "source": {
+        "object": "budget_lines",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "BudgetLine",
+          "plural": "budgetLines"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "Admin",          "actions": ["create", "read", "update", "delete"] },
-        { "role": "ProjectManager", "actions": ["create", "read", "update", "delete"] },
-        { "role": "TeamMember",     "actions": ["read"] },
-        { "role": "Viewer",         "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "create"
+            },
+            {
+              "action": "read"
+            },
+            {
+              "action": "update"
+            },
+            {
+              "action": "delete"
+            }
+          ]
+        },
+        {
+          "role": "TeamMember",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "Viewer",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     },
     "AuditRecord": {
-      "source": { "object": "audit_records", "type": "table" },
-      "graphql": { "enabled": true, "type": { "singular": "AuditRecord", "plural": "auditRecords" } },
-      "rest": { "enabled": false },
+      "description": "Append-only audit trail — every mutation on any entity produces a record. Read-only from the DAB/MCP surface (writes happen via the kernel's audit-log primitive).",
+      "source": {
+        "object": "audit_records",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "AuditRecord",
+          "plural": "auditRecords"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
       "permissions": [
-        { "role": "Owner",          "actions": ["read"] },
-        { "role": "Admin",          "actions": ["read"] },
-        { "role": "ProjectManager", "actions": ["read"] }
+        {
+          "role": "Owner",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "Admin",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        },
+        {
+          "role": "ProjectManager",
+          "actions": [
+            {
+              "action": "read"
+            }
+          ]
+        }
       ]
     }
   }

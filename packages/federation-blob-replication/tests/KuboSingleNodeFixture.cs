@@ -45,8 +45,7 @@ public sealed class KuboSingleNodeFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        _container = new ContainerBuilder()
-            .WithImage("ipfs/kubo:v0.28.0")
+        _container = new ContainerBuilder("ipfs/kubo:v0.28.0")
             .WithPortBinding(5001, assignRandomHostPort: true)
             .WithPortBinding(8080, assignRandomHostPort: true)
             .WithEnvironment("IPFS_PROFILE", "test")

@@ -30,8 +30,7 @@ public sealed class PostgresAssetStoreFixture : IAsyncLifetime
         Environment.SetEnvironmentVariable("TESTCONTAINERS_RYUK_DISABLED", "true");
     }
 
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder()
-        .WithImage("postgres:16-alpine")
+    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:16-alpine")
         .WithDatabase("sunfish_assets_test")
         .WithUsername("sunfish")
         .WithPassword("sunfish")

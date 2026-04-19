@@ -11,6 +11,10 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <!-- Direct pin so Central Package Management enforces 10.0.6 against Npgsql 10.0.1's
+         transitive resolution of 10.0.4, silencing MSB3277 (matches the Bridge/Sunfish.Bridge
+         fix for the same class of Aspire-era transitive lag). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
