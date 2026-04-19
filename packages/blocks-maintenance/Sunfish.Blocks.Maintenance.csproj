@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.SDK.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.Maintenance</PackageId>
