@@ -2,7 +2,7 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Kernel</PackageId>
-    <Description>Kernel contract facade for Sunfish — exposes the platform spec §3 kernel primitives (entity store, version store, audit log, schema registry, permission evaluator, event bus, blob store) at the spec-named Layer 2 surface. Ships as type-forwarded wrappers over Sunfish.Foundation primitives plus stub interfaces for the not-yet-shipped Schema Registry (gap G2) and Event Bus (gap G3).</Description>
+    <Description>Kernel contract facade for Sunfish — exposes the platform spec §3 kernel primitives (entity store, version store, audit log, permission evaluator, blob store) at the spec-named Layer 2 surface. Ships as type-forwarded wrappers over Sunfish.Foundation primitives plus a stub interface for the not-yet-shipped Event Bus (gap G3). The Schema Registry (§3.4) ships from the sibling Sunfish.Kernel.SchemaRegistry package.</Description>
     <PackageTags>sunfish;kernel;contracts;facade</PackageTags>
     <!-- Stub interfaces are intentionally empty and documented via xmldoc, but the
          empty-interface analyzer and CS1591 (missing doc on member) are noisy for a

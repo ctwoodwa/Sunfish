@@ -15,10 +15,13 @@
 // than fabricate synonyms in `Sunfish.Kernel.*`; see README for the
 // rationale.
 //
-// Two primitives from §3 are NOT forwarded here because they are not
-// yet shipped:
-//   • §3.4 Schema Registry — stub lives at Sunfish.Kernel.Schema.ISchemaRegistry (gap G2)
+// One primitive from §3 is NOT forwarded here because it is not yet shipped:
 //   • §3.6 Event Bus       — stub lives at Sunfish.Kernel.Events.IEventBus     (gap G3)
+//
+// §3.4 Schema Registry shipped in G2 as the sibling Sunfish.Kernel.SchemaRegistry
+// package (preserving the Sunfish.Kernel.Schema namespace for source compat).
+// Consumers that want the primitive take a package reference on
+// Sunfish.Kernel.SchemaRegistry in addition to Sunfish.Kernel.
 
 using System.Runtime.CompilerServices;
 
