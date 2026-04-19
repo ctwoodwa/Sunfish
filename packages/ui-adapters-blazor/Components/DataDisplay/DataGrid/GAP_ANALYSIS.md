@@ -218,13 +218,13 @@ Spec: `row-drag-drop.md`
 Spec: `columns/frozen.md`
 Reference: RESEARCH_LOG.md §4 — Radzen stacked `position: sticky` offsets, boundary shadow classes
 
-- [ ] B5.1 — Add `Locked` bool parameter to `SunfishGridColumn` (default: false)
-- [ ] B5.2 — Add `FrozenPosition` enum (Left, Right) parameter on column (default: Left)
-- [ ] B5.3 — Add `Lockable` bool parameter to `SunfishGridColumn` (default: true)
-- [ ] B5.4 — Apply `position: sticky` with computed `inset-inline-start`/`inset-inline-end` — sum widths of preceding frozen columns for offset
-- [ ] B5.5 — CSS classes: `mar-datagrid-col--locked`, `mar-datagrid-col--locked-end` (shadow on boundary column)
-- [ ] B5.6 — Z-index layering: 2 for header+frozen, 1 for body+frozen
-- [ ] B5.7 — JS: recalculate offsets on column resize/reorder
+- [x] B5.1 — Add `Locked` bool parameter to `SunfishGridColumn` (default: false)
+- [x] B5.2 — Add `FrozenPosition` enum (Left, Right) parameter on column (default: Left) — implemented as `GridColumnFrozenPosition` enum with `Start`/`End` values (LTR-semantic aliases)
+- [x] B5.3 — Add `Lockable` bool parameter to `SunfishGridColumn` (default: true)
+- [x] B5.4 — Apply `position: sticky` with computed `inset-inline-start`/`inset-inline-end` — sum widths of preceding frozen columns for offset
+- [x] B5.5 — CSS classes: `mar-datagrid-col--locked`, `mar-datagrid-col--locked-end` (shadow on boundary column)
+- [x] B5.6 — Z-index layering: 2 for header+frozen, 1 for body+frozen
+- [x] B5.7 — JS: recalculate offsets on column resize/reorder
 
 ---
 

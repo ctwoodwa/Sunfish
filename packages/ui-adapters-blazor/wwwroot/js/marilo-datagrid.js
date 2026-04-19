@@ -28,7 +28,7 @@ export function attachGrid(rootElementOrId, dotnetRef, options) {
     if (handle.options.columnResize) installColumnResize(handle);    // B2
     if (handle.options.columnReorder) installColumnReorder(handle);  // B3
     // if (handle.options.rowDragDrop) installRowDragDrop(handle);
-    // if (handle.options.frozenColumns) installFrozenColumns(handle);
+    if (handle.options.frozenColumns) recomputeFrozenOffsets(rootElement);  // B5 — initial offset pass
 
     return handle;
 }
@@ -128,6 +128,9 @@ function installColumnResize(handle) {
             } catch {
                 // Component may have been torn down mid-drag — swallow the error gracefully.
             }
+
+            // B5.7 — recompute sticky offsets after resize commits (only if frozen columns are active)
+            if (handle.options.frozenColumns) recomputeFrozenOffsets(rootElement);
         };
 
         document.addEventListener('mousemove', onMouseMove, true);
@@ -281,6 +284,9 @@ function installColumnReorder(handle) {
         } catch {
             // Component may have been torn down mid-drag — swallow the error gracefully.
         }
+
+        // B5.7 — recompute sticky offsets after reorder commits (only if frozen columns are active)
+        if (handle.options.frozenColumns) recomputeFrozenOffsets(rootElement);
         cleanup();
     };
 
@@ -311,4 +317,75 @@ function installColumnReorder(handle) {
             cleanup();
         }
     });
+}
+
+// ── B5: Frozen / Locked Columns ───────────────────────────────────────────────
+//
+// Offset model:
+//   • Start-frozen (left in LTR): offset = cumulative width of all preceding Start-frozen cols.
+//   • End-frozen (right in LTR): offset = cumulative width of all following End-frozen cols.
+//
+// CSS custom properties are written directly onto each locked <th>/<td>. The CSS class
+// `.mar-datagrid-col--locked` uses `inset-inline-start`/`inset-inline-end` referencing
+// these properties (the C# inline style also sets position:sticky + the pixel side value
+// as a fallback). This JS pass runs on:
+//   1. attachGrid mount (initial)
+//   2. After column resize commits (mouseup)
+//   3. After column reorder commits (drop → OnColumnReordered)
+
+/**
+ * Recalculate `--mar-datagrid-col-offset-start` and `--mar-datagrid-col-offset-end`
+ * custom properties on every locked `<th>` and `<td>`. The values are derived from the
+ * rendered widths of the `<col>` elements which are always up to date after resize/reorder.
+ *
+ * @param {string|HTMLElement} rootElementOrId - the grid's outer container element or its DOM id.
+ */
+export function recomputeFrozenOffsets(rootElementOrId) {
+    const el = typeof rootElementOrId === 'string'
+        ? document.getElementById(rootElementOrId)
+        : rootElementOrId;
+    if (!el) return;
+
+    // The <colgroup><col data-column-id> sequence is the authoritative column order.
+    const cols = Array.from(el.querySelectorAll('colgroup > col[data-column-id]'));
+
+    // Start-frozen: walk left-to-right; accumulate offset before applying.
+    let startOffset = 0;
+    for (const col of cols) {
+        const columnId = col.getAttribute('data-column-id');
+        const locked = col.getAttribute('data-locked') === 'true';
+        const position = col.getAttribute('data-frozen-position') ?? 'Start';
+        if (!locked || position !== 'Start') continue;
+        applyFrozenOffset(el, columnId, 'start', startOffset);
+        startOffset += col.getBoundingClientRect().width;
+    }
+
+    // End-frozen: walk right-to-left; accumulate offset before applying.
+    let endOffset = 0;
+    for (const col of [...cols].reverse()) {
+        const columnId = col.getAttribute('data-column-id');
+        const locked = col.getAttribute('data-locked') === 'true';
+        const position = col.getAttribute('data-frozen-position') ?? 'Start';
+        if (!locked || position !== 'End') continue;
+        applyFrozenOffset(el, columnId, 'end', endOffset);
+        endOffset += col.getBoundingClientRect().width;
+    }
+}
+
+/**
+ * Write the CSS custom property for the frozen offset onto every cell (th + td) for a column.
+ *
+ * @param {HTMLElement} rootElement - the grid container
+ * @param {string} columnId - matches data-column-id on <th> and locked <td> elements
+ * @param {'start'|'end'} side - which inset axis to update
+ * @param {number} offsetPx - pixel offset value
+ */
+function applyFrozenOffset(rootElement, columnId, side, offsetPx) {
+    const escaped = CSS.escape(columnId);
+    const cells = rootElement.querySelectorAll(
+        `th[data-column-id="${escaped}"], td[data-column-id="${escaped}"]`);
+    const prop = side === 'start'
+        ? '--mar-datagrid-col-offset-start'
+        : '--mar-datagrid-col-offset-end';
+    cells.forEach(c => c.style.setProperty(prop, offsetPx + 'px'));
 }

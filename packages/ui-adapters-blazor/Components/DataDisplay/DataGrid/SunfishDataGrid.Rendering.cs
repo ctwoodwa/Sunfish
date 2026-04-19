@@ -102,6 +102,8 @@ public partial class SunfishDataGrid<TItem>
                 var cellClass = CssProvider.DataGridCellClass();
                 if (cellRenderArgs?.Class != null) cellClass = $"{cellClass} {cellRenderArgs.Class}";
                 if (IsCellSelected(index, column.Field)) cellClass = $"{cellClass} mar-datagrid-cell--selected";
+                if (column.Locked) cellClass = $"{cellClass} mar-datagrid-col--locked";
+                if (column.Locked && IsBoundaryFrozenColumn(column)) cellClass = $"{cellClass} mar-datagrid-col--locked-end";
                 var frozenCellStyle = GetFrozenCellStyle(column);
                 var combinedExtra = string.Join("", new[] { cellRenderArgs?.Style, frozenCellStyle }.Where(s => !string.IsNullOrEmpty(s)));
                 var finalCellStyle = GetColumnCellStyle(column, string.IsNullOrEmpty(combinedExtra) ? null : combinedExtra);
@@ -110,6 +112,7 @@ public partial class SunfishDataGrid<TItem>
                 builder.AddAttribute(51, "class", cellClass);
                 builder.AddAttribute(52, "role", "gridcell");
                 if (finalCellStyle != null) builder.AddAttribute(53, "style", finalCellStyle);
+                if (column.Locked) builder.AddAttribute(54, "data-column-id", column.EffectiveId);
 
                 // Cell selection: click handler (stop propagation so row click doesn't also fire)
                 if (SelectionUnit == GridSelectionUnit.Cell && SelectionMode != GridSelectionMode.None)

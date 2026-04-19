@@ -147,6 +147,15 @@
     /// <summary>When Locked=true, the side to pin to. Default: Start (left in LTR).</summary>
     [Parameter] public GridColumnFrozenPosition FrozenPosition { get; set; } = GridColumnFrozenPosition.Start;
 
+    /// <summary>
+    /// Whether this column can be locked/unlocked at runtime via the column menu.
+    /// Defaults to <c>true</c>. Set to <c>false</c> to prevent the user from toggling
+    /// the frozen state through the column menu (future C3 column-menu feature).
+    /// <para><b>Note:</b> This parameter gates runtime UI toggling only. Setting
+    /// <see cref="Locked"/> directly always works regardless of this value.</para>
+    /// </summary>
+    [Parameter] public bool Lockable { get; set; } = true;
+
     /// <summary>Composite format string for display (e.g. "{0:C2}"). Takes precedence over Format.</summary>
     [Parameter] public string? DisplayFormat { get; set; }
 
