@@ -73,6 +73,10 @@ public sealed class SpreadsheetIngestionPipeline : IIngestionPipeline<Spreadshee
             ["schemaId"] = input.SchemaId,
         };
 
+        // TODO(G21): migrate to IEntityStore.CreateBatchAsync once the pipeline is wired to an
+        // IEntityStore. Currently the pipeline produces IngestedEntity value objects only; the
+        // actual store writes happen in the caller. When the pipeline gains direct store access,
+        // replace the per-row CreateAsync loop with a single CreateBatchAsync call.
         var session = new IngestedEntity(
             EntityId: Guid.NewGuid().ToString("n"),
             SchemaId: "sunfish.ingestion.bulk_import_session/1",
