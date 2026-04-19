@@ -37,7 +37,7 @@
          SkiaSharp native assets are required on Linux CI runners (QuestPDF.Drawing loads them at
          type-init time) — pinned alongside to match the SkiaSharp version QuestPDF 2023.12.6 uses. -->
     <PackageVersion Include="QuestPDF" Version="2023.12.6" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="MetadataExtractor" Version="2.9.3" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.6" />
