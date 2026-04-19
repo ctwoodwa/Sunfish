@@ -133,11 +133,11 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                 DotNetObjectReference.Create(this),
                 new
                 {
-                    keyboardNavigation = false,                         // B1
-                    columnResize = AllowColumnResize || Resizable,      // B2
-                    columnReorder = AllowColumnReorder || Reorderable,  // B3
-                    rowDragDrop = false,                                // B4
-                    frozenColumns = false                               // B5
+                    keyboardNavigation = false,                             // B1
+                    columnResize = AllowColumnResize || Resizable,          // B2
+                    columnReorder = AllowColumnReorder || Reorderable,      // B3
+                    rowDragDrop = false,                                    // B4
+                    frozenColumns = _columns.Any(c => c.Locked)            // B5
                 });
         }
         catch (Exception ex) when (ex is JSDisconnectedException
