@@ -104,12 +104,12 @@ Spec: `templates/no-data.md`, `templates/row.md`
 ### A5: Column Enhancements
 Spec: `columns/bound.md`, `columns/frozen.md`, `columns/visible.md`
 
-- [ ] A5.1 — Add `Editable` bool parameter to `SunfishGridColumn` (default: true)
-- [ ] A5.2 — Respect `Editable` in Rendering.cs — skip EditorTemplate for non-editable columns
-- [ ] A5.3 — Add `HeaderClass` string parameter to `SunfishGridColumn`
-- [ ] A5.4 — Add `Id` string parameter to `SunfishGridColumn`
-- [ ] A5.5 — Add `ShowColumnMenu` bool parameter to `SunfishGridColumn` (default: false)
-- [ ] A5.6 — Add `VisibleInColumnChooser` bool parameter (default: true)
+- [x] A5.1 — Add `Editable` bool parameter to `SunfishGridColumn` (default: true)
+- [x] A5.2 — Respect `Editable` in Rendering.cs — skip EditorTemplate for non-editable columns
+- [x] A5.3 — Add `HeaderClass` string parameter to `SunfishGridColumn`
+- [x] A5.4 — Add `Id` string parameter to `SunfishGridColumn`
+- [x] A5.5 — Add `ShowColumnMenu` bool parameter to `SunfishGridColumn` (default: false)
+- [x] A5.6 — Add `VisibleInColumnChooser` bool parameter (default: true)
 
 ### A6: GridState Enrichment
 Spec: `state.md`
