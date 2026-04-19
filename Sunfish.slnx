@@ -11,6 +11,10 @@
     <Project Path="packages/kernel/Sunfish.Kernel.csproj" />
     <Project Path="packages/kernel/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/schema-registry/">
+    <Project Path="packages/kernel-schema-registry/Sunfish.Kernel.SchemaRegistry.csproj" />
+    <Project Path="packages/kernel-schema-registry/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/ui-core/">
     <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
     <Project Path="packages/ui-core/tests/tests.csproj" />

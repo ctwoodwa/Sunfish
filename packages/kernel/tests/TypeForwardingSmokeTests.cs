@@ -88,18 +88,15 @@ public class TypeForwardingSmokeTests
         AssertLivesInFoundation(typeof(SignedOperation<>));
     }
 
-    // ----- Stub primitives (spec §3.4 / G2, §3.6 / G3) -----
+    // ----- Stub primitives (spec §3.6 / G3) -----
 
-    [Fact]
-    public void SchemaRegistryStub_LivesInKernelAssembly()
-    {
-        var type = typeof(Schema.ISchemaRegistry);
-        Assert.NotNull(type);
-        Assert.True(type.IsInterface);
-        Assert.Equal("Sunfish.Kernel.Schema", type.Namespace);
-        var asmName = type.Assembly.GetName().Name;
-        Assert.Equal("Sunfish.Kernel", asmName);
-    }
+    // Note: the §3.4 ISchemaRegistry stub that G1 reserved in this package has
+    // been promoted by G2 into the real contract shipped from the sibling
+    // Sunfish.Kernel.SchemaRegistry package. The namespace Sunfish.Kernel.Schema
+    // is preserved for source compatibility with early consumers that bound to
+    // the reserved stub — it now resolves to the real interface in the new
+    // assembly instead of the empty stub. See
+    // icm/01_discovery/output/sunfish-gap-analysis-2026-04-18.md (G2).
 
     [Fact]
     public void EventBusStub_LivesInKernelAssembly()

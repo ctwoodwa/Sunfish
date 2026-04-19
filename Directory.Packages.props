@@ -19,6 +19,9 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
     <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <PackageVersion Include="NSec.Cryptography" Version="25.4.0" />
+    <!-- JsonSchema.Net: MIT-licensed JSON Schema draft 2020-12 validator by Greg Dennis.
+         Pinned at 8.0.5 (latest MIT release; 9.x switched to OSMFEULA proprietary license). -->
+    <PackageVersion Include="JsonSchema.Net" Version="8.0.5" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
