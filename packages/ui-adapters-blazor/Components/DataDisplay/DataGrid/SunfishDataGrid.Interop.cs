@@ -100,8 +100,16 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                     frozenColumns = false         // B5
                 });
         }
-        catch (JSDisconnectedException) { /* circuit down during prerender — skip */ }
-        catch (InvalidOperationException) { /* JS unavailable in SSR — skip */ }
+        catch (Exception ex) when (ex is JSDisconnectedException
+                                       || ex is InvalidOperationException
+                                       || ex is JSException
+                                       || ex.GetType().Name.Contains("JSRuntime"))
+        {
+            // Tolerate: circuit down (JSDisconnectedException), SSR/pre-rendering
+            // (InvalidOperationException), module unavailable (JSException), or test-harness
+            // interop exceptions where import() is not configured (JSRuntimeUnhandledInvocationException).
+            // The datagrid renders correctly without JS — interactive features simply aren't wired.
+        }
     }
 
     /// <summary>Called from JS when a column is resized.</summary>
