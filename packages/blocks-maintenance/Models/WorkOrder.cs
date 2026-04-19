@@ -1,3 +1,5 @@
+using Sunfish.Foundation.Assets.Common;
+
 namespace Sunfish.Blocks.Maintenance.Models;
 
 /// <summary>

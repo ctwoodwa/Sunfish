@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.Maintenance.Services;
 
