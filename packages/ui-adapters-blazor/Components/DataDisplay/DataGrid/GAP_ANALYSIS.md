@@ -143,12 +143,12 @@ Spec: `highlighting.md`, `sizing.md`
 Spec: `export/csv.md`, `export/events.md`
 Reference: RESEARCH_LOG.md §2 (Radzen) — Radzen keeps export logic outside the grid; grid exposes `ColumnsCollection` + current query state so export is composable. Consider exposing visible columns + current filter/sort as public API so export can be implemented as extension method or separate service.
 
-- [ ] A8.1 — Add `ExportToCsv()` public method
-- [ ] A8.2 — Expose `GetExportData()` internal method that returns visible columns + current data (respecting sort/filter)
-- [ ] A8.3 — Generate CSV from visible columns and current data
-- [ ] A8.4 — Trigger browser download via JS interop (`URL.createObjectURL` + click)
-- [ ] A8.5 — Add `OnBeforeExport` / `OnAfterExport` EventCallback parameters
-- [ ] A8.6 — Support export of all data (not just current page) via `ExportAllPages` option
+- [x] A8.1 — Add `ExportToCsv()` public method
+- [x] A8.2 — Expose `GetExportData()` internal method that returns visible columns + current data (respecting sort/filter)
+- [x] A8.3 — Generate CSV from visible columns and current data
+- [x] A8.4 — Trigger browser download via JS interop (`URL.createObjectURL` + click)
+- [x] A8.5 — Add `OnBeforeExport` / `OnAfterExport` EventCallback parameters
+- [x] A8.6 — Support export of all data (not just current page) via `ExportAllPages` option
 
 ---
 
