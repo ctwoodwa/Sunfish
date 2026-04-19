@@ -182,10 +182,29 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     /// <summary>Detail row template for master-detail expansion. Receives the row item as context.</summary>
     [Parameter] public RenderFragment<TItem>? DetailTemplate { get; set; }
 
-    /// <summary>Custom template displayed when the grid has no data.</summary>
+    /// <summary>
+    /// Custom template displayed when the grid has no data (i.e., <see cref="_displayedItems"/> is empty
+    /// and no groups are present).
+    /// Rendered inside a single <c>&lt;tr&gt;&lt;td colspan="N"&gt;</c> that spans all columns, preserving
+    /// table structure. Falls back to a plain "No data available." message when not set.
+    /// <para><b>Loading interaction:</b> when <see cref="IsLoading"/> is <c>true</c>, the loading overlay
+    /// takes priority and this template is suppressed even if items are empty.</para>
+    /// </summary>
     [Parameter] public RenderFragment? NoDataTemplate { get; set; }
 
-    /// <summary>Custom row template. When set, replaces the default row rendering. Receives the row item as context.</summary>
+    /// <summary>
+    /// Custom row template for full control over cell rendering. When set, the grid renders the outer
+    /// <c>&lt;tr&gt;</c> element (with all row-level event handlers: click, double-click, context-menu,
+    /// selection, drag, detail-expand, and checkbox) and the template is responsible for the inner
+    /// <c>&lt;td&gt;</c> cells only.
+    /// <para><b>Wrapper convention:</b> the grid owns the <c>&lt;tr&gt;</c>; the template fills the cells.
+    /// This matches the Radzen / MudBlazor convention.</para>
+    /// <para><b>System columns:</b> drag-handle, detail-expand, and checkbox columns (when enabled) are
+    /// rendered by the grid before the template content. The command column (edit/delete) is skipped when
+    /// <c>RowTemplate</c> is set — include any command UI inside the template if needed.</para>
+    /// <para><b>Events preserved:</b> <see cref="OnRowClick"/>, <see cref="OnRowDoubleClick"/>,
+    /// <see cref="OnRowContextMenu"/>, and <see cref="OnRowRender"/> all continue to fire.</para>
+    /// </summary>
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
     // ── Parameters: State Events ────────────────────────────────────────

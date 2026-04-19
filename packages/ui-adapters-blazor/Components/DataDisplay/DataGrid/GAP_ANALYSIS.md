@@ -96,10 +96,10 @@ Reference: RESEARCH_LOG.md §8 — MudBlazor programmatic filter API
 ### A4: Additional Templates
 Spec: `templates/no-data.md`, `templates/row.md`
 
-- [ ] A4.1 — Add `NoDataTemplate` RenderFragment parameter
-- [ ] A4.2 — Render `NoDataTemplate` when `_displayedItems` is empty (instead of empty table body)
-- [ ] A4.3 — Add `RowTemplate` RenderFragment<TItem> parameter for full custom row rendering
-- [ ] A4.4 — When `RowTemplate` is set, bypass default cell rendering and use the template
+- [x] A4.1 — Add `NoDataTemplate` RenderFragment parameter
+- [x] A4.2 — Render `NoDataTemplate` when `_displayedItems` is empty (instead of empty table body)
+- [x] A4.3 — Add `RowTemplate` RenderFragment<TItem> parameter for full custom row rendering
+- [x] A4.4 — When `RowTemplate` is set, bypass default cell rendering and use the template
 
 ### A5: Column Enhancements
 Spec: `columns/bound.md`, `columns/frozen.md`, `columns/visible.md`
