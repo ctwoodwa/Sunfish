@@ -439,6 +439,10 @@ test-results/
 .wolf/hooks/_session.json
 .wolf/designqc-captures/
 
+# Claude Code per-user state — local permission overrides, scheduler lock file
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+
 # Docs (generated)
 apps/docs/_site/
 apps/docs/api/

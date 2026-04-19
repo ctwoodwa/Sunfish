@@ -240,6 +240,470 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-16T19:21:21.361Z"
+    },
+    {
+      "id": "bug-016",
+      "timestamp": "2026-04-19T12:33:47.507Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-c2-pdf-export/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 5→25 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:33:47.507Z"
+    },
+    {
+      "id": "bug-017",
+      "timestamp": "2026-04-19T12:36:45.410Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-c2-pdf-export/packages/ui-adapters-blazor/tests/Components/PdfExportTests.cs",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 39→47 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:36:45.410Z"
+    },
+    {
+      "id": "bug-018",
+      "timestamp": "2026-04-19T12:50:02.777Z",
+      "error_message": "Missing error handling in Task",
+      "file": ".worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:50:02.777Z"
+    },
+    {
+      "id": "bug-019",
+      "timestamp": "2026-04-19T12:50:57.240Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/wwwroot/js/marilo-datagrid.js",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 13→18 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:50:57.240Z"
+    },
+    {
+      "id": "bug-020",
+      "timestamp": "2026-04-19T12:51:08.886Z",
+      "error_message": "Missing guard clause",
+      "file": ".worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/wwwroot/js/marilo-datagrid.js",
+      "root_cause": "No early return/throw for edge case: !rootElement",
+      "fix": "Added guard clause: if (!rootElement)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:51:08.886Z"
+    },
+    {
+      "id": "bug-021",
+      "timestamp": "2026-04-19T12:54:41.525Z",
+      "error_message": "Missing import: .\n    /// </summary>\n    [Fact]\n    public void OnFirstRender_ImportsMariloDatagridModule()\n    {\n        // Arrange: Loose mode means bUnit auto-satisfies import() and returns a mock module.\n        // SetupModule additionally registers a named handler so we can inspect its invocations.\n        var module = JSInterop.SetupModule(\n            ",
+      "file": ".worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/tests/Components/JsInteropInfrastructureTests.cs",
+      "root_cause": "Module(s) not imported: .\n    /// </summary>\n    [Fact]\n    public void OnFirstRender_ImportsMariloDatagridModule()\n    {\n        // Arrange: Loose mode means bUnit auto-satisfies import() and returns a mock module.\n        // SetupModule additionally registers a named handler so we can inspect its invocations.\n        var module = JSInterop.SetupModule(\n            ",
+      "fix": "Added import(s) for .\n    /// </summary>\n    [Fact]\n    public void OnFirstRender_ImportsMariloDatagridModule()\n    {\n        // Arrange: Loose mode means bUnit auto-satisfies import() and returns a mock module.\n        // SetupModule additionally registers a named handler so we can inspect its invocations.\n        var module = JSInterop.SetupModule(\n            ",
+      "tags": [
+        "auto-detected",
+        "missing-import",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T12:54:41.525Z"
+    },
+    {
+      "id": "bug-022",
+      "timestamp": "2026-04-19T13:03:10.931Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 4→11 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:03:10.931Z"
+    },
+    {
+      "id": "bug-023",
+      "timestamp": "2026-04-19T13:23:26.562Z",
+      "error_message": "Incorrect value in code",
+      "file": ".worktrees/g37-c2-pdf-export/Directory.Packages.props",
+      "root_cause": "Had \"SkiaSharp.NativeAssets.Linux\"",
+      "fix": "Changed to \"SkiaSharp.NativeAssets.Linux.NoDependencies\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:23:26.562Z"
+    },
+    {
+      "id": "bug-024",
+      "timestamp": "2026-04-19T13:30:08.140Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11→29 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:30:08.140Z"
+    },
+    {
+      "id": "bug-025",
+      "timestamp": "2026-04-19T13:30:49.839Z",
+      "error_message": "Missing guard clause",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "No early return/throw for edge case: columnIndex < 0 || columnIndex >= _visibleColumns.Count",
+      "fix": "Added guard clause: if (columnIndex < 0 || columnIndex >= _visib)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:30:49.839Z"
+    },
+    {
+      "id": "bug-026",
+      "timestamp": "2026-04-19T13:32:13.582Z",
+      "error_message": "CSS fix: background-color",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css",
+      "root_cause": "background-color: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "fix": "Changed background-color: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:32:13.582Z"
+    },
+    {
+      "id": "bug-027",
+      "timestamp": "2026-04-19T13:32:37.394Z",
+      "error_message": "CSS fix: background-color",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css",
+      "root_cause": "background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "fix": "Changed background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:32:37.394Z"
+    },
+    {
+      "id": "bug-028",
+      "timestamp": "2026-04-19T13:32:45.427Z",
+      "error_message": "CSS fix: background-color",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/Providers/Material/wwwroot/css/sunfish-material.css",
+      "root_cause": "background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "fix": "Changed background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important → var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:32:45.427Z"
+    },
+    {
+      "id": "bug-029",
+      "timestamp": "2026-04-19T13:37:21.453Z",
+      "error_message": "Wrong reference: OnColumnResized should be HandleColumnResizedFromJs",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/tests/Components/ColumnResizingTests.cs",
+      "root_cause": "Used \"OnColumnResized\" instead of \"HandleColumnResizedFromJs\"",
+      "fix": "Changed OnColumnResized → HandleColumnResizedFromJs",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T13:37:35.918Z"
+    },
+    {
+      "id": "bug-030",
+      "timestamp": "2026-04-19T13:41:40.515Z",
+      "error_message": "Null/undefined access in ",
+      "file": ".worktrees/g37-b2-col-resize/packages/ui-adapters-blazor/tests/Components/ColumnResizingTests.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T13:41:40.515Z"
+    },
+    {
+      "id": "bug-031",
+      "timestamp": "2026-04-19T14:05:32.930Z",
+      "error_message": "Null/undefined access in ",
+      "file": ".worktrees/g37-b3-col-reorder/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:05:32.930Z"
+    },
+    {
+      "id": "bug-032",
+      "timestamp": "2026-04-19T14:06:15.290Z",
+      "error_message": "Null/undefined access in ",
+      "file": ".worktrees/g37-b3-col-reorder/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishGridColumn.razor",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:06:15.290Z"
+    },
+    {
+      "id": "bug-033",
+      "timestamp": "2026-04-19T14:46:55.923Z",
+      "error_message": "Null/undefined access in ",
+      "file": ".worktrees/g37-b5-frozen-cols/packages/ui-adapters-blazor/wwwroot/js/marilo-datagrid.js",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:46:55.923Z"
+    },
+    {
+      "id": "bug-034",
+      "timestamp": "2026-04-19T14:47:15.855Z",
+      "error_message": "CSS fix: background-color",
+      "file": ".worktrees/g37-b5-frozen-cols/packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "background-color: var(--bs-body-bg) → var(--mar-datagrid-header-bg, var(--bs-body-bg, #f8f9fa))",
+      "fix": "Changed background-color: var(--bs-body-bg) → var(--mar-datagrid-header-bg, var(--bs-body-bg, #f8f9fa))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T14:47:15.855Z"
+    },
+    {
+      "id": "bug-035",
+      "timestamp": "2026-04-19T14:47:31.115Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b5-frozen-cols/packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6→25 lines (3 removed) | Also: // --- Frozen / locked columns ---; .sf-datagrid-col--locked {",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T14:47:46.528Z"
+    },
+    {
+      "id": "bug-036",
+      "timestamp": "2026-04-19T15:11:10.228Z",
+      "error_message": "Missing error handling in installRowDragDrop",
+      "file": ".worktrees/g37-b4-row-dnd/packages/ui-adapters-blazor/wwwroot/js/marilo-datagrid.js",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "js"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:11:10.228Z"
+    },
+    {
+      "id": "bug-037",
+      "timestamp": "2026-04-19T15:11:35.813Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b4-row-dnd/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Interop.cs",
+      "root_cause": "9 lines replaced/restructured",
+      "fix": "Rewrote 21→32 lines (9 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:11:35.813Z"
+    },
+    {
+      "id": "bug-038",
+      "timestamp": "2026-04-19T15:11:51.423Z",
+      "error_message": "Significant refactor of ",
+      "file": ".worktrees/g37-b4-row-dnd/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs",
+      "root_cause": "7 lines replaced/restructured",
+      "fix": "Rewrote 20→27 lines (7 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:11:51.423Z"
+    },
+    {
+      "id": "bug-039",
+      "timestamp": "2026-04-19T15:34:10.187Z",
+      "error_message": "Missing guard clause",
+      "file": ".worktrees/g37-c3-col-menu/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Data.cs",
+      "root_cause": "No early return/throw for edge case: newSize > 0 && newSize != _state.PageSize",
+      "fix": "Added guard clause: if (newSize > 0 && newSize != _state.PageSiz)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T15:34:10.187Z"
+    },
+    {
+      "id": "bug-040",
+      "timestamp": "2026-04-19T17:10:55.240Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/foundation-catalog/tests/Templates/LeaseRenewalFormTests.cs",
+      "root_cause": "Had \"https://sunfish.io/schemas/property-management/le",
+      "fix": "Changed to \"https://sunfish.io/schemas/property-management/le",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T17:10:55.240Z"
+    },
+    {
+      "id": "bug-041",
+      "timestamp": "2026-04-19T17:12:12.655Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/foundation-catalog/tests/Fixtures/Templates/lease-renewal.overlay.json",
+      "root_cause": "Had \"properties\"",
+      "fix": "Changed to \"$id\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T17:12:12.655Z"
+    },
+    {
+      "id": "bug-042",
+      "timestamp": "2026-04-19T17:46:44.247Z",
+      "error_message": "Significant refactor of ",
+      "file": "README.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 8→12 lines (5 removed) | Also: Bridge is the reference Sunfish solution accelerat; project-management app that composes every tier of",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T17:46:52.234Z"
+    },
+    {
+      "id": "bug-043",
+      "timestamp": "2026-04-19T17:46:57.037Z",
+      "error_message": "Significant refactor of ",
+      "file": "accelerators/bridge/PLATFORM_ALIGNMENT.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6→18 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T17:46:57.037Z"
+    },
+    {
+      "id": "bug-044",
+      "timestamp": "2026-04-19T18:57:47.886Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/foundation-catalog/Bundles/BundleManifestLoader.cs",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 15→23 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T18:57:47.886Z"
     }
   ]
 }
