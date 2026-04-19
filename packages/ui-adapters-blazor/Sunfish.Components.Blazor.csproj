@@ -26,6 +26,8 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Sunfish.Components.Blazor.Tests" />
+    <!-- Required for NSubstitute to mock internal interfaces in tests -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
