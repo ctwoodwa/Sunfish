@@ -1,0 +1,73 @@
+@* Read-only ledger table showing invoices for a given query.
+   Payment entry UI is deferred to a follow-up. *@
+
+@if (_invoices is null)
+{
+    <div class="sf-rent-ledger sf-rent-ledger--loading">Loading...</div>
+}
+else if (_invoices.Count == 0)
+{
+    <div class="sf-rent-ledger sf-rent-ledger--empty">No invoices</div>
+}
+else
+{
+    <div class="sf-rent-ledger">
+        <table class="sf-rent-ledger__table">
+            <thead>
+                <tr>
+                    <th>Due Date</th>
+                    <th>Lease</th>
+                    <th>Amount Due</th>
+                    <th>Amount Paid</th>
+                    <th>Status</th>
+                    <th>Aging (days)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var invoice in _invoices)
+                {
+                    var aging = ComputeAgingDays(invoice);
+                    <tr class="sf-rent-ledger__row sf-rent-ledger__row--@invoice.Status.ToString().ToLowerInvariant()">
+                        <td>@invoice.DueDate.ToString("yyyy-MM-dd")</td>
+                        <td>@invoice.LeaseId</td>
+                        <td>@invoice.AmountDue.ToString("F2")</td>
+                        <td>@invoice.AmountPaid.ToString("F2")</td>
+                        <td>@invoice.Status</td>
+                        <td>@(aging > 0 ? aging.ToString() : "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    [Inject] private IRentCollectionService RentCollectionService { get; set; } = default!;
+
+    /// <summary>Filter query applied when loading invoices. Defaults to all invoices.</summary>
+    [Parameter] public ListInvoicesQuery Query { get; set; } = new();
+
+    /// <summary>The reference date used to compute aging. Defaults to today.</summary>
+    [Parameter] public DateOnly? Today { get; set; }
+
+    private List<Invoice>? _invoices;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        _invoices = new List<Invoice>();
+        await foreach (var invoice in RentCollectionService.ListInvoicesAsync(Query))
+        {
+            _invoices.Add(invoice);
+        }
+    }
+
+    private int ComputeAgingDays(Invoice invoice)
+    {
+        var today = Today ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        if (invoice.Status is InvoiceStatus.Paid or InvoiceStatus.Cancelled)
+            return 0;
+        var diff = today.DayNumber - invoice.DueDate.DayNumber;
+        return diff > 0 ? diff : 0;
+    }
+}
