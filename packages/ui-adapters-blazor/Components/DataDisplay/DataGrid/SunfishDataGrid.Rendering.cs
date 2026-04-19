@@ -82,127 +82,140 @@ public partial class SunfishDataGrid<TItem>
             builder.CloseElement(); // td
         }
 
-        foreach (var column in _visibleColumns)
+        if (RowTemplate != null)
         {
-            var cellRenderArgs = GetCellRenderArgs(column, item);
-            var cellClass = CssProvider.DataGridCellClass();
-            if (cellRenderArgs?.Class != null) cellClass = $"{cellClass} {cellRenderArgs.Class}";
-            if (IsCellSelected(index, column.Field)) cellClass = $"{cellClass} mar-datagrid-cell--selected";
-            var frozenCellStyle = GetFrozenCellStyle(column);
-            var combinedExtra = string.Join("", new[] { cellRenderArgs?.Style, frozenCellStyle }.Where(s => !string.IsNullOrEmpty(s)));
-            var finalCellStyle = GetColumnCellStyle(column, string.IsNullOrEmpty(combinedExtra) ? null : combinedExtra);
-
-            builder.OpenElement(50, "td");
-            builder.AddAttribute(51, "class", cellClass);
-            builder.AddAttribute(52, "role", "gridcell");
-            if (finalCellStyle != null) builder.AddAttribute(53, "style", finalCellStyle);
-
-            // Cell selection: click handler (stop propagation so row click doesn't also fire)
-            if (SelectionUnit == GridSelectionUnit.Cell && SelectionMode != GridSelectionMode.None)
-            {
-                var cellSelCol = column;
-                var cellSelItem = item;
-                var cellSelIndex = index;
-                builder.AddAttribute(54, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await HandleCellClick(cellSelItem, cellSelCol.Field, cellSelIndex)));
-                builder.AddEventStopPropagationAttribute(55, "onclick", true);
-            }
-
-            // InCell: click to edit a specific cell
-            if (EditMode == GridEditMode.InCell && !isEditing && column.Editable)
-            {
-                var cellCol = column;
-                var cellItem = item;
-                builder.AddAttribute(56, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await BeginCellEdit(cellItem, cellCol.Field)));
-                builder.AddEventStopPropagationAttribute(57, "ondblclick", true);
-            }
-
-            // Determine what to render in the cell
-            if (EditMode == GridEditMode.InCell && IsCellEditing(item, column.Field) && column.Editable && column.EditorTemplate != null)
-            {
-                // InCell: only the focused cell shows editor
-                builder.AddContent(60, column.EditorTemplate(item));
-                // InCell: inline save/cancel buttons
-                builder.OpenElement(61, "div");
-                builder.AddAttribute(62, "class", "mar-datagrid-incell-actions");
-                builder.OpenElement(63, "button");
-                builder.AddAttribute(64, "type", "button");
-                builder.AddAttribute(65, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
-                builder.AddAttribute(66, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
-                builder.AddEventStopPropagationAttribute(67, "onclick", true);
-                builder.AddContent(68, "\u2713"); // checkmark
-                builder.CloseElement();
-                builder.OpenElement(69, "button");
-                builder.AddAttribute(70, "type", "button");
-                builder.AddAttribute(71, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
-                builder.AddAttribute(72, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
-                builder.AddEventStopPropagationAttribute(73, "onclick", true);
-                builder.AddContent(74, "\u2717"); // X mark
-                builder.CloseElement();
-                builder.CloseElement(); // div
-            }
-            else if (isEditing && EditMode == GridEditMode.Inline && column.Editable && column.EditorTemplate != null)
-            {
-                // Inline: all cells in row show editors
-                builder.AddContent(60, column.EditorTemplate(item));
-            }
-            else if (column.Template != null)
-            {
-                builder.AddContent(60, column.Template(item));
-            }
-            else
-            {
-                builder.AddContent(60, column.GetDisplayValue(item));
-            }
-
-            builder.CloseElement(); // td
+            // RowTemplate is set: the template author provides the <td> cells.
+            // The grid renders the <tr> (with all row-level handlers already attached above);
+            // the template fills the data cell content only.
+            // System columns (drag, detail, checkbox) are rendered by the grid before this point.
+            // The command column is skipped when RowTemplate is set; callers are expected to
+            // include any command UI inside their template if needed.
+            builder.AddContent(50, RowTemplate(item));
         }
-
-        // Command cell (Inline and Popup modes only; InCell handles per-cell)
-        if (EditMode != GridEditMode.None && EditMode != GridEditMode.InCell)
+        else
         {
-            builder.OpenElement(80, "td");
-            builder.AddAttribute(81, "class", "mar-datagrid-command-cell");
-            builder.AddAttribute(82, "role", "gridcell");
-
-            if (isEditing && EditMode == GridEditMode.Inline)
+            foreach (var column in _visibleColumns)
             {
-                builder.OpenElement(82, "button");
-                builder.AddAttribute(83, "type", "button");
-                builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
-                builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
-                builder.AddContent(87, "Save");
-                builder.CloseElement();
+                var cellRenderArgs = GetCellRenderArgs(column, item);
+                var cellClass = CssProvider.DataGridCellClass();
+                if (cellRenderArgs?.Class != null) cellClass = $"{cellClass} {cellRenderArgs.Class}";
+                if (IsCellSelected(index, column.Field)) cellClass = $"{cellClass} mar-datagrid-cell--selected";
+                var frozenCellStyle = GetFrozenCellStyle(column);
+                var combinedExtra = string.Join("", new[] { cellRenderArgs?.Style, frozenCellStyle }.Where(s => !string.IsNullOrEmpty(s)));
+                var finalCellStyle = GetColumnCellStyle(column, string.IsNullOrEmpty(combinedExtra) ? null : combinedExtra);
 
-                builder.OpenElement(88, "button");
-                builder.AddAttribute(89, "type", "button");
-                builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn");
-                builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
-                builder.AddEventStopPropagationAttribute(92, "onclick", true);
-                builder.AddContent(93, "Cancel");
-                builder.CloseElement();
+                builder.OpenElement(50, "td");
+                builder.AddAttribute(51, "class", cellClass);
+                builder.AddAttribute(52, "role", "gridcell");
+                if (finalCellStyle != null) builder.AddAttribute(53, "style", finalCellStyle);
+
+                // Cell selection: click handler (stop propagation so row click doesn't also fire)
+                if (SelectionUnit == GridSelectionUnit.Cell && SelectionMode != GridSelectionMode.None)
+                {
+                    var cellSelCol = column;
+                    var cellSelItem = item;
+                    var cellSelIndex = index;
+                    builder.AddAttribute(54, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await HandleCellClick(cellSelItem, cellSelCol.Field, cellSelIndex)));
+                    builder.AddEventStopPropagationAttribute(55, "onclick", true);
+                }
+
+                // InCell: click to edit a specific cell
+                if (EditMode == GridEditMode.InCell && !isEditing && column.Editable)
+                {
+                    var cellCol = column;
+                    var cellItem = item;
+                    builder.AddAttribute(56, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await BeginCellEdit(cellItem, cellCol.Field)));
+                    builder.AddEventStopPropagationAttribute(57, "ondblclick", true);
+                }
+
+                // Determine what to render in the cell
+                if (EditMode == GridEditMode.InCell && IsCellEditing(item, column.Field) && column.Editable && column.EditorTemplate != null)
+                {
+                    // InCell: only the focused cell shows editor
+                    builder.AddContent(60, column.EditorTemplate(item));
+                    // InCell: inline save/cancel buttons
+                    builder.OpenElement(61, "div");
+                    builder.AddAttribute(62, "class", "mar-datagrid-incell-actions");
+                    builder.OpenElement(63, "button");
+                    builder.AddAttribute(64, "type", "button");
+                    builder.AddAttribute(65, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(66, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
+                    builder.AddEventStopPropagationAttribute(67, "onclick", true);
+                    builder.AddContent(68, "\u2713"); // checkmark
+                    builder.CloseElement();
+                    builder.OpenElement(69, "button");
+                    builder.AddAttribute(70, "type", "button");
+                    builder.AddAttribute(71, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(72, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
+                    builder.AddEventStopPropagationAttribute(73, "onclick", true);
+                    builder.AddContent(74, "\u2717"); // X mark
+                    builder.CloseElement();
+                    builder.CloseElement(); // div
+                }
+                else if (isEditing && EditMode == GridEditMode.Inline && column.Editable && column.EditorTemplate != null)
+                {
+                    // Inline: all cells in row show editors
+                    builder.AddContent(60, column.EditorTemplate(item));
+                }
+                else if (column.Template != null)
+                {
+                    builder.AddContent(60, column.Template(item));
+                }
+                else
+                {
+                    builder.AddContent(60, column.GetDisplayValue(item));
+                }
+
+                builder.CloseElement(); // td
             }
-            else
+
+            // Command cell (Inline and Popup modes only; InCell handles per-cell)
+            if (EditMode != GridEditMode.None && EditMode != GridEditMode.InCell)
             {
-                // Not editing: Edit/Delete buttons
-                var editItem = item;
-                builder.OpenElement(82, "button");
-                builder.AddAttribute(83, "type", "button");
-                builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
-                builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await BeginEdit(editItem)));
-                builder.AddEventStopPropagationAttribute(86, "onclick", true);
-                builder.AddContent(87, "Edit");
-                builder.CloseElement();
+                builder.OpenElement(80, "td");
+                builder.AddAttribute(81, "class", "mar-datagrid-command-cell");
+                builder.AddAttribute(82, "role", "gridcell");
 
-                builder.OpenElement(88, "button");
-                builder.AddAttribute(89, "type", "button");
-                builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--delete");
-                builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await DeleteItem(editItem)));
-                builder.AddEventStopPropagationAttribute(92, "onclick", true);
-                builder.AddContent(93, "Delete");
-                builder.CloseElement();
+                if (isEditing && EditMode == GridEditMode.Inline)
+                {
+                    builder.OpenElement(82, "button");
+                    builder.AddAttribute(83, "type", "button");
+                    builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
+                    builder.AddContent(87, "Save");
+                    builder.CloseElement();
+
+                    builder.OpenElement(88, "button");
+                    builder.AddAttribute(89, "type", "button");
+                    builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
+                    builder.AddEventStopPropagationAttribute(92, "onclick", true);
+                    builder.AddContent(93, "Cancel");
+                    builder.CloseElement();
+                }
+                else
+                {
+                    // Not editing: Edit/Delete buttons
+                    var editItem = item;
+                    builder.OpenElement(82, "button");
+                    builder.AddAttribute(83, "type", "button");
+                    builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await BeginEdit(editItem)));
+                    builder.AddEventStopPropagationAttribute(86, "onclick", true);
+                    builder.AddContent(87, "Edit");
+                    builder.CloseElement();
+
+                    builder.OpenElement(88, "button");
+                    builder.AddAttribute(89, "type", "button");
+                    builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--delete");
+                    builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await DeleteItem(editItem)));
+                    builder.AddEventStopPropagationAttribute(92, "onclick", true);
+                    builder.AddContent(93, "Delete");
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement(); // td
             }
-
-            builder.CloseElement(); // td
         }
 
         builder.CloseElement(); // tr
