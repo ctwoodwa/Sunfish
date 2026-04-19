@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace Sunfish.Foundation.Blobs;
 
 /// <summary>
@@ -58,6 +60,62 @@ public sealed class FileSystemBlobStore : IBlobStore
         }
 
         return cid;
+    }
+
+    /// <summary>
+    /// Streams content directly to a temp file on disk while computing the CID incrementally
+    /// (single-pass SHA-256 via <see cref="IncrementalHash"/>). The temp file is atomically
+    /// renamed to the final CID-addressed path once hashing completes, guaranteeing no
+    /// half-written files are ever visible as completed blobs.
+    /// </summary>
+    public async ValueTask<Cid> PutStreamingAsync(Stream content, CancellationToken ct = default)
+    {
+        // We don't know the CID until we've consumed the whole stream, so write to a temp
+        // location first and rename once hashing is done.
+        var tempPath = Path.Combine(_root, ".tmp-" + Path.GetRandomFileName());
+        Directory.CreateDirectory(_root);
+
+        using var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        var copyBuffer = new byte[81920]; // 80 KiB — matches FileStream default copy buffer
+
+        try
+        {
+            await using (var dest = new FileStream(
+                tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+                bufferSize: 81920, useAsync: true))
+            {
+                int read;
+                while ((read = await content.ReadAsync(copyBuffer, ct)) > 0)
+                {
+                    hasher.AppendData(copyBuffer, 0, read);
+                    await dest.WriteAsync(copyBuffer.AsMemory(0, read), ct);
+                }
+            }
+
+            Span<byte> digest = stackalloc byte[Cid.Sha256DigestLength];
+            hasher.GetHashAndReset(digest);
+            var cid = Cid.FromDigest(digest);
+            var finalPath = CidToPath(cid);
+
+            if (File.Exists(finalPath))
+            {
+                // Duplicate: discard the temp copy — the content is already stored.
+                File.Delete(tempPath);
+                return cid;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(finalPath)!);
+            File.Move(tempPath, finalPath, overwrite: false);
+            return cid;
+        }
+        catch
+        {
+            if (File.Exists(tempPath))
+            {
+                try { File.Delete(tempPath); } catch { /* best-effort */ }
+            }
+            throw;
+        }
     }
 
     public async ValueTask<ReadOnlyMemory<byte>?> GetAsync(Cid cid, CancellationToken ct = default)

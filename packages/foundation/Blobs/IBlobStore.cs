@@ -26,6 +26,30 @@ public interface IBlobStore
     ValueTask<Cid> PutAsync(ReadOnlyMemory<byte> content, CancellationToken ct = default);
 
     /// <summary>
+    /// Stores content from a <see cref="Stream"/> without requiring the caller to buffer the
+    /// entire payload in memory first. Returns the canonical CID once all bytes are consumed.
+    /// Idempotent — calling twice with the same content produces the same CID.
+    /// </summary>
+    /// <remarks>
+    /// The default interface implementation reads the entire stream into a <see cref="MemoryStream"/>
+    /// and delegates to <see cref="PutAsync(ReadOnlyMemory{byte}, CancellationToken)"/>. This keeps
+    /// every backend functional without source changes. Backends that can stream natively (e.g.
+    /// <see cref="FileSystemBlobStore"/>) override this method to avoid the memory copy.
+    ///
+    /// Follow-up work (G22 subsequent passes):
+    /// <list type="bullet">
+    ///   <item>IpfsBlobStore — requires Kubo multipart/streaming RPC mechanics.</item>
+    ///   <item>S3 backend (if added) — use multipart upload.</item>
+    /// </list>
+    /// </remarks>
+    virtual async ValueTask<Cid> PutStreamingAsync(Stream content, CancellationToken ct = default)
+    {
+        using var ms = new MemoryStream();
+        await content.CopyToAsync(ms, ct);
+        return await PutAsync(ms.ToArray(), ct);
+    }
+
+    /// <summary>
     /// Retrieves bytes by CID. Returns <see langword="null"/> if the blob is not locally
     /// available (implementations may or may not attempt remote fetch depending on backend).
     /// </summary>

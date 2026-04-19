@@ -43,6 +43,36 @@ public readonly record struct Cid(string Value)
         Span<byte> digest = stackalloc byte[Sha256DigestLength];
         SHA256.HashData(content, digest);
 
+        return FromDigest(digest);
+    }
+
+    /// <summary>
+    /// Computes the CID of a stream using a single-pass incremental SHA-256 hash.
+    /// The stream is read from its current position to the end; the caller is responsible
+    /// for seeking if a specific range is intended.
+    /// </summary>
+    public static async ValueTask<Cid> FromStreamAsync(Stream stream, CancellationToken ct = default)
+    {
+        using var hasher = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+
+        var buffer = new byte[81920]; // 80 KiB — matches FileStream default copy buffer
+        int read;
+        while ((read = await stream.ReadAsync(buffer, ct)) > 0)
+        {
+            hasher.AppendData(buffer, 0, read);
+        }
+
+        Span<byte> digest = stackalloc byte[Sha256DigestLength];
+        hasher.GetHashAndReset(digest);
+        return FromDigest(digest);
+    }
+
+    /// <summary>
+    /// Encodes a pre-computed SHA-256 digest into the canonical CID v1 / raw / SHA-256 format.
+    /// </summary>
+    /// <param name="digest">A 32-byte SHA-256 digest.</param>
+    internal static Cid FromDigest(ReadOnlySpan<byte> digest)
+    {
         // CID v1 = [version] [codec] [multihash-code] [digest-length] [digest]
         Span<byte> cidBytes = stackalloc byte[4 + Sha256DigestLength];
         cidBytes[0] = Version1;

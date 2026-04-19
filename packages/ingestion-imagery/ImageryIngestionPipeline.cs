@@ -5,9 +5,10 @@ using Sunfish.Ingestion.Imagery.Metadata;
 namespace Sunfish.Ingestion.Imagery;
 
 /// <summary>
-/// Ingestion pipeline for drone/robot imagery uploads. Buffers the image into <see cref="IBlobStore"/>
-/// first (content-addressed), then runs <see cref="IImageryMetadataExtractor"/> against a fresh
-/// stream view over the same bytes, and finally emits a single <c>imagery.ingested</c> event on
+/// Ingestion pipeline for drone/robot imagery uploads. Streams the image into <see cref="IBlobStore"/>
+/// via <see cref="IBlobStore.PutStreamingAsync"/> (content-addressed, no full in-memory buffering when
+/// the backend supports streaming), then runs <see cref="IImageryMetadataExtractor"/> against a seeked
+/// or buffered view over the same bytes, and finally emits a single <c>imagery.ingested</c> event on
 /// the minted entity. Metadata extraction failures are non-fatal — the entity is still produced
 /// with all-null metadata fields. See Sunfish Platform spec §7.5.
 /// </summary>
@@ -22,25 +23,54 @@ public sealed class ImageryIngestionPipeline(
         IngestionContext context,
         CancellationToken ct = default)
     {
-        // 1. Buffer the raw bytes into blob store (image archival, content-addressed dedup).
-        using var ms = new MemoryStream();
-        await input.Content.CopyToAsync(ms, ct);
-        var bytes = ms.ToArray();
+        // 1. Stream the raw bytes into blob store (spec §7.5 streaming upload path).
+        //    PutStreamingAsync consumes the stream once; backends that can stream natively
+        //    (e.g. FileSystemBlobStore) avoid buffering the full payload in managed memory.
+        //    The stream is then re-read from the beginning for metadata extraction below.
+        if (!input.Content.CanSeek)
+        {
+            // Non-seekable source: buffer once so metadata extraction can re-read.
+            using var ms = new MemoryStream();
+            await input.Content.CopyToAsync(ms, ct);
 
-        if (bytes.Length == 0)
+            if (ms.Length == 0)
+            {
+                return IngestionResult<IngestedEntity>.Fail(
+                    IngestOutcome.ValidationFailed, "Image stream is empty.");
+            }
+
+            ms.Position = 0;
+            var cidNs = await blobs.PutStreamingAsync(ms, ct);
+            ms.Position = 0;
+            return await FinishIngestAsync(input, cidNs, ms, ct);
+        }
+
+        if (input.Content.Length == 0)
         {
             return IngestionResult<IngestedEntity>.Fail(
                 IngestOutcome.ValidationFailed, "Image stream is empty.");
         }
 
-        var cid = await blobs.PutAsync(bytes, ct);
+        var cid = await blobs.PutStreamingAsync(input.Content, ct);
 
-        // 2. Metadata extraction uses a fresh MemoryStream view. Never fatal.
+        // Seek back so metadata extraction can re-read from the start.
+        input.Content.Position = 0;
+        return await FinishIngestAsync(input, cid, input.Content, ct);
+    }
+
+    private ValueTask<IngestionResult<IngestedEntity>> FinishIngestAsync(
+        ImageUpload input,
+        Cid cid,
+        Stream contentForMetadata,
+        CancellationToken ct)
+    {
+        _ = ct; // reserved for future async metadata extraction
+
+        // 2. Metadata extraction. Never fatal.
         ImageryMetadata metadata;
         try
         {
-            using var metaStream = new MemoryStream(bytes, writable: false);
-            metadata = extractor.Extract(metaStream);
+            metadata = extractor.Extract(contentForMetadata);
         }
         catch
         {
@@ -68,11 +98,11 @@ public sealed class ImageryIngestionPipeline(
             new IngestedEvent("imagery.ingested", body, DateTime.UtcNow),
         };
 
-        return IngestionResult<IngestedEntity>.Success(new IngestedEntity(
+        return ValueTask.FromResult(IngestionResult<IngestedEntity>.Success(new IngestedEntity(
             EntityId: Guid.NewGuid().ToString("n"),
             SchemaId: input.SchemaId,
             Body: body,
             Events: events,
-            BlobCids: new[] { cid }));
+            BlobCids: new[] { cid })));
     }
 }
