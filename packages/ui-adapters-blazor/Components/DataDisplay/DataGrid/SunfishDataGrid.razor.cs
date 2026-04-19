@@ -44,6 +44,7 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
 
     // Search state
     internal string _searchText = "";
+    private CancellationTokenSource? _searchCts;
 
     // FilterMenu state
     internal string? _filterMenuField;
@@ -160,6 +161,12 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
 
     /// <summary>Placeholder text for the search box.</summary>
     [Parameter] public string SearchBoxPlaceholder { get; set; } = "Search...";
+
+    /// <summary>
+    /// Debounce delay (in milliseconds) for the search box. After the user stops typing, the filter
+    /// is applied after this many milliseconds. Defaults to 300ms.
+    /// </summary>
+    [Parameter] public int SearchDelay { get; set; } = 300;
 
     /// <summary>Optional custom width provider. Defaults to <see cref="FixedWidthProvider"/>.</summary>
     [Parameter] public IColumnWidthProvider? ColumnWidthProvider { get; set; }

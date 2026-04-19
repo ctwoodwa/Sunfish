@@ -240,12 +240,28 @@ public partial class SunfishDataGrid<TItem>
                 prop!.GetValue(item)?.ToString()?.Contains(lower, StringComparison.OrdinalIgnoreCase) == true));
     }
 
-    internal async Task OnSearchChanged(ChangeEventArgs e)
+    internal void OnSearchChanged(ChangeEventArgs e)
     {
         _searchText = e.Value?.ToString() ?? "";
-        _state.CurrentPage = 1;
-        await ProcessDataAsync();
-        await NotifyStateChanged("Search");
+
+        // Cancel any pending debounce
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+        var token = _searchCts.Token;
+
+        // Debounce: wait SearchDelay ms before applying the filter
+        _ = Task.Delay(SearchDelay, token).ContinueWith(async t =>
+        {
+            if (t.IsCanceled) return;
+            await InvokeAsync(async () =>
+            {
+                _state.CurrentPage = 1;
+                await ProcessDataAsync();
+                await NotifyStateChanged("Search");
+                StateHasChanged();
+            });
+        }, TaskScheduler.Default);
     }
 
     // ── CSV Export ──────────────────────────────────────────────────────
@@ -759,10 +775,19 @@ public partial class SunfishDataGrid<TItem>
         StateHasChanged();
     }
 
-    /// <summary>Removes all active filters and reprocesses data.</summary>
+    /// <summary>
+    /// Removes all active filters (column filters, composite filters, and search box text) and reprocesses data.
+    /// </summary>
     public async Task ClearFilters()
     {
+        // Cancel any pending search debounce
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = null;
+
         _state.FilterDescriptors.Clear();
+        _state.CompositeFilterDescriptors.Clear();
+        _searchText = "";
         _state.CurrentPage = 1;
         await ProcessDataAsync();
         await NotifyPageChanged();
