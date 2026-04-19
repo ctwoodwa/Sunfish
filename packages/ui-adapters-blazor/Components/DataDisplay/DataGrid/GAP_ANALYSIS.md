@@ -86,12 +86,12 @@ Spec: `columns/auto-generated.md`
 Spec: `filtering/searchbox.md`
 Reference: RESEARCH_LOG.md §8 — MudBlazor programmatic filter API
 
-- [ ] A3.1 — Add `ShowSearchBox` bool parameter
-- [ ] A3.2 — Render search input in toolbar area
-- [ ] A3.3 — Implement global text search across all string-type visible columns
-- [ ] A3.4 — Add `SearchFilter` string to `GridState` for persistence
-- [ ] A3.5 — Debounce input (configurable `SearchDelay` parameter, default 300ms)
-- [ ] A3.6 — Expose `AddFilter(FilterDescriptor)` / `ClearFilters()` public methods on grid for programmatic filter control
+- [x] A3.1 — Add `ShowSearchBox` bool parameter
+- [x] A3.2 — Render search input in toolbar area
+- [x] A3.3 — Implement global text search across all string-type visible columns
+- [x] A3.4 — Add `SearchFilter` string to `GridState` for persistence
+- [x] A3.5 — Debounce input (configurable `SearchDelay` parameter, default 300ms)
+- [x] A3.6 — Expose `AddFilter(FilterDescriptor)` / `ClearFilters()` public methods on grid for programmatic filter control
 
 ### A4: Additional Templates
 Spec: `templates/no-data.md`, `templates/row.md`
