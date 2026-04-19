@@ -19,6 +19,10 @@
     <Project Path="packages/kernel-event-bus/Sunfish.Kernel.EventBus.csproj" />
     <Project Path="packages/kernel-event-bus/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/rule-engine-event-bridge/">
+    <Project Path="packages/foundation-rule-engine-event-bridge/Sunfish.Foundation.RuleEngine.EventBridge.csproj" />
+    <Project Path="packages/foundation-rule-engine-event-bridge/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/ui-core/">
     <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
     <Project Path="packages/ui-core/tests/tests.csproj" />
