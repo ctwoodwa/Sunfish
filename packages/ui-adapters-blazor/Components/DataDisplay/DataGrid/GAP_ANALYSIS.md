@@ -246,10 +246,10 @@ Dependency: ClosedXML (MIT) or similar
 Spec: `export/pdf.md`
 Dependency: QuestPDF (MIT) or similar
 
-- [ ] C2.1 — Add QuestPDF NuGet reference (MIT license)
-- [ ] C2.2 — Add `ExportToPdf()` public method
-- [ ] C2.3 — Generate table layout matching grid columns
-- [ ] C2.4 — Trigger browser download via JS interop
+- [x] C2.1 — Add QuestPDF NuGet reference (MIT license)
+- [x] C2.2 — Add `ExportToPdf()` public method
+- [x] C2.3 — Generate table layout matching grid columns
+- [x] C2.4 — Trigger browser download via JS interop
 
 ### C3: Column Menu
 Spec: `columns/menu.md`
