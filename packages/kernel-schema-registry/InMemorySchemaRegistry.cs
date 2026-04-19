@@ -58,9 +58,17 @@ public sealed class InMemorySchemaRegistry : ISchemaRegistry
         string jsonSchemaText,
         IReadOnlyList<SchemaId>? parents = null,
         IReadOnlyList<string>? tags = null,
+        int? blobThreshold = null,
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(jsonSchemaText);
+
+        if (blobThreshold.HasValue && blobThreshold.Value <= 0)
+        {
+            throw new ArgumentException(
+                $"blobThreshold must be a positive integer; got {blobThreshold.Value}.",
+                nameof(blobThreshold));
+        }
 
         // 1. Canonicalize the schema text before hashing so that two clients
         //    who register logically-equivalent schemas with different
@@ -105,7 +113,8 @@ public sealed class InMemorySchemaRegistry : ISchemaRegistry
             ParentSchemas: parents ?? Array.Empty<SchemaId>(),
             Migrations: Array.Empty<Migration>(),
             Tags: tags ?? Array.Empty<string>(),
-            ContentAddress: cid);
+            ContentAddress: cid,
+            BlobThreshold: blobThreshold);
 
         // Register-or-return-existing so the operation is idempotent.
         var entry = _schemas.GetOrAdd(id, _ => new Entry(schema, parsedSchema));
