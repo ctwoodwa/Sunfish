@@ -105,6 +105,7 @@
                         var sortDir = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
                         var headerCellClass = CssProvider.DataGridHeaderCellClass(isSortable, isSorted);
                         if (column.Locked) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked";
+                        if (!string.IsNullOrEmpty(column.HeaderClass)) headerCellClass = string.IsNullOrEmpty(headerCellClass) ? column.HeaderClass : $"{headerCellClass} {column.HeaderClass}";
                         var frozenHeaderStyle = GetFrozenCellStyle(column, isHeader: true);
                         var combinedStyle = GetColumnCellStyle(column, frozenHeaderStyle);
 
