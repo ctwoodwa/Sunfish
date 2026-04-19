@@ -107,7 +107,11 @@
                         if (column.Locked) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked";
                         if (!string.IsNullOrEmpty(column.HeaderClass)) headerCellClass = string.IsNullOrEmpty(headerCellClass) ? column.HeaderClass : $"{headerCellClass} {column.HeaderClass}";
                         var frozenHeaderStyle = GetFrozenCellStyle(column, isHeader: true);
-                        var combinedStyle = GetColumnCellStyle(column, frozenHeaderStyle);
+                        // B2.4: header must be position:relative so the absolutely-positioned handle aligns.
+                        var resizePositionStyle = column.IsResizable(AllowColumnResize || Resizable) ? "position:relative;" : null;
+                        var combinedStyle = GetColumnCellStyle(column, string.IsNullOrEmpty(frozenHeaderStyle)
+                            ? resizePositionStyle
+                            : resizePositionStyle is not null ? $"{frozenHeaderStyle}{resizePositionStyle}" : frozenHeaderStyle);
 
                         <th class="@headerCellClass"
                             role="columnheader"
@@ -177,6 +181,19 @@
                                         @RenderCheckBoxFilterMenu()
                                     </div>
                                 }
+                            }
+                            @* B2.4: column resize drag handle — rendered only when both grid and column allow resizing. *@
+                            @if (column.IsResizable(AllowColumnResize || Resizable))
+                            {
+                                <div class="mar-datagrid-col-resize-handle"
+                                     data-column-index="@_visibleColumns.IndexOf(column)"
+                                     data-column-id="@column.EffectiveId"
+                                     data-min-width="@column.MinResizableWidth"
+                                     data-max-width="@column.MaxResizableWidth"
+                                     role="separator"
+                                     aria-orientation="vertical"
+                                     aria-label="@($"Resize column {column.DisplayTitle}")"
+                                     @onclick:stopPropagation="true"></div>
                             }
                         </th>
                     }

@@ -25,7 +25,19 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     internal bool _resizable;
     internal bool _reorderable;
 
-    /// <summary>Whether columns can be resized by dragging. Defaults to false.</summary>
+    /// <summary>
+    /// Whether columns can be resized by dragging (B2 canonical parameter). Defaults to <c>false</c>.
+    /// When <c>true</c>, drag handles are rendered in each resizable column header and the JS resize
+    /// handler is activated. Individual columns can opt out by setting their <c>Resizable</c> parameter
+    /// to <c>false</c>.
+    /// </summary>
+    [Parameter] public bool AllowColumnResize { get; set; }
+
+    /// <summary>
+    /// Whether columns can be resized by dragging. Defaults to false.
+    /// <para><b>Note:</b> <see cref="AllowColumnResize"/> is the canonical B2 parameter.
+    /// This property is honoured for backward compatibility; setting either is sufficient.</para>
+    /// </summary>
     [Parameter] public bool Resizable { get; set; }
 
     /// <summary>Whether columns can be reordered by dragging. Defaults to false.</summary>
@@ -34,7 +46,13 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     /// <summary>Fires when column order changes.</summary>
     [Parameter] public EventCallback<List<string>> OnColumnReorder { get; set; }
 
-    /// <summary>Fires when a column is resized.</summary>
+    /// <summary>
+    /// Fires once (on mouseup) when a column is resized via the drag handle.
+    /// Carries the column index, column id, and final width in pixels.
+    /// </summary>
+    [Parameter] public EventCallback<DataGridColumnResizedEventArgs> OnColumnResized { get; set; }
+
+    /// <summary>Fires when a column is resized (legacy event — prefer <see cref="OnColumnResized"/>).</summary>
     [Parameter] public EventCallback<ColumnResizeEventArgs> OnColumnResize { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -42,7 +60,8 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         if (firstRender)
         {
             _dotNetRef = DotNetObjectReference.Create(this);
-            _resizable = Resizable;
+            // AllowColumnResize is canonical (B2); Resizable is the legacy alias — honour either.
+            _resizable = AllowColumnResize || Resizable;
             _reorderable = Reorderable;
 
             if (_resizable || _reorderable || Navigable || RowDraggable)
@@ -93,11 +112,11 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                 DotNetObjectReference.Create(this),
                 new
                 {
-                    keyboardNavigation = false,   // B1
-                    columnResize = false,         // B2
-                    columnReorder = false,        // B3
-                    rowDragDrop = false,          // B4
-                    frozenColumns = false         // B5
+                    keyboardNavigation = false,                  // B1
+                    columnResize = AllowColumnResize || Resizable, // B2
+                    columnReorder = false,                       // B3
+                    rowDragDrop = false,                         // B4
+                    frozenColumns = false                        // B5
                 });
         }
         catch (Exception ex) when (ex is JSDisconnectedException
@@ -112,27 +131,47 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         }
     }
 
-    /// <summary>Called from JS when a column is resized.</summary>
+    /// <summary>
+    /// Called from JS exactly once, on mouseup, when a column drag-resize completes.
+    /// Updates the column's runtime width, persists to <see cref="GridState.ColumnStates"/>,
+    /// fires <see cref="OnColumnResized"/> (and the legacy <see cref="OnColumnResize"/>),
+    /// then triggers <c>StateHasChanged</c>.
+    /// </summary>
     [JSInvokable]
     public async Task OnColumnResized(int columnIndex, double newWidth)
     {
-        if (columnIndex >= 0 && columnIndex < _visibleColumns.Count)
-        {
-            var column = _visibleColumns[columnIndex];
-            column.RuntimeWidth = $"{newWidth}px";
-            ResolveLayoutContract();
+        if (columnIndex < 0 || columnIndex >= _visibleColumns.Count)
+            return;
 
-            if (OnColumnResize.HasDelegate)
-            {
-                await OnColumnResize.InvokeAsync(new ColumnResizeEventArgs
-                {
-                    Field = column.Field,
-                    Width = newWidth
-                });
-            }
-            await NotifyStateChanged("ColumnResize");
-            await InvokeAsync(StateHasChanged);
+        var column = _visibleColumns[columnIndex];
+        var widthCss = $"{newWidth:F0}px";
+        column.RuntimeWidth = widthCss;
+        ResolveLayoutContract();
+
+        // B2.7: persist width into GridState.ColumnStates so consumers can round-trip the state.
+        var colState = _state.ColumnStates.FirstOrDefault(cs => cs.Field == column.Field);
+        if (colState is not null)
+            colState.Width = widthCss;
+
+        // B2.8: fire the new typed EventCallback first.
+        if (OnColumnResized.HasDelegate)
+        {
+            await OnColumnResized.InvokeAsync(
+                new DataGridColumnResizedEventArgs(columnIndex, column.EffectiveId, newWidth));
         }
+
+        // Legacy callback kept for backward compatibility.
+        if (OnColumnResize.HasDelegate)
+        {
+            await OnColumnResize.InvokeAsync(new ColumnResizeEventArgs
+            {
+                Field = column.Field,
+                Width = newWidth
+            });
+        }
+
+        await NotifyStateChanged("ColumnResize");
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Called from JS when columns are reordered.</summary>
@@ -461,7 +500,16 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
 """;
 }
 
-/// <summary>Event args for column resize.</summary>
+/// <summary>
+/// Event args raised by <see cref="SunfishDataGrid{TItem}.OnColumnResized"/> (B2.8)
+/// when the user completes a column drag-resize.
+/// </summary>
+/// <param name="ColumnIndex">Zero-based index in <c>_visibleColumns</c> at the time of the resize.</param>
+/// <param name="ColumnId">Effective column identifier (matches the <c>data-column-id</c> DOM attribute).</param>
+/// <param name="NewWidth">Final column width in pixels.</param>
+public sealed record DataGridColumnResizedEventArgs(int ColumnIndex, string ColumnId, double NewWidth);
+
+/// <summary>Event args for column resize (legacy — prefer <see cref="DataGridColumnResizedEventArgs"/>).</summary>
 public class ColumnResizeEventArgs
 {
     /// <summary>The field name of the resized column.</summary>

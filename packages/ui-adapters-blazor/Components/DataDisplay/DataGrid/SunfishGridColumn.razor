@@ -88,6 +88,31 @@
     /// Set by the parent grid (<see cref="SunfishDataGrid{TItem}.RegisterColumn"/>) on registration.</summary>
     internal int _columnIndex;
 
+    /// <summary>
+    /// Whether this column can be resized by the user when the grid's <c>AllowColumnResize</c> is <c>true</c>.
+    /// Defaults to <c>true</c>; set to <c>false</c> to opt a specific column out of resizing.
+    /// </summary>
+    [Parameter] public bool Resizable { get; set; } = true;
+
+    /// <summary>
+    /// Minimum column width enforced during resize (CSS length string, e.g. <c>"40px"</c>).
+    /// When not set, the JS layer defaults to 40 px.
+    /// </summary>
+    [Parameter] public string? MinResizableWidth { get; set; }
+
+    /// <summary>
+    /// Maximum column width enforced during resize (CSS length string, e.g. <c>"600px"</c>).
+    /// When not set, there is no upper limit.
+    /// </summary>
+    [Parameter] public string? MaxResizableWidth { get; set; }
+
+    /// <summary>
+    /// Returns <c>true</c> when this column should show a resize handle.
+    /// A column is resizable only when the grid opts in via <paramref name="gridAllows"/>
+    /// AND the column's own <see cref="Resizable"/> is <c>true</c>.
+    /// </summary>
+    internal bool IsResizable(bool gridAllows) => gridAllows && Resizable;
+
     /// <summary>Whether this column can be used for grouping. Defaults to true.</summary>
     [Parameter] public bool Groupable { get; set; } = true;
 
