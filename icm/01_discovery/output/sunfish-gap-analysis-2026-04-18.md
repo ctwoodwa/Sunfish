@@ -1641,6 +1641,7 @@ Aspire host availability.
 **Priority:** P2
 **Category:** Spec / Governance
 **Spec references:** Appendix C #1
+**Resolution:** ADR-resolved — see `docs/adrs/0001-schema-registry-governance.md`
 
 **Gap Description**
 "Canonical schema registry governance model — is it a foundation, a company, a W3C working
@@ -1686,6 +1687,7 @@ G2.
 **Priority:** P2
 **Category:** Spec
 **Spec references:** Appendix C #2
+**Resolution:** ADR-resolved — see `docs/adrs/0002-kernel-module-format.md`
 
 **Gap Description**
 "Kernel module format — is it an Assembly + manifest (like ASP.NET), an OCI artifact, or
@@ -1730,6 +1732,7 @@ None.
 **Priority:** P2
 **Category:** Spec / Kernel
 **Spec references:** Appendix C #3
+**Resolution:** ADR-resolved — see `docs/adrs/0003-event-bus-distribution-semantics.md`
 
 **Gap Description**
 "Event bus distribution semantics — Sunfish default (at-least-once) or opt-in stronger
@@ -1768,6 +1771,7 @@ G3.
 **Priority:** P3
 **Category:** Spec / Crypto
 **Spec references:** Appendix C #4
+**Resolution:** ADR-resolved — see `docs/adrs/0004-post-quantum-signature-migration.md`
 
 **Gap Description**
 "Post-quantum signature algorithm migration plan." Reserved extension point in spec §3.3
