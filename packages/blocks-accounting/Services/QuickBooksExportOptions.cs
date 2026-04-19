@@ -8,7 +8,7 @@ namespace Sunfish.Blocks.Accounting.Services;
 /// is not available. Defaults to <c>"Unspecified"</c>.
 /// </param>
 /// <param name="IncludeSourceReference">
-/// When <see langword="true"/> (default), writes the <see cref="JournalEntry.SourceReference"/>
+/// When <see langword="true"/> (default), writes the <c>JournalEntry.SourceReference</c>
 /// value into the IIF <c>MEMO</c> field of each SPL line, prefixed with <c>"[src]"</c>.
 /// When <see langword="false"/>, the line-level MEMO is left blank.
 /// </param>

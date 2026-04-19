@@ -19,7 +19,7 @@ namespace Sunfish.Blocks.Accounting.Models;
 /// <param name="StartDate">First day of the first depreciation period.</param>
 /// <param name="OriginalCost">Total acquisition cost of the asset. Must be non-negative.</param>
 /// <param name="SalvageValue">
-/// Estimated residual value at end of useful life. Must be non-negative and ≤ <paramref name="originalCost"/>.
+/// Estimated residual value at end of useful life. Must be non-negative and ≤ <paramref name="OriginalCost"/>.
 /// </param>
 /// <param name="UsefulLifeMonths">
 /// Expected useful life in months. Must be a positive integer.

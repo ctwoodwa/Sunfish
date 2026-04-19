@@ -42,7 +42,7 @@ namespace Sunfish.Blocks.Accounting.Services;
 /// relative to the TRNS account.
 /// </para>
 /// <para>
-/// <b>Empty-batch behaviour:</b> when <paramref name="entries"/> is empty, only the header block
+/// <b>Empty-batch behaviour:</b> when the <c>entries</c> parameter is empty, only the header block
 /// (<c>!TRNS</c> / <c>!SPL</c> / <c>!ENDTRNS</c>) is emitted. This is intentional — a valid IIF
 /// file with no data rows is still a valid IIF file.
 /// </para>

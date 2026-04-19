@@ -9,19 +9,8 @@ namespace Sunfish.Blocks.Accounting.Models;
 ///   <item>Exactly one of <see cref="Debit"/> or <see cref="Credit"/> must be non-zero.</item>
 ///   <item>Both <see cref="Debit"/> and <see cref="Credit"/> must be non-negative.</item>
 /// </list>
+/// Use the constructor <c>JournalEntryLine(accountId, debit, credit, notes)</c> to create instances.
 /// </remarks>
-/// <param name="AccountId">Reference to the <see cref="GLAccount"/> being debited or credited.</param>
-/// <param name="Debit">
-/// Amount debited to the account.  Must be <c>0</c> when this is a credit line.
-/// </param>
-/// <param name="Credit">
-/// Amount credited to the account.  Must be <c>0</c> when this is a debit line.
-/// </param>
-/// <param name="Notes">Optional free-form annotation for this line.</param>
-/// <exception cref="ArgumentException">
-/// Thrown when both <paramref name="Debit"/> and <paramref name="Credit"/> are non-zero,
-/// when both are zero, or when either is negative.
-/// </exception>
 public sealed record JournalEntryLine
 {
     /// <summary>Reference to the <see cref="GLAccount"/> being debited or credited.</summary>

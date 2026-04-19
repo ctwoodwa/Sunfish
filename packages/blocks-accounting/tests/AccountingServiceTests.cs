@@ -221,7 +221,7 @@ public class AccountingServiceTests
 
         // Fire 20 concurrent PostEntryAsync calls.
         var tasks = Enumerable.Range(0, 20).Select(_ =>
-            PostBalancedEntry(svc, cash.Id, revenue.Id).AsTask()).ToArray();
+            PostBalancedEntry(svc, cash.Id, revenue.Id)).ToArray();
 
         await Task.WhenAll(tasks);
 

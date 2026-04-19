@@ -10,18 +10,9 @@ namespace Sunfish.Blocks.Accounting.Models;
 /// Invariant (enforced at construction): sum of all <see cref="JournalEntryLine.Debit"/> values
 /// must equal sum of all <see cref="JournalEntryLine.Credit"/> values across all
 /// <see cref="Lines"/>. Imbalanced entries are rejected with <see cref="ArgumentException"/>.
+/// Use the constructor <c>JournalEntry(id, entryDate, memo, lines, createdAtUtc, sourceReference)</c>
+/// to create instances.
 /// </remarks>
-/// <param name="Id">Unique journal entry identifier.</param>
-/// <param name="EntryDate">The accounting date this entry is effective for.</param>
-/// <param name="Memo">Human-readable description of the transaction.</param>
-/// <param name="Lines">
-/// Ordered list of debit/credit lines. Must not be empty, and debits must equal credits.
-/// </param>
-/// <param name="CreatedAtUtc">Wall-clock instant at which the entry was posted.</param>
-/// <param name="SourceReference">
-/// Optional opaque string linking back to the originating event, e.g.
-/// <c>"rent-payment:INV-123"</c>. Used for audit traceability; not interpreted by this package.
-/// </param>
 public sealed record JournalEntry
 {
     /// <summary>Unique journal entry identifier.</summary>
