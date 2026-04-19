@@ -72,6 +72,10 @@
     <Project Path="packages/blocks-rent-collection/Sunfish.Blocks.RentCollection.csproj" />
     <Project Path="packages/blocks-rent-collection/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/tax-reporting/">
+    <Project Path="packages/blocks-tax-reporting/Sunfish.Blocks.TaxReporting.csproj" />
+    <Project Path="packages/blocks-tax-reporting/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
     <Project Path="packages/compat-telerik/tests/tests.csproj" />
