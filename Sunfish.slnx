@@ -15,6 +15,10 @@
     <Project Path="packages/kernel-schema-registry/Sunfish.Kernel.SchemaRegistry.csproj" />
     <Project Path="packages/kernel-schema-registry/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/event-bus/">
+    <Project Path="packages/kernel-event-bus/Sunfish.Kernel.EventBus.csproj" />
+    <Project Path="packages/kernel-event-bus/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/ui-core/">
     <Project Path="packages/ui-core/Sunfish.UICore.csproj" />
     <Project Path="packages/ui-core/tests/tests.csproj" />

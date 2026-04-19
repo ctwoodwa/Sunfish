@@ -15,24 +15,20 @@ namespace Sunfish.Kernel.Tests;
 /// </summary>
 /// <remarks>
 /// <para>
-/// These tests do two jobs:
+/// These tests prove the shipped (forwarded) kernel primitives resolve from the
+/// Foundation assembly via <c>[assembly: TypeForwardedTo]</c>. If someone renames
+/// a type in Foundation without updating <c>TypeForwards.cs</c>, the Kernel
+/// assembly won't compile in the first place — but these tests guard the
+/// additional invariant that the CLR resolves the type to the SAME Foundation
+/// assembly at runtime (not an accidental duplicate).
 /// </para>
-/// <list type="number">
-///   <item><description>
-///     Prove the shipped (forwarded) kernel primitives resolve from the
-///     Foundation assembly via <c>[assembly: TypeForwardedTo]</c>. If someone
-///     renames a type in Foundation without updating <c>TypeForwards.cs</c>,
-///     the Kernel assembly won't compile in the first place — but these tests
-///     guard the additional invariant that the CLR resolves the type to the
-///     SAME Foundation assembly at runtime (not an accidental duplicate).
-///   </description></item>
-///   <item><description>
-///     Confirm the stub interfaces for the not-yet-shipped primitives
-///     (<c>ISchemaRegistry</c>, <c>IEventBus</c>) ship from the Kernel
-///     assembly directly — i.e. the Kernel physically owns the stub types
-///     rather than forwarding them anywhere.
-///   </description></item>
-/// </list>
+/// <para>
+/// The §3.4 Schema Registry (gap G2) and §3.6 Event Bus (gap G3) primitives are
+/// no longer covered here: each has been promoted out of this façade into its
+/// own sibling package (<c>Sunfish.Kernel.SchemaRegistry</c>,
+/// <c>Sunfish.Kernel.EventBus</c>) and ships its own smoke tests. See
+/// <c>icm/01_discovery/output/sunfish-gap-analysis-2026-04-18.md</c> (G2, G3).
+/// </para>
 /// </remarks>
 public class TypeForwardingSmokeTests
 {
@@ -86,26 +82,6 @@ public class TypeForwardingSmokeTests
         AssertLivesInFoundation(typeof(PrincipalId));
         AssertLivesInFoundation(typeof(Signature));
         AssertLivesInFoundation(typeof(SignedOperation<>));
-    }
-
-    // ----- Stub primitives (spec §3.6 / G3) -----
-
-    // Note: the §3.4 ISchemaRegistry stub that G1 reserved in this package has
-    // been promoted by G2 into the real contract shipped from the sibling
-    // Sunfish.Kernel.SchemaRegistry package. The namespace Sunfish.Kernel.Schema
-    // is preserved for source compatibility with early consumers that bound to
-    // the reserved stub — it now resolves to the real interface in the new
-    // assembly instead of the empty stub. See
-    // icm/01_discovery/output/sunfish-gap-analysis-2026-04-18.md (G2).
-
-    [Fact]
-    public void EventBusStub_LivesInKernelAssembly()
-    {
-        var type = typeof(Events.IEventBus);
-        Assert.NotNull(type);
-        Assert.True(type.IsInterface);
-        Assert.Equal("Sunfish.Kernel", type.Assembly.GetName().Name);
-        Assert.Equal("Sunfish.Kernel.Events", type.Namespace);
     }
 
     // ----- Helper -----
