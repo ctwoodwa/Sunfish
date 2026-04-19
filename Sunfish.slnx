@@ -52,6 +52,10 @@
     <Project Path="packages/blocks-tasks/Sunfish.Blocks.Tasks.csproj" />
     <Project Path="packages/blocks-tasks/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/leases/">
+    <Project Path="packages/blocks-leases/Sunfish.Blocks.Leases.csproj" />
+    <Project Path="packages/blocks-leases/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/scheduling/">
     <Project Path="packages/blocks-scheduling/Sunfish.Blocks.Scheduling.csproj" />
     <Project Path="packages/blocks-scheduling/tests/tests.csproj" />
