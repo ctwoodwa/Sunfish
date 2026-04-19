@@ -1,0 +1,73 @@
+@* Read-display inspection list. Consumes IInspectionsService via DI.
+   Template editor, response capture, deficiency detail, and mobile capture are deferred. *@
+
+@inject IInspectionsService InspectionsService
+
+@if (_inspections is null)
+{
+    <div class="sf-inspection-list__loading">Loading inspections…</div>
+}
+else if (_inspections.Count == 0)
+{
+    <div class="sf-inspection-list__empty">No inspections scheduled</div>
+}
+else
+{
+    <table class="sf-inspection-list">
+        <thead>
+            <tr>
+                <th class="sf-inspection-list__col-date">Scheduled date</th>
+                <th class="sf-inspection-list__col-unit">Unit</th>
+                <th class="sf-inspection-list__col-phase">Phase</th>
+                <th class="sf-inspection-list__col-inspector">Inspector</th>
+                <th class="sf-inspection-list__col-deficiencies">Deficiencies</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _inspections)
+            {
+                <tr class="sf-inspection-list__row" data-inspection-id="@row.Inspection.Id">
+                    <td class="sf-inspection-list__col-date">@row.Inspection.ScheduledDate.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-inspection-list__col-unit">@row.Inspection.UnitId</td>
+                    <td class="sf-inspection-list__col-phase">@row.Inspection.Phase</td>
+                    <td class="sf-inspection-list__col-inspector">@row.Inspection.InspectorName</td>
+                    <td class="sf-inspection-list__col-deficiencies">@row.DeficiencyCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<InspectionRow>? _inspections;
+
+    private sealed record InspectionRow(Inspection Inspection, int DeficiencyCount);
+
+    /// <summary>
+    /// Optional filter to pass when loading inspections. Defaults to <see cref="ListInspectionsQuery.Empty"/>
+    /// (returns all inspections).
+    /// </summary>
+    [Parameter] public ListInspectionsQuery Query { get; set; } = ListInspectionsQuery.Empty;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var rows = new List<InspectionRow>();
+            await foreach (var inspection in InspectionsService.ListInspectionsAsync(Query))
+            {
+                var defCount = 0;
+                await foreach (var _ in InspectionsService.ListDeficienciesAsync(inspection.Id))
+                    defCount++;
+
+                rows.Add(new InspectionRow(inspection, defCount));
+            }
+            _inspections = rows;
+        }
+        catch
+        {
+            _inspections = [];
+        }
+    }
+}
