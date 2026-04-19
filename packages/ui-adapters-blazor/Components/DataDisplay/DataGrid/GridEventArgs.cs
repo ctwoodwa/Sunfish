@@ -181,6 +181,34 @@ public class GridExportEventArgs
     public int RowCount { get; set; }
 }
 
+/// <summary>Options for <see cref="SunfishDataGrid{TItem}.ExportToExcelAsync(XlsxExportOptions?)"/>.</summary>
+public sealed record XlsxExportOptions
+{
+    /// <summary>
+    /// Name for the downloaded file. Defaults to <c>grid-export-{timestamp}.xlsx</c>.
+    /// </summary>
+    public string? FileName { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, exports all filtered/sorted rows regardless of pagination.
+    /// When <c>false</c>, exports only the current page. Defaults to <c>false</c>
+    /// (respects the grid's own <c>ExportAllPages</c> parameter when <c>null</c>).
+    /// </summary>
+    public bool ExportAllPages { get; init; }
+
+    /// <summary>Whether to include the header row. Defaults to <c>true</c>.</summary>
+    public bool IncludeHeaders { get; init; } = true;
+
+    /// <summary>Name of the Excel worksheet. Defaults to <c>"Export"</c>.</summary>
+    public string SheetName { get; init; } = "Export";
+
+    /// <summary>Freeze the first row (header) so it stays visible while scrolling. Defaults to <c>true</c>.</summary>
+    public bool FreezeHeaderRow { get; init; } = true;
+
+    /// <summary>Auto-fit column widths to their content after writing. Defaults to <c>true</c>.</summary>
+    public bool AutoFitColumns { get; init; } = true;
+}
+
 /// <summary>Event arguments for row drag-and-drop reorder.</summary>
 /// <typeparam name="TItem">The row data type.</typeparam>
 public class GridRowDropEventArgs<TItem>

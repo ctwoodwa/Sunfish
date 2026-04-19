@@ -1,3 +1,4 @@
+using Sunfish.Components.Blazor.Internal.Interop;
 using Sunfish.Foundation.Enums;
 using Sunfish.UICore.Contracts;
 
@@ -223,4 +224,11 @@ internal sealed class StubIconProvider : ISunfishIconProvider
 {
     public string GetIcon(string name, IconSize size = IconSize.Medium) => string.Empty;
     public string GetIconSpriteUrl() => string.Empty;
+}
+
+/// <summary>No-op download service stub for tests that render SunfishDataGrid but do not exercise export.</summary>
+internal sealed class StubDownloadService : IDownloadService
+{
+    public ValueTask DownloadAsync(DownloadRequest request, CancellationToken cancellationToken = default)
+        => ValueTask.CompletedTask;
 }

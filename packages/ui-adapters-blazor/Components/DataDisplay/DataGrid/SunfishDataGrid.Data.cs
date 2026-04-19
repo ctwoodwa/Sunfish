@@ -321,6 +321,111 @@ public partial class SunfishDataGrid<TItem>
             headers);
     }
 
+    // ── Excel Export ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Generates an <c>.xlsx</c> workbook from visible columns and current data, then
+    /// triggers a browser file download.
+    /// </summary>
+    /// <param name="options">
+    /// Optional export options.  When <c>null</c>, defaults are used (all pages if the
+    /// grid's own <c>ExportAllPages</c> parameter is set, headers included,
+    /// sheet named <c>"Export"</c>, first row frozen, columns auto-fitted).
+    /// </param>
+    /// <remarks>
+    /// Fires <see cref="OnBeforeExport"/> before generating bytes (set
+    /// <see cref="GridExportEventArgs.IsCancelled"/> to abort) and
+    /// <see cref="OnAfterExport"/> after the download is queued.
+    /// </remarks>
+    public async Task ExportToExcelAsync(XlsxExportOptions? options = null)
+    {
+        options ??= new XlsxExportOptions { ExportAllPages = ExportAllPages };
+
+        // Fire OnBeforeExport
+        var beforeArgs = new GridExportEventArgs { Format = "xlsx" };
+        if (OnBeforeExport.HasDelegate)
+        {
+            await OnBeforeExport.InvokeAsync(beforeArgs);
+            if (beforeArgs.IsCancelled) return;
+        }
+
+        // Build column descriptors from visible columns
+        var columns = _visibleColumns
+            .Select(c => new ExportColumnDescriptor(c.Field, c.DisplayTitle, c.Format))
+            .ToList();
+
+        // Resolve data rows
+        IEnumerable<TItem> items;
+        if (options.ExportAllPages && Data is not null)
+        {
+            items = Data;
+            if (!string.IsNullOrWhiteSpace(_searchText))
+                items = ApplySearch(items, _searchText);
+            foreach (var filter in _state.FilterDescriptors)
+                items = ApplyFilter(items, filter);
+            items = ApplySort(items);
+        }
+        else
+        {
+            items = _displayedItems;
+        }
+
+        var itemList = items.ToList();
+
+        // Generate XLSX bytes (pure C# — no Blazor dependency)
+        var bytes = XlsxExportWriter.Write(columns, itemList, options);
+
+        // Trigger browser download
+        await TriggerXlsxDownloadAsync(bytes, options);
+
+        // Fire OnAfterExport
+        if (OnAfterExport.HasDelegate)
+        {
+            await OnAfterExport.InvokeAsync(new GridExportEventArgs
+            {
+                Format = "xlsx",
+                RowCount = itemList.Count
+            });
+        }
+    }
+
+    /// <summary>
+    /// Convenience overload that accepts a file name and export-all-pages flag directly.
+    /// </summary>
+    /// <param name="fileName">
+    /// File name for the download (e.g. <c>"report.xlsx"</c>).
+    /// When <c>null</c> a timestamped default is used.
+    /// </param>
+    /// <param name="exportAllPages">
+    /// When <c>true</c>, all filtered/sorted rows are exported regardless of pagination.
+    /// </param>
+    public Task ExportToExcelAsync(string? fileName, bool exportAllPages = false)
+        => ExportToExcelAsync(new XlsxExportOptions
+        {
+            FileName = fileName,
+            ExportAllPages = exportAllPages
+        });
+
+    private async Task TriggerXlsxDownloadAsync(byte[] bytes, XlsxExportOptions options)
+    {
+        var fileName = string.IsNullOrWhiteSpace(options.FileName)
+            ? $"grid-export-{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx"
+            : options.FileName;
+
+        const string mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+        // Transport bytes as base64 through the existing IDownloadService / JS `download`
+        // function in sunfish-clipboard-download.js.  Base64 encoding is the standard
+        // Blazor pattern for binary payloads; it avoids the overhead of raw byte-array
+        // marshalling through JS interop for typical file sizes.
+        await _downloadService.DownloadAsync(new Internal.Interop.DownloadRequest
+        {
+            FileName = fileName,
+            ContentType = mimeType,
+            Base64Content = Convert.ToBase64String(bytes)
+        });
+    }
+
     // ── Filtering (extended operators) ──────────────────────────────────
 
     private static IEnumerable<TItem> ApplyFilter(IEnumerable<TItem> items, FilterDescriptor filter)

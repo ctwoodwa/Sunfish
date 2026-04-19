@@ -18,6 +18,7 @@ public class AutoGenerateColumnsTests : BunitContext
         Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
         Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
         Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
+        Services.AddScoped<Sunfish.Components.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
     }
 
     // ── Test models ────────────────────────────────────────────────────────

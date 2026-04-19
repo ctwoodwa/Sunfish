@@ -236,11 +236,11 @@ Reference: RESEARCH_LOG.md §4 — Radzen stacked `position: sticky` offsets, bo
 Spec: `export/excel.md`
 Dependency: ClosedXML (MIT) or similar
 
-- [ ] C1.1 — Add ClosedXML NuGet reference (MIT license)
-- [ ] C1.2 — Add `ExportToExcel()` public method
-- [ ] C1.3 — Generate .xlsx from visible columns and data
-- [ ] C1.4 — Trigger browser download via JS interop
-- [ ] C1.5 — Respect Format strings for cell formatting in Excel
+- [x] C1.1 — Add ClosedXML NuGet reference (MIT license)
+- [x] C1.2 — Add `ExportToExcel()` public method
+- [x] C1.3 — Generate .xlsx from visible columns and data
+- [x] C1.4 — Trigger browser download via JS interop
+- [x] C1.5 — Respect Format strings for cell formatting in Excel
 
 ### C2: PDF Export
 Spec: `export/pdf.md`
