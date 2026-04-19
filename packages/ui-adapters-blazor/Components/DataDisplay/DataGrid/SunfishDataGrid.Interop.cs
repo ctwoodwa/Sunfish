@@ -133,12 +133,16 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
 
     /// <summary>
     /// Called from JS exactly once, on mouseup, when a column drag-resize completes.
+    /// The <c>[JSInvokable("OnColumnResized")]</c> attribute binds the .NET identifier
+    /// <c>"OnColumnResized"</c> used by <c>invokeMethodAsync</c> in marilo-datagrid.js to this
+    /// method, which is named <c>HandleColumnResizedFromJs</c> to avoid a C# naming conflict
+    /// with the <see cref="OnColumnResized"/> EventCallback parameter.
     /// Updates the column's runtime width, persists to <see cref="GridState.ColumnStates"/>,
     /// fires <see cref="OnColumnResized"/> (and the legacy <see cref="OnColumnResize"/>),
     /// then triggers <c>StateHasChanged</c>.
     /// </summary>
-    [JSInvokable]
-    public async Task OnColumnResized(int columnIndex, double newWidth)
+    [JSInvokable("OnColumnResized")]
+    public async Task HandleColumnResizedFromJs(int columnIndex, double newWidth)
     {
         if (columnIndex < 0 || columnIndex >= _visibleColumns.Count)
             return;
