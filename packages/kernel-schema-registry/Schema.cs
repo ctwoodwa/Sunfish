@@ -37,13 +37,21 @@ namespace Sunfish.Kernel.Schema;
 /// CID of the canonical-JSON UTF-8 bytes of <see cref="JsonSchemaText"/>. Equal
 /// across federation peers for logically-equivalent schemas.
 /// </param>
+/// <param name="BlobThreshold">
+/// Per-schema override for the blob-routing boundary (spec §3.4, G20 —
+/// <c>x-sunfish.blobThreshold</c>). When <see langword="null"/>, ingestion falls
+/// back to the global <c>D-BLOB-BOUNDARY</c> default (64 KiB). When set, the
+/// value is the maximum number of bytes a payload may occupy before it is
+/// promoted to the blob store rather than inlined; must be a positive integer.
+/// </param>
 public sealed record Schema(
     SchemaId Id,
     string JsonSchemaText,
     IReadOnlyList<SchemaId> ParentSchemas,
     IReadOnlyList<Migration> Migrations,
     IReadOnlyList<string> Tags,
-    Cid ContentAddress);
+    Cid ContentAddress,
+    int? BlobThreshold = null);
 
 /// <summary>
 /// Declarative migration step from one schema version to another. Stored in the

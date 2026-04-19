@@ -46,14 +46,24 @@ public interface ISchemaRegistry
     /// </param>
     /// <param name="parents">Optional ordered list of parent schema ids.</param>
     /// <param name="tags">Optional caller-supplied tags (case-sensitive).</param>
+    /// <param name="blobThreshold">
+    /// Per-schema blob-routing boundary override (spec §3.4, G20 —
+    /// <c>x-sunfish.blobThreshold</c>). When <see langword="null"/> the global
+    /// <c>D-BLOB-BOUNDARY</c> default applies. Must be a positive integer when
+    /// supplied; zero or negative values raise <see cref="ArgumentException"/>.
+    /// </param>
     /// <param name="ct">Cancellation token.</param>
     /// <exception cref="InvalidSchemaException">
     /// The supplied text is not a syntactically valid JSON Schema document.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="blobThreshold"/> is zero or negative.
     /// </exception>
     ValueTask<Schema> RegisterAsync(
         string jsonSchemaText,
         IReadOnlyList<SchemaId>? parents = null,
         IReadOnlyList<string>? tags = null,
+        int? blobThreshold = null,
         CancellationToken ct = default);
 
     /// <summary>
