@@ -18,10 +18,12 @@ public partial class SunfishDataGrid<TItem>
         var isSelected = _selectedItems.Contains(item);
         var isStripedRow = Striped && index % 2 == 1;
         var isEditing = IsItemEditing(item);
+        var isHighlighted = _highlightedSet?.Contains(item) == true;
         var rowClass = CssProvider.DataGridRowClass(isSelected, isStripedRow);
         var rowRenderArgs = GetRowRenderArgs(item);
         var finalRowClass = rowRenderArgs?.Class != null ? $"{rowClass} {rowRenderArgs.Class}" : rowClass;
         if (isEditing) finalRowClass += " mar-datagrid-row--editing";
+        if (isHighlighted) finalRowClass += " mar-datagrid-row--highlighted";
         var rowStyle = rowRenderArgs?.Style;
 
         builder.OpenElement(0, "tr");

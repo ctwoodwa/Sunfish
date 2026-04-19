@@ -13901,6 +13901,7 @@ textarea.form-control-lg {
 
 .sf-bs-datagrid-row {
   border-bottom: 1px solid var(--sf-color-border);
+  min-height: var(--mar-datagrid-row-height, 36px);
   transition: background 0.15s;
 }
 .sf-bs-datagrid-row:last-child {
@@ -13917,7 +13918,8 @@ textarea.form-control-lg {
 }
 
 .sf-bs-datagrid-cell {
-  padding: var(--sf-space-sm) var(--sf-space-md);
+  padding: var(--mar-datagrid-cell-padding, var(--sf-space-sm) var(--sf-space-md));
+  font-size: var(--mar-datagrid-font-size, inherit);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -14130,6 +14132,37 @@ textarea.form-control-lg {
 
 .sf-bs-datagrid-row--focused {
   outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
+  outline-offset: -1px;
+}
+
+/* ── DataGrid size tiers (A7.1 + A7.2) ──────────────────────────────────────
+   Each tier sets CSS custom properties consumed by .sf-bs-datagrid-cell and
+   .sf-bs-datagrid-row. The variables are scoped to the grid root so they
+   cascade to all descendant cells/rows without touching header or filter rows.
+   Design choice: we retrofit the existing .sf-bs-datagrid-cell and
+   .sf-bs-datagrid-row rules to consume the variables; size classes thus work
+   even when the grid is inside a provider-less host.
+   --------------------------------------------------------------------------- */
+.mar-datagrid--size-small {
+  --mar-datagrid-font-size: 0.8125rem;
+  --mar-datagrid-cell-padding: 0.25rem 0.5rem;
+  --mar-datagrid-row-height: 28px;
+}
+.mar-datagrid--size-medium {
+  --mar-datagrid-font-size: 0.875rem;
+  --mar-datagrid-cell-padding: 0.5rem 0.75rem;
+  --mar-datagrid-row-height: 36px;
+}
+.mar-datagrid--size-large {
+  --mar-datagrid-font-size: 1rem;
+  --mar-datagrid-cell-padding: 0.75rem 1rem;
+  --mar-datagrid-row-height: 48px;
+}
+
+/* ── DataGrid highlighted rows (A7.3 + A7.4) ───────────────────────────────── */
+.mar-datagrid-row--highlighted {
+  background-color: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.18) !important;
+  outline: 1px solid rgba(var(--bs-warning-rgb, 255, 193, 7), 0.5);
   outline-offset: -1px;
 }
 

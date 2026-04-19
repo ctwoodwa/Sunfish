@@ -171,6 +171,28 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     /// <summary>Optional custom width provider. Defaults to <see cref="FixedWidthProvider"/>.</summary>
     [Parameter] public IColumnWidthProvider? ColumnWidthProvider { get; set; }
 
+    /// <summary>
+    /// Controls the visual density of the grid. Maps to a root-level CSS class:
+    /// <list type="bullet">
+    ///   <item><description><see cref="DataGridSize.Small"/> → <c>mar-datagrid--size-small</c></description></item>
+    ///   <item><description><see cref="DataGridSize.Medium"/> → <c>mar-datagrid--size-medium</c> (default)</description></item>
+    ///   <item><description><see cref="DataGridSize.Large"/> → <c>mar-datagrid--size-large</c></description></item>
+    /// </list>
+    /// Each tier sets CSS custom properties <c>--mar-datagrid-font-size</c>, <c>--mar-datagrid-cell-padding</c>,
+    /// and <c>--mar-datagrid-row-height</c> which are consumed by cell and row styling.
+    /// </summary>
+    [Parameter] public DataGridSize Size { get; set; } = DataGridSize.Medium;
+
+    /// <summary>
+    /// Items that should be visually highlighted. When an item in this collection matches a rendered
+    /// row, the CSS class <c>mar-datagrid-row--highlighted</c> is applied to that row's <c>&lt;tr&gt;</c> element.
+    /// <para><b>Equality model:</b> reference equality is used by default (matching on the exact same
+    /// object reference). For <c>record</c> types where value equality is desired, pass instances that
+    /// compare equal to the items in <see cref="Data"/> or the server-loaded data. Internally the grid
+    /// materialises a <see cref="HashSet{TItem}"/> once per render pass for O(1) per-row lookup.</para>
+    /// </summary>
+    [Parameter] public IEnumerable<TItem>? HighlightedItems { get; set; }
+
     // ── Parameters: Templates ───────────────────────────────────────────
 
     /// <summary>Column definitions (SunfishGridColumn components).</summary>
@@ -317,6 +339,16 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
         StateHasChanged();
     }
 
+    // ── Highlight state ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Cached <see cref="HashSet{TItem}"/> built from <see cref="HighlightedItems"/> once per render pass.
+    /// Null when <see cref="HighlightedItems"/> is null (no rows highlighted). Reference equality is used
+    /// so that the set correctly identifies the same objects passed as <see cref="Data"/>. If the consumer
+    /// already passes an <see cref="ISet{T}"/> of the correct type, we wrap it directly to avoid a copy.
+    /// </summary>
+    private HashSet<TItem>? _highlightedSet;
+
     // ── Computed Properties ─────────────────────────────────────────────
 
     internal List<SunfishGridColumn<TItem>> _visibleColumns => _columns.Where(c => c.Visible).ToList();
@@ -331,6 +363,17 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     internal int TotalPages => _state.TotalCount > 0 && _state.PageSize > 0
         ? (int)Math.Ceiling((double)_state.TotalCount / _state.PageSize)
         : 1;
+
+    /// <summary>
+    /// Returns the CSS class that encodes the current <see cref="Size"/> tier.
+    /// Applied to the grid's root element alongside the CSS-provider base class.
+    /// </summary>
+    private string SizeClass => Size switch
+    {
+        DataGridSize.Small  => "mar-datagrid--size-small",
+        DataGridSize.Large  => "mar-datagrid--size-large",
+        _                   => "mar-datagrid--size-medium",  // DataGridSize.Medium is the default
+    };
 
     private string? RootStyle
     {
@@ -365,6 +408,25 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
 
         if (SelectedItems != null)
             _selectedItems = new HashSet<TItem>(SelectedItems);
+
+        // Materialise the highlighted-items set once per render pass for O(1) per-row lookup.
+        // Use EqualityComparer<TItem>.Default so that:
+        //   – reference types: reference equality (same object identity)
+        //   – record / value types: value equality via GetHashCode / Equals
+        // If the consumer already passes a HashSet<TItem>, use it directly to avoid an
+        // unnecessary copy (the comparer is already the consumer's intended semantics).
+        if (HighlightedItems is null)
+        {
+            _highlightedSet = null;
+        }
+        else if (HighlightedItems is HashSet<TItem> existingSet)
+        {
+            _highlightedSet = existingSet;
+        }
+        else
+        {
+            _highlightedSet = new HashSet<TItem>(HighlightedItems);
+        }
 
         if (!_stateInitialized)
         {

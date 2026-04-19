@@ -134,10 +134,10 @@ Note (A6.9/A6.10): Editing operations (`BeginEdit`, `BeginCellEdit`, `BeginAdd`,
 ### A7: Highlighting & Size
 Spec: `highlighting.md`, `sizing.md`
 
-- [ ] A7.1 — Add `Size` parameter (enum: Small, Medium, Large) with CSS class mapping
-- [ ] A7.2 — Add CSS variables for each size tier (font-size, padding, row-height)
-- [ ] A7.3 — Add `HighlightedItems` IEnumerable<TItem> parameter
-- [ ] A7.4 — Apply `mar-datagrid-row--highlighted` CSS class to highlighted rows in rendering
+- [x] A7.1 — Add `Size` parameter (enum: Small, Medium, Large) with CSS class mapping
+- [x] A7.2 — Add CSS variables for each size tier (font-size, padding, row-height)
+- [x] A7.3 — Add `HighlightedItems` IEnumerable<TItem> parameter
+- [x] A7.4 — Apply `mar-datagrid-row--highlighted` CSS class to highlighted rows in rendering
 
 ### A8: CSV Export
 Spec: `export/csv.md`, `export/events.md`

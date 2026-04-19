@@ -2616,6 +2616,7 @@
 
 .sf-datagrid-row {
   border-bottom: 1px solid var(--sf-color-border);
+  min-height: var(--mar-datagrid-row-height, 36px);
   transition: background var(--sf-transition-fast);
 }
 
@@ -2640,7 +2641,8 @@
 }
 
 .sf-datagrid-cell {
-  padding: var(--sf-space-sm) var(--sf-space-md);
+  padding: var(--mar-datagrid-cell-padding, var(--sf-space-sm) var(--sf-space-md));
+  font-size: var(--mar-datagrid-font-size, inherit);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2922,6 +2924,31 @@
 
 .sf-datagrid-row--focused {
   outline: 2px solid var(--sf-color-focus-ring, var(--sf-color-primary));
+  outline-offset: -1px;
+}
+
+/* ── DataGrid size tiers (A7.1 + A7.2) ──────────────────────────────────────
+   See Bootstrap provider for full design rationale. */
+.mar-datagrid--size-small {
+  --mar-datagrid-font-size: 0.8125rem;
+  --mar-datagrid-cell-padding: 0.25rem 0.5rem;
+  --mar-datagrid-row-height: 28px;
+}
+.mar-datagrid--size-medium {
+  --mar-datagrid-font-size: 0.875rem;
+  --mar-datagrid-cell-padding: 0.5rem 0.75rem;
+  --mar-datagrid-row-height: 36px;
+}
+.mar-datagrid--size-large {
+  --mar-datagrid-font-size: 1rem;
+  --mar-datagrid-cell-padding: 0.75rem 1rem;
+  --mar-datagrid-row-height: 48px;
+}
+
+/* ── DataGrid highlighted rows (A7.3 + A7.4) ───────────────────────────────── */
+.mar-datagrid-row--highlighted {
+  background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important;
+  outline: 1px solid rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.5);
   outline-offset: -1px;
 }
 
