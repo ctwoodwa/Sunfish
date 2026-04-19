@@ -520,3 +520,57 @@ tr.is-row-dragging-source {
     background: var(--mar-datagrid-reorder-line-color, #1e90ff);
     pointer-events: none;
 }
+
+// ── C3: Column Menu ───────────────────────────────────────────────────────────
+
+.mar-datagrid-column-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    min-width: 180px;
+    background: var(--mar-datagrid-menu-bg, #fff);
+    border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px 0;
+}
+
+.mar-datagrid-column-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: inherit;
+
+    &:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    &:disabled {
+        color: #999;
+        cursor: not-allowed;
+    }
+}
+
+.mar-datagrid-column-menu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--mar-datagrid-border-color, #dee2e6);
+}
+
+.mar-datagrid-column-menu-trigger {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 0 4px;
+    color: var(--mar-datagrid-muted-color, #6c757d);
+    line-height: 1;
+
+    &:hover {
+        color: inherit;
+    }
+}
