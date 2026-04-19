@@ -60,6 +60,10 @@
     <Project Path="packages/blocks-inspections/Sunfish.Blocks.Inspections.csproj" />
     <Project Path="packages/blocks-inspections/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/maintenance/">
+    <Project Path="packages/blocks-maintenance/Sunfish.Blocks.Maintenance.csproj" />
+    <Project Path="packages/blocks-maintenance/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/scheduling/">
     <Project Path="packages/blocks-scheduling/Sunfish.Blocks.Scheduling.csproj" />
     <Project Path="packages/blocks-scheduling/tests/tests.csproj" />
