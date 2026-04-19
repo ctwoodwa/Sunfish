@@ -19,6 +19,7 @@ public partial class SunfishDataGrid<TItem>
         _inCellEditingField = null;
         if (OnEdit.HasDelegate)
             await OnEdit.InvokeAsync(new GridEditEventArgs<TItem> { Item = item });
+        await NotifyStateChanged("EditItem");
         StateHasChanged();
     }
 
@@ -32,6 +33,7 @@ public partial class SunfishDataGrid<TItem>
         _isCreating = false;
         if (OnEdit.HasDelegate)
             await OnEdit.InvokeAsync(new GridEditEventArgs<TItem> { Item = item });
+        await NotifyStateChanged("EditItem");
         StateHasChanged();
     }
 
@@ -47,6 +49,7 @@ public partial class SunfishDataGrid<TItem>
         _inCellEditingField = null;
         if (OnAdd.HasDelegate)
             await OnAdd.InvokeAsync(new GridEditEventArgs<TItem> { Item = _editingItem });
+        await NotifyStateChanged("InsertedItem");
         StateHasChanged();
     }
 
@@ -70,6 +73,7 @@ public partial class SunfishDataGrid<TItem>
             _inCellEditingField = null;
             await ProcessDataAsync();
         }
+        await NotifyStateChanged("EditItem");
         StateHasChanged();
     }
 
@@ -80,8 +84,10 @@ public partial class SunfishDataGrid<TItem>
         if (OnCancel.HasDelegate)
             await OnCancel.InvokeAsync(new GridEditEventArgs<TItem> { Item = _editingItem });
         _editingItem = default;
+        _originalItem = default;
         _isCreating = false;
         _inCellEditingField = null;
+        await NotifyStateChanged("EditItem");
         StateHasChanged();
     }
 
@@ -97,6 +103,7 @@ public partial class SunfishDataGrid<TItem>
         if (OnDelete.HasDelegate) await OnDelete.InvokeAsync(args);
         if (!args.IsCancelled)
             await ProcessDataAsync();
+        await NotifyStateChanged("EditItem");
         StateHasChanged();
     }
 
