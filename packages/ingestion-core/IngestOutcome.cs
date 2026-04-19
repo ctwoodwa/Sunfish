@@ -32,4 +32,10 @@ public enum IngestOutcome
 
     /// <summary>An unexpected internal error occurred while processing the input.</summary>
     InternalError,
+
+    /// <summary>
+    /// The tenant's ingestion quota has been exhausted for the current period. The caller should
+    /// back off and retry after the quota window refills.
+    /// </summary>
+    QuotaExceeded,
 }
