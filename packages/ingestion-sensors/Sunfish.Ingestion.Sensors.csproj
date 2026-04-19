@@ -15,6 +15,7 @@
     <InternalsVisibleTo Include="Sunfish.Ingestion.Sensors.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
   <ItemGroup>
