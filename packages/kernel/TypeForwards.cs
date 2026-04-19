@@ -15,13 +15,15 @@
 // than fabricate synonyms in `Sunfish.Kernel.*`; see README for the
 // rationale.
 //
-// One primitive from §3 is NOT forwarded here because it is not yet shipped:
-//   • §3.6 Event Bus       — stub lives at Sunfish.Kernel.Events.IEventBus     (gap G3)
-//
-// §3.4 Schema Registry shipped in G2 as the sibling Sunfish.Kernel.SchemaRegistry
-// package (preserving the Sunfish.Kernel.Schema namespace for source compat).
-// Consumers that want the primitive take a package reference on
-// Sunfish.Kernel.SchemaRegistry in addition to Sunfish.Kernel.
+// All seven primitives from §3 now have real contracts either forwarded here or
+// shipped in a sibling `Sunfish.Kernel.*` package. Primitives promoted out of this
+// facade into sibling packages (the G1-reserved stubs were deleted as each shipped):
+//   • §3.4 Schema Registry — shipped via Sunfish.Kernel.SchemaRegistry (gap G2).
+//     Lives at Sunfish.Kernel.Schema.ISchemaRegistry in the sibling assembly.
+//   • §3.6 Event Bus — shipped via Sunfish.Kernel.EventBus (gap G3).
+//     Lives at Sunfish.Kernel.Events.IEventBus in the sibling assembly.
+// Consumers that want a sibling primitive take its package reference in addition
+// to Sunfish.Kernel.
 
 using System.Runtime.CompilerServices;
 
