@@ -36,6 +36,44 @@ public interface IEntityStore
     Task<EntityId> CreateAsync(SchemaId schema, JsonDocument body, CreateOptions options, CancellationToken ct = default);
 
     /// <summary>
+    /// Mints a batch of entities in a single call.
+    /// </summary>
+    /// <param name="drafts">The drafts to create, each specifying a schema, body, and options.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    /// The <see cref="EntityId"/> list corresponding 1-to-1 with <paramref name="drafts"/>,
+    /// in the same order.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// <b>Atomicity is backend-dependent.</b> The default interface implementation (DIM) is a
+    /// sequential loop over <see cref="CreateAsync"/>. It is <em>not atomic</em>: a failure on
+    /// draft <c>N</c> leaves drafts <c>0..N-1</c> already committed. Backend implementations
+    /// that can provide true all-or-nothing semantics (e.g. <c>InMemoryEntityStore</c>) override
+    /// this method to do so.
+    /// </para>
+    /// <para>
+    /// Postgres: the DIM fallback is in effect until a dedicated atomic override ships
+    /// (<b>G21 follow-up</b>). Do not rely on rollback semantics when targeting the Postgres
+    /// backend in the current release.
+    /// </para>
+    /// </remarks>
+    async Task<IReadOnlyList<EntityId>> CreateBatchAsync(
+        IEnumerable<EntityDraft> drafts,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(drafts);
+        var results = new List<EntityId>();
+        foreach (var draft in drafts)
+        {
+            ct.ThrowIfCancellationRequested();
+            var id = await CreateAsync(draft.Schema, draft.Body, draft.Options, ct).ConfigureAwait(false);
+            results.Add(id);
+        }
+        return results;
+    }
+
+    /// <summary>
     /// Appends a new version with the given body and returns its <see cref="VersionId"/>.
     /// The entity's materialized current body is updated atomically.
     /// </summary>

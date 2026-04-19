@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Assets.Versions;
 
@@ -131,6 +132,145 @@ public sealed class InMemoryEntityStore : IEntityStore
 
             _ = _observer.OnVersionAppendedAsync(id, version, ct);
             return id;
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// <b>Atomic override.</b> All inserts succeed or none are visible: if any draft fails (e.g.
+    /// validation, idempotency conflict), every entity written earlier in the batch is removed from
+    /// the store before the exception propagates, leaving the store in exactly its pre-batch state.
+    /// Locks are acquired in a deterministic order (lexicographic on the derived <see cref="EntityId"/>)
+    /// to prevent deadlocks when concurrent batches overlap.
+    /// </remarks>
+    public async Task<IReadOnlyList<EntityId>> CreateBatchAsync(
+        IEnumerable<EntityDraft> drafts,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(drafts);
+
+        // Materialise so we can iterate twice (validate + insert) without re-evaluating.
+        var draftList = drafts as IReadOnlyList<EntityDraft> ?? drafts.ToList();
+        if (draftList.Count == 0)
+            return Array.Empty<EntityId>();
+
+        // --- Phase 1: validate all drafts BEFORE acquiring any locks ---
+        foreach (var draft in draftList)
+        {
+            ct.ThrowIfCancellationRequested();
+            ArgumentNullException.ThrowIfNull(draft.Body, nameof(draft));
+            ArgumentNullException.ThrowIfNull(draft.Options, nameof(draft));
+            await _validator.ValidateAsync(draft.Schema, draft.Body, ct).ConfigureAwait(false);
+        }
+
+        // --- Phase 2: derive all entity IDs (deterministic, lock-free) ---
+        var derivedIds = new EntityId[draftList.Count];
+        for (int i = 0; i < draftList.Count; i++)
+            derivedIds[i] = DeriveEntityId(draftList[i].Schema, draftList[i].Options);
+
+        // --- Phase 3: acquire locks in a consistent order to prevent deadlocks ---
+        // Sort DISTINCT ids; two drafts targeting the same id will share one lock.
+        var distinctIds = derivedIds
+            .Distinct()
+            .OrderBy(id => id.Scheme, StringComparer.Ordinal)
+            .ThenBy(id => id.Authority, StringComparer.Ordinal)
+            .ThenBy(id => id.LocalPart, StringComparer.Ordinal)
+            .Select(id => _storage.LockFor(id))
+            .ToArray();
+
+        // Acquire all locks. We need a recursive-safe approach: take them one by one in order.
+        var locksHeld = new List<object>(distinctIds.Length);
+        try
+        {
+            foreach (var lockObj in distinctIds)
+            {
+                Monitor.Enter(lockObj);
+                locksHeld.Add(lockObj);
+            }
+
+            // --- Phase 4: perform all inserts while holding all locks ---
+            // `results` is the ordered output (one EntityId per draft).
+            // `newlyInserted` tracks only the ids THIS batch wrote — idempotent hits are
+            // excluded so rollback never removes a pre-existing entity.
+            var results = new List<EntityId>(draftList.Count);
+            var newlyInserted = new HashSet<EntityId>();
+            try
+            {
+                for (int i = 0; i < draftList.Count; i++)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    var draft = draftList[i];
+                    var id = derivedIds[i];
+                    var validFrom = draft.Options.ValidFrom ?? DateTimeOffset.UtcNow;
+                    var canonicalBody = JsonCanonicalizer.ToCanonicalString(draft.Body);
+
+                    if (_storage.Entities.TryGetValue(id, out var existing))
+                    {
+                        if (existing.BodyJson == canonicalBody)
+                        {
+                            // Idempotent match — entity pre-existed with matching body, accept as-is.
+                            results.Add(id);
+                            continue;
+                        }
+                        throw new IdempotencyConflictException(
+                            $"Entity '{id}' already exists with a different body; batch rolled back.");
+                    }
+
+                    var initialBody = CloneBody(draft.Body);
+                    var hash = HashVersion(parentHash: null, canonicalBody: canonicalBody, validFrom: validFrom);
+                    var versionId = new VersionId(id, 1, hash);
+                    var version = new Versions.Version(
+                        Id: versionId,
+                        ParentId: null,
+                        Body: initialBody,
+                        ValidFrom: validFrom,
+                        ValidTo: null,
+                        Author: draft.Options.Issuer,
+                        Signature: null,
+                        Diff: null);
+
+                    var history = new List<Versions.Version> { version };
+                    _storage.Versions[id] = history;
+
+                    var record = new EntityRecord
+                    {
+                        Id = id,
+                        Schema = draft.Schema,
+                        Tenant = draft.Options.Tenant,
+                        CurrentVersion = versionId,
+                        BodyJson = canonicalBody,
+                        CreatedAt = validFrom,
+                        UpdatedAt = validFrom,
+                        DeletedAt = null,
+                        CreationNonce = draft.Options.Nonce,
+                        CreationIssuer = draft.Options.Issuer,
+                    };
+                    _storage.Entities[id] = record;
+                    results.Add(id);
+                    newlyInserted.Add(id);
+                }
+
+                // All inserts succeeded.
+                return results;
+            }
+            catch
+            {
+                // Rollback: undo only the entities THIS batch created. Idempotent re-hits
+                // (pre-existing entities) are intentionally excluded from `newlyInserted`
+                // and are left untouched.
+                foreach (var insertedId in newlyInserted)
+                {
+                    _storage.Entities.TryRemove(insertedId, out _);
+                    _storage.Versions.TryRemove(insertedId, out _);
+                }
+                throw;
+            }
+        }
+        finally
+        {
+            // Release all locks in reverse order.
+            for (int i = locksHeld.Count - 1; i >= 0; i--)
+                Monitor.Exit(locksHeld[i]);
         }
     }
 
