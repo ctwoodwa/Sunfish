@@ -53,6 +53,41 @@
     /// <summary>Whether this column is editable in edit mode. Defaults to true.</summary>
     [Parameter] public bool Editable { get; set; } = true;
 
+    /// <summary>Additional CSS class applied to the header cell (&lt;th&gt;) for this column.
+    /// Appended (space-separated) to any existing header classes; does not replace them.</summary>
+    [Parameter] public string? HeaderClass { get; set; }
+
+    /// <summary>Stable column identifier, independent of <see cref="Field"/>.
+    /// Useful when the field name may vary but a consistent column key is required
+    /// (e.g. for state persistence, column chooser, or column menus).
+    /// When not set, falls back to <see cref="Field"/>, then to an index-based key.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, a column-menu trigger will be rendered in the header once a column-menu
+    /// host is available in the grid.
+    /// <para><b>Note:</b> The column-menu host UI is not yet shipped (Phase C tracker item C3).
+    /// Setting this parameter now ensures the column participates when menus land.</para>
+    /// </summary>
+    [Parameter] public bool ShowColumnMenu { get; set; }
+
+    /// <summary>
+    /// Whether this column appears in the column chooser UI. Defaults to <c>true</c>.
+    /// Set to <c>false</c> to permanently hide a column from the chooser.
+    /// <para><b>Note:</b> The column chooser UI is not yet shipped (Phase C tracker item C4).
+    /// Setting this parameter now ensures the column is excluded when the chooser lands.</para>
+    /// </summary>
+    [Parameter] public bool VisibleInColumnChooser { get; set; } = true;
+
+    /// <summary>Gets the effective column identifier.
+    /// Returns <see cref="Id"/> if set; otherwise <see cref="Field"/> when non-empty;
+    /// otherwise a positional key of the form <c>"column-{index}"</c>.</summary>
+    internal string EffectiveId => Id ?? (string.IsNullOrEmpty(Field) ? $"column-{_columnIndex}" : Field);
+
+    /// <summary>Zero-based position of this column in the parent grid's column list.
+    /// Set by the parent grid (<see cref="SunfishDataGrid{TItem}.RegisterColumn"/>) on registration.</summary>
+    internal int _columnIndex;
+
     /// <summary>Whether this column can be used for grouping. Defaults to true.</summary>
     [Parameter] public bool Groupable { get; set; } = true;
 

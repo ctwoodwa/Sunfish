@@ -291,6 +291,7 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     {
         if (!_columns.Contains(column))
         {
+            column._columnIndex = _columns.Count;
             _columns.Add(column);
 
             // When AutoGenerateColumns is active, re-run the reflection pass so that any
@@ -577,7 +578,9 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
             Field = c.Field,
             Width = c.EffectiveWidth,
             Order = i,
-            Visible = c.Visible
+            Visible = c.Visible,
+            ShowColumnMenu = c.ShowColumnMenu,
+            VisibleInColumnChooser = c.VisibleInColumnChooser
         }).ToList()
     };
 
