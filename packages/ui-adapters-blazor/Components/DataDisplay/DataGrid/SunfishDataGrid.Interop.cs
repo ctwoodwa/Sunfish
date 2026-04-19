@@ -43,8 +43,28 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     /// <summary>Whether columns can be reordered by dragging. Defaults to false.</summary>
     [Parameter] public bool Reorderable { get; set; }
 
-    /// <summary>Fires when column order changes.</summary>
+    /// <summary>
+    /// Whether columns can be reordered by dragging (B3 canonical parameter). Defaults to <c>false</c>.
+    /// When <c>true</c>, header cells for reorderable columns become HTML5 drag sources and the JS
+    /// reorder handler is activated. Individual columns can opt out by setting their
+    /// <c>Reorderable</c> parameter to <c>false</c>.
+    /// </summary>
+    [Parameter] public bool AllowColumnReorder { get; set; }
+
+    /// <summary>Fires when column order changes (legacy event — prefer <see cref="OnColumnReordered"/>).</summary>
     [Parameter] public EventCallback<List<string>> OnColumnReorder { get; set; }
+
+    /// <summary>
+    /// Fires before a column reorder is committed, allowing the consumer to cancel it.
+    /// Set <see cref="DataGridColumnReorderingEventArgs.Cancel"/> to <c>true</c> to abort.
+    /// </summary>
+    [Parameter] public EventCallback<DataGridColumnReorderingEventArgs> OnColumnReordering { get; set; }
+
+    /// <summary>
+    /// Fires after a column reorder has been applied.
+    /// Carries the old and new indices of the moved column.
+    /// </summary>
+    [Parameter] public EventCallback<DataGridColumnReorderedEventArgs> OnColumnReordered { get; set; }
 
     /// <summary>
     /// Fires once (on mouseup) when a column is resized via the drag handle.
@@ -62,7 +82,8 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             _dotNetRef = DotNetObjectReference.Create(this);
             // AllowColumnResize is canonical (B2); Resizable is the legacy alias — honour either.
             _resizable = AllowColumnResize || Resizable;
-            _reorderable = Reorderable;
+            // AllowColumnReorder is canonical (B3); Reorderable is the legacy alias — honour either.
+            _reorderable = AllowColumnReorder || Reorderable;
 
             if (_resizable || _reorderable || Navigable || RowDraggable)
             {
@@ -112,11 +133,11 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                 DotNetObjectReference.Create(this),
                 new
                 {
-                    keyboardNavigation = false,                  // B1
-                    columnResize = AllowColumnResize || Resizable, // B2
-                    columnReorder = false,                       // B3
-                    rowDragDrop = false,                         // B4
-                    frozenColumns = false                        // B5
+                    keyboardNavigation = false,                         // B1
+                    columnResize = AllowColumnResize || Resizable,      // B2
+                    columnReorder = AllowColumnReorder || Reorderable,  // B3
+                    rowDragDrop = false,                                // B4
+                    frozenColumns = false                               // B5
                 });
         }
         catch (Exception ex) when (ex is JSDisconnectedException
@@ -178,7 +199,75 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         await InvokeAsync(StateHasChanged);
     }
 
-    /// <summary>Called from JS when columns are reordered.</summary>
+    /// <summary>
+    /// Called from JS before a column drag-reorder is committed.
+    /// Returns <c>true</c> when the reorder is allowed to proceed; <c>false</c> when either a
+    /// guard condition fails or the consumer handler sets <see cref="DataGridColumnReorderingEventArgs.Cancel"/>.
+    /// The <c>[JSInvokable("OnColumnReordering")]</c> attribute binds the .NET identifier used by
+    /// <c>invokeMethodAsync</c> in marilo-datagrid.js to this method, which is named
+    /// <c>HandleColumnReorderingFromJs</c> to avoid a C# naming conflict with the
+    /// <see cref="OnColumnReordering"/> EventCallback parameter.
+    /// </summary>
+    [JSInvokable("OnColumnReordering")]
+    public async Task<bool> HandleColumnReorderingFromJs(int oldIndex, int newIndex)
+    {
+        var effectiveAllowReorder = AllowColumnReorder || Reorderable;
+        if (!effectiveAllowReorder) return false;
+        if (oldIndex < 0 || oldIndex >= _columns.Count) return false;
+        if (newIndex < 0 || newIndex > _columns.Count - 1) return false;
+        if (!_columns[oldIndex].IsReorderable(effectiveAllowReorder)) return false;
+
+        var args = new DataGridColumnReorderingEventArgs(oldIndex, newIndex);
+        await OnColumnReordering.InvokeAsync(args);
+        return !args.Cancel;
+    }
+
+    /// <summary>
+    /// Called from JS after a column drag-reorder completes (not cancelled).
+    /// Moves the column in <c>_columns</c>, re-sequences <see cref="SunfishGridColumn{TItem}.OrderIndex"/>
+    /// on all columns, updates <see cref="GridState.ColumnStates"/> order, fires
+    /// <see cref="OnColumnReordered"/>, and triggers a re-render.
+    /// The <c>[JSInvokable("OnColumnReordered")]</c> attribute binds the .NET identifier used by
+    /// <c>invokeMethodAsync</c> in marilo-datagrid.js to this method, which is named
+    /// <c>HandleColumnReorderedFromJs</c> to avoid a C# naming conflict with the
+    /// <see cref="OnColumnReordered"/> EventCallback parameter.
+    /// </summary>
+    [JSInvokable("OnColumnReordered")]
+    public async Task HandleColumnReorderedFromJs(int oldIndex, int newIndex)
+    {
+        if (oldIndex < 0 || oldIndex >= _columns.Count) return;
+        if (newIndex < 0 || newIndex >= _columns.Count) return;
+
+        // B3.6: remove from old position and insert at new position.
+        var col = _columns[oldIndex];
+        _columns.RemoveAt(oldIndex);
+        _columns.Insert(newIndex, col);
+
+        // Re-sequence OrderIndex on all columns to match new positions.
+        for (int i = 0; i < _columns.Count; i++)
+            _columns[i].SetOrderIndex(i);
+
+        // B3.7: keep GridState.ColumnStates[i].Order in sync with new column order.
+        if (_state?.ColumnStates is { Count: > 0 } states)
+        {
+            for (int i = 0; i < _columns.Count; i++)
+            {
+                var target = states.FirstOrDefault(s => s.Field == _columns[i].EffectiveId);
+                if (target is not null) target.Order = i;
+            }
+        }
+
+        await OnColumnReordered.InvokeAsync(new DataGridColumnReorderedEventArgs(oldIndex, newIndex));
+
+        // Legacy callback — fire the old event with the new field order.
+        if (OnColumnReorder.HasDelegate)
+            await OnColumnReorder.InvokeAsync(_columns.Select(c => c.Field).ToList());
+
+        await NotifyStateChanged("ColumnReorder");
+        await InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>Called from JS when columns are reordered (legacy path — pre-B3).</summary>
     [JSInvokable]
     public async Task OnColumnsReordered(int fromIndex, int toIndex)
     {
@@ -538,3 +627,23 @@ public class ColumnState
     /// <summary>Whether the column is visible.</summary>
     public bool Visible { get; set; } = true;
 }
+
+/// <summary>
+/// Event args for <see cref="SunfishDataGrid{TItem}.OnColumnReordering"/> (B3.5).
+/// Set <see cref="Cancel"/> to <c>true</c> to abort the reorder.
+/// </summary>
+/// <param name="OldIndex">Zero-based index of the column before reorder.</param>
+/// <param name="NewIndex">Zero-based index the column will move to if not cancelled.</param>
+public sealed record DataGridColumnReorderingEventArgs(int OldIndex, int NewIndex)
+{
+    /// <summary>Set to <c>true</c> to abort the column reorder.</summary>
+    public bool Cancel { get; set; }
+}
+
+/// <summary>
+/// Event args for <see cref="SunfishDataGrid{TItem}.OnColumnReordered"/> (B3.5).
+/// Carries the old and new positions of the moved column.
+/// </summary>
+/// <param name="OldIndex">Zero-based index of the column before the reorder.</param>
+/// <param name="NewIndex">Zero-based index the column moved to after the reorder.</param>
+public sealed record DataGridColumnReorderedEventArgs(int OldIndex, int NewIndex);

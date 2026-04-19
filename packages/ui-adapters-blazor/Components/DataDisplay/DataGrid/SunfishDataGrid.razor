@@ -117,6 +117,9 @@
                             role="columnheader"
                             style="@(string.IsNullOrEmpty(combinedStyle) ? null : combinedStyle)"
                             aria-sort="@GetAriaSortValue(sortDir)"
+                            data-column-index="@_visibleColumns.IndexOf(column)"
+                            data-column-id="@column.EffectiveId"
+                            draggable="@(column.IsReorderable(AllowColumnReorder || Reorderable) ? "true" : "false")"
                             @onclick="(e) => OnHeaderClick(column, isSortable, e)">
                             @if (column.HeaderTemplate != null)
                             {

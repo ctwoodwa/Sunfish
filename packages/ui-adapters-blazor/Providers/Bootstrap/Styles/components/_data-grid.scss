@@ -291,3 +291,24 @@
   outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
   outline-offset: -1px;
 }
+
+// =================================================================
+// B3: Column Reordering — drag clone, drop indicator, source highlight
+// =================================================================
+
+.mar-datagrid-col-drag-clone {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--sf-color-border, #dee2e6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  border-radius: 2px;
+}
+
+.mar-datagrid-col-drop-line {
+  // Styled inline by JS; this class exists for future theming.
+}
+
+th.is-dragging-source {
+  opacity: 0.4;
+}
