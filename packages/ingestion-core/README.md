@@ -62,3 +62,31 @@ A quarterly inspection of Unit 4B ties all four active modalities to the same `I
 4. **Sensor** — a leak sensor posts its batch → `SensorIngestionPipeline` mints a batch entity with 12 readings; one exceeds threshold → fires `sensor.threshold_breach` for the workflow orchestrator.
 
 All four flows produce the same kernel-ready `(entity, event[])` shape. Downstream consumers (workflows, UI, federation, audit) treat them identically — the spec §7.7 "single canonical stream" promise, realized.
+
+## Middleware extension points
+
+`IIngestionMiddleware<TInput>` is a pre-ingest slot for cross-cutting concerns such as virus scanning, quota enforcement, and content moderation. Middleware is registered via `.AddMiddleware<T>()` on the builder. No default AV or quota middleware ships in `Sunfish.Ingestion.Core`; consumers wire their own.
+
+**Example — plugging in a ClamAV scanner:**
+
+```csharp
+// 1. Implement the interface in your application or a private library:
+public sealed class ClamAvMiddleware : IIngestionMiddleware<FileBlob>
+{
+    public async Task<MiddlewareResult> InvokeAsync(FileBlob input, IngestionContext ctx,
+        MiddlewareDelegate<FileBlob> next, CancellationToken ct)
+    {
+        var scanResult = await _clamClient.ScanAsync(input.Stream, ct);
+        if (scanResult.Infected)
+            return MiddlewareResult.Quarantine(scanResult.ThreatName);
+        return await next(input, ctx, ct);
+    }
+}
+
+// 2. Register during service configuration:
+builder.Services.AddSunfishIngestion()
+    .WithImagery()
+    .AddMiddleware<ClamAvMiddleware>();
+```
+
+A quarantined result surfaces as `IngestOutcome.Quarantined` in the returned `IngestionResult<T>`, which callers can branch on without further setup.

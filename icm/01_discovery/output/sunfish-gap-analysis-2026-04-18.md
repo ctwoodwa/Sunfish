@@ -807,6 +807,7 @@ pile up with no listeners.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.3, §7.5, Phase C parking-lot #2 / #4, Issue #12 sub-item 2
+**Resolution:** Approved as P3 gap. Hooks left unspecified until a concrete PM-vertical feature (inspection crack detection, anomaly alerting) defines the shape.
 
 **Gap Description**
 `IPostIngestHandler<T>` exists as the consumer-owned extension slot, but no default ML
@@ -853,6 +854,7 @@ None.
 **Priority:** P2
 **Category:** Ingestion / UI
 **Spec references:** §6 design references, Phase C parking-lot #1, Issue #12 sub-item 3
+**Resolution:** Deferred (Option B). Re-evaluate after G5 inspections vertical slice proves the form-authoring UX pain is real. No code action at this time.
 
 **Gap Description**
 Spec §6 cites Typeform-AI as the baseline 2026 UX expectation; Phase C parking lot names
@@ -1294,6 +1296,7 @@ None.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** Phase C parking-lot #11, Issue #12 sub-item 9
+**Resolution:** Approved as gap (Option B). The IIngestionMiddleware<TInput> slot already supports consumer-wired AV; no default ClamAV adapter ships. When a customer surfaces a concrete AV need, revisit Option A. Document the middleware-slot pattern in ingestion-core README.
 
 **Gap Description**
 `IIngestionMiddleware<TInput>` slot exists; `IngestOutcome.Quarantined` discriminator
@@ -1337,6 +1340,7 @@ None.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** Phase C parking-lot #10, Issue #12 sub-item 8
+**Resolution:** Approved as P3 gap. The Sunfish.Ingestion.Satellite package ships the contract surface only; provider-specific Planet/Maxar/Sentinel Hub/Airbus adapters are consumer-shipped until a demand signal surfaces.
 
 **Gap Description**
 `ISatelliteImageryProvider` contract ships with a `NoOpSatelliteImageryProvider` default.
@@ -1382,6 +1386,7 @@ None.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.6, §9, Phase C parking-lot #7, Issue #12 sub-item 6
+**Resolution:** Approved as P3 gap. Sunfish.Ingestion.Bim is not scheduled; a BIM/CAD-heavy accelerator would trigger this work.
 
 **Gap Description**
 Spec §9 codifies BIM-as-enrichment, IFC 4.3.2 as canonical format, two-way sync. Xbim
@@ -1426,6 +1431,7 @@ G22 (streaming blob-write — BIM files are multi-GB).
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.3 end-to-end example, Phase C parking-lot #2
+**Resolution:** Approved as P3 gap. The §7.3 LLM orchestrator is future-dated; current voice pipeline handles the transcribe → classify → persist path without AI mutation generation.
 
 **Gap Description**
 `IPostIngestHandler<TranscriptionResult>` implementation that runs a transcript through an
@@ -1556,6 +1562,7 @@ None.
 **Priority:** P2
 **Category:** Ingestion / Test
 **Spec references:** Phase C parking-lot #14, Issue #12 sub-item 12
+**Resolution:** Approved as gap (Option B). Opt-in live-API integration test projects deferred until voice modalities have a concrete deployment user. Manual-verification runbook shipped in docs/runbooks/live-api-verification.md.
 
 **Gap Description**
 All Phase C tests use mocked `HttpClient`. Opt-in `*.IntegrationTests` projects that hit
@@ -1601,6 +1608,7 @@ None.
 **Priority:** P2
 **Category:** Infrastructure
 **Spec references:** PR #19 status
+**Resolution:** PR #19 merged as 577e34d; live-Aspire smoke verification deferred to the live-API runbook (docs/runbooks/live-api-verification.md) as a separate checklist entry.
 
 **Gap Description**
 The `feat/dab-mcp-dml-tools` PR (still open; branch exists but unmerged as of this
@@ -1816,6 +1824,7 @@ None.
 **Priority:** P3
 **Category:** Spec
 **Spec references:** Appendix C #8, Appendix E.5, Appendix E.6 #1
+**Resolution:** Approved gap (Option B equivalent). No accelerator currently requires C# → Rust parity or edge/embedded UX. Re-evaluate when the Base accelerator or Transit accelerator surfaces a rugged-scanner / kiosk requirement. Prototype spike stays deferred.
 
 **Gap Description**
 Two intertwined open questions: (a) Rust kernel crate for mobile-native + browser-WASM
