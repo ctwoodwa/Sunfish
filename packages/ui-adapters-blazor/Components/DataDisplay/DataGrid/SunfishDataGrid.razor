@@ -67,7 +67,10 @@
                 }
                 @foreach (var column in _visibleColumns)
                 {
-                    <col data-column-id="@column.EffectiveId" style="@GetColumnWidthStyle(column)" />
+                    <col data-column-id="@column.EffectiveId"
+                         data-locked="@(column.Locked ? "true" : "false")"
+                         data-frozen-position="@column.FrozenPosition"
+                         style="@GetColumnWidthStyle(column)" />
                 }
                 @if (EditMode != GridEditMode.None && EditMode != GridEditMode.InCell)
                 {
@@ -105,6 +108,7 @@
                         var sortDir = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
                         var headerCellClass = CssProvider.DataGridHeaderCellClass(isSortable, isSorted);
                         if (column.Locked) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked";
+                        if (column.Locked && IsBoundaryFrozenColumn(column)) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked-end";
                         if (!string.IsNullOrEmpty(column.HeaderClass)) headerCellClass = string.IsNullOrEmpty(headerCellClass) ? column.HeaderClass : $"{headerCellClass} {column.HeaderClass}";
                         var frozenHeaderStyle = GetFrozenCellStyle(column, isHeader: true);
                         // B2.4: header must be position:relative so the absolutely-positioned handle aligns.
