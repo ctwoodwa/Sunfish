@@ -158,11 +158,11 @@ Reference: RESEARCH_LOG.md §2 (Radzen) — Radzen keeps export logic outside th
 *Community consensus: column resize + reorder are "table stakes" — prioritize B2/B3 first.*
 
 ### B0: JS Interop Infrastructure
-- [ ] B0.1 — Create `wwwroot/js/marilo-datagrid.js` ES module
-- [ ] B0.2 — Register JS module in `SunfishDataGrid` via `IJSRuntime.InvokeAsync<IJSObjectReference>("import", ...)`
-- [ ] B0.3 — Add `IAsyncDisposable` implementation to dispose JS module reference
-- [ ] B0.4 — Add `[Inject] IJSRuntime JS { get; set; }` to SunfishDataGrid.razor.cs
-- [ ] B0.5 — Add `<colgroup>/<col>` elements to markup for efficient column width management (Radzen pattern — enables resize without full re-render)
+- [x] B0.1 — Create `wwwroot/js/marilo-datagrid.js` ES module
+- [x] B0.2 — Register JS module in `SunfishDataGrid` via `IJSRuntime.InvokeAsync<IJSObjectReference>("import", ...)`
+- [x] B0.3 — Add `IAsyncDisposable` implementation to dispose JS module reference
+- [x] B0.4 — Add `[Inject] IJSRuntime JS { get; set; }` to SunfishDataGrid.razor.cs
+- [x] B0.5 — Add `<colgroup>/<col>` elements to markup for efficient column width management (Radzen pattern — enables resize without full re-render)
 
 ### B1: Keyboard Navigation
 Spec: `keyboard-navigation.md`

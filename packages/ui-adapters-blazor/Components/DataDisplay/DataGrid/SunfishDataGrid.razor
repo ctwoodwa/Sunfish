@@ -67,7 +67,7 @@
                 }
                 @foreach (var column in _visibleColumns)
                 {
-                    <col style="@GetColumnWidthStyle(column)" />
+                    <col data-column-id="@column.EffectiveId" style="@GetColumnWidthStyle(column)" />
                 }
                 @if (EditMode != GridEditMode.None && EditMode != GridEditMode.InCell)
                 {

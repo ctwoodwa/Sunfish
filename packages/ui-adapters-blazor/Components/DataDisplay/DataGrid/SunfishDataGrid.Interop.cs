@@ -15,6 +15,11 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     private DotNetObjectReference<SunfishDataGrid<TItem>>? _dotNetRef;
     private string _gridId = $"mar-grid-{Guid.NewGuid():N}";
 
+    // B0: dedicated ES module for Phase B interactive features (keyboard nav, resize, reorder, DnD, frozen columns).
+    // Loaded lazily on first render; B1-B5 populate the feature hooks inside marilo-datagrid.js.
+    private IJSObjectReference? _dataGridModule;
+    private IJSObjectReference? _dataGridHandle;
+
     // Column state
     internal List<ColumnState> _columnStates = [];
     internal bool _resizable;
@@ -51,6 +56,59 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                     rowDraggable = RowDraggable
                 });
             }
+
+            // B0.2: load the dedicated ES module and attach the Phase B lifecycle handle.
+            // Tolerate SSR / pre-rendering where JS is unavailable.
+            await AttachDataGridJsAsync();
+        }
+    }
+
+    /// <summary>
+    /// Ensures the <c>marilo-datagrid.js</c> ES module is loaded.
+    /// Idempotent — safe to call multiple times; loads only once.
+    /// </summary>
+    private async Task EnsureDataGridModuleAsync()
+    {
+        _dataGridModule ??= await JS.InvokeAsync<IJSObjectReference>(
+            "import",
+            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+    }
+
+    /// <summary>
+    /// Loads the datagrid ES module and attaches the JS behavior handle.
+    /// Called once from <see cref="OnAfterRenderAsync"/> on first render.
+    /// Silently skips if JS is unavailable (SSR / pre-rendering).
+    /// </summary>
+    private async Task AttachDataGridJsAsync()
+    {
+        try
+        {
+            await EnsureDataGridModuleAsync();
+
+            // Pass the grid element ID; the JS module resolves document.getElementById(_gridId).
+            // A proper ElementReference (@ref capture) will replace this once B1 adds the @ref.
+            _dataGridHandle = await _dataGridModule!.InvokeAsync<IJSObjectReference>(
+                "attachGrid",
+                _gridId,
+                DotNetObjectReference.Create(this),
+                new
+                {
+                    keyboardNavigation = false,   // B1
+                    columnResize = false,         // B2
+                    columnReorder = false,        // B3
+                    rowDragDrop = false,          // B4
+                    frozenColumns = false         // B5
+                });
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException
+                                       || ex is InvalidOperationException
+                                       || ex is JSException
+                                       || ex.GetType().Name.Contains("JSRuntime"))
+        {
+            // Tolerate: circuit down (JSDisconnectedException), SSR/pre-rendering
+            // (InvalidOperationException), module unavailable (JSException), or test-harness
+            // interop exceptions where import() is not configured (JSRuntimeUnhandledInvocationException).
+            // The datagrid renders correctly without JS — interactive features simply aren't wired.
         }
     }
 
@@ -138,6 +196,27 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             catch (JSDisconnectedException) { }
         }
         _dotNetRef?.Dispose();
+
+        // B0.3: dispose the Phase B ES module handle and module reference.
+        if (_dataGridHandle is not null)
+        {
+            try
+            {
+                if (_dataGridModule is not null)
+                    await _dataGridModule.InvokeVoidAsync("detachGrid", _dataGridHandle);
+            }
+            catch (JSDisconnectedException) { /* circuit down, nothing to clean */ }
+            catch (JSException) { /* module unloaded, nothing to clean */ }
+            await _dataGridHandle.DisposeAsync();
+            _dataGridHandle = null;
+        }
+
+        if (_dataGridModule is not null)
+        {
+            try { await _dataGridModule.DisposeAsync(); }
+            catch (JSDisconnectedException) { }
+            _dataGridModule = null;
+        }
 
         // Dispose the lazily-created CSV download module (see SunfishDataGrid.Export.cs).
         await DisposeExportModuleAsync();
