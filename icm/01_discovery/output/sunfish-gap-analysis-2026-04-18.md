@@ -807,6 +807,7 @@ pile up with no listeners.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.3, §7.5, Phase C parking-lot #2 / #4, Issue #12 sub-item 2
+**Resolution:** Approved as P3 gap. Hooks left unspecified until a concrete PM-vertical feature (inspection crack detection, anomaly alerting) defines the shape.
 
 **Gap Description**
 `IPostIngestHandler<T>` exists as the consumer-owned extension slot, but no default ML
@@ -1339,6 +1340,7 @@ None.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** Phase C parking-lot #10, Issue #12 sub-item 8
+**Resolution:** Approved as P3 gap. The Sunfish.Ingestion.Satellite package ships the contract surface only; provider-specific Planet/Maxar/Sentinel Hub/Airbus adapters are consumer-shipped until a demand signal surfaces.
 
 **Gap Description**
 `ISatelliteImageryProvider` contract ships with a `NoOpSatelliteImageryProvider` default.
@@ -1384,6 +1386,7 @@ None.
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.6, §9, Phase C parking-lot #7, Issue #12 sub-item 6
+**Resolution:** Approved as P3 gap. Sunfish.Ingestion.Bim is not scheduled; a BIM/CAD-heavy accelerator would trigger this work.
 
 **Gap Description**
 Spec §9 codifies BIM-as-enrichment, IFC 4.3.2 as canonical format, two-way sync. Xbim
@@ -1428,6 +1431,7 @@ G22 (streaming blob-write — BIM files are multi-GB).
 **Priority:** P3
 **Category:** Ingestion
 **Spec references:** §7.3 end-to-end example, Phase C parking-lot #2
+**Resolution:** Approved as P3 gap. The §7.3 LLM orchestrator is future-dated; current voice pipeline handles the transcribe → classify → persist path without AI mutation generation.
 
 **Gap Description**
 `IPostIngestHandler<TranscriptionResult>` implementation that runs a transcript through an
@@ -1820,6 +1824,7 @@ None.
 **Priority:** P3
 **Category:** Spec
 **Spec references:** Appendix C #8, Appendix E.5, Appendix E.6 #1
+**Resolution:** Approved gap (Option B equivalent). No accelerator currently requires C# → Rust parity or edge/embedded UX. Re-evaluate when the Base accelerator or Transit accelerator surfaces a rugged-scanner / kiosk requirement. Prototype spike stays deferred.
 
 **Gap Description**
 Two intertwined open questions: (a) Rust kernel crate for mobile-native + browser-WASM
