@@ -144,6 +144,13 @@
     /// <summary>When true, the column is frozen and sticks during horizontal scroll.</summary>
     [Parameter] public bool Locked { get; set; }
 
+    /// <summary>
+    /// Programmatically toggles <see cref="Locked"/> at runtime (e.g. via the column menu).
+    /// Using a method bypasses the Blazor BL0005 warning that fires when a parameter property
+    /// is set from outside the component's own render tree.
+    /// </summary>
+    internal void SetLocked(bool locked) => Locked = locked;
+
     /// <summary>When Locked=true, the side to pin to. Default: Start (left in LTR).</summary>
     [Parameter] public GridColumnFrozenPosition FrozenPosition { get; set; } = GridColumnFrozenPosition.Start;
 

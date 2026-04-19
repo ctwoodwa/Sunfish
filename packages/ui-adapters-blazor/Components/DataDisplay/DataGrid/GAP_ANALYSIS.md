@@ -254,10 +254,10 @@ Dependency: QuestPDF (MIT) or similar
 ### C3: Column Menu
 Spec: `columns/menu.md`
 
-- [ ] C3.1 — Create `SunfishGridColumnMenu` component (dropdown popup)
-- [ ] C3.2 — Render menu trigger button in header when `ShowColumnMenu` is true
-- [ ] C3.3 — Menu items: Sort Ascending, Sort Descending, Clear Sort, Filter, Lock/Unlock
-- [ ] C3.4 — Add click-outside-to-close behavior (JS interop)
+- [x] C3.1 — Create `SunfishGridColumnMenu` component (dropdown popup)
+- [x] C3.2 — Render menu trigger button in header when `ShowColumnMenu` is true
+- [x] C3.3 — Menu items: Sort Ascending, Sort Descending, Clear Sort, Filter, Lock/Unlock
+- [x] C3.4 — Add click-outside-to-close behavior (JS interop)
 
 ### C4: Column Chooser
 Spec: `templates/column-chooser.md`

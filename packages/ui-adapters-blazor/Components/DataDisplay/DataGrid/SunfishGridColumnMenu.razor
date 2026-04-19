@@ -1,0 +1,102 @@
+@namespace Sunfish.Components.Blazor.Components.DataDisplay
+@typeparam TItem
+
+@if (IsOpen)
+{
+    <div class="mar-datagrid-column-menu" @ref="_menuRef" role="menu" aria-label="Column options">
+        @if (ShowSort)
+        {
+            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+                    @onclick="HandleSortAsc">Sort ascending</button>
+            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+                    @onclick="HandleSortDesc">Sort descending</button>
+            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+                    @onclick="HandleClearSort"
+                    disabled="@(!HasSort)">Clear sort</button>
+            <div class="mar-datagrid-column-menu-divider" role="separator"></div>
+        }
+        @if (ShowFilter)
+        {
+            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+                    @onclick="HandleFilter">Filter&#x2026;</button>
+            <div class="mar-datagrid-column-menu-divider" role="separator"></div>
+        }
+        @if (ShowLock)
+        {
+            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+                    @onclick="HandleToggleLock">
+                @(IsLocked ? "Unlock column" : "Lock column")
+            </button>
+        }
+    </div>
+}
+
+@code {
+    /// <summary>Whether the menu is open.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Whether sort items are shown. Typically tied to column.Sortable.</summary>
+    [Parameter] public bool ShowSort { get; set; } = true;
+
+    /// <summary>Whether the Filter item is shown. Typically tied to column.Filterable.</summary>
+    [Parameter] public bool ShowFilter { get; set; } = true;
+
+    /// <summary>Whether the Lock/Unlock item is shown. Typically tied to column.Lockable.</summary>
+    [Parameter] public bool ShowLock { get; set; } = true;
+
+    /// <summary>Whether the column is currently locked (frozen). Controls the label text.</summary>
+    [Parameter] public bool IsLocked { get; set; }
+
+    /// <summary>Whether there is an active sort on this column. Controls whether Clear sort is enabled.</summary>
+    [Parameter] public bool HasSort { get; set; }
+
+    /// <summary>Raised when the user clicks Sort ascending.</summary>
+    [Parameter] public EventCallback OnSortAscending { get; set; }
+
+    /// <summary>Raised when the user clicks Sort descending.</summary>
+    [Parameter] public EventCallback OnSortDescending { get; set; }
+
+    /// <summary>Raised when the user clicks Clear sort.</summary>
+    [Parameter] public EventCallback OnClearSort { get; set; }
+
+    /// <summary>Raised when the user clicks Filter.</summary>
+    [Parameter] public EventCallback OnFilter { get; set; }
+
+    /// <summary>Raised when the user clicks Lock / Unlock column.</summary>
+    [Parameter] public EventCallback OnToggleLock { get; set; }
+
+    /// <summary>Raised by item handlers after invoking their action, to tell the grid to close the menu.</summary>
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private ElementReference _menuRef;
+
+    private async Task HandleSortAsc()
+    {
+        await OnSortAscending.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleSortDesc()
+    {
+        await OnSortDescending.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleClearSort()
+    {
+        await OnClearSort.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleFilter()
+    {
+        await OnFilter.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleToggleLock()
+    {
+        await OnToggleLock.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+}
