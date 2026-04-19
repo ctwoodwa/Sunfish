@@ -30,6 +30,15 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
     <PackageVersion Include="ClosedXML" Version="0.105.0" />
+    <!-- QuestPDF: MIT-licensed up to and including 2023.12.x. Version 2024.3+ switched to a
+         Community license (free under $1 M USD annual revenue; commercial license required above
+         that threshold). Pinned at 2023.12.6, the highest 2023.12.x patch actually published to
+         NuGet (2023.12.7 and 2023.12.8 were never published). Same rationale as JsonSchema.Net 8.0.5.
+         SkiaSharp native assets are required on Linux CI runners (QuestPDF.Drawing loads them at
+         type-init time) — pinned alongside to match the SkiaSharp version QuestPDF 2023.12.6 uses. -->
+    <PackageVersion Include="QuestPDF" Version="2023.12.6" />
+    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
+    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
     <PackageVersion Include="CsvHelper" Version="33.1.0" />
     <PackageVersion Include="MetadataExtractor" Version="2.9.3" />
     <PackageVersion Include="System.Net.Http.Json" Version="10.0.6" />

@@ -32,6 +32,12 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="QuestPDF" />
+    <!-- SkiaSharp native assets: QuestPDF.Drawing requires these on Linux at type-init time.
+         Using the .NoDependencies variant (what QuestPDF's error message explicitly asks for) to
+         avoid pulling fontconfig as a transitive system dep on CI runners that don't have it. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
+    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />

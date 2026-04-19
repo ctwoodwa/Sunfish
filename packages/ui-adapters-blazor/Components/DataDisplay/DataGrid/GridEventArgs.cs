@@ -238,3 +238,45 @@ public enum GridRowDropPosition
     /// <summary>Dropped after the destination item.</summary>
     After
 }
+
+/// <summary>
+/// Options controlling how <see cref="SunfishDataGrid{TItem}.ExportToPdfAsync(PdfExportOptions?)"/>
+/// behaves.
+/// </summary>
+public sealed record PdfExportOptions
+{
+    /// <summary>
+    /// The filename suggested to the browser. When <c>null</c>, defaults to
+    /// <c>grid-export-{timestamp}.pdf</c>.
+    /// </summary>
+    public string? FileName { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, exports all items matching active filters and sorts (ignoring
+    /// pagination). When <c>false</c> (the default), only the currently visible page is exported.
+    /// </summary>
+    public bool ExportAllPages { get; init; }
+
+    /// <summary>Whether to include a header row in the PDF table. Defaults to <c>true</c>.</summary>
+    public bool IncludeHeaders { get; init; } = true;
+
+    /// <summary>
+    /// Optional title printed at the top of the first page. When <c>null</c>, no title is rendered.
+    /// </summary>
+    public string? DocumentTitle { get; init; }
+
+    /// <summary>
+    /// When <c>true</c>, the page is rendered in landscape orientation.
+    /// When <c>false</c> (the default), portrait orientation is used.
+    /// </summary>
+    public bool Landscape { get; init; }
+
+    /// <summary>
+    /// The paper size. Accepted values: <c>"Letter"</c>, <c>"A4"</c>, <c>"Legal"</c>.
+    /// Defaults to <c>"Letter"</c>. Unknown values throw <see cref="ArgumentException"/>.
+    /// </summary>
+    public string PageSize { get; init; } = "Letter";
+
+    /// <summary>Whether to print a page-number footer on each page. Defaults to <c>true</c>.</summary>
+    public bool IncludePageNumbers { get; init; } = true;
+}
