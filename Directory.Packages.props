@@ -22,6 +22,9 @@
     <!-- JsonSchema.Net: MIT-licensed JSON Schema draft 2020-12 validator by Greg Dennis.
          Pinned at 8.0.5 (latest MIT release; 9.x switched to OSMFEULA proprietary license). -->
     <PackageVersion Include="JsonSchema.Net" Version="8.0.5" />
+    <!-- MessagePack: MIT-licensed binary serializer by Yoshifumi Kawai (neuecc).
+         3.1.4 is the latest stable MIT release; used by ingestion-sensors for G28 MessagePack decoding. -->
+    <PackageVersion Include="MessagePack" Version="3.1.4" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />

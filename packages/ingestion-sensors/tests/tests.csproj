@@ -6,6 +6,7 @@
     <RootNamespace>Sunfish.Ingestion.Sensors.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
