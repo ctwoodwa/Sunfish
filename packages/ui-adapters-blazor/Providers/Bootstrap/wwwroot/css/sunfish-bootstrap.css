@@ -14166,6 +14166,24 @@ textarea.form-control-lg {
   outline-offset: -1px;
 }
 
+/* ── DataGrid column resize handle (B2.4) ───────────────────────────────────── */
+.mar-datagrid-col-resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+  user-select: none;
+  touch-action: none;
+  z-index: 1;
+}
+
+.mar-datagrid-col-resize-handle:hover,
+.mar-datagrid-col-resize-handle.is-dragging {
+  background-color: var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2));
+}
+
 .sf-bs-datasheet {
   border: 1px solid var(--sf-color-border);
   border-radius: var(--sf-radius-md);
