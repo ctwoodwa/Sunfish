@@ -264,116 +264,61 @@ public partial class SunfishDataGrid<TItem>
         }, TaskScheduler.Default);
     }
 
-    // ── CSV Export ──────────────────────────────────────────────────────
+    // ── CSV Export data materialisation ────────────────────────────────
 
     /// <summary>
-    /// Generates CSV content from grid data. When ExportAllPages is true (default),
-    /// exports all filtered/sorted data. When false, exports only the current page.
-    /// Fires OnBeforeExport and OnAfterExport lifecycle events.
+    /// Returns the set of items that would be exported when <paramref name="exportAllPages"/>
+    /// is taken into account. Applies search + filters + sort. When <c>exportAllPages</c> is
+    /// <c>false</c> the current <see cref="_displayedItems"/> page is returned unchanged.
     /// </summary>
-    public async Task<string> ExportToCsvAsync(bool includeHeaders = true, string separator = ",")
+    internal List<TItem> GetAllFilteredItems(bool exportAllPages)
     {
-        // Fire OnBeforeExport
-        var beforeArgs = new GridExportEventArgs { Format = "csv" };
-        if (OnBeforeExport.HasDelegate)
-        {
-            await OnBeforeExport.InvokeAsync(beforeArgs);
-            if (beforeArgs.IsCancelled) return string.Empty;
-        }
+        if (!exportAllPages)
+            return _displayedItems;
 
-        var sb = new System.Text.StringBuilder();
-        var columns = _visibleColumns;
+        if (Data is null) return [];
 
-        if (includeHeaders)
-        {
-            sb.AppendLine(string.Join(separator, columns.Select(c => EscapeCsv(c.DisplayTitle, separator))));
-        }
+        IEnumerable<TItem> items = Data;
 
-        IEnumerable<TItem> items;
-        if (ExportAllPages && Data is not null)
-        {
-            items = Data;
-            if (!string.IsNullOrWhiteSpace(_searchText))
-                items = ApplySearch(items, _searchText);
-            foreach (var filter in _state.FilterDescriptors)
-                items = ApplyFilter(items, filter);
-            items = ApplySort(items);
-        }
-        else
-        {
-            items = _displayedItems;
-        }
+        if (!string.IsNullOrWhiteSpace(_searchText))
+            items = ApplySearch(items, _searchText);
 
-        var itemList = items.ToList();
-        foreach (var item in itemList)
-        {
-            var values = columns.Select(c => EscapeCsv(c.GetDisplayValue(item), separator));
-            sb.AppendLine(string.Join(separator, values));
-        }
+        foreach (var filter in _state.FilterDescriptors)
+            items = ApplyFilter(items, filter);
 
-        var result = sb.ToString();
+        foreach (var composite in _state.CompositeFilterDescriptors)
+            items = ApplyCompositeFilter(items, composite);
 
-        // Fire OnAfterExport
-        if (OnAfterExport.HasDelegate)
-        {
-            var afterArgs = new GridExportEventArgs
-            {
-                Format = "csv",
-                Data = result,
-                RowCount = itemList.Count
-            };
-            await OnAfterExport.InvokeAsync(afterArgs);
-        }
+        items = ApplySort(items);
 
-        return result;
+        return items.ToList();
     }
 
     /// <summary>
-    /// Synchronous CSV export (backward compatibility). Does not fire lifecycle events.
-    /// Use ExportToCsvAsync for full lifecycle support.
+    /// Builds a <see cref="GridExportData{TItem}"/> snapshot for the current grid state.
+    /// Only visible columns are included. Filters, sort, and search are all respected.
     /// </summary>
-    public string ExportToCsv(bool includeHeaders = true, string separator = ",")
+    /// <param name="exportAllPages">
+    /// When <c>true</c>, all items matching the active filters and sorts are returned
+    /// (ignoring paging). When <c>false</c>, only the currently displayed page is returned.
+    /// </param>
+    /// <returns>
+    /// A <see cref="GridExportData{TItem}"/> containing visible columns, the items list,
+    /// and a field-to-title header map.
+    /// </returns>
+    public GridExportData<TItem> GetExportData(bool exportAllPages = false)
     {
-        var sb = new System.Text.StringBuilder();
         var columns = _visibleColumns;
+        var items = GetAllFilteredItems(exportAllPages);
 
-        if (includeHeaders)
-        {
-            sb.AppendLine(string.Join(separator, columns.Select(c => EscapeCsv(c.DisplayTitle, separator))));
-        }
+        var headers = columns.ToDictionary(
+            c => c.Field ?? "",
+            c => c.DisplayTitle);
 
-        IEnumerable<TItem> items;
-        if (ExportAllPages && Data is not null)
-        {
-            items = Data;
-            if (!string.IsNullOrWhiteSpace(_searchText))
-                items = ApplySearch(items, _searchText);
-            foreach (var filter in _state.FilterDescriptors)
-                items = ApplyFilter(items, filter);
-            items = ApplySort(items);
-        }
-        else
-        {
-            items = _displayedItems;
-        }
-
-        foreach (var item in items)
-        {
-            var values = columns.Select(c => EscapeCsv(c.GetDisplayValue(item), separator));
-            sb.AppendLine(string.Join(separator, values));
-        }
-
-        return sb.ToString();
-    }
-
-    private static string EscapeCsv(string value, string separator)
-    {
-        if (string.IsNullOrEmpty(value)) return "";
-        if (value.Contains(separator) || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
-        {
-            return $"\"{value.Replace("\"", "\"\"")}\"";
-        }
-        return value;
+        return new GridExportData<TItem>(
+            columns.AsReadOnly(),
+            items.AsReadOnly(),
+            headers);
     }
 
     // ── Filtering (extended operators) ──────────────────────────────────
