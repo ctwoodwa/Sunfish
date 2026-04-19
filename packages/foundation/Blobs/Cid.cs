@@ -1,4 +1,6 @@
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Sunfish.Foundation.Blobs;
 
@@ -17,6 +19,7 @@ namespace Sunfish.Foundation.Blobs;
 /// until that's done, treat these CIDs as Sunfish-internal identifiers that follow the CID v1
 /// shape and will later be made byte-for-byte interoperable with IPFS.
 /// </remarks>
+[JsonConverter(typeof(CidJsonConverter))]
 public readonly record struct Cid(string Value)
 {
     /// <summary>The multibase prefix for base32-lowercase ('b' per the multibase spec).</summary>
@@ -145,5 +148,20 @@ internal static class Base32
         }
 
         return new string(output);
+    }
+}
+
+internal sealed class CidJsonConverter : JsonConverter<Cid>
+{
+    public override Cid Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var str = reader.GetString() ?? throw new JsonException("Cid must be a non-null string.");
+        try { return Cid.Parse(str); }
+        catch (FormatException ex) { throw new JsonException(ex.Message, ex); }
+    }
+
+    public override void Write(Utf8JsonWriter writer, Cid value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.Value);
     }
 }

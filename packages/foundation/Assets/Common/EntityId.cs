@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Sunfish.Foundation.Assets.Common;
 
 /// <summary>
@@ -7,6 +10,7 @@ namespace Sunfish.Foundation.Assets.Common;
 /// Wire form: <c>{Scheme}:{Authority}/{LocalPart}</c>. Example: <c>property:acme-rentals/42</c>.
 /// Spec §3.1. <see cref="Parse"/> is the inverse of <see cref="ToString"/>.
 /// </remarks>
+[JsonConverter(typeof(EntityIdJsonConverter))]
 public readonly record struct EntityId(string Scheme, string Authority, string LocalPart)
 {
     /// <summary>Canonical string form: <c>{Scheme}:{Authority}/{LocalPart}</c>.</summary>
@@ -49,5 +53,20 @@ public readonly record struct EntityId(string Scheme, string Authority, string L
             id = default;
             return false;
         }
+    }
+}
+
+internal sealed class EntityIdJsonConverter : JsonConverter<EntityId>
+{
+    public override EntityId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var str = reader.GetString() ?? throw new JsonException("EntityId must be a non-null string.");
+        try { return EntityId.Parse(str); }
+        catch (FormatException ex) { throw new JsonException(ex.Message, ex); }
+    }
+
+    public override void Write(Utf8JsonWriter writer, EntityId value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(value.ToString());
     }
 }
