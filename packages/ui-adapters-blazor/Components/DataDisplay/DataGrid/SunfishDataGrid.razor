@@ -232,7 +232,7 @@
                     @RenderEditRow(_editingItem)
                 }
 
-                @if (_displayedItems.Count == 0 && _groupedRows.Count == 0 && !_isCreating)
+                @if (_displayedItems.Count == 0 && _groupedRows.Count == 0 && !_isCreating && !IsLoading)
                 {
                     <tr role="row">
                         <td colspan="@TotalColumnCount" role="gridcell" class="sf-datagrid-empty">
@@ -250,13 +250,6 @@
                 else if (_groupedRows.Count > 0)
                 {
                     @RenderGroupRows(_groupedRows)
-                }
-                else if (RowTemplate != null)
-                {
-                    @foreach (var item in _displayedItems)
-                    {
-                        @RowTemplate(item)
-                    }
                 }
                 else if (EnableVirtualization)
                 {
