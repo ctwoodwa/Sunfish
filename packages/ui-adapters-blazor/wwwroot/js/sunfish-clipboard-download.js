@@ -61,6 +61,29 @@ export function download(request) {
 }
 
 /**
+ * Triggers a browser file download from a plain-text string.
+ * Used by SunfishDataGrid CSV export so that the C# layer can pass the CSV string directly
+ * without base64-encoding overhead.
+ *
+ * @param {string} fileName   The suggested filename (e.g. "export.csv").
+ * @param {string} mimeType   The MIME type (e.g. "text/csv;charset=utf-8").
+ * @param {string} content    The plain-text file content.
+ */
+export function downloadText(fileName, mimeType, content) {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
+}
+
+/**
  * Disposes module resources (stateless — no-op).
  */
 export function dispose() {

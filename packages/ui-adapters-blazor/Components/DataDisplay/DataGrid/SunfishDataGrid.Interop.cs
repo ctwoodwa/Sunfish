@@ -138,6 +138,9 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             catch (JSDisconnectedException) { }
         }
         _dotNetRef?.Dispose();
+
+        // Dispose the lazily-created CSV download module (see SunfishDataGrid.Export.cs).
+        await DisposeExportModuleAsync();
     }
 
     private string GetGridScript() => $$"""
