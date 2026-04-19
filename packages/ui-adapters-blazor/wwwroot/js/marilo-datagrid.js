@@ -30,6 +30,11 @@ export function attachGrid(rootElementOrId, dotnetRef, options) {
     if (handle.options.rowDragDrop) installRowDragDrop(handle);     // B4
     if (handle.options.frozenColumns) recomputeFrozenOffsets(rootElement);  // B5 — initial offset pass
 
+    // C3.4: grid-level click-outside listener. Always installed so that column menus close when
+    // the user clicks anywhere outside them. This avoids a per-menu JS lifecycle — one listener
+    // per grid instance handles all column menus on that grid.
+    installColumnMenuClickOutside(handle);
+
     return handle;
 }
 
@@ -527,4 +532,47 @@ function applyFrozenOffset(rootElement, columnId, side, offsetPx) {
         ? '--mar-datagrid-col-offset-start'
         : '--mar-datagrid-col-offset-end';
     cells.forEach(c => c.style.setProperty(prop, offsetPx + 'px'));
+}
+
+// ── C3.4: Column Menu Click-Outside ──────────────────────────────────────────
+//
+// Design: grid-level listener (one per grid instance) rather than per-menu.
+// Rationale: simpler lifecycle — the listener is installed once in attachGrid and
+// removed once in detachGrid, matching the existing B2/B3/B4 pattern.
+//
+// When a mousedown lands outside ALL .mar-datagrid-column-menu elements in this
+// grid AND the click did NOT originate from a .mar-datagrid-column-menu-trigger
+// button, we call CloseColumnMenu on the .NET side.
+
+/**
+ * Install the click-outside-to-close listener for column menus.
+ *
+ * @param {Object} handle - the grid handle returned by attachGrid
+ */
+function installColumnMenuClickOutside(handle) {
+    const { rootElement, dotnetRef } = handle;
+    if (!rootElement) return;
+
+    const onMouseDown = (ev) => {
+        // If there is no open menu in this grid, nothing to do.
+        const openMenu = rootElement.querySelector('.mar-datagrid-column-menu');
+        if (!openMenu) return;
+
+        // Click is inside an open menu — let the menu's own button handler run.
+        if (openMenu.contains(ev.target)) return;
+
+        // Click is on the trigger that opened this menu — ToggleColumnMenu on the .NET
+        // side will handle toggling it closed, so we must NOT also fire CloseColumnMenu
+        // or the menu will immediately re-open (toggle then close = net open).
+        if (ev.target.closest('.mar-datagrid-column-menu-trigger')) return;
+
+        dotnetRef.invokeMethodAsync('CloseColumnMenu');
+    };
+
+    // Capture phase so we hear the click before it reaches Blazor stop-propagation handlers.
+    document.addEventListener('mousedown', onMouseDown, true);
+
+    handle.listeners.push({
+        remove: () => document.removeEventListener('mousedown', onMouseDown, true)
+    });
 }
