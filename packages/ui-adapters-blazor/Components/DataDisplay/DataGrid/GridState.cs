@@ -71,4 +71,10 @@ public class GridColumnState
 
     /// <summary>Whether the column is visible.</summary>
     public bool Visible { get; set; } = true;
+
+    /// <summary>Whether the column exposes a column-menu trigger. Mirrors <see cref="SunfishGridColumn{TItem}.ShowColumnMenu"/>.</summary>
+    public bool ShowColumnMenu { get; set; }
+
+    /// <summary>Whether the column appears in the column chooser. Mirrors <see cref="SunfishGridColumn{TItem}.VisibleInColumnChooser"/>.</summary>
+    public bool VisibleInColumnChooser { get; set; } = true;
 }
