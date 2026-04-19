@@ -76,11 +76,11 @@ Reference: RESEARCH_LOG.md §1 — Radzen `GroupByMany` recursive tree, collapse
 ### A2: AutoGenerateColumns
 Spec: `columns/auto-generated.md`
 
-- [ ] A2.1 — Add `AutoGenerateColumns` bool parameter (default: false)
-- [ ] A2.2 — On init, reflect `typeof(TItem)` public properties to auto-create column definitions
-- [ ] A2.3 — Respect `[Display]` and `[Editable]` attributes for Title/Editable
-- [ ] A2.4 — Allow explicit `SunfishGridColumn` children to override auto-generated columns
-- [ ] A2.5 — Skip navigation properties and complex types
+- [x] A2.1 — Add `AutoGenerateColumns` bool parameter (default: false)
+- [x] A2.2 — On init, reflect `typeof(TItem)` public properties to auto-create column definitions
+- [x] A2.3 — Respect `[Display]` and `[Editable]` attributes for Title/Editable
+- [x] A2.4 — Allow explicit `SunfishGridColumn` children to override auto-generated columns
+- [x] A2.5 — Skip navigation properties and complex types
 
 ### A3: SearchBox Filter
 Spec: `filtering/searchbox.md`
