@@ -575,10 +575,13 @@
     private SunfishDataGrid<Employee>? _exportGrid;
     private string _csvOutput = "";
 
-    private void ExportCsv()
+    private async Task ExportCsv()
     {
         if (_exportGrid != null)
-            _csvOutput = _exportGrid.ExportToCsv();
+        {
+            await _exportGrid.ExportToCsvAsync();
+            _csvOutput = "CSV download triggered";
+        }
     }
 
     // ── Virtualization ─────────────────────────────────────────────────
@@ -843,9 +846,9 @@
         "</SunfishDataGrid>\n" +
         "<button @onclick=\"ExportCsv\">Export to CSV</button>\n\n" +
         "@code {\n" +
-        "    private void ExportCsv()\n" +
+        "    private async Task ExportCsv()\n" +
         "    {\n" +
-        "        _csvOutput = _exportGrid.ExportToCsv();\n" +
+        "        await _exportGrid.ExportToCsvAsync();\n" +
         "    }\n" +
         "}";
 
