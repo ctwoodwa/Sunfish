@@ -33,6 +33,10 @@
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Markdig" />
     <PackageReference Include="QuestPDF" />
+    <!-- SkiaSharp native assets: required at runtime on Linux (CI) for QuestPDF.Drawing to init.
+         Unconditional reference — NuGet only resolves the Linux-specific runtime assets for the
+         linux-x64 RID at publish time, so the overhead on Windows/macOS builds is negligible. -->
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
