@@ -27,7 +27,7 @@ export function attachGrid(rootElementOrId, dotnetRef, options) {
     // if (handle.options.keyboardNavigation) installKeyboardNavigation(handle);
     if (handle.options.columnResize) installColumnResize(handle);    // B2
     if (handle.options.columnReorder) installColumnReorder(handle);  // B3
-    // if (handle.options.rowDragDrop) installRowDragDrop(handle);
+    if (handle.options.rowDragDrop) installRowDragDrop(handle);     // B4
     if (handle.options.frozenColumns) recomputeFrozenOffsets(rootElement);  // B5 — initial offset pass
 
     return handle;
@@ -299,6 +299,145 @@ function installColumnReorder(handle) {
             .forEach(n => n.classList.remove('is-dragging-source'));
         draggingIndex = null;
         draggingColumnId = null;
+    };
+
+    rootElement.addEventListener('dragstart', onDragStart);
+    rootElement.addEventListener('drag', onDrag);
+    rootElement.addEventListener('dragover', onDragOver);
+    rootElement.addEventListener('drop', onDrop);
+    rootElement.addEventListener('dragend', onDragEnd);
+
+    handle.listeners.push({
+        remove: () => {
+            rootElement.removeEventListener('dragstart', onDragStart);
+            rootElement.removeEventListener('drag', onDrag);
+            rootElement.removeEventListener('dragover', onDragOver);
+            rootElement.removeEventListener('drop', onDrop);
+            rootElement.removeEventListener('dragend', onDragEnd);
+            cleanup();
+        }
+    });
+}
+
+// ── B4: Row Drag-and-Drop ─────────────────────────────────────────────────────
+//
+// Performance contract:
+//   dragstart  — capture source row index; build floating clone <tr>; create drop-line indicator
+//   drag       — move clone to cursor position; ZERO .NET calls
+//   dragover   — update drop-line position; ZERO .NET calls
+//   drop       — exactly ONE .NET call: invokeMethodAsync('OnRowDropped', sourceIndex, destIndex, dropPosition)
+//   dragend    — cleanup (fires even if drop was outside a valid target)
+//
+// B3 coexistence: both B3 and B4 listen on root dragstart. B3 targets th[data-column-index],
+// B4 targets tr[data-row-index]. An event can only match one — they are mutually exclusive.
+//
+// Firefox quirk: dataTransfer.setData('text/plain', ...) is required to actually start HTML5 drag.
+
+/**
+ * Install row drag-and-drop handlers on a grid handle.
+ * Called from attachGrid when options.rowDragDrop is true.
+ *
+ * @param {Object} handle - the handle returned by attachGrid
+ */
+function installRowDragDrop(handle) {
+    const rootElement = handle.rootElement;
+    if (!rootElement) return;
+
+    let draggingIndex = null;
+    let cloneEl = null;
+    let dropLineEl = null;
+
+    const onDragStart = (ev) => {
+        const tr = ev.target.closest('tr[data-row-index][draggable="true"]');
+        if (!tr) return;
+        draggingIndex = Number(tr.getAttribute('data-row-index'));
+
+        ev.dataTransfer.effectAllowed = 'move';
+        // Firefox requires a data payload to actually initiate drag.
+        ev.dataTransfer.setData('text/plain', String(draggingIndex));
+
+        // Build floating clone positioned under the cursor.
+        cloneEl = tr.cloneNode(true);
+        cloneEl.classList.add('mar-datagrid-row-drag-clone');
+        cloneEl.style.position = 'fixed';
+        cloneEl.style.left = ev.clientX + 'px';
+        cloneEl.style.top = ev.clientY + 'px';
+        cloneEl.style.pointerEvents = 'none';
+        cloneEl.style.opacity = '0.75';
+        cloneEl.style.zIndex = '10000';
+        cloneEl.style.background = 'var(--mar-datagrid-row-bg, #fff)';
+        cloneEl.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+        document.body.appendChild(cloneEl);
+
+        // Horizontal drop-indicator line (positioned relative to root element).
+        dropLineEl = document.createElement('div');
+        dropLineEl.className = 'mar-datagrid-row-drop-line';
+        dropLineEl.style.display = 'none';
+        // Root element must be positioned for the absolute line to align correctly.
+        const currentPosition = getComputedStyle(rootElement).position;
+        if (currentPosition === 'static') rootElement.style.position = 'relative';
+        rootElement.appendChild(dropLineEl);
+
+        tr.classList.add('is-row-dragging-source');
+    };
+
+    // Move the floating clone with the cursor — no .NET calls.
+    const onDrag = (ev) => {
+        if (cloneEl && ev.clientX !== 0) {
+            cloneEl.style.left = ev.clientX + 'px';
+            cloneEl.style.top = ev.clientY + 'px';
+        }
+    };
+
+    // Update drop-indicator position — no .NET calls.
+    const onDragOver = (ev) => {
+        if (draggingIndex === null) return;
+        const tr = ev.target.closest('tr[data-row-index]');
+        if (!tr) return;
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = 'move';
+
+        const rect = tr.getBoundingClientRect();
+        const insertAfter = ev.clientY > rect.top + rect.height / 2;
+        const rootRect = rootElement.getBoundingClientRect();
+        if (dropLineEl) {
+            dropLineEl.style.display = 'block';
+            dropLineEl.style.top = ((insertAfter ? rect.bottom : rect.top) - rootRect.top) + 'px';
+        }
+    };
+
+    // On drop: fire exactly ONE .NET call.
+    const onDrop = async (ev) => {
+        if (draggingIndex === null) return;
+        const tr = ev.target.closest('tr[data-row-index]');
+        if (!tr) { cleanup(); return; }
+        ev.preventDefault();
+
+        const targetIndex = Number(tr.getAttribute('data-row-index'));
+        const rect = tr.getBoundingClientRect();
+        const insertAfter = ev.clientY > rect.top + rect.height / 2;
+        let destIndex = insertAfter ? targetIndex + 1 : targetIndex;
+        // Account for removal of dragged row at sourceIndex.
+        if (destIndex > draggingIndex) destIndex -= 1;
+        if (destIndex === draggingIndex) { cleanup(); return; }
+
+        const dropPosition = insertAfter ? 'After' : 'Before';
+        try {
+            await handle.dotnetRef.invokeMethodAsync('OnRowDropped', draggingIndex, destIndex, dropPosition);
+        } catch {
+            // Component may have been torn down mid-drag — swallow the error gracefully.
+        }
+        cleanup();
+    };
+
+    const onDragEnd = () => cleanup();
+
+    const cleanup = () => {
+        if (cloneEl) { cloneEl.remove(); cloneEl = null; }
+        if (dropLineEl) { dropLineEl.remove(); dropLineEl = null; }
+        rootElement.querySelectorAll('.is-row-dragging-source')
+            .forEach(n => n.classList.remove('is-row-dragging-source'));
+        draggingIndex = null;
     };
 
     rootElement.addEventListener('dragstart', onDragStart);

@@ -207,12 +207,12 @@ Reference: RESEARCH_LOG.md §3 — Radzen visual clone + cancelable pre-event
 ### B4: Row Drag-and-Drop
 Spec: `row-drag-drop.md`
 
-- [ ] B4.1 — Add `RowDraggable` bool parameter
-- [ ] B4.2 — JS: `initRowDrag(elementRef, dotNetRef)` — HTML5 drag-and-drop on rows
-- [ ] B4.3 — Render drag handle element in rows when enabled
-- [ ] B4.4 — .NET callback: `OnRowDropped(int sourceIndex, int destIndex)`
-- [ ] B4.5 — Add `OnRowDrop` EventCallback<GridRowDropEventArgs<TItem>>
-- [ ] B4.6 — Create `GridRowDropEventArgs<TItem>` (Item, DestinationItem, DestinationIndex, DropPosition)
+- [x] B4.1 — Add `RowDraggable` bool parameter
+- [x] B4.2 — JS: `installRowDragDrop(handle)` — HTML5 drag-and-drop on rows (marilo-datagrid.js)
+- [x] B4.3 — Render drag handle element in rows when enabled (drag handle span, draggable="true" on &lt;tr&gt;, data-row-index)
+- [x] B4.4 — .NET callback: `HandleRowDroppedFromJs` [JSInvokable("OnRowDropped")]
+- [x] B4.5 — Add `OnRowDrop` EventCallback&lt;GridRowDropEventArgs&lt;TItem&gt;&gt;
+- [x] B4.6 — Create `GridRowDropEventArgs&lt;TItem&gt;` (Item, DestinationItem, DestinationIndex, DropPosition)
 
 ### B5: Frozen/Locked Columns
 Spec: `columns/frozen.md`

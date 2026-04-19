@@ -486,3 +486,37 @@ th.mar-datagrid-col--locked {
 th.is-dragging-source {
     opacity: 0.4;
 }
+
+// =================================================================
+// B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
+// =================================================================
+
+.mar-datagrid-row-drag-handle {
+    cursor: grab;
+    user-select: none;
+    padding: 0 4px;
+    color: var(--mar-datagrid-row-drag-handle-color, #999);
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.mar-datagrid-drag-cell {
+    width: 2rem;
+    text-align: center;
+    padding: 0;
+}
+
+tr.is-row-dragging-source {
+    opacity: 0.4;
+}
+
+.mar-datagrid-row-drop-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+    pointer-events: none;
+}

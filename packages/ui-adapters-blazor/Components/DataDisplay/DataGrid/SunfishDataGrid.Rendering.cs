@@ -34,16 +34,23 @@ public partial class SunfishDataGrid<TItem>
         builder.AddAttribute(5, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowClick(item, e)));
         builder.AddAttribute(6, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowDoubleClick(item, e)));
         builder.AddAttribute(7, "oncontextmenu", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowContextMenu(item, e)));
+        // B4.3: emit draggable + data-row-index on the <tr> so the JS handler can match tr[data-row-index][draggable="true"].
+        // Always emit draggable (true or false) to be explicit and avoid browser default-true edge-cases.
+        builder.AddAttribute(8, "draggable", RowDraggable ? "true" : "false");
+        if (RowDraggable) builder.AddAttribute(9, "data-row-index", index.ToString());
 
-        // Drag handle cell
+        // Drag handle cell (system column, rendered before data columns — Option A)
         if (RowDraggable)
         {
-            builder.OpenElement(8, "td");
-            builder.AddAttribute(9, "class", "mar-datagrid-drag-cell");
-            builder.AddAttribute(10, "role", "gridcell");
-            builder.AddAttribute(11, "draggable", "true");
-            builder.AddAttribute(12, "data-row-index", index.ToString());
-            builder.AddContent(13, "\u2807");
+            builder.OpenElement(10, "td");
+            builder.AddAttribute(11, "class", "mar-datagrid-drag-cell");
+            builder.AddAttribute(12, "role", "gridcell");
+            builder.AddAttribute(13, "aria-label", "Drag row");
+            builder.OpenElement(14, "span");
+            builder.AddAttribute(15, "class", "mar-datagrid-row-drag-handle");
+            builder.AddAttribute(16, "aria-hidden", "true");
+            builder.AddContent(17, "\u2807"); // ⠇ drag dots icon
+            builder.CloseElement(); // span
             builder.CloseElement(); // td
         }
 
