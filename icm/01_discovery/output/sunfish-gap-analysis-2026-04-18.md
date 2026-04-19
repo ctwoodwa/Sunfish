@@ -1939,6 +1939,76 @@ None.
 
 ---
 
+### G37 — SunfishDataGrid feature coverage (component-level)
+
+**Priority:** P1
+**Category:** UI
+**Spec references:** `docs/component-specs/grid/` (78 files). Component-level tracker at `packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/GAP_ANALYSIS.md` (134 tasks across 4 phases, created 2026-03-30, last refreshed 2026-04-01).
+
+**Gap Description**
+`SunfishDataGrid` — the flagship data-display component — has an estimated **55-60% API coverage** versus its own component spec. A pre-existing component-level gap analysis tracks **134 tasks across 4 phases** (A: 49 pure-C#, B: 35 JS-interop, C: 29 advanced features, D: 21 future). Two pre-phase passes in March 2026 landed the core (public GridState, CRUD, filter menu, multi-sort, virtualization, footer, detail templates) but zero of the 134 planned-phase tasks have started.
+
+Representative missing capabilities:
+- **Phase A** — Grouping (with recursive GroupByMany + aggregates), AutoGenerateColumns, global SearchBox, NoDataTemplate, RowTemplate, column Editable/HeaderClass/Id/ShowColumnMenu/VisibleInColumnChooser, GridState enrichment (EditItem, ExpandedItems, ColumnStates, SearchFilter), Size enum, HighlightedItems, CSV export.
+- **Phase B** — Full JS-interop layer (`marilo-datagrid.js` ES module): keyboard navigation, column resize ⚡, column reorder ⚡, row drag-and-drop, frozen/locked columns. Community consensus flags column resize + reorder as "table stakes" for any enterprise grid.
+- **Phase C** — Excel export (ClosedXML), PDF export (QuestPDF), column menu, column chooser, CheckBoxList filter mode, multi-column headers, cell selection, editing validation (EditForm + DataAnnotations).
+- **Phase D** — AI features (AI Column / Highlight / Search / Smart Box), popup-form/buttons templates, pager template, toolbar built-in tools, virtual/checkbox columns, AdaptiveMode (card layout on narrow viewports).
+
+**Impact Assessment**
+- Affected users: every Bridge accelerator screen that uses grids (timeline, kanban, board, task list, inspection lists, budget-line tables) and every future PM-vertical view.
+- Severity: P1 — core operations work (filter, sort, page, select, edit, detail expand) but enterprise-expected capabilities (column resize, keyboard nav, Excel export, grouping) are absent. Users coming from Radzen / Syncfusion / AG Grid will experience the gap immediately.
+- Workarounds: consumers can wrap external grid libraries (MudBlazor DataGrid, Radzen DataGrid, Blazorise DataGrid) per G36's OSS gap-filler catalog — but that undercuts Sunfish's "one adapter, consistent surface" value proposition.
+- Competitive risk: data grid is the single most-used component in business apps; a weak grid makes Sunfish look incomplete regardless of how strong the kernel is.
+
+**Root Cause**
+Component-spec size (78 spec files) vs available time. The DataGrid spec was carried forward from Marilo and is comprehensive; the migration shipped a functional core but deferred the long tail. Pre-phase passes prioritized correctness over feature surface.
+
+**Options**
+
+#### Option A: Execute the existing 134-task tracker in phase order (A → B → C → D)
+- **Pros:** Plan already scoped; tasks are discrete; RESEARCH_LOG.md captured reference patterns from Radzen / QuickGrid / MudBlazor / Tabulator / AG Grid.
+- **Cons:** 134 tasks is multi-quarter work for one component. Phase A alone (49 tasks) is ~4-6 weeks.
+- **Risk:** Low — spec is stable; tasks are well-scoped.
+- **Effort:** XL — Phase A (M/L), Phase B (L), Phase C (L), Phase D (M). Total 4-6 months at steady state.
+
+#### Option B: Ship Phase A + Phase B only (table-stakes parity); defer C + D
+- **Pros:** Covers the 80% that enterprise users expect. Column resize (B2) + column reorder (B3) + keyboard nav (B1) alone close most of the "feels incomplete" perception gap. Frees 50 tasks (C+D) into a later tracker.
+- **Cons:** No Excel/PDF export (C1/C2) or AI features (D1). Consumers that need export route through OSS wrappers.
+- **Risk:** Low.
+- **Effort:** L — Phase A + B = 84 tasks, ~8-12 weeks.
+
+#### Option C: Adopt MudBlazor.DataGrid / Radzen.Blazor.DataGrid as a provider; deprecate the Sunfish impl
+- **Pros:** Instant feature-parity with a mature grid. Reduces Sunfish maintenance burden. Consistent with G36's OSS-as-provider pattern.
+- **Cons:** Fragments the SunfishDataGrid surface — existing consumers would need to migrate. Loses the custom GridState shape. Contradicts the "one Sunfish surface" principle.
+- **Risk:** Medium — existing consumers in `apps/kitchen-sink` + `accelerators/bridge` would need rework.
+- **Effort:** M initial integration + XL migration tail.
+
+#### Option D: Prioritize by consumer demand — instrument current usage, execute the 134-task list in demand order
+- **Pros:** Aligns effort with real pain; avoids speculative work on features nobody uses.
+- **Cons:** Requires telemetry / customer interviews that don't exist yet; delays table-stakes features (keyboard, resize, grouping) whose demand is obvious.
+- **Risk:** Medium — "what's really used" bias toward current Bridge usage which is PmDemo-derived.
+- **Effort:** L — same surface area as A/B, but reordered.
+
+**Recommended Path**
+
+**Option B** — ship Phase A + Phase B only (84 tasks). This closes the "feels unfinished" gap at the most visible level (column resize, reorder, keyboard nav, grouping, CSV export, SearchBox) without over-committing to the XL full-spec surface. Phases C + D remain in the tracker as follow-up work, picked up opportunistically once the Sunfish PM vertical surfaces specific demand for Excel/PDF export or AI features.
+
+Execute in the existing tracker's phase order (A before B because A is pure-C# and derisks the rendering / state model; B's JS-interop layer depends on the stabilized column model). Phase A and Phase B can be done by a dedicated DataGrid workstream in parallel with platform-tier work (G1-G5).
+
+**Effort Estimate**
+
+**L** — ~8-12 weeks for Phase A + B. Tracker is at `packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/GAP_ANALYSIS.md`; update its progress table as tasks complete, one session per 3-5 tasks.
+
+**Dependencies**
+
+None at the platform level. The tracker itself notes internal dependencies (B0 JS-infra before B1-B5; A1 grouping before A8 CSV-export of grouped data).
+
+**Note on integration with this platform gap analysis**
+
+This entry exists so the DataGrid work is *visible* at the platform tier. The 134-task tracker remains the authoritative plan-of-record at the component tier; don't duplicate sub-task state here. Reference the file whenever this gap is scheduled or its priority is revisited.
+
+---
+
 ## Prioritized Execution Order
 
 The order below is a directed plan, not a sorted list. Gaps on the same tier can proceed
