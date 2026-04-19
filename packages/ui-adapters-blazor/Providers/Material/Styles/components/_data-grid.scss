@@ -446,3 +446,24 @@
     position: relative;
     z-index: 1;
 }
+
+// =================================================================
+// B3: Column Reordering — drag clone, drop indicator, source highlight
+// =================================================================
+
+.mar-datagrid-col-drag-clone {
+    background: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
+    border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-border, #e0e0e0));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0.75rem;
+    font-size: inherit;
+    border-radius: 2px;
+}
+
+.mar-datagrid-col-drop-line {
+    // Styled inline by JS; this class exists for future theming.
+}
+
+th.is-dragging-source {
+    opacity: 0.4;
+}
