@@ -1051,4 +1051,113 @@ public partial class SunfishDataGrid<TItem>
             await OnPaginationPageSizeChanged(newSize);
         }
     }
+
+    // ── C3: Column Menu Actions ─────────────────────────────────────────
+
+    /// <summary>Toggles the column menu open/closed for the column at the given visible-column index.</summary>
+    internal void ToggleColumnMenu(int columnIndex)
+    {
+        _openMenuColumnIndex = _openMenuColumnIndex == columnIndex ? null : columnIndex;
+        StateHasChanged();
+    }
+
+    /// <summary>Closes whichever column menu is currently open. Used by OnClose callbacks and click-outside.</summary>
+    [Microsoft.JSInterop.JSInvokable("CloseColumnMenu")]
+    public void CloseColumnMenu()
+    {
+        _openMenuColumnIndex = null;
+        InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>Returns true when this column has an active sort descriptor.</summary>
+    internal bool IsSortedColumn(SunfishGridColumn<TItem> column)
+        => _state.SortDescriptors.Any(s => s.Field == column.Field);
+
+    /// <summary>Sorts the column ascending. Replaces existing single-sort (does not multi-sort).</summary>
+    internal async Task SortColumnAsc(SunfishGridColumn<TItem> column)
+    {
+        if (!Sortable || !column.Sortable) return;
+        var existing = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
+        if (existing is not null)
+            existing.Direction = Sunfish.Foundation.Enums.SortDirection.Ascending;
+        else
+        {
+            _state.SortDescriptors.Clear();
+            _state.SortDescriptors.Add(new Sunfish.Foundation.Data.SortDescriptor
+            {
+                Field = column.Field,
+                Direction = Sunfish.Foundation.Enums.SortDirection.Ascending
+            });
+        }
+        _state.CurrentPage = 1;
+        await ProcessDataAsync();
+        await NotifyPageChanged();
+        await NotifyStateChanged("Sort");
+        StateHasChanged();
+    }
+
+    /// <summary>Sorts the column descending. Replaces existing single-sort.</summary>
+    internal async Task SortColumnDesc(SunfishGridColumn<TItem> column)
+    {
+        if (!Sortable || !column.Sortable) return;
+        var existing = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
+        if (existing is not null)
+            existing.Direction = Sunfish.Foundation.Enums.SortDirection.Descending;
+        else
+        {
+            _state.SortDescriptors.Clear();
+            _state.SortDescriptors.Add(new Sunfish.Foundation.Data.SortDescriptor
+            {
+                Field = column.Field,
+                Direction = Sunfish.Foundation.Enums.SortDirection.Descending
+            });
+        }
+        _state.CurrentPage = 1;
+        await ProcessDataAsync();
+        await NotifyPageChanged();
+        await NotifyStateChanged("Sort");
+        StateHasChanged();
+    }
+
+    /// <summary>Removes any active sort descriptor for the column.</summary>
+    internal async Task ClearColumnSort(SunfishGridColumn<TItem> column)
+    {
+        var existing = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
+        if (existing is null) return;
+        _state.SortDescriptors.Remove(existing);
+        _state.CurrentPage = 1;
+        await ProcessDataAsync();
+        await NotifyPageChanged();
+        await NotifyStateChanged("Sort");
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Opens the filter UI for the given column.
+    /// When <see cref="FilterMode"/> is <see cref="GridFilterMode.FilterMenu"/>, delegates to
+    /// the existing <see cref="ToggleFilterMenu"/> path. Other filter modes are no-ops from the
+    /// column menu (the consumer should set FilterMode to FilterMenu to get column-menu-driven filters).
+    /// </summary>
+    internal void OpenFilterMenu(SunfishGridColumn<TItem> column)
+    {
+        if (FilterMode == GridFilterMode.FilterMenu && column.Filterable)
+            ToggleFilterMenu(column.Field);
+        else if (FilterMode == GridFilterMode.CheckBoxList && column.Filterable)
+            ToggleCheckBoxFilter(column.Field);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Toggles the <see cref="Sunfish.Components.Blazor.Components.DataDisplay.SunfishGridColumn{TItem}.Locked"/>
+    /// state of the column, then triggers a layout recompute and state notification.
+    /// Only acts when the column's <c>Lockable</c> parameter is true.
+    /// </summary>
+    internal async Task ToggleColumnLock(SunfishGridColumn<TItem> column)
+    {
+        if (!column.Lockable) return;
+        column.SetLocked(!column.Locked);
+        ResolveLayoutContract();
+        await NotifyStateChanged("ColumnLock");
+        StateHasChanged();
+    }
 }

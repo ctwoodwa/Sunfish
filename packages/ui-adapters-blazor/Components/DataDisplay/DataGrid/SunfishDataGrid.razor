@@ -189,6 +189,34 @@
                                     </div>
                                 }
                             }
+                            @* C3.2: column menu trigger + popup — rendered when column.ShowColumnMenu is true. *@
+                            @if (column.ShowColumnMenu)
+                            {
+                                var colMenuIndex = _visibleColumns.IndexOf(column);
+                                var colMenuOpen = _openMenuColumnIndex == colMenuIndex;
+                                <button type="button"
+                                        class="mar-datagrid-column-menu-trigger"
+                                        aria-label="@($"Column menu for {column.DisplayTitle}")"
+                                        aria-haspopup="menu"
+                                        aria-expanded="@(colMenuOpen ? "true" : "false")"
+                                        @onclick="() => ToggleColumnMenu(colMenuIndex)"
+                                        @onclick:stopPropagation="true">&#x22EE;</button>
+
+                                <SunfishGridColumnMenu TItem="TItem"
+                                                       IsOpen="@colMenuOpen"
+                                                       ShowSort="@(Sortable && column.Sortable)"
+                                                       ShowFilter="@(FilterMode != GridFilterMode.None && column.Filterable)"
+                                                       ShowLock="@column.Lockable"
+                                                       IsLocked="@column.Locked"
+                                                       HasSort="@IsSortedColumn(column)"
+                                                       OnSortAscending="() => SortColumnAsc(column)"
+                                                       OnSortDescending="() => SortColumnDesc(column)"
+                                                       OnClearSort="() => ClearColumnSort(column)"
+                                                       OnFilter="() => OpenFilterMenu(column)"
+                                                       OnToggleLock="() => ToggleColumnLock(column)"
+                                                       OnClose="CloseColumnMenu" />
+                            }
+
                             @* B2.4: column resize drag handle — rendered only when both grid and column allow resizing. *@
                             @if (column.IsResizable(AllowColumnResize || Resizable))
                             {

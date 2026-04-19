@@ -60,6 +60,10 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     internal HashSet<string> _checkBoxFilterSelected = new();
     internal List<string> _checkBoxFilterDistinct = new();
 
+    // C3: column menu state — tracks which visible-column index currently has its menu open.
+    // null means no menu is open.
+    internal int? _openMenuColumnIndex;
+
     // ── Parameters: Data Binding ────────────────────────────────────────
 
     /// <summary>Client-side data source. Mutually exclusive with <see cref="OnRead"/>.</summary>
