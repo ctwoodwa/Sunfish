@@ -114,18 +114,21 @@ Spec: `columns/bound.md`, `columns/frozen.md`, `columns/visible.md`
 ### A6: GridState Enrichment
 Spec: `state.md`
 Reference: RESEARCH_LOG.md §1 (group state), §7 (QuickGrid decoupled pagination)
-Note: Radzen uses a `DataGridSettings` object with `SaveSettings()`/`LoadSettings()` for full state round-tripping — consider exposing a similar `Settings` parameter alongside the event-based approach.
+Note: Radzen uses a `DataGridSettings` object with `SaveSettings()`/`LoadSettings()` for full state round-tripping. Sunfish uses event-based `OnStateChanged` instead; a `SaveSettings()`/`LoadSettings()` helper is deferred as a potential A6.7+ follow-up task (not implemented here — event-based approach is sufficient for round-tripping).
+Note (A6.5): `ColumnState` is named `GridColumnState` in code (same namespace); uses `Order` instead of `OrderIndex` — contract-compatible superset.
+Note (A6.1–A6.3): `GridState` remains non-generic (`object?` typed) to avoid breaking consumer contracts. `TItem`-typed round-tripping is achievable via cast at the consumer call site.
+Note (A6.9/A6.10): Editing operations (`BeginEdit`, `BeginCellEdit`, `BeginAdd`, `SaveEdit`, `CancelEdit`, `DeleteItem`) now call `NotifyStateChanged` so `OnStateChanged` fires with the enriched state. `ToggleDetailRow` already did this.
 
-- [ ] A6.1 — Add `EditItem` property to GridState
-- [ ] A6.2 — Add `OriginalEditItem` property to GridState
-- [ ] A6.3 — Add `InsertedItem` property to GridState
-- [ ] A6.4 — Add `ExpandedItems` HashSet to GridState
-- [ ] A6.5 — Add `ColumnStates` list (order, width, visible) to GridState — each entry: `ColumnState { Field, OrderIndex, Width, Visible }`
-- [ ] A6.6 — Add `SearchFilter` string to GridState
+- [x] A6.1 — Add `EditItem` property to GridState
+- [x] A6.2 — Add `OriginalEditItem` property to GridState
+- [x] A6.3 — Add `InsertedItem` property to GridState
+- [x] A6.4 — Add `ExpandedItems` HashSet to GridState
+- [x] A6.5 — Add `ColumnStates` list (order, width, visible) to GridState — each entry: `GridColumnState { Field, Order, Width, Visible }`
+- [x] A6.6 — Add `SearchFilter` string to GridState (was already present from A3 — verified)
 - [ ] A6.7 — Add `Skip` int to GridState (for virtual scroll position)
 - [ ] A6.8 — Add `TableWidth` string to GridState
-- [ ] A6.9 — Sync editing state (_editingItem, _originalItem) to GridState on changes
-- [ ] A6.10 — Sync _expandedDetailItems to GridState.ExpandedItems on changes
+- [x] A6.9 — Sync editing state (_editingItem, _originalItem) to GridState on changes (NotifyStateChanged added to all edit operations)
+- [x] A6.10 — Sync _expandedDetailItems to GridState.ExpandedItems on changes (already done via ToggleDetailRow)
 - [ ] A6.11 — Add `CancellationToken` to `GridReadEventArgs` for long-running server queries (QuickGrid pattern)
 
 ### A7: Highlighting & Size
