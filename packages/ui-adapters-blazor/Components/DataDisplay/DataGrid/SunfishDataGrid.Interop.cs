@@ -136,7 +136,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
                     keyboardNavigation = false,                             // B1
                     columnResize = AllowColumnResize || Resizable,          // B2
                     columnReorder = AllowColumnReorder || Reorderable,      // B3
-                    rowDragDrop = false,                                    // B4
+                    rowDragDrop = RowDraggable,                             // B4
                     frozenColumns = _columns.Any(c => c.Locked)            // B5
                 });
         }
@@ -294,22 +294,33 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
         // Can be used for accessibility announcements
     }
 
-    /// <summary>Called from JS when a row is dropped to a new position.</summary>
-    [JSInvokable]
-    public async Task OnRowDropped(int sourceIndex, int destIndex, string dropPosition)
+    /// <summary>
+    /// Called from JS exactly once, on drop, when a row drag-and-drop completes.
+    /// The <c>[JSInvokable("OnRowDropped")]</c> attribute binds the .NET identifier used by
+    /// <c>invokeMethodAsync</c> in marilo-datagrid.js to this method, which is named
+    /// <c>HandleRowDroppedFromJs</c> to avoid a C# naming conflict with the
+    /// <see cref="OnRowDrop"/> EventCallback parameter.
+    /// The grid does NOT mutate the data collection; it raises <see cref="OnRowDrop"/> and
+    /// the consumer owns the reorder operation.
+    /// </summary>
+    [JSInvokable("OnRowDropped")]
+    public async Task HandleRowDroppedFromJs(int sourceIndex, int destIndex, string dropPosition)
     {
-        if (sourceIndex < 0 || sourceIndex >= _displayedItems.Count ||
-            destIndex < 0 || destIndex >= _displayedItems.Count)
-            return;
+        if (!RowDraggable) return;
+        if (sourceIndex < 0 || sourceIndex >= _displayedItems.Count) return;
+        if (destIndex < 0 || destIndex >= _displayedItems.Count) return;
+        if (sourceIndex == destIndex) return;
+
+        var position = Enum.TryParse<GridRowDropPosition>(dropPosition, ignoreCase: true, out var p)
+            ? p
+            : GridRowDropPosition.Before;
 
         var args = new GridRowDropEventArgs<TItem>
         {
             Item = _displayedItems[sourceIndex],
             DestinationItem = _displayedItems[destIndex],
             DestinationIndex = destIndex,
-            DropPosition = string.Equals(dropPosition, "after", StringComparison.OrdinalIgnoreCase)
-                ? GridRowDropPosition.After
-                : GridRowDropPosition.Before
+            DropPosition = position
         };
 
         if (OnRowDrop.HasDelegate)
