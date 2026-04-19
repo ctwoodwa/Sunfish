@@ -32,6 +32,7 @@
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Markdig" />
+    <PackageReference Include="QuestPDF" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
