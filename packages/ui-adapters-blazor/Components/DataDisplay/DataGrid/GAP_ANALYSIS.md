@@ -183,14 +183,14 @@ Reference: RESEARCH_LOG.md §5 — Radzen split: C# owns logical index state, JS
 Spec: `columns/resize.md`
 Reference: RESEARCH_LOG.md §2 — Radzen `<colgroup>/<col>` pattern, single JS→.NET callback on mouseup
 
-- [ ] B2.1 — Add `AllowColumnResize` bool parameter on grid (default: false)
-- [ ] B2.2 — Add `Resizable` bool parameter to `SunfishGridColumn` (default: true when grid allows)
-- [ ] B2.3 — Add `MinResizableWidth` / `MaxResizableWidth` string parameters on column
-- [ ] B2.4 — Render drag handle `<div>` in header cells for resizable columns
-- [ ] B2.5 — JS: `startColumnResize(gridId, elementRef, colIndex, clientX)` — mousedown captures initial state, mousemove updates `<col>` widths directly in DOM (no .NET calls during drag)
-- [ ] B2.6 — JS→.NET: `[JSInvokable] OnColumnResized(int colIndex, double newWidth)` fires **once on mouseup** — updates column width and fires event
-- [ ] B2.7 — Persist widths in `GridState.ColumnStates`
-- [ ] B2.8 — Add `OnColumnResized` EventCallback<DataGridColumnResizedEventArgs> parameter
+- [x] B2.1 — Add `AllowColumnResize` bool parameter on grid (default: false)
+- [x] B2.2 — Add `Resizable` bool parameter to `SunfishGridColumn` (default: true when grid allows)
+- [x] B2.3 — Add `MinResizableWidth` / `MaxResizableWidth` string parameters on column
+- [x] B2.4 — Render drag handle `<div>` in header cells for resizable columns
+- [x] B2.5 — JS: `installColumnResize(handle)` — mousedown captures initial state, mousemove updates `<col>` widths directly in DOM (no .NET calls during drag)
+- [x] B2.6 — JS→.NET: `[JSInvokable("OnColumnResized")] HandleColumnResizedFromJs(int colIndex, double newWidth)` fires **once on mouseup** — updates column width and fires event
+- [x] B2.7 — Width persisted via `column.RuntimeWidth` → `EffectiveWidth` → `GetState().ColumnStates`
+- [x] B2.8 — Add `OnColumnResized` EventCallback<DataGridColumnResizedEventArgs> parameter
 
 ### B3: Column Reordering ⚡ (table stakes)
 Spec: `columns/reorder.md`
