@@ -1,4 +1,5 @@
 using System.Text.Json;
+using MessagePack;
 using Sunfish.Foundation.Blobs;
 using Sunfish.Ingestion.Core;
 using Sunfish.Ingestion.Sensors.Decoders;
@@ -28,7 +29,7 @@ public sealed class SensorIngestionPipeline(IBlobStore blobs) : IIngestionPipeli
         {
             SensorBatchFormat.Json => new JsonSensorBatchDecoder(SensorBatchFormat.Json),
             SensorBatchFormat.JsonNdjson => new JsonSensorBatchDecoder(SensorBatchFormat.JsonNdjson),
-            SensorBatchFormat.MessagePack => new NoOpMessagePackDecoder(),
+            SensorBatchFormat.MessagePack => new MessagePackSensorBatchDecoder(),
             _ => throw new NotSupportedException($"Unknown format {input.Format}"),
         };
 
@@ -61,6 +62,10 @@ public sealed class SensorIngestionPipeline(IBlobStore blobs) : IIngestionPipeli
         catch (JsonException ex)
         {
             return IngestionResult<IngestedEntity>.Fail(IngestOutcome.UnsupportedFormat, $"Malformed JSON: {ex.Message}");
+        }
+        catch (MessagePackSerializationException ex)
+        {
+            return IngestionResult<IngestedEntity>.Fail(IngestOutcome.UnsupportedFormat, $"Malformed MessagePack: {ex.Message}");
         }
 
         var body = new Dictionary<string, object?>
