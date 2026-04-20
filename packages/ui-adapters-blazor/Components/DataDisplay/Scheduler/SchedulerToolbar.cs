@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Scheduler;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Scheduler;
 
 /// <summary>
 /// Child component for the SunfishScheduler that provides custom toolbar content

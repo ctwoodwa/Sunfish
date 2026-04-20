@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Defines a resource metadata column in the AllocationScheduler's left-side resource grid.

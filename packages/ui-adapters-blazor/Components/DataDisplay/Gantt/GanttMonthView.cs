@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Configures the Gantt timeline for month-level view where each slot is 1 week.

@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.Editors;
+namespace Sunfish.UIAdapters.Blazor.Components.Editors;
 
 /// <summary>
 /// Defines a custom tool for the SunfishEditor toolbar.

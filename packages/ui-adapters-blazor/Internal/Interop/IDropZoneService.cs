@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 /// <summary>
 /// Manages external drop-zone registration for file upload components.

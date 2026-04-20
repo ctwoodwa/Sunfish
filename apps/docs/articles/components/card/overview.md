@@ -58,4 +58,4 @@ The `SunfishCard` component renders a styled container typically used to group r
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Blazor.Components.DataDisplay.SunfishCard)
+- [API Reference](xref:Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishCard)

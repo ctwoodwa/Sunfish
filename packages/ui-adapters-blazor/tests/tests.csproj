@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IsPackable>false</IsPackable>
-    <AssemblyName>Sunfish.Components.Blazor.Tests</AssemblyName>
+    <AssemblyName>Sunfish.UIAdapters.Blazor.Tests</AssemblyName>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -15,6 +15,6 @@
     <PackageReference Include="NSubstitute" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Sunfish.Components.Blazor.csproj" />
+    <ProjectReference Include="..\Sunfish.UIAdapters.Blazor.csproj" />
   </ItemGroup>
 </Project>

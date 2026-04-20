@@ -8,7 +8,7 @@ namespace Sunfish.UICore.Contracts;
 /// <para>
 /// Per spec §4.5 Phase 2.5 + Appendix E.3 (L1). Derived from Iced's <c>Renderer</c>
 /// type parameter. The default implementation (<c>BlazorDomRenderer</c> in
-/// <c>Sunfish.Components.Blazor</c>) produces a <c>RenderFragment</c> output for
+/// <c>Sunfish.UIAdapters.Blazor</c>) produces a <c>RenderFragment</c> output for
 /// browser DOM. A future <c>MauiNativeRenderer</c> or <c>AvaloniaRenderer</c> could
 /// emit native-widget tree output for Phase 2.5 multi-platform hosts without
 /// touching component code.

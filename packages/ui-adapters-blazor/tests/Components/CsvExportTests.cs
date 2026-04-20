@@ -1,14 +1,14 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using Sunfish.Components.Blazor.Base;
-using Sunfish.Components.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // Writer tests — no grid needed, pure unit tests against CsvExportWriter
@@ -224,7 +224,7 @@ public class CsvExportGridTests : BunitContext
         Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
         Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
         Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
-        Services.AddSingleton<Sunfish.Components.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
+        Services.AddSingleton<Sunfish.UIAdapters.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
 
         // Set bUnit JS interop to strict mode so unhandled calls throw rather than silently
         // returning defaults. Then register the module import + downloadText call.
@@ -276,7 +276,7 @@ public class CsvExportGridTests : BunitContext
         // The grid imports the clipboard-download module lazily.
         // bUnit Loose mode will auto-handle the import() call and return a mock IJSObjectReference.
         // We additionally set up the downloadText call so we can inspect it.
-        JSInterop.SetupModule("./_content/Sunfish.Components.Blazor/js/sunfish-clipboard-download.js");
+        JSInterop.SetupModule("./_content/Sunfish.UIAdapters.Blazor/js/sunfish-clipboard-download.js");
     }
 
     // ── A8.2 — GetExportData returns visible columns + current data ───────────

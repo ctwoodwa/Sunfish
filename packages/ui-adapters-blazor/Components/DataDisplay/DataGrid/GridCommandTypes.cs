@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Defines a command that can be placed on grid rows, cells, or toolbar.

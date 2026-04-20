@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>Sunfish.Components.Blazor</PackageId>
+    <PackageId>Sunfish.UIAdapters.Blazor</PackageId>
+    <RootNamespace>Sunfish.UIAdapters.Blazor</RootNamespace>
+    <AssemblyName>Sunfish.UIAdapters.Blazor</AssemblyName>
     <Description>Blazor component implementations for Sunfish.</Description>
     <PackageTags>blazor;components;razor-class-library;ui-framework;sunfish</PackageTags>
     <Nullable>enable</Nullable>
@@ -25,19 +27,14 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Sunfish.Components.Blazor.Tests" />
+    <InternalsVisibleTo Include="Sunfish.UIAdapters.Blazor.Tests" />
     <!-- Required for NSubstitute to mock internal interfaces in tests -->
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ClosedXML" />
     <PackageReference Include="Markdig" />
-    <PackageReference Include="QuestPDF" />
-    <!-- SkiaSharp native assets: QuestPDF.Drawing requires these on Linux at type-init time.
-         Using the .NoDependencies variant (what QuestPDF's error message explicitly asks for) to
-         avoid pulling fontconfig as a transitive system dep on CI runners that don't have it. -->
-    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" />
-    <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" />
+    <PackageReference Include="Microsoft.Playwright" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />

@@ -2,7 +2,7 @@ using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// JS interop for column resize, reorder, and keyboard navigation.
@@ -111,7 +111,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     {
         _dataGridModule ??= await JS.InvokeAsync<IJSObjectReference>(
             "import",
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
     }
 
     /// <summary>

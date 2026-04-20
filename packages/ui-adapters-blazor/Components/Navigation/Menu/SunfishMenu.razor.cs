@@ -1,11 +1,11 @@
 using System.Reflection;
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Sunfish.Components.Blazor.Components.Navigation;
+namespace Sunfish.UIAdapters.Blazor.Components.Navigation;
 
 public partial class SunfishMenu : SunfishComponentBase
 {

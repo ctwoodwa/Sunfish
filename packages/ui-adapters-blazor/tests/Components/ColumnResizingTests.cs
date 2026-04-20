@@ -3,14 +3,14 @@ using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
-using Sunfish.Components.Blazor.Components.DataDisplay;
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>
 /// bUnit tests for G37 B2 — SunfishDataGrid column resizing.
@@ -181,7 +181,7 @@ public class ColumnResizingTests : BunitContext
     public void AttachGrid_WhenAllowColumnResize_True_PassesColumnResizeTrue()
     {
         var module = JSInterop.SetupModule(
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
         module.Setup<object>("attachGrid", _ => true);
 
         Render<SunfishDataGrid<Employee>>(p => p
@@ -213,7 +213,7 @@ public class ColumnResizingTests : BunitContext
     public void AttachGrid_WhenAllowColumnResize_False_PassesColumnResizeFalse()
     {
         var module = JSInterop.SetupModule(
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
         module.Setup<object>("attachGrid", _ => true);
 
         Render<SunfishDataGrid<Employee>>(p => p

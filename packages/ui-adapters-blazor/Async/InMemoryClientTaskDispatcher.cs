@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Sunfish.UICore.Contracts;
 
-namespace Sunfish.Components.Blazor.Async;
+namespace Sunfish.UIAdapters.Blazor.Async;
 
 /// <summary>
 /// Bridges <see cref="IClientTask{TMessage}"/> and

@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Event arguments for list item reorder events.

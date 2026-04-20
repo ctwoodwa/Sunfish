@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using Sunfish.Foundation.Models;
 
-namespace Sunfish.Components.Blazor.Internal;
+namespace Sunfish.UIAdapters.Blazor.Internal;
 
 /// <summary>
 /// Converts Blazor event args types into their framework-agnostic Sunfish equivalents.

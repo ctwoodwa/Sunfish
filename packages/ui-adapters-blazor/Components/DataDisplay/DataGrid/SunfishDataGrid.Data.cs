@@ -3,7 +3,7 @@ using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Data processing pipeline for SunfishDataGrid: filtering, sorting, grouping, paging.
@@ -1148,7 +1148,7 @@ public partial class SunfishDataGrid<TItem>
     }
 
     /// <summary>
-    /// Toggles the <see cref="Sunfish.Components.Blazor.Components.DataDisplay.SunfishGridColumn{TItem}.Locked"/>
+    /// Toggles the <see cref="Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishGridColumn{TItem}.Locked"/>
     /// state of the column, then triggers a layout recompute and state notification.
     /// Only acts when the column's <c>Lockable</c> parameter is true.
     /// </summary>

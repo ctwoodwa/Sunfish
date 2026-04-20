@@ -2,18 +2,19 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
-using Sunfish.Components.Blazor.Components.DataDisplay;
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>
-/// Tests for G37 C2 — SunfishDataGrid PDF export via QuestPDF 2023.12.6 (MIT-pinned).
-/// Covers both the pure <c>PdfExportWriter</c> and grid-level integration.
+/// Tests for SunfishDataGrid PDF export via Playwright.
+/// Covers HtmlTableBuilder (pure unit tests, no bunit) and grid-level integration
+/// (bunit with a mocked IPdfExportWriter — no live browser required).
 /// </summary>
 public class PdfExportTests : BunitContext
 {
@@ -26,19 +27,32 @@ public class PdfExportTests : BunitContext
         DateTime CreatedAt,
         bool Active);
 
-    // ── Mocks / shared helpers ─────────────────────────────────────────────
+    // ── Fake PDF bytes — %PDF- magic header ───────────────────────────────
+
+    private static readonly byte[] FakePdfBytes = [0x25, 0x50, 0x44, 0x46, 0x2D];
+
+    // ── Mocks ──────────────────────────────────────────────────────────────
 
     private readonly IDownloadService _downloadSvc = Substitute.For<IDownloadService>();
+    private readonly IPdfExportWriter _pdfWriter   = Substitute.For<IPdfExportWriter>();
 
     public PdfExportTests()
     {
+        _pdfWriter
+            .WriteAsync<SampleItem>(
+                Arg.Any<IReadOnlyList<ExportColumnDescriptor>>(),
+                Arg.Any<IReadOnlyList<SampleItem>>(),
+                Arg.Any<PdfExportOptions>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(FakePdfBytes));
+
         Services.AddSingleton<SunfishOptions>();
         Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
         Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
         Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
         Services.AddScoped<IDownloadService>(_ => _downloadSvc);
-        Services.AddScoped<ISunfishJsModuleLoader>(
-            _ => Substitute.For<ISunfishJsModuleLoader>());
+        Services.AddScoped<ISunfishJsModuleLoader>(_ => Substitute.For<ISunfishJsModuleLoader>());
+        Services.AddScoped<IPdfExportWriter>(_ => _pdfWriter);
     }
 
     // ── Shared sample data ─────────────────────────────────────────────────
@@ -56,92 +70,124 @@ public class PdfExportTests : BunitContext
         => cols.Select(c => new ExportColumnDescriptor(c.Field, c.Title, null)).ToList();
 
     // ══════════════════════════════════════════════════════════════════════
-    //  PdfExportWriter — pure unit tests (no Blazor, no bunit)
+    //  HtmlTableBuilder — pure unit tests (no Blazor, no bunit, no browser)
     // ══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public void Writer_ProducesNonEmptyByteArray()
+    public void Builder_ProducesHtmlDocument()
     {
-        var bytes = PdfExportWriter.Write(Cols(("Id", "ID"), ("Name", "Name")), SampleData, new PdfExportOptions());
+        var html = HtmlTableBuilder.Build(Cols(("Id", "ID"), ("Name", "Name")), SampleData, new PdfExportOptions());
 
-        Assert.NotEmpty(bytes);
+        Assert.Contains("<!DOCTYPE html>", html, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("<table>", html, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
-    public void Writer_OutputStartsWithPdfMagicBytes()
+    public void Builder_RendersAllDataRows()
     {
-        // Every valid PDF starts with "%PDF-" (0x25 0x50 0x44 0x46 0x2D)
-        var bytes = PdfExportWriter.Write(Cols(("Id", "ID")), SampleData, new PdfExportOptions());
+        var html = HtmlTableBuilder.Build(Cols(("Name", "Name")), SampleData, new PdfExportOptions());
 
-        Assert.True(bytes.Length >= 5, "PDF should have at least 5 bytes");
-        Assert.Equal(0x25, bytes[0]); // '%'
-        Assert.Equal(0x50, bytes[1]); // 'P'
-        Assert.Equal(0x44, bytes[2]); // 'D'
-        Assert.Equal(0x46, bytes[3]); // 'F'
-        Assert.Equal(0x2D, bytes[4]); // '-'
+        Assert.Contains("Alice", html);
+        Assert.Contains("Bob",   html);
+        Assert.Contains("Carol", html);
     }
 
     [Fact]
-    public void Writer_IncludeHeadersFalse_ProducesDifferentOutput()
+    public void Builder_IncludesColumnHeaders_WhenIncludeHeadersTrue()
     {
-        // Without a full PDF text-extraction oracle, byte-length delta is an adequate proxy:
-        // a header row adds cells, so headers-on should produce a different (typically larger)
-        // byte sequence than headers-off.
-        var columns = Cols(("Id", "ID"), ("Name", "Name"));
-        var withHeaders    = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { IncludeHeaders = true });
-        var withoutHeaders = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { IncludeHeaders = false });
+        var html = HtmlTableBuilder.Build(
+            Cols(("Id", "ID"), ("Name", "Name")),
+            SampleData,
+            new PdfExportOptions { IncludeHeaders = true });
 
-        Assert.NotEqual(withHeaders.Length, withoutHeaders.Length);
+        Assert.Contains("<th>ID</th>",   html);
+        Assert.Contains("<th>Name</th>", html);
     }
 
     [Fact]
-    public void Writer_LandscapeVsPortrait_ProduceDifferentByteLengths()
+    public void Builder_OmitsHeaderRow_WhenIncludeHeadersFalse()
     {
-        // Different page dimensions → different layout → different byte representation.
-        var columns   = Cols(("Id", "ID"), ("Name", "Name"), ("Price", "Price"));
-        var portrait  = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { Landscape = false });
-        var landscape = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { Landscape = true });
+        var html = HtmlTableBuilder.Build(
+            Cols(("Id", "ID"), ("Name", "Name")),
+            SampleData,
+            new PdfExportOptions { IncludeHeaders = false });
 
-        Assert.NotEqual(portrait.Length, landscape.Length);
+        Assert.DoesNotContain("<th>", html);
     }
 
     [Fact]
-    public void Writer_DocumentTitle_IncreasesOutputSize()
+    public void Builder_IncludesDocumentTitle_WhenProvided()
     {
-        // A non-empty title adds a header element, which should increase the byte size.
-        var columns   = Cols(("Id", "ID"));
-        var noTitle   = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { DocumentTitle = null });
-        var withTitle = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { DocumentTitle = "My Report Title" });
+        var html = HtmlTableBuilder.Build(
+            Cols(("Id", "ID")),
+            SampleData,
+            new PdfExportOptions { DocumentTitle = "My Report" });
 
-        Assert.True(withTitle.Length > noTitle.Length,
-            "A document with a title should be larger than one without");
+        Assert.Contains("<h1>", html);
+        Assert.Contains("My Report", html);
     }
 
     [Fact]
-    public void Writer_UnknownPageSize_ThrowsArgumentException()
+    public void Builder_NoTitleElement_WhenDocumentTitleNull()
     {
-        var columns = Cols(("Id", "ID"));
+        var html = HtmlTableBuilder.Build(
+            Cols(("Id", "ID")),
+            SampleData,
+            new PdfExportOptions { DocumentTitle = null });
 
+        Assert.DoesNotContain("<h1>", html);
+    }
+
+    [Fact]
+    public void Builder_HtmlEncodesSpecialCharacters()
+    {
+        var items = new List<SampleItem>
+        {
+            new(1, "<script>alert('xss')</script>", 0, DateTime.Today, true)
+        };
+        var html = HtmlTableBuilder.Build(Cols(("Name", "Name")), items, new PdfExportOptions());
+
+        Assert.DoesNotContain("<script>", html);
+        Assert.Contains("&lt;script&gt;", html);
+    }
+
+    [Fact]
+    public void Builder_TwoColumns_ProducesMoreContentThanOneColumn()
+    {
+        var oneCol = HtmlTableBuilder.Build(Cols(("Id", "ID")), SampleData, new PdfExportOptions());
+        var twoCols = HtmlTableBuilder.Build(Cols(("Id", "ID"), ("Name", "Name")), SampleData, new PdfExportOptions());
+
+        Assert.True(twoCols.Length > oneCol.Length,
+            "Two columns should produce more HTML than one column");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  PlaywrightPdfExportWriter.MapFormat — pure validation tests
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Theory]
+    [InlineData("Letter", "Letter")]
+    [InlineData("letter", "Letter")]
+    [InlineData("A4",     "A4")]
+    [InlineData("a4",     "A4")]
+    [InlineData("Legal",  "Legal")]
+    [InlineData("legal",  "Legal")]
+    public void MapFormat_RecognisedSizes_ReturnsCanonicalName(string input, string expected)
+    {
+        Assert.Equal(expected, PlaywrightPdfExportWriter.MapFormat(input));
+    }
+
+    [Fact]
+    public void MapFormat_UnknownPageSize_ThrowsArgumentException()
+    {
         var ex = Assert.Throws<ArgumentException>(() =>
-            PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { PageSize = "A3" }));
+            PlaywrightPdfExportWriter.MapFormat("A3"));
 
         Assert.Contains("A3", ex.Message);
     }
 
-    [Theory]
-    [InlineData("Letter")]
-    [InlineData("A4")]
-    [InlineData("Legal")]
-    public void Writer_SupportedPageSizes_DoNotThrow(string size)
-    {
-        var columns = Cols(("Id", "ID"));
-        var bytes   = PdfExportWriter.Write(columns, SampleData, new PdfExportOptions { PageSize = size });
-
-        Assert.NotEmpty(bytes);
-    }
-
     // ══════════════════════════════════════════════════════════════════════
-    //  Grid-level integration tests (bunit)
+    //  Grid-level integration tests (bunit, IPdfExportWriter mocked)
     // ══════════════════════════════════════════════════════════════════════
 
     [Fact]
@@ -167,63 +213,6 @@ public class PdfExportTests : BunitContext
     }
 
     [Fact]
-    public async Task Grid_ExportToPdfAsync_Base64DecodesBackToValidPdf()
-    {
-        var grid = Render<SunfishDataGrid<SampleItem>>(p => p
-            .Add(g => g.Data, SampleData)
-            .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
-                .Add(col => col.Field, "Id"))
-            .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
-                .Add(col => col.Field, "Name")));
-
-        DownloadRequest? captured = null;
-        await _downloadSvc.DownloadAsync(
-            Arg.Do<DownloadRequest>(r => captured = r),
-            Arg.Any<CancellationToken>());
-
-        await grid.Instance.ExportToPdfAsync();
-
-        Assert.NotNull(captured);
-        var bytes = Convert.FromBase64String(captured!.Base64Content);
-        Assert.True(bytes.Length > 0, "Expected non-empty PDF bytes");
-
-        // Verify PDF magic bytes (%PDF-)
-        Assert.Equal(0x25, bytes[0]); // '%'
-        Assert.Equal(0x50, bytes[1]); // 'P'
-        Assert.Equal(0x44, bytes[2]); // 'D'
-        Assert.Equal(0x46, bytes[3]); // 'F'
-    }
-
-    [Fact]
-    public async Task Grid_ExportToPdfAsync_ExportAllPages_IncludesAllItems()
-    {
-        // Paged grid showing only 1 item per page.
-        var grid = Render<SunfishDataGrid<SampleItem>>(p => p
-            .Add(g => g.Data, SampleData)
-            .Add(g => g.Pageable, true)
-            .Add(g => g.PageSize, 1)
-            .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
-                .Add(col => col.Field, "Name")));
-
-        int byteLength = 0;
-        await _downloadSvc.DownloadAsync(
-            Arg.Do<DownloadRequest>(r => byteLength = Convert.FromBase64String(r.Base64Content).Length),
-            Arg.Any<CancellationToken>());
-
-        // Export current page only (1 item)
-        await grid.Instance.ExportToPdfAsync(new PdfExportOptions { ExportAllPages = false });
-        var singlePageSize = byteLength;
-
-        // Export all pages (3 items)
-        await grid.Instance.ExportToPdfAsync(new PdfExportOptions { ExportAllPages = true });
-        var allPagesSize = byteLength;
-
-        // More rows → larger PDF
-        Assert.True(allPagesSize > singlePageSize,
-            "Exporting all pages should produce a larger PDF than a single page");
-    }
-
-    [Fact]
     public async Task Grid_ExportToPdfAsync_OnBeforeExportAndOnAfterExportFire()
     {
         bool beforeFired = false;
@@ -245,47 +234,37 @@ public class PdfExportTests : BunitContext
     }
 
     [Fact]
-    public async Task Grid_ExportToPdfAsync_HiddenColumnsOmitted()
+    public async Task Grid_ExportToPdfAsync_ExportAllPages_PassesAllItemsToWriter()
     {
-        // A grid with one hidden column should produce a PDF that uses only the visible
-        // column data. We verify this using PdfExportWriter directly (a pure writer unit test
-        // that doesn't require bunit) to prove the column descriptor list is honoured, then
-        // verify the grid integration path triggers a non-empty download.
+        var grid = Render<SunfishDataGrid<SampleItem>>(p => p
+            .Add(g => g.Data, SampleData)
+            .Add(g => g.Pageable, true)
+            .Add(g => g.PageSize, 1)
+            .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
+                .Add(col => col.Field, "Name")));
 
-        // ── Pure writer path: 1 column vs 2 columns (large dataset for clear byte-delta) ──
-        var bigData = Enumerable.Range(1, 100)
-            .Select(i => new SampleItem(i, new string('A', 200), i * 1.5m, DateTime.Today, i % 2 == 0))
-            .ToList();
+        await grid.Instance.ExportToPdfAsync(new PdfExportOptions { ExportAllPages = true });
 
-        var oneColDescriptors = new List<ExportColumnDescriptor>
-        {
-            new("Id", "ID", null)
-        };
-        var twoColDescriptors = new List<ExportColumnDescriptor>
-        {
-            new("Id", "ID",     null),
-            new("Name", "Name", null)
-        };
+        await _pdfWriter.Received(1).WriteAsync<SampleItem>(
+            Arg.Any<IReadOnlyList<ExportColumnDescriptor>>(),
+            Arg.Is<IReadOnlyList<SampleItem>>(items => items.Count == SampleData.Count),
+            Arg.Any<PdfExportOptions>(),
+            Arg.Any<CancellationToken>());
+    }
 
-        var opts = new PdfExportOptions { ExportAllPages = true };
-        var bytesOneCol = PdfExportWriter.Write<SampleItem>(oneColDescriptors, bigData, opts);
-        var bytesTwoCols = PdfExportWriter.Write<SampleItem>(twoColDescriptors, bigData, opts);
+    [Fact]
+    public async Task Grid_ExportToPdfAsync_HiddenColumnsOmittedFromDescriptors()
+    {
+        IReadOnlyList<ExportColumnDescriptor>? capturedCols = null;
+        _pdfWriter
+            .WriteAsync<SampleItem>(
+                Arg.Do<IReadOnlyList<ExportColumnDescriptor>>(cols => capturedCols = cols),
+                Arg.Any<IReadOnlyList<SampleItem>>(),
+                Arg.Any<PdfExportOptions>(),
+                Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(FakePdfBytes));
 
-        Assert.True(bytesOneCol.Length > 0, "One-column PDF must not be empty");
-        Assert.True(bytesTwoCols.Length > bytesOneCol.Length,
-            $"Two-column PDF ({bytesTwoCols.Length} bytes) should be larger than one-column PDF ({bytesOneCol.Length} bytes)");
-
-        // ── Grid integration path: hidden column triggers a download ─────
-        var downloadSvc = Substitute.For<IDownloadService>();
-        using var ctx = new BunitContext();
-        ctx.Services.AddSingleton<SunfishOptions>();
-        ctx.Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
-        ctx.Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
-        ctx.Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
-        ctx.Services.AddScoped<IDownloadService>(_ => downloadSvc);
-        ctx.Services.AddScoped<ISunfishJsModuleLoader>(_ => Substitute.For<ISunfishJsModuleLoader>());
-
-        var grid = ctx.Render<SunfishDataGrid<SampleItem>>(p => p
+        var grid = Render<SunfishDataGrid<SampleItem>>(p => p
             .Add(g => g.Data, SampleData)
             .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
                 .Add(col => col.Field, "Id")
@@ -293,14 +272,12 @@ public class PdfExportTests : BunitContext
             .AddChildContent<SunfishGridColumn<SampleItem>>(c => c
                 .Add(col => col.Field, "Name")
                 .Add(col => col.Title, "Name")
-                .Add(col => col.Visible, false)));  // hidden — should be omitted
+                .Add(col => col.Visible, false)));
 
         await grid.Instance.ExportToPdfAsync();
 
-        await downloadSvc.Received(1).DownloadAsync(
-            Arg.Is<DownloadRequest>(r =>
-                r.ContentType == "application/pdf" &&
-                !string.IsNullOrEmpty(r.Base64Content)),
-            Arg.Any<CancellationToken>());
+        Assert.NotNull(capturedCols);
+        Assert.Single(capturedCols);
+        Assert.Equal("ID", capturedCols![0].Title);
     }
 }

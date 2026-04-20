@@ -1,10 +1,10 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models.DataSheet;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// A spreadsheet-like, inline-editable data grid with bulk-save, cell-level

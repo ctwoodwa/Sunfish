@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using Markdig;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sunfish.Components.Blazor.Components.Editors;
+namespace Sunfish.UIAdapters.Blazor.Components.Editors;
 
 /// <summary>
 /// Converts editor content between HTML and another format. Register

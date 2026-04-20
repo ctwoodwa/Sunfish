@@ -1,11 +1,11 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.Layout.ResizableContainer;
+namespace Sunfish.UIAdapters.Blazor.Components.Layout.ResizableContainer;
 
 /// <summary>
 /// A wrapper component that allows end users to resize its child content via drag handles.

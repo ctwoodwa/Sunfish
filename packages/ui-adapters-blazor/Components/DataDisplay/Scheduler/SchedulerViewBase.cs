@@ -2,7 +2,7 @@ using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Scheduler;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Scheduler;
 
 /// <summary>
 /// Abstract base class for Scheduler view configuration components (Day, Week, Month).

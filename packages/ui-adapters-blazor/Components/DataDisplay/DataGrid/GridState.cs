@@ -1,6 +1,6 @@
 using Sunfish.Foundation.Data;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Represents the current state of a <see cref="SunfishDataGrid{TItem}"/>,

@@ -3,80 +3,64 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
-
-  <!-- Platform foundation + UI + blocks + ingestion + federation -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.6" />
-    <PackageVersion Include="bunit" Version="2.7.2" />
-    <PackageVersion Include="xunit" Version="2.9.3" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-    <PackageVersion Include="Markdig" Version="1.1.2" />
-    <PackageVersion Include="coverlet.collector" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
-    <PackageVersion Include="NSubstitute" Version="5.3.0" />
-    <PackageVersion Include="NSec.Cryptography" Version="25.4.0" />
-    <!-- JsonSchema.Net: MIT-licensed JSON Schema draft 2020-12 validator by Greg Dennis.
-         Pinned at 8.0.5 (latest MIT release; 9.x switched to OSMFEULA proprietary license). -->
-    <PackageVersion Include="JsonSchema.Net" Version="8.0.5" />
-    <!-- MessagePack: MIT-licensed binary serializer by Yoshifumi Kawai (neuecc).
-         3.1.4 is the latest stable MIT release; used by ingestion-sensors for G28 MessagePack decoding. -->
-    <PackageVersion Include="MessagePack" Version="3.1.4" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
-    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0" />
-    <PackageVersion Include="ClosedXML" Version="0.105.0" />
-    <!-- QuestPDF: MIT-licensed up to and including 2023.12.x. Version 2024.3+ switched to a
-         Community license (free under $1 M USD annual revenue; commercial license required above
-         that threshold). Pinned at 2023.12.6, the highest 2023.12.x patch actually published to
-         NuGet (2023.12.7 and 2023.12.8 were never published). Same rationale as JsonSchema.Net 8.0.5.
-         SkiaSharp native assets are required on Linux CI runners (QuestPDF.Drawing loads them at
-         type-init time) — pinned alongside to match the SkiaSharp version QuestPDF 2023.12.6 uses. -->
-    <PackageVersion Include="QuestPDF" Version="2023.12.6" />
-    <PackageVersion Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="2.88.6" />
-    <PackageVersion Include="HarfBuzzSharp.NativeAssets.Linux" Version="7.3.0.2" />
-    <PackageVersion Include="CsvHelper" Version="33.1.0" />
-    <PackageVersion Include="MetadataExtractor" Version="2.9.3" />
-    <PackageVersion Include="System.Net.Http.Json" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.6" />
-    <PackageVersion Include="Testcontainers" Version="4.11.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.6"/>
+    <PackageVersion Include="bunit" Version="2.7.2"/>
+    <PackageVersion Include="xunit" Version="2.9.3"/>
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5"/>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.4.0"/>
+    <PackageVersion Include="Markdig" Version="1.1.3"/>
+    <PackageVersion Include="coverlet.collector" Version="10.0.0"/>
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6"/>
+    <PackageVersion Include="NSubstitute" Version="5.3.0"/>
+    <PackageVersion Include="NSec.Cryptography" Version="25.4.0"/>
+    <PackageVersion Include="JsonSchema.Net" Version="9.2.0"/>
+    <PackageVersion Include="MessagePack" Version="3.1.4"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.6"/>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1"/>
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0"/>
+    <PackageVersion Include="ClosedXML" Version="0.105.0"/>
+    <PackageVersion Include="Microsoft.Playwright" Version="1.59.0"/>
+    <PackageVersion Include="CsvHelper" Version="33.1.0"/>
+    <PackageVersion Include="MetadataExtractor" Version="2.9.3"/>
+    <PackageVersion Include="System.Net.Http.Json" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="10.0.6"/>
+    <PackageVersion Include="Testcontainers" Version="4.11.0"/>
   </ItemGroup>
-
-  <!-- Bridge accelerator (accelerators/bridge/*) -->
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.2" />
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.2" />
-    <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.2.2" />
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.6" />
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.5.0" />
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.4.0" />
-    <PackageVersion Include="NBomber" Version="6.3.0" />
-    <PackageVersion Include="NBomber.Http" Version="6.2.0" />
-    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.2" />
-    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.2" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.1" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
-    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
-    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
-    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1" />
-    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
-    <PackageVersion Include="WolverineFx" Version="5.31.0" />
-    <PackageVersion Include="WolverineFx.Postgresql" Version="5.31.0" />
-    <PackageVersion Include="WolverineFx.RabbitMQ" Version="5.31.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.2"/>
+    <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.2.2"/>
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.6"/>
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0"/>
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.5.0"/>
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.4.0"/>
+    <PackageVersion Include="NBomber" Version="6.3.0"/>
+    <PackageVersion Include="NBomber.Http" Version="6.2.0"/>
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.2"/>
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.2"/>
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.1"/>
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0"/>
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0"/>
+    <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0"/>
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.1.1"/>
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0"/>
+    <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.0"/>
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0"/>
+    <PackageVersion Include="WolverineFx" Version="5.31.1"/>
+    <PackageVersion Include="WolverineFx.Postgresql" Version="5.31.1"/>
+    <PackageVersion Include="WolverineFx.RabbitMQ" Version="5.31.1"/>
   </ItemGroup>
 </Project>

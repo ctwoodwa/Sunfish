@@ -1,9 +1,9 @@
-@namespace Sunfish.Components.Blazor.Components.Editors
+@namespace Sunfish.UIAdapters.Blazor.Components.Editors
 @inherits SunfishComponentBase
 @implements IAsyncDisposable
 @inject IJSRuntime JS
-@inject Sunfish.Components.Blazor.Internal.Interop.IResizeObserverService ResizeObserverService
-@inject Sunfish.Components.Blazor.Internal.Interop.IElementMeasurementService MeasurementService
+@inject Sunfish.UIAdapters.Blazor.Internal.Interop.IResizeObserverService ResizeObserverService
+@inject Sunfish.UIAdapters.Blazor.Internal.Interop.IElementMeasurementService MeasurementService
 
 <div class="@CombineClasses(CssProvider.EditorClass())"
      style="@CombineStyles(WidthStyle)"
@@ -1048,7 +1048,7 @@
         _showOverflowPopup = !_showOverflowPopup;
     }
 
-    private async Task OnToolbarResized(Sunfish.Components.Blazor.Internal.Interop.ElementRect rect)
+    private async Task OnToolbarResized(Sunfish.UIAdapters.Blazor.Internal.Interop.ElementRect rect)
     {
         _toolbarWidth = rect.Width;
         await RecalculateOverflow();

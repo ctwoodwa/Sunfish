@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// CSV export logic for <see cref="SunfishDataGrid{TItem}"/>.
@@ -132,7 +132,7 @@ public partial class SunfishDataGrid<TItem>
         {
             _clipboardDownloadModule ??= await JS.InvokeAsync<IJSObjectReference>(
                 "import",
-                "./_content/Sunfish.Components.Blazor/js/sunfish-clipboard-download.js");
+                "./_content/Sunfish.UIAdapters.Blazor/js/sunfish-clipboard-download.js");
 
             await _clipboardDownloadModule.InvokeVoidAsync("downloadText", fileName, mimeType, content);
         }

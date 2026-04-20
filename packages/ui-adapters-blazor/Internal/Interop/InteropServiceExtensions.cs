@@ -1,7 +1,7 @@
 using Sunfish.Foundation.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 /// <summary>
 /// Registers shared interop services on the <see cref="SunfishBuilder"/>.

@@ -1,8 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
-using Sunfish.Components.Blazor.Async;
+using Sunfish.UIAdapters.Blazor.Async;
 using Sunfish.UICore.Contracts;
 
-namespace Sunfish.Components.Blazor.Renderers.DependencyInjection;
+namespace Sunfish.UIAdapters.Blazor.Renderers.DependencyInjection;
 
 /// <summary>
 /// Dependency-injection extensions that register the default Blazor renderer and

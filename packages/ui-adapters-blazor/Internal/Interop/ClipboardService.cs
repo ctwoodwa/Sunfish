@@ -1,6 +1,6 @@
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 internal sealed class ClipboardService : IClipboardService
 {

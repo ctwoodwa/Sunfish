@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>Event args for dependency creation. Contains the newly created dependency details.</summary>
 public class GanttDependencyCreateEventArgs

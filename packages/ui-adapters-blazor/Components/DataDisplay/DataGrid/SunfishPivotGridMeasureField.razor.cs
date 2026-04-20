@@ -1,9 +1,9 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishPivotGridMeasureField : SunfishComponentBase
 {

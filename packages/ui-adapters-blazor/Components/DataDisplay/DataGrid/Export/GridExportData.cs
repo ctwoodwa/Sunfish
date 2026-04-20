@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// A snapshot of the grid's export-ready data: visible columns, their header labels, and the

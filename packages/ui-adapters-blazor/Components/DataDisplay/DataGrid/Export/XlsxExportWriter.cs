@@ -1,7 +1,7 @@
 using System.Reflection;
 using ClosedXML.Excel;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Pure (no-Blazor-dependency) XLSX writer for <see cref="SunfishDataGrid{TItem}"/> export.

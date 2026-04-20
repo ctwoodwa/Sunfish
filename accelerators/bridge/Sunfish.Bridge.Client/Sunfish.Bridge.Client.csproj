@@ -15,7 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-core\Sunfish.UICore.csproj" />
-    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.Components.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj" />

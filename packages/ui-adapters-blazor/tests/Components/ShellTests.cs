@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Shell;
+using Sunfish.UIAdapters.Blazor.Shell;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class ShellTests
 {
@@ -10,7 +10,7 @@ public class ShellTests
     {
         var type = typeof(SunfishAppShell);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Shell", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Shell", type.Namespace);
     }
 
     [Fact]
@@ -36,7 +36,7 @@ public class ShellTests
         };
         foreach (var t in expected)
         {
-            Assert.Equal("Sunfish.Components.Blazor.Shell", t.Namespace);
+            Assert.Equal("Sunfish.UIAdapters.Blazor.Shell", t.Namespace);
         }
     }
 }

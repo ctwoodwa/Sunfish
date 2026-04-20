@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 /// <summary>
 /// Lazily imports and caches JS ES modules from the Sunfish.Components static content path.

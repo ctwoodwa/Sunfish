@@ -20,9 +20,9 @@ public static class ComponentRegistry
     private static readonly string[] OverviewOnly = ["overview"];
     private static readonly string[] DataSheetSubPages = ["overview", "editing-and-validation", "bulk-operations", "keyboard-and-accessibility"];
 
-    // API path helpers — builds /api/Sunfish.Components.Blazor.Components.{ns}.Sunfish{name}.html
-    private static string Api(string ns, string name) => $"/api/Sunfish.Components.Blazor.Components.{ns}.Sunfish{name}.html";
-    private static string ApiNs(string ns) => $"/api/Sunfish.Components.Blazor.Components.{ns}.html";
+    // API path helpers — builds /api/Sunfish.UIAdapters.Blazor.Components.{ns}.Sunfish{name}.html
+    private static string Api(string ns, string name) => $"/api/Sunfish.UIAdapters.Blazor.Components.{ns}.Sunfish{name}.html";
+    private static string ApiNs(string ns) => $"/api/Sunfish.UIAdapters.Blazor.Components.{ns}.html";
 
     public static readonly ComponentInfo[] All =
     [
@@ -418,7 +418,7 @@ public static class ComponentRegistry
             ApiNs("Layout"), OverviewOnly),
         new("RootComponent", "rootcomponent", "Miscellaneous", "miscellaneous",
             "Application root wrapper for theme and provider setup.",
-            "/api/Sunfish.Components.Blazor.Components.SunfishThemeProvider.html", OverviewOnly),
+            "/api/Sunfish.UIAdapters.Blazor.Components.SunfishThemeProvider.html", OverviewOnly),
     ];
 
     private static readonly Dictionary<string, ComponentInfo> _bySlug =

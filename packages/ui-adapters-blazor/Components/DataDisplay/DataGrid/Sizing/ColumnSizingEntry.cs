@@ -1,6 +1,6 @@
-using Sunfish.Components.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Input model for a single column width resolution pass.

@@ -1,12 +1,12 @@
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests;
+namespace Sunfish.UIAdapters.Blazor.Tests;
 
 public class SunfishComponentBaseTests : BunitContext
 {

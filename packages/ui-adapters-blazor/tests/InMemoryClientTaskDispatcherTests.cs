@@ -1,11 +1,11 @@
 using System.Runtime.CompilerServices;
 using Bunit;
 using Microsoft.AspNetCore.Components;
-using Sunfish.Components.Blazor.Async;
+using Sunfish.UIAdapters.Blazor.Async;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests;
+namespace Sunfish.UIAdapters.Blazor.Tests;
 
 public class InMemoryClientTaskDispatcherTests : BunitContext
 {

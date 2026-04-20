@@ -60,7 +60,7 @@ DocFX reads XML doc comments from:
 
 - `../../packages/foundation/bin/Debug/net10.0/Sunfish.Foundation.dll` + `.xml`
 - `../../packages/ui-core/bin/Debug/net10.0/Sunfish.UICore.dll` + `.xml`
-- `../../packages/ui-adapters-blazor/bin/Debug/net10.0/Sunfish.Components.Blazor.dll` + `.xml`
+- `../../packages/ui-adapters-blazor/bin/Debug/net10.0/Sunfish.UIAdapters.Blazor.dll` + `.xml`
 
 The `.xml` sidecars are emitted by `<GenerateDocumentationFile>true</GenerateDocumentationFile>`
 in `Directory.Build.props`, which is already applied to every Sunfish
@@ -72,7 +72,7 @@ automatically.
 - **Component specs** in `component-specs/*/` are the canonical prose
   source of truth for each component's behavior. Never duplicate API
   parameter tables into the spec — link to the generated API page with
-  `<xref:Sunfish.Components.Blazor.Components.Buttons.SunfishButton>`
+  `<xref:Sunfish.UIAdapters.Blazor.Components.Buttons.SunfishButton>`
   instead.
 - **Articles** are for cross-cutting guidance (theming, accessibility,
   getting-started). Link to specs for component-specific detail.

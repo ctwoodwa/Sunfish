@@ -3,14 +3,14 @@ using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
-using Sunfish.Components.Blazor.Components.DataDisplay;
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>
 /// Tests for G37 B0 — SunfishDataGrid JS interop infrastructure.
@@ -90,7 +90,7 @@ public class JsInteropInfrastructureTests : BunitContext
         // Arrange: Loose mode means bUnit auto-satisfies import() and returns a mock module.
         // SetupModule additionally registers a named handler so we can inspect its invocations.
         var module = JSInterop.SetupModule(
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
         module.SetupVoid("attachGrid", _ => true);
 
         // Act
@@ -118,7 +118,7 @@ public class JsInteropInfrastructureTests : BunitContext
     {
         // Arrange
         var module = JSInterop.SetupModule(
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
         var attachSetup = module.SetupVoid("attachGrid", _ => true);
 
         // Act
@@ -148,7 +148,7 @@ public class JsInteropInfrastructureTests : BunitContext
     {
         // Arrange: register module and set up handlers so bUnit doesn't hang waiting for results.
         var module = JSInterop.SetupModule(
-            "./_content/Sunfish.Components.Blazor/js/marilo-datagrid.js");
+            "./_content/Sunfish.UIAdapters.Blazor/js/marilo-datagrid.js");
         module.SetupVoid("attachGrid", _ => true).SetVoidResult();
         module.SetupVoid("detachGrid", _ => true).SetVoidResult();
 

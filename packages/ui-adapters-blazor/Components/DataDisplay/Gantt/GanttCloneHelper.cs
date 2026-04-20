@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 internal static class GanttCloneHelper
 {

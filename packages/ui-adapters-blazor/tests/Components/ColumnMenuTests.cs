@@ -3,15 +3,15 @@ using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
-using Sunfish.Components.Blazor.Components.DataDisplay;
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>
 /// bUnit tests for G37 C3 — SunfishDataGrid column menu.

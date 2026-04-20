@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Components.Editors;
+using Sunfish.UIAdapters.Blazor.Components.Editors;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 // Smoke test for the Editors category migration. SunfishEditor wires two internal
 // JS-module interop services (IElementMeasurementService, IResizeObserverService)
@@ -18,13 +18,13 @@ public class EditorsTests
     {
         var type = typeof(SunfishEditor);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Editors", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Editors", type.Namespace);
     }
 
     [Fact]
     public void EditorCustomTool_TypeExists()
     {
         var type = typeof(EditorCustomTool);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Editors", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Editors", type.Namespace);
     }
 }

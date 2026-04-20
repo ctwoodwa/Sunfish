@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Map;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Map;
 
 /// <summary>
 /// Interface for MapLayer components that accept child settings registrations via CascadingValue.

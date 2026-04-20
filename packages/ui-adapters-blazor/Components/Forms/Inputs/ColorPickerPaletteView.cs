@@ -2,7 +2,7 @@ using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.Forms.Inputs;
+namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 
 /// <summary>
 /// Configures the ColorPicker to include the palette (color swatch grid) view.

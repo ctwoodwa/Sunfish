@@ -28,11 +28,11 @@ public sealed class DemoTenantContext : ITenantContext
 
     public string TenantId => "demo-tenant";
     public string UserId => "demo-user";
-    public IReadOnlyList<string> Roles { get; } = [Authorization.Roles.ProjectManager];
+    public IReadOnlyList<string> Roles { get; } = [Authorization.Roles.Manager];
     public bool HasPermission(string permission) => true;
 }
 
 internal static class Roles
 {
-    public const string ProjectManager = Sunfish.Bridge.Data.Authorization.Roles.ProjectManager;
+    public const string Manager = Sunfish.Bridge.Data.Authorization.Roles.Manager;
 }

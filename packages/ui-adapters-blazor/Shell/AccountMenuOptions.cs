@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Shell;
+namespace Sunfish.UIAdapters.Blazor.Shell;
 
 public class AccountMenuItemOptions
 {

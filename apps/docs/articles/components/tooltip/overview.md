@@ -35,4 +35,4 @@ The `SunfishTooltip` component wraps any content and displays a text tooltip on 
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Blazor.Components.DataDisplay.SunfishTooltip)
+- [API Reference](xref:Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishTooltip)

@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Overlays;
+namespace Sunfish.UIAdapters.Blazor.Components.Overlays;
 
 /// <summary>
 /// Defines the preferred placement of a <see cref="SunfishPopup"/> relative to its anchor element.

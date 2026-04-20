@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Components.Feedback;
+using Sunfish.UIAdapters.Blazor.Components.Feedback;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class FeedbackTests
 {
@@ -10,13 +10,13 @@ public class FeedbackTests
     {
         var type = typeof(SunfishAlert);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Feedback", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Feedback", type.Namespace);
     }
 
     [Fact]
     public void SunfishCallout_TypeExists()
     {
         var type = typeof(SunfishCallout);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Feedback", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Feedback", type.Namespace);
     }
 }

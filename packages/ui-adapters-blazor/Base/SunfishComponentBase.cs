@@ -3,7 +3,7 @@ using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Services;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Base;
+namespace Sunfish.UIAdapters.Blazor.Base;
 
 /// <summary>
 /// Base class for all Sunfish components, providing shared infrastructure such as

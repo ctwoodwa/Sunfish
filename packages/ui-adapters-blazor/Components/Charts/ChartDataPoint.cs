@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Charts;
+namespace Sunfish.UIAdapters.Blazor.Components.Charts;
 
 /// <summary>
 /// Represents a single data point extracted from a chart series.

@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Forms.Inputs;
+namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 
 /// <summary>
 /// Event arguments for the <see cref="SunfishMultiSelect{TItem, TValue}.OnItemRender"/>

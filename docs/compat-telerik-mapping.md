@@ -23,7 +23,7 @@
 ## TelerikButton
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikButton`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Buttons.SunfishButton`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Buttons.SunfishButton`
 
 | Telerik parameter | Type (Telerik) | Sunfish parameter | Type (Sunfish) | Mapping |
 |---|---|---|---|---|
@@ -52,7 +52,7 @@
 ## TelerikIcon
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikIcon`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Utility.SunfishIcon`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Utility.SunfishIcon`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -71,7 +71,7 @@
 ## TelerikCheckBox
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikCheckBox`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishCheckbox`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishCheckbox`
 
 Note the spelling: Telerik uses `CheckBox` (two words); Sunfish uses `Checkbox` (one word).
 The wrapper file is `TelerikCheckBox.razor` and delegates to `<SunfishCheckbox>`.
@@ -90,7 +90,7 @@ The wrapper file is `TelerikCheckBox.razor` and delegates to `<SunfishCheckbox>`
 ## TelerikTextBox
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikTextBox`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishTextBox`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishTextBox`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -107,7 +107,7 @@ The wrapper file is `TelerikCheckBox.razor` and delegates to `<SunfishCheckbox>`
 ## TelerikDropDownList\<TItem, TValue\>
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikDropDownList<TItem, TValue>`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishDropDownList`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishDropDownList`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -129,7 +129,7 @@ The wrapper file is `TelerikCheckBox.razor` and delegates to `<SunfishCheckbox>`
 ## TelerikComboBox\<TItem, TValue\>
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikComboBox<TItem, TValue>`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishComboBox`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishComboBox`
 
 Same shape as TelerikDropDownList plus `Filterable` (bool) and `AllowCustom` (bool).
 Both are passed through when Sunfish supports them; logged+dropped otherwise.
@@ -139,7 +139,7 @@ Both are passed through when Sunfish supports them; logged+dropped otherwise.
 ## TelerikDatePicker
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikDatePicker`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishDatePicker`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishDatePicker`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -155,7 +155,7 @@ Both are passed through when Sunfish supports them; logged+dropped otherwise.
 ## TelerikForm
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikForm`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Forms.SunfishForm`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.SunfishForm`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -179,7 +179,7 @@ Both are passed through when Sunfish supports them; logged+dropped otherwise.
 ## TelerikGrid\<TItem\>
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikGrid<TItem>`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.DataDisplay.SunfishDataGrid<TItem>`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishDataGrid<TItem>`
 
 | Telerik parameter | Type (Telerik) | Mapping |
 |---|---|---|
@@ -223,7 +223,7 @@ A future policy-gated PR may ship `TelerikGridColumn` as a shim if demand warran
 ## TelerikWindow
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikWindow`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Overlays.SunfishWindow`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Overlays.SunfishWindow`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -241,7 +241,7 @@ A future policy-gated PR may ship `TelerikGridColumn` as a shim if demand warran
 ## TelerikTooltip
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikTooltip`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.DataDisplay.SunfishTooltip`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishTooltip`
 
 | Telerik parameter | Type | Mapping |
 |---|---|---|
@@ -255,7 +255,7 @@ A future policy-gated PR may ship `TelerikGridColumn` as a shim if demand warran
 ## TelerikNotification
 
 - **Telerik target:** `Telerik.Blazor.Components.TelerikNotification`
-- **Sunfish target:** `Sunfish.Components.Blazor.Components.Feedback.SunfishSnackbarHost`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Feedback.SunfishSnackbarHost`
 
 ### Divergences
 

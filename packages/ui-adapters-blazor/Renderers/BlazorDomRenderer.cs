@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Sunfish.UICore.Contracts;
 
-namespace Sunfish.Components.Blazor.Renderers;
+namespace Sunfish.UIAdapters.Blazor.Renderers;
 
 /// <summary>
 /// Default <see cref="ISunfishRenderer"/> for Blazor Server / WASM / MAUI Hybrid

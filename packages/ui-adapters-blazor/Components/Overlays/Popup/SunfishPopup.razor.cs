@@ -1,10 +1,10 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.Overlays;
+namespace Sunfish.UIAdapters.Blazor.Components.Overlays;
 
 /// <summary>
 /// Lightweight anchor-positioned popup for filter menus, column choosers, and popup edit forms.

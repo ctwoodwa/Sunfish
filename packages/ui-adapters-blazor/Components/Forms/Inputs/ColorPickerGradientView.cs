@@ -1,7 +1,7 @@
 using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.Forms.Inputs;
+namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 
 /// <summary>
 /// Configures the ColorPicker to include the gradient (HSVA canvas) view.

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Components;
-using Sunfish.Components.Blazor.Renderers;
+using Sunfish.UIAdapters.Blazor.Renderers;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests;
+namespace Sunfish.UIAdapters.Blazor.Tests;
 
 public class BlazorDomRendererTests
 {

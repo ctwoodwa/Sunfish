@@ -1,6 +1,6 @@
 using Sunfish.Foundation.Enums;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Map;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Map;
 
 /// <summary>
 /// Options passed to the JS engine adapter during initialization.

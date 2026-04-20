@@ -1,5 +1,5 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Web.Virtualization;
 
 #pragma warning disable ASP0006 // seq++ is intentional in manual RenderTreeBuilder code — each render fragment builds a complete tree from scratch
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost, ITreeListEditController
 {

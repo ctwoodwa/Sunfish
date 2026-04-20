@@ -1,14 +1,14 @@
 using System.Reflection;
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Data;
 using Sunfish.Foundation.Enums;
-using Sunfish.Components.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishDataGrid<TItem> : SunfishComponentBase
 {

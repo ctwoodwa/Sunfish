@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Editors;
+namespace Sunfish.UIAdapters.Blazor.Components.Editors;
 
 /// <summary>
 /// Base class for editor command arguments.

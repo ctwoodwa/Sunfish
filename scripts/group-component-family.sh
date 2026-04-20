@@ -16,7 +16,7 @@ shift 2
 
 CAT_DIR="packages/ui-adapters-blazor/Components/$CATEGORY"
 DST="$CAT_DIR/$FAMILY"
-NS="Sunfish.Components.Blazor.Components.$CATEGORY"
+NS="Sunfish.UIAdapters.Blazor.Components.$CATEGORY"
 
 [ -d "$CAT_DIR" ] || { echo "FAIL: category not found: $CAT_DIR"; exit 1; }
 mkdir -p "$DST"

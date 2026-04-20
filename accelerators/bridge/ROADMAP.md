@@ -58,7 +58,7 @@ The unified notification architecture is implemented and wired.
 
 - `UserNotification` has no toast-only properties (no CloseAfterMs, Closeable, ThemeColor).
 - `NotificationModel` (Sunfish.Core) remains a presentation-only concern, untouched.
-- `NotificationItem` (Sunfish.Components.Blazor.Shell) remains the bell's view DTO, populated only via the feed projection mapper.
+- `NotificationItem` (Sunfish.UIAdapters.Blazor.Shell) remains the bell's view DTO, populated only via the feed projection mapper.
 - The bell component is strictly presentational — it never mutates state, only fires event callbacks.
 - `SunfishSnackbarHost` is mounted once in `MainLayout.razor`.
 

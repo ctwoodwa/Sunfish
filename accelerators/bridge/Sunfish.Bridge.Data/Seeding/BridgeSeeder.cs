@@ -43,7 +43,7 @@ public sealed class BridgeSeeder : IHostedService
 
         // 5 team members
         string[] members = ["alex.kim", "blair.osei", "casey.nguyen", "drew.patel", "ellis.romero"];
-        string[] roles = ["ProjectManager", "TeamMember", "TeamMember", "TeamMember", "Viewer"];
+        string[] roles = [Authorization.Roles.Manager, Authorization.Roles.TeamMember, Authorization.Roles.TeamMember, Authorization.Roles.TeamMember, Authorization.Roles.Viewer];
         for (var i = 0; i < members.Length; i++)
         {
             db.ProjectMembers.Add(new ProjectMember

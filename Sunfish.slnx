@@ -48,7 +48,7 @@
     <Project Path="packages/ui-core/tests/tests.csproj" />
   </Folder>
   <Folder Name="/ui-adapters-blazor/">
-    <Project Path="packages/ui-adapters-blazor/Sunfish.Components.Blazor.csproj" />
+    <Project Path="packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj" />
     <Project Path="packages/ui-adapters-blazor/tests/tests.csproj" />
   </Folder>
   <Folder Name="/providers/">

@@ -1,8 +1,8 @@
-using Sunfish.Components.Blazor.Components.Forms.Containers;
-using Sunfish.Components.Blazor.Components.Forms.Inputs;
+using Sunfish.UIAdapters.Blazor.Components.Forms.Containers;
+using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class FormsTests
 {
@@ -11,13 +11,13 @@ public class FormsTests
     {
         var type = typeof(SunfishForm);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Forms.Containers", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Forms.Containers", type.Namespace);
     }
 
     [Fact]
     public void SunfishCheckbox_TypeIsInInputsNamespace()
     {
         var type = typeof(SunfishCheckbox);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Forms.Inputs", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Forms.Inputs", type.Namespace);
     }
 }

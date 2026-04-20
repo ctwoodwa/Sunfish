@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 /// <summary>
 /// Provides clipboard read/write operations via the browser Clipboard API.

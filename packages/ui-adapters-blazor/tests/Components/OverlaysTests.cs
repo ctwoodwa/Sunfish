@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Components.Overlays;
+using Sunfish.UIAdapters.Blazor.Components.Overlays;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class OverlaysTests
 {
@@ -10,7 +10,7 @@ public class OverlaysTests
     {
         var type = typeof(SunfishWindow);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Overlays", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Overlays", type.Namespace);
     }
 
     [Fact]
@@ -18,6 +18,6 @@ public class OverlaysTests
     {
         var type = typeof(SunfishPopup);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Overlays", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Overlays", type.Namespace);
     }
 }

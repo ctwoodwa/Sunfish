@@ -1,11 +1,11 @@
-using Sunfish.Components.Blazor.Components.DataDisplay.Map;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay.Map;
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishMap : SunfishComponentBase, IAsyncDisposable, IMapLayerHost
 {

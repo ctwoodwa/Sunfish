@@ -1,12 +1,18 @@
-using Sunfish.Components.Blazor.Internal.Interop;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// PDF export logic for <see cref="SunfishDataGrid{TItem}"/>.
 /// </summary>
 public partial class SunfishDataGrid<TItem>
 {
+    // Resolved lazily so rendering succeeds even without AddSunfishPlaywrightPdf().
+    [Inject] private IServiceProvider _pdfServices { get; set; } = default!;
+    private IPdfExportWriter? PdfWriter => _pdfServices.GetService<IPdfExportWriter>();
+
     // ── Public overloads ────────────────────────────────────────────────
 
     /// <summary>
@@ -30,9 +36,9 @@ public partial class SunfishDataGrid<TItem>
     /// emitted.
     /// </para>
     /// <para>
-    /// <b>QuestPDF version:</b> this method uses QuestPDF 2023.12.6 (the highest MIT-licensed
-    /// release available on NuGet). Versions 2024.3+ carry a Community license
-    /// (see <c>Directory.Packages.props</c> for the pin rationale).
+    /// <b>PDF service:</b> PDF export requires <c>AddSunfishPlaywrightPdf()</c> to be called
+    /// in your application's DI container. Chromium browser binaries must be installed on the
+    /// host machine (<c>playwright install chromium</c>).
     /// </para>
     /// </remarks>
     /// <exception cref="InvalidOperationException">
@@ -114,8 +120,13 @@ public partial class SunfishDataGrid<TItem>
 
         var itemList = items.ToList();
 
-        // ── Generate PDF bytes (pure C# — no Blazor dependency) ─────────
-        var bytes = PdfExportWriter.Write(columns, itemList, options);
+        // ── Generate PDF bytes via Playwright ───────────────────────────
+        var pdfWriter = PdfWriter
+            ?? throw new InvalidOperationException(
+                "PDF export requires AddSunfishPlaywrightPdf() in your DI container. " +
+                "See SunfishPdfServiceExtensions.");
+
+        var bytes = await pdfWriter.WriteAsync(columns, itemList, options);
 
         // ── Trigger browser download via IDownloadService ────────────────
         var fileName = string.IsNullOrWhiteSpace(options.FileName)

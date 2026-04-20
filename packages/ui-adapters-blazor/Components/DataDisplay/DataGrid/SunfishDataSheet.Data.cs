@@ -2,7 +2,7 @@ using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Helpers;
 using Sunfish.Foundation.Models.DataSheet;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Dirty-state tracking, commit, reset, and validation logic for SunfishDataSheet.

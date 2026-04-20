@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Charts;
+namespace Sunfish.UIAdapters.Blazor.Components.Charts;
 
 /// <summary>
 /// Event args for chart data point click events.

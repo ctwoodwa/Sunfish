@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Map;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Map;
 
 /// <summary>
 /// MapLibre GL JS adapter implementing <see cref="IMapEngineAdapter"/>.

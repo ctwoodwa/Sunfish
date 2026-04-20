@@ -57,4 +57,4 @@ The `SunfishSearchBox` component builds on `SunfishTextField` to provide a dedic
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishSearchBox)
+- [API Reference](xref:Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishSearchBox)

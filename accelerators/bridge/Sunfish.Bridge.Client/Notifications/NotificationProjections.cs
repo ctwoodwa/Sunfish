@@ -1,4 +1,4 @@
-using Sunfish.Components.Blazor.Shell;
+using Sunfish.UIAdapters.Blazor.Shell;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Sunfish.Foundation.Notifications;
@@ -8,7 +8,7 @@ namespace Sunfish.Bridge.Client.Notifications;
 
 /// <summary>
 /// Maps a canonical <see cref="UserNotification"/> to the bell/feed view shape
-/// (<see cref="NotificationItem"/>, owned by Sunfish.Components.Blazor.Shell).
+/// (<see cref="NotificationItem"/>, owned by Sunfish.UIAdapters.Blazor.Shell).
 ///
 /// This is a one-way projection — the bell never mutates the canonical store directly;
 /// "mark read" / "delete read" actions go through <see cref="IUserNotificationService"/>

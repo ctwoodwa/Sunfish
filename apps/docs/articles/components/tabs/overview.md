@@ -56,4 +56,4 @@ The `SunfishTabs` component displays a horizontal tab strip and shows the conten
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Blazor.Components.Layout.SunfishTabStrip)
+- [API Reference](xref:Sunfish.UIAdapters.Blazor.Components.Layout.SunfishTabStrip)

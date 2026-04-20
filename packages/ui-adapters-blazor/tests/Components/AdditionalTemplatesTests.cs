@@ -1,14 +1,14 @@
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using Sunfish.Components.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Data;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>Tests for <see cref="SunfishDataGrid{TItem}"/> A4 template parameters:
 /// <see cref="SunfishDataGrid{TItem}.NoDataTemplate"/> and <see cref="SunfishDataGrid{TItem}.RowTemplate"/>.</summary>
@@ -20,7 +20,7 @@ public class AdditionalTemplatesTests : BunitContext
         Services.AddScoped<ISunfishThemeService, SunfishThemeService>();
         Services.AddScoped<ISunfishCssProvider, StubCssProvider>();
         Services.AddScoped<ISunfishIconProvider, StubIconProvider>();
-        Services.AddScoped<Sunfish.Components.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
+        Services.AddScoped<Sunfish.UIAdapters.Blazor.Internal.Interop.IDownloadService, StubDownloadService>();
     }
 
     private record TestItem(int Id, string Name);

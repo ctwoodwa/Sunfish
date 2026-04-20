@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Scheduler;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Scheduler;
 
 /// <summary>
 /// Non-generic interface that allows <see cref="SchedulerViewBase"/> components to register

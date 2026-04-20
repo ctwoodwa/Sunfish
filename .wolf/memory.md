@@ -429,3 +429,250 @@
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
 | 17:17 | Edited .gitignore | 4→8 lines | ~54 |
+| 17:45 | Created _shared/product/architecture-principles.md | — | ~3392 |
+| 17:47 | Created _shared/product/naming.md | — | ~3051 |
+| 17:48 | Created _shared/engineering/package-conventions.md | — | ~3419 |
+| 17:50 | Created _shared/engineering/coding-standards.md | — | ~3654 |
+| 17:52 | Created _shared/engineering/testing-strategy.md | — | ~3476 |
+| 17:52 | Session end: 5 writes across 5 files (architecture-principles.md, naming.md, package-conventions.md, coding-standards.md, testing-strategy.md) | 5 reads | ~18206 tok |
+| 18:40 | Session end: 5 writes across 5 files (architecture-principles.md, naming.md, package-conventions.md, coding-standards.md, testing-strategy.md) | 10 reads | ~34136 tok |
+| 18:47 | Edited _shared/engineering/coding-standards.md | inline fix | ~118 |
+| 18:47 | Edited _shared/engineering/testing-strategy.md | 9→9 lines | ~193 |
+| 18:48 | Edited _shared/engineering/testing-strategy.md | expanded (+28 lines) | ~413 |
+| 18:48 | Edited _shared/product/naming.md | 6→7 lines | ~150 |
+| 18:48 | Edited _shared/product/naming.md | 6→6 lines | ~179 |
+| 18:49 | Edited _shared/product/naming.md | 6→5 lines | ~254 |
+| 18:50 | Edited accelerators/bridge/Sunfish.Bridge.Data/Authorization/Roles.cs | inline fix | ~14 |
+| 18:50 | Edited accelerators/bridge/Sunfish.Bridge/Authorization/DemoTenantContext.cs | 8→8 lines | ~69 |
+| 18:50 | Edited accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SeederSmokeTests.cs | inline fix | ~28 |
+| 18:50 | Edited accelerators/bridge/Sunfish.Bridge.Data/Seeding/BridgeSeeder.cs | inline fix | ~48 |
+| 18:50 | Edited accelerators/bridge/dab-config.json | inline fix | ~8 |
+| 18:51 | Edited accelerators/bridge/dab-config.json | inline fix | ~46 |
+| 18:51 | Edited _shared/engineering/bridge-data-audit.md | inline fix | ~52 |
+| 18:51 | Edited _shared/engineering/bridge-data-audit.md | 3→3 lines | ~153 |
+| 18:53 | Session end: 19 writes across 11 files (architecture-principles.md, naming.md, package-conventions.md, coding-standards.md, testing-strategy.md) | 16 reads | ~35980 tok |
+| 19:00 | Created docs/adrs/0016-app-and-accelerator-naming.md | — | ~2698 |
+| 19:01 | Edited docs/adrs/README.md | 1→2 lines | ~54 |
+| 19:01 | Edited _shared/product/naming.md | expanded (+10 lines) | ~266 |
+| 19:01 | Edited _shared/product/naming.md | 6→5 lines | ~151 |
+| 19:08 | Edited packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj | 3→5 lines | ~76 |
+| 19:14 | Edited apps/docs/docfx.json | "ui-adapters-blazor/bin/De" → "ui-adapters-blazor/bin/De" | ~23 |
+| 19:15 | Edited scripts/group-component-family.sh | "Sunfish.Components.Blazor" → "Sunfish.UIAdapters.Blazor" | ~14 |
+| 19:15 | Edited _shared/product/naming.md | 2→2 lines | ~52 |
+| 19:16 | Edited _shared/product/naming.md | 5→4 lines | ~189 |
+| 19:16 | Edited _shared/product/naming.md | "ui-adapters-blazor" → "packages/ui-adapters-reac" | ~75 |
+
+## Session: 2026-04-19 19:25
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 19:28 | Created _shared/design/component-principles.md | — | ~3137 |
+| 19:30 | Created _shared/design/tokens-guidelines.md | — | ~2976 |
+| 19:31 | Created _shared/product/compatibility-policy.md | — | ~2767 |
+| 19:32 | Session end: 3 writes across 3 files (component-principles.md, tokens-guidelines.md, compatibility-policy.md) | 3 reads | ~9515 tok |
+| 07:19 | Session end: 3 writes across 3 files (component-principles.md, tokens-guidelines.md, compatibility-policy.md) | 3 reads | ~9515 tok |
+
+## Session: 2026-04-20 07:19
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:20 | Edited ../../Users/Chris/.claude/settings.json | 1→4 lines | ~27 |
+| 07:20 | Session end: 1 writes across 1 files (settings.json) | 1 reads | ~27 tok |
+| 07:52 | Session end: 1 writes across 1 files (settings.json) | 1 reads | ~27 tok |
+| 08:19 | Created _shared/product/vision.md | — | ~3890 |
+| 08:20 | Session end: 2 writes across 2 files (settings.json, vision.md) | 2 reads | ~4195 tok |
+
+## Session: 2026-04-20 08:24
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:47 | Edited _shared/product/vision.md | expanded (+14 lines) | ~1214 |
+| 08:47 | Edited _shared/product/vision.md | expanded (+17 lines) | ~555 |
+| 08:48 | Session end: 2 writes across 1 files (vision.md) | 0 reads | ~1896 tok |
+| 08:53 | Edited _shared/product/vision.md | expanded (+13 lines) | ~1097 |
+| 08:55 | Edited _shared/product/vision.md | 3→6 lines | ~664 |
+| 08:55 | Edited _shared/product/vision.md | expanded (+23 lines) | ~824 |
+| 08:55 | Edited _shared/product/vision.md | expanded (+14 lines) | ~502 |
+| 08:55 | Session end: 6 writes across 1 files (vision.md) | 0 reads | ~5204 tok |
+| 08:57 | Edited _shared/product/vision.md | 5→7 lines | ~453 |
+| 08:57 | Edited _shared/product/vision.md | 2→3 lines | ~116 |
+| 08:57 | Edited _shared/product/vision.md | inline fix | ~63 |
+| 08:57 | Edited _shared/product/vision.md | expanded (+8 lines) | ~314 |
+| 08:58 | Session end: 10 writes across 1 files (vision.md) | 0 reads | ~6217 tok |
+| 09:02 | Edited _shared/product/vision.md | inline fix | ~215 |
+| 09:02 | Edited _shared/product/vision.md | inline fix | ~251 |
+| 09:02 | Edited _shared/product/vision.md | inline fix | ~60 |
+| 09:02 | Edited _shared/product/vision.md | 1→2 lines | ~117 |
+| 09:02 | Session end: 14 writes across 1 files (vision.md) | 0 reads | ~6907 tok |
+| 09:16 | Edited _shared/product/vision.md | inline fix | ~173 |
+| 09:16 | Edited _shared/product/vision.md | inline fix | ~146 |
+| 09:16 | Edited _shared/product/vision.md | 3→5 lines | ~294 |
+| 09:17 | Session end: 17 writes across 1 files (vision.md) | 0 reads | ~7563 tok |
+| 09:21 | Edited _shared/product/vision.md | 3→7 lines | ~440 |
+| 09:22 | Edited _shared/product/vision.md | 3→5 lines | ~440 |
+| 09:22 | Edited _shared/product/vision.md | expanded (+8 lines) | ~331 |
+| 09:22 | Session end: 20 writes across 1 files (vision.md) | 0 reads | ~8860 tok |
+| 09:38 | Edited _shared/product/vision.md | inline fix | ~8 |
+| 09:38 | Edited _shared/product/vision.md | expanded (+10 lines) | ~802 |
+| 09:38 | Edited _shared/product/vision.md | 3→5 lines | ~162 |
+| 09:38 | Edited _shared/product/vision.md | expanded (+13 lines) | ~400 |
+| 09:39 | Session end: 24 writes across 1 files (vision.md) | 0 reads | ~10330 tok |
+| 09:41 | Edited _shared/product/vision.md | expanded (+10 lines) | ~625 |
+| 09:41 | Session end: 25 writes across 1 files (vision.md) | 0 reads | ~11000 tok |
+| 09:55 | Edited _shared/product/vision.md | 6→7 lines | ~473 |
+| 09:55 | Edited _shared/product/vision.md | expanded (+9 lines) | ~515 |
+| 09:56 | Edited _shared/product/vision.md | 1→3 lines | ~234 |
+| 09:58 | Created docs/adrs/0017-web-components-lit-technical-basis.md | — | ~4126 |
+| 09:58 | Edited docs/adrs/README.md | 1→2 lines | ~68 |
+| 09:59 | Session end: 30 writes across 3 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md) | 1 reads | ~17368 tok |
+| 10:10 | Session end: 30 writes across 3 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md) | 1 reads | ~17368 tok |
+| 10:19 | Created .claude/rules/universal-planning.md | — | ~1327 |
+| 10:19 | Created _shared/engineering/planning-framework.md | — | ~2314 |
+| 10:19 | Session end: 32 writes across 5 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 1 reads | ~21270 tok |
+| 10:26 | Session end: 32 writes across 5 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 1 reads | ~21270 tok |
+| 10:37 | Created GOVERNANCE.md | — | ~3014 |
+| 10:38 | Created docs/adrs/0018-governance-and-license-posture.md | — | ~2240 |
+| 10:38 | Created .github/ISSUE_TEMPLATE/rfc.yml | — | ~982 |
+| 10:38 | Created .github/ISSUE_TEMPLATE/config.yml | — | ~205 |
+| 10:39 | Edited CONTRIBUTING.md | expanded (+10 lines) | ~166 |
+| 10:39 | Edited .github/CODEOWNERS | expanded (+11 lines) | ~147 |
+| 10:39 | Edited docs/adrs/README.md | 1→2 lines | ~77 |
+| 10:39 | Edited _shared/product/vision.md | 1→2 lines | ~242 |
+| 10:41 | Session end: 40 writes across 11 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 8 reads | ~40780 tok |
+| 10:47 | Created _shared/engineering/commit-conventions.md | — | ~3246 |
+| 10:47 | Edited _shared/engineering/commit-conventions.md | modified feat() | ~214 |
+| 10:48 | Edited _shared/engineering/commit-conventions.md | 34→31 lines | ~391 |
+| 10:48 | Created _shared/engineering/releases.md | — | ~3658 |
+| 10:48 | Created CHANGELOG.md | — | ~191 |
+| 10:48 | Edited _shared/engineering/commit-conventions.md | 8→8 lines | ~240 |
+| 10:48 | Edited _shared/engineering/commit-conventions.md | 5→3 lines | ~77 |
+| 10:48 | Edited _shared/engineering/commit-conventions.md | 5→3 lines | ~106 |
+| 10:48 | Created _shared/design/documentation-framework.md | — | ~4208 |
+| 10:48 | Edited _shared/engineering/commit-conventions.md | 3→1 lines | ~45 |
+| 10:49 | Edited _shared/engineering/commit-conventions.md | reduced (-6 lines) | ~80 |
+| 10:49 | Created _shared/engineering/ci-quality-gates.md | — | ~3313 |
+| 10:49 | Created _shared/engineering/supply-chain-security.md | — | ~4312 |
+| 10:49 | Edited _shared/engineering/ci-quality-gates.md | 9→10 lines | ~401 |
+| 10:49 | Created _shared/engineering/code-review.md | — | ~3542 |
+| 10:49 | Edited _shared/engineering/ci-quality-gates.md | 5→6 lines | ~141 |
+| 10:49 | Edited _shared/engineering/ci-quality-gates.md | 4→5 lines | ~278 |
+| 10:50 | Edited _shared/engineering/ci-quality-gates.md | expanded (+9 lines) | ~337 |
+| 10:50 | Edited _shared/engineering/ci-quality-gates.md | 1→3 lines | ~126 |
+| 10:50 | Edited _shared/engineering/ci-quality-gates.md | 1→3 lines | ~142 |
+| 10:50 | Edited _shared/engineering/ci-quality-gates.md | 1→3 lines | ~198 |
+| 10:51 | Session end: 61 writes across 18 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 24 reads | ~97560 tok |
+| 10:57 | Created _shared/design/accessibility.md | — | ~6268 |
+| 10:57 | Created _shared/design/internationalization.md | — | ~4599 |
+| 10:57 | Edited _shared/design/internationalization.md | 1→5 lines | ~307 |
+| 10:58 | Edited _shared/design/internationalization.md | 4→5 lines | ~528 |
+| 10:58 | Created _shared/engineering/ai-code-policy.md | — | ~4685 |
+| 10:58 | Edited _shared/design/internationalization.md | 2→4 lines | ~379 |
+| 10:58 | Edited _shared/design/internationalization.md | 7→9 lines | ~375 |
+| 10:59 | Edited _shared/design/internationalization.md | 5→8 lines | ~640 |
+| 10:59 | Edited _shared/design/internationalization.md | expanded (+17 lines) | ~186 |
+| 10:59 | Edited _shared/design/internationalization.md | modified render() | ~369 |
+| 11:04 | Created _shared/engineering/operations-sre.md | — | ~4503 |
+| 11:04 | Created _shared/engineering/data-privacy.md | — | ~6855 |
+| 11:04 | Edited _shared/engineering/data-privacy.md | 3→5 lines | ~164 |
+| 11:04 | Edited _shared/engineering/data-privacy.md | 1→3 lines | ~266 |
+| 11:05 | Created _shared/product/community-operations.md | — | ~3955 |
+| 11:05 | Edited _shared/product/community-operations.md | 9→10 lines | ~505 |
+| 11:05 | Edited _shared/product/community-operations.md | 5→7 lines | ~367 |
+| 11:06 | Edited _shared/product/community-operations.md | 9→10 lines | ~418 |
+| 11:06 | Edited _shared/product/community-operations.md | 11→12 lines | ~492 |
+| 11:06 | Edited _shared/product/community-operations.md | 5→9 lines | ~274 |
+| 11:07 | Edited _shared/product/community-operations.md | 8→9 lines | ~432 |
+| 11:07 | Edited _shared/product/community-operations.md | 5→7 lines | ~325 |
+| 11:07 | Edited _shared/product/community-operations.md | expanded (+8 lines) | ~503 |
+| 11:08 | Edited _shared/product/community-operations.md | expanded (+12 lines) | ~390 |
+| 11:08 | Edited _shared/product/community-operations.md | expanded (+6 lines) | ~216 |
+| 11:08 | Session end: 86 writes across 24 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 35 reads | ~157714 tok |
+| 11:12 | Edited _shared/engineering/operations-sre.md | "data-privacy.md" → "../../GOVERNANCE.md" | ~99 |
+| 11:12 | Edited _shared/engineering/operations-sre.md | inline fix | ~32 |
+| 11:12 | Edited _shared/engineering/operations-sre.md | inline fix | ~31 |
+| 11:15 | Created _shared/engineering/cal-diy-research.md | — | ~2594 |
+| 11:15 | Session end: 90 writes across 25 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 37 reads | ~176906 tok |
+| 11:16 | Created _shared/product/sustainability.md | — | ~6674 |
+| 11:17 | Session end: 91 writes across 26 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 37 reads | ~184057 tok |
+| 11:50 | Created _shared/engineering/tailwindcss-research.md | — | ~2684 |
+| 11:51 | Created _shared/engineering/prisma-research.md | — | ~3111 |
+| 11:53 | Created _shared/engineering/daily-co-research.md | — | ~3381 |
+| 11:53 | Session end: 94 writes across 29 files (vision.md, 0017-web-components-lit-technical-basis.md, README.md, universal-planning.md, planning-framework.md) | 48 reads | ~227773 tok |
+
+## Session: 2026-04-20 11:57
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:59 | Edited _shared/engineering/code-review.md | inline fix | ~68 |
+| 11:59 | Edited _shared/engineering/code-review.md | inline fix | ~34 |
+| 11:59 | Edited _shared/engineering/code-review.md | 4→4 lines | ~117 |
+| 11:59 | Edited docs/adrs/0017-web-components-lit-technical-basis.md | 2→2 lines | ~72 |
+| 11:59 | Edited _shared/engineering/data-privacy.md | 5 → 1 | ~166 |
+| 11:59 | Edited _shared/engineering/data-privacy.md | inline fix | ~62 |
+| 11:59 | Edited _shared/engineering/data-privacy.md | inline fix | ~63 |
+| 11:59 | Edited _shared/engineering/data-privacy.md | inline fix | ~66 |
+| 11:59 | Edited _shared/engineering/data-privacy.md | 5 → 1 | ~43 |
+| 11:59 | Edited _shared/engineering/supply-chain-security.md | inline fix | ~10 |
+| 11:59 | Edited _shared/engineering/supply-chain-security.md | inline fix | ~25 |
+| 11:59 | Edited _shared/engineering/commit-conventions.md | inline fix | ~46 |
+| 11:59 | Edited _shared/engineering/commit-conventions.md | inline fix | ~83 |
+| 11:59 | Edited _shared/engineering/commit-conventions.md | 2→2 lines | ~43 |
+| 12:00 | Edited _shared/engineering/ci-quality-gates.md | "releases.md" → ".github/SECURITY.md" | ~102 |
+| 12:00 | Edited _shared/engineering/ci-quality-gates.md | inline fix | ~35 |
+| 12:00 | Edited _shared/engineering/ci-quality-gates.md | 2→2 lines | ~44 |
+| 12:00 | Edited _shared/engineering/releases.md | "/commit-conventions.md" → "feat:" | ~52 |
+| 12:00 | Edited _shared/engineering/releases.md | 2→2 lines | ~58 |
+| 12:00 | Edited _shared/engineering/planning-framework.md | inline fix | ~60 |
+| 12:02 | Edited _shared/engineering/planning-framework.md | inline fix | ~171 |
+| 12:03 | Edited _shared/engineering/planning-framework.md | 2→2 lines | ~148 |
+| 12:03 | Edited _shared/engineering/planning-framework.md | inline fix | ~27 |
+| 12:03 | Edited docs/adrs/0018-governance-and-license-posture.md | inline fix | ~54 |
+| 12:03 | Edited .claude/rules/universal-planning.md | 2→2 lines | ~39 |
+| 12:03 | Edited _shared/engineering/commit-conventions.md | inline fix | ~17 |
+| 12:03 | Edited GOVERNANCE.md | 7→8 lines | ~333 |
+| 12:03 | Edited _shared/engineering/ai-code-policy.md | "s November 2025 " → "s late-2025 " | ~106 |
+| 12:08 | Session end: 28 writes across 12 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 12 reads | ~43034 tok |
+| 12:17 | Session end: 28 writes across 12 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 12 reads | ~43034 tok |
+| 12:24 | Session end: 28 writes across 12 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 12 reads | ~43034 tok |
+| 12:28 | Session end: 28 writes across 12 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 12 reads | ~43034 tok |
+| 12:38 | Session end: 28 writes across 12 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 12 reads | ~43034 tok |
+| 12:40 | Edited _shared/product/sustainability.md | inline fix | ~263 |
+| 12:40 | Edited _shared/product/sustainability.md | inline fix | ~138 |
+| 12:40 | Session end: 30 writes across 13 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~49720 tok |
+| 12:42 | Session end: 30 writes across 13 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~49720 tok |
+| 12:46 | Session end: 30 writes across 13 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~49720 tok |
+| 12:49 | Edited _shared/product/sustainability.md | inline fix | ~337 |
+| 12:49 | Edited _shared/product/sustainability.md | 1→2 lines | ~244 |
+| 12:49 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/project_sunfish_private_until_llc.md | — | ~586 |
+| 12:50 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | — | ~63 |
+| 12:50 | Session end: 34 writes across 15 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~51037 tok |
+| 12:51 | Session end: 34 writes across 15 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~51037 tok |
+| 12:57 | Session end: 34 writes across 15 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~51037 tok |
+| 13:04 | Session end: 34 writes across 15 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 13 reads | ~51037 tok |
+| 13:21 | Edited Directory.Packages.props | 2→2 lines | ~41 |
+| 13:22 | Session end: 35 writes across 16 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 14 reads | ~51081 tok |
+| 13:25 | Session end: 35 writes across 16 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 14 reads | ~51081 tok |
+| 13:38 | Session end: 35 writes across 16 files (code-review.md, 0017-web-components-lit-technical-basis.md, data-privacy.md, supply-chain-security.md, commit-conventions.md) | 14 reads | ~51081 tok |
+
+## Session: 2026-04-20 13:47
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:55 | Edited Directory.Packages.props | 5→3 lines | ~51 |
+| 13:55 | Edited packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj | 8→3 lines | ~39 |
+| 13:55 | Created packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/IPdfExportWriter.cs | — | ~85 |
+| 13:55 | Created packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/HtmlTableBuilder.cs | — | ~831 |
+| 13:55 | Created packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/SunfishPlaywrightBrowserService.cs | — | ~283 |
+| 13:55 | Created packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/PlaywrightPdfExportWriter.cs | — | ~700 |
+| 13:55 | Created packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/SunfishPdfServiceExtensions.cs | — | ~332 |
+| 13:55 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs | 10→14 lines | ~142 |
+| 13:56 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs | 6→6 lines | ~80 |
+| 13:56 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs | added 1 condition(s) | ~104 |
+| 13:56 | Created packages/ui-adapters-blazor/tests/Components/PdfExportTests.cs | — | ~2859 |
+| 13:57 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs | 12→14 lines | ~157 |
+| 13:57 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs | added nullish coalescing | ~102 |
+| 13:58 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/SunfishPdfServiceExtensions.cs | inline fix | ~5 |
+| 13:58 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/SunfishPdfServiceExtensions.cs | 11→10 lines | ~111 |
+| 13:59 | Session end: 15 writes across 9 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 4 reads | ~6890 tok |
+| 14:07 | Created .gitattributes | — | ~342 |
+| 14:07 | Edited .gitignore | 2→3 lines | ~20 |

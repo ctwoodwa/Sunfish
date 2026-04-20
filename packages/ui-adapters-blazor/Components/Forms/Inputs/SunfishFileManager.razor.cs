@@ -1,11 +1,11 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using System.Reflection;
 
-namespace Sunfish.Components.Blazor.Components.Forms.Inputs;
+namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 
 /// <summary>
 /// A generic file manager component that displays and navigates a file/folder tree.

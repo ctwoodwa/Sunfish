@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Internal.Interop;
+namespace Sunfish.UIAdapters.Blazor.Internal.Interop;
 
 /// <summary>
 /// Observes element size changes using the browser ResizeObserver API.

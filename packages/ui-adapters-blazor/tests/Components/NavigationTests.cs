@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Components.Navigation;
+using Sunfish.UIAdapters.Blazor.Components.Navigation;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class NavigationTests
 {
@@ -10,13 +10,13 @@ public class NavigationTests
     {
         var type = typeof(SunfishNavBar);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Navigation", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Navigation", type.Namespace);
     }
 
     [Fact]
     public void SunfishTreeView_TypeExists()
     {
         var type = typeof(SunfishTreeView);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Navigation", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Navigation", type.Namespace);
     }
 }

@@ -6,7 +6,7 @@
           "files": [
             "foundation/bin/Debug/net10.0/Sunfish.Foundation.dll",
             "ui-core/bin/Debug/net10.0/Sunfish.UICore.dll",
-            "ui-adapters-blazor/bin/Debug/net10.0/Sunfish.Components.Blazor.dll"
+            "ui-adapters-blazor/bin/Debug/net10.0/Sunfish.UIAdapters.Blazor.dll"
           ],
           "src": "../../packages"
         }

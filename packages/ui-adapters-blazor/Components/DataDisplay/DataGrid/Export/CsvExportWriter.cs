@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Pure, stateless CSV writer. Converts a <see cref="GridExportData{TItem}"/> snapshot into an

@@ -5,7 +5,7 @@ using Sunfish.Foundation.Helpers;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Active cell state, edit mode transitions, and keyboard handlers for SunfishDataSheet.

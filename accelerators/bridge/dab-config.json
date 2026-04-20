@@ -93,7 +93,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -128,7 +128,7 @@
       ]
     },
     "ProjectMember": {
-      "description": "Many-to-many join between Project and User. Carries the member's role on that project (Owner / Admin / ProjectManager / TeamMember / Viewer).",
+      "description": "Many-to-many join between Project and User. Carries the member's role on that project (Owner / Admin / Manager / TeamMember / Viewer).",
       "source": {
         "object": "project_members",
         "type": "table"
@@ -179,7 +179,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -265,7 +265,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -357,7 +357,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -452,7 +452,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -547,7 +547,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -633,7 +633,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -722,7 +722,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "create"
@@ -790,7 +790,7 @@
           ]
         },
         {
-          "role": "ProjectManager",
+          "role": "Manager",
           "actions": [
             {
               "action": "read"

@@ -1,8 +1,8 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.Navigation;
+namespace Sunfish.UIAdapters.Blazor.Components.Navigation;
 
 public partial class SunfishTreeItem : SunfishComponentBase
 {

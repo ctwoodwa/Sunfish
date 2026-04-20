@@ -704,6 +704,566 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-19T18:57:47.886Z"
+    },
+    {
+      "id": "bug-045",
+      "timestamp": "2026-04-19T22:48:49.161Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/product/naming.md",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 6→6 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T22:48:49.161Z"
+    },
+    {
+      "id": "bug-046",
+      "timestamp": "2026-04-19T22:50:26.037Z",
+      "error_message": "Wrong reference: ProjectManager should be Manager",
+      "file": "accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/SeederSmokeTests.cs",
+      "root_cause": "Used \"ProjectManager\" instead of \"Manager\"",
+      "fix": "Changed ProjectManager → Manager",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T22:50:26.037Z"
+    },
+    {
+      "id": "bug-047",
+      "timestamp": "2026-04-19T22:50:58.001Z",
+      "error_message": "Incorrect value in code",
+      "file": "accelerators/bridge/dab-config.json",
+      "root_cause": "Had \"ProjectManager\"",
+      "fix": "Changed to \"Manager\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T22:50:58.001Z"
+    },
+    {
+      "id": "bug-048",
+      "timestamp": "2026-04-19T22:51:04.877Z",
+      "error_message": "Wrong reference: ProjectManager should be Manager",
+      "file": "accelerators/bridge/dab-config.json",
+      "root_cause": "Used \"ProjectManager\" instead of \"Manager\"",
+      "fix": "Changed ProjectManager → Manager",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T22:51:04.877Z"
+    },
+    {
+      "id": "bug-049",
+      "timestamp": "2026-04-19T22:51:24.203Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/bridge-data-audit.md",
+      "root_cause": "Had `ProjectManager`",
+      "fix": "Changed to `Manager`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T22:51:36.034Z"
+    },
+    {
+      "id": "bug-050",
+      "timestamp": "2026-04-19T23:14:57.139Z",
+      "error_message": "Incorrect value in code",
+      "file": "apps/docs/docfx.json",
+      "root_cause": "Had \"ui-adapters-blazor/bin/Debug/net10.0/Sunfish.Comp",
+      "fix": "Changed to \"ui-adapters-blazor/bin/Debug/net10.0/Sunfish.UIAd",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T23:14:57.139Z"
+    },
+    {
+      "id": "bug-051",
+      "timestamp": "2026-04-19T23:15:09.319Z",
+      "error_message": "Incorrect value in code",
+      "file": "scripts/group-component-family.sh",
+      "root_cause": "Had \"Sunfish.Components.Blazor.Components.$CATEGORY\"",
+      "fix": "Changed to \"Sunfish.UIAdapters.Blazor.Components.$CATEGORY\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "sh"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-19T23:15:09.319Z"
+    },
+    {
+      "id": "bug-052",
+      "timestamp": "2026-04-19T23:15:52.555Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/product/naming.md",
+      "root_cause": "Had `Sunfish.Components.Blazor`",
+      "fix": "Changed to `Sunfish.UIAdapters.Blazor`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-19T23:16:15.641Z"
+    },
+    {
+      "id": "bug-053",
+      "timestamp": "2026-04-20T12:47:38.733Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/product/vision.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 5→19 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T12:47:38.733Z"
+    },
+    {
+      "id": "bug-054",
+      "timestamp": "2026-04-20T12:57:37.727Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/product/vision.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 5→7 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T12:57:37.727Z"
+    },
+    {
+      "id": "bug-055",
+      "timestamp": "2026-04-20T12:57:40.704Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/product/vision.md",
+      "root_cause": "Had `Sunfish.Icons.*`",
+      "fix": "Changed to `Sunfish.Compat.<Vendor>`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-20T13:02:28.267Z"
+    },
+    {
+      "id": "bug-056",
+      "timestamp": "2026-04-20T13:16:47.470Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/product/vision.md",
+      "root_cause": "Had `blocks-prescriptions`",
+      "fix": "Changed to 's contracts | New bounded contexts (`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T13:16:47.470Z"
+    },
+    {
+      "id": "bug-057",
+      "timestamp": "2026-04-20T13:38:22.685Z",
+      "error_message": "Wrong reference: Four should be Five",
+      "file": "_shared/product/vision.md",
+      "root_cause": "Used \"Four\" instead of \"Five\"",
+      "fix": "Changed Four → Five",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T13:38:22.685Z"
+    },
+    {
+      "id": "bug-058",
+      "timestamp": "2026-04-20T13:55:48.395Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/product/vision.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6→7 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T13:55:48.395Z"
+    },
+    {
+      "id": "bug-059",
+      "timestamp": "2026-04-20T14:47:53.076Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/engineering/commit-conventions.md",
+      "root_cause": "9 lines replaced/restructured",
+      "fix": "Rewrote 51→38 lines (9 removed) | Also: `main` is squash-merge only. Rationale:; - One commit per PR = one changelog entry per PR, ",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-20T14:49:03.716Z"
+    },
+    {
+      "id": "bug-060",
+      "timestamp": "2026-04-20T14:48:51.589Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/commit-conventions.md",
+      "root_cause": "Had 's `",
+      "fix": "Changed to `chore`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T14:48:51.589Z"
+    },
+    {
+      "id": "bug-061",
+      "timestamp": "2026-04-20T14:49:27.161Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/engineering/ci-quality-gates.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 9→10 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T14:49:27.161Z"
+    },
+    {
+      "id": "bug-062",
+      "timestamp": "2026-04-20T14:49:47.698Z",
+      "error_message": "Missing error handling in unknown",
+      "file": "_shared/engineering/ci-quality-gates.md",
+      "root_cause": "Code path had no error handling — exceptions would propagate uncaught",
+      "fix": "Added try/catch block",
+      "tags": [
+        "auto-detected",
+        "error-handling",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T14:49:47.698Z"
+    },
+    {
+      "id": "bug-063",
+      "timestamp": "2026-04-20T14:50:34.774Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/ci-quality-gates.md",
+      "root_cause": "Had \"release is delayed,\"",
+      "fix": "Changed to `v0.5.3-preview.2`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T14:50:34.774Z"
+    },
+    {
+      "id": "bug-064",
+      "timestamp": "2026-04-20T14:58:11.857Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/design/internationalization.md",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 4→5 lines (4 removed) | Also: - **Languages with >2 plural forms are first-class; - **Select (gender, variant) alongside plural.** ` | Also: - **Unit tests for pluralization** — every ICU Mes; - **Snapshot tests for RTL layout** — every layout",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-20T14:59:10.462Z"
+    },
+    {
+      "id": "bug-065",
+      "timestamp": "2026-04-20T15:05:45.215Z",
+      "error_message": "Significant refactor of ",
+      "file": "_shared/product/community-operations.md",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 9→10 lines (6 removed) | Also: - **Pre-Level 4:** no scheduled content program. T; - **Level 4+:** commercial services revenue (per [ | Also: - **Buying stars, downloads, or manufactured hype.; - **Creating fake community activity.** Sockpuppet | Also: [CHAOSS](https://chaoss.community/) (Community Hea; | **Pre-Level 2** | Simple counts — issues opened/ | Also: Deferred until Level 4+. Sunfish will show up at r; Hosting a Sunfish-specific meetup or summit is def | Also: Contribution recognition scales with the community; - **Changelog credit.** Each release's changelog n | Also: - **Code of Conduct applies universally** across a; - **Moderation reports** go to the BDFL via privat | Also: Sunfish's business model (per [vision.md](vision.m; The commercial community tier activates when the f",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 8,
+      "last_seen": "2026-04-20T15:08:06.193Z"
+    },
+    {
+      "id": "bug-066",
+      "timestamp": "2026-04-20T15:12:07.710Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/operations-sre.md",
+      "root_cause": "Had `data-privacy.md`",
+      "fix": "Changed to `../../GOVERNANCE.md`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T15:12:07.710Z"
+    },
+    {
+      "id": "bug-067",
+      "timestamp": "2026-04-20T15:59:03.905Z",
+      "error_message": "Wrong reference: pending should be ci",
+      "file": "_shared/engineering/code-review.md",
+      "root_cause": "Used \"pending\" instead of \"ci\"",
+      "fix": "Changed pending → ci",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T15:59:03.905Z"
+    },
+    {
+      "id": "bug-068",
+      "timestamp": "2026-04-20T15:59:42.325Z",
+      "error_message": "Wrong reference: Draft should be Posture",
+      "file": "_shared/engineering/supply-chain-security.md",
+      "root_cause": "Used \"Draft\" instead of \"Posture\"",
+      "fix": "Changed Draft → Posture",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T15:59:42.325Z"
+    },
+    {
+      "id": "bug-069",
+      "timestamp": "2026-04-20T16:00:00.701Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/ci-quality-gates.md",
+      "root_cause": "Had `releases.md`",
+      "fix": "Changed to `.github/SECURITY.md`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T16:00:00.701Z"
+    },
+    {
+      "id": "bug-070",
+      "timestamp": "2026-04-20T16:00:07.629Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/releases.md",
+      "root_cause": "Had `/commit-conventions.md`",
+      "fix": "Changed to `feat:`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T16:00:07.629Z"
+    },
+    {
+      "id": "bug-071",
+      "timestamp": "2026-04-20T16:00:12.931Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/planning-framework.md",
+      "root_cause": "Had `GOVERNANCE.md`",
+      "fix": "Changed to `../../GOVERNANCE.md`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-20T16:03:02.505Z"
+    },
+    {
+      "id": "bug-072",
+      "timestamp": "2026-04-20T16:03:51.928Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/engineering/ai-code-policy.md",
+      "root_cause": "Had 's November 2025 `",
+      "fix": "Changed to 's late-2025 `",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T16:03:51.928Z"
+    },
+    {
+      "id": "bug-073",
+      "timestamp": "2026-04-20T16:49:36.093Z",
+      "error_message": "Incorrect value in code",
+      "file": "_shared/product/sustainability.md",
+      "root_cause": "Had \"Relationship between commercial entity and OSS pr",
+      "fix": "Changed to `private → public`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T16:49:36.093Z"
+    },
+    {
+      "id": "bug-074",
+      "timestamp": "2026-04-20T17:21:36.228Z",
+      "error_message": "Incorrect value in code",
+      "file": "Directory.Packages.props",
+      "root_cause": "Had \"2202.8.2\"",
+      "fix": "Changed to \"2026.2.4\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:21:36.228Z"
+    },
+    {
+      "id": "bug-075",
+      "timestamp": "2026-04-20T17:55:04.074Z",
+      "error_message": "Significant refactor of ",
+      "file": "Directory.Packages.props",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 5→3 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:55:04.074Z"
+    },
+    {
+      "id": "bug-076",
+      "timestamp": "2026-04-20T17:55:07.706Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 8→3 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "csproj"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:55:07.706Z"
+    },
+    {
+      "id": "bug-077",
+      "timestamp": "2026-04-20T17:56:10.841Z",
+      "error_message": "Missing guard clause",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs",
+      "root_cause": "No early return/throw for edge case: _pdfExportWriter is null",
+      "fix": "Added guard clause: if (_pdfExportWriter is null)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:56:10.841Z"
+    },
+    {
+      "id": "bug-078",
+      "timestamp": "2026-04-20T17:57:58.334Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Pdf.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:57:58.334Z"
+    },
+    {
+      "id": "bug-079",
+      "timestamp": "2026-04-20T17:58:10.111Z",
+      "error_message": "Wrong reference: TItem should be T",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/SunfishPdfServiceExtensions.cs",
+      "root_cause": "Used \"TItem\" instead of \"T\"",
+      "fix": "Changed TItem → T",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-20T17:58:10.111Z"
     }
   ]
 }

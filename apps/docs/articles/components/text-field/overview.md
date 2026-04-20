@@ -46,4 +46,4 @@ The `SunfishTextField` component renders a text `<input>` element inside a style
 
 ## See Also
 
-- [API Reference](xref:Sunfish.Components.Blazor.Components.Forms.Inputs.SunfishTextBox)
+- [API Reference](xref:Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.SunfishTextBox)

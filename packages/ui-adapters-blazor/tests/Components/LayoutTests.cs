@@ -1,7 +1,7 @@
-using Sunfish.Components.Blazor.Components.Layout;
+using Sunfish.UIAdapters.Blazor.Components.Layout;
 using Xunit;
 
-namespace Sunfish.Components.Blazor.Tests.Components;
+namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 public class LayoutTests
 {
@@ -10,13 +10,13 @@ public class LayoutTests
     {
         var type = typeof(SunfishAccordion);
         Assert.True(type.IsPublic);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Layout", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Layout", type.Namespace);
     }
 
     [Fact]
     public void SunfishAppBar_TypeExists()
     {
         var type = typeof(SunfishAppBar);
-        Assert.Equal("Sunfish.Components.Blazor.Components.Layout", type.Namespace);
+        Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Layout", type.Namespace);
     }
 }

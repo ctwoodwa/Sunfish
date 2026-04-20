@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.Forms.Inputs;
+namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs;
 
 /// <summary>
 /// Interface that allows <see cref="ColorPickerViewBase"/> components to register

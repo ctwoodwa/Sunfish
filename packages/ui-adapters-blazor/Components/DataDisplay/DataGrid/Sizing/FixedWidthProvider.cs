@@ -1,7 +1,7 @@
 using System.Globalization;
-using Sunfish.Components.Blazor.Components.DataDisplay;
+using Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Resolves explicit widths (or defaults) into a shared immutable contract.

@@ -1,12 +1,12 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
-using Sunfish.Components.Blazor.Internal;
+using Sunfish.UIAdapters.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Internal;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Sunfish.Components.Blazor.Components.Navigation;
+namespace Sunfish.UIAdapters.Blazor.Components.Navigation;
 
 public partial class SunfishTreeView : SunfishComponentBase
 {

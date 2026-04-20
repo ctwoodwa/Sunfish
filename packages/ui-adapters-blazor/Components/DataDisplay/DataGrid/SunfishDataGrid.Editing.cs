@@ -1,7 +1,7 @@
 using Sunfish.Foundation.Enums;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Editing/CRUD operations for SunfishDataGrid.

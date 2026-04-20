@@ -1,10 +1,10 @@
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models.DataSheet;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishDataSheetColumn<TItem> : SunfishComponentBase
 {

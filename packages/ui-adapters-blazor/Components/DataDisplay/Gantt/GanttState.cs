@@ -1,4 +1,4 @@
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>Controls which filter UI is displayed in SunfishGantt.</summary>
 public enum GanttFilterMode

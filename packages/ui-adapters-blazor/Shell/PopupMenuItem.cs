@@ -1,6 +1,6 @@
 using System;
 
-namespace Sunfish.Components.Blazor.Shell;
+namespace Sunfish.UIAdapters.Blazor.Shell;
 
 /// <summary>Single row in a <see cref="SunfishUserMenu"/>.</summary>
 public class PopupMenuItem

@@ -1,6 +1,6 @@
 @inherits SunfishComponentBase
 @inject IJSRuntime JS
-@inject Sunfish.Components.Blazor.Internal.Interop.ISunfishJsModuleLoader JsModuleLoader
+@inject Sunfish.UIAdapters.Blazor.Internal.Interop.ISunfishJsModuleLoader JsModuleLoader
 
 <div class="@CombineClasses(CssProvider.DatePickerClass()) mar-date-range-picker @(_isPopupOpen ? "mar-date-range-picker--open" : "") @SizeClass @RoundedClass @FillModeClass"
      style="@CombineStyles()"

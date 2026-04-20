@@ -1,8 +1,8 @@
-using Sunfish.Components.Blazor.Internal.Interop;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Foundation.Enums;
 using Sunfish.UICore.Contracts;
 
-namespace Sunfish.Components.Blazor.Tests;
+namespace Sunfish.UIAdapters.Blazor.Tests;
 
 internal sealed class StubCssProvider : ISunfishCssProvider
 {

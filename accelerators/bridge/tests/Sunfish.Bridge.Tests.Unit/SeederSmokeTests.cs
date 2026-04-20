@@ -15,7 +15,7 @@ public class SeederSmokeTests
     {
         public string TenantId => "demo-tenant";
         public string UserId => "test-user";
-        public IReadOnlyList<string> Roles { get; } = [Sunfish.Bridge.Data.Authorization.Roles.ProjectManager];
+        public IReadOnlyList<string> Roles { get; } = [Sunfish.Bridge.Data.Authorization.Roles.Manager];
         public bool HasPermission(string permission) => true;
     }
 

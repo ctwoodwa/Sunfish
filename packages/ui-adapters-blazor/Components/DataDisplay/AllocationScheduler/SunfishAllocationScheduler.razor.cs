@@ -1,13 +1,13 @@
-// using Sunfish.Components.Blazor.Components.DataGrid.Sizing; — removed: Sizing types now flat in DataDisplay namespace
+// using Sunfish.UIAdapters.Blazor.Components.DataGrid.Sizing; — removed: Sizing types now flat in DataDisplay namespace
 using Sunfish.Foundation.Base;
-using Sunfish.Components.Blazor.Base;
+using Sunfish.UIAdapters.Blazor.Base;
 using Sunfish.Foundation.BusinessLogic.Enums;
 using Sunfish.Foundation.Enums;
 using Sunfish.Foundation.Models;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBase, IAsyncDisposable
 {

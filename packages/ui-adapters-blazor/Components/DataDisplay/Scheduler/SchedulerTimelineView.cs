@@ -1,6 +1,6 @@
 using Sunfish.Foundation.Models;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay.Scheduler;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Scheduler;
 
 /// <summary>
 /// Configures the Timeline view for <see cref="SunfishScheduler"/>.

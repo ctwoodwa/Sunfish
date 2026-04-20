@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Sunfish.Components.Blazor.Components.DataDisplay;
+namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
 /// <summary>
 /// Internal tree node used by <see cref="SunfishGantt{TItem}"/> to represent
