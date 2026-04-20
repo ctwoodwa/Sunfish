@@ -676,3 +676,8 @@
 | 13:59 | Session end: 15 writes across 9 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 4 reads | ~6890 tok |
 | 14:07 | Created .gitattributes | — | ~342 |
 | 14:07 | Edited .gitignore | 2→3 lines | ~20 |
+| 14:09 | Session end: 17 writes across 11 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 5 reads | ~7278 tok |
+| 14:14 | Session end: 17 writes across 11 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 5 reads | ~7278 tok |
+| 14:22 | Created docs/adrs/0021-reporting-pipeline-policy.md | — | ~3079 |
+| 14:22 | Edited docs/adrs/README.md | 1→2 lines | ~79 |
+| 14:22 | Session end: 19 writes across 13 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 5 reads | ~10661 tok |

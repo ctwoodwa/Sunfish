@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-20T18:07:36.781Z
-> Files: 60 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-20T18:22:10.304Z
+> Files: 61 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -199,7 +199,8 @@
 - `0016-app-and-accelerator-naming.md` — ADR 0016 — App and Accelerator Naming Convention (~2529 tok)
 - `0017-web-components-lit-technical-basis.md` — ADR 0017 — Web Components (via Lit) as UI Technical Basis; JS and WASM Consumption Tracks (~3868 tok)
 - `0018-governance-and-license-posture.md` — ADR 0018 — Governance Model and License Posture (~2120 tok)
-- `README.md` — Project documentation (~638 tok)
+- `0021-reporting-pipeline-policy.md` — ADR 0021 — Document and Report Generation Pipeline (~2887 tok)
+- `README.md` — Project documentation (~678 tok)
 
 ## docs/specifications/
 

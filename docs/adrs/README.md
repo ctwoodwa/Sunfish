@@ -29,6 +29,7 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0016](0016-app-and-accelerator-naming.md) | App and Accelerator Naming Convention | Accepted | — |
 | [0017](0017-web-components-lit-technical-basis.md) | Web Components (via Lit) as UI Technical Basis; JS and WASM Consumption Tracks | Accepted | — |
 | [0018](0018-governance-and-license-posture.md) | Governance Model and License Posture (BDFL + MIT + ODF/UPF/ICM stack) | Accepted | — |
+| [0021](0021-reporting-pipeline-policy.md) | Document and Report Generation Pipeline (Contracts + Pure-OSS Defaults + Commercial Adapters) | Accepted | — |
 
 ## Appendix C Resolution
 
