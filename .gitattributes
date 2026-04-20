@@ -1,0 +1,59 @@
+# Sunfish line-ending policy: LF in the repo, everywhere.
+# Rationale: matches GitHub's default, Linux CI, JS/TS ecosystem, and
+# modern .NET tooling. Windows contributors who want CRLF locally can
+# set core.autocrlf=true — the repo stays LF either way.
+
+# Default: detect text vs binary, store text as LF in the repo
+* text=auto eol=lf
+
+# Windows-only scripts must have CRLF
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.ps1   text eol=crlf
+
+# Explicit text
+*.cs            text
+*.csproj        text
+*.slnx          text
+*.sln           text
+*.json          text
+*.md            text
+*.yml           text
+*.yaml          text
+*.razor         text
+*.razor.css     text
+*.html          text
+*.css           text
+*.js            text
+*.ts            text
+*.tsx           text
+*.mjs           text
+*.config        text
+*.props         text
+*.targets       text
+*.xml           text
+Directory.Build.props   text
+Directory.Packages.props text
+
+# Binary — never normalize
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.webp  binary
+*.svg   text
+*.pdf   binary
+*.zip   binary
+*.7z    binary
+*.gz    binary
+*.tar   binary
+*.ttf   binary
+*.otf   binary
+*.woff  binary
+*.woff2 binary
+*.pfx   binary
+*.snk   binary
+*.dll   binary
+*.exe   binary
+*.bin   binary

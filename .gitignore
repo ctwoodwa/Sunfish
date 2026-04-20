@@ -442,6 +442,7 @@ test-results/
 # Claude Code per-user state — local permission overrides, scheduler lock file
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+.claude/worktrees/
 
 # Docs (generated)
 apps/docs/_site/
