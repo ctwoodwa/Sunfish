@@ -10,7 +10,7 @@
         @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Icon))
     {
-        <span class="sf-toolbar-button__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+        <span class="sf-toolbar-button__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
     }
     @ChildContent
 </button>

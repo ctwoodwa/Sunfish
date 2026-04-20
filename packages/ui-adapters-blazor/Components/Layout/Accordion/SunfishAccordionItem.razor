@@ -12,7 +12,7 @@
             @onclick="ToggleExpanded">
         @if (!string.IsNullOrEmpty(Icon))
         {
-            <span class="sf-accordion-item__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+            <span class="sf-accordion-item__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
         }
         @Title
     </button>

@@ -20,7 +20,7 @@
             aria-haspopup="true"
             aria-expanded="@_menuOpen.ToString().ToLowerInvariant()"
             @onclick="ToggleMenu">
-        @IconProvider.GetIcon("chevron-down", IconSize.Small)
+        @IconProvider.GetIconMarkup("chevron-down", IconSize.Small)
     </button>
     @if (_menuOpen)
     {

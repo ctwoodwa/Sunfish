@@ -27,7 +27,7 @@
         else
         {
             <span class="sf-upload__icon" aria-hidden="true">
-                @IconProvider.GetIcon("upload", Sunfish.Foundation.Enums.IconSize.Medium)
+                @IconProvider.GetIconMarkup("upload", Sunfish.Foundation.Enums.IconSize.Medium)
             </span>
             <span class="sf-upload__text">
                 Drag and drop file@(Multiple ? "s" : "") here, or
@@ -82,7 +82,7 @@
                     {
                         @* File icon *@
                         <span class="sf-upload__file-icon" aria-hidden="true">
-                            @IconProvider.GetIcon("file", Sunfish.Foundation.Enums.IconSize.Small)
+                            @IconProvider.GetIconMarkup("file", Sunfish.Foundation.Enums.IconSize.Small)
                         </span>
 
                         @* File info *@

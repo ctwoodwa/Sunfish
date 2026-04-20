@@ -15,7 +15,7 @@
         {
             <span class="sf-rating__star @(isFilled ? "mar-rating__star--filled" : "")"
                   aria-label="@starIndex of @Max stars">
-                @IconProvider.GetIcon(iconName, IconSize.Medium)
+                @IconProvider.GetIconMarkup(iconName, IconSize.Medium)
             </span>
         }
         else
@@ -24,7 +24,7 @@
                     type="button"
                     aria-label="@starIndex of @Max stars"
                     @onclick="() => SetRating(starIndex)">
-                @IconProvider.GetIcon(iconName, IconSize.Medium)
+                @IconProvider.GetIconMarkup(iconName, IconSize.Medium)
             </button>
         }
     }

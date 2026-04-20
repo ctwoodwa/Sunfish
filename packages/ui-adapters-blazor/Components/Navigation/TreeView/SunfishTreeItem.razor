@@ -32,7 +32,7 @@
         }
         @if (!string.IsNullOrEmpty(Icon))
         {
-            <span class="sf-tree-item__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+            <span class="sf-tree-item__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
         }
         @if (!string.IsNullOrEmpty(Url))
         {

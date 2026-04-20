@@ -7,7 +7,7 @@
             disabled="@Disabled"
             aria-label="Decrease"
             @onclick="Decrement">
-        @IconProvider.GetIcon("minus", IconSize.Small)
+        @IconProvider.GetIconMarkup("minus", IconSize.Small)
     </button>
     <input type="number"
            class="@CssProvider.TextBoxClass(IsInvalid, Disabled)"
@@ -22,7 +22,7 @@
             disabled="@Disabled"
             aria-label="Increase"
             @onclick="Increment">
-        @IconProvider.GetIcon("plus", IconSize.Small)
+        @IconProvider.GetIconMarkup("plus", IconSize.Small)
     </button>
 </div>
 

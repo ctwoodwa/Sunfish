@@ -4,7 +4,7 @@
      style="@CombineStyles()"
      @attributes="AdditionalAttributes">
     <span class="sf-search-box__icon">
-        @IconProvider.GetIcon("search", IconSize.Small)
+        @IconProvider.GetIconMarkup("search", IconSize.Small)
     </span>
     <input type="search"
            value="@Value"
@@ -19,7 +19,7 @@
                 aria-label="Clear search"
                 disabled="@Disabled"
                 @onclick="ClearValue">
-            @IconProvider.GetIcon("x-close", IconSize.Small)
+            @IconProvider.GetIconMarkup("x-close", IconSize.Small)
         </button>
     }
     else if (!string.IsNullOrEmpty(KbdHint))

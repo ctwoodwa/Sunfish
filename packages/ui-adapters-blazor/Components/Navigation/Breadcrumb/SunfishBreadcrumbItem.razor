@@ -7,7 +7,7 @@
         <span aria-current="page">
             @if (!string.IsNullOrEmpty(Icon))
             {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
             }
             @if (!string.IsNullOrEmpty(Title))
             {
@@ -21,7 +21,7 @@
         <a href="@Href">
             @if (!string.IsNullOrEmpty(Icon))
             {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
             }
             @if (!string.IsNullOrEmpty(Title))
             {
@@ -35,7 +35,7 @@
         <span>
             @if (!string.IsNullOrEmpty(Icon))
             {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIcon(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
             }
             @if (!string.IsNullOrEmpty(Title))
             {

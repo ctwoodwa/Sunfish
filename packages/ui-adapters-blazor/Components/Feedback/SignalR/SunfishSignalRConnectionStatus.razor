@@ -16,11 +16,11 @@
             @attributes="AdditionalAttributes">
         @if (_aggregateState is AggregateConnectionState.Offline)
         {
-            @IconProvider.GetIcon("wifi-off", Compact ? IconSize.Small : IconSize.Medium)
+            @IconProvider.GetIconMarkup("wifi-off", Compact ? IconSize.Small : IconSize.Medium)
         }
         else
         {
-            @IconProvider.GetIcon("wifi", Compact ? IconSize.Small : IconSize.Medium)
+            @IconProvider.GetIconMarkup("wifi", Compact ? IconSize.Small : IconSize.Medium)
         }
         @if (ShowCounts)
         {

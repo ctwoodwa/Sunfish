@@ -19,7 +19,7 @@
             @* Up button *@
             <button type="button" class="sf-btn mar-btn--flat mar-btn--sm" @onclick="NavigateUp"
                     disabled="@(!CanNavigateUp)">
-                @IconProvider.GetIcon("arrow-up", IconSize.Small)
+                @IconProvider.GetIconMarkup("arrow-up", IconSize.Small)
                 Up
             </button>
 
@@ -76,11 +76,11 @@
                     @onclick="ToggleSortDirection">
                 @if (_sortAscending)
                 {
-                    @IconProvider.GetIcon("sort-asc", IconSize.Small)
+                    @IconProvider.GetIconMarkup("sort-asc", IconSize.Small)
                 }
                 else
                 {
-                    @IconProvider.GetIcon("sort-desc", IconSize.Small)
+                    @IconProvider.GetIconMarkup("sort-desc", IconSize.Small)
                 }
             </button>
 
@@ -98,7 +98,7 @@
                 <button type="button" class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__upload-btn"
                         title="Upload files"
                         @onclick="ShowUploadDialog">
-                    @IconProvider.GetIcon("upload", IconSize.Small)
+                    @IconProvider.GetIconMarkup("upload", IconSize.Small)
                     Upload
                 </button>
             }
@@ -110,7 +110,7 @@
                         class="sf-btn mar-btn--flat mar-btn--sm mar-filemanager__details-btn @(_previewPaneVisible ? "mar-filemanager__details-btn--active" : "")"
                         title="@(_previewPaneVisible ? "Hide details" : "Show details")"
                         @onclick="TogglePreviewPane">
-                    @IconProvider.GetIcon("info", IconSize.Small)
+                    @IconProvider.GetIconMarkup("info", IconSize.Small)
                     Details
                 </button>
             }
@@ -121,11 +121,11 @@
                     @onclick="ToggleView">
                 @if (View == FileManagerViewType.Grid)
                 {
-                    @IconProvider.GetIcon("view-list", IconSize.Small)
+                    @IconProvider.GetIconMarkup("view-list", IconSize.Small)
                 }
                 else
                 {
-                    @IconProvider.GetIcon("view-grid", IconSize.Small)
+                    @IconProvider.GetIconMarkup("view-grid", IconSize.Small)
                 }
             </button>
         }
@@ -147,7 +147,7 @@
                             aria-selected="@isActive"
                             class="@(isActive ? "mar-filemanager__tree-item--active" : "")"
                             @onclick="() => NavigateTo(GetPath(f))">
-                            @IconProvider.GetIcon("folder", IconSize.Small) @GetName(f)
+                            @IconProvider.GetIconMarkup("folder", IconSize.Small) @GetName(f)
                         </li>
                     }
                 </ul>
@@ -175,7 +175,7 @@
                              @oncontextmenu="e => ShowContextMenu(entry, e)"
                              @oncontextmenu:preventDefault="true">
                             <span class="sf-filemanager__icon">
-                                @IconProvider.GetIcon(GetIsDirectory(entry) ? "folder" : "file", IconSize.Large)
+                                @IconProvider.GetIconMarkup(GetIsDirectory(entry) ? "folder" : "file", IconSize.Large)
                             </span>
                             @if (IsRenaming(entry))
                             {
@@ -216,7 +216,7 @@
                                 @oncontextmenu="e => ShowContextMenu(entry, e)"
                                 @oncontextmenu:preventDefault="true">
                                 <td role="gridcell">
-                                    @IconProvider.GetIcon(GetIsDirectory(entry) ? "folder" : "file", IconSize.Small)
+                                    @IconProvider.GetIconMarkup(GetIsDirectory(entry) ? "folder" : "file", IconSize.Small)
                                     @if (IsRenaming(entry))
                                     {
                                         <input class="sf-filemanager__rename-input"
@@ -252,7 +252,7 @@
                 {
                     var sel = SelectedItem;
                     <div class="sf-filemanager__preview-icon">
-                        @IconProvider.GetIcon(GetIsDirectory(sel) ? "folder" : "file", IconSize.Large)
+                        @IconProvider.GetIconMarkup(GetIsDirectory(sel) ? "folder" : "file", IconSize.Large)
                     </div>
                     <div class="sf-filemanager__preview-details">
                         <div class="sf-filemanager__preview-name">@GetName(sel)</div>

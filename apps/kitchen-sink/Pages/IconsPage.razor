@@ -44,7 +44,7 @@
             @foreach (var name in _tablerSamples)
             {
                 <div class="icons-card" title="@name">
-                    <div class="icons-card-icon">@_tablerProvider.GetIcon(name, IconSize.Medium)</div>
+                    <div class="icons-card-icon">@_tablerProvider.GetIconMarkup(name, IconSize.Medium)</div>
                     <span class="icons-card-name">@name</span>
                 </div>
             }
@@ -54,7 +54,7 @@
             @foreach (var size in new[] { IconSize.Small, IconSize.Medium, IconSize.Large, IconSize.ExtraLarge })
             {
                 <div style="text-align: center;">
-                    @_tablerProvider.GetIcon("home", size)
+                    @_tablerProvider.GetIconMarkup("home", size)
                     <div style="font-size: 0.75rem; margin-top: 0.25rem; opacity: 0.6;">@size</div>
                 </div>
             }

@@ -34,7 +34,7 @@
                        @onclick:preventDefault="@(SelectedItemChanged.HasDelegate)">
                         @if (!string.IsNullOrEmpty(icon))
                         {
-                            <span class="sf-drawer__item-icon">@IconProvider.GetIcon(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                            <span class="sf-drawer__item-icon">@IconProvider.GetIconMarkup(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
                         }
                         @if (!MiniMode || Expanded)
                         {
@@ -48,7 +48,7 @@
                          @onclick="() => HandleItemClick(item)">
                         @if (!string.IsNullOrEmpty(icon))
                         {
-                            <span class="sf-drawer__item-icon">@IconProvider.GetIcon(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                            <span class="sf-drawer__item-icon">@IconProvider.GetIconMarkup(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
                         }
                         @if (!MiniMode || Expanded)
                         {

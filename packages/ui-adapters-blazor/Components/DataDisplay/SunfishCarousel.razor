@@ -21,10 +21,10 @@
     @if (ShowArrows)
     {
         <button class="sf-carousel__prev" @onclick="Previous" aria-label="Previous">
-            @IconProvider.GetIcon("chevron-left", IconSize.Medium)
+            @IconProvider.GetIconMarkup("chevron-left", IconSize.Medium)
         </button>
         <button class="sf-carousel__next" @onclick="Next" aria-label="Next">
-            @IconProvider.GetIcon("chevron-right", IconSize.Medium)
+            @IconProvider.GetIconMarkup("chevron-right", IconSize.Medium)
         </button>
     }
     <div class="sf-carousel__dots">

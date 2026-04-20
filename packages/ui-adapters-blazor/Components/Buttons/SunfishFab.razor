@@ -5,7 +5,7 @@
         disabled="@(!Enabled)"
         @onclick="OnClick"
         @attributes="AdditionalAttributes">
-    @IconProvider.GetIcon(Icon, IconSize.Medium)
+    @IconProvider.GetIconMarkup(Icon, IconSize.Medium)
     @if (ChildContent != null)
     {
         <span class="sf-fab__text">@ChildContent</span>
