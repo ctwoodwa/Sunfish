@@ -176,6 +176,9 @@
     <Project Path="accelerators/bridge/tests/Sunfish.Bridge.Tests.Integration/Sunfish.Bridge.Tests.Integration.csproj" />
     <Project Path="accelerators/bridge/tests/Sunfish.Bridge.Tests.Performance/Sunfish.Bridge.Tests.Performance.csproj" />
   </Folder>
+  <Folder Name="/accelerators/anchor/">
+    <Project Path="accelerators/anchor/Sunfish.Anchor.csproj" />
+  </Folder>
   <Folder Name="/apps/">
     <Project Path="apps/kitchen-sink/Sunfish.KitchenSink.csproj" />
   </Folder>

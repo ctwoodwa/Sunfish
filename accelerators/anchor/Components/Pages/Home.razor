@@ -1,0 +1,42 @@
+@page "/"
+
+<PageTitle>Sunfish Anchor</PageTitle>
+
+<div class="anchor-dashboard">
+    <header class="anchor-hero">
+        <h1>Sunfish Anchor</h1>
+        <p class="anchor-hero-sub">
+            Local-first desktop dashboard for Sunfish — reports, admin, and audit.
+            Your data lives on this device.
+        </p>
+        <span class="anchor-status-pill" title="Offline-by-default. Sync is opt-in per bundle.">
+            Local-first · Offline-by-default
+        </span>
+    </header>
+
+    <section class="anchor-placeholder">
+        <h2>Scope reserved</h2>
+        <p>
+            This accelerator is scaffolded and positioned as the desktop reports and
+            admin dashboard tool. Scope — bundle selection, report catalog,
+            authentication model, LocalFirst store wiring — is deliberately deferred
+            until the Web Components migration lands (ADR 0017) so Anchor and Bridge
+            consume the same component surface from day one.
+        </p>
+        <p>
+            See the <code>README.md</code> in this folder for Anchor's architectural role
+            and the deferred-scope checklist.
+        </p>
+    </section>
+</div>
+
+<style>
+    .anchor-dashboard { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-hero h1 { font-size: 2rem; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+    .anchor-hero-sub { color: #555; margin: 0 0 1rem; line-height: 1.5; }
+    .anchor-status-pill { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; background: #e6f4ea; color: #1e6b3c; font-size: 0.8125rem; font-weight: 500; }
+    .anchor-placeholder { margin-top: 2rem; padding: 1.5rem; border: 1px dashed #ccc; border-radius: 8px; background: #fafafa; }
+    .anchor-placeholder h2 { margin: 0 0 0.75rem; font-size: 1.125rem; }
+    .anchor-placeholder p { margin: 0 0 0.75rem; line-height: 1.55; color: #444; }
+    .anchor-placeholder code { background: #eee; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.9em; }
+</style>
