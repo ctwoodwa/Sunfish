@@ -48,7 +48,7 @@ Recommended: option 2 for Bridge (single-DbContext simplifies transactions and t
 
 | File | Classification | Notes |
 |---|---|---|
-| `Roles.cs` — `Owner`, `Admin`, `ProjectManager`, `TeamMember`, `Viewer` | Mostly shell | `ProjectManager` is a vertical term — rename to `Manager` or make it a per-bundle role. Others are shell-generic. |
+| `Roles.cs` — `Owner`, `Admin`, `Manager`, `TeamMember`, `Viewer` | Shell | `ProjectManager` was renamed to `Manager` (2026-04-19) — see Recommendation 4 below. All five are now shell-generic. |
 | `Permissions.cs` — `ProjectCreate`, `ProjectDelete`, `TaskCreate`, `TaskDelete`, `BudgetEdit`, `RiskExport`, `AuditRead`, `OrgUpdate`, `SsoManage` | Split | `OrgUpdate`, `SsoManage`, `AuditRead` → shell. All `Project*`, `Task*`, `BudgetEdit`, `RiskExport` → move with the entities they protect. |
 
 ### `Seeding/BridgeSeeder.cs`
@@ -156,9 +156,9 @@ Every other table belongs to a block.
 1. **Land ADR 0015** before any Bridge.Data move happens. Decide the module-entity registration pattern (external DbContext per block, or module-extension into Bridge's DbContext).
 2. **Add a `PR-template` or `CODEOWNERS` rule** that flags new entities in `Bridge.Data.Entities` for extra review — catches future leakage.
 3. **Freeze new domain additions to `Bridge.Data.Entities`.** New domain work goes into a `blocks-*` module (creating the module if necessary) even while the existing entities remain in place.
-4. **Rename `Roles.ProjectManager` → `Roles.Manager`** — tiny change, removes the most visible vertical-specific language from shell code. Do this alongside ADR 0006 follow-ups.
+4. **~~Rename `Roles.ProjectManager` → `Roles.Manager`~~** — ✅ **Done 2026-04-19.** Renamed across `Sunfish.Bridge.Data/Authorization/Roles.cs`, `Sunfish.Bridge.Data/Seeding/BridgeSeeder.cs`, `Sunfish.Bridge/Authorization/DemoTenantContext.cs`, `Sunfish.Bridge.Tests.Unit/SeederSmokeTests.cs`, and `accelerators/bridge/dab-config.json` (9 policy entries + 1 description).
 5. **Defer actual entity moves to P2** when `blocks-projects` and friends actually exist. Don't churn the code until there's a target.
-6. **Update `DemoTenantContext.Roles`** to match whatever rename lands in point 4.
+6. **~~Update `DemoTenantContext.Roles`~~** — ✅ Done alongside #4.
 
 ---
 

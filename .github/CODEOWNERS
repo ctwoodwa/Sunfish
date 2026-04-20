@@ -13,6 +13,17 @@
 # Foundation layer (framework-agnostic contracts)
 /packages/foundation/           @ctwoodwa
 
+# Foundation-tier split packages (per ADRs 0005, 0008, 0009, 0012, 0013)
+/packages/foundation-catalog/             @ctwoodwa
+/packages/foundation-multitenancy/        @ctwoodwa
+/packages/foundation-featuremanagement/   @ctwoodwa
+/packages/foundation-localfirst/          @ctwoodwa
+/packages/foundation-integrations/        @ctwoodwa
+
+# Governance and decision-making docs
+/GOVERNANCE.md                  @ctwoodwa
+/docs/adrs/                     @ctwoodwa
+
 # UI contracts — require extra scrutiny (breaking change surface)
 /packages/ui-core/              @ctwoodwa
 

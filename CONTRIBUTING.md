@@ -81,6 +81,16 @@ Any change visible to library consumers **requires**:
 - XML doc comments on all new/changed public members
 - A changelog entry describing the change from the user's perspective
 
+## Governance
+
+Sunfish is pre-release and currently led by a single maintainer under a BDFL model with
+explicit transition triggers. See [`GOVERNANCE.md`](GOVERNANCE.md) for the decision model,
+the ODF + UPF + ICM framework stack, how external contributors participate, and the triggers
+under which governance evolves (maintainer tier, steering committee, foundation membership).
+
+Contributions are made under the project's [MIT License](LICENSE). Sign commits with
+`git commit --signoff` (DCO) — no CLA is required.
+
 ## Code of Conduct
 
 This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).

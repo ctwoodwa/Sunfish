@@ -26,6 +26,9 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0012](0012-foundation-localfirst.md) | Foundation.LocalFirst Contracts + Federation Relationship | Accepted | — |
 | [0013](0013-foundation-integrations.md) | Foundation.Integrations + Provider-Neutrality Policy | Accepted | — |
 | [0014](0014-adapter-parity-policy.md) | UI Adapter Parity Policy (Blazor ↔ React) | Accepted | — |
+| [0016](0016-app-and-accelerator-naming.md) | App and Accelerator Naming Convention | Accepted | — |
+| [0017](0017-web-components-lit-technical-basis.md) | Web Components (via Lit) as UI Technical Basis; JS and WASM Consumption Tracks | Accepted | — |
+| [0018](0018-governance-and-license-posture.md) | Governance Model and License Posture (BDFL + MIT + ODF/UPF/ICM stack) | Accepted | — |
 
 ## Appendix C Resolution
 
