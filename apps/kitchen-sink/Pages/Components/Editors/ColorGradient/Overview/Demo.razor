@@ -1,0 +1,38 @@
+@page "/components/editors/colorgradient/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ColorGradient / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorGradient / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ColorGradient/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorGradient</code> presents an HSV canvas, hue slider, and opacity slider so
+            users can dial in a precise color. Two-way bind the chosen color via <code>@@bind-Value</code>,
+            switch the output to hex with <code>ValueFormat="ColorFormat.Hex"</code>, and hide the alpha
+            channel with <code>ShowOpacityEditor="false"</code> when opacity doesn't apply.
+        </p>
+        <p>
+            See <a href="/components/editors/colorgradient/keyboard-navigation">keyboard-navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishColorGradient @bind-Value="_color" />
+            <p style="margin-top:8px;">Selected: <strong>@_color</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "ColorGradient", "Overview"];
+
+    private string _color = "rgb(25, 118, 210)";
+}

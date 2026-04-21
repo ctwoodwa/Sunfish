@@ -1,0 +1,53 @@
+@page "/components/editors/upload/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>Upload / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Upload / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Upload/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishUpload</code> posts selected files to a configurable endpoint. Set
+            <code>SaveUrl</code> (and optionally <code>RemoveUrl</code>), choose between automatic and manual
+            upload via <code>AutoUpload</code>, and restrict inputs with <code>Accept</code>,
+            <code>AllowedExtensions</code>, <code>MaxFileSize</code>, and <code>MinFileSize</code>. Observe
+            progress and results through the <code>OnSuccess</code>, <code>OnError</code>, and
+            <code>OnProgress</code> callbacks.
+        </p>
+        <p>
+            See <a href="/components/editors/upload/chunk-upload">chunk-upload</a> and
+            <a href="/components/editors/upload/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishUpload SaveUrl="/api/upload"
+                          OnSuccess="HandleSuccess"
+                          OnError="HandleError" />
+            @if (!string.IsNullOrEmpty(_uploadStatus))
+            {
+                <p class="demo-status">@_uploadStatus</p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Upload", "Overview"];
+
+    private string? _uploadStatus;
+
+    private void HandleSuccess(UploadSuccessEventArgs args) =>
+        _uploadStatus = $"Uploaded {args.Files.Count} file(s).";
+
+    private void HandleError(UploadErrorEventArgs args) =>
+        _uploadStatus = $"Error uploading {args.Files.Count} file(s).";
+}

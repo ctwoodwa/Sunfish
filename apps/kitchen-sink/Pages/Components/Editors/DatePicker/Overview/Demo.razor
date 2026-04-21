@@ -1,0 +1,46 @@
+@page "/components/editors/datepicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DatePicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DatePicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DatePicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDatePicker</code> combines a text field with a popup calendar for picking a single
+            <code>DateOnly?</code> value. Bind with <code>Value</code> / <code>ValueChanged</code> and
+            constrain the selectable range with <code>Min</code> / <code>Max</code>. Disable specific dates
+            (holidays, weekends) through the relevant parameters in the feature demos.
+        </p>
+        <p>
+            See <a href="/components/editors/datepicker/format">format</a>,
+            <a href="/components/editors/datepicker/templates">templates</a>, and
+            <a href="/components/editors/datepicker/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <SunfishField>
+                <SunfishLabel>Select a date</SunfishLabel>
+                <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" />
+            </SunfishField>
+            @if (_date.HasValue)
+            {
+                <p>Selected date: <strong>@_date.Value.ToString("yyyy-MM-dd")</strong></p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "DatePicker", "Overview"];
+
+    private DateOnly? _date;
+}

@@ -1408,6 +1408,22 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-21T21:07:14.870Z"
+    },
+    {
+      "id": "bug-089",
+      "timestamp": "2026-04-21T21:12:43.786Z",
+      "error_message": "Wrong reference: DateOnly should be DateTime",
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/Demo.razor",
+      "root_cause": "Used \"DateOnly\" instead of \"DateTime\"",
+      "fix": "Changed DateOnly → DateTime",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-21T21:12:44.871Z"
     }
   ]
 }

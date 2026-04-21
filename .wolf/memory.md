@@ -867,3 +867,39 @@
 | 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/Demo.razor | — | ~561 |
 | 17:09 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Overview/Demo.razor | — | ~712 |
 | 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/DateInput/Overview/Demo.razor | — | ~437 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/DatePicker/Overview/Demo.razor | — | ~498 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/TimePicker/Overview/Demo.razor | — | ~410 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/DateTimePicker/Overview/Demo.razor | — | ~407 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/DateRangePicker/Overview/Demo.razor | — | ~444 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/Demo.razor | — | ~471 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/ColorGradient/Overview/Demo.razor | — | ~404 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/ColorPalette/Overview/Demo.razor | — | ~423 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/ColorPicker/Overview/Demo.razor | — | ~442 |
+| 17:10 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Overview/Demo.razor | — | ~553 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/Rating/Overview/Demo.razor | — | ~394 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/Signature/Overview/Demo.razor | — | ~330 |
+| 17:10 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Menu/Overview/Demo.razor | — | ~598 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/FileSelect/Overview/Demo.razor | — | ~530 |
+| 17:10 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/ContextMenu/Overview/Demo.razor | — | ~600 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/Upload/Overview/Demo.razor | — | ~562 |
+| 17:10 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Overview/Demo.razor | — | ~628 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/Demo.razor | — | ~460 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/FloatingLabel/Overview/Demo.razor | — | ~388 |
+
+## Session: 2026-04-21 17:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:10 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Overview/Demo.razor | — | ~787 |
+| 17:10 | Created apps/kitchen-sink/Pages/Components/Editors/Label/Overview/Demo.razor | — | ~440 |
+| 17:11 | Created apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | — | ~641 |
+| 17:11 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Wizard/Overview/Demo.razor | — | ~826 |
+| 17:11 | Session end: 4 writes across 1 files (Demo.razor) | 0 reads | ~2887 tok |
+| 17:11 | Created .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Overview/Demo.razor | — | ~739 |
+| 17:11 | Edited apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/Demo.razor | modified HandleDrop() | ~41 |
+| 17:11 | Edited apps/kitchen-sink/Pages/Components/Editors/Upload/Overview/Demo.razor | 5→5 lines | ~70 |
+| 17:11 | Edited apps/kitchen-sink/Pages/Components/Editors/Label/Overview/Demo.razor | 11→11 lines | ~126 |
+| 17:12 | Session end: 8 writes across 1 files (Demo.razor) | 3 reads | ~3932 tok |
+| 17:12 | Edited apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/Demo.razor | inline fix | ~10 |
+| 17:12 | Edited apps/kitchen-sink/Pages/Components/Editors/Rating/Overview/Demo.razor | inline fix | ~8 |
+| 17:12 | Session end: 10 writes across 1 files (Demo.razor) | 3 reads | ~3951 tok |

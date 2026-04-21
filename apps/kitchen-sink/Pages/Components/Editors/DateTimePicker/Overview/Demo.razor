@@ -1,0 +1,39 @@
+@page "/components/editors/datetimepicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DateTimePicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DateTimePicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DateTimePicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDateTimePicker</code> combines date and time selection into a single
+            <code>DateTime?</code> control. Use <code>@@bind-Value</code> for two-way binding; the popup
+            exposes both calendar and time wheels so users don't need two separate controls.
+        </p>
+        <p>
+            See <a href="/components/editors/datetimepicker/format">format</a>,
+            <a href="/components/editors/datetimepicker/templates">templates</a>, and
+            <a href="/components/editors/datetimepicker/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishDateTimePicker @bind-Value="_value" />
+            <span>Selected: @_value?.ToString("g")</span>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "DateTimePicker", "Overview"];
+
+    private DateTime? _value = DateTime.Now;
+}

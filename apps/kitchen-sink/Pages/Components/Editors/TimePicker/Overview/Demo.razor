@@ -1,0 +1,39 @@
+@page "/components/editors/timepicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TimePicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TimePicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TimePicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTimePicker</code> is a dropdown for selecting a <code>TimeOnly?</code> value.
+            Two-way bind with <code>@@bind-Value</code> and pair it alongside a <code>SunfishDatePicker</code>
+            when you need a date + time combo, or use <code>SunfishDateTimePicker</code> for a single control.
+        </p>
+        <p>
+            See <a href="/components/editors/timepicker/format">format</a>,
+            <a href="/components/editors/timepicker/templates">templates</a>, and
+            <a href="/components/editors/timepicker/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishTimePicker @bind-Value="_time" />
+            <span>Selected: @_time?.ToString()</span>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "TimePicker", "Overview"];
+
+    private TimeOnly? _time = TimeOnly.FromDateTime(DateTime.Now);
+}

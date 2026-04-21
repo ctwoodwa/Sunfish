@@ -1,0 +1,39 @@
+@page "/components/editors/colorpalette/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ColorPalette / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPalette / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ColorPalette/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPalette</code> displays a grid of color swatches for quick selection. By default
+            it renders an Office-style preset palette; supply your own set through the <code>Colors</code>
+            parameter, control the grid shape with <code>Columns</code>, and resize the tiles with
+            <code>TileWidth</code> / <code>TileHeight</code>. Two-way bind the picked color via
+            <code>@@bind-Value</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/colorpalette/keyboard-navigation">keyboard-navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishColorPalette @bind-Value="_selectedColor" />
+            <p style="margin-top:8px;">Selected: <strong style="color:@_selectedColor;">@_selectedColor</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "ColorPalette", "Overview"];
+
+    private string? _selectedColor;
+}

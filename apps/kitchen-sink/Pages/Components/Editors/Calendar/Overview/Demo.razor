@@ -1,0 +1,44 @@
+@page "/components/editors/calendar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Calendar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Calendar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCalendar</code> is an inline calendar for browsing and selecting dates.
+            Two-way bind a single selection with <code>@@bind-Value</code>, respond to user clicks through
+            <code>OnDateClick</code>, and constrain the selectable range with <code>Min</code> /
+            <code>Max</code>. Toggle visual affordances such as <code>ShowWeekNumbers</code> and
+            <code>ShowOtherMonthDays</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/calendar/range-selection">range-selection</a>,
+            <a href="/components/editors/calendar/multiple-selection">multiple-selection</a>, and
+            <a href="/components/editors/calendar/templates">templates</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishCalendar @bind-Value="_selectedDate" />
+            @if (_selectedDate.HasValue)
+            {
+                <p>Selected: <strong>@_selectedDate.Value.ToString("dddd, MMMM d, yyyy")</strong></p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Calendar", "Overview"];
+
+    private DateTime? _selectedDate;
+}

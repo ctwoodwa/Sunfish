@@ -1,0 +1,46 @@
+@page "/components/editors/dropzone/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DropZone / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropZone / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropZone</code> accepts files via drag-and-drop or click-to-browse. Restrict
+            accepted inputs with <code>Accept</code>, <code>MaxFileSize</code>, and <code>Multiple</code>;
+            hand drop events off to your code with <code>OnDrop</code>. Use the <code>Note</code> parameter
+            to show a helpful hint inside the zone, or pass custom markup via <code>ChildContent</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/dropzone/integration">integration</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishDropZone OnDrop="HandleDrop" Note="Supports JPG, PNG, and PDF up to 10 MB" />
+            @if (!string.IsNullOrEmpty(_status))
+            {
+                <p><strong>Status:</strong> @_status</p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "DropZone", "Overview"];
+
+    private string? _status;
+
+    private void HandleDrop(Sunfish.Foundation.Models.DropZoneEventArgs args)
+    {
+        _status = $"Dropped {args.FileNames.Length} file(s).";
+    }
+}

@@ -1,0 +1,54 @@
+@page "/components/editors/fileselect/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>FileSelect / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileSelect / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/FileSelect/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFileUpload</code> (the implementation behind the FileSelect catalog entry) provides
+            a file picker that reports selected files via the <code>OnSelect</code> callback. Restrict
+            accepted inputs with <code>AllowedExtensions</code>, <code>Accept</code>, <code>MaxFileSize</code>,
+            and <code>MinFileSize</code>. Use <code>Multiple</code> to toggle single- vs multi-file mode.
+        </p>
+        <p>
+            See <a href="/components/editors/fileselect/events">events</a> and
+            <a href="/components/editors/fileselect/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishFileUpload OnSelect="HandleSelect" OnRemove="HandleRemove" />
+            @if (!string.IsNullOrEmpty(_status))
+            {
+                <p class="demo-status">@_status</p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "FileSelect", "Overview"];
+
+    private string? _status;
+
+    private void HandleSelect(FileSelectEventArgs args)
+    {
+        var valid = args.Files.Count(f => !f.IsInvalid);
+        _status = $"Selected {valid} file(s).";
+    }
+
+    private void HandleRemove(FileSelectEventArgs args)
+    {
+        _status = $"Removed {args.Files.Count} file(s).";
+    }
+}

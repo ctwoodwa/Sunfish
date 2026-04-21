@@ -1,0 +1,40 @@
+@page "/components/editors/colorpicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ColorPicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ColorPicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPicker</code> is the combined color-picking control: a swatch trigger that
+            opens a popup with gradient and palette views. Two-way bind with <code>@@bind-Value</code>,
+            select the emitted format via <code>ValueFormat</code> (Hex or Rgb), and choose which view to
+            show via <code>View</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/colorpicker/views">views</a> and
+            <a href="/components/editors/colorpicker/keyboard-navigation">keyboard-navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishColorPicker @bind-Value="@_color" />
+            <div style="width: 48px; height: 48px; background: @(_color ?? "transparent"); border-radius: 4px; margin-top: 8px; border: 1px solid #ccc;"></div>
+            <p>Selected color: <strong>@(_color ?? "(none)")</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "ColorPicker", "Overview"];
+
+    private string? _color;
+}

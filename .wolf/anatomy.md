@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T21:09:20.927Z
-> Files: 155 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T21:12:44.860Z
+> Files: 178 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -34,6 +34,34 @@
 ## .claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/
 
 - `Demo.razor` (~970 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Overview/
+
+- `Demo.razor` (~553 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/ContextMenu/Overview/
+
+- `Demo.razor` (~600 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Menu/Overview/
+
+- `Demo.razor` (~598 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Overview/
+
+- `Demo.razor` (~628 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Overview/
+
+- `Demo.razor` (~787 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Overview/
+
+- `Demo.razor` (~739 tok)
+
+## .claude/worktrees/agent-a95e1435/apps/kitchen-sink/Pages/Components/Navigation/Wizard/Overview/
+
+- `Demo.razor` (~826 tok)
 
 ## .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/Editor/Overview/
 
@@ -335,9 +363,25 @@
 
 - `Demo.razor` (~960 tok)
 
+## apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/
+
+- `Demo.razor` (~471 tok)
+
 ## apps/kitchen-sink/Pages/Components/Editors/Checkbox/Overview/
 
 - `Demo.razor` (~502 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/ColorGradient/Overview/
+
+- `Demo.razor` (~404 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/ColorPalette/Overview/
+
+- `Demo.razor` (~423 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/ColorPicker/Overview/
+
+- `Demo.razor` (~442 tok)
 
 ## apps/kitchen-sink/Pages/Components/Editors/ComboBox/Overview/
 
@@ -347,9 +391,41 @@
 
 - `Demo.razor` (~437 tok)
 
+## apps/kitchen-sink/Pages/Components/Editors/DatePicker/Overview/
+
+- `Demo.razor` (~498 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/DateRangePicker/Overview/
+
+- `Demo.razor` (~444 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/DateTimePicker/Overview/
+
+- `Demo.razor` (~407 tok)
+
 ## apps/kitchen-sink/Pages/Components/Editors/DropDownList/Overview/
 
 - `Demo.razor` — Declares a (~665 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/
+
+- `Demo.razor` (~456 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/FileSelect/Overview/
+
+- `Demo.razor` (~530 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/
+
+- `Demo.razor` (~641 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/FloatingLabel/Overview/
+
+- `Demo.razor` (~388 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Label/Overview/
+
+- `Demo.razor` (~422 tok)
 
 ## apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/
 
@@ -375,6 +451,14 @@
 
 - `Demo.razor` (~394 tok)
 
+## apps/kitchen-sink/Pages/Components/Editors/Rating/Overview/
+
+- `Demo.razor` (~393 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Signature/Overview/
+
+- `Demo.razor` (~330 tok)
+
 ## apps/kitchen-sink/Pages/Components/Editors/Slider/Overview/
 
 - `Demo.razor` (~462 tok)
@@ -390,6 +474,14 @@
 ## apps/kitchen-sink/Pages/Components/Editors/TextBox/Overview/
 
 - `Demo.razor` (~516 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/TimePicker/Overview/
+
+- `Demo.razor` (~410 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Upload/Overview/
+
+- `Demo.razor` (~567 tok)
 
 ## apps/kitchen-sink/Pages/Components/Feedback/AnimationContainer/Overview/
 

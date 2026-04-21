@@ -1,0 +1,43 @@
+@page "/components/editors/label/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Label / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Label / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Label/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishLabel</code> is a thin wrapper over a semantic <code>&lt;label&gt;</code> element
+            that participates in Sunfish's field and validation contracts. Set the label text via
+            <code>Text</code> (or place it as <code>ChildContent</code>), and associate the label with an
+            input by <code>For</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:320px;">
+            <SunfishField>
+                <SunfishLabel Text="Email address" />
+                <SunfishTextBox @bind-Value="_email" Placeholder="you@@example.com" />
+            </SunfishField>
+
+            <SunfishField>
+                <SunfishLabel>Additional notes</SunfishLabel>
+                <SunfishTextBox @bind-Value="_note" />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Label", "Overview"];
+
+    private string? _email;
+    private string? _note;
+}

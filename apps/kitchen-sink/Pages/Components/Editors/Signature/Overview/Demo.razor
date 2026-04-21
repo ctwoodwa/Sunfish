@@ -1,0 +1,34 @@
+@page "/components/editors/signature/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Signature / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Signature / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Signature/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSignature</code> captures a handwritten signature via mouse, pen, or touch input
+            on an HTML canvas. Size the surface through inline <code>Style</code> or CSS classes; the
+            component emits the captured stroke data for persistence.
+        </p>
+        <p>
+            See <a href="/components/editors/signature/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishSignature Style="width:400px;height:200px;border:1px solid #ccc;" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Signature", "Overview"];
+}

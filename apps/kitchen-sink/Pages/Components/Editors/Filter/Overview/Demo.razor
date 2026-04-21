@@ -1,0 +1,61 @@
+@page "/components/editors/filter/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using CompositeFilterDescriptor = Sunfish.Foundation.Models.CompositeFilterDescriptor
+
+<PageTitle>Filter / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Filter / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFilter</code> is a composable filter builder that lets end users assemble query
+            expressions at runtime — add, remove, and reorder rows that target fields with operators and
+            values. Two-way bind the composite state with <code>Value</code> / <code>ValueChanged</code>,
+            and react to user confirmation through <code>OnApply</code>. The resulting
+            <code>CompositeFilterDescriptor</code> can be fed to data grids, queries, or services.
+        </p>
+        <p>
+            See <a href="/components/editors/filter/template">template</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishFilter @bind-Value="_filter" OnApply="HandleApply" />
+            @if (_applied)
+            {
+                <div style="margin-top:12px;padding:12px;background:#f5f5f5;border-radius:4px;">
+                    <strong>Applied filter:</strong>
+                    @if (_filter?.FilterDescriptors.Count > 0)
+                    {
+                        <ul style="margin:8px 0 0 0;">
+                            @foreach (var fd in _filter.FilterDescriptors)
+                            {
+                                <li>@fd.Field @fd.Operator @fd.Value</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>No filter rows</span>
+                    }
+                </div>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Filter", "Overview"];
+
+    private CompositeFilterDescriptor? _filter = new();
+    private bool _applied;
+
+    private void HandleApply() => _applied = true;
+}

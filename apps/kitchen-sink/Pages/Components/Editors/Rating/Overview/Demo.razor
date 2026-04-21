@@ -1,0 +1,39 @@
+@page "/components/editors/rating/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Rating / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Rating / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Rating/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRating</code> captures a scalar rating as a row of star icons. Set the total stars
+            with <code>Max</code>, two-way bind the chosen value with <code>@@bind-Value</code>, and label the
+            control for assistive technology with <code>Label</code>. Use <code>IsReadOnly</code> to display
+            a value without allowing interaction.
+        </p>
+        <p>
+            See <a href="/components/editors/rating/template">template</a> and
+            <a href="/components/editors/rating/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishRating @bind-Value="_rating" Max="5" Label="Product quality" />
+            <p><strong>@_rating of 5 stars</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Rating", "Overview"];
+
+    private int _rating = 3;
+}

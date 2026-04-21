@@ -1,0 +1,40 @@
+@page "/components/editors/daterangepicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DateRangePicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DateRangePicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DateRangePicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDateRangePicker</code> selects a start and end <code>DateOnly?</code> in one
+            control — ideal for reservation windows, reporting periods, or filter criteria. Bind each end
+            with <code>@@bind-StartDate</code> and <code>@@bind-EndDate</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/daterangepicker/format">format</a>,
+            <a href="/components/editors/daterangepicker/events">events</a>, and
+            <a href="/components/editors/daterangepicker/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishDateRangePicker @bind-StartDate="_start" @bind-EndDate="_end" />
+            <span>@_start?.ToString("d") — @_end?.ToString("d")</span>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "DateRangePicker", "Overview"];
+
+    private DateOnly? _start = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly? _end = DateOnly.FromDateTime(DateTime.Today.AddDays(7));
+}
