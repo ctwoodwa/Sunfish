@@ -1,0 +1,17 @@
+@page "/account/bundles"
+@layout AccountLayout
+@using Sunfish.Blocks.TenantAdmin
+@using Sunfish.Blocks.BusinessCases
+
+<PageTitle>Bundles &amp; entitlements · Sunfish</PageTitle>
+
+<SettingsPageHeader Title="Bundles &amp; entitlements"
+                    Description="Activate business-case bundles for this tenant and review the resulting module and feature entitlements." />
+
+<SettingsSection Title="Bundle activation">
+    <BundleActivationPanel />
+</SettingsSection>
+
+<SettingsSection Title="Resolved entitlements">
+    <EntitlementSnapshotBlock />
+</SettingsSection>

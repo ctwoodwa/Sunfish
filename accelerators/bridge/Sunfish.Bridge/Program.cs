@@ -15,6 +15,7 @@ using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Seeding;
 using Sunfish.Bridge.Hubs;
 using Sunfish.Foundation.Catalog.Bundles;
+using Sunfish.Foundation.FeatureManagement;
 using Sunfish.Blocks.Subscriptions.DependencyInjection;
 using Sunfish.Blocks.TenantAdmin.DependencyInjection;
 using Sunfish.Blocks.BusinessCases.DependencyInjection;
@@ -54,14 +55,19 @@ builder.Services.AddSignalR()
 // Feature flags.
 builder.Services.AddFeatureManagement();
 
-// P1 domain blocks + bundle catalog (ADR 0015 module-entity registration).
+// P1 domain blocks + bundle catalog + feature-management chain
+// (ADR 0015 module-entity registration, ADR 0007 bundles, ADR 0009 features).
 // Registration order matters:
-//   1. IBundleCatalog singleton — consumed by BundleActivationPanel and BundleEntitlementResolver
-//   2. Block DI extensions — each registers its ISunfishEntityModule, services, and
-//      (for businesscases) an IEntitlementResolver that feeds the feature-management chain
-//   3. Bundle manifests are seeded into the catalog below, after Build(), so the
-//      singleton is available before any feature evaluation runs.
+//   1. IBundleCatalog singleton — consumed by BundleActivationPanel and
+//      BundleEntitlementResolver.
+//   2. AddSunfishFeatureManagement() — registers IFeatureCatalog, IFeatureProvider,
+//      IFeatureEvaluator → DefaultFeatureEvaluator, and a NoOp IEntitlementResolver.
+//   3. Block DI extensions — each registers its ISunfishEntityModule and services.
+//      AddInMemoryBusinessCases() replaces the NoOp IEntitlementResolver with
+//      BundleEntitlementResolver (same-lifetime last-registration wins).
+//   4. Bundle manifests are seeded into the catalog after Build(), below.
 builder.Services.AddSunfishBundleCatalog();
+builder.Services.AddSunfishFeatureManagement();
 builder.Services.AddInMemorySubscriptions();
 builder.Services.AddInMemoryTenantAdmin();
 builder.Services.AddInMemoryBusinessCases();
