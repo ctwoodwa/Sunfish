@@ -1,0 +1,133 @@
+@page "/components/scheduling/allocation-scheduler/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AllocationScheduler / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AllocationScheduler / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Scheduling/AllocationScheduler/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The <code>SunfishAllocationScheduler</code> adapts to several appearance axes at once: the timeline
+            zoom (<code>ViewGrain</code>), how values render inside cells (<code>ValueMode</code>), row density
+            (<code>StripedRows</code>, <code>Height</code>), and overall theming via design tokens.
+        </p>
+        <p>
+            Use the controls below to explore these knobs. The <em>grain</em> selector drives whether columns
+            represent days, weeks, months, quarters, or years, and the <em>density</em> selector switches between
+            a compact configuration (narrower time columns, shorter height) and a comfortable one.
+        </p>
+        <p>
+            Theme tokens such as <code>--sf-color-primary</code>, <code>--sf-color-surface</code>, and
+            <code>--sf-color-border</code> cascade from the surrounding CSS scope — wrap the scheduler in a
+            <code>data-sunfish-theme</code> container to swap between light and dark presentations.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-bottom:1rem">
+            <label>
+                Grain:
+                <select @bind="_grain" @bind:after="StateHasChanged">
+                    <option value="@TimeGranularity.Day">Day</option>
+                    <option value="@TimeGranularity.Week">Week</option>
+                    <option value="@TimeGranularity.Month">Month</option>
+                    <option value="@TimeGranularity.Quarter">Quarter</option>
+                    <option value="@TimeGranularity.Year">Year</option>
+                </select>
+            </label>
+            <label>
+                Value mode:
+                <select @bind="_valueMode" @bind:after="StateHasChanged">
+                    <option value="@AllocationValueMode.Hours">Hours</option>
+                    <option value="@AllocationValueMode.Currency">Currency</option>
+                </select>
+            </label>
+            <label>
+                Density:
+                <select @bind="_density" @bind:after="StateHasChanged">
+                    <option value="comfortable">Comfortable</option>
+                    <option value="compact">Compact</option>
+                </select>
+            </label>
+            <label>
+                <input type="checkbox" @bind="_striped" @bind:after="StateHasChanged" />
+                Striped rows
+            </label>
+            <label>
+                Theme:
+                <select @bind="_theme" @bind:after="StateHasChanged">
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                </select>
+            </label>
+        </div>
+
+        <div data-sunfish-theme="@_theme"
+             style="border:1px solid var(--sf-color-border, #e5e7eb);border-radius:.5rem;padding:1px;background:var(--sf-color-surface, #ffffff);">
+            <SunfishAllocationScheduler TResource="StaffResource"
+                                        Resources="@_resources"
+                                        Allocations="@_allocations"
+                                        AuthoritativeLevel="TimeGranularity.Week"
+                                        ViewGrain="@_grain"
+                                        ValueMode="@_valueMode"
+                                        StripedRows="@_striped"
+                                        VisibleStart="@_demoStart"
+                                        MinVisibleColumns="3"
+                                        TimeColumnWidth="@(_density == "compact" ? 56 : 88)"
+                                        DefaultRangeUnit="TimeGranularity.Month"
+                                        Height="@(_density == "compact" ? "240px" : "320px")">
+                <AllocationResourceColumns>
+                    <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                    <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+                </AllocationResourceColumns>
+            </SunfishAllocationScheduler>
+        </div>
+
+        <p style="margin-top:1rem;font-size:.875rem;color:var(--sf-color-text-muted, #6b7280)">
+            Current: grain <strong>@_grain</strong>, value-mode <strong>@_valueMode</strong>,
+            density <strong>@_density</strong>, theme <strong>@_theme</strong>.
+        </p>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Scheduling", "AllocationScheduler", "Appearance"];
+
+    private readonly DateTime _demoStart = new(2026, 4, 6);
+
+    private TimeGranularity _grain = TimeGranularity.Week;
+    private AllocationValueMode _valueMode = AllocationValueMode.Hours;
+    private bool _striped = true;
+    private string _density = "comfortable";
+    private string _theme = "light";
+
+    private readonly List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA"  },
+        new() { Id = 4, Name = "David Kim",   Role = "PM"  },
+    };
+
+    private readonly List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 28, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 4, TaskId = 104, TaskName = "Release Plan", BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 8,  Unit = AllocationUnit.Hours },
+    };
+
+    public class StaffResource
+    {
+        public int    Id   { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+    }
+}
