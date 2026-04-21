@@ -1,0 +1,114 @@
+@page "/components/layout/wizard/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Wizard / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Wizard / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Wizard/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWizard</code> guides users through a sequential, stepwise flow. Each
+            <code>SunfishWizardStep</code> (spec-compatible alias: <code>WizardStep</code>) contributes a
+            rail indicator and a content panel. Bind the zero-based index with <code>@("@bind-CurrentStepIndex")</code>
+            or <code>@("@bind-Value")</code> — both target the same state.
+        </p>
+        <p>
+            In <code>Linear</code> mode (the default) the user cannot skip ahead past an unvalidated step:
+            setting <code>Valid="false"</code> on the current step blocks <em>Next</em>. Flip
+            <code>Linear="false"</code> to allow free jumping via rail clicks.
+        </p>
+        <ul>
+            <li><code>Orientation</code> — <code>Horizontal</code> (default) or <code>Vertical</code>.</li>
+            <li><code>StepType</code> — <code>Full</code> (default), <code>Text</code>, or <code>Steps</code>.</li>
+            <li><code>ShowStepTitle</code> — hides the per-step label when <code>false</code>.</li>
+            <li><code>Draggable</code> — surfaces <code>draggable="true"</code> on rail items (reorder plumbing lands later).</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Linear 4-step wizard with validation</h4>
+                <p style="margin:.25rem 0 .75rem; font-size:.85rem; opacity:.75;">
+                    Fill in each field. <em>Next</em> stays disabled while <code>Valid == false</code>
+                    on the current step. Clear a field to reactivate the guard.
+                </p>
+                <SunfishWizard @bind-CurrentStepIndex="_step" Linear="true" ShowPager="true">
+                    <SunfishWizardStep Label="Account" Icon="user" Valid="@IsAccountValid">
+                        <div style="padding:16px; display:flex; flex-direction:column; gap:.5rem;">
+                            <strong>1 · Account</strong>
+                            <label>Email
+                                <input type="email" value="@_email"
+                                       @oninput="e => _email = e.Value?.ToString() ?? string.Empty"
+                                       placeholder="user@example.com"
+                                       style="width:260px;" />
+                            </label>
+                            <small style="opacity:.7;">Required — must contain <code>@@</code>.</small>
+                        </div>
+                    </SunfishWizardStep>
+
+                    <SunfishWizardStep Label="Profile" Icon="id-card" Valid="@IsProfileValid">
+                        <div style="padding:16px; display:flex; flex-direction:column; gap:.5rem;">
+                            <strong>2 · Profile</strong>
+                            <label>Full name
+                                <input type="text" value="@_name"
+                                       @oninput="e => _name = e.Value?.ToString() ?? string.Empty"
+                                       placeholder="Ada Lovelace"
+                                       style="width:260px;" />
+                            </label>
+                            <small style="opacity:.7;">Required — at least 2 characters.</small>
+                        </div>
+                    </SunfishWizardStep>
+
+                    <SunfishWizardStep Label="Preferences" Icon="settings" Optional="true">
+                        <div style="padding:16px; display:flex; flex-direction:column; gap:.5rem;">
+                            <strong>3 · Preferences</strong>
+                            <label>
+                                <input type="checkbox" @bind="_subscribe" /> Email me product updates
+                            </label>
+                            <small style="opacity:.7;">Optional — can be skipped.</small>
+                        </div>
+                    </SunfishWizardStep>
+
+                    <SunfishWizardStep Label="Review" Icon="check">
+                        <div style="padding:16px; display:flex; flex-direction:column; gap:.25rem;">
+                            <strong>4 · Review</strong>
+                            <div>Email: <code>@(_email.Length > 0 ? _email : "(not set)")</code></div>
+                            <div>Name: <code>@(_name.Length > 0 ? _name : "(not set)")</code></div>
+                            <div>Subscribe: <code>@_subscribe</code></div>
+                            <small style="opacity:.7;">Click <em>Finish</em> to complete.</small>
+                        </div>
+                    </SunfishWizardStep>
+                </SunfishWizard>
+                <p style="margin:.5rem 0 0; font-size:.85rem;">
+                    Current step: <strong>@(_step + 1) of 4</strong>
+                </p>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Wizard", "Overview"];
+
+    private int _step;
+    private string _email = "";
+    private string _name = "";
+    private bool _subscribe;
+
+    private bool? IsAccountValid
+        => _email.Length == 0 ? null : _email.Contains('@');
+
+    private bool? IsProfileValid
+        => _name.Length == 0 ? null : _name.Trim().Length >= 2;
+}

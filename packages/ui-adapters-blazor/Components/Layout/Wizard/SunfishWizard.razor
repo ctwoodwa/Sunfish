@@ -1,4 +1,5 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
 
 <div class="@CombineClasses(RootCssClass)"
@@ -29,6 +30,7 @@
                     aria-current="@(isCurrent ? "step" : null)"
                     tabindex="@(stepIndex == _focusedIndex ? 0 : -1)"
                     disabled="@(!isClickable || step.Disabled)"
+                    draggable="@(Draggable ? "true" : null)"
                     @onclick="() => GoToStep(stepIndex)">
                 @if (step.StepTemplate != null)
                 {
@@ -36,21 +38,24 @@
                 }
                 else
                 {
-                    <span class="sf-wizard__step-indicator">
-                        @if (step.Valid == true)
-                        {
-                            <span class="sf-wizard__step-icon mar-wizard__step-icon--valid">&#x2713;</span>
-                        }
-                        else if (step.Valid == false)
-                        {
-                            <span class="sf-wizard__step-icon mar-wizard__step-icon--invalid">&#x2717;</span>
-                        }
-                        else
-                        {
-                            <span class="sf-wizard__step-number">@(isCompleted ? "\u2713" : (step.Text ?? (stepIndex + 1).ToString()))</span>
-                        }
-                    </span>
-                    @if (!string.IsNullOrEmpty(step.Label))
+                    @if (EffectiveStepType != WizardStepType.Text)
+                    {
+                        <span class="sf-wizard__step-indicator">
+                            @if (step.Valid == true)
+                            {
+                                <span class="sf-wizard__step-icon mar-wizard__step-icon--valid">&#x2713;</span>
+                            }
+                            else if (step.Valid == false)
+                            {
+                                <span class="sf-wizard__step-icon mar-wizard__step-icon--invalid">&#x2717;</span>
+                            }
+                            else
+                            {
+                                <span class="sf-wizard__step-number">@(isCompleted ? "✓" : (step.Text ?? (stepIndex + 1).ToString()))</span>
+                            }
+                        </span>
+                    }
+                    @if (ShowStepTitle && EffectiveStepType != WizardStepType.Steps && !string.IsNullOrEmpty(step.Label))
                     {
                         <span class="sf-wizard__step-label">
                             @step.Label
@@ -82,10 +87,10 @@
     </div>
 
     @* Navigation buttons *@
-    @if (WizardButtons != null)
+    @if (EffectiveButtonTemplate != null)
     {
         <div class="sf-wizard__actions">
-            @WizardButtons(Value)
+            @EffectiveButtonTemplate(Value)
         </div>
     }
     else
@@ -105,7 +110,7 @@
             }
             @if (Value < _steps.Count - 1)
             {
-                var nextDisabled = _steps.Count > 0 && Value + 1 < _steps.Count && _steps[Value + 1].Disabled;
+                var nextDisabled = IsNextBlocked();
                 <button type="button" class="sf-btn mar-btn--primary" disabled="@nextDisabled" @onclick="NextStep">
                     @(NextText ?? "Next")
                 </button>
@@ -121,34 +126,112 @@
 </div>
 
 @code {
-    private readonly List<WizardStep> _steps = new();
+    private readonly List<SunfishWizardStep> _steps = new();
     private int _focusedIndex;
     private readonly string _instanceId = Guid.NewGuid().ToString("N")[..8];
 
-    // ── Parameters ─────────────────────────────────────────────────────
+    // ── Parameters: structure ──────────────────────────────────────────
 
+    /// <summary>Wizard body — hosts <see cref="SunfishWizardStep"/> (or spec-style <c>WizardStep</c>) children.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Read-only view of the registered steps (ICollection, as required by the hierarchical spec).</summary>
+    public ICollection<SunfishWizardStep> Steps => _steps;
+
+    // ── Parameters: step index (dual-named for spec + Sunfish conventions) ──
+
+    /// <summary>Zero-based index of the current step. Spec-compatible name. Supports two-way binding.</summary>
     [Parameter] public int Value { get; set; }
+
+    /// <summary>Change callback for <see cref="Value"/>.</summary>
     [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    /// <summary>Sunfish-canonical alias for <see cref="Value"/>. Supports two-way binding.</summary>
+    [Parameter]
+    public int CurrentStepIndex
+    {
+        get => Value;
+        set => Value = value;
+    }
+
+    /// <summary>Change callback for <see cref="CurrentStepIndex"/>.</summary>
+    [Parameter] public EventCallback<int> CurrentStepIndexChanged { get; set; }
+
+    // ── Parameters: layout / behaviour ─────────────────────────────────
+
+    /// <summary>
+    /// When <c>true</c> (default) the user cannot skip ahead past uncompleted steps
+    /// and Next is blocked if the current step reports <c>Valid == false</c>.
+    /// </summary>
     [Parameter] public bool Linear { get; set; } = true;
-    [Parameter] public string? PreviousText { get; set; }
-    [Parameter] public string? NextText { get; set; }
-    [Parameter] public string? FinishText { get; set; }
-    [Parameter] public EventCallback OnFinish { get; set; }
-    [Parameter] public EventCallback<int> OnStepChange { get; set; }
-    [Parameter] public RenderFragment<int>? WizardButtons { get; set; }
+
+    /// <summary>Stepper orientation — <see cref="WizardOrientation.Horizontal"/> (default) or <see cref="WizardOrientation.Vertical"/>.</summary>
+    [Parameter] public WizardOrientation? Orientation { get; set; }
+
+    /// <summary>Legacy 4-way stepper position (Top/Bottom/Left/Right). Inferred from <see cref="Orientation"/> when not set.</summary>
+    [Parameter] public WizardStepperPosition StepperPosition { get; set; } = WizardStepperPosition.Top;
+
+    /// <summary>Controls what each step on the rail renders: label only, chip only, or both (default).</summary>
+    [Parameter] public WizardStepType? StepType { get; set; }
+
+    /// <summary>Whether to render the step label next to the chip on the rail. Default <c>true</c>.</summary>
+    [Parameter] public bool ShowStepTitle { get; set; } = true;
+
+    /// <summary>Whether steps can be dragged to reorder. Default <c>false</c> — a pure UX hint today; reorder plumbing lands in Wave 3.</summary>
+    [Parameter] public bool Draggable { get; set; }
+
     [Parameter] public string? Width { get; set; }
     [Parameter] public string? Height { get; set; }
     [Parameter] public bool ShowPager { get; set; }
-    [Parameter] public WizardStepperPosition StepperPosition { get; set; } = WizardStepperPosition.Top;
 
-    // ── Computed CSS ────────────────────────────────────────────────────
+    // ── Parameters: built-in button labels ─────────────────────────────
+
+    [Parameter] public string? PreviousText { get; set; }
+    [Parameter] public string? NextText { get; set; }
+    [Parameter] public string? FinishText { get; set; }
+
+    // ── Parameters: custom buttons + events ────────────────────────────
+
+    /// <summary>Canonical custom-button slot. Receives the current step index.</summary>
+    [Parameter] public RenderFragment<int>? ButtonTemplate { get; set; }
+
+    /// <summary>Spec-compatible alias for <see cref="ButtonTemplate"/>.</summary>
+    [Parameter] public RenderFragment<int>? WizardButtons { get; set; }
+
+    private RenderFragment<int>? EffectiveButtonTemplate => ButtonTemplate ?? WizardButtons;
+
+    /// <summary>
+    /// Fires when the Finish button is pressed on the last step.
+    /// Not raised by custom <see cref="ButtonTemplate"/>/<see cref="WizardButtons"/> output.
+    /// </summary>
+    [Parameter] public EventCallback OnFinish { get; set; }
+
+    /// <summary>
+    /// Fires on the wizard before any navigation. Set
+    /// <see cref="WizardStepChangeEventArgs.IsCancelled"/> to veto the transition.
+    /// Complements the per-step <see cref="SunfishWizardStep.OnChange"/>.
+    /// </summary>
+    [Parameter] public EventCallback<WizardStepChangeEventArgs> OnStepChange { get; set; }
+
+    /// <summary>Fires after the active step changes; the argument is the new index.</summary>
+    [Parameter] public EventCallback<int> OnActivate { get; set; }
+
+    // ── Computed presentation ──────────────────────────────────────────
+
+    private WizardStepperPosition EffectivePosition => Orientation switch
+    {
+        WizardOrientation.Vertical => WizardStepperPosition.Left,
+        WizardOrientation.Horizontal => WizardStepperPosition.Top,
+        _ => StepperPosition,
+    };
+
+    private WizardStepType EffectiveStepType => StepType ?? WizardStepType.Full;
 
     private string RootCssClass
     {
         get
         {
-            var pos = StepperPosition.ToString().ToLowerInvariant();
+            var pos = EffectivePosition.ToString().ToLowerInvariant();
             return $"mar-wizard mar-wizard--stepper-{pos}";
         }
     }
@@ -164,13 +247,13 @@
         }
     }
 
-    private string StepperCssClass => StepperPosition is WizardStepperPosition.Left or WizardStepperPosition.Right
+    private string StepperCssClass => EffectivePosition is WizardStepperPosition.Left or WizardStepperPosition.Right
         ? "mar-wizard__steps--vertical"
         : "";
 
     // ── Step registration ──────────────────────────────────────────────
 
-    internal void RegisterStep(WizardStep step)
+    internal void RegisterStep(SunfishWizardStep step)
     {
         if (!_steps.Contains(step))
         {
@@ -179,7 +262,7 @@
         }
     }
 
-    internal void UnregisterStep(WizardStep step)
+    internal void UnregisterStep(SunfishWizardStep step)
     {
         _steps.Remove(step);
         StateHasChanged();
@@ -187,12 +270,35 @@
 
     // ── Navigation ─────────────────────────────────────────────────────
 
+    private bool IsNextBlocked()
+    {
+        if (Value < 0 || Value >= _steps.Count - 1) return false;
+        var current = _steps[Value];
+        if (Linear && current.Valid == false) return true;
+        var next = _steps[Value + 1];
+        return next.Disabled;
+    }
+
     private async Task GoToStep(int index)
     {
         if (index < 0 || index >= _steps.Count || _steps[index].Disabled) return;
         if (index == Value) return;
 
-        // Fire current step's OnChange for cancellation support
+        // Linear guard: invalid current step blocks forward movement
+        if (Linear && index > Value && Value < _steps.Count && _steps[Value].Valid == false)
+        {
+            return;
+        }
+
+        // Fire wizard-level OnStepChange first (cancellable)
+        if (OnStepChange.HasDelegate)
+        {
+            var wizardArgs = new WizardStepChangeEventArgs { TargetIndex = index };
+            await OnStepChange.InvokeAsync(wizardArgs);
+            if (wizardArgs.IsCancelled) return;
+        }
+
+        // Fire current step's OnChange (also cancellable)
         if (Value >= 0 && Value < _steps.Count)
         {
             var currentStep = _steps[Value];
@@ -207,12 +313,17 @@
         Value = index;
         _focusedIndex = index;
         await ValueChanged.InvokeAsync(Value);
-        await OnStepChange.InvokeAsync(Value);
+        await CurrentStepIndexChanged.InvokeAsync(Value);
+        await OnActivate.InvokeAsync(Value);
+        if (index >= 0 && index < _steps.Count && _steps[index].OnActivate.HasDelegate)
+        {
+            await _steps[index].OnActivate.InvokeAsync(index);
+        }
     }
 
     private async Task NextStep()
     {
-        if (Value < _steps.Count - 1)
+        if (Value < _steps.Count - 1 && !IsNextBlocked())
             await GoToStep(Value + 1);
     }
 
@@ -233,7 +344,7 @@
     {
         if (_steps.Count == 0) return;
 
-        var isVertical = StepperPosition is WizardStepperPosition.Left or WizardStepperPosition.Right;
+        var isVertical = EffectivePosition is WizardStepperPosition.Left or WizardStepperPosition.Right;
         var nextKey = isVertical ? "ArrowDown" : "ArrowRight";
         var prevKey = isVertical ? "ArrowUp" : "ArrowLeft";
 

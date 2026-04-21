@@ -141,10 +141,10 @@
 </PageSection>
 
 <PageSection Title="Events">
-    <DemoSection Title="OnFinish & OnStepChange" Description="OnFinish fires when the final step's button is clicked. OnStepChange fires on every navigation.">
+    <DemoSection Title="OnFinish & OnActivate" Description="OnFinish fires when the final step's button is clicked. OnActivate fires with the new index after every navigation.">
         <SunfishWizard @bind-Value="_eventStep"
                       OnFinish="@OnWizardFinish"
-                      OnStepChange="@OnStepChanged">
+                      OnActivate="@OnStepChanged">
             <WizardStep Label="Step 1">
                 <div style="padding:16px;">Navigate through steps to see events fire.</div>
             </WizardStep>

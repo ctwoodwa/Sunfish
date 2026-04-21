@@ -1,0 +1,138 @@
+@page "/components/layout/wizard/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Wizard / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Wizard / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Wizard/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWizard</code> exposes three navigation events:
+        </p>
+        <ul>
+            <li><code>OnStepChange</code> — fires on the wizard <em>before</em> the active step changes. The
+                handler receives a <code>WizardStepChangeEventArgs</code>; setting <code>IsCancelled = true</code>
+                vetoes the transition.</li>
+            <li><code>OnActivate</code> — fires with the new index <em>after</em> the active step changes.</li>
+            <li><code>OnFinish</code> — fires when the user presses the built-in <em>Finish</em> button on the
+                last step. Custom <code>ButtonTemplate</code> / <code>WizardButtons</code> output is responsible
+                for its own finish signal.</li>
+        </ul>
+        <p>
+            Each <code>SunfishWizardStep</code> also exposes its own <code>OnChange</code> (cancellable)
+            and <code>OnActivate</code>. The wizard-level handlers fire first; per-step handlers fire second.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 340px); gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Wizard with instrumentation</h4>
+                <p style="margin:.25rem 0 .5rem; font-size:.85rem; opacity:.75;">
+                    Step 2 vetoes forward navigation once — try <em>Next</em> twice.
+                </p>
+                <SunfishWizard @bind-CurrentStepIndex="_step"
+                               Linear="true"
+                               OnStepChange="HandleStepChange"
+                               OnActivate="HandleActivate"
+                               OnFinish="HandleFinish">
+                    <SunfishWizardStep Label="Start">
+                        <div style="padding:16px;">Step 1 — press <em>Next</em>.</div>
+                    </SunfishWizardStep>
+                    <SunfishWizardStep Label="Gate" OnChange="HandleStep2Change">
+                        <div style="padding:16px;">
+                            Step 2 — the first forward attempt is vetoed by
+                            <code>args.IsCancelled = true</code> at the step level.
+                        </div>
+                    </SunfishWizardStep>
+                    <SunfishWizardStep Label="Confirm">
+                        <div style="padding:16px;">Step 3 — press <em>Finish</em> to raise <code>OnFinish</code>.</div>
+                    </SunfishWizardStep>
+                </SunfishWizard>
+                <p style="margin:.5rem 0 0; font-size:.85rem;">
+                    Step: <strong>@(_step + 1) of 3</strong> · Finished:
+                    <strong>@(_finished ? "yes" : "no")</strong>
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.78rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — navigate the wizard.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+                <button type="button" class="sf-btn mar-btn--secondary" style="margin-top:.5rem;"
+                        @onclick="() => { _log.Clear(); _step2Vetoed = false; }">
+                    Reset log + veto gate
+                </button>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Wizard", "Events"];
+
+    private int _step;
+    private bool _finished;
+    private bool _step2Vetoed;
+
+    private readonly List<string> _log = new();
+
+    private void Log(string entry)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {entry}");
+        if (_log.Count > 80) _log.RemoveRange(80, _log.Count - 80);
+    }
+
+    private void HandleStepChange(WizardStepChangeEventArgs args)
+    {
+        Log($"wizard OnStepChange -> target={args.TargetIndex} (cancelled={args.IsCancelled})");
+    }
+
+    private void HandleActivate(int index)
+    {
+        Log($"wizard OnActivate -> index={index}");
+    }
+
+    private void HandleFinish()
+    {
+        _finished = true;
+        Log("wizard OnFinish");
+    }
+
+    private Task HandleStep2Change(WizardStepChangeEventArgs args)
+    {
+        if (args.TargetIndex > 1 && !_step2Vetoed)
+        {
+            _step2Vetoed = true;
+            args.IsCancelled = true;
+            Log("step[1] OnChange -> vetoed forward navigation (first attempt)");
+        }
+        else
+        {
+            Log($"step[1] OnChange -> target={args.TargetIndex}");
+        }
+        return Task.CompletedTask;
+    }
+}
