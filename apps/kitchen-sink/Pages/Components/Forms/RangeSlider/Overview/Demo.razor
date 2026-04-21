@@ -1,0 +1,73 @@
+@page "/components/forms/rangeslider/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>RangeSlider / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="RangeSlider / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/RangeSlider/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRangeSlider&lt;TValue&gt;</code> is a generic two-thumb range picker that shares
+            a single track. Two-way bind each handle via <code>@@bind-StartValue</code> and
+            <code>@@bind-EndValue</code>; configure <code>Min</code> / <code>Max</code> bounds,
+            <code>SmallStep</code> for arrow-key snapping, <code>LargeStep</code> for
+            <kbd>PageUp</kbd> / <kbd>PageDown</kbd> jumps and major tick spacing,
+            <code>TickPosition</code> for tick placement, <code>Decimals</code> for precision, and
+            <code>Orientation</code> for axis. The two thumbs enforce <em>start ≤ end</em> automatically.
+        </p>
+        <p>
+            See <a href="/components/forms/slider/events">Slider events</a> for the shared event model.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row" style="display:flex; flex-direction:column; gap:1.25rem; max-width:520px;">
+
+            <SunfishField>
+                <SunfishLabel>Integer range (@_iStart – @_iEnd)</SunfishLabel>
+                <SunfishRangeSlider TValue="int"
+                                    @bind-StartValue="_iStart"
+                                    @bind-EndValue="_iEnd"
+                                    Min="0"
+                                    Max="100"
+                                    SmallStep="1"
+                                    LargeStep="25"
+                                    TickPosition="SliderTickPosition.Both" />
+            </SunfishField>
+
+            <SunfishField>
+                <SunfishLabel>Price range (@_minPrice.ToString("C2") — @_maxPrice.ToString("C2"))</SunfishLabel>
+                <SunfishRangeSlider TValue="decimal"
+                                    @bind-StartValue="_minPrice"
+                                    @bind-EndValue="_maxPrice"
+                                    Min="10m"
+                                    Max="150m"
+                                    SmallStep="5m"
+                                    LargeStep="20m"
+                                    Decimals="2"
+                                    TickPosition="SliderTickPosition.After">
+                    <LabelTemplate Context="v">
+                        @v.ToString("C2")
+                    </LabelTemplate>
+                </SunfishRangeSlider>
+            </SunfishField>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "RangeSlider", "Overview"];
+
+    private int _iStart = 20;
+    private int _iEnd = 80;
+
+    private decimal _minPrice = 20m;
+    private decimal _maxPrice = 75m;
+}

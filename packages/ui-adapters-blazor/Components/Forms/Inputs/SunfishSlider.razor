@@ -1,35 +1,49 @@
+@typeparam TValue where TValue : struct, System.Numerics.INumber<TValue>
+@using System.Globalization
+@using System.Numerics
+@using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
 
 <div class="@CombineClasses(SliderClass)"
      style="@CombineStyles()">
     @if (ShowButtons)
     {
-        <button type="button" class="sf-slider__btn" disabled="@(!Enabled)" @onclick="Decrement" aria-label="Decrease">-</button>
+        <button type="button"
+                class="sf-slider__btn mar-slider__btn--decrease"
+                disabled="@(!Enabled)"
+                tabindex="-1"
+                aria-hidden="true"
+                @onclick="DecrementAsync">-</button>
     }
     <input type="range"
-           value="@Value"
-           min="@Min"
-           max="@Max"
-           step="@Step"
+           value="@FormatValue(Value)"
+           min="@FormatValue(Min)"
+           max="@FormatValue(Max)"
+           step="@FormatValue(SmallStep)"
            disabled="@(!Enabled)"
            orient="@(Orientation == SliderOrientation.Vertical ? "vertical" : "horizontal")"
-           @oninput="OnSliderChanged"
+           role="slider"
+           aria-valuemin="@FormatValue(Min)"
+           aria-valuemax="@FormatValue(Max)"
+           aria-valuenow="@FormatValue(Value)"
+           @oninput="OnSliderInputAsync"
+           @onkeydown="OnKeyDownAsync"
            @attributes="AdditionalAttributes" />
     @if (ShowButtons)
     {
-        <button type="button" class="sf-slider__btn" disabled="@(!Enabled)" @onclick="Increment" aria-label="Increase">+</button>
+        <button type="button"
+                class="sf-slider__btn mar-slider__btn--increase"
+                disabled="@(!Enabled)"
+                tabindex="-1"
+                aria-hidden="true"
+                @onclick="IncrementAsync">+</button>
     }
-    @if (LargeStep.HasValue)
+    @if (TickPosition != SliderTickPosition.None && !LargeStep.Equals(default(TValue)))
     {
-        <div class="sf-slider__ticks">
-            @{
-                var tickValue = Min;
-                while (tickValue <= Max)
-                {
-                    var pct = (tickValue - Min) / (Max - Min) * 100;
-                    <span class="sf-slider__tick" style="@(Orientation == SliderOrientation.Horizontal ? $"left: {pct}%;" : $"bottom: {pct}%;")"></span>
-                    tickValue += LargeStep.Value;
-                }
+        <div class="@TicksClass">
+            @foreach (var tick in EnumerateTicks())
+            {
+                <span class="sf-slider__tick" style="@TickStyle(tick)"></span>
             }
         </div>
     }
@@ -42,15 +56,46 @@
 </div>
 
 @code {
-    [Parameter] public double Value { get; set; }
-    [Parameter] public EventCallback<double> ValueChanged { get; set; }
-    [Parameter] public double Min { get; set; } = 0;
-    [Parameter] public double Max { get; set; } = 100;
-    [Parameter] public double Step { get; set; } = 1;
+    /// <summary>The current slider value. Supports two-way binding via <c>@@bind-Value</c>.</summary>
+    [Parameter] public TValue Value { get; set; } = default!;
+
+    /// <summary>Fires whenever <see cref="Value"/> changes (drag, click, buttons, keyboard).</summary>
+    [Parameter] public EventCallback<TValue> ValueChanged { get; set; }
+
+    /// <summary>Minimum selectable value. Required.</summary>
+    [Parameter] public TValue Min { get; set; } = default!;
+
+    /// <summary>Maximum selectable value. Required and must be greater than <see cref="Min"/>.</summary>
+    [Parameter] public TValue Max { get; set; } = default!;
+
+    /// <summary>
+    /// The numeric interval used for arrow-key increments, drag snapping, and small ticks.
+    /// Required by spec. Defaults to one unit.
+    /// </summary>
+    [Parameter] public TValue SmallStep { get; set; } = TValue.One;
+
+    /// <summary>
+    /// The numeric interval used for PageUp/PageDown jumps and major tick spacing.
+    /// Defaults to ten units.
+    /// </summary>
+    [Parameter] public TValue LargeStep { get; set; } = TValue.CreateChecked(10);
+
+    /// <summary>Number precision applied when formatting the value for the native input.</summary>
+    [Parameter] public int? Decimals { get; set; }
+
+    /// <summary>Which side of the track renders tick marks. Defaults to <see cref="SliderTickPosition.Both"/>.</summary>
+    [Parameter] public SliderTickPosition TickPosition { get; set; } = SliderTickPosition.Both;
+
+    /// <summary>Horizontal (default) or Vertical orientation.</summary>
     [Parameter] public SliderOrientation Orientation { get; set; } = SliderOrientation.Horizontal;
-    [Parameter] public double? LargeStep { get; set; }
-    [Parameter] public RenderFragment<double>? LabelTemplate { get; set; }
+
+    /// <summary>Custom render fragment for the current-value label.</summary>
+    [Parameter] public RenderFragment<TValue>? LabelTemplate { get; set; }
+
+    /// <summary>Whether the slider accepts input. Defaults to <c>true</c>.</summary>
     [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Renders side-mounted +/- stepper buttons.</summary>
     [Parameter] public bool ShowButtons { get; set; }
 
     private string SliderClass
@@ -63,24 +108,101 @@
         }
     }
 
-    private async Task OnSliderChanged(ChangeEventArgs e)
+    private string TicksClass => TickPosition switch
     {
-        if (double.TryParse(e.Value?.ToString(), out var val))
+        SliderTickPosition.Before => "sf-slider__ticks mar-slider__ticks--before",
+        SliderTickPosition.After  => "sf-slider__ticks mar-slider__ticks--after",
+        SliderTickPosition.Both   => "sf-slider__ticks mar-slider__ticks--both",
+        _                         => "sf-slider__ticks"
+    };
+
+    private string FormatValue(TValue value)
+    {
+        if (Decimals.HasValue)
         {
-            Value = val;
-            await ValueChanged.InvokeAsync(Value);
+            var rounded = Math.Round(ToDouble(value), Decimals.Value, MidpointRounding.AwayFromZero);
+            return rounded.ToString("F" + Decimals.Value, CultureInfo.InvariantCulture);
+        }
+        return value is IFormattable f ? f.ToString(null, CultureInfo.InvariantCulture) : value.ToString() ?? string.Empty;
+    }
+
+    private static double ToDouble(TValue value) => double.CreateChecked(value);
+
+    private IEnumerable<TValue> EnumerateTicks()
+    {
+        var tick = Min;
+        // Epsilon guard: loop inclusive of Max without compounding rounding error by iterating on indexed LargeStep multiples.
+        var span = ToDouble(Max) - ToDouble(Min);
+        var step = ToDouble(LargeStep);
+        if (step <= 0 || span <= 0) yield break;
+        var count = (int)Math.Floor(span / step + 1e-9);
+        for (var i = 0; i <= count; i++)
+        {
+            yield return tick;
+            tick += LargeStep;
+        }
+        // Always emit Max so the last major tick is exactly on the boundary.
+        if (!tick.Equals(Max) && ToDouble(tick) < ToDouble(Max))
+        {
+            yield return Max;
         }
     }
 
-    private async Task Decrement()
+    private string TickStyle(TValue tick)
     {
-        Value = Math.Max(Min, Value - Step);
-        await ValueChanged.InvokeAsync(Value);
+        var range = ToDouble(Max) - ToDouble(Min);
+        if (range <= 0) return "";
+        var pct = (ToDouble(tick) - ToDouble(Min)) / range * 100;
+        return Orientation == SliderOrientation.Horizontal
+            ? $"left: {pct.ToString("F4", CultureInfo.InvariantCulture)}%;"
+            : $"bottom: {pct.ToString("F4", CultureInfo.InvariantCulture)}%;";
     }
 
-    private async Task Increment()
+    private async Task OnSliderInputAsync(ChangeEventArgs e)
     {
-        Value = Math.Min(Max, Value + Step);
+        if (e.Value is null) return;
+        var raw = e.Value.ToString();
+        if (raw is null) return;
+        if (double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
+        {
+            await SetValueAsync(TValue.CreateChecked(parsed));
+        }
+    }
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (!Enabled) return;
+        switch (e.Key)
+        {
+            case "PageUp":
+                await SetValueAsync(Clamp(Value + LargeStep));
+                break;
+            case "PageDown":
+                await SetValueAsync(Clamp(Value - LargeStep));
+                break;
+            case "Home":
+                await SetValueAsync(Min);
+                break;
+            case "End":
+                await SetValueAsync(Max);
+                break;
+        }
+    }
+
+    private Task IncrementAsync() => SetValueAsync(Clamp(Value + SmallStep));
+
+    private Task DecrementAsync() => SetValueAsync(Clamp(Value - SmallStep));
+
+    private TValue Clamp(TValue value)
+    {
+        if (value.CompareTo(Min) < 0) return Min;
+        if (value.CompareTo(Max) > 0) return Max;
+        return value;
+    }
+
+    private async Task SetValueAsync(TValue value)
+    {
+        Value = value;
         await ValueChanged.InvokeAsync(Value);
     }
 }

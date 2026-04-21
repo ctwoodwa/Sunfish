@@ -6,7 +6,7 @@
 
 <SunfishExamplePanel Title="Slider / Accessibility"
                      Breadcrumb="@_breadcrumb"
-                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Slider/Accessibility/Demo.razor"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Slider/Accessibility/Demo.razor"
                      Sources="@GeneratedSources">
 
     <Narrative>
@@ -53,7 +53,7 @@
                 <h3 style="margin:0 0 .5rem;">Labelled via aria-labelledby</h3>
                 <SunfishLabel Id="brightness-label">Brightness</SunfishLabel>
                 <SunfishSlider @bind-Value="_brightness"
-                               Min="0" Max="100" Step="1"
+                               Min="0" Max="100" SmallStep="1"
                                aria-labelledby="brightness-label" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Current: <strong>@_brightness</strong></p>
             </section>
@@ -66,7 +66,7 @@
                 </p>
                 <SunfishLabel Id="temp-label">Temperature</SunfishLabel>
                 <SunfishSlider @bind-Value="_temp"
-                               Min="60" Max="85" Step="1"
+                               Min="60" Max="85" SmallStep="1"
                                aria-labelledby="temp-label"
                                aria-valuetext="@($"{_temp} degrees Fahrenheit")" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Announced: <strong>@_temp°F</strong></p>
@@ -76,7 +76,7 @@
                 <h3 style="margin:0 0 .5rem;">Described-by hint</h3>
                 <SunfishLabel Id="priority-label">Priority weight</SunfishLabel>
                 <SunfishSlider @bind-Value="_priority"
-                               Min="0" Max="10" Step="1"
+                               Min="0" Max="10" SmallStep="1"
                                aria-labelledby="priority-label"
                                aria-describedby="priority-hint" />
                 <span id="priority-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
@@ -86,7 +86,7 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
-                <SunfishSlider Value="50" Min="0" Max="100" Step="1" Enabled="false" aria-label="Locked value" />
+                <SunfishSlider Value="50" Min="0" Max="100" SmallStep="1" Enabled="false" aria-label="Locked value" />
             </section>
 
         </div>

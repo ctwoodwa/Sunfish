@@ -6,7 +6,7 @@
 
 <SunfishExamplePanel Title="Slider / Appearance"
                      Breadcrumb="@_breadcrumb"
-                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Slider/Appearance/Demo.razor"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Slider/Appearance/Demo.razor"
                      Sources="@GeneratedSources">
 
     <Narrative>
@@ -29,7 +29,7 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Plain (0–100)</h3>
-                <SunfishSlider @bind-Value="_a" Min="0" Max="100" Step="1" />
+                <SunfishSlider @bind-Value="_a" Min="0" Max="100" SmallStep="1" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Value: <strong>@_a</strong></p>
             </section>
 
@@ -37,25 +37,25 @@
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label</h3>
                 <SunfishField>
                     <SunfishLabel>Volume (@_volume)</SunfishLabel>
-                    <SunfishSlider @bind-Value="_volume" Min="0" Max="100" Step="5" />
+                    <SunfishSlider @bind-Value="_volume" Min="0" Max="100" SmallStep="5" />
                 </SunfishField>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With stepper buttons</h3>
-                <SunfishSlider @bind-Value="_b" Min="0" Max="10" Step="1" ShowButtons="true" />
+                <SunfishSlider @bind-Value="_b" Min="0" Max="10" SmallStep="1" ShowButtons="true" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Value: <strong>@_b</strong></p>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With ticks (LargeStep=25)</h3>
-                <SunfishSlider @bind-Value="_c" Min="0" Max="100" Step="1" LargeStep="25" />
+                <SunfishSlider @bind-Value="_c" Min="0" Max="100" SmallStep="1" LargeStep="25" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Value: <strong>@_c</strong></p>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With template label</h3>
-                <SunfishSlider @bind-Value="_d" Min="0" Max="100" Step="5">
+                <SunfishSlider @bind-Value="_d" Min="0" Max="100" SmallStep="5">
                     <LabelTemplate Context="v">
                         <strong>@v%</strong>
                     </LabelTemplate>
@@ -65,20 +65,20 @@
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Vertical</h3>
                 <div style="height:180px; display:flex; align-items:center; justify-content:center;">
-                    <SunfishSlider @bind-Value="_e" Min="0" Max="100" Step="1" Orientation="SliderOrientation.Vertical" />
+                    <SunfishSlider @bind-Value="_e" Min="0" Max="100" SmallStep="1" Orientation="SliderOrientation.Vertical" />
                 </div>
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Value: <strong>@_e</strong></p>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Fractional step</h3>
-                <SunfishSlider @bind-Value="_f" Min="0" Max="1" Step="0.05" />
+                <SunfishSlider @bind-Value="_f" Min="0" Max="1" SmallStep="0.05" />
                 <p style="margin:.25rem 0 0; font-size:.85rem;">Value: <strong>@_f.ToString("0.00")</strong></p>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
-                <SunfishSlider Value="50" Min="0" Max="100" Step="1" Enabled="false" ShowButtons="true" />
+                <SunfishSlider Value="50" Min="0" Max="100" SmallStep="1" Enabled="false" ShowButtons="true" />
             </section>
 
         </div>

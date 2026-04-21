@@ -1,0 +1,83 @@
+@page "/components/forms/slider/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Slider / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Slider / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Slider/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSlider&lt;TValue&gt;</code> is a generic single-thumb slider over any numeric
+            type (<code>int</code>, <code>short</code>, <code>long</code>, <code>float</code>,
+            <code>double</code>, <code>decimal</code>). Configure <code>Min</code> / <code>Max</code>,
+            set <code>SmallStep</code> for arrow-key increments and <code>LargeStep</code> for
+            <kbd>PageUp</kbd> / <kbd>PageDown</kbd> jumps plus major tick spacing.
+            <code>TickPosition</code> (<code>Before</code> / <code>After</code> / <code>Both</code> /
+            <code>None</code>) selects which side of the track renders ticks; <code>Decimals</code>
+            controls display precision; <code>Orientation</code> flips to vertical;
+            <code>ShowButtons</code> renders +/- stepper buttons.
+        </p>
+        <p>
+            See <a href="/components/forms/slider/events">events</a>,
+            <a href="/components/forms/slider/appearance">appearance</a>, and
+            <a href="/components/forms/slider/accessibility">accessibility</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row" style="display:flex; flex-direction:column; gap:1.25rem; max-width:520px;">
+
+            <SunfishField>
+                <SunfishLabel>Integer volume (0–100): @_volume</SunfishLabel>
+                <SunfishSlider TValue="int"
+                               @bind-Value="_volume"
+                               Min="0"
+                               Max="100"
+                               SmallStep="1"
+                               LargeStep="25"
+                               TickPosition="SliderTickPosition.Both"
+                               ShowButtons="true" />
+            </SunfishField>
+
+            <SunfishField>
+                <SunfishLabel>Decimal price (@_price.ToString("C2"))</SunfishLabel>
+                <SunfishSlider TValue="decimal"
+                               @bind-Value="_price"
+                               Min="0m"
+                               Max="50m"
+                               SmallStep="0.5m"
+                               LargeStep="10m"
+                               Decimals="2"
+                               TickPosition="SliderTickPosition.After" />
+            </SunfishField>
+
+            <SunfishField>
+                <SunfishLabel>Double temperature: @_temp.ToString("F1")°C</SunfishLabel>
+                <SunfishSlider TValue="double"
+                               @bind-Value="_temp"
+                               Min="-20.0"
+                               Max="40.0"
+                               SmallStep="0.5"
+                               LargeStep="10.0"
+                               Decimals="1"
+                               TickPosition="SliderTickPosition.Both"
+                               ShowButtons="true" />
+            </SunfishField>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Slider", "Overview"];
+
+    private int _volume = 25;
+    private decimal _price = 12.5m;
+    private double _temp = 22.0;
+}
