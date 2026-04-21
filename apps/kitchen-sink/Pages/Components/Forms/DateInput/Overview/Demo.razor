@@ -1,0 +1,44 @@
+@page "/components/forms/dateinput/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DateInput / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DateInput / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/DateInput/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDateInput</code> is a keyboard-first, segmented date text field. Unlike
+            <code>SunfishDatePicker</code>, it has <em>no popup calendar</em> — users edit each
+            segment (month, day, year) directly.
+        </p>
+        <ul>
+            <li><kbd>&larr;</kbd> / <kbd>&rarr;</kbd> move focus between segments.</li>
+            <li><kbd>&uarr;</kbd> / <kbd>&darr;</kbd> increment / decrement the focused segment (wraps at min/max).</li>
+            <li>Digit keys replace the segment; further digits append until the max is reached, then focus auto-advances.</li>
+            <li><kbd>Backspace</kbd> / <kbd>Del</kbd> clears the segment; <kbd>Enter</kbd> commits; <kbd>/</kbd> <kbd>-</kbd> <kbd>.</kbd> <kbd>Space</kbd> advance focus.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:320px;">
+            <SunfishDateInput @bind-Value="_date"
+                              Format="MM/dd/yyyy"
+                              Width="200px"
+                              ShowClearButton="true"
+                              AriaLabel="Pick a date" />
+            <p style="margin:0;">Selected: <strong>@(_date?.ToString("yyyy-MM-dd") ?? "(none)")</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DateInput", "Overview"];
+
+    private DateTime? _date = new DateTime(2026, 4, 21);
+}

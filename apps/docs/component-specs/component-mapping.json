@@ -26,7 +26,7 @@
     "colorpicker": { "sunfish": "SunfishColorPicker", "status": "implemented", "category": "forms" },
     "combobox": { "sunfish": "SunfishComboBox", "status": "partial", "category": "forms" },
     "contextmenu": { "sunfish": "SunfishContextMenu", "status": "implemented", "category": "navigation" },
-    "dateinput": { "sunfish": "SunfishDatePicker", "status": "partial", "category": "forms" },
+    "dateinput": { "sunfish": "SunfishDateInput", "status": "partial", "category": "forms" },
     "datepicker": { "sunfish": "SunfishDatePicker", "status": "implemented", "category": "forms" },
     "daterangepicker": { "sunfish": "SunfishDateRangePicker", "status": "implemented", "category": "forms" },
     "datetimepicker": { "sunfish": "SunfishDateTimePicker", "status": "implemented", "category": "forms" },

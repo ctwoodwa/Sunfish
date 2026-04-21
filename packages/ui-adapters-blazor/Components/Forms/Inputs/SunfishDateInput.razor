@@ -1,62 +1,55 @@
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses("mar-dateinput")"
+@*
+    SunfishDateInput — segmented keyboard-first date text field.
+
+    Renders one <span> per format segment (e.g. month / day / year) inside a
+    focusable wrapper. Arrow keys move between segments; ArrowUp/ArrowDown
+    increment/decrement the focused segment; digit keys replace the segment
+    value (clamped to segment range). See the `dateinput` spec under
+    apps/docs/component-specs/dateinput for the parity surface.
+
+    Distinct from SunfishDatePicker — no popup calendar.
+*@
+
+<div class="@CombineClasses("mar-dateinput", "sf-dateinput", Disabled ? "sf-dateinput--disabled" : null, ReadOnly ? "sf-dateinput--readonly" : null)"
      style="@CombineStyles(WidthStyle())"
+     role="group"
+     aria-label="@(AriaLabel ?? "Date input")"
      @attributes="AdditionalAttributes">
-    <input type="date"
-           class="sf-dateinput__input"
-           value="@FormatForInput()"
-           min="@FormatDate(Min)"
-           max="@FormatDate(Max)"
-           placeholder="@Placeholder"
-           disabled="@(!Enabled)"
-           readonly="@ReadOnly"
-           tabindex="@TabIndex"
-           @onchange="HandleChange" />
-</div>
-
-@code {
-    [Parameter] public DateTime? Value { get; set; }
-    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
-    [Parameter] public string Format { get; set; } = "MM/dd/yyyy";
-    [Parameter] public DateTime? Min { get; set; }
-    [Parameter] public DateTime? Max { get; set; }
-    [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public bool ReadOnly { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public string? Width { get; set; }
-    [Parameter] public int TabIndex { get; set; }
-    [Parameter] public EventCallback<DateTime?> OnChange { get; set; }
-
-    private string? FormatForInput()
-    {
-        return Value?.ToString("yyyy-MM-dd");
-    }
-
-    private string? FormatDate(DateTime? date)
-    {
-        return date?.ToString("yyyy-MM-dd");
-    }
-
-    private string? WidthStyle()
-    {
-        return !string.IsNullOrEmpty(Width) ? $"width:{Width}" : null;
-    }
-
-    private async Task HandleChange(ChangeEventArgs e)
-    {
-        var raw = e.Value?.ToString();
-        DateTime? parsed = null;
-
-        if (!string.IsNullOrEmpty(raw) && DateTime.TryParse(raw, out var dt))
+    <div class="sf-dateinput__segments"
+         tabindex="@(Disabled ? -1 : TabIndex)"
+         @onfocusin="HandleFocusIn"
+         @onfocusout="HandleFocusOut"
+         @onkeydown="HandleKeyDown"
+         @onkeydown:preventDefault="_preventDefault">
+        @for (var i = 0; i < _segments.Count; i++)
         {
-            if (Min.HasValue && dt < Min.Value) dt = Min.Value;
-            if (Max.HasValue && dt > Max.Value) dt = Max.Value;
-            parsed = dt;
+            var idx = i;
+            var seg = _segments[idx];
+            if (seg.IsLiteral)
+            {
+                <span class="sf-dateinput__literal">@seg.Display</span>
+            }
+            else
+            {
+                <span class="sf-dateinput__segment @(idx == _focusedIndex && _hasFocus ? "sf-dateinput__segment--focused" : "") @(seg.HasValue ? "sf-dateinput__segment--filled" : "sf-dateinput__segment--placeholder")"
+                      role="spinbutton"
+                      aria-label="@seg.AriaLabel"
+                      aria-valuenow="@(seg.HasValue ? seg.Value?.ToString() : null)"
+                      aria-valuemin="@seg.Min"
+                      aria-valuemax="@seg.Max"
+                      @onclick="@(() => FocusSegment(idx))">@seg.Display</span>
+            }
         }
-
-        Value = parsed;
-        await ValueChanged.InvokeAsync(Value);
-        await OnChange.InvokeAsync(Value);
-    }
-}
+        @if (ShowClearButton && _value.HasValue && !Disabled && !ReadOnly)
+        {
+            <button type="button"
+                    class="sf-dateinput__clear"
+                    aria-label="Clear"
+                    tabindex="-1"
+                    @onclick="ClearValue"
+                    @onclick:stopPropagation="true">&#x2715;</button>
+        }
+    </div>
+</div>
