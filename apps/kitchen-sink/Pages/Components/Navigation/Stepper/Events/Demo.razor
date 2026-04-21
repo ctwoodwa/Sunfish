@@ -1,0 +1,137 @@
+@page "/components/layout/stepper/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Stepper / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stepper / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStepper</code> exposes two events:
+        </p>
+        <ul>
+            <li><code>ActiveStepChanged</code> — fires whenever the active step changes, whether
+                from a user click, the public API (<code>NextAsync</code>,
+                <code>PreviousAsync</code>, <code>GoToStepAsync</code>), or external binding.
+                Supports <code>@@bind-ActiveStep</code>.</li>
+            <li><code>OnStepClick</code> — fires specifically when the user clicks a step
+                indicator. Provides the target index. Useful for validation gates where you want
+                to intercept a click <em>in addition</em> to updating
+                <code>ActiveStep</code>.</li>
+        </ul>
+        <p>
+            The event log below captures both callbacks alongside button-driven programmatic
+            transitions.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 360px); gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Live stepper</h4>
+                <SunfishStepper @ref="_stepper"
+                                ActiveStep="_active"
+                                ActiveStepChanged="HandleActiveStepChanged"
+                                OnStepClick="HandleStepClick">
+                    <SunfishStep Title="Choose plan"><p style="margin:0;">Plan selection body.</p></SunfishStep>
+                    <SunfishStep Title="Enter details"><p style="margin:0;">Details body.</p></SunfishStep>
+                    <SunfishStep Title="Review"><p style="margin:0;">Review body.</p></SunfishStep>
+                    <SunfishStep Title="Confirm"><p style="margin:0;">Confirm body.</p></SunfishStep>
+                </SunfishStepper>
+
+                <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokePrevious">Previous (API)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokeNext">Next (API)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="GoToLast">GoToStepAsync(3)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ClearLog">Clear Log</SunfishButton>
+                </div>
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Current ActiveStep: <strong>@_active</strong>
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click a step indicator or a button.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Stepper", "Events"];
+
+    private SunfishStepper? _stepper;
+    private int _active;
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void HandleActiveStepChanged(int index)
+    {
+        _active = index;
+        Log($"ActiveStepChanged -> {index}");
+    }
+
+    private void HandleStepClick(int index)
+    {
+        Log($"OnStepClick -> {index}");
+    }
+
+    private async Task InvokeNext()
+    {
+        if (_stepper is not null)
+        {
+            await _stepper.NextAsync();
+            Log("Invoked NextAsync()");
+        }
+    }
+
+    private async Task InvokePrevious()
+    {
+        if (_stepper is not null)
+        {
+            await _stepper.PreviousAsync();
+            Log("Invoked PreviousAsync()");
+        }
+    }
+
+    private async Task GoToLast()
+    {
+        if (_stepper is not null)
+        {
+            await _stepper.GoToStepAsync(3);
+            Log("Invoked GoToStepAsync(3)");
+        }
+    }
+}

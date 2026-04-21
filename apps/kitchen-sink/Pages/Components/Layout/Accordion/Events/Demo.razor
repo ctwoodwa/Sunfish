@@ -1,0 +1,152 @@
+@page "/components/layout/accordion/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Accordion / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Accordion / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Accordion/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Accordion exposes one event on the container and one on each item:
+        </p>
+        <ul>
+            <li><code>ExpandedItemsChanged</code> (container, data-driven) — fires when the set of
+                expanded items changes. Enables <code>@@bind-ExpandedItems</code>.</li>
+            <li><code>IsExpandedChanged</code> (item, declarative) — fires when an individual
+                item's <code>IsExpanded</code> toggles. Enables
+                <code>@@bind-IsExpanded</code>.</li>
+        </ul>
+        <p>
+            The log below is append-only (newest first). Each row records the source and the
+            resulting state. Toggling items with the mouse, keyboard, or via the buttons below will
+            all emit events through the same pipeline.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Declarative items (IsExpandedChanged)</h4>
+                <SunfishAccordion>
+                    <SunfishAccordionItem Title="Item A"
+                                          IsExpanded="_a"
+                                          IsExpandedChanged="v => HandleItem(nameof(_a), v, () => _a = v)">
+                        <p style="margin:0;">First item body.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Item B"
+                                          IsExpanded="_b"
+                                          IsExpandedChanged="v => HandleItem(nameof(_b), v, () => _b = v)">
+                        <p style="margin:0;">Second item body.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Item C"
+                                          IsExpanded="_c"
+                                          IsExpandedChanged="v => HandleItem(nameof(_c), v, () => _c = v)">
+                        <p style="margin:0;">Third item body.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+
+                <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _a, nameof(_a))">Toggle A</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _b, nameof(_b))">Toggle B</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _c, nameof(_c))">Toggle C</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ClearLog">Clear Log</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Data-driven (ExpandedItemsChanged)</h4>
+                <SunfishAccordion Data="@_items"
+                                  TextField="Title"
+                                  ExpandMode="AccordionExpandMode.Single"
+                                  ExpandedItems="@_expandedItems"
+                                  ExpandedItemsChanged="HandleExpandedItemsChanged" />
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Currently expanded:
+                    <strong>
+                        @(_expandedItems.Cast<DataItem>().Select(x => x.Title).DefaultIfEmpty("(none)").Aggregate((a, b) => $"{a}, {b}"))
+                    </strong>
+                </p>
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:200px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — toggle an item to emit.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Accordion", "Events"];
+
+    private bool _a;
+    private bool _b;
+    private bool _c;
+
+    private IEnumerable<object> _expandedItems = Array.Empty<object>();
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void HandleItem(string name, bool value, Action apply)
+    {
+        apply();
+        Log($"{name}.IsExpandedChanged -> {value}");
+    }
+
+    private void Toggle(ref bool state, string name)
+    {
+        state = !state;
+        Log($"Programmatic Toggle {name} -> {state}");
+    }
+
+    private void HandleExpandedItemsChanged(IEnumerable<object> items)
+    {
+        _expandedItems = items;
+        var titles = items.Cast<DataItem>().Select(x => x.Title);
+        var joined = titles.Any() ? string.Join(", ", titles) : "(none)";
+        Log($"ExpandedItemsChanged -> [{joined}]");
+    }
+
+    public class DataItem
+    {
+        public string Title { get; set; } = "";
+    }
+
+    private readonly List<DataItem> _items =
+    [
+        new() { Title = "Alpha" },
+        new() { Title = "Bravo" },
+        new() { Title = "Charlie" },
+    ];
+}

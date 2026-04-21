@@ -1,0 +1,98 @@
+@page "/components/layout/grid/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Grid / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Grid / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Grid/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The Sunfish 12-column grid is expressed with <code>SunfishRow</code> and
+            <code>SunfishColumn</code>. Each <code>SunfishColumn</code> takes an optional
+            <code>Span</code> (1–12) and <code>Offset</code> (0–11) to control its width and
+            left-hand gap. Columns that don't specify <code>Span</code> fall back to the
+            CSS-provider default (usually equal-width auto layout).
+        </p>
+        <p>
+            Because the grid is CSS-driven, responsive behaviour, column gutters, and breakpoint
+            thresholds are controlled entirely through the active CSS provider (Bootstrap, Material,
+            FluentUI). Swap the provider on the root <code>SunfishThemeProvider</code> to change
+            the visual treatment without touching page markup.
+        </p>
+        <p>
+            Typical patterns below: equal-width columns, mixed spans for a 3-column content layout
+            with sidebar, offsets to indent a column, and a card grid built from a row of equal
+            columns.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div class="demo-row">
+                <h4 style="margin:0 0 .5rem;">Equal-width columns (4 × Span=3)</h4>
+                <SunfishRow>
+                    <SunfishColumn Span="3"><div class="cell">Span 3</div></SunfishColumn>
+                    <SunfishColumn Span="3"><div class="cell">Span 3</div></SunfishColumn>
+                    <SunfishColumn Span="3"><div class="cell">Span 3</div></SunfishColumn>
+                    <SunfishColumn Span="3"><div class="cell">Span 3</div></SunfishColumn>
+                </SunfishRow>
+            </div>
+
+            <div class="demo-row">
+                <h4 style="margin:0 0 .5rem;">Sidebar + main (Span=3 / Span=9)</h4>
+                <SunfishRow>
+                    <SunfishColumn Span="3"><div class="cell cell--muted">Sidebar</div></SunfishColumn>
+                    <SunfishColumn Span="9"><div class="cell">Main content area</div></SunfishColumn>
+                </SunfishRow>
+            </div>
+
+            <div class="demo-row">
+                <h4 style="margin:0 0 .5rem;">Offset indent (Offset=3, Span=6)</h4>
+                <SunfishRow>
+                    <SunfishColumn Span="6" Offset="3"><div class="cell">Centered column, Span=6 / Offset=3</div></SunfishColumn>
+                </SunfishRow>
+            </div>
+
+            <div class="demo-row">
+                <h4 style="margin:0 0 .5rem;">Card grid (3 × Span=4)</h4>
+                <SunfishRow>
+                    <SunfishColumn Span="4"><div class="cell cell--card"><strong>Card A</strong><p>Any child content works.</p></div></SunfishColumn>
+                    <SunfishColumn Span="4"><div class="cell cell--card"><strong>Card B</strong><p>Row/Column are framework-agnostic containers.</p></div></SunfishColumn>
+                    <SunfishColumn Span="4"><div class="cell cell--card"><strong>Card C</strong><p>CSS provider controls spacing.</p></div></SunfishColumn>
+                </SunfishRow>
+            </div>
+
+            <div class="demo-row">
+                <h4 style="margin:0 0 .5rem;">Mixed spans (4 / 4 / 4 then 6 / 6)</h4>
+                <SunfishRow>
+                    <SunfishColumn Span="4"><div class="cell">4</div></SunfishColumn>
+                    <SunfishColumn Span="4"><div class="cell">4</div></SunfishColumn>
+                    <SunfishColumn Span="4"><div class="cell">4</div></SunfishColumn>
+                </SunfishRow>
+                <SunfishRow>
+                    <SunfishColumn Span="6"><div class="cell">6</div></SunfishColumn>
+                    <SunfishColumn Span="6"><div class="cell">6</div></SunfishColumn>
+                </SunfishRow>
+            </div>
+
+        </div>
+
+        <style>
+            .cell { background: var(--sunfish-surface-2, #eef2ff); border: 1px solid var(--sunfish-border, #c7d2fe); border-radius: .375rem; padding: .75rem; text-align: center; }
+            .cell--muted { background: var(--sunfish-surface-3, #f3f4f6); }
+            .cell--card { text-align: left; }
+            .cell--card p { margin: .25rem 0 0; font-size: .85rem; opacity: .75; }
+        </style>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Grid", "Appearance"];
+}

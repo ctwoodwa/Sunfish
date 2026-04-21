@@ -1,0 +1,178 @@
+@page "/components/layout/drawer/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Drawer / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Drawer / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Drawer/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDrawer</code> is a slide-in panel commonly used for app navigation or
+            side content. Its visual configuration:
+        </p>
+        <ul>
+            <li><code>Position</code> — <code>DrawerPosition.Left</code> (default),
+                <code>Right</code>, <code>Top</code>, or <code>Bottom</code>.</li>
+            <li><code>Mode</code> — <code>DrawerMode.Overlay</code> (default; drawer floats over
+                content with a backdrop) or <code>DrawerMode.Push</code> (drawer reserves a slot
+                and pushes page content).</li>
+            <li><code>Expanded</code> — whether the drawer is open. Supports two-way binding.</li>
+            <li><code>Width</code> — drawer width when expanded (default <code>"300px"</code>).</li>
+            <li><code>MiniMode</code> — when <code>true</code>, the drawer collapses to an
+                icon-only rail (<code>MiniWidth</code>, default <code>"50px"</code>) instead of
+                disappearing. Hover / tap to expand, collapse to return to mini.</li>
+        </ul>
+        <p>
+            Data-driven mode uses <code>Data</code> + <code>TextField</code> /
+            <code>IconField</code> / <code>UrlField</code>, or you can build your own item
+            markup inside <code>ChildContent</code>. The <code>DrawerContent</code> RenderFragment
+            hosts the "page body" that sits adjacent to the drawer in Push mode.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Position: Left / Right / Top / Bottom</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _left = true">Left</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _right = true">Right</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _top = true">Top</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _bottom = true">Bottom</SunfishButton>
+                </div>
+
+                <SunfishDrawer Position="DrawerPosition.Left" @bind-Expanded="_left">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Left drawer</h3>
+                        <p style="margin:0; font-size:.9rem;">Click outside the drawer to dismiss.</p>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _left = false">Close</SunfishButton>
+                    </div>
+                </SunfishDrawer>
+
+                <SunfishDrawer Position="DrawerPosition.Right" @bind-Expanded="_right">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Right drawer</h3>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _right = false">Close</SunfishButton>
+                    </div>
+                </SunfishDrawer>
+
+                <SunfishDrawer Position="DrawerPosition.Top" @bind-Expanded="_top">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Top drawer</h3>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _top = false">Close</SunfishButton>
+                    </div>
+                </SunfishDrawer>
+
+                <SunfishDrawer Position="DrawerPosition.Bottom" @bind-Expanded="_bottom">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Bottom drawer</h3>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _bottom = false">Close</SunfishButton>
+                    </div>
+                </SunfishDrawer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Mode: Overlay vs Push</h4>
+                <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _overlay = true">Open Overlay</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _push = !_push">@(_push ? "Close Push" : "Open Push")</SunfishButton>
+                </div>
+
+                <SunfishDrawer Position="DrawerPosition.Left"
+                               Mode="DrawerMode.Overlay"
+                               @bind-Expanded="_overlay">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Overlay</h3>
+                        <p style="margin:0; font-size:.9rem;">Backdrop dims page content; click scrim to dismiss.</p>
+                    </div>
+                </SunfishDrawer>
+
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden; margin-top:.5rem;">
+                    <SunfishDrawer Position="DrawerPosition.Left"
+                                   Mode="DrawerMode.Push"
+                                   @bind-Expanded="_push">
+                        <ChildContent>
+                            <div style="padding:1rem;">
+                                <h3 style="margin:0 0 .5rem;">Push drawer</h3>
+                                <p style="margin:0; font-size:.9rem;">Page content is pushed, not overlaid.</p>
+                            </div>
+                        </ChildContent>
+                        <DrawerContent>
+                            <div style="padding:1rem; background:var(--sunfish-surface-2, #eef2ff); min-height:120px;">
+                                <p style="margin:0;">Page content area (adjacent to drawer).</p>
+                            </div>
+                        </DrawerContent>
+                    </SunfishDrawer>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">MiniMode (collapsed rail)</h4>
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden;">
+                    <SunfishDrawer Position="DrawerPosition.Left"
+                                   Mode="DrawerMode.Push"
+                                   MiniMode="true"
+                                   MiniWidth="56px"
+                                   Width="260px"
+                                   @bind-Expanded="_mini"
+                                   Data="@_navItems"
+                                   TextField="Text"
+                                   IconField="Icon" />
+                </div>
+                <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _mini = !_mini">@(_mini ? "Collapse to mini" : "Expand")</SunfishButton>
+                </div>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    When collapsed, the drawer narrows to <code>MiniWidth</code> and shows only icons.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Custom width</h4>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _wide = true">Open 480px drawer</SunfishButton>
+                <SunfishDrawer Position="DrawerPosition.Right"
+                               Width="480px"
+                               @bind-Expanded="_wide">
+                    <div style="padding:1rem;">
+                        <h3 style="margin:0 0 .5rem;">Wider drawer</h3>
+                        <p style="margin:0; font-size:.9rem;">
+                            <code>Width="480px"</code> — any CSS length works.
+                        </p>
+                    </div>
+                </SunfishDrawer>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Drawer", "Appearance"];
+
+    private bool _left;
+    private bool _right;
+    private bool _top;
+    private bool _bottom;
+    private bool _overlay;
+    private bool _push;
+    private bool _mini = true;
+    private bool _wide;
+
+    private record NavItem(string Text, string Icon);
+
+    private readonly List<NavItem> _navItems =
+    [
+        new("Home", "home"),
+        new("Inbox", "inbox"),
+        new("Team", "users"),
+        new("Settings", "settings"),
+    ];
+}

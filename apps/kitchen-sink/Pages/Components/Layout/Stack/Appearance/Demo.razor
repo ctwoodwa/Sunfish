@@ -1,0 +1,105 @@
+@page "/components/layout/stack/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Stack / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stack / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Stack/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStack</code> is a flexbox-based layout primitive. The main knobs are:
+        </p>
+        <ul>
+            <li><code>Orientation</code> — <code>StackDirection.Horizontal</code> (default) or
+                <code>Vertical</code>.</li>
+            <li><code>Spacing</code> — any CSS gap value (e.g. <code>"8px"</code>,
+                <code>"1rem"</code>). Applied as <code>gap</code> on the flex container.</li>
+            <li><code>HorizontalAlign</code> / <code>VerticalAlign</code> — accept
+                <code>StackAlignment.Start</code>, <code>Center</code>, <code>End</code>,
+                <code>Stretch</code>, <code>SpaceBetween</code>, <code>SpaceAround</code>.
+                For horizontal stacks, <code>HorizontalAlign</code> drives
+                <code>justify-content</code> and <code>VerticalAlign</code> drives
+                <code>align-items</code>; vertical stacks swap them.</li>
+            <li><code>Width</code> / <code>Height</code> — any CSS length, e.g. <code>"100%"</code>
+                or <code>"300px"</code>.</li>
+        </ul>
+        <p>
+            Pair <code>SpaceBetween</code> with a fixed <code>Width</code> to distribute items,
+            or use <code>Center</code> + <code>Spacing</code> to group related controls.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal, Spacing="1rem"</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal" Spacing="1rem" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">
+                    <span class="chip">One</span>
+                    <span class="chip">Two</span>
+                    <span class="chip">Three</span>
+                </SunfishStack>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Vertical, Spacing=".5rem"</h4>
+                <SunfishStack Orientation="StackDirection.Vertical" Spacing=".5rem" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem; width:240px;">
+                    <span class="chip">First</span>
+                    <span class="chip">Second</span>
+                    <span class="chip">Third</span>
+                </SunfishStack>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal, HorizontalAlign=SpaceBetween, Width="100%"</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal" HorizontalAlign="StackAlignment.SpaceBetween" Width="100%" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">
+                    <span class="chip">Leading</span>
+                    <span class="chip">Middle</span>
+                    <span class="chip">Trailing</span>
+                </SunfishStack>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal, HorizontalAlign=Center, Spacing="2rem"</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal" HorizontalAlign="StackAlignment.Center" Spacing="2rem" Width="100%" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">
+                    <span class="chip">A</span>
+                    <span class="chip">B</span>
+                    <span class="chip">C</span>
+                </SunfishStack>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Vertical, HorizontalAlign=Stretch (children fill width)</h4>
+                <SunfishStack Orientation="StackDirection.Vertical" HorizontalAlign="StackAlignment.Stretch" Spacing=".5rem" Width="280px" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">
+                    <div class="chip" style="text-align:center;">Stretched 1</div>
+                    <div class="chip" style="text-align:center;">Stretched 2</div>
+                    <div class="chip" style="text-align:center;">Stretched 3</div>
+                </SunfishStack>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal, VerticalAlign=Center (mixed-height children)</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal" VerticalAlign="StackAlignment.Center" Spacing="1rem" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem; min-height:80px;">
+                    <span class="chip" style="padding:.25rem .5rem;">small</span>
+                    <span class="chip" style="padding:.75rem 1rem; font-size:1.1rem;">bigger</span>
+                    <span class="chip" style="padding:.5rem .75rem;">medium</span>
+                </SunfishStack>
+            </div>
+
+        </div>
+
+        <style>
+            .chip { display:inline-flex; align-items:center; background:var(--sunfish-surface, #fff); border:1px solid var(--sunfish-border, #c7d2fe); border-radius:.375rem; padding:.375rem .75rem; font-size:.9rem; }
+        </style>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Stack", "Appearance"];
+}

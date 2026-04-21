@@ -1,0 +1,91 @@
+@page "/components/layout/panel/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Panel / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Panel / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Panel/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPanel</code> is a rectangular surface with an optional header, content body,
+            and footer. Its visual configuration uses:
+        </p>
+        <ul>
+            <li><code>Title</code> — header text. When set (or <code>HeaderTemplate</code> is
+                supplied) the header chrome is rendered.</li>
+            <li><code>HeaderTemplate</code> / <code>ContentTemplate</code> /
+                <code>FooterTemplate</code> — RenderFragments for custom header, body, and footer.</li>
+            <li><code>Collapsible</code> — when <code>true</code>, a disclosure arrow appears on the
+                header and clicking toggles <code>Expanded</code>.</li>
+            <li><code>Expanded</code> — default <code>true</code>. Supports two-way binding.</li>
+            <li><code>Disabled</code> — applies a disabled CSS state and blocks the toggle.</li>
+        </ul>
+        <p>
+            Styling uses the active CSS provider's panel tokens plus any standard
+            <code>Style</code> / <code>Class</code> overrides you pass through.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+
+            <SunfishPanel Title="Basic Panel">
+                <p style="margin:0;">A plain panel with a <code>Title</code> and body content.</p>
+            </SunfishPanel>
+
+            <SunfishPanel Title="Collapsible (expanded)" Collapsible="true" Expanded="true">
+                <p style="margin:0;">
+                    <code>Collapsible="true"</code> shows a disclosure arrow — click the header to
+                    collapse.
+                </p>
+            </SunfishPanel>
+
+            <SunfishPanel Title="Collapsible (collapsed)" Collapsible="true" Expanded="false">
+                <p style="margin:0;">
+                    This panel starts collapsed. Content is hidden until expanded.
+                </p>
+            </SunfishPanel>
+
+            <SunfishPanel Title="Disabled Panel" Collapsible="true" Disabled="true">
+                <p style="margin:0;">
+                    <code>Disabled="true"</code> blocks the toggle and applies the disabled visual.
+                </p>
+            </SunfishPanel>
+
+            <SunfishPanel>
+                <HeaderTemplate>
+                    <span style="display:flex; align-items:center; gap:.5rem;">
+                        <span aria-hidden="true">&#128196;</span>
+                        <strong>Custom Header</strong>
+                    </span>
+                </HeaderTemplate>
+                <ContentTemplate>
+                    <p style="margin:0;">Header rendered via <code>HeaderTemplate</code>.</p>
+                </ContentTemplate>
+            </SunfishPanel>
+
+            <SunfishPanel Title="With Footer">
+                <ContentTemplate>
+                    <p style="margin:0;">Action panel with a footer slot.</p>
+                </ContentTemplate>
+                <FooterTemplate>
+                    <div style="display:flex; gap:.5rem; justify-content:flex-end;">
+                        <SunfishButton Variant="ButtonVariant.Secondary">Cancel</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Primary">OK</SunfishButton>
+                    </div>
+                </FooterTemplate>
+            </SunfishPanel>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Panel", "Appearance"];
+}

@@ -1,0 +1,106 @@
+@page "/components/layout/stack/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Stack / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stack / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Stack/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStack</code> is a thin flex wrapper with no implicit ARIA semantics. It
+            renders a <code>&lt;div&gt;</code> and forwards <code>AdditionalAttributes</code>, which
+            means you should add semantics with <code>role</code>, <code>aria-label</code>, or
+            native HTML5 elements where appropriate.
+        </p>
+        <ul>
+            <li><strong>Toolbars / action rows.</strong> Apply <code>role="toolbar"</code> and
+                <code>aria-label</code> when the stack groups related controls. Toolbars support
+                arrow-key navigation via the child components themselves — the stack itself doesn't
+                intercept keys.</li>
+            <li><strong>Radio / option groups.</strong> Use <code>role="group"</code> or
+                <code>role="radiogroup"</code> with <code>aria-labelledby</code> pointing at a
+                heading.</li>
+            <li><strong>Navigation / breadcrumb.</strong> Wrap the stack in <code>&lt;nav&gt;</code>
+                and label it.</li>
+            <li><strong>Reading order.</strong> Flex order is visual; DOM order is logical. Screen
+                readers follow DOM order regardless of <code>HorizontalAlign="StackAlignment.End"</code>
+                or reversed orientations — keep the source order meaningful.</li>
+            <li><strong>Gap ≠ separator.</strong> Spacing is visual only. If items represent
+                separate sections, pair them with <code>role="separator"</code> children
+                (e.g. <code>SunfishDivider</code>) or structural HTML.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Toolbar pattern</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal"
+                              Spacing=".5rem"
+                              role="toolbar"
+                              aria-label="Formatting options"
+                              Style="background:var(--sunfish-surface-2, #eef2ff); padding:.5rem; border-radius:.375rem;">
+                    <button type="button" aria-label="Bold" style="padding:.25rem .5rem;">B</button>
+                    <button type="button" aria-label="Italic" style="padding:.25rem .5rem;">I</button>
+                    <button type="button" aria-label="Underline" style="padding:.25rem .5rem;">U</button>
+                </SunfishStack>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    <code>role="toolbar"</code> + <code>aria-label</code> promote the stack to a
+                    named landmark.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Radio group pattern</h4>
+                <div role="radiogroup" aria-labelledby="shipping-label">
+                    <p id="shipping-label" style="margin:0 0 .25rem; font-weight:600;">Shipping speed</p>
+                    <SunfishStack Orientation="StackDirection.Vertical" Spacing=".25rem">
+                        <label style="display:flex; gap:.5rem;"><input type="radio" name="ship" value="std" /> Standard (5-7 days)</label>
+                        <label style="display:flex; gap:.5rem;"><input type="radio" name="ship" value="exp" /> Express (2-3 days)</label>
+                        <label style="display:flex; gap:.5rem;"><input type="radio" name="ship" value="nd" /> Next day</label>
+                    </SunfishStack>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Navigation landmark</h4>
+                <nav aria-label="Section links">
+                    <SunfishStack Orientation="StackDirection.Horizontal" Spacing="1rem">
+                        <a href="#">Overview</a>
+                        <a href="#">API</a>
+                        <a href="#">Examples</a>
+                        <a href="#">Changelog</a>
+                    </SunfishStack>
+                </nav>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    The <code>&lt;nav&gt;</code> wrapper carries semantics; the stack handles layout.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Reading order reminder</h4>
+                <SunfishStack Orientation="StackDirection.Horizontal" Spacing=".5rem">
+                    <a href="#">1. Start</a>
+                    <a href="#">2. Continue</a>
+                    <a href="#">3. Finish</a>
+                </SunfishStack>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Tab traversal hits 1 → 2 → 3 in DOM order. Avoid CSS <code>order</code>
+                    reordering that would make the visible sequence diverge.
+                </p>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Stack", "Accessibility"];
+}

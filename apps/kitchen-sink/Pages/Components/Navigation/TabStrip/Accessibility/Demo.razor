@@ -1,0 +1,127 @@
+@page "/components/layout/tabstrip/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>TabStrip / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TabStrip / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTabStrip</code> follows the WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/tabs/" target="_blank" rel="noopener">Tabs</a>
+            pattern:
+        </p>
+        <ul>
+            <li>The tab list renders <code>role="tablist"</code> and carries
+                <code>aria-orientation="horizontal"</code> (Top/Bottom) or
+                <code>"vertical"</code> (Left/Right).</li>
+            <li>Each tab header is a <code>&lt;button role="tab"&gt;</code> with
+                <code>aria-selected</code>, <code>aria-controls</code> pointing at the panel, and
+                an <code>id</code> that the panel references back.</li>
+            <li>Each panel renders <code>role="tabpanel"</code>, <code>aria-labelledby</code>
+                pointing at its tab header, and <code>aria-hidden</code> mirroring the active state
+                (relevant when <code>PersistTabContent="true"</code> keeps inactive panels in DOM).</li>
+            <li>Close buttons on <code>Closeable</code> tabs carry
+                <code>aria-label="Close {Title}"</code>.</li>
+            <li>Disabled tabs render the native <code>disabled</code> attribute plus
+                <code>aria-selected="false"</code>, so they stay out of the keyboard tab order.</li>
+        </ul>
+        <h4 style="margin:1rem 0 .25rem;">Keyboard</h4>
+        <table style="border-collapse:collapse; font-size:.9rem;">
+            <thead>
+                <tr style="background:var(--sunfish-surface-3, #f3f4f6);">
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Key</th>
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus into / out of the tab list</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Activate the focused tab (native button behaviour)</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>←</kbd> / <kbd>→</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus between tabs in a horizontal list (browser default on adjacent buttons)</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>↑</kbd> / <kbd>↓</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus between tabs in a vertical list</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Home</kbd> / <kbd>End</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Jump focus to first / last tab</td></tr>
+            </tbody>
+        </table>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal (aria-orientation="horizontal")</h4>
+                <SunfishTabStrip TabPosition="TabPosition.Top">
+                    <TabStripTab Id="h-overview" Title="Overview">
+                        <p style="margin:0;">
+                            Inspect the tab list — <code>role="tablist"</code> and
+                            <code>aria-orientation="horizontal"</code>.
+                        </p>
+                    </TabStripTab>
+                    <TabStripTab Id="h-details" Title="Details">
+                        <p style="margin:0;">Panel has <code>role="tabpanel"</code> + <code>aria-labelledby</code>.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="h-disabled" Title="Disabled" Disabled="true">
+                        <p style="margin:0;">Not reachable.</p>
+                    </TabStripTab>
+                </SunfishTabStrip>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Vertical (aria-orientation="vertical")</h4>
+                <SunfishTabStrip TabPosition="TabPosition.Left">
+                    <TabStripTab Id="v-general" Title="General">
+                        <p style="margin:0;">Vertical tab list — use Up/Down arrow keys between tabs.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="v-security" Title="Security">
+                        <p style="margin:0;">Second vertical panel.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="v-billing" Title="Billing">
+                        <p style="margin:0;">Third vertical panel.</p>
+                    </TabStripTab>
+                </SunfishTabStrip>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Closeable tab (aria-label on the × button)</h4>
+                <SunfishTabStrip>
+                    <TabStripTab Id="c-main" Title="Main">
+                        <p style="margin:0;">Main content.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="c-scratch" Title="Scratch" Closeable="true">
+                        <p style="margin:0;">
+                            The × button carries <code>aria-label="Close Scratch"</code> so
+                            assistive tech announces which tab will close.
+                        </p>
+                    </TabStripTab>
+                </SunfishTabStrip>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">PersistTabContent (hidden panels remain addressable)</h4>
+                <SunfishTabStrip PersistTabContent="true">
+                    <TabStripTab Id="p-a" Title="Tab A">
+                        <p style="margin:0;">Panel A stays in the DOM when inactive.</p>
+                        <p style="margin:0; font-size:.85rem; opacity:.75;">
+                            Inactive panels have <code>aria-hidden="true"</code> so screen readers
+                            skip them. Useful when tabs own stateful editors that shouldn't unmount.
+                        </p>
+                    </TabStripTab>
+                    <TabStripTab Id="p-b" Title="Tab B">
+                        <p style="margin:0;">Panel B — also persistent.</p>
+                    </TabStripTab>
+                </SunfishTabStrip>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "TabStrip", "Accessibility"];
+}

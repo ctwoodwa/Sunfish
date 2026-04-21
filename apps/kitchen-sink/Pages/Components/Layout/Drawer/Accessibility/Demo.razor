@@ -1,0 +1,154 @@
+@page "/components/layout/drawer/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Drawer / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Drawer / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Drawer/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDrawer</code> is rendered with <code>role="navigation"</code> and
+            <code>aria-expanded</code> reflecting its open state. Accessibility responsibilities
+            are split between the component and the consumer:
+        </p>
+        <ul>
+            <li><strong>Default semantics.</strong> <code>role="navigation"</code> makes the drawer
+                a landmark. Pair it with an <code>aria-label</code> (e.g.
+                <code>"Primary navigation"</code>) so multiple navs on the same page can be told
+                apart.</li>
+            <li><strong>Modal navigation.</strong> For overlay drawers, add <code>role="dialog"</code>
+                (or <code>aria-modal="true"</code>) when the drawer should trap focus and block
+                page interaction. For non-modal navigation rails (typical app sidebars), leave the
+                default <code>navigation</code> role in place.</li>
+            <li><strong>Keyboard.</strong> <kbd>Tab</kbd> enters and cycles through the nav items.
+                Provide a visible close affordance (button or <kbd>Esc</kbd> handler) — the built-in
+                backdrop click closes overlay drawers automatically.</li>
+            <li><strong>Backdrop / scrim.</strong> In <code>DrawerMode.Overlay</code>, clicking the
+                scrim triggers <code>OnClose</code> and fires <code>ExpandedChanged</code>. This
+                gives mouse users an exit route; keyboard users still need a focusable Close button
+                or an <kbd>Esc</kbd> binding in your page.</li>
+            <li><strong>Item semantics.</strong> Data-driven items with a <code>UrlField</code>
+                render as <code>&lt;a&gt;</code> elements (natively focusable). Items without a URL
+                render as <code>&lt;div&gt;</code> — supply your own
+                <code>ItemTemplate</code> with <code>&lt;button&gt;</code>s to guarantee
+                focusability and <code>aria-current="page"</code> on the selected entry.</li>
+            <li><strong>MiniMode.</strong> When the drawer is collapsed to a rail, the text label
+                is visually hidden. Keep an <code>aria-label</code> or
+                <code>&lt;span class="visually-hidden"&gt;</code> alongside the icon so screen
+                readers still announce the destination.</li>
+        </ul>
+        <h4 style="margin:1rem 0 .25rem;">Keyboard</h4>
+        <table style="border-collapse:collapse; font-size:.9rem;">
+            <thead>
+                <tr style="background:var(--sunfish-surface-3, #f3f4f6);">
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Key</th>
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Cycle focus through drawer items</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Enter</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Activate a link or button item</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Esc</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Close the drawer (consumer-provided handler)</td></tr>
+            </tbody>
+        </table>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Named navigation landmark</h4>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _navOpen = true">Open Primary Navigation</SunfishButton>
+                <SunfishDrawer Position="DrawerPosition.Left"
+                               @bind-Expanded="_navOpen"
+                               aria-label="Primary navigation">
+                    <nav>
+                        <ul style="list-style:none; margin:0; padding:1rem 0; display:flex; flex-direction:column; gap:.25rem;">
+                            <li><a href="#" style="display:block; padding:.5rem 1rem;">Home</a></li>
+                            <li><a href="#" style="display:block; padding:.5rem 1rem;" aria-current="page">Dashboard</a></li>
+                            <li><a href="#" style="display:block; padding:.5rem 1rem;">Reports</a></li>
+                            <li><a href="#" style="display:block; padding:.5rem 1rem;">Settings</a></li>
+                        </ul>
+                        <div style="padding:0 1rem;">
+                            <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _navOpen = false">Close</SunfishButton>
+                        </div>
+                    </nav>
+                </SunfishDrawer>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    <code>aria-label="Primary navigation"</code> names the landmark; the active
+                    link carries <code>aria-current="page"</code>.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Modal drawer (role="dialog")</h4>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _modalOpen = true">Open Modal Drawer</SunfishButton>
+                <SunfishDrawer Position="DrawerPosition.Right"
+                               @bind-Expanded="_modalOpen"
+                               role="dialog"
+                               aria-modal="true"
+                               aria-labelledby="modal-drawer-heading">
+                    <div style="padding:1rem;">
+                        <h3 id="modal-drawer-heading" style="margin:0 0 .5rem;">Filters</h3>
+                        <p style="margin:0 0 .75rem; font-size:.9rem;">
+                            <code>role="dialog"</code> + <code>aria-modal="true"</code> signals to
+                            assistive tech that the drawer is modal. Pair with a focus trap in your
+                            page.
+                        </p>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _modalOpen = false">Close</SunfishButton>
+                    </div>
+                </SunfishDrawer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">MiniMode with accessible labels</h4>
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden;">
+                    <SunfishDrawer Position="DrawerPosition.Left"
+                                   Mode="DrawerMode.Push"
+                                   MiniMode="true"
+                                   MiniWidth="56px"
+                                   Width="260px"
+                                   @bind-Expanded="_mini"
+                                   aria-label="Main navigation rail">
+                        <nav aria-label="Rail">
+                            <ul style="list-style:none; margin:0; padding:1rem 0;">
+                                <li><a href="#" aria-label="Home" title="Home" style="display:flex; gap:.5rem; padding:.5rem 1rem;"><span aria-hidden="true">&#127968;</span><span style="@LabelVisibility">Home</span></a></li>
+                                <li><a href="#" aria-label="Inbox" title="Inbox" style="display:flex; gap:.5rem; padding:.5rem 1rem;"><span aria-hidden="true">&#128231;</span><span style="@LabelVisibility">Inbox</span></a></li>
+                                <li><a href="#" aria-label="Settings" title="Settings" style="display:flex; gap:.5rem; padding:.5rem 1rem;"><span aria-hidden="true">&#9881;</span><span style="@LabelVisibility">Settings</span></a></li>
+                            </ul>
+                        </nav>
+                    </SunfishDrawer>
+                </div>
+                <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _mini = !_mini">
+                        @(_mini ? "Collapse to mini" : "Expand")
+                    </SunfishButton>
+                </div>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Each link carries an <code>aria-label</code> so the destination is announced
+                    even when the text is visually hidden in rail mode.
+                </p>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Drawer", "Accessibility"];
+
+    private bool _navOpen;
+    private bool _modalOpen;
+    private bool _mini = true;
+
+    private string LabelVisibility => _mini
+        ? "position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;"
+        : "";
+}

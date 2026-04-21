@@ -1,0 +1,129 @@
+@page "/components/layout/stepper/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Stepper / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stepper / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            A stepper communicates progress through a sequential workflow. Accessibility guidance:
+        </p>
+        <ul>
+            <li><strong>Promote to a navigation landmark.</strong> Wrap the stepper in
+                <code>&lt;nav&gt;</code> with <code>aria-label="Setup progress"</code> (or use
+                <code>role="navigation"</code> on the stepper directly via
+                <code>AdditionalAttributes</code>).</li>
+            <li><strong>Describe progress.</strong> Surface the overall progress to screen readers
+                with <code>aria-label="Step 2 of 4: Enter details"</code> on the container, and
+                keep it in sync with <code>ActiveStep</code>.</li>
+            <li><strong>Status on each indicator.</strong> Each step's status (Pending / Active /
+                Completed / Error) is conveyed visually. Pair it with an
+                <code>aria-label</code> or <code>aria-current="step"</code> on the active indicator
+                so non-sighted users get the same information.</li>
+            <li><strong>Optional steps.</strong> The <code>Optional</code> sub-label is visible
+                only — add <code>aria-label="Step 3 (optional)"</code> on the indicator to expose
+                the affordance to assistive tech.</li>
+            <li><strong>Error steps.</strong> When a step is in <code>StepStatus.Error</code>,
+                supplement with <code>aria-invalid="true"</code> or a live-region announcement
+                (<code>role="alert"</code>) that explains the failure.</li>
+            <li><strong>Keyboard.</strong> Indicators are rendered as <code>&lt;div&gt;</code>
+                elements with click handlers. For keyboard parity, either (a) supply your own
+                Next/Back buttons that drive <code>ActiveStep</code>, or (b) wrap each indicator
+                in a semantic <code>&lt;button&gt;</code> via a custom template in future
+                iterations.</li>
+        </ul>
+        <h4 style="margin:1rem 0 .25rem;">Keyboard</h4>
+        <table style="border-collapse:collapse; font-size:.9rem;">
+            <thead>
+                <tr style="background:var(--sunfish-surface-3, #f3f4f6);">
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Key</th>
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus to Previous / Next buttons</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Activate Previous / Next (advance stepper)</td></tr>
+            </tbody>
+        </table>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Navigation landmark + progress label</h4>
+                <nav aria-label="@StepLabel">
+                    <SunfishStepper @bind-ActiveStep="_active" aria-label="@StepLabel">
+                        <SunfishStep Title="Account">
+                            <p style="margin:0;">Create your account.</p>
+                        </SunfishStep>
+                        <SunfishStep Title="Details">
+                            <p style="margin:0;">Tell us about yourself.</p>
+                        </SunfishStep>
+                        <SunfishStep Title="Preferences" Optional="true">
+                            <p style="margin:0;">Optional preferences.</p>
+                        </SunfishStep>
+                        <SunfishStep Title="Confirm">
+                            <p style="margin:0;">Confirm and submit.</p>
+                        </SunfishStep>
+                    </SunfishStepper>
+                </nav>
+
+                <div style="display:flex; gap:.5rem; margin-top:.75rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary"
+                                   OnClick="() => _active = Math.Max(0, _active - 1)"
+                                   Disabled="@(_active == 0)"
+                                   aria-label="Go to previous step">
+                        Previous
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary"
+                                   OnClick="() => _active = Math.Min(3, _active + 1)"
+                                   Disabled="@(_active == 3)"
+                                   aria-label="Go to next step">
+                        Next
+                    </SunfishButton>
+                </div>
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;" aria-live="polite">
+                    @StepLabel
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Error step + live announcement</h4>
+                <nav aria-label="Validation progress">
+                    <SunfishStepper ActiveStep="1">
+                        <SunfishStep Title="Submit" StepStatus="StepStatus.Completed">
+                            <p style="margin:0;">Submitted.</p>
+                        </SunfishStep>
+                        <SunfishStep Title="Validation" StepStatus="StepStatus.Error">
+                            <p style="margin:0;">Validation failed — required fields missing.</p>
+                        </SunfishStep>
+                        <SunfishStep Title="Publish" Disabled="true">
+                            <p style="margin:0;">Waiting for validation.</p>
+                        </SunfishStep>
+                    </SunfishStepper>
+                </nav>
+                <p role="alert" style="margin:.5rem 0 0; color:#b91c1c; font-weight:600;">
+                    Step 2 failed: Validation errors must be resolved before proceeding.
+                </p>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Stepper", "Accessibility"];
+
+    private int _active = 0;
+
+    private string StepLabel => $"Step {_active + 1} of 4";
+}

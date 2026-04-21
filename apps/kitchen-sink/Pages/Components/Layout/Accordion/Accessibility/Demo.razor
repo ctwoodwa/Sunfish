@@ -1,0 +1,118 @@
+@page "/components/layout/accordion/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Accordion / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Accordion / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Accordion/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAccordion</code> follows the WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/accordion/" target="_blank" rel="noopener">Accordion</a>
+            pattern:
+        </p>
+        <ul>
+            <li>The accordion root has <code>role="region"</code>.</li>
+            <li>Each item header is a semantic
+                <code>&lt;button type="button"&gt;</code> with
+                <code>aria-expanded="true|false"</code> and
+                <code>aria-controls</code> pointing at the content panel.</li>
+            <li>Each content panel has <code>role="region"</code>, a unique <code>id</code>, and is
+                removed from the DOM when collapsed. Screen readers announce the expanded state
+                changes via <code>aria-expanded</code>.</li>
+            <li>The <code>disabled</code> attribute on a header button removes it from the tab
+                order and blocks activation.</li>
+        </ul>
+        <h4 style="margin:1rem 0 .25rem;">Keyboard</h4>
+        <table style="border-collapse:collapse; font-size:.9rem;">
+            <thead>
+                <tr style="background:var(--sunfish-surface-3, #f3f4f6);">
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Key</th>
+                    <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus to the next item header</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Shift+Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus to the previous item header</td></tr>
+                <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Toggle the focused header (native button behaviour)</td></tr>
+            </tbody>
+        </table>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Live accordion (inspect with a screen reader)</h4>
+                <SunfishAccordion ExpandMode="AccordionExpandMode.Single">
+                    <SunfishAccordionItem Title="Section 1" @bind-IsExpanded="_s1">
+                        <p style="margin:0;">
+                            Each header is a <code>&lt;button&gt;</code> with
+                            <code>aria-expanded</code> and <code>aria-controls</code>. Tab here,
+                            press <kbd>Enter</kbd> to toggle, and the panel below appears.
+                        </p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Section 2" @bind-IsExpanded="_s2">
+                        <p style="margin:0;">
+                            When <code>ExpandMode="AccordionExpandMode.Single"</code> is active,
+                            expanding this closes Section 1 — the previously-expanded header's
+                            <code>aria-expanded</code> flips back to <code>false</code>.
+                        </p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Section 3 (Disabled)" Disabled="true">
+                        <p style="margin:0;">This item is inert — <code>disabled</code> on the button.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Labelled accordion region</h4>
+                <h5 id="faq-title" style="margin:0 0 .5rem;">Frequently Asked Questions</h5>
+                <SunfishAccordion aria-labelledby="faq-title">
+                    <SunfishAccordionItem Title="How do I reset my password?" @bind-IsExpanded="_f1">
+                        <p style="margin:0;">Use the "Forgot password" link on the sign-in screen.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Is there a free tier?" @bind-IsExpanded="_f2">
+                        <p style="margin:0;">Yes — the Community tier is always free.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    <code>aria-labelledby="faq-title"</code> names the accordion region using the
+                    visible heading above.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">ARIA inspection</h4>
+                <p style="margin:0 0 .25rem; font-size:.85rem;">
+                    Using browser devtools, inspect a header — it renders as:
+                </p>
+                <pre style="background:var(--sunfish-surface-3, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.8rem; margin:0; overflow-x:auto;">
+&lt;button type="button"
+        class="sf-accordion-item__header"
+        aria-expanded="true"
+        aria-controls="acc-…"&gt;
+    Section 1
+&lt;/button&gt;
+&lt;div id="acc-…" role="region" class="sf-accordion-item__content"&gt;…&lt;/div&gt;</pre>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Accordion", "Accessibility"];
+
+    private bool _s1 = true;
+    private bool _s2;
+    private bool _f1;
+    private bool _f2;
+}

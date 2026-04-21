@@ -1,0 +1,115 @@
+@page "/components/layout/grid/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Grid / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Grid / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Grid/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The 12-column grid is a <em>presentational</em> layout primitive — by itself it has no
+            semantics, no role, and no keyboard behaviour. Accessibility flows from the semantic
+            landmarks you place <em>inside</em> the columns, not from the grid itself.
+        </p>
+        <ul>
+            <li><strong>No <code>role="grid"</code>.</strong> The ARIA <code>grid</code> role is for
+                focusable, keyboard-navigable tabular data (think spreadsheet), not for visual layout.
+                Leave the default <code>&lt;div&gt;</code> semantics on <code>SunfishRow</code> and
+                <code>SunfishColumn</code>.</li>
+            <li><strong>Use HTML5 landmarks inside.</strong> Wrap column content in
+                <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>,
+                <code>&lt;aside&gt;</code>, or <code>&lt;footer&gt;</code> so assistive tech can
+                skip between regions.</li>
+            <li><strong>Heading hierarchy.</strong> Give each region a heading. The grid doesn't
+                affect the document outline — it's up to you to keep <code>h1</code>…<code>h6</code>
+                levels well-nested.</li>
+            <li><strong>Source order matters.</strong> The grid renders columns in DOM order. Screen
+                readers and keyboard users follow DOM order, not visual position. Avoid reordering
+                columns purely visually (e.g. via CSS <code>order</code>) without adjusting source.</li>
+            <li><strong>Responsive collapse.</strong> When columns stack on narrow viewports, the
+                reading order is still DOM order — test small widths to make sure the collapsed
+                sequence is coherent.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <h4 style="margin:0;">Semantic layout with landmarks</h4>
+            <SunfishRow>
+                <SunfishColumn Span="12">
+                    <header aria-label="Page header" style="background:var(--sunfish-surface-3, #f3f4f6); border-radius:.375rem; padding:.75rem;">
+                        <h2 style="margin:0; font-size:1.1rem;">Site Header</h2>
+                    </header>
+                </SunfishColumn>
+            </SunfishRow>
+            <SunfishRow>
+                <SunfishColumn Span="3">
+                    <nav aria-label="Section navigation" style="background:var(--sunfish-surface-2, #eef2ff); border-radius:.375rem; padding:.75rem; min-height:140px;">
+                        <h3 style="margin:0 0 .5rem; font-size:.95rem;">Navigation</h3>
+                        <ul style="margin:0; padding-left:1.1rem; font-size:.85rem;">
+                            <li><a href="#">Overview</a></li>
+                            <li><a href="#">Getting started</a></li>
+                            <li><a href="#">API reference</a></li>
+                        </ul>
+                    </nav>
+                </SunfishColumn>
+                <SunfishColumn Span="9">
+                    <main aria-label="Main content" style="background:var(--sunfish-surface-2, #eef2ff); border-radius:.375rem; padding:.75rem; min-height:140px;">
+                        <h3 style="margin:0 0 .5rem; font-size:.95rem;">Main</h3>
+                        <p style="margin:0; font-size:.9rem;">
+                            The <code>&lt;nav&gt;</code> / <code>&lt;main&gt;</code> landmarks above
+                            are what screen readers announce — the <code>SunfishRow</code> and
+                            <code>SunfishColumn</code> wrappers contribute no semantics.
+                        </p>
+                    </main>
+                </SunfishColumn>
+            </SunfishRow>
+            <SunfishRow>
+                <SunfishColumn Span="12">
+                    <footer aria-label="Page footer" style="background:var(--sunfish-surface-3, #f3f4f6); border-radius:.375rem; padding:.75rem; font-size:.85rem;">
+                        Site Footer (<code>&lt;footer&gt;</code> landmark)
+                    </footer>
+                </SunfishColumn>
+            </SunfishRow>
+
+            <h4 style="margin:1rem 0 0;">Reading order test</h4>
+            <p style="margin:0; font-size:.85rem; opacity:.8;">
+                Tab through the links below — focus follows DOM order (Card 1 → Card 2 → Card 3),
+                which matches visual order here. Tabbing always reflects source order, so avoid
+                CSS reordering that would desynchronise the two.
+            </p>
+            <SunfishRow>
+                <SunfishColumn Span="4">
+                    <article aria-labelledby="card-1-heading" style="background:var(--sunfish-surface-2, #eef2ff); border-radius:.375rem; padding:.75rem;">
+                        <h3 id="card-1-heading" style="margin:0 0 .25rem; font-size:.95rem;">Card 1</h3>
+                        <a href="#">Read more</a>
+                    </article>
+                </SunfishColumn>
+                <SunfishColumn Span="4">
+                    <article aria-labelledby="card-2-heading" style="background:var(--sunfish-surface-2, #eef2ff); border-radius:.375rem; padding:.75rem;">
+                        <h3 id="card-2-heading" style="margin:0 0 .25rem; font-size:.95rem;">Card 2</h3>
+                        <a href="#">Read more</a>
+                    </article>
+                </SunfishColumn>
+                <SunfishColumn Span="4">
+                    <article aria-labelledby="card-3-heading" style="background:var(--sunfish-surface-2, #eef2ff); border-radius:.375rem; padding:.75rem;">
+                        <h3 id="card-3-heading" style="margin:0 0 .25rem; font-size:.95rem;">Card 3</h3>
+                        <a href="#">Read more</a>
+                    </article>
+                </SunfishColumn>
+            </SunfishRow>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Grid", "Accessibility"];
+}

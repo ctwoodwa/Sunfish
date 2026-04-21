@@ -1,0 +1,154 @@
+@page "/components/layout/tabstrip/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+@using Sunfish.Foundation.Models
+
+<PageTitle>TabStrip / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TabStrip / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTabStrip</code> exposes the following events:
+        </p>
+        <ul>
+            <li><code>ActiveTabIdChanged</code> — fires when the active tab changes. Supports
+                <code>@@bind-ActiveTabId</code>.</li>
+            <li><code>OnStateInit</code> — fires on first render with the initial
+                <code>TabStripState</code>. Use to restore persisted state (e.g. last active tab
+                from local storage).</li>
+            <li><code>OnStateChanged</code> — fires whenever the active tab, tab visibility, pin
+                state, or tab order changes. Good for auto-saving state.</li>
+            <li><code>OnTabReorder</code> — fires after a drag reorder completes. Requires
+                <code>EnableTabReorder="true"</code>.</li>
+        </ul>
+        <p>
+            Per-tab events:
+        </p>
+        <ul>
+            <li><code>VisibleChanged</code> on <code>TabStripTab</code> — fires when a Closeable
+                tab is closed or visibility is toggled.</li>
+            <li><code>PinnedChanged</code> on <code>TabStripTab</code> — fires when a Pinnable
+                tab's pin state changes.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 360px); gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Live tabstrip</h4>
+                <SunfishTabStrip @bind-ActiveTabId="_activeId"
+                                 OnStateInit="HandleStateInit"
+                                 OnStateChanged="HandleStateChanged">
+                    <TabStripTab Id="overview" Title="Overview">
+                        <p style="margin:0;">Overview content.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="details" Title="Details">
+                        <p style="margin:0;">Details content.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="closeable"
+                                 Title="Closeable"
+                                 Closeable="true"
+                                 Visible="_closeableVisible"
+                                 VisibleChanged="HandleCloseableVisibleChanged">
+                        <p style="margin:0;">Click the × to close — <code>VisibleChanged</code> fires.</p>
+                    </TabStripTab>
+                    <TabStripTab Id="pinnable"
+                                 Title="Pinnable"
+                                 Pinnable="true"
+                                 Pinned="_pinned"
+                                 PinnedChanged="HandlePinnedChanged">
+                        <p style="margin:0;">Pinnable body — <code>PinnedChanged</code> fires when pinned state toggles.</p>
+                    </TabStripTab>
+                </SunfishTabStrip>
+
+                <div style="display:flex; flex-wrap:wrap; gap:.5rem; margin-top:.75rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => ActivateTab("overview"))">Activate overview</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => ActivateTab("details"))">Activate details</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _closeableVisible = !_closeableVisible)">Toggle Closeable Visibility</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _pinned = !_pinned)">Toggle Pinned</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ClearLog">Clear Log</SunfishButton>
+                </div>
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    ActiveTabId: <strong>@_activeId</strong> — closeable visible:
+                    <strong>@_closeableVisible</strong> — pinned: <strong>@_pinned</strong>
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — interact with the tabs to emit.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "TabStrip", "Events"];
+
+    private string? _activeId = "overview";
+    private bool _closeableVisible = true;
+    private bool _pinned;
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void ActivateTab(string id)
+    {
+        _activeId = id;
+        Log($"Programmatic Activate -> {id}");
+    }
+
+    private void HandleStateInit(TabStripStateEventArgs args)
+    {
+        Log($"OnStateInit -> active={args.TabStripState.ActiveTabId}, tabs={args.TabStripState.TabStates.Count}");
+    }
+
+    private void HandleStateChanged(TabStripStateEventArgs args)
+    {
+        var summary = string.Join(", ",
+            args.TabStripState.TabStates.Select(t => $"{t.Id}(v={t.Visible},p={t.Pinned})"));
+        Log($"OnStateChanged -> active={args.TabStripState.ActiveTabId} [{summary}]");
+    }
+
+    private void HandleCloseableVisibleChanged(bool value)
+    {
+        _closeableVisible = value;
+        Log($"closeable.VisibleChanged -> {value}");
+    }
+
+    private void HandlePinnedChanged(bool value)
+    {
+        _pinned = value;
+        Log($"pinnable.PinnedChanged -> {value}");
+    }
+}

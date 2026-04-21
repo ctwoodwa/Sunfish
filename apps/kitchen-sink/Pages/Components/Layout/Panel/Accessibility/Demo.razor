@@ -1,0 +1,104 @@
+@page "/components/layout/panel/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Panel / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Panel / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Panel/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            When <code>Collapsible="true"</code>, the header is rendered as a semantic
+            <code>&lt;button type="button"&gt;</code> with <code>aria-expanded</code> reflecting
+            the current state and <code>aria-label</code> announcing "Collapse" or "Expand". A
+            non-collapsible panel has no interactive semantics — treat it as a purely structural
+            surface and add <code>role="region"</code> + <code>aria-labelledby</code> when the
+            panel represents a named section.
+        </p>
+        <ul>
+            <li><strong>Collapsible panel (button pattern).</strong> The toggle button receives
+                keyboard focus. <kbd>Enter</kbd> and <kbd>Space</kbd> toggle expansion.
+                <code>aria-expanded="true|false"</code> keeps assistive tech in sync.</li>
+            <li><strong>Named region pattern.</strong> For non-collapsible panels that represent
+                a landmark (settings card, summary, etc.), pass <code>role="region"</code> and
+                point <code>aria-labelledby</code> at the header element.</li>
+            <li><strong>Disabled state.</strong> <code>Disabled="true"</code> prevents the toggle
+                from firing. The disabled CSS class signals non-interactivity; keyboard focus still
+                skips the button because it's effectively inert.</li>
+            <li><strong>Custom header content.</strong> When using <code>HeaderTemplate</code>,
+                keep interactive elements inside the header to a minimum. Nested buttons confuse
+                assistive tech — prefer putting actions in <code>FooterTemplate</code>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Collapsible (keyboard: Enter / Space)</h4>
+                <SunfishPanel Title="FAQ: How do collapsible panels work?" Collapsible="true" @bind-Expanded="_expanded">
+                    <p style="margin:0;">
+                        Tab to the header, then press <kbd>Enter</kbd> or <kbd>Space</kbd> to
+                        toggle. Screen readers announce the new
+                        <code>aria-expanded</code> value on each toggle.
+                    </p>
+                </SunfishPanel>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Current expanded: <strong>@_expanded</strong> — the header's
+                    <code>aria-expanded</code> attribute reflects this.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Named region (role="region" + aria-labelledby)</h4>
+                <SunfishPanel role="region" aria-labelledby="summary-heading">
+                    <HeaderTemplate>
+                        <h3 id="summary-heading" style="margin:0; font-size:1rem;">Account Summary</h3>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        <p style="margin:0;">
+                            A screen reader announces "Account Summary, region" on entry. The
+                            header's <code>id</code> is referenced by <code>aria-labelledby</code>
+                            on the panel root (passed via <code>AdditionalAttributes</code>).
+                        </p>
+                    </ContentTemplate>
+                </SunfishPanel>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Disabled panel (inert)</h4>
+                <SunfishPanel Title="Unavailable settings" Collapsible="true" Disabled="true">
+                    <p style="margin:0;">Toggle is blocked while disabled.</p>
+                </SunfishPanel>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Keyboard reference</h4>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr style="background:var(--sunfish-surface-3, #f3f4f6);">
+                            <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Tab</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Move focus to collapsible panel header</td></tr>
+                        <tr><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);">Toggle expanded / collapsed</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Panel", "Accessibility"];
+
+    private bool _expanded = true;
+}

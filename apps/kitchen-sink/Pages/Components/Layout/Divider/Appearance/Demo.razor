@@ -1,0 +1,89 @@
+@page "/components/layout/divider/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Divider / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Divider / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Divider/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDivider</code> renders a semantic <code>&lt;hr&gt;</code> element styled by
+            the active CSS provider. Its one parameter:
+        </p>
+        <ul>
+            <li><code>Vertical</code> (default <code>false</code>) — switches the divider to a
+                vertical rule. Horizontal dividers stretch to their container's width; vertical
+                dividers need an explicit <code>Style</code> height (or to sit inside a flex
+                container with a defined cross-axis size).</li>
+        </ul>
+        <p>
+            Colour, thickness, margin, and dash style all come from the CSS provider. Override
+            per-instance with inline <code>Style</code> or a custom <code>Class</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal (default)</h4>
+                <div style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                    <p style="margin:0 0 .5rem;">Content above the rule.</p>
+                    <SunfishDivider />
+                    <p style="margin:.5rem 0 0;">Content below the rule.</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Vertical (flex row, fixed height)</h4>
+                <div style="display:flex; align-items:center; gap:1rem; background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem; height:64px;">
+                    <span>Left</span>
+                    <SunfishDivider Vertical="true" Style="height:40px;" />
+                    <span>Middle</span>
+                    <SunfishDivider Vertical="true" Style="height:40px;" />
+                    <span>Right</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Thick accent rule (Style override)</h4>
+                <div style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                    <p style="margin:0 0 .5rem;">Before accent</p>
+                    <SunfishDivider Style="border:0; border-top:3px solid #6a4cff; margin:.75rem 0;" />
+                    <p style="margin:.5rem 0 0;">After accent</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Dashed variant</h4>
+                <div style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                    <p style="margin:0 0 .5rem;">Above dashed</p>
+                    <SunfishDivider Style="border:0; border-top:1px dashed #94a3b8; margin:.75rem 0;" />
+                    <p style="margin:.5rem 0 0;">Below dashed</p>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Section separator inside a Stack</h4>
+                <SunfishStack Orientation="StackDirection.Vertical" Spacing="0" Style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">
+                    <div style="padding:.5rem 0;">Section A</div>
+                    <SunfishDivider />
+                    <div style="padding:.5rem 0;">Section B</div>
+                    <SunfishDivider />
+                    <div style="padding:.5rem 0;">Section C</div>
+                </SunfishStack>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Divider", "Appearance"];
+}
