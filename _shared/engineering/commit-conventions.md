@@ -163,7 +163,7 @@ export default {
     'type-enum': [2, 'always',
       ['feat', 'fix', 'docs', 'style', 'refactor', 'perf',
        'test', 'build', 'ci', 'chore', 'revert']],
-    'scope-enum': [2, 'always',
+    'scope-enum': [1, 'always',
       ['foundation', 'foundation-catalog', 'foundation-multitenancy',
        'foundation-featuremanagement', 'foundation-localfirst',
        'foundation-integrations', 'ui-core', 'ui-adapters-blazor',
@@ -177,6 +177,8 @@ export default {
   },
 };
 ```
+
+**Scope posture:** `type-enum` is at error level (2) because `type` drives SemVer inference — getting it wrong corrupts changelogs and version bumps. `scope-enum` is at warning level (1) because scope is informational: a mis-scoped commit is still a legible commit. The enum above reflects what the repo has *named scopes* for as of the last review; new packages add their scope organically via warnings rather than requiring a config-sync PR per package. Promote `scope-enum` to 2 if the project grows a release engineer who benefits from per-scope changelog grouping being airtight.
 
 Wire `.github/workflows/commitlint.yml` on `pull_request` using `wagoid/commitlint-github-action`.
 

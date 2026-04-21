@@ -1,0 +1,19 @@
+name: Commitlint
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  commitlint:
+    name: Lint PR commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: commitlint.config.js
+          helpURL: https://github.com/ctwoodwa/Sunfish/blob/main/_shared/engineering/commit-conventions.md
