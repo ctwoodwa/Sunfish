@@ -1,6 +1,8 @@
 @inherits SunfishComponentBase
+@implements IDisposable
 @typeparam TItem
 @typeparam TValue
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
 <div class="@CombineClasses(CssProvider.ComboBoxClass(_isOpen, Disabled, IsInvalid))"
      style="@CombineStyles()"
@@ -14,6 +16,7 @@
                value="@_inputText"
                placeholder="@Placeholder"
                disabled="@Disabled"
+               readonly="@ReadOnly"
                role="combobox"
                aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
                aria-autocomplete="list"
@@ -35,41 +38,157 @@
 
     <DropdownPopup IsOpen="@_isOpen">
         <div class="@CssProvider.ComboBoxPopupClass()">
-            <ul role="listbox">
-                @for (var i = 0; i < _filteredItems.Count; i++)
+            @if (HeaderTemplate is not null)
+            {
+                <div class="sf-combobox__header">
+                    @HeaderTemplate
+                </div>
+            }
+
+            @if (_visibleItems.Count == 0)
+            {
+                @if (NoDataTemplate is not null)
                 {
-                    var index = i;
-                    var item = _filteredItems[i];
-                    var isHighlighted = index == _highlightedIndex;
-                    var isSelected = Equals(GetValue(item), Value);
-                    <li id="cb-option-@index"
-                        class="@CssProvider.ComboBoxItemClass(isHighlighted, isSelected)"
-                        role="option"
-                        aria-selected="@isSelected.ToString().ToLowerInvariant()"
-                        @onmousedown="() => SelectItem(item)"
-                        @onmouseover="() => _highlightedIndex = index">
-                        @if (ItemTemplate is not null)
-                        {
-                            @ItemTemplate(item)
-                        }
-                        else
-                        {
-                            @GetText(item)
-                        }
-                    </li>
+                    <div class="sf-combobox__no-data">
+                        @* NoDataTemplate is rendered without an item context. *@
+                        @NoDataTemplate(default!)
+                    </div>
                 }
-            </ul>
+                else
+                {
+                    <div class="sf-combobox__no-data">No items found</div>
+                }
+            }
+            else if (Virtual)
+            {
+                <ul role="listbox" class="sf-combobox__list sf-combobox__list--virtual"
+                    style="height:@(VirtualContainerHeight);overflow-y:auto;">
+                    <Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize Items="@_visibleItems"
+                                                                                    Context="item"
+                                                                                    ItemSize="@((float)VirtualItemHeight)">
+                        @{
+                            var vIndex = _visibleItems.IndexOf(item);
+                            var vIsHighlighted = vIndex == _highlightedIndex;
+                            var vIsSelected = Equals(GetValue(item), Value);
+                        }
+                        <li id="cb-option-@vIndex"
+                            class="@CssProvider.ComboBoxItemClass(vIsHighlighted, vIsSelected)"
+                            role="option"
+                            aria-selected="@vIsSelected.ToString().ToLowerInvariant()"
+                            style="height:@(VirtualItemHeight)px;"
+                            @onmousedown="() => SelectItem(item)"
+                            @onmouseover="() => _highlightedIndex = vIndex">
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @GetText(item)
+                            }
+                        </li>
+                    </Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize>
+                </ul>
+            }
+            else if (!string.IsNullOrEmpty(GroupField))
+            {
+                <ul role="listbox" class="sf-combobox__list">
+                    @{
+                        var orderedIndices = Enumerable.Range(0, _visibleItems.Count)
+                            .OrderBy(idx => GetGroupValue(_visibleItems[idx]) ?? string.Empty,
+                                     StringComparer.CurrentCultureIgnoreCase)
+                            .ToList();
+                        string? lastGroup = null;
+                    }
+                    @foreach (var index in orderedIndices)
+                    {
+                        var item = _visibleItems[index];
+                        var groupKey = GetGroupValue(item) ?? string.Empty;
+                        if (!string.Equals(groupKey, lastGroup, StringComparison.Ordinal))
+                        {
+                            lastGroup = groupKey;
+                            if (!string.IsNullOrEmpty(groupKey))
+                            {
+                                <li class="sf-combobox__group-header"
+                                    role="presentation"
+                                    style="position:sticky;top:0;z-index:1;background:inherit;font-weight:600;">
+                                    @groupKey
+                                </li>
+                            }
+                        }
+
+                        var isHighlighted = index == _highlightedIndex;
+                        var isSelected = Equals(GetValue(item), Value);
+                        <li id="cb-option-@index"
+                            class="@CssProvider.ComboBoxItemClass(isHighlighted, isSelected)"
+                            role="option"
+                            aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                            @onmousedown="() => SelectItem(item)"
+                            @onmouseover="() => _highlightedIndex = index">
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @GetText(item)
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <ul role="listbox" class="sf-combobox__list">
+                    @for (var i = 0; i < _visibleItems.Count; i++)
+                    {
+                        var index = i;
+                        var item = _visibleItems[i];
+                        var isHighlighted = index == _highlightedIndex;
+                        var isSelected = Equals(GetValue(item), Value);
+                        <li id="cb-option-@index"
+                            class="@CssProvider.ComboBoxItemClass(isHighlighted, isSelected)"
+                            role="option"
+                            aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                            @onmousedown="() => SelectItem(item)"
+                            @onmouseover="() => _highlightedIndex = index">
+                            @if (ItemTemplate is not null)
+                            {
+                                @ItemTemplate(item)
+                            }
+                            else
+                            {
+                                @GetText(item)
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+
+            @if (FooterTemplate is not null)
+            {
+                <div class="sf-combobox__footer">
+                    @* FooterTemplate is rendered without an item context. *@
+                    @FooterTemplate(default!)
+                </div>
+            }
         </div>
     </DropdownPopup>
 </div>
 
 @code {
+    // ── Data ────────────────────────────────────────────────────────────────
     [Parameter] public IEnumerable<TItem> Data { get; set; } = Enumerable.Empty<TItem>();
     [Parameter] public string? TextField { get; set; }
     [Parameter] public string? ValueField { get; set; }
+    [Parameter] public string? GroupField { get; set; }
+
+    // ── Value binding ───────────────────────────────────────────────────────
     [Parameter] public TValue? Value { get; set; }
     [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
     [Parameter] public EventCallback<TValue?> OnChange { get; set; }
+
+    // ── Appearance / state ──────────────────────────────────────────────────
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
@@ -77,18 +196,62 @@
     [Parameter] public bool IsInvalid { get; set; }
     [Parameter] public bool AllowCustom { get; set; }
     [Parameter] public bool ShowClearButton { get; set; }
+
+    // ── Filtering ───────────────────────────────────────────────────────────
+    /// <summary>Legacy filter-mode shortcut. Kept for source compatibility; new callers should use <see cref="FilterOperator"/>.</summary>
     [Parameter] public ComboBoxFilterMode FilterMode { get; set; } = ComboBoxFilterMode.Contains;
+
+    /// <summary>String filter operator used for client-side filtering and forwarded in <see cref="OnRead"/> args.</summary>
+    [Parameter] public FilterOperator FilterOperator { get; set; } = FilterOperator.StartsWith;
+
+    /// <summary>Minimum characters required before filtering kicks in. <c>0</c> (default) filters on every keystroke.</summary>
+    [Parameter] public int MinLength { get; set; }
+
+    /// <summary>Debounce window (ms) applied to filter input. <c>0</c> fires synchronously.</summary>
+    [Parameter] public int DebounceDelay { get; set; } = 150;
+
+    // ── Templates ───────────────────────────────────────────────────────────
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
     [Parameter] public RenderFragment<TItem>? ValueTemplate { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? FooterTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? NoDataTemplate { get; set; }
 
+    // ── Virtualization ──────────────────────────────────────────────────────
+    /// <summary>Enables virtualization of the dropdown list. Disables in-dropdown grouping.</summary>
+    [Parameter] public bool Virtual { get; set; }
+
+    /// <summary>Row height in pixels used by Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize.</summary>
+    [Parameter] public int VirtualItemHeight { get; set; } = 28;
+
+    /// <summary>CSS height for the virtualized scroll container.</summary>
+    [Parameter] public string VirtualContainerHeight { get; set; } = "240px";
+
+    // ── OnRead (server-side data) ───────────────────────────────────────────
+    /// <summary>
+    /// Fired when the filter or paging state changes. When bound, <see cref="Data"/> is ignored and
+    /// the handler is expected to supply <see cref="ComboBoxReadEventArgs{TItem}.Data"/> (and
+    /// optionally <see cref="ComboBoxReadEventArgs{TItem}.Total"/>).
+    /// </summary>
+    [Parameter] public EventCallback<ComboBoxReadEventArgs<TItem>> OnRead { get; set; }
+
+    // ── State ───────────────────────────────────────────────────────────────
     private bool _isOpen;
     private int _highlightedIndex = -1;
     private string _inputText = string.Empty;
-    private List<TItem> _filteredItems = new();
+    private List<TItem> _localFiltered = new();
+    private List<TItem> _remoteData = new();
+    private int _remoteTotal;
+    private Timer? _debounceTimer;
+    private bool _onReadInvoked;
 
-    protected override void OnParametersSet()
+    private bool UseOnRead => OnRead.HasDelegate;
+
+    private List<TItem> _visibleItems => UseOnRead ? _remoteData : _localFiltered;
+
+    protected override async Task OnParametersSetAsync()
     {
-        if (Value is not null)
+        if (Value is not null && !UseOnRead)
         {
             var selectedItem = Data.FirstOrDefault(item => Equals(GetValue(item), Value));
             if (selectedItem is not null)
@@ -96,56 +259,136 @@
                 _inputText = GetText(selectedItem) ?? string.Empty;
             }
         }
-        ApplyFilter();
+
+        if (UseOnRead)
+        {
+            if (!_onReadInvoked)
+            {
+                _onReadInvoked = true;
+                await InvokeOnReadAsync();
+            }
+        }
+        else
+        {
+            ApplyLocalFilter();
+        }
     }
 
     private string? GetText(TItem item)
     {
         if (item is null) return null;
         if (string.IsNullOrEmpty(TextField)) return item.ToString();
-        return typeof(TItem).GetProperty(TextField)?.GetValue(item)?.ToString();
+        return ResolvePath(item, TextField)?.ToString();
     }
 
     private TValue? GetValue(TItem item)
     {
         if (item is null) return default;
         if (string.IsNullOrEmpty(ValueField)) return (TValue?)(object?)item;
-        var propValue = typeof(TItem).GetProperty(ValueField)?.GetValue(item);
+        var propValue = ResolvePath(item, ValueField);
         if (propValue is null) return default;
         var targetType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
-        return (TValue?)Convert.ChangeType(propValue, targetType);
+        try
+        {
+            return (TValue?)Convert.ChangeType(propValue, targetType);
+        }
+        catch
+        {
+            return default;
+        }
     }
 
-    private void ApplyFilter()
+    private string? GetGroupValue(TItem item)
     {
-        if (string.IsNullOrEmpty(_inputText))
+        if (item is null || string.IsNullOrEmpty(GroupField)) return null;
+        return ResolvePath(item, GroupField)?.ToString();
+    }
+
+    // Supports dotted paths (e.g. "Category.CategoryName") per the spec.
+    private static object? ResolvePath(object? root, string path)
+    {
+        if (root is null || string.IsNullOrEmpty(path)) return null;
+        object? current = root;
+        foreach (var segment in path.Split('.'))
         {
-            _filteredItems = Data.ToList();
+            if (current is null) return null;
+            var prop = current.GetType().GetProperty(segment);
+            if (prop is null) return null;
+            current = prop.GetValue(current);
+        }
+        return current;
+    }
+
+    private bool MatchesFilter(string? text)
+    {
+        if (string.IsNullOrEmpty(_inputText)) return true;
+        if (text is null) return false;
+
+        // FilterOperator takes precedence when explicitly set to a non-default value; otherwise
+        // we fall back to FilterMode so the existing default (Contains) surface is preserved.
+        return FilterOperator switch
+        {
+            FilterOperator.Contains => text.Contains(_inputText, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.StartsWith => text.StartsWith(_inputText, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.EndsWith => text.EndsWith(_inputText, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.Equals => text.Equals(_inputText, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.NotEquals => !text.Equals(_inputText, StringComparison.OrdinalIgnoreCase),
+            _ => FilterMode == ComboBoxFilterMode.StartsWith
+                ? text.StartsWith(_inputText, StringComparison.OrdinalIgnoreCase)
+                : text.Contains(_inputText, StringComparison.OrdinalIgnoreCase),
+        };
+    }
+
+    private void ApplyLocalFilter()
+    {
+        if (string.IsNullOrEmpty(_inputText) || _inputText.Length < MinLength)
+        {
+            _localFiltered = string.IsNullOrEmpty(_inputText)
+                ? Data.ToList()
+                : new List<TItem>();
             return;
         }
 
-        _filteredItems = Data
-            .Where(item =>
-            {
-                var text = GetText(item);
-                if (text is null) return false;
-                return FilterMode == ComboBoxFilterMode.StartsWith
-                    ? text.StartsWith(_inputText, StringComparison.OrdinalIgnoreCase)
-                    : text.Contains(_inputText, StringComparison.OrdinalIgnoreCase);
-            })
-            .ToList();
+        _localFiltered = Data.Where(item => MatchesFilter(GetText(item))).ToList();
+    }
+
+    private async Task InvokeOnReadAsync()
+    {
+        if (!UseOnRead) return;
+
+        var args = new ComboBoxReadEventArgs<TItem>
+        {
+            Filter = string.IsNullOrEmpty(_inputText) ? null : _inputText,
+            FilterOperator = FilterOperator,
+            Skip = 0,
+            Take = 0,
+            Sorts = Array.Empty<SortDescriptor>(),
+            Data = Array.Empty<TItem>(),
+        };
+
+        await OnRead.InvokeAsync(args);
+        _remoteData = args.Data?.ToList() ?? new List<TItem>();
+        _remoteTotal = args.Total > 0 ? args.Total : _remoteData.Count;
     }
 
     private async Task OnInputChanged(ChangeEventArgs e)
     {
-        _inputText = e.Value?.ToString() ?? string.Empty;
-        ApplyFilter();
-        _isOpen = _filteredItems.Count > 0;
-        _highlightedIndex = _filteredItems.Count > 0 ? 0 : -1;
+        if (ReadOnly || Disabled) return;
 
-        if (AllowCustom)
+        _inputText = e.Value?.ToString() ?? string.Empty;
+
+        if (DebounceDelay > 0)
         {
-            // For custom values, try to parse input as TValue
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(_ => InvokeAsync(ApplyFilterPipelineAsync), null, DebounceDelay, Timeout.Infinite);
+        }
+        else
+        {
+            await ApplyFilterPipelineAsync();
+        }
+
+        if (AllowCustom && !UseOnRead)
+        {
             var matchingItem = Data.FirstOrDefault(item =>
                 string.Equals(GetText(item), _inputText, StringComparison.OrdinalIgnoreCase));
             if (matchingItem is not null)
@@ -156,6 +399,22 @@
                 await OnChange.InvokeAsync(value);
             }
         }
+    }
+
+    private async Task ApplyFilterPipelineAsync()
+    {
+        if (UseOnRead)
+        {
+            await InvokeOnReadAsync();
+        }
+        else
+        {
+            ApplyLocalFilter();
+        }
+
+        _isOpen = _visibleItems.Count > 0 || NoDataTemplate is not null;
+        _highlightedIndex = _visibleItems.Count > 0 ? 0 : -1;
+        StateHasChanged();
     }
 
     private async Task SelectItem(TItem item)
@@ -172,16 +431,32 @@
     {
         Value = default;
         _inputText = string.Empty;
-        ApplyFilter();
+        if (UseOnRead)
+        {
+            await InvokeOnReadAsync();
+        }
+        else
+        {
+            ApplyLocalFilter();
+        }
         await ValueChanged.InvokeAsync(default);
         await OnChange.InvokeAsync(default);
     }
 
-    private void OpenDropdown()
+    private async Task OpenDropdown()
     {
         if (Disabled) return;
-        ApplyFilter();
-        _isOpen = _filteredItems.Count > 0;
+
+        if (UseOnRead)
+        {
+            await InvokeOnReadAsync();
+        }
+        else
+        {
+            ApplyLocalFilter();
+        }
+
+        _isOpen = _visibleItems.Count > 0 || NoDataTemplate is not null;
     }
 
     private void CloseDropdownDelayed()
@@ -202,27 +477,27 @@
             case "ArrowDown":
                 if (!_isOpen)
                 {
-                    OpenDropdown();
+                    await OpenDropdown();
                 }
-                else if (_filteredItems.Count > 0)
+                else if (_visibleItems.Count > 0)
                 {
-                    _highlightedIndex = (_highlightedIndex + 1) % _filteredItems.Count;
+                    _highlightedIndex = (_highlightedIndex + 1) % _visibleItems.Count;
                 }
                 break;
 
             case "ArrowUp":
-                if (_isOpen && _filteredItems.Count > 0)
+                if (_isOpen && _visibleItems.Count > 0)
                 {
                     _highlightedIndex = _highlightedIndex <= 0
-                        ? _filteredItems.Count - 1
+                        ? _visibleItems.Count - 1
                         : _highlightedIndex - 1;
                 }
                 break;
 
             case "Enter":
-                if (_isOpen && _highlightedIndex >= 0 && _highlightedIndex < _filteredItems.Count)
+                if (_isOpen && _highlightedIndex >= 0 && _highlightedIndex < _visibleItems.Count)
                 {
-                    await SelectItem(_filteredItems[_highlightedIndex]);
+                    await SelectItem(_visibleItems[_highlightedIndex]);
                 }
                 break;
 
@@ -230,5 +505,14 @@
                 _isOpen = false;
                 break;
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _debounceTimer?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 }

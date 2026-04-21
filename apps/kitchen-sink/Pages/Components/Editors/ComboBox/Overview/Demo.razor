@@ -1,6 +1,8 @@
 @page "/components/forms/combobox/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
 <PageTitle>ComboBox / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,32 +13,119 @@
 
     <Narrative>
         <p>
-            <code>SunfishComboBox</code> pairs a free-text input with a filtered dropdown of selectable items.
-            Bind data with <code>Data</code>, <code>TextField</code>, and <code>ValueField</code>; capture the
-            selected key through <code>Value</code> / <code>ValueChanged</code>. Configure <code>FilterMode</code>
-            to switch between <em>Contains</em> and <em>StartsWith</em>, and toggle
-            <code>ShowClearButton</code> to expose a reset affordance.
+            <code>SunfishComboBox</code> pairs a free-text input with a filterable dropdown. Bind data
+            with <code>Data</code>, <code>TextField</code>, and <code>ValueField</code>; capture the
+            selected key through <code>@@bind-Value</code>. The dropdown supports grouping via
+            <code>GroupField</code>, UI virtualization via <code>Virtual</code>, and templating via
+            <code>ItemTemplate</code> / <code>HeaderTemplate</code> / <code>FooterTemplate</code> /
+            <code>NoDataTemplate</code>.
         </p>
         <p>
-            See <a href="/components/editors/combobox/virtualization">virtualization</a>,
-            <a href="/components/editors/combobox/templates">templates</a>, and
-            <a href="/components/editors/combobox/custom-value">custom-value</a> for feature-specific demos.
+            Filter tuning — <code>FilterOperator</code> (Contains / StartsWith / EndsWith),
+            <code>DebounceDelay</code>, and <code>MinLength</code> — lets you balance responsiveness
+            and data-source load.
         </p>
     </Narrative>
 
     <Example>
-        <div class="demo-row">
-            <SunfishField>
-                <SunfishLabel>Country</SunfishLabel>
-                <SunfishComboBox TItem="Country"
-                                TValue="int?"
-                                Data="@_countries"
-                                TextField="Name"
-                                ValueField="Id"
-                                Value="@_selectedValue"
-                                ValueChanged="@(v => _selectedValue = v)"
-                                Placeholder="Type to search..." />
-            </SunfishField>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Basic</h3>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishComboBox TItem="Country"
+                                    TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name"
+                                    ValueField="Id"
+                                    @bind-Value="@_basicValue"
+                                    ShowClearButton="true"
+                                    FilterOperator="FilterOperator.Contains"
+                                    DebounceDelay="150"
+                                    MinLength="0"
+                                    Placeholder="Type to search..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Grouping</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>GroupField="Category.CategoryName"</code> emits sticky group headers; dotted
+                    paths resolve through nested properties.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Product</SunfishLabel>
+                    <SunfishComboBox TItem="Product"
+                                    TValue="int?"
+                                    Data="@_products"
+                                    TextField="Name"
+                                    ValueField="Id"
+                                    GroupField="Category.CategoryName"
+                                    @bind-Value="@_groupedValue"
+                                    ShowClearButton="true"
+                                    Placeholder="Pick a product..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Virtualization (12,345 rows)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>Virtual="true"</code> renders only the visible rows through
+                    <code>&lt;Virtualize&gt;</code>. Adjust <code>VirtualItemHeight</code> to match
+                    your row CSS.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Large dataset</SunfishLabel>
+                    <SunfishComboBox TItem="Person"
+                                    TValue="int?"
+                                    Data="@_largeData"
+                                    TextField="Name"
+                                    ValueField="Id"
+                                    Virtual="true"
+                                    VirtualItemHeight="28"
+                                    VirtualContainerHeight="240px"
+                                    @bind-Value="@_virtualValue"
+                                    ShowClearButton="true"
+                                    Placeholder="Scroll — only visible rows render" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Templates</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Header / footer / item / no-data slots all compose around the same combo.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishComboBox TItem="Country"
+                                    TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name"
+                                    ValueField="Id"
+                                    @bind-Value="@_templatedValue"
+                                    Placeholder="Pick a country...">
+                        <HeaderTemplate>
+                            <strong style="padding:.25rem .75rem; display:block;">Select a country</strong>
+                        </HeaderTemplate>
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                        <FooterTemplate Context="_">
+                            <em style="padding:.25rem .75rem; display:block; color:#555;">
+                                @_countries.Count countries total
+                            </em>
+                        </FooterTemplate>
+                        <NoDataTemplate Context="_">
+                            <div style="padding:.5rem .75rem; color:#888;">No countries match your filter.</div>
+                        </NoDataTemplate>
+                    </SunfishComboBox>
+                </SunfishField>
+            </section>
+
         </div>
     </Example>
 
@@ -46,9 +135,15 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "ComboBox", "Overview"];
 
-    private int? _selectedValue;
+    private int? _basicValue;
+    private int? _groupedValue;
+    private int? _virtualValue;
+    private int? _templatedValue;
 
     private record Country(int Id, string Name, string Code);
+    private record Category(int CategoryId, string CategoryName);
+    private record Product(int Id, string Name, Category Category);
+    private record Person(int Id, string Name);
 
     private readonly List<Country> _countries = new()
     {
@@ -59,4 +154,19 @@
         new(5, "France", "FR"),
         new(6, "Japan", "JP"),
     };
+
+    private List<Product> _products = new();
+    private List<Person> _largeData = new();
+
+    protected override void OnInitialized()
+    {
+        _products = Enumerable.Range(1, 20)
+            .Select(i => new Product(i, $"Product {i}",
+                new Category(i % 4, $"Category {i % 4}")))
+            .ToList();
+
+        _largeData = Enumerable.Range(1, 12345)
+            .Select(i => new Person(i, $"Name {i}"))
+            .ToList();
+    }
 }
