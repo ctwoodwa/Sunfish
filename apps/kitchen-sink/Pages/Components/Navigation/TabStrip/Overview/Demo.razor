@@ -1,0 +1,63 @@
+@page "/components/navigation/tabstrip/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+
+<PageTitle>TabStrip / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TabStrip / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTabStrip</code> organises related content into switchable panels. The active
+            tab is controlled by <code>ActiveTabId</code> (two-way bindable), with each
+            <code>TabStripTab</code> contributing an <code>Id</code>, <code>Title</code>, and panel
+            content. Layout is tunable via <code>TabPosition</code>, <code>TabAlignment</code>,
+            and <code>Size</code>; per-tab flags include <code>Disabled</code>,
+            <code>Closeable</code>, and <code>Pinnable</code>.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/navigation/tabstrip/tabs-on-left">tabs on left</a>,
+            <a href="/components/navigation/tabstrip/tabs-on-bottom">tabs on bottom</a>,
+            <a href="/components/navigation/tabstrip/tabs-on-right">tabs on right</a>,
+            <a href="/components/navigation/tabstrip/scrollable-tabs">scrollable tabs</a>,
+            <a href="/components/navigation/tabstrip/draggable-tabs">draggable tabs</a>,
+            <a href="/components/navigation/tabstrip/content-template">content template</a>,
+            <a href="/components/navigation/tabstrip/events">events</a>,
+            <a href="/components/navigation/tabstrip/keyboard-navigation">keyboard navigation</a>,
+            and <a href="/components/navigation/tabstrip/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <SunfishTabStrip @bind-ActiveTabId="@_activeTabId">
+            <TabStripTab Id="overview" Title="Overview">
+                <p>This is the overview content.</p>
+            </TabStripTab>
+            <TabStripTab Id="details" Title="Details">
+                <p>This is the details content.</p>
+            </TabStripTab>
+            <TabStripTab Id="settings" Title="Settings">
+                <SunfishField>
+                    <SunfishLabel>Display Name</SunfishLabel>
+                    <SunfishTextBox Placeholder="Enter a name" />
+                </SunfishField>
+                <SunfishField>
+                    <SunfishSwitch Label="Enable notifications" />
+                </SunfishField>
+            </TabStripTab>
+        </SunfishTabStrip>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "TabStrip", "Overview"];
+
+    private string _activeTabId = "overview";
+}
