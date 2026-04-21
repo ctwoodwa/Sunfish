@@ -1,38 +1,39 @@
 @inherits SunfishComponentBase
+@* SunfishMaskedInput — masked text input with format enforcement.
+   View only; mask engine + parameters live in SunfishMaskedInput.razor.cs. *@
 
-<input type="text"
-       class="@CombineClasses(CssProvider.TextBoxClass(IsInvalid, !Enabled))"
-       style="@CombineStyles()"
-       value="@Value"
-       placeholder="@(Placeholder ?? Mask)"
-       disabled="@(!Enabled)"
-       readonly="@ReadOnly"
-       aria-label="@AriaLabel"
-       aria-describedby="@AriaDescribedBy"
-       @oninput="OnInputChanged"
-       @attributes="AdditionalAttributes" />
-
-@code {
-    [Parameter] public string Value { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> ValueChanged { get; set; }
-    [Parameter] public string? Mask { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public bool IsInvalid { get; set; }
-    [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public bool ReadOnly { get; set; }
-
-    /// <summary>Whether to include mask literal characters in the Value.</summary>
-    [Parameter] public bool IncludeLiterals { get; set; }
-
-    /// <summary>The prompt character shown for unfilled mask positions.</summary>
-    [Parameter] public char Prompt { get; set; } = '_';
-
-    [Parameter] public string? AriaLabel { get; set; }
-    [Parameter] public string? AriaDescribedBy { get; set; }
-
-    private async Task OnInputChanged(ChangeEventArgs e)
+<span class="@CombineClasses(CssProvider.TextBoxClass(IsInvalid, !Enabled), "sf-maskedtextbox")"
+      style="@CombineStyles()">
+    <input @ref="_inputElement"
+           type="text"
+           class="sf-maskedtextbox__input"
+           value="@RenderedDisplayValue"
+           placeholder="@EffectivePlaceholder"
+           id="@Id"
+           name="@Name"
+           tabindex="@TabIndex"
+           title="@Title"
+           inputmode="@InputMode"
+           autocapitalize="@AutoCapitalize"
+           spellcheck="@SpellCheck"
+           autocomplete="@AutoComplete"
+           disabled="@(!Enabled)"
+           readonly="@ReadOnly"
+           aria-label="@AriaLabel"
+           aria-labelledby="@AriaLabelledBy"
+           aria-describedby="@AriaDescribedBy"
+           aria-placeholder="@Mask"
+           aria-invalid="@(IsInvalid ? "true" : null)"
+           @oninput="OnInput"
+           @onkeydown="OnKeyDown"
+           @onfocus="OnFocus"
+           @onblur="OnBlurHandler"
+           @attributes="AdditionalAttributes" />
+    @if (ShowClearButton && Enabled && !ReadOnly && !IsSlotsEmpty())
     {
-        Value = e.Value?.ToString() ?? string.Empty;
-        await ValueChanged.InvokeAsync(Value);
+        <button type="button"
+                class="sf-maskedtextbox__clear"
+                aria-label="Clear"
+                @onclick="ClearValue">&times;</button>
     }
-}
+</span>
