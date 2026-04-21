@@ -4,6 +4,7 @@ using Sunfish.KitchenSink.Data;
 using Sunfish.KitchenSink.Services;
 using Sunfish.Providers.FluentUI;
 using Sunfish.Providers.FluentUI.Extensions;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 #if BOOTSTRAP_PROVIDER
 using Sunfish.Providers.Bootstrap;
 using Sunfish.Providers.Bootstrap.Extensions;
@@ -35,7 +36,8 @@ builder.Services.AddRazorComponents()
 
 // Register core Sunfish services (theme service, notifications, etc.).
 // AddSunfish() is a single entry point that replaces the legacy three-call registration.
-builder.Services.AddSunfish();
+builder.Services.AddSunfish()
+    .AddSunfishInteropServices();
 
 // FluentUI (mandatory) — provider switcher needs the concrete types,
 // so we register those explicitly instead of using AddSunfishFluentUI().
