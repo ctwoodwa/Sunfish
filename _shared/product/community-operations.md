@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-21
 **Governs:** How Sunfish engages with contributors, users, and adopters once a community forms — and, just as importantly, what the project deliberately does *not* do while no community exists yet.
 **Companion docs:** [vision.md](vision.md), [roadmap-tracker.md](roadmap-tracker.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md), [`../engineering/ai-code-policy.md`](../engineering/ai-code-policy.md), [`../engineering/data-privacy.md`](../engineering/data-privacy.md).
+**Agent relevance:** Low-frequency. Loaded by agents working on governance, moderation, or community-engagement questions. Skip for coding tasks.
 
 > **Project Mode context:** Read [vision.md §"Project Mode"](vision.md#project-mode) first. Until a second sustained contributor arrives, the BDFL is sole decision-maker and there is no formal governance model. This is intentional; do not add one prematurely.
 

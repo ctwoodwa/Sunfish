@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-20
 **Companion docs:** [architecture-principles.md](architecture-principles.md), [roadmap-tracker.md](roadmap-tracker.md), [compatibility-policy.md](compatibility-policy.md).
+**Agent relevance:** Loaded by agents working on any Sunfish feature, design, or strategy decision. High-frequency context; read § Project Mode first.
 
 ## Project Mode
 

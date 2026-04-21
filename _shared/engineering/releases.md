@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Release cadence, changelog format, version tagging, and release-notes mechanics for every Sunfish package, bundle, template, and accelerator.
 **Companion docs:** [compatibility-policy.md](../product/compatibility-policy.md), [commit-conventions.md](commit-conventions.md), [supply-chain-security.md](supply-chain-security.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`../../docs/adrs/0011-bundle-versioning-upgrade-policy.md`](../../docs/adrs/0011-bundle-versioning-upgrade-policy.md).
+**Agent relevance:** Low-to-medium frequency. Loaded by agents cutting a release, writing changelog entries, or tagging a version.
 
 Sunfish is a pre-1.0, MIT-licensed, BDFL-led OSS platform. [compatibility-policy.md](../product/compatibility-policy.md) defines the semver rules (what qualifies as patch/minor/major); this document defines the mechanics around actually cutting a release — when we release, how the changelog is shaped, how tags are named, and how breaking changes get communicated. The two documents are strict companions: neither answers the other's questions.
 

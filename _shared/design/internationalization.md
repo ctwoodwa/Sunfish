@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every user-visible string, every date/number/currency rendering, every template, every notification body, and every RTL layout concern across `packages/foundation-*`, `packages/ui-core`, `packages/ui-adapters-*`, `blocks-*`, and `apps/*`. Does not govern internal log messages, error codes used only by the audit envelope, or source-code identifiers.
 **Companion docs:** [accessibility.md](accessibility.md), [component-principles.md](component-principles.md), [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](../product/documentation-framework.md), [coding-standards.md](../engineering/coding-standards.md), [testing-strategy.md](../engineering/testing-strategy.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md](../product/vision.md) §5.
+**Agent relevance:** Loaded by agents touching user-visible strings, date/number/currency rendering, templates, or RTL layout. Skip for backend-only changes.
 
 Sunfish's Pillar 5 commits culture and language as platform primitives, not feature-flagged enterprise upsells ([vision.md](../product/vision.md)). This document operationalizes that commitment into concrete process, code conventions, and quality gates. It reads alongside [accessibility.md](accessibility.md); the two pillars share test harnesses, CI gates, and regulatory footing.
 

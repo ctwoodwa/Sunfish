@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every `.csproj` in `packages/`, `accelerators/`, and `apps/`.
 **Companion docs:** [naming.md](../product/naming.md), [testing-strategy.md](testing-strategy.md), [coding-standards.md](coding-standards.md).
+**Agent relevance:** Loaded by agents creating or editing a `.csproj`. High-frequency for scaffolding tasks.
 
 This is the practical guide for structuring a new Sunfish package. It codifies conventions already in use in `packages/foundation-catalog/`, `packages/foundation-multitenancy/`, `packages/foundation-featuremanagement/`, `packages/foundation-localfirst/`, `packages/foundation-integrations/`, and most `blocks-*` modules. For a new package, start by copying one of those — then adjust per this doc.
 
@@ -16,7 +17,7 @@ At repo root. Applies to every project. Current values:
 ```xml
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
@@ -153,7 +154,7 @@ Razor packages frequently use `<NoWarn>CS1591</NoWarn>` because `.razor` files p
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AssemblyName><Sunfish.Tier.Name>.Tests</AssemblyName>

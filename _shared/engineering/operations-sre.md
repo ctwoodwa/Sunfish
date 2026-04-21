@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Observability stack, SLI/SLO discipline, incident response, post-mortems, and runbooks — once Bridge or any Sunfish accelerator hosts a production tenant. Until then this document is posture-only.
 **Companion docs:** [ci-quality-gates.md](ci-quality-gates.md), [supply-chain-security.md](supply-chain-security.md), [data-privacy.md](data-privacy.md), [ai-code-policy.md](ai-code-policy.md), [../product/vision.md](../product/vision.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [ADR 0006 — Bridge is a SaaS shell](../../docs/adrs/0006-bridge-is-saas-shell.md).
+**Agent relevance:** Low-frequency. Loaded only once a production tenant exists or observability code is touched. Skip for pre-release work.
 
 ## Posture summary
 

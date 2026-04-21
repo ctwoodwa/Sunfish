@@ -3,6 +3,7 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-19
 **Governs:** Every new package, namespace, project, assembly, bundle key, module key, feature key, provider key, template id, JSON property, and fixture filename in the repo.
+**Agent relevance:** Loaded by agents creating new packages, namespaces, projects, bundle keys, module keys, or feature keys. High-frequency for scaffolding tasks.
 
 Naming is a load-bearing part of Sunfish's layered architecture. The conventions below are already in use across the repo; this document codifies them so new code lands consistently. When in doubt, look at a recent adjacent example (`packages/foundation-multitenancy/` for a Foundation-tier package, `packages/blocks-leases/` for a domain module) — then copy the shape.
 

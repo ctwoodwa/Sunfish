@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** How plans are produced at every ICM stage and for every significant Sunfish contribution.
 **Companion docs:** [`icm/CONTEXT.md`](../../icm/CONTEXT.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`docs/adrs/`](../../docs/adrs/), [`.claude/rules/universal-planning.md`](../../.claude/rules/universal-planning.md).
+**Agent relevance:** Loaded by agents producing ICM-stage plans or multi-phase proposals. High-frequency when planning; skip for trivial fixes.
 
 ## Adoption
 

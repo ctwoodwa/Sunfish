@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Branch protection on `main`, the set of required status checks on every pull request, and the merge policy the maintainer enforces until community governance expands per [ADR 0018](../../docs/adrs/0018-governance-and-license-posture.md).
 **Companion docs:** [testing-strategy.md](testing-strategy.md), [coding-standards.md](coding-standards.md), [package-conventions.md](package-conventions.md), [commit-conventions.md](commit-conventions.md), [releases.md](releases.md), [supply-chain-security.md](supply-chain-security.md), [`.github/SECURITY.md`](../../.github/SECURITY.md), [`GOVERNANCE.md`](../../GOVERNANCE.md).
+**Agent relevance:** Loaded by agents preparing a PR or debugging required-check failures. High-frequency for any contribution.
 
 Sunfish is a pre-release OSS platform on .NET 10. "Green on main" is non-negotiable — every merge must have passed CI, and `main` must always be tag-ready. This document records what CI actually runs today, what additions are planned, and the merge policy the BDFL (per [ADR 0018](../../docs/adrs/0018-governance-and-license-posture.md)) enforces before the project opens to external contributors.
 

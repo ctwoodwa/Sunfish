@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every test project and test file in the repo.
 **Companion docs:** [package-conventions.md](package-conventions.md), [coding-standards.md](coding-standards.md), [adapter-parity.md](adapter-parity.md).
+**Agent relevance:** Loaded by agents writing tests or expanding coverage. High-frequency for test-expansion pipelines.
 
 Sunfish's test suites are a green-bar: every push to main builds clean and passes tests. The strategy below codifies how we achieve that without over-engineering the test pyramid for a pre-1.0 codebase.
 

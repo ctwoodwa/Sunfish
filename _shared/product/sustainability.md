@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-21
 **Governs:** Funding sources and the relationship between commercial services and the OSS project.
 **Companion docs:** [vision.md](vision.md), [community-operations.md](community-operations.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`../../docs/adrs/0018-governance-and-license-posture.md`](../../docs/adrs/0018-governance-and-license-posture.md).
+**Agent relevance:** Low-frequency. Loaded by agents working on governance, licensing, or commercial-structure questions. Skip for coding tasks.
 
 > **Project Mode context:** Read [vision.md §"Project Mode"](vision.md#project-mode) before this document. Sunfish is self-funded by the BDFL as a personal AI-agent learning project. Commercial sustainability is optional, not the goal.
 

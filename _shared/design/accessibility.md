@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Every component in `packages/ui-core` and `packages/ui-adapters-*`, every user-facing surface in `blocks-*` and `bundles/*`, every accelerator host (Bridge today; successors later), and the accessibility CI gate on `main`.
 **Companion docs:** [component-principles.md](component-principles.md) §7, [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](../product/documentation-framework.md), [adapter-parity.md](../engineering/adapter-parity.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md §Pillar 5](../product/vision.md).
+**Agent relevance:** Loaded by agents working on ui-core contracts, adapters, or any user-facing surface. High-frequency; a11y regressions fail CI.
 
 Accessibility is the operational half of [vision.md §Pillar 5 — *Inclusive by default*](../product/vision.md). The vision document commits Sunfish to WCAG 2.2 AA as a non-negotiable baseline; this document codifies the contracts, processes, reviewer checklists, and CI gates that make that commitment concrete. "An accessibility regression is a build failure, not a backlog item" is enforced here, not aspired to elsewhere.
 

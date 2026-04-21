@@ -1,9 +1,12 @@
 # Compatibility Policy
 
 **Status:** Accepted (pre-1.0 rules in effect)
-**Last reviewed:** 2026-04-19
+**Last reviewed:** 2026-04-21
 **Governs:** Version numbering, deprecation, and breaking-change commitments for every package, public API, bundle, template, and accelerator release.
 **Companion docs:** [architecture-principles.md](architecture-principles.md), [`docs/adrs/0011-bundle-versioning-upgrade-policy.md`](../../docs/adrs/0011-bundle-versioning-upgrade-policy.md).
+**Agent relevance:** Loaded by agents working on package versioning, breaking changes, or release scoping. Medium-frequency.
+
+> **Project Mode caveat:** This document is permissive pre-1.0. Post-1.0 commitments — framework version matrices, LTS windows, federation-protocol stability guarantees — will be made when and if a downstream consumer requires them. Until then, semver is informational: it signals intent and breaking-change direction, but does not imply enterprise-grade stability promises for an audience that does not exist. See [vision.md §"Project Mode"](vision.md#project-mode).
 
 Sunfish is pre-1.0. This document records what consumers can rely on today and what changes when 1.0 arrives. The rules are intentionally different for the two phases — pre-1.0 is optimized for design velocity; post-1.0 is optimized for consumer stability.
 

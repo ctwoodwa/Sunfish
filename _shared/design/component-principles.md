@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every component in `packages/ui-core`, `packages/ui-adapters-*`, and component surfaces in `blocks-*` that ship UI.
 **Companion docs:** [tokens-guidelines.md](tokens-guidelines.md), [adapter-parity.md](../engineering/adapter-parity.md), [architecture-principles.md](../product/architecture-principles.md).
+**Agent relevance:** Loaded by agents working on ui-core, ui-adapters-*, or UI surfaces in blocks. High-frequency for UI work.
 
 Sunfish's framework-agnostic claim rests on a clean split between what components *are* (UI Core contracts) and how they *render* (UI adapters + provider themes). This document codifies the rules that keep that split honest.
 

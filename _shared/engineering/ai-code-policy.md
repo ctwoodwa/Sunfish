@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Every contribution to the Sunfish repo, whether AI-assisted or not — how to disclose AI involvement, how reviewers handle AI-authored changes, and who is accountable when something goes wrong.
 **Companion docs:** [commit-conventions.md](commit-conventions.md), [code-review.md](code-review.md), [testing-strategy.md](testing-strategy.md), [coding-standards.md](coding-standards.md), [planning-framework.md](planning-framework.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [ADR 0018](../../docs/adrs/0018-governance-and-license-posture.md), [vision §Pillar 4](../product/vision.md).
+**Agent relevance:** Loaded by agents (and human sponsors) opening PRs. High-frequency — every commit discloses AI involvement and signs the DCO.
 
 > **Not legal advice.** This is project policy, not counsel. Contributors remain responsible for complying with their employer's policies, their AI tool vendor's terms of service, and the laws of their jurisdiction.
 

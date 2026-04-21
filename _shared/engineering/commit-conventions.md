@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Every commit on every branch of the Sunfish repo.
 **Companion docs:** [naming.md](../product/naming.md), [`GOVERNANCE.md`](../../GOVERNANCE.md), [planning-framework.md](planning-framework.md), [releases.md](releases.md).
+**Agent relevance:** Loaded by every agent producing a commit. High-frequency.
 
 Sunfish adopts [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/) as the single discipline for commit messages. The repo has shipped under ad-hoc patterns (`G37 C3: …`, `Planning phase: …`) during pre-community development; this doc is the switch to a machine-parseable, tool-compatible convention before we open contributions.
 

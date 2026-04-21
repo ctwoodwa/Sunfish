@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every `.cs` file in the repo.
 **Companion docs:** [package-conventions.md](package-conventions.md), [testing-strategy.md](testing-strategy.md), [naming.md](../product/naming.md).
+**Agent relevance:** Loaded by agents writing or editing `.cs` files. High-frequency for any C# work.
 
 Sunfish is pre-1.0 C# on .NET 10. These are the patterns already established in recent packages (`foundation-catalog`, `foundation-multitenancy`, `foundation-featuremanagement`, `foundation-localfirst`, `foundation-integrations`). When in doubt, copy the shape of a type from one of those packages — this file codifies why those shapes were chosen.
 

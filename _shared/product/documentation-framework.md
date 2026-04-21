@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** The structure of `apps/docs/` and every authored Markdown page published to the Sunfish documentation site. Does not govern internal workflow artifacts under `icm/`, ADRs under `docs/adrs/`, or engineering standards under `_shared/`.
 **Companion docs:** [component-principles.md](../design/component-principles.md), [tokens-guidelines.md](../design/tokens-guidelines.md), [architecture-principles.md](architecture-principles.md), [vision.md](vision.md).
+**Agent relevance:** Loaded by agents authoring pages under `apps/docs/`. Skip for code-only changes.
 
 Sunfish ships for three audiences at once — technical founders, small operators without a dev team, and AI-savvy stakeholders ([vision.md](vision.md)). A single prose style can't serve all three unless the docs are organized by *what the reader is trying to do* rather than by *what part of the product is being described*. This document adopts the Diátaxis framework as that organizing principle for `apps/docs/`.
 

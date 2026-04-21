@@ -3,6 +3,7 @@
 **Status:** Draft for review
 **Date:** 2026-04-19
 **Context:** Follow-up work identified by [ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md) — "Bridge is a Generic SaaS Shell, Not a Vertical App." This doc inventories what's actually in `accelerators/bridge/Sunfish.Bridge.Data`, classifies each type as shell-level vs. vertical-leakage, and proposes a phased move plan.
+**Agent relevance:** Low-frequency. Loaded by agents working on Bridge.Data entities or the `blocks-*` extraction plan. Skip otherwise.
 
 ---
 

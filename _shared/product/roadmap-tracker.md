@@ -3,6 +3,7 @@
 **Status:** Living document
 **Last reviewed:** 2026-04-19
 **Purpose:** Consolidated status of planning-phase outputs (ADRs, Foundation packages, bundle manifests) and the roadmap through P6. Update every time an ADR merges, a package ships, or a phase gate closes.
+**Agent relevance:** Loaded by agents planning phase work or orienting to project status. Refresh frequently; source of truth for what's shipped vs. pending.
 
 ---
 
