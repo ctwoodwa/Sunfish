@@ -7,7 +7,7 @@
 <SunfishExamplePanel Title="Button / Overview"
                      Breadcrumb="@_breadcrumb"
                      GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor"
-                     Sources="@_sources">
+                     Sources="@GeneratedSources">
 
     <Narrative>
         <p>
@@ -59,55 +59,4 @@
 
     private int _clicks;
     private void HandleClick() => _clicks++;
-
-    // Sources — manually wired for the proof-point demo. The MSBuild
-    // source generator will replace this with Sources.g.cs in Phase 3.
-    private static readonly IReadOnlyList<SunfishSourceFile> _sources =
-    [
-        new SunfishSourceFile("Demo.razor",
-            """
-            @page "/components/buttons/button/overview"
-            @layout MainLayout
-            @using Sunfish.UIAdapters.Blazor.Components.Showcase
-
-            <SunfishExamplePanel Title="Button / Overview"
-                                 Breadcrumb="@_breadcrumb"
-                                 GitHubUrl="..."
-                                 Sources="@_sources">
-
-                <Narrative>
-                    <p><code>SunfishButton</code> is the primary action control ...</p>
-                </Narrative>
-
-                <Example>
-                    <div class="demo-row">
-                        <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
-                        <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
-                        <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
-                        <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
-                        <SunfishButton Variant="ButtonVariant.Info">Info</SunfishButton>
-                        <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
-                    </div>
-
-                    <div class="demo-row">
-                        <SunfishButton Size="ButtonSize.Small">Small</SunfishButton>
-                        <SunfishButton Size="ButtonSize.Medium">Medium</SunfishButton>
-                        <SunfishButton Size="ButtonSize.Large">Large</SunfishButton>
-                    </div>
-
-                    <div class="demo-row">
-                        <SunfishButton OnClick="HandleClick">Clicked @_clicks times</SunfishButton>
-                        <SunfishButton Enabled="false">Disabled</SunfishButton>
-                        <SunfishButton FillMode="FillMode.Outline">Outline</SunfishButton>
-                    </div>
-                </Example>
-
-            </SunfishExamplePanel>
-
-            @code {
-                private int _clicks;
-                private void HandleClick() => _clicks++;
-            }
-            """),
-    ];
 }
