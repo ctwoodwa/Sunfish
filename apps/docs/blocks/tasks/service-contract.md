@@ -2,6 +2,12 @@
 uid: block-tasks-service-contract
 title: Tasks — Service Contract
 description: Public surface of TaskBoardBlock and how callers supply task data without a service layer.
+keywords:
+  - tasks
+  - render-fragment
+  - item-template
+  - kanban
+  - blazor
 ---
 
 # Tasks — Service Contract
@@ -93,6 +99,80 @@ private void MoveForward(TaskItem task)
 ## Deferred: drag-and-drop
 
 Because the block is read-display, there is no drag-and-drop UI. A future pass would likely add an `OnTransition` callback on `TaskBoardBlock` that invokes `TaskBoardState.TryTransition` internally and surfaces the rejection back to the caller.
+
+## Default card rendering
+
+When `ItemTemplate` is not supplied, `TaskBoardBlock` renders a minimal card with the title and (if present) the assignee. The default is intentionally sparse — the block's visual contract is "a column-per-status layout with your tasks in the right places"; richer cards are consumer territory.
+
+If you want to test the default path, verify with a `TaskItem` that has no `ItemTemplate` override and assert against the rendered markup — `tests/TaskBoardBlockTests.cs` has fixtures for this.
+
+## bUnit testing
+
+Because `TaskBoardBlock` is a pure Razor component with no DI surface, it is trivially testable under bUnit:
+
+```csharp
+using Bunit;
+using Sunfish.Blocks.Tasks;
+using Sunfish.Blocks.Tasks.Models;
+using Xunit;
+
+public class TaskBoardBlockTests : TestContext
+{
+    [Fact]
+    public void RendersFourColumns()
+    {
+        var cut = RenderComponent<TaskBoardBlock>(parameters => parameters
+            .Add(p => p.Items, Array.Empty<TaskItem>()));
+
+        // The board renders one column per TaskStatus value (4).
+        Assert.Equal(4, cut.FindAll(".sf-task-board__column").Count);
+    }
+
+    [Fact]
+    public void GroupsItemsByStatus()
+    {
+        var items = new[]
+        {
+            new TaskItem { Id = "1", Title = "A", Status = TaskStatus.Backlog },
+            new TaskItem { Id = "2", Title = "B", Status = TaskStatus.Backlog },
+            new TaskItem { Id = "3", Title = "C", Status = TaskStatus.Done },
+        };
+
+        var cut = RenderComponent<TaskBoardBlock>(parameters => parameters
+            .Add(p => p.Items, items));
+
+        // Two cards should appear under the Backlog column.
+        Assert.Equal(2, cut.FindAll(".sf-task-board__column--backlog .sf-task-card").Count);
+    }
+}
+```
+
+## Wrapping your own domain model
+
+Teams that already have a richer "work item" model in their app can still use the block by mapping at the presentation boundary:
+
+```csharp
+private IReadOnlyList<TaskItem> _display =>
+    _workItems.Select(w => new TaskItem
+    {
+        Id       = w.Id.ToString(),
+        Title    = $"{w.Priority}: {w.Summary}",
+        Status   = MapStatus(w.Lifecycle),
+        Assignee = w.AssignedTo?.DisplayName,
+        DueDateUtc = w.DueAt,
+    }).ToArray();
+
+private static TaskStatus MapStatus(WorkItemLifecycle lc) => lc switch
+{
+    WorkItemLifecycle.New        => TaskStatus.Backlog,
+    WorkItemLifecycle.Queued     => TaskStatus.Todo,
+    WorkItemLifecycle.Active     => TaskStatus.InProgress,
+    WorkItemLifecycle.Done       => TaskStatus.Done,
+    _ => TaskStatus.Backlog,
+};
+```
+
+Render the block with the projected `_display` and the `ItemTemplate` can still access the original work-item via a sidecar lookup if it needs extra fields.
 
 ## Related
 

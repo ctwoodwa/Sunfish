@@ -2,6 +2,12 @@
 uid: block-subscriptions-entity-model
 title: Subscriptions — Entity Model
 description: EF Core entity configurations contributed by blocks-subscriptions via ADR-0015 module registration.
+keywords:
+  - subscriptions
+  - entity-model
+  - ef-core
+  - adr-0015
+  - multi-tenancy
 ---
 
 # Subscriptions — Entity Model
@@ -103,8 +109,44 @@ The block ships five `IEntityTypeConfiguration<T>` implementations in the `Data/
 
 Every tenant-scoped entity implements `IMustHaveTenant`. The shared Bridge `DbContext` applies a global query filter that restricts reads to the ambient tenant, so ordinary LINQ queries on `Subscription`, `UsageMeter`, and `MeteredUsage` are tenant-safe by default.
 
+## Contributing additional configuration
+
+If you need to extend the entity configuration (add indexes, alter column widths, register value converters), the cleanest pattern is to add a second `IEntityTypeConfiguration<T>` implementation *in your own assembly* and register it via your own `ISunfishEntityModule`. The shared `DbContext` applies every registered module, so additive configurations compose without forcing you to fork the block.
+
+A more invasive change (renaming a property, changing a key) belongs inside the block's own `*EntityConfiguration` files and should go through the `sunfish-api-change` pipeline variant because it impacts every downstream consumer.
+
+## Strong-typed ids
+
+All ids (`PlanId`, `AddOnId`, `SubscriptionId`, `UsageMeterId`) are Sunfish strong-typed id structs produced by Foundation's id generator. They carry an underlying `Guid`, expose a `NewId()` static factory, and have custom converters registered by Foundation so they round-trip through JSON and EF Core without per-id boilerplate.
+
+`MeteredUsage.Id` is an exception — it is a plain `Guid` because the record is typically produced in bulk from external observation streams and the `Guid` form is cheaper to synthesise.
+
+## Migrations
+
+The block does not ship migrations. Because the entities contribute to the *shared* Bridge `DbContext`, migrations live with the host app and cover every block's entities in one unified migration stream. This keeps version control simple at the cost of making it the host's job to re-scaffold after a block upgrade that changes entities.
+
+Recommended workflow on a block version bump that changes entities:
+
+```bash
+dotnet ef migrations add UpgradeSubscriptionsBlock --context BridgeDbContext
+dotnet ef database update --context BridgeDbContext
+```
+
+The migration name convention is "UpgradeXxxBlock" (or a more specific name if the change is narrower).
+
+## Test coverage
+
+`tests/SubscriptionsEntityModuleTests.cs` asserts:
+
+- `ModuleKey` returns the canonical `sunfish.blocks.subscriptions`.
+- `Configure(ModelBuilder)` runs without throwing on a fresh model builder.
+- Every expected entity type has a key configured after `Configure(...)` is called.
+
+These are useful regression tests if you are extending the block's entity surface — copy the fixture into your downstream test project and add assertions for your custom entity configurations.
+
 ## Related
 
 - [Overview](overview.md)
 - [DI Wiring](di-wiring.md)
 - ADR 0015 — `docs/adrs/0015-module-entity-registration.md`
+- ADR 0008 — `docs/adrs/0008-foundation-multitenancy.md`

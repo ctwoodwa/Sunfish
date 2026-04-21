@@ -2,6 +2,13 @@
 uid: block-workflow-overview
 title: Workflow — Overview
 description: Introduction to the blocks-workflow package — declarative state-machine primitives, a fluent builder, and an in-memory runtime.
+keywords:
+  - workflow
+  - state-machine
+  - fluent-builder
+  - runtime
+  - reachability
+  - deterministic-transitions
 ---
 
 # Workflow — Overview
@@ -74,6 +81,71 @@ With `Rejected`, `Cancelled`, and `Completed` marked `Terminal(...)`.
 - No built-in compensation or saga pattern; hook-error semantics are advisory (the transition is committed before the hook is awaited).
 - No time-based triggers or scheduled transitions; only external triggers drive the state machine.
 - No visualization helpers. Consumers who want a diagram render one themselves from the transition table.
+
+## Where things live in the package
+
+| Path (under `packages/blocks-workflow/src/`) | Purpose |
+|---|---|
+| `IWorkflowDefinition.cs` | Immutable-definition contract. |
+| `FrozenWorkflowDefinition.cs` | Internal implementation returned by `Build()`. |
+| `WorkflowDefinitionBuilder.cs` | Fluent builder with reachability validation. |
+| `IWorkflowRuntime.cs` | Imperative runtime contract. |
+| `InMemoryWorkflowRuntime.cs` | Per-instance-locked in-memory implementation. |
+| `WorkflowInstance.cs` | Snapshot record. |
+| `WorkflowInstanceId.cs` | Strong-typed id. |
+| `WorkflowServiceCollectionExtensions.cs` | `AddInMemoryWorkflow` extension. |
+| `tests/WorkflowDefinitionBuilderTests.cs` | Builder behaviour, duplicate edges, reachability. |
+| `tests/InMemoryWorkflowRuntimeTests.cs` | Start / fire / get, concurrency, hook error semantics. |
+| `tests/DemoMaintenanceWorkflowTests.cs` | End-to-end reference workflow. |
+| `tests/Fixtures/DemoMaintenanceWorkflow.cs` | Canonical example workflow. |
+| `tests/Fixtures/DemoMaintenanceState.cs`, `DemoMaintenanceTrigger.cs` | Example state and trigger enums. |
+
+## End-to-end example — maintenance request
+
+```csharp
+using Sunfish.Blocks.Workflow;
+
+// 1. Build a definition once, at startup or on first use.
+var definition = new WorkflowDefinitionBuilder<
+    DemoMaintenanceState, DemoMaintenanceTrigger, DemoMaintenanceContext>()
+    .StartAt(DemoMaintenanceState.Submitted)
+    .Transition(DemoMaintenanceState.Submitted,  DemoMaintenanceTrigger.Approve,  DemoMaintenanceState.Approved)
+    .Transition(DemoMaintenanceState.Submitted,  DemoMaintenanceTrigger.Reject,   DemoMaintenanceState.Rejected)
+    .Transition(DemoMaintenanceState.Submitted,  DemoMaintenanceTrigger.Cancel,   DemoMaintenanceState.Cancelled)
+    .Transition(DemoMaintenanceState.Approved,   DemoMaintenanceTrigger.Start,    DemoMaintenanceState.InProgress)
+    .Transition(DemoMaintenanceState.Approved,   DemoMaintenanceTrigger.Cancel,   DemoMaintenanceState.Cancelled)
+    .Transition(DemoMaintenanceState.InProgress, DemoMaintenanceTrigger.Complete, DemoMaintenanceState.Completed)
+    .Transition(DemoMaintenanceState.InProgress, DemoMaintenanceTrigger.Cancel,   DemoMaintenanceState.Cancelled)
+    .Terminal(
+        DemoMaintenanceState.Rejected,
+        DemoMaintenanceState.Cancelled,
+        DemoMaintenanceState.Completed)
+    .Build();
+
+// 2. Start an instance.
+var runtime = sp.GetRequiredService<IWorkflowRuntime>();
+var inst = await runtime.StartAsync(definition, new DemoMaintenanceContext("req-42"), ct);
+// inst.CurrentState == Submitted
+
+// 3. Fire triggers.
+inst = await runtime.FireAsync<DemoMaintenanceState, DemoMaintenanceTrigger, DemoMaintenanceContext>(
+    inst.Id, DemoMaintenanceTrigger.Approve, ct);
+// inst.CurrentState == Approved, inst.TransitionCount == 1
+```
+
+## Designing a workflow
+
+Good workflow definitions share a few traits:
+
+- **Small state space.** Aim for five to ten states; above that, a workflow usually wants to be decomposed.
+- **Explicit terminal states.** Any state that does not have outgoing transitions must be marked terminal, or `Build()` fails. This forces you to think about what "done" looks like.
+- **Named triggers over state transitions.** A trigger (`Approve`, `Cancel`) is the *event* that causes a move; a transition is the *edge*. Prefer triggers that read like verbs in your domain — it makes the table human-readable.
+- **Idempotent `OnTransition` hooks.** Because the transition is committed before the hook runs, hooks must be safe to retry.
+
+## ADRs in effect
+
+- **ADR 0022 — Example catalog + docs taxonomy.** Governs this docs page set.
+- No ADR currently locks the persistence story; that's the subject of a future ADR when the durable runtime lands.
 
 ## Related
 

@@ -2,6 +2,12 @@
 uid: block-rent-collection-ledger-service
 title: Rent Collection — Ledger Service
 description: IRentCollectionService contract — schedules, invoices, and payments.
+keywords:
+  - rent-collection
+  - service-contract
+  - invoice-lifecycle
+  - payment-recording
+  - concurrency
 ---
 
 # Rent Collection — Ledger Service
@@ -95,6 +101,80 @@ await svc.RecordPaymentAsync(new RecordPaymentRequest(
 ## Precision note
 
 All monetary fields (`MonthlyAmount`, `AmountDue`, `AmountPaid`, `Amount`, fee amounts) are `decimal` with a two-decimal-place assumption. The service does not round or truncate — callers must pre-round values if strict two-decimal precision matters to downstream code.
+
+## Period math
+
+`GenerateInvoiceAsync` computes the period end and due date from the schedule's `Frequency` and `DueDayOfMonth`:
+
+- **Monthly** — `PeriodEnd = last day of PeriodStart's month` (e.g. March 2025 → `2025-03-31`).
+- **BiMonthly** — covers two calendar months from `PeriodStart`.
+- **Quarterly** — covers three calendar months.
+- **Annually** — covers twelve calendar months.
+
+`DueDate` is always `new DateOnly(PeriodStart.Year, PeriodStart.Month, schedule.DueDayOfMonth)` — aligned to the schedule's due day, in the first month of the period. Because `DueDayOfMonth` is capped at 28 in `CreateScheduleAsync`, the `DateOnly` construction is safe for every month including February.
+
+## Blazor-side usage — `RentLedgerBlock`
+
+The `RentLedgerBlock` is purely read-display. It takes a `[Parameter] ListInvoicesQuery Query` and calls `IRentCollectionService.ListInvoicesAsync` on init, presenting the results as a table with columns for period, due date, amount due, amount paid, status, and aging days (for open/overdue invoices). Payment entry is not in the UI yet; consumers who want to add a payment from the ledger should wire their own form or button into an `ItemTemplate`-like hook (planned follow-up).
+
+```razor
+@using Sunfish.Blocks.RentCollection.Services
+
+<RentLedgerBlock Query="@_query" />
+
+@code {
+    private ListInvoicesQuery _query = new()
+    {
+        LeaseId = "lease-123",
+        Status = null,   // no status filter
+    };
+}
+```
+
+## Error model
+
+| Call | Condition | Exception |
+|---|---|---|
+| `CreateScheduleAsync` | `DueDayOfMonth < 1 \|\| > 28` | `ArgumentException` |
+| `GenerateInvoiceAsync` | schedule id not found | `KeyNotFoundException` |
+| `RecordPaymentAsync` | invoice id not found | `KeyNotFoundException` |
+| `RecordPaymentAsync` | cancelled via `CancellationToken` | `OperationCanceledException` |
+
+There are no business-rule exceptions beyond the ones above — overpayment is silently absorbed, zero-amount payments are recorded as-is, and late-fee evaluation is not performed. Consumers that want those behaviours layer them on top.
+
+## Concurrency test (from `tests/RentCollectionServiceTests.cs`)
+
+```csharp
+[Fact]
+public async Task RecordPaymentAsync_ConcurrentPayments_SerializedCorrectly()
+{
+    var svc = CreateService();
+    var (_, invoice) = await CreateScheduleAndInvoice(svc, amountDue: 1000m);
+
+    // Fire 10 concurrent payments of 100 each — total should be exactly 1000.
+    var tasks = Enumerable.Range(0, 10)
+        .Select(_ => svc.RecordPaymentAsync(new RecordPaymentRequest(
+            InvoiceId: invoice.Id,
+            Amount: 100m,
+            PaidAtUtc: null,
+            Method: "cash")).AsTask())
+        .ToArray();
+
+    await Task.WhenAll(tasks);
+
+    var updated = await svc.GetInvoiceAsync(invoice.Id);
+    Assert.Equal(1000m, updated!.AmountPaid);
+    Assert.Equal(InvoiceStatus.Paid, updated.Status);
+}
+```
+
+The per-invoice `SemaphoreSlim` prevents lost-update races. Invoices for different leases proceed entirely in parallel.
+
+## Troubleshooting
+
+- **"DueDayOfMonth must be between 1 and 28"** — supply a value in range; there is no "last day of the month" sentinel.
+- **Overpayment stayed on the invoice** — expected. `AmountPaid` is preserved verbatim so audit trails are not lost; credit-memo issuance is a follow-up.
+- **`ListInvoicesAsync` returned stale data** — the in-memory implementation reads from a `ConcurrentDictionary` snapshot; if you just wrote via another service instance, ensure you share the singleton.
 
 ## Related
 

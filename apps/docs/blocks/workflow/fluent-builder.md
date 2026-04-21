@@ -2,6 +2,12 @@
 uid: block-workflow-fluent-builder
 title: Workflow — Fluent Builder
 description: WorkflowDefinitionBuilder — StartAt, Transition, Terminal, OnTransition, Build, and build-time reachability validation.
+keywords:
+  - workflow-builder
+  - fluent-api
+  - reachability
+  - transition-table
+  - start-at
 ---
 
 # Workflow — Fluent Builder
@@ -108,6 +114,72 @@ public static IWorkflowDefinition<DemoMaintenanceState, DemoMaintenanceTrigger, 
 ```
 
 Every reachable state is either terminal (`Rejected`, `Cancelled`, `Completed`) or has outgoing edges (`Submitted`, `Approved`, `InProgress`), so `Build()` succeeds.
+
+## Common build-time errors
+
+| Error | Cause | Fix |
+|---|---|---|
+| `InvalidOperationException: StartAt must be called before Build.` | You forgot `StartAt(...)`. | Add it. |
+| `ArgumentException: Transition (A, X) already maps to B; cannot remap to C.` | You registered two edges with the same `(from, on)` key. | Remove one, or rename the trigger. |
+| `InvalidOperationException: State 'X' is reachable but has no outgoing transitions and is not terminal.` | A state is a dead-end but you forgot `Terminal(X)`. | Mark it terminal, or add an outgoing transition. |
+
+The reachability check runs a BFS from `InitialState` and visits every state reachable via the transition table. Only *reachable* states must be non-dead; unreachable states are ignored. This means you can declare triggers that lead to legal-but-never-used states without tripping the validator, which is occasionally useful for forward-compatible enum additions.
+
+## Testing a builder
+
+`tests/WorkflowDefinitionBuilderTests.cs` exercises every error path. A small excerpt:
+
+```csharp
+[Fact]
+public void Transition_DuplicateEdgeThrows()
+{
+    var builder = new WorkflowDefinitionBuilder<S, T, C>()
+        .StartAt(S.Start)
+        .Transition(S.Start, T.Go, S.Mid);
+
+    Assert.Throws<ArgumentException>(() =>
+        builder.Transition(S.Start, T.Go, S.End));
+}
+
+[Fact]
+public void Build_DeadEndStateThrows()
+{
+    var builder = new WorkflowDefinitionBuilder<S, T, C>()
+        .StartAt(S.Start)
+        .Transition(S.Start, T.Go, S.Mid);
+    // S.Mid is reachable but has no outgoing edge and is not terminal.
+
+    Assert.Throws<InvalidOperationException>(() => builder.Build());
+}
+```
+
+## Caching the built definition
+
+Definitions are immutable and thread-safe, so they can (and should) be cached. A common pattern is to store them in a singleton factory:
+
+```csharp
+public static class MaintenanceWorkflow
+{
+    private static readonly IWorkflowDefinition<DemoMaintenanceState, DemoMaintenanceTrigger, DemoMaintenanceContext>
+        Definition = DemoMaintenanceWorkflow.Build();
+
+    public static IWorkflowDefinition<DemoMaintenanceState, DemoMaintenanceTrigger, DemoMaintenanceContext> Instance
+        => Definition;
+}
+```
+
+Callers retrieve `MaintenanceWorkflow.Instance` without rebuilding. Because `Build()` does work (reachability BFS, dictionary construction), caching is worth the small static-init cost.
+
+## Hook signature rationale
+
+The `OnTransition` hook takes five parameters:
+
+- **from / to** — the states involved. Useful for hook code that needs to know where the transition is going (e.g. "only fire an email on `Approved → InProgress`").
+- **trigger** — the trigger that caused the transition. Lets hooks differentiate between different paths into the same state.
+- **context** — the per-instance context. The hook may mutate the context object (it is not a `readonly` record by constraint).
+- **ct** — a cancellation token. Honoured during the await if the hook is async I/O.
+
+Keeping the hook signature rich means consumers rarely need to bypass the runtime to do per-transition side effects.
 
 ## Related
 

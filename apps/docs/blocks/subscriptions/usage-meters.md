@@ -2,6 +2,12 @@
 uid: block-subscriptions-usage-meters
 title: Subscriptions — Usage Meters
 description: UsageMeter and MeteredUsage — recording per-tenant metered consumption against subscriptions.
+keywords:
+  - usage-meter
+  - metered-usage
+  - billing-events
+  - metering
+  - saas-metering
 ---
 
 # Subscriptions — Usage Meters
@@ -80,6 +86,53 @@ Note that *creating* a meter is not currently exposed on `ISubscriptionService`.
 ## Multi-tenancy
 
 All meter and usage records implement `IMustHaveTenant`. The service implementations are expected to filter by the ambient tenant; passing a meter id that belongs to a different tenant should behave as "not found" rather than silently recording a cross-tenant sample.
+
+## Typical aggregation patterns
+
+Because the service does not provide aggregation, consumers generally pick one of three strategies:
+
+1. **EF Core LINQ** — for persistence-backed implementations, project a sum over `MeteredUsage` for the billing period:
+   ```csharp
+   var total = await dbContext.Set<MeteredUsage>()
+       .Where(u => u.MeterId == meterId)
+       .Where(u => u.RecordedAtUtc >= periodStart && u.RecordedAtUtc < periodEnd)
+       .SumAsync(u => u.Quantity, ct);
+   ```
+2. **Pre-aggregated rollup table** — have a nightly job collapse same-day samples into a summary row in a custom table. Cheaper for dashboards but adds write complexity.
+3. **External time-series store** — stream usage events to a TSDB (Timescale, InfluxDB) in parallel with writing to `MeteredUsage`. Use the TSDB for dashboards and the record for billing.
+
+None of these are in the block today — each is an explicit build-on-top decision.
+
+## Sample volume considerations
+
+`MeteredUsage` rows accumulate quickly. A single `api-calls` meter with 10 RPS produces ~860k rows per day. The in-memory service is fine for demos and tests; production hosts on any non-trivial metering workload should:
+
+- Use a persistence-backed implementation from day one.
+- Partition the `MeteredUsage` table by month (PostgreSQL native partitioning works well here).
+- Batch writes — record many samples in one `RecordUsageAsync` call if your API traffic allows.
+
+The block does not provide a batch API (`RecordUsageBatchAsync`) today; adding one is a low-friction follow-up and the service surface is designed to accept one without breaking existing callers.
+
+## Correcting a mistaken sample
+
+Samples are append-only. To correct an overcount, insert a compensating *negative* sample:
+
+```csharp
+await svc.RecordUsageAsync(meter.Id, quantity: -5m, ct);
+```
+
+The sum-based aggregation will net out correctly. An operator-level "void the last sample" that removes rows is not exposed; that kind of corrective action belongs at a higher privilege level than the block's service surface.
+
+## Unit conventions
+
+`Unit` is free-form text but convention matters for downstream consumers. Recommended values:
+
+- `"calls"` for request-count meters.
+- `"mb"`, `"gb"`, `"tb"` for storage (lower case, no unit prefix).
+- `"minutes"`, `"hours"` for time-based meters.
+- `"seats"` for licence-count meters (`RecordUsageAsync` with `quantity = 1` per seat per day is a common pattern).
+
+A future pass may introduce an `enum UsageUnit` to formalise this; until then, consistency within your own catalog is the pragmatic answer.
 
 ## Related
 

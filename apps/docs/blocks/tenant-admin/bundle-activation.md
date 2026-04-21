@@ -2,6 +2,12 @@
 uid: block-tenant-admin-bundle-activation
 title: Tenant Admin — Bundle Activation
 description: BundleActivation, the activate/deactivate service surface, and the BundleActivationPanel Blazor block.
+keywords:
+  - bundle-activation
+  - businesscases
+  - edition-selection
+  - soft-delete
+  - bundle-catalog
 ---
 
 # Tenant Admin — Bundle Activation
@@ -104,8 +110,67 @@ Debug.Assert(removed == true);
 
 Because deactivation is a soft-delete, a full audit trail of "who had what bundle and edition active, when" is recoverable from the table. The block does not currently expose an "inactive activations" query — consumers that need the history can project directly off the persisted rows or extend the service.
 
+Example audit projection:
+
+```csharp
+var history = await dbContext.Set<BundleActivation>()
+    .Where(a => a.TenantId == tenantId)
+    .OrderBy(a => a.ActivatedAt)
+    .Select(a => new
+    {
+        a.BundleKey,
+        a.Edition,
+        a.ActivatedAt,
+        a.DeactivatedAt,
+        DurationDays = (a.DeactivatedAt ?? DateTime.UtcNow).Subtract(a.ActivatedAt).TotalDays,
+    })
+    .ToListAsync(ct);
+```
+
+This lightweight projection is enough to feed a timeline UI showing which bundles a tenant has used across time.
+
+## Changing editions without losing history
+
+The most common workflow — "move from standard to enterprise on the Essentials bundle" — is two service calls:
+
+```csharp
+await svc.DeactivateBundleAsync(tenantId, "sunfish.essentials");
+await svc.ActivateBundleAsync(new ActivateBundleRequest
+{
+    TenantId  = tenantId,
+    BundleKey = "sunfish.essentials",
+    Edition   = "enterprise",
+});
+```
+
+The first call marks the `standard` row with `DeactivatedAt`; the second creates a new `enterprise` row with a fresh `ActivatedAt`. The audit trail shows the transition clearly.
+
+A hypothetical "change edition in place" operation was considered and rejected because it would lose the timestamp of the tier change — the audit value of the two-row pattern is higher than the minor ergonomics win.
+
+## Concurrency
+
+The in-memory service locks around the activation list per tenant while reading and writing, so a concurrent `ActivateBundleAsync` + `DeactivateBundleAsync` pair on the same tenant serialises. This prevents a race where both a deactivate-then-reactivate pattern and a parallel activate land simultaneously and leave two active rows for the same `BundleKey`. A persistence-backed implementation must provide equivalent guarantees (unique partial index on `(TenantId, BundleKey, DeactivatedAt IS NULL)` is the typical postgres answer).
+
+## BundleActivationPanelTests
+
+`tests/BundleActivationPanelTests.cs` uses bUnit to assert:
+
+- The available-bundles list renders one `<li data-bundle-key="...">` per bundle in the catalog.
+- Choosing an edition and clicking Activate calls `ITenantAdminService.ActivateBundleAsync` with the expected request.
+- The active-bundles list refreshes after activation.
+- Error status messages surface on `Exception` from the service.
+
+These fixtures are a useful template if you extend the panel with your own affordances.
+
+## Relationship to `blocks-businesscases`
+
+The bundle activation block is the tenant-admin-side counterpart to `blocks-businesscases`. The catalog side defines *what is available* (bundles, their editions, their routes, their capabilities); the tenant-admin side records *what the tenant chose*. Neither block depends on the other at the service level — only the `BundleActivationPanel` UI block reaches across to read `IBundleCatalog`.
+
+If you want to show only bundles a specific tenant is eligible for (e.g. by SKU), filter `IBundleCatalog.GetBundles()` upstream of the panel or wrap `IBundleCatalog` in a tenant-aware decorator.
+
 ## Related
 
 - [Overview](overview.md)
 - [Tenant Profile](tenant-profile.md)
 - [Entity Model](entity-model.md)
+- ADR 0007 — `docs/adrs/0007-bundle-manifest-schema.md`

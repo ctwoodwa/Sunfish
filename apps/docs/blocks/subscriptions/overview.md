@@ -2,6 +2,14 @@
 uid: block-subscriptions-overview
 title: Subscriptions — Overview
 description: Introduction to the blocks-subscriptions package — plans, editions, subscriptions, add-ons, and usage meters.
+keywords:
+  - subscriptions
+  - plans
+  - editions
+  - add-ons
+  - usage-metering
+  - saas
+  - multi-tenant
 ---
 
 # Subscriptions — Overview
@@ -56,6 +64,74 @@ Registers `ISubscriptionService` (singleton → `InMemorySubscriptionService`) a
 - Proration on mid-period plan changes is not modelled.
 - Billing integration is out of scope for this block — `blocks-subscriptions` records the subscription; invoice generation (rent-collection or a separate billing block) is a downstream concern.
 - The in-memory service does not persist across process restarts; use the EF Core-backed wiring for real apps.
+- Usage aggregation (sum per meter per window) is not in the service surface yet; callers aggregate their own samples.
+
+## Where things live in the package
+
+| Path (under `packages/blocks-subscriptions/`) | Purpose |
+|---|---|
+| `Models/Plan.cs` | Catalog plan record. |
+| `Models/Edition.cs` | `Lite` / `Standard` / `Enterprise` enum. |
+| `Models/AddOn.cs` | Catalog add-on record. |
+| `Models/Subscription.cs` | Tenant-scoped subscription. |
+| `Models/UsageMeter.cs`, `MeteredUsage.cs` | Tenant-scoped meters and samples. |
+| `Services/ISubscriptionService.cs` | Framework-agnostic contract. |
+| `Services/InMemorySubscriptionService.cs` | Thread-safe in-memory implementation. |
+| `Data/*EntityConfiguration.cs` | Per-entity `IEntityTypeConfiguration<T>` classes. |
+| `Data/SubscriptionsEntityModule.cs` | ADR-0015 module; applies configurations to the shared `DbContext`. |
+| `DependencyInjection/SubscriptionsServiceCollectionExtensions.cs` | `AddInMemorySubscriptions` extension. |
+| `State/SubscriptionListState.cs` | Backing state object for the list block. |
+| `SubscriptionListBlock.razor` | List view UI. |
+| `tests/InMemorySubscriptionServiceTests.cs` | Service behaviour. |
+| `tests/SubscriptionsEntityModuleTests.cs` | Entity module contract. |
+
+## Example: wire + browse + subscribe + record usage
+
+```csharp
+// Host wiring
+builder.Services
+    .AddSunfishFoundation()
+    .AddSunfishBridge()
+    .AddInMemorySubscriptions();
+
+// Later, in a request handler
+var svc = sp.GetRequiredService<ISubscriptionService>();
+
+// Browse catalog (not tenant-scoped)
+var plans = new List<Plan>();
+await foreach (var plan in svc.ListPlansAsync(ct))
+    plans.Add(plan);
+
+// Create a subscription for the current tenant
+var sub = await svc.CreateSubscriptionAsync(new CreateSubscriptionRequest
+{
+    PlanId    = plans[0].Id,
+    Edition   = Edition.Standard,
+    StartDate = DateOnly.FromDateTime(DateTime.UtcNow),
+});
+
+// Record metered usage (meters are seeded or pre-created elsewhere)
+await svc.RecordUsageAsync(meter.Id, quantity: 42m, ct);
+```
+
+## ADRs in effect
+
+- **ADR 0015 — Module entity registration pattern.** `blocks-subscriptions` is one of the canonical implementers: it ships `SubscriptionsEntityModule : ISunfishEntityModule` so its EF Core entity configurations are applied to the shared Bridge `DbContext` rather than a per-block context.
+- **ADR 0008 — Foundation multi-tenancy.** Tenant-scoped entities implement `IMustHaveTenant` and are filtered by the ambient tenant via the Bridge global query filter.
+- **ADR 0022 — Example catalog + docs taxonomy.** Governs the structure of this docs page set.
+
+## Interaction model
+
+A typical SaaS host uses the block in three places:
+
+1. **Catalog page** — call `ListPlansAsync` / `ListAddOnsAsync` (catalog scope) to render pricing tiers and attach options.
+2. **Subscription page for the current tenant** — call `ListSubscriptionsAsync(query)` (tenant-scoped) to render what they have and render the list block (`SubscriptionListBlock`) inside the layout.
+3. **Metering touchpoint** — call `RecordUsageAsync` from whichever handler observes the metered event (API middleware, scheduled rollup, stripe-webhook-style ingester). The block does not care about the call site; any code path with the meter id can emit samples.
+
+## Comparison with other billing blocks
+
+- **vs. `blocks-rent-collection`** — rent-collection is about periodic invoices against a schedule; subscriptions is about tenant binding and metered usage. They co-exist happily if your app bills some tenants by subscription and others by rent schedule.
+- **vs. full billing platform (Stripe Billing, Recurly)** — these platforms handle dunning, invoicing, tax, and payment processing. `blocks-subscriptions` is the *record keeper* for plan/tier/metering; the billing platform consumes the records.
 
 ## Related
 

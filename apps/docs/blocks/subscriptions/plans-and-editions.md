@@ -2,6 +2,12 @@
 uid: block-subscriptions-plans-and-editions
 title: Subscriptions — Plans and Editions
 description: Catalog concepts — plans, editions, add-ons, and the subscription record that binds a tenant to them.
+keywords:
+  - plans
+  - editions
+  - addons
+  - catalog
+  - tenant-subscription
 ---
 
 # Subscriptions — Plans and Editions
@@ -108,6 +114,37 @@ public sealed record ListSubscriptionsQuery
 ```
 
 Pass `ListSubscriptionsQuery.Empty` to list every subscription for the current tenant.
+
+## Catalog vs. tenant boundary
+
+The split between catalog (`Plan`, `AddOn`) and tenant-scoped (`Subscription`, `UsageMeter`, `MeteredUsage`) is the single most important design choice in this block. Practical implications:
+
+- **`Plan` rows live once.** A plan defined by the operator is visible to every tenant.
+- **`Subscription` rows are per-tenant.** The same `PlanId` referenced by five subscriptions means five tenants subscribed to that plan.
+- **Price at subscribe-time is not captured automatically.** `Subscription.Edition` is captured, but `MonthlyPrice` is not. If the catalog changes its price later, historical subscriptions continue to reference the catalog's latest price when you join. If price-at-subscribe-time matters for billing, capture it in your billing pipeline at the moment `CreateSubscriptionAsync` returns.
+- **Add-on association is a list of ids.** The `AddOns` list on `Subscription` is an `IReadOnlyList<AddOnId>`. EF Core materialises it via a list-of-scalar conversion configured in `SubscriptionEntityConfiguration`. Consumers that want richer per-subscription add-on metadata (attached-at timestamps, custom quantity) should add a join entity in their own block.
+
+## Subscription lifecycle
+
+`blocks-subscriptions` does not enforce a state machine (no `Active` / `Cancelled` enum). The record's lifecycle is expressed through `StartDate` / `EndDate` — a subscription is "active" when today is within `[StartDate, EndDate ?? MaxValue]`. This keeps the data model simple; higher-level blocks can layer a status machine if they need one.
+
+To cancel a subscription, set `EndDate` to today. The block does not expose `CancelSubscriptionAsync` — use `UpdateSubscriptionAsync(... with { EndDate = today })` (or the equivalent on the in-memory service). A terminal cancellation that preserves history is a follow-up.
+
+## Add-on idempotency
+
+`AddAddOnAsync(subscriptionId, addOnId)` is idempotent — calling it twice with the same pair leaves the `Subscription.AddOns` list unchanged on the second call. The in-memory implementation checks `List.Contains` before adding. A persistence-backed implementation should use a deterministic insert-if-not-exists query.
+
+Removing an add-on is not currently exposed on the service surface — see usage-meters documentation for the general pattern of "call the underlying store directly" if you need detach semantics today.
+
+## Edition naming guidance
+
+The three edition values are deliberately generic:
+
+- **Lite** — entry-level; often free or low-priced, limited features.
+- **Standard** — mid-tier; the catalog's "most common" choice.
+- **Enterprise** — top-tier; SLA, white-glove support, advanced features.
+
+If your commercial narrative needs different names (e.g. "Starter / Pro / Business"), display them via a presentation-layer mapping rather than by extending the enum. An enum change is a breaking API change; a display mapping is not.
 
 ## Related
 

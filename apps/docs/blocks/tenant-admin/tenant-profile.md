@@ -2,6 +2,12 @@
 uid: block-tenant-admin-tenant-profile
 title: Tenant Admin — Tenant Profile
 description: TenantProfile, TenantUser, TenantRole, and the profile and users surfaces on ITenantAdminService.
+keywords:
+  - tenant-profile
+  - tenant-user
+  - tenant-role
+  - rbac-coarse
+  - invitation
 ---
 
 # Tenant Admin — Tenant Profile
@@ -123,6 +129,50 @@ public sealed record InviteTenantUserRequest
 - `Save` calls `UpdateTenantProfileAsync` and updates a status line ("Saved." or the exception message).
 
 The block is deliberately minimal. Role-aware edit affordances (disable the form for non-Admins, hide billing-related fields, etc.) are a follow-up.
+
+## TenantUsersListBlock (Blazor)
+
+```razor
+<TenantUsersListBlock TenantId="@tenantId" />
+```
+
+- Injects `ITenantAdminService`.
+- On init, calls `ListTenantUsersAsync(TenantId)` and renders the result as a table with columns for email, display name, role, invited-at, and accepted-at.
+- Does not ship invite/remove/edit affordances. A follow-up may add a row action menu.
+
+The block sets `data-user-id` on each row for bUnit-friendly testing.
+
+## Idempotency notes on the service
+
+- **`UpdateTenantProfileAsync`** — create-or-update. First call creates with the required `DisplayName`; later calls update. Fields left `null` on the request stay unchanged.
+- **`InviteTenantUserAsync`** — not idempotent; re-inviting the same email creates a second `TenantUser` row with a new `TenantUserId`. Consumers that want "upsert-by-email" semantics should check `ListTenantUsersAsync` first.
+- **`AssignRoleAsync`** — idempotent; assigning the same role returns the same record unchanged.
+- **`RemoveTenantUserAsync`** — idempotent; returns `false` when the user was already absent.
+
+## Common patterns
+
+**Bootstrapping the first owner** — `InviteTenantUserAsync` with `Role = TenantRole.Owner`, then set `AcceptedAt` to the current UTC time via a direct `UpdateTenantUserAsync` call (not shown on the public surface today — use an implementation-specific seed path).
+
+**Checking whether the current user is privileged** — `ListTenantUsersAsync(tenantId)` and find the user whose email matches the authenticated principal's email; inspect their `Role`.
+
+**Transferring ownership** — `AssignRoleAsync` the outgoing owner to `Admin`, then `AssignRoleAsync` the incoming owner to `Owner`. The service does not enforce an "exactly one owner" invariant; your policy layer may.
+
+## Mapping TenantRole to policy requirements
+
+A common pattern is to tie `TenantRole` values to ASP.NET Core authorization policies:
+
+```csharp
+services.AddAuthorization(options =>
+{
+    options.AddPolicy("TenantOwner", p => p.RequireRole(TenantRole.Owner.ToString()));
+    options.AddPolicy("TenantAdmin", p => p.RequireRole(TenantRole.Owner.ToString(), TenantRole.Admin.ToString()));
+    options.AddPolicy("TenantMember", p => p.RequireAssertion(ctx =>
+        Enum.TryParse<TenantRole>(ctx.User.FindFirstValue("tenant_role"), out var role)
+        && role <= TenantRole.Member));
+});
+```
+
+The `Role <= Member` trick works because the enum values are ordered from most-privileged to least (`Owner = 0 … Viewer = 4`); a caller with `Member` (3) passes the check, a `Viewer` (4) does not.
 
 ## Related
 

@@ -2,6 +2,13 @@
 uid: block-tax-reporting-signed-hash-export
 title: Tax Reporting — Signed Hash Export
 description: Canonical-JSON SHA-256 hashing, the Finalize → Sign lifecycle, and the plain-text renderer used for export.
+keywords:
+  - canonical-json
+  - sha256
+  - content-hash
+  - signature
+  - tamper-evident
+  - ed25519
 ---
 
 # Tax Reporting — Signed Hash Export
@@ -118,7 +125,50 @@ Console.WriteLine(text);
 var signed = await svc.SignAsync(final.Id, signatureValue: approverSignature, ct);
 ```
 
+## Verifying a report later
+
+Because the canonical-JSON hash is deterministic, you can re-verify at any time:
+
+```csharp
+// Later — after load from persistence (when persistence exists) or a fresh query
+var report = await svc.GetReportAsync(reportId, ct);
+
+var expectedHash = TaxReportCanonicalJson.ComputeHash(report.Body);
+if (report.Status == TaxReportStatus.Finalized && report.SignatureValue != expectedHash)
+{
+    throw new InvalidOperationException(
+        $"Content hash mismatch on {report.Id}: expected {expectedHash} but report has {report.SignatureValue}. " +
+        "Body has been tampered with or the canonicalization contract drifted.");
+}
+```
+
+The hash does **not** cover `TaxReport.Status`, `TaxReport.SignatureValue`, or `TaxReport.GeneratedAtUtc` — only `TaxReport.Body`. That's intentional: the lifecycle state mutates but the content underneath should stay bit-identical once finalized.
+
+## The two hash boundaries
+
+There are two meaningful "content hash" boundaries the block honours:
+
+1. **Body-level content hash (`TaxReportCanonicalJson.ComputeHash(body)`)** — covers every field inside the discriminated body. Used by `FinalizeAsync`.
+2. **Amendment — new draft, same body** — after `AmendAsync`, the new draft's body is a copy of the predecessor's body. Running the hash again produces the same value. Differences from the predecessor flow via edits to the new draft, which will be rehashed on its own `FinalizeAsync`.
+
+This gives you a reliable "this is the version of the report that was finalized" check that transcends the ID change between the original and the amendment.
+
+## Renderer regression tests
+
+`tests/TaxReportTextRendererTests.cs` includes snapshot-style assertions for each body subtype. The renderer output format is considered stable once shipped — breaking changes to column spacing or line order would be a visible diff for consumers who consumed the text in any automated way (e.g. emailing it, storing it as a pdf source). Plan for a minor version bump if the format changes.
+
+## Rationale for "signature string" flexibility
+
+`SignAsync` takes a plain `string`. This is deliberate:
+
+- Consumers with an existing PKI can store a `"sig:<base64>"` blob.
+- Consumers without one can store a `"approver@example.com:<date>"` approval record.
+- Future Foundation-integrated signing can store `"ed25519:<keyId>:<base64>"` and the block remains unchanged.
+
+The service does not *validate* the string — the trust model is that the caller is responsible for producing a meaningful signature. This keeps the block's scope small until Foundation's signing primitives land.
+
 ## Related
 
 - [Overview](overview.md)
 - [Entity Model](entity-model.md)
+- ADR 0004 — `docs/adrs/0004-post-quantum-signature-migration.md` (motivating the deferred real-signature pass)

@@ -2,6 +2,13 @@
 uid: block-tenant-admin-overview
 title: Tenant Admin — Overview
 description: Introduction to the blocks-tenant-admin package — tenant profile, user membership, and bundle activation.
+keywords:
+  - tenant-admin
+  - rbac
+  - roles
+  - invitations
+  - bundle-activation
+  - multi-tenancy
 ---
 
 # Tenant Admin — Overview
@@ -64,6 +71,73 @@ The block does not verify that the `BundleKey` / `Edition` it receives exist in 
 - RBAC is intentionally coarse — five roles, no permission-level customisation.
 - Invitation acceptance flow (email delivery, token verification) is out of scope. `TenantUser.AcceptedAt` is set when the acceptance comes back into the service; delivery is a separate concern.
 - `TenantProfileBlock` is deliberately minimal; role-aware edit affordances are a follow-up.
+
+## Where things live in the package
+
+| Path (under `packages/blocks-tenant-admin/`) | Purpose |
+|---|---|
+| `Models/TenantProfile.cs` | Per-tenant profile record. |
+| `Models/TenantUser.cs` | Per-tenant user membership record. |
+| `Models/TenantRole.cs` | Five-value coarse role enum. |
+| `Models/BundleActivation.cs` | Soft-deletable bundle activation record. |
+| `Services/ITenantAdminService.cs` | Framework-agnostic contract across all three domains. |
+| `Services/InMemoryTenantAdminService.cs` | Thread-safe in-memory implementation. |
+| `Services/*Request.cs` | Input DTOs (`UpdateTenantProfile`, `InviteTenantUser`, `ActivateBundle`). |
+| `Data/*EntityConfiguration.cs` | Per-entity `IEntityTypeConfiguration<T>` classes. |
+| `Data/TenantAdminEntityModule.cs` | ADR-0015 module. |
+| `DependencyInjection/TenantAdminServiceCollectionExtensions.cs` | `AddInMemoryTenantAdmin` extension. |
+| `TenantProfileBlock.razor` | Profile edit form. |
+| `TenantUsersListBlock.razor` | User list view. |
+| `BundleActivationPanel.razor` | Bundle activate/deactivate UI. |
+| `tests/InMemoryTenantAdminServiceTests.cs` | Service behaviour. |
+| `tests/TenantAdminEntityModuleTests.cs` | Module contract assertions. |
+| `tests/BundleActivationPanelTests.cs` | bUnit component tests. |
+
+## End-to-end example
+
+```csharp
+// Host wiring
+builder.Services
+    .AddSunfishFoundation()
+    .AddSunfishBridge()
+    .AddInMemoryBusinessCases()      // required for BundleActivationPanel
+    .AddInMemoryTenantAdmin();
+
+// Inside a request
+var svc = sp.GetRequiredService<ITenantAdminService>();
+var tenantId = ambientTenant.Id;
+
+// 1. Seed the profile
+await svc.UpdateTenantProfileAsync(new UpdateTenantProfileRequest
+{
+    TenantId     = tenantId,
+    DisplayName  = "Acme Property LLC",
+    ContactEmail = "admin@acme.example",
+});
+
+// 2. Invite a manager
+var manager = await svc.InviteTenantUserAsync(new InviteTenantUserRequest
+{
+    TenantId = tenantId,
+    Email    = "ops@acme.example",
+    Role     = TenantRole.Manager,
+});
+
+// 3. Activate a bundle
+var activation = await svc.ActivateBundleAsync(new ActivateBundleRequest
+{
+    TenantId  = tenantId,
+    BundleKey = "sunfish.essentials",
+    Edition   = "standard",
+});
+```
+
+## ADRs in effect
+
+- **ADR 0015 — Module entity registration.** `blocks-tenant-admin` is a canonical implementer.
+- **ADR 0008 — Foundation multi-tenancy.** `TenantProfile`, `TenantUser`, `BundleActivation` implement `IMustHaveTenant`.
+- **ADR 0007 — Bundle manifest schema.** `BundleActivation.BundleKey` and `Edition` reference keys from `BusinessCaseBundleManifest`.
+- **ADR 0022 — Example catalog + docs taxonomy.** Governs this docs page set.
 
 ## Related
 

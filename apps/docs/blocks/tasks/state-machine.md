@@ -2,6 +2,12 @@
 uid: block-tasks-state-machine
 title: Tasks — State Machine
 description: TaskBoardState and the canonical Backlog → Todo → InProgress → Done lifecycle with permitted reverts.
+keywords:
+  - tasks
+  - state-machine
+  - lifecycle
+  - try-transition
+  - non-throwing
 ---
 
 # Tasks — State Machine
@@ -84,7 +90,73 @@ if (!state.TryTransition(task, TaskStatus.Done, out _))
 
 The lifecycle is hard-coded. The file's own comment flags this as a known follow-up: a registry or a consumer-defined enum would let other teams plug in their own statuses. Until then, consumers who need different states should fork the state machine or wrap it.
 
+## Wrapping with guard conditions
+
+Adding business rules on top of `TryTransition` is a common pattern — for example, "only allow `InProgress → Done` if there's an assignee":
+
+```csharp
+public sealed class AssigneeAwareTaskBoardState
+{
+    private readonly TaskBoardState _inner = new();
+
+    public bool TryTransition(TaskItem item, TaskStatus target, out TaskItem updated, out string? reason)
+    {
+        if (target == TaskStatus.Done && string.IsNullOrWhiteSpace(item.Assignee))
+        {
+            updated = item;
+            reason  = "Cannot complete an unassigned task.";
+            return false;
+        }
+
+        reason = null;
+        return _inner.TryTransition(item, target, out updated);
+    }
+}
+```
+
+This composes cleanly because the inner state machine is stateless — you can hold a single instance and let the wrapper add policy on top.
+
+## Pairing with undo
+
+Because every successful transition produces a new `TaskItem` via `with`, undo is a matter of holding onto the previous reference:
+
+```csharp
+private readonly Stack<TaskItem> _history = new();
+
+private void Move(TaskItem t, TaskStatus target)
+{
+    if (_state.TryTransition(t, target, out var next))
+    {
+        _history.Push(t);
+        Replace(next);
+    }
+}
+
+private void Undo()
+{
+    if (_history.Count > 0)
+    {
+        var prior = _history.Pop();
+        Replace(prior);
+    }
+}
+
+private void Replace(TaskItem updated) =>
+    _tasks = _tasks.Select(x => x.Id == updated.Id ? updated : x).ToArray();
+```
+
+## Non-throwing rationale
+
+The choice to return `bool` instead of throwing is deliberate. A Kanban UI typically reacts to a user action (a drag, a button click) and the natural response to an invalid move is a visual cue (tooltip, shake, snackbar) — not an exception. Throwing would force every UI handler into try/catch plumbing.
+
+For contrast, the generic `blocks-workflow` runtime *does* throw on invalid triggers. That block is meant to back server-side lifecycles where exceptions compose with the pipeline's error handling. Tasks is UI-first, so the ergonomics flip.
+
+## Exhaustiveness check
+
+`TaskBoardState.IsValid` is implemented as a C# switch expression with all transition cases enumerated. Adding a new `TaskStatus` value without updating `IsValid` will break the `Done → NewValue` case silently (`IsValid` returns `false` by default). A future pass may convert to an exhaustive pattern with a compile-time warning for unhandled cases; today, keep the enum and the state machine updates paired.
+
 ## Related
 
 - [Overview](overview.md)
 - [Service Contract](service-contract.md)
+- [blocks-workflow — State Machine Primitives](../workflow/state-machine-primitives.md) (for throwing, generic state machines)
