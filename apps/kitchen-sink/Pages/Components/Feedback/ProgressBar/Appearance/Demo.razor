@@ -1,6 +1,7 @@
 @page "/components/feedback/progressbar/appearance"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
 
 <PageTitle>ProgressBar / Appearance · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,58 +12,53 @@
 
     <Narrative>
         <p>
-            <code>SunfishProgressBar</code> is a theme-driven wrapper around a native
-            <code>role="progressbar"</code> element. Its look is determined by four parameters:
-            <code>Value</code> (0&ndash;<code>Max</code>) for determinate progress,
-            <code>IsIndeterminate</code> for unknown-duration work, <code>Label</code> +
-            <code>ShowLabel</code> for an inline percentage or caption, and the standard
-            <code>Style</code> / <code>Class</code> surface for sizing. Custom colours and heights
-            are driven through CSS custom properties on the parent element so a single component
-            reskins with the active provider.
+            <code>SunfishProgressBar</code>'s surface is driven by CSS custom properties and a
+            <code>ProgressCssClass</code> hook on the fill element. The examples below walk a fixed
+            value through a palette of <em>ThemeColor-style</em> utility classes — one per semantic
+            intent — using <code>ProgressCssClass</code>. A custom <code>LabelTemplate</code> is
+            used to format the value as bytes downloaded.
         </p>
         <p>
-            The examples below contrast determinate, indeterminate, labelled, custom-max (bytes
-            downloaded), tall, and tokenised variants &mdash; all the same component with different
-            parameters.
+            Theme providers ship these utility classes so an app can switch palettes without
+            touching component markup.
         </p>
     </Narrative>
 
     <Example>
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+        <div style="display:flex; flex-direction:column; gap:1rem;">
 
             <section>
-                <h3 style="margin:0 0 .5rem;">Determinate (default)</h3>
-                <SunfishProgressBar Value="@_progress" />
-                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
-                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
-                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
-                    <span style="align-self:center; color:#666;">Value = @_progress / 100</span>
+                <h3 style="margin:0 0 .5rem;">Theme colours</h3>
+                <div style="display:flex; flex-direction:column; gap:.5rem;">
+                    <SunfishProgressBar Value="65" ShowLabel="true" ProgressCssClass="sf-progressbar__fill--primary" />
+                    <SunfishProgressBar Value="65" ShowLabel="true" ProgressCssClass="sf-progressbar__fill--success" />
+                    <SunfishProgressBar Value="65" ShowLabel="true" ProgressCssClass="sf-progressbar__fill--warning" />
+                    <SunfishProgressBar Value="65" ShowLabel="true" ProgressCssClass="sf-progressbar__fill--danger" />
+                    <SunfishProgressBar Value="65" ShowLabel="true" ProgressCssClass="sf-progressbar__fill--info" />
                 </div>
             </section>
 
             <section>
-                <h3 style="margin:0 0 .5rem;">Indeterminate</h3>
-                <SunfishProgressBar IsIndeterminate="true" Label="Syncing..." />
+                <h3 style="margin:0 0 .5rem;">Chunked theme colour</h3>
+                <SunfishProgressBar Value="70" ChunkCount="10" ProgressCssClass="sf-progressbar__chunk--success" />
             </section>
 
             <section>
-                <h3 style="margin:0 0 .5rem;">With inline label</h3>
-                <SunfishProgressBar Value="72" ShowLabel="true" />
+                <h3 style="margin:0 0 .5rem;">Custom LabelTemplate (bytes downloaded)</h3>
+                <SunfishProgressBar Value="@_downloaded" Max="@_total">
+                    <LabelTemplate Context="current">
+                        <strong>@FormatBytes(current)</strong> / @FormatBytes(_total)
+                    </LabelTemplate>
+                </SunfishProgressBar>
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _downloaded = Math.Max(0, _downloaded - 262144))">-256 KB</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _downloaded = Math.Min(_total, _downloaded + 262144))">+256 KB</SunfishButton>
+                </div>
             </section>
 
             <section>
-                <h3 style="margin:0 0 .5rem;">Custom label text</h3>
-                <SunfishProgressBar Value="3" Max="5" ShowLabel="true" Label="Step 3 of 5" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem;">Custom Max (bytes downloaded)</h3>
-                <SunfishProgressBar Value="1_572_864" Max="2_097_152" ShowLabel="true" Label="1.5 MB / 2.0 MB" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem;">Tall variant via Style tokens</h3>
-                <SunfishProgressBar Value="60" Style="height: 18px; border-radius: 9px;" />
+                <h3 style="margin:0 0 .5rem;">Non-animated determinate</h3>
+                <SunfishProgressBar Value="40" Animated="false" ShowLabel="true" />
             </section>
 
         </div>
@@ -74,5 +70,13 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Feedback", "ProgressBar", "Appearance"];
 
-    private double _progress = 45;
+    private double _downloaded = 1_572_864;
+    private const double _total = 2_097_152;
+
+    private static string FormatBytes(double bytes)
+    {
+        if (bytes >= 1_048_576) return $"{bytes / 1_048_576:F1} MB";
+        if (bytes >= 1024) return $"{bytes / 1024:F0} KB";
+        return $"{bytes:F0} B";
+    }
 }

@@ -5,6 +5,9 @@ namespace Sunfish.Foundation.Enums;
 /// </summary>
 public enum LoaderType
 {
+    /// <summary>A classic rotating spinner — the default for most loading states.</summary>
+    Spinner,
+
     /// <summary>A pulsing animation style.</summary>
     Pulsing,
 

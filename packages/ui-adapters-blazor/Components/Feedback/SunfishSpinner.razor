@@ -1,19 +1,103 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Feedback
+@using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
 
-@if (Visible)
+@{
+    var sizeClass = CssProvider.SpinnerClass(Size);
+    var typeClass = $"sf-spinner--{LoaderType.ToString().ToLowerInvariant()}";
+    var themeClass = string.IsNullOrWhiteSpace(ThemeColor) ? null : $"sf-spinner--{ThemeColor.ToLowerInvariant()}";
+    var positionClass = $"sf-loader-container__loader--{LoaderPosition.ToString().ToLowerInvariant()}";
+    var panelClass = $"sf-loader-container__panel--{Panel.ToString().ToLowerInvariant()}";
+    var isContainerMode = ChildContent is not null;
+}
+
+@if (!isContainerMode)
 {
-    <div class="@CombineClasses(CssProvider.SpinnerClass(Size))"
-         style="@CombineStyles()"
-         role="status"
-         aria-label="Loading"
+    @* Basic spinner mode — renders a standalone loading indicator. *@
+    @if (Visible)
+    {
+        <div class="@CombineClasses(sizeClass, typeClass, themeClass)"
+             style="@CombineStyles()"
+             role="status"
+             aria-label="@(AriaLabel ?? "Loading")"
+             @attributes="AdditionalAttributes">
+            <span class="sf-sr-only">@(AriaLabel ?? "Loading...")</span>
+        </div>
+    }
+}
+else
+{
+    @* Loader-container mode — wraps ChildContent and shows an overlay when Loading is true. *@
+    <div class="@CombineClasses("sf-loader-container", Loading == true ? "sf-loader-container--loading" : null)"
+         style="@CombineStyles("position: relative;")"
+         aria-busy="@(Loading == true ? "true" : "false")"
          @attributes="AdditionalAttributes">
-        <span class="sf-sr-only">Loading...</span>
+        <div class="sf-loader-container__content">
+            @ChildContent
+        </div>
+        @if (Loading == true)
+        {
+            <div class="@CombineClasses("sf-loader-container__overlay", panelClass, positionClass)"
+                 role="status"
+                 aria-label="@(AriaLabel ?? "Loading")">
+                <div class="@CombineClasses(sizeClass, typeClass, themeClass, "sf-loader-container__loader")">
+                    <span class="sf-sr-only">@(AriaLabel ?? "Loading...")</span>
+                </div>
+            </div>
+        }
     </div>
 }
 
 @code {
+    /// <summary>
+    /// The size of the spinner. Defaults to <see cref="SpinnerSize.Medium"/>.
+    /// </summary>
     [Parameter] public SpinnerSize Size { get; set; } = SpinnerSize.Medium;
 
-    /// <summary>Whether the spinner is visible.</summary>
+    /// <summary>
+    /// Whether the spinner is visible in basic (non-container) mode. Ignored when
+    /// <see cref="ChildContent"/> is set — use <see cref="Loading"/> in that case.
+    /// </summary>
     [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>
+    /// In loader-container mode (<see cref="ChildContent"/> set), toggles the overlay.
+    /// When <c>true</c>, overlays a backdrop + spinner over <see cref="ChildContent"/>;
+    /// when <c>false</c> or <c>null</c>, the child content renders normally.
+    /// </summary>
+    [Parameter] public bool? Loading { get; set; }
+
+    /// <summary>
+    /// Content being loaded. When set, the spinner switches to loader-container mode
+    /// and the <see cref="Loading"/> parameter drives the overlay.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// The visual style of the loader animation. Defaults to <see cref="Sunfish.Foundation.Enums.LoaderType.Spinner"/>.
+    /// </summary>
+    [Parameter] public LoaderType LoaderType { get; set; } = LoaderType.Spinner;
+
+    /// <summary>
+    /// Where the loader sits within the overlay when in loader-container mode. Defaults to
+    /// <see cref="Enums.LoaderPosition.Center"/>.
+    /// </summary>
+    [Parameter] public LoaderPosition LoaderPosition { get; set; } = LoaderPosition.Center;
+
+    /// <summary>
+    /// The backdrop panel rendered behind the spinner in loader-container mode.
+    /// Defaults to <see cref="LoaderPanel.Solid"/>.
+    /// </summary>
+    [Parameter] public LoaderPanel Panel { get; set; } = LoaderPanel.Solid;
+
+    /// <summary>
+    /// Optional theme colour token (e.g. <c>"primary"</c>, <c>"success"</c>, <c>"danger"</c>).
+    /// Rendered as a <c>sf-spinner--{value}</c> modifier class.
+    /// </summary>
+    [Parameter] public string? ThemeColor { get; set; }
+
+    /// <summary>
+    /// Optional accessible label for the spinner / loading overlay. Defaults to <c>"Loading"</c>.
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
 }

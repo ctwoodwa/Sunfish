@@ -1,34 +1,173 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Feedback
+@using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses(CssProvider.ProgressBarClass())"
+@{
+    var rootClasses = CombineClasses(
+        CssProvider.ProgressBarClass(),
+        Orientation == ProgressBarOrientation.Vertical
+            ? "sf-progressbar--vertical"
+            : "sf-progressbar--horizontal",
+        ChunkCount > 0 ? "sf-progressbar--chunked" : null,
+        Indeterminate ? "sf-progressbar--indeterminate" : null,
+        Animated ? "sf-progressbar--animated" : null);
+}
+
+<div class="@rootClasses"
      style="@CombineStyles()"
      role="progressbar"
-     aria-valuenow="@(IsIndeterminate ? null : Value)"
-     aria-valuemin="0"
+     aria-valuenow="@(Indeterminate ? null : (object)ClampedValue)"
+     aria-valuemin="@Min"
      aria-valuemax="@Max"
+     aria-busy="@(Indeterminate ? "true" : null)"
      aria-label="@Label"
      @attributes="AdditionalAttributes">
-    @if (!IsIndeterminate)
+
+    @if (ChunkCount > 0)
     {
-        <div class="sf-progressbar__fill" style="width:@(Percentage)%"></div>
+        <div class="sf-progressbar__track">
+            @for (var i = 0; i < EffectiveChunkCount; i++)
+            {
+                var chunkClass = GetChunkClass(i);
+                <div class="@CombineClasses("sf-progressbar__chunk", chunkClass, ProgressCssClass)"></div>
+            }
+        </div>
+    }
+    else if (Indeterminate)
+    {
+        <div class="@CombineClasses("sf-progressbar__fill", "sf-progressbar__fill--indeterminate", ProgressCssClass)"></div>
     }
     else
     {
-        <div class="sf-progressbar__fill mar-progressbar__fill--indeterminate"></div>
+        var fillStyle = Orientation == ProgressBarOrientation.Vertical
+            ? $"height:{Percentage}%"
+            : $"width:{Percentage}%";
+        <div class="@CombineClasses("sf-progressbar__fill", ProgressCssClass)" style="@fillStyle"></div>
     }
-    @if (ShowLabel && !IsIndeterminate)
+
+    @if (LabelTemplate is not null && !Indeterminate)
+    {
+        <span class="sf-progressbar__label">@LabelTemplate(ClampedValue)</span>
+    }
+    else if (ShowLabel && !Indeterminate)
     {
         <span class="sf-progressbar__label">@(Label ?? $"{Percentage:F0}%")</span>
     }
 </div>
 
 @code {
+    /// <summary>The current progress value. Expected range is <see cref="Min"/>..<see cref="Max"/>.</summary>
     [Parameter] public double Value { get; set; }
+
+    /// <summary>The minimum value of the progress range. Default is <c>0</c>.</summary>
+    [Parameter] public double Min { get; set; } = 0;
+
+    /// <summary>The maximum value of the progress range. Default is <c>100</c>.</summary>
     [Parameter] public double Max { get; set; } = 100;
-    [Parameter] public bool IsIndeterminate { get; set; }
-    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// When <c>true</c>, renders an animated indeterminate state instead of a determinate fill.
+    /// <c>aria-valuenow</c> is omitted and <c>aria-busy="true"</c> is set.
+    /// </summary>
+    [Parameter] public bool Indeterminate { get; set; }
+
+    /// <summary>
+    /// Backwards-compatible alias for <see cref="Indeterminate"/>. Prefer <c>Indeterminate</c>.
+    /// </summary>
+    [Parameter]
+    public bool IsIndeterminate
+    {
+        get => Indeterminate;
+        set => Indeterminate = value;
+    }
+
+    /// <summary>The orientation of the progress bar. Default is <see cref="ProgressBarOrientation.Horizontal"/>.</summary>
+    [Parameter] public ProgressBarOrientation Orientation { get; set; } = ProgressBarOrientation.Horizontal;
+
+    /// <summary>
+    /// When greater than <c>0</c>, renders the progress as <c>ChunkCount</c> discrete cells
+    /// (ChunkProgressBar mode). When <c>0</c> (default), renders a single continuous fill bar.
+    /// </summary>
+    [Parameter] public int ChunkCount { get; set; } = 0;
+
+    /// <summary>Additional CSS class applied to the progress fill/chunks for custom styling.</summary>
+    [Parameter] public string? ProgressCssClass { get; set; }
+
+    /// <summary>
+    /// Custom label template. The context value is the clamped numeric <see cref="Value"/>.
+    /// When set, takes precedence over <see cref="ShowLabel"/> / <see cref="Label"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<double>? LabelTemplate { get; set; }
+
+    /// <summary>
+    /// Whether to render the default percentage label. Ignored when <see cref="LabelTemplate"/> is set.
+    /// </summary>
     [Parameter] public bool ShowLabel { get; set; }
 
-    private double Percentage => Max > 0 ? Math.Clamp(Value / Max * 100, 0, 100) : 0;
+    /// <summary>
+    /// An optional textual label (used both for <c>aria-label</c> and the rendered label when
+    /// <see cref="ShowLabel"/> is <c>true</c>).
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Whether the determinate fill animates between value transitions. Defaults to <c>true</c>.
+    /// Also drives the indeterminate animation when <see cref="Indeterminate"/> is set.
+    /// </summary>
+    [Parameter] public bool Animated { get; set; } = true;
+
+    /// <summary>
+    /// Fires once when <see cref="Value"/> reaches or exceeds <see cref="Max"/>. Raised at most once
+    /// per render cycle; subsequent writes that remain at <c>Max</c> do not refire.
+    /// </summary>
+    [Parameter] public EventCallback<double> OnComplete { get; set; }
+
+    private double _lastValue = double.NegativeInfinity;
+    private bool _completedFired;
+
+    private double ClampedValue => Math.Clamp(Value, Min, Max);
+
+    private double Percentage =>
+        Max > Min
+            ? Math.Clamp((ClampedValue - Min) / (Max - Min) * 100.0, 0, 100)
+            : 0;
+
+    private int EffectiveChunkCount => Math.Max(0, ChunkCount);
+
+    private string GetChunkClass(int index)
+    {
+        if (Indeterminate)
+        {
+            return "sf-progressbar__chunk--indeterminate";
+        }
+
+        var filledChunks = (int)Math.Round(Percentage / 100.0 * EffectiveChunkCount);
+        return index < filledChunks
+            ? "sf-progressbar__chunk--filled"
+            : "sf-progressbar__chunk--empty";
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Indeterminate)
+        {
+            _completedFired = false;
+            _lastValue = double.NegativeInfinity;
+            return;
+        }
+
+        var current = ClampedValue;
+        var crossed = _lastValue < Max && current >= Max;
+        _lastValue = current;
+
+        if (crossed && !_completedFired && OnComplete.HasDelegate)
+        {
+            _completedFired = true;
+            await OnComplete.InvokeAsync(current);
+        }
+        else if (current < Max)
+        {
+            _completedFired = false;
+        }
+    }
 }
