@@ -1,0 +1,53 @@
+@page "/components/editor/editor/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Editor / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Editor / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/Editor/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishEditor</code> is a rich-text editor that renders HTML content with a configurable
+            toolbar. Bind content with <code>@@bind-Value</code>, restrict the toolbar through the
+            <code>Tools</code> array, and control the edit surface with <code>EditMode</code>
+            (<code>Edit</code> / <code>Source</code> / <code>Preview</code>). Layout is controlled through
+            <code>Height</code>, <code>Width</code>, and <code>Adaptive</code>.
+        </p>
+        <p>
+            Separate demo pages cover
+            <a href="/components/editor/editor/tools">tools</a>,
+            <a href="/components/editor/editor/templates">templates</a>,
+            <a href="/components/editor/editor/import-export">import / export</a>,
+            <a href="/components/editor/editor/events">events</a>,
+            <a href="/components/editor/editor/readonly">read-only</a>, and
+            <a href="/components/editor/editor/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishEditor @bind-Value="_editorContent"
+                               Placeholder="Type some HTML here..."
+                               Height="200px" />
+            </div>
+
+            <div class="demo-row">
+                <strong>Current value:</strong>
+                <pre style="background:#f5f5f5;padding:8px;border-radius:4px;overflow-x:auto;max-height:120px;width:100%;">@_editorContent</pre>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editor", "Editor", "Overview"];
+
+    private string? _editorContent = "<p>Hello, <strong>world</strong>!</p>";
+}

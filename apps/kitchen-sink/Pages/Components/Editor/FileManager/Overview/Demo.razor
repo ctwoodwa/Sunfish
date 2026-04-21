@@ -1,0 +1,66 @@
+@page "/components/editor/filemanager/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>FileManager / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileManager / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/FileManager/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFileManager</code> is a Windows-Explorer-style component for browsing, selecting,
+            and managing files and folders. Supply rows via <code>Data</code> or <code>OnRead</code>,
+            bind the active folder with <code>@@bind-Path</code>, and toggle presentation with
+            <code>@@bind-View</code> (<code>ListView</code> / <code>Grid</code>). CRUD toggles
+            (<code>AllowCreate</code>, <code>AllowRename</code>, <code>AllowDelete</code>) surface
+            built-in actions.
+        </p>
+        <p>
+            Separate demo pages cover
+            <a href="/components/editor/filemanager/sorting">sorting</a>,
+            <a href="/components/editor/filemanager/selection">selection</a>,
+            <a href="/components/editor/filemanager/context-menu">context menu</a>,
+            <a href="/components/editor/filemanager/toolbar">toolbar</a>,
+            <a href="/components/editor/filemanager/events">events</a>,
+            <a href="/components/editor/filemanager/keyboard-navigation">keyboard navigation</a>, and
+            <a href="/components/editor/filemanager/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishFileManager TItem="FileManagerEntry"
+                                    Data="@_sampleData"
+                                    Height="400px"
+                                    @bind-Path="_currentPath" />
+            </div>
+            <div class="demo-row">
+                <span>Current path: <strong>@_currentPath</strong></span>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editor", "FileManager", "Overview"];
+
+    private string _currentPath = "/";
+
+    private readonly List<FileManagerEntry> _sampleData =
+    [
+        new() { Id = "1", Name = "Documents", Path = "/Documents", IsDirectory = true, HasDirectories = true, DateModified = new DateTime(2026, 3, 15) },
+        new() { Id = "2", Name = "Images", Path = "/Images", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 3, 20) },
+        new() { Id = "3", Name = "Downloads", Path = "/Downloads", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 4, 1) },
+        new() { Id = "4", Name = "readme.md", Path = "/readme.md", IsDirectory = false, Extension = ".md", Size = 2048, DateModified = new DateTime(2026, 4, 5) },
+        new() { Id = "5", Name = "budget.xlsx", Path = "/budget.xlsx", IsDirectory = false, Extension = ".xlsx", Size = 15360, DateModified = new DateTime(2026, 4, 8) },
+        new() { Id = "6", Name = "notes.txt", Path = "/notes.txt", IsDirectory = false, Extension = ".txt", Size = 512, DateModified = new DateTime(2026, 4, 10) },
+        new() { Id = "10", ParentId = "1", Name = "Reports", Path = "/Documents/Reports", IsDirectory = true, HasDirectories = false, DateModified = new DateTime(2026, 3, 10) },
+        new() { Id = "11", ParentId = "1", Name = "invoice.pdf", Path = "/Documents/invoice.pdf", IsDirectory = false, Extension = ".pdf", Size = 102400, DateModified = new DateTime(2026, 3, 12) },
+    ];
+}

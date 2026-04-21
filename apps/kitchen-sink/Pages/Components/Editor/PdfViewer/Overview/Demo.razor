@@ -1,0 +1,42 @@
+@page "/components/editor/pdfviewer/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>PdfViewer / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="PdfViewer / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/PdfViewer/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPdfViewer</code> renders a PDF document with toolbar controls for page
+            navigation and zoom using the browser's native PDF support. The primary parameters are
+            <code>Url</code> (source), <code>Height</code> / <code>Width</code> (layout),
+            <code>ShowToolbar</code> (chrome), and two-way bindable <code>Page</code> / <code>Zoom</code>
+            with <code>PageChanged</code> / <code>ZoomChanged</code> callbacks.
+        </p>
+        <p>
+            Separate demo pages cover
+            <a href="/components/editor/pdfviewer/toolbar">toolbar</a>,
+            <a href="/components/editor/pdfviewer/events">events</a>,
+            <a href="/components/editor/pdfviewer/keyboard-navigation">keyboard navigation</a>, and
+            <a href="/components/editor/pdfviewer/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishPdfViewer Url="demo.pdf" Height="500px" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editor", "PdfViewer", "Overview"];
+}
