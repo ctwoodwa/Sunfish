@@ -1,0 +1,122 @@
+@page "/components/navigation/menu/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Menu / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Menu / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Menu/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMenu</code> follows the
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/menu/" target="_blank" rel="noopener">WAI-ARIA
+            Menu pattern</a>. Menu items render as either <code>&lt;a role="menuitem"&gt;</code>
+            (when a <code>Url</code> is set) or <code>&lt;button type="button" role="menuitem"&gt;</code>
+            otherwise. Items with children advertise that via <code>aria-haspopup="true"</code>,
+            and disabled items are exposed with both native <code>disabled</code> (on buttons) and
+            <code>aria-disabled</code> (on anchors).
+        </p>
+        <p>
+            <code>SunfishMenuDivider</code> (or a <code>SeparatorField</code> flag on data-bound
+            items) renders as <code>role="separator"</code> so AT users can tell grouped
+            commands apart. Submenus use <code>role="menu"</code> on the nested container.
+        </p>
+        <p>
+            Keyboard interaction follows the authoring-practices pattern — arrow keys move the
+            focused item, <kbd>Home</kbd> / <kbd>End</kbd> jump to the first / last enabled
+            item, <kbd>Enter</kbd> or <kbd>Space</kbd> activate the focused item, and
+            <kbd>Escape</kbd> closes the menu and returns focus to its trigger.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Try it with keyboard &amp; screen reader</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Click the trigger, then use <kbd>Arrow Down</kbd> / <kbd>Arrow Up</kbd> to
+                    move, <kbd>Home</kbd> / <kbd>End</kbd> to jump, <kbd>Enter</kbd> to activate,
+                    and <kbd>Escape</kbd> to close. Disabled items and separators are skipped by
+                    the keyboard ring.
+                </p>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _open = !_open">Menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_open" IsOpenChanged="@((bool v) => _open = v)">
+                        <SunfishMenuItem Icon="plus" Text="New" />
+                        <SunfishMenuItem Icon="folder" Text="Open" />
+                        <SunfishMenuItem Icon="save" Text="Save" />
+                        <SunfishMenuDivider />
+                        <SunfishMenuItem Icon="share" Text="Share" />
+                        <SunfishMenuItem Icon="print" Text="Print" IsDisabled="true" />
+                        <SunfishMenuDivider />
+                        <SunfishMenuItem Icon="trash" Text="Delete" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0;">
+                    <dt><code>role="menuitem"</code></dt>
+                    <dd>Applied to every menu item (button or anchor).</dd>
+                    <dt><code>role="separator"</code></dt>
+                    <dd>Applied to <code>SunfishMenuDivider</code> (or any data-bound item where <code>SeparatorField</code> resolves truthy).</dd>
+                    <dt><code>role="menu"</code></dt>
+                    <dd>Applied to nested submenu containers when <code>ItemsField</code> is used.</dd>
+                    <dt><code>aria-haspopup="true"</code></dt>
+                    <dd>Set on any item that has children.</dd>
+                    <dt><code>aria-disabled="true"</code></dt>
+                    <dd>Set on disabled anchors. Buttons also get the native <code>disabled</code> attribute.</dd>
+                    <dt><code>aria-current</code></dt>
+                    <dd>Not used — menus are ephemeral and do not represent navigation state.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Keyboard shortcuts</h3>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Keys</th>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Arrow Down</kbd></td><td style="padding:.35rem .75rem;">Focus the next enabled item (wraps at the end).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Arrow Up</kbd></td><td style="padding:.35rem .75rem;">Focus the previous enabled item (wraps at the start).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Home</kbd></td><td style="padding:.35rem .75rem;">Focus the first enabled item.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>End</kbd></td><td style="padding:.35rem .75rem;">Focus the last enabled item.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd> or <kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Activate the focused item.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Escape</kbd></td><td style="padding:.35rem .75rem;">Close the menu and return focus to its trigger.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Screen-reader output (expected)</h3>
+                <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.85rem; overflow:auto;"><code>menu
+  New, menu item
+  Open, menu item
+  Save, menu item
+  separator
+  Share, menu item
+  Print, menu item, dimmed
+  separator
+  Delete, menu item</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Menu", "Accessibility"];
+
+    private bool _open;
+}

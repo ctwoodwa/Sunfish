@@ -1,0 +1,106 @@
+@page "/components/navigation/breadcrumb/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Breadcrumb / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Breadcrumb / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBreadcrumb</code> renders a horizontal trail of links. Visual variants are
+            controlled via the <code>IsActive</code> flag on each <code>SunfishBreadcrumbItem</code>,
+            the optional <code>Icon</code> parameter, and CSS custom properties exposed on the
+            root <code>.sf-breadcrumb</code> element. The <code>Class</code> and <code>Style</code>
+            parameters pass through to the root element for ad-hoc theming.
+        </p>
+        <p>
+            The examples below exercise the common visual axes: plain text-only crumbs, crumbs with
+            inline icons, deep hierarchies, truncated content, and a re-skinned variant using
+            token overrides. All variants remain framework-agnostic — the contract lives in
+            <code>ui-core</code> and the same shapes are available on other adapters.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default</h3>
+                <SunfishBreadcrumb>
+                    <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true">Breadcrumb</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With icons</h3>
+                <SunfishBreadcrumb>
+                    <SunfishBreadcrumbItem Href="/" Icon="home">Home</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="/components" Icon="grid">Components</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true" Icon="chevron-right">Breadcrumb</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Deep hierarchy</h3>
+                <SunfishBreadcrumb>
+                    <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">Projects</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">Sunfish</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">Packages</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">ui-adapters-blazor</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">Navigation</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true">SunfishBreadcrumb.razor</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Data-bound</h3>
+                <SunfishBreadcrumb Data="_dataCrumbs" TextField="Text" UrlField="Url" IconField="Icon" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Constrained width (wraps)</h3>
+                <div style="max-width:320px; border:1px dashed var(--sunfish-border, #d1d5db); padding:.5rem; border-radius:.375rem;">
+                    <SunfishBreadcrumb>
+                        <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+                        <SunfishBreadcrumbItem Href="#">A fairly long section title</SunfishBreadcrumbItem>
+                        <SunfishBreadcrumbItem Href="#">Another section</SunfishBreadcrumbItem>
+                        <SunfishBreadcrumbItem IsActive="true">Current page title is long</SunfishBreadcrumbItem>
+                    </SunfishBreadcrumb>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
+                <SunfishBreadcrumb Style="background: var(--sunfish-surface-muted, #f3f4f6); padding:.5rem .75rem; border-radius:999px;">
+                    <SunfishBreadcrumbItem Href="/">Dashboard</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="#">Reports</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true">Q2</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Breadcrumb", "Appearance"];
+
+    private record Crumb(string Text, string? Url, string? Icon);
+
+    private readonly List<Crumb> _dataCrumbs = new()
+    {
+        new("Home", "/", "home"),
+        new("Docs", "#", "book"),
+        new("API", "#", null),
+        new("SunfishBreadcrumb", null, null),
+    };
+}

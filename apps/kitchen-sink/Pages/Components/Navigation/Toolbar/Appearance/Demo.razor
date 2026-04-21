@@ -1,0 +1,144 @@
+@page "/components/navigation/toolbar/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Toolbar / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Toolbar / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishToolbar</code> is a horizontal container that groups
+            <code>SunfishToolbarButton</code>, <code>SunfishToolbarToggleButton</code>,
+            <code>SunfishToolbarGroup</code>, and <code>SunfishToolbarSeparator</code>. Toggle
+            buttons use <code>IsActive</code> / <code>IsActiveChanged</code> for two-way binding,
+            ordinary toolbar buttons accept an optional <code>Icon</code> glyph, and the whole
+            toolbar can be disabled wholesale by setting <code>Enabled="false"</code> on the root.
+        </p>
+        <p>
+            Appearance variants focus on layout composition: a simple flat toolbar, a grouped
+            toolbar with separators, an icon-only variant, a mix of buttons and toggle buttons, a
+            disabled toolbar, and a re-skinned toolbar using token overrides on the root.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Flat toolbar</h3>
+                <SunfishToolbar>
+                    <SunfishToolbarButton>New</SunfishToolbarButton>
+                    <SunfishToolbarButton>Open</SunfishToolbarButton>
+                    <SunfishToolbarButton>Save</SunfishToolbarButton>
+                    <SunfishToolbarButton Disabled="true">Delete</SunfishToolbarButton>
+                </SunfishToolbar>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Grouped with separators</h3>
+                <SunfishToolbar>
+                    <SunfishToolbarGroup>
+                        <SunfishToolbarButton>Cut</SunfishToolbarButton>
+                        <SunfishToolbarButton>Copy</SunfishToolbarButton>
+                        <SunfishToolbarButton>Paste</SunfishToolbarButton>
+                    </SunfishToolbarGroup>
+                    <SunfishToolbarSeparator />
+                    <SunfishToolbarGroup>
+                        <SunfishToolbarButton>Undo</SunfishToolbarButton>
+                        <SunfishToolbarButton>Redo</SunfishToolbarButton>
+                    </SunfishToolbarGroup>
+                    <SunfishToolbarSeparator />
+                    <SunfishToolbarGroup>
+                        <SunfishToolbarButton>Zoom in</SunfishToolbarButton>
+                        <SunfishToolbarButton>Zoom out</SunfishToolbarButton>
+                    </SunfishToolbarGroup>
+                </SunfishToolbar>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Icon-only (with tooltips)</h3>
+                <SunfishToolbar>
+                    <SunfishToolbarButton Icon="plus" Title="New" />
+                    <SunfishToolbarButton Icon="folder" Title="Open" />
+                    <SunfishToolbarButton Icon="save" Title="Save" />
+                    <SunfishToolbarSeparator />
+                    <SunfishToolbarButton Icon="trash" Title="Delete" Disabled="true" />
+                </SunfishToolbar>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Toggle buttons (text formatting)</h3>
+                <SunfishToolbar>
+                    <SunfishToolbarGroup>
+                        <SunfishToolbarToggleButton IsActive="@_bold" IsActiveChanged="@((bool v) => _bold = v)" Title="Bold">
+                            <strong>B</strong>
+                        </SunfishToolbarToggleButton>
+                        <SunfishToolbarToggleButton IsActive="@_italic" IsActiveChanged="@((bool v) => _italic = v)" Title="Italic">
+                            <em>I</em>
+                        </SunfishToolbarToggleButton>
+                        <SunfishToolbarToggleButton IsActive="@_underline" IsActiveChanged="@((bool v) => _underline = v)" Title="Underline">
+                            <u>U</u>
+                        </SunfishToolbarToggleButton>
+                    </SunfishToolbarGroup>
+                    <SunfishToolbarSeparator />
+                    <SunfishToolbarGroup>
+                        <SunfishToolbarToggleButton IsActive="@(_align == "left")"
+                                                    IsActiveChanged="@((bool v) => SetAlign(v, "left"))"
+                                                    Title="Align left">Left</SunfishToolbarToggleButton>
+                        <SunfishToolbarToggleButton IsActive="@(_align == "center")"
+                                                    IsActiveChanged="@((bool v) => SetAlign(v, "center"))"
+                                                    Title="Align center">Center</SunfishToolbarToggleButton>
+                        <SunfishToolbarToggleButton IsActive="@(_align == "right")"
+                                                    IsActiveChanged="@((bool v) => SetAlign(v, "right"))"
+                                                    Title="Align right">Right</SunfishToolbarToggleButton>
+                    </SunfishToolbarGroup>
+                </SunfishToolbar>
+                <p style="margin:.5rem 0 0 0; font-size:.85rem; opacity:.7;">
+                    State: bold=<strong>@_bold</strong>, italic=<strong>@_italic</strong>,
+                    underline=<strong>@_underline</strong>, align=<strong>@_align</strong>.
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled whole-toolbar</h3>
+                <SunfishToolbar Enabled="false">
+                    <SunfishToolbarButton>Cut</SunfishToolbarButton>
+                    <SunfishToolbarButton>Copy</SunfishToolbarButton>
+                    <SunfishToolbarButton>Paste</SunfishToolbarButton>
+                </SunfishToolbar>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
+                <SunfishToolbar Style="background: linear-gradient(180deg, var(--sunfish-surface, #fff), var(--sunfish-surface-muted, #f3f4f6)); padding:.375rem; border-radius:.75rem; box-shadow: 0 1px 2px rgba(0,0,0,.06);">
+                    <SunfishToolbarButton>Draw</SunfishToolbarButton>
+                    <SunfishToolbarButton>Erase</SunfishToolbarButton>
+                    <SunfishToolbarSeparator />
+                    <SunfishToolbarButton>Shape</SunfishToolbarButton>
+                    <SunfishToolbarButton>Text</SunfishToolbarButton>
+                </SunfishToolbar>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Toolbar", "Appearance"];
+
+    private bool _bold = true;
+    private bool _italic;
+    private bool _underline;
+    private string _align = "left";
+
+    private void SetAlign(bool isActive, string value)
+    {
+        if (isActive) _align = value;
+    }
+}

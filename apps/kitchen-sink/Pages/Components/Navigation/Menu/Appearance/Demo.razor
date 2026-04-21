@@ -1,0 +1,166 @@
+@page "/components/navigation/menu/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Menu / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Menu / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Menu/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMenu</code> is a popup list of actions. Visual variants are composed from
+            <code>SunfishMenuItem</code> (with an optional <code>Icon</code> and the
+            <code>IsDisabled</code> state) and <code>SunfishMenuDivider</code>. Trigger behaviour
+            is controlled by <code>ShowOn</code> (<code>MenuShowOn.Click</code> by default, or
+            <code>MouseEnter</code> for hover-triggered menus), and the open state is a two-way
+            binding on <code>IsOpen</code>.
+        </p>
+        <p>
+            The grid below covers the common axes: a basic menu, a menu with icons, a menu with
+            dividers and disabled items, a data-bound menu with a separator flag, a hierarchical
+            submenu, and a re-skinned variant using style overrides on the root.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Basic</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _basic = !_basic">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_basic" IsOpenChanged="@((bool v) => _basic = v)">
+                        <SunfishMenuItem Text="Edit" />
+                        <SunfishMenuItem Text="Duplicate" />
+                        <SunfishMenuItem Text="Archive" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With icons</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _icons = !_icons">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_icons" IsOpenChanged="@((bool v) => _icons = v)">
+                        <SunfishMenuItem Icon="pencil" Text="Edit" />
+                        <SunfishMenuItem Icon="copy" Text="Duplicate" />
+                        <SunfishMenuItem Icon="share" Text="Share" />
+                        <SunfishMenuItem Icon="archive" Text="Archive" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With dividers &amp; disabled</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _groups = !_groups">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_groups" IsOpenChanged="@((bool v) => _groups = v)">
+                        <SunfishMenuItem Icon="plus" Text="New" />
+                        <SunfishMenuItem Icon="folder" Text="Open" />
+                        <SunfishMenuItem Icon="save" Text="Save" />
+                        <SunfishMenuDivider />
+                        <SunfishMenuItem Icon="share" Text="Share" />
+                        <SunfishMenuItem Icon="print" Text="Print" IsDisabled="true" />
+                        <SunfishMenuDivider />
+                        <SunfishMenuItem Icon="trash" Text="Delete" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Data-bound (with separators)</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _data = !_data">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_data"
+                                 IsOpenChanged="@((bool v) => _data = v)"
+                                 Data="_items"
+                                 TextField="Text"
+                                 IconField="Icon"
+                                 SeparatorField="Separator"
+                                 DisabledField="Disabled" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Hierarchical (submenu)</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _nested = !_nested">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_nested"
+                                 IsOpenChanged="@((bool v) => _nested = v)"
+                                 Data="_nestedItems"
+                                 TextField="Text"
+                                 IconField="Icon"
+                                 ItemsField="Children" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _skin = !_skin">Toggle menu</SunfishButton>
+                    <SunfishMenu IsOpen="@_skin"
+                                 IsOpenChanged="@((bool v) => _skin = v)"
+                                 Style="border-radius:.75rem; box-shadow:0 8px 20px rgba(0,0,0,.12); padding:.25rem 0;">
+                        <SunfishMenuItem Icon="star" Text="Favorites" />
+                        <SunfishMenuItem Icon="clock" Text="Recent" />
+                        <SunfishMenuDivider />
+                        <SunfishMenuItem Icon="settings" Text="Settings" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Menu", "Appearance"];
+
+    private bool _basic;
+    private bool _icons;
+    private bool _groups;
+    private bool _data;
+    private bool _nested;
+    private bool _skin;
+
+    private record MenuItemVm(string Text, string? Icon = null, bool Disabled = false, bool Separator = false, List<MenuItemVm>? Children = null);
+
+    private readonly List<MenuItemVm> _items = new()
+    {
+        new("New", "plus"),
+        new("Open", "folder"),
+        new("Save", "save"),
+        new("", Separator: true),
+        new("Share", "share"),
+        new("Print", "print", Disabled: true),
+    };
+
+    private readonly List<MenuItemVm> _nestedItems = new()
+    {
+        new("File", "file", Children: new()
+        {
+            new("New", "plus"),
+            new("Open…", "folder"),
+            new("Save", "save"),
+        }),
+        new("Edit", "pencil", Children: new()
+        {
+            new("Undo", "undo"),
+            new("Redo", "redo"),
+            new("Cut", "cut"),
+            new("Copy", "copy"),
+            new("Paste", "paste"),
+        }),
+        new("View", "eye", Children: new()
+        {
+            new("Zoom in", null),
+            new("Zoom out", null),
+            new("Fit to screen", null),
+        }),
+    };
+}

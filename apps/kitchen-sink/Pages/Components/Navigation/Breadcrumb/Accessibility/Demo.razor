@@ -1,0 +1,115 @@
+@page "/components/navigation/breadcrumb/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Breadcrumb / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Breadcrumb / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBreadcrumb</code> follows the
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/" target="_blank" rel="noopener">WAI-ARIA
+            Authoring Practices for breadcrumbs</a>. The root element is a semantic
+            <code>&lt;nav&gt;</code> with <code>aria-label="breadcrumb"</code>, and the trail is
+            laid out as an ordered list (<code>&lt;ol&gt;</code> of <code>&lt;li&gt;</code>) so
+            screen readers announce both position and size.
+        </p>
+        <p>
+            The currently active crumb is rendered as a plain <code>&lt;span&gt;</code> with
+            <code>aria-current="page"</code>, which AT users hear as "current page" rather than
+            another clickable link. Non-active crumbs render as anchors when a <code>Href</code>
+            is set and otherwise fall through to a plain <code>&lt;span&gt;</code>.
+        </p>
+        <p>
+            Keyboard interaction follows normal link semantics — <kbd>Tab</kbd> moves focus across
+            the hyperlinks in the trail, <kbd>Shift</kbd>+<kbd>Tab</kbd> moves back, and
+            <kbd>Enter</kbd> activates the focused link. There is no custom roving tabindex: every
+            crumb is a separately focusable control that uses the browser's native focus ring.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Try it with keyboard &amp; screen reader</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Focus the first link, then use <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>
+                    to move between crumbs. Note that the last crumb (&ldquo;Accessibility&rdquo;)
+                    is not reachable by keyboard — it is the current page.
+                </p>
+                <SunfishBreadcrumb>
+                    <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="/components/navigation/breadcrumb/overview">Breadcrumb</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true">Accessibility</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0;">
+                    <dt><code>&lt;nav aria-label="breadcrumb"&gt;</code></dt>
+                    <dd>Root landmark — announced as "breadcrumb navigation".</dd>
+                    <dt><code>&lt;ol&gt;</code></dt>
+                    <dd>Ordered list container — preserves trail sequence.</dd>
+                    <dt><code>&lt;li&gt;</code></dt>
+                    <dd>One per crumb, carrying BEM class <code>.sf-breadcrumb__item</code>.</dd>
+                    <dt><code>aria-current="page"</code></dt>
+                    <dd>Applied to the active crumb (<code>IsActive="true"</code>).</dd>
+                    <dt><code>&lt;a href="..."&gt;</code></dt>
+                    <dd>Non-active crumbs with a <code>Href</code>; fully focusable and keyboard-activatable.</dd>
+                    <dt><code>&lt;span&gt;</code></dt>
+                    <dd>Non-active crumbs without a <code>Href</code>; not focusable.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Keyboard shortcuts</h3>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Keys</th>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td>
+                            <td style="padding:.35rem .75rem;">Move focus to the next focusable crumb.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Shift</kbd>+<kbd>Tab</kbd></td>
+                            <td style="padding:.35rem .75rem;">Move focus to the previous focusable crumb.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Enter</kbd></td>
+                            <td style="padding:.35rem .75rem;">Activate the focused crumb (follows its <code>Href</code>).</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Screen-reader output (expected)</h3>
+                <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.85rem; overflow:auto;"><code>breadcrumb, navigation
+  list, 4 items
+    1. Home, link
+    2. Components, link
+    3. Breadcrumb, link
+    4. Accessibility, current page</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Breadcrumb", "Accessibility"];
+}

@@ -1,0 +1,154 @@
+@page "/components/navigation/treeview/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TreeView / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeView / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeView</code> renders a hierarchical list. Visual variants are driven
+            by the <code>Size</code> parameter (a CSS length that controls the per-item font-size),
+            the <code>CheckBoxMode</code> enum (<code>None</code>, <code>Single</code>,
+            <code>Multiple</code>), and state flags like <code>Disabled</code> and
+            <code>ReadOnly</code>. The visible icon next to each item comes from either the
+            <code>Icon</code> prop on declarative <code>SunfishTreeItem</code> children or the
+            <code>IconField</code> on data-bound trees.
+        </p>
+        <p>
+            The grid below shows the common axes: a compact / comfortable / spacious size ramp,
+            multiple-selection and multi-checkbox trees, single-expand (accordion) mode, a
+            read-only tree with pre-selected nodes, a disabled tree, and a re-skinned variant
+            that swaps surface tokens at the root.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Compact (Size = "0.8rem")</h3>
+                <SunfishTreeView Size="0.8rem">
+                    <SunfishTreeItem Title="src" IsExpanded="true">
+                        <SunfishTreeItem Title="components" IsExpanded="true">
+                            <SunfishTreeItem Title="Button.razor" />
+                            <SunfishTreeItem Title="Menu.razor" />
+                            <SunfishTreeItem Title="TreeView.razor" />
+                        </SunfishTreeItem>
+                        <SunfishTreeItem Title="services" />
+                    </SunfishTreeItem>
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Comfortable (default)</h3>
+                <SunfishTreeView>
+                    <SunfishTreeItem Title="Inbox" IsExpanded="true">
+                        <SunfishTreeItem Title="Today" />
+                        <SunfishTreeItem Title="Yesterday" />
+                        <SunfishTreeItem Title="Last week" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Drafts" />
+                    <SunfishTreeItem Title="Archive" />
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Spacious (Size = "1.1rem")</h3>
+                <SunfishTreeView Size="1.1rem">
+                    <SunfishTreeItem Title="Team" IsExpanded="true">
+                        <SunfishTreeItem Title="Engineering" />
+                        <SunfishTreeItem Title="Design" />
+                        <SunfishTreeItem Title="Product" />
+                    </SunfishTreeItem>
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Multi-select with checkboxes</h3>
+                <SunfishTreeView Data="_fileData"
+                                 IdField="Id"
+                                 ParentIdField="ParentId"
+                                 TextField="Name"
+                                 SelectionMode="TreeSelectionMode.Multiple"
+                                 CheckBoxMode="CheckBoxMode.Multiple"
+                                 ExpandedItems="@_expanded" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Single-expand (accordion)</h3>
+                <SunfishTreeView SingleExpand="true" ExpandOnClick="true">
+                    <SunfishTreeItem Title="Section A">
+                        <SunfishTreeItem Title="A.1" />
+                        <SunfishTreeItem Title="A.2" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Section B">
+                        <SunfishTreeItem Title="B.1" />
+                        <SunfishTreeItem Title="B.2" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Section C">
+                        <SunfishTreeItem Title="C.1" />
+                    </SunfishTreeItem>
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Read-only (pre-selected)</h3>
+                <SunfishTreeView Data="_fileData"
+                                 IdField="Id"
+                                 ParentIdField="ParentId"
+                                 TextField="Name"
+                                 SelectedItems="@(new[] { "2" })"
+                                 ExpandedItems="@(new[] { "1" })"
+                                 ReadOnly="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishTreeView Disabled="true">
+                    <SunfishTreeItem Title="Cannot interact" IsExpanded="true">
+                        <SunfishTreeItem Title="Child 1" />
+                        <SunfishTreeItem Title="Child 2" />
+                    </SunfishTreeItem>
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
+                <SunfishTreeView Style="background: var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.5rem; border:1px solid var(--sunfish-border, #d1d5db);">
+                    <SunfishTreeItem Title="Favorites" IsExpanded="true">
+                        <SunfishTreeItem Title="Starred" />
+                        <SunfishTreeItem Title="Pinned" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Recent" />
+                </SunfishTreeView>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "TreeView", "Appearance"];
+
+    private record FileNode(string Id, string? ParentId, string Name);
+
+    private readonly List<FileNode> _fileData = new()
+    {
+        new("1", null, "Documents"),
+        new("2", "1", "Reports"),
+        new("3", "2", "Q1.pdf"),
+        new("4", "2", "Q2.pdf"),
+        new("5", "1", "Images"),
+        new("6", "5", "logo.png"),
+        new("7", null, "Downloads"),
+    };
+
+    private readonly string[] _expanded = new[] { "1", "2" };
+}

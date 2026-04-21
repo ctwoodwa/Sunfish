@@ -1,0 +1,127 @@
+@page "/components/navigation/pagination/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Pagination / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Pagination / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Pagination/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPagination</code> is built as a semantic <code>&lt;nav&gt;</code> landmark
+            with <code>role="navigation"</code> and a customisable <code>aria-label</code> (via the
+            <code>AriaLabel</code> parameter, default <code>"pagination"</code>). Every interactive
+            control inside it is a native <code>&lt;button&gt;</code>, so keyboard and
+            assistive-technology behaviour follows the browser's built-in button semantics.
+        </p>
+        <p>
+            The current page button is marked with <code>aria-current="page"</code> so screen
+            readers announce it as the current location. The &laquo; and &raquo; arrow buttons use
+            <code>aria-label="Previous page"</code> / <code>"Next page"</code> so the decorative
+            glyph is never spoken alone. When the <code>PageSizes</code> dropdown is rendered it
+            carries <code>aria-label="Items per page"</code>.
+        </p>
+        <p>
+            Prev/Next automatically go <code>disabled</code> at the ends of the range, which both
+            prevents click interaction and removes those controls from the tab sequence.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Try it with keyboard &amp; screen reader</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Tab into the pager, then use <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> to
+                    traverse each button. Press <kbd>Enter</kbd> or <kbd>Space</kbd> to activate
+                    the focused button. The page-size <code>&lt;select&gt;</code> uses its native
+                    platform combobox semantics (<kbd>Arrow</kbd> keys to pick values).
+                </p>
+                <SunfishPagination Page="@_page"
+                                   PageChanged="@((int v) => _page = v)"
+                                   Total="137"
+                                   PageSize="@_size"
+                                   PageSizeChanged="@((int v) => _size = v)"
+                                   PageSizes="@(new List<int> { 10, 25, 50 })"
+                                   AriaLabel="Results pagination"
+                                   ShowInfo="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0;">
+                    <dt><code>&lt;nav role="navigation" aria-label="..."&gt;</code></dt>
+                    <dd>Root landmark, labelled via the <code>AriaLabel</code> parameter.</dd>
+                    <dt><code>aria-current="page"</code></dt>
+                    <dd>Applied to the button of the current page.</dd>
+                    <dt><code>aria-label="Previous page"</code></dt>
+                    <dd>On the &laquo; button — decorative glyph is never read in isolation.</dd>
+                    <dt><code>aria-label="Next page"</code></dt>
+                    <dd>On the &raquo; button.</dd>
+                    <dt><code>aria-label="Items per page"</code></dt>
+                    <dd>On the page-size <code>&lt;select&gt;</code> (when <code>PageSizes</code> is set).</dd>
+                    <dt><code>disabled</code></dt>
+                    <dd>Automatically applied to Prev at page 1 and Next at the last page — removes them from the tab sequence.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Keyboard shortcuts</h3>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Keys</th>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></td>
+                            <td style="padding:.35rem .75rem;">Move focus between page buttons and the size selector.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Enter</kbd> or <kbd>Space</kbd></td>
+                            <td style="padding:.35rem .75rem;">Activate the focused page button.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Arrow</kbd> keys</td>
+                            <td style="padding:.35rem .75rem;">Change selection in the open page-size dropdown (native combobox).</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:.35rem .75rem;"><kbd>Home</kbd> / <kbd>End</kbd></td>
+                            <td style="padding:.35rem .75rem;">Inside the open page-size dropdown: jump to first / last option.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Screen-reader output (expected)</h3>
+                <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.85rem; overflow:auto;"><code>Results pagination, navigation
+  "1-@(_size) of 137 items"
+  Previous page, button
+  1, button, current page
+  2, button
+  3, button
+  4, button
+  5, button
+  Next page, button
+  Items per page, combobox, @(_size)</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Pagination", "Accessibility"];
+
+    private int _page = 1;
+    private int _size = 10;
+}

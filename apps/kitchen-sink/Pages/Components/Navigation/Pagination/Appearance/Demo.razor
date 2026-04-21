@@ -1,0 +1,111 @@
+@page "/components/navigation/pagination/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Pagination / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Pagination / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Pagination/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPagination</code> renders previous/next controls, a window of numeric page
+            buttons, and an optional page-size dropdown and info counter. Visual variants are
+            primarily driven by the <code>ButtonCount</code>, <code>ShowInfo</code>, and
+            <code>PageSizes</code> parameters, while surface colors/spacing come from the standard
+            <code>--sunfish-*</code> design tokens.
+        </p>
+        <p>
+            The grid below covers the common appearance axes: a short/long button window, with and
+            without the info string, with and without the page-size dropdown, a large total set, and
+            a style-override variant that re-skins the buttons using a <code>Style</code> override
+            at the root.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default (ButtonCount = 5)</h3>
+                <SunfishPagination Page="@_p1"
+                                   PageChanged="@((int v) => _p1 = v)"
+                                   Total="100"
+                                   PageSize="10" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Narrow window (ButtonCount = 3)</h3>
+                <SunfishPagination Page="@_p2"
+                                   PageChanged="@((int v) => _p2 = v)"
+                                   Total="100"
+                                   PageSize="10"
+                                   ButtonCount="3" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With info text (ShowInfo)</h3>
+                <SunfishPagination Page="@_p3"
+                                   PageChanged="@((int v) => _p3 = v)"
+                                   Total="237"
+                                   PageSize="10"
+                                   ShowInfo="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With page-size dropdown</h3>
+                <SunfishPagination Page="@_p4"
+                                   PageChanged="@((int v) => _p4 = v)"
+                                   PageSize="@_p4Size"
+                                   PageSizeChanged="@((int v) => _p4Size = v)"
+                                   Total="500"
+                                   PageSizes="@(new List<int> { 10, 25, 50, 100 })"
+                                   ShowInfo="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Large total (wider window)</h3>
+                <SunfishPagination Page="@_p5"
+                                   PageChanged="@((int v) => _p5 = v)"
+                                   Total="9999"
+                                   PageSize="25"
+                                   ButtonCount="7"
+                                   ShowInfo="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
+                <SunfishPagination Page="@_p6"
+                                   PageChanged="@((int v) => _p6 = v)"
+                                   Total="60"
+                                   PageSize="10"
+                                   Style="background: var(--sunfish-surface-muted, #f3f4f6); padding:.5rem; border-radius:999px; gap:.25rem; display:inline-flex;" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Single page edge case</h3>
+                <SunfishPagination Page="1"
+                                   Total="7"
+                                   PageSize="10"
+                                   ShowInfo="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Pagination", "Appearance"];
+
+    private int _p1 = 1;
+    private int _p2 = 1;
+    private int _p3 = 3;
+    private int _p4 = 2;
+    private int _p4Size = 25;
+    private int _p5 = 42;
+    private int _p6 = 1;
+}
