@@ -1,0 +1,28 @@
+- name: Accounting
+  href: accounting/
+- name: Assets
+  href: assets/
+- name: Business Cases
+  href: businesscases/
+- name: Forms
+  href: forms/
+- name: Inspections
+  href: inspections/
+- name: Leases
+  href: leases/
+- name: Maintenance
+  href: maintenance/
+- name: Rent Collection
+  href: rent-collection/
+- name: Scheduling
+  href: scheduling/
+- name: Subscriptions
+  href: subscriptions/
+- name: Tasks
+  href: tasks/
+- name: Tax Reporting
+  href: tax-reporting/
+- name: Tenant Admin
+  href: tenant-admin/
+- name: Workflow
+  href: workflow/
