@@ -242,6 +242,7 @@ public class XlsxExportTests : BunitContext
         // Assert — DownloadService should have been called with xlsx mime type
         await _downloadSvc.Received(1).DownloadAsync(
             Arg.Is<DownloadRequest>(r =>
+                r != null &&
                 r.ContentType == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" &&
                 !string.IsNullOrEmpty(r.Base64Content) &&
                 r.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)),

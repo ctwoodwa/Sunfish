@@ -206,6 +206,7 @@ public class PdfExportTests : BunitContext
 
         await _downloadSvc.Received(1).DownloadAsync(
             Arg.Is<DownloadRequest>(r =>
+                r != null &&
                 r.ContentType == "application/pdf" &&
                 !string.IsNullOrEmpty(r.Base64Content) &&
                 r.FileName.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase)),
@@ -247,7 +248,7 @@ public class PdfExportTests : BunitContext
 
         await _pdfWriter.Received(1).WriteAsync<SampleItem>(
             Arg.Any<IReadOnlyList<ExportColumnDescriptor>>(),
-            Arg.Is<IReadOnlyList<SampleItem>>(items => items.Count == SampleData.Count),
+            Arg.Is<IReadOnlyList<SampleItem>>(items => items != null && items.Count == SampleData.Count),
             Arg.Any<PdfExportOptions>(),
             Arg.Any<CancellationToken>());
     }
