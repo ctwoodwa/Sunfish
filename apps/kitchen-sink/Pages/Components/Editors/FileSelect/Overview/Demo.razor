@@ -41,13 +41,13 @@
 
     private string? _status;
 
-    private void HandleSelect(FileSelectEventArgs args)
+    private void HandleSelect(FileUploadSelectEventArgs args)
     {
         var valid = args.Files.Count(f => !f.IsInvalid);
         _status = $"Selected {valid} file(s).";
     }
 
-    private void HandleRemove(FileSelectEventArgs args)
+    private void HandleRemove(UploadEventArgs args)
     {
         _status = $"Removed {args.Files.Count} file(s).";
     }

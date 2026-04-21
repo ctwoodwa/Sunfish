@@ -1,0 +1,110 @@
+@page "/components/forms/fileupload/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>FileUpload / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileUpload / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FileUpload/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFileUpload</code> exposes render-fragment slots for every part of the
+            card: the select-files button (<code>SelectFilesButtonTemplate</code>), the
+            whole file-item row (<code>FileTemplate</code>), and the label/size line within
+            a built-in row (<code>FileInfoTemplate</code>). Use <code>ShowFileList=false</code>
+            if you want to render the queue yourself elsewhere on the page.
+        </p>
+        <p>
+            The drop-zone container accepts arbitrary styling via <code>Class</code> and
+            <code>Style</code>, which flow through <code>AdditionalAttributes</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:1.5rem; max-width:960px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default</h3>
+                <SunfishFileUpload Multiple="true" AllowedExtensions="@_allowed" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Custom select button</h3>
+                <SunfishFileUpload Multiple="true">
+                    <SelectFilesButtonTemplate>
+                        <div style="padding:1rem 1.5rem; border:2px dashed var(--mar-accent, #4c6ef5); border-radius:10px; text-align:center; cursor:pointer;">
+                            <div style="font-size:1.5rem; font-weight:600;">+</div>
+                            <div>Choose photos to share</div>
+                        </div>
+                    </SelectFilesButtonTemplate>
+                </SunfishFileUpload>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Template file row</h3>
+                <SunfishFileUpload Multiple="true" AllowedExtensions="@_allowed">
+                    <FileTemplate Context="ctx">
+                        <div style="display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem; border-radius:8px; background:var(--mar-surface-2, #f5f5f5); width:100%;">
+                            <span style="font-size:1.25rem;">@IconForExt(ctx.File.Extension)</span>
+                            <span style="flex:1; min-width:0;">
+                                <strong style="display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">@ctx.File.Name</strong>
+                                <small style="opacity:.7;">@($"{ctx.File.Size / 1024.0:F1} KB")</small>
+                            </span>
+                            @if (ctx.IsInvalid)
+                            {
+                                <span role="alert" style="color:#d03030; font-size:.75rem;">@ctx.ValidationMessage</span>
+                            }
+                        </div>
+                    </FileTemplate>
+                </SunfishFileUpload>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Hidden list (headless)</h3>
+                <SunfishFileUpload Multiple="true"
+                                   ShowFileList="false"
+                                   FilesChanged="HandleHeadlessChange" />
+                @if (_headless.Count > 0)
+                {
+                    <ul style="list-style:none; padding:0; margin:.5rem 0 0 0;">
+                        @foreach (var f in _headless)
+                        {
+                            <li style="font-size:.85rem;">- @f.Name</li>
+                        }
+                    </ul>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishFileUpload Multiple="true" Disabled="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FileUpload", "Appearance"];
+
+    private readonly List<string> _allowed = [".png", ".jpg", ".jpeg", ".gif", ".pdf"];
+    private IList<SelectedFile> _headless = new List<SelectedFile>();
+
+    private void HandleHeadlessChange(IList<SelectedFile> files) => _headless = files;
+
+    private static string IconForExt(string ext) => ext.ToLowerInvariant() switch
+    {
+        ".png" or ".jpg" or ".jpeg" or ".gif" => "IMG",
+        ".pdf" => "PDF",
+        ".doc" or ".docx" => "DOC",
+        ".xls" or ".xlsx" or ".csv" => "XLS",
+        ".zip" or ".7z" or ".rar" => "ZIP",
+        _ => "FILE"
+    };
+}
