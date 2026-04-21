@@ -1,0 +1,169 @@
+@page "/components/data-display/treelist/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+
+<PageTitle>TreeList / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeList / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeList&lt;TItem&gt;</code> exposes a typed event surface for hierarchical
+            interactions: <code>OnExpand</code> / <code>OnCollapse</code> receive cancellable
+            <code>TreeListExpandEventArgs&lt;T&gt;</code> / <code>TreeListCollapseEventArgs&lt;T&gt;</code>
+            so handlers can block a toggle by setting <code>IsCancelled = true</code>. Selection
+            (<code>SelectedItemsChanged</code>), paging (<code>PageChanged</code>), and row clicks
+            (<code>OnRowClick</code>) complete the interactive surface.
+        </p>
+        <p>
+            This demo wires the full set against a small org chart and appends every callback to a
+            scrollable event log. Toggle <em>Block expand on "Research"</em> to see the cancellation
+            gate in action.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <div>
+                <div style="margin-bottom:.5rem; display:flex; align-items:center; gap:.5rem;">
+                    <label style="display:inline-flex; align-items:center; gap:.35rem;">
+                        <input type="checkbox" @bind="_blockResearch" />
+                        Block expand on "Research"
+                    </label>
+                </div>
+
+                <SunfishTreeList TItem="OrgNode"
+                                 Data="_orgChart"
+                                 ItemsField="@nameof(OrgNode.Reports)"
+                                 Sortable="true"
+                                 Pageable="true"
+                                 PageSize="5"
+                                 Page="_page"
+                                 SelectionMode="TreeListSelectionMode.Single"
+                                 SelectedItems="_selected"
+                                 OnExpand="HandleExpand"
+                                 OnCollapse="HandleCollapse"
+                                 OnRowClick="HandleRowClick"
+                                 PageChanged="HandlePageChanged"
+                                 SelectedItemsChanged="HandleSelectionChanged">
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Name)" Title="Name" Expandable="true" Width="220px" />
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Title)" Title="Role" Width="180px" />
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Department)" Title="Department" />
+                </SunfishTreeList>
+            </div>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:320px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click or expand a row.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "TreeList", "Events"];
+
+    private sealed record OrgNode
+    {
+        public string Name { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Department { get; init; } = "";
+        public List<OrgNode> Reports { get; init; } = new();
+    }
+
+    private readonly List<OrgNode> _orgChart =
+    [
+        new()
+        {
+            Name = "Ada Lovelace",
+            Title = "CEO",
+            Department = "Executive",
+            Reports =
+            [
+                new()
+                {
+                    Name = "Grace Hopper",
+                    Title = "VP Engineering",
+                    Department = "Engineering",
+                    Reports =
+                    [
+                        new() { Name = "Alan Turing", Title = "Eng. Manager", Department = "Platform" },
+                        new() { Name = "Linus Torvalds", Title = "Eng. Manager", Department = "Kernel" },
+                    ],
+                },
+                new()
+                {
+                    Name = "Katherine Johnson",
+                    Title = "VP Research",
+                    Department = "Research",
+                    Reports =
+                    [
+                        new() { Name = "Don Knuth", Title = "Principal Scientist", Department = "Research" },
+                    ],
+                },
+            ],
+        },
+    ];
+
+    private int _page = 1;
+    private bool _blockResearch;
+    private IReadOnlyList<OrgNode> _selected = Array.Empty<OrgNode>();
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    private void HandleExpand(TreeListExpandEventArgs<OrgNode> args)
+    {
+        if (_blockResearch && args.Item.Department == "Research")
+        {
+            args.IsCancelled = true;
+            Log($"OnExpand → {args.Item.Name} (CANCELLED)");
+            return;
+        }
+        Log($"OnExpand → {args.Item.Name}");
+    }
+
+    private void HandleCollapse(TreeListCollapseEventArgs<OrgNode> args) =>
+        Log($"OnCollapse → {args.Item.Name}");
+
+    private void HandleRowClick(OrgNode item) =>
+        Log($"OnRowClick → {item.Name}");
+
+    private void HandlePageChanged(int page)
+    {
+        _page = page;
+        Log($"PageChanged → page {page}");
+    }
+
+    private void HandleSelectionChanged(IReadOnlyList<OrgNode> items)
+    {
+        _selected = items;
+        var names = string.Join(", ", items.Select(n => n.Name));
+        Log($"SelectedItemsChanged → [{names}]");
+    }
+}
