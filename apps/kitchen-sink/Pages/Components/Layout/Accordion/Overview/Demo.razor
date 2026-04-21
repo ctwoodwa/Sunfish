@@ -1,6 +1,8 @@
 @page "/components/layout/accordion/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.Foundation.Enums
 
 <PageTitle>Accordion / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -10,16 +12,59 @@
                      Sources="@GeneratedSources">
 
     <Narrative>
-        <p>Accordions display collapsible content panels for presenting information in a limited space.</p>
         <p>
-            This overview page is a stub — the live demo is forthcoming. The component is tracked
-            in the Sunfish example catalog for cross-provider parity.
+            <code>SunfishAccordion</code> displays collapsible content panels. It supports two
+            authoring modes:
         </p>
+        <ul>
+            <li><strong>Declarative (<code>ChildContent</code>)</strong> — nest
+                <code>SunfishAccordionItem</code> tags with a <code>Title</code>, optional
+                <code>Icon</code>, and <code>@@bind-IsExpanded</code>. Use this when you know the
+                content at authoring time.</li>
+            <li><strong>Data-driven (<code>Data</code>)</strong> — bind a collection of models.
+                Items may contain nested children (via <code>ItemsField</code>, default
+                <code>"Items"</code>), producing a true hierarchical panel bar.
+                <code>TextField</code>, <code>IconField</code>, <code>DisabledField</code>,
+                <code>UrlField</code>, and <code>ExpandedField</code> select property names on your
+                model. Templates (<code>HeaderTemplate</code>/<code>ContentTemplate</code>) let you
+                customise rendering.</li>
+        </ul>
     </Narrative>
 
     <Example>
-        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
-            <strong>Accordion</strong> — overview demo coming soon.
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Declarative mode (ChildContent)</h4>
+                <SunfishAccordion ExpandMode="AccordionExpandMode.Single">
+                    <SunfishAccordionItem Title="Shipping" Icon="truck" @bind-IsExpanded="_shipping">
+                        <p style="margin:0;">Standard shipping takes 5–7 business days.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Returns" Icon="rotate-ccw" @bind-IsExpanded="_returns">
+                        <p style="margin:0;">Free returns within 30 days, original condition.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Warranty" Icon="shield" @bind-IsExpanded="_warranty">
+                        <p style="margin:0;">12-month manufacturer warranty against defects.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Hierarchical data mode</h4>
+                <SunfishAccordion Data="@_panels"
+                                  TextField="Text"
+                                  ItemsField="Items"
+                                  DisabledField="Disabled"
+                                  UrlField="Url"
+                                  ExpandMode="AccordionExpandMode.Single" />
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Each panel item may contain nested children via
+                    <code>ItemsField="Items"</code>. The accordion recurses, giving a vertical
+                    PanelBar. <em>Item 1.2</em> is disabled via <code>DisabledField</code>;
+                    <em>Item 2.2</em> carries a <code>Url</code>.
+                </p>
+            </div>
+
         </div>
     </Example>
 
@@ -28,4 +73,52 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "Layout", "Accordion", "Overview"];
+
+    private bool _shipping = true;
+    private bool _returns;
+    private bool _warranty;
+
+    public class PanelItem
+    {
+        public string Text { get; set; } = "";
+        public bool Disabled { get; set; }
+        public string? Url { get; set; }
+        public List<PanelItem>? Items { get; set; }
+    }
+
+    private readonly List<PanelItem> _panels =
+    [
+        new()
+        {
+            Text = "Item 1",
+            Items =
+            [
+                new() { Text = "Item 1.1" },
+                new()
+                {
+                    Text = "Item 1.2 (disabled)",
+                    Disabled = true,
+                    Items =
+                    [
+                        new() { Text = "Item 1.2.1" },
+                        new() { Text = "Item 1.2.2" },
+                    ],
+                },
+            ],
+        },
+        new()
+        {
+            Text = "Item 2",
+            Items =
+            [
+                new()
+                {
+                    Text = "Item 2.1",
+                    Items = [ new() { Text = "Item 2.1.1" } ],
+                },
+                new() { Text = "Item 2.2 (with Url)", Url = "https://sunfish.dev" },
+            ],
+        },
+        new() { Text = "Item 3 (leaf)" },
+    ];
 }

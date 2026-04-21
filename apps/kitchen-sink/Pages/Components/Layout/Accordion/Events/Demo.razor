@@ -1,6 +1,7 @@
 @page "/components/layout/accordion/events"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Layout
 @using Sunfish.Foundation.Enums
 
 <PageTitle>Accordion / Events · Sunfish Kitchen Sink</PageTitle>
@@ -11,20 +12,20 @@
                      Sources="@GeneratedSources">
 
     <Narrative>
-        <p>
-            Accordion exposes one event on the container and one on each item:
-        </p>
+        <p>Accordion emits the following events:</p>
         <ul>
-            <li><code>ExpandedItemsChanged</code> (container, data-driven) — fires when the set of
-                expanded items changes. Enables <code>@@bind-ExpandedItems</code>.</li>
-            <li><code>IsExpandedChanged</code> (item, declarative) — fires when an individual
-                item's <code>IsExpanded</code> toggles. Enables
-                <code>@@bind-IsExpanded</code>.</li>
+            <li><strong><code>OnExpand</code></strong> (data-driven) — fires <em>before</em> an item
+                expands. Set <code>args.IsCancelled = true</code> to abort.</li>
+            <li><strong><code>OnCollapse</code></strong> (data-driven) — fires <em>before</em>
+                collapse. Cancellable in the same way.</li>
+            <li><strong><code>ExpandedItemsChanged</code></strong> (data-driven) — fires after the
+                set of expanded items changes. Enables <code>@@bind-ExpandedItems</code>.</li>
+            <li><strong><code>IsExpandedChanged</code></strong> (declarative <code>SunfishAccordionItem</code>) — fires on individual-item toggle. Enables <code>@@bind-IsExpanded</code>.</li>
         </ul>
         <p>
-            The log below is append-only (newest first). Each row records the source and the
-            resulting state. Toggling items with the mouse, keyboard, or via the buttons below will
-            all emit events through the same pipeline.
+            The log below is append-only (newest first). The "Veto collapse" checkbox below
+            demonstrates the cancellable <code>OnCollapse</code> event — try collapsing an expanded
+            item while it's on.
         </p>
     </Narrative>
 
@@ -32,7 +33,7 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
 
             <div>
-                <h4 style="margin:0 0 .5rem;">Declarative items (IsExpandedChanged)</h4>
+                <h4 style="margin:0 0 .5rem;">Declarative (IsExpandedChanged)</h4>
                 <SunfishAccordion>
                     <SunfishAccordionItem Title="Item A"
                                           IsExpanded="_a"
@@ -50,7 +51,6 @@
                         <p style="margin:0;">Third item body.</p>
                     </SunfishAccordionItem>
                 </SunfishAccordion>
-
                 <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
                     <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _a, nameof(_a))">Toggle A</SunfishButton>
                     <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _b, nameof(_b))">Toggle B</SunfishButton>
@@ -60,12 +60,18 @@
             </div>
 
             <div>
-                <h4 style="margin:0 0 .5rem;">Data-driven (ExpandedItemsChanged)</h4>
+                <h4 style="margin:0 0 .5rem;">Data-driven (OnExpand / OnCollapse)</h4>
+                <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem;">
+                    <input type="checkbox" @bind="_vetoCollapse" />
+                    <span style="font-size:.85rem;">Veto collapse (<code>args.IsCancelled = true</code>)</span>
+                </label>
                 <SunfishAccordion Data="@_items"
                                   TextField="Title"
                                   ExpandMode="AccordionExpandMode.Single"
                                   ExpandedItems="@_expandedItems"
-                                  ExpandedItemsChanged="HandleExpandedItemsChanged" />
+                                  ExpandedItemsChanged="HandleExpandedItemsChanged"
+                                  OnExpand="HandleOnExpand"
+                                  OnCollapse="HandleOnCollapse" />
 
                 <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
                     Currently expanded:
@@ -77,7 +83,7 @@
 
             <div style="grid-column:1 / -1;">
                 <h4 style="margin:0 0 .5rem;">Event log</h4>
-                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:200px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:220px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
                     @if (_log.Count == 0)
                     {
                         <em style="opacity:.6;">No events yet — toggle an item to emit.</em>
@@ -104,6 +110,7 @@
     private bool _a;
     private bool _b;
     private bool _c;
+    private bool _vetoCollapse;
 
     private IEnumerable<object> _expandedItems = Array.Empty<object>();
 
@@ -136,6 +143,26 @@
         var titles = items.Cast<DataItem>().Select(x => x.Title);
         var joined = titles.Any() ? string.Join(", ", titles) : "(none)";
         Log($"ExpandedItemsChanged -> [{joined}]");
+    }
+
+    private void HandleOnExpand(AccordionExpandEventArgs args)
+    {
+        var title = (args.Item as DataItem)?.Title ?? "?";
+        Log($"OnExpand -> {title}");
+    }
+
+    private void HandleOnCollapse(AccordionCollapseEventArgs args)
+    {
+        var title = (args.Item as DataItem)?.Title ?? "?";
+        if (_vetoCollapse)
+        {
+            args.IsCancelled = true;
+            Log($"OnCollapse -> {title} (VETOED)");
+        }
+        else
+        {
+            Log($"OnCollapse -> {title}");
+        }
     }
 
     public class DataItem

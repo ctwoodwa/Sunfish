@@ -6,57 +6,14 @@
      role="region"
      @attributes="AdditionalAttributes">
 
-    @if (Data != null && Data.Any())
+    @if (IsDataDriven)
     {
-        @* Data-driven mode *@
-        @foreach (var item in Data)
-        {
-            var isExpanded = _expandedItems.Contains(item);
-            var text = GetPropertyValue(item, TextField);
-            var icon = GetPropertyValue(item, IconField);
-            var url = GetPropertyValue(item, UrlField);
-            var disabled = IsItemDisabled(item);
-            var contentId = $"acc-{item.GetHashCode():X8}";
-
-            <div class="@CssProvider.AccordionItemClass(isExpanded)">
-                <button type="button"
-                        class="sf-accordion-item__header"
-                        aria-expanded="@isExpanded.ToString().ToLower()"
-                        aria-controls="@contentId"
-                        disabled="@disabled"
-                        @onclick="() => HandleItemToggle(item)">
-                    @if (HeaderTemplate != null)
-                    {
-                        @HeaderTemplate(item)
-                    }
-                    else
-                    {
-                        @if (!string.IsNullOrEmpty(icon))
-                        {
-                            <span class="sf-accordion-item__icon">@IconProvider.GetIconMarkup(icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
-                        }
-                        <span class="sf-accordion-item__text">@text</span>
-                    }
-                </button>
-                @if (isExpanded)
-                {
-                    <div id="@contentId" role="region" class="sf-accordion-item__content">
-                        @if (ContentTemplate != null)
-                        {
-                            @ContentTemplate(item)
-                        }
-                        else if (!string.IsNullOrEmpty(url))
-                        {
-                            <a href="@url">@text</a>
-                        }
-                    </div>
-                }
-            </div>
-        }
+        @* Data-driven mode — flat or hierarchical. Supports recursive children via ItemsField. *@
+        @RenderItems(Data!, 0)
     }
     else
     {
-        @* Manual mode: CascadingValue for expand coordination *@
+        @* Declarative / ChildContent mode — one level of SunfishAccordionItem children coordinated via CascadingValue. *@
         <CascadingValue Value="this" IsFixed="true">
             @ChildContent
         </CascadingValue>
@@ -64,23 +21,35 @@
 </div>
 
 @code {
+    // ── Internal state ──────────────────────────────────────────────────
+
     private HashSet<object> _expandedItems = [];
     private readonly List<SunfishAccordionItem> _items = [];
 
-    /// <summary>Data source for data-driven accordion items.</summary>
+    // ── Parameters: Data Binding ────────────────────────────────────────
+
+    /// <summary>Data source for data-driven accordion items. Supports flat or hierarchical (via <see cref="ItemsField"/>) collections.</summary>
     [Parameter] public IEnumerable<object>? Data { get; set; }
 
-    /// <summary>Property name for the item display text.</summary>
+    /// <summary>Property name for the item display text. Defaults to "Text".</summary>
     [Parameter] public string TextField { get; set; } = "Text";
 
-    /// <summary>Property name for the item icon.</summary>
+    /// <summary>Property name for the item icon. Defaults to "Icon".</summary>
     [Parameter] public string IconField { get; set; } = "Icon";
 
-    /// <summary>Property name for the item navigation URL.</summary>
+    /// <summary>Property name for the item navigation URL. Defaults to "Url".</summary>
     [Parameter] public string UrlField { get; set; } = "Url";
 
-    /// <summary>Property name for the item disabled flag.</summary>
+    /// <summary>Property name for the item disabled flag. Defaults to "Disabled".</summary>
     [Parameter] public string DisabledField { get; set; } = "Disabled";
+
+    /// <summary>Property name for per-item initial expanded flag. Defaults to "Expanded".</summary>
+    [Parameter] public string ExpandedField { get; set; } = "Expanded";
+
+    /// <summary>Property name on each item that contains nested child items. When set (e.g. "Items"), the accordion renders recursively. Defaults to "Items".</summary>
+    [Parameter] public string ItemsField { get; set; } = "Items";
+
+    // ── Parameters: Expansion ───────────────────────────────────────────
 
     /// <summary>How items expand — Single (one at a time) or Multiple. Defaults to Multiple.</summary>
     [Parameter] public AccordionExpandMode ExpandMode { get; set; } = AccordionExpandMode.Multiple;
@@ -88,17 +57,30 @@
     /// <summary>The currently expanded items. Supports two-way binding.</summary>
     [Parameter] public IEnumerable<object>? ExpandedItems { get; set; }
 
-    /// <summary>Fires when the expanded items collection changes.</summary>
+    /// <summary>Fires when the expanded items collection changes (after expand/collapse is committed).</summary>
     [Parameter] public EventCallback<IEnumerable<object>> ExpandedItemsChanged { get; set; }
+
+    /// <summary>Fires before an item expands. Set <see cref="AccordionExpandEventArgs.IsCancelled"/> to cancel.</summary>
+    [Parameter] public EventCallback<AccordionExpandEventArgs> OnExpand { get; set; }
+
+    /// <summary>Fires before an item collapses. Set <see cref="AccordionCollapseEventArgs.IsCancelled"/> to cancel.</summary>
+    [Parameter] public EventCallback<AccordionCollapseEventArgs> OnCollapse { get; set; }
+
+    // ── Parameters: Templates & Content ─────────────────────────────────
 
     /// <summary>Custom header template for data-driven items.</summary>
     [Parameter] public RenderFragment<object>? HeaderTemplate { get; set; }
 
-    /// <summary>Custom content template for data-driven items.</summary>
+    /// <summary>Custom content template for data-driven leaf items (items without children).</summary>
     [Parameter] public RenderFragment<object>? ContentTemplate { get; set; }
 
-    /// <summary>Manual child content (SunfishAccordionItem components).</summary>
+    /// <summary>Manual child content (SunfishAccordionItem components) — used when <see cref="Data"/> is not provided.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    /// <summary>True when the accordion is rendering from a bound <see cref="Data"/> collection.</summary>
+    private bool IsDataDriven => Data != null && Data.Any();
 
     // ── Lifecycle ───────────────────────────────────────────────────────
 
@@ -106,11 +88,25 @@
     {
         if (ExpandedItems != null)
             _expandedItems = new HashSet<object>(ExpandedItems);
+        else if (IsDataDriven)
+            SeedExpandedFromExpandedField(Data!);
+    }
+
+    private void SeedExpandedFromExpandedField(IEnumerable<object> items)
+    {
+        foreach (var item in items)
+        {
+            if (GetPropertyBool(item, ExpandedField))
+                _expandedItems.Add(item);
+
+            if (GetChildren(item) is { } kids)
+                SeedExpandedFromExpandedField(kids);
+        }
     }
 
     // ── Public API ──────────────────────────────────────────────────────
 
-    /// <summary>Forces re-render with current data.</summary>
+    /// <summary>Forces a re-render with the current data (e.g. after mutating the source collection in place).</summary>
     public void Rebind() => StateHasChanged();
 
     // ── Internal API for manual AccordionItem children ──────────────────
@@ -139,38 +135,170 @@
         }
     }
 
+    // ── Recursive data-driven renderer ──────────────────────────────────
+
+    private RenderFragment RenderItems(IEnumerable<object> items, int depth) => builder =>
+    {
+        int seq = 0;
+        foreach (var item in items)
+        {
+            var isExpanded = _expandedItems.Contains(item);
+            var text = GetPropertyString(item, TextField);
+            var icon = GetPropertyString(item, IconField);
+            var url = GetPropertyString(item, UrlField);
+            var disabled = GetPropertyBool(item, DisabledField);
+            var contentId = $"acc-{item.GetHashCode():X8}-{depth}";
+            var children = GetChildren(item);
+            var hasChildren = children != null && children.Any();
+
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", CssProvider.AccordionItemClass(isExpanded) + (hasChildren ? " sf-accordion-item--has-children" : "") + $" sf-accordion-item--depth-{depth}");
+
+            // Header button
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "class", "sf-accordion-item__header");
+            builder.AddAttribute(seq++, "aria-expanded", isExpanded.ToString().ToLowerInvariant());
+            builder.AddAttribute(seq++, "aria-controls", contentId);
+            builder.AddAttribute(seq++, "disabled", disabled);
+            var clickItem = item;
+            builder.AddAttribute(seq++, "onclick",
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create(this, () => HandleItemToggle(clickItem)));
+
+            if (HeaderTemplate != null)
+            {
+                builder.AddContent(seq++, HeaderTemplate(item));
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(icon))
+                {
+                    builder.OpenElement(seq++, "span");
+                    builder.AddAttribute(seq++, "class", "sf-accordion-item__icon");
+                    builder.AddContent(seq++, IconProvider.GetIconMarkup(icon, Sunfish.Foundation.Enums.IconSize.Small));
+                    builder.CloseElement();
+                }
+                builder.OpenElement(seq++, "span");
+                builder.AddAttribute(seq++, "class", "sf-accordion-item__text");
+                builder.AddContent(seq++, text);
+                builder.CloseElement();
+            }
+
+            builder.CloseElement(); // </button>
+
+            // Expanded body
+            if (isExpanded)
+            {
+                builder.OpenElement(seq++, "div");
+                builder.AddAttribute(seq++, "id", contentId);
+                builder.AddAttribute(seq++, "role", "region");
+                builder.AddAttribute(seq++, "class", "sf-accordion-item__content");
+
+                if (hasChildren)
+                {
+                    // Recurse into nested items
+                    builder.AddContent(seq++, RenderItems(children!, depth + 1));
+                }
+                else if (ContentTemplate != null)
+                {
+                    builder.AddContent(seq++, ContentTemplate(item));
+                }
+                else if (!string.IsNullOrEmpty(url))
+                {
+                    builder.OpenElement(seq++, "a");
+                    builder.AddAttribute(seq++, "href", url);
+                    builder.AddContent(seq++, text);
+                    builder.CloseElement();
+                }
+
+                builder.CloseElement(); // </div content>
+            }
+
+            builder.CloseElement(); // </div item>
+        }
+    };
+
     // ── Data-driven event handlers ──────────────────────────────────────
 
     private async Task HandleItemToggle(object item)
     {
-        if (IsItemDisabled(item)) return;
+        if (GetPropertyBool(item, DisabledField)) return;
 
-        if (_expandedItems.Contains(item))
+        var wasExpanded = _expandedItems.Contains(item);
+
+        if (wasExpanded)
         {
+            // Fire cancellable OnCollapse first
+            if (OnCollapse.HasDelegate)
+            {
+                var args = new AccordionCollapseEventArgs { Item = item };
+                await OnCollapse.InvokeAsync(args);
+                if (args.IsCancelled) return;
+            }
             _expandedItems.Remove(item);
         }
         else
         {
+            // Fire cancellable OnExpand first
+            if (OnExpand.HasDelegate)
+            {
+                var args = new AccordionExpandEventArgs { Item = item };
+                await OnExpand.InvokeAsync(args);
+                if (args.IsCancelled) return;
+            }
+
             if (ExpandMode == AccordionExpandMode.Single)
-                _expandedItems.Clear();
+            {
+                // Collapse only siblings at the same depth — find the parent and clear its peers.
+                var siblings = FindSiblings(Data!, item);
+                foreach (var sibling in siblings.ToList())
+                {
+                    if (sibling != item && _expandedItems.Contains(sibling))
+                        _expandedItems.Remove(sibling);
+                }
+            }
             _expandedItems.Add(item);
         }
 
         await ExpandedItemsChanged.InvokeAsync(_expandedItems.ToList());
+        StateHasChanged();
+    }
+
+    /// <summary>Returns the sibling collection (including <paramref name="item"/>) within the Data tree.</summary>
+    private IEnumerable<object> FindSiblings(IEnumerable<object> items, object item)
+    {
+        if (items.Contains(item)) return items;
+        foreach (var candidate in items)
+        {
+            var kids = GetChildren(candidate);
+            if (kids == null) continue;
+            var sibs = FindSiblings(kids, item);
+            if (sibs.Any()) return sibs;
+        }
+        return [];
     }
 
     // ── Helpers ─────────────────────────────────────────────────────────
 
-    private static string? GetPropertyValue(object item, string propertyName)
+    private IEnumerable<object>? GetChildren(object item)
     {
-        if (item is null) return null;
+        if (string.IsNullOrEmpty(ItemsField)) return null;
+        var raw = item.GetType().GetProperty(ItemsField)?.GetValue(item);
+        if (raw is System.Collections.IEnumerable enumerable and not string)
+            return enumerable.Cast<object>();
+        return null;
+    }
+
+    private static string? GetPropertyString(object? item, string propertyName)
+    {
+        if (item is null || string.IsNullOrEmpty(propertyName)) return null;
         return item.GetType().GetProperty(propertyName)?.GetValue(item)?.ToString();
     }
 
-    private bool IsItemDisabled(object item)
+    private static bool GetPropertyBool(object? item, string propertyName)
     {
-        if (item is null) return false;
-        var prop = item.GetType().GetProperty(DisabledField);
+        if (item is null || string.IsNullOrEmpty(propertyName)) return false;
+        var prop = item.GetType().GetProperty(propertyName);
         if (prop is null) return false;
         return prop.GetValue(item) is true;
     }
