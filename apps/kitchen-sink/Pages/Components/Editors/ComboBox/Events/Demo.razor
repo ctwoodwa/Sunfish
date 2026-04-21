@@ -1,0 +1,131 @@
+@page "/components/forms/combobox/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ComboBox / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ComboBox / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ComboBox/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishComboBox</code> emits two typed value callbacks and relies on attribute
+            pass-through for focus events:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — two-way binding wire for the selected <code>TValue</code>.
+                Fires when an option is clicked, <kbd>Enter</kbd>ed, cleared, or (when
+                <code>AllowCustom="true"</code>) typed-then-matched.</li>
+            <li><code>OnChange</code> — semantic alias that fires alongside <code>ValueChanged</code>.</li>
+            <li><code>@@onfocus</code> / <code>@@onblur</code> — native DOM focus events pass through
+                the inner <code>&lt;input&gt;</code> via <code>AdditionalAttributes</code>.</li>
+        </ul>
+        <p>
+            Navigate with <kbd>Arrow Down</kbd>, <kbd>Arrow Up</kbd>, <kbd>Enter</kbd>, and
+            <kbd>Escape</kbd> — every event is written to the log on the right.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    Value="@_value"
+                                    ValueChanged="HandleValueChanged"
+                                    OnChange="HandleOnChange"
+                                    ShowClearButton="true"
+                                    Placeholder="Type to search..."
+                                    @onfocus="@(() => Log("focus", "input"))"
+                                    @onblur="@(() => Log("blur", "input"))" />
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; color:#555;">
+                    Current value: <strong>@(_value?.ToString() ?? "(none)")</strong>
+                    — changes: <strong>@_changeCount</strong>
+                </p>
+
+                <div style="display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="ClearLog">Clear log</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary"
+                                   OnClick="@(() => _value = null)">
+                        Reset value
+                    </SunfishButton>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:340px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — focus the combo and type)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ComboBox", "Events"];
+
+    private int? _value;
+    private int _changeCount;
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void HandleValueChanged(int? value)
+    {
+        _value = value;
+        _changeCount++;
+        Log("ValueChanged", value?.ToString() ?? "(cleared)");
+    }
+
+    private void HandleOnChange(int? value)
+    {
+        Log("OnChange", value?.ToString() ?? "(cleared)");
+    }
+
+    private void Log(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

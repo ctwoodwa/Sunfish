@@ -1,0 +1,129 @@
+@page "/components/forms/multiselect/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MultiSelect / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MultiSelect / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMultiSelect</code> implements the ARIA pattern for a searchable,
+            multi-selectable combobox. The trigger is a container with
+            <code>role="combobox"</code>, <code>aria-haspopup="listbox"</code>, and
+            <code>aria-multiselectable="true"</code>. The popup is a <code>role="listbox"</code> of
+            <code>role="option"</code> items, each tracking <code>aria-selected</code>.
+        </p>
+        <ul>
+            <li><strong>Trigger</strong> — <code>role="combobox"</code>,
+                <code>aria-haspopup="listbox"</code>,
+                <code>aria-multiselectable="true"</code>,
+                <code>aria-expanded</code> reflects popup state.</li>
+            <li><strong>Options</strong> — <code>role="option"</code> with
+                <code>aria-selected="true"</code> for each picked value.</li>
+            <li><strong>Chips</strong> — each selected chip is keyboard-removable; the remove button
+                carries <code>aria-label="Remove {value}"</code>.</li>
+            <li><strong>Keyboard</strong> — <kbd>Arrow Down</kbd> opens / moves highlight,
+                <kbd>Enter</kbd> toggles selection, <kbd>Backspace</kbd> removes the last chip,
+                <kbd>Ctrl</kbd>+<kbd>A</kbd> selects all visible options, <kbd>Esc</kbd> closes.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled multi-select</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab to focus, <kbd>Arrow Down</kbd> to open, <kbd>Enter</kbd> to toggle an
+                    option, <kbd>Backspace</kbd> to remove the last chip,
+                    <kbd>Ctrl</kbd>+<kbd>A</kbd> to select all visible.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Countries</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country" TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_value"
+                                        Filterable="true"
+                                        ShowClearButton="true"
+                                        Placeholder="Type to filter..." />
+                </SunfishField>
+                @if (_value.Count > 0)
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Selected (<strong>@_value.Count</strong>):
+                        <strong>@string.Join(", ", _value)</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="combobox"</code></dt>
+                    <dd>On the trigger container — marks it as an editable combobox surface.</dd>
+
+                    <dt><code>aria-haspopup="listbox"</code></dt>
+                    <dd>Announces that activation opens a listbox popup.</dd>
+
+                    <dt><code>aria-multiselectable="true"</code></dt>
+                    <dd>Tells assistive tech that multiple options can be picked.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd><code>"true"</code> when the popup is open, <code>"false"</code> otherwise.</dd>
+
+                    <dt><code>role="listbox"</code></dt>
+                    <dd>Wraps the popup option list.</dd>
+
+                    <dt><code>role="option"</code> + <code>aria-selected</code></dt>
+                    <dd>On each option, with <code>aria-selected="true"</code> for picked items.</dd>
+
+                    <dt><kbd>Arrow Down</kbd></dt>
+                    <dd>Opens the popup; moves highlight down.</dd>
+
+                    <dt><kbd>Arrow Up</kbd></dt>
+                    <dd>Moves highlight up.</dd>
+
+                    <dt><kbd>Enter</kbd></dt>
+                    <dd>Toggles selection of the highlighted option.</dd>
+
+                    <dt><kbd>Backspace</kbd></dt>
+                    <dd>Removes the last selected chip when the filter input is empty.</dd>
+
+                    <dt><kbd>Ctrl</kbd>+<kbd>A</kbd></dt>
+                    <dd>Selects every currently visible (filtered) option.</dd>
+
+                    <dt><kbd>Esc</kbd></dt>
+                    <dd>Closes the popup without changing selection.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "MultiSelect", "Accessibility"];
+
+    private List<int> _value = new();
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Finland", "FI"),
+        new(7, "Ireland", "IE"),
+        new(8, "Japan", "JP"),
+    };
+}

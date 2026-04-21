@@ -1,0 +1,118 @@
+@page "/components/forms/combobox/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ComboBox / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ComboBox / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ComboBox/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishComboBox</code> follows the ARIA combobox pattern. The trigger field is a
+            native <code>&lt;input&gt;</code> carrying <code>role="combobox"</code>,
+            <code>aria-expanded</code>, and <code>aria-autocomplete="list"</code>. The popup is a
+            <code>role="listbox"</code> of <code>role="option"</code> items, and every option tracks
+            its own <code>aria-selected</code> state.
+        </p>
+        <ul>
+            <li><strong>Combobox input</strong> — <code>role="combobox"</code>,
+                <code>aria-autocomplete="list"</code>, <code>aria-expanded</code>.</li>
+            <li><strong>Options</strong> — <code>role="option"</code> with an
+                <code>aria-selected</code> flag that matches <code>Value</code>.</li>
+            <li><strong>Labelling</strong> — wrap the combobox in a <code>SunfishField</code> /
+                <code>SunfishLabel</code> so the accessible name is programmatic, not visual.</li>
+            <li><strong>Keyboard</strong> — <kbd>Arrow Down</kbd> opens / moves highlight,
+                <kbd>Arrow Up</kbd> moves highlight, <kbd>Enter</kbd> commits,
+                <kbd>Esc</kbd> closes.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled combobox</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab to focus, type to filter, <kbd>Arrow Down</kbd> to open and walk the list,
+                    <kbd>Enter</kbd> to commit. A screen reader announces each option as it gains
+                    the visual highlight.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    @bind-Value="@_value"
+                                    ShowClearButton="true"
+                                    Placeholder="Type to search..." />
+                </SunfishField>
+                @if (_value.HasValue)
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Selected country id: <strong>@_value</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="combobox"</code></dt>
+                    <dd>On the inner <code>&lt;input&gt;</code> — marks the trigger as an editable
+                        combobox.</dd>
+
+                    <dt><code>aria-autocomplete="list"</code></dt>
+                    <dd>Announces that the popup will show a filtered list of suggestions, not an
+                        inline completion.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Toggles between <code>"true"</code> when the list is visible and
+                        <code>"false"</code> when it is not.</dd>
+
+                    <dt><code>role="listbox"</code></dt>
+                    <dd>Wraps the <code>&lt;ul&gt;</code> of options.</dd>
+
+                    <dt><code>role="option"</code></dt>
+                    <dd>On each <code>&lt;li&gt;</code> with <code>aria-selected</code> tracking
+                        the current value.</dd>
+
+                    <dt><kbd>Arrow Down</kbd></dt>
+                    <dd>Opens the popup if closed; moves highlight down otherwise.</dd>
+
+                    <dt><kbd>Arrow Up</kbd></dt>
+                    <dd>Moves highlight up, wrapping to the last option.</dd>
+
+                    <dt><kbd>Enter</kbd></dt>
+                    <dd>Commits the highlighted option and closes the popup.</dd>
+
+                    <dt><kbd>Esc</kbd></dt>
+                    <dd>Closes the popup without committing.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ComboBox", "Accessibility"];
+
+    private int? _value;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

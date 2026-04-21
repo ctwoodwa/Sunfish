@@ -1,0 +1,131 @@
+@page "/components/forms/datepicker/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DatePicker / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DatePicker / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DatePicker/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDatePicker</code> combines a standard text <code>&lt;input&gt;</code> trigger
+            with a popup calendar that announces as a <code>role="dialog"</code>. Every day cell is a
+            native <code>&lt;button&gt;</code> with a full-date <code>aria-label</code>
+            (e.g. &ldquo;April 21, 2026&rdquo;) and an <code>aria-selected</code> flag, so screen
+            readers can distinguish the currently-chosen day from its siblings.
+        </p>
+        <ul>
+            <li><strong>Trigger</strong> — the field is a native text input. Pair it with a
+                <code>SunfishLabel</code> (or a <code>&lt;label for="..."&gt;</code>) to give it a
+                visible and programmatic name.</li>
+            <li><strong>Popup</strong> — renders as <code>role="dialog"</code> with
+                <code>aria-label="Date picker calendar"</code>. Clicking the backdrop dismisses it.</li>
+            <li><strong>Month navigation</strong> — the previous / next buttons have explicit
+                <code>aria-label</code>s (&ldquo;Previous month&rdquo;, &ldquo;Next month&rdquo;).</li>
+            <li><strong>Day cells</strong> — each renders with <code>aria-label</code> carrying the full
+                date and <code>aria-selected="true"</code> on the currently-chosen day. Disabled days
+                carry the native <code>disabled</code> attribute, so assistive tech skips them.</li>
+            <li><strong>Keyboard</strong> — <kbd>Tab</kbd> to focus, <kbd>Enter</kbd> /
+                <kbd>Space</kbd> to open, <kbd>Tab</kbd> through the month navigation and day grid,
+                <kbd>Enter</kbd> to commit, click the backdrop to cancel.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled &amp; keyboard-reachable</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Open DevTools and inspect the input — it is a plain text field whose accessible
+                    name comes from the associated <code>SunfishLabel</code>. Tab to focus, press
+                    <kbd>Enter</kbd> or <kbd>Space</kbd> to open the calendar dialog.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Appointment date</SunfishLabel>
+                    <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" />
+                </SunfishField>
+                @if (_date.HasValue)
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Selected: <strong>@_date.Value.ToString("dddd, MMMM d, yyyy")</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled days announce as unavailable</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Past dates and weekends are set via <code>Min</code> and <code>DisabledDates</code>.
+                    The native <code>disabled</code> attribute on each day button is what lets assistive
+                    technology skip them when navigating with arrow keys or swipe gestures.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Next available weekday</SunfishLabel>
+                    <SunfishDatePicker Value="@_weekdayDate"
+                                       ValueChanged="@(v => _weekdayDate = v)"
+                                       Min="@_today"
+                                       DisabledDates="@_weekends" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="dialog"</code></dt>
+                    <dd>Applied to the popup calendar container with <code>aria-label="Date picker calendar"</code>.</dd>
+
+                    <dt><code>aria-label</code> (day)</dt>
+                    <dd>Full written date on every day button, e.g. <code>"April 21, 2026"</code>.</dd>
+
+                    <dt><code>aria-selected</code></dt>
+                    <dd><code>"true"</code> on the currently selected day, <code>"false"</code> otherwise.</dd>
+
+                    <dt><code>aria-label</code> (nav)</dt>
+                    <dd><code>"Previous month"</code> / <code>"Next month"</code> on the chevron buttons.</dd>
+
+                    <dt><code>disabled</code></dt>
+                    <dd>Native HTML <code>disabled</code> on any day outside <code>Min</code>/<code>Max</code>
+                        or in <code>DisabledDates</code>.</dd>
+
+                    <dt><kbd>Tab</kbd></dt>
+                    <dd>Moves focus into the input, then into the popup once opened.</dd>
+
+                    <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt>
+                    <dd>Opens the calendar from the input; commits the focused day button inside the grid.</dd>
+
+                    <dt>Click outside</dt>
+                    <dd>Closes the popup without committing a selection.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DatePicker", "Accessibility"];
+
+    private DateOnly? _date;
+    private DateOnly? _weekdayDate;
+
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly IReadOnlyList<DateOnly> _weekends = BuildWeekends();
+
+    private static List<DateOnly> BuildWeekends()
+    {
+        var list = new List<DateOnly>();
+        for (var i = 0; i < 90; i++)
+        {
+            var d = _today.AddDays(i);
+            if (d.DayOfWeek == DayOfWeek.Saturday || d.DayOfWeek == DayOfWeek.Sunday)
+                list.Add(d);
+        }
+        return list;
+    }
+}

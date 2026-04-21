@@ -1,0 +1,179 @@
+@page "/components/forms/colorpicker/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ColorPicker / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPicker / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ColorPicker/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPicker</code> exposes a rich set of appearance knobs. The trigger
+            button can vary in <code>Size</code> (<code>sm</code>, <code>md</code>, <code>lg</code>),
+            <code>Rounded</code> corners, and <code>FillMode</code> (solid, flat, outline). The popup
+            supports two views — <code>ColorPickerView.Gradient</code> (HSV canvas + hue slider) and
+            <code>ColorPickerView.Palette</code> (preset swatches) — and the final value is emitted
+            in either <code>ColorFormat.Rgb</code> (default) or <code>ColorFormat.Hex</code>.
+        </p>
+        <p>
+            Action buttons (<code>ShowButtons</code>), the clear control
+            (<code>ShowClearButton</code>), and the preview swatch (<code>ShowPreview</code>) can
+            each be toggled. The examples below walk through every appearance axis.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes</h3>
+                <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_size1" Size="sm" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Size="sm"</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_size2" Size="md" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Size="md" (default)</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_size3" Size="lg" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Size="lg"</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Rounded corners</h3>
+                <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_round1" Rounded="sm" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Rounded="sm"</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_round2" Rounded="md" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Rounded="md"</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_round3" Rounded="full" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Rounded="full"</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Fill modes</h3>
+                <div style="display:flex; gap:1rem; align-items:center; flex-wrap:wrap;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_fill1" FillMode="solid" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">FillMode="solid"</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_fill2" FillMode="flat" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">FillMode="flat"</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_fill3" FillMode="outline" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">FillMode="outline"</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Initial view: Gradient vs. Palette</h3>
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_gradColor" View="ColorPickerView.Gradient" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">
+                            <code>View="ColorPickerView.Gradient"</code>
+                        </p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_paletteColor" View="ColorPickerView.Palette" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">
+                            <code>View="ColorPickerView.Palette"</code>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Value format: Hex vs. Rgb</h3>
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_rgbValue" ValueFormat="ColorFormat.Rgb" />
+                        <p style="margin:.25rem 0 0; font-size:.85rem;">
+                            Value: <code>@(_rgbValue ?? "(none)")</code>
+                        </p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_hexValue" ValueFormat="ColorFormat.Hex" />
+                        <p style="margin:.25rem 0 0; font-size:.85rem;">
+                            Value: <code>@(_hexValue ?? "(none)")</code>
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Popup affordances</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Toggle <code>ShowButtons</code>, <code>ShowClearButton</code>, and
+                    <code>ShowPreview</code> to build a stripped-down or full-featured popup.
+                </p>
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_minimal"
+                                            ShowButtons="false"
+                                            ShowPreview="false"
+                                            ShowClearButton="false" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Minimal (commit-on-pick)</p>
+                    </div>
+                    <div>
+                        <SunfishColorPicker @bind-Value="@_full"
+                                            ShowButtons="true"
+                                            ShowPreview="true"
+                                            ShowClearButton="true" />
+                        <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">Full (Apply + Cancel + Clear + preview)</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled</h3>
+                <SunfishColorPicker Value="#4472c4" Disabled="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorPicker", "Appearance"];
+
+    private string? _size1 = "#4472c4";
+    private string? _size2 = "#e67e22";
+    private string? _size3 = "#27ae60";
+
+    private string? _round1 = "#3498db";
+    private string? _round2 = "#9b59b6";
+    private string? _round3 = "#e74c3c";
+
+    private string? _fill1 = "#16a085";
+    private string? _fill2 = "#f39c12";
+    private string? _fill3 = "#2c3e50";
+
+    private string? _gradColor = "#ff8000";
+    private string? _paletteColor = "#00b050";
+
+    private string? _rgbValue = "rgb(52, 152, 219)";
+    private string? _hexValue = "#8e44ad";
+
+    private string? _minimal = "#c0392b";
+    private string? _full = "#1abc9c";
+}

@@ -1,0 +1,138 @@
+@page "/components/forms/upload/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Upload / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Upload / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Upload/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishUpload</code> layers explicit semantics across the drop-zone, the file
+            queue, the progress indicator, and the per-file action buttons so assistive tech can
+            narrate upload progress and expose each keyboard action.
+        </p>
+        <ul>
+            <li><strong>Root region</strong> — <code>role="region"</code>
+                <code>aria-label="File upload"</code> so the whole drop-zone is discoverable as a
+                landmark.</li>
+            <li><strong>File list</strong> — <code>role="list"</code>
+                <code>aria-label="Upload queue"</code>; each row is
+                <code>role="listitem"</code>.</li>
+            <li><strong>Progress</strong> — <code>role="progressbar"</code> with
+                <code>aria-valuenow</code>, <code>aria-valuemin="0"</code>,
+                <code>aria-valuemax="100"</code>, and an
+                <code>aria-label</code> naming the file and percentage.</li>
+            <li><strong>Live updates</strong> — status messages live inside an
+                <code>aria-live="polite"</code> region so screen readers announce validation and
+                progress changes without stealing focus.</li>
+            <li><strong>Action buttons</strong> — Cancel, Resume, Remove, Retry each carry an
+                explicit <code>aria-label</code> containing the file name.</li>
+            <li><strong>Error messages</strong> — rendered with
+                <code>role="alert"</code> so AT announces invalid files immediately.</li>
+            <li><strong>Toolbar</strong> — the bottom action bar (in
+                <code>AutoUpload="false"</code> mode) is a <code>role="toolbar"</code> with
+                <code>aria-label="Upload actions"</code>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Deferred upload with full controls</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab into the drop-zone, press <kbd>Enter</kbd> or <kbd>Space</kbd> on the
+                    <em>Select files</em> button, then navigate each queue row's action buttons via
+                    <kbd>Tab</kbd>. The toolbar at the bottom carries
+                    <code>role="toolbar"</code>.
+                </p>
+                <SunfishUpload SaveUrl="/api/upload"
+                               AutoUpload="false"
+                               AllowedExtensions="@_allowedExtensions"
+                               MaxFileSize="5_242_880" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Pre-populated queue (each row is a listitem)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    These entries demonstrate the <code>role="list"</code> / <code>role="listitem"</code>
+                    structure; each remove button exposes
+                    <code>aria-label="Remove {file}"</code>.
+                </p>
+                <SunfishUpload SaveUrl="/api/upload" Files="@_initialFiles" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="region"</code> + <code>aria-label="File upload"</code></dt>
+                    <dd>Wraps the whole drop-zone so it appears as a landmark region.</dd>
+
+                    <dt><code>role="list"</code> / <code>role="listitem"</code></dt>
+                    <dd>On the queue <code>&lt;ul&gt;</code> and each file row.</dd>
+
+                    <dt><code>role="progressbar"</code></dt>
+                    <dd>With <code>aria-valuenow</code>, <code>aria-valuemin="0"</code>,
+                        <code>aria-valuemax="100"</code>, and an
+                        <code>aria-label</code> such as
+                        <em>&ldquo;Uploading report.pdf: 42%&rdquo;</em>.</dd>
+
+                    <dt><code>role="alert"</code></dt>
+                    <dd>On per-file validation error messages — announced immediately on invalid
+                        pick.</dd>
+
+                    <dt><code>aria-live="polite"</code></dt>
+                    <dd>Wraps transient status chrome (file size, progress text) for non-intrusive
+                        announcements.</dd>
+
+                    <dt><code>role="toolbar"</code> + <code>aria-label="Upload actions"</code></dt>
+                    <dd>On the bottom action bar in deferred (<code>AutoUpload="false"</code>) mode.</dd>
+
+                    <dt>Per-file button <code>aria-label</code></dt>
+                    <dd>Every action button (<em>Cancel</em>, <em>Resume</em>, <em>Remove</em>,
+                        <em>Retry</em>) includes the target file name in its label.</dd>
+
+                    <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt>
+                    <dd>Activates the focused <em>Select files</em> or per-file action button.</dd>
+
+                    <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt>
+                    <dd>Walks through the drop-zone trigger, the per-file action buttons, and the
+                        toolbar actions.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Upload", "Accessibility"];
+
+    private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".pdf" };
+
+    private readonly List<UploadFileInfo> _initialFiles = new()
+    {
+        new UploadFileInfo
+        {
+            Name = "annual-report.pdf",
+            Size = 2_348_712,
+            Extension = ".pdf",
+            Status = UploadFileStatus.Uploaded,
+            Progress = 100,
+        },
+        new UploadFileInfo
+        {
+            Name = "cover-photo.jpg",
+            Size = 512_000,
+            Extension = ".jpg",
+            Status = UploadFileStatus.Uploaded,
+            Progress = 100,
+        },
+    };
+}

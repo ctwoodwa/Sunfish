@@ -1,0 +1,152 @@
+@page "/components/forms/datepicker/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DatePicker / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DatePicker / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DatePicker/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDatePicker</code> displays a read-only text field with a calendar popup.
+            Visual variations come from three parameter families:
+        </p>
+        <ul>
+            <li><code>Format</code> — any <code>DateOnly</code>-compatible .NET format string
+                (<code>yyyy-MM-dd</code>, <code>dd MMM yyyy</code>, <code>MMM d, yyyy</code>, ...).</li>
+            <li><code>Placeholder</code> — custom prompt text shown when <code>Value</code> is null.</li>
+            <li>State flags — <code>Disabled</code>, <code>ReadOnly</code>, and the
+                <code>Min</code> / <code>Max</code> / <code>DisabledDates</code> triad that greys
+                out individual days in the calendar grid.</li>
+        </ul>
+        <p>
+            The six panels below demonstrate the same <code>DateOnly?</code> value under different
+            configurations. The popup calendar is the same component in every variant — only the
+            trigger field and day-cell states vary.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default</h3>
+                <SunfishField>
+                    <SunfishLabel>Pick a date</SunfishLabel>
+                    <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Format presets</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>ISO (yyyy-MM-dd)</SunfishLabel>
+                        <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" Format="yyyy-MM-dd" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Long (MMM d, yyyy)</SunfishLabel>
+                        <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" Format="MMM d, yyyy" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>European (dd/MM/yyyy)</SunfishLabel>
+                        <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" Format="dd/MM/yyyy" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Full (dddd, MMMM d, yyyy)</SunfishLabel>
+                        <SunfishDatePicker Value="@_date" ValueChanged="@(v => _date = v)" Format="dddd, MMMM d, yyyy" />
+                    </SunfishField>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Placeholder</h3>
+                <SunfishField>
+                    <SunfishLabel>Departure date</SunfishLabel>
+                    <SunfishDatePicker Value="@_placeholderDate"
+                                       ValueChanged="@(v => _placeholderDate = v)"
+                                       Placeholder="Choose your departure..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Range-constrained (Min / Max)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Only dates in the current month are selectable — everything outside
+                    <code>Min</code>/<code>Max</code> is rendered disabled in the calendar grid.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>This month only</SunfishLabel>
+                    <SunfishDatePicker Value="@_bounded"
+                                       ValueChanged="@(v => _bounded = v)"
+                                       Min="@_monthStart"
+                                       Max="@_monthEnd" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled dates (weekends)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>DisabledDates</code> accepts any <code>IEnumerable&lt;DateOnly&gt;</code>;
+                    here every Saturday and Sunday in the next 60 days is filtered out.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Weekdays only</SunfishLabel>
+                    <SunfishDatePicker Value="@_weekdayOnly"
+                                       ValueChanged="@(v => _weekdayOnly = v)"
+                                       DisabledDates="@_weekends"
+                                       Min="@_today"
+                                       Max="@_today.AddDays(60)" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled &amp; read-only</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Disabled</SunfishLabel>
+                        <SunfishDatePicker Value="@_today" Disabled="true" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Read only</SunfishLabel>
+                        <SunfishDatePicker Value="@_today" ReadOnly="true" />
+                    </SunfishField>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DatePicker", "Appearance"];
+
+    private DateOnly? _date;
+    private DateOnly? _placeholderDate;
+    private DateOnly? _bounded;
+    private DateOnly? _weekdayOnly;
+
+    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
+    private static readonly DateOnly _monthStart = new(_today.Year, _today.Month, 1);
+    private static readonly DateOnly _monthEnd =
+        new DateOnly(_today.Year, _today.Month, 1).AddMonths(1).AddDays(-1);
+
+    private static readonly IReadOnlyList<DateOnly> _weekends = BuildWeekends();
+
+    private static List<DateOnly> BuildWeekends()
+    {
+        var list = new List<DateOnly>();
+        for (var i = 0; i < 60; i++)
+        {
+            var d = _today.AddDays(i);
+            if (d.DayOfWeek == DayOfWeek.Saturday || d.DayOfWeek == DayOfWeek.Sunday)
+                list.Add(d);
+        }
+        return list;
+    }
+}

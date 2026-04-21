@@ -1,0 +1,178 @@
+@page "/components/forms/upload/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Upload / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Upload / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Upload/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishUpload</code> exposes a rich callback surface covering the full file
+            life-cycle — select, upload, progress, success, error, remove, cancel, clear, pause, and
+            resume. Every callback carries a <code>Files</code> list so the handler can inspect the
+            affected entries; many also honour <code>IsCancelled</code> to suppress the default
+            action.
+        </p>
+        <ul>
+            <li><code>OnSelect(UploadSelectEventArgs)</code> — fires after files are picked. Cancel
+                to reject.</li>
+            <li><code>OnUpload(UploadEventArgs)</code> — fires before an upload request is sent.
+                Cancel to skip.</li>
+            <li><code>OnProgress(UploadProgressEventArgs)</code> — fires with the current percent
+                during transfer.</li>
+            <li><code>OnSuccess(UploadSuccessEventArgs)</code> / <code>OnError(UploadErrorEventArgs)</code>
+                — fire on HTTP completion.</li>
+            <li><code>OnRemove(UploadEventArgs)</code> — fires when the user removes a file.</li>
+            <li><code>OnCancel</code> / <code>OnClear</code> / <code>OnPause</code> /
+                <code>OnResume</code> — fire on their respective user actions.</li>
+        </ul>
+        <p>
+            The placeholder endpoint <code>/api/upload</code> is not wired — expect
+            <code>OnError</code> callbacks once an upload attempt is made. The event log still
+            demonstrates the full ordering: select → upload → progress → error.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 340px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishUpload SaveUrl="/api/upload"
+                               AutoUpload="false"
+                               AllowedExtensions="@_allowedExtensions"
+                               MaxFileSize="5_242_880"
+                               OnSelect="HandleOnSelect"
+                               OnUpload="HandleOnUpload"
+                               OnProgress="HandleOnProgress"
+                               OnSuccess="HandleOnSuccess"
+                               OnError="HandleOnError"
+                               OnRemove="HandleOnRemove"
+                               OnCancel="HandleOnCancel"
+                               OnClear="HandleOnClear"
+                               OnPause="HandleOnPause"
+                               OnResume="HandleOnResume" />
+
+                <label style="display:flex; gap:.5rem; align-items:center; font-size:.85rem;">
+                    <input type="checkbox" @bind="_blockSelect" />
+                    Cancel <code>OnSelect</code> (files will be rejected)
+                </label>
+
+                <p style="margin:0; font-size:.85rem; color:#555;">
+                    Accepts <code>.png</code>, <code>.jpg</code>, <code>.pdf</code> up to 5&nbsp;MB.
+                    Upload attempts will fail against the placeholder endpoint, surfacing
+                    <code>OnError</code>.
+                </p>
+
+                <SunfishButton Size="ButtonSize.Small" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:420px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — pick a file)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Upload", "Events"];
+
+    private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".pdf" };
+    private bool _blockSelect;
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private static string FileNames(List<UploadFileInfo> files) =>
+        files.Count == 0 ? "(no files)" : string.Join(", ", files.Select(f => f.Name));
+
+    private void HandleOnSelect(UploadSelectEventArgs args)
+    {
+        if (_blockSelect)
+        {
+            args.IsCancelled = true;
+            Log("OnSelect", $"IsCancelled=true — rejected {FileNames(args.Files)}");
+        }
+        else
+        {
+            Log("OnSelect", FileNames(args.Files));
+        }
+    }
+
+    private void HandleOnUpload(UploadEventArgs args)
+    {
+        Log("OnUpload", FileNames(args.Files));
+    }
+
+    private void HandleOnProgress(UploadProgressEventArgs args)
+    {
+        Log("OnProgress", $"{args.Progress}% — {FileNames(args.Files)}");
+    }
+
+    private void HandleOnSuccess(UploadSuccessEventArgs args)
+    {
+        Log("OnSuccess", $"{args.Operation} — {FileNames(args.Files)}");
+    }
+
+    private void HandleOnError(UploadErrorEventArgs args)
+    {
+        Log("OnError", $"{args.Operation} HTTP {args.Request.Status} — {FileNames(args.Files)}");
+    }
+
+    private void HandleOnRemove(UploadEventArgs args)
+    {
+        Log("OnRemove", FileNames(args.Files));
+    }
+
+    private void HandleOnCancel(UploadCancelEventArgs args)
+    {
+        Log("OnCancel", FileNames(args.Files));
+    }
+
+    private void HandleOnClear(UploadClearEventArgs args)
+    {
+        Log("OnClear", FileNames(args.Files));
+    }
+
+    private void HandleOnPause(UploadPauseEventArgs args)
+    {
+        Log("OnPause", FileNames(args.Files));
+    }
+
+    private void HandleOnResume(UploadResumeEventArgs args)
+    {
+        Log("OnResume", FileNames(args.Files));
+    }
+
+    private void Log(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

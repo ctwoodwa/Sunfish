@@ -1,0 +1,190 @@
+@page "/components/forms/multiselect/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MultiSelect / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MultiSelect / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMultiSelect</code> lets users pick zero or more values from a
+            <code>role="listbox"</code> popup. Selected values are rendered as removable chips inside
+            the trigger. The visible surface is driven by:
+        </p>
+        <ul>
+            <li><code>TagMode</code> — <code>Multiple</code> shows one chip per selection,
+                <code>Single</code> collapses picks into a summary chip once past
+                <code>MaxVisibleTags</code>.</li>
+            <li><code>MaxVisibleTags</code> — threshold for switching into summary-chip mode.</li>
+            <li><code>Filterable</code> + <code>FilterOperator</code> — enables the inline search
+                field and controls match strategy (<code>StartsWith</code> default,
+                <code>Contains</code>, <code>EndsWith</code>).</li>
+            <li><code>ShowClearButton</code> / <code>ShowArrowButton</code> — toggle the inline
+                affordances.</li>
+            <li><code>AllowCustom</code> — accept free-form tags that are not in <code>Data</code>.</li>
+            <li><code>ItemTemplate</code> / <code>TagTemplate</code> — custom markup for popup options
+                and individual chips.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default</h3>
+                <SunfishField>
+                    <SunfishLabel>Countries</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country" TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_basic"
+                                        Placeholder="Pick one or more..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Filterable (Contains)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Open the popup and type to filter by substring.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Countries</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country" TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_filterable"
+                                        Filterable="true"
+                                        FilterOperator="ComboBoxFilterMode.Contains"
+                                        Placeholder="Type 'land'..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Summary-tag mode</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    With <code>TagMode="MultiSelectTagMode.Single"</code> and
+                    <code>MaxVisibleTags="2"</code>, picks past the threshold collapse into a
+                    summary chip like <em>&ldquo;+3 more&rdquo;</em>.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Countries</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country" TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_summary"
+                                        TagMode="MultiSelectTagMode.Single"
+                                        MaxVisibleTags="2"
+                                        Placeholder="Pick several..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Clear &amp; arrow affordances</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>With clear button</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries"
+                                            TextField="Name" ValueField="Id"
+                                            @bind-Value="@_clearable"
+                                            ShowClearButton="true"
+                                            Placeholder="Pick several..." />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>No arrow button</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries"
+                                            TextField="Name" ValueField="Id"
+                                            @bind-Value="@_noArrow"
+                                            ShowArrowButton="false"
+                                            Placeholder="Click to open..." />
+                    </SunfishField>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom item template</h3>
+                <SunfishField>
+                    <SunfishLabel>Countries with flag codes</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country" TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_templated"
+                                        Placeholder="Pick several...">
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                    </SunfishMultiSelect>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">State flags</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Disabled</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries" TextField="Name" ValueField="Id"
+                                            Value="@_preselected" Disabled="true"
+                                            Placeholder="Disabled" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Read only</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries" TextField="Name" ValueField="Id"
+                                            Value="@_preselected" ReadOnly="true"
+                                            Placeholder="Read only" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Invalid</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries" TextField="Name" ValueField="Id"
+                                            @bind-Value="@_invalid"
+                                            IsInvalid="true"
+                                            Placeholder="Required" />
+                    </SunfishField>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "MultiSelect", "Appearance"];
+
+    private List<int> _basic = new();
+    private List<int> _filterable = new();
+    private List<int> _summary = new();
+    private List<int> _clearable = new();
+    private List<int> _noArrow = new();
+    private List<int> _templated = new();
+    private List<int> _invalid = new();
+
+    private readonly List<int> _preselected = new() { 2, 4 };
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Finland", "FI"),
+        new(7, "Ireland", "IE"),
+        new(8, "Iceland", "IS"),
+        new(9, "New Zealand", "NZ"),
+        new(10, "Japan", "JP"),
+    };
+}

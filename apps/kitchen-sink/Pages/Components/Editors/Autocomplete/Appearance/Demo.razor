@@ -1,0 +1,187 @@
+@page "/components/forms/autocomplete/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
+
+<PageTitle>Autocomplete / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Autocomplete / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAutocomplete</code> is a text input with a filtering suggestion popup. The
+            user types freely; the popup lists matching items from <code>Items</code> (flat strings)
+            or <code>Data</code> + <code>TextField</code> (typed objects). The committed value is
+            always the string that ends up in the input, so it plays nicely with free-form entry.
+        </p>
+        <ul>
+            <li><code>FilterOperator</code> — <code>Contains</code> (default),
+                <code>StartsWith</code>, <code>EndsWith</code>, <code>Equals</code>,
+                <code>NotEquals</code>.</li>
+            <li><code>MinLength</code> — number of characters before suggestions appear
+                (default <code>1</code>).</li>
+            <li><code>DebounceDelay</code> — milliseconds to debounce the filter between keystrokes.</li>
+            <li><code>ShowClearButton</code> — exposes an inline reset affordance.</li>
+            <li><code>ItemTemplate</code>, <code>HeaderTemplate</code>, <code>FooterTemplate</code>
+                — custom markup for options, header, and footer slots.</li>
+            <li>State flags — <code>Disabled</code>, <code>ReadOnly</code>, <code>IsInvalid</code>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default (string suggestions)</h3>
+                <SunfishField>
+                    <SunfishLabel>City</SunfishLabel>
+                    <SunfishAutocomplete TItem="string"
+                                         Items="@_cities"
+                                         @bind-Value="@_basic"
+                                         Placeholder="Type a city..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Filter operators</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Contains (default)</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             @bind-Value="@_filterContains"
+                                             FilterOperator="FilterOperator.Contains"
+                                             Placeholder="Try 'ork'" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>StartsWith</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             @bind-Value="@_filterStarts"
+                                             FilterOperator="FilterOperator.StartsWith"
+                                             Placeholder="Try 'new'" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>EndsWith</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             @bind-Value="@_filterEnds"
+                                             FilterOperator="FilterOperator.EndsWith"
+                                             Placeholder="Try 'on'" />
+                    </SunfishField>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">MinLength &amp; Debounce</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Suggestions appear only after <code>MinLength="2"</code> characters; the filter is
+                    debounced by <code>300ms</code> to limit work on fast-typing users.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>City</SunfishLabel>
+                    <SunfishAutocomplete TItem="string" Items="@_cities"
+                                         @bind-Value="@_debounced"
+                                         MinLength="2"
+                                         DebounceDelay="300"
+                                         Placeholder="Type at least 2 chars..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Typed data + custom template</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Using <code>Data</code> + <code>TextField</code> lets each option be a typed
+                    object; <code>ItemTemplate</code> renders the option markup.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishAutocomplete TItem="Country"
+                                         Data="@_countries"
+                                         TextField="Name"
+                                         @bind-Value="@_templated"
+                                         Placeholder="Pick a country...">
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                    </SunfishAutocomplete>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Clear button</h3>
+                <SunfishField>
+                    <SunfishLabel>With clear affordance</SunfishLabel>
+                    <SunfishAutocomplete TItem="string" Items="@_cities"
+                                         @bind-Value="@_clearable"
+                                         ShowClearButton="true"
+                                         Placeholder="Type then clear..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">State flags</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Disabled</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             Value="London" Disabled="true" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Read only</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             Value="Paris" ReadOnly="true" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Invalid</SunfishLabel>
+                        <SunfishAutocomplete TItem="string" Items="@_cities"
+                                             @bind-Value="@_invalid"
+                                             IsInvalid="true"
+                                             Placeholder="Required" />
+                    </SunfishField>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Autocomplete", "Appearance"];
+
+    private string _basic = string.Empty;
+    private string _filterContains = string.Empty;
+    private string _filterStarts = string.Empty;
+    private string _filterEnds = string.Empty;
+    private string _debounced = string.Empty;
+    private string _templated = string.Empty;
+    private string _clearable = string.Empty;
+    private string _invalid = string.Empty;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<string> _cities = new()
+    {
+        "New York", "New Orleans", "Newark",
+        "London", "Liverpool", "Leeds",
+        "Paris", "Lyon", "Marseille",
+        "Tokyo", "Osaka", "Kyoto",
+        "Boston", "Washington", "Austin", "Houston",
+        "Dublin", "Cork", "Galway",
+    };
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}
