@@ -42,6 +42,17 @@ Default to one public type per file. Small related types (an enum and its associ
 
 Inside a namespace / above file-scoped namespace: `System.*` first, then `Microsoft.*`, then third-party, then `Sunfish.*`, each group alphabetical. Implicit usings handle the common `System.*` cases so individual files usually don't need them. When the compiler complains about an ambiguous reference, disambiguate with a using, not a fully-qualified type name.
 
+## Identifier conventions
+
+- **PascalCase** types, methods, properties, events, constants.
+- **camelCase** parameters, locals, private fields. The `_` prefix on instance fields is optional; existing code mixes, prefer no prefix in new code.
+- **`I`-prefix** on interfaces. (Repeated from *Interfaces* below because reviewers reach for this rule first.)
+- **Enums as single-concept nouns** (`BundleCategory`, `TenantStatus`, `DeploymentMode`), not verbs or adjectives.
+- **Extension-method static classes** named `<ConsumerType>Extensions` (e.g. `BundleCatalogExtensions`, `ServiceCollectionExtensions`).
+- **DI sugar** named `AddSunfish<Concept>` — see §*Dependency injection* below.
+
+For package, namespace, bundle-key, and other cross-cutting *name shapes*, see [naming.md](../product/naming.md). This section covers *intra-file* identifier casing and suffixes only.
+
 ## Nullable reference types
 
 Fully adopted. Rules:
