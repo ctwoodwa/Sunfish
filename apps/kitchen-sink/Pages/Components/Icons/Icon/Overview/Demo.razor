@@ -1,0 +1,67 @@
+@page "/components/icons/icon/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Icon / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Icon / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishIcon</code> renders a named or custom icon through the configured
+            <code>ISunfishIconProvider</code> (Tabler, Legacy sprite, FluentUI, Bootstrap, or Material).
+            Icons accept a <code>Name</code> lookup, an <code>Icon</code> render fragment, or custom
+            <code>ChildContent</code> SVG markup, and expose <code>Size</code>, <code>Flip</code>,
+            <code>ThemeColor</code>, and <code>AriaLabel</code> for accessible decoration.
+        </p>
+        <p>
+            This overview shows the canonical configurations. A separate
+            <a href="/components/icons/icon/svgicon">svg icon</a> demo covers custom SVG content and
+            render-fragment usage.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="display:flex; gap:1rem; align-items:center;">
+                <SunfishIcon Name="home" AriaLabel="Home" />
+                <SunfishIcon Name="search" AriaLabel="Search" />
+                <SunfishIcon Name="user" AriaLabel="User" />
+                <SunfishIcon Name="check" AriaLabel="Check" />
+                <SunfishIcon Name="star-filled" AriaLabel="Favorite" />
+                <SunfishIcon Name="settings" AriaLabel="Settings" />
+            </div>
+
+            <div class="demo-row" style="display:flex; gap:1rem; align-items:center;">
+                <SunfishIcon Name="star-filled" Size="IconSize.Small" AriaLabel="Small" />
+                <SunfishIcon Name="star-filled" Size="IconSize.Medium" AriaLabel="Medium" />
+                <SunfishIcon Name="star-filled" Size="IconSize.Large" AriaLabel="Large" />
+                <SunfishIcon Name="star-filled" Size="IconSize.ExtraLarge" AriaLabel="Extra large" />
+            </div>
+
+            <div class="demo-row" style="display:flex; gap:1rem; align-items:center;">
+                <SunfishIcon Name="check" ThemeColor="IconThemeColor.Primary" AriaLabel="Primary" />
+                <SunfishIcon Name="check" ThemeColor="IconThemeColor.Success" AriaLabel="Success" />
+                <SunfishIcon Name="check" ThemeColor="IconThemeColor.Warning" AriaLabel="Warning" />
+                <SunfishIcon Name="check" ThemeColor="IconThemeColor.Danger" AriaLabel="Danger" />
+                <SunfishIcon Name="check" ThemeColor="IconThemeColor.Info" AriaLabel="Info" />
+            </div>
+
+            <div class="demo-row" style="display:flex; gap:1rem; align-items:center;">
+                <SunfishIcon Name="chevron-down" Flip="IconFlip.None" AriaLabel="Chevron (no flip)" />
+                <SunfishIcon Name="chevron-down" Flip="IconFlip.Horizontal" AriaLabel="Chevron flipped horizontally" />
+                <SunfishIcon Name="chevron-down" Flip="IconFlip.Vertical" AriaLabel="Chevron flipped vertically" />
+                <SunfishIcon Name="chevron-down" Flip="IconFlip.Both" AriaLabel="Chevron flipped both" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Icons", "Icon", "Overview"];
+}
