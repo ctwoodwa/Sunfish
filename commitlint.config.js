@@ -4,7 +4,7 @@ export default {
     'type-enum': [2, 'always',
       ['feat', 'fix', 'docs', 'style', 'refactor', 'perf',
        'test', 'build', 'ci', 'chore', 'revert']],
-    'scope-enum': [2, 'always',
+    'scope-enum': [1, 'always',
       ['foundation', 'foundation-catalog', 'foundation-multitenancy',
        'foundation-featuremanagement', 'foundation-localfirst',
        'foundation-integrations', 'ui-core', 'ui-adapters-blazor',
