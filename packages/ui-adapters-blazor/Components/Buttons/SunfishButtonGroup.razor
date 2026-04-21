@@ -9,21 +9,3 @@
         @ChildContent
     </CascadingValue>
 </div>
-
-@code {
-    /// <summary>Selection mode for toggle buttons in the group.</summary>
-    [Parameter] public GridSelectionMode SelectionMode { get; set; } = GridSelectionMode.None;
-
-    /// <summary>Whether all buttons in the group are enabled.</summary>
-    [Parameter] public bool Enabled { get; set; } = true;
-
-    /// <summary>Width of the button group container.</summary>
-    [Parameter] public string? Width { get; set; }
-
-    /// <summary>Fires when the selection changes.</summary>
-    [Parameter] public EventCallback<int> SelectedChanged { get; set; }
-
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-
-    private string? WidthStyle => Width != null ? $"width:{Width};" : null;
-}

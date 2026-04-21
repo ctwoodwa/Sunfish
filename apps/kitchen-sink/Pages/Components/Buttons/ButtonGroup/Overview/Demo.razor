@@ -11,38 +11,85 @@
 
     <Narrative>
         <p>
-            <code>SunfishButtonGroup</code> combines related <code>SunfishButton</code> instances into a single
-            visual unit, making it clear that the actions belong together. Children are projected through a
-            cascading parameter so the group can coordinate layout and state across the set.
+            <code>SunfishButtonGroup</code> combines related actions into one visual unit. Children
+            declare themselves with the spec-aligned child tags
+            <code>&lt;ButtonGroupButton&gt;</code> (no selection state) and
+            <code>&lt;ButtonGroupToggleButton&gt;</code> (<code>@@bind-Selected</code>-capable).
+            The parent coordinates selection across toggle children based on
+            <code>SelectionMode</code>.
         </p>
         <p>
-            Primary parameters: <code>SelectionMode</code> for optional toggle selection,
-            <code>Enabled</code> to disable the entire group, <code>Width</code> to constrain the container,
-            and <code>SelectedChanged</code> to observe selection. See sibling demos for
-            <a href="/components/buttons/buttongroup/appearance">appearance</a>,
-            <a href="/components/buttons/buttongroup/selection">selection</a>,
+            Primary parameters: <code>SelectionMode</code>
+            (<code>ButtonGroupSelectionMode.None</code> / <code>Single</code> /
+            <code>Multiple</code>; <code>Single</code> is the default),
+            <code>Enabled</code> (disables every child),
+            <code>Width</code> (constrains the container), plus the
+            <code>SelectedIndex</code> / <code>SelectedIndexes</code> two-way bindings. See sibling
+            demos for <a href="/components/buttons/buttongroup/appearance">appearance</a>,
             <a href="/components/buttons/buttongroup/events">events</a>, and
-            <a href="/components/buttons/buttongroup/keyboard-navigation">keyboard navigation</a>.
+            <a href="/components/buttons/buttongroup/accessibility">accessibility</a>.
         </p>
     </Narrative>
 
     <Example>
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
-            <div class="demo-row">
-                <SunfishButtonGroup>
-                    <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Secondary">Center</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
-                </SunfishButtonGroup>
-            </div>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
 
-            <div class="demo-row">
+            <section>
+                <h3 style="margin:0 0 .5rem;">Regular buttons (no selection)</h3>
                 <SunfishButtonGroup>
-                    <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                    <ButtonGroupButton OnClick="@(_ => _lastAction = "Left")">Left</ButtonGroupButton>
+                    <ButtonGroupButton OnClick="@(_ => _lastAction = "Center")">Center</ButtonGroupButton>
+                    <ButtonGroupButton OnClick="@(_ => _lastAction = "Right")">Right</ButtonGroupButton>
                 </SunfishButtonGroup>
-            </div>
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    Last action: <strong>@_lastAction</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Single selection (radio-like)</h3>
+                <SunfishButtonGroup SelectionMode="ButtonGroupSelectionMode.Single">
+                    <ButtonGroupToggleButton @bind-Selected="_sortAsc">Ascending</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton @bind-Selected="_sortDesc">Descending</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton @bind-Selected="_sortCustom">Custom</ButtonGroupToggleButton>
+                </SunfishButtonGroup>
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    Selected: Ascending=<strong>@_sortAsc</strong>,
+                    Descending=<strong>@_sortDesc</strong>,
+                    Custom=<strong>@_sortCustom</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Multiple selection (checkbox-like)</h3>
+                <SunfishButtonGroup SelectionMode="ButtonGroupSelectionMode.Multiple">
+                    <ButtonGroupToggleButton @bind-Selected="_bold">Bold</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton @bind-Selected="_italic">Italic</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton @bind-Selected="_underline">Underline</ButtonGroupToggleButton>
+                </SunfishButtonGroup>
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    Active: @_activeFormats
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Mixed regular + toggle, with disabled and hidden entries</h3>
+                <SunfishButtonGroup SelectionMode="ButtonGroupSelectionMode.Single">
+                    <ButtonGroupButton OnClick="@(_ => _lastAction = "Reset")">Reset</ButtonGroupButton>
+                    <ButtonGroupToggleButton @bind-Selected="_viewList">List</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton @bind-Selected="_viewGrid">Grid</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton Enabled="false">Map (disabled)</ButtonGroupToggleButton>
+                    <ButtonGroupToggleButton Visible="@_showKanban" @bind-Selected="_viewKanban">Kanban</ButtonGroupToggleButton>
+                </SunfishButtonGroup>
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    <label>
+                        <input type="checkbox" checked="@_showKanban"
+                               @onchange="@(e => _showKanban = (bool)(e.Value ?? false))" />
+                        Show Kanban option
+                    </label>
+                </p>
+            </section>
+
         </div>
     </Example>
 
@@ -51,4 +98,32 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "Buttons", "ButtonGroup", "Overview"];
+
+    private string _lastAction = "(none)";
+
+    private bool _sortAsc;
+    private bool _sortDesc = true;
+    private bool _sortCustom;
+
+    private bool _bold;
+    private bool _italic = true;
+    private bool _underline;
+
+    private bool _viewList = true;
+    private bool _viewGrid;
+    private bool _viewKanban;
+
+    private bool _showKanban = true;
+
+    private string _activeFormats
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (_bold) parts.Add("Bold");
+            if (_italic) parts.Add("Italic");
+            if (_underline) parts.Add("Underline");
+            return parts.Count == 0 ? "(none)" : string.Join(", ", parts);
+        }
+    }
 }
