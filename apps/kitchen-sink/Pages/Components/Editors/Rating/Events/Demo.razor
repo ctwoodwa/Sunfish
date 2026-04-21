@@ -68,7 +68,7 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "Rating", "Events"];
 
-    private int _value;
+    private double _value;
     private int _changeCount;
     private readonly List<string> _log = new();
 
@@ -79,7 +79,7 @@
         if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
     }
 
-    private void HandleValueChanged(int v)
+    private void HandleValueChanged(double v)
     {
         var old = _value;
         _value = v;

@@ -5,14 +5,13 @@
 @inject ILogger<TelerikDatePicker> Logger
 
 @*
-    Divergence: Telerik's DatePicker works with DateTime?; Sunfish's SunfishDatePicker
-    uses DateOnly?. The wrapper converts between them so existing Telerik-shaped consumer
-    code (DateTime?) keeps compiling.
+    Telerik and Sunfish both now use DateTime? for DatePicker.Value — the wrapper
+    forwards parameters verbatim.
 *@
-<SunfishDatePicker Value="_valueDateOnly"
-                   ValueChanged="OnSunfishValueChanged"
-                   Min="_minDateOnly"
-                   Max="_maxDateOnly"
+<SunfishDatePicker Value="Value"
+                   ValueChanged="ValueChanged"
+                   Min="Min"
+                   Max="Max"
                    Format="Format"
                    Enabled="Enabled"
                    @attributes="AdditionalAttributes" />
@@ -27,21 +26,4 @@
 
     [Parameter(CaptureUnmatchedValues = true)]
     public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-
-    private DateOnly? _valueDateOnly;
-    private DateOnly? _minDateOnly;
-    private DateOnly? _maxDateOnly;
-
-    protected override void OnParametersSet()
-    {
-        _valueDateOnly = Value is { } v ? DateOnly.FromDateTime(v) : null;
-        _minDateOnly = Min is { } mi ? DateOnly.FromDateTime(mi) : null;
-        _maxDateOnly = Max is { } ma ? DateOnly.FromDateTime(ma) : null;
-    }
-
-    private async Task OnSunfishValueChanged(DateOnly? d)
-    {
-        Value = d?.ToDateTime(TimeOnly.MinValue);
-        await ValueChanged.InvokeAsync(Value);
-    }
 }

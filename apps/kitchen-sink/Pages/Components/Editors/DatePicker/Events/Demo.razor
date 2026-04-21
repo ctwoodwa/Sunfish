@@ -83,13 +83,13 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "DatePicker", "Events"];
 
-    private DateOnly? _date;
+    private DateTime? _date;
     private int _changeCount;
 
     private record LogEntry(DateTime Timestamp, string Event, string Detail);
     private readonly List<LogEntry> _log = new();
 
-    private void HandleValueChanged(DateOnly? newValue)
+    private void HandleValueChanged(DateTime? newValue)
     {
         _date = newValue;
         _changeCount++;

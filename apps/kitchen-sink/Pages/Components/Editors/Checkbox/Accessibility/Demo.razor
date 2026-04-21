@@ -18,7 +18,7 @@
         </p>
         <p>
             The component also sets <code>aria-checked</code> to <code>"true"</code>,
-            <code>"false"</code>, or <code>"mixed"</code> depending on <code>Checked</code> and
+            <code>"false"</code>, or <code>"mixed"</code> depending on <code>Value</code> and
             <code>Indeterminate</code>. Additional ARIA (describedby, required) pass through via
             <code>AdditionalAttributes</code>.
         </p>
@@ -55,15 +55,15 @@
                     or <code>"mixed"</code>.
                 </p>
                 <div style="display:flex; flex-direction:column; gap:.35rem;">
-                    <SunfishCheckbox Checked="false" Label='aria-checked="false"' />
-                    <SunfishCheckbox Checked="true"  Label='aria-checked="true"' />
+                    <SunfishCheckbox Value="false" Label='aria-checked="false"' />
+                    <SunfishCheckbox Value="true"  Label='aria-checked="true"' />
                     <SunfishCheckbox Indeterminate="true" Label='aria-checked="mixed"' />
                 </div>
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem;">Required + described-by</h3>
-                <SunfishCheckbox @bind-Checked="_terms"
+                <SunfishCheckbox @bind-Value="_terms"
                                  Label="I accept the terms of service"
                                  aria-required="true"
                                  aria-describedby="terms-hint" />
@@ -74,7 +74,7 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem;">Invalid state announced</h3>
-                <SunfishCheckbox Checked="false"
+                <SunfishCheckbox Value="false"
                                  Label="I accept (required)"
                                  aria-invalid="true"
                                  aria-describedby="tos-error" />
@@ -85,7 +85,7 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
-                <SunfishCheckbox Checked="true" Enabled="false" Label="Admin access (locked)" />
+                <SunfishCheckbox Value="true" Enabled="false" Label="Admin access (locked)" />
             </section>
 
         </div>

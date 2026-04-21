@@ -13,7 +13,7 @@
         <p>
             <code>SunfishRating</code> captures a scalar rating as a row of star icons. Set the total stars
             with <code>Max</code>, two-way bind the chosen value with <code>@@bind-Value</code>, and label the
-            control for assistive technology with <code>Label</code>. Use <code>IsReadOnly</code> to display
+            control for assistive technology with <code>Label</code>. Use <code>ReadOnly</code> to display
             a value without allowing interaction.
         </p>
         <p>
@@ -35,5 +35,5 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "Rating", "Overview"];
 
-    private int _rating = 3;
+    private double _rating = 3;
 }

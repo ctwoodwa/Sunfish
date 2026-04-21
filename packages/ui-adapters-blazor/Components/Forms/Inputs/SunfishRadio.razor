@@ -1,3 +1,4 @@
+@typeparam TValue
 @inherits SunfishComponentBase
 
 <label class="@CombineClasses(CssProvider.RadioClass(IsChecked))" style="@CombineStyles()" @attributes="AdditionalAttributes">
@@ -18,25 +19,25 @@
 </label>
 
 @code {
-    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public TValue? Value { get; set; }
     [Parameter] public string Name { get; set; } = string.Empty;
     [Parameter] public bool IsSelected { get; set; }
     [Parameter] public string? Label { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
 
-    [CascadingParameter] public SunfishRadioGroup? RadioGroup { get; set; }
+    [CascadingParameter] public SunfishRadioGroup<TValue>? RadioGroup { get; set; }
 
     private string ResolvedName => RadioGroup?.Name ?? Name;
     private bool ResolvedEnabled => RadioGroup?.Enabled ?? Enabled;
     private bool IsChecked => RadioGroup is not null
-        ? string.Equals(RadioGroup.Value, Value, StringComparison.Ordinal)
+        ? (Value is not null && RadioGroup.IsSelected(Value))
         : IsSelected;
 
     private async Task OnSelectionChanged(ChangeEventArgs e)
     {
-        if (RadioGroup is not null)
+        if (RadioGroup is not null && Value is not null)
         {
             await RadioGroup.SelectValue(Value);
         }

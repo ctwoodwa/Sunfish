@@ -11,7 +11,7 @@
         var isFilled = starIndex <= Value;
         var iconName = isFilled ? "star-filled" : "star";
 
-        if (IsReadOnly || !Enabled)
+        if (ReadOnly || !Enabled)
         {
             <span class="sf-rating__star @(isFilled ? "mar-rating__star--filled" : "")"
                   aria-label="@starIndex of @Max stars">
@@ -31,10 +31,17 @@
 </div>
 
 @code {
-    [Parameter] public int Value { get; set; }
-    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    /// <summary>The current rating value. Supports fractional values (e.g. 3.5) for half-star precision.</summary>
+    [Parameter] public double Value { get; set; }
+
+    /// <summary>Fires when the rating value changes. Powers <c>@@bind-Value</c>.</summary>
+    [Parameter] public EventCallback<double> ValueChanged { get; set; }
+
     [Parameter] public int Max { get; set; } = 5;
-    [Parameter] public bool IsReadOnly { get; set; }
+
+    /// <summary>When true, the rating is displayed without allowing interaction.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
     [Parameter] public bool Enabled { get; set; } = true;
     [Parameter] public string? Label { get; set; }
 
@@ -43,13 +50,13 @@
         get
         {
             var cls = CssProvider.RatingClass();
-            if (IsReadOnly) cls += " mar-rating--readonly";
+            if (ReadOnly) cls += " mar-rating--readonly";
             if (!Enabled) cls += " mar-rating--disabled";
             return cls;
         }
     }
 
-    private async Task SetRating(int rating)
+    private async Task SetRating(double rating)
     {
         Value = rating;
         await ValueChanged.InvokeAsync(Value);

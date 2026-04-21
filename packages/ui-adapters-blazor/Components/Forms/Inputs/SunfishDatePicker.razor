@@ -48,8 +48,8 @@
                     @foreach (var day in GetCalendarDays())
                     {
                         var isDisabled = IsDayDisabled(day.Date);
-                        var isToday = day.Date == DateOnly.FromDateTime(DateTime.Today);
-                        var isSelected = Value.HasValue && day.Date == Value.Value;
+                        var isToday = day.Date == DateTime.Today;
+                        var isSelected = Value.HasValue && day.Date == Value.Value.Date;
                         var isOutsideMonth = day.Date.Month != _displayMonth.Month || day.Date.Year != _displayMonth.Year;
                         <button type="button"
                                 class="sf-calendar__day @(isToday ? "mar-calendar__day--today" : "") @(isSelected ? "mar-calendar__day--selected" : "") @(isDisabled ? "mar-calendar__day--disabled" : "") @(isOutsideMonth ? "mar-calendar__day--outside" : "")"
@@ -67,17 +67,21 @@
 </div>
 
 @code {
-    [Parameter] public DateOnly? Value { get; set; }
-    [Parameter] public EventCallback<DateOnly?> ValueChanged { get; set; }
+    /// <summary>The selected date value. Supports two-way binding via <c>@@bind-Value</c>.</summary>
+    [Parameter] public DateTime? Value { get; set; }
+
+    /// <summary>Fires when the selected date changes. Powers <c>@@bind-Value</c>.</summary>
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+
     [Parameter] public string? Placeholder { get; set; }
-    [Parameter] public DateOnly? Min { get; set; }
-    [Parameter] public DateOnly? Max { get; set; }
+    [Parameter] public DateTime? Min { get; set; }
+    [Parameter] public DateTime? Max { get; set; }
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
     [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public bool ShowClearButton { get; set; }
     [Parameter] public bool ShowWeekNumbers { get; set; }
-    [Parameter] public IEnumerable<DateOnly>? DisabledDates { get; set; }
+    [Parameter] public IEnumerable<DateTime>? DisabledDates { get; set; }
     [Parameter] public string Format { get; set; } = "yyyy-MM-dd";
 
     /// <summary>
@@ -88,16 +92,15 @@
     [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
 
     private bool _isCalendarOpen;
-    private DateOnly _displayMonth;
+    private DateTime _displayMonth;
     private bool _isAdaptive => AdaptiveMode == Sunfish.Foundation.Enums.AdaptiveMode.Auto;
 
     private static readonly string[] _dayHeaders = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
     protected override void OnInitialized()
     {
-        _displayMonth = Value ?? DateOnly.FromDateTime(DateTime.Today);
-        // Normalize to first of month
-        _displayMonth = new DateOnly(_displayMonth.Year, _displayMonth.Month, 1);
+        var reference = Value?.Date ?? DateTime.Today;
+        _displayMonth = new DateTime(reference.Year, reference.Month, 1);
     }
 
     private string? FormatValue() => Value?.ToString(Format);
@@ -106,8 +109,8 @@
     {
         if (Disabled) return;
         // Reset display month to the selected value or today
-        var reference = Value ?? DateOnly.FromDateTime(DateTime.Today);
-        _displayMonth = new DateOnly(reference.Year, reference.Month, 1);
+        var reference = Value?.Date ?? DateTime.Today;
+        _displayMonth = new DateTime(reference.Year, reference.Month, 1);
         _isCalendarOpen = true;
     }
 
@@ -126,12 +129,12 @@
         _displayMonth = _displayMonth.AddMonths(1);
     }
 
-    private record struct CalendarDay(DateOnly Date);
+    private record struct CalendarDay(DateTime Date);
 
     private List<CalendarDay> GetCalendarDays()
     {
         var days = new List<CalendarDay>();
-        var firstOfMonth = new DateOnly(_displayMonth.Year, _displayMonth.Month, 1);
+        var firstOfMonth = new DateTime(_displayMonth.Year, _displayMonth.Month, 1);
         var daysInMonth = DateTime.DaysInMonth(_displayMonth.Year, _displayMonth.Month);
 
         // Day of week offset (Sunday = 0)
@@ -146,7 +149,7 @@
         // Current month days
         for (var d = 1; d <= daysInMonth; d++)
         {
-            days.Add(new CalendarDay(new DateOnly(_displayMonth.Year, _displayMonth.Month, d)));
+            days.Add(new CalendarDay(new DateTime(_displayMonth.Year, _displayMonth.Month, d)));
         }
 
         // Fill to complete the last week (up to 42 cells for 6 rows)
@@ -158,15 +161,15 @@
         return days;
     }
 
-    private bool IsDayDisabled(DateOnly date)
+    private bool IsDayDisabled(DateTime date)
     {
-        if (Min.HasValue && date < Min.Value) return true;
-        if (Max.HasValue && date > Max.Value) return true;
-        if (DisabledDates != null && DisabledDates.Contains(date)) return true;
+        if (Min.HasValue && date < Min.Value.Date) return true;
+        if (Max.HasValue && date > Max.Value.Date) return true;
+        if (DisabledDates != null && DisabledDates.Any(d => d.Date == date)) return true;
         return false;
     }
 
-    private async Task SelectDay(DateOnly date, bool isDisabled)
+    private async Task SelectDay(DateTime date, bool isDisabled)
     {
         if (isDisabled) return;
         Value = date;

@@ -14,7 +14,7 @@
             <code>SunfishRating</code> renders a container with <code>role="radiogroup"</code> and
             <code>aria-label</code> sourced from the <code>Label</code> parameter. Each star is a
             <code>&lt;button&gt;</code> (or a <code>&lt;span&gt;</code> when
-            <code>IsReadOnly="true"</code>) with an <code>aria-label</code> of the form
+            <code>ReadOnly="true"</code>) with an <code>aria-label</code> of the form
             <em>"N of Max stars"</em>, so screen readers always announce both the current position and
             the maximum.
         </p>
@@ -74,10 +74,10 @@
             <section>
                 <h3 style="margin:0 0 .5rem;">Read-only (stars rendered as &lt;span&gt;)</h3>
                 <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
-                    When <code>IsReadOnly="true"</code>, each star is a non-focusable
+                    When <code>ReadOnly="true"</code>, each star is a non-focusable
                     <code>&lt;span&gt;</code> — AT announces it but cannot activate it.
                 </p>
-                <SunfishRating Value="4" Max="5" IsReadOnly="true" Label="Displayed score" />
+                <SunfishRating Value="4" Max="5" ReadOnly="true" Label="Displayed score" />
             </section>
 
             <section>
@@ -94,8 +94,8 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "Rating", "Accessibility"];
 
-    private int _satisfaction = 4;
-    private int _delivery = 3;
+    private double _satisfaction = 4;
+    private double _delivery = 3;
 
     private static readonly (string Keys, string Action)[] _shortcuts =
     [

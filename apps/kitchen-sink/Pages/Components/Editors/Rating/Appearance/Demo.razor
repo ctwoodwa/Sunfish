@@ -18,7 +18,7 @@
             <li><code>Max</code> — total number of stars (typically 3, 5, or 10).</li>
             <li><code>Value</code> — the currently selected count. Two-way bind via
                 <code>@@bind-Value</code>.</li>
-            <li><code>IsReadOnly</code> — renders each star as a non-interactive <code>&lt;span&gt;</code>
+            <li><code>ReadOnly</code> — renders each star as a non-interactive <code>&lt;span&gt;</code>
                 rather than a button.</li>
             <li><code>Enabled</code> — set to <code>false</code> for the disabled visual treatment.</li>
             <li><code>Label</code> — the accessible label for the radio group (also shown to AT).</li>
@@ -64,7 +64,7 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Read-only (display)</h3>
-                <SunfishRating Value="4" Max="5" IsReadOnly="true" Label="Displayed rating" />
+                <SunfishRating Value="4" Max="5" ReadOnly="true" Label="Displayed rating" />
             </section>
 
             <section>
@@ -81,7 +81,7 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "Rating", "Appearance"];
 
-    private int _three = 2;
-    private int _ten = 7;
-    private int _quality = 4;
+    private double _three = 2;
+    private double _ten = 7;
+    private double _quality = 4;
 }

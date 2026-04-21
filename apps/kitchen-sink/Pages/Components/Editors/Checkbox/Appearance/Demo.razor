@@ -17,8 +17,8 @@
         <ul>
             <li><code>Label</code> — the adjacent text; omit for an icon-only / naked checkbox.</li>
             <li><code>LabelPosition</code> — <code>"after"</code> (default) or <code>"before"</code>.</li>
-            <li><code>Checked</code> — two-way bindable via <code>@@bind-Checked</code>.</li>
-            <li><code>Indeterminate</code> — mixed visual state (still reflects <code>Checked</code> internally).</li>
+            <li><code>Value</code> — two-way bindable via <code>@@bind-Value</code>.</li>
+            <li><code>Indeterminate</code> — mixed visual state (still reflects <code>Value</code> internally).</li>
             <li><code>Enabled</code> — set to <code>false</code> for a disabled appearance.</li>
         </ul>
     </Narrative>
@@ -28,12 +28,12 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Unchecked</h3>
-                <SunfishCheckbox Checked="false" Label="Subscribe to newsletter" />
+                <SunfishCheckbox Value="false" Label="Subscribe to newsletter" />
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Checked</h3>
-                <SunfishCheckbox Checked="true" Label="I agree to terms" />
+                <SunfishCheckbox Value="true" Label="I agree to terms" />
             </section>
 
             <section>
@@ -43,27 +43,27 @@
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Label before</h3>
-                <SunfishCheckbox @bind-Checked="_labelBefore" Label="Before the box" LabelPosition="before" />
+                <SunfishCheckbox @bind-Value="_labelBefore" Label="Before the box" LabelPosition="before" />
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Naked (no label)</h3>
-                <SunfishCheckbox @bind-Checked="_naked" />
+                <SunfishCheckbox @bind-Value="_naked" />
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled unchecked</h3>
-                <SunfishCheckbox Checked="false" Enabled="false" Label="Cannot opt in" />
+                <SunfishCheckbox Value="false" Enabled="false" Label="Cannot opt in" />
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled checked</h3>
-                <SunfishCheckbox Checked="true" Enabled="false" Label="Locked on" />
+                <SunfishCheckbox Value="true" Enabled="false" Label="Locked on" />
             </section>
 
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Live (bound)</h3>
-                <SunfishCheckbox @bind-Checked="_live" Label="Toggle me" />
+                <SunfishCheckbox @bind-Value="_live" Label="Toggle me" />
                 <p style="margin:.5rem 0 0; font-size:.85rem;">Bound value: <strong>@_live</strong></p>
             </section>
 

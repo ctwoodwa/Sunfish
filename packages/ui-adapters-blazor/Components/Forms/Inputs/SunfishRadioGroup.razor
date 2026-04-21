@@ -1,3 +1,4 @@
+@typeparam TValue
 @inherits SunfishComponentBase
 
 <div class="@CombineClasses(GroupClass)"
@@ -10,9 +11,9 @@
     {
         @foreach (var item in Data)
         {
-            var itemValue = GetPropertyValue(item, ValueField);
-            var itemText = GetPropertyValue(item, TextField) ?? itemValue ?? item.ToString();
-            var isSelected = string.Equals(itemValue, Value, StringComparison.Ordinal);
+            var itemValue = GetPropertyValue<TValue>(item, ValueField);
+            var itemText = GetPropertyText(item, TextField) ?? itemValue?.ToString() ?? item.ToString();
+            var isSelected = EqualityComparer<TValue?>.Default.Equals(itemValue, Value);
 
             <label class="@CssProvider.RadioClass(isSelected)">
                 <input type="radio"
@@ -20,7 +21,7 @@
                        value="@itemValue"
                        checked="@isSelected"
                        disabled="@(!Enabled)"
-                       @onchange="() => SelectValue(itemValue ?? string.Empty)" />
+                       @onchange="() => SelectValue(itemValue!)" />
                 <span>@itemText</span>
             </label>
         }
@@ -35,8 +36,8 @@
 
 @code {
     /// <summary>The selected value. Supports two-way binding.</summary>
-    [Parameter] public string Value { get; set; } = string.Empty;
-    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
 
     /// <summary>The radio group name (shared across all radios in the group).</summary>
     [Parameter] public string Name { get; set; } = $"rg-{Guid.NewGuid().ToString("N")[..8]}";
@@ -73,14 +74,34 @@
         }
     }
 
-    internal async Task SelectValue(string value)
+    internal async Task SelectValue(TValue value)
     {
         if (!Enabled) return;
         Value = value;
         await ValueChanged.InvokeAsync(value);
     }
 
-    private static string? GetPropertyValue(object item, string propertyName)
+    internal bool IsSelected(TValue candidate) =>
+        EqualityComparer<TValue?>.Default.Equals(Value, candidate);
+
+    private static T? GetPropertyValue<T>(object item, string propertyName)
+    {
+        var prop = item.GetType().GetProperty(propertyName);
+        if (prop is null) return default;
+        var raw = prop.GetValue(item);
+        if (raw is T typed) return typed;
+        if (raw is null) return default;
+        try
+        {
+            return (T)Convert.ChangeType(raw, typeof(T));
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private static string? GetPropertyText(object item, string propertyName)
     {
         return item.GetType().GetProperty(propertyName)?.GetValue(item)?.ToString();
     }

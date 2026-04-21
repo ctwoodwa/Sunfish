@@ -14,8 +14,8 @@
             <code>SunfishCheckbox</code> exposes a single primary callback:
         </p>
         <ul>
-            <li><code>CheckedChanged</code> — fires when the user clicks the checkbox or activates it
-                with <kbd>Space</kbd>. Powers <code>@@bind-Checked</code>.</li>
+            <li><code>ValueChanged</code> — fires when the user clicks the checkbox or activates it
+                with <kbd>Space</kbd>. Powers <code>@@bind-Value</code>.</li>
         </ul>
         <p>
             Focus and blur are attached through <code>AdditionalAttributes</code>. The log captures
@@ -28,17 +28,17 @@
         <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
             <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:.75rem;">
 
-                <SunfishCheckbox Checked="@_parent"
-                                 CheckedChanged="HandleParentChanged"
+                <SunfishCheckbox Value="@_parent"
+                                 ValueChanged="HandleParentChanged"
                                  Indeterminate="@_parentIndeterminate"
                                  Label="Select all features"
                                  @onfocus="HandleParentFocus"
                                  @onblur="HandleParentBlur" />
 
                 <div style="margin-left:1.25rem; display:flex; flex-direction:column; gap:.35rem;">
-                    <SunfishCheckbox Checked="@_child1" CheckedChanged="HandleChild1" Label="Feature A" />
-                    <SunfishCheckbox Checked="@_child2" CheckedChanged="HandleChild2" Label="Feature B" />
-                    <SunfishCheckbox Checked="@_child3" CheckedChanged="HandleChild3" Label="Feature C" />
+                    <SunfishCheckbox Value="@_child1" ValueChanged="HandleChild1" Label="Feature A" />
+                    <SunfishCheckbox Value="@_child2" ValueChanged="HandleChild2" Label="Feature B" />
+                    <SunfishCheckbox Value="@_child3" ValueChanged="HandleChild3" Label="Feature C" />
                 </div>
 
                 <p style="margin:0; font-size:.85rem; opacity:.75;">
@@ -101,15 +101,15 @@
         _parent = v;
         _parentIndeterminate = false;
         _child1 = _child2 = _child3 = v;
-        Log($"CheckedChanged (parent) -> {v} — cascaded to children");
+        Log($"ValueChanged (parent) -> {v} — cascaded to children");
     }
 
     private void HandleParentFocus() => Log("onfocus (parent)");
     private void HandleParentBlur() => Log("onblur (parent)");
 
-    private void HandleChild1(bool v) { _child1 = v; Log($"CheckedChanged (A) -> {v}"); RecomputeParent(); }
-    private void HandleChild2(bool v) { _child2 = v; Log($"CheckedChanged (B) -> {v}"); RecomputeParent(); }
-    private void HandleChild3(bool v) { _child3 = v; Log($"CheckedChanged (C) -> {v}"); RecomputeParent(); }
+    private void HandleChild1(bool v) { _child1 = v; Log($"ValueChanged (A) -> {v}"); RecomputeParent(); }
+    private void HandleChild2(bool v) { _child2 = v; Log($"ValueChanged (B) -> {v}"); RecomputeParent(); }
+    private void HandleChild3(bool v) { _child3 = v; Log($"ValueChanged (C) -> {v}"); RecomputeParent(); }
 
     private void ClearLog() => _log.Clear();
 }

@@ -2,7 +2,7 @@
 
 <label class="@GetCheckboxClass()" style="@CombineStyles()" @attributes="AdditionalAttributes">
     <input type="checkbox"
-           checked="@Checked"
+           checked="@Value"
            disabled="@(!Enabled)"
            aria-checked="@GetAriaChecked()"
            @onchange="OnCheckChanged" />
@@ -13,8 +13,12 @@
 </label>
 
 @code {
-    [Parameter] public bool Checked { get; set; }
-    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+    /// <summary>The checked state. Supports two-way binding via <c>@@bind-Value</c>.</summary>
+    [Parameter] public bool Value { get; set; }
+
+    /// <summary>Fires when the user toggles the checkbox. Powers <c>@@bind-Value</c>.</summary>
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
     [Parameter] public string? Label { get; set; }
     [Parameter] public bool Indeterminate { get; set; }
     [Parameter] public bool Enabled { get; set; } = true;
@@ -25,7 +29,7 @@
     private string GetCheckboxClass()
     {
         return ClassBuilder.Clear()
-            .AddClass(CssProvider.CheckboxClass(Checked))
+            .AddClass(CssProvider.CheckboxClass(Value))
             .AddClass("mar-checkbox--indeterminate", Indeterminate)
             .AddClass("mar-checkbox--disabled", !Enabled)
             .AddClass(Class)
@@ -35,13 +39,13 @@
     private string GetAriaChecked()
     {
         if (Indeterminate) return "mixed";
-        return Checked ? "true" : "false";
+        return Value ? "true" : "false";
     }
 
     private async Task OnCheckChanged(ChangeEventArgs e)
     {
         if (!Enabled) return;
-        Checked = (bool)(e.Value ?? false);
-        await CheckedChanged.InvokeAsync(Checked);
+        Value = (bool)(e.Value ?? false);
+        await ValueChanged.InvokeAsync(Value);
     }
 }

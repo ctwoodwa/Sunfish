@@ -2,10 +2,9 @@
 @using Microsoft.AspNetCore.Components
 @using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
 
-@* Note: Telerik uses "CheckBox" (two words) and "Value"; Sunfish uses "Checkbox" and "Checked".
-   The wrapper keeps the Telerik spelling on the outside. *@
-<SunfishCheckbox Checked="Value"
-                 CheckedChanged="ValueChanged"
+@* Note: Telerik uses "CheckBox" (two words); Sunfish uses "Checkbox". Both now use `Value`. *@
+<SunfishCheckbox Value="Value"
+                 ValueChanged="ValueChanged"
                  Enabled="Enabled"
                  Indeterminate="Indeterminate"
                  @attributes="AdditionalAttributes" />

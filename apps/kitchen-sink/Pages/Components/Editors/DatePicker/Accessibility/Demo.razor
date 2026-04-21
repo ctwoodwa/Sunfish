@@ -111,15 +111,15 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "DatePicker", "Accessibility"];
 
-    private DateOnly? _date;
-    private DateOnly? _weekdayDate;
+    private DateTime? _date;
+    private DateTime? _weekdayDate;
 
-    private static readonly DateOnly _today = DateOnly.FromDateTime(DateTime.Today);
-    private static readonly IReadOnlyList<DateOnly> _weekends = BuildWeekends();
+    private static readonly DateTime _today = DateTime.Today;
+    private static readonly IReadOnlyList<DateTime> _weekends = BuildWeekends();
 
-    private static List<DateOnly> BuildWeekends()
+    private static List<DateTime> BuildWeekends()
     {
-        var list = new List<DateOnly>();
+        var list = new List<DateTime>();
         for (var i = 0; i < 90; i++)
         {
             var d = _today.AddDays(i);
