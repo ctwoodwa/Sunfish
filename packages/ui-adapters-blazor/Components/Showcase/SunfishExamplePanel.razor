@@ -1,0 +1,252 @@
+@using Sunfish.UIAdapters.Blazor.Components.Buttons
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@inject IJSRuntime JS
+
+@*
+    SunfishExamplePanel — per-catalog-leaf demo-page shell.
+
+    ADR 0022. Used by every component-demo page in kitchen-sink (and, later,
+    compat-telerik's demo host and any other provider library). One panel per
+    catalog leaf — one URL, one focused demo. Composes with existing
+    DemoSection for pages that have multiple sub-examples.
+*@
+
+<div class="sf-example-panel @(IsAspirational ? "sf-example-panel--aspirational" : "")">
+
+    @* Header: breadcrumb, title, narrative *@
+    <header class="sf-example-panel-header">
+        @if (Breadcrumb is { Length: > 0 })
+        {
+            <SunfishBreadcrumb Class="sf-example-panel-breadcrumb">
+                @for (int i = 0; i < Breadcrumb.Length; i++)
+                {
+                    var crumb = Breadcrumb[i];
+                    var isLast = i == Breadcrumb.Length - 1;
+                    <SunfishBreadcrumbItem IsActive="@isLast">@crumb</SunfishBreadcrumbItem>
+                }
+            </SunfishBreadcrumb>
+        }
+        <h1 class="sf-example-panel-title">
+            @Title
+            @if (IsAspirational)
+            {
+                <span class="sf-example-panel-aspirational-badge">ASPIRATIONAL</span>
+            }
+        </h1>
+        @if (Narrative is not null)
+        {
+            <div class="sf-example-panel-narrative">
+                @Narrative
+            </div>
+        }
+    </header>
+
+    @if (IsAspirational)
+    {
+        <section class="sf-example-panel-aspirational-body">
+            <p><strong>Sunfish component:</strong> not yet built.</p>
+            @if (!string.IsNullOrEmpty(IntakeUrl))
+            {
+                <p><strong>Tracked under:</strong> <a href="@IntakeUrl" target="_blank" rel="noopener">@IntakeUrl</a></p>
+            }
+            @if (!string.IsNullOrEmpty(ParityReferenceUrl))
+            {
+                <p><strong>Parity reference:</strong> <a href="@ParityReferenceUrl" target="_blank" rel="noopener">@ParityReferenceUrl</a></p>
+            }
+            @if (AspirationalNotes is not null)
+            {
+                <div class="sf-example-panel-aspirational-notes">
+                    @AspirationalNotes
+                </div>
+            }
+        </section>
+    }
+    else
+    {
+        @* Toolbar: tab controls (left), theme controls (right) *@
+        <div class="sf-example-panel-toolbar">
+            <div class="sf-example-panel-tabs">
+                <button type="button"
+                        class="sf-example-panel-tab @(_activeTab == Tab.Example ? "sf-example-panel-tab--active" : "")"
+                        @onclick="() => SetTab(Tab.Example)">
+                    EXAMPLE
+                </button>
+                @if (Sources is { Count: > 0 })
+                {
+                    <button type="button"
+                            class="sf-example-panel-tab @(_activeTab == Tab.Source ? "sf-example-panel-tab--active" : "")"
+                            @onclick="() => SetTab(Tab.Source)">
+                        VIEW SOURCE
+                    </button>
+                }
+                @if (!string.IsNullOrEmpty(GitHubUrl))
+                {
+                    <a class="sf-example-panel-action" href="@GitHubUrl" target="_blank" rel="noopener">
+                        EDIT ON GITHUB
+                        <SunfishIcon Name="external-link" Size="IconSize.Small" />
+                    </a>
+                }
+                @if (_activeTab == Tab.Source && Sources is { Count: > 0 })
+                {
+                    <button type="button" class="sf-example-panel-action" @onclick="CopyActiveSource">
+                        @if (_copied)
+                        {
+                            <SunfishIcon Name="check" Size="IconSize.Small" />
+                            <span>Copied</span>
+                        }
+                        else
+                        {
+                            <SunfishIcon Name="copy" Size="IconSize.Small" />
+                            <span>Copy</span>
+                        }
+                    </button>
+                }
+            </div>
+            <div class="sf-example-panel-controls">
+                @if (ThemeControls is not null)
+                {
+                    @ThemeControls
+                }
+            </div>
+        </div>
+
+        @* Content: EXAMPLE tab or VIEW SOURCE tab *@
+        @if (_activeTab == Tab.Example)
+        {
+            @if (Configurator is not null)
+            {
+                <div class="sf-example-panel-configurator">
+                    @Configurator
+                </div>
+            }
+            <div class="sf-example-panel-body">
+                @Example
+            </div>
+        }
+        else
+        {
+            <div class="sf-example-panel-source">
+                <div class="sf-example-panel-source-tabs">
+                    @for (int i = 0; i < Sources!.Count; i++)
+                    {
+                        var idx = i;
+                        var file = Sources[idx];
+                        <button type="button"
+                                class="sf-example-panel-source-tab @(_activeSourceIndex == idx ? "sf-example-panel-source-tab--active" : "")"
+                                @onclick="() => SetActiveSource(idx)">
+                            @file.Name
+                        </button>
+                    }
+                </div>
+                <div class="sf-example-panel-source-viewer">
+                    <pre class="sf-example-panel-pre"><code class="language-@GetLanguage(Sources[_activeSourceIndex])" @ref="_codeRef">@Sources[_activeSourceIndex].Content</code></pre>
+                </div>
+            </div>
+        }
+
+        @* Footer: tokens-guidelines link (decision D2) *@
+        <footer class="sf-example-panel-footer">
+            <a href="@TokensDocsUrl" class="sf-example-panel-footer-link" target="_blank" rel="noopener">
+                Style with design tokens
+                <SunfishIcon Name="arrow-right" Size="IconSize.Small" />
+            </a>
+        </footer>
+    }
+
+</div>
+
+@code {
+    /// <summary>Title displayed in the panel header (e.g. "Button / Overview").</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>Breadcrumb segments. Last segment is rendered active.</summary>
+    [Parameter] public string[]? Breadcrumb { get; set; }
+
+    /// <summary>Narrative prose rendered above the toolbar.</summary>
+    [Parameter] public RenderFragment? Narrative { get; set; }
+
+    /// <summary>Live example rendered in the EXAMPLE tab.</summary>
+    [Parameter] public RenderFragment? Example { get; set; }
+
+    /// <summary>Optional configurator sub-toolbar above the example (prop controls).</summary>
+    [Parameter] public RenderFragment? Configurator { get; set; }
+
+    /// <summary>Source files exposed in the VIEW SOURCE tab. Empty or null hides the tab.</summary>
+    [Parameter] public IReadOnlyList<SunfishSourceFile>? Sources { get; set; }
+
+    /// <summary>GitHub URL to the primary source file. Null hides the EDIT ON GITHUB action.</summary>
+    [Parameter] public string? GitHubUrl { get; set; }
+
+    /// <summary>Slot for theme/provider controls, rendered right-aligned in the toolbar.</summary>
+    [Parameter] public RenderFragment? ThemeControls { get; set; }
+
+    /// <summary>Link target for the "Style with design tokens" footer (decision D2).</summary>
+    [Parameter] public string TokensDocsUrl { get; set; }
+        = "https://github.com/ctwoodwa/Sunfish/blob/main/_shared/design/tokens-guidelines.md";
+
+    /// <summary>
+    /// Render this panel as an aspirational placeholder (component not yet built).
+    /// Hides tabs and source viewer; shows the intake and parity-reference links.
+    /// </summary>
+    [Parameter] public bool IsAspirational { get; set; }
+
+    /// <summary>URL to the tracked intake document (aspirational mode only).</summary>
+    [Parameter] public string? IntakeUrl { get; set; }
+
+    /// <summary>Upstream parity reference URL (aspirational mode only).</summary>
+    [Parameter] public string? ParityReferenceUrl { get; set; }
+
+    /// <summary>Free-form prose for aspirational pages: "When this lands, the demo will show ...".</summary>
+    [Parameter] public RenderFragment? AspirationalNotes { get; set; }
+
+    private enum Tab { Example, Source }
+    private Tab _activeTab = Tab.Example;
+    private int _activeSourceIndex;
+    private bool _copied;
+    private bool _pendingHighlight;
+    private ElementReference _codeRef;
+
+    private void SetTab(Tab tab)
+    {
+        _activeTab = tab;
+        if (tab == Tab.Source) _pendingHighlight = true;
+    }
+
+    private void SetActiveSource(int index)
+    {
+        _activeSourceIndex = index;
+        _pendingHighlight = true;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingHighlight)
+        {
+            _pendingHighlight = false;
+            try { await JS.InvokeVoidAsync("Prism.highlightElement", _codeRef); }
+            catch { /* Prism not loaded; code is still readable */ }
+        }
+    }
+
+    private async Task CopyActiveSource()
+    {
+        if (Sources is null || _activeSourceIndex >= Sources.Count) return;
+        await JS.InvokeVoidAsync("navigator.clipboard.writeText", Sources[_activeSourceIndex].Content);
+        _copied = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        _copied = false;
+        StateHasChanged();
+    }
+
+    private static string GetLanguage(SunfishSourceFile file) => file.Name switch
+    {
+        var n when n.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) => "razor",
+        var n when n.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) => "csharp",
+        var n when n.EndsWith(".css", StringComparison.OrdinalIgnoreCase) => "css",
+        var n when n.EndsWith(".json", StringComparison.OrdinalIgnoreCase) => "json",
+        var n when n.EndsWith(".yaml", StringComparison.OrdinalIgnoreCase)
+                || n.EndsWith(".yml", StringComparison.OrdinalIgnoreCase) => "yaml",
+        _ => "text",
+    };
+}

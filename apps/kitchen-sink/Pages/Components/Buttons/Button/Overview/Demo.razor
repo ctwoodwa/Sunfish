@@ -1,0 +1,113 @@
+@page "/components/buttons/button/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Button / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Button / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor"
+                     Sources="@_sources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButton</code> is the primary action control. It supports six <code>Variant</code> values
+            (Primary, Secondary, Danger, Warning, Info, Success), three <code>Size</code> values, five <code>FillMode</code>
+            values, five <code>Rounded</code> values, and slots for icon and child content. Click handlers are wired
+            through the <code>OnClick</code> <code>EventCallback</code>; form integration uses <code>ButtonType</code>
+            with <code>Submit</code> / <code>Reset</code> / <code>Button</code>.
+        </p>
+        <p>
+            This overview shows the canonical configurations. Separate demo pages cover
+            <a href="/components/buttons/button/icons">icons</a>,
+            <a href="/components/buttons/button/appearance">appearance</a>,
+            <a href="/components/buttons/button/events">events</a>, and
+            <a href="/components/buttons/button/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Info">Info</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
+            </div>
+
+            <div class="demo-row">
+                <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Primary">Small</SunfishButton>
+                <SunfishButton Size="ButtonSize.Medium" Variant="ButtonVariant.Primary">Medium</SunfishButton>
+                <SunfishButton Size="ButtonSize.Large" Variant="ButtonVariant.Primary">Large</SunfishButton>
+            </div>
+
+            <div class="demo-row">
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="HandleClick">Clicked @_clicks time@(_clicks == 1 ? "" : "s")</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" Enabled="false">Disabled</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Outline</SunfishButton>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Button", "Overview"];
+
+    private int _clicks;
+    private void HandleClick() => _clicks++;
+
+    // Sources — manually wired for the proof-point demo. The MSBuild
+    // source generator will replace this with Sources.g.cs in Phase 3.
+    private static readonly IReadOnlyList<SunfishSourceFile> _sources =
+    [
+        new SunfishSourceFile("Demo.razor",
+            """
+            @page "/components/buttons/button/overview"
+            @layout MainLayout
+            @using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+            <SunfishExamplePanel Title="Button / Overview"
+                                 Breadcrumb="@_breadcrumb"
+                                 GitHubUrl="..."
+                                 Sources="@_sources">
+
+                <Narrative>
+                    <p><code>SunfishButton</code> is the primary action control ...</p>
+                </Narrative>
+
+                <Example>
+                    <div class="demo-row">
+                        <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Info">Info</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
+                    </div>
+
+                    <div class="demo-row">
+                        <SunfishButton Size="ButtonSize.Small">Small</SunfishButton>
+                        <SunfishButton Size="ButtonSize.Medium">Medium</SunfishButton>
+                        <SunfishButton Size="ButtonSize.Large">Large</SunfishButton>
+                    </div>
+
+                    <div class="demo-row">
+                        <SunfishButton OnClick="HandleClick">Clicked @_clicks times</SunfishButton>
+                        <SunfishButton Enabled="false">Disabled</SunfishButton>
+                        <SunfishButton FillMode="FillMode.Outline">Outline</SunfishButton>
+                    </div>
+                </Example>
+
+            </SunfishExamplePanel>
+
+            @code {
+                private int _clicks;
+                private void HandleClick() => _clicks++;
+            }
+            """),
+    ];
+}

@@ -1,0 +1,262 @@
+/* SunfishExamplePanel — per-catalog-leaf demo-page shell (ADR 0022). */
+
+.sf-example-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    border: 1px solid var(--sf-color-border, #d0d4dc);
+    border-radius: var(--sf-radius-md, 8px);
+    background: var(--sf-color-surface, #ffffff);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.sf-example-panel-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.5rem 1.5rem 0.75rem;
+}
+
+.sf-example-panel-breadcrumb {
+    font-size: 0.8125rem;
+    opacity: 0.75;
+}
+
+.sf-example-panel-title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sf-example-panel-aspirational-badge {
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--sf-radius-sm, 4px);
+    background: var(--sf-color-warning-bg, #fff3cd);
+    color: var(--sf-color-warning-fg, #664d03);
+    border: 1px solid var(--sf-color-warning-border, #ffecb5);
+}
+
+.sf-example-panel-narrative {
+    color: var(--sf-color-text-muted, #586069);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    max-width: 72ch;
+}
+
+/* Toolbar */
+
+.sf-example-panel-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 0.75rem;
+    background: var(--sf-color-subtle, #f6f8fa);
+    border-top: 1px solid var(--sf-color-border, #d0d4dc);
+    border-bottom: 1px solid var(--sf-color-border, #d0d4dc);
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.sf-example-panel-tabs {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.sf-example-panel-tab {
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sf-color-text-muted, #586069);
+    cursor: pointer;
+    border-radius: var(--sf-radius-sm, 4px);
+    transition: background 0.15s, color 0.15s;
+}
+
+.sf-example-panel-tab:hover {
+    background: var(--sf-color-hover, rgba(0, 0, 0, 0.04));
+    color: var(--sf-color-text, #24292f);
+}
+
+.sf-example-panel-tab--active {
+    color: var(--sf-color-primary, #0969da);
+    background: var(--sf-color-surface, #ffffff);
+    border: 1px solid var(--sf-color-border, #d0d4dc);
+}
+
+.sf-example-panel-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sf-color-primary, #0969da);
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: var(--sf-radius-sm, 4px);
+    transition: background 0.15s;
+}
+
+.sf-example-panel-action:hover {
+    background: var(--sf-color-hover, rgba(9, 105, 218, 0.08));
+}
+
+.sf-example-panel-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Configurator (optional above-example prop controls) */
+
+.sf-example-panel-configurator {
+    padding: 0.75rem 1.5rem;
+    background: var(--sf-color-subtle, #f6f8fa);
+    border-bottom: 1px solid var(--sf-color-border, #d0d4dc);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+/* Example body */
+
+.sf-example-panel-body {
+    padding: 1.5rem;
+    min-height: 120px;
+    background: var(--sf-color-surface, #ffffff);
+}
+
+/* Source viewer */
+
+.sf-example-panel-source {
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-example-panel-source-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--sf-color-border, #d0d4dc);
+    background: var(--sf-color-subtle, #f6f8fa);
+    overflow-x: auto;
+}
+
+.sf-example-panel-source-tab {
+    background: transparent;
+    border: 0;
+    padding: 0.625rem 1rem;
+    font-size: 0.8125rem;
+    font-family: var(--sf-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    color: var(--sf-color-text-muted, #586069);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.sf-example-panel-source-tab:hover {
+    color: var(--sf-color-text, #24292f);
+}
+
+.sf-example-panel-source-tab--active {
+    color: var(--sf-color-primary, #0969da);
+    border-bottom-color: var(--sf-color-primary, #0969da);
+    font-weight: 600;
+}
+
+.sf-example-panel-source-viewer {
+    background: var(--sf-color-code-bg, #1a1a27);
+    color: var(--sf-color-code-fg, #e6edf3);
+    max-height: 520px;
+    overflow: auto;
+}
+
+.sf-example-panel-pre {
+    margin: 0;
+    padding: 1rem 1.25rem;
+    font-family: var(--sf-font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    white-space: pre;
+    tab-size: 4;
+}
+
+/* Footer */
+
+.sf-example-panel-footer {
+    padding: 0.75rem 1.5rem;
+    background: var(--sf-color-subtle, #f6f8fa);
+    border-top: 1px solid var(--sf-color-border, #d0d4dc);
+    display: flex;
+    justify-content: flex-end;
+}
+
+.sf-example-panel-footer-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.8125rem;
+    color: var(--sf-color-text-muted, #586069);
+    text-decoration: none;
+}
+
+.sf-example-panel-footer-link:hover {
+    color: var(--sf-color-primary, #0969da);
+}
+
+/* Aspirational-mode variant */
+
+.sf-example-panel--aspirational .sf-example-panel-header {
+    background: linear-gradient(180deg, var(--sf-color-warning-bg, #fff8e6) 0%, transparent 100%);
+}
+
+.sf-example-panel-aspirational-body {
+    padding: 1.5rem 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sf-example-panel-aspirational-body p {
+    margin: 0;
+    font-size: 0.9375rem;
+}
+
+.sf-example-panel-aspirational-notes {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: var(--sf-color-subtle, #f6f8fa);
+    border-radius: var(--sf-radius-sm, 4px);
+    font-size: 0.875rem;
+    line-height: 1.55;
+}
+
+/* Responsive: wrap toolbar on narrow viewports */
+
+@media (max-width: 720px) {
+    .sf-example-panel-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .sf-example-panel-controls {
+        justify-content: flex-end;
+    }
+}
