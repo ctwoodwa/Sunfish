@@ -1,6 +1,7 @@
 @page "/components/data-display/treelist/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
 
 <PageTitle>TreeList / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,35 +12,36 @@
 
     <Narrative>
         <p>
-            <code>SunfishTreeList&lt;TItem&gt;</code> displays hierarchical data in a grid-like layout with
-            per-column definitions and expand/collapse nodes. Bind flat data and configure <code>IdField</code>
-            and <code>ParentIdField</code> to build the hierarchy automatically. Columns are declared with
-            <code>SunfishTreeListColumn</code>. Toggles such as <code>Sortable</code>, <code>Pageable</code>,
-            <code>FilterMode</code>, and <code>SelectionMode</code> enable common interactions.
+            <code>SunfishTreeList&lt;TItem&gt;</code> renders hierarchical data as a grid. Bind
+            <code>Data</code> and either:
         </p>
+        <ul>
+            <li>pair <code>IdField</code> + <code>ParentIdField</code> for flat self-referencing data, or</li>
+            <li>set <code>ItemsField</code> for a nested-children model (shown below).</li>
+        </ul>
         <p>
-            Sibling demos cover
-            <a href="/components/data-display/treelist/editing-inline">editing</a>,
-            <a href="/components/data-display/treelist/filtering">filtering</a>,
-            <a href="/components/data-display/treelist/columns-frozen">columns</a>, and
-            <a href="/components/data-display/treelist/row-drag-and-drop">drag-and-drop</a>.
+            Columns are declared with <code>SunfishTreeListColumn</code>. Mark one column
+            <code>Expandable="true"</code> to host the chevron. Common features (<code>Sortable</code>,
+            <code>Pageable</code>, <code>FilterMode</code>, <code>SelectionMode</code>) are opt-in on the
+            parent. Keyboard navigation (<code>Navigable="true"</code>) gives Arrow-right/Arrow-left
+            expand/collapse and home/end jumps.
         </p>
     </Narrative>
 
     <Example>
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
-            <div class="demo-row">
-                <SunfishTreeList TItem="Employee"
-                                 Data="@_employees"
-                                 IdField="Id"
-                                 ParentIdField="ParentId"
-                                 Sortable="true">
-                    <SunfishTreeListColumn Field="Name" Title="Name" />
-                    <SunfishTreeListColumn Field="Department" Title="Department" />
-                    <SunfishTreeListColumn Field="Position" Title="Position" />
-                </SunfishTreeList>
-            </div>
-        </div>
+        <SunfishTreeList TItem="OrgNode"
+                         Data="_orgChart"
+                         ItemsField="@nameof(OrgNode.Reports)"
+                         Sortable="true"
+                         Pageable="true"
+                         PageSize="5"
+                         SelectionMode="TreeListSelectionMode.Single"
+                         Navigable="true">
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Name)" Title="Name" Expandable="true" Width="260px" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Title)" Title="Role" Width="200px" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Department)" Title="Department" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Headcount)" Title="Team size" Width="120px" />
+        </SunfishTreeList>
     </Example>
 
 </SunfishExamplePanel>
@@ -48,21 +50,57 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Data Display", "TreeList", "Overview"];
 
-    private record Employee
+    private sealed record OrgNode
     {
-        public string Id { get; init; } = "";
-        public string? ParentId { get; init; }
         public string Name { get; init; } = "";
+        public string Title { get; init; } = "";
         public string Department { get; init; } = "";
-        public string Position { get; init; } = "";
+        public int Headcount { get; init; }
+        public List<OrgNode> Reports { get; init; } = new();
     }
 
-    private readonly List<Employee> _employees =
+    private readonly List<OrgNode> _orgChart =
     [
-        new() { Id = "1", Name = "Alice", Department = "Engineering", Position = "Director" },
-        new() { Id = "2", ParentId = "1", Name = "Bob", Department = "Engineering", Position = "Lead" },
-        new() { Id = "3", ParentId = "1", Name = "Carol", Department = "Engineering", Position = "Dev" },
-        new() { Id = "4", Name = "Dave", Department = "Marketing", Position = "Director" },
-        new() { Id = "5", ParentId = "4", Name = "Eve", Department = "Marketing", Position = "Analyst" },
+        new()
+        {
+            Name = "Ada Lovelace",
+            Title = "CEO",
+            Department = "Executive",
+            Headcount = 42,
+            Reports =
+            [
+                new()
+                {
+                    Name = "Grace Hopper",
+                    Title = "VP Engineering",
+                    Department = "Engineering",
+                    Headcount = 28,
+                    Reports =
+                    [
+                        new() { Name = "Alan Turing", Title = "Eng. Manager", Department = "Platform", Headcount = 9 },
+                        new() { Name = "Linus Torvalds", Title = "Eng. Manager", Department = "Kernel", Headcount = 12 },
+                    ],
+                },
+                new()
+                {
+                    Name = "Margaret Hamilton",
+                    Title = "VP Product",
+                    Department = "Product",
+                    Headcount = 8,
+                    Reports =
+                    [
+                        new() { Name = "Don Knuth", Title = "Principal PM", Department = "Product", Headcount = 0 },
+                    ],
+                },
+                new()
+                {
+                    Name = "Katherine Johnson",
+                    Title = "VP Research",
+                    Department = "Research",
+                    Headcount = 5,
+                    Reports = new(),
+                },
+            ],
+        },
     ];
 }

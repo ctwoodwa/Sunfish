@@ -82,7 +82,14 @@
                     @foreach (var col in orderedCols)
                     {
                         <td class="sf-treelist__filter-cell">
-                            @if (IsColumnFilterable(col))
+                            @{
+                                var filterTpl = (col as SunfishTreeListColumn)?.FilterCellTemplate;
+                            }
+                            @if (filterTpl is not null)
+                            {
+                                @filterTpl
+                            }
+                            else if (IsColumnFilterable(col))
                             {
                                 var fieldName = col.Field;
                                 <input type="text"

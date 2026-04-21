@@ -12,25 +12,62 @@
     <Narrative>
         <p>
             <code>SunfishListView&lt;TItem&gt;</code> renders a flat, template-driven list of items. Provide
-            a collection to <code>Data</code> and supply an <code>ItemTemplate</code> to control how each
-            record appears. Toggles include <code>Pageable</code> / <code>PageSize</code> for paging and
-            <code>SelectionMode</code> for row selection.
+            a collection to <code>Data</code> and supply an <code>ItemTemplate</code> (or spec-aligned
+            <code>Template</code>) to control how each record appears.
+        </p>
+        <p>
+            This page exercises two of the newest structural features added in Tier 2 Wave 2:
+            <strong>grouping</strong> (set <code>Groupable="true"</code> plus <code>GroupField</code> or a
+            <code>Group</code> descriptor list to render group headers between items) and
+            <strong>virtualization</strong> (set <code>Virtual="true"</code> and pick a
+            <code>VirtualItemHeight</code> to render tens of thousands of rows without performance loss).
         </p>
         <p>
             Sibling demos cover
-            <a href="/components/data-display/listview/paging">paging</a>,
-            <a href="/components/data-display/listview/editing">editing</a>,
-            <a href="/components/data-display/listview/templates">templates</a>, and
-            <a href="/components/data-display/listview/loading-on-demand">loading-on-demand</a>.
+            <a href="/components/data-display/listview/appearance">appearance</a>,
+            <a href="/components/data-display/listview/events">events</a>, and
+            <a href="/components/data-display/listview/accessibility">accessibility</a>.
         </p>
     </Narrative>
 
     <Example>
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
-            <div class="demo-row">
-                <SunfishListView Data="_items" TItem="string">
-                    <ItemTemplate Context="item">
-                        <span>@item</span>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1.5rem;">
+            <div>
+                <h4 style="margin:0 0 .5rem;">Grouping by Team</h4>
+                <p style="margin:0 0 .5rem; font-size:.8rem; opacity:.75;">
+                    <code>Groupable="true" GroupField="Team"</code>
+                </p>
+                <SunfishListView Data="_employees"
+                                 TItem="Employee"
+                                 Groupable="true"
+                                 GroupField="@nameof(Employee.Team)"
+                                 Width="100%">
+                    <ItemTemplate Context="e">
+                        <div style="display:flex; align-items:center; gap:.5rem; padding:.4rem .75rem; border-bottom:1px solid var(--sunfish-border, #eef);">
+                            <SunfishAvatar Initials="@e.Initials" Size="AvatarSize.Small" />
+                            <span style="flex:1;">@e.Name</span>
+                            <span style="opacity:.6; font-size:.75rem;">#@e.Id</span>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Virtualization (10,000 rows)</h4>
+                <p style="margin:0 0 .5rem; font-size:.8rem; opacity:.75;">
+                    <code>Virtual="true" VirtualItemHeight="32"</code>
+                </p>
+                <SunfishListView Data="_big"
+                                 TItem="Row"
+                                 Virtual="true"
+                                 VirtualItemHeight="32"
+                                 VirtualContainerHeight="360px"
+                                 Width="100%">
+                    <ItemTemplate Context="r">
+                        <div style="display:flex; gap:.5rem; padding:.4rem .75rem; border-bottom:1px solid var(--sunfish-border, #eef); height:32px; box-sizing:border-box;">
+                            <span style="opacity:.5; width:4rem;">#@r.Id</span>
+                            <span>@r.Label</span>
+                        </div>
                     </ItemTemplate>
                 </SunfishListView>
             </div>
@@ -43,5 +80,18 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Data Display", "ListView", "Overview"];
 
-    private readonly List<string> _items = ["Apple", "Banana", "Cherry", "Date", "Elderberry"];
+    private record Employee(int Id, string Name, string Team, string Initials);
+    private record Row(int Id, string Label);
+
+    private static readonly string[] _teams = ["Engineering", "Design", "Product", "Sales"];
+
+    private readonly List<Employee> _employees = Enumerable.Range(1, 16).Select(i =>
+        new Employee(
+            i,
+            $"Teammate {i:D2}",
+            _teams[i % _teams.Length],
+            $"T{i:D2}")).ToList();
+
+    private readonly List<Row> _big = Enumerable.Range(1, 10_000).Select(i =>
+        new Row(i, $"Virtualized row {i:N0}")).ToList();
 }

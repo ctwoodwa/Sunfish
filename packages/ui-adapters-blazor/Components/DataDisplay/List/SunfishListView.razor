@@ -1,9 +1,12 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay
 @inherits SunfishComponentBase
 @typeparam TItem
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Sunfish.Foundation.Data
 
 <div class="@CombineClasses(CssProvider.ListViewClass())"
      style="@CombineStyles(SizeStyle)"
+     role="list"
      @attributes="AdditionalAttributes">
 
     @if (HeaderTemplate != null)
@@ -11,23 +14,61 @@
         <div class="sf-listview__header">@HeaderTemplate</div>
     }
 
+    @if (_isLoading && EnableLoaderContainer)
+    {
+        <div class="sf-listview__loader-container" aria-busy="true">
+            <div class="sf-listview__loader" role="status" aria-label="Loading">Loading...</div>
+        </div>
+    }
+
     <div class="sf-listview__items">
         @if (_pagedItems != null)
         {
-            @foreach (var item in _pagedItems)
+            @if (Groupable && _groupedItems != null && _groupedItems.Count > 0)
             {
-                var isSelected = _selectedItems.Contains(item);
-                <div class="@CssProvider.ListViewItemClass(isSelected)"
-                     @onclick="() => HandleItemClick(item)">
-                    @if (_editingItem != null && EqualityComparer<TItem>.Default.Equals(_editingItem, item) && EditTemplate != null)
-                    {
-                        @EditTemplate(item)
-                    }
-                    else
-                    {
-                        @ItemTemplate(item)
-                    }
+                @foreach (var group in _groupedItems)
+                {
+                    <div class="sf-listview__group" role="group" aria-label="@group.Header">
+                        @if (GroupHeaderTemplate != null)
+                        {
+                            <div class="sf-listview__group-header">@GroupHeaderTemplate(group)</div>
+                        }
+                        else
+                        {
+                            <div class="sf-listview__group-header">
+                                <strong>@group.Field:</strong> @group.Header
+                                <span class="sf-listview__group-count">(@group.Items.Count)</span>
+                            </div>
+                        }
+                        <div class="sf-listview__group-items">
+                            @{
+                                var gIdx = 0;
+                            }
+                            @foreach (var item in group.Items)
+                            {
+                                @RenderItem(item, gIdx++)
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else if (Virtual)
+            {
+                <div class="sf-listview__virtual" style="height:@VirtualContainerHeight;overflow:auto;">
+                    <Virtualize Items="@_pagedItemsList"
+                                Context="vitem"
+                                ItemSize="@((float)VirtualItemHeight)">
+                        @RenderItem(vitem, -1)
+                    </Virtualize>
                 </div>
+            }
+            else
+            {
+                var idx = 0;
+                foreach (var item in _pagedItems)
+                {
+                    <text>@RenderItem(item, idx++)</text>
+                }
             }
         }
     </div>
@@ -55,143 +96,51 @@
                     @onclick="NextPage">
                 Next
             </button>
+
+            @if (PageSizes != null && PageSizes.Count > 0)
+            {
+                <select class="sf-listview__pager-size"
+                        @onchange="HandlePageSizeChanged"
+                        aria-label="Page size">
+                    @foreach (var size in PageSizes)
+                    {
+                        <option value="@size" selected="@(size == PageSize)">@size</option>
+                    }
+                </select>
+            }
         </div>
     }
 </div>
 
 @code {
-    [Parameter] public IEnumerable<TItem>? Data { get; set; }
-    [Parameter] public EventCallback<DataRequest> OnRead { get; set; }
-    [Parameter, EditorRequired] public RenderFragment<TItem> ItemTemplate { get; set; } = default!;
-    [Parameter] public bool Pageable { get; set; }
-    [Parameter] public int PageSize { get; set; } = 10;
-    [Parameter] public GridSelectionMode SelectionMode { get; set; } = GridSelectionMode.None;
-    [Parameter] public IEnumerable<TItem>? SelectedItems { get; set; }
-    [Parameter] public EventCallback<IEnumerable<TItem>> SelectedItemsChanged { get; set; }
-    [Parameter] public RenderFragment<TItem>? EditTemplate { get; set; }
-    [Parameter] public EventCallback<TItem> OnCreate { get; set; }
-    [Parameter] public EventCallback<TItem> OnUpdate { get; set; }
-    [Parameter] public EventCallback<TItem> OnDelete { get; set; }
-    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
-    [Parameter] public RenderFragment? FooterTemplate { get; set; }
-    [Parameter] public string? Width { get; set; }
-    [Parameter] public string? Height { get; set; }
-    [Parameter] public int Page { get; set; }
-    [Parameter] public EventCallback<int> PageChanged { get; set; }
-
-    private string? SizeStyle
+    private RenderFragment RenderItem(TItem item, int indexHint) => __builder =>
     {
-        get
-        {
-            var parts = new List<string>();
-            if (Width != null) parts.Add($"width:{Width};");
-            if (Height != null) parts.Add($"height:{Height};overflow:auto;");
-            return parts.Count > 0 ? string.Join("", parts) : null;
-        }
-    }
+        var isSelected = _selectedItems.Contains(item);
+        var isEditing = _editingItem != null && EqualityComparer<TItem>.Default.Equals(_editingItem, item);
+        var isAlternate = indexHint >= 0 && indexHint % 2 == 1;
+        var itemClass = CssProvider.ListViewItemClass(isSelected);
+        if (isAlternate) itemClass += " sf-listview__item--alt";
 
-    /// <summary>Forces the list view to re-read its data source.</summary>
-    public async Task Rebind()
-    {
-        if (OnRead.HasDelegate) await LoadServerData();
-        else if (Data != null) { _allItems = Data.ToList(); _totalCount = _allItems.Count; ApplyPaging(); }
-        StateHasChanged();
-    }
-
-    private List<TItem> _allItems = [];
-    private IEnumerable<TItem>? _pagedItems;
-    private HashSet<TItem> _selectedItems = new();
-    private TItem? _editingItem = default;
-    private int _currentPage;
-    private int _totalCount;
-
-    private int TotalPages => _totalCount > 0 ? (int)Math.Ceiling((double)_totalCount / PageSize) : 1;
-
-    protected override async Task OnParametersSetAsync()
-    {
-        if (SelectedItems != null)
-        {
-            _selectedItems = new HashSet<TItem>(SelectedItems);
-        }
-
-        if (OnRead.HasDelegate)
-        {
-            await LoadServerData();
-        }
-        else if (Data != null)
-        {
-            _allItems = Data.ToList();
-            _totalCount = _allItems.Count;
-            ApplyPaging();
-        }
-    }
-
-    private async Task LoadServerData()
-    {
-        var request = new Sunfish.Foundation.Data.DataRequest
-        {
-            Paging = new Sunfish.Foundation.Data.PageState
+        <div class="@itemClass"
+             role="listitem"
+             aria-selected="@(SelectionMode != GridSelectionMode.None ? isSelected.ToString().ToLowerInvariant() : null)"
+             @onclick="() => HandleItemClick(item)">
+            @if (isEditing && EditTemplate != null)
             {
-                PageIndex = _currentPage,
-                PageSize = PageSize
+                @EditTemplate(item)
             }
-        };
-        await OnRead.InvokeAsync(request);
-    }
-
-    private void ApplyPaging()
-    {
-        if (Pageable)
-        {
-            _pagedItems = _allItems.Skip(_currentPage * PageSize).Take(PageSize);
-        }
-        else
-        {
-            _pagedItems = _allItems;
-        }
-    }
-
-    private async Task HandleItemClick(TItem item)
-    {
-        if (SelectionMode == GridSelectionMode.None) return;
-
-        if (SelectionMode == GridSelectionMode.Single)
-        {
-            _selectedItems.Clear();
-            _selectedItems.Add(item);
-        }
-        else
-        {
-            if (!_selectedItems.Remove(item))
+            else if (isAlternate && AlternatingItemTemplate != null)
             {
-                _selectedItems.Add(item);
+                @AlternatingItemTemplate(item)
             }
-        }
-
-        await SelectedItemsChanged.InvokeAsync(_selectedItems);
-    }
-
-    private async Task PreviousPage()
-    {
-        if (_currentPage > 0)
-        {
-            _currentPage--;
-            if (OnRead.HasDelegate)
-                await LoadServerData();
-            else
-                ApplyPaging();
-        }
-    }
-
-    private async Task NextPage()
-    {
-        if (_currentPage < TotalPages - 1)
-        {
-            _currentPage++;
-            if (OnRead.HasDelegate)
-                await LoadServerData();
-            else
-                ApplyPaging();
-        }
-    }
+            else if (Template != null)
+            {
+                @Template(item)
+            }
+            else if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+        </div>
+    };
 }

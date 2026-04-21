@@ -4,11 +4,35 @@
 @code {
     [CascadingParameter] private IColumnHost? ParentHost { get; set; }
 
+    /// <summary>
+    /// When true, this column renders the expand/collapse chevron for hierarchical nodes.
+    /// If no column sets <c>Expandable="true"</c>, the first column is used by default.
+    /// </summary>
+    [Parameter] public bool Expandable { get; set; }
+
+    /// <summary>
+    /// When true, this column can be locked (frozen) to the start of the tree list.
+    /// Used to carry the spec's <c>Lockable</c> signal — actual locking UX is deferred.
+    /// </summary>
+    [Parameter] public bool Lockable { get; set; }
+
     /// <summary>Custom cell template. Receives the row item as context.</summary>
     [Parameter] public RenderFragment<object>? Template { get; set; }
 
     /// <summary>Custom header template.</summary>
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>
+    /// Custom cell template used while the row is being edited. When set, overrides the default
+    /// text-input editor. Receives the row item as context.
+    /// </summary>
+    [Parameter] public RenderFragment<object>? EditTemplate { get; set; }
+
+    /// <summary>
+    /// Custom filter-cell template for <c>TreeListFilterMode.FilterRow</c>. When set, the tree list
+    /// renders this fragment in place of the default text input for this column.
+    /// </summary>
+    [Parameter] public RenderFragment? FilterCellTemplate { get; set; }
 
     protected override void OnInitialized()
     {

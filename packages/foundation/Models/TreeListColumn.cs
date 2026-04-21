@@ -17,6 +17,34 @@ public class TreeListCommandEventArgs<TItem>
     public bool IsNew { get; set; }
 }
 
+/// <summary>
+/// Event arguments for the <c>OnExpand</c> event on <c>SunfishTreeList</c>.
+/// Set <see cref="IsCancelled"/> to <c>true</c> in the handler to prevent the expand from taking effect.
+/// </summary>
+/// <typeparam name="TItem">The row data type.</typeparam>
+public class TreeListExpandEventArgs<TItem>
+{
+    /// <summary>The item whose row is being expanded.</summary>
+    public TItem Item { get; set; } = default!;
+
+    /// <summary>Set to <c>true</c> in the handler to cancel the expand.</summary>
+    public bool IsCancelled { get; set; }
+}
+
+/// <summary>
+/// Event arguments for the <c>OnCollapse</c> event on <c>SunfishTreeList</c>.
+/// Set <see cref="IsCancelled"/> to <c>true</c> in the handler to prevent the collapse from taking effect.
+/// </summary>
+/// <typeparam name="TItem">The row data type.</typeparam>
+public class TreeListCollapseEventArgs<TItem>
+{
+    /// <summary>The item whose row is being collapsed.</summary>
+    public TItem Item { get; set; } = default!;
+
+    /// <summary>Set to <c>true</c> in the handler to cancel the collapse.</summary>
+    public bool IsCancelled { get; set; }
+}
+
 public class TreeListSortEventArgs
 {
     public string? Field { get; set; }

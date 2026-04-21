@@ -20,8 +20,31 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
     [Parameter] public string? HasChildrenField { get; set; }
     [Parameter] public bool Sortable { get; set; }
     [Parameter] public EventCallback<TreeListSortEventArgs> OnSortChanged { get; set; }
-    [Parameter] public EventCallback<TItem> OnExpand { get; set; }
-    [Parameter] public EventCallback<TItem> OnCollapse { get; set; }
+
+    /// <summary>
+    /// Fires when the user expands a row. The handler receives a
+    /// <see cref="TreeListExpandEventArgs{TItem}"/> and may set
+    /// <c>IsCancelled = true</c> to prevent the expand.
+    /// </summary>
+    [Parameter] public EventCallback<TreeListExpandEventArgs<TItem>> OnExpand { get; set; }
+
+    /// <summary>
+    /// Fires when the user collapses a row. The handler receives a
+    /// <see cref="TreeListCollapseEventArgs{TItem}"/> and may set
+    /// <c>IsCancelled = true</c> to prevent the collapse.
+    /// </summary>
+    [Parameter] public EventCallback<TreeListCollapseEventArgs<TItem>> OnCollapse { get; set; }
+
+    /// <summary>
+    /// Two-way bindable set of currently expanded items. When null, expansion state is tracked internally.
+    /// When bound, this is the source of truth — consumers may pre-expand or programmatically control
+    /// expansion without needing a <c>@ref</c> to the tree list.
+    /// </summary>
+    [Parameter] public HashSet<TItem>? ExpandedItems { get; set; }
+
+    /// <summary>Raised when <see cref="ExpandedItems"/> changes after an expand or collapse.</summary>
+    [Parameter] public EventCallback<HashSet<TItem>> ExpandedItemsChanged { get; set; }
+
     [Parameter] public TreeListSelectionMode SelectionMode { get; set; } = TreeListSelectionMode.None;
     [Parameter] public IReadOnlyList<TItem>? SelectedItems { get; set; }
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
@@ -131,6 +154,35 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
         else
         {
             _rootItems = BuildTree();
+        }
+
+        // Mirror the caller-owned ExpandedItems set into the internal _expandedIds index.
+        if (ExpandedItems is not null && ExpandedItems.Count > 0)
+        {
+            RehydrateExpandedIdsFromItems(_rootItems);
+        }
+    }
+
+    private void RehydrateExpandedIdsFromItems(List<TreeListNode> nodes)
+    {
+        foreach (var node in nodes)
+        {
+            if (ExpandedItems!.Contains(node.Item)) _expandedIds.Add(node.Id);
+            if (node.Children.Count > 0) RehydrateExpandedIdsFromItems(node.Children);
+        }
+    }
+
+    /// <summary>Index of the column that carries the expand chevron (first with <c>Expandable="true"</c>, else 0).</summary>
+    internal int ExpandableColumnIndex
+    {
+        get
+        {
+            var cols = OrderedColumns;
+            for (var i = 0; i < cols.Count; i++)
+            {
+                if (cols[i] is SunfishTreeListColumn { Expandable: true }) return i;
+            }
+            return 0;
         }
     }
 
@@ -372,6 +424,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
     {
         int seq = 0;
         var columns = OrderedColumns;
+        var expandCol = ExpandableColumnIndex;
         foreach (var node in nodes)
         {
             var isExpanded = _expandedIds.Contains(node.Id);
@@ -413,14 +466,24 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                 if (isEditingRow)
                 {
                     var fieldName = col.Field; var currentVal = GetEditValue(fieldName)?.ToString() ?? "";
-                    if (ci == 0)
+                    var editTpl = (col as SunfishTreeListColumn)?.EditTemplate;
+                    if (ci == expandCol)
                     {
                         builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", $"padding-left: {depth * 20}px; display: inline-flex; align-items: center; gap: 4px;");
                         builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", "width: 20px;"); builder.CloseElement();
-                        builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "mar-treelist__edit-input");
-                        builder.AddAttribute(seq++, "value", currentVal);
-                        builder.AddAttribute(seq++, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetEditValue(fieldName, e.Value?.ToString() ?? "")));
-                        builder.CloseElement(); builder.CloseElement();
+                        if (editTpl is not null) { builder.AddContent(seq++, editTpl((object)node.Item!)); }
+                        else
+                        {
+                            builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "mar-treelist__edit-input");
+                            builder.AddAttribute(seq++, "value", currentVal);
+                            builder.AddAttribute(seq++, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetEditValue(fieldName, e.Value?.ToString() ?? "")));
+                            builder.CloseElement();
+                        }
+                        builder.CloseElement();
+                    }
+                    else if (editTpl is not null)
+                    {
+                        builder.AddContent(seq++, editTpl((object)node.Item!));
                     }
                     else
                     {
@@ -430,7 +493,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                         builder.CloseElement();
                     }
                 }
-                else if (ci == 0)
+                else if (ci == expandCol)
                 {
                     builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", $"padding-left: {depth * 20}px; display: inline-flex; align-items: center; gap: 4px;");
                     if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
@@ -470,6 +533,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
     {
         int seq = 0;
         var columns = OrderedColumns;
+        var expandCol = ExpandableColumnIndex;
         var isExpanded = _expandedIds.Contains(node.Id);
         var hasKids = node.Children.Any() || node.HasChildren;
         var nodeId = node.Id; var nodeItem = node.Item;
@@ -492,7 +556,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
             builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
             var tdStyle = GetColumnWidthStyle(col);
             if (!string.IsNullOrEmpty(tdStyle)) builder.AddAttribute(seq++, "style", tdStyle);
-            if (ci == 0)
+            if (ci == expandCol)
             {
                 builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", $"padding-left: {depth * 20}px; display: inline-flex; align-items: center; gap: 4px;");
                 if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
@@ -535,8 +599,29 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
 
     private async Task ToggleExpand(string id, TItem item)
     {
-        if (_expandedIds.Remove(id)) { if (OnCollapse.HasDelegate) await OnCollapse.InvokeAsync(item); }
-        else { _expandedIds.Add(id); if (OnExpand.HasDelegate) await OnExpand.InvokeAsync(item); }
+        if (_expandedIds.Contains(id))
+        {
+            var args = new TreeListCollapseEventArgs<TItem> { Item = item };
+            if (OnCollapse.HasDelegate) await OnCollapse.InvokeAsync(args);
+            if (args.IsCancelled) return;
+            _expandedIds.Remove(id);
+            await SyncExpandedItemsAsync(item, add: false);
+        }
+        else
+        {
+            var args = new TreeListExpandEventArgs<TItem> { Item = item };
+            if (OnExpand.HasDelegate) await OnExpand.InvokeAsync(args);
+            if (args.IsCancelled) return;
+            _expandedIds.Add(id);
+            await SyncExpandedItemsAsync(item, add: true);
+        }
+    }
+
+    private async Task SyncExpandedItemsAsync(TItem item, bool add)
+    {
+        if (ExpandedItems is null) return;
+        if (add) ExpandedItems.Add(item); else ExpandedItems.Remove(item);
+        if (ExpandedItemsChanged.HasDelegate) await ExpandedItemsChanged.InvokeAsync(ExpandedItems);
     }
 
     internal bool IsEditing(TItem item) => EditMode == TreeListEditMode.Inline && _editingItem is not null && EqualityComparer<TItem>.Default.Equals(_editingItem, item);
@@ -761,8 +846,13 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                     var hasKids = node.Children.Any() || node.HasChildren;
                     if (hasKids && !_expandedIds.Contains(node.Id))
                     {
-                        _expandedIds.Add(node.Id);
-                        if (OnExpand.HasDelegate) await OnExpand.InvokeAsync(node.Item);
+                        var args = new TreeListExpandEventArgs<TItem> { Item = node.Item };
+                        if (OnExpand.HasDelegate) await OnExpand.InvokeAsync(args);
+                        if (!args.IsCancelled)
+                        {
+                            _expandedIds.Add(node.Id);
+                            await SyncExpandedItemsAsync(node.Item, add: true);
+                        }
                     }
                     else if (hasKids && _expandedIds.Contains(node.Id))
                     {
@@ -780,8 +870,13 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                     var hasKids = node.Children.Any() || node.HasChildren;
                     if (hasKids && _expandedIds.Contains(node.Id))
                     {
-                        _expandedIds.Remove(node.Id);
-                        if (OnCollapse.HasDelegate) await OnCollapse.InvokeAsync(node.Item);
+                        var args = new TreeListCollapseEventArgs<TItem> { Item = node.Item };
+                        if (OnCollapse.HasDelegate) await OnCollapse.InvokeAsync(args);
+                        if (!args.IsCancelled)
+                        {
+                            _expandedIds.Remove(node.Id);
+                            await SyncExpandedItemsAsync(node.Item, add: false);
+                        }
                     }
                     else if (depth > 0)
                     {

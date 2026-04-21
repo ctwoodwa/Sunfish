@@ -11,18 +11,23 @@
 
     <Narrative>
         <p>
-            <code>SunfishListView&lt;TItem&gt;</code> raises <code>SelectedItemsChanged</code>
-            (for selection in <code>Single</code> / <code>Multiple</code> modes), <code>PageChanged</code>
-            (for paging), and the edit-flow events <code>OnCreate</code>, <code>OnUpdate</code>, and
-            <code>OnDelete</code> when an <code>EditTemplate</code> is bound. This demo wires selection and
-            paging into an append-only log so you can see every payload.
+            <code>SunfishListView&lt;TItem&gt;</code> raises selection, paging, and the full edit-flow
+            event set. Each edit-flow callback receives a
+            <code>ListViewCommandEventArgs&lt;TItem&gt;</code> whose <code>IsCancelled</code> flag lets
+            handlers veto the operation (e.g., prevent editing protected rows, validate before save).
+        </p>
+        <p>
+            This demo wires <code>OnCreate</code>, <code>OnUpdate</code>, <code>OnDelete</code>,
+            <code>OnEdit</code>, <code>OnCancel</code>, <code>SelectedItemsChanged</code>, and
+            <code>PageChanged</code> into an append-only event log on the right.
         </p>
     </Narrative>
 
     <Example>
         <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
             <div>
-                <SunfishListView Data="_people"
+                <SunfishListView @ref="_list"
+                                 Data="_people"
                                  TItem="Person"
                                  Width="100%"
                                  SelectionMode="GridSelectionMode.Multiple"
@@ -31,14 +36,43 @@
                                  PageSize="3"
                                  Page="_page"
                                  PageChanged="HandlePageChanged"
-                                 SelectedItemsChanged="HandleSelectionChanged">
+                                 SelectedItemsChanged="HandleSelectionChanged"
+                                 OnModelInit="@(() => new Person(0, "New teammate", "Designer", "NT"))"
+                                 OnCreate="HandleCreate"
+                                 OnUpdate="HandleUpdate"
+                                 OnDelete="HandleDelete"
+                                 OnEdit="HandleEdit"
+                                 OnCancel="HandleCancel">
+                    <HeaderTemplate>
+                        <div style="display:flex; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small"
+                                           OnClick="() => _list!.BeginInsertAsync()">Add teammate</SunfishButton>
+                            <span style="font-size:.75rem; opacity:.7; align-self:center;">
+                                (First item is protected - OnEdit cancels the edit)
+                            </span>
+                        </div>
+                    </HeaderTemplate>
                     <ItemTemplate Context="p">
                         <div style="display:flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
                             <SunfishAvatar Initials="@p.Initials" Size="AvatarSize.Small" />
                             <span style="flex:1;">@p.Name</span>
                             <SunfishBadge Variant="BadgeVariant.Info">@p.Role</SunfishBadge>
+                            <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small"
+                                           OnClick="() => _list!.BeginEditAsync(p)">Edit</SunfishButton>
+                            <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small"
+                                           OnClick="() => _list!.DeleteItemAsync(p)">Delete</SunfishButton>
                         </div>
                     </ItemTemplate>
+                    <EditTemplate Context="p">
+                        <div style="display:flex; gap:.5rem; padding:.5rem .75rem; background:var(--sunfish-surface-subtle, #f8fafc); border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <input type="text" @bind="p.Name" style="flex:1;" />
+                            <input type="text" @bind="p.Role" style="width:7rem;" />
+                            <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small"
+                                           OnClick="() => _list!.SaveEditAsync()">Save</SunfishButton>
+                            <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small"
+                                           OnClick="() => _list!.CancelEditAsync()">Cancel</SunfishButton>
+                        </div>
+                    </EditTemplate>
                 </SunfishListView>
             </div>
 
@@ -47,10 +81,10 @@
                     <strong>Event log</strong>
                     <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
                 </div>
-                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:260px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:320px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
                     @if (_log.Count == 0)
                     {
-                        <em style="opacity:.6;">No events yet — click an item or page.</em>
+                        <em style="opacity:.6;">No events yet - click Add, Edit, or Delete.</em>
                     }
                     else
                     {
@@ -70,10 +104,24 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Data Display", "ListView", "Events"];
 
-    private record Person(string Name, string Role, string Initials);
+    private SunfishListView<Person>? _list;
 
-    private readonly List<Person> _people = Enumerable.Range(1, 10).Select(i =>
-        new Person($"Teammate {i:D2}",
+    private class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Role { get; set; } = "";
+        public string Initials { get; set; } = "";
+
+        public Person() {}
+        public Person(int id, string name, string role, string initials)
+        {
+            Id = id; Name = name; Role = role; Initials = initials;
+        }
+    }
+
+    private List<Person> _people = Enumerable.Range(1, 10).Select(i =>
+        new Person(i, $"Teammate {i:D2}",
             i % 3 == 0 ? "Engineer" : i % 3 == 1 ? "Designer" : "Product",
             $"T{i:D2}")).ToList();
 
@@ -90,13 +138,49 @@
     private void HandlePageChanged(int page)
     {
         _page = page;
-        Log($"PageChanged → page {page}");
+        Log($"PageChanged -> page {page}");
     }
 
     private void HandleSelectionChanged(IEnumerable<Person> items)
     {
         _selected = items;
         var names = string.Join(", ", items.Select(p => p.Name));
-        Log($"SelectedItemsChanged → [{names}]");
+        Log($"SelectedItemsChanged -> [{names}]");
+    }
+
+    private void HandleCreate(ListViewCommandEventArgs<Person> e)
+    {
+        if (!e.IsNew) return;
+        var p = e.Item;
+        p.Id = (_people.Count == 0 ? 0 : _people.Max(x => x.Id)) + 1;
+        _people.Insert(0, p);
+        Log($"OnCreate -> {p.Name} (#{p.Id})");
+    }
+
+    private void HandleUpdate(ListViewCommandEventArgs<Person> e)
+    {
+        Log($"OnUpdate -> {e.Item.Name} (#{e.Item.Id})");
+    }
+
+    private void HandleDelete(ListViewCommandEventArgs<Person> e)
+    {
+        _people.Remove(e.Item);
+        Log($"OnDelete -> {e.Item.Name} (#{e.Item.Id})");
+    }
+
+    private void HandleEdit(ListViewCommandEventArgs<Person> e)
+    {
+        if (e.Item.Id == 1)
+        {
+            e.IsCancelled = true;
+            Log($"OnEdit CANCELLED for protected #{e.Item.Id}");
+            return;
+        }
+        Log($"OnEdit -> {e.Item.Name} (#{e.Item.Id})");
+    }
+
+    private void HandleCancel(ListViewCommandEventArgs<Person> e)
+    {
+        Log($"OnCancel -> {e.Item.Name} (was {(e.IsNew ? "new" : "existing")})");
     }
 }
