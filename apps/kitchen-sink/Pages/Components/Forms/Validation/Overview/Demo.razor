@@ -1,0 +1,84 @@
+@page "/components/forms/validation/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Validation / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Validation / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Validation/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Sunfish's validation family renders field-level and form-level messages using the standard
+            Blazor <code>EditContext</code> that <code>SunfishForm</code> cascades down. The main surface is
+            <code>SunfishValidationMessage</code> (bound to a property via the <code>For</code> expression),
+            with <code>SunfishValidationSummary</code> for an aggregate view and
+            <code>SunfishValidationTooltip</code> for hover-anchored messages. A standalone
+            <code>SunfishValidation</code> renders an ad-hoc message with a chosen <code>Severity</code>.
+        </p>
+        <p>
+            See sibling demos for
+            <a href="/components/forms/validation/summary-template">summary template</a>,
+            <a href="/components/forms/validation/message-template">message template</a>,
+            <a href="/components/forms/validation/tooltip-template">tooltip template</a>,
+            <a href="/components/forms/validation/tooltip-position">tooltip position</a>, and
+            localization variants.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem; max-width:480px;">
+            <SunfishForm Model="_model" OnValidSubmit="HandleValidSubmit">
+                <FormValidation>
+                    <DataAnnotationsValidator />
+                    <SunfishValidationSummary />
+                </FormValidation>
+                <ChildContent>
+                    <SunfishField Text="Username" Id="username">
+                        <SunfishTextBox @bind-Value="_model.Username" />
+                        <SunfishValidationMessage For="@(() => _model.Username)" />
+                    </SunfishField>
+
+                    <SunfishField Text="Email" Id="email">
+                        <SunfishTextBox @bind-Value="_model.Email" />
+                        <SunfishValidationMessage For="@(() => _model.Email)" />
+                    </SunfishField>
+
+                    <div class="demo-row">
+                        <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Validate</SunfishButton>
+                    </div>
+                </ChildContent>
+            </SunfishForm>
+
+            @if (_submitted)
+            {
+                <SunfishAlert Severity="AlertSeverity.Success">All fields are valid.</SunfishAlert>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Validation", "Overview"];
+
+    private readonly SignupModel _model = new();
+    private bool _submitted;
+
+    private void HandleValidSubmit() => _submitted = true;
+
+    private sealed class SignupModel
+    {
+        [Required(ErrorMessage = "Username is required.")]
+        [MinLength(3, ErrorMessage = "Username must be at least 3 characters.")]
+        public string? Username { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string? Email { get; set; }
+    }
+}
