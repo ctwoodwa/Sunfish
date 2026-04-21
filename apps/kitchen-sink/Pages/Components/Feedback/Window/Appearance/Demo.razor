@@ -1,0 +1,150 @@
+@page "/components/overlays/window/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Window / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Window / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Window/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWindow</code> exposes a rich styling surface via explicit parameters and
+            CSS custom properties. The main sizing knobs are <code>Width</code> / <code>Height</code>
+            (any CSS length), the <code>Size</code> enum (<code>Small</code>, <code>Medium</code>,
+            <code>Large</code>) for quick presets, and <code>MinWidth</code> / <code>MaxWidth</code> /
+            <code>MinHeight</code> / <code>MaxHeight</code> for constraints. Use <code>Top</code> and
+            <code>Left</code> to pin a window to a specific position; otherwise the window auto-centers
+            in the viewport.
+        </p>
+        <p>
+            The <code>Modal</code> parameter toggles the backdrop overlay — non-modal windows float
+            above page content without dimming it, while modal windows add a scrim and trap interaction.
+            The <code>Draggable</code> and <code>Resizable</code> booleans control whether users can
+            move or resize the window via the title bar and edge handles respectively.
+        </p>
+        <p>
+            Visual theming uses the <code>ThemeColor</code> parameter (maps to the
+            <code>--mar-window-theme-color</code> custom property on the title bar) and the standard
+            Sunfish design tokens for surface color, border radius, shadow, and spacing. Override any
+            of the <code>--mar-window-*</code> CSS variables in your app stylesheet to re-skin the
+            component globally.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showSmall = true">Open Small</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showMedium = true">Open Medium</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showLarge = true">Open Large</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showModalScrim = true">Open Modal (Scrim)</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showNonModal = true">Open Non-Modal</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showPinned = true">Open Pinned (Non-Draggable)</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Info" OnClick="() => _showThemed = true">Open Themed Window</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Info" OnClick="() => _showFooter = true">Open With Footer</SunfishButton>
+            </div>
+
+            <SunfishWindow Title="Small Window (300px preset)"
+                           @bind-Visible="_showSmall"
+                           Size="WindowSize.Small"
+                           Height="220px">
+                <p>Uses <code>Size="WindowSize.Small"</code> — 300px wide.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Medium Window (600px preset)"
+                           @bind-Visible="_showMedium"
+                           Size="WindowSize.Medium"
+                           Height="320px">
+                <p>Uses <code>Size="WindowSize.Medium"</code> — 600px wide.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Large Window (900px preset)"
+                           @bind-Visible="_showLarge"
+                           Size="WindowSize.Large"
+                           Height="420px">
+                <p>Uses <code>Size="WindowSize.Large"</code> — 900px wide.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Modal Window with Backdrop"
+                           @bind-Visible="_showModalScrim"
+                           Modal="true"
+                           Width="520px"
+                           Height="280px">
+                <p>
+                    <code>Modal="true"</code> renders a dimmed overlay behind the window and blocks
+                    pointer events on the page below.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Non-Modal Floating Window"
+                           @bind-Visible="_showNonModal"
+                           Modal="false"
+                           Width="520px"
+                           Height="280px">
+                <p>
+                    No backdrop — the page remains fully interactive while this window floats above it.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Pinned Window (Non-Draggable, Non-Resizable)"
+                           @bind-Visible="_showPinned"
+                           Draggable="false"
+                           Resizable="false"
+                           Width="480px"
+                           Height="240px">
+                <p>
+                    <code>Draggable="false"</code> and <code>Resizable="false"</code> lock the window
+                    in place. Note the absence of resize handles.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Themed Window"
+                           @bind-Visible="_showThemed"
+                           ThemeColor="#6a4cff"
+                           Width="520px"
+                           Height="280px"
+                           Style="--mar-window-border-radius:14px;">
+                <p>
+                    <code>ThemeColor="#6a4cff"</code> tints the title bar via the
+                    <code>--mar-window-theme-color</code> CSS variable. The <code>Style</code>
+                    parameter passes through additional custom-property overrides.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Window With Footer"
+                           @bind-Visible="_showFooter"
+                           Width="520px"
+                           Height="300px"
+                           FooterLayoutAlign="WindowFooterLayoutAlign.End">
+                <ChildContent>
+                    <p>
+                        The <code>FooterLayoutAlign</code> parameter controls footer justification
+                        (<code>Start</code>, <code>Center</code>, <code>End</code>, <code>Stretch</code>).
+                    </p>
+                </ChildContent>
+                <FooterTemplate>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showFooter = false">Cancel</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showFooter = false">OK</SunfishButton>
+                </FooterTemplate>
+            </SunfishWindow>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Overlays", "Window", "Appearance"];
+
+    private bool _showSmall;
+    private bool _showMedium;
+    private bool _showLarge;
+    private bool _showModalScrim;
+    private bool _showNonModal;
+    private bool _showPinned;
+    private bool _showThemed;
+    private bool _showFooter;
+}
