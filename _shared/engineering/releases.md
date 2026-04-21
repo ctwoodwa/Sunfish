@@ -18,7 +18,7 @@ Sunfish follows [Keep a Changelog v1.1.0](https://keepachangelog.com/en/1.1.0/) 
 **No fixed cadence. Release when ready.** Pre-1.0 Sunfish is optimized for design velocity; shipping on a clock would force half-finished work out the door. The rule is:
 
 - A release happens when the next chunk of work is **complete, documented, and verified** — not on a calendar.
-- In practice we expect ~every 2–4 weeks during active development, but weeks with no release are fine.
+- The natural cadence is **release per roadmap phase exit** (per [roadmap-tracker.md](../product/roadmap-tracker.md)); ad-hoc patch releases go out whenever a regression is fixed. Weeks with no release are fine.
 - Hotfixes for reported regressions ship as soon as the fix lands on `main`.
 
 ### Post-1.0 (target)

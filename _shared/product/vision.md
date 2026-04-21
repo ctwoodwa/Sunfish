@@ -4,6 +4,10 @@
 **Last reviewed:** 2026-04-20
 **Companion docs:** [architecture-principles.md](architecture-principles.md), [roadmap-tracker.md](roadmap-tracker.md), [compatibility-policy.md](compatibility-policy.md).
 
+## Project Mode
+
+Sunfish is primarily an AI-coding-agent learning vehicle and a real-world target for sustained AI-assisted development. The ambitious vision below is the *playground spec* — its scope provides authentic decision surface for agents to operate in. Commercial outcomes are optional; if managed hosting, implementation services, or compat-surface licensing later generate revenue, that's a bonus, not the plan. All policies and documents in this repo should be read in this light: they exist to make AI-assisted work compounding and the artifacts useful, not to satisfy an enterprise buyer who does not exist.
+
 ## What Sunfish is
 
 **Sunfish is an OSS full-stack platform for building local-first, federation-capable software — a component library, a set of reusable domain blocks, and a multi-tenant SaaS shell you can run on a laptop today and a cloud cluster tomorrow.** It exists so that a technical founder, a small operator, or a domain expert with an AI-savvy collaborator can ship a real product without paying platform rent, surrendering their data to a third party, or rewriting their stack when they outgrow the kitchen-table phase.

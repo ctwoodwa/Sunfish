@@ -241,7 +241,7 @@ Treat Bridge's test projects as the reference for future accelerators.
 
 ## Coverage
 
-`coverlet.collector` in every test csproj emits coverage on `dotnet test /p:CollectCoverage=true`. No target threshold enforced yet; coverage reports are informational. When a module ships to GA, a threshold gets established per-module in an ADR.
+`coverlet.collector` in every test csproj emits coverage on `dotnet test /p:CollectCoverage=true`. No target threshold enforced yet; coverage reports are informational. **[ci-quality-gates.md §Coverage](ci-quality-gates.md)** is the canonical policy: it describes the Codecov dashboard setup, the 5-percentage-point drop alert, and the per-package target ranges that serve as starting points once packages reach GA.
 
 ## Known test-env gotchas
 

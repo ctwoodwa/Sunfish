@@ -56,6 +56,8 @@ An AI agent (e.g., an unattended Claude Code or GitHub Copilot Workspace task) o
 - **Sponsor certification.** By signing off, the sponsor affirms they have read the diff, understood the change, run the build and tests locally, and can answer reviewer questions about any part of it.
 - **No bulk unreviewed PRs.** See §"What's explicitly not allowed".
 
+**Sponsor accountability rule:** The sponsor must (a) run `dotnet build Sunfish.slnx` and `dotnet test Sunfish.slnx` locally and confirm green before opening the PR, and (b) read the full diff — not just the summary the agent produced. If a sponsored commit ships a regression (test failure, build break, or behavior bug reported within 7 days of merge), it is reverted without ceremony. No process, no blame debate — revert, then re-land once the issue is understood. This rule exists because sponsorship is a human accountability mechanism, not a rubber-stamp mechanism. A sponsor who cannot explain what a section does should not sponsor it.
+
 ## Human accountability
 
 The DCO signoff (`git commit --signoff`, producing `Signed-off-by:`) is the accountability hinge. It has been since 2004 (Linux Foundation, post-SCO disputes) and it still works for the AI era with one clarification: **the human signer is certifying the submission act, not that they typed every character**. What they must certify has not changed:

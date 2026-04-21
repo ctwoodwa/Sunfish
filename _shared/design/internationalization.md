@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-19
 **Governs:** Every user-visible string, every date/number/currency rendering, every template, every notification body, and every RTL layout concern across `packages/foundation-*`, `packages/ui-core`, `packages/ui-adapters-*`, `blocks-*`, and `apps/*`. Does not govern internal log messages, error codes used only by the audit envelope, or source-code identifiers.
-**Companion docs:** [accessibility.md](accessibility.md), [component-principles.md](component-principles.md), [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](documentation-framework.md), [coding-standards.md](../engineering/coding-standards.md), [testing-strategy.md](../engineering/testing-strategy.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md](../product/vision.md) §5.
+**Companion docs:** [accessibility.md](accessibility.md), [component-principles.md](component-principles.md), [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](../product/documentation-framework.md), [coding-standards.md](../engineering/coding-standards.md), [testing-strategy.md](../engineering/testing-strategy.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md](../product/vision.md) §5.
 
 Sunfish's Pillar 5 commits culture and language as platform primitives, not feature-flagged enterprise upsells ([vision.md](../product/vision.md)). This document operationalizes that commitment into concrete process, code conventions, and quality gates. It reads alongside [accessibility.md](accessibility.md); the two pillars share test harnesses, CI gates, and regulatory footing.
 
@@ -180,7 +180,7 @@ Per [vision.md §Business model](../product/vision.md), Sunfish offers **profess
 - [accessibility.md](accessibility.md) — parallel inclusivity pillar; shared test harness, shared CI gates.
 - [component-principles.md](component-principles.md) — localization contract belongs on every component's public surface, alongside accessibility.
 - [tokens-guidelines.md](tokens-guidelines.md) — BCP-47 tags appear in token-naming conventions for locale-sensitive variants.
-- [documentation-framework.md](documentation-framework.md) — `articles/globalization/*` how-to migration target under Diátaxis.
+- [documentation-framework.md](../product/documentation-framework.md) — `articles/globalization/*` how-to migration target under Diátaxis.
 - [coding-standards.md](../engineering/coding-standards.md) — `TreatWarningsAsErrors` and nullability rules apply to localization resource access.
 - [testing-strategy.md](../engineering/testing-strategy.md) — where pluralization and RTL test cases are authored.
 - [ci-quality-gates.md](../engineering/ci-quality-gates.md) — where the hardcoded-string and missing-key gates are registered.

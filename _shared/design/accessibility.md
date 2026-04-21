@@ -3,7 +3,7 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-20
 **Governs:** Every component in `packages/ui-core` and `packages/ui-adapters-*`, every user-facing surface in `blocks-*` and `bundles/*`, every accelerator host (Bridge today; successors later), and the accessibility CI gate on `main`.
-**Companion docs:** [component-principles.md](component-principles.md) §7, [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](documentation-framework.md), [adapter-parity.md](../engineering/adapter-parity.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md §Pillar 5](../product/vision.md).
+**Companion docs:** [component-principles.md](component-principles.md) §7, [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](../product/documentation-framework.md), [adapter-parity.md](../engineering/adapter-parity.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md §Pillar 5](../product/vision.md).
 
 Accessibility is the operational half of [vision.md §Pillar 5 — *Inclusive by default*](../product/vision.md). The vision document commits Sunfish to WCAG 2.2 AA as a non-negotiable baseline; this document codifies the contracts, processes, reviewer checklists, and CI gates that make that commitment concrete. "An accessibility regression is a build failure, not a backlog item" is enforced here, not aspired to elsewhere.
 
@@ -49,7 +49,7 @@ The contract has eight entries. An empty entry is allowed only when the componen
 
 ### Example contract shape (authoritative template)
 
-Components publish this verbatim on their reference page (`apps/docs/reference/components/<component>.md` per [documentation-framework.md](documentation-framework.md)):
+Components publish this verbatim on their reference page (`apps/docs/reference/components/<component>.md` per [documentation-framework.md](../product/documentation-framework.md)):
 
 ```md
 ## Accessibility
@@ -164,7 +164,7 @@ Cadence: every provider-theme PR triggers the provider audit for the components 
 
 ## Accessibility statement and conformance claims
 
-Sunfish publishes a **platform-wide accessibility statement** at `apps/docs/explanation/accessibility.md` (Diátaxis explanation mode per [documentation-framework.md](documentation-framework.md)). The statement:
+Sunfish publishes a **platform-wide accessibility statement** at `apps/docs/explanation/accessibility.md` (Diátaxis explanation mode per [documentation-framework.md](../product/documentation-framework.md)). The statement:
 
 - Names WCAG 2.2 AA as the baseline.
 - Links to this document for the operational detail.
@@ -210,7 +210,7 @@ This is an upsell layered onto the OSS platform, not a gate on OSS accessibility
 |---|---|---|
 | axe-core CI job wired into `ci.yml` | **P1** | Once `packages/ui-components-web` ships (ADR 0017 migration). Until then, bUnit-side axe integration lands first as an interim gate. |
 | `_shared/engineering/a11y-baseline.md` with initial entries | **P1** | Ships alongside the first axe CI run; migrates pre-existing violations into the baseline with target dates. |
-| Per-component Accessibility section backfill in `apps/docs/reference/components/` | **P1** | Blocking before 1.0; in flight as part of [documentation-framework.md](documentation-framework.md) migration. |
+| Per-component Accessibility section backfill in `apps/docs/reference/components/` | **P1** | Blocking before 1.0; in flight as part of [documentation-framework.md](../product/documentation-framework.md) migration. |
 | VPAT / ACR template in `apps/docs/reference/conformance/` | **P2** | Before the first bundle sale that requires formal attestation (expected: school-district pilot). |
 | Screen-reader test-environment documentation in `apps/docs/how-to/testing/` | **P2** | How to install NVDA, configure JAWS for trial use, enable VoiceOver verbosity, run TalkBack on Android emulator. |
 | Scoped-registry + ARIA interaction tests (ADR 0017 edge) | **P3** | When scoped registries are used in a component that exposes cross-root labelling. |
@@ -221,7 +221,7 @@ This is an upsell layered onto the OSS platform, not a gate on OSS accessibility
 
 - [component-principles.md](component-principles.md) §7 — accessibility as a component contract (this document operationalizes that principle).
 - [tokens-guidelines.md](tokens-guidelines.md) — `--sf-color-*` and `--sf-motion-*` tokens that provider themes resolve to contrast-compliant and motion-respectful values.
-- [documentation-framework.md](documentation-framework.md) — where the accessibility statement and per-component a11y contracts live (Diátaxis explanation + reference modes).
+- [documentation-framework.md](../product/documentation-framework.md) — where the accessibility statement and per-component a11y contracts live (Diátaxis explanation + reference modes).
 - [adapter-parity.md](../engineering/adapter-parity.md) — parity-exception shape reused by the a11y baseline-drift file.
 - [ci-quality-gates.md](../engineering/ci-quality-gates.md) — required-status-check doctrine that the a11y CI job joins.
 - [testing-strategy.md](../engineering/testing-strategy.md) — xUnit + bUnit + Testcontainers harness the axe job integrates with.
