@@ -2,6 +2,14 @@
   href: articles/getting-started/
 - name: Components
   href: articles/components/
+- name: Blocks
+  href: blocks/
+- name: Accelerators
+  href: accelerators/
+- name: Foundation
+  href: foundation/
+- name: Libraries
+  href: libraries/
 - name: Theming
   href: articles/theming/
 - name: Accessibility

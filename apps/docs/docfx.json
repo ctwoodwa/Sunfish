@@ -37,6 +37,22 @@
           "component-specs/**/toc.yml",
           "component-specs/toc.yml"
         ]
+      },
+      {
+        "files": [
+          "blocks/**/**.md",
+          "blocks/**/toc.yml",
+          "blocks/toc.yml",
+          "accelerators/**/**.md",
+          "accelerators/**/toc.yml",
+          "accelerators/toc.yml",
+          "libraries/**/**.md",
+          "libraries/**/toc.yml",
+          "libraries/toc.yml",
+          "foundation/**/**.md",
+          "foundation/**/toc.yml",
+          "foundation/toc.yml"
+        ]
       }
     ],
     "resource": [
