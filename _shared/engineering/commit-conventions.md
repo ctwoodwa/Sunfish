@@ -201,11 +201,9 @@ Use `git commit -s` (or `--signoff`) to add it automatically.
 
 ### PR titles
 
-PR titles MUST follow the same Conventional Commits format as commit titles. Reason: Sunfish uses **squash-merge** (see below), and GitHub takes the PR title as the squash-commit subject by default. A compliant PR title guarantees a compliant commit on `main`.
+PR titles MUST follow the same Conventional Commits format as commit titles. Reason: Sunfish uses squash-merge (see [ci-quality-gates.md §Merge strategy](ci-quality-gates.md#merge-strategy)), and GitHub takes the PR title as the squash-commit subject by default. A compliant PR title guarantees a compliant commit on `main`.
 
-### Squash-merge policy
-
-`main` is squash-merge only. One commit per PR = one changelog entry; linear history; easy `git bisect`. Feature branches MAY carry any number of WIP commits in any format — the gate is the squash-merge subject, which the maintainer edits to match this spec before merging.
+Feature branches MAY carry any number of WIP commits in any format — the gate is the squash-merge subject, which the maintainer edits to match this spec before merging.
 
 ## Cross-references
 
@@ -213,5 +211,6 @@ PR titles MUST follow the same Conventional Commits format as commit titles. Rea
 - [compatibility-policy.md](../product/compatibility-policy.md) — package SemVer rules that `feat`/`fix`/`!` commits feed.
 - [ADR 0011](../../docs/adrs/0011-bundle-versioning-upgrade-policy.md) — bundle SemVer and pre-1.0 breaking-change semantics.
 - [planning-framework.md](planning-framework.md) — how plans become commits.
+- [ci-quality-gates.md](ci-quality-gates.md) — squash-merge policy, commitlint gate, required checks.
 - [`GOVERNANCE.md`](../../GOVERNANCE.md) — DCO, maintainership, contribution flow.
 - [releases.md](releases.md) — release cadence and changelog tooling decision.
