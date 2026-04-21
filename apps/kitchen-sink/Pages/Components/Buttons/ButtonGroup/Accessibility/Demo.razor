@@ -1,0 +1,147 @@
+@page "/components/buttons/buttongroup/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ButtonGroup / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ButtonGroup / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButtonGroup</code> renders a wrapping element with
+            <code>role="group"</code> and a default <code>aria-label="Button group"</code>.
+            Override the label through pass-through attributes — an accurate name helps
+            screen-reader users understand what the cluster represents.
+        </p>
+        <p>
+            The group is not a single composite widget — every child is a regular
+            <code>&lt;button&gt;</code>, so Tab / Shift+Tab move between children, and
+            Enter / Space activate the focused one. Use Arrow keys only when the group's
+            semantic role is <code>toolbar</code> or <code>radiogroup</code> (see the
+            <code>role="toolbar"</code> example below for a pattern that adds roving tabindex).
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:560px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled group</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Pass <code>aria-label</code> through to replace the default name so the
+                    group's purpose is announced to assistive tech.
+                </p>
+                <SunfishButtonGroup aria-label="View density">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Comfortable</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Cozy</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Compact</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Group labelled by an adjacent heading</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Use <code>aria-labelledby</code> to point at a visible label element
+                    instead of duplicating its text.
+                </p>
+                <h4 id="filter-label" style="margin:0 0 .35rem; font-size:.95rem;">Filter</h4>
+                <SunfishButtonGroup aria-labelledby="filter-label">
+                    <SunfishButton Variant="ButtonVariant.Secondary">All</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Active</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Archived</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Toolbar pattern (roving Tab focus)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    For a toolbar, advertise <code>role="toolbar"</code> and handle Arrow-key
+                    focus movement yourself. The active child has <code>tabindex="0"</code>,
+                    the rest <code>tabindex="-1"</code>, so only one Tab stop enters the group.
+                </p>
+                <div role="toolbar" aria-label="Text formatting" @onkeydown="HandleToolbarKey"
+                     style="display:inline-flex; gap:.25rem;">
+                    @for (int i = 0; i < _toolbarLabels.Length; i++)
+                    {
+                        var idx = i;
+                        <button type="button"
+                                tabindex="@(idx == _activeIndex ? 0 : -1)"
+                                aria-label="@_toolbarLabels[idx]"
+                                aria-pressed="@((_activeIndex == idx) ? "true" : "false")"
+                                @onclick="@(() => _activeIndex = idx)"
+                                style="padding:.35rem .6rem; border:1px solid var(--sf-color-border, #ccc); background:@(idx == _activeIndex ? "#e7f1ff" : "#fff"); cursor:pointer;">
+                            @_toolbarLabels[idx]
+                        </button>
+                    }
+                </div>
+                <p style="margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Active tool: <strong>@_toolbarLabels[_activeIndex]</strong>
+                </p>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ButtonGroup", "Accessibility"];
+
+    private int _activeIndex;
+    private readonly string[] _toolbarLabels = ["Bold", "Italic", "Underline"];
+
+    private void HandleToolbarKey(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowRight":
+            case "ArrowDown":
+                _activeIndex = (_activeIndex + 1) % _toolbarLabels.Length;
+                break;
+            case "ArrowLeft":
+            case "ArrowUp":
+                _activeIndex = (_activeIndex - 1 + _toolbarLabels.Length) % _toolbarLabels.Length;
+                break;
+            case "Home":
+                _activeIndex = 0;
+                break;
+            case "End":
+                _activeIndex = _toolbarLabels.Length - 1;
+                break;
+        }
+    }
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                 "Move focus between buttons (default group behavior)"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>", "Activate the focused button"),
+        ("<kbd>&#x2190;</kbd> / <kbd>&#x2192;</kbd>", "Toolbar pattern: move focus within the toolbar"),
+        ("<kbd>Home</kbd>",                "Toolbar pattern: focus the first item"),
+        ("<kbd>End</kbd>",                 "Toolbar pattern: focus the last item")
+    ];
+}

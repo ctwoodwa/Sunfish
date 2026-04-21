@@ -1,0 +1,116 @@
+@page "/components/buttons/segmentedcontrol/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SegmentedControl / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SegmentedControl / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/SegmentedControl/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSegmentedControl</code> publishes one callback,
+            <code>ValueChanged</code>, which delivers the newly-selected string. The
+            control uses the standard <code>@@bind-Value</code> pattern — combining
+            <code>Value</code> and <code>ValueChanged</code> into two-way binding — so
+            wiring it up is a one-line operation.
+        </p>
+        <p>
+            The two controls below demonstrate both styles: the top one uses
+            <code>@@bind-Value</code> directly, and the bottom one wires
+            <code>Value</code> + a named <code>ValueChanged</code> handler so the log can
+            record every transition. Clicking the already-selected segment still fires
+            <code>ValueChanged</code> with the same value, so add a guard if you only want
+            transitions.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div>
+                <h4 style="margin:0 0 .35rem;">Two-way binding (<code>@("@bind-Value")</code>)</h4>
+                <SunfishSegmentedControl Items="_densityItems" @bind-Value="_density" />
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    Density: <strong>@_density</strong>
+                </p>
+
+                <h4 style="margin:1rem 0 .35rem;">Named <code>ValueChanged</code> handler (logged)</h4>
+                <SunfishSegmentedControl Items="_sortItems"
+                                         Value="@_sort"
+                                         ValueChanged="HandleSortChanged" />
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    Sort: <strong>@_sort</strong> — total changes: <strong>@_sortChangeCount</strong>
+                </p>
+
+                <h4 style="margin:1rem 0 .35rem;">Disabled — no callbacks</h4>
+                <SunfishSegmentedControl Items="_densityItems"
+                                         Value="@_density"
+                                         Enabled="false"
+                                         ValueChanged="@(v => Append("ValueChanged", $"disabled → {v} (will not fire)"))" />
+
+                <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:380px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "SegmentedControl", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private readonly List<string> _densityItems = new() { "Comfortable", "Cozy", "Compact" };
+    private string _density = "Cozy";
+
+    private readonly List<string> _sortItems = new() { "Name", "Date", "Size" };
+    private string _sort = "Name";
+    private int _sortChangeCount;
+
+    private void HandleSortChanged(string value)
+    {
+        var previous = _sort;
+        _sort = value;
+        _sortChangeCount++;
+        Append("ValueChanged", $"sort: {previous} → {value}");
+    }
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

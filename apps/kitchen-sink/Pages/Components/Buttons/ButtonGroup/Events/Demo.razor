@@ -1,0 +1,129 @@
+@page "/components/buttons/buttongroup/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ButtonGroup / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ButtonGroup / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButtonGroup</code> publishes one container-level callback,
+            <code>SelectedChanged</code>, which carries the zero-based index of the most
+            recently activated child. Individual buttons keep their own <code>OnClick</code>
+            callback — combine the two to track both "which action ran" (child) and "which
+            slot in the group" (container).
+        </p>
+        <p>
+            The example below lets you pick a sort direction. Each button fires its own
+            <code>OnClick</code>, and the container fires <code>SelectedChanged</code> with the
+            slot index. Focus events (<code>@@onfocus</code> / <code>@@onblur</code>)
+            come through pass-through attributes on the children.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 300px; gap:1rem; align-items:start;">
+
+            <div>
+                <SunfishButtonGroup SelectedChanged="HandleContainerSelection">
+                    <SunfishButton Variant="@SlotVariant(0)"
+                                   OnClick="@(_ => HandleChildClick(0, "Ascending"))"
+                                   @onfocus="@(() => Append("focus", "slot 0"))">
+                        Ascending
+                    </SunfishButton>
+                    <SunfishButton Variant="@SlotVariant(1)"
+                                   OnClick="@(_ => HandleChildClick(1, "Descending"))"
+                                   @onfocus="@(() => Append("focus", "slot 1"))">
+                        Descending
+                    </SunfishButton>
+                    <SunfishButton Variant="@SlotVariant(2)"
+                                   OnClick="@(_ => HandleChildClick(2, "Custom"))"
+                                   @onfocus="@(() => Append("focus", "slot 2"))">
+                        Custom
+                    </SunfishButton>
+                </SunfishButtonGroup>
+
+                <p style="margin-top:.75rem; color:#555; font-size:.9rem;">
+                    Selected slot: <strong>@(_selectedSlot?.ToString() ?? "none")</strong> —
+                    last action: <strong>@_lastAction</strong>
+                </p>
+
+                <div style="margin-top:1rem;">
+                    <h4 style="margin:0 0 .5rem;">Multi-action toolbar (each child independent)</h4>
+                    <SunfishButtonGroup>
+                        <SunfishButton Variant="ButtonVariant.Secondary"
+                                       OnClick="@(_ => Append("OnClick", "Copy"))">Copy</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary"
+                                       OnClick="@(_ => Append("OnClick", "Cut"))">Cut</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary"
+                                       OnClick="@(_ => Append("OnClick", "Paste"))">Paste</SunfishButton>
+                    </SunfishButtonGroup>
+                </div>
+
+                <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ButtonGroup", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+    private int? _selectedSlot;
+    private string _lastAction = "(none)";
+
+    private ButtonVariant SlotVariant(int slot) =>
+        _selectedSlot == slot ? ButtonVariant.Primary : ButtonVariant.Secondary;
+
+    private void HandleChildClick(int slot, string label)
+    {
+        _selectedSlot = slot;
+        _lastAction = label;
+        Append("OnClick", $"slot {slot} → {label}");
+    }
+
+    private void HandleContainerSelection(int slot) =>
+        Append("SelectedChanged", $"container reports slot {slot}");
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

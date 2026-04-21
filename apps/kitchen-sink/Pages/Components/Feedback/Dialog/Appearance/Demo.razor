@@ -1,0 +1,114 @@
+@page "/components/feedback/dialog/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Dialog / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Dialog / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Dialog/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDialog</code> is a modal surface whose chrome is controlled entirely by
+            parameters:
+        </p>
+        <ul>
+            <li><code>Title</code> &mdash; text for the header bar.</li>
+            <li><code>Width</code> / <code>Height</code> &mdash; any CSS length (<code>"400px"</code>, <code>"50%"</code>, <code>"auto"</code>).</li>
+            <li><code>Modal</code> &mdash; adds an overlay scrim and traps interaction.</li>
+            <li><code>Draggable</code> &mdash; allows the user to move the dialog by its title bar.</li>
+            <li><code>ShowCloseButton</code> &mdash; toggles the header <em>&times;</em> icon.</li>
+            <li><code>Buttons</code> &mdash; predefined footer button sets: <code>Ok</code>, <code>OkCancel</code>, <code>YesNo</code>, <code>YesNoCancel</code>, <code>RetryCancel</code>, or <code>None</code>.</li>
+            <li><code>DialogContent</code> / <code>DialogActions</code> &mdash; named fragments for the body and the footer; when omitted, child content is used.</li>
+        </ul>
+        <p>
+            The buttons below open six visual variants covering the common layouts you will
+            scaffold in a line-of-business app.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+            <SunfishButton OnClick="@(() => _basic = true)">Basic</SunfishButton>
+            <SunfishButton OnClick="@(() => _narrow = true)">Narrow (360px)</SunfishButton>
+            <SunfishButton OnClick="@(() => _tall = true)">Tall (520×480)</SunfishButton>
+            <SunfishButton OnClick="@(() => _draggable = true)">Draggable</SunfishButton>
+            <SunfishButton OnClick="@(() => _nonModal = true)">Non-modal</SunfishButton>
+            <SunfishButton OnClick="@(() => _presetButtons = true)">Preset buttons (YesNoCancel)</SunfishButton>
+            <SunfishButton OnClick="@(() => _custom = true)">Custom actions fragment</SunfishButton>
+        </div>
+
+        <SunfishDialog @bind-Visible="_basic" Title="Basic dialog">
+            <p>This is the default surface &mdash; auto width, modal, close button in the header, no preset footer buttons.</p>
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_narrow" Title="Narrow dialog" Width="360px">
+            <p>Width pinned to <code>360px</code>; height grows to fit content.</p>
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_tall" Title="Tall dialog" Width="520px" Height="480px">
+            <DialogContent>
+                <p>A fixed <code>520 &times; 480</code> surface &mdash; useful for form-heavy dialogs.</p>
+                <p>The body scrolls internally when content exceeds the height.</p>
+                <p>Slot structured content through the <code>DialogContent</code> render fragment.</p>
+            </DialogContent>
+            <DialogActions>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _tall = false)">Close</SunfishButton>
+            </DialogActions>
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_draggable" Title="Draggable dialog" Draggable="true" Width="400px">
+            <p>Drag the title bar to reposition this window anywhere on the viewport.</p>
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_nonModal" Title="Non-modal dialog" Modal="false" Width="420px">
+            <p>No scrim &mdash; background content remains interactive. Useful for inspector panels.</p>
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_presetButtons"
+                       Title="Discard changes?"
+                       Width="420px"
+                       Buttons="DialogButtons.YesNoCancel"
+                       OnButtonClick="HandlePresetResult">
+            <p>Using the <code>Buttons</code> enum wires up Yes/No/Cancel with the standard visual hierarchy.</p>
+            @if (_lastResult is not null)
+            {
+                <p style="margin-top:.5rem; color:#666;">Last result: <strong>@_lastResult</strong></p>
+            }
+        </SunfishDialog>
+
+        <SunfishDialog @bind-Visible="_custom" Title="Custom action buttons" Width="440px">
+            <DialogContent>
+                <p>Slot any buttons you need through <code>DialogActions</code>. Danger actions should be visually separated from safe defaults.</p>
+            </DialogContent>
+            <DialogActions>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _custom = false)">Cancel</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary"   OnClick="@(() => _custom = false)">Save draft</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Danger"    OnClick="@(() => _custom = false)">Delete</SunfishButton>
+            </DialogActions>
+        </SunfishDialog>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Dialog", "Appearance"];
+
+    private bool _basic;
+    private bool _narrow;
+    private bool _tall;
+    private bool _draggable;
+    private bool _nonModal;
+    private bool _presetButtons;
+    private bool _custom;
+
+    private string? _lastResult;
+
+    private void HandlePresetResult(DialogResult result)
+    {
+        _lastResult = result.ToString();
+    }
+}

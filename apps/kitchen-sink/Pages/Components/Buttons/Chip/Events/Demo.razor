@@ -1,0 +1,158 @@
+@page "/components/buttons/chip/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chip / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chip / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Chip/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChip</code> publishes three callbacks:
+        </p>
+        <ul>
+            <li><code>OnClick</code> — fires for every click, carrying <code>MouseEventArgs</code>. It
+                runs after the internal selection toggle, so you see the post-toggle state.</li>
+            <li><code>SelectedChanged</code> — fires only when <code>Selectable="true"</code> and
+                the chip toggles. Wire it with <code>@@bind-IsSelected</code> for two-way binding.</li>
+            <li><code>OnRemove</code> — fires when the user clicks the trailing &times; on a
+                <code>Removable</code> chip. The remove button stops click propagation so
+                <code>OnClick</code> does <em>not</em> fire for the same gesture.</li>
+        </ul>
+        <p>
+            The log panel captures events in order. Try clicking the selectable chips,
+            removing tokens, and focusing/blurring to see the full stream.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div>
+                <h4 style="margin:0 0 .35rem;">Selectable chips (<code>@("@bind-IsSelected")</code>)</h4>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishChip Variant="ChipVariant.Primary"
+                                 Label="Design"
+                                 Selectable="true"
+                                 @bind-IsSelected="_selDesign"
+                                 OnClick="@(_ => Append("OnClick", $"Design → selected={_selDesign}"))" />
+                    <SunfishChip Variant="ChipVariant.Primary"
+                                 Label="Engineering"
+                                 Selectable="true"
+                                 @bind-IsSelected="_selEng"
+                                 OnClick="@(_ => Append("OnClick", $"Engineering → selected={_selEng}"))" />
+                    <SunfishChip Variant="ChipVariant.Primary"
+                                 Label="QA"
+                                 Selectable="true"
+                                 @bind-IsSelected="_selQa"
+                                 OnClick="@(_ => Append("OnClick", $"QA → selected={_selQa}"))" />
+                </div>
+                <p style="margin:.5rem 0 0; color:#555; font-size:.9rem;">
+                    State: Design=<strong>@_selDesign</strong>, Engineering=<strong>@_selEng</strong>, QA=<strong>@_selQa</strong>
+                </p>
+
+                <h4 style="margin:1rem 0 .35rem;">Removable chips (<code>OnRemove</code>)</h4>
+                @if (_tokens.Count == 0)
+                {
+                    <em style="color:#888;">(all removed — reset below)</em>
+                }
+                else
+                {
+                    <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                        @foreach (var token in _tokens.ToList())
+                        {
+                            <SunfishChip Variant="ChipVariant.Info"
+                                         Label="@token"
+                                         Removable="true"
+                                         OnClick="@(_ => Append("OnClick", $"token '{token}'"))"
+                                         OnRemove="@(() => HandleRemove(token))" />
+                        }
+                    </div>
+                }
+
+                <h4 style="margin:1rem 0 .35rem;">Separate <code>SelectedChanged</code> handler</h4>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    When you want to react only to toggle transitions (not the raw click),
+                    bind <code>SelectedChanged</code> directly.
+                </p>
+                <SunfishChip Variant="ChipVariant.Success"
+                             Label="Priority"
+                             Selectable="true"
+                             IsSelected="_priority"
+                             SelectedChanged="HandlePrioritySelectionChanged" />
+                <span style="margin-left:.5rem; color:#555; font-size:.85rem;">Priority selected: <strong>@_priority</strong></span>
+
+                <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ResetTokens">Reset tokens</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:420px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Chip", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private bool _selDesign, _selEng, _selQa;
+    private bool _priority;
+    private List<string> _tokens = new() { "frontend", "accessibility", "forms" };
+
+    private void HandlePrioritySelectionChanged(bool value)
+    {
+        _priority = value;
+        Append("SelectedChanged", $"Priority → {value}");
+    }
+
+    private void HandleRemove(string token)
+    {
+        _tokens.Remove(token);
+        Append("OnRemove", $"token '{token}'");
+    }
+
+    private void ResetTokens()
+    {
+        _tokens = new() { "frontend", "accessibility", "forms" };
+        Append("reset", "tokens restored");
+    }
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

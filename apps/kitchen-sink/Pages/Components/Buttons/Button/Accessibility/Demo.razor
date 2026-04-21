@@ -1,0 +1,140 @@
+@page "/components/buttons/button/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Button / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Button / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Button/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButton</code> renders a native <code>&lt;button&gt;</code> element, so
+            it inherits the implicit <code>role="button"</code> and all baseline keyboard
+            semantics from the platform. <kbd>Enter</kbd> and <kbd>Space</kbd> activate it,
+            <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> move focus in/out, and the
+            <code>disabled</code> attribute is mirrored from the <code>Enabled</code>
+            parameter so assistive tech announces the state correctly.
+        </p>
+        <p>
+            Additional ARIA attributes pass through <code>AdditionalAttributes</code>. Use
+            <code>aria-label</code> on icon-only buttons, <code>aria-describedby</code> to
+            associate help text, <code>aria-pressed</code> for toggle semantics (or switch to
+            <a href="/components/buttons/togglebutton/overview"><code>SunfishToggleButton</code></a>),
+            and <code>aria-haspopup</code> / <code>aria-expanded</code> when the button
+            triggers a menu or popover.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:520px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">
+                                    @((MarkupString)keys)
+                                </td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only button with aria-label</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    An icon-only control needs a textual name for screen readers.
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary"
+                               aria-label="Open settings"
+                               OnClick="@(_ => _lastAction = "Settings opened")">
+                    <Icon><span aria-hidden="true">&#x2699;</span></Icon>
+                </SunfishButton>
+                <span style="margin-left:.75rem; color:#555; font-size:.85rem;">Last action: <strong>@_lastAction</strong></span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Button described by help text</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>aria-describedby</code> points at a visible hint so assistive tech
+                    reads it after the button's accessible name.
+                </p>
+                <SunfishButton Variant="ButtonVariant.Danger" aria-describedby="delete-hint"
+                               OnClick="@(_ => _lastAction = "Delete confirmed")">
+                    Delete account
+                </SunfishButton>
+                <span id="delete-hint" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    This action is permanent and cannot be undone.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state is announced</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>Enabled="false"</code> sets the native <code>disabled</code>
+                    attribute, which removes the element from the tab order and causes screen
+                    readers to announce "dimmed" / "disabled" depending on platform.
+                </p>
+                <SunfishButton Variant="ButtonVariant.Primary" Enabled="false">Save (disabled)</SunfishButton>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Menu trigger with <code>aria-haspopup</code> / <code>aria-expanded</code></h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Pass-through attributes let you advertise popup semantics without a
+                    wrapper component.
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary"
+                               aria-haspopup="menu"
+                               aria-expanded="@_expandedString"
+                               OnClick="ToggleMenu">
+                    Options @(_expanded ? "▲" : "▼")
+                </SunfishButton>
+                @if (_expanded)
+                {
+                    <ul role="menu" style="margin:.5rem 0 0; padding:.25rem 0; border:1px solid var(--sf-color-border, #ddd); background:var(--sf-color-surface, #fff); list-style:none; max-width:220px;">
+                        <li role="menuitem" style="padding:.35rem .75rem;">Rename</li>
+                        <li role="menuitem" style="padding:.35rem .75rem;">Duplicate</li>
+                        <li role="menuitem" style="padding:.35rem .75rem;">Archive</li>
+                    </ul>
+                }
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Button", "Accessibility"];
+
+    private string _lastAction = "(none)";
+    private bool _expanded;
+    private string _expandedString => _expanded ? "true" : "false";
+
+    private void ToggleMenu() => _expanded = !_expanded;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",               "Move focus to the next focusable element"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus to the previous focusable element"),
+        ("<kbd>Enter</kbd>",             "Activate the focused button"),
+        ("<kbd>Space</kbd>",             "Activate the focused button"),
+        ("<kbd>Esc</kbd>",               "(When in a modal trigger context) dismiss the popup")
+    ];
+}

@@ -1,0 +1,141 @@
+@page "/components/feedback/progressbar/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ProgressBar / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ProgressBar / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishProgressBar</code> renders a wrapper with <code>role="progressbar"</code>,
+            and automatically sets <code>aria-valuemin</code>, <code>aria-valuemax</code>, and
+            <code>aria-valuenow</code> from the <code>Max</code> and <code>Value</code> parameters.
+            When <code>IsIndeterminate</code> is true, <code>aria-valuenow</code> is intentionally
+            <em>omitted</em> per the ARIA 1.2 spec, so assistive tech announces the bar as
+            &ldquo;busy&rdquo; rather than reading a stale number.
+        </p>
+        <ul>
+            <li>
+                <strong>Accessible name</strong> &mdash; set <code>Label</code> to give the bar an
+                explicit <code>aria-label</code>. Without one, pair the bar with an external
+                visible label using <code>aria-labelledby</code> via the <code>Style</code>/attribute
+                surface.
+            </li>
+            <li>
+                <strong>Determinate announcements</strong> &mdash; screen readers announce the current
+                percentage (calculated from <code>Value / Max</code>) whenever it changes. Throttle
+                very fast updates so users are not spammed with announcements.
+            </li>
+            <li>
+                <strong>Indeterminate announcements</strong> &mdash; the bar is still a live
+                <code>progressbar</code>, but with no <code>aria-valuenow</code>. Pair it with a
+                short status message (<code>role="status"</code>) so users know <em>what</em> is
+                loading.
+            </li>
+            <li>
+                <strong>Respect <code>prefers-reduced-motion</code></strong> &mdash; the
+                indeterminate animation is keyframed; users with reduced-motion preferences will see
+                a less distracting pattern without any parameter changes needed.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled determinate bar</h3>
+                <label for="upload-progress" style="display:block; font-weight:600; margin-bottom:.25rem;">Upload progress</label>
+                <SunfishProgressBar Value="@_percent"
+                                    Label="Upload progress"
+                                    ShowLabel="true"
+                                    id="upload-progress" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _percent = Math.Max(0, _percent - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _percent = Math.Min(100, _percent + 10))">+10</SunfishButton>
+                    <span style="align-self:center; color:#666;">
+                        Announced as: &ldquo;Upload progress, @_percent percent&rdquo;
+                    </span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Indeterminate paired with status text</h3>
+                <p id="sync-status" role="status" style="margin:0 0 .25rem; color:#555;">
+                    Syncing ledger entries &mdash; this may take a minute.
+                </p>
+                <SunfishProgressBar IsIndeterminate="true" Label="Syncing ledger entries" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Live-updating bar (auto-advance every second)</h3>
+                <SunfishProgressBar Value="@_tick" ShowLabel="true" Label="Auto-advancing progress" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="ToggleTicker">@(_running ? "Pause" : "Start")</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _tick = 0)">Reset</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="progressbar"</code></dt>
+                    <dd>Applied to the root <code>&lt;div&gt;</code>.</dd>
+
+                    <dt><code>aria-valuemin</code> / <code>aria-valuemax</code></dt>
+                    <dd>Set to <code>0</code> and <code>Max</code> (default <code>100</code>).</dd>
+
+                    <dt><code>aria-valuenow</code></dt>
+                    <dd>Set to <code>Value</code> when determinate; omitted when <code>IsIndeterminate</code> is true.</dd>
+
+                    <dt><code>aria-label</code></dt>
+                    <dd>Driven by the <code>Label</code> parameter.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ProgressBar", "Accessibility"];
+
+    private double _percent = 40;
+    private double _tick;
+    private bool _running;
+    private System.Threading.Timer? _timer;
+
+    private void ToggleTicker()
+    {
+        _running = !_running;
+        if (_running)
+        {
+            _timer = new System.Threading.Timer(_ =>
+            {
+                InvokeAsync(() =>
+                {
+                    _tick = Math.Min(100, _tick + 5);
+                    if (_tick >= 100) { _running = false; _timer?.Dispose(); _timer = null; }
+                    StateHasChanged();
+                });
+            }, null, 1000, 1000);
+        }
+        else
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
+}

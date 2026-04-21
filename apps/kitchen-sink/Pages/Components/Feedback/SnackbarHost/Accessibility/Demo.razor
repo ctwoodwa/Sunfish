@@ -1,0 +1,137 @@
+@page "/components/feedback/snackbarhost/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@inject ISunfishNotificationService Notifications
+
+<PageTitle>SnackbarHost / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SnackbarHost / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SnackbarHost/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Each notification rendered by <code>SunfishSnackbarHost</code> is a
+            <code>role="status"</code> element with <code>aria-live="polite"</code>. Polite live
+            regions are announced by assistive technology <em>after</em> the current speech
+            completes &mdash; correct for transient feedback that should not interrupt the user.
+            Error-class notifications are still rendered as <code>status</code>; if a message is
+            critical enough to interrupt, surface it as a <code>SunfishAlert</code> instead.
+        </p>
+        <ul>
+            <li>
+                <strong>Live region</strong>: <code>role="status"</code> + implicit
+                <code>aria-live="polite"</code>. Announcements fire when the notification enters
+                the DOM.
+            </li>
+            <li>
+                <strong>Dismiss button</strong>: native <code>&lt;button&gt;</code> with
+                <code>aria-label="Dismiss"</code>. Reachable by <kbd>Tab</kbd>, activatable with
+                <kbd>Enter</kbd> or <kbd>Space</kbd>. Only rendered when the underlying
+                <code>NotificationModel</code> has <code>Closeable = true</code>.
+            </li>
+            <li>
+                <strong>Auto-close duration</strong>: respect WCAG 2.2.1 (&ldquo;Timing Adjustable&rdquo;)
+                &mdash; keep <code>CloseAfterMs &ge; 5000</code> for any message that carries
+                meaning, or set it to <code>0</code> for persistent notifications that the user must
+                acknowledge.
+            </li>
+            <li>
+                <strong>Non-colour cues</strong>: severity is conveyed by colour <em>and</em> by a
+                leading word in the message body (&ldquo;Error:&rdquo;, &ldquo;Warning:&rdquo;),
+                so the semantics survive monochrome rendering.
+            </li>
+            <li>
+                <strong>Reduced motion</strong>: setting <code>AnimationType="NotificationAnimation.None"</code>
+                disables slide/fade transitions for users with
+                <code>prefers-reduced-motion</code> preferences.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Push announcements (polite live region)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Prefix each message with its severity so screen readers announce
+                    &ldquo;Error: upload failed&rdquo; rather than relying on colour to
+                    disambiguate.
+                </p>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="@(() => PushWithPrefix("Info", "Draft #42 autosaved.", ToastSeverity.Info))">Info</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Success" OnClick="@(() => PushWithPrefix("Success", "Invoice INV-00412 posted.", ToastSeverity.Success))">Success</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Warning" OnClick="@(() => PushWithPrefix("Warning", "2 fields are missing tax codes.", ToastSeverity.Warning))">Warning</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Danger"  OnClick="@(() => PushWithPrefix("Error",   "Upload failed — network unreachable.", ToastSeverity.Error))">Error</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Persistent message (no auto-close)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Critical status that the user should acknowledge &mdash; set
+                    <code>CloseAfterMs = 0</code> and rely on the dismiss button, which is
+                    keyboard-reachable.
+                </p>
+                <SunfishButton OnClick="PushSticky">Push sticky status</SunfishButton>
+                <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="Notifications.HideAll">Clear all</SunfishButton>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="status"</code></dt>
+                    <dd>Applied to every notification. Implicit <code>aria-live="polite"</code>.</dd>
+
+                    <dt><code>aria-label="Dismiss"</code></dt>
+                    <dd>On the per-notification close button.</dd>
+
+                    <dt><kbd>Tab</kbd></dt>
+                    <dd>Moves focus to the dismiss button of the most recent notification.</dd>
+
+                    <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt>
+                    <dd>Activates the focused dismiss button.</dd>
+
+                    <dt><code>CloseAfterMs = 0</code></dt>
+                    <dd>Disables auto-close so users have unlimited time to read and act.</dd>
+                </dl>
+            </section>
+
+        </div>
+
+        <SunfishSnackbarHost VerticalPosition="NotificationVerticalPosition.Bottom"
+                             HorizontalPosition="NotificationHorizontalPosition.Right"
+                             AnimationType="NotificationAnimation.Fade"
+                             MaxCount="5" />
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SnackbarHost", "Accessibility"];
+
+    private void PushWithPrefix(string prefix, string message, ToastSeverity severity)
+    {
+        Notifications.Show(new NotificationModel
+        {
+            Message      = $"{prefix}: {message}",
+            Severity     = severity,
+            CloseAfterMs = 5000,
+            Closeable    = true
+        });
+    }
+
+    private void PushSticky()
+    {
+        Notifications.Show(new NotificationModel
+        {
+            Message      = "Status: Export is still running in the background.",
+            Severity     = ToastSeverity.Info,
+            CloseAfterMs = 0,
+            Closeable    = true
+        });
+    }
+}

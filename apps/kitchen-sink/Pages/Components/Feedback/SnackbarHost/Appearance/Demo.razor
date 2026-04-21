@@ -1,0 +1,137 @@
+@page "/components/feedback/snackbarhost/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@inject ISunfishNotificationService Notifications
+
+<PageTitle>SnackbarHost / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SnackbarHost / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SnackbarHost/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSnackbarHost</code> is a singleton container that renders transient
+            notifications pushed through <code>ISunfishNotificationService</code>. Its visual
+            surface is controlled by five parameters:
+        </p>
+        <ul>
+            <li><code>VerticalPosition</code> &mdash; <code>Top</code> or <code>Bottom</code> edge of the viewport.</li>
+            <li><code>HorizontalPosition</code> &mdash; <code>Left</code>, <code>Center</code>, or <code>Right</code>.</li>
+            <li><code>MaxCount</code> &mdash; how many items stay visible simultaneously. Excess items queue in the service.</li>
+            <li><code>AnimationType</code> &mdash; <code>None</code>, <code>Fade</code>, or <code>SlideIn</code>.</li>
+            <li><code>AnimationDurationMs</code> &mdash; animation length in milliseconds (default 300).</li>
+        </ul>
+        <p>
+            Per-notification styling (severity tone, custom theme colour, dismiss button, auto-close
+            timeout) is set on the <code>NotificationModel</code> when calling
+            <code>Show</code> / <code>ShowToast</code>. The host below is a live sibling instance
+            &mdash; click the buttons to push notifications and watch them animate in.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Push toasts (severity tones)</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="@(() => Notifications.ShowToast("Saved draft #42", ToastSeverity.Info))">Info</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Success" OnClick="@(() => Notifications.ShowToast("Payment posted successfully", ToastSeverity.Success))">Success</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Warning" OnClick="@(() => Notifications.ShowToast("Draft is missing 2 fields", ToastSeverity.Warning))">Warning</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Danger"  OnClick="@(() => Notifications.ShowToast("Upload failed &mdash; retrying", ToastSeverity.Error))">Error</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom models (sticky, coloured, no-auto-close)</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="PushSticky">Sticky (no auto-close)</SunfishButton>
+                    <SunfishButton OnClick="PushBrandColour">Custom theme colour</SunfishButton>
+                    <SunfishButton OnClick="PushNonDismissible">Non-dismissible (2s)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="Notifications.HideAll">Clear all</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Host position (this page hosts a demo instance)</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap; align-items:center;">
+                    <label>Vertical:
+                        <select @bind="_vertical">
+                            <option value="@NotificationVerticalPosition.Top">Top</option>
+                            <option value="@NotificationVerticalPosition.Bottom">Bottom</option>
+                        </select>
+                    </label>
+                    <label>Horizontal:
+                        <select @bind="_horizontal">
+                            <option value="@NotificationHorizontalPosition.Left">Left</option>
+                            <option value="@NotificationHorizontalPosition.Center">Center</option>
+                            <option value="@NotificationHorizontalPosition.Right">Right</option>
+                        </select>
+                    </label>
+                    <label>Animation:
+                        <select @bind="_animation">
+                            <option value="@NotificationAnimation.None">None</option>
+                            <option value="@NotificationAnimation.Fade">Fade</option>
+                            <option value="@NotificationAnimation.SlideIn">SlideIn</option>
+                        </select>
+                    </label>
+                </div>
+                <p style="margin-top:.5rem; color:#666; font-size:.85rem;">
+                    Current: <code>@_vertical</code> &middot; <code>@_horizontal</code> &middot; <code>@_animation</code>
+                </p>
+            </section>
+
+        </div>
+
+        <SunfishSnackbarHost VerticalPosition="_vertical"
+                             HorizontalPosition="_horizontal"
+                             AnimationType="_animation"
+                             MaxCount="5" />
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SnackbarHost", "Appearance"];
+
+    private NotificationVerticalPosition   _vertical   = NotificationVerticalPosition.Bottom;
+    private NotificationHorizontalPosition _horizontal = NotificationHorizontalPosition.Right;
+    private NotificationAnimation          _animation  = NotificationAnimation.Fade;
+
+    private void PushSticky()
+    {
+        Notifications.Show(new NotificationModel
+        {
+            Message      = "Sticky notification — dismiss with the × button",
+            Severity     = ToastSeverity.Info,
+            CloseAfterMs = 0,
+            Closeable    = true
+        });
+    }
+
+    private void PushBrandColour()
+    {
+        Notifications.Show(new NotificationModel
+        {
+            Message      = "Brand-coloured notification",
+            Severity     = ToastSeverity.Info,
+            CloseAfterMs = 4000,
+            Closeable    = true,
+            ThemeColor   = "#6366f1"
+        });
+    }
+
+    private void PushNonDismissible()
+    {
+        Notifications.Show(new NotificationModel
+        {
+            Message      = "Uploading... 30% complete",
+            Severity     = ToastSeverity.Info,
+            CloseAfterMs = 2000,
+            Closeable    = false
+        });
+    }
+}

@@ -1,0 +1,125 @@
+@page "/components/feedback/signalr-connection-status/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SignalR Status / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SignalR Status / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SignalRStatus/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The <code>SunfishSignalRConnectionStatus</code> trigger is a native
+            <code>&lt;button&gt;</code> with <code>aria-haspopup="dialog"</code> and a
+            reflected <code>aria-expanded</code> so assistive tech announces it as
+            &ldquo;SignalR: all 3 hubs healthy, button, collapsed&rdquo;. The popup is a
+            <code>role="dialog"</code> region with a visible header, and each hub is rendered
+            through <code>HubConnectionRow</code> which announces a textual health label
+            (<em>Healthy / Starting / Recovering / Degraded / Offline</em>) so state is not
+            conveyed by colour alone.
+        </p>
+        <ul>
+            <li>
+                <strong>Keyboard &mdash; trigger</strong>: <kbd>Tab</kbd> to focus,
+                <kbd>Enter</kbd> / <kbd>Space</kbd> to open the popup.
+            </li>
+            <li>
+                <strong>Keyboard &mdash; popup</strong>: <kbd>Tab</kbd> cycles through hub rows
+                and the <em>Reconnect</em> button on any offline hub; clicking the scrim or
+                pressing <kbd>Esc</kbd> closes the popup.
+            </li>
+            <li>
+                <strong>Accessible name</strong>: the <code>aria-label</code> is generated from
+                the aggregate summary (e.g. &ldquo;SignalR: 1 of 3 hubs unhealthy&rdquo;) and
+                updates live &mdash; screen readers announce the new label each time the
+                registry's <code>Changed</code> event fires.
+            </li>
+            <li>
+                <strong>Textual health labels</strong>: every row carries both a coloured badge
+                and a short label (<em>Healthy</em>, <em>Offline</em>, etc.) so the meaning
+                survives high-contrast and monochrome rendering.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <SunfishAlert Severity="AlertSeverity.Info">
+                <strong>Backend required.</strong> The live component injects
+                <code>ISignalRConnectionRegistry</code>. Kitchen-sink does not register hubs,
+                so the reference markup below documents the emitted semantics.
+            </SunfishAlert>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard interactions</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:480px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (key, action) in _keyboard)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">
+                                    @((MarkupString)key)
+                                </td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA attributes (emitted by the component)</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>aria-label</code></dt>
+                    <dd>Live aggregate summary &mdash; e.g. &ldquo;SignalR: 1 of 3 hubs unhealthy&rdquo;.</dd>
+
+                    <dt><code>aria-haspopup="dialog"</code></dt>
+                    <dd>Advertises the popup as a dialog.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Reflects the popup open/closed state.</dd>
+
+                    <dt><code>role="dialog"</code></dt>
+                    <dd>Applied to the popup container.</dd>
+
+                    <dt><code>role="listitem"</code></dt>
+                    <dd>Applied to every hub row inside the popup.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Screen-reader notes</h3>
+                <ul>
+                    <li>The trigger's <code>title</code> and <code>aria-label</code> are identical, so a hover tooltip and a screen-reader announcement stay in sync.</li>
+                    <li>Health is always announced in words (<em>Healthy</em>, <em>Recovering</em>, <em>Offline</em>) &mdash; never through colour alone.</li>
+                    <li>The popup header text (<code>Title</code>) labels the dialog; set a project-specific value (&ldquo;Real-time feeds&rdquo;, &ldquo;Live data&rdquo;) for clarity.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SignalR Status", "Accessibility"];
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("<kbd>Tab</kbd>",              "Focus the status trigger"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>", "Open or close the popup"),
+        ("<kbd>Tab</kbd> (popup open)", "Cycle through hub rows and the Reconnect button"),
+        ("<kbd>Esc</kbd>",              "Close the popup and return focus to the trigger"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Reverse focus order"),
+    ];
+}

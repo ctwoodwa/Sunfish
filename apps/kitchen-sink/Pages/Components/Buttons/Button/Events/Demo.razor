@@ -1,0 +1,130 @@
+@page "/components/buttons/button/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Button / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Button / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Button/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButton</code> exposes a single semantic callback,
+            <code>OnClick</code>, which carries the underlying
+            <code>MouseEventArgs</code>. The native <code>focus</code> and <code>blur</code>
+            DOM events are forwarded through <code>AdditionalAttributes</code> using the
+            <code>@@onfocus</code> / <code>@@onblur</code> pass-through, so wiring them up is
+            a one-line operation.
+        </p>
+        <p>
+            The three buttons below share one append-only log so you can see the exact
+            order of events — click them, press <kbd>Tab</kbd> to move focus, and watch
+            the stream populate.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 300px; gap:1rem; align-items:start;">
+
+            <div>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary"
+                                   OnClick="@(e => Append("OnClick", $"Primary (button {e.Button})"))"
+                                   @onfocus="@(() => Append("focus", "Primary"))"
+                                   @onblur="@(() => Append("blur", "Primary"))">
+                        Primary
+                    </SunfishButton>
+
+                    <SunfishButton Variant="ButtonVariant.Secondary"
+                                   OnClick="@(e => Append("OnClick", $"Secondary (button {e.Button})"))"
+                                   @onfocus="@(() => Append("focus", "Secondary"))"
+                                   @onblur="@(() => Append("blur", "Secondary"))">
+                        Secondary
+                    </SunfishButton>
+
+                    <SunfishButton Variant="ButtonVariant.Danger"
+                                   OnClick="@(e => Append("OnClick", $"Danger (button {e.Button})"))"
+                                   @onfocus="@(() => Append("focus", "Danger"))"
+                                   @onblur="@(() => Append("blur", "Danger"))">
+                        Danger
+                    </SunfishButton>
+
+                    <SunfishButton Variant="ButtonVariant.Secondary"
+                                   Enabled="false"
+                                   OnClick="@(_ => Append("OnClick", "Disabled (will not fire)"))">
+                        Disabled (no event)
+                    </SunfishButton>
+                </div>
+
+                <div style="margin-top:1rem;">
+                    <h4 style="margin:0 0 .25rem;">Form integration</h4>
+                    <p style="margin:0 0 .5rem; color:#555; font-size:.85rem;">
+                        <code>ButtonType</code> controls the HTML <code>type</code> attribute.
+                        Submit and Reset participate in native form semantics.
+                    </p>
+                    <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
+                          style="border:1px dashed var(--sf-color-border, #ddd); padding:.75rem; border-radius:4px;">
+                        <input type="text" @bind="_fieldValue" placeholder="Type anything, then Submit"
+                               style="padding:.35rem .5rem; margin-right:.5rem;" />
+                        <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Submit</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" ButtonType="ButtonType.Reset"
+                                       OnClick="@(_ => Append("OnClick", "Reset"))">
+                            Reset
+                        </SunfishButton>
+                    </form>
+                </div>
+
+                <div style="margin-top:.75rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — click or Tab to a button)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Button", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+    private string? _fieldValue;
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void HandleFormSubmit() =>
+        Append("submit", $"form value='{_fieldValue}'");
+
+    private void ClearLog() => _log.Clear();
+}

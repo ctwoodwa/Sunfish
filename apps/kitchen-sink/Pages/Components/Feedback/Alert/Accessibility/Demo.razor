@@ -1,0 +1,126 @@
+@page "/components/feedback/alert/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Alert / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Alert / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Alert/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAlert</code> renders a wrapper with <code>role="alert"</code>, which
+            causes compliant assistive technology to announce the contents as an
+            <em>assertive</em> live region — meaning the text is spoken as soon as the alert is
+            inserted into the DOM. Pair the role with an <code>AriaLabel</code> when the visible
+            text is too terse to stand on its own, and prefer writing the severity word
+            (&ldquo;Warning&rdquo;, &ldquo;Critical&rdquo;) into the message so users who cannot
+            see colour still get the full meaning.
+        </p>
+        <ul>
+            <li>
+                <strong>Live announcement</strong> — the root <code>&lt;div role="alert"&gt;</code>
+                is implicitly <code>aria-live="assertive"</code>, so newly rendered alerts
+                interrupt the screen reader and are spoken immediately.
+            </li>
+            <li>
+                <strong>Dismiss button</strong> — when <code>IsDismissible="true"</code>, the close
+                control is a native <code>&lt;button&gt;</code> with
+                <code>aria-label="Dismiss alert"</code>, so it is reachable by
+                <kbd>Tab</kbd> and activatable with <kbd>Enter</kbd> or <kbd>Space</kbd>.
+            </li>
+            <li>
+                <strong>Non-colour cues</strong> — always prepend a short label
+                (&ldquo;Error:&rdquo;, &ldquo;Success:&rdquo;) so the message survives a
+                monochrome or high-contrast rendering of the theme.
+            </li>
+            <li>
+                <strong>Semantic sibling components</strong> — for long-lived status text that
+                should <em>not</em> interrupt, use a <code>role="status"</code> element
+                (e.g. a <code>SunfishSpinner</code>) instead of an alert.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Live-announced alert (toggle to trigger)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Click the button to insert a fresh alert. Screen readers announce it immediately
+                    because <code>role="alert"</code> is an assertive live region.
+                </p>
+                <div style="display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton OnClick="AnnounceAlert">Announce new alert</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _announcement = null)">Clear</SunfishButton>
+                </div>
+                <div style="margin-top:.75rem; min-height:3rem;">
+                    @if (_announcement is not null)
+                    {
+                        <SunfishAlert Severity="AlertSeverity.Info" AriaLabel="Saved notification">
+                            <strong>Saved.</strong> @_announcement
+                        </SunfishAlert>
+                    }
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Dismiss button is keyboard-operable</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Focus the alert with <kbd>Tab</kbd>, then press <kbd>Enter</kbd> or
+                    <kbd>Space</kbd> to close it. The button announces as
+                    &ldquo;Dismiss alert, button&rdquo;.
+                </p>
+                @if (_dismissVisible)
+                {
+                    <SunfishAlert Severity="AlertSeverity.Warning"
+                                  IsDismissible="true"
+                                  OnDismiss="@(() => _dismissVisible = false)">
+                        <strong>Warning.</strong> Two items in this draft are missing tax codes. Review before submitting.
+                    </SunfishAlert>
+                }
+                else
+                {
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _dismissVisible = true)">Restore alert</SunfishButton>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; role reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="alert"</code></dt>
+                    <dd>Implicit <code>aria-live="assertive"</code> + <code>aria-atomic="true"</code>. Applied to the root <code>&lt;div&gt;</code>.</dd>
+
+                    <dt><code>AriaLabel</code></dt>
+                    <dd>Maps to <code>aria-label</code> on the root wrapper — use when the text alone is ambiguous.</dd>
+
+                    <dt><code>Dismiss button</code></dt>
+                    <dd>Native <code>&lt;button type="button"&gt;</code> with <code>aria-label="Dismiss alert"</code>.</dd>
+
+                    <dt><code>role="status"</code></dt>
+                    <dd>Prefer for <em>non-interrupting</em> progress text; not applied by <code>SunfishAlert</code>.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Alert", "Accessibility"];
+
+    private string? _announcement;
+    private bool _dismissVisible = true;
+    private int _counter;
+
+    private void AnnounceAlert()
+    {
+        _counter++;
+        _announcement = $"Draft #{_counter} was stored at {DateTime.Now:HH:mm:ss}.";
+    }
+}

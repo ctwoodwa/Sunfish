@@ -1,0 +1,127 @@
+@page "/components/buttons/chip/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chip / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chip / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Chip/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChip</code> renders a compact entity token. Appearance is driven by
+            three parameters: <code>Variant</code> (one of the
+            <code>ChipVariant</code> values — <strong>Default</strong>, <strong>Primary</strong>,
+            <strong>Secondary</strong>, <strong>Danger</strong>, <strong>Warning</strong>,
+            <strong>Info</strong>, <strong>Success</strong>), <code>IsSelected</code>
+            (a two-tone selected state), and <code>Disabled</code>. The <code>Icon</code>
+            render-fragment slot draws a leading glyph and the <code>Removable</code> flag
+            renders a trailing &times; button.
+        </p>
+        <p>
+            Chips are shaped like pills by design — they do not expose a <code>Rounded</code>
+            parameter. If you need rectangular tags, use a <code>SunfishButton</code> with
+            <code>FillMode.Outline</code>. The combinations below walk through each variant,
+            each state, icons, and removable tokens.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Variants</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishChip Variant="ChipVariant.Default"   Label="Default"   />
+                    <SunfishChip Variant="ChipVariant.Primary"   Label="Primary"   />
+                    <SunfishChip Variant="ChipVariant.Secondary" Label="Secondary" />
+                    <SunfishChip Variant="ChipVariant.Danger"    Label="Danger"    />
+                    <SunfishChip Variant="ChipVariant.Warning"   Label="Warning"   />
+                    <SunfishChip Variant="ChipVariant.Info"      Label="Info"      />
+                    <SunfishChip Variant="ChipVariant.Success"   Label="Success"   />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Selected state</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Each variant renders a visually distinct selected treatment.
+                </p>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishChip Variant="ChipVariant.Default"   Label="Default"   IsSelected="true" />
+                    <SunfishChip Variant="ChipVariant.Primary"   Label="Primary"   IsSelected="true" />
+                    <SunfishChip Variant="ChipVariant.Secondary" Label="Secondary" IsSelected="true" />
+                    <SunfishChip Variant="ChipVariant.Danger"    Label="Danger"    IsSelected="true" />
+                    <SunfishChip Variant="ChipVariant.Success"   Label="Success"   IsSelected="true" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishChip Variant="ChipVariant.Default" Label="Disabled" Disabled="true" />
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Disabled" Disabled="true" />
+                    <SunfishChip Variant="ChipVariant.Danger"  Label="Disabled" Disabled="true" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With icons</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishChip Variant="ChipVariant.Info" Label="Info">
+                        <Icon><span aria-hidden="true">&#x24D8;</span></Icon>
+                    </SunfishChip>
+                    <SunfishChip Variant="ChipVariant.Warning" Label="Careful">
+                        <Icon><span aria-hidden="true">&#x26A0;</span></Icon>
+                    </SunfishChip>
+                    <SunfishChip Variant="ChipVariant.Success" Label="Done">
+                        <Icon><span aria-hidden="true">&#x2713;</span></Icon>
+                    </SunfishChip>
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Designer">
+                        <Icon><span aria-hidden="true">&#x1F464;</span></Icon>
+                    </SunfishChip>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Removable (dismissible) tokens</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Click the <strong>&times;</strong> to remove. <code>Removable</code> adds
+                    a visually-distinct close affordance; the chip itself stays clickable.
+                </p>
+                @if (_tags.Count == 0)
+                {
+                    <em style="color:#888;">(all removed — use the reset button to restore)</em>
+                }
+                else
+                {
+                    <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                        @foreach (var tag in _tags.ToList())
+                        {
+                            <SunfishChip Variant="ChipVariant.Primary"
+                                         Label="@tag"
+                                         Removable="true"
+                                         OnRemove="@(() => _tags.Remove(tag))" />
+                        }
+                    </div>
+                }
+                <div style="margin-top:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ResetTags">Reset tags</SunfishButton>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Chip", "Appearance"];
+
+    private List<string> _tags = new() { "design", "frontend", "a11y", "blazor" };
+
+    private void ResetTags() => _tags = new() { "design", "frontend", "a11y", "blazor" };
+}

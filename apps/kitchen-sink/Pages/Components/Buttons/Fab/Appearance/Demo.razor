@@ -1,0 +1,95 @@
+@page "/components/buttons/fab/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Fab / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Fab / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Fab/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFab</code> is a floating action button. Its appearance is driven by
+            <code>Size</code> (one of <code>FabSize.Small</code> / <code>Medium</code> /
+            <code>Large</code>), the <code>Icon</code> name string, and an optional
+            <code>ChildContent</code> for extended (text+icon) FABs. The <code>Enabled</code>
+            flag flips the disabled state.
+        </p>
+        <p>
+            By default a FAB is <strong>fixed-positioned</strong> in the bottom-right
+            corner of the viewport. To include FABs inline in a demo, override
+            <code>PositionMode="static"</code> so the button lays out in flow instead of
+            floating. <code>HorizontalAlign</code> (<code>left</code> / <code>right</code>),
+            <code>VerticalAlign</code> (<code>top</code> / <code>bottom</code>), and the
+            matching <code>HorizontalOffset</code> / <code>VerticalOffset</code> CSS length
+            strings control anchoring when <code>PositionMode</code> is <code>fixed</code> or
+            <code>absolute</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes (inline, <code>PositionMode="static"</code>)</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                    <SunfishFab PositionMode="static" Size="FabSize.Small"  Icon="plus" />
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus" />
+                    <SunfishFab PositionMode="static" Size="FabSize.Large"  Icon="plus" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only vs extended (with label)</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus" />
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus">
+                        New item
+                    </SunfishFab>
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="edit">
+                        Compose
+                    </SunfishFab>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">States</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:1rem; align-items:center;">
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus" />
+                    <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus" Enabled="false" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Anchor demo — absolute positioning inside a scroll container</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Setting <code>PositionMode="absolute"</code> anchors the FAB to the nearest
+                    positioned ancestor. The example below shows each of the four corner
+                    anchors in a <code>position:relative</code> sandbox.
+                </p>
+                <div style="position:relative; height:260px; border:1px dashed var(--sf-color-border, #ccc); border-radius:6px; background:var(--sf-color-surface, #f7f8fa);">
+                    <SunfishFab PositionMode="absolute" HorizontalAlign="left"  VerticalAlign="top"    HorizontalOffset="12px" VerticalOffset="12px"
+                                Size="FabSize.Small" Icon="arrow-up-left" />
+                    <SunfishFab PositionMode="absolute" HorizontalAlign="right" VerticalAlign="top"    HorizontalOffset="12px" VerticalOffset="12px"
+                                Size="FabSize.Small" Icon="arrow-up-right" />
+                    <SunfishFab PositionMode="absolute" HorizontalAlign="left"  VerticalAlign="bottom" HorizontalOffset="12px" VerticalOffset="12px"
+                                Size="FabSize.Small" Icon="arrow-down-left" />
+                    <SunfishFab PositionMode="absolute" HorizontalAlign="right" VerticalAlign="bottom" HorizontalOffset="12px" VerticalOffset="12px"
+                                Size="FabSize.Medium" Icon="plus" />
+                    <p style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); margin:0; color:#888; font-size:.85rem;">
+                        anchor sandbox (position:relative)
+                    </p>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Fab", "Appearance"];
+}

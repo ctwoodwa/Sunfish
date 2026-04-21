@@ -1,0 +1,122 @@
+@page "/components/buttons/togglebutton/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ToggleButton / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ToggleButton / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishToggleButton</code> exposes two callbacks:
+        </p>
+        <ul>
+            <li><code>OnClick</code> — fires first with the raw <code>MouseEventArgs</code>.</li>
+            <li><code>SelectedChanged</code> — fires after the internal toggle, with the
+                new boolean state. Use <code>@@bind-Selected</code> to combine
+                <code>Selected</code> + <code>SelectedChanged</code> into two-way binding.</li>
+        </ul>
+        <p>
+            A disabled toggle fires <em>neither</em> callback. Focus events are available
+            through pass-through <code>@@onfocus</code> / <code>@@onblur</code> directives.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div>
+                <h4 style="margin:0 0 .35rem;">Two-way binding (<code>@("@bind-Selected")</code>)</h4>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishToggleButton @bind-Selected="_bold">Bold</SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_italic">Italic</SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_underline">Underline</SunfishToggleButton>
+                </div>
+                <p style="margin:.5rem 0 0; font-weight:@(_bold ? "bold" : "normal"); font-style:@(_italic ? "italic" : "normal"); text-decoration:@(_underline ? "underline" : "none");">
+                    Preview — state Bold=<strong>@_bold</strong>, Italic=<strong>@_italic</strong>, Underline=<strong>@_underline</strong>
+                </p>
+
+                <h4 style="margin:1rem 0 .35rem;">Separate callbacks (<code>OnClick</code> + <code>SelectedChanged</code>)</h4>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    This variant logs the raw click, the selection change, and focus/blur
+                    events individually so you can see the exact call order.
+                </p>
+                <SunfishToggleButton Selected="_notify"
+                                     SelectedChanged="HandleNotifyChanged"
+                                     OnClick="@(e => Append("OnClick", $"Notify (button {e.Button}, pre-toggle state={_notify})"))"
+                                     @onfocus="@(() => Append("focus", "Notify"))"
+                                     @onblur="@(() => Append("blur", "Notify"))">
+                    <Icon><span aria-hidden="true">&#x1F514;</span></Icon>
+                    <ChildContent>Notify</ChildContent>
+                </SunfishToggleButton>
+                <span style="margin-left:.75rem; color:#555; font-size:.85rem;">Notify: <strong>@_notify</strong></span>
+
+                <h4 style="margin:1rem 0 .35rem;">Disabled toggle fires nothing</h4>
+                <SunfishToggleButton Enabled="false"
+                                     OnClick="@(_ => Append("OnClick", "Disabled (will not fire)"))"
+                                     SelectedChanged="@(v => Append("SelectedChanged", $"Disabled → {v}"))">
+                    Disabled toggle
+                </SunfishToggleButton>
+
+                <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:420px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ToggleButton", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private bool _bold;
+    private bool _italic;
+    private bool _underline;
+    private bool _notify;
+
+    private void HandleNotifyChanged(bool value)
+    {
+        _notify = value;
+        Append("SelectedChanged", $"Notify → {value}");
+    }
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

@@ -1,0 +1,135 @@
+@page "/components/feedback/dialog/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Dialog / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Dialog / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Dialog/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDialog</code> exposes three event callbacks that together cover open,
+            close, and button-activation lifecycles:
+        </p>
+        <ul>
+            <li><code>VisibleChanged</code> &mdash; fires whenever <code>Visible</code> toggles; two-way binding via <code>@@bind-Visible</code> builds on this.</li>
+            <li><code>OnClose</code> &mdash; fires after the dialog closes via the header close button, overlay click, or a Cancel/No preset button.</li>
+            <li><code>OnButtonClick</code> &mdash; fires when a predefined footer button (from the <code>Buttons</code> enum) is clicked; the payload is a <code>DialogResult</code>.</li>
+        </ul>
+        <p>
+            The append-only event log on the right records every callback in order. Open the
+            dialog, click buttons, dismiss via Esc or overlay, and watch the stream populate.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="OpenConfirmDialog">Open YesNoCancel dialog</SunfishButton>
+                    <SunfishButton OnClick="OpenBoundDialog">Open @@bind-Visible dialog</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                </div>
+                <p style="margin-top:.5rem; color:#666; font-size:.85rem;">
+                    Events captured: @_log.Count &middot; last result: <strong>@( _lastResult ?? "none" )</strong>
+                </p>
+
+                <SunfishDialog Visible="_confirmVisible"
+                               VisibleChanged="HandleConfirmVisibleChanged"
+                               Title="Leave this page?"
+                               Width="420px"
+                               Buttons="DialogButtons.YesNoCancel"
+                               OnButtonClick="HandleButtonClick"
+                               OnClose="HandleClose">
+                    <p>Unsaved changes will be lost. Choose <em>Yes</em> to leave, <em>No</em> to stay, or <em>Cancel</em> to dismiss.</p>
+                </SunfishDialog>
+
+                <SunfishDialog @bind-Visible="_boundVisible"
+                               Title="Two-way bound dialog"
+                               Width="400px"
+                               OnClose="HandleClose">
+                    <p>This dialog uses <code>@@bind-Visible</code>. Changes to <code>_boundVisible</code> in code are reflected instantly; clicking the header close button resets it to <code>false</code>.</p>
+                    <p>Current value: <strong>@_boundVisible</strong></p>
+                </SunfishDialog>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li><strong>@entry.Event</strong> &mdash; @entry.Detail</li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Dialog", "Events"];
+
+    private bool _confirmVisible;
+    private bool _boundVisible;
+    private string? _lastResult;
+
+    private record LogEntry(string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void OpenConfirmDialog()
+    {
+        _confirmVisible = true;
+        Append("Open", "YesNoCancel dialog shown");
+    }
+
+    private void OpenBoundDialog()
+    {
+        _boundVisible = true;
+        Append("Open", "@bind-Visible dialog shown");
+    }
+
+    private void HandleConfirmVisibleChanged(bool value)
+    {
+        _confirmVisible = value;
+        Append("VisibleChanged", value.ToString());
+    }
+
+    private void HandleButtonClick(DialogResult result)
+    {
+        _lastResult = result.ToString();
+        Append("OnButtonClick", result.ToString());
+    }
+
+    private void HandleClose()
+    {
+        Append("OnClose", "dialog dismissed");
+    }
+
+    private void ClearLog()
+    {
+        _log.Clear();
+        _lastResult = null;
+    }
+}

@@ -1,0 +1,96 @@
+@page "/components/feedback/signalr-connection-status/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SignalR Status / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SignalR Status / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SignalRStatus/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSignalRConnectionStatus</code> renders a single toolbar trigger that
+            visualises the aggregate health of every hub registered in
+            <code>ISignalRConnectionRegistry</code>. Its look is controlled by four parameters:
+            <code>Compact</code> (smaller footprint for dense toolbars), <code>ShowCounts</code>
+            (displays a <em>healthy / total</em> pair next to the icon), <code>Title</code>
+            (header of the popup list), and <code>PopupPlacement</code>
+            (<code>BottomStart</code>, <code>BottomEnd</code>, <code>TopStart</code>,
+            <code>TopEnd</code>). The icon itself flips between
+            <code>wifi</code> and <code>wifi-off</code> glyphs based on the aggregate
+            <code>AggregateConnectionState</code> returned by the registry.
+        </p>
+        <p>
+            This demo requires a running SignalR backend that registers hubs via
+            <code>ISignalRConnectionRegistry</code>. The snippets below show every appearance
+            variant you would embed in an AppBar or status panel; a preview row illustrates the
+            trigger chrome using a mocked icon so the styling is still reviewable.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <SunfishAlert Severity="AlertSeverity.Info">
+                <strong>Backend required.</strong> <code>SunfishSignalRConnectionStatus</code>
+                injects <code>ISignalRConnectionRegistry</code>. The kitchen-sink demo does not
+                register hubs, so the live renderings below use a static mock-up of the trigger
+                chrome to keep the visual reference intact.
+            </SunfishAlert>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default &mdash; counts visible, bottom-end popup</h3>
+                <pre style="margin:0; padding:.75rem; background:#0f172a; color:#e2e8f0; border-radius:.5rem; overflow:auto;"><code>&lt;SunfishSignalRConnectionStatus /&gt;</code></pre>
+                <div style="display:inline-flex; align-items:center; gap:.4rem; margin-top:.5rem; padding:.4rem .75rem; border:1px solid var(--sf-color-border, #d1d5db); border-radius:999px; background:#ecfdf5; color:#065f46;">
+                    <span aria-hidden="true">&#128246;</span>
+                    <span style="font-weight:600;">3/3</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Compact &mdash; dense toolbar variant</h3>
+                <pre style="margin:0; padding:.75rem; background:#0f172a; color:#e2e8f0; border-radius:.5rem; overflow:auto;"><code>&lt;SunfishSignalRConnectionStatus Compact="true" ShowCounts="false" /&gt;</code></pre>
+                <div style="display:inline-flex; align-items:center; gap:.25rem; margin-top:.5rem; padding:.25rem .5rem; border:1px solid var(--sf-color-border, #d1d5db); border-radius:.375rem;">
+                    <span aria-hidden="true" style="font-size:.85rem;">&#128246;</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Degraded state &mdash; icon flips to <code>wifi-off</code></h3>
+                <pre style="margin:0; padding:.75rem; background:#0f172a; color:#e2e8f0; border-radius:.5rem; overflow:auto;"><code>&lt;SunfishSignalRConnectionStatus Title="Real-time feeds" /&gt;</code></pre>
+                <div style="display:inline-flex; align-items:center; gap:.4rem; margin-top:.5rem; padding:.4rem .75rem; border:1px solid #fca5a5; border-radius:999px; background:#fef2f2; color:#991b1b;">
+                    <span aria-hidden="true">&#128683;</span>
+                    <span style="font-weight:600;">1/3</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Critical-only filter</h3>
+                <pre style="margin:0; padding:.75rem; background:#0f172a; color:#e2e8f0; border-radius:.5rem; overflow:auto;"><code>&lt;SunfishSignalRConnectionStatus IncludeNonCritical="false" /&gt;</code></pre>
+                <p style="margin:.5rem 0 0; color:#555;">
+                    Optional hubs (<code>IsCritical == false</code>) are excluded from the popup
+                    and from the counts, so &ldquo;all healthy&rdquo; means all
+                    <em>critical</em> hubs are online.
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Popup placement</h3>
+                <pre style="margin:0; padding:.75rem; background:#0f172a; color:#e2e8f0; border-radius:.5rem; overflow:auto;"><code>&lt;SunfishSignalRConnectionStatus PopupPlacement="ConnectionPopupPlacement.TopEnd" /&gt;</code></pre>
+                <p style="margin:.5rem 0 0; color:#555;">
+                    Use <code>TopStart</code> / <code>TopEnd</code> when the trigger lives in a
+                    status bar anchored to the bottom of the viewport.
+                </p>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SignalR Status", "Appearance"];
+}

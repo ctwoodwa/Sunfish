@@ -1,0 +1,170 @@
+@page "/components/feedback/dialog/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Dialog / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Dialog / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Dialog/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDialog</code> renders its surface as <code>role="dialog"</code> with
+            <code>aria-modal</code> bound to the <code>Modal</code> parameter. The header text is
+            wired through an adjacent <code>&lt;span&gt;</code> inside <code>sf-dialog-title</code>
+            &mdash; pair it with <code>aria-labelledby</code> by supplying an <code>id</code>
+            via <code>AdditionalAttributes</code> when you need a fully deterministic accessible
+            name.
+        </p>
+        <ul>
+            <li>
+                <strong>Role</strong>: <code>role="dialog"</code>. Use <code>SunfishConfirmDialog</code>
+                instead (<code>role="alertdialog"</code>) whenever the content requires a user
+                response before proceeding.
+            </li>
+            <li>
+                <strong>Modal scrim</strong>: when <code>Modal="true"</code>, a backdrop captures
+                pointer events outside the dialog. Clicking the scrim closes the dialog unless
+                <code>CloseOnOverlayClick="false"</code>.
+            </li>
+            <li>
+                <strong>Close button</strong>: rendered as a native <code>&lt;button&gt;</code> with
+                <code>aria-label="Close"</code>. It is reachable via <kbd>Tab</kbd> and activatable
+                with <kbd>Enter</kbd> or <kbd>Space</kbd>.
+            </li>
+            <li>
+                <strong>Preset buttons</strong>: driven by the <code>Buttons</code> enum. Preset
+                rendering produces native buttons with visible text labels (OK, Cancel, Yes, No,
+                Retry), so they are announced by assistive technology without additional ARIA.
+            </li>
+            <li>
+                <strong>Focus management</strong>: set initial focus on the most important action in
+                your <code>DialogContent</code> (for example a &ldquo;Save&rdquo; button) via
+                <code>@@ref</code> + <code>.FocusAsync()</code> in an <code>OnAfterRenderAsync</code>
+                override. Restore focus to the invoking control when the dialog closes.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled dialog with managed focus restoration</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Tab to the button below and press <kbd>Enter</kbd>. When the dialog closes,
+                    focus returns to the same trigger so keyboard users never lose their place.
+                </p>
+                <button type="button" @ref="_trigger"
+                        class="mar-btn mar-btn--primary"
+                        @onclick="OpenLabelled">
+                    Open labelled dialog
+                </button>
+
+                <SunfishDialog @bind-Visible="_labelledVisible"
+                               Title="Confirm checkout"
+                               Width="440px"
+                               Buttons="DialogButtons.OkCancel"
+                               OnClose="RestoreFocus">
+                    <p>
+                        Review the order total and press <em>OK</em> to place the order, or
+                        <em>Cancel</em> to return to the cart.
+                    </p>
+                    <ul>
+                        <li>3 items &mdash; subtotal $142.00</li>
+                        <li>Shipping: $0 (in-store pickup)</li>
+                        <li>Tax: $11.36</li>
+                    </ul>
+                </SunfishDialog>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Non-closeable-via-overlay dialog</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    For destructive or in-progress actions, prevent accidental dismissal by
+                    setting <code>CloseOnOverlayClick="false"</code> and hiding the header close
+                    button.
+                </p>
+                <SunfishButton OnClick="@(() => _lockedVisible = true)">Open locked dialog</SunfishButton>
+
+                <SunfishDialog @bind-Visible="_lockedVisible"
+                               Title="Uploading&hellip;"
+                               Width="400px"
+                               CloseOnOverlayClick="false"
+                               ShowCloseButton="false"
+                               Buttons="DialogButtons.None">
+                    <DialogContent>
+                        <p>Your upload is in progress. This dialog will close automatically when it completes.</p>
+                    </DialogContent>
+                    <DialogActions>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _lockedVisible = false)">Force close (demo only)</SunfishButton>
+                    </DialogActions>
+                </SunfishDialog>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard &amp; ARIA reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:520px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key / attribute</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Behaviour</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (key, behaviour) in _reference)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">
+                                    @((MarkupString)key)
+                                </td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@behaviour</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Dialog", "Accessibility"];
+
+    private ElementReference _trigger;
+    private bool _labelledVisible;
+    private bool _lockedVisible;
+
+    private void OpenLabelled()
+    {
+        _labelledVisible = true;
+    }
+
+    private async Task RestoreFocus()
+    {
+        try
+        {
+            await _trigger.FocusAsync();
+        }
+        catch
+        {
+            // ignore — the element may no longer be in the DOM
+        }
+    }
+
+    private static readonly (string Key, string Behaviour)[] _reference =
+    [
+        ("<kbd>Tab</kbd>",                              "Cycle through close button, body content, preset buttons."),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",             "Reverse focus order."),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>",         "Activate the focused button."),
+        ("<kbd>Esc</kbd>",                              "Dismiss &mdash; handled by the browser for native modals and by overlay-click wiring."),
+        ("<code>role=\"dialog\"</code>",               "Applied to the dialog surface."),
+        ("<code>aria-modal</code>",                     "Reflects the <code>Modal</code> parameter."),
+        ("<code>aria-label=\"Close\"</code>",           "On the header <em>&times;</em> button."),
+    ];
+}

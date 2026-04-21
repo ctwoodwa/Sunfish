@@ -1,0 +1,127 @@
+@page "/components/buttons/segmentedcontrol/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SegmentedControl / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SegmentedControl / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/SegmentedControl/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSegmentedControl</code> adopts the <strong>radio group</strong>
+            pattern: the outer container is <code>role="radiogroup"</code>, and every
+            segment is a <code>&lt;button&gt;</code> with <code>role="radio"</code> plus
+            an <code>aria-checked</code> value reflecting its selection state. This lets
+            assistive tech announce the group name, the currently-selected option, and
+            the total count of options.
+        </p>
+        <p>
+            By default the group carries <code>aria-label="Segmented control"</code>.
+            Override it by passing <code>aria-label</code> through — or pair the control
+            with an existing label element via <code>aria-labelledby</code>. When
+            <code>Enabled="false"</code>, every segment has the native <code>disabled</code>
+            attribute set, so the whole group is skipped by the Tab key.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:600px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled group (<code>aria-label</code>)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Supply a concise, meaningful name for the radiogroup. Screen readers
+                    announce it when focus enters the control.
+                </p>
+                <SunfishSegmentedControl Items="_viewItems" @bind-Value="_view"
+                                         aria-label="Calendar range" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Group labelled by an adjacent heading (<code>aria-labelledby</code>)</h3>
+                <h4 id="sort-label" style="margin:0 0 .35rem;">Sort by</h4>
+                <SunfishSegmentedControl Items="_sortItems" @bind-Value="_sort"
+                                         aria-labelledby="sort-label" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Group described by help text (<code>aria-describedby</code>)</h3>
+                <SunfishSegmentedControl Items="_densityItems" @bind-Value="_density"
+                                         aria-label="Row density"
+                                         aria-describedby="density-hint" />
+                <span id="density-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Controls how tightly rows are packed in the table below. Screen readers
+                    will announce this hint after the group label.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled group is announced</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Every segment is natively disabled; focus skips the whole group.
+                </p>
+                <SunfishSegmentedControl Items="_viewItems" Value="@_view"
+                                         aria-label="Disabled view range" Enabled="false" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Rendered ARIA (for reference)</h3>
+                <p style="margin:0; color:#555; font-size:.9rem;">
+                    When you inspect the DOM you will see <code>role="radiogroup"</code> on
+                    the container and <code>role="radio" aria-checked="true|false"</code> on
+                    each segment — exactly the pattern described in the WAI-ARIA Authoring
+                    Practices for a radio group.
+                </p>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "SegmentedControl", "Accessibility"];
+
+    private readonly List<string> _viewItems    = new() { "Day", "Week", "Month" };
+    private string _view = "Week";
+
+    private readonly List<string> _sortItems    = new() { "Name", "Date", "Size" };
+    private string _sort = "Name";
+
+    private readonly List<string> _densityItems = new() { "Comfortable", "Cozy", "Compact" };
+    private string _density = "Cozy";
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                     "Move focus into the radiogroup"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",    "Move focus out of the radiogroup"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>", "Select the focused segment"),
+        ("<kbd>&#x2190;</kbd> / <kbd>&#x2192;</kbd>", "In browsers that implement radiogroup semantics: move between radios"),
+        ("<kbd>&#x2191;</kbd> / <kbd>&#x2193;</kbd>", "In browsers that implement radiogroup semantics: move between radios")
+    ];
+}

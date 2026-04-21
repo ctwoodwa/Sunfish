@@ -1,0 +1,126 @@
+@page "/components/buttons/togglebutton/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ToggleButton / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ToggleButton / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishToggleButton</code> renders a native <code>&lt;button&gt;</code> and
+            automatically emits <code>aria-pressed</code> ("true" or "false") reflecting its
+            <code>Selected</code> state. This is the W3C-recommended pattern for a
+            two-state toggle and is distinct from a switch (<code>role="switch"</code>, which
+            uses <code>aria-checked</code> and has a more "on/off" semantic).
+        </p>
+        <p>
+            The <code>Enabled="false"</code> flag maps to the native <code>disabled</code>
+            attribute, so the browser removes the toggle from the tab order and assistive
+            tech announces the disabled state. Tab order is the default DOM order; use a
+            <code>SunfishButtonGroup</code> around the toggles when you want Arrow-key
+            navigation within a logical cluster (add the roving-tabindex handling yourself,
+            as the group is a generic <code>role="group"</code>).
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:560px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only toggles — <code>aria-label</code> required</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Without visible text, supply an accessible name via
+                    <code>aria-label</code>. <code>aria-pressed</code> is set for you.
+                </p>
+                <SunfishButtonGroup aria-label="Text formatting">
+                    <SunfishToggleButton @bind-Selected="_bold"      aria-label="Bold">
+                        <Icon><span aria-hidden="true"><strong>B</strong></span></Icon>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_italic"    aria-label="Italic">
+                        <Icon><span aria-hidden="true"><em>I</em></span></Icon>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_underline" aria-label="Underline">
+                        <Icon><span aria-hidden="true" style="text-decoration:underline;">U</span></Icon>
+                    </SunfishToggleButton>
+                </SunfishButtonGroup>
+                <p style="margin:.5rem 0 0; font-size:.85rem; color:#555;">
+                    Toggle state: Bold=<strong>@_bold</strong>, Italic=<strong>@_italic</strong>, Underline=<strong>@_underline</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Toggle described by help text</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>aria-describedby</code> points at supplementary copy.
+                </p>
+                <SunfishToggleButton @bind-Selected="_privateMode" aria-describedby="private-hint">
+                    <Icon><span aria-hidden="true">&#x1F512;</span></Icon>
+                    <ChildContent>Private mode</ChildContent>
+                </SunfishToggleButton>
+                <span id="private-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    When on, activity is not shared with collaborators.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state is announced</h3>
+                <SunfishToggleButton Enabled="false">Disabled toggle (unpressed)</SunfishToggleButton>
+                <SunfishToggleButton Enabled="false" Selected="true">Disabled toggle (pressed)</SunfishToggleButton>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">When to prefer a switch role</h3>
+                <p style="margin:0; color:#555; font-size:.9rem;">
+                    A <code>SunfishToggleButton</code> is the right choice when the action is
+                    contextual (e.g. "bold the selected text") or when multiple toggles form
+                    a toolbar. For a global on/off setting that stays toggled, consider a
+                    dedicated switch component (<code>role="switch"</code>) for clearer
+                    semantics.
+                </p>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ToggleButton", "Accessibility"];
+
+    private bool _bold, _italic, _underline;
+    private bool _privateMode;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                     "Move focus to the next toggle"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",    "Move focus to the previous toggle"),
+        ("<kbd>Enter</kbd>",                   "Flip the pressed state"),
+        ("<kbd>Space</kbd>",                   "Flip the pressed state")
+    ];
+}

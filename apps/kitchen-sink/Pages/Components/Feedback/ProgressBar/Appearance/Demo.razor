@@ -1,0 +1,78 @@
+@page "/components/feedback/progressbar/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ProgressBar / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ProgressBar / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishProgressBar</code> is a theme-driven wrapper around a native
+            <code>role="progressbar"</code> element. Its look is determined by four parameters:
+            <code>Value</code> (0&ndash;<code>Max</code>) for determinate progress,
+            <code>IsIndeterminate</code> for unknown-duration work, <code>Label</code> +
+            <code>ShowLabel</code> for an inline percentage or caption, and the standard
+            <code>Style</code> / <code>Class</code> surface for sizing. Custom colours and heights
+            are driven through CSS custom properties on the parent element so a single component
+            reskins with the active provider.
+        </p>
+        <p>
+            The examples below contrast determinate, indeterminate, labelled, custom-max (bytes
+            downloaded), tall, and tokenised variants &mdash; all the same component with different
+            parameters.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Determinate (default)</h3>
+                <SunfishProgressBar Value="@_progress" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+                    <span style="align-self:center; color:#666;">Value = @_progress / 100</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Indeterminate</h3>
+                <SunfishProgressBar IsIndeterminate="true" Label="Syncing..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With inline label</h3>
+                <SunfishProgressBar Value="72" ShowLabel="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom label text</h3>
+                <SunfishProgressBar Value="3" Max="5" ShowLabel="true" Label="Step 3 of 5" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom Max (bytes downloaded)</h3>
+                <SunfishProgressBar Value="1_572_864" Max="2_097_152" ShowLabel="true" Label="1.5 MB / 2.0 MB" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Tall variant via Style tokens</h3>
+                <SunfishProgressBar Value="60" Style="height: 18px; border-radius: 9px;" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ProgressBar", "Appearance"];
+
+    private double _progress = 45;
+}

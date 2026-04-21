@@ -1,0 +1,135 @@
+@page "/components/buttons/chip/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chip / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chip / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChip</code> renders as a <code>&lt;span&gt;</code> with
+            <code>role="option"</code> and <code>tabindex="0"</code>, so it is keyboard
+            reachable. When a chip is selected the component emits <code>aria-selected="true"</code>;
+            when disabled it emits <code>aria-disabled="true"</code> and drops out of the tab order
+            (<code>tabindex="-1"</code>).
+        </p>
+        <p>
+            The dismiss affordance on a <code>Removable</code> chip is a native
+            <code>&lt;button&gt;</code> with <code>aria-label="Remove"</code>, so screen readers
+            announce it as a separate activatable control. Because chips are
+            <code>role="option"</code>, the recommended parent is a container with
+            <code>role="listbox"</code> (for a single-select) or
+            <code>role="listbox" aria-multiselectable="true"</code> (for a multi-select set) —
+            the sibling <code>SunfishChipSet</code> does exactly that.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:560px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Selectable chips inside a <code>listbox</code></h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Wrap chips with a parent that carries <code>role="listbox"</code> and
+                    <code>aria-multiselectable="true"</code>. Each selected chip publishes
+                    <code>aria-selected="true"</code>.
+                </p>
+                <div role="listbox" aria-multiselectable="true" aria-labelledby="role-label"
+                     style="display:flex; flex-wrap:wrap; gap:.5rem; padding:.5rem; border:1px solid var(--sf-color-border, #ddd); border-radius:4px;">
+                    <span id="role-label" style="position:absolute; left:-9999px;">Pick any role that applies</span>
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Designer"    Selectable="true" @bind-IsSelected="_roleDesigner" />
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Engineer"    Selectable="true" @bind-IsSelected="_roleEngineer" />
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Researcher"  Selectable="true" @bind-IsSelected="_roleResearcher" />
+                    <SunfishChip Variant="ChipVariant.Primary" Label="Manager"     Selectable="true" @bind-IsSelected="_roleManager" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Removable chip — separate button for the dismiss affordance</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The &times; affordance is a native button with its own focus ring and
+                    <code>aria-label="Remove"</code>, so it is independently announced.
+                </p>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    @if (_demo1)
+                    {
+                        <SunfishChip Variant="ChipVariant.Info" Label="tag-one" Removable="true"
+                                     OnRemove="@(() => _demo1 = false)" />
+                    }
+                    @if (_demo2)
+                    {
+                        <SunfishChip Variant="ChipVariant.Info" Label="tag-two" Removable="true"
+                                     OnRemove="@(() => _demo2 = false)" />
+                    }
+                    @if (_demo3)
+                    {
+                        <SunfishChip Variant="ChipVariant.Info" Label="tag-three" Removable="true"
+                                     OnRemove="@(() => _demo3 = false)" />
+                    }
+                    @if (!_demo1 && !_demo2 && !_demo3)
+                    {
+                        <em style="color:#888;">(all removed)</em>
+                    }
+                </div>
+                <div style="margin-top:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ResetDemo">Reset</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled chip is announced as disabled</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>Disabled="true"</code> sets <code>aria-disabled="true"</code> and
+                    removes the chip from the tab order via <code>tabindex="-1"</code>.
+                </p>
+                <SunfishChip Variant="ChipVariant.Default" Label="Disabled chip" Disabled="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Chip", "Accessibility"];
+
+    private bool _roleDesigner, _roleEngineer, _roleResearcher, _roleManager;
+    private bool _demo1 = true, _demo2 = true, _demo3 = true;
+
+    private void ResetDemo() { _demo1 = true; _demo2 = true; _demo3 = true; }
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",          "Move focus to the next chip"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus to the previous chip"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>", "Toggle the focused selectable chip (activates <code>OnClick</code>)"),
+        ("<kbd>Tab</kbd> (on removable chip)", "Move to the inner Remove button"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd> (on Remove)", "Dismiss the chip")
+    ];
+}

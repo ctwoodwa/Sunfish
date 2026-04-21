@@ -1,0 +1,125 @@
+@page "/components/buttons/fab/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Fab / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Fab / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Fab/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFab</code> renders a native <code>&lt;button&gt;</code>, so it
+            inherits role <code>button</code>, native focus behaviour, and activation with
+            <kbd>Enter</kbd> or <kbd>Space</kbd>. The <code>Enabled</code> parameter maps to
+            the native <code>disabled</code> attribute, so the browser removes the FAB from
+            the tab order automatically when disabled.
+        </p>
+        <p>
+            Because a FAB is typically <strong>icon-only</strong>, an accessible name is
+            required. Pass <code>aria-label</code> through — pass-through attributes forward
+            straight to the underlying button. For an extended (text) FAB the child
+            content acts as the accessible name.
+        </p>
+        <p>
+            Floating positioning is a visual concern, not an accessibility one — the
+            button is focusable wherever it renders in the document. Still, consider
+            placing the FAB's DOM position close to the action it relates to so the Tab
+            order is coherent for keyboard users.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:520px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only FAB — <code>aria-label</code> required</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    A purely icon-only FAB needs a textual name for screen readers.
+                </p>
+                <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus"
+                            aria-label="Create new message"
+                            OnClick="@(_ => _lastAction = "Message composer opened")" />
+                <span style="margin-left:.75rem; color:#555; font-size:.85rem;">Last action: <strong>@_lastAction</strong></span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Extended FAB — child content becomes the name</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    When a FAB has visible text, the text itself serves as the accessible
+                    name — <code>aria-label</code> is not needed.
+                </p>
+                <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus"
+                            OnClick="@(_ => _lastAction = "New item started")">
+                    New item
+                </SunfishFab>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Described-by help text</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Pair <code>aria-describedby</code> with a visible hint to give assistive
+                    tech supplementary context.
+                </p>
+                <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="trash"
+                            aria-label="Delete selection"
+                            aria-describedby="fab-delete-hint"
+                            OnClick="@(_ => _lastAction = "Selection deleted")" />
+                <span id="fab-delete-hint" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    Deletes all currently selected items. This action cannot be undone.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state is announced</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>Enabled="false"</code> sets the native <code>disabled</code>
+                    attribute, so the FAB is skipped by the Tab key and announced as
+                    disabled by screen readers.
+                </p>
+                <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus"
+                            aria-label="Create (disabled)" Enabled="false" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Fab", "Accessibility"];
+
+    private string _lastAction = "(none)";
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                      "Move focus to the FAB"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",     "Move focus out of the FAB"),
+        ("<kbd>Enter</kbd>",                    "Activate the FAB"),
+        ("<kbd>Space</kbd>",                    "Activate the FAB")
+    ];
+}

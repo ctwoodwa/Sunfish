@@ -1,0 +1,142 @@
+@page "/components/feedback/confirmdialog/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ConfirmDialog / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ConfirmDialog / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ConfirmDialog/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishConfirmDialog</code> exposes three event callbacks plus two-way
+            visibility binding:
+        </p>
+        <ul>
+            <li><code>VisibleChanged</code> &mdash; fires whenever <code>Visible</code> changes; pair with <code>@@bind-Visible</code> for reactive toggling.</li>
+            <li><code>OnConfirm</code> &mdash; fires when the user clicks the <em>Confirm</em> button (or pressed its keyboard equivalent). The dialog closes automatically afterwards.</li>
+            <li><code>OnCancel</code> &mdash; fires when the user clicks <em>Cancel</em>, the header close button, or the modal overlay. The dialog closes automatically afterwards.</li>
+        </ul>
+        <p>
+            The event log on the right captures every callback with the <em>action</em> taken and
+            the resulting <code>Visible</code> value. Exercise all three exit paths (Confirm,
+            Cancel, overlay click) to populate the stream.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="OpenDelete">Open dangerous confirm</SunfishButton>
+                    <SunfishButton OnClick="OpenPublish">Open neutral confirm</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                </div>
+                <p style="margin-top:.5rem; color:#666; font-size:.85rem;">
+                    Confirmed: <strong>@_confirmedCount</strong> &middot; Cancelled: <strong>@_cancelledCount</strong>
+                </p>
+
+                <SunfishConfirmDialog @bind-Visible="_deleteVisible"
+                                      Title="Delete invoice INV-00412?"
+                                      Message="This permanently deletes the invoice and all attached line items."
+                                      ConfirmText="Delete"
+                                      CancelText="Keep"
+                                      IsDangerous="true"
+                                      OnConfirm="HandleDeleteConfirm"
+                                      OnCancel="HandleDeleteCancel" />
+
+                <SunfishConfirmDialog @bind-Visible="_publishVisible"
+                                      Title="Publish draft?"
+                                      Message="Your draft will become visible to reviewers."
+                                      OnConfirm="HandlePublishConfirm"
+                                      OnCancel="HandlePublishCancel" />
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li><strong>@entry.Event</strong> &mdash; @entry.Detail</li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ConfirmDialog", "Events"];
+
+    private bool _deleteVisible;
+    private bool _publishVisible;
+    private int _confirmedCount;
+    private int _cancelledCount;
+
+    private record LogEntry(string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void OpenDelete()
+    {
+        _deleteVisible = true;
+        Append("Open", "Delete confirm shown");
+    }
+
+    private void OpenPublish()
+    {
+        _publishVisible = true;
+        Append("Open", "Publish confirm shown");
+    }
+
+    private void HandleDeleteConfirm()
+    {
+        _confirmedCount++;
+        Append("OnConfirm", "Delete invoice INV-00412");
+    }
+
+    private void HandleDeleteCancel()
+    {
+        _cancelledCount++;
+        Append("OnCancel", "Delete cancelled");
+    }
+
+    private void HandlePublishConfirm()
+    {
+        _confirmedCount++;
+        Append("OnConfirm", "Publish draft");
+    }
+
+    private void HandlePublishCancel()
+    {
+        _cancelledCount++;
+        Append("OnCancel", "Publish cancelled");
+    }
+
+    private void ClearLog()
+    {
+        _log.Clear();
+        _confirmedCount = 0;
+        _cancelledCount = 0;
+    }
+}
