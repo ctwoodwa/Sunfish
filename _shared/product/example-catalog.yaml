@@ -1,0 +1,1358 @@
+# Sunfish canonical example catalog (ADR 0022)
+#
+# This file is the parity contract for every Sunfish provider library:
+# kitchen-sink (Sunfish.Blazor adapter), compat-telerik demos, future
+# Sunfish.React / Sunfish.WC demo hosts, and any third-party provider
+# library that opts into Sunfish's catalog shape.
+#
+# Status values:
+#   sunfish-implemented — component/package exists; demo/docs required
+#   sunfish-partial     — exists but not all examples apply yet
+#   aspirational        — catalog reserves the node; no Sunfish impl yet
+#
+# Phase 1 inventory populates this file. Today's skeleton lists the
+# families the intake names; subagent passes fill the leaves.
+
+version: 1
+updated: 2026-04-21
+
+# ---------------------------------------------------------------
+# UI COMPONENTS
+# ---------------------------------------------------------------
+
+components:
+
+  # ---- Smart AI (all aspirational until Sunfish builds them) --
+
+  smart-ai:
+    aiprompt:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikAIPrompt
+      examples:
+        - overview
+        - templates
+        - commands
+        - events
+        - localization
+        - keyboard-navigation
+    chatui:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikChat
+      examples:
+        - overview
+        - toolbar
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    promptbox:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikPromptBox
+      examples:
+        - overview
+    speechtotextbutton:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikSpeechToTextButton
+      examples:
+        - overview
+        - events
+        - configuration
+    smartpastebutton:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikSmartPasteButton
+      examples:
+        - overview
+        - integration
+    grid-ai-smart-box:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: Grid.AISmartBox
+      notes: Integrates into the Grid overview demo; not a standalone component
+      examples:
+        - overview
+    chart-ai-smart-box:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: Chart.AISmartBox
+      notes: Integrates into the Chart overview demo; not a standalone component
+      examples:
+        - overview
+
+  # ---- Layout & navigation -------------------------------------
+
+  layout:
+    appbar:
+      status: sunfish-implemented
+      sunfish-component: SunfishAppBar
+      examples:
+        - overview
+        - spacer
+        - scrollable
+        - themebuilder-integration
+    drawer:
+      status: sunfish-implemented
+      sunfish-component: SunfishDrawer
+      examples:
+        - overview
+        - modes
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    gridlayout:
+      status: sunfish-implemented
+      sunfish-component: SunfishGridLayout
+      examples:
+        - overview
+        - gaps
+        - alignment
+    stacklayout:
+      status: sunfish-implemented
+      sunfish-component: SunfishStackLayout
+      examples:
+        - overview
+        - orientation
+        - spacing
+    splitter:
+      status: sunfish-implemented
+      sunfish-component: SunfishSplitter
+      examples:
+        - overview
+        - horizontal
+        - vertical
+        - nested
+        - events
+        - keyboard-navigation
+        - rtl
+    tilelayout:
+      status: sunfish-implemented
+      sunfish-component: SunfishTileLayout
+      examples:
+        - overview
+        - draggable
+        - resizable
+        - columns-and-rows
+        - state
+        - events
+        - keyboard-navigation
+        - rtl
+    mediaquery:
+      status: sunfish-implemented
+      sunfish-component: SunfishMediaQuery
+      examples:
+        - overview
+
+  navigation:
+    breadcrumb:
+      status: sunfish-implemented
+      sunfish-component: SunfishBreadcrumb
+      examples:
+        - overview
+        - items
+        - icons
+        - events
+        - templates
+        - keyboard-navigation
+        - rtl
+    menu:
+      status: sunfish-implemented
+      sunfish-component: SunfishMenu
+      examples:
+        - overview
+        - data-binding
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    contextmenu:
+      status: sunfish-implemented
+      sunfish-component: SunfishContextMenu
+      examples:
+        - overview
+        - data-binding
+        - templates
+        - integration
+        - events
+        - keyboard-navigation
+        - rtl
+    panelbar:
+      status: sunfish-implemented
+      sunfish-component: SunfishPanelBar
+      examples:
+        - overview
+        - data-binding
+        - multiple-expand-modes
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    stepper:
+      status: sunfish-implemented
+      sunfish-component: SunfishStepper
+      examples:
+        - overview
+        - linear-mode
+        - templates
+        - validation
+        - events
+        - keyboard-navigation
+        - rtl
+    tabstrip:
+      status: sunfish-implemented
+      sunfish-component: SunfishTabStrip
+      examples:
+        - overview
+        - tabs-on-left
+        - tabs-on-bottom
+        - tabs-on-right
+        - scrollable-tabs
+        - draggable-tabs
+        - content-template
+        - events
+        - keyboard-navigation
+        - rtl
+    wizard:
+      status: sunfish-implemented
+      sunfish-component: SunfishWizard
+      examples:
+        - overview
+        - form
+        - configuration
+        - buttons
+        - events
+        - localization
+        - rtl
+        - stepper-template
+        - keyboard-navigation
+    pager:
+      status: sunfish-implemented
+      sunfish-component: SunfishPager
+      examples:
+        - overview
+        - events
+        - keyboard-navigation
+        - rtl
+        - input
+    toolbar:
+      status: sunfish-implemented
+      sunfish-component: SunfishToolBar
+      examples:
+        - overview
+        - templates
+        - overflow
+        - events
+        - keyboard-navigation
+        - rtl
+
+  # ---- Buttons & actions ---------------------------------------
+
+  buttons:
+    button:
+      status: sunfish-implemented
+      sunfish-component: SunfishButton
+      examples:
+        - overview
+        - icons
+        - appearance
+        - events
+        - keyboard-navigation
+    buttongroup:
+      status: sunfish-implemented
+      sunfish-component: SunfishButtonGroup
+      examples:
+        - overview
+        - appearance
+        - selection
+        - events
+        - keyboard-navigation
+    dropdownbutton:
+      status: sunfish-implemented
+      sunfish-component: SunfishDropDownButton
+      examples:
+        - overview
+        - appearance
+        - items
+        - events
+        - keyboard-navigation
+        - rtl
+    splitbutton:
+      status: sunfish-implemented
+      sunfish-component: SunfishSplitButton
+      examples:
+        - overview
+        - appearance
+        - items
+        - events
+        - keyboard-navigation
+        - rtl
+    togglebutton:
+      status: sunfish-implemented
+      sunfish-component: SunfishToggleButton
+      examples:
+        - overview
+        - appearance
+        - events
+        - keyboard-navigation
+
+  # ---- Editors / inputs ----------------------------------------
+
+  editors:
+    autocomplete:
+      status: sunfish-implemented
+      sunfish-component: SunfishAutoComplete
+      examples:
+        - overview
+        - virtualization
+        - templates
+        - grouping
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    combobox:
+      status: sunfish-implemented
+      sunfish-component: SunfishComboBox
+      examples:
+        - overview
+        - virtualization
+        - templates
+        - grouping
+        - custom-value
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    multicolumncombobox:
+      status: sunfish-implemented
+      sunfish-component: SunfishMultiColumnComboBox
+      examples:
+        - overview
+        - virtualization
+        - templates
+        - grouping
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    dropdownlist:
+      status: sunfish-implemented
+      sunfish-component: SunfishDropDownList
+      examples:
+        - overview
+        - virtualization
+        - templates
+        - grouping
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    multiselect:
+      status: sunfish-implemented
+      sunfish-component: SunfishMultiSelect
+      examples:
+        - overview
+        - virtualization
+        - templates
+        - grouping
+        - auto-close
+        - checkboxes
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    checkbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishCheckBox
+      examples:
+        - overview
+        - indeterminate-state
+        - events
+        - validation
+        - keyboard-navigation
+    radiogroup:
+      status: sunfish-implemented
+      sunfish-component: SunfishRadioGroup
+      examples:
+        - overview
+        - horizontal-orientation
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    switch:
+      status: sunfish-implemented
+      sunfish-component: SunfishSwitch
+      examples:
+        - overview
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    slider:
+      status: sunfish-implemented
+      sunfish-component: SunfishSlider
+      examples:
+        - overview
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    rangeslider:
+      status: sunfish-implemented
+      sunfish-component: SunfishRangeSlider
+      examples:
+        - overview
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    numerictextbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishNumericTextBox
+      examples:
+        - overview
+        - format
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    textbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishTextBox
+      examples:
+        - overview
+        - adornments
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    textarea:
+      status: sunfish-implemented
+      sunfish-component: SunfishTextArea
+      examples:
+        - overview
+        - autoresize
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    maskedtextbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishMaskedTextBox
+      examples:
+        - overview
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    dateinput:
+      status: sunfish-implemented
+      sunfish-component: SunfishDateInput
+      examples:
+        - overview
+        - format
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    datepicker:
+      status: sunfish-implemented
+      sunfish-component: SunfishDatePicker
+      examples:
+        - overview
+        - format
+        - templates
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    timepicker:
+      status: sunfish-implemented
+      sunfish-component: SunfishTimePicker
+      examples:
+        - overview
+        - format
+        - templates
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    datetimepicker:
+      status: sunfish-implemented
+      sunfish-component: SunfishDateTimePicker
+      examples:
+        - overview
+        - format
+        - templates
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    daterangepicker:
+      status: sunfish-implemented
+      sunfish-component: SunfishDateRangePicker
+      examples:
+        - overview
+        - format
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    calendar:
+      status: sunfish-implemented
+      sunfish-component: SunfishCalendar
+      examples:
+        - overview
+        - range-selection
+        - multiple-selection
+        - selection
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    colorgradient:
+      status: sunfish-implemented
+      sunfish-component: SunfishColorGradient
+      examples:
+        - overview
+        - keyboard-navigation
+        - rtl
+    colorpalette:
+      status: sunfish-implemented
+      sunfish-component: SunfishColorPalette
+      examples:
+        - overview
+        - keyboard-navigation
+        - rtl
+    colorpicker:
+      status: sunfish-implemented
+      sunfish-component: SunfishColorPicker
+      examples:
+        - overview
+        - views
+        - keyboard-navigation
+        - rtl
+    rating:
+      status: sunfish-implemented
+      sunfish-component: SunfishRating
+      examples:
+        - overview
+        - template
+        - events
+        - keyboard-navigation
+        - rtl
+    signature:
+      status: sunfish-implemented
+      sunfish-component: SunfishSignature
+      examples:
+        - overview
+        - events
+        - rtl
+    fileselect:
+      status: sunfish-implemented
+      sunfish-component: SunfishFileSelect
+      examples:
+        - overview
+        - events
+        - validation
+        - rtl
+    upload:
+      status: sunfish-implemented
+      sunfish-component: SunfishUpload
+      examples:
+        - overview
+        - chunk-upload
+        - events
+        - validation
+        - keyboard-navigation
+        - rtl
+    dropzone:
+      status: sunfish-implemented
+      sunfish-component: SunfishDropZone
+      examples:
+        - overview
+        - integration
+    floatinglabel:
+      status: sunfish-implemented
+      sunfish-component: SunfishFloatingLabel
+      examples:
+        - overview
+        - controlled-state
+    label:
+      status: sunfish-implemented
+      sunfish-component: SunfishLabel
+      examples:
+        - overview
+    filter:
+      status: sunfish-implemented
+      sunfish-component: SunfishFilter
+      examples:
+        - overview
+        - template
+        - keyboard-navigation
+        - rtl
+
+  # ---- Data display --------------------------------------------
+
+  data-display:
+    grid:
+      status: sunfish-implemented
+      sunfish-component: SunfishDataGrid
+      examples:
+        - overview
+        - data-binding-manual-operations
+        - data-binding-remote-data-ajax
+        - data-binding-observable-data
+        - data-binding-entity-framework
+        - data-binding-automatic-operations
+        - data-binding-row-drag-and-drop
+        - data-binding-multiple-tables
+        - editing-inline
+        - editing-popup
+        - editing-in-cell
+        - editing-custom-editor-template
+        - editing-custom-popup-form
+        - editing-drag-drop-between-grids
+        - editing-crud-with-entity-framework
+        - editing-batch
+        - filtering-filter-row
+        - filtering-filter-menu
+        - filtering-checkbox-filter
+        - filtering-custom
+        - grouping
+        - grouping-custom
+        - grouping-load-on-demand
+        - aggregates-group-footer
+        - aggregates-total-footer
+        - aggregates-custom
+        - columns-frozen
+        - columns-menu
+        - columns-resizable
+        - columns-reorderable
+        - columns-multi-header
+        - columns-visibility
+        - columns-virtualization
+        - columns-chooser
+        - columns-state
+        - columns-auto-generated
+        - selection-row
+        - selection-multiple-rows
+        - selection-checkbox
+        - selection-cell
+        - hierarchy
+        - hierarchy-with-tabs
+        - sorting-basic
+        - sorting-multiple-columns
+        - virtualization-row
+        - virtualization-row-and-column
+        - export-excel
+        - export-csv
+        - export-pdf
+        - templates-row
+        - templates-column-header
+        - templates-column
+        - templates-no-data
+        - templates-group-header
+        - state
+        - row-detail
+        - search-panel
+        - loading-animation
+        - pager
+        - locked-columns
+        - tooltip-integration
+        - adaptive-rendering
+        - rtl
+        - keyboard-navigation
+        - localization
+    treelist:
+      status: sunfish-implemented
+      sunfish-component: SunfishTreeList
+      examples:
+        - overview
+        - data-binding-remote
+        - data-binding-observable
+        - editing-inline
+        - editing-popup
+        - editing-in-cell
+        - columns-frozen
+        - columns-reorderable
+        - columns-resizable
+        - columns-menu
+        - columns-chooser
+        - filtering
+        - sorting
+        - selection
+        - row-drag-and-drop
+        - paging
+        - state
+        - templates
+        - export-excel
+        - export-csv
+        - export-pdf
+        - keyboard-navigation
+        - rtl
+    treeview:
+      status: sunfish-implemented
+      sunfish-component: SunfishTreeView
+      examples:
+        - overview
+        - data-binding
+        - flat-data
+        - load-on-demand
+        - multiple-selection
+        - checkboxes
+        - drag-and-drop
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    listview:
+      status: sunfish-implemented
+      sunfish-component: SunfishListView
+      examples:
+        - overview
+        - paging
+        - editing
+        - templates
+        - loading-on-demand
+        - rtl
+    listbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishListBox
+      examples:
+        - overview
+        - transfer-items
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    gantt:
+      status: sunfish-implemented
+      sunfish-component: SunfishGantt
+      examples:
+        - overview
+        - data-binding-remote
+        - data-binding-hierarchical
+        - timeline-views
+        - editing-inline
+        - editing-popup
+        - columns
+        - dependencies
+        - selection
+        - toolbar
+        - events
+        - keyboard-navigation
+        - rtl
+    scheduler:
+      status: sunfish-implemented
+      sunfish-component: SunfishScheduler
+      examples:
+        - overview
+        - views-day
+        - views-week
+        - views-multi-week
+        - views-month
+        - views-timeline
+        - views-agenda
+        - data-binding-remote
+        - data-binding-multiple-resources
+        - editing
+        - editing-with-validation
+        - editing-custom-form
+        - editing-custom-popup-form
+        - grouping
+        - templates
+        - drag-and-drop
+        - resize
+        - events
+        - localization
+        - keyboard-navigation
+        - rtl
+    pivotgrid:
+      status: sunfish-implemented
+      sunfish-component: SunfishPivotGrid
+      examples:
+        - overview
+        - data-binding-xmla
+        - data-binding-local
+        - export-excel
+        - export-pdf
+        - filtering
+        - chart-integration
+        - keyboard-navigation
+        - rtl
+    spreadsheet:
+      status: sunfish-implemented
+      sunfish-component: SunfishSpreadsheet
+      examples:
+        - overview
+        - data-binding-local
+        - data-binding-remote
+        - export
+        - formulas
+        - selection
+        - events
+        - keyboard-navigation
+        - rtl
+    card:
+      status: sunfish-implemented
+      sunfish-component: SunfishCard
+      examples:
+        - overview
+        - orientation
+        - action-buttons
+        - separator
+    carousel:
+      status: sunfish-implemented
+      sunfish-component: SunfishCarousel
+      examples:
+        - overview
+        - templates
+        - events
+        - keyboard-navigation
+        - rtl
+    map:
+      status: sunfish-implemented
+      sunfish-component: SunfishMap
+      examples:
+        - overview
+        - layers
+        - markers
+        - events
+        - keyboard-navigation
+    avatar:
+      status: sunfish-implemented
+      sunfish-component: SunfishAvatar
+      examples:
+        - overview
+        - types
+        - sizes
+    badge:
+      status: sunfish-implemented
+      sunfish-component: SunfishBadge
+      examples:
+        - overview
+        - appearance
+        - icons
+
+  # ---- Charts & data-viz ---------------------------------------
+
+  charts:
+    chart:
+      status: sunfish-implemented
+      sunfish-component: SunfishChart
+      examples:
+        - overview
+        - bar-charts-bar
+        - bar-charts-column
+        - bar-charts-range-bar
+        - bar-charts-waterfall
+        - bar-charts-funnel
+        - line-charts-line
+        - line-charts-area
+        - line-charts-range-area
+        - line-charts-range-line
+        - line-charts-scatter
+        - line-charts-scatter-line
+        - pie-charts-pie
+        - pie-charts-donut
+        - pie-charts-pyramid
+        - other-bubble
+        - other-box-plot
+        - other-heatmap
+        - other-bullet
+        - data-binding-local
+        - data-binding-remote-ajax
+        - data-binding-hierarchical
+        - data-binding-custom-source
+        - axes-multiple
+        - axes-date
+        - axes-categories
+        - axes-crossing
+        - axes-plot-bands
+        - axes-notes
+        - labels-position
+        - labels-rotation
+        - labels-template
+        - events-click
+        - events-hover
+        - events-zoom
+        - events-pan
+        - series-colors
+        - legend
+        - panning-and-zooming
+        - crosshair
+        - tooltip
+        - date-series
+        - dynamic-charts
+        - drill-down-charts
+        - localization
+        - rtl
+    stock-chart:
+      status: sunfish-implemented
+      sunfish-component: SunfishStockChart
+      examples:
+        - overview
+        - period-selector
+        - multiple-panes
+        - crosshair
+        - navigator
+        - events
+    sparkline:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikSparkline
+      examples:
+        - overview
+    heatmap:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikHeatmap
+      examples:
+        - overview
+        - labels
+        - tooltip
+        - legend
+        - events
+    sankey:
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikSankey
+      examples:
+        - overview
+        - labels
+        - tooltip
+        - legend
+        - events
+    lineargauge:
+      status: sunfish-implemented
+      sunfish-component: SunfishLinearGauge
+      examples:
+        - overview
+        - multiple-pointers
+        - vertical-orientation
+
+  # ---- Feedback ------------------------------------------------
+
+  feedback:
+    dialog:
+      status: sunfish-implemented
+      sunfish-component: SunfishDialog
+      examples:
+        - overview
+        - predefined-dialogs
+        - forms-in-dialogs
+        - events
+        - keyboard-navigation
+        - rtl
+    window:
+      status: sunfish-implemented
+      sunfish-component: SunfishWindow
+      examples:
+        - overview
+        - draggable
+        - resizable
+        - multiple-windows
+        - configuration
+        - dimensions
+        - actions
+        - position
+        - constrain-movement
+        - modal
+        - rtl
+        - keyboard-navigation
+    tooltip:
+      status: sunfish-implemented
+      sunfish-component: SunfishTooltip
+      examples:
+        - overview
+        - templates
+        - position
+        - events
+        - rtl
+    popupbox:
+      status: sunfish-implemented
+      sunfish-component: SunfishPopupBox
+      examples:
+        - overview
+        - anchor-align
+        - events
+    progressbar:
+      status: sunfish-implemented
+      sunfish-component: SunfishProgressBar
+      examples:
+        - overview
+        - label
+        - events
+    chunkprogressbar:
+      status: sunfish-implemented
+      sunfish-component: SunfishChunkProgressBar
+      examples:
+        - overview
+        - events
+    loader:
+      status: sunfish-implemented
+      sunfish-component: SunfishLoader
+      examples:
+        - overview
+        - types-and-sizes
+        - appearance
+    loadercontainer:
+      status: sunfish-implemented
+      sunfish-component: SunfishLoaderContainer
+      examples:
+        - overview
+        - panel
+        - events
+    skeleton:
+      status: sunfish-implemented
+      sunfish-component: SunfishSkeleton
+      examples:
+        - overview
+        - templates
+        - shapes
+    animationcontainer:
+      status: sunfish-implemented
+      sunfish-component: SunfishAnimationContainer
+      examples:
+        - overview
+
+  # ---- Editor & authoring --------------------------------------
+
+  editor:
+    editor:
+      status: sunfish-implemented
+      sunfish-component: SunfishEditor
+      examples:
+        - overview
+        - tools
+        - templates
+        - import-export
+        - events
+        - readonly
+        - keyboard-navigation
+        - rtl
+    imageeditor:
+      status: sunfish-implemented
+      sunfish-component: SunfishImageEditor
+      examples:
+        - overview
+        - tools
+        - events
+        - keyboard-navigation
+    pdfviewer:
+      status: sunfish-implemented
+      sunfish-component: SunfishPdfViewer
+      examples:
+        - overview
+        - toolbar
+        - events
+        - keyboard-navigation
+        - rtl
+    filemanager:
+      status: sunfish-implemented
+      sunfish-component: SunfishFileManager
+      examples:
+        - overview
+        - sorting
+        - selection
+        - context-menu
+        - toolbar
+        - events
+        - keyboard-navigation
+        - rtl
+
+  # ---- Forms ---------------------------------------------------
+
+  forms:
+    form:
+      status: sunfish-implemented
+      sunfish-component: SunfishForm
+      examples:
+        - overview
+        - orientation
+        - layout
+        - groups-and-columns
+        - dynamic-fields
+        - buttons
+        - templates
+        - validation
+        - keyboard-navigation
+        - rtl
+    validation:
+      status: sunfish-implemented
+      sunfish-component: SunfishValidation
+      examples:
+        - overview
+        - summary-template
+        - summary-localization
+        - message-template
+        - message-localization
+        - tooltip-template
+        - tooltip-localization
+        - tooltip-position
+
+  # ---- Icons & images ------------------------------------------
+
+  icons:
+    icon:
+      status: sunfish-implemented
+      sunfish-component: SunfishIcon
+      examples:
+        - overview
+        - svgicon
+    fonticon:
+      status: sunfish-implemented
+      sunfish-component: SunfishFontIcon
+      examples:
+        - overview
+
+  # ---- Third-party integration surfaces ------------------------
+
+  integrations:
+    reporting-integration:
+      status: aspirational
+      sunfish-component: null
+      notes: Rendered in apps/docs via ADR 0021 reporting pipeline docs; no live demo
+      examples:
+        - overview
+
+# ---------------------------------------------------------------
+# NON-UI LIBRARIES
+# (documented under apps/docs/libraries/, not kitchen-sink)
+# ---------------------------------------------------------------
+
+non-ui-libraries:
+  spread-processing:
+    status: aspirational
+    sunfish-package: null
+    telerik-equivalent: Telerik.Documents.Spreadsheet
+    related-adr: 0021
+    docs:
+      - overview
+      - formulas
+      - styling
+      - templates
+      - import-export
+  spread-stream-processing:
+    status: aspirational
+    sunfish-package: null
+    telerik-equivalent: Telerik.Documents.Spreadsheet.FormatProviders.OpenXml
+    related-adr: 0021
+    docs:
+      - overview
+      - export-large-data
+  words-processing:
+    status: aspirational
+    sunfish-package: null
+    telerik-equivalent: Telerik.Windows.Documents
+    related-adr: 0021
+    docs:
+      - overview
+      - pdf-export
+  zip-library:
+    status: aspirational
+    sunfish-package: null
+    telerik-equivalent: Telerik.Zip
+    docs:
+      - overview
+      - compress-stream
+
+# ---------------------------------------------------------------
+# BLOCKS
+# (documented under apps/docs/blocks/)
+# ---------------------------------------------------------------
+
+blocks:
+  accounting:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Accounting
+    docs:
+      - overview
+      - entity-model
+      - service-contract
+      - quickbooks-iif-export
+  assets:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Assets
+    docs:
+      - overview
+      - entity-model
+      - service-contract
+  businesscases:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.BusinessCases
+    related-adr: 0015
+    docs:
+      - overview
+      - entitlement-resolver
+      - bundle-provisioning-service
+      - entity-model
+      - di-wiring
+  forms:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Forms
+    docs:
+      - overview
+      - service-contract
+  inspections:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Inspections
+    docs:
+      - overview
+      - entity-model
+      - service-contract
+      - state-transitions
+  leases:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Leases
+    docs:
+      - overview
+      - entity-model
+      - service-contract
+      - demo-lease-list
+  maintenance:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Maintenance
+    docs:
+      - overview
+      - entity-model
+      - service-contract
+      - workflow
+  rent-collection:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.RentCollection
+    docs:
+      - overview
+      - ledger-service
+      - deferred-integrations
+  scheduling:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Scheduling
+    docs:
+      - overview
+      - service-contract
+  subscriptions:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Subscriptions
+    related-adr: 0015
+    docs:
+      - overview
+      - plans-and-editions
+      - usage-meters
+      - entity-model
+      - di-wiring
+  tasks:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Tasks
+    docs:
+      - overview
+      - state-machine
+      - service-contract
+  tax-reporting:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.TaxReporting
+    docs:
+      - overview
+      - entity-model
+      - signed-hash-export
+  tenant-admin:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.TenantAdmin
+    related-adr: 0015
+    docs:
+      - overview
+      - tenant-profile
+      - bundle-activation
+      - entity-model
+      - di-wiring
+  workflow:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Blocks.Workflow
+    docs:
+      - overview
+      - state-machine-primitives
+      - fluent-builder
+      - runtime
+
+# ---------------------------------------------------------------
+# ACCELERATORS
+# (documented under apps/docs/accelerators/)
+# ---------------------------------------------------------------
+
+accelerators:
+  bridge:
+    status: sunfish-implemented
+    related-adr: 0006
+    docs:
+      - overview
+      - shell-model
+      - bundle-provisioning
+      - tenant-admin
+      - getting-started
+  anchor:
+    status: sunfish-implemented
+    docs:
+      - overview
+      - maui-blazor-hybrid
+      - reports-admin-scope
+      - getting-started
+
+# ---------------------------------------------------------------
+# FOUNDATION LAYERS
+# (documented under apps/docs/foundation/)
+# ---------------------------------------------------------------
+
+foundation:
+  multitenancy:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.MultiTenancy
+    related-adr: 0008
+    docs:
+      - overview
+      - tenant-context
+      - tenant-scoped-markers
+  feature-management:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.FeatureManagement
+    related-adr: 0009
+    docs:
+      - overview
+      - feature-evaluator
+      - entitlement-resolver
+  catalog:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.Catalog
+    related-adr: 0007
+    docs:
+      - overview
+      - bundle-manifests
+  localfirst:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.LocalFirst
+    related-adr: 0012
+    docs:
+      - overview
+      - offline-store
+      - sync-engine
+  integrations:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.Integrations
+    related-adr: 0013
+    docs:
+      - overview
+      - registry
+      - credentials
+      - webhooks
+  persistence:
+    status: sunfish-implemented
+    sunfish-package: Sunfish.Foundation.Persistence
+    related-adr: 0015
+    docs:
+      - overview
+      - entity-module-pattern
