@@ -1,0 +1,52 @@
+@page "/components/smart-ai/smartpastebutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SmartPasteButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SmartPasteButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/SmartAi/SmartPasteButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSmartPasteButton</code> is a one-click action that triggers AI-assisted
+            paste from the clipboard into form fields. It inherits the button family's
+            <code>Variant</code> and <code>Size</code> parameters, and activation is surfaced via
+            the <code>OnClick</code> <code>EventCallback</code>. Child content overrides the
+            default label.
+        </p>
+        <p>
+            This overview shows the canonical button alongside common variants. A companion
+            <a href="/components/smart-ai/smartpastebutton/integration">integration</a> demo covers
+            parsing clipboard content into a form model.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishSmartPasteButton OnClick="HandleSmartPaste" />
+            </div>
+            <div class="demo-row">
+                <SunfishSmartPasteButton Variant="ButtonVariant.Primary" OnClick="HandleSmartPaste" />
+                <SunfishSmartPasteButton Variant="ButtonVariant.Secondary" OnClick="HandleSmartPaste" />
+                <SunfishSmartPasteButton Variant="ButtonVariant.Info" OnClick="HandleSmartPaste" />
+            </div>
+            <div class="demo-row">
+                <SunfishSmartPasteButton OnClick="HandleSmartPaste" Variant="ButtonVariant.Primary">
+                    Auto-fill from Clipboard
+                </SunfishSmartPasteButton>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Smart AI", "SmartPasteButton", "Overview"];
+
+    private Task HandleSmartPaste() => Task.CompletedTask;
+}

@@ -1,0 +1,69 @@
+@page "/components/smart-ai/speechtotextbutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SpeechToTextButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SpeechToTextButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/SmartAi/SpeechToTextButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSpeechToTextButton</code> is a toggle button that starts and stops speech
+            recognition. Listening state is two-way bound via <code>IsListening</code> /
+            <code>IsListeningChanged</code>, and recognized text is delivered through the
+            <code>OnTextReceived</code> <code>EventCallback&lt;string&gt;</code>. The button
+            inherits the standard <code>Variant</code> and <code>Size</code> parameters.
+        </p>
+        <p>
+            This overview shows the canonical listening toggle across variants. Sibling demos cover
+            <a href="/components/smart-ai/speechtotextbutton/events">events</a> and
+            <a href="/components/smart-ai/speechtotextbutton/configuration">configuration</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishSpeechToTextButton IsListening="_isListening"
+                                           IsListeningChanged="ListeningChanged"
+                                           OnTextReceived="HandleText" />
+            </div>
+            <div class="demo-row">
+                <SunfishSpeechToTextButton Variant="ButtonVariant.Primary"
+                                           IsListening="_isListening2"
+                                           IsListeningChanged="ListeningChanged2" />
+                <SunfishSpeechToTextButton Variant="ButtonVariant.Secondary"
+                                           IsListening="_isListening3"
+                                           IsListeningChanged="ListeningChanged3" />
+            </div>
+            @if (!string.IsNullOrEmpty(_recognizedText))
+            {
+                <p>Recognized: <strong>@_recognizedText</strong></p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Smart AI", "SpeechToTextButton", "Overview"];
+
+    private bool _isListening;
+    private bool _isListening2;
+    private bool _isListening3;
+    private string _recognizedText = "";
+
+    private void ListeningChanged(bool value) => _isListening = value;
+    private void ListeningChanged2(bool value) => _isListening2 = value;
+    private void ListeningChanged3(bool value) => _isListening3 = value;
+
+    private Task HandleText(string text)
+    {
+        _recognizedText = text;
+        return Task.CompletedTask;
+    }
+}
