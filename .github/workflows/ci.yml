@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-dotnet@v5
         with:
-          dotnet-version: '10.x'
+          global-json-file: global.json
 
       - name: Restore
         run: dotnet restore Sunfish.slnx
