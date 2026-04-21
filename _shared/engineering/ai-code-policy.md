@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Every contribution to the Sunfish repo, whether AI-assisted or not — how to disclose AI involvement, how reviewers handle AI-authored changes, and who is accountable when something goes wrong.
 **Companion docs:** [commit-conventions.md](commit-conventions.md), [code-review.md](code-review.md), [testing-strategy.md](testing-strategy.md), [coding-standards.md](coding-standards.md), [planning-framework.md](planning-framework.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [ADR 0018](../../docs/adrs/0018-governance-and-license-posture.md), [vision §Pillar 4](../product/vision.md).
+**Agent relevance:** Loaded by agents (and human sponsors) opening PRs. High-frequency — every commit discloses AI involvement and signs the DCO.
 
 > **Not legal advice.** This is project policy, not counsel. Contributors remain responsible for complying with their employer's policies, their AI tool vendor's terms of service, and the laws of their jurisdiction.
 
@@ -55,6 +56,8 @@ An AI agent (e.g., an unattended Claude Code or GitHub Copilot Workspace task) o
 - **Disclosure required** in the PR description. State the agent, model, and prompt/task source (e.g., *"This PR was authored by Claude Code running a `/loop` task against issue #123. Sponsor reviewed every file and ran the test suite."*).
 - **Sponsor certification.** By signing off, the sponsor affirms they have read the diff, understood the change, run the build and tests locally, and can answer reviewer questions about any part of it.
 - **No bulk unreviewed PRs.** See §"What's explicitly not allowed".
+
+**Sponsor accountability rule:** The sponsor must (a) run `dotnet build Sunfish.slnx` and `dotnet test Sunfish.slnx` locally and confirm green before opening the PR, and (b) read the full diff — not just the summary the agent produced. If a sponsored commit ships a regression (test failure, build break, or behavior bug reported within 7 days of merge), it is reverted without ceremony. No process, no blame debate — revert, then re-land once the issue is understood. This rule exists because sponsorship is a human accountability mechanism, not a rubber-stamp mechanism. A sponsor who cannot explain what a section does should not sponsor it.
 
 ## Human accountability
 

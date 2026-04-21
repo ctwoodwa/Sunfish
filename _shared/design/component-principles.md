@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every component in `packages/ui-core`, `packages/ui-adapters-*`, and component surfaces in `blocks-*` that ship UI.
 **Companion docs:** [tokens-guidelines.md](tokens-guidelines.md), [adapter-parity.md](../engineering/adapter-parity.md), [architecture-principles.md](../product/architecture-principles.md).
+**Agent relevance:** Loaded by agents working on ui-core, ui-adapters-*, or UI surfaces in blocks. High-frequency for UI work.
 
 Sunfish's framework-agnostic claim rests on a clean split between what components *are* (UI Core contracts) and how they *render* (UI adapters + provider themes). This document codifies the rules that keep that split honest.
 
@@ -123,6 +124,39 @@ Components consume icons through `ISunfishIconProvider.GetIcon("icon.name")`. Ic
 ### 12. Parity is mandatory; exceptions are registered
 
 Per [ADR 0014](../../docs/adrs/0014-adapter-parity-policy.md), a component change lands in every first-party adapter in the same PR, or registers an explicit, time-boxed exception in [`adapter-parity.md`](../engineering/adapter-parity.md). G37 `SunfishDataGrid` is an active bootstrap-phase exception — the grid exists in Blazor today and will add a React implementation when the React adapter lands.
+
+## Framework-agnostic boundary
+
+Principles 1–2 set the direction; this section names the boundary in concrete type-reference terms so reviewers can reject a leak without having to argue about it.
+
+### What may live in `Sunfish.UICore`
+
+- Pure C# types: `record`, `class`, `interface`, `enum`, `readonly record struct`.
+- Types from `System.*`, `System.Collections.Generic.*`, `System.Threading.*`, `System.Threading.Tasks.*`.
+- `Microsoft.Extensions.*` — DI, logging, options, configuration. Explicitly allowed because it's framework-neutral and consumed everywhere in .NET.
+- Types declared elsewhere in `Sunfish.Foundation.*` and `Sunfish.UICore.*` itself.
+- Accessibility contracts as C# records (WAI-ARIA role names as strings, keyboard maps as arrays), *not* as DOM or JSX constructs.
+
+### What must not appear in `Sunfish.UICore`
+
+- **Blazor**: `Microsoft.AspNetCore.Components.*`, `RenderFragment`, `RenderFragment<T>`, `EventCallback`, `EventCallback<T>`, `IJSRuntime`, `IJSObjectReference`, `ElementReference`, `[Parameter]`, `[CascadingParameter]`, `@inject`, `ComponentBase`, anything under `Microsoft.AspNetCore.*`.
+- **React / any JS framework**: no TypeScript, no JSX-flavored types. (Moot in .NET, but worth stating — contracts that can only be expressed via `ReactNode`/`JSX.Element` don't belong here either.)
+- **Any web-platform type** that presupposes a DOM: `HtmlString`, `MarkupString`, raw CSS class names baked into contracts, selectors, stylesheet imports.
+- **File-extension-coupled types**: `.razor`, `.cshtml`, `.tsx`, `.jsx`, `.vue` — UI Core is `.cs` only.
+
+### Slot-style rendering without `RenderFragment`
+
+When a component needs adapter-provided content in a slot position (header, cell, empty-state), UI Core names the *slot* as a strongly-typed key + optional payload record; the adapter maps that to its framework's rendering primitive:
+
+- Blazor → `RenderFragment` or `RenderFragment<T>`.
+- React → `ReactNode` or a render-prop callback.
+- Future adapters → whatever that framework's equivalent is.
+
+UI Core's contract describes *what* the slot is for and *what data* it carries, never *how* it is rendered. See `ISunfishRenderer` in `packages/ui-core/Contracts/` for the seam shape.
+
+### `.editorconfig` / analyzer enforcement (tracked follow-up)
+
+Reviewer vigilance is the current gate. A Roslyn analyzer that flags `Microsoft.AspNetCore.Components.*` references inside `Sunfish.UICore` is a tracked follow-up once the parity test harness lands ([adapter-parity.md](../engineering/adapter-parity.md)). Until then, the rules above are cited in PR review per [code-review.md](../engineering/code-review.md) item #1 (architectural fit).
 
 ## Component lifecycle contract
 

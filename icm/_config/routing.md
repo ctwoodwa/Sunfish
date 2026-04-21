@@ -2,6 +2,8 @@
 
 Use this guide to classify incoming requests and select the appropriate pipeline variant.
 
+> **Default path is fast-track.** Per [`icm/CONTEXT.md` §Fast-track is the default](../CONTEXT.md#fast-track-is-the-default), most Sunfish work collapses to `00_intake` → `05_implementation-plan` → `06_build` → `07_review`. The stage emphasis notes below describe what the *full* pipeline looks like for each variant — use them only when the change genuinely warrants that depth (new ADR, breaking public API, generator/template rewrite). When in doubt, start on the fast-track and expand only where the intake note shows a concrete need.
+
 ## Request Classification
 
 All requests to Sunfish fall into one of seven categories. Use the heuristics below to classify

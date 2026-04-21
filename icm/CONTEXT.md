@@ -47,6 +47,16 @@ variant specifies:
 When starting work, choose a pipeline variant in stage 00_intake. The variant's `routing.md` then
 guides how to navigate the default stages.
 
+## Fast-track is the default
+
+Sunfish is a solo, pre-community project (see [`_shared/product/vision.md` §Project Mode](../_shared/product/vision.md)). The full 9-stage pipeline is the *maximum* ceremony available, not the expected baseline. For most work, **fast-track is the default**:
+
+- **Default fast-track path:** `00_intake` → `05_implementation-plan` → `06_build`. Collapse `01`–`04` into the intake note when the scope fits in a paragraph.
+- **When to expand:** Add `02_architecture` when the change needs an ADR; add `03_package-design` when a new public API surface is introduced; add `04_scaffolding` only for generator/template work.
+- **Always:** Create an intake note (even one paragraph) so the change is traceable. Always run `07_review` against the diff; always pick a `08_release` posture (changelog line, version bump if applicable).
+
+Picking the fast-track path is a choice made in `00_intake` and recorded there. Expanding back to the full pipeline is always allowed — stage gates are a tool, not a tax.
+
 ## Terminology
 
 In this repository:

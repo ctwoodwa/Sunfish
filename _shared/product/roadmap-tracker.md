@@ -3,6 +3,11 @@
 **Status:** Living document
 **Last reviewed:** 2026-04-19
 **Purpose:** Consolidated status of planning-phase outputs (ADRs, Foundation packages, bundle manifests) and the roadmap through P6. Update every time an ADR merges, a package ships, or a phase gate closes.
+**Agent relevance:** Loaded by agents planning phase work or orienting to project status. Refresh frequently; source of truth for what's shipped vs. pending.
+
+---
+
+> **Aspirational, not committed.** Per [vision.md §Project Mode](vision.md), Sunfish is a self-funded AI-coding-learning vehicle with a bus factor of 1. The ADRs, packages, and phase markers (P1–P6) enumerated below are the *ambitious scope* the project is aiming at — a learning target, not a delivery contract. Treat "Pending" rows as "planned if the project continues on its current trajectory," not as commitments to users or contributors. Only rows marked **Shipped** / **Accepted** reflect completed work.
 
 ---
 

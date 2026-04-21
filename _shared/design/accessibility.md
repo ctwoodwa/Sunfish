@@ -3,7 +3,8 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-20
 **Governs:** Every component in `packages/ui-core` and `packages/ui-adapters-*`, every user-facing surface in `blocks-*` and `bundles/*`, every accelerator host (Bridge today; successors later), and the accessibility CI gate on `main`.
-**Companion docs:** [component-principles.md](component-principles.md) §7, [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](documentation-framework.md), [adapter-parity.md](../engineering/adapter-parity.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md §Pillar 5](../product/vision.md).
+**Companion docs:** [component-principles.md](component-principles.md) §7, [tokens-guidelines.md](tokens-guidelines.md), [documentation-framework.md](../product/documentation-framework.md), [adapter-parity.md](../engineering/adapter-parity.md), [ci-quality-gates.md](../engineering/ci-quality-gates.md), [vision.md §Pillar 5](../product/vision.md).
+**Agent relevance:** Loaded by agents working on ui-core contracts, adapters, or any user-facing surface. High-frequency; a11y regressions fail CI.
 
 Accessibility is the operational half of [vision.md §Pillar 5 — *Inclusive by default*](../product/vision.md). The vision document commits Sunfish to WCAG 2.2 AA as a non-negotiable baseline; this document codifies the contracts, processes, reviewer checklists, and CI gates that make that commitment concrete. "An accessibility regression is a build failure, not a backlog item" is enforced here, not aspired to elsewhere.
 
@@ -49,7 +50,7 @@ The contract has eight entries. An empty entry is allowed only when the componen
 
 ### Example contract shape (authoritative template)
 
-Components publish this verbatim on their reference page (`apps/docs/reference/components/<component>.md` per [documentation-framework.md](documentation-framework.md)):
+Components publish this verbatim on their reference page (`apps/docs/reference/components/<component>.md` per [documentation-framework.md](../product/documentation-framework.md)):
 
 ```md
 ## Accessibility
@@ -64,6 +65,34 @@ Components publish this verbatim on their reference page (`apps/docs/reference/c
 - **Target size:** Close button ≥ 24×24 (desktop); ≥ 44×44 in mobile-flagged bundles.
 - **Shadow DOM:** Title is inside the component's shadow root; consumers pass a string via the `heading` property, not via external `aria-labelledby`.
 ```
+
+## Shadow DOM and accessibility
+
+Contract item #8 states the per-component rules; this section pulls them together with the supporting context reviewers need when a cross-root ARIA question comes up.
+
+### Open Shadow DOM is the default
+
+Sunfish components attach their shadow roots with `{ mode: 'open' }` (Lit's default). The accessibility tree traverses open shadow roots natively in Chrome, Firefox, Safari, and every major AT (NVDA, JAWS, VoiceOver, TalkBack) — the user-facing a11y experience is equivalent to light-DOM for the purposes of role, label, and state announcement. **Closed shadow roots (`mode: 'closed'`) are prohibited** — they break AT tree exposure in some engines and defeat open-source composability. A component author who believes closed-mode is the right call opens an ADR first.
+
+### Why cross-root ARIA references break
+
+ARIA IDREFs (`aria-labelledby`, `aria-describedby`, `aria-controls`, `aria-owns`, `for`, `list`) resolve by document-scoped ID lookup. A consumer in the light tree passing `aria-labelledby="my-id"` to a Sunfish Web Component cannot reach an element whose ID lives inside the component's shadow root — the ID is scoped to the shadow root, not to the document. This is a platform limitation, not a Sunfish design choice.
+
+### Three workarounds, in preference order
+
+1. **Reflective ARIA (preferred for host-element attributes).** Authors set ARIA state on the **host element** via [ARIAMixin](https://www.w3.org/TR/wai-aria-1.2/#ARIAMixin) properties (`el.ariaLabel`, `el.ariaExpanded`, `el.role`, …). The component reads those properties internally and mirrors them onto shadow-tree nodes where needed. Consumers therefore set ARIA as if the component were a built-in.
+2. **ElementInternals for form association.** Form-associated Custom Elements (per ADR 0017) call `attachInternals()` and use `ElementInternals.ariaLabel`, `ElementInternals.role`, `ElementInternals.setFormValue(...)`, etc. This is the path for components that participate in `<form>` validation and labelling — `SunfishInput`, `SunfishSelect`, `SunfishCheckbox`.
+3. **Expose ARIA via a typed property.** When a component genuinely needs an external label target (a dialog titled by arbitrary light-DOM content), expose a string property (e.g., `heading="…"`) instead of an IDREF. The component renders the string into a shadow-tree element it owns and labels itself internally. This is the pattern the [Dialog example contract](#accessibility) above uses.
+
+Avoid the anti-pattern of trying to forward `aria-labelledby` by copying the referenced element's text content into the shadow tree — it stale-drifts when the external element changes and breaks screen-reader pronunciation for dynamic content.
+
+### Declarative Shadow DOM (DSD)
+
+Sunfish plans to ship DSD for server-rendered component hydration once the stable `shadowroot` attribute reaches wide browser support (Safari 16.4+, Chrome/Edge 111+, Firefox 123+). DSD does **not** change any of the accessibility rules above — the hydrated root behaves exactly like an imperatively-attached open root. Authors who gate a feature on DSD availability must not also gate its accessibility contract.
+
+### Manual testing note
+
+The manual screen-reader matrix (§Manual audit workflow) runs against the final open-shadow-root output; no separate "shadow-tree pass" is required. Reviewers verify that the specific Shadow DOM rules (reflective ARIA set, ElementInternals used for forms, no cross-root IDREF leakage) are honored in the contract update shipped with the PR.
 
 ## Automated testing
 
@@ -164,7 +193,7 @@ Cadence: every provider-theme PR triggers the provider audit for the components 
 
 ## Accessibility statement and conformance claims
 
-Sunfish publishes a **platform-wide accessibility statement** at `apps/docs/explanation/accessibility.md` (Diátaxis explanation mode per [documentation-framework.md](documentation-framework.md)). The statement:
+Sunfish publishes a **platform-wide accessibility statement** at `apps/docs/explanation/accessibility.md` (Diátaxis explanation mode per [documentation-framework.md](../product/documentation-framework.md)). The statement:
 
 - Names WCAG 2.2 AA as the baseline.
 - Links to this document for the operational detail.
@@ -210,7 +239,7 @@ This is an upsell layered onto the OSS platform, not a gate on OSS accessibility
 |---|---|---|
 | axe-core CI job wired into `ci.yml` | **P1** | Once `packages/ui-components-web` ships (ADR 0017 migration). Until then, bUnit-side axe integration lands first as an interim gate. |
 | `_shared/engineering/a11y-baseline.md` with initial entries | **P1** | Ships alongside the first axe CI run; migrates pre-existing violations into the baseline with target dates. |
-| Per-component Accessibility section backfill in `apps/docs/reference/components/` | **P1** | Blocking before 1.0; in flight as part of [documentation-framework.md](documentation-framework.md) migration. |
+| Per-component Accessibility section backfill in `apps/docs/reference/components/` | **P1** | Blocking before 1.0; in flight as part of [documentation-framework.md](../product/documentation-framework.md) migration. |
 | VPAT / ACR template in `apps/docs/reference/conformance/` | **P2** | Before the first bundle sale that requires formal attestation (expected: school-district pilot). |
 | Screen-reader test-environment documentation in `apps/docs/how-to/testing/` | **P2** | How to install NVDA, configure JAWS for trial use, enable VoiceOver verbosity, run TalkBack on Android emulator. |
 | Scoped-registry + ARIA interaction tests (ADR 0017 edge) | **P3** | When scoped registries are used in a component that exposes cross-root labelling. |
@@ -221,7 +250,7 @@ This is an upsell layered onto the OSS platform, not a gate on OSS accessibility
 
 - [component-principles.md](component-principles.md) §7 — accessibility as a component contract (this document operationalizes that principle).
 - [tokens-guidelines.md](tokens-guidelines.md) — `--sf-color-*` and `--sf-motion-*` tokens that provider themes resolve to contrast-compliant and motion-respectful values.
-- [documentation-framework.md](documentation-framework.md) — where the accessibility statement and per-component a11y contracts live (Diátaxis explanation + reference modes).
+- [documentation-framework.md](../product/documentation-framework.md) — where the accessibility statement and per-component a11y contracts live (Diátaxis explanation + reference modes).
 - [adapter-parity.md](../engineering/adapter-parity.md) — parity-exception shape reused by the a11y baseline-drift file.
 - [ci-quality-gates.md](../engineering/ci-quality-gates.md) — required-status-check doctrine that the a11y CI job joins.
 - [testing-strategy.md](../engineering/testing-strategy.md) — xUnit + bUnit + Testcontainers harness the axe job integrates with.

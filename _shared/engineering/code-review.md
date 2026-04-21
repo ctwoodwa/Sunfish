@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Code review language and process for Sunfish PRs — how reviewers write comments, what blocks merge, how fast the BDFL responds.
 **Companion docs:** [commit-conventions.md](commit-conventions.md), [planning-framework.md](planning-framework.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [ci-quality-gates.md](ci-quality-gates.md).
+**Agent relevance:** Loaded by agents writing or responding to review comments. Medium-frequency; cite when comment tone needs rewording.
 
 Sunfish is a remote, async, pre-community OSS project. Every reviewer comment is read without tone-of-voice, without shared whiteboard, and often across several time zones. This doc sets the convention reviewers follow so the *shape* of a comment carries the same information its words do.
 
@@ -144,11 +145,9 @@ Reviewers don't have to cover everything in one pass, but the maintainer owns th
 
 ## Review cadence
 
-Pre-community (current): the BDFL responds to open PRs within **5 business days** of the author marking them ready for review. Work-in-progress (draft) PRs have no SLA.
+Pre-community (current): the bus factor is 1 — expect outages of any length when the BDFL is unavailable. There is no SLA. When the BDFL is around and available, the goal is response within a few business days, but nothing is committed. If a PR will be delayed, the BDFL comments on it with an expected date; silent delay is a defect.
 
 Post-community: once the maintainer tier activates (per [`GOVERNANCE.md` §Transition triggers](../../GOVERNANCE.md#transition-triggers)), first-review SLA tightens to **2 business days** and CODEOWNERS gets a scoped review assignment automatically. TSC-era review cadence will be set when the TSC forms.
-
-If a PR is going to miss the SLA (travel, illness, conference week), the BDFL comments on the PR with an expected review date. Silent delay is a defect.
 
 ## When a comment blocks merge
 

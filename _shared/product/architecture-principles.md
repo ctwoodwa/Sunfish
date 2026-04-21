@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Every package, adapter, bundle, and accelerator in the Sunfish repo.
 **Companion docs:** [roadmap-tracker.md](roadmap-tracker.md), [naming.md](naming.md), [compatibility-policy.md](compatibility-policy.md), [`docs/adrs/`](../../docs/adrs/).
+**Agent relevance:** Loaded by agents working on architecture, packages, or cross-tier decisions. High-frequency context.
 
 This document is the canonical statement of Sunfish's architectural commitments. ADRs decide specific questions; this file summarizes the commitments those ADRs consolidate and adds structural rules that govern how the tiers relate. Where a principle is backed by an ADR, the ADR number is cited — read the ADR for the full rationale.
 

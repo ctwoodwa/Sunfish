@@ -2,6 +2,8 @@
 
 Tracks per-component and per-contract parity between first-party UI adapters. Governed by [ADR 0014](../../docs/adrs/0014-adapter-parity-policy.md).
 
+**Agent relevance:** Loaded by agents adding components or UI contracts, or reviewing adapter coverage. High-frequency for ui-core/ui-adapters work.
+
 **Rule:** a new component or contract lands in every first-party adapter in the same PR, or registers an exception below.
 
 Status key: ✅ implemented · 🚧 in progress · ❌ not implemented · — not applicable

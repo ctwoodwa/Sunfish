@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Provider theme packages (`packages/ui-adapters-blazor/Providers/{FluentUI,Bootstrap,Material}`), component CSS consumption, and any future adapter's theming layer.
 **Companion docs:** [component-principles.md](component-principles.md), [adapter-parity.md](../engineering/adapter-parity.md).
+**Agent relevance:** Loaded by agents working on provider themes, component CSS, or adapter theming layers. Skip for non-UI work.
 
 Design tokens are Sunfish's answer to multi-provider theming. Every visual property a component renders (color, spacing, typography, radius, shadow, motion) is expressed as a semantic token that a provider resolves. Components never hardcode visual values. Provider swap is a CSS-variable swap, not a rebuild.
 

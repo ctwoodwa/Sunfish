@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Every tenant-data boundary, every bundle-vertical regulatory regime, every export/import pathway, and every place Sunfish code touches personal information — whether in a self-hosted deployment, a Bridge-hosted tenant, or a federated peer exchange.
 **Companion docs:** [coding-standards.md](coding-standards.md), [testing-strategy.md](testing-strategy.md), [supply-chain-security.md](supply-chain-security.md), [ai-code-policy.md](ai-code-policy.md), [../product/compatibility-policy.md](../product/compatibility-policy.md), [../product/vision.md §Pillar 1](../product/vision.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [ADR 0005](../../docs/adrs/0005-type-customization-model.md), [ADR 0007](../../docs/adrs/0007-bundle-manifest-schema.md), [ADR 0012](../../docs/adrs/0012-foundation-localfirst.md), [ADR 0013](../../docs/adrs/0013-foundation-integrations.md).
+**Agent relevance:** Loaded by agents touching tenant-data boundaries, export/import pathways, or PII. Medium-frequency; required for regulated-domain blocks.
 
 > **Not legal advice.** This is platform posture, not counsel. Deployers retain full regulatory responsibility for their specific deployments, jurisdictions, data subjects, and contractual obligations.
 
@@ -79,8 +80,8 @@ Retention policy is a **bundle-manifest concern**, not a platform constant. Diff
 
 **Platform-level minimums:**
 
-- **Soft-delete by default.** All tenant-visible deletes are soft-deletes; hard-delete is a separate tenant-configured action.
-- **Tenant-configurable hard-delete window.** Default 30 days; tenants can shorten (down to 0 — immediate hard delete) or extend (up to a bundle-specified statutory maximum).
+- **Soft-delete intent.** The design intent is that all tenant-visible deletes are soft-deletes with a configurable hard-delete window (default 30 days). **TODO:** This intent is not yet backed by a concrete mechanism — no `ISoftDeletable` interface, no EF Core query filter, no analyzer rule. Until a concrete mechanism ships in an ADR, treat this as a design target, not an enforced policy. Implement as a foundation contract when the first compliance-scoped bundle activates (see §"Activation triggers").
+- **Tenant-configurable hard-delete window (intent).** Default 30 days; tenants should be able to shorten or extend. Not yet enforced.
 - **Cryptographic erasure for encrypted blobs.** When encryption-at-rest is enabled with per-tenant keys (see [supply-chain-security.md](supply-chain-security.md) §"Artifact signing" and the key-management follow-up), hard-delete destroys the key — the ciphertext becomes computationally unrecoverable without bulk-scanning storage. This satisfies NIST SP 800-88 Rev. 1 "Cryptographic Erase" for encrypted data at rest.
 - **Backup retention alignment.** Deployers must configure backup retention no longer than the longest hard-delete window plus a reasonable recovery buffer. Sunfish documents the pattern; Sunfish does not run the backup infrastructure in self-hosted deployments.
 

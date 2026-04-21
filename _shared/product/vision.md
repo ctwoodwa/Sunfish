@@ -3,6 +3,11 @@
 **Status:** Accepted
 **Last reviewed:** 2026-04-20
 **Companion docs:** [architecture-principles.md](architecture-principles.md), [roadmap-tracker.md](roadmap-tracker.md), [compatibility-policy.md](compatibility-policy.md).
+**Agent relevance:** Loaded by agents working on any Sunfish feature, design, or strategy decision. High-frequency context; read § Project Mode first.
+
+## Project Mode
+
+Sunfish is primarily an AI-coding-agent learning vehicle and a real-world target for sustained AI-assisted development. The ambitious vision below is the *playground spec* — its scope provides authentic decision surface for agents to operate in. Commercial outcomes are optional; if managed hosting, implementation services, or compat-surface licensing later generate revenue, that's a bonus, not the plan. All policies and documents in this repo should be read in this light: they exist to make AI-assisted work compounding and the artifacts useful, not to satisfy an enterprise buyer who does not exist.
 
 ## What Sunfish is
 

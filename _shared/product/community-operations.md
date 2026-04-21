@@ -1,9 +1,12 @@
 # Community Operations
 
 **Status:** Posture for pre-release / pre-community
-**Last reviewed:** 2026-04-20
+**Last reviewed:** 2026-04-21
 **Governs:** How Sunfish engages with contributors, users, and adopters once a community forms — and, just as importantly, what the project deliberately does *not* do while no community exists yet.
 **Companion docs:** [vision.md](vision.md), [roadmap-tracker.md](roadmap-tracker.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md), [`../../CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md), [`../engineering/ai-code-policy.md`](../engineering/ai-code-policy.md), [`../engineering/data-privacy.md`](../engineering/data-privacy.md).
+**Agent relevance:** Low-frequency. Loaded by agents working on governance, moderation, or community-engagement questions. Skip for coding tasks.
+
+> **Project Mode context:** Read [vision.md §"Project Mode"](vision.md#project-mode) first. Until a second sustained contributor arrives, the BDFL is sole decision-maker and there is no formal governance model. This is intentional; do not add one prematurely.
 
 ## Posture summary
 
@@ -45,9 +48,7 @@ Each level corresponds to a governance trigger in [`GOVERNANCE.md`](../../GOVERN
 | **0 — Solo** | Current | N/A | BDFL maintains everything; no community operations beyond the pre-community obligations above. |
 | **1 — First external contributor** | Aspirational | First external issue or PR | "Good first issue" and "help wanted" labels applied to backlog; fast review; personal welcome and public thank-you. |
 | **2 — Three external committers** | Deferred | 3+ committers sustained over 3 months (GOVERNANCE maintainer-tier trigger) | Maintainer tier designated; [All Contributors](https://allcontributors.org/) bot or equivalent attribution; monthly changelog summary posted to Discussions Announcements. |
-| **3 — Ten external committers** | Deferred | 10+ committers (GOVERNANCE TSC trigger) | Technical Steering Committee forms; lightweight formal RFC process adopted; optional community calls or office hours if the community asks for them; CHAOSS-aligned metrics dashboard (Augur or GrimoireLab) stood up. |
-| **4 — Corporate adopter signals** | Deferred | First corporate adopter running in production (GOVERNANCE commercial trigger) | DevRel content program begins (blog posts, case studies, conference talks); commercial support intake channel; project social account (if any) created. |
-| **5 — Foundation evaluation** | Deferred | Production adoption by 3+ unrelated organizations (GOVERNANCE foundation trigger) | Foundation proposal process begins (CNCF Sandbox, Linux Foundation, Apache, or independent); community and infrastructure move to foundation-neutral channels. |
+| **3–5 — Deferred** | Deferred indefinitely | 10+ committers → TSC; first corporate adopter → DevRel; 3+ production orgs → foundation | Levels 3–5 are deferred indefinitely; revisit if external contribution sustains at the Level 2 threshold. Details removed — they described governance for an audience that does not exist. |
 
 ## Communication channels
 
@@ -102,44 +103,13 @@ Contribution recognition scales with the community. Under-crediting contributors
 - **Code of Conduct applies universally** across all project spaces — repo, Discussions, any future community channels, and any event where Sunfish is officially represented. See [`CODE_OF_CONDUCT.md`](../../CODE_OF_CONDUCT.md).
 - **Moderation reports** go to the BDFL via private GitHub Security Advisory (the same private channel vulnerabilities use) until a moderation-specific channel is warranted. Reporters are not required to identify themselves publicly; confidentiality is honored to the extent compatible with investigation.
 - **Response time.** Moderation reports get acknowledged within 2 business days and a disposition within 10 business days. A public summary of enforcement actions (with reporter identity protected) may be published at Level 3+ for accountability.
-- **Level 3+:** a dedicated Code of Conduct committee forms when the TSC forms, so moderation authority is not concentrated in a single person and conflicts of interest (BDFL as both investigator and subject) have a clear escalation path.
 - **No retaliation.** Reporting a Code of Conduct violation, in good faith, is never itself grounds for project consequences — no matter who the subject of the report is.
 
-## DevRel and content posture
+## DevRel, events, and commercial community tier
 
-DevRel investment at the pre-community stage is a classic misallocation — it produces content for an audience that doesn't exist yet, and costs maintainer hours that are better spent shipping the first bundle. Sunfish defers it explicitly.
+All deferred until Level 3+ triggers fire — which requires a sustained contributor community that does not exist today. The BDFL posts opportunistically on personal channels when there is something worth saying; no scheduled content, no conference program, no commercial support intake channel.
 
-- **Pre-Level 4:** no scheduled content program. No blog calendar. No conference talks on behalf of the project. The founder posts opportunistically on personal channels (blog, LinkedIn, personal social) without representing a project voice that doesn't exist yet. Writing about Sunfish's technical decisions publicly is still valuable — it contributes to the ODF transparency record — but it happens when there's something worth saying, not on a cadence.
-- **Level 4+:** commercial services revenue (per [vision.md §"Business model"](vision.md)) funds dedicated content work. Target audiences in priority order: technical founders building vertical SaaS, small operators evaluating self-hosting, AI-savvy stakeholders on vertical teams. Content formats: long-form technical writeups, reference-bundle case studies, conference talks at events where the target audience actually attends.
-- **Never:** sponsored or paid-placement content that obscures the commercial relationship. If Sunfish commercial services are mentioned in a post, the post says so. If a vendor sponsors a talk, the talk discloses it.
-
-## Events and meetups
-
-Deferred until Level 4+. Sunfish will show up at relevant conferences once a commercial customer signal justifies travel budget:
-
-- **General OSS and developer events.** `.NET Conf` (Microsoft-stack audience, first natural fit given Sunfish's .NET core), CHAOSScon (community-health audience, relevant once metrics instrumentation lands), `All Things Open`, `FOSDEM`, `Open Source Summit`.
-- **Vertical-specific events** aligned with shipped reference bundles. HIMSS for healthcare, buildingSMART International Summit for BIM and construction, Ed-Fi Summit for K-12 education, IRS Nationwide Tax Forum for tax filing, NARPM for property management.
-- **Local meetups** in cities where commercial customers and contributors cluster — attend first, speak second, host last.
-
-Hosting a Sunfish-specific meetup or summit is deferred until Level 4+; the community has to exist before gathering it makes sense. A "Sunfish Conf" before the first external contributor arrives is theater, not community-building.
-
-## Commercial community tier
-
-Sunfish's business model (per [vision.md §"Business model"](vision.md)) is "services on top of OSS." Paid support, managed hosting, implementation help, and federation onboarding are legitimate revenue streams. But **paid status does not buy governance influence** — the meritocracy principle in ODF and `GOVERNANCE.md` applies equally to commercial customers and free users. Commercial contracts purchase service-level response, implementation help, and hosting; they do not purchase roadmap priority, ADR outcomes, or private features.
-
-Specifically, commercial customers get:
-
-- Guaranteed response times and escalation paths per their support contract.
-- Private channels for deployment-specific questions that shouldn't be public (credentials, tenant data, infrastructure topology).
-- Priority scheduling for professional-services engagements.
-
-Commercial customers do not get:
-
-- Roadmap vetoes or private feature roadmaps.
-- Private builds of Sunfish with proprietary features not available in OSS.
-- The ability to suppress public discussion of bugs or limitations they care about.
-
-The commercial community tier activates when the first paying customer signals materialize (Level 4). Intake goes through a documented commercial channel separate from public issues; day-to-day technical questions still flow through public Discussions so that answers benefit everyone and institutional knowledge accrues in searchable form.
+If and when commercial revenue arises, the policy is: paid status does not buy roadmap influence, ADR outcomes, or private features. Commercial contracts purchase service-level response and implementation help — not governance power.
 
 ## Anti-patterns
 
@@ -161,9 +131,7 @@ Tying the preceding sections back to the triggers in [`GOVERNANCE.md`](../../GOV
 | First external issue filed | Apply `good-first-issue` or `help-wanted` labels across the backlog; personal welcome reply within 1 business day; ensure the reporter knows where to follow up. |
 | First external PR merged | Public thank-you in the PR; changelog credit in the next release; `All Contributors` entry (when bot activates at Level 2). |
 | **3+ external committers** (Level 2) | Maintainer tier per `GOVERNANCE.md`; activate `All Contributors` bot; begin monthly changelog summary in Discussions Announcements. |
-| **10+ external committers** (Level 3) | TSC forms; formal RFC process; consider optional community call cadence; stand up CHAOSS metrics dashboard. |
-| **First corporate adopter signal** (Level 4) | DevRel content plan; commercial support intake channel; case-study process; project social account if warranted. |
-| **3+ production orgs** (Level 5) | Foundation evaluation begins; community moves toward foundation-neutral stewardship. |
+| **10+ external committers, corporate adopter, 3+ production orgs** (Levels 3–5) | Deferred indefinitely. See Level 3–5 row in the community levels table above. |
 
 ## Cross-references
 

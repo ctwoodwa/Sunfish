@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-19
 **Governs:** Dependency management, artifact signing, SBOM generation, and security-focused CI workflows across every Sunfish package, accelerator, and release artifact.
 **Companion docs:** [package-conventions.md](package-conventions.md), [testing-strategy.md](testing-strategy.md), [coding-standards.md](coding-standards.md), [../../.github/SECURITY.md](../../.github/SECURITY.md), [../../GOVERNANCE.md](../../GOVERNANCE.md), [ADR 0018 — governance and license posture](../../docs/adrs/0018-governance-and-license-posture.md).
+**Agent relevance:** Loaded by agents modifying dependencies, CI workflows, or release-artifact pipelines. Medium-frequency.
 
 Sunfish is a pre-release, MIT-licensed, BDFL-led OSS platform. We treat supply-chain integrity as table-stakes — xz-utils (2024), SolarWinds, and the recurring PyTorch-nightly and npm-typosquatting incidents make clear that a permissive license and a small maintainer set are not a defense. This doc codifies the posture we commit to today, the gaps we accept, and the triggers that escalate us to stricter controls.
 

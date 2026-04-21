@@ -4,6 +4,7 @@
 **Last reviewed:** 2026-04-20
 **Governs:** Release cadence, changelog format, version tagging, and release-notes mechanics for every Sunfish package, bundle, template, and accelerator.
 **Companion docs:** [compatibility-policy.md](../product/compatibility-policy.md), [commit-conventions.md](commit-conventions.md), [supply-chain-security.md](supply-chain-security.md), [`../../GOVERNANCE.md`](../../GOVERNANCE.md), [`../../docs/adrs/0011-bundle-versioning-upgrade-policy.md`](../../docs/adrs/0011-bundle-versioning-upgrade-policy.md).
+**Agent relevance:** Low-to-medium frequency. Loaded by agents cutting a release, writing changelog entries, or tagging a version.
 
 Sunfish is a pre-1.0, MIT-licensed, BDFL-led OSS platform. [compatibility-policy.md](../product/compatibility-policy.md) defines the semver rules (what qualifies as patch/minor/major); this document defines the mechanics around actually cutting a release — when we release, how the changelog is shaped, how tags are named, and how breaking changes get communicated. The two documents are strict companions: neither answers the other's questions.
 
@@ -18,7 +19,7 @@ Sunfish follows [Keep a Changelog v1.1.0](https://keepachangelog.com/en/1.1.0/) 
 **No fixed cadence. Release when ready.** Pre-1.0 Sunfish is optimized for design velocity; shipping on a clock would force half-finished work out the door. The rule is:
 
 - A release happens when the next chunk of work is **complete, documented, and verified** — not on a calendar.
-- In practice we expect ~every 2–4 weeks during active development, but weeks with no release are fine.
+- The natural cadence is **release per roadmap phase exit** (per [roadmap-tracker.md](../product/roadmap-tracker.md)); ad-hoc patch releases go out whenever a regression is fixed. Weeks with no release are fine.
 - Hotfixes for reported regressions ship as soon as the fix lands on `main`.
 
 ### Post-1.0 (target)
