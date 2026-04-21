@@ -1,5 +1,6 @@
 using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Extensions;
+using Sunfish.UIAdapters.Blazor.Internal.Interop;
 using Sunfish.Providers.Bootstrap;
 using Sunfish.Providers.Bootstrap.Extensions;
 using Sunfish.Providers.FluentUI;
@@ -13,6 +14,10 @@ using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Seeding;
 using Sunfish.Bridge.Hubs;
+using Sunfish.Foundation.Catalog.Bundles;
+using Sunfish.Blocks.Subscriptions.DependencyInjection;
+using Sunfish.Blocks.TenantAdmin.DependencyInjection;
+using Sunfish.Blocks.BusinessCases.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.FeatureManagement;
 using Wolverine;
@@ -49,6 +54,18 @@ builder.Services.AddSignalR()
 // Feature flags.
 builder.Services.AddFeatureManagement();
 
+// P1 domain blocks + bundle catalog (ADR 0015 module-entity registration).
+// Registration order matters:
+//   1. IBundleCatalog singleton — consumed by BundleActivationPanel and BundleEntitlementResolver
+//   2. Block DI extensions — each registers its ISunfishEntityModule, services, and
+//      (for businesscases) an IEntitlementResolver that feeds the feature-management chain
+//   3. Bundle manifests are seeded into the catalog below, after Build(), so the
+//      singleton is available before any feature evaluation runs.
+builder.Services.AddSunfishBundleCatalog();
+builder.Services.AddInMemorySubscriptions();
+builder.Services.AddInMemoryTenantAdmin();
+builder.Services.AddInMemoryBusinessCases();
+
 // Wolverine messaging — RabbitMQ transport, Postgres outbox.
 builder.Host.UseWolverine(opts =>
 {
@@ -79,7 +96,8 @@ builder.Services.AddCors();
 builder.Services.AddAuthorization();
 
 // Sunfish component services with provider switching (FluentUI, Bootstrap, Material)
-builder.Services.AddSunfish();
+builder.Services.AddSunfish()
+    .AddSunfishInteropServices();
 builder.Services.AddSingleton(new FluentUIOptions());
 builder.Services.AddSingleton(new BootstrapOptions());
 builder.Services.AddSingleton(new MaterialOptions());
@@ -110,6 +128,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
+
+// Seed the bundle catalog with the five manifests shipped as embedded resources
+// by Sunfish.Foundation.Catalog. Runs once at startup; idempotent across duplicate
+// calls because Register() throws on duplicate keys (startup is single-pass).
+{
+    var catalog = app.Services.GetRequiredService<IBundleCatalog>();
+    foreach (var logicalName in BundleManifestLoader.ListEmbeddedBundleResourceNames())
+    {
+        catalog.Register(BundleManifestLoader.LoadEmbedded(logicalName));
+    }
+}
 
 if (!app.Environment.IsDevelopment())
 {

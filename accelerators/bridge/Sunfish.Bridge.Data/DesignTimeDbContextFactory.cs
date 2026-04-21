@@ -1,4 +1,5 @@
 using Sunfish.Foundation.Authorization;
+using Sunfish.Foundation.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
@@ -24,6 +25,6 @@ public sealed class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<Sun
         var options = new DbContextOptionsBuilder<SunfishBridgeDbContext>()
             .UseNpgsql("Host=localhost;Database=sunfishbridgedb;Username=postgres;Password=postgres")
             .Options;
-        return new SunfishBridgeDbContext(options, new DesignTimeTenant());
+        return new SunfishBridgeDbContext(options, Array.Empty<ISunfishEntityModule>(), new DesignTimeTenant());
     }
 }

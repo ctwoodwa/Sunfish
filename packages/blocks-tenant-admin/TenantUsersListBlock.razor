@@ -1,0 +1,60 @@
+@* Minimal tenant users list. Consumes ITenantAdminService via DI. *@
+
+@inject ITenantAdminService TenantAdminService
+
+@if (_users is null)
+{
+    <div class="sf-tenant-users__loading">Loading tenant users…</div>
+}
+else if (_users.Count == 0)
+{
+    <div class="sf-tenant-users__empty">No users</div>
+}
+else
+{
+    <table class="sf-tenant-users">
+        <thead>
+            <tr>
+                <th class="sf-tenant-users__col-email">Email</th>
+                <th class="sf-tenant-users__col-name">Display name</th>
+                <th class="sf-tenant-users__col-role">Role</th>
+                <th class="sf-tenant-users__col-invited">Invited</th>
+                <th class="sf-tenant-users__col-accepted">Accepted</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in _users)
+            {
+                <tr class="sf-tenant-users__row" data-user-id="@user.Id">
+                    <td class="sf-tenant-users__col-email">@user.Email</td>
+                    <td class="sf-tenant-users__col-name">@user.DisplayName</td>
+                    <td class="sf-tenant-users__col-role">@user.Role</td>
+                    <td class="sf-tenant-users__col-invited">@user.InvitedAt.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-tenant-users__col-accepted">
+                        @(user.AcceptedAt?.ToString("yyyy-MM-dd") ?? "pending")
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private IReadOnlyList<TenantUser>? _users;
+
+    /// <summary>The tenant whose users are listed. Required.</summary>
+    [Parameter] public TenantId TenantId { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _users = await TenantAdminService.ListTenantUsersAsync(TenantId);
+        }
+        catch
+        {
+            _users = Array.Empty<TenantUser>();
+        }
+    }
+}

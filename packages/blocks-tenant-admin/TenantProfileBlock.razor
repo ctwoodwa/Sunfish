@@ -1,0 +1,83 @@
+@* Minimal tenant-profile edit form. Consumes ITenantAdminService via DI.
+   Full role-aware edit affordances are deferred to follow-up work. *@
+
+@inject ITenantAdminService TenantAdminService
+
+<div class="sf-tenant-profile">
+    @if (_loaded is null)
+    {
+        <div class="sf-tenant-profile__loading">Loading tenant profile…</div>
+    }
+    else
+    {
+        <form class="sf-tenant-profile__form" @onsubmit="SaveAsync">
+            <label class="sf-tenant-profile__label">
+                Display name
+                <input class="sf-tenant-profile__input" @bind="_displayName" />
+            </label>
+
+            <label class="sf-tenant-profile__label">
+                Contact email
+                <input class="sf-tenant-profile__input" @bind="_contactEmail" />
+            </label>
+
+            <label class="sf-tenant-profile__label">
+                Contact phone
+                <input class="sf-tenant-profile__input" @bind="_contactPhone" />
+            </label>
+
+            <button type="submit" class="sf-tenant-profile__save">Save</button>
+
+            @if (!string.IsNullOrEmpty(_status))
+            {
+                <div class="sf-tenant-profile__status">@_status</div>
+            }
+        </form>
+    }
+</div>
+
+@code {
+    private TenantProfile? _loaded;
+    private string _displayName = string.Empty;
+    private string? _contactEmail;
+    private string? _contactPhone;
+    private string? _status;
+
+    /// <summary>The tenant whose profile is being edited. Required.</summary>
+    [Parameter] public TenantId TenantId { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        var profile = await TenantAdminService.GetTenantProfileAsync(TenantId);
+        _loaded = profile ?? new TenantProfile
+        {
+            TenantId = TenantId,
+            DisplayName = string.Empty,
+            CreatedAt = DateTime.UtcNow,
+        };
+        _displayName = _loaded.DisplayName;
+        _contactEmail = _loaded.ContactEmail;
+        _contactPhone = _loaded.ContactPhone;
+    }
+
+    private async Task SaveAsync()
+    {
+        try
+        {
+            var saved = await TenantAdminService.UpdateTenantProfileAsync(new UpdateTenantProfileRequest
+            {
+                TenantId = TenantId,
+                DisplayName = _displayName,
+                ContactEmail = _contactEmail,
+                ContactPhone = _contactPhone,
+            });
+            _loaded = saved;
+            _status = "Saved.";
+        }
+        catch (Exception ex)
+        {
+            _status = $"Save failed: {ex.Message}";
+        }
+    }
+}

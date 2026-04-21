@@ -7,6 +7,9 @@
     <Project Path="packages/foundation-assets-postgres/Sunfish.Foundation.Assets.Postgres.csproj" />
     <Project Path="packages/foundation-assets-postgres/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/persistence/">
+    <Project Path="packages/foundation-persistence/Sunfish.Foundation.Persistence.csproj" />
+  </Folder>
   <Folder Name="/kernel/">
     <Project Path="packages/kernel/Sunfish.Kernel.csproj" />
     <Project Path="packages/kernel/tests/tests.csproj" />
@@ -107,6 +110,18 @@
   <Folder Name="/blocks/tax-reporting/">
     <Project Path="packages/blocks-tax-reporting/Sunfish.Blocks.TaxReporting.csproj" />
     <Project Path="packages/blocks-tax-reporting/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/subscriptions/">
+    <Project Path="packages/blocks-subscriptions/Sunfish.Blocks.Subscriptions.csproj" />
+    <Project Path="packages/blocks-subscriptions/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/tenant-admin/">
+    <Project Path="packages/blocks-tenant-admin/Sunfish.Blocks.TenantAdmin.csproj" />
+    <Project Path="packages/blocks-tenant-admin/tests/Sunfish.Blocks.TenantAdmin.Tests.csproj" />
+  </Folder>
+  <Folder Name="/blocks/business-cases/">
+    <Project Path="packages/blocks-businesscases/Sunfish.Blocks.BusinessCases.csproj" />
+    <Project Path="packages/blocks-businesscases/tests/tests.csproj" />
   </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />

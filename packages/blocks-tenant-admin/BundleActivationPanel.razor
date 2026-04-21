@@ -1,0 +1,143 @@
+@* Bundle activation panel. Consumes IBundleCatalog + ITenantAdminService.
+   Lists every registered bundle with its Name, Version, and edition mappings,
+   and lets an operator activate one at a chosen edition. Shows currently active
+   bundles for the tenant. *@
+
+@inject IBundleCatalog BundleCatalog
+@inject ITenantAdminService TenantAdminService
+
+<div class="sf-bundle-activation-panel">
+    <h3 class="sf-bundle-activation-panel__title">Available bundles</h3>
+
+    @{
+        var bundles = BundleCatalog.GetBundles();
+    }
+
+    @if (bundles.Count == 0)
+    {
+        <div class="sf-bundle-activation-panel__empty">No bundles registered.</div>
+    }
+    else
+    {
+        <ul class="sf-bundle-activation-panel__list">
+            @foreach (var bundle in bundles)
+            {
+                var editionKeys = bundle.EditionMappings.Keys.ToArray();
+                var selectedEdition = _selectedEdition.TryGetValue(bundle.Key, out var e)
+                    ? e
+                    : editionKeys.FirstOrDefault() ?? string.Empty;
+
+                <li class="sf-bundle-activation-panel__item" data-bundle-key="@bundle.Key">
+                    <div class="sf-bundle-activation-panel__name">@bundle.Name</div>
+                    <div class="sf-bundle-activation-panel__version">@($"v{bundle.Version}")</div>
+
+                    @if (editionKeys.Length > 0)
+                    {
+                        <select class="sf-bundle-activation-panel__edition"
+                                value="@selectedEdition"
+                                @onchange="e => OnEditionChanged(bundle.Key, e.Value?.ToString())">
+                            @foreach (var edition in editionKeys)
+                            {
+                                <option value="@edition">@edition</option>
+                            }
+                        </select>
+                    }
+
+                    <button type="button"
+                            class="sf-bundle-activation-panel__activate"
+                            @onclick="() => ActivateAsync(bundle.Key, selectedEdition)">
+                        Activate
+                    </button>
+                </li>
+            }
+        </ul>
+    }
+
+    <h3 class="sf-bundle-activation-panel__title">Active bundles</h3>
+
+    @if (_active is null)
+    {
+        <div class="sf-bundle-activation-panel__loading">Loading…</div>
+    }
+    else if (_active.Count == 0)
+    {
+        <div class="sf-bundle-activation-panel__empty">No bundles active for this tenant.</div>
+    }
+    else
+    {
+        <ul class="sf-bundle-activation-panel__active">
+            @foreach (var activation in _active)
+            {
+                <li class="sf-bundle-activation-panel__active-item" data-activation-id="@activation.Id">
+                    <span class="sf-bundle-activation-panel__active-key">@activation.BundleKey</span>
+                    <span class="sf-bundle-activation-panel__active-edition">@activation.Edition</span>
+                </li>
+            }
+        </ul>
+    }
+
+    @if (!string.IsNullOrEmpty(_status))
+    {
+        <div class="sf-bundle-activation-panel__status">@_status</div>
+    }
+</div>
+
+@code {
+    private IReadOnlyList<BundleActivation>? _active;
+    private readonly Dictionary<string, string> _selectedEdition = new(StringComparer.Ordinal);
+    private string? _status;
+
+    /// <summary>The tenant whose activations are shown. Required.</summary>
+    [Parameter] public TenantId TenantId { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshActiveAsync();
+    }
+
+    private void OnEditionChanged(string bundleKey, string? edition)
+    {
+        if (!string.IsNullOrEmpty(edition))
+        {
+            _selectedEdition[bundleKey] = edition;
+        }
+    }
+
+    private async Task ActivateAsync(string bundleKey, string edition)
+    {
+        if (string.IsNullOrWhiteSpace(edition))
+        {
+            _status = $"Cannot activate '{bundleKey}': no edition selected.";
+            return;
+        }
+
+        try
+        {
+            await TenantAdminService.ActivateBundleAsync(new ActivateBundleRequest
+            {
+                TenantId = TenantId,
+                BundleKey = bundleKey,
+                Edition = edition,
+            });
+            _status = $"Activated {bundleKey} ({edition}).";
+            await RefreshActiveAsync();
+        }
+        catch (Exception ex)
+        {
+            _status = $"Activate failed: {ex.Message}";
+        }
+    }
+
+    private async Task RefreshActiveAsync()
+    {
+        try
+        {
+            _active = await TenantAdminService.ListActiveBundlesAsync(TenantId);
+        }
+        catch
+        {
+            _active = Array.Empty<BundleActivation>();
+        }
+    }
+}

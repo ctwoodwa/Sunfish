@@ -1,0 +1,107 @@
+@* Diagnostic block: renders the current tenant's resolved entitlement snapshot.
+   Shows active bundle key, edition, modules, and feature-default values. *@
+
+@using Sunfish.Foundation.Assets.Common
+@inject Sunfish.Foundation.Authorization.ITenantContext TenantContext
+@inject IBusinessCaseService BusinessCaseService
+
+@if (_state.IsLoading)
+{
+    <div class="sf-entitlement-snapshot__loading">Loading entitlements…</div>
+}
+else if (_state.Snapshot is null || _state.Snapshot.ActiveBundleKey is null)
+{
+    <div class="sf-entitlement-snapshot__empty">No active bundle for tenant</div>
+}
+else
+{
+    var snapshot = _state.Snapshot;
+    <section class="sf-entitlement-snapshot">
+        <header class="sf-entitlement-snapshot__header">
+            <div class="sf-entitlement-snapshot__tenant">Tenant: <code>@snapshot.TenantId</code></div>
+            <div class="sf-entitlement-snapshot__bundle">Bundle: <code>@snapshot.ActiveBundleKey</code></div>
+            <div class="sf-entitlement-snapshot__edition">Edition: <code>@snapshot.ActiveEdition</code></div>
+            <div class="sf-entitlement-snapshot__resolved-at">
+                Resolved at @snapshot.ResolvedAt.ToString("u")
+            </div>
+        </header>
+
+        <h4 class="sf-entitlement-snapshot__section-header">Active modules</h4>
+        @if (snapshot.ActiveModules.Count == 0)
+        {
+            <div class="sf-entitlement-snapshot__empty">No active modules</div>
+        }
+        else
+        {
+            <ul class="sf-entitlement-snapshot__modules">
+                @foreach (var module in snapshot.ActiveModules)
+                {
+                    <li class="sf-entitlement-snapshot__module" data-module-key="@module">@module</li>
+                }
+            </ul>
+        }
+
+        <h4 class="sf-entitlement-snapshot__section-header">Feature values</h4>
+        @if (snapshot.ResolvedFeatureValues.Count == 0)
+        {
+            <div class="sf-entitlement-snapshot__empty">No feature defaults</div>
+        }
+        else
+        {
+            <table class="sf-entitlement-snapshot__features">
+                <thead>
+                    <tr>
+                        <th class="sf-entitlement-snapshot__col-key">Feature</th>
+                        <th class="sf-entitlement-snapshot__col-value">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var entry in snapshot.ResolvedFeatureValues)
+                    {
+                        <tr class="sf-entitlement-snapshot__feature-row" data-feature-key="@entry.Key">
+                            <td class="sf-entitlement-snapshot__col-key">@entry.Key</td>
+                            <td class="sf-entitlement-snapshot__col-value">@entry.Value</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </section>
+}
+
+@code {
+    private EntitlementSnapshotState _state = EntitlementSnapshotState.Loading();
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var tenantIdValue = TenantContext.TenantId;
+            if (string.IsNullOrWhiteSpace(tenantIdValue))
+            {
+                _state = EntitlementSnapshotState.Loaded(new TenantEntitlementSnapshot(
+                    TenantId: new TenantId(string.Empty),
+                    ActiveBundleKey: null,
+                    ActiveEdition: null,
+                    ActiveModules: Array.Empty<string>(),
+                    ResolvedFeatureValues: new Dictionary<string, string>(),
+                    ResolvedAt: DateTimeOffset.UtcNow));
+                return;
+            }
+
+            var snapshot = await BusinessCaseService.GetSnapshotAsync(new TenantId(tenantIdValue));
+            _state = EntitlementSnapshotState.Loaded(snapshot);
+        }
+        catch
+        {
+            _state = EntitlementSnapshotState.Loaded(new TenantEntitlementSnapshot(
+                TenantId: new TenantId(string.Empty),
+                ActiveBundleKey: null,
+                ActiveEdition: null,
+                ActiveModules: Array.Empty<string>(),
+                ResolvedFeatureValues: new Dictionary<string, string>(),
+                ResolvedAt: DateTimeOffset.UtcNow));
+        }
+    }
+}
