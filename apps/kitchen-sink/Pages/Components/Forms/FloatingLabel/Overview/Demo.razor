@@ -1,0 +1,59 @@
+@page "/components/forms/floatinglabel/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>FloatingLabel / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FloatingLabel / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FloatingLabel/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFloatingLabel</code> wraps any focusable input to provide an animated
+            label that sits inside the field when empty and floats above it when the field is
+            focused or holds a value. The mechanic is CSS-only — no JS interop — using
+            <code>:focus-within</code> plus <code>:has(:placeholder-shown)</code>.
+        </p>
+        <p>
+            <strong>Contract:</strong> the wrapped <code>&lt;input&gt;</code> or
+            <code>&lt;textarea&gt;</code> MUST carry a non-empty <code>placeholder</code>
+            attribute (a single space is enough). For <code>&lt;select&gt;</code>, bind
+            <code>Float</code> to the non-empty state of the value.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display: flex; flex-direction: column; gap: 1.25rem; max-width: 24rem;">
+
+            <SunfishFloatingLabel Label="Full name">
+                <SunfishTextBox @bind-Value="_name" Placeholder=" " />
+            </SunfishFloatingLabel>
+
+            <SunfishFloatingLabel Label="Country" Float="@(!string.IsNullOrEmpty(_country))">
+                <SunfishSelect @bind-Value="_country">
+                    <option value=""></option>
+                    <option value="us">United States</option>
+                    <option value="ca">Canada</option>
+                    <option value="uk">United Kingdom</option>
+                </SunfishSelect>
+            </SunfishFloatingLabel>
+
+            <SunfishFloatingLabel Label="Notes">
+                <SunfishTextArea @bind-Value="_notes" Placeholder=" " Rows="4" />
+            </SunfishFloatingLabel>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FloatingLabel", "Overview"];
+
+    private string _name = string.Empty;
+    private string _country = string.Empty;
+    private string _notes = string.Empty;
+}

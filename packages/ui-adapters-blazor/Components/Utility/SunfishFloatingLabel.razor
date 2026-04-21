@@ -1,24 +1,51 @@
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses("mar-floating-label") @(_isFocused || _hasValue ? "mar-floating-label--active" : "")"
+@*
+    SunfishFloatingLabel — Material-style floating label wrapper.
+
+    Mechanic (CSS-only, no JS interop):
+      * The wrapper uses `:focus-within` to detect focus on any contained input.
+      * The wrapper uses `:has(:placeholder-shown)` to detect empty state.
+      * When BOTH conditions are false (input has a value OR is focused), the label floats.
+
+    CONTRACT for the wrapped input:
+      * The child <input>/<textarea> MUST set a non-empty `placeholder` attribute
+        (even a single space). Without it, the `:placeholder-shown` selector cannot
+        fire and the label will not float on value-present.
+      * For <select> and other non-placeholder-capable controls, set `Float="true"`
+        explicitly when the control has a value, or toggle via `@bind-Float`.
+
+    Parameters:
+      * Label (required) — the label text.
+      * For — optional HTML `for` target; passed through to the inner <label>.
+      * ChildContent — the wrapped input/select/textarea.
+      * Float — optional explicit-float override (use for <select>).
+      * Class — appended to the root wrapper (composed via SunfishComponentBase).
+*@
+
+<div class="@CombineClasses("sf-floating-label") @(Float ? "sf-floating-label--float" : "")"
      style="@CombineStyles()"
      @attributes="AdditionalAttributes">
-    <label class="sf-floating-label__label">@Text</label>
-    <div class="sf-floating-label__content"
-         @onfocusin="HandleFocusIn"
-         @onfocusout="HandleFocusOut">
+    <label class="sf-floating-label__label" for="@For">@Label</label>
+    <div class="sf-floating-label__field">
         @ChildContent
     </div>
 </div>
 
 @code {
-    [Parameter] public string Text { get; set; } = string.Empty;
+    /// <summary>The label text displayed above (or over) the wrapped input.</summary>
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+
+    /// <summary>The wrapped input/select/textarea. Must render a placeholder attribute for CSS-only float-on-value detection.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public bool HasValue { get; set; }
 
-    private bool _isFocused;
-    private bool _hasValue => HasValue;
+    /// <summary>Optional HTML `for` attribute forwarded to the label element.</summary>
+    [Parameter] public string? For { get; set; }
 
-    private void HandleFocusIn() => _isFocused = true;
-    private void HandleFocusOut() => _isFocused = false;
+    /// <summary>
+    /// Explicit float override. The CSS-only mechanic (`:focus-within` + `:placeholder-shown`)
+    /// covers inputs and textareas automatically; set this to <c>true</c> for controls that
+    /// cannot expose a placeholder (e.g. <c>&lt;select&gt;</c>) when they hold a value.
+    /// </summary>
+    [Parameter] public bool Float { get; set; }
 }

@@ -1,0 +1,83 @@
+/*
+    SunfishFloatingLabel — scoped styles for the real floating-label mechanic.
+
+    The label sits inside the input bounds by default (looking like placeholder text)
+    and floats above on focus or when the input holds a value.
+
+    Float triggers (any of the following raises the label):
+      * :focus-within on the wrapper
+      * the wrapper :has() an input/textarea that is NOT :placeholder-shown
+      * `.sf-floating-label--float` class (explicit opt-in via the `Float` parameter)
+
+    NOTE on CSS-prefix parity: this component currently uses a `sf-floating-label`
+    prefix. The repo-wide `mar-*` / `k-*` prefix audit (spec-verification-2026-04-21)
+    is tracked separately and intentionally not addressed here.
+*/
+
+.sf-floating-label {
+    position: relative;
+    display: inline-block;
+    padding-top: 0.65rem;
+    width: 100%;
+    font-family: inherit;
+}
+
+.sf-floating-label__field {
+    display: block;
+    width: 100%;
+}
+
+.sf-floating-label__field > :is(input, textarea, select, .sf-textbox, .sf-select, .sf-textarea) {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.sf-floating-label__label {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    transform-origin: left top;
+    font-size: 1rem;
+    color: var(--sunfish-muted, #6b7280);
+    background: transparent;
+    padding: 0 0.25rem;
+    pointer-events: none;
+    transition:
+        transform 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        font-size 150ms cubic-bezier(0.4, 0, 0.2, 1),
+        color 150ms ease;
+    white-space: nowrap;
+}
+
+/* Float trigger 1: any descendant is focused. */
+.sf-floating-label:focus-within .sf-floating-label__label {
+    transform: translateY(calc(-50% - 1.1rem)) scale(0.85);
+    font-size: 0.85rem;
+    color: var(--sunfish-accent, #2563eb);
+    background: var(--sunfish-surface, #ffffff);
+}
+
+/*
+    Float trigger 2: the input has a value (i.e. placeholder is NOT shown).
+    Uses :has() so we can parent-select on the child's state. Requires the
+    child to declare a non-empty `placeholder` attribute per the component contract.
+*/
+.sf-floating-label:has(:is(input, textarea):not(:placeholder-shown)) .sf-floating-label__label {
+    transform: translateY(calc(-50% - 1.1rem)) scale(0.85);
+    font-size: 0.85rem;
+    background: var(--sunfish-surface, #ffffff);
+}
+
+/* Float trigger 3: explicit opt-in for non-placeholder-capable controls (select). */
+.sf-floating-label--float .sf-floating-label__label {
+    transform: translateY(calc(-50% - 1.1rem)) scale(0.85);
+    font-size: 0.85rem;
+    background: var(--sunfish-surface, #ffffff);
+}
+
+/* When focus AND value are both present, prefer the focus color. */
+.sf-floating-label:focus-within:has(:is(input, textarea):not(:placeholder-shown)) .sf-floating-label__label,
+.sf-floating-label--float:focus-within .sf-floating-label__label {
+    color: var(--sunfish-accent, #2563eb);
+}

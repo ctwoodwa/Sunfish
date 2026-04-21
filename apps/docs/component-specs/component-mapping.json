@@ -44,7 +44,7 @@
     "filter": { "sunfish": null, "status": "planned", "category": "forms" },
     "flatcolorpicker": { "sunfish": "SunfishColorPicker", "status": "partial", "category": "forms" },
     "floatingactionbutton": { "sunfish": "SunfishFab", "status": "implemented", "category": "buttons" },
-    "floatinglabel": { "sunfish": "SunfishLabel", "status": "partial", "category": "forms" },
+    "floatinglabel": { "sunfish": "SunfishFloatingLabel", "status": "implemented", "category": "forms" },
     "form": { "sunfish": "SunfishForm", "status": "implemented", "category": "forms" },
     "gantt": { "sunfish": null, "status": "planned", "category": "scheduling" },
     "gauges": { "sunfish": null, "status": "planned", "category": "charts" },
