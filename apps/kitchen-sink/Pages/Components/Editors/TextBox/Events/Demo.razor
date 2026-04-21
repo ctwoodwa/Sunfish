@@ -1,0 +1,90 @@
+@page "/components/forms/textbox/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextBox / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextBox / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextBox/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextBox</code> exposes its primary update channel through
+            <code>ValueChanged</code> (which powers <code>@@bind-Value</code>). Every keystroke is
+            streamed from the underlying <code>&lt;input&gt;</code> via <code>@@oninput</code>, so the
+            callback fires immediately on each edit. Optional <code>DebounceDelay</code> lets you
+            throttle updates for network-backed consumers.
+        </p>
+        <p>
+            The demo below wires <code>ValueChanged</code> directly and also attaches the native
+            focus and blur handlers through <code>AdditionalAttributes</code>. Every invocation is
+            appended to the append-only log on the right.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:0.5rem;">
+                <SunfishField>
+                    <SunfishLabel>Name (streamed on every keystroke)</SunfishLabel>
+                    <SunfishTextBox Value="@_value"
+                                    ValueChanged="HandleValueChanged"
+                                    Placeholder="Type something..."
+                                    ShowClearButton="true"
+                                    @onfocus="HandleFocus"
+                                    @onblur="HandleBlur" />
+                </SunfishField>
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    Current value: <strong>@(_value ?? "(empty)")</strong> — length: <strong>@((_value ?? "").Length)</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — type in the input above.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextBox", "Events"];
+
+    private string _value = string.Empty;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(string v)
+    {
+        _value = v;
+        Log($"ValueChanged -> \"{v}\" (len {v.Length})");
+    }
+
+    private void HandleFocus() => Log("onfocus fired");
+
+    private void HandleBlur() => Log($"onblur fired (value=\"{_value}\")");
+
+    private void ClearLog() => _log.Clear();
+}

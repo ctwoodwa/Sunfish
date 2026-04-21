@@ -1,0 +1,127 @@
+@page "/components/forms/select/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Select / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Select / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Select/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSelect</code> uses a native <code>&lt;select&gt;</code>, so it inherits the
+            full platform accessibility contract: implicit combobox / listbox semantics, arrow-key
+            navigation, <kbd>Enter</kbd> / <kbd>Space</kbd> to open on some platforms, type-ahead, and
+            screen reader announcement of the selected option.
+        </p>
+        <p>
+            Associate the label via <code>SunfishLabel</code> + <code>SunfishField</code> (or via
+            <code>aria-labelledby</code> pass-through). For invalid state, pair <code>IsInvalid</code>
+            with <code>aria-invalid</code> and an error element referenced by <code>aria-describedby</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled via aria-labelledby</h3>
+                <SunfishLabel Id="country-label">Country</SunfishLabel>
+                <SunfishSelect Value="@_country"
+                               ValueChanged="@(v => _country = v)"
+                               aria-labelledby="country-label">
+                    <option value="">--</option>
+                    <option value="us">United States</option>
+                    <option value="ca">Canada</option>
+                </SunfishSelect>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Required + described-by</h3>
+                <SunfishLabel Id="plan-label">Plan</SunfishLabel>
+                <SunfishSelect Value="@_plan"
+                               ValueChanged="@(v => _plan = v)"
+                               aria-labelledby="plan-label"
+                               aria-required="true"
+                               aria-describedby="plan-hint">
+                    <option value="">--</option>
+                    <option value="free">Free</option>
+                    <option value="pro">Pro</option>
+                    <option value="team">Team</option>
+                </SunfishSelect>
+                <span id="plan-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    You can change plans at any time.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Invalid announced via aria-invalid</h3>
+                <SunfishLabel Id="role-label">Role</SunfishLabel>
+                <SunfishSelect Value="@_role"
+                               ValueChanged="@(v => _role = v)"
+                               IsInvalid="true"
+                               aria-labelledby="role-label"
+                               aria-invalid="true"
+                               aria-describedby="role-error">
+                    <option value="">-- select --</option>
+                    <option value="admin">Admin</option>
+                    <option value="viewer">Viewer</option>
+                </SunfishSelect>
+                <span id="role-error" role="alert" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    Role is required.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled announced</h3>
+                <SunfishSelect Value="viewer" Enabled="false" aria-label="Role (locked)">
+                    <option value="viewer">Viewer</option>
+                </SunfishSelect>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Select", "Accessibility"];
+
+    private string _country = string.Empty;
+    private string _plan = string.Empty;
+    private string _role = string.Empty;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                   "Move focus to / out of the select"),
+        ("<kbd>Space</kbd> / <kbd>Enter</kbd>", "Open the dropdown (platform-dependent)"),
+        ("<kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd>", "Move to next / previous option"),
+        ("<kbd>Home</kbd> / <kbd>End</kbd>", "Move to first / last option"),
+        ("Character keys",                   "Type-ahead: jump to the option whose text starts with the typed letters"),
+        ("<kbd>Esc</kbd>",                   "Close the dropdown without changing selection"),
+    ];
+}

@@ -1,0 +1,104 @@
+@page "/components/forms/switch/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Switch / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Switch / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Switch/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSwitch</code> exposes two primary callbacks (both wire the same state change —
+            pick whichever reads best for your component):
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires when the switch toggles. Powers
+                <code>@@bind-Value</code>.</li>
+            <li><code>IsOnChanged</code> — backwards-compatible alias for <code>ValueChanged</code>
+                that pairs with the <code>IsOn</code> parameter.</li>
+        </ul>
+        <p>
+            Focus and blur are attached through <code>AdditionalAttributes</code>. The log on the
+            right records each invocation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:.75rem;">
+
+                <SunfishSwitch Value="@_value"
+                               ValueChanged="HandleValueChanged"
+                               OnLabel="Sync enabled"
+                               OffLabel="Sync disabled"
+                               @onfocus="HandleFocus"
+                               @onblur="HandleBlur" />
+
+                <SunfishSwitch IsOn="@_ison"
+                               IsOnChanged="HandleIsOnChanged"
+                               Label="Legacy IsOn API" />
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    value=<strong>@_value</strong>, ison=<strong>@_ison</strong>, toggles=<strong>@_toggleCount</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — flip a switch.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Switch", "Events"];
+
+    private bool _value;
+    private bool _ison;
+    private int _toggleCount;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(bool v)
+    {
+        _value = v;
+        _toggleCount++;
+        Log($"ValueChanged -> {v}");
+    }
+
+    private void HandleIsOnChanged(bool v)
+    {
+        _ison = v;
+        _toggleCount++;
+        Log($"IsOnChanged -> {v}");
+    }
+
+    private void HandleFocus() => Log("onfocus");
+    private void HandleBlur() => Log("onblur");
+
+    private void ClearLog() => _log.Clear();
+}

@@ -1,0 +1,108 @@
+@page "/components/forms/checkbox/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Checkbox / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Checkbox / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Checkbox/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCheckbox</code> renders an <code>&lt;input type="checkbox"&gt;</code> inside a
+            <code>&lt;label&gt;</code>, so it inherits the platform semantics:
+            <code>role="checkbox"</code> implicit, <kbd>Space</kbd> toggles, <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>
+            moves focus, and the <code>disabled</code> attribute removes it from the tab order.
+        </p>
+        <p>
+            The component also sets <code>aria-checked</code> to <code>"true"</code>,
+            <code>"false"</code>, or <code>"mixed"</code> depending on <code>Checked</code> and
+            <code>Indeterminate</code>. Additional ARIA (describedby, required) pass through via
+            <code>AdditionalAttributes</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">aria-checked reflects tri-state</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Inspect in DevTools: <code>aria-checked</code> is <code>"true"</code>, <code>"false"</code>,
+                    or <code>"mixed"</code>.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:.35rem;">
+                    <SunfishCheckbox Checked="false" Label='aria-checked="false"' />
+                    <SunfishCheckbox Checked="true"  Label='aria-checked="true"' />
+                    <SunfishCheckbox Indeterminate="true" Label='aria-checked="mixed"' />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Required + described-by</h3>
+                <SunfishCheckbox @bind-Checked="_terms"
+                                 Label="I accept the terms of service"
+                                 aria-required="true"
+                                 aria-describedby="terms-hint" />
+                <span id="terms-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    You must accept before continuing.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Invalid state announced</h3>
+                <SunfishCheckbox Checked="false"
+                                 Label="I accept (required)"
+                                 aria-invalid="true"
+                                 aria-describedby="tos-error" />
+                <span id="tos-error" role="alert" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    You must accept the terms to continue.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
+                <SunfishCheckbox Checked="true" Enabled="false" Label="Admin access (locked)" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Checkbox", "Accessibility"];
+
+    private bool _terms;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                "Move focus to / out of the checkbox"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus backward"),
+        ("<kbd>Space</kbd>",              "Toggle the checked state"),
+    ];
+}

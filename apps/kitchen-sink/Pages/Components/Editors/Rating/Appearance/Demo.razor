@@ -1,0 +1,87 @@
+@page "/components/forms/rating/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Rating / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Rating / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Rating/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRating</code> renders a row of star icons that filled left-to-right according
+            to the current <code>Value</code>. The visual axes are:
+        </p>
+        <ul>
+            <li><code>Max</code> — total number of stars (typically 3, 5, or 10).</li>
+            <li><code>Value</code> — the currently selected count. Two-way bind via
+                <code>@@bind-Value</code>.</li>
+            <li><code>IsReadOnly</code> — renders each star as a non-interactive <code>&lt;span&gt;</code>
+                rather than a button.</li>
+            <li><code>Enabled</code> — set to <code>false</code> for the disabled visual treatment.</li>
+            <li><code>Label</code> — the accessible label for the radio group (also shown to AT).</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.5rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Empty (0 of 5)</h3>
+                <SunfishRating Value="0" Max="5" Label="Empty rating" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Partial (3 of 5)</h3>
+                <SunfishRating Value="3" Max="5" Label="Three stars" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Full (5 of 5)</h3>
+                <SunfishRating Value="5" Max="5" Label="Top rating" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Max 3</h3>
+                <SunfishRating @bind-Value="_three" Max="3" Label="Three-star scale" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Max 10</h3>
+                <SunfishRating @bind-Value="_ten" Max="10" Label="Ten-star scale" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label + readout</h3>
+                <SunfishField>
+                    <SunfishLabel>Product quality</SunfishLabel>
+                    <SunfishRating @bind-Value="_quality" Max="5" Label="Product quality" />
+                    <p style="margin:.35rem 0 0; font-size:.85rem;">@_quality / 5 stars</p>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Read-only (display)</h3>
+                <SunfishRating Value="4" Max="5" IsReadOnly="true" Label="Displayed rating" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishRating Value="3" Max="5" Enabled="false" Label="Locked rating" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Rating", "Appearance"];
+
+    private int _three = 2;
+    private int _ten = 7;
+    private int _quality = 4;
+}

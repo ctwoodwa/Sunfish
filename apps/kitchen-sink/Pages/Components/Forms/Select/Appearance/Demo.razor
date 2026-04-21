@@ -1,0 +1,110 @@
+@page "/components/forms/select/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Select / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Select / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Select/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSelect</code> wraps the native <code>&lt;select&gt;</code> for single-value
+            selection. The visual axes are: label (via <code>SunfishField</code> /
+            <code>SunfishLabel</code>), invalid state (<code>IsInvalid</code>), enabled state
+            (<code>Enabled</code>), and the <code>Filterable</code> mode that adds a filter input
+            above the dropdown.
+        </p>
+        <p>
+            Child content is a plain block of <code>&lt;option&gt;</code> elements, including
+            <code>&lt;optgroup&gt;</code> for grouped data. The examples below exercise the common
+            visual axes.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1.25rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Plain</h3>
+                <SunfishSelect Value="@_a" ValueChanged="@(v => _a = v)">
+                    <option value="">Choose a fruit</option>
+                    <option value="apple">Apple</option>
+                    <option value="banana">Banana</option>
+                    <option value="cherry">Cherry</option>
+                </SunfishSelect>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label</h3>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishSelect Value="@_country" ValueChanged="@(v => _country = v)">
+                        <option value="">Select a country</option>
+                        <option value="us">United States</option>
+                        <option value="ca">Canada</option>
+                        <option value="mx">Mexico</option>
+                    </SunfishSelect>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Filterable</h3>
+                <SunfishSelect Value="@_city" ValueChanged="@(v => _city = v)" Filterable="true">
+                    <option value="">Choose a city</option>
+                    <option value="nyc">New York</option>
+                    <option value="la">Los Angeles</option>
+                    <option value="chi">Chicago</option>
+                    <option value="hou">Houston</option>
+                    <option value="phx">Phoenix</option>
+                </SunfishSelect>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Grouped options</h3>
+                <SunfishSelect Value="@_tz" ValueChanged="@(v => _tz = v)">
+                    <option value="">Select a time zone</option>
+                    <optgroup label="Americas">
+                        <option value="ny">New York</option>
+                        <option value="la">Los Angeles</option>
+                    </optgroup>
+                    <optgroup label="Europe">
+                        <option value="lon">London</option>
+                        <option value="ber">Berlin</option>
+                    </optgroup>
+                </SunfishSelect>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Invalid</h3>
+                <SunfishSelect Value="@_bad" ValueChanged="@(v => _bad = v)" IsInvalid="true">
+                    <option value="">Choose...</option>
+                    <option value="a">Alpha</option>
+                    <option value="b">Beta</option>
+                </SunfishSelect>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishSelect Value="apple" Enabled="false">
+                    <option value="apple">Apple</option>
+                </SunfishSelect>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Select", "Appearance"];
+
+    private string _a = string.Empty;
+    private string _country = string.Empty;
+    private string _city = string.Empty;
+    private string _tz = string.Empty;
+    private string _bad = string.Empty;
+}

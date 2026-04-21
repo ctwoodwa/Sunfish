@@ -1,0 +1,124 @@
+@page "/components/forms/select/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Select / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Select / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Select/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSelect</code> exposes two event callbacks:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires when the selected option changes. Powers
+                <code>@@bind-Value</code>.</li>
+            <li><code>OnFilterTextChanged</code> — fires (in <code>Filterable="true"</code> mode) on
+                every keystroke of the filter input, with the current filter string.</li>
+        </ul>
+        <p>
+            Additional events (<code>onfocus</code>, <code>onblur</code>) pass through via
+            <code>AdditionalAttributes</code>. The log on the right records every invocation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishField>
+                    <SunfishLabel>Priority (plain)</SunfishLabel>
+                    <SunfishSelect Value="@_priority"
+                                   ValueChanged="HandlePriorityChanged"
+                                   @onfocus="HandleFocus"
+                                   @onblur="HandleBlur">
+                        <option value="">--</option>
+                        <option value="low">Low</option>
+                        <option value="med">Medium</option>
+                        <option value="high">High</option>
+                    </SunfishSelect>
+                </SunfishField>
+
+                <SunfishField>
+                    <SunfishLabel>Team (filterable)</SunfishLabel>
+                    <SunfishSelect Value="@_team"
+                                   ValueChanged="HandleTeamChanged"
+                                   Filterable="true"
+                                   OnFilterTextChanged="HandleFilterChanged">
+                        <option value="">--</option>
+                        <option value="platform">Platform</option>
+                        <option value="growth">Growth</option>
+                        <option value="infra">Infra</option>
+                        <option value="design">Design</option>
+                    </SunfishSelect>
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    priority=<strong>@(_priority == "" ? "(none)" : _priority)</strong>,
+                    team=<strong>@(_team == "" ? "(none)" : _team)</strong>,
+                    filter="<strong>@_lastFilter</strong>"
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — pick an option or type in the filter.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Select", "Events"];
+
+    private string _priority = string.Empty;
+    private string _team = string.Empty;
+    private string _lastFilter = string.Empty;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandlePriorityChanged(string v)
+    {
+        _priority = v;
+        Log($"ValueChanged (priority) -> \"{v}\"");
+    }
+
+    private void HandleTeamChanged(string v)
+    {
+        _team = v;
+        Log($"ValueChanged (team) -> \"{v}\"");
+    }
+
+    private void HandleFilterChanged(string text)
+    {
+        _lastFilter = text;
+        Log($"OnFilterTextChanged -> \"{text}\"");
+    }
+
+    private void HandleFocus() => Log("onfocus (priority)");
+    private void HandleBlur() => Log("onblur (priority)");
+
+    private void ClearLog() => _log.Clear();
+}

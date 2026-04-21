@@ -1,0 +1,99 @@
+@page "/components/forms/textbox/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextBox / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextBox / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextBox/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextBox</code> is a single-line input whose look is driven by a small set of
+            parameters: <code>Placeholder</code>, <code>Disabled</code>, <code>ReadOnly</code>,
+            <code>IsInvalid</code>, <code>Prefix</code> / <code>Suffix</code> adornments (with optional
+            <code>ShowPrefixSeparator</code> / <code>ShowSuffixSeparator</code>), and
+            <code>ShowClearButton</code>. <code>InputType</code> swaps between <code>text</code>,
+            <code>email</code>, <code>password</code>, <code>tel</code>, <code>url</code>, and so on.
+        </p>
+        <p>
+            The examples below walk the visual axes — with/without label, prefix/suffix, disabled and
+            readonly, an invalid state, and a clear button. All variants remain framework-agnostic: the
+            contract lives in <code>ui-core</code> and is honored identically by the React adapter.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1.25rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Plain</h3>
+                <SunfishTextBox Value="@_a" ValueChanged="@(v => _a = v)" Placeholder="Enter text" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label</h3>
+                <SunfishField>
+                    <SunfishLabel>Full name</SunfishLabel>
+                    <SunfishTextBox Value="@_b" ValueChanged="@(v => _b = v)" Placeholder="Jane Doe" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Prefix adornment</h3>
+                <SunfishTextBox Value="@_c" ValueChanged="@(v => _c = v)" Placeholder="username" ShowPrefixSeparator="true">
+                    <Prefix><span style="padding:0 .5rem; color:#6b7280;">@@</span></Prefix>
+                </SunfishTextBox>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Suffix adornment</h3>
+                <SunfishTextBox Value="@_d" ValueChanged="@(v => _d = v)" Placeholder="0.00" ShowSuffixSeparator="true">
+                    <Suffix><span style="padding:0 .5rem; color:#6b7280;">USD</span></Suffix>
+                </SunfishTextBox>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With clear button</h3>
+                <SunfishTextBox Value="@_e" ValueChanged="@(v => _e = v)" Placeholder="Type to see clear" ShowClearButton="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Password</h3>
+                <SunfishTextBox Value="@_f" ValueChanged="@(v => _f = v)" Placeholder="password" InputType="password" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishTextBox Value="Cannot edit" Disabled="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Read-only</h3>
+                <SunfishTextBox Value="Read-only value" ReadOnly="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Invalid</h3>
+                <SunfishTextBox Value="@_g" ValueChanged="@(v => _g = v)" Placeholder="required" IsInvalid="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextBox", "Appearance"];
+
+    private string _a = string.Empty;
+    private string _b = string.Empty;
+    private string _c = string.Empty;
+    private string _d = string.Empty;
+    private string _e = "clear me";
+    private string _f = string.Empty;
+    private string _g = string.Empty;
+}

@@ -1,0 +1,113 @@
+@page "/components/forms/searchbox/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SearchBox / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SearchBox / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/SearchBox/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSearchBox</code> exposes three callbacks:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires on each keystroke; also fires with an empty string
+                when the clear button is clicked. Powers <code>@@bind-Value</code>.</li>
+            <li><code>OnSearch</code> — fires when the user presses <kbd>Enter</kbd> while the input
+                has focus. Receives the current value.</li>
+            <li><code>OnEscape</code> — fires when the user presses <kbd>Esc</kbd>. Useful for
+                dismissing a search overlay.</li>
+        </ul>
+        <p>
+            Focus and blur are attached through <code>AdditionalAttributes</code>. The log records
+            each callback invocation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 280px; min-width:260px; display:flex; flex-direction:column; gap:.75rem;">
+
+                <SunfishField>
+                    <SunfishLabel>Search (press Enter to submit, Esc to cancel)</SunfishLabel>
+                    <SunfishSearchBox Value="@_value"
+                                      ValueChanged="HandleValueChanged"
+                                      OnSearch="HandleSearch"
+                                      OnEscape="HandleEscape"
+                                      Placeholder="Type to search..."
+                                      KbdHint="Enter"
+                                      @onfocus="HandleFocus"
+                                      @onblur="HandleBlur" />
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    value="<strong>@_value</strong>", submits=<strong>@_submitCount</strong>, escapes=<strong>@_escapeCount</strong>
+                </p>
+                <p style="margin:0; font-size:.85rem; opacity:.75;">Last submitted query: <strong>@_lastSubmitted</strong></p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — type, press Enter, or press Esc.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "SearchBox", "Events"];
+
+    private string _value = string.Empty;
+    private string _lastSubmitted = "(none)";
+    private int _submitCount;
+    private int _escapeCount;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(string v)
+    {
+        _value = v;
+        Log($"ValueChanged -> \"{v}\"");
+    }
+
+    private void HandleSearch(string query)
+    {
+        _lastSubmitted = query;
+        _submitCount++;
+        Log($"OnSearch -> \"{query}\"");
+    }
+
+    private void HandleEscape()
+    {
+        _escapeCount++;
+        Log("OnEscape fired");
+    }
+
+    private void HandleFocus() => Log("onfocus");
+    private void HandleBlur() => Log("onblur");
+
+    private void ClearLog() => _log.Clear();
+}

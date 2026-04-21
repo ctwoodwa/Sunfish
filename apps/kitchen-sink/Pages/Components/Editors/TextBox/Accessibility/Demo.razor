@@ -1,0 +1,130 @@
+@page "/components/forms/textbox/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextBox / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextBox / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextBox/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextBox</code> wraps a native <code>&lt;input&gt;</code>, so it gets the
+            implicit <code>role="textbox"</code> and baseline keyboard semantics from the platform
+            for free. Associate a visible label with <code>SunfishLabel</code> + <code>SunfishField</code>
+            (or any native <code>&lt;label for&gt;</code>), supply supplementary instructions through
+            <code>aria-describedby</code>, and mark required fields via <code>aria-required</code>. The
+            <code>IsInvalid</code> parameter should be paired with <code>aria-invalid="true"</code> and
+            a hint referenced by <code>aria-describedby</code> so assistive tech announces the error.
+        </p>
+        <p>
+            All additional ARIA attributes pass through <code>AdditionalAttributes</code>. The examples
+            below show the recommended wiring.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:540px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled field via aria-labelledby</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The <code>SunfishLabel</code> id is referenced by <code>aria-labelledby</code>, so
+                    assistive tech announces "First name, edit".
+                </p>
+                <SunfishLabel Id="first-name-label">First name</SunfishLabel>
+                <SunfishTextBox Value="@_firstName"
+                                ValueChanged="@(v => _firstName = v)"
+                                aria-labelledby="first-name-label" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Required + described-by hint</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>aria-required="true"</code> announces the required state;
+                    <code>aria-describedby</code> points at the help text rendered below.
+                </p>
+                <SunfishLabel Id="email-label">Email</SunfishLabel>
+                <SunfishTextBox Value="@_email"
+                                ValueChanged="@(v => _email = v)"
+                                InputType="email"
+                                aria-labelledby="email-label"
+                                aria-required="true"
+                                aria-describedby="email-hint" />
+                <span id="email-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    We'll never share your email.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Invalid state with aria-invalid + error message</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Pairing <code>IsInvalid</code> with <code>aria-invalid="true"</code> and a
+                    describedby pointer makes the error announce automatically on focus.
+                </p>
+                <SunfishLabel Id="zip-label">ZIP code</SunfishLabel>
+                <SunfishTextBox Value="@_zip"
+                                ValueChanged="@(v => _zip = v)"
+                                IsInvalid="true"
+                                aria-labelledby="zip-label"
+                                aria-invalid="true"
+                                aria-describedby="zip-error" />
+                <span id="zip-error" role="alert" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    ZIP code must be 5 digits.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state is announced</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>Disabled="true"</code> sets the native <code>disabled</code> attribute; the
+                    control is removed from the tab order.
+                </p>
+                <SunfishTextBox Value="Cannot edit" Disabled="true" aria-label="Account id" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextBox", "Accessibility"];
+
+    private string _firstName = string.Empty;
+    private string _email = string.Empty;
+    private string _zip = "abc";
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",               "Move focus to / out of the input"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus backward"),
+        ("<kbd>Home</kbd>",              "Move caret to start of value"),
+        ("<kbd>End</kbd>",               "Move caret to end of value"),
+        ("<kbd>Esc</kbd>",               "(In embedded contexts) clear / cancel"),
+    ];
+}

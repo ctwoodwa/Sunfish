@@ -1,0 +1,115 @@
+@page "/components/forms/checkbox/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Checkbox / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Checkbox / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Checkbox/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCheckbox</code> exposes a single primary callback:
+        </p>
+        <ul>
+            <li><code>CheckedChanged</code> — fires when the user clicks the checkbox or activates it
+                with <kbd>Space</kbd>. Powers <code>@@bind-Checked</code>.</li>
+        </ul>
+        <p>
+            Focus and blur are attached through <code>AdditionalAttributes</code>. The log captures
+            every callback invocation, including the running totals of a "select all" pattern where a
+            parent checkbox reflects an indeterminate state when children are mixed.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:.75rem;">
+
+                <SunfishCheckbox Checked="@_parent"
+                                 CheckedChanged="HandleParentChanged"
+                                 Indeterminate="@_parentIndeterminate"
+                                 Label="Select all features"
+                                 @onfocus="HandleParentFocus"
+                                 @onblur="HandleParentBlur" />
+
+                <div style="margin-left:1.25rem; display:flex; flex-direction:column; gap:.35rem;">
+                    <SunfishCheckbox Checked="@_child1" CheckedChanged="HandleChild1" Label="Feature A" />
+                    <SunfishCheckbox Checked="@_child2" CheckedChanged="HandleChild2" Label="Feature B" />
+                    <SunfishCheckbox Checked="@_child3" CheckedChanged="HandleChild3" Label="Feature C" />
+                </div>
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    parent=<strong>@_parent</strong>, indeterminate=<strong>@_parentIndeterminate</strong>,
+                    selected=<strong>@SelectedCount / 3</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — toggle a checkbox.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Checkbox", "Events"];
+
+    private bool _parent;
+    private bool _parentIndeterminate;
+    private bool _child1;
+    private bool _child2;
+    private bool _child3;
+    private readonly List<string> _log = new();
+
+    private int SelectedCount =>
+        (_child1 ? 1 : 0) + (_child2 ? 1 : 0) + (_child3 ? 1 : 0);
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void RecomputeParent()
+    {
+        var n = SelectedCount;
+        _parent = n == 3;
+        _parentIndeterminate = n > 0 && n < 3;
+    }
+
+    private void HandleParentChanged(bool v)
+    {
+        _parent = v;
+        _parentIndeterminate = false;
+        _child1 = _child2 = _child3 = v;
+        Log($"CheckedChanged (parent) -> {v} — cascaded to children");
+    }
+
+    private void HandleParentFocus() => Log("onfocus (parent)");
+    private void HandleParentBlur() => Log("onblur (parent)");
+
+    private void HandleChild1(bool v) { _child1 = v; Log($"CheckedChanged (A) -> {v}"); RecomputeParent(); }
+    private void HandleChild2(bool v) { _child2 = v; Log($"CheckedChanged (B) -> {v}"); RecomputeParent(); }
+    private void HandleChild3(bool v) { _child3 = v; Log($"CheckedChanged (C) -> {v}"); RecomputeParent(); }
+
+    private void ClearLog() => _log.Clear();
+}

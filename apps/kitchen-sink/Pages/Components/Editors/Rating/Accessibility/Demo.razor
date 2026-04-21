@@ -1,0 +1,106 @@
+@page "/components/forms/rating/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Rating / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Rating / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Rating/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRating</code> renders a container with <code>role="radiogroup"</code> and
+            <code>aria-label</code> sourced from the <code>Label</code> parameter. Each star is a
+            <code>&lt;button&gt;</code> (or a <code>&lt;span&gt;</code> when
+            <code>IsReadOnly="true"</code>) with an <code>aria-label</code> of the form
+            <em>"N of Max stars"</em>, so screen readers always announce both the current position and
+            the maximum.
+        </p>
+        <p>
+            Because each star is a native focusable button, <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>
+            walks through the stars and <kbd>Enter</kbd> / <kbd>Space</kbd> activates the focused one
+            to set the rating to that position.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">role="radiogroup" with a named label</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Inspect in DevTools: the outer <code>&lt;div&gt;</code> has <code>role="radiogroup"</code>
+                    and <code>aria-label="Overall satisfaction"</code>.
+                </p>
+                <SunfishRating @bind-Value="_satisfaction"
+                               Max="5"
+                               Label="Overall satisfaction" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Each star carries "N of Max stars"</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Focus a star and the screen reader says "3 of 5 stars, button". This gives AT users
+                    the same positional context sighted users get visually.
+                </p>
+                <SunfishRating @bind-Value="_delivery"
+                               Max="5"
+                               Label="Delivery speed" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Read-only (stars rendered as &lt;span&gt;)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    When <code>IsReadOnly="true"</code>, each star is a non-focusable
+                    <code>&lt;span&gt;</code> — AT announces it but cannot activate it.
+                </p>
+                <SunfishRating Value="4" Max="5" IsReadOnly="true" Label="Displayed score" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
+                <SunfishRating Value="3" Max="5" Enabled="false" Label="Locked score" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Rating", "Accessibility"];
+
+    private int _satisfaction = 4;
+    private int _delivery = 3;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                "Move focus to the first (or next) star button"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus backward"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>", "Activate the focused star (set rating to that position)"),
+    ];
+}

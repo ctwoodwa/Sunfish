@@ -1,0 +1,145 @@
+@page "/components/forms/searchbox/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SearchBox / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SearchBox / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/SearchBox/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSearchBox</code> is an <code>&lt;input type="search"&gt;</code> which has the
+            implicit <code>role="searchbox"</code>. The clear button already carries
+            <code>aria-label="Clear search"</code>, and <kbd>Enter</kbd> triggers
+            <code>OnSearch</code> while <kbd>Esc</kbd> triggers <code>OnEscape</code>.
+        </p>
+        <p>
+            Associate a visible label via <code>SunfishLabel</code> + <code>SunfishField</code>, or
+            pass <code>aria-label</code> / <code>aria-labelledby</code> through
+            <code>AdditionalAttributes</code>. For a full live-search pattern, wrap the input and
+            results with <code>role="search"</code> on a parent landmark and use
+            <code>aria-controls</code> to point the input at the results region.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Search landmark + aria-labelledby + aria-controls</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Wrap in <code>role="search"</code>, label via a visible heading, and point
+                    <code>aria-controls</code> at the results region. Results themselves use
+                    <code>aria-live</code> so matches are announced.
+                </p>
+                <div role="search" aria-labelledby="search-heading" style="display:flex; flex-direction:column; gap:.5rem;">
+                    <SunfishLabel Id="search-heading">Search users</SunfishLabel>
+                    <SunfishSearchBox Value="@_query"
+                                      ValueChanged="HandleQueryChanged"
+                                      OnSearch="HandleSubmit"
+                                      aria-labelledby="search-heading"
+                                      aria-controls="search-results" />
+                    <div id="search-results"
+                         role="region"
+                         aria-live="polite"
+                         aria-label="Search results"
+                         style="min-height:4rem; padding:.5rem .75rem; border:1px solid var(--sf-color-border, #e5e7eb); border-radius:.375rem; font-size:.85rem;">
+                        @if (string.IsNullOrWhiteSpace(_query))
+                        {
+                            <em style="opacity:.6;">Start typing to filter.</em>
+                        }
+                        else if (Matches.Count == 0)
+                        {
+                            <span>No matches for "<strong>@_query</strong>".</span>
+                        }
+                        else
+                        {
+                            <span>@Matches.Count match(es) for "<strong>@_query</strong>":</span>
+                            <ul style="margin:.25rem 0 0; padding-left:1.25rem;">
+                                @foreach (var m in Matches)
+                                {
+                                    <li>@m</li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With describedby hint</h3>
+                <SunfishSearchBox Value="@_withHint"
+                                  ValueChanged="@(v => _withHint = v)"
+                                  aria-label="Documentation search"
+                                  aria-describedby="search-hint"
+                                  KbdHint="/" />
+                <span id="search-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Tip: press <kbd>/</kbd> from anywhere on the page to focus this input.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
+                <SunfishSearchBox Value="offline" Disabled="true" aria-label="Search (unavailable offline)" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "SearchBox", "Accessibility"];
+
+    private static readonly string[] _all =
+    {
+        "Alice Cooper", "Bob Marley", "Carol Kaye", "Dave Brubeck",
+        "Ella Fitzgerald", "Frank Zappa", "Grace Slick", "Herbie Hancock"
+    };
+
+    private string _query = string.Empty;
+    private string _withHint = string.Empty;
+
+    private List<string> Matches =>
+        string.IsNullOrWhiteSpace(_query)
+            ? new()
+            : _all.Where(n => n.Contains(_query, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    private void HandleQueryChanged(string v) => _query = v;
+
+    private void HandleSubmit(string _q) { /* no-op in accessibility demo */ }
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                "Move focus to / out of the search box"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus backward"),
+        ("<kbd>Enter</kbd>",              "Fire OnSearch with the current value"),
+        ("<kbd>Esc</kbd>",                "Fire OnEscape (typical: dismiss overlay)"),
+        ("Character keys",                "Update Value on every keystroke"),
+    ];
+}

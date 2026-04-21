@@ -1,0 +1,117 @@
+@page "/components/forms/textarea/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextArea / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextArea / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextArea/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextArea</code> wraps a native <code>&lt;textarea&gt;</code>, inheriting the
+            implicit <code>role="textbox"</code> with a multi-line affordance. Keyboard navigation
+            (<kbd>Tab</kbd>, arrow keys, <kbd>Home</kbd>/<kbd>End</kbd>) is handled by the platform.
+            Associate the label via <code>SunfishLabel</code> + <code>SunfishField</code> or via
+            <code>aria-labelledby</code>, and expose help text via <code>aria-describedby</code>.
+        </p>
+        <p>
+            For invalid fields, pair <code>IsInvalid="true"</code> with <code>aria-invalid="true"</code>
+            and a visible error message referenced by <code>aria-describedby</code> — this is what
+            screen readers announce on focus.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled via aria-labelledby</h3>
+                <SunfishLabel Id="notes-label">Notes</SunfishLabel>
+                <SunfishTextArea Value="@_notes"
+                                 ValueChanged="@(v => _notes = v)"
+                                 Rows="3"
+                                 aria-labelledby="notes-label" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Required + described-by</h3>
+                <SunfishLabel Id="bio-label">Bio</SunfishLabel>
+                <SunfishTextArea Value="@_bio"
+                                 ValueChanged="@(v => _bio = v)"
+                                 Rows="3"
+                                 MaxLength="200"
+                                 aria-labelledby="bio-label"
+                                 aria-required="true"
+                                 aria-describedby="bio-hint" />
+                <span id="bio-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Up to 200 characters. Tell us a bit about yourself.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Invalid state announced</h3>
+                <SunfishLabel Id="reason-label">Reason for rejection</SunfishLabel>
+                <SunfishTextArea Value="@_reason"
+                                 ValueChanged="@(v => _reason = v)"
+                                 Rows="3"
+                                 IsInvalid="true"
+                                 aria-labelledby="reason-label"
+                                 aria-invalid="true"
+                                 aria-describedby="reason-error" />
+                <span id="reason-error" role="alert" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    A reason is required before you can submit.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state announced</h3>
+                <SunfishTextArea Value="Historical note, cannot edit." Enabled="false" Rows="2" aria-label="Archived note" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextArea", "Accessibility"];
+
+    private string _notes = string.Empty;
+    private string _bio = string.Empty;
+    private string _reason = string.Empty;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                "Move focus to / out of the textarea"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>", "Move focus backward"),
+        ("<kbd>Arrow</kbd> keys",         "Move caret by character / line"),
+        ("<kbd>Home</kbd> / <kbd>End</kbd>", "Move caret to start / end of line"),
+        ("<kbd>Ctrl</kbd>+<kbd>Home</kbd> / <kbd>Ctrl</kbd>+<kbd>End</kbd>", "Move caret to start / end of value"),
+        ("<kbd>Enter</kbd>",              "Insert a newline (textarea is multi-line)"),
+    ];
+}

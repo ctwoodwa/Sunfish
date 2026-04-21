@@ -1,0 +1,116 @@
+@page "/components/forms/slider/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Slider / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Slider / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Slider/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSlider</code> renders <code>&lt;input type="range"&gt;</code>, which carries
+            the implicit <code>role="slider"</code>. The browser exposes the value, minimum, maximum,
+            and step to assistive technology automatically. Keyboard control is native:
+            <kbd>Arrow</kbd> keys step, <kbd>PageUp</kbd> / <kbd>PageDown</kbd> jump,
+            <kbd>Home</kbd> / <kbd>End</kbd> snap to the ends.
+        </p>
+        <p>
+            Associate a visible label via <code>SunfishLabel</code> + <code>SunfishField</code> or
+            pass <code>aria-labelledby</code> through. For a current-value readout that screen readers
+            announce explicitly, set <code>aria-valuetext</code> through
+            <code>AdditionalAttributes</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled via aria-labelledby</h3>
+                <SunfishLabel Id="brightness-label">Brightness</SunfishLabel>
+                <SunfishSlider @bind-Value="_brightness"
+                               Min="0" Max="100" Step="1"
+                               aria-labelledby="brightness-label" />
+                <p style="margin:.25rem 0 0; font-size:.85rem;">Current: <strong>@_brightness</strong></p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With aria-valuetext for readable readout</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Screen readers prefer <code>aria-valuetext</code> when the raw value isn't meaningful
+                    — for instance a temperature with units.
+                </p>
+                <SunfishLabel Id="temp-label">Temperature</SunfishLabel>
+                <SunfishSlider @bind-Value="_temp"
+                               Min="60" Max="85" Step="1"
+                               aria-labelledby="temp-label"
+                               aria-valuetext="@($"{_temp} degrees Fahrenheit")" />
+                <p style="margin:.25rem 0 0; font-size:.85rem;">Announced: <strong>@_temp°F</strong></p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Described-by hint</h3>
+                <SunfishLabel Id="priority-label">Priority weight</SunfishLabel>
+                <SunfishSlider @bind-Value="_priority"
+                               Min="0" Max="10" Step="1"
+                               aria-labelledby="priority-label"
+                               aria-describedby="priority-hint" />
+                <span id="priority-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Higher values bubble this task to the top of the backlog.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled is announced</h3>
+                <SunfishSlider Value="50" Min="0" Max="100" Step="1" Enabled="false" aria-label="Locked value" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Slider", "Accessibility"];
+
+    private double _brightness = 60;
+    private double _temp = 72;
+    private double _priority = 5;
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                   "Move focus to / out of the slider"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",  "Move focus backward"),
+        ("<kbd>ArrowRight</kbd> / <kbd>ArrowUp</kbd>", "Increase value by Step"),
+        ("<kbd>ArrowLeft</kbd> / <kbd>ArrowDown</kbd>", "Decrease value by Step"),
+        ("<kbd>PageUp</kbd>",                "Increase by a larger browser-defined amount"),
+        ("<kbd>PageDown</kbd>",              "Decrease by a larger browser-defined amount"),
+        ("<kbd>Home</kbd>",                  "Snap to Min"),
+        ("<kbd>End</kbd>",                   "Snap to Max"),
+    ];
+}

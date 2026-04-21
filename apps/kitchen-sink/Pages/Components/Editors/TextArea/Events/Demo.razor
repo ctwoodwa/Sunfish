@@ -1,0 +1,102 @@
+@page "/components/forms/textarea/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextArea / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextArea / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextArea/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextArea</code> surfaces updates through <code>ValueChanged</code> (driving
+            <code>@@bind-Value</code>). The underlying <code>&lt;textarea&gt;</code> streams updates on
+            each keystroke via the native <code>oninput</code> binding. Focus, blur, and keyboard
+            events can be attached through <code>AdditionalAttributes</code> — the passthrough pattern
+            used for most Sunfish form controls.
+        </p>
+        <p>
+            The log on the right records <code>ValueChanged</code>, <code>onfocus</code>,
+            <code>onblur</code>, and <code>onkeydown</code> (for Enter + Ctrl/Cmd-Enter, a common
+            submit shortcut).
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 280px; min-width:260px; display:flex; flex-direction:column; gap:.5rem;">
+                <SunfishField>
+                    <SunfishLabel>Comment</SunfishLabel>
+                    <SunfishTextArea Value="@_value"
+                                     ValueChanged="HandleValueChanged"
+                                     Rows="4"
+                                     Placeholder="Type, Ctrl/Cmd+Enter to submit..."
+                                     @onfocus="HandleFocus"
+                                     @onblur="HandleBlur"
+                                     @onkeydown="HandleKeyDown" />
+                </SunfishField>
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    Length: <strong>@_value.Length</strong> — lines: <strong>@(_value.Split('\n').Length)</strong> — last submit: <strong>@_lastSubmit</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — start typing.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextArea", "Events"];
+
+    private string _value = string.Empty;
+    private string _lastSubmit = "(never)";
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(string v)
+    {
+        _value = v;
+        Log($"ValueChanged -> len {v.Length}");
+    }
+
+    private void HandleFocus() => Log("onfocus fired");
+
+    private void HandleBlur() => Log($"onblur fired (length={_value.Length})");
+
+    private void HandleKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        Log($"onkeydown key=\"{e.Key}\" ctrl={e.CtrlKey} meta={e.MetaKey}");
+        if (e.Key == "Enter" && (e.CtrlKey || e.MetaKey))
+        {
+            _lastSubmit = DateTime.Now.ToString("HH:mm:ss");
+            Log("SUBMIT via Ctrl/Cmd+Enter");
+        }
+    }
+
+    private void ClearLog() => _log.Clear();
+}

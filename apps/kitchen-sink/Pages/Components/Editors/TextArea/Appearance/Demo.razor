@@ -1,0 +1,95 @@
+@page "/components/forms/textarea/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextArea / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextArea / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextArea/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextArea</code> renders a native <code>&lt;textarea&gt;</code> tuned for
+            long-form text entry. The visible height is controlled by <code>Rows</code>, initial
+            content guidance by <code>Placeholder</code>, hard limits by <code>MaxLength</code>, and
+            states by <code>Enabled</code>, <code>ReadOnly</code>, and <code>IsInvalid</code>.
+            <code>AutoComplete</code> and <code>SpellCheck</code> pass through to the native element.
+        </p>
+        <p>
+            The examples below exercise the common visual axes: compact (<code>Rows=2</code>), default
+            (<code>Rows=4</code>), tall (<code>Rows=8</code>), labelled, disabled, read-only, invalid,
+            and a version with a <code>MaxLength</code> counter pattern.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Compact (2 rows)</h3>
+                <SunfishTextArea Value="@_a" ValueChanged="@(v => _a = v)" Rows="2" Placeholder="Short note..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default (4 rows)</h3>
+                <SunfishTextArea Value="@_b" ValueChanged="@(v => _b = v)" Rows="4" Placeholder="Description" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Tall (8 rows)</h3>
+                <SunfishTextArea Value="@_c" ValueChanged="@(v => _c = v)" Rows="8" Placeholder="Long-form content" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label</h3>
+                <SunfishField>
+                    <SunfishLabel>Bio</SunfishLabel>
+                    <SunfishTextArea Value="@_d" ValueChanged="@(v => _d = v)" Rows="3" Placeholder="Tell us about yourself" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishTextArea Value="Cannot edit this content." Enabled="false" Rows="3" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Read-only</h3>
+                <SunfishTextArea Value="Read-only content. Selectable but not editable." ReadOnly="true" Rows="3" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Invalid</h3>
+                <SunfishTextArea Value="@_e" ValueChanged="@(v => _e = v)" Rows="3" Placeholder="Too short..." IsInvalid="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With MaxLength + counter</h3>
+                <SunfishTextArea Value="@_f" ValueChanged="@(v => _f = v)" Rows="3" Placeholder="Up to 120 chars" MaxLength="120" />
+                <div style="margin-top:.35rem; font-size:.8rem; color:#6b7280; text-align:right;">@(_f.Length) / 120</div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Spellcheck off</h3>
+                <SunfishTextArea Value="@_g" ValueChanged="@(v => _g = v)" Rows="3" Placeholder="Code snippet / identifiers" SpellCheck="false" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "TextArea", "Appearance"];
+
+    private string _a = string.Empty;
+    private string _b = string.Empty;
+    private string _c = string.Empty;
+    private string _d = string.Empty;
+    private string _e = "short";
+    private string _f = string.Empty;
+    private string _g = string.Empty;
+}

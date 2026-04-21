@@ -1,0 +1,85 @@
+@page "/components/forms/switch/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Switch / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Switch / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Switch/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSwitch</code> is a two-state toggle with these visual axes:
+        </p>
+        <ul>
+            <li><code>Value</code> — on / off. Two-way bind via <code>@@bind-Value</code>.</li>
+            <li><code>Label</code> — the neutral label shown in either state.</li>
+            <li><code>OnLabel</code> / <code>OffLabel</code> — contextual text that swaps based on state
+                (takes precedence over <code>Label</code> when set).</li>
+            <li><code>Enabled</code> — set to <code>false</code> for a disabled appearance.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:1.25rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Off (default)</h3>
+                <SunfishSwitch Value="false" Label="Dark mode" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">On</h3>
+                <SunfishSwitch Value="true" Label="Dark mode" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">On/Off labels</h3>
+                <SunfishSwitch @bind-Value="_wifi" OnLabel="Wi-Fi on" OffLabel="Wi-Fi off" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">No label</h3>
+                <SunfishSwitch @bind-Value="_naked" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled off</h3>
+                <SunfishSwitch Value="false" Enabled="false" Label="Auto-sync" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled on</h3>
+                <SunfishSwitch Value="true" Enabled="false" Label="Auto-sync" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Live (bound)</h3>
+                <SunfishSwitch @bind-Value="_live" Label="Live toggle" />
+                <p style="margin:.5rem 0 0; font-size:.85rem;">Value: <strong>@_live</strong></p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Inline in a field</h3>
+                <SunfishField>
+                    <SunfishLabel>Notifications</SunfishLabel>
+                    <SunfishSwitch @bind-Value="_notif" OnLabel="Enabled" OffLabel="Disabled" />
+                </SunfishField>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Switch", "Appearance"];
+
+    private bool _wifi = true;
+    private bool _naked;
+    private bool _live;
+    private bool _notif = true;
+}

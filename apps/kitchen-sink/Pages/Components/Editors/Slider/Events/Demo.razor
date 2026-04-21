@@ -1,0 +1,104 @@
+@page "/components/forms/slider/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Slider / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Slider / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Slider/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSlider</code> exposes its update channel through a single callback:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires on each input event (drag, click on track,
+                stepper-button click, and arrow-key press). Powers <code>@@bind-Value</code>.</li>
+        </ul>
+        <p>
+            Focus, blur, and key events are attached through <code>AdditionalAttributes</code>. The log
+            below records every <code>ValueChanged</code> invocation with its old and new values.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 280px; min-width:260px; display:flex; flex-direction:column; gap:.75rem;">
+
+                <SunfishField>
+                    <SunfishLabel>Volume (@_value)</SunfishLabel>
+                    <SunfishSlider Value="@_value"
+                                   ValueChanged="HandleValueChanged"
+                                   Min="0"
+                                   Max="100"
+                                   Step="5"
+                                   ShowButtons="true"
+                                   LargeStep="25"
+                                   @onfocus="HandleFocus"
+                                   @onblur="HandleBlur"
+                                   @onkeydown="HandleKeyDown" />
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    value=<strong>@_value</strong>, changes=<strong>@_changeCount</strong>, last-key=<strong>@_lastKey</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — drag or arrow the slider.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Slider", "Events"];
+
+    private double _value = 25;
+    private int _changeCount;
+    private string _lastKey = "(none)";
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(double v)
+    {
+        var old = _value;
+        _value = v;
+        _changeCount++;
+        Log($"ValueChanged {old} -> {v}");
+    }
+
+    private void HandleFocus() => Log("onfocus");
+    private void HandleBlur() => Log("onblur");
+
+    private void HandleKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        _lastKey = e.Key;
+        Log($"onkeydown key=\"{e.Key}\"");
+    }
+
+    private void ClearLog() => _log.Clear();
+}

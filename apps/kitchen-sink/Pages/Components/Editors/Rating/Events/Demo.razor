@@ -1,0 +1,94 @@
+@page "/components/forms/rating/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Rating / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Rating / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Rating/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRating</code> exposes one primary callback:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires when the user clicks a star (or activates it via
+                keyboard). Receives the 1-based count of filled stars. Powers <code>@@bind-Value</code>.</li>
+        </ul>
+        <p>
+            Focus and blur of individual star buttons can be observed through
+            <code>AdditionalAttributes</code> on the group container. The log below records each
+            rating change with its old and new values.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:.75rem;">
+
+                <SunfishField>
+                    <SunfishLabel>Rate your experience</SunfishLabel>
+                    <SunfishRating Value="@_value"
+                                   ValueChanged="HandleValueChanged"
+                                   Max="5"
+                                   Label="Rate your experience"
+                                   @onfocusin="HandleFocusIn"
+                                   @onfocusout="HandleFocusOut" />
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    value=<strong>@_value / 5</strong>, changes=<strong>@_changeCount</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click a star.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Rating", "Events"];
+
+    private int _value;
+    private int _changeCount;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(int v)
+    {
+        var old = _value;
+        _value = v;
+        _changeCount++;
+        Log($"ValueChanged {old} -> {v}");
+    }
+
+    private void HandleFocusIn() => Log("onfocusin (star received focus)");
+    private void HandleFocusOut() => Log("onfocusout (star lost focus)");
+
+    private void ClearLog() => _log.Clear();
+}
