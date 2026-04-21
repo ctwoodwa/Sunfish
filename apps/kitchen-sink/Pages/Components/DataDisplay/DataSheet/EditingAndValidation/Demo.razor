@@ -1,0 +1,159 @@
+@page "/components/data-display/datasheet/editing-and-validation"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Models.DataSheet
+
+<PageTitle>DataSheet / Editing And Validation · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataSheet / Editing And Validation"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataSheet/EditingAndValidation/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataSheet&lt;TItem&gt;</code> is a spreadsheet-like editable grid built around
+            cell-level dirty tracking. Each <code>SunfishDataSheetColumn</code> declares its
+            <code>Field</code>, its <code>ColumnType</code> (<code>Text</code>, <code>Number</code>,
+            <code>Date</code>, <code>Select</code>, <code>Checkbox</code>, <code>Computed</code>), and
+            optional <code>Required</code> / <code>Validate</code> hooks. As the user edits a cell, the
+            sheet tracks the original and current values in <code>_dirtyRows</code>; committing fires
+            <code>OnRowChanged</code>, and <em>Save All</em> fires <code>OnValidate</code> first (to allow
+            handlers to append errors) then <code>OnSaveAll</code> if validation passes.
+        </p>
+        <p>
+            This page wires up a simple Employee sheet: name is required, salary must be positive, and
+            start date must be in the past. Errors block Save. The event log below captures every commit
+            and every save attempt.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <SunfishDataSheet Data="_rows"
+                              TItem="Employee"
+                              KeyField="Id"
+                              AllowAddRow="true"
+                              AllowDeleteRow="true"
+                              OnRowChanged="HandleRowChanged"
+                              OnValidate="HandleValidate"
+                              OnSaveAll="HandleSaveAll">
+                <SunfishDataSheetColumn TItem="Employee"
+                                        Field="Name"
+                                        Title="Name"
+                                        ColumnType="DataSheetColumnType.Text"
+                                        Required="true"
+                                        Validate="ValidateName" />
+                <SunfishDataSheetColumn TItem="Employee"
+                                        Field="Department"
+                                        Title="Department"
+                                        ColumnType="DataSheetColumnType.Select"
+                                        Options="_departments" />
+                <SunfishDataSheetColumn TItem="Employee"
+                                        Field="Salary"
+                                        Title="Salary"
+                                        ColumnType="DataSheetColumnType.Number"
+                                        Validate="ValidateSalary" />
+                <SunfishDataSheetColumn TItem="Employee"
+                                        Field="StartDate"
+                                        Title="Start"
+                                        ColumnType="DataSheetColumnType.Date"
+                                        Validate="ValidateStartDate" />
+                <SunfishDataSheetColumn TItem="Employee"
+                                        Field="Active"
+                                        Title="Active"
+                                        ColumnType="DataSheetColumnType.Checkbox" />
+            </SunfishDataSheet>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:300px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">Edit a cell or click Save All.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataSheet", "Editing And Validation"];
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime? StartDate { get; set; }
+        public bool Active { get; set; }
+    }
+
+    private readonly List<Employee> _rows =
+    [
+        new() { Id = 1, Name = "Alice Nguyen", Department = "eng", Salary = 110000, StartDate = new DateTime(2021, 3, 15), Active = true },
+        new() { Id = 2, Name = "Bob Smith", Department = "design", Salary = 92000, StartDate = new DateTime(2022, 7, 1), Active = true },
+        new() { Id = 3, Name = "Carol White", Department = "product", Salary = 125000, StartDate = new DateTime(2020, 1, 20), Active = false },
+    ];
+
+    private readonly List<DataSheetSelectOption> _departments =
+    [
+        new() { Value = "eng",     Label = "Engineering" },
+        new() { Value = "design",  Label = "Design" },
+        new() { Value = "product", Label = "Product" },
+        new() { Value = "ops",     Label = "Operations" },
+    ];
+
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    // ── Validators ─────────────────────────────────────────────────────
+    private static string? ValidateName(Employee e) =>
+        string.IsNullOrWhiteSpace(e.Name) ? "Name is required" : null;
+
+    private static string? ValidateSalary(Employee e) =>
+        e.Salary <= 0 ? "Salary must be positive" : null;
+
+    private static string? ValidateStartDate(Employee e) =>
+        e.StartDate is { } d && d > DateTime.Today ? "Start date must not be in the future" : null;
+
+    // ── Event handlers ─────────────────────────────────────────────────
+    private void HandleRowChanged(DataSheetRowChangedArgs<Employee> args) =>
+        Log($"OnRowChanged → [{args.Row.Name}].{args.Field}  {args.OldValue} → {args.NewValue}");
+
+    private void HandleValidate(DataSheetValidateArgs<Employee> args)
+    {
+        foreach (var row in args.DirtyRows)
+        {
+            if (ValidateName(row) is { } n)
+                args.Errors.Add(new DataSheetValidationError<Employee> { Row = row, Field = "Name", Message = n });
+            if (ValidateSalary(row) is { } s)
+                args.Errors.Add(new DataSheetValidationError<Employee> { Row = row, Field = "Salary", Message = s });
+            if (ValidateStartDate(row) is { } d)
+                args.Errors.Add(new DataSheetValidationError<Employee> { Row = row, Field = "StartDate", Message = d });
+        }
+        Log($"OnValidate → {args.DirtyRows.Count} dirty rows, {args.Errors.Count} errors");
+    }
+
+    private void HandleSaveAll(DataSheetSaveArgs<Employee> args) =>
+        Log($"OnSaveAll → {args.DirtyRows.Count} saved, {args.DeletedRows.Count} deleted");
+}

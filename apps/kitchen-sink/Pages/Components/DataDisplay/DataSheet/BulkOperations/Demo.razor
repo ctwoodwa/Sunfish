@@ -1,0 +1,108 @@
+@page "/components/data-display/datasheet/bulk-operations"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Models.DataSheet
+
+<PageTitle>DataSheet / Bulk Operations · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataSheet / Bulk Operations"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataSheet/BulkOperations/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataSheet&lt;TItem&gt;</code> supports Excel-style bulk editing. Select one or
+            many rows via the built-in checkbox column, then use the toolbar actions to bulk-delete or
+            bulk-reset. Paste a TSV range from any spreadsheet with <kbd>Ctrl</kbd>+<kbd>V</kbd> (enabled
+            by default via <code>AllowBulkPaste="true"</code>); the sheet fills cells starting at the
+            active cell and commits every affected cell as dirty.
+        </p>
+        <p>
+            This demo seeds a five-row inventory sheet. Try:
+        </p>
+        <ul>
+            <li>Click the header checkbox to select all, then use the bulk bar to <strong>Delete</strong> or <strong>Reset</strong>.</li>
+            <li>Copy three values from Excel into the Qty column — all three cells commit in one gesture.</li>
+            <li>Add a new row via <strong>+ Add Row</strong> then fill it in, or bulk-delete selected rows.</li>
+            <li>Click <strong>Save All</strong> to emit the dirty + deleted row payloads.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <SunfishDataSheet Data="_rows"
+                              TItem="Item"
+                              KeyField="Sku"
+                              AllowAddRow="true"
+                              AllowDeleteRow="true"
+                              AllowBulkPaste="true"
+                              OnRowChanged="HandleRowChanged"
+                              OnSaveAll="HandleSaveAll">
+                <SunfishDataSheetColumn TItem="Item" Field="Sku"     Title="SKU"   ColumnType="DataSheetColumnType.Text"   Editable="false" />
+                <SunfishDataSheetColumn TItem="Item" Field="Name"    Title="Name"  ColumnType="DataSheetColumnType.Text"   Required="true" />
+                <SunfishDataSheetColumn TItem="Item" Field="Qty"     Title="Qty"   ColumnType="DataSheetColumnType.Number" />
+                <SunfishDataSheetColumn TItem="Item" Field="Price"   Title="Price" ColumnType="DataSheetColumnType.Number" />
+                <SunfishDataSheetColumn TItem="Item" Field="Total"   Title="Total" ColumnType="DataSheetColumnType.Computed"
+                                        Format="@(i => (i.Qty * i.Price).ToString("C2"))" />
+            </SunfishDataSheet>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:300px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">Bulk edit, delete, or paste to see events.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataSheet", "Bulk Operations"];
+
+    private class Item
+    {
+        public string Sku { get; set; } = "";
+        public string Name { get; set; } = "";
+        public int Qty { get; set; }
+        public decimal Price { get; set; }
+    }
+
+    private readonly List<Item> _rows =
+    [
+        new() { Sku = "KB-100", Name = "Mechanical Keyboard", Qty = 12, Price = 89.99m },
+        new() { Sku = "MS-200", Name = "Wireless Mouse",      Qty = 25, Price = 29.50m },
+        new() { Sku = "MN-300", Name = "27\" Monitor",        Qty =  4, Price = 349.00m },
+        new() { Sku = "WC-400", Name = "HD Webcam",           Qty =  8, Price = 79.99m },
+        new() { Sku = "DL-500", Name = "Desk Lamp",           Qty = 15, Price = 55.00m },
+    ];
+
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    private void HandleRowChanged(DataSheetRowChangedArgs<Item> args) =>
+        Log($"OnRowChanged → [{args.Row.Sku}].{args.Field}  {args.OldValue} → {args.NewValue}");
+
+    private void HandleSaveAll(DataSheetSaveArgs<Item> args) =>
+        Log($"OnSaveAll → {args.DirtyRows.Count} saved, {args.DeletedRows.Count} deleted");
+}

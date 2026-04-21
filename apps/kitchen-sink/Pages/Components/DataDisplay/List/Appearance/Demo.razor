@@ -1,0 +1,123 @@
+@page "/components/data-display/list/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>List / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="List / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/List/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishList</code> renders a bound collection as an ARIA <code>listbox</code>. The visual
+            shape is driven by a handful of parameters: <code>Size</code> (the string <code>"sm"</code>,
+            <code>"md"</code>, or <code>"lg"</code>) controls padding and font size; <code>Width</code> and
+            <code>Height</code> set container dimensions (setting a height enables internal scrolling);
+            <code>ItemTemplate</code> swaps the default text renderer for a custom layout; and
+            <code>ShowToolbar</code> + <code>ToolbarPosition</code> adds a move-up / move-down / remove
+            toolbar alongside the list.
+        </p>
+        <p>
+            This page shows five variants: default text, compact (<code>sm</code>), rich template, scrollable
+            with fixed height, and a list with the toolbar docked to the right.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+                <div style="min-width:220px;">
+                    <h4 style="margin:0 0 .5rem;">Default (<code>md</code>)</h4>
+                    <SunfishList Data="_fruits"
+                                 TextField="Text"
+                                 Width="220px" />
+                </div>
+
+                <div style="min-width:220px;">
+                    <h4 style="margin:0 0 .5rem;">Compact (<code>sm</code>)</h4>
+                    <SunfishList Data="_fruits"
+                                 TextField="Text"
+                                 Size="sm"
+                                 Width="220px" />
+                </div>
+
+                <div style="min-width:220px;">
+                    <h4 style="margin:0 0 .5rem;">Large (<code>lg</code>)</h4>
+                    <SunfishList Data="_fruits"
+                                 TextField="Text"
+                                 Size="lg"
+                                 Width="220px" />
+                </div>
+            </div>
+
+            <div class="demo-row" style="gap:1.5rem; flex-wrap:wrap; align-items:flex-start;">
+                <div style="min-width:260px;">
+                    <h4 style="margin:0 0 .5rem;">Rich template</h4>
+                    <SunfishList Data="_people" Width="260px">
+                        <ItemTemplate Context="item">
+                            @{
+                                var p = (Person)item;
+                            }
+                            <div style="display:flex; align-items:center; gap:.5rem;">
+                                <SunfishAvatar Initials="@p.Initials" Size="AvatarSize.Small" />
+                                <div>
+                                    <div style="font-weight:600;">@p.Name</div>
+                                    <div style="font-size:.75rem; opacity:.7;">@p.Role</div>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </SunfishList>
+                </div>
+
+                <div style="min-width:260px;">
+                    <h4 style="margin:0 0 .5rem;">Scrollable (fixed height)</h4>
+                    <SunfishList Data="_many"
+                                 TextField="Text"
+                                 Width="260px"
+                                 Height="160px" />
+                </div>
+
+                <div style="min-width:260px;">
+                    <h4 style="margin:0 0 .5rem;">With toolbar</h4>
+                    <SunfishList Data="_fruits"
+                                 TextField="Text"
+                                 Width="260px"
+                                 SelectionMode="GridSelectionMode.Single"
+                                 ShowToolbar="true"
+                                 ToolbarPosition="ListToolbarPosition.Right" />
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "List", "Appearance"];
+
+    private record Fruit(string Text, string Value);
+    private record Person(string Name, string Role, string Initials);
+
+    private readonly List<object> _fruits =
+    [
+        new Fruit("Apple", "apple"),
+        new Fruit("Banana", "banana"),
+        new Fruit("Cherry", "cherry"),
+        new Fruit("Date", "date"),
+        new Fruit("Elderberry", "elderberry"),
+    ];
+
+    private readonly List<object> _people =
+    [
+        new Person("Alice Johnson", "Engineer", "AJ"),
+        new Person("Bob Smith", "Designer", "BS"),
+        new Person("Carol White", "Product", "CW"),
+    ];
+
+    private readonly List<object> _many = Enumerable.Range(1, 40)
+        .Select(i => (object)new Fruit($"Item {i:D2}", $"item-{i}"))
+        .ToList();
+}

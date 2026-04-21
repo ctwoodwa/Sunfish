@@ -1,0 +1,87 @@
+@page "/components/data-display/chart/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chart / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chart / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Chart/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChart</code> exposes semantic structure through WAI-ARIA Graphics Roles:
+            <code>role="graphics-document"</code> on the root, <code>role="graphics-object"</code> on the
+            rendered SVG, and <code>role="graphics-symbol"</code> with an <code>aria-label</code> on each
+            data point (e.g. <em>"Jan: 12000"</em>). Data points render with <code>tabindex="0"</code>, so
+            a keyboard user can Tab to each bar / marker / slice and hear it announced.
+        </p>
+        <p>
+            Name the chart via the <code>Title</code> parameter or via a <code>ChartTitle</code> child
+            component; the root's <code>aria-label</code> mirrors whichever is set. Use a
+            <code>ChartTitle</code> with a <code>Description</code> when the visual title is too terse for
+            screen-reader users. The legend is exposed as a <code>role="list"</code> with per-series
+            <code>role="listitem"</code> entries; clicking a legend item toggles visibility for both
+            pointer and keyboard users.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <SunfishChart Title="Monthly Revenue vs Profit" Height="320px">
+                <SunfishChartSeries Name="Revenue"
+                                    Data="_sales"
+                                    Field="Revenue"
+                                    CategoryField="Month"
+                                    Type="ChartSeriesType.Column"
+                                    Color="#4e79a7" />
+                <SunfishChartSeries Name="Profit"
+                                    Data="_sales"
+                                    Field="Profit"
+                                    CategoryField="Month"
+                                    Type="ChartSeriesType.Column"
+                                    Color="#59a14f" />
+            </SunfishChart>
+
+            <dl style="font-size:0.875rem; max-width:680px;">
+                <dt><strong>role</strong> (root)</dt>
+                <dd><code>graphics-document</code> with <code>aria-roledescription="chart"</code> and <code>aria-label</code> derived from <code>Title</code> / <code>ChartTitle</code>.</dd>
+                <dt><strong>role</strong> (SVG)</dt>
+                <dd><code>graphics-object</code> — groups all rendered series.</dd>
+                <dt><strong>role</strong> (data points)</dt>
+                <dd><code>graphics-symbol</code> with an <code>aria-label</code> of the form "<em>Category</em>: <em>Value</em>" (Pie/Donut adds percentage).</dd>
+                <dt><strong>Legend</strong></dt>
+                <dd><code>role="list"</code> with <code>role="listitem"</code> chips; clicking toggles series visibility for everyone.</dd>
+                <dt><strong>Keyboard</strong></dt>
+                <dd>
+                    <ul style="margin:.25rem 0 0 1rem;">
+                        <li><kbd>Tab</kbd> — focus the chart root, then each data point in DOM order</li>
+                        <li><kbd>Enter</kbd> / <kbd>Space</kbd> — activates a data point (fires <code>OnSeriesClick</code>)</li>
+                        <li><kbd>Shift+Tab</kbd> — reverse traversal</li>
+                    </ul>
+                </dd>
+                <dt><strong>Don't rely on color alone</strong></dt>
+                <dd>Pair the <code>Palette</code> with textured patterns or clear series names in the legend.</dd>
+                <dt><strong>Data tables for detail</strong></dt>
+                <dd>Provide an adjacent <code>&lt;table&gt;</code> of the same data for screen-reader users who need to inspect exact values.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Chart", "Accessibility"];
+
+    private record SalesData(string Month, double Revenue, double Profit);
+
+    private readonly List<SalesData> _sales =
+    [
+        new("Jan", 12000, 3200),
+        new("Feb", 15000, 4100),
+        new("Mar", 13500, 3800),
+        new("Apr", 17000, 5200),
+    ];
+}

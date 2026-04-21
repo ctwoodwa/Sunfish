@@ -1,0 +1,121 @@
+@page "/components/data-display/datagrid/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+
+<PageTitle>DataGrid / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataGrid / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataGrid/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataGrid</code> raises a rich set of events for user interaction
+            (<code>OnRowClick</code>, <code>OnRowDoubleClick</code>, <code>OnRowContextMenu</code>) and
+            state transitions (<code>PageChanged</code>, <code>SelectedItemsChanged</code>,
+            <code>OnStateChanged</code>). This demo wires up the full surface against a live dataset and
+            appends every notification to a scrollable event log so you can see the order and payload.
+        </p>
+        <p>
+            Row selection is bound via <code>@@bind-SelectedItems</code>, paging via
+            <code>@@bind-Page</code>, and every callback pushes a timestamped line into an
+            append-only list. Clear the log to start fresh.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <div>
+                <SunfishDataGrid Data="_products"
+                                 TItem="Product"
+                                 Sortable="true"
+                                 Pageable="true"
+                                 PageSize="3"
+                                 @bind-Page="_page"
+                                 SelectionMode="GridSelectionMode.Single"
+                                 @bind-SelectedItems="_selected"
+                                 OnRowClick="HandleRowClick"
+                                 OnRowDoubleClick="HandleRowDoubleClick"
+                                 OnRowContextMenu="HandleRowContextMenu"
+                                 PageChanged="HandlePageChanged"
+                                 SelectedItemsChanged="HandleSelectionChanged"
+                                 OnStateChanged="HandleStateChanged">
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Name" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:260px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click, double-click, or right-click a row.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataGrid", "Events"];
+
+    private record Product(string Name, string Category, decimal Price);
+
+    private readonly List<Product> _products =
+    [
+        new("Keyboard", "Peripheral", 89.99m),
+        new("Monitor", "Display", 349.00m),
+        new("Mouse", "Peripheral", 29.50m),
+        new("Webcam", "Peripheral", 79.99m),
+        new("Laptop Stand", "Accessory", 45.00m),
+        new("USB Hub", "Peripheral", 39.00m),
+        new("Desk Lamp", "Accessory", 55.00m),
+    ];
+
+    private int _page = 1;
+    private IEnumerable<Product> _selected = [];
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    private void HandleRowClick(GridRowClickEventArgs<Product> args) =>
+        Log($"OnRowClick → {args.Item.Name}");
+
+    private void HandleRowDoubleClick(GridRowClickEventArgs<Product> args) =>
+        Log($"OnRowDoubleClick → {args.Item.Name}");
+
+    private void HandleRowContextMenu(GridRowClickEventArgs<Product> args) =>
+        Log($"OnRowContextMenu → {args.Item.Name}");
+
+    private void HandlePageChanged(int page) => Log($"PageChanged → page {page}");
+
+    private void HandleSelectionChanged(IEnumerable<Product> items)
+    {
+        var names = string.Join(", ", items.Select(p => p.Name));
+        Log($"SelectedItemsChanged → [{names}]");
+    }
+
+    private void HandleStateChanged(GridStateChangedEventArgs args) =>
+        Log($"OnStateChanged → {args.PropertyName}");
+}

@@ -1,0 +1,90 @@
+@page "/components/data-display/list/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>List / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="List / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/List/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishList</code> implements the ARIA listbox pattern out of the box. The root element
+            carries <code>role="listbox"</code>, <code>tabindex="0"</code>, and — when
+            <code>SelectionMode="GridSelectionMode.Multiple"</code> — <code>aria-multiselectable="true"</code>.
+            Each item carries <code>role="option"</code> and <code>aria-selected</code>. Focus is managed via
+            <code>aria-activedescendant</code> pointing at the item id that currently has visual focus, so
+            the roving-tabindex pattern is handled internally.
+        </p>
+        <p>
+            Supply an accessible name through either <code>AriaLabel</code> (for a concise inline name) or
+            <code>AriaLabelledBy</code> (to point at a visible heading). When the list sits inside a
+            labelled form field or card, reusing the existing label via <code>AriaLabelledBy</code> is
+            preferred — it avoids duplicated text in the accessibility tree.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <h4 id="pick-fruit" style="margin:0;">Pick a fruit</h4>
+            <SunfishList Data="_fruits"
+                         TextField="Text"
+                         Width="260px"
+                         SelectionMode="GridSelectionMode.Single"
+                         AriaLabelledBy="pick-fruit" />
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Multi-select with inline label</h4>
+                <SunfishList Data="_fruits"
+                             TextField="Text"
+                             Width="260px"
+                             SelectionMode="GridSelectionMode.Multiple"
+                             AriaLabel="Fruits to include in order" />
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>role</strong> on root</dt>
+                <dd><code>listbox</code></dd>
+                <dt><strong>role</strong> on items</dt>
+                <dd><code>option</code> with <code>aria-selected</code> reflecting selection state</dd>
+                <dt><strong>aria-multiselectable</strong></dt>
+                <dd>Set to <code>true</code> when <code>SelectionMode="Multiple"</code></dd>
+                <dt><strong>aria-activedescendant</strong></dt>
+                <dd>Points at the focused item id; moves with arrow keys without shifting DOM focus</dd>
+                <dt><strong>aria-disabled</strong></dt>
+                <dd>Applied to items when <code>Enabled="false"</code> is on the list</dd>
+                <dt><strong>Keyboard</strong></dt>
+                <dd>
+                    <ul style="margin:.25rem 0 0 1rem;">
+                        <li><kbd>Tab</kbd> — move focus into or out of the listbox</li>
+                        <li><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> — move active option</li>
+                        <li><kbd>Home</kbd> / <kbd>End</kbd> — jump to first or last option</li>
+                        <li><kbd>Space</kbd> or <kbd>Enter</kbd> — toggle / select the active option</li>
+                    </ul>
+                </dd>
+                <dt><strong>Toolbar</strong></dt>
+                <dd>When <code>ShowToolbar="true"</code>, the toolbar is a <code>role="toolbar"</code> region
+                with <code>aria-label</code> and per-button <code>aria-label</code> / <code>title</code>.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "List", "Accessibility"];
+
+    private record Fruit(string Text, string Value);
+
+    private readonly List<object> _fruits =
+    [
+        new Fruit("Apple", "apple"),
+        new Fruit("Banana", "banana"),
+        new Fruit("Cherry", "cherry"),
+        new Fruit("Date", "date"),
+        new Fruit("Elderberry", "elderberry"),
+    ];
+}

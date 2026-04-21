@@ -1,0 +1,80 @@
+@page "/components/data-display/badge/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Badge / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Badge / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBadge</code> has two styling axes: <em>color</em> via the <code>BadgeVariant</code>
+            enum (<code>Default</code>, <code>Primary</code>, <code>Secondary</code>, <code>Danger</code>,
+            <code>Warning</code>, <code>Info</code>, <code>Success</code>) and <em>shape</em> driven by
+            whether child content is present. An empty badge renders as a dot; a badge with content renders
+            as a pill with the count or label inside.
+        </p>
+        <p>
+            <code>Position</code> (<code>"edge"</code>, <code>"inline"</code>, <code>"inside"</code>,
+            <code>"outside"</code>) plus <code>HorizontalAlign</code> / <code>VerticalAlign</code> let you
+            anchor the badge to a parent element. <code>ShowCutoutBorder</code> adds a border ring to
+            visually separate the badge from a busy background.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="align-items:center; gap:0.5rem;">
+                <strong style="min-width:110px;">Variants:</strong>
+                <SunfishBadge Variant="BadgeVariant.Default">Default</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Primary">Primary</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Secondary">Secondary</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Danger">Danger</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Warning">Warning</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Info">Info</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Success">Success</SunfishBadge>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.5rem;">
+                <strong style="min-width:110px;">Dot (empty):</strong>
+                <SunfishBadge Variant="BadgeVariant.Danger" />
+                <SunfishBadge Variant="BadgeVariant.Warning" />
+                <SunfishBadge Variant="BadgeVariant.Info" />
+                <SunfishBadge Variant="BadgeVariant.Success" />
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.5rem;">
+                <strong style="min-width:110px;">Count pill:</strong>
+                <SunfishBadge Variant="BadgeVariant.Primary">1</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Primary">9</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Primary">42</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Primary">99+</SunfishBadge>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:1.5rem;">
+                <strong style="min-width:110px;">Anchored:</strong>
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Inbox</SunfishButton>
+                    <SunfishBadge Variant="BadgeVariant.Danger" Position="edge">3</SunfishBadge>
+                </div>
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Messages</SunfishButton>
+                    <SunfishBadge Variant="BadgeVariant.Primary" Position="edge" HorizontalAlign="end" VerticalAlign="top">12</SunfishBadge>
+                </div>
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishAvatar Initials="JS" />
+                    <SunfishBadge Variant="BadgeVariant.Success" Position="edge" HorizontalAlign="end" VerticalAlign="bottom" ShowCutoutBorder="true" />
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Badge", "Appearance"];
+}

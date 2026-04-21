@@ -1,0 +1,110 @@
+@page "/components/data-display/chart/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Charts
+
+<PageTitle>Chart / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chart / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Chart/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChart</code> raises three callbacks: <code>OnSeriesClick</code> fires when a data
+            point (bar, line marker, slice, bubble, scatter circle) is clicked with a
+            <code>ChartSeriesClickEventArgs</code>; <code>OnLegendItemClick</code> fires when a legend
+            item is clicked with a <code>ChartLegendItemClickEventArgs</code>; and <code>OnRender</code>
+            fires after every render with a <code>ChartRenderEventArgs</code> carrying chart dimensions
+            and series counts.
+        </p>
+        <p>
+            This demo wires all three against a multi-series column chart. Click bars, toggle legend items,
+            and watch the append-only event log.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <SunfishChart Title="Monthly Performance" Height="340px"
+                          OnSeriesClick="HandleSeriesClick"
+                          OnLegendItemClick="HandleLegendClick"
+                          OnRender="HandleRender">
+                <SunfishChartSeries Name="Revenue"
+                                    Data="_sales"
+                                    Field="Revenue"
+                                    CategoryField="Month"
+                                    Type="ChartSeriesType.Column"
+                                    Color="#4e79a7" />
+                <SunfishChartSeries Name="Profit"
+                                    Data="_sales"
+                                    Field="Profit"
+                                    CategoryField="Month"
+                                    Type="ChartSeriesType.Column"
+                                    Color="#59a14f" />
+                <SunfishChartSeries Name="Target"
+                                    Data="_sales"
+                                    Field="Target"
+                                    CategoryField="Month"
+                                    Type="ChartSeriesType.Line"
+                                    Color="#e15759" />
+            </SunfishChart>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:300px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click a bar or legend chip.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Chart", "Events"];
+
+    private record SalesData(string Month, double Revenue, double Profit, double Target);
+
+    private readonly List<SalesData> _sales =
+    [
+        new("Jan", 12000, 3200, 15000),
+        new("Feb", 15000, 4100, 15000),
+        new("Mar", 13500, 3800, 15000),
+        new("Apr", 17000, 5200, 18000),
+        new("May", 19500, 6100, 18000),
+        new("Jun", 21000, 7000, 20000),
+    ];
+
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    private void HandleSeriesClick(ChartSeriesClickEventArgs args) =>
+        Log($"OnSeriesClick → {args.SeriesName} @ {args.Category} = {args.Value}");
+
+    private void HandleLegendClick(ChartLegendItemClickEventArgs args) =>
+        Log($"OnLegendItemClick → [{args.SeriesIndex}] {args.Text}");
+
+    private void HandleRender(ChartRenderEventArgs args) =>
+        Log($"OnRender → {args.SeriesCount} series, {args.TotalDataPoints} points");
+}

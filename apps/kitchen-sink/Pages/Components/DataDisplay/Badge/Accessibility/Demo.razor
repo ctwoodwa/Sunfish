@@ -1,0 +1,77 @@
+@page "/components/data-display/badge/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Badge / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Badge / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBadge</code> renders a <code>&lt;span&gt;</code> with no implicit ARIA role, so
+            accessibility is about pairing meaning with the anchor element. A count badge next to an
+            Inbox button should read as "Inbox, 3 unread" — not "Inbox" followed by a decorative "3". A
+            status dot on an avatar should communicate presence (online/offline/busy) without relying on
+            color alone.
+        </p>
+        <p>
+            The recommended patterns below use <code>aria-label</code> on the wrapper to combine the
+            trigger text with the badge meaning, or <code>role="status"</code> on the badge itself when
+            it represents a live, standalone state value.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="align-items:center; gap:1.5rem;">
+                <div style="position:relative;display:inline-flex;"
+                     aria-label="Inbox, 3 unread messages">
+                    <SunfishButton Variant="ButtonVariant.Secondary" aria-hidden="true">Inbox</SunfishButton>
+                    <SunfishBadge Variant="BadgeVariant.Danger" Position="edge" aria-hidden="true">3</SunfishBadge>
+                </div>
+                <span>Wrapper <code>aria-label</code> merges trigger and count — badge marked <code>aria-hidden</code>.</span>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:1.5rem;">
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishAvatar Initials="PW" />
+                    <SunfishBadge Variant="BadgeVariant.Success"
+                                  Position="edge"
+                                  HorizontalAlign="end"
+                                  VerticalAlign="bottom"
+                                  ShowCutoutBorder="true"
+                                  role="status"
+                                  aria-label="Online" />
+                </div>
+                <span>Status dot — <code>role="status"</code> + <code>aria-label</code> carry the meaning without relying on color.</span>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:1.5rem;">
+                <SunfishBadge Variant="BadgeVariant.Warning" role="status">Degraded</SunfishBadge>
+                <span>Standalone status — badge itself carries <code>role="status"</code>; the visible text is already announced.</span>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>Pairing with a trigger</strong></dt>
+                <dd>Put <code>aria-label</code> on the wrapping container; mark the badge <code>aria-hidden="true"</code>.</dd>
+                <dt><strong>Standalone status</strong></dt>
+                <dd>Add <code>role="status"</code> so screen readers treat the badge as a live region.</dd>
+                <dt><strong>Don't rely on color</strong></dt>
+                <dd>Danger / Warning / Success variants use color — pair them with text or an <code>aria-label</code>.</dd>
+                <dt><strong>Contrast</strong></dt>
+                <dd>All variants meet WCAG AA non-text contrast (3:1) against their default surface; verify custom palettes.</dd>
+                <dt><strong>Keyboard</strong></dt>
+                <dd>Badges are not focusable. Focus moves to the associated control (button, link, avatar).</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Badge", "Accessibility"];
+}

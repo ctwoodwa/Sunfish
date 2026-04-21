@@ -1,0 +1,84 @@
+@page "/components/data-display/tooltip/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Tooltip / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Tooltip / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTooltip</code> has three visual dials. <code>Position</code>
+            (<code>TooltipPosition.Top</code> / <code>Bottom</code> / <code>Left</code> /
+            <code>Right</code>) sets where the tip appears. <code>ShowOn</code>
+            (<code>TooltipShowOn.Hover</code> / <code>Focus</code> / <code>Click</code>) sets the trigger.
+            <code>ShowCallout</code> toggles a small arrow pointing at the anchor. Width and height clamp the
+            tip's dimensions when you need predictable word-wrap.
+        </p>
+        <p>
+            Content comes from either the <code>Text</code> parameter (plain string) or the
+            <code>TooltipTemplate</code> render fragment (rich HTML). This page illustrates each combination
+            against a standard anchor button.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishTooltip Text="Top position" Position="TooltipPosition.Top" ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Top</SunfishButton>
+                </SunfishTooltip>
+                <SunfishTooltip Text="Bottom position" Position="TooltipPosition.Bottom" ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Bottom</SunfishButton>
+                </SunfishTooltip>
+                <SunfishTooltip Text="Left position" Position="TooltipPosition.Left" ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
+                </SunfishTooltip>
+                <SunfishTooltip Text="Right position" Position="TooltipPosition.Right" ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
+                </SunfishTooltip>
+            </div>
+
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishTooltip Text="Hover to show" ShowOn="TooltipShowOn.Hover">
+                    <SunfishButton Variant="ButtonVariant.Primary">Hover</SunfishButton>
+                </SunfishTooltip>
+                <SunfishTooltip Text="Focus (tab into) to show" ShowOn="TooltipShowOn.Focus">
+                    <SunfishButton Variant="ButtonVariant.Primary">Focus</SunfishButton>
+                </SunfishTooltip>
+                <SunfishTooltip Text="Click to toggle" ShowOn="TooltipShowOn.Click">
+                    <SunfishButton Variant="ButtonVariant.Primary">Click</SunfishButton>
+                </SunfishTooltip>
+            </div>
+
+            <div class="demo-row" style="gap:1rem;">
+                <SunfishTooltip Width="200px" ShowCallout="true">
+                    <ChildContent>
+                        <SunfishButton Variant="ButtonVariant.Info">Rich content</SunfishButton>
+                    </ChildContent>
+                    <TooltipTemplate>
+                        <div style="text-align:left;">
+                            <strong>Rich tooltip</strong>
+                            <p style="margin:.25rem 0 0;">Supports any markup — lists, links, badges, icons.</p>
+                        </div>
+                    </TooltipTemplate>
+                </SunfishTooltip>
+
+                <SunfishTooltip Text="Sized tooltip with a fixed width clamps long copy so it wraps predictably."
+                                Width="180px"
+                                ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Info">Sized (180px)</SunfishButton>
+                </SunfishTooltip>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Tooltip", "Appearance"];
+}

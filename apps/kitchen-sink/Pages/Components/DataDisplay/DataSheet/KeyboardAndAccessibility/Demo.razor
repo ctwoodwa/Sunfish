@@ -1,0 +1,106 @@
+@page "/components/data-display/datasheet/keyboard-and-accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Models.DataSheet
+
+<PageTitle>DataSheet / Keyboard And Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataSheet / Keyboard And Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataSheet/KeyboardAndAccessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataSheet&lt;TItem&gt;</code> exposes an ARIA <code>role="grid"</code> with per-row
+            <code>role="row"</code> and per-cell <code>role="gridcell"</code>. The accessible name is set
+            via the <code>AriaLabel</code> parameter (defaults to <em>"Editable data grid"</em>); supply
+            something task-specific when the sheet sits in a pane without a visible heading. A live-region
+            announcer (<code>aria-live="polite"</code>) reads out the current row/column on cell activation.
+        </p>
+        <p>
+            Keyboard support matches Excel conventions: arrow keys move the active cell, <kbd>Enter</kbd>
+            enters edit mode, <kbd>Escape</kbd> cancels, <kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd>
+            commit and move horizontally, <kbd>F2</kbd> opens the in-place editor, and <kbd>Delete</kbd>
+            clears the active cell (when editable). Bulk paste via <kbd>Ctrl</kbd>+<kbd>V</kbd> is enabled
+            by default through <code>AllowBulkPaste="true"</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <h4 id="sheet-a11y-heading" style="margin:0;">Employee roster</h4>
+            <SunfishDataSheet Data="_rows"
+                              TItem="Employee"
+                              KeyField="Id"
+                              AriaLabel="Employee roster"
+                              AllowAddRow="true"
+                              AllowDeleteRow="true">
+                <SunfishDataSheetColumn TItem="Employee" Field="Name"       Title="Name"       ColumnType="DataSheetColumnType.Text"     Required="true" />
+                <SunfishDataSheetColumn TItem="Employee" Field="Department" Title="Department" ColumnType="DataSheetColumnType.Select"   Options="_departments" />
+                <SunfishDataSheetColumn TItem="Employee" Field="Salary"     Title="Salary"     ColumnType="DataSheetColumnType.Number" />
+                <SunfishDataSheetColumn TItem="Employee" Field="StartDate"  Title="Start"      ColumnType="DataSheetColumnType.Date" />
+                <SunfishDataSheetColumn TItem="Employee" Field="Active"     Title="Active"     ColumnType="DataSheetColumnType.Checkbox" />
+            </SunfishDataSheet>
+
+            <dl style="font-size:0.875rem; max-width:680px;">
+                <dt><strong>role</strong> (root)</dt>
+                <dd><code>grid</code> with <code>aria-label</code> = <code>AriaLabel</code> parameter.</dd>
+                <dt><strong>role</strong> (rows)</dt>
+                <dd><code>row</code> with <code>aria-rowindex</code> reflecting DOM order.</dd>
+                <dt><strong>role</strong> (cells)</dt>
+                <dd><code>gridcell</code> with <code>aria-colindex</code>, <code>aria-readonly</code> on non-editable columns, and <code>aria-invalid="true"</code> when validation fails.</dd>
+                <dt><strong>Live-region announcer</strong></dt>
+                <dd><code>aria-live="polite"</code> region reads out row/column context as the active cell changes.</dd>
+                <dt><strong>Keyboard</strong></dt>
+                <dd>
+                    <ul style="margin:.25rem 0 0 1rem;">
+                        <li><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> / <kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> — move active cell</li>
+                        <li><kbd>Enter</kbd> — activate / commit; with <kbd>Shift</kbd> moves up instead of down</li>
+                        <li><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd> — commit and move horizontally, wrapping to adjacent rows</li>
+                        <li><kbd>F2</kbd> — open in-place editor for the active cell</li>
+                        <li><kbd>Escape</kbd> — cancel the current edit, restoring the original value</li>
+                        <li><kbd>Home</kbd> / <kbd>End</kbd> — jump to first / last cell in the row</li>
+                        <li><kbd>Ctrl</kbd>+<kbd>Home</kbd> / <kbd>Ctrl</kbd>+<kbd>End</kbd> — jump to the first / last cell in the sheet</li>
+                        <li><kbd>Delete</kbd> — clear the active editable cell</li>
+                        <li><kbd>Ctrl</kbd>+<kbd>V</kbd> — paste TSV range when <code>AllowBulkPaste="true"</code></li>
+                    </ul>
+                </dd>
+                <dt><strong>Selection checkbox column</strong></dt>
+                <dd>When <code>AllowDeleteRow="true"</code>, the sheet renders a checkbox column with per-row <code>aria-label</code> and a "Select all" header checkbox.</dd>
+                <dt><strong>Validation errors</strong></dt>
+                <dd>Invalid cells set <code>aria-invalid="true"</code> and expose the error message via <code>aria-errormessage</code> pointing at an adjacent hint.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataSheet", "Keyboard And Accessibility"];
+
+    private class Employee
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public decimal Salary { get; set; }
+        public DateTime? StartDate { get; set; }
+        public bool Active { get; set; }
+    }
+
+    private readonly List<Employee> _rows =
+    [
+        new() { Id = 1, Name = "Alice Nguyen", Department = "eng",     Salary = 110000, StartDate = new DateTime(2021, 3, 15), Active = true },
+        new() { Id = 2, Name = "Bob Smith",    Department = "design",  Salary =  92000, StartDate = new DateTime(2022, 7, 1),  Active = true },
+        new() { Id = 3, Name = "Carol White",  Department = "product", Salary = 125000, StartDate = new DateTime(2020, 1, 20), Active = false },
+    ];
+
+    private readonly List<DataSheetSelectOption> _departments =
+    [
+        new() { Value = "eng",     Label = "Engineering" },
+        new() { Value = "design",  Label = "Design" },
+        new() { Value = "product", Label = "Product" },
+    ];
+}

@@ -1,0 +1,97 @@
+@page "/components/data-display/listview/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ListView / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListView / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/ListView/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListView&lt;TItem&gt;</code> raises <code>SelectedItemsChanged</code>
+            (for selection in <code>Single</code> / <code>Multiple</code> modes), <code>PageChanged</code>
+            (for paging), and the edit-flow events <code>OnCreate</code>, <code>OnUpdate</code>, and
+            <code>OnDelete</code> when an <code>EditTemplate</code> is bound. This demo wires selection and
+            paging into an append-only log so you can see every payload.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 1fr 320px; gap:1rem;">
+            <div>
+                <SunfishListView Data="_people"
+                                 TItem="Person"
+                                 Width="100%"
+                                 SelectionMode="GridSelectionMode.Multiple"
+                                 @bind-SelectedItems="_selected"
+                                 Pageable="true"
+                                 PageSize="3"
+                                 @bind-Page="_page"
+                                 PageChanged="HandlePageChanged"
+                                 SelectedItemsChanged="HandleSelectionChanged">
+                    <ItemTemplate Context="p">
+                        <div style="display:flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <SunfishAvatar Initials="@p.Initials" Size="AvatarSize.Small" />
+                            <span style="flex:1;">@p.Name</span>
+                            <SunfishBadge Variant="BadgeVariant.Info">@p.Role</SunfishBadge>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.5rem; padding:.75rem; display:flex; flex-direction:column; gap:.5rem;">
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <strong>Event log</strong>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small" OnClick="() => _log.Clear()">Clear</SunfishButton>
+                </div>
+                <div style="font-family:var(--sunfish-font-mono, monospace); font-size:.75rem; max-height:260px; overflow:auto; background:var(--sunfish-surface-subtle, #f9fafb); padding:.5rem; border-radius:.25rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click an item or page.</em>
+                    }
+                    else
+                    {
+                        @foreach (var line in _log)
+                        {
+                            <div>@line</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "ListView", "Events"];
+
+    private record Person(string Name, string Role, string Initials);
+
+    private readonly List<Person> _people = Enumerable.Range(1, 10).Select(i =>
+        new Person($"Teammate {i:D2}",
+            i % 3 == 0 ? "Engineer" : i % 3 == 1 ? "Designer" : "Product",
+            $"T{i:D2}")).ToList();
+
+    private IEnumerable<Person> _selected = [];
+    private int _page = 0;
+    private readonly List<string> _log = [];
+
+    private void Log(string message)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss.fff}  {message}");
+        if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
+    }
+
+    private void HandlePageChanged(int page) => Log($"PageChanged → page {page}");
+
+    private void HandleSelectionChanged(IEnumerable<Person> items)
+    {
+        var names = string.Join(", ", items.Select(p => p.Name));
+        Log($"SelectedItemsChanged → [{names}]");
+    }
+}
