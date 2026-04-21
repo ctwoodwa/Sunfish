@@ -1,0 +1,181 @@
+@page "/components/utility/themeprovider/overview"
+@page "/components/miscellaneous/rootcomponent/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Theme Provider / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Theme Provider / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Utility/ThemeProvider/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishThemeProvider</code> is the application root wrapper. It cascades
+            theme tokens, default localization strings, layout direction, and a diagnostic
+            log level to every descendant Sunfish component, and renders the global
+            <code>#sf-popup-root</code> container that popups, dialogs, and tooltips portal
+            into so they escape <code>overflow:hidden</code> / scroll-trap ancestors.
+        </p>
+        <p>
+            The recommended placement is a single provider in <code>MainLayout.razor</code>
+            wrapping the entire <code>@@Body</code> — the kitchen-sink app itself does this.
+            The nested provider below demonstrates how the <code>Dir</code>,
+            <code>CssVariables</code>, and <code>DefaultLocalization</code> parameters
+            propagate to any Sunfish component placed inside.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Knobs</h3>
+                <div class="demo-row" style="display:flex; gap:1rem; flex-wrap:wrap; align-items:center;">
+                    <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                        Direction
+                        <select @bind="_dir">
+                            @foreach (var v in Enum.GetValues<TextDirection>())
+                            {
+                                <option value="@v">@v</option>
+                            }
+                        </select>
+                    </label>
+                    <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                        Accent colour
+                        <input type="color" @bind="_accent" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                        Surface
+                        <input type="color" @bind="_surface" />
+                    </label>
+                    <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                        Radius
+                        <input type="text" @bind="_radius" placeholder="e.g. 8px" />
+                    </label>
+                    <label style="display:flex; gap:.25rem; align-items:center; font-size:.85rem;">
+                        <input type="checkbox" @bind="_popupContainer" />
+                        Render <code>#sf-popup-root</code>
+                    </label>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Nested provider — children adopt cascaded values</h3>
+                <SunfishThemeProvider Dir="_dir"
+                                      GlobalPopupContainer="_popupContainer"
+                                      CssVariables="BuildCssVariables()"
+                                      DefaultLocalization="_localization">
+                    <div style="padding:1rem;
+                                background:var(--sf-color-surface, #fff);
+                                color:var(--sf-color-text, #111);
+                                border:1px solid var(--sf-color-border, #ddd);
+                                border-radius:var(--sf-radius-md, 4px);
+                                display:flex; flex-direction:column; gap:.75rem;">
+
+                        <p style="margin:0;">
+                            This wrapper picks up <code>--sf-color-primary</code>,
+                            <code>--sf-color-surface</code>, and <code>--sf-radius-md</code>
+                            from the cascaded <code>CssVariables</code> — no inline styles
+                            on the descendants.
+                        </p>
+
+                        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                            <SunfishButton Variant="ButtonVariant.Primary">
+                                @LocalizedOrFallback("themeprovider.demo.cta", "Primary action")
+                            </SunfishButton>
+                            <SunfishButton Variant="ButtonVariant.Secondary">
+                                @LocalizedOrFallback("themeprovider.demo.cancel", "Cancel")
+                            </SunfishButton>
+                        </div>
+
+                        <SunfishAlert Severity="AlertSeverity.Info">
+                            Direction = <strong>@_dir</strong>. Flip to <em>Rtl</em> to see
+                            every Sunfish component below re-mirror, and toggle the popup
+                            container checkbox to watch <code>#sf-popup-root</code> appear
+                            and disappear from the DOM.
+                        </SunfishAlert>
+
+                        <NestedChildInspector />
+                    </div>
+                </SunfishThemeProvider>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Typical usage</h3>
+                <pre style="background:#0f172a; color:#e2e8f0; padding:.75rem; border-radius:4px; overflow-x:auto;"><code>@_usageSnippet</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Utility", "Theme Provider", "Overview"];
+
+    private TextDirection _dir = TextDirection.Ltr;
+    private string _accent = "#6a1b9a";
+    private string _surface = "#fafafa";
+    private string _radius = "8px";
+    private bool _popupContainer = true;
+
+    private readonly Dictionary<string, string> _localization = new()
+    {
+        ["themeprovider.demo.cta"] = "Save changes",
+        ["themeprovider.demo.cancel"] = "Discard",
+    };
+
+    private IDictionary<string, string> BuildCssVariables() => new Dictionary<string, string>
+    {
+        ["--sf-color-primary"] = _accent,
+        ["--sf-color-surface"] = _surface,
+        ["--sf-radius-md"] = _radius,
+    };
+
+    private string LocalizedOrFallback(string key, string fallback) =>
+        _localization.TryGetValue(key, out var v) ? v : fallback;
+
+    private const string _usageSnippet =
+@"<!-- MainLayout.razor -->
+@inherits LayoutComponentBase
+
+<SunfishThemeProvider Dir=""TextDirection.Ltr""
+                      DefaultLocalization=""@_strings""
+                      CssVariables=""@_variables"">
+    @Body
+</SunfishThemeProvider>
+
+@code {
+    private Dictionary<string, string> _strings = new() {
+        [""common.save""] = ""Save"",
+    };
+    private Dictionary<string, string> _variables = new() {
+        [""--sf-color-primary""] = ""#3b82f6"",
+    };
+}";
+
+    /// <summary>
+    /// Tiny inspector component that reads every cascading surface the provider
+    /// publishes — direct evidence that descendants adopt them without extra wiring.
+    /// </summary>
+    private sealed class NestedChildInspector : ComponentBase
+    {
+        [CascadingParameter(Name = "GlobalDir")] public TextDirection GlobalDir { get; set; }
+        [CascadingParameter(Name = "DefaultLocalization")] public IDictionary<string, string>? Strings { get; set; }
+        [CascadingParameter(Name = "SunfishLogLevel")] public SunfishLogLevel LogLevel { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            var count = Strings?.Count ?? 0;
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "style", "font-size:.8rem; color:#64748b;");
+            builder.AddContent(2, $"Cascading values seen by nested child — GlobalDir: {GlobalDir}, LogLevel: {LogLevel}, localized strings: {count}");
+            builder.CloseElement();
+        }
+    }
+}

@@ -2,6 +2,7 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Sunfish.Foundation.Configuration;
 using Sunfish.Foundation.Services;
+using Sunfish.UIAdapters.Blazor.Components.Utility;
 using Sunfish.UICore.Contracts;
 using Xunit;
 
