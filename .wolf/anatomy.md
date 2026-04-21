@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-20T18:22:10.304Z
-> Files: 61 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T07:45:12.256Z
+> Files: 64 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -36,6 +36,12 @@
 
 - `config.yml` (~205 tok)
 - `rfc.yml` (~982 tok)
+
+## .github/rulesets/
+
+- `main-branch.json` (~313 tok)
+- `README.md` — Project documentation (~1206 tok)
+- `release-tags.json` (~120 tok)
 
 ## .worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/
 

@@ -681,3 +681,11 @@
 | 14:22 | Created docs/adrs/0021-reporting-pipeline-policy.md | — | ~3079 |
 | 14:22 | Edited docs/adrs/README.md | 1→2 lines | ~79 |
 | 14:22 | Session end: 19 writes across 13 files (Directory.Packages.props, Sunfish.UIAdapters.Blazor.csproj, IPdfExportWriter.cs, HtmlTableBuilder.cs, SunfishPlaywrightBrowserService.cs) | 5 reads | ~10661 tok |
+
+## Session: 2026-04-21 07:42
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:44 | Created .github/rulesets/main-branch.json | — | ~313 |
+| 07:44 | Created .github/rulesets/release-tags.json | — | ~120 |
+| 07:45 | Created .github/rulesets/README.md | — | ~1287 |
