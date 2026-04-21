@@ -1,6 +1,7 @@
 @page "/components/navigation/pagination/appearance"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
 
 <PageTitle>Pagination / Appearance · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,17 +12,22 @@
 
     <Narrative>
         <p>
-            <code>SunfishPagination</code> renders previous/next controls, a window of numeric page
-            buttons, and an optional page-size dropdown and info counter. Visual variants are
-            primarily driven by the <code>ButtonCount</code>, <code>ShowInfo</code>, and
-            <code>PageSizes</code> parameters, while surface colors/spacing come from the standard
-            <code>--sunfish-*</code> design tokens.
+            <code>SunfishPagination</code> exposes three page-selector modes via
+            <code>InputType</code>:
         </p>
+        <ul>
+            <li><code>PagerInputType.Buttons</code> (default) — numeric page buttons with ellipsis
+                collapsing when the page count exceeds <code>ButtonCount</code>.</li>
+            <li><code>PagerInputType.Dropdown</code> — a native <code>&lt;select&gt;</code> listing
+                every page, rendered as "Page [n] of N". Ideal for dense data tables with a
+                predictable page count.</li>
+            <li><code>PagerInputType.Input</code> — a numeric input. The page commits on blur or
+                <kbd>Enter</kbd> to avoid firing a page change on every keystroke.</li>
+        </ul>
         <p>
-            The grid below covers the common appearance axes: a short/long button window, with and
-            without the info string, with and without the page-size dropdown, a large total set, and
-            a style-override variant that re-skins the buttons using a <code>Style</code> override
-            at the root.
+            Each variant below is bound to its own page index so you can exercise them
+            independently. All three share the same <code>Total</code> and <code>PageSize</code>
+            so the computed total-pages value (20) is identical.
         </p>
     </Narrative>
 
@@ -29,67 +35,52 @@
         <div style="display:flex; flex-direction:column; gap:1.5rem;">
 
             <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default (ButtonCount = 5)</h3>
-                <SunfishPagination Page="@_p1"
-                                   PageChanged="@((int v) => _p1 = v)"
-                                   Total="100"
-                                   PageSize="10" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Narrow window (ButtonCount = 3)</h3>
-                <SunfishPagination Page="@_p2"
-                                   PageChanged="@((int v) => _p2 = v)"
-                                   Total="100"
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Buttons (default)</h3>
+                <SunfishPagination @bind-Page="@_pageButtons"
+                                   Total="200"
                                    PageSize="10"
-                                   ButtonCount="3" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With info text (ShowInfo)</h3>
-                <SunfishPagination Page="@_p3"
-                                   PageChanged="@((int v) => _p3 = v)"
-                                   Total="237"
-                                   PageSize="10"
-                                   ShowInfo="true" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With page-size dropdown</h3>
-                <SunfishPagination Page="@_p4"
-                                   PageChanged="@((int v) => _p4 = v)"
-                                   PageSize="@_p4Size"
-                                   PageSizeChanged="@((int v) => _p4Size = v)"
-                                   Total="500"
-                                   PageSizes="@(new List<int> { 10, 25, 50, 100 })"
-                                   ShowInfo="true" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Large total (wider window)</h3>
-                <SunfishPagination Page="@_p5"
-                                   PageChanged="@((int v) => _p5 = v)"
-                                   Total="9999"
-                                   PageSize="25"
                                    ButtonCount="7"
-                                   ShowInfo="true" />
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageButtons</strong></small>
             </section>
 
             <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via Style</h3>
-                <SunfishPagination Page="@_p6"
-                                   PageChanged="@((int v) => _p6 = v)"
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Dropdown</h3>
+                <SunfishPagination @bind-Page="@_pageDropdown"
+                                   Total="200"
+                                   PageSize="10"
+                                   InputType="PagerInputType.Dropdown"
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageDropdown</strong></small>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Input</h3>
+                <SunfishPagination @bind-Page="@_pageInput"
+                                   Total="200"
+                                   PageSize="10"
+                                   InputType="PagerInputType.Input"
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageInput</strong></small>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Arrows toggled off (PreviousNext / FirstLast = false)</h3>
+                <SunfishPagination @bind-Page="@_pageMinimal"
+                                   Total="200"
+                                   PageSize="10"
+                                   PreviousNext="false"
+                                   FirstLast="false"
+                                   ButtonCount="7"
+                                   Info="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via <code>Style</code></h3>
+                <SunfishPagination @bind-Page="@_pageReskin"
                                    Total="60"
                                    PageSize="10"
                                    Style="background: var(--sunfish-surface-muted, #f3f4f6); padding:.5rem; border-radius:999px; gap:.25rem; display:inline-flex;" />
-            </section>
-
-            <section>
-                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Single page edge case</h3>
-                <SunfishPagination Page="1"
-                                   Total="7"
-                                   PageSize="10"
-                                   ShowInfo="true" />
             </section>
 
         </div>
@@ -101,11 +92,9 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Navigation", "Pagination", "Appearance"];
 
-    private int _p1 = 1;
-    private int _p2 = 1;
-    private int _p3 = 3;
-    private int _p4 = 2;
-    private int _p4Size = 25;
-    private int _p5 = 42;
-    private int _p6 = 1;
+    private int _pageButtons = 5;
+    private int _pageDropdown = 5;
+    private int _pageInput = 5;
+    private int _pageMinimal = 1;
+    private int _pageReskin = 1;
 }

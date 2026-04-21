@@ -1,6 +1,7 @@
 @page "/components/navigation/pagination/events"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
 
 <PageTitle>Pagination / Events · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,38 +12,38 @@
 
     <Narrative>
         <p>
-            <code>SunfishPagination</code> exposes two callbacks that together cover every user
-            interaction. The live component below is wired to both; every invocation is appended
-            to the log below.
+            <code>SunfishPagination</code> exposes three callbacks that together cover every user
+            interaction. The live component below is wired to all three; every invocation is
+            appended to the log.
         </p>
         <ul>
-            <li><code>PageChanged</code> — fires when the current page changes, whether from the
-                previous/next arrows, a numeric button, or after a page-size change (which resets
-                the current page to 1). Supports two-way binding via <code>@@bind-Page</code>.</li>
+            <li><code>PageChanged</code> — fires when the current page changes from the arrows, a
+                numeric button, the page dropdown / input, or after a page-size change (which
+                resets to page 1). Supports two-way binding via <code>@@bind-Page</code>.</li>
             <li><code>PageSizeChanged</code> — fires when the user selects a new entry from the
                 <code>PageSizes</code> dropdown. Supports two-way binding via
                 <code>@@bind-PageSize</code>.</li>
+            <li><code>OnRefresh</code> — fires when the refresh button is clicked (requires
+                <code>RefreshButton="true"</code>). After <code>OnRefresh</code>,
+                <code>PageChanged</code> is re-fired with the current page so consumers can re-run
+                their query.</li>
         </ul>
-        <p>
-            Click a page number, the &laquo;/&raquo; arrows, or change the page size to see the
-            events fire. The "Applied items" table below shows the slice that would be rendered for
-            the current <code>Page</code> / <code>PageSize</code>, demonstrating how a consuming
-            data view would react.
-        </p>
     </Narrative>
 
     <Example>
         <div style="display:flex; flex-direction:column; gap:1rem;">
 
             <div style="display:flex; gap:1.25rem; flex-wrap:wrap; align-items:flex-start;">
-                <div style="flex:1 1 420px; min-width:320px;">
+                <div style="flex:1 1 480px; min-width:360px;">
                     <SunfishPagination Page="@_page"
                                        PageChanged="@HandlePageChanged"
                                        PageSize="@_pageSize"
                                        PageSizeChanged="@HandlePageSizeChanged"
+                                       OnRefresh="@HandleRefresh"
                                        Total="@_total"
                                        PageSizes="@(new List<int> { 5, 10, 25, 50 })"
-                                       ShowInfo="true" />
+                                       Info="true"
+                                       RefreshButton="true" />
 
                     <p style="margin:.75rem 0 0 0; font-size:.9rem;">
                         Current: page <strong>@_page</strong>, pageSize <strong>@_pageSize</strong>,
@@ -56,7 +57,7 @@
 
                 <div style="flex:1 1 260px; min-width:260px;">
                     <h4 style="margin:0 0 .5rem 0; font-size:.85rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Event log</h4>
-                    <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.8rem; max-height:260px; overflow:auto; margin:0;">@(_log.Count == 0 ? "(no events yet — interact above)" : string.Join("\n", _log))</pre>
+                    <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.8rem; max-height:280px; overflow:auto; margin:0;">@(_log.Count == 0 ? "(no events yet — interact above)" : string.Join("\n", _log))</pre>
                 </div>
             </div>
 
@@ -82,18 +83,25 @@
     private int _page = 1;
     private int _pageSize = 10;
     private int _total = 57;
+    private int _refreshCount;
     private readonly List<string> _log = new();
 
     private void HandlePageChanged(int newPage)
     {
         _page = newPage;
-        Append($"PageChanged → {newPage}");
+        Append($"PageChanged -> {newPage}");
     }
 
     private void HandlePageSizeChanged(int newSize)
     {
         _pageSize = newSize;
-        Append($"PageSizeChanged → {newSize}");
+        Append($"PageSizeChanged -> {newSize}");
+    }
+
+    private void HandleRefresh()
+    {
+        _refreshCount++;
+        Append($"OnRefresh (#{_refreshCount})");
     }
 
     private void ClearLog()
