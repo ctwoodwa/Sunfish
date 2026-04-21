@@ -2,6 +2,13 @@
 uid: block-forms-service-contract
 title: Forms — Service Contract
 description: The FormBlock<TModel> component parameters, slots, events, and submission-state shape.
+keywords:
+  - sunfish
+  - forms
+  - formblock
+  - formblockstate
+  - blazor
+  - validation
 ---
 
 # Forms — Service Contract
@@ -87,6 +94,41 @@ All setters are `internal` — consumers read the state but do not mutate it.
    - `State.LastSubmitAttemptUtc = now`; `State.LastSubmitWasValid = false`;
      `State.HasSubmitted = true`.
    - `OnStateChanged` fires; `OnSubmitted` is **not** invoked.
+
+`OnSubmitted` is awaited in full before `IsSubmitting` is reset — this guarantees the submit
+button stays disabled for the entire round-trip, including network I/O. If `OnSubmitted`
+throws, the exception bubbles; `IsSubmitting` is still reset inside a `finally` block so
+the UI does not get stuck in a submitting state.
+
+## Error propagation from `OnSubmitted`
+
+The block does not catch exceptions thrown by the `OnSubmitted` handler — they propagate to
+the Blazor error boundary (or unhandled-exception pipeline) the host has configured.
+`State.LastSubmitWasValid` is only set to `true` on a successful return, so an exception
+leaves the last-valid flag untouched.
+
+For expected failures (validation from a server-side check, for example), prefer returning
+normally after attaching a validation message via `EditContext`, rather than throwing.
+
+## Composition with `SunfishForm`
+
+`FormBlock<TModel>` renders `SunfishForm` internally; the block doesn't attempt to hide it.
+The underlying form still reads standard `[EditContext]` cascades and validation attributes
+on `TModel`, so:
+
+- `DataAnnotations` attributes on the model (`[Required]`, `[Range]`, …) are honoured.
+- Additional `<SunfishValidation />` providers cannot be added on top — the block injects
+  its own and there is no override. If you need a custom validator, compose `SunfishForm`
+  directly instead of using the block.
+
+## Test-surface guarantees
+
+The first-pass smoke tests (`FormBlockTests.cs`) pin the public namespaces:
+
+- `FormBlock<>` must stay in `Sunfish.Blocks.Forms`.
+- `FormBlockState` must stay in `Sunfish.Blocks.Forms.State`.
+
+Anything else is fair game in subsequent passes (subject to normal SemVer rules).
 
 ## Related pages
 

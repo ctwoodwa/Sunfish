@@ -2,6 +2,14 @@
 uid: block-forms-overview
 title: Forms — Overview
 description: An opinionated single-page validated form block that wraps SunfishForm and SunfishValidation with sensible defaults and a lightweight submission-state model.
+keywords:
+  - sunfish
+  - blocks
+  - forms
+  - formblock
+  - sunfishform
+  - validation
+  - blazor
 ---
 
 # Forms — Overview
@@ -71,6 +79,69 @@ Do not reach for it when:
     private Task SaveAsync(EditLeaseInput input) => _service.SaveAsync(input);
 }
 ```
+
+## Customising the button row
+
+The default submit button covers the common "Save" case. Supply the `FormButtons` slot to
+render a Cancel-and-Save pair or any other layout:
+
+```razor
+<FormBlock TModel="EditLeaseInput" Model="@_model" OnSubmitted="SaveAsync">
+    <FormItems>
+        @* ... items ... *@
+    </FormItems>
+    <FormButtons>
+        <SunfishButton Variant="ButtonVariant.Secondary"
+                       OnClick="Cancel">
+            Cancel
+        </SunfishButton>
+        <SunfishButton Variant="ButtonVariant.Primary"
+                       ButtonType="ButtonType.Submit"
+                       Enabled="@(!_formBlock.State.IsSubmitting)">
+            Save
+        </SunfishButton>
+    </FormButtons>
+</FormBlock>
+```
+
+When you supply `FormButtons`, the built-in submit button is not rendered — the slot
+replaces it entirely. `SubmitText` is ignored in that case.
+
+## Observing submission state
+
+Attach `OnStateChanged` to react to transitions without sprinkling `_isSubmitting` flags
+through the parent:
+
+```razor
+<FormBlock TModel="EditLeaseInput"
+           Model="@_model"
+           OnSubmitted="SaveAsync"
+           OnStateChanged="HandleStateChanged">
+    ...
+</FormBlock>
+
+@code {
+    private string? _banner;
+
+    private void HandleStateChanged(FormBlockState state)
+    {
+        _banner = state switch
+        {
+            { IsSubmitting: true }                          => "Saving…",
+            { HasSubmitted: true, LastSubmitWasValid: true } => "Saved.",
+            { HasSubmitted: true, LastSubmitWasValid: false } => "Please fix the highlighted errors.",
+            _                                                => null,
+        };
+    }
+}
+```
+
+## Typeparam ergonomics
+
+Blazor renders `FormBlock<TModel>` as `<FormBlock TModel="...">`. The `TModel` constraint is
+`class`, so value-type models are not supported (the `SunfishForm` primitive underneath
+reserves value types for editor primitives). For scalar edits, skip the block and use
+`SunfishForm` directly.
 
 ## Related pages
 

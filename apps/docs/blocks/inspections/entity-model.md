@@ -2,6 +2,13 @@
 uid: block-inspections-entity-model
 title: Inspections — Entity Model
 description: Templates, checklist items, inspections, responses, deficiencies, and reports — the entities that make up Sunfish.Blocks.Inspections.
+keywords:
+  - sunfish
+  - inspections
+  - entity-model
+  - inspection-template
+  - deficiency
+  - inspection-report
 ---
 
 # Inspections — Entity Model
@@ -118,6 +125,56 @@ InspectionTemplate 1 ─── N Inspection           (by TemplateId)
 Inspection         1 ─── N InspectionResponse   (appended over time)
 Inspection         1 ─── N Deficiency
 Inspection         1 ─── N InspectionReport     (multiple reports possible)
+```
+
+## Strong-typed identifiers
+
+Each record has a dedicated identifier struct with a `NewId()` factory:
+
+- `InspectionTemplateId`
+- `InspectionChecklistItemId`
+- `InspectionId`
+- `DeficiencyId`
+- `InspectionReportId`
+
+Identifiers are opaque string values. The in-memory service uses GUIDs internally; a
+persistence-backed implementation is free to use any collision-resistant scheme.
+`InspectionChecklistItem`'s identifier is caller-controlled so the template author can
+cross-reference items from seed scripts.
+
+## Immutability and transitions
+
+All records are immutable. Each lifecycle change on an `Inspection` returns a _new_
+`Inspection` instance with the updated phase and timestamps. Callers must treat the
+returned record as the current state — mutating the local copy (e.g. casting the
+`Responses` list) is not supported.
+
+`RecordResponseAsync` appends to the responses list by producing a new record whose
+`Responses` list contains the old elements plus the new one. Under concurrent calls the
+in-memory service serialises append operations so there are no lost updates; the
+`ConcurrentRecordResponseAsync` test asserts 10 parallel appends all land.
+
+## Usage example (drawn from tests)
+
+```csharp
+// Build a reusable template request
+var request = new CreateTemplateRequest
+{
+    Name        = "Standard Move-In",
+    Description = "Standard move-in checklist",
+    Items       =
+    [
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Smoke detector operational?", InspectionItemKind.YesNo, Required: true),
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Water heater functional?", InspectionItemKind.PassFail, Required: true),
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Overall cleanliness rating", InspectionItemKind.Rating1to5, Required: false),
+    ],
+};
+
+var svc      = new InMemoryInspectionsService();
+var template = await svc.CreateTemplateAsync(request);
 ```
 
 ## Related pages

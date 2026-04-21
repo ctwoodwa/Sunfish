@@ -2,6 +2,13 @@
 uid: block-accounting-entity-model
 title: Accounting — Entity Model
 description: Chart of accounts, journal entries with double-entry invariants, and depreciation schedule records exposed by Sunfish.Blocks.Accounting.
+keywords:
+  - sunfish
+  - accounting
+  - gl-account
+  - journal-entry
+  - depreciation-schedule
+  - entity-model
 ---
 
 # Accounting — Entity Model
@@ -91,6 +98,58 @@ DepreciationSchedule  ── references ──>  EntityId (external asset)
 There are no direct relationships between `DepreciationSchedule` and the JE engine in this
 pass; the follow-up `ComputeScheduleAsync` would emit JEs that reference the schedule via
 `SourceReference`.
+
+## Strong-typed identifiers
+
+Every top-level record has a dedicated identifier struct:
+
+- `GLAccountId` — wraps a `string` code; the value is the same human-readable code the
+  caller supplies to `CreateGLAccountRequest.Code`. This makes GL codes round-trip through
+  the journal entries and the IIF export without a secondary lookup table.
+- `JournalEntryId` — GUID-based; `JournalEntryId.NewId()` generates a fresh identifier.
+- `DepreciationScheduleId` — GUID-based; `DepreciationScheduleId.NewId()` generates a fresh
+  identifier.
+
+Because records are immutable and identifiers are opaque to callers, any persistence-backed
+implementation can re-use the same shapes without layering extra DTOs.
+
+## Invariant catalogue
+
+The constructors on `JournalEntry` and `JournalEntryLine` are the sole place where balance
+and single-side invariants are enforced. Every persistence-backed implementation must call
+those constructors (not bypass them) to retain the guarantees:
+
+| Type | Invariant | Constructor behaviour |
+|---|---|---|
+| `JournalEntryLine` | Exactly one of `Debit` / `Credit` is non-zero. | `ArgumentException`. |
+| `JournalEntryLine` | Both `Debit` and `Credit` are `>= 0`. | `ArgumentException`. |
+| `JournalEntry` | `Lines` is non-empty. | `ArgumentException`. |
+| `JournalEntry` | `Sum(l.Debit) == Sum(l.Credit)` across `Lines`. | `ArgumentException` with a message reporting the actual totals (formatted `F2`). |
+
+`DepreciationSchedule` enforces non-negative `OriginalCost`, non-negative `SalvageValue`,
+`SalvageValue <= OriginalCost`, and `UsefulLifeMonths > 0`.
+
+## Usage example (drawn from tests)
+
+```csharp
+var accountId = GLAccountId.NewId();
+
+// Rejected: debit and credit both non-zero
+Assert.Throws<ArgumentException>(() =>
+    new JournalEntryLine(accountId, debit: 100m, credit: 50m));
+
+// Rejected: imbalanced across lines
+var lines = new List<JournalEntryLine>
+{
+    new(cashId,    debit: 500m, credit: 0m),
+    new(revenueId, debit: 0m,   credit: 400m),   // 500 ≠ 400
+};
+await Assert.ThrowsAsync<ArgumentException>(
+    () => svc.PostEntryAsync(new PostJournalEntryRequest(
+        EntryDate: new DateOnly(2025, 6, 1),
+        Memo: "Imbalanced",
+        Lines: lines)).AsTask());
+```
 
 ## Related pages
 

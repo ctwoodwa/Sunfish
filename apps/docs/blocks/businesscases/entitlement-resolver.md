@@ -2,6 +2,13 @@
 uid: block-businesscases-entitlement-resolver
 title: Business Cases — Entitlement Resolver
 description: How BundleEntitlementResolver maps a tenant's active bundle + edition to feature values in the Sunfish feature-management pipeline.
+keywords:
+  - sunfish
+  - businesscases
+  - entitlement-resolver
+  - feature-management
+  - bundle
+  - edition-mapping
 ---
 
 # Business Cases — Entitlement Resolver
@@ -86,6 +93,51 @@ IFeatureEvaluator.IsEnabledAsync("modules.rent.enabled", tenantContext)
   → manifest.RequiredModules ∪ manifest.EditionMappings[edition] → contains "rent"?
   → FeatureValue.Of(true)
 ```
+
+## Worked examples (from resolver tests)
+
+The `BundleEntitlementResolverTests` fixture registers a manifest with these feature
+defaults and edition mappings:
+
+- `FeatureDefaults = { "leases.enabled" = "true", "leases.max-count" = "50" }`
+- `EditionMappings["standard"] = [ "sunfish.blocks.leases" ]`
+- `EditionMappings["enterprise"] = [ "sunfish.blocks.leases", "sunfish.blocks.maintenance" ]`
+- `RequiredModules = [ "sunfish.blocks.identity" ]`
+
+With `tenant-a` provisioned on the `standard` edition:
+
+| Key | Result | Reason |
+|---|---|---|
+| `leases.enabled` | `"true"` | `FeatureDefaults` hit. |
+| `modules.sunfish.blocks.leases.enabled` | `true` | In `EditionMappings["standard"]`. |
+| `modules.sunfish.blocks.identity.enabled` | `true` | In `RequiredModules` (edition-independent). |
+| `modules.sunfish.blocks.maintenance.enabled` | `false` | Not in standard edition's mapping. |
+| `billing.max-invoices` | `null` | Unknown key shape; resolver defers. |
+
+These are pinned by the resolver tests and should hold for any persistence-backed
+implementation that honours the same `IBundleCatalog` contract.
+
+## Feature key shapes
+
+The resolver recognises two key shapes:
+
+- **Raw keys** (`"<subsystem>.<flag>"` style): looked up directly in
+  `BundleManifest.FeatureDefaults`. Example: `"leases.enabled"`, `"billing.allow-ach"`.
+- **Module-probe keys** (`"modules.<moduleKey>.enabled"`): decomposed into the literal
+  prefix `modules.`, a module key, and the literal suffix `.enabled`. Example:
+  `"modules.sunfish.blocks.leases.enabled"` → module key `sunfish.blocks.leases`.
+
+String matching is `StringComparison.Ordinal` — case-sensitive. If you adopt a different
+module-key convention (e.g. hyphenated), stay consistent across the manifest and the
+caller side of `IFeatureEvaluator.IsEnabledAsync`.
+
+## Fallthrough semantics
+
+Returning `null` is the resolver's only way to say "I don't know." The feature-management
+pipeline treats `null` as a signal to try the next resolver. A resolver that returns a
+concrete `FeatureValue` ends the search; make sure you _never_ return `FeatureValue.Of(false)`
+when you mean "ask someone else" — that would pin the feature to `false` and prevent any
+downstream resolver from overriding.
 
 ## Related pages
 

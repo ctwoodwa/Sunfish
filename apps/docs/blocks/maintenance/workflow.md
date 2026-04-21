@@ -2,6 +2,13 @@
 uid: block-maintenance-workflow
 title: Maintenance — Workflow
 description: Allowed lifecycle transitions for maintenance requests, RFQs, quotes, and work orders, plus the atomic AcceptQuoteAsync fan-out.
+keywords:
+  - sunfish
+  - maintenance
+  - workflow
+  - state-machine
+  - transition-table
+  - atomic-accept
 ---
 
 # Maintenance — Workflow
@@ -164,6 +171,70 @@ The `entity` label identifies which object the transition was attempted on (e.g.
   two blocks independent and to avoid introducing an event-bus dependency.
 - Emergency-priority maintenance requests will (in a future pass) auto-fast-track through
   `UnderReview`. Today they must follow the standard transition sequence.
+
+## Worked examples
+
+### Valid request path
+
+```csharp
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.UnderReview);
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.Approved);
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.InProgress);
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.Completed);
+```
+
+Pinned by `TransitionRequest_ValidPath_SubmittedToCompleted`.
+
+### Illegal skip
+
+```csharp
+// Request is in Submitted — cannot jump straight to Completed.
+await Assert.ThrowsAsync<InvalidOperationException>(
+    () => svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.Completed).AsTask());
+```
+
+Pinned by `TransitionRequest_InvalidTransition_ThrowsInvalidOperationException`.
+
+### Cancel-from-anywhere
+
+`Cancelled` is allowed from any non-terminal request state. Pinned by the
+`TransitionRequest_CancelAllowedFromAnyNonTerminalState` theory:
+
+| Starting state | Action | Result |
+|---|---|---|
+| `Submitted` | `TransitionRequestAsync(id, Cancelled)` | → `Cancelled` |
+| `UnderReview` | `TransitionRequestAsync(id, Cancelled)` | → `Cancelled` |
+| `Approved` | `TransitionRequestAsync(id, Cancelled)` | → `Cancelled` |
+| `InProgress` | `TransitionRequestAsync(id, Cancelled)` | → `Cancelled` |
+| Any terminal | `TransitionRequestAsync(id, *)` | `InvalidOperationException` |
+
+### OnHold cycle
+
+A work order in `InProgress` can be parked on `OnHold` and later resumed:
+
+```csharp
+await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.OnHold);
+// …parts on order, tenant unavailable, etc.
+await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.InProgress);
+await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Completed);
+```
+
+`OnHold` has exactly one outbound target — back to `InProgress`. You cannot complete a
+work order directly from `OnHold`.
+
+## Test-surface cross-reference
+
+| Test | What it pins |
+|---|---|
+| `SubmitRequestAsync_CreatesRequest_InSubmittedStatus` | Requests always start in `Submitted`. |
+| `TransitionRequest_ValidPath_SubmittedToCompleted` | The happy path is allowed end-to-end. |
+| `TransitionRequest_InvalidTransition_ThrowsInvalidOperationException` | Illegal target raises. |
+| `TransitionRequest_CancelAllowedFromAnyNonTerminalState` | `Cancelled` from any non-terminal state. |
+| `TransitionRequest_FromTerminalState_Throws` | Terminal states have no outbound edges. |
+| `AcceptQuoteAsync_AcceptsTarget_DeclinesOthers_SpawnsWorkOrder` | Single-call fan-out invariants. |
+| `AcceptQuoteAsync_IsAtomic_ConcurrentCallsConvergeToExactlyOneAccepted` | Race convergence. |
+| `TransitionWorkOrder_ValidPath_DraftToCompleted` | Work-order happy path. |
+| `TransitionWorkOrder_OnHoldCycle` | `OnHold ↔ InProgress` round-trip. |
 
 ## Related pages
 

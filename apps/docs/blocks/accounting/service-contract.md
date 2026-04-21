@@ -2,6 +2,13 @@
 uid: block-accounting-service-contract
 title: Accounting — Service Contract
 description: The IAccountingService public surface — GL accounts, balanced journal-entry posting, and depreciation-schedule registration.
+keywords:
+  - sunfish
+  - accounting
+  - service-contract
+  - iaccountingservice
+  - journal-entry
+  - chart-of-accounts
 ---
 
 # Accounting — Service Contract
@@ -108,11 +115,38 @@ does not emit JEs or compute period expense.
    `IQuickBooksJournalEntryExporter.Export` — see
    [QuickBooks IIF Export](quickbooks-iif-export.md).
 
+## Concurrency
+
+`InMemoryAccountingService` protects both the chart and the journal-entry store with a lock,
+so concurrent `PostEntryAsync` calls never lose entries. The regression is pinned by the
+`PostEntryAsync_ConcurrentCallsAreSafe_AllEntriesAreStored` test, which fires 20 parallel
+posts and asserts that all 20 land in the ledger. Persistence-backed implementations should
+provide equivalent guarantees (database transactions typically do this for free).
+
+## Cancellation semantics
+
+All methods accept an optional `CancellationToken`. Cancellation is checked before each store
+mutation; once a mutation has been committed the method will not abort mid-way. Callers that
+need hard deadlines should wrap the call in their own timeout — cancellation is cooperative.
+
 ## Default implementation
 
 `InMemoryAccountingService` is registered by `AddInMemoryAccounting`. It is suitable for
 testing, prototyping, and kitchen-sink demos. Replace it with a persistence-backed
-implementation for production workloads.
+implementation for production workloads. The in-memory service keeps two `Dictionary`
+instances — one keyed by `GLAccountId`, one keyed by `JournalEntryId` — and a simple list
+for depreciation schedules; no other state is stored.
+
+### Registering a replacement
+
+A production host that provides its own implementation should still register the IIF
+exporter from `AddInMemoryAccounting`, because the exporter is framework-agnostic and
+stateless:
+
+```csharp
+services.AddSingleton<IAccountingService, EfAccountingService>();
+services.AddSingleton<IQuickBooksJournalEntryExporter, QuickBooksIifExporter>();
+```
 
 ## Related pages
 

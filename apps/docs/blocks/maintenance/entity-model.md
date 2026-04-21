@@ -2,6 +2,15 @@
 uid: block-maintenance-entity-model
 title: Maintenance — Entity Model
 description: Vendor, MaintenanceRequest, Rfq, Quote, and WorkOrder — the entities that make up Sunfish.Blocks.Maintenance.
+keywords:
+  - sunfish
+  - maintenance
+  - entity-model
+  - vendor
+  - work-order
+  - rfq
+  - quote
+  - lifecycle
 ---
 
 # Maintenance — Entity Model
@@ -108,6 +117,59 @@ Deficiency          ← opaque string ─── MaintenanceRequest.DeficiencyRef
 The `DeficiencyReference` link is a plain string — the block has no compile-time
 dependency on `blocks-inspections`. Consumer code translates between the real
 `DeficiencyId` value and this string when wiring the two blocks together.
+
+## Strong-typed identifiers
+
+Each record has a dedicated identifier struct:
+
+- `VendorId`
+- `MaintenanceRequestId`
+- `RfqId`
+- `QuoteId`
+- `WorkOrderId`
+
+Identifiers are opaque strings. The in-memory service uses GUIDs internally;
+persistence-backed implementations are free to use any collision-resistant scheme.
+Properties use `EntityId` (from `Sunfish.Foundation.Assets.Common`) rather than
+`PropertyId` — properties are cross-block assets.
+
+## Usage example (drawn from tests)
+
+Registering a vendor and submitting a request — pinned by the smoke tests:
+
+```csharp
+var svc = new InMemoryMaintenanceService();
+
+var vendor = await svc.CreateVendorAsync(new CreateVendorRequest
+{
+    DisplayName  = "Ace Plumbing",
+    ContactName  = "Bob Builder",
+    ContactEmail = "bob@aceplumbing.com",
+    Specialty    = VendorSpecialty.Plumbing,
+});
+// vendor.Status defaults to VendorStatus.Active.
+
+var request = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
+{
+    PropertyId              = new EntityId("property", "test", "prop-1"),
+    RequestedByDisplayName  = "Jane Tenant",
+    Description             = "Leaky faucet in kitchen",
+    Priority                = MaintenancePriority.Normal,
+    RequestedDate           = new DateOnly(2026, 5, 1),
+});
+// request.Status == MaintenanceRequestStatus.Submitted
+// request.DeficiencyReference == null (unless explicitly set)
+```
+
+## Immutability and transitions
+
+All records are immutable. Every lifecycle transition produces a new record with the
+updated status and timestamps. Callers must treat the returned record as the current
+state — mutating a local copy is not supported and will not persist.
+
+For example, `TransitionWorkOrderAsync(id, WorkOrderStatus.Completed)` returns a new
+`WorkOrder` with `Status == Completed` and `CompletedDate` set. The previous `Draft`
+record in the caller's hand is now stale.
 
 ## Related pages
 

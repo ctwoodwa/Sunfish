@@ -2,6 +2,13 @@
 uid: block-maintenance-service-contract
 title: Maintenance — Service Contract
 description: The IMaintenanceService public surface — vendors, requests, RFQ/quote flow, and work-order management.
+keywords:
+  - sunfish
+  - maintenance
+  - service-contract
+  - imaintenance-service
+  - accept-quote
+  - concurrency
 ---
 
 # Maintenance — Service Contract
@@ -114,6 +121,53 @@ IAsyncEnumerable<WorkOrder> ListWorkOrdersAsync(
 
 `InMemoryMaintenanceService` is registered by `AddInMemoryMaintenance`. State is held in
 process; replace with a persistence-backed implementation for production.
+
+## Query filters
+
+| Query | Fields | Combinator |
+|---|---|---|
+| `ListVendorsQuery` | `Specialty?`, `Status?` | AND across all non-null fields. |
+| `ListVendorsQuery.Empty` | — | Returns all vendors. |
+| `ListRequestsQuery` | `PropertyId?`, `Priority?`, `Status?` | AND across all non-null fields. |
+| `ListWorkOrdersQuery` | `RequestId?`, `AssignedVendorId?`, `Status?` | AND across all non-null fields. |
+| `ListQuotesAsync(requestId)` | Request-scoped by parameter. | — |
+
+`ListVendorsAsync(new ListVendorsQuery { Specialty = VendorSpecialty.Plumbing })` is
+pinned by `ListVendorsAsync_FilterBySpecialty_ReturnsMatchingOnly`; the active/suspended
+split is pinned by `ListVendorsAsync_FilterByActiveStatus_ExcludesSuspended`.
+
+## Concurrency
+
+The in-memory service protects each mutable collection with a lock. `AcceptQuoteAsync` uses
+a per-request lock so a race on the same maintenance request produces exactly one accepted
+quote. Two pinning tests cover this:
+
+- `AcceptQuoteAsync_AcceptsTarget_DeclinesOthers_SpawnsWorkOrder` — single accept call:
+  target → `Accepted`, all siblings → `Declined`, one `WorkOrder` in `Draft`.
+- `AcceptQuoteAsync_IsAtomic_ConcurrentCallsConvergeToExactlyOneAccepted` — fires two
+  parallel accepts on different quotes; asserts exactly one `Accepted`, at least one
+  `Declined`, exactly one `WorkOrder` spawned. At most one call may throw (losing-racer
+  sees its target already-declined).
+
+## Error semantics
+
+- Invalid lifecycle transitions throw `InvalidOperationException` with a message of the
+  form `"Cannot transition {entity} from {from} to {to}. Allowed targets from {from}:
+  [...]."`. See [Workflow — Transition-guard error messages](workflow.md#transition-guard-error-messages).
+- `GetVendorAsync`, `GetRequestAsync`, `GetWorkOrderAsync` return `null` for unknown ids
+  rather than throwing.
+- `null` requests throw `ArgumentNullException` at the entry point.
+
+## Registering a replacement
+
+```csharp
+services.AddInMemoryMaintenance();                                     // optional baseline
+services.AddSingleton<IMaintenanceService, MyEfMaintenanceService>();  // wins by last-registered rule
+```
+
+A persistence-backed implementation must preserve the transition-guard semantics
+(invalid target → `InvalidOperationException`) and the atomicity of `AcceptQuoteAsync`.
+The two concurrency tests above are the primary conformance gates.
 
 ## Related pages
 

@@ -2,6 +2,15 @@
 uid: block-businesscases-overview
 title: Business Cases — Overview
 description: Bundle activation, edition selection, and entitlement resolution for multi-tenant Sunfish hosts.
+keywords:
+  - sunfish
+  - blocks
+  - businesscases
+  - bundles
+  - editions
+  - entitlements
+  - feature-management
+  - multitenancy
 ---
 
 # Business Cases — Overview
@@ -75,6 +84,53 @@ an admin page to see exactly what the entitlement pipeline has evaluated to.
 - [ADR 0008 — Foundation MultiTenancy](../../docs/adrs/0008-foundation-multitenancy.md):
   `BundleActivationRecord` implements `IMustHaveTenant`, so Bridge's central tenant filter
   scopes every read and write.
+
+## End-to-end sketch
+
+```csharp
+using Sunfish.Blocks.BusinessCases.DependencyInjection;
+using Sunfish.Blocks.BusinessCases.Services;
+using Sunfish.Foundation.Assets.Common;
+
+services.AddInMemoryBusinessCases();
+// ... elsewhere the host registers IBundleCatalog
+
+var provisioning = serviceProvider.GetRequiredService<IBundleProvisioningService>();
+var read         = serviceProvider.GetRequiredService<IBusinessCaseService>();
+var tenant       = new TenantId("tenant-a");
+
+// 1. Activate the bundle
+await provisioning.ProvisionAsync(tenant, "sunfish.propertymgmt", "Pro");
+
+// 2. Resolve the current snapshot (what the UI and feature pipeline see)
+var snapshot = await read.GetSnapshotAsync(tenant);
+
+// 3. Later — deprovision
+await provisioning.DeprovisionAsync(tenant, "sunfish.propertymgmt");
+```
+
+## Why reads and writes are split
+
+Keeping `IBusinessCaseService` (read) and `IBundleProvisioningService` (write) on separate
+interfaces lets admin-role-gated code target just the provisioning surface while public
+code paths (including the entitlement resolver) take the read interface. The split also
+keeps each contract small enough to be easily mocked in tests — the
+`BundleEntitlementResolverTests` fixture constructs an `InMemoryBusinessCaseService` and
+passes it to the resolver without involving provisioning at all.
+
+## Feature-management integration
+
+When `BundleEntitlementResolver` is registered, it participates in the normal
+`IFeatureEvaluator` chain. The pipeline tries each resolver in turn and uses the first
+non-`null` `FeatureValue` it sees. A typical layering is:
+
+1. `BundleEntitlementResolver` (this block — answers from the active bundle manifest).
+2. A tenant-override resolver (for admin-set overrides).
+3. A global-default resolver or static config.
+
+Returning `null` from a resolver is the correct way to say "I don't know — ask the next
+one." This is why the resolver's algorithm returns `null` for missing tenant, missing
+active bundle, missing bundle in catalog, and unknown key shapes.
 
 ## Related pages
 

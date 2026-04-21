@@ -2,6 +2,14 @@
 uid: block-inspections-overview
 title: Inspections — Overview
 description: Inspection templates, scheduled inspections, deficiency tracking, and summary report generation for Sunfish-hosted property apps.
+keywords:
+  - sunfish
+  - blocks
+  - inspections
+  - checklist
+  - deficiency
+  - property-management
+  - templates
 ---
 
 # Inspections — Overview
@@ -69,9 +77,73 @@ Registers `InMemoryInspectionsService` as the singleton `IInspectionsService`. S
 development, tests, and demos — replace with a persistence-backed implementation for
 production.
 
+## End-to-end sketch
+
+```csharp
+using Sunfish.Blocks.Inspections.DependencyInjection;
+using Sunfish.Blocks.Inspections.Models;
+using Sunfish.Blocks.Inspections.Services;
+using Sunfish.Foundation.Assets.Common;
+
+services.AddInMemoryInspections();
+
+var svc = serviceProvider.GetRequiredService<IInspectionsService>();
+
+// 1. Create a template
+var template = await svc.CreateTemplateAsync(new CreateTemplateRequest
+{
+    Name        = "Standard Move-In",
+    Description = "Move-in checklist",
+    Items =
+    [
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Smoke detector operational?", InspectionItemKind.YesNo, Required: true),
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Water heater functional?", InspectionItemKind.PassFail, Required: true),
+        new InspectionChecklistItem(InspectionChecklistItemId.NewId(),
+            "Overall cleanliness rating", InspectionItemKind.Rating1to5, Required: false),
+    ],
+});
+
+// 2. Schedule → start → record responses → complete
+var inspection = await svc.ScheduleAsync(new ScheduleInspectionRequest
+{
+    TemplateId     = template.Id,
+    UnitId         = new EntityId("unit", "acme", "3B"),
+    InspectorName  = "Jane Smith",
+    ScheduledDate  = new DateOnly(2026, 5, 1),
+});
+
+await svc.StartAsync(inspection.Id);
+await svc.RecordResponseAsync(inspection.Id,
+    new InspectionResponse(template.Items[0].Id, "yes", null));
+await svc.CompleteAsync(inspection.Id);
+
+// 3. Record a deficiency and generate a report
+await svc.RecordDeficiencyAsync(new RecordDeficiencyRequest
+{
+    InspectionId = inspection.Id,
+    ItemId       = template.Items[1].Id,
+    Severity     = DeficiencySeverity.Medium,
+    Description  = "Water heater not functional",
+});
+
+var report = await svc.GenerateReportAsync(inspection.Id);
+```
+
+## Operational invariants at a glance
+
+| Invariant | Enforced by | On violation |
+|---|---|---|
+| Phase transitions follow `Scheduled → InProgress → Completed`. | `StartAsync`, `CompleteAsync`. | `InvalidOperationException`. |
+| Responses can only be appended while `InProgress`. | `RecordResponseAsync`. | `InvalidOperationException`. |
+| A report can only be generated for an existing inspection. | `GenerateReportAsync`. | `InvalidOperationException`. |
+| Concurrent `RecordResponseAsync` calls never lose responses. | Internal per-inspection lock in `InMemoryInspectionsService`. | — (serialised). |
+
 ## Related ADRs
 
 - ADR 0015 — Module-Entity Registration (for the eventual persistence-backed implementation).
+- ADR 0022 — Example catalog + docs taxonomy. Block UID prefix is `block-inspections-*`.
 
 ## Related pages
 

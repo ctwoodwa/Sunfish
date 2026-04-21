@@ -2,6 +2,13 @@
 uid: block-leases-service-contract
 title: Leases — Service Contract
 description: The ILeaseService public surface — create, get, and list leases with optional phase and tenant filters.
+keywords:
+  - sunfish
+  - leases
+  - service-contract
+  - ilease-service
+  - list-leases-query
+  - in-memory
 ---
 
 # Leases — Service Contract
@@ -94,6 +101,56 @@ Filters are AND-combined. A `null` filter means "no filter on that field".
 `InMemoryLeaseService` is registered by `AddInMemoryLeases`. It is suitable for
 development, tests, and kitchen-sink demos. Replace with a persistence-backed
 implementation for production workloads.
+
+## Argument validation
+
+The default implementation validates arguments eagerly:
+
+- `CreateAsync(null)` throws `ArgumentNullException` — pinned by
+  `CreateAsync_ThrowsOnNull_Request`.
+- `ListAsync(null)` throws `ArgumentNullException` on the first enumeration step — pinned
+  by `ListAsync_ThrowsOnNull_Query`.
+
+`GetAsync` returns `null` for unknown ids rather than throwing — callers drive control flow
+off the nullability rather than catching a `KeyNotFoundException`. This matches the
+pattern used by `IInspectionsService.GetInspectionAsync`.
+
+## Concurrency
+
+`InMemoryLeaseService` stores leases in a thread-safe dictionary. Concurrent `CreateAsync`
+calls never lose a record — pinned by `ConcurrentCreates_AreAllPersisted`, which fires 20
+parallel creates and asserts all 20 are retrievable via `ListAsync`. There is no
+per-lease lock because the first-pass surface has no mutating operations after create.
+
+```csharp
+var tasks = Enumerable.Range(0, 20)
+    .Select(i => svc.CreateAsync(MakeRequest($"unit-{i}")).AsTask())
+    .ToArray();
+
+await Task.WhenAll(tasks);
+
+// ListAsync returns all 20, in unspecified order.
+```
+
+## Cancellation
+
+All methods accept a `CancellationToken`. The in-memory implementation checks the token at
+method entry — a cancelled token causes the operation to throw
+`OperationCanceledException` before any mutation. Persistence-backed implementations
+should honour the same contract and forward the token to their I/O.
+
+## Registering a replacement
+
+To swap in a persistence-backed implementation, register it after `AddInMemoryLeases` (or
+instead of it):
+
+```csharp
+services.AddInMemoryLeases();                          // optional baseline
+services.AddSingleton<ILeaseService, MyEfLeaseService>(); // wins by last-registered rule
+```
+
+Or register only the replacement and skip `AddInMemoryLeases` entirely. The interface is
+the only contract consumers (including `LeaseListBlock`) depend on.
 
 ## Related pages
 

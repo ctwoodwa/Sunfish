@@ -2,6 +2,14 @@
 uid: block-businesscases-entity-model
 title: Business Cases — Entity Model
 description: BundleActivationRecord and TenantEntitlementSnapshot — the persistence and read-model shapes of the business-cases block.
+keywords:
+  - sunfish
+  - businesscases
+  - bundle-activation
+  - entitlement-snapshot
+  - entity-model
+  - multitenancy
+  - ef-core
 ---
 
 # Business Cases — Entity Model
@@ -84,6 +92,39 @@ TenantId  <──  BundleActivationRecord  ── references ──>  BundleKey 
 
 TenantEntitlementSnapshot  derived from  BundleActivationRecord + BundleManifest
 ```
+
+## EF Core mapping
+
+`BundleActivationRecordEntityConfiguration` maps the record to a stable table named
+`businesscases_bundle_activation_records`. Key mappings:
+
+| Column / index | Notes |
+|---|---|
+| `Id` | `BundleActivationRecordId` → `string` via value converter, max length 64. |
+| `TenantId` | `TenantId` → `string` via value converter, max length 64, required. |
+| `BundleKey` | `string`, max length 256, required. |
+| `Edition` | `string`, max length 64, required. |
+| `ActivatedAt` | required `DateTimeOffset`. |
+| `DeactivatedAt` | nullable `DateTimeOffset`. |
+| Unique index `ix_businesscases_activation_tenant_bundle` | `(TenantId, BundleKey)` — enforces "one record per (tenant, bundle)" at the database level. |
+
+Because the entity module applies configurations from the containing assembly, any new
+EF-mapped record declared inside `Sunfish.Blocks.BusinessCases.Data` is picked up
+automatically without further wiring.
+
+## Snapshot semantics
+
+`TenantEntitlementSnapshot` is a _read-through_ computation, not a cached projection. Each
+call to `IBusinessCaseService.GetSnapshotAsync`:
+
+1. Fetches the active `BundleActivationRecord` for the tenant.
+2. Looks up the bundle manifest from `IBundleCatalog`.
+3. Unions `RequiredModules` with `EditionMappings[edition]` for `ActiveModules`.
+4. Copies `FeatureDefaults` verbatim into `ResolvedFeatureValues`.
+5. Stamps `ResolvedAt` with the current UTC instant.
+
+The snapshot is cheap to compute and does not mutate any state. Treat it as a
+point-in-time value; pin it in a variable if you need to render it twice.
 
 ## Related pages
 

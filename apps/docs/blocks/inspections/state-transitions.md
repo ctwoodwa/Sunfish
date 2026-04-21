@@ -2,6 +2,13 @@
 uid: block-inspections-state-transitions
 title: Inspections — State Transitions
 description: Allowed lifecycle transitions for Inspection and Deficiency entities, and the service methods that perform them.
+keywords:
+  - sunfish
+  - inspections
+  - state-machine
+  - inspection-phase
+  - deficiency-status
+  - lifecycle
 ---
 
 # Inspections — State Transitions
@@ -80,6 +87,42 @@ captured every response they plan to record.
 `GenerateReportAsync` is a read-through operation. It does not change the inspection's
 phase, does not mutate deficiency status, and can be called repeatedly — each call yields
 a new `InspectionReport` snapshot that reflects the state at generation time.
+
+## Worked example — an illegal transition
+
+Pinned by `StartAsync_WhenNotScheduled_ThrowsInvalidOperationException`:
+
+```csharp
+var (svc, template) = await MakeServiceWithTemplate();
+var inspection = await svc.ScheduleAsync(MakeScheduleRequest(template.Id));
+await svc.StartAsync(inspection.Id);
+
+// Inspection is now InProgress — starting again throws.
+await Assert.ThrowsAsync<InvalidOperationException>(
+    () => svc.StartAsync(inspection.Id).AsTask());
+```
+
+Similarly, `CompleteAsync_WhenNotInProgress_ThrowsInvalidOperationException` asserts that
+completing a `Scheduled` inspection throws. The service never enters a half-transitioned
+state — either the transition succeeds atomically and the returned record reflects the new
+phase, or it throws and the stored record is untouched.
+
+## Test-surface cross-reference
+
+| Test | What it pins |
+|---|---|
+| `ScheduleAsync_CreatesInspection_InScheduledPhase` | `ScheduleAsync` always produces `Scheduled`. |
+| `StartAsync_Scheduled_TransitionsToInProgress_AndSetsStartedAtUtc` | `Scheduled → InProgress` with `StartedAtUtc` stamped. |
+| `CompleteAsync_InProgress_TransitionsToCompleted_AndSetsCompletedAtUtc` | `InProgress → Completed` with `CompletedAtUtc` stamped. |
+| `RecordResponseAsync_AppendsToResponses` | Response append is idempotent on phase. |
+| `ConcurrentRecordResponseAsync_OnSameInspection_AreSerializedNoLostResponses` | Per-inspection lock prevents lost responses. |
+
+## Deferred transitions
+
+The `Cancelled` value is reserved but no service method drives it today. When a future pass
+adds a `CancelAsync`, the allowed transitions are expected to be:
+`Scheduled → Cancelled` and `InProgress → Cancelled`; `Completed → Cancelled` must remain
+forbidden.
 
 ## Related pages
 

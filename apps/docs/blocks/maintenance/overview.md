@@ -2,6 +2,14 @@
 uid: block-maintenance-overview
 title: Maintenance — Overview
 description: Vendors, maintenance requests, RFQ / quote flow, and work orders for Sunfish-hosted property apps.
+keywords:
+  - sunfish
+  - maintenance
+  - blocks
+  - vendors
+  - work-orders
+  - rfq
+  - property-management
 ---
 
 # Maintenance — Overview
@@ -74,9 +82,76 @@ Registers `InMemoryMaintenanceService` as the singleton `IMaintenanceService`. S
 for development, tests, and demos. Replace with a persistence-backed implementation for
 production.
 
+## End-to-end sketch
+
+```csharp
+using Sunfish.Blocks.Maintenance.DependencyInjection;
+using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Blocks.Maintenance.Services;
+using Sunfish.Foundation.Assets.Common;
+
+services.AddInMemoryMaintenance();
+
+var svc = serviceProvider.GetRequiredService<IMaintenanceService>();
+
+// 1. Register a vendor.
+var plumber = await svc.CreateVendorAsync(new CreateVendorRequest
+{
+    DisplayName = "Ace Plumbing",
+    ContactEmail = "ops@ace-plumbing.example",
+    Specialty = VendorSpecialty.Plumbing,
+});
+
+// 2. A tenant submits a request — always starts in Submitted.
+var request = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
+{
+    PropertyId = new EntityId("property", "acme", "3B"),
+    RequestedByDisplayName = "Jane Tenant",
+    Description = "Leaky kitchen faucet",
+    Priority = MaintenancePriority.Normal,
+    RequestedDate = new DateOnly(2026, 5, 1),
+});
+
+// 3. Review, approve, send RFQ, accept quote → fan-out spawns a work order.
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.UnderReview);
+await svc.TransitionRequestAsync(request.Id, MaintenanceRequestStatus.Approved);
+
+var rfq = await svc.SendRfqAsync(new SendRfqRequest
+{
+    RequestId = request.Id,
+    InvitedVendors = [plumber.Id],
+    ResponseDueDate = new DateOnly(2026, 5, 15),
+    Scope = "Replace kitchen faucet cartridge",
+});
+
+var quote = await svc.SubmitQuoteAsync(new SubmitQuoteRequest
+{
+    VendorId = plumber.Id,
+    RequestId = request.Id,
+    Amount = 180m,
+    ValidUntil = new DateOnly(2026, 6, 1),
+});
+
+await svc.AcceptQuoteAsync(quote.Id);
+// ↑ Atomic: quote → Accepted, any other quotes → Declined, new WorkOrder in Draft.
+```
+
+## Operational invariants at a glance
+
+| Invariant | Enforced by | On violation |
+|---|---|---|
+| Requests start in `Submitted`. | `SubmitRequestAsync`. | (No override.) |
+| Request transitions follow the allowed-target graph. | `TransitionRequestAsync`. | `InvalidOperationException`. |
+| Cancelling an already-terminal request is rejected. | `TransitionRequestAsync`. | Pinned by `TransitionRequest_FromTerminalState_Throws`. |
+| `AcceptQuoteAsync` yields exactly one accepted quote per request. | Per-request lock. | Pinned by `AcceptQuoteAsync_IsAtomic_ConcurrentCallsConvergeToExactlyOneAccepted`. |
+| Work-order transitions follow the allowed-target graph (with OnHold ↔ InProgress toggling). | `TransitionWorkOrderAsync`. | `InvalidOperationException`. |
+| Completing a work order stamps `CompletedDate`. | `TransitionWorkOrderAsync`. | Pinned by `TransitionWorkOrder_ValidPath_DraftToCompleted`. |
+
 ## Related ADRs
 
 - ADR 0015 — Module-Entity Registration (for when the persistence-backed service lands).
+- ADR 0013 — Foundation.Integrations (for vendor-portal dispatch integrations).
+- ADR 0022 — Example catalog + docs taxonomy. Block UID prefix is `block-maintenance-*`.
 
 ## Related pages
 

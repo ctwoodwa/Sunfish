@@ -2,6 +2,12 @@
 uid: block-assets-service-contract
 title: Assets — Service Contract
 description: The Blazor component surface exposed by Sunfish.Blocks.Assets. No standalone service interface is defined in this pass.
+keywords:
+  - sunfish
+  - assets
+  - service-contract
+  - assetcatalogblock
+  - component-api
 ---
 
 # Assets — Service Contract
@@ -43,11 +49,54 @@ No events are raised. The block is read-display only. Editing, uploading, and fi
 interaction flow through the embedded `SunfishFileManager` via its own event model (see the
 [SunfishFileManager component spec](../../component-specs/filemanager/overview.md)).
 
+## Minimal host page
+
+```razor
+@page "/admin/assets"
+@using Sunfish.Blocks.Assets
+@using Sunfish.Blocks.Assets.Models
+
+<h1>Asset catalog</h1>
+
+<AssetCatalogBlock Items="@_records" ShowFileManager="true" />
+
+@code {
+    private IReadOnlyList<AssetRecord> _records = Array.Empty<AssetRecord>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _records = await LoadRecordsAsync();
+    }
+
+    private Task<IReadOnlyList<AssetRecord>> LoadRecordsAsync() => ...;
+}
+```
+
+## Hiding the file manager
+
+Toggling `ShowFileManager="false"` collapses the right-hand pane but the two-column grid is
+still set up — the right column simply renders empty. To reclaim the width, wrap the block
+in a host container that overrides the grid template (the block emits
+`display:grid; grid-template-columns: 2fr 1fr`).
+
+## Test-surface guarantees
+
+The first-pass smoke tests (`AssetCatalogBlockTests.cs`) assert only that the component and
+record types are public and live in the canonical namespaces. This means:
+
+- Namespace moves are a breaking change.
+- Renaming `AssetCatalogBlock` or `AssetRecord` is a breaking change.
+
+Anything else — parameter additions, internal layout tweaks — is fair game in subsequent
+passes so long as existing parameter names and default values are preserved.
+
 ## Planned follow-ups
 
 - A formal `IAssetsService` with query, upload, and link-to-other-block surface.
 - Thumbnail / preview rendering.
 - Asset-level permissions wired to Foundation.Authorization.
+- Row-click/select events and a companion details panel.
+- Integration with a storage-abstraction (`IBlobStore`) for the file-manager side of the view.
 
 ## Related pages
 

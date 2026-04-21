@@ -2,6 +2,12 @@
 uid: block-businesscases-bundle-provisioning-service
 title: Business Cases — Bundle Provisioning Service
 description: The write-side contract for activating and deactivating bundles for a Sunfish tenant.
+keywords:
+  - sunfish
+  - businesscases
+  - provisioning
+  - bundle-activation
+  - admin
 ---
 
 # Business Cases — Bundle Provisioning Service
@@ -84,6 +90,51 @@ seeding is an optimisation rather than a correctness concern.
 `InMemoryBundleProvisioningService` is registered by `AddInMemoryBusinessCases`. It is
 backed by a shared `InMemoryBundleActivationStore` so that `IBundleProvisioningService` and
 `IBusinessCaseService` see consistent state.
+
+The in-memory store is a simple concurrent dictionary keyed by `(TenantId, BundleKey)`;
+activation is idempotent enough for demo and test scenarios but is not durable. Move to a
+persistence-backed implementation for any deployment where bundle state must survive
+process restart.
+
+## Worked example (from test fixtures)
+
+```csharp
+var catalog = new BundleCatalog();
+catalog.Register(new BusinessCaseBundleManifest
+{
+    Key              = "sunfish.bundles.test",
+    Name             = "Test Bundle",
+    Version          = "0.1.0",
+    FeatureDefaults  = new Dictionary<string, string>
+    {
+        ["leases.enabled"]   = "true",
+        ["leases.max-count"] = "50",
+    },
+    EditionMappings  = new Dictionary<string, IReadOnlyList<string>>
+    {
+        ["standard"]   = new[] { "sunfish.blocks.leases" },
+        ["enterprise"] = new[] { "sunfish.blocks.leases", "sunfish.blocks.maintenance" },
+    },
+    RequiredModules  = new[] { "sunfish.blocks.identity" },
+});
+
+var store = new InMemoryBundleActivationStore();
+var prov  = new InMemoryBundleProvisioningService(catalog, store);
+
+// Activate for tenant-a on the standard edition
+await prov.ProvisionAsync(new TenantId("tenant-a"), "sunfish.bundles.test", "standard");
+```
+
+The reverse call — `DeprovisionAsync(tenantId, bundleKey)` — removes (or deactivates)
+the record. Subsequent calls with the same arguments are no-ops.
+
+## Thread safety
+
+`InMemoryBundleProvisioningService` guards all mutations through the store's internal
+dictionary. Concurrent `ProvisionAsync` calls for the same `(tenantId, bundleKey)` resolve
+to exactly one activation record — duplicates are rejected with
+`InvalidOperationException`, which is the same error the contract promises for ordinary
+sequential duplicate calls.
 
 ## Related pages
 

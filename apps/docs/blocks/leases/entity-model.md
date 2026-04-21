@@ -2,6 +2,13 @@
 uid: block-leases-entity-model
 title: Leases — Entity Model
 description: Lease, Unit, Party, Document, and the LeasePhase lifecycle exposed by Sunfish.Blocks.Leases.
+keywords:
+  - sunfish
+  - leases
+  - entity-model
+  - lease-phase
+  - party
+  - lease-state
 ---
 
 # Leases — Entity Model
@@ -104,6 +111,48 @@ Lease           1 ─── N  Document        (follow-up: today Document has no
 
 Today `Document` does not carry a `LeaseId` reference — document association will follow
 in the workflow pass.
+
+## Strong-typed identifiers
+
+Each record uses a dedicated identifier struct. Identifiers are opaque strings; the
+in-memory service uses GUIDs, but a persistence-backed implementation is free to use any
+collision-resistant scheme.
+
+- `LeaseId` — unique identifier for a `Lease`.
+- `PartyId` — unique identifier for a `Party`.
+- `DocumentId` — unique identifier for a `Document`.
+
+`Unit` uses the canonical `EntityId` shape from `Sunfish.Foundation.Assets.Common`
+(`kind:tenant/local`), not a dedicated `UnitId` — units are cross-block assets, not a
+leases-owned concept.
+
+## Usage example (drawn from tests)
+
+The tests pin the minimum shape of a `CreateLeaseRequest`:
+
+```csharp
+var request = new CreateLeaseRequest
+{
+    UnitId      = new EntityId("unit", "test", "unit-1"),
+    Tenants     = [new PartyId("tenant-a")],
+    Landlord    = new PartyId("landlord-x"),
+    StartDate   = new DateOnly(2025, 1, 1),
+    EndDate     = new DateOnly(2025, 12, 31),
+    MonthlyRent = 1500m,
+};
+
+var svc   = new InMemoryLeaseService();
+var lease = await svc.CreateAsync(request);
+
+// lease.Phase is always Draft on the first pass
+```
+
+## Immutability
+
+All records use `required` / `init;` properties. Once constructed they cannot be mutated —
+the future workflow pass will produce new records for phase transitions rather than
+mutating existing ones. This matches the pattern used by `blocks-inspections` and
+`blocks-maintenance`.
 
 ## Related pages
 

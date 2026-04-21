@@ -2,6 +2,12 @@
 uid: block-inspections-service-contract
 title: Inspections — Service Contract
 description: The IInspectionsService public surface — templates, scheduling and executing inspections, recording responses and deficiencies, and generating summary reports.
+keywords:
+  - sunfish
+  - inspections
+  - service-contract
+  - iinspectionsservice
+  - lifecycle
 ---
 
 # Inspections — Service Contract
@@ -97,10 +103,47 @@ inspection does not exist.
 6. **Complete** when the inspector finishes: `CompleteAsync(id)`.
 7. **Generate a report**: `GenerateReportAsync(id)`.
 
+## Concurrency
+
+`InMemoryInspectionsService` uses a per-inspection lock for response recording, so
+concurrent `RecordResponseAsync` calls on the same inspection serialise rather than race.
+The `ConcurrentRecordResponseAsync_OnSameInspection_AreSerializedNoLostResponses` test
+fires 10 concurrent appends and asserts the final `Responses` list has exactly 10 entries.
+Other endpoints protect shared dictionaries with the same strategy; callers can treat the
+service as thread-safe under ordinary mixed workloads.
+
+## Query filters
+
+Several list endpoints accept filter records. Filter semantics:
+
+| Query | Fields | Combinator |
+|---|---|---|
+| `ListInspectionsQuery` | `UnitId?`, `Phase?`, `InspectorName?`, `FromDate?`, `ToDate?` | AND across all non-null fields. |
+| `ListInspectionsQuery.Empty` | — | Returns all inspections. |
+
+The `FromDate` / `ToDate` pair bounds `ScheduledDate` inclusively; pass only one to leave
+the other end open.
+
+## Pass/fail heuristic
+
+`GenerateReportAsync` walks the inspection's responses and scores each against the matching
+checklist item's `Kind`:
+
+- `YesNo` — `"yes"` counts as pass.
+- `PassFail` — `"pass"` counts as pass.
+- `Rating1to5` — numeric value `>= 3` counts as pass.
+- `FreeText`, `Photo` — any non-empty value counts as pass.
+
+`DeficiencyCount` is the total number of deficiencies linked to the inspection (any
+`Severity`, any `Status`). Reports are read-through: regenerate to reflect new responses or
+deficiencies.
+
 ## Default implementation
 
 `InMemoryInspectionsService` is registered by `AddInMemoryInspections`. State is held in
-process; replace with a persistence-backed implementation for production.
+process; replace with a persistence-backed implementation for production. The in-memory
+service keeps dictionaries keyed by each identifier type plus a per-inspection lock
+dictionary for response appends.
 
 ## Related pages
 

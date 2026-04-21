@@ -2,6 +2,14 @@
 uid: block-accounting-quickbooks-iif-export
 title: Accounting — QuickBooks IIF Export
 description: How Sunfish.Blocks.Accounting produces QuickBooks-compatible IIF output from a batch of journal entries.
+keywords:
+  - sunfish
+  - accounting
+  - quickbooks
+  - iif
+  - intuit
+  - export
+  - journal-entry
 ---
 
 # Accounting — QuickBooks IIF Export
@@ -104,6 +112,44 @@ await foreach (var entry in accounting.ListEntriesAsync(new ListEntriesQuery(fro
 var iif = exporter.Export(entries, new QuickBooksExportOptions());
 await File.WriteAllTextAsync("april-export.iif", iif);
 ```
+
+## Multi-line split entries
+
+Entries with more than two lines are supported. The first line becomes the `TRNS` row; every
+subsequent line becomes an `SPL` row. Columns are preserved in input order. For a split entry
+that credits rental revenue and tax payable against a single cash debit, the pinned test
+output looks like:
+
+```
+TRNS   07/01/2025   1000   Split rent with tax   1100.00
+SPL    07/01/2025   4000                         -1000.00
+SPL    07/01/2025   2100                          -100.00
+ENDTRNS
+```
+
+The test `Export_MultiLineEntry_PreservesAllLinesInOrder` verifies this behaviour directly.
+
+## Importing into QuickBooks Desktop
+
+1. Save the returned string to a file with a `.iif` extension (UTF-8 without BOM).
+2. In QuickBooks Desktop, open **File → Utilities → Import → IIF Files**.
+3. Select the file and confirm the import.
+
+QuickBooks surfaces import errors in a dialog and writes a log file; the most common causes
+of rejection are unknown account names (the default `"Unspecified"` avoids this but skips the
+per-line posting) and out-of-range dates. For QBO (QuickBooks Online), use the QBO REST API
+instead — IIF is Desktop-only.
+
+## Interop caveats
+
+- **Localisation.** `MM/dd/yyyy` and invariant-culture `F2` amounts are required by
+  QuickBooks. The exporter ignores the host culture on purpose.
+- **Tab delimiting.** IIF is tab-delimited with no quoting. The exporter replaces tabs,
+  newlines, and carriage returns in `Memo`, `Notes`, and account-code fields with spaces so
+  the row never splits.
+- **Empty batch.** `Export([], options)` emits the three header rows (`!TRNS`, `!SPL`,
+  `!ENDTRNS`) and nothing else. The resulting file is still valid IIF and can be imported
+  with no effect.
 
 ## Related pages
 

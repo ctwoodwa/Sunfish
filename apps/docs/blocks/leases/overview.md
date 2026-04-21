@@ -2,6 +2,14 @@
 uid: block-leases-overview
 title: Leases — Overview
 description: Canonical lease, unit, party, and document records plus a ready-made lease-list Blazor block for property-management apps.
+keywords:
+  - sunfish
+  - leases
+  - blocks
+  - property-management
+  - lease-lifecycle
+  - docusign
+  - blazor
 ---
 
 # Leases — Overview
@@ -68,11 +76,66 @@ services.AddInMemoryLeases();
 Registers `InMemoryLeaseService` as the singleton `ILeaseService`. Suitable for
 development and demo scenarios.
 
+## End-to-end sketch
+
+```csharp
+using Sunfish.Blocks.Leases.DependencyInjection;
+using Sunfish.Blocks.Leases.Models;
+using Sunfish.Blocks.Leases.Services;
+using Sunfish.Foundation.Assets.Common;
+
+services.AddInMemoryLeases();
+
+var svc = serviceProvider.GetRequiredService<ILeaseService>();
+
+// 1. Callers hold their own Party records (party creation is out of scope here).
+var tenantId   = new PartyId("tenant-smith");
+var landlordId = new PartyId("landlord-acme");
+
+// 2. Create a lease — always starts in Draft.
+var lease = await svc.CreateAsync(new CreateLeaseRequest
+{
+    UnitId      = new EntityId("unit", "acme", "3B"),
+    Tenants     = [tenantId],
+    Landlord    = landlordId,
+    StartDate   = new DateOnly(2026, 5, 1),
+    EndDate     = new DateOnly(2027, 4, 30),
+    MonthlyRent = 1800m,
+});
+
+// 3. Retrieve or list.
+var draft = await svc.GetAsync(lease.Id);
+await foreach (var l in svc.ListAsync(new ListLeasesQuery { Phase = LeasePhase.Draft }))
+{
+    // render into LeaseListBlock or a custom view
+}
+```
+
+## Operational invariants at a glance
+
+| Invariant | Enforced by | On violation |
+|---|---|---|
+| `CreateAsync` always produces `LeasePhase.Draft`. | `InMemoryLeaseService.CreateAsync`. | (No override in this pass.) |
+| `Id` is always non-empty on the returned lease. | `InMemoryLeaseService.CreateAsync`. | Pinned by `CreateAsync_AssignsNonEmptyId`. |
+| `null` request throws `ArgumentNullException`. | `CreateAsync`, `ListAsync`. | Pinned by `CreateAsync_ThrowsOnNull_Request` and `ListAsync_ThrowsOnNull_Query`. |
+| `GetAsync` returns `null` for unknown ids rather than throwing. | `InMemoryLeaseService.GetAsync`. | Pinned by `GetAsync_ReturnsNull_WhenIdUnknown`. |
+| Concurrent creates never lose a record. | Thread-safe dictionary in `InMemoryLeaseService`. | Pinned by `ConcurrentCreates_AreAllPersisted` (20 parallel creates → 20 records). |
+
+## Deferred follow-ups
+
+- DocuSign envelope dispatch and signature-state polling (ADR 0013 integration).
+- Phase transitions (`Draft → AwaitingSignature → Executed → Active → Renewed/Terminated`).
+- Document upload, blob-store linking (`IBlobStore`), and e-signature audit trail.
+- Commencement-date triggers, renewal workflows, and termination reason codes.
+- Rent-ledger hookup to `blocks-accounting`.
+- Parties as first-class module entities (persistence-backed party CRUD).
+
 ## Related ADRs
 
 - ADR 0015 — Module-Entity Registration (for when the persistence-backed service lands).
 - ADR 0013 — Foundation.Integrations (DocuSign is the expected signature provider; the
   integration surface sits outside this block).
+- ADR 0022 — Example catalog + docs taxonomy. Block UID prefix is `block-leases-*`.
 
 ## Related pages
 
