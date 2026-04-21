@@ -1,0 +1,48 @@
+@page "/components/layout/splitter/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Splitter / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Splitter / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Splitter/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSplitter</code> divides a region into resizable panes with draggable separators. Set
+            <code>Orientation</code> to <code>SplitterOrientation.Horizontal</code> or <code>Vertical</code>, and
+            nest one or more <code>SunfishSplitterPane</code> children using <code>Size</code>, <code>Min</code>,
+            <code>Max</code>, <code>Resizable</code>, and <code>Collapsible</code> to constrain the layout.
+        </p>
+        <p>
+            Sibling feature demos cover
+            <a href="/components/layout/splitter/horizontal">horizontal</a>,
+            <a href="/components/layout/splitter/vertical">vertical</a>,
+            <a href="/components/layout/splitter/nested">nested</a>,
+            <a href="/components/layout/splitter/events">events</a>,
+            <a href="/components/layout/splitter/keyboard-navigation">keyboard navigation</a>, and
+            <a href="/components/layout/splitter/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row" style="height:300px;">
+            <SunfishSplitter Orientation="SplitterOrientation.Horizontal">
+                <SunfishSplitterPane Size="50%">
+                    <div style="padding:1rem;">Left Pane</div>
+                </SunfishSplitterPane>
+                <SunfishSplitterPane Size="50%">
+                    <div style="padding:1rem;">Right Pane</div>
+                </SunfishSplitterPane>
+            </SunfishSplitter>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Splitter", "Overview"];
+}

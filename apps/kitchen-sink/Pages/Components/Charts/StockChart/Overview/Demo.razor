@@ -1,0 +1,39 @@
+@page "/components/charts/stock-chart/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>StockChart / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="StockChart / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/StockChart/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStockChart</code> is a specialized chart for financial time-series data —
+            OHLC and candlestick series, a navigator for range selection, and a crosshair for
+            value inspection. The component is style-driven; pass <code>Style</code> or
+            <code>Class</code> to size it inside your layout.
+        </p>
+        <p>
+            This overview shows the default rendering with sample data. Separate demo pages cover
+            <a href="/components/charts/stock-chart/period-selector">period selector</a>,
+            <a href="/components/charts/stock-chart/multiple-panes">multiple panes</a>,
+            <a href="/components/charts/stock-chart/navigator">navigator</a>, and
+            <a href="/components/charts/stock-chart/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishStockChart Style="height:400px; width:100%;" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Charts", "StockChart", "Overview"];
+}

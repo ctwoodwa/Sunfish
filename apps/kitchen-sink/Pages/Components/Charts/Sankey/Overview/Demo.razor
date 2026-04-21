@@ -1,0 +1,77 @@
+@page "/components/charts/sankey/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Sankey / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Sankey / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Sankey/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSankey</code> visualizes flow quantities between nodes using proportionally
+            weighted paths. Supply a <code>SankeyData</code> object containing <code>Nodes</code> and
+            <code>Links</code> — each link references a <code>SourceId</code> and <code>TargetId</code>
+            and carries a <code>Value</code> that drives the ribbon width. Chart-level parameters
+            <code>Title</code>, <code>Height</code>, and the <code>OnNodeClick</code> callback round out
+            the primary API.
+        </p>
+        <p>
+            This overview shows a basic energy-flow diagram. Separate demo pages cover
+            <a href="/components/charts/sankey/labels">labels</a>,
+            <a href="/components/charts/sankey/tooltip">tooltip</a>,
+            <a href="/components/charts/sankey/legend">legend</a>, and
+            <a href="/components/charts/sankey/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishSankey Data="_basicData"
+                           Title="Energy Flow"
+                           Height="350px"
+                           OnNodeClick="HandleNodeClick" />
+        </div>
+        @if (_selectedNode != null)
+        {
+            <div style="margin-top:12px; padding:8px 12px; background:#e3f2fd; border-radius:4px; font-size:13px;">
+                Selected node: <strong>@(_selectedNode.Label ?? _selectedNode.Id)</strong>
+            </div>
+        }
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Charts", "Sankey", "Overview"];
+
+    private SankeyNode? _selectedNode;
+
+    private Task HandleNodeClick(SankeyNode node)
+    {
+        _selectedNode = node;
+        return Task.CompletedTask;
+    }
+
+    private readonly SankeyData _basicData = new()
+    {
+        Nodes = new()
+        {
+            new SankeyNode { Id = "solar", Label = "Solar" },
+            new SankeyNode { Id = "wind", Label = "Wind" },
+            new SankeyNode { Id = "coal", Label = "Coal" },
+            new SankeyNode { Id = "electricity", Label = "Electricity" },
+            new SankeyNode { Id = "heat", Label = "Heat" },
+        },
+        Links = new()
+        {
+            new SankeyLink { SourceId = "solar", TargetId = "electricity", Value = 120 },
+            new SankeyLink { SourceId = "wind", TargetId = "electricity", Value = 80 },
+            new SankeyLink { SourceId = "coal", TargetId = "electricity", Value = 200 },
+            new SankeyLink { SourceId = "coal", TargetId = "heat", Value = 100 },
+        }
+    };
+}

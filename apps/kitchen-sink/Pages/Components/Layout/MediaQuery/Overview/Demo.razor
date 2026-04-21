@@ -1,0 +1,34 @@
+@page "/components/layout/mediaquery/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MediaQuery / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MediaQuery / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/MediaQuery/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMediaQuery</code> observes the current viewport and exposes a responsive rendering context
+            to its <code>ChildContent</code>. Use it to show and hide content based on breakpoint, or to feed the
+            active breakpoint into downstream components that adapt their layout. It is a logical component — it
+            renders its children but does not emit a visual wrapper of its own.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishMediaQuery>
+                <SunfishAlert Severity="AlertSeverity.Info">Responsive content area</SunfishAlert>
+            </SunfishMediaQuery>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "MediaQuery", "Overview"];
+}

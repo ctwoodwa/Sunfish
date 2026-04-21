@@ -1,0 +1,52 @@
+@page "/components/layout/gridlayout/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>GridLayout / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="GridLayout / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/GridLayout/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishGridLayout</code> wraps CSS Grid with a declarative Blazor API. Set tracks via the
+            <code>Columns</code> and <code>Rows</code> string parameters (or the nested <code>ColumnDefinitions</code>
+            / <code>RowDefinitions</code> collections), control gutters with <code>ColumnSpacing</code> and
+            <code>RowSpacing</code>, and place children via <code>SunfishGridLayoutItem</code> using
+            <code>Row</code> / <code>Column</code> / <code>RowSpan</code> / <code>ColumnSpan</code>.
+        </p>
+        <p>
+            Sibling feature demos cover
+            <a href="/components/layout/gridlayout/gaps">gaps</a> and
+            <a href="/components/layout/gridlayout/alignment">alignment</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <SunfishGridLayout Columns="200px 1fr 200px" Rows="auto 1fr auto" ColumnSpacing="16px" RowSpacing="8px">
+            <SunfishGridLayoutItem Row="1" Column="1" ColumnSpan="3">
+                <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Header (spans 3 columns)</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="1">
+                <div style="background:var(--sf-color-info-light);padding:12px;border-radius:4px;">Sidebar</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="2">
+                <div style="background:var(--sf-color-success-light);padding:12px;border-radius:4px;">Content</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="2" Column="3">
+                <div style="background:var(--sf-color-info-light);padding:12px;border-radius:4px;">Aside</div>
+            </SunfishGridLayoutItem>
+            <SunfishGridLayoutItem Row="3" Column="1" ColumnSpan="3">
+                <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Footer (spans 3 columns)</div>
+            </SunfishGridLayoutItem>
+        </SunfishGridLayout>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "GridLayout", "Overview"];
+}

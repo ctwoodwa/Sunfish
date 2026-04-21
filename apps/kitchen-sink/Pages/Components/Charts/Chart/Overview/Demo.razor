@@ -1,0 +1,87 @@
+@page "/components/charts/chart/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chart / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chart / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Chart/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChart</code> renders a categorical or numeric chart composed of one or more
+            <code>SunfishChartSeries</code> children. Each series binds to a data collection through
+            <code>Data</code>, <code>Field</code>, and <code>CategoryField</code> (or <code>XField</code> /
+            <code>YField</code> for scatter and bubble). The <code>Type</code> parameter selects a
+            <code>ChartSeriesType</code> — Line, Column, Bar, Area, Pie, Donut, Scatter, ScatterLine, or Bubble.
+            Chart-level options like <code>Title</code>, <code>Height</code>, <code>ShowLegend</code>, and
+            <code>ShowTooltips</code> control the surrounding chrome.
+        </p>
+        <p>
+            This overview demonstrates the two most common configurations — a multi-series line chart and a
+            side-by-side column chart. Separate demo pages cover
+            <a href="/components/charts/chart/line-charts-line">line charts</a>,
+            <a href="/components/charts/chart/bar-charts-column">column charts</a>,
+            <a href="/components/charts/chart/pie-charts-pie">pie charts</a>, and
+            <a href="/components/charts/chart/events-click">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishChart Title="Monthly Revenue" Height="350px">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_salesData"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Line"
+                                        Color="#4e79a7" />
+                    <SunfishChartSeries Name="Profit"
+                                        Data="_salesData"
+                                        Field="Profit"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Line"
+                                        Color="#e15759" />
+                </SunfishChart>
+            </div>
+
+            <div class="demo-row">
+                <SunfishChart Title="Revenue vs Profit" Height="350px">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_salesData"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Column"
+                                        Color="#4e79a7" />
+                    <SunfishChartSeries Name="Profit"
+                                        Data="_salesData"
+                                        Field="Profit"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Column"
+                                        Color="#59a14f" />
+                </SunfishChart>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Charts", "Chart", "Overview"];
+
+    private record SalesData(string Month, double Revenue, double Profit);
+
+    private readonly List<SalesData> _salesData =
+    [
+        new("Jan", 12000, 3200),
+        new("Feb", 15000, 4100),
+        new("Mar", 13500, 3800),
+        new("Apr", 17000, 5200),
+        new("May", 19500, 6100),
+        new("Jun", 21000, 7000),
+    ];
+}

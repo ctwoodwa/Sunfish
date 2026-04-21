@@ -1,0 +1,43 @@
+@page "/components/layout/tilelayout/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TileLayout / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TileLayout / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTileLayout</code> arranges dashboard-style tiles on a responsive grid. Each tile can be
+            reordered and resized interactively, making it a good fit for configurable home screens and KPI
+            dashboards. Typical parameters control the column count, row height, and drag/resize behaviour on
+            child tiles.
+        </p>
+        <p>
+            Sibling feature demos cover
+            <a href="/components/layout/tilelayout/draggable">draggable</a>,
+            <a href="/components/layout/tilelayout/resizable">resizable</a>,
+            <a href="/components/layout/tilelayout/columns-and-rows">columns &amp; rows</a>,
+            <a href="/components/layout/tilelayout/state">state</a>,
+            <a href="/components/layout/tilelayout/events">events</a>,
+            <a href="/components/layout/tilelayout/keyboard-navigation">keyboard navigation</a>, and
+            <a href="/components/layout/tilelayout/rtl">RTL</a>.
+        </p>
+        @* TODO: Flesh out a richer Overview example once the SunfishTileLayout child-tile API is stabilised. *@
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishTileLayout Style="min-height:300px;" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "TileLayout", "Overview"];
+}
