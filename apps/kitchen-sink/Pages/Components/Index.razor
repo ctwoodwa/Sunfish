@@ -34,7 +34,48 @@
             </div>
         </section>
     }
+
+    <section class="components-landing__family" id="aspirational">
+        <h2>Aspirational <span class="components-landing__count">@_aspirational.Length</span></h2>
+        <p class="components-landing__note">
+            Planned components tracked in the catalog for cross-provider parity but
+            not yet implemented in the Sunfish Blazor adapter. Listed here for visibility.
+        </p>
+        <div class="components-landing__grid">
+            @foreach (var a in _aspirational)
+            {
+                <div class="components-landing__card components-landing__card--aspirational">
+                    <div class="components-landing__card-title">
+                        @a.Name <span class="components-landing__badge">planned</span>
+                    </div>
+                    <div class="components-landing__card-desc">
+                        <code>@a.TelerikEquivalent</code> — @a.Family
+                    </div>
+                </div>
+            }
+        </div>
+    </section>
 </div>
+
+@code {
+    private record AspirationalEntry(string Name, string Family, string TelerikEquivalent);
+
+    private static readonly AspirationalEntry[] _aspirational =
+    [
+        new("StackLayout", "layout", "TelerikStackLayout"),
+        new("PanelBar", "navigation", "TelerikPanelBar"),
+        new("Pager", "navigation", "TelerikPager"),
+        new("DropDownButton", "buttons", "TelerikDropDownButton"),
+        new("Sparkline", "charts", "TelerikSparkline"),
+        new("Heatmap", "charts", "TelerikHeatmap"),
+        new("PopupBox", "feedback", "TelerikPopupBox"),
+        new("ImageEditor", "editor", "TelerikImageEditor"),
+        new("FontIcon", "icons", "TelerikFontIcon"),
+        new("ReportingIntegration", "integrations", "Telerik Reporting"),
+        new("Grid AISmartBox", "smart-ai", "Grid.AISmartBox (embedded)"),
+        new("Chart AISmartBox", "smart-ai", "Chart.AISmartBox (embedded)"),
+    ];
+}
 
 <style>
     .components-landing { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
@@ -79,5 +120,24 @@
         color: var(--sunfish-muted, #6b7280);
         display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
         overflow: hidden;
+    }
+    .components-landing__card--aspirational {
+        cursor: not-allowed; opacity: .75;
+        background: var(--sunfish-card-bg-muted, #fafafa);
+    }
+    .components-landing__card--aspirational:hover {
+        border-color: var(--sunfish-border, #e5e7eb);
+        box-shadow: none; transform: none;
+    }
+    .components-landing__badge {
+        font-size: .6875rem; font-weight: 500;
+        color: var(--sunfish-muted, #6b7280);
+        background: var(--sunfish-chip-bg, #f3f4f6);
+        padding: .0625rem .375rem; border-radius: 999px;
+        margin-left: .25rem; vertical-align: middle;
+    }
+    .components-landing__note {
+        color: var(--sunfish-muted, #6b7280);
+        font-size: .875rem; margin: -.25rem 0 .75rem;
     }
 </style>
