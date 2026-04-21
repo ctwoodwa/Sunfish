@@ -1,0 +1,171 @@
+@page "/components/forms/listbox/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>ListBox / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListBox / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ListBox/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListBox&lt;TItem&gt;</code> exposes five events — listen to the unified
+            <code>OnActionClick</code> to observe every toolbar click (with an
+            <code>IsCancelled</code> escape hatch), or subscribe to the per-action events
+            <code>OnReorder</code>, <code>OnRemove</code>, <code>OnTransfer</code>, and
+            <code>OnDrop</code>.
+        </p>
+        <ul>
+            <li><code>OnActionClick</code> — fires first for every toolbar action; setting
+                <code>args.IsCancelled = true</code> suppresses the follow-up event.</li>
+            <li><code>OnReorder</code> — <code>MoveUp</code> / <code>MoveDown</code>.</li>
+            <li><code>OnRemove</code> — <code>Remove</code>.</li>
+            <li><code>OnTransfer</code> — any of the four transfer tools; includes
+                <code>DestinationListBoxId</code>.</li>
+            <li><code>OnDrop</code> — fires from the source ListBox after a connected-pair drop.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 360px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:.75rem;">
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                    <div>
+                        <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Source (toolbar host)</div>
+                        <SunfishListBox @ref="_src"
+                                        TItem="Country"
+                                        Id="lb-src"
+                                        Data="@_source"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        SelectionMode="ListBoxSelectionMode.Multiple"
+                                        @bind-SelectedItems="_sourceSelected"
+                                        Connected="lb-dst"
+                                        Toolbar="true"
+                                        DraggableConnected="true"
+                                        OnActionClick="HandleActionClick"
+                                        OnReorder="HandleReorder"
+                                        OnRemove="HandleRemove"
+                                        OnTransfer="HandleTransfer"
+                                        OnDrop="HandleDrop"
+                                        Width="220px"
+                                        Height="240px" />
+                    </div>
+                    <div>
+                        <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Destination</div>
+                        <SunfishListBox @ref="_dst"
+                                        TItem="Country"
+                                        Id="lb-dst"
+                                        Data="@_destination"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        SelectionMode="ListBoxSelectionMode.Multiple"
+                                        @bind-SelectedItems="_destinationSelected"
+                                        Connected="lb-src"
+                                        DraggableConnected="true"
+                                        Width="220px"
+                                        Height="240px" />
+                    </div>
+                </div>
+
+                <label style="display:flex; gap:.5rem; align-items:center; font-size:.85rem;">
+                    <input type="checkbox" @bind="_blockRemove" />
+                    Cancel <code>OnActionClick</code> for <code>Remove</code> (blocks
+                    <code>OnRemove</code>)
+                </label>
+
+                <div>
+                    <button type="button" @onclick="ClearLog">Clear log</button>
+                </div>
+            </div>
+
+            <aside style="border:1px solid #ddd; border-radius:4px; background:#fafafa; height:420px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid #ddd;">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.78rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — click a toolbar button or drag an item)</li>
+                    }
+                    else
+                    {
+                        @foreach (var e in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@e.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@e.Event</strong> — @e.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ListBox", "Events"];
+
+    private SunfishListBox<Country>? _src;
+    private SunfishListBox<Country>? _dst;
+
+    private IEnumerable<Country> _sourceSelected = new List<Country>();
+    private IEnumerable<Country> _destinationSelected = new List<Country>();
+
+    private List<Country> _source = new()
+    {
+        new(1, "United States"),
+        new(2, "Canada"),
+        new(3, "United Kingdom"),
+        new(4, "Germany"),
+        new(5, "France"),
+        new(6, "Finland"),
+    };
+    private List<Country> _destination = new();
+
+    private bool _blockRemove;
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void HandleActionClick(ListBoxActionClickEventArgs<Country> args)
+    {
+        if (_blockRemove && args.Tool == ListBoxToolName.Remove)
+        {
+            args.IsCancelled = true;
+            Log("OnActionClick", $"{args.Tool} IsCancelled=true (suppressed)");
+            return;
+        }
+        Log("OnActionClick", $"{args.Tool} — {args.Items.Count} item(s)");
+    }
+
+    private void HandleReorder(ListBoxReorderEventArgs<Country> args)
+        => Log("OnReorder", $"{args.Items.Count} item(s) from {args.FromIndex} to {args.ToIndex}");
+
+    private void HandleRemove(ListBoxRemoveEventArgs<Country> args)
+        => Log("OnRemove", $"{args.Items.Count} item(s): {string.Join(", ", args.Items.Select(c => c.Name))}");
+
+    private void HandleTransfer(ListBoxTransferEventArgs<Country> args)
+        => Log("OnTransfer", $"{args.Tool} → {args.DestinationListBoxId} ({args.Items.Count} item(s))");
+
+    private void HandleDrop(ListBoxDropEventArgs<Country> args)
+        => Log("OnDrop", $"→ {args.DestinationListBoxId} at index {args.DestinationIndex?.ToString() ?? "(end)"} ({args.Items.Count} item(s))");
+
+    private void Log(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private record Country(int Id, string Name);
+}

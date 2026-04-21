@@ -1,123 +1,123 @@
+@typeparam TItem
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses(ListBoxCss())"
-     style="@CombineStyles(HeightStyle())"
-     role="listbox"
-     aria-multiselectable="@((SelectionMode == ListBoxSelectionMode.Multiple).ToString().ToLowerInvariant())"
+<div class="@RootCss()"
+     style="@CombineStyles(RootStyle())"
+     id="@Id"
      @attributes="AdditionalAttributes">
 
-    @if (Data is not null)
+    @if (EffectiveToolbarPosition == ListBoxToolBarPosition.Top)
     {
-        @foreach (var item in Data)
-        {
-            var isSelected = IsItemSelected(item);
-            <div class="@ItemCss(isSelected)"
-                 role="option"
-                 aria-selected="@isSelected.ToString().ToLowerInvariant()"
-                 @onclick="() => HandleSelect(item)">
-                @if (ItemTemplate is not null)
-                {
-                    @ItemTemplate(item)
-                }
-                else
-                {
-                    <span class="sf-listbox__item-text">@GetFieldValue(item, TextField)</span>
-                }
-            </div>
-        }
+        @RenderToolbar()
     }
-    else if (!string.IsNullOrEmpty(Placeholder))
+
+    <div class="sf-listbox__body-row"
+         style="display:flex; gap:.5rem; align-items:stretch;">
+
+        @if (EffectiveToolbarPosition == ListBoxToolBarPosition.Left)
+        {
+            @RenderToolbar()
+        }
+
+        <div class="sf-listbox__list"
+             role="listbox"
+             aria-multiselectable="@((SelectionMode == ListBoxSelectionMode.Multiple).ToString().ToLowerInvariant())"
+             aria-label="@AriaLabel"
+             aria-labelledby="@AriaLabelledBy"
+             style="@ListStyle()"
+             @ondragover="HandleDragOver"
+             @ondragover:preventDefault="_dragActive"
+             @ondrop="HandleDropOnList"
+             @ondrop:preventDefault="_dragActive">
+
+            @if (Data is not null && Data.Any())
+            {
+                var idx = 0;
+                @foreach (var item in Data)
+                {
+                    var capturedIdx = idx;
+                    var isSelected = IsItemSelected(item);
+                    var isDisabled = IsItemDisabled(item);
+                    var itemId = $"{_listId}-opt-{capturedIdx}";
+
+                    <div class="@ItemCss(isSelected, isDisabled)"
+                         id="@itemId"
+                         role="option"
+                         aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                         aria-disabled="@isDisabled.ToString().ToLowerInvariant()"
+                         draggable="@(DraggableConnected && !isDisabled ? "true" : "false")"
+                         @ondragstart="@(e => HandleDragStart(e, item, capturedIdx))"
+                         @ondragover="@(e => HandleDragOverItem(e, capturedIdx))"
+                         @ondragover:preventDefault="_dragActive"
+                         @ondrop="@(e => HandleDropOnItem(e, capturedIdx))"
+                         @ondrop:preventDefault="_dragActive"
+                         @ondragend="HandleDragEnd"
+                         @onclick="@(e => HandleSelect(e, item))">
+
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(item)
+                        }
+                        else
+                        {
+                            <span class="sf-listbox__item-text">@GetFieldValue(item, TextField)</span>
+                        }
+                    </div>
+                    idx++;
+                }
+            }
+            else if (NoDataTemplate is not null)
+            {
+                <div class="sf-listbox__nodata">@NoDataTemplate</div>
+            }
+            else if (!string.IsNullOrEmpty(Placeholder))
+            {
+                <div class="sf-listbox__placeholder">@Placeholder</div>
+            }
+        </div>
+
+        @if (EffectiveToolbarPosition == ListBoxToolBarPosition.Right)
+        {
+            @RenderToolbar()
+        }
+    </div>
+
+    @if (EffectiveToolbarPosition == ListBoxToolBarPosition.Bottom)
     {
-        <div class="sf-listbox__placeholder">@Placeholder</div>
+        @RenderToolbar()
     }
 </div>
 
 @code {
-    [Parameter] public IEnumerable<object>? Data { get; set; }
-    [Parameter] public object? Value { get; set; }
-    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
-    [Parameter] public IEnumerable<object>? SelectedItems { get; set; }
-    [Parameter] public EventCallback<IEnumerable<object>?> SelectedItemsChanged { get; set; }
-    [Parameter] public string TextField { get; set; } = "Text";
-    [Parameter] public string ValueField { get; set; } = "Value";
-    [Parameter] public ListBoxSelectionMode SelectionMode { get; set; } = ListBoxSelectionMode.Single;
-    [Parameter] public string? Height { get; set; } = "200px";
-    [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public bool Reorderable { get; set; }
-    [Parameter] public bool Draggable { get; set; }
-    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
-    [Parameter] public string? Placeholder { get; set; }
-
-    private List<object> _selectedItems = new();
-
-    protected override void OnParametersSet()
+    private RenderFragment RenderToolbar() => builder =>
     {
-        if (SelectedItems is not null)
+        if (!Toolbar || EffectiveTools.Count == 0) return;
+
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "sf-listbox__toolbar");
+        builder.AddAttribute(2, "role", "toolbar");
+        builder.AddAttribute(3, "style",
+            EffectiveToolbarPosition is ListBoxToolBarPosition.Top or ListBoxToolBarPosition.Bottom
+                ? "display:flex; gap:.25rem; flex-direction:row;"
+                : "display:flex; gap:.25rem; flex-direction:column;");
+
+        var seq = 10;
+        foreach (var tool in EffectiveTools)
         {
-            _selectedItems = SelectedItems.ToList();
-        }
-        else if (Value is not null && _selectedItems.Count == 0)
-        {
-            _selectedItems = new List<object> { Value };
-        }
-    }
-
-    private string ListBoxCss()
-    {
-        var css = "mar-listbox";
-        if (!Enabled) css += " mar-listbox--disabled";
-        return css;
-    }
-
-    private string? HeightStyle()
-    {
-        return !string.IsNullOrEmpty(Height) ? $"height:{Height};overflow-y:auto" : null;
-    }
-
-    private string ItemCss(bool isSelected)
-    {
-        var css = "mar-listbox__item";
-        if (isSelected) css += " mar-listbox__item--selected";
-        return css;
-    }
-
-    private bool IsItemSelected(object item)
-    {
-        var itemValue = GetFieldValue(item, ValueField);
-        return _selectedItems.Any(s => GetFieldValue(s, ValueField) == itemValue);
-    }
-
-    private async Task HandleSelect(object item)
-    {
-        if (!Enabled) return;
-
-        if (SelectionMode == ListBoxSelectionMode.Single)
-        {
-            _selectedItems = new List<object> { item };
-            Value = item;
-            await ValueChanged.InvokeAsync(item);
-        }
-        else
-        {
-            var itemValue = GetFieldValue(item, ValueField);
-            var existing = _selectedItems.FirstOrDefault(s => GetFieldValue(s, ValueField) == itemValue);
-
-            if (existing is not null)
-            {
-                _selectedItems.Remove(existing);
-            }
-            else
-            {
-                _selectedItems.Add(item);
-            }
+            var capturedTool = tool;
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "class", "sf-listbox__tool");
+            builder.AddAttribute(seq++, "title", GetToolLabel(capturedTool));
+            builder.AddAttribute(seq++, "aria-label", GetToolLabel(capturedTool));
+            builder.AddAttribute(seq++, "disabled", !Enabled);
+            builder.AddAttribute(seq++, "onclick",
+                Microsoft.AspNetCore.Components.EventCallback.Factory.Create(
+                    this, async () => await InvokeToolAsync(capturedTool)));
+            builder.AddContent(seq++, GetToolGlyph(capturedTool));
+            builder.CloseElement();
         }
 
-        await SelectedItemsChanged.InvokeAsync(_selectedItems);
-    }
-
-    private string GetFieldValue(object item, string fieldName)
-    {
-        var prop = item.GetType().GetProperty(fieldName);
-        return prop?.GetValue(item)?.ToString() ?? "";
-    }
+        builder.CloseElement();
+    };
 }
