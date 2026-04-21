@@ -26,8 +26,8 @@ components:
 
   smart-ai:
     aiprompt:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishAIPrompt
       telerik-equivalent: TelerikAIPrompt
       examples:
         - overview
@@ -37,8 +37,8 @@ components:
         - localization
         - keyboard-navigation
     chatui:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishChat
       telerik-equivalent: TelerikChat
       examples:
         - overview
@@ -48,22 +48,22 @@ components:
         - keyboard-navigation
         - rtl
     promptbox:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishPromptBox
       telerik-equivalent: TelerikPromptBox
       examples:
         - overview
     speechtotextbutton:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishSpeechToTextButton
       telerik-equivalent: TelerikSpeechToTextButton
       examples:
         - overview
         - events
         - configuration
     smartpastebutton:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishSmartPasteButton
       telerik-equivalent: TelerikSmartPasteButton
       examples:
         - overview
@@ -112,8 +112,9 @@ components:
         - gaps
         - alignment
     stacklayout:
-      status: sunfish-implemented
-      sunfish-component: SunfishStackLayout
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikStackLayout
       examples:
         - overview
         - orientation
@@ -181,8 +182,9 @@ components:
         - keyboard-navigation
         - rtl
     panelbar:
-      status: sunfish-implemented
-      sunfish-component: SunfishPanelBar
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikPanelBar
       examples:
         - overview
         - data-binding
@@ -230,8 +232,9 @@ components:
         - stepper-template
         - keyboard-navigation
     pager:
-      status: sunfish-implemented
-      sunfish-component: SunfishPager
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikPager
       examples:
         - overview
         - events
@@ -240,7 +243,7 @@ components:
         - input
     toolbar:
       status: sunfish-implemented
-      sunfish-component: SunfishToolBar
+      sunfish-component: SunfishToolbar
       examples:
         - overview
         - templates
@@ -271,8 +274,9 @@ components:
         - events
         - keyboard-navigation
     dropdownbutton:
-      status: sunfish-implemented
-      sunfish-component: SunfishDropDownButton
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikDropDownButton
       examples:
         - overview
         - appearance
@@ -304,7 +308,7 @@ components:
   editors:
     autocomplete:
       status: sunfish-implemented
-      sunfish-component: SunfishAutoComplete
+      sunfish-component: SunfishAutocomplete
       examples:
         - overview
         - virtualization
@@ -367,7 +371,7 @@ components:
         - rtl
     checkbox:
       status: sunfish-implemented
-      sunfish-component: SunfishCheckBox
+      sunfish-component: SunfishCheckbox
       examples:
         - overview
         - indeterminate-state
@@ -413,7 +417,7 @@ components:
         - rtl
     numerictextbox:
       status: sunfish-implemented
-      sunfish-component: SunfishNumericTextBox
+      sunfish-component: SunfishNumericInput
       examples:
         - overview
         - format
@@ -443,7 +447,7 @@ components:
         - rtl
     maskedtextbox:
       status: sunfish-implemented
-      sunfish-component: SunfishMaskedTextBox
+      sunfish-component: SunfishMaskedInput
       examples:
         - overview
         - events
@@ -555,7 +559,7 @@ components:
         - rtl
     fileselect:
       status: sunfish-implemented
-      sunfish-component: SunfishFileSelect
+      sunfish-component: SunfishFileUpload
       examples:
         - overview
         - events
@@ -920,8 +924,8 @@ components:
         - legend
         - events
     sankey:
-      status: aspirational
-      sunfish-component: null
+      status: sunfish-implemented
+      sunfish-component: SunfishSankey
       telerik-equivalent: TelerikSankey
       examples:
         - overview
@@ -976,8 +980,9 @@ components:
         - events
         - rtl
     popupbox:
-      status: sunfish-implemented
-      sunfish-component: SunfishPopupBox
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikPopupBox
       examples:
         - overview
         - anchor-align
@@ -1038,8 +1043,9 @@ components:
         - keyboard-navigation
         - rtl
     imageeditor:
-      status: sunfish-implemented
-      sunfish-component: SunfishImageEditor
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikImageEditor
       examples:
         - overview
         - tools
@@ -1107,8 +1113,9 @@ components:
         - overview
         - svgicon
     fonticon:
-      status: sunfish-implemented
-      sunfish-component: SunfishFontIcon
+      status: aspirational
+      sunfish-component: null
+      telerik-equivalent: TelerikFontIcon
       examples:
         - overview
 
