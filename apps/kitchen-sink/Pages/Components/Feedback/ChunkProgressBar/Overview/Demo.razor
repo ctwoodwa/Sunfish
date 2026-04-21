@@ -1,0 +1,51 @@
+@page "/components/feedback/chunkprogressbar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ChunkProgressBar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ChunkProgressBar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ChunkProgressBar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChunkProgressBar</code> displays progress as discrete filled segments, which
+            helps communicate step-wise workflows at a glance. <code>Value</code> drives fill,
+            <code>ChunkCount</code> controls granularity, and <code>Indeterminate</code> enables the
+            running-animation state. <code>Orientation</code> supports horizontal and vertical
+            layouts; <code>Label</code> provides an accessible description.
+        </p>
+        <p>
+            This overview shows basic and labelled variants. A separate demo page covers
+            <a href="/components/feedback/chunkprogressbar/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                <p style="margin:0;">Progress: @_progress%</p>
+                <SunfishChunkProgressBar Value="@_progress" />
+                <div class="demo-row">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <p style="margin:0 0 0.5rem 0;">With label</p>
+                <SunfishChunkProgressBar Value="60" Label="Uploading files..." />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ChunkProgressBar", "Overview"];
+
+    private double _progress = 40;
+}

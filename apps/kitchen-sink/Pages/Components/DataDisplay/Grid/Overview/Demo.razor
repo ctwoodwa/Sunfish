@@ -1,0 +1,77 @@
+@page "/components/data-display/grid/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Grid / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Grid / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataGrid&lt;TItem&gt;</code> is the data grid component. It renders tabular data with
+            columns declared via <code>SunfishGridColumn&lt;TItem&gt;</code>. Bind data through <code>Data</code>
+            (for client operations) or wire <code>OnRead</code> for server-side paging/sorting/filtering.
+            Common parameters include <code>Pageable</code>, <code>Sortable</code>, <code>FilterMode</code>,
+            <code>SelectionMode</code>, <code>EditMode</code>, and <code>Groupable</code>.
+        </p>
+        <p>
+            The Grid has a large feature surface. Separate demos cover
+            <a href="/components/data-display/grid/editing-inline">editing</a>,
+            <a href="/components/data-display/grid/filtering-filter-row">filtering</a>,
+            <a href="/components/data-display/grid/grouping">grouping</a>,
+            <a href="/components/data-display/grid/columns-frozen">columns</a>,
+            <a href="/components/data-display/grid/selection-row">selection</a>, and
+            <a href="/components/data-display/grid/virtualization-row">virtualization</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishDataGrid TItem="Employee" Data="@_employees">
+                    <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+                    <SunfishGridColumn TItem="Employee" Field="Department" />
+                    <SunfishGridColumn TItem="Employee" Field="HireDate" Title="Hire Date" Format="yyyy-MM-dd" />
+                    <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Grid", "Overview"];
+
+    private readonly List<Employee> _employees =
+    [
+        new("Alice Johnson", "Engineering", new DateTime(2019, 3, 15), 95000m),
+        new("Bob Smith", "Marketing", new DateTime(2020, 7, 1), 72000m),
+        new("Carol White", "Engineering", new DateTime(2018, 1, 10), 105000m),
+        new("David Brown", "Sales", new DateTime(2021, 11, 20), 68000m),
+        new("Eve Davis", "Engineering", new DateTime(2022, 5, 5), 88000m),
+        new("Frank Miller", "Marketing", new DateTime(2017, 9, 12), 78000m),
+        new("Grace Lee", "Sales", new DateTime(2023, 2, 28), 65000m),
+    ];
+
+    public class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime HireDate { get; set; }
+        public decimal Salary { get; set; }
+
+        public Employee() { }
+        public Employee(string name, string department, DateTime hireDate, decimal salary)
+        {
+            Name = name;
+            Department = department;
+            HireDate = hireDate;
+            Salary = salary;
+        }
+    }
+}

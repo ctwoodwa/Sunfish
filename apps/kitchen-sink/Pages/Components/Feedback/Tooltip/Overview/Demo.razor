@@ -1,0 +1,57 @@
+@page "/components/feedback/tooltip/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Tooltip / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Tooltip / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTooltip</code> displays informative text on hover or focus over any trigger
+            element passed as <code>ChildContent</code>. Plain text is supplied via <code>Text</code>;
+            rich content is supplied via the <code>TooltipTemplate</code> render fragment.
+            <code>Position</code> (<code>TooltipPosition.Top</code> / <code>Bottom</code> /
+            <code>Left</code> / <code>Right</code>) and <code>ShowOn</code>
+            (<code>Hover</code> / <code>Focus</code> / <code>Click</code>) control placement and
+            trigger behaviour.
+        </p>
+        <p>
+            This overview shows plain-text and rich-template variants. Separate demo pages cover
+            <a href="/components/feedback/tooltip/templates">templates</a>,
+            <a href="/components/feedback/tooltip/position">position</a>, and
+            <a href="/components/feedback/tooltip/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishTooltip Text="This is a tooltip">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Hover me</SunfishButton>
+                </SunfishTooltip>
+
+                <SunfishTooltip>
+                    <ChildContent>
+                        <SunfishButton Variant="ButtonVariant.Secondary">Hover for rich tip</SunfishButton>
+                    </ChildContent>
+                    <TooltipTemplate>
+                        <div style="text-align:center;">
+                            <strong>Rich Tooltip</strong><br />
+                            <span>Supports <em>any</em> HTML content.</span>
+                        </div>
+                    </TooltipTemplate>
+                </SunfishTooltip>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Tooltip", "Overview"];
+}

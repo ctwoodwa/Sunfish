@@ -1,0 +1,53 @@
+@page "/components/navigation/stepper/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Stepper / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stepper / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStepper</code> shows progress through a sequence of numbered steps. Bind the
+            zero-based <code>ActiveStep</code> (or subscribe to <code>ActiveStepChanged</code>), list
+            steps via <code>SunfishStep</code> with <code>Title</code> and optional
+            <code>Description</code>, and switch between horizontal and vertical layouts with
+            <code>Orientation</code> (<code>StepperOrientation.Horizontal</code> /
+            <code>Vertical</code>).
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/navigation/stepper/linear-mode">linear mode</a>,
+            <a href="/components/navigation/stepper/templates">templates</a>,
+            <a href="/components/navigation/stepper/validation">validation</a>,
+            <a href="/components/navigation/stepper/events">events</a>,
+            <a href="/components/navigation/stepper/keyboard-navigation">keyboard navigation</a>,
+            and <a href="/components/navigation/stepper/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <SunfishStepper ActiveStep="@_step">
+                <SunfishStep Title="Account" />
+                <SunfishStep Title="Profile" />
+                <SunfishStep Title="Review" />
+            </SunfishStepper>
+            <div class="demo-row">
+                <SunfishButton Enabled="@(_step > 0)" OnClick="@(() => _step--)">Previous</SunfishButton>
+                <SunfishButton Enabled="@(_step < 2)" OnClick="@(() => _step++)">Next</SunfishButton>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Stepper", "Overview"];
+
+    private int _step;
+}

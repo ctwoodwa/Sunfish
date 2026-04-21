@@ -1,0 +1,42 @@
+@page "/components/data-display/carousel/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Carousel / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Carousel / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCarousel</code> cycles through a set of slides supplied as child content. Each child
+            element becomes a slide; the carousel handles navigation and indicators. Control the visible
+            area with <code>Style</code> (height/width) or surrounding layout.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/carousel/templates">templates</a> and
+            <a href="/components/data-display/carousel/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishCarousel Style="height:200px;width:400px;">
+                    <div style="background:#e3f2fd;height:100%;display:flex;align-items:center;justify-content:center;">Slide 1</div>
+                    <div style="background:#f3e5f5;height:100%;display:flex;align-items:center;justify-content:center;">Slide 2</div>
+                    <div style="background:#e8f5e9;height:100%;display:flex;align-items:center;justify-content:center;">Slide 3</div>
+                </SunfishCarousel>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Carousel", "Overview"];
+}

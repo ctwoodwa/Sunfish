@@ -1,0 +1,43 @@
+@page "/components/editors/slider/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Slider / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Slider / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Slider/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSlider</code> picks a single numeric value from a continuous range. Configure
+            <code>Min</code>, <code>Max</code>, and <code>Step</code>, and two-way bind through
+            <code>@@bind-Value</code>. Flip to a vertical axis with <code>Orientation</code>, enable
+            increment/decrement controls via <code>ShowButtons</code>, or use <code>LargeStep</code> to tune
+            the Page Up / Page Down jump size.
+        </p>
+        <p>
+            See <a href="/components/editors/slider/events">events</a>,
+            <a href="/components/editors/slider/validation">validation</a>, and
+            <a href="/components/editors/slider/keyboard-navigation">keyboard-navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishField>
+                <SunfishLabel>Volume: @_sliderValue</SunfishLabel>
+                <SunfishSlider @bind-Value="_sliderValue" Min="0" Max="100" Step="5" />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Slider", "Overview"];
+
+    private double _sliderValue = 25;
+}

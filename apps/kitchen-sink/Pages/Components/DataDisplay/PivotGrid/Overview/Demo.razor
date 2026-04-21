@@ -1,0 +1,61 @@
+@page "/components/data-display/pivotgrid/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>PivotGrid / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="PivotGrid / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPivotGrid</code> cross-tabulates flat data into row groups, column groups, and
+            measure aggregates. Declare dimensions with <code>SunfishPivotGridRowField</code> and
+            <code>SunfishPivotGridColumnField</code>; declare the numeric measure with
+            <code>SunfishPivotGridMeasureField</code>; and choose an aggregate with
+            <code>AggregateFunction</code> (Sum, Count, Average, Min, Max).
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/pivotgrid/data-binding-local">local data</a>,
+            <a href="/components/data-display/pivotgrid/filtering">filtering</a>, and
+            <a href="/components/data-display/pivotgrid/export-excel">Excel export</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishPivotGrid Data="_salesData"
+                                  AggregateFunction="PivotGridAggregateFunction.Sum"
+                                  Height="300px">
+                    <SunfishPivotGridRowField Field="Region" Title="Region" />
+                    <SunfishPivotGridColumnField Field="Product" Title="Product" />
+                    <SunfishPivotGridMeasureField Field="Revenue" Title="Revenue" />
+                </SunfishPivotGrid>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "PivotGrid", "Overview"];
+
+    private readonly List<object> _salesData = new()
+    {
+        new SalesRecord("North", "Widget A", 1200),
+        new SalesRecord("North", "Widget B", 800),
+        new SalesRecord("South", "Widget A", 950),
+        new SalesRecord("South", "Widget B", 1100),
+        new SalesRecord("East", "Widget A", 700),
+        new SalesRecord("East", "Widget B", 1500),
+        new SalesRecord("West", "Widget A", 1300),
+        new SalesRecord("West", "Widget B", 600),
+    };
+
+    private record SalesRecord(string Region, string Product, double Revenue);
+}

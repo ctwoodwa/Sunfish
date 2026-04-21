@@ -1,0 +1,82 @@
+@page "/components/editors/autocomplete/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Autocomplete / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Autocomplete / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAutocomplete</code> is a single-select combobox that suggests matches as the user types.
+            Bind a flat list through <code>Items</code> for simple strings, or pass a model collection via
+            <code>Data</code> + <code>TextField</code> + <code>ValueField</code>. The <code>Value</code> /
+            <code>ValueChanged</code> pair drives two-way binding, and <code>Placeholder</code> plus
+            <code>ShowClearButton</code> fine-tune the input affordance.
+        </p>
+        <p>
+            Filtering, virtualization, grouping, and template customization each have dedicated demos —
+            see <a href="/components/editors/autocomplete/templates">templates</a>,
+            <a href="/components/editors/autocomplete/grouping">grouping</a>, and
+            <a href="/components/editors/autocomplete/virtualization">virtualization</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishField>
+                    <SunfishLabel>Search a fruit</SunfishLabel>
+                    <SunfishAutocomplete TItem="string"
+                                        Items="@_fruits"
+                                        Value="@_selectedFruit"
+                                        ValueChanged="@(v => _selectedFruit = v)"
+                                        Placeholder="Type to search..." />
+                </SunfishField>
+            </div>
+
+            <div class="demo-row">
+                <SunfishField>
+                    <SunfishLabel>Search a country</SunfishLabel>
+                    <SunfishAutocomplete TItem="Country"
+                                        Data="@_countries"
+                                        TextField="Name"
+                                        ValueField="Code"
+                                        Value="@_selectedCountry"
+                                        ValueChanged="@(v => _selectedCountry = v)"
+                                        Placeholder="Type a country name..."
+                                        ShowClearButton="true" />
+                </SunfishField>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Autocomplete", "Overview"];
+
+    private string _selectedFruit = "";
+    private string _selectedCountry = "";
+
+    private readonly string[] _fruits =
+        ["Apple", "Apricot", "Banana", "Blueberry", "Cherry", "Date", "Fig", "Grape", "Kiwi", "Lemon", "Mango", "Orange", "Peach", "Pear", "Plum", "Raspberry", "Strawberry"];
+
+    private readonly List<Country> _countries =
+    [
+        new("US", "United States"),
+        new("GB", "United Kingdom"),
+        new("FR", "France"),
+        new("DE", "Germany"),
+        new("JP", "Japan"),
+        new("CA", "Canada"),
+        new("AU", "Australia"),
+        new("BR", "Brazil"),
+    ];
+
+    public record Country(string Code, string Name);
+}

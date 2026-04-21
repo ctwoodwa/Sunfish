@@ -1,0 +1,47 @@
+@page "/components/editors/textbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextBox</code> is the canonical single-line text input. Bind its value with
+            <code>Value</code> / <code>ValueChanged</code>, surface a placeholder with
+            <code>Placeholder</code>, and signal error states via <code>IsInvalid</code>. Pair it with
+            <code>SunfishField</code>, <code>SunfishLabel</code>, and <code>SunfishValidation</code> for a
+            complete form row.
+        </p>
+        <p>
+            See <a href="/components/editors/textbox/adornments">adornments</a>,
+            <a href="/components/editors/textbox/events">events</a>, and
+            <a href="/components/editors/textbox/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:320px;">
+            <SunfishField>
+                <SunfishLabel>Name</SunfishLabel>
+                <SunfishTextBox Value="@_name" ValueChanged="@(v => _name = v)" Placeholder="Enter your name" />
+            </SunfishField>
+            <SunfishField>
+                <SunfishLabel>Disabled Input</SunfishLabel>
+                <SunfishTextBox Value="Cannot edit" Disabled="true" />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "TextBox", "Overview"];
+
+    private string? _name;
+}

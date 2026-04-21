@@ -1,0 +1,43 @@
+@page "/components/editors/numerictextbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>NumericTextBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="NumericTextBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/NumericTextBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishNumericInput</code> (the implementation behind the NumericTextBox catalog entry)
+            is a numeric input field with increment and decrement buttons. Constrain the input with
+            <code>Min</code> and <code>Max</code>, control the step size with <code>Step</code>, and
+            two-way bind through <code>@@bind-Value</code>. Use <code>Disabled</code> to render the field
+            in a read-only state.
+        </p>
+        <p>
+            See <a href="/components/editors/numerictextbox/format">format</a>,
+            <a href="/components/editors/numerictextbox/events">events</a>, and
+            <a href="/components/editors/numerictextbox/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:280px;">
+            <SunfishNumericInput @bind-Value="_basicValue" Placeholder="Enter a number" />
+            <SunfishNumericInput @bind-Value="_rangeValue" Min="0" Max="100" Step="5" Placeholder="0 to 100, step 5" />
+            <p>Values: <strong>@_basicValue</strong>, <strong>@_rangeValue</strong></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "NumericTextBox", "Overview"];
+
+    private double _basicValue = 10;
+    private double _rangeValue = 50;
+}

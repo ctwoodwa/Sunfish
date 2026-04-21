@@ -1,0 +1,48 @@
+@page "/components/editors/maskedtextbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MaskedTextBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MaskedTextBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMaskedInput</code> (the implementation behind the MaskedTextBox catalog entry)
+            enforces structured input via mask patterns — phone numbers, dates, SSNs, credit cards, etc.
+            Define the pattern with <code>Mask</code> (<code>0</code> for digits, <code>L</code> for letters,
+            <code>A</code> alphanumeric, <code>&amp;</code> any), customize the prompt character with
+            <code>Prompt</code>, and opt into including literal characters in the bound value with
+            <code>IncludeLiterals</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/maskedtextbox/events">events</a> and
+            <a href="/components/editors/maskedtextbox/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:320px;">
+            <SunfishMaskedInput @bind-Value="_phoneValue"
+                               Mask="(000) 000-0000"
+                               Prompt="@('_')"
+                               AriaLabel="Phone number" />
+            <SunfishMaskedInput @bind-Value="_dateValue"
+                               Mask="00/00/0000"
+                               Placeholder="MM/DD/YYYY"
+                               AriaLabel="Date" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "MaskedTextBox", "Overview"];
+
+    private string _phoneValue = "";
+    private string _dateValue = "";
+}

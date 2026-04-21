@@ -1264,6 +1264,150 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-20T17:58:10.111Z"
+    },
+    {
+      "id": "bug-080",
+      "timestamp": "2026-04-21T13:08:22.624Z",
+      "error_message": "Incorrect value in code",
+      "file": "Directory.Packages.props",
+      "root_cause": "Had \"11.0.0-preview.3.26207.106\"",
+      "fix": "Changed to \"11.0.0-preview.2.26159.112\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T13:08:22.624Z"
+    },
+    {
+      "id": "bug-081",
+      "timestamp": "2026-04-21T13:10:44.494Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor/tests/Components/XlsxExportTests.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T13:10:44.494Z"
+    },
+    {
+      "id": "bug-082",
+      "timestamp": "2026-04-21T13:10:50.678Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor/tests/Components/PdfExportTests.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check) | Also: Arg.Is<IReadOnlyList<SampleItem>>(items => items != null && ",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-21T13:10:57.318Z"
+    },
+    {
+      "id": "bug-083",
+      "timestamp": "2026-04-21T15:09:20.759Z",
+      "error_message": "Incorrect value in code",
+      "file": "Directory.Packages.props",
+      "root_cause": "Had \"6.3.0\"",
+      "fix": "Changed to \"6.4.0-beta.0\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T15:09:20.759Z"
+    },
+    {
+      "id": "bug-084",
+      "timestamp": "2026-04-21T15:31:52.610Z",
+      "error_message": "Wrong reference: net10 should be net11",
+      "file": "apps/docs/docfx.json",
+      "root_cause": "Used \"net10\" instead of \"net11\"",
+      "fix": "Changed net10 → net11",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T15:31:52.610Z"
+    },
+    {
+      "id": "bug-085",
+      "timestamp": "2026-04-21T20:47:44.039Z",
+      "error_message": "Significant refactor of ",
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor",
+      "root_cause": "40 lines replaced/restructured",
+      "fix": "Rewrote 54→3 lines (40 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T20:47:44.039Z"
+    },
+    {
+      "id": "bug-086",
+      "timestamp": "2026-04-21T20:47:59.110Z",
+      "error_message": "Incorrect value in code",
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor",
+      "root_cause": "Had \"@_sources\"",
+      "fix": "Changed to \"@GeneratedSources\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T20:47:59.110Z"
+    },
+    {
+      "id": "bug-087",
+      "timestamp": "2026-04-21T20:59:29.859Z",
+      "error_message": "Wrong reference: SunfishAutoComplete should be SunfishAutocomplete",
+      "file": "_shared/product/example-catalog.yaml",
+      "root_cause": "Used \"SunfishAutoComplete\" instead of \"SunfishAutocomplete\"",
+      "fix": "Changed SunfishAutoComplete → SunfishAutocomplete",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "yaml"
+      ],
+      "related_bugs": [],
+      "occurrences": 6,
+      "last_seen": "2026-04-21T20:59:34.401Z"
+    },
+    {
+      "id": "bug-088",
+      "timestamp": "2026-04-21T21:07:14.870Z",
+      "error_message": "Incorrect value in code",
+      "file": ".claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/Demo.razor",
+      "root_cause": "Had \"IconThemeColor.Error\"",
+      "fix": "Changed to \"IconThemeColor.Danger\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-21T21:07:14.870Z"
     }
   ]
 }

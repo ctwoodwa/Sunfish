@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T07:45:12.256Z
-> Files: 64 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T21:09:20.927Z
+> Files: 155 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -9,8 +9,10 @@
 
 ## ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/
 
-- `MEMORY.md` — Memory Index (~59 tok)
+- `MEMORY.md` — Memory Index (~223 tok)
+- `project_pre_release_latest_first_policy.md` (~479 tok)
 - `project_sunfish_private_until_llc.md` (~562 tok)
+- `reference_efcore_npgsql_preview_lock.md` (~316 tok)
 
 ## ./
 
@@ -18,7 +20,8 @@
 - `.gitignore` — Git ignore rules (~2309 tok)
 - `CHANGELOG.md` — Changelog (~179 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
-- `Directory.Packages.props` (~1204 tok)
+- `Directory.Packages.props` (~1370 tok)
+- `global.json` (~29 tok)
 - `GOVERNANCE.md` — Sunfish Governance (~2929 tok)
 
 ## .claude/rules/
@@ -27,6 +30,22 @@
 
 ## .claude/skill/
 
+
+## .claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/
+
+- `Demo.razor` (~970 tok)
+
+## .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/Editor/Overview/
+
+- `Demo.razor` (~629 tok)
+
+## .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/FileManager/Overview/
+
+- `Demo.razor` (~1018 tok)
+
+## .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/PdfViewer/Overview/
+
+- `Demo.razor` (~472 tok)
 
 ## .github/
 
@@ -42,6 +61,17 @@
 - `main-branch.json` (~313 tok)
 - `README.md` — Project documentation (~1206 tok)
 - `release-tags.json` (~120 tok)
+
+## .github/workflows/
+
+- `ci.yml` — CI: CI (~214 tok)
+- `codeql.yml` — CI: CodeQL (~243 tok)
+- `docs.yml` — CI: Docs (~384 tok)
+
+## .vscode/
+
+- `launch.json` (~735 tok)
+- `tasks.json` (~556 tok)
 
 ## .worktrees/g37-b0-js-interop/packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/
 
@@ -172,9 +202,14 @@
 - `architecture-principles.md` — Architecture Principles (~3180 tok)
 - `community-operations.md` — Community Operations (~5354 tok)
 - `compatibility-policy.md` — Compatibility Policy (~2594 tok)
+- `example-catalog.yaml` — Sunfish canonical example catalog (ADR 0022) (~9464 tok)
 - `naming.md` — Naming Conventions (~3157 tok)
 - `sustainability.md` — Funding and Sustainability (~6685 tok)
 - `vision.md` — Product Vision (~12110 tok)
+
+## accelerators/anchor/
+
+- `Sunfish.Anchor.csproj` (~1409 tok)
 
 ## accelerators/bridge/
 
@@ -200,12 +235,289 @@
 
 - `docfx.json` — .yml", "api/index.md"] (~431 tok)
 
+## apps/kitchen-sink/
+
+- `Sunfish.KitchenSink.csproj` (~609 tok)
+
+## apps/kitchen-sink/Pages/Components/
+
+- `Index.razor` (~898 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/
+
+- `Demo.razor` (~860 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Overview/
+
+- `Demo.razor` (~692 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/SplitButton/Overview/
+
+- `Demo.razor` (~458 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Overview/
+
+- `Demo.razor` (~614 tok)
+
+## apps/kitchen-sink/Pages/Components/Charts/Chart/Overview/
+
+- `Demo.razor` (~1090 tok)
+
+## apps/kitchen-sink/Pages/Components/Charts/LinearGauge/Overview/
+
+- `Demo.razor` (~467 tok)
+
+## apps/kitchen-sink/Pages/Components/Charts/Sankey/Overview/
+
+- `Demo.razor` (~836 tok)
+
+## apps/kitchen-sink/Pages/Components/Charts/StockChart/Overview/
+
+- `Demo.razor` (~437 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Avatar/Overview/
+
+- `Demo.razor` (~626 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Overview/
+
+- `Demo.razor` (~712 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Card/Overview/
+
+- `Demo.razor` (~695 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Overview/
+
+- `Demo.razor` (~504 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Overview/
+
+- `Demo.razor` (~1306 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Overview/
+
+- `Demo.razor` — Declares Employee (~948 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Overview/
+
+- `Demo.razor` — Declares ListItem (~658 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/ListView/Overview/
+
+- `Demo.razor` (~524 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Map/Overview/
+
+- `Demo.razor` — Declares string (~690 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/
+
+- `Demo.razor` (~714 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Overview/
+
+- `Demo.razor` (~790 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/
+
+- `Demo.razor` (~657 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/
+
+- `Demo.razor` (~851 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Overview/
+
+- `Demo.razor` (~621 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Overview/
+
+- `Demo.razor` (~960 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Checkbox/Overview/
+
+- `Demo.razor` (~502 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/ComboBox/Overview/
+
+- `Demo.razor` (~662 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/DateInput/Overview/
+
+- `Demo.razor` (~437 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/DropDownList/Overview/
+
+- `Demo.razor` — Declares a (~665 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/
+
+- `Demo.razor` (~561 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/MultiColumnComboBox/Overview/
+
+- `Demo.razor` — Declares Employee (~773 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Overview/
+
+- `Demo.razor` (~692 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/NumericTextBox/Overview/
+
+- `Demo.razor` (~518 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/RadioGroup/Overview/
+
+- `Demo.razor` (~469 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/RangeSlider/Overview/
+
+- `Demo.razor` (~394 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Slider/Overview/
+
+- `Demo.razor` (~462 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/Switch/Overview/
+
+- `Demo.razor` (~404 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/TextArea/Overview/
+
+- `Demo.razor` (~472 tok)
+
+## apps/kitchen-sink/Pages/Components/Editors/TextBox/Overview/
+
+- `Demo.razor` (~516 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/AnimationContainer/Overview/
+
+- `Demo.razor` (~440 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/ChunkProgressBar/Overview/
+
+- `Demo.razor` (~611 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/Dialog/Overview/
+
+- `Demo.razor` (~841 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/Loader/Overview/
+
+- `Demo.razor` (~766 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/LoaderContainer/Overview/
+
+- `Demo.razor` (~618 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Overview/
+
+- `Demo.razor` (~611 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/Skeleton/Overview/
+
+- `Demo.razor` (~480 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Overview/
+
+- `Demo.razor` (~676 tok)
+
+## apps/kitchen-sink/Pages/Components/Feedback/Window/Overview/
+
+- `Demo.razor` (~969 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/Form/Overview/
+
+- `Demo.razor` — Declares ContactModel (~909 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/Validation/Overview/
+
+- `Demo.razor` — Declares SignupModel (~978 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/AppBar/Overview/
+
+- `Demo.razor` (~448 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/Drawer/Overview/
+
+- `Demo.razor` (~554 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/GridLayout/Overview/
+
+- `Demo.razor` (~723 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/MediaQuery/Overview/
+
+- `Demo.razor` (~362 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/Splitter/Overview/
+
+- `Demo.razor` (~574 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/
+
+- `Demo.razor` (~512 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Overview/
+
+- `Demo.razor` (~553 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/ContextMenu/Overview/
+
+- `Demo.razor` (~600 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/Menu/Overview/
+
+- `Demo.razor` (~598 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/Stepper/Overview/
+
+- `Demo.razor` (~628 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Overview/
+
+- `Demo.razor` (~787 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Overview/
+
+- `Demo.razor` (~739 tok)
+
+## apps/kitchen-sink/Pages/Components/Navigation/Wizard/Overview/
+
+- `Demo.razor` (~826 tok)
+
+## apps/kitchen-sink/Pages/Components/SmartAi/AIPrompt/Overview/
+
+- `Demo.razor` (~670 tok)
+
+## apps/kitchen-sink/Pages/Components/SmartAi/Chat/Overview/
+
+- `Demo.razor` (~734 tok)
+
+## apps/kitchen-sink/Pages/Components/SmartAi/PromptBox/Overview/
+
+- `Demo.razor` (~671 tok)
+
+## apps/kitchen-sink/Pages/Components/SmartAi/SmartPasteButton/Overview/
+
+- `Demo.razor` (~617 tok)
+
+## apps/kitchen-sink/Pages/Components/SmartAi/SpeechToTextButton/Overview/
+
+- `Demo.razor` (~813 tok)
+
+## apps/kitchen-sink/build/
+
+- `SunfishDemoSources.targets` — /Demo.razor, gathers companion files in the same (~1678 tok)
+
 ## docs/adrs/
 
 - `0016-app-and-accelerator-naming.md` — ADR 0016 — App and Accelerator Naming Convention (~2529 tok)
-- `0017-web-components-lit-technical-basis.md` — ADR 0017 — Web Components (via Lit) as UI Technical Basis; JS and WASM Consumption Tracks (~3868 tok)
+- `0017-web-components-lit-technical-basis.md` — ADR 0017 — Spec-First UI Contracts with Native Framework Adapters and an Optional Web-Components Con (~5155 tok)
 - `0018-governance-and-license-posture.md` — ADR 0018 — Governance Model and License Posture (~2120 tok)
 - `0021-reporting-pipeline-policy.md` — ADR 0021 — Document and Report Generation Pipeline (~2887 tok)
+- `0022-example-catalog-and-docs-taxonomy.md` — ADR 0022 — Canonical Example Catalog, Documentation Taxonomy, and the Demo-Page Panel (~4528 tok)
 - `README.md` — Project documentation (~678 tok)
 
 ## docs/specifications/
@@ -216,6 +528,15 @@
 
 ## icm/
 
+
+## icm/00_intake/output/
+
+- `web-components-migration-intake-2026-04-20.md` — Intake Note — UI Architecture Migration (ADR 0017, revised) (~3606 tok)
+
+## icm/working-notes/
+
+- `2026-04-21-component-inventory-gap-report.md` — Component Inventory Gap Report (~1107 tok)
+- `2026-04-21-wave-1-subagent-brief.md` — Wave 1 Subagent Brief — Overview demo page authoring (~1210 tok)
 
 ## packages/foundation-catalog/
 
@@ -332,9 +653,16 @@
 - `SunfishPdfServiceExtensions.cs` — Extension methods for registering Playwright-based PDF export with SunfishDataGrid. (~320 tok)
 - `SunfishPlaywrightBrowserService.cs` — Class: SunfishPlaywrightBrowserService (~283 tok)
 
+## packages/ui-adapters-blazor/Components/Showcase/
+
+- `SunfishExamplePanel.razor` — Declares Tab (~2717 tok)
+- `SunfishExamplePanel.razor.css` — Styles: 31 rules (~1793 tok)
+- `SunfishSourceFile.cs` — A single source file exposed by <see cref="SunfishExamplePanel"/>'s VIEW SOURCE tab. (~128 tok)
+
 ## packages/ui-adapters-blazor/tests/Components/
 
-- `PdfExportTests.cs` — Tests for SunfishDataGrid PDF export via Playwright. Covers HtmlTableBuilder (pure unit tests, no bu (~2859 tok)
+- `PdfExportTests.cs` — Tests for SunfishDataGrid PDF export via Playwright. Covers HtmlTableBuilder (pure unit tests, no bu (~2871 tok)
+- `XlsxExportTests.cs` — Tests for G37 C1 — SunfishDataGrid Excel export via ClosedXML. Covers both the pure <c>XlsxExportWri (~3675 tok)
 
 ## scripts/
 

@@ -1,0 +1,40 @@
+@page "/components/feedback/animationcontainer/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AnimationContainer / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AnimationContainer / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/AnimationContainer/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAnimationContainer</code> wraps arbitrary content and applies entry / exit
+            animations when <code>Visible</code> toggles. Two-way binding via
+            <code>@@bind-Visible</code> keeps callers in sync with the animated state. The container
+            is typically composed with feedback components such as <code>SunfishAlert</code> to
+            animate banner entry.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishButton OnClick="@(() => _show = !_show)">Toggle</SunfishButton>
+                <SunfishAnimationContainer @bind-Visible="_show">
+                    <SunfishAlert Severity="AlertSeverity.Info">Animated content</SunfishAlert>
+                </SunfishAnimationContainer>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "AnimationContainer", "Overview"];
+
+    private bool _show = true;
+}

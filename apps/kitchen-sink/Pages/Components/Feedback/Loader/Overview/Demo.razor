@@ -1,0 +1,65 @@
+@page "/components/feedback/loader/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Loader / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Loader / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Loader/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishLoader</code> displays a centred loading indicator. Toggle it with
+            <code>Visible</code>, describe the pending operation with <code>Text</code>, and choose
+            a spinner scale with <code>Size</code> (<code>SpinnerSize.Small</code> /
+            <code>Medium</code> / <code>Large</code>). Supplying <code>ChildContent</code> turns the
+            loader into an overlay over its children.
+        </p>
+        <p>
+            This overview shows standalone and content-overlay variants. Separate demo pages cover
+            <a href="/components/feedback/loader/types-and-sizes">types and sizes</a> and
+            <a href="/components/feedback/loader/appearance">appearance</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div>
+                <div style="height: 120px; position: relative; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <SunfishLoader Visible="@_visible" Text="Loading data..." />
+                </div>
+                <div class="demo-row" style="margin-top: 8px;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _visible = !_visible)">
+                        @(_visible ? "Hide" : "Show") Loader
+                    </SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <SunfishLoader Visible="@_overlayVisible" Text="Refreshing...">
+                    <div style="padding: 24px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                        <p>This content is overlaid by the loader when visible.</p>
+                        <p>Item 1 - Product A</p>
+                        <p>Item 2 - Product B</p>
+                    </div>
+                </SunfishLoader>
+                <div class="demo-row" style="margin-top: 8px;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _overlayVisible = !_overlayVisible)">
+                        Toggle Overlay
+                    </SunfishButton>
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Loader", "Overview"];
+
+    private bool _visible = true;
+    private bool _overlayVisible = true;
+}

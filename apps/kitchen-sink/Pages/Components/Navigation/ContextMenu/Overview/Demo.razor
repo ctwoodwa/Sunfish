@@ -1,0 +1,51 @@
+@page "/components/navigation/contextmenu/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ContextMenu / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ContextMenu / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/ContextMenu/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishContextMenu</code> attaches a right-click popup menu to a target region. The
+            <code>ChildContent</code> slot defines the area that captures the <code>contextmenu</code>
+            event, and <code>MenuContent</code> holds the items that appear when the menu opens.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/navigation/contextmenu/data-binding">data binding</a>,
+            <a href="/components/navigation/contextmenu/templates">templates</a>,
+            <a href="/components/navigation/contextmenu/integration">integration</a>,
+            <a href="/components/navigation/contextmenu/events">events</a>,
+            <a href="/components/navigation/contextmenu/keyboard-navigation">keyboard navigation</a>,
+            and <a href="/components/navigation/contextmenu/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishContextMenu>
+                <ChildContent>
+                    <div style="padding:2rem;border:1px dashed #ccc;text-align:center;min-width:240px;">
+                        Right-click here
+                    </div>
+                </ChildContent>
+                <MenuContent>
+                    <button type="button" class="sf-menu-item">Cut</button>
+                    <button type="button" class="sf-menu-item">Copy</button>
+                    <button type="button" class="sf-menu-item">Paste</button>
+                </MenuContent>
+            </SunfishContextMenu>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "ContextMenu", "Overview"];
+}

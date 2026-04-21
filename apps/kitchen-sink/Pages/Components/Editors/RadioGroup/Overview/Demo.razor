@@ -1,0 +1,43 @@
+@page "/components/editors/radiogroup/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>RadioGroup / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="RadioGroup / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/RadioGroup/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishRadioGroup</code> manages a set of mutually exclusive <code>SunfishRadio</code>
+            options. Use <code>@@bind-Value</code> on the group to capture which option is selected;
+            each child radio contributes its own <code>Value</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/radiogroup/horizontal-orientation">horizontal-orientation</a>,
+            <a href="/components/editors/radiogroup/events">events</a>, and
+            <a href="/components/editors/radiogroup/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishRadioGroup @bind-Value="_selected">
+                <SunfishRadio Value="@("option1")">Option 1</SunfishRadio>
+                <SunfishRadio Value="@("option2")">Option 2</SunfishRadio>
+                <SunfishRadio Value="@("option3")">Option 3</SunfishRadio>
+            </SunfishRadioGroup>
+            <span>Selected: <strong>@_selected</strong></span>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "RadioGroup", "Overview"];
+
+    private string? _selected = "option1";
+}

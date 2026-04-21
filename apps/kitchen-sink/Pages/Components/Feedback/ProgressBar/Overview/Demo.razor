@@ -1,0 +1,52 @@
+@page "/components/feedback/progressbar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ProgressBar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ProgressBar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishProgressBar</code> visualises determinate or indeterminate progress. Set
+            <code>Value</code> (0–<code>Max</code>, default <code>Max=100</code>) for a determinate
+            bar, or <code>IsIndeterminate=true</code> for an animated running indicator when the
+            duration is unknown. Use <code>Label</code> together with <code>ShowLabel</code> to
+            provide an accessible description.
+        </p>
+        <p>
+            This overview shows determinate and indeterminate variants. Separate demo pages cover
+            <a href="/components/feedback/progressbar/label">label</a> and
+            <a href="/components/feedback/progressbar/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                <p style="margin:0;">Progress: @_progress%</p>
+                <SunfishProgressBar Value="@_progress" />
+                <div class="demo-row">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <p style="margin:0 0 0.5rem 0;">Indeterminate</p>
+                <SunfishProgressBar IsIndeterminate="true" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ProgressBar", "Overview"];
+
+    private double _progress = 45;
+}

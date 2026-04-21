@@ -1,0 +1,57 @@
+@page "/components/data-display/map/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay.Map
+
+<PageTitle>Map / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Map / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Map/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMap</code> renders interactive maps. Set <code>Center</code> and <code>Zoom</code>
+            to control the initial view, then stack one or more <code>MapLayer</code> children inside
+            <code>MapLayers</code>. Layer types include <code>Tile</code>, <code>Marker</code>,
+            <code>Shape</code>, and <code>Bubble</code>. Handle user interaction via <code>OnClick</code>,
+            <code>OnMarkerClick</code>, <code>OnZoomEnd</code>, and <code>OnPanEnd</code>.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/map/layers">layers</a>,
+            <a href="/components/data-display/map/markers">markers</a>, and
+            <a href="/components/data-display/map/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="height:400px;">
+                <SunfishMap Center="@_dcCenter"
+                            Zoom="12"
+                            Height="100%"
+                            Width="100%">
+                    <MapLayers>
+                        <MapLayer Type="@MapLayerType.Tile"
+                                  UrlTemplate="@_tileUrl"
+                                  Attribution="@_tileAttribution"
+                                  Subdomains="@_subdomains" />
+                    </MapLayers>
+                </SunfishMap>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Map", "Overview"];
+
+    private readonly string[] _subdomains = ["a", "b", "c"];
+    private const string _tileUrl = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+    private const string _tileAttribution = "&copy; <a href='https://osm.org/copyright'>OpenStreetMap contributors</a>";
+    private readonly MapCenter _dcCenter = new() { Latitude = 38.8977, Longitude = -77.0365 };
+}

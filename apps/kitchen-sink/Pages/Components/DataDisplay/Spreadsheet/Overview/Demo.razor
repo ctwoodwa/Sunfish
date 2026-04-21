@@ -1,0 +1,59 @@
+@page "/components/data-display/spreadsheet/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Spreadsheet / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Spreadsheet / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSpreadsheet</code> provides an Excel-like grid with lettered column headers and
+            numbered rows. Size the grid with <code>RowCount</code> / <code>ColumnCount</code>, constrain
+            with <code>Height</code> / <code>Width</code>, and react to edits through <code>OnCellEdit</code>.
+            Toggle <code>ReadOnly</code> to disable cell mutation.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/spreadsheet/data-binding-local">data binding</a>,
+            <a href="/components/data-display/spreadsheet/export">export</a>,
+            <a href="/components/data-display/spreadsheet/formulas">formulas</a>, and
+            <a href="/components/data-display/spreadsheet/selection">selection</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishSpreadsheet RowCount="10"
+                                    ColumnCount="6"
+                                    Height="300px"
+                                    OnCellEdit="HandleCellEdit" />
+            </div>
+            @if (_lastEdit is not null)
+            {
+                <div style="padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
+                    Last edit: Cell (@(_lastEdit.Row + 1), col @(_lastEdit.Column + 1))
+                    changed from "@(_lastEdit.OldValue ?? "")" to "@(_lastEdit.NewValue ?? "")"
+                </div>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Spreadsheet", "Overview"];
+
+    private SpreadsheetCellEditEventArgs? _lastEdit;
+
+    private Task HandleCellEdit(SpreadsheetCellEditEventArgs args)
+    {
+        _lastEdit = args;
+        return Task.CompletedTask;
+    }
+}

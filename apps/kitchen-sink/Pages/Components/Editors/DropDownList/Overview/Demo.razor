@@ -1,0 +1,62 @@
+@page "/components/editors/dropdownlist/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DropDownList / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropDownList / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DropDownList/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropDownList</code> is a closed-list picker — users must choose from the items you
+            provide, not type a free value. Bind model data with <code>Data</code>, <code>TextField</code>,
+            and <code>ValueField</code>; two-way bind the selected key through <code>Value</code>. Use
+            <code>Filterable</code> to enable type-to-filter and <code>DefaultText</code> for the placeholder
+            shown before a selection is made.
+        </p>
+        <p>
+            See <a href="/components/editors/dropdownlist/templates">templates</a>,
+            <a href="/components/editors/dropdownlist/grouping">grouping</a>, and
+            <a href="/components/editors/dropdownlist/virtualization">virtualization</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishField>
+                <SunfishLabel>Country</SunfishLabel>
+                <SunfishDropDownList TItem="Country"
+                                    TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name"
+                                    ValueField="Id"
+                                    Value="@_selectedValue"
+                                    ValueChanged="@(v => _selectedValue = v)"
+                                    Placeholder="Select a country..." />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "DropDownList", "Overview"];
+
+    private int? _selectedValue;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

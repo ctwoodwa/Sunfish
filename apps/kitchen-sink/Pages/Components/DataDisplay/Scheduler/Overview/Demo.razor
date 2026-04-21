@@ -1,0 +1,77 @@
+@page "/components/data-display/scheduler/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Scheduler / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Scheduler / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishScheduler</code> renders appointments on a calendar with Day, Week, MultiDay, Month,
+            Timeline, and Agenda views. Bind appointment data via <code>Appointments</code>, set the focus via
+            <code>CurrentDate</code>, and switch layouts with <code>View</code>. Enable editing with
+            <code>Editable="true"</code> and wire <code>OnUpdate</code> / <code>OnDelete</code>.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/scheduler/views-week">week view</a>,
+            <a href="/components/data-display/scheduler/views-month">month view</a>,
+            <a href="/components/data-display/scheduler/editing">editing</a>, and
+            <a href="/components/data-display/scheduler/grouping">grouping</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishScheduler Appointments="@_sampleAppointments"
+                                  CurrentDate="@_currentDate"
+                                  Style="height:500px;" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Scheduler", "Overview"];
+
+    private readonly DateTime _currentDate = new(2026, 4, 12);
+
+    private readonly List<SchedulerAppointment> _sampleAppointments = new()
+    {
+        new SchedulerAppointment
+        {
+            Title = "Sprint Planning",
+            Start = new DateTime(2026, 4, 13, 9, 0, 0),
+            End = new DateTime(2026, 4, 13, 11, 0, 0),
+            Color = "#0078d4"
+        },
+        new SchedulerAppointment
+        {
+            Title = "Design Review",
+            Start = new DateTime(2026, 4, 14, 14, 0, 0),
+            End = new DateTime(2026, 4, 14, 15, 30, 0),
+            Color = "#107c10"
+        },
+        new SchedulerAppointment
+        {
+            Title = "Team Standup",
+            Start = new DateTime(2026, 4, 12, 9, 30, 0),
+            End = new DateTime(2026, 4, 12, 9, 45, 0),
+            Color = "#5c2d91"
+        },
+        new SchedulerAppointment
+        {
+            Title = "Client Demo",
+            Start = new DateTime(2026, 4, 15, 13, 0, 0),
+            End = new DateTime(2026, 4, 15, 14, 0, 0),
+            Color = "#d83b01"
+        },
+    };
+}

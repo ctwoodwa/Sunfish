@@ -1,0 +1,83 @@
+@page "/components/feedback/window/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Window / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Window / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Window/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWindow</code> provides a draggable, resizable overlay for displaying content
+            that can coexist with the underlying page. Use <code>@@bind-Visible</code> to toggle the
+            window, <code>Title</code> for the header, and <code>Width</code> / <code>Height</code>
+            to control dimensions. The <code>Modal</code> parameter toggles the backdrop, and
+            <code>Actions</code> (a <code>WindowAction</code> flag) enables the built-in minimize,
+            maximize, and close buttons.
+        </p>
+        <p>
+            This overview shows basic, modal, and action-equipped variants. Separate demo pages cover
+            <a href="/components/feedback/window/draggable">draggable</a>,
+            <a href="/components/feedback/window/resizable">resizable</a>,
+            <a href="/components/feedback/window/modal">modal</a>, and
+            <a href="/components/feedback/window/actions">actions</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showBasic = true">Open Window</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showModal = true">Open Modal Window</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showActions = true">Open Window with Actions</SunfishButton>
+                @if (!string.IsNullOrEmpty(_lastAction))
+                {
+                    <span>Last action: @_lastAction</span>
+                }
+            </div>
+
+            <SunfishWindow Title="Basic Window"
+                           @bind-Visible="_showBasic"
+                           Width="500px"
+                           Height="300px">
+                <p>This is the window content.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Modal Window"
+                           @bind-Visible="_showModal"
+                           Modal="true"
+                           Width="500px"
+                           Height="300px">
+                <p>This modal window has an overlay behind it.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Window with Actions"
+                           @bind-Visible="_showActions"
+                           Actions="WindowAction.Close | WindowAction.Minimize | WindowAction.Maximize"
+                           OnAction="HandleAction"
+                           Width="600px"
+                           Height="400px">
+                <p>This window has minimize, maximize, and close buttons.</p>
+            </SunfishWindow>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Window", "Overview"];
+
+    private bool _showBasic;
+    private bool _showModal;
+    private bool _showActions;
+    private string? _lastAction;
+
+    private void HandleAction(WindowAction action)
+    {
+        _lastAction = action.ToString();
+    }
+}

@@ -1,0 +1,83 @@
+@page "/components"
+@layout MainLayout
+@using Sunfish.KitchenSink.Data
+
+<PageTitle>Components · Sunfish Kitchen Sink</PageTitle>
+
+<div class="components-landing">
+    <header class="components-landing__hero">
+        <h1>Components</h1>
+        <p>
+            Every component in the Sunfish Blazor adapter, grouped by family.
+            Pick a component to open its Overview demo. The catalog is also
+            published as <a href="/_shared/product/example-catalog.yaml">example-catalog.yaml</a>
+            for cross-provider parity tracking.
+        </p>
+    </header>
+
+    @foreach (var category in ComponentRegistry.GetCategories())
+    {
+        var items = ComponentRegistry.GetByCategory(category.Slug);
+        if (items.Length == 0) { continue; }
+
+        <section class="components-landing__family" id="@category.Slug">
+            <h2>@category.Name <span class="components-landing__count">@items.Length</span></h2>
+            <div class="components-landing__grid">
+                @foreach (var c in items)
+                {
+                    <a class="components-landing__card"
+                       href="/components/@category.Slug/@c.Slug.ToLowerInvariant()/overview">
+                        <div class="components-landing__card-title">@c.Name</div>
+                        <div class="components-landing__card-desc">@c.Description</div>
+                    </a>
+                }
+            </div>
+        </section>
+    }
+</div>
+
+<style>
+    .components-landing { max-width: 1200px; margin: 0 auto; padding: 1.5rem 2rem 4rem; }
+    .components-landing__hero { margin-bottom: 2rem; }
+    .components-landing__hero h1 { font-size: 2rem; margin: 0 0 .5rem; }
+    .components-landing__hero p { color: var(--sunfish-muted, #555); max-width: 780px; line-height: 1.5; }
+    .components-landing__family { margin-bottom: 2.5rem; }
+    .components-landing__family h2 {
+        font-size: 1.25rem; margin: 0 0 .75rem;
+        display: flex; align-items: center; gap: .5rem;
+        border-bottom: 1px solid var(--sunfish-border, #e5e7eb);
+        padding-bottom: .5rem;
+    }
+    .components-landing__count {
+        font-size: .75rem; font-weight: 500;
+        color: var(--sunfish-muted, #6b7280);
+        background: var(--sunfish-chip-bg, #f3f4f6);
+        padding: .125rem .5rem; border-radius: 999px;
+    }
+    .components-landing__grid {
+        display: grid; gap: .75rem;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .components-landing__card {
+        display: block; padding: .875rem 1rem;
+        border: 1px solid var(--sunfish-border, #e5e7eb);
+        border-radius: .5rem;
+        text-decoration: none; color: inherit;
+        transition: border-color .15s, box-shadow .15s, transform .15s;
+        background: var(--sunfish-card-bg, #fff);
+    }
+    .components-landing__card:hover {
+        border-color: var(--sunfish-accent, #2563eb);
+        box-shadow: 0 2px 8px rgba(0,0,0,.06);
+        transform: translateY(-1px);
+    }
+    .components-landing__card-title {
+        font-weight: 600; font-size: .95rem; margin-bottom: .25rem;
+    }
+    .components-landing__card-desc {
+        font-size: .8125rem; line-height: 1.35;
+        color: var(--sunfish-muted, #6b7280);
+        display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>

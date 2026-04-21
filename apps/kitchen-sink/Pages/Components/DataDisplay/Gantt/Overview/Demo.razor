@@ -1,0 +1,95 @@
+@page "/components/data-display/gantt/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Gantt / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Gantt / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishGantt&lt;TItem&gt;</code> displays project tasks on a timeline with hierarchical
+            grouping and progress tracking. Bind flat data through <code>Data</code> with <code>IdField</code>
+            and <code>ParentIdField</code>, declare detail columns inside <code>GanttColumns</code>, and
+            register timeline views inside <code>GanttViews</code> (Day, Week, Month). Wire
+            <code>OnUpdate</code> and <code>OnDelete</code> to persist task changes.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/gantt/editing-inline">editing</a>,
+            <a href="/components/data-display/gantt/timeline-views">timeline views</a>,
+            <a href="/components/data-display/gantt/dependencies">dependencies</a>, and
+            <a href="/components/data-display/gantt/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishGantt TItem="GanttTask"
+                              Data="@_tasks"
+                              IdField="Id"
+                              ParentIdField="ParentId"
+                              Height="500px"
+                              Width="100%"
+                              @bind-View="_currentView">
+                    <GanttColumns>
+                        <GanttColumn TItem="GanttTask"
+                                     Field="Title"
+                                     Expandable="true"
+                                     Width="220px"
+                                     Title="Task Title" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="PercentComplete"
+                                     Width="80px"
+                                     Title="% Done"
+                                     DisplayFormat="{0:N0}%"
+                                     TextAlign="right" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="Start"
+                                     Width="100px"
+                                     DisplayFormat="{0:d}" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="End"
+                                     Width="100px"
+                                     DisplayFormat="{0:d}" />
+                    </GanttColumns>
+                    <GanttViews>
+                        <GanttWeekView />
+                        <GanttMonthView />
+                    </GanttViews>
+                </SunfishGantt>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Gantt", "Overview"];
+
+    private GanttView _currentView = GanttView.Week;
+
+    private readonly List<GanttTask> _tasks = GenerateSampleData();
+
+    private static List<GanttTask> GenerateSampleData()
+    {
+        var today = DateTime.Today;
+        return
+        [
+            new() { Id = "1", Title = "Planning", Start = today, End = today.AddDays(12), PercentComplete = 80 },
+            new() { Id = "1.1", ParentId = "1", Title = "Requirements Gathering", Start = today, End = today.AddDays(4), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Stakeholder Review", Start = today.AddDays(4), End = today.AddDays(7), PercentComplete = 100 },
+            new() { Id = "2", Title = "Design", Start = today.AddDays(10), End = today.AddDays(22), PercentComplete = 50 },
+            new() { Id = "2.1", ParentId = "2", Title = "Wireframes", Start = today.AddDays(10), End = today.AddDays(14), PercentComplete = 100 },
+            new() { Id = "2.2", ParentId = "2", Title = "UI Mockups", Start = today.AddDays(14), End = today.AddDays(19), PercentComplete = 30 },
+            new() { Id = "3", Title = "Development", Start = today.AddDays(20), End = today.AddDays(40), PercentComplete = 15 },
+            new() { Id = "3.1", ParentId = "3", Title = "Backend API", Start = today.AddDays(20), End = today.AddDays(30), PercentComplete = 30 },
+            new() { Id = "3.2", ParentId = "3", Title = "Frontend UI", Start = today.AddDays(25), End = today.AddDays(35), PercentComplete = 10 },
+        ];
+    }
+}

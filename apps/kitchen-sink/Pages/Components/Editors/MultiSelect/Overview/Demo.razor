@@ -1,0 +1,63 @@
+@page "/components/editors/multiselect/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MultiSelect / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MultiSelect / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMultiSelect</code> lets users pick one or many items from a filterable list,
+            rendering each selection as a tag. Provide data through <code>Data</code>, <code>TextField</code>,
+            and <code>ValueField</code>; the selected keys flow through <code>Value</code> /
+            <code>ValueChanged</code> as a <code>List&lt;TValue&gt;</code>. Use <code>TagMode</code> to
+            collapse selections into a single summary tag, and <code>AutoClose</code> /
+            <code>ShowClearButton</code> to tune interaction.
+        </p>
+        <p>
+            See <a href="/components/editors/multiselect/checkboxes">checkboxes</a>,
+            <a href="/components/editors/multiselect/grouping">grouping</a>, and
+            <a href="/components/editors/multiselect/virtualization">virtualization</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishField>
+                <SunfishLabel>Countries</SunfishLabel>
+                <SunfishMultiSelect TItem="Country"
+                                   TValue="int"
+                                   Data="@_countries"
+                                   TextField="Name"
+                                   ValueField="Id"
+                                   Value="@_selectedValues"
+                                   ValueChanged="@((List<int> v) => _selectedValues = v)"
+                                   Placeholder="Select countries..." />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "MultiSelect", "Overview"];
+
+    private List<int> _selectedValues = new();
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

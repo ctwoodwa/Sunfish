@@ -1,0 +1,45 @@
+@page "/components/editors/textarea/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TextArea / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TextArea / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/TextArea/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTextArea</code> is a multi-line text input for longer free-form entry such as
+            descriptions, comments, or notes. Configure the initial visible height with <code>Rows</code>,
+            bind the value with <code>Value</code> / <code>ValueChanged</code>, and hint the expected content
+            with <code>Placeholder</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/textarea/autoresize">autoresize</a>,
+            <a href="/components/editors/textarea/events">events</a>, and
+            <a href="/components/editors/textarea/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishField>
+                <SunfishLabel>Description</SunfishLabel>
+                <SunfishTextArea Value="@_description"
+                                ValueChanged="@(v => _description = v)"
+                                Rows="4"
+                                Placeholder="Enter a description" />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "TextArea", "Overview"];
+
+    private string? _description;
+}

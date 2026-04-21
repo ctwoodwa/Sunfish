@@ -1,0 +1,52 @@
+@page "/components/data-display/treeview/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TreeView / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeView / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeView</code> renders a hierarchy of nodes. Use <code>SunfishTreeItem</code>
+            child content for literal trees, or bind <code>Data</code> with <code>IdField</code> /
+            <code>ParentIdField</code> (flat) or <code>ItemsField</code> (hierarchical) for data-driven trees.
+            Toggles include <code>SelectionMode</code>, <code>CheckBoxMode</code>,
+            <code>EnableDragDrop</code>, and <code>ExpandOnClick</code>.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/treeview/data-binding">data-binding</a>,
+            <a href="/components/data-display/treeview/checkboxes">checkboxes</a>,
+            <a href="/components/data-display/treeview/load-on-demand">load-on-demand</a>, and
+            <a href="/components/data-display/treeview/drag-and-drop">drag-and-drop</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishTreeView>
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports">
+                            <SunfishTreeItem Title="Q1" />
+                            <SunfishTreeItem Title="Q2" />
+                        </SunfishTreeItem>
+                        <SunfishTreeItem Title="Images" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Downloads" />
+                    <SunfishTreeItem Title="Desktop" />
+                </SunfishTreeView>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "TreeView", "Overview"];
+}

@@ -1,0 +1,41 @@
+@page "/components/buttons/splitbutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SplitButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SplitButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/SplitButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSplitButton</code> pairs a primary action with a dropdown of secondary actions.
+            The primary action raises <code>OnClick</code>; the adjacent chevron toggles an overlay
+            surface populated by the <code>MenuContent</code> <code>RenderFragment</code>.
+        </p>
+        <p>
+            Primary parameters: <code>Variant</code>, <code>Size</code>, <code>Enabled</code>,
+            <code>OnClick</code>, <code>Icon</code>, and <code>MenuContent</code>. See sibling demos for
+            <a href="/components/buttons/splitbutton/appearance">appearance</a>,
+            <a href="/components/buttons/splitbutton/items">items</a>,
+            <a href="/components/buttons/splitbutton/events">events</a>, and
+            <a href="/components/buttons/splitbutton/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishSplitButton>
+                Save
+            </SunfishSplitButton>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "SplitButton", "Overview"];
+}

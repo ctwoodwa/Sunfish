@@ -1,0 +1,5 @@
+{
+    "appHost": {
+        "path": "accelerators\\bridge\\Sunfish.Bridge.AppHost\\Sunfish.Bridge.AppHost.csproj"
+    }
+}

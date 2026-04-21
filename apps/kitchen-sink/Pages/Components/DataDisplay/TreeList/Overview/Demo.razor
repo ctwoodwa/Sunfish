@@ -1,0 +1,68 @@
+@page "/components/data-display/treelist/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TreeList / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeList / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeList&lt;TItem&gt;</code> displays hierarchical data in a grid-like layout with
+            per-column definitions and expand/collapse nodes. Bind flat data and configure <code>IdField</code>
+            and <code>ParentIdField</code> to build the hierarchy automatically. Columns are declared with
+            <code>SunfishTreeListColumn</code>. Toggles such as <code>Sortable</code>, <code>Pageable</code>,
+            <code>FilterMode</code>, and <code>SelectionMode</code> enable common interactions.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/treelist/editing-inline">editing</a>,
+            <a href="/components/data-display/treelist/filtering">filtering</a>,
+            <a href="/components/data-display/treelist/columns-frozen">columns</a>, and
+            <a href="/components/data-display/treelist/row-drag-and-drop">drag-and-drop</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishTreeList TItem="Employee"
+                                 Data="@_employees"
+                                 IdField="Id"
+                                 ParentIdField="ParentId"
+                                 Sortable="true">
+                    <SunfishTreeListColumn Field="Name" Title="Name" />
+                    <SunfishTreeListColumn Field="Department" Title="Department" />
+                    <SunfishTreeListColumn Field="Position" Title="Position" />
+                </SunfishTreeList>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "TreeList", "Overview"];
+
+    private record Employee
+    {
+        public string Id { get; init; } = "";
+        public string? ParentId { get; init; }
+        public string Name { get; init; } = "";
+        public string Department { get; init; } = "";
+        public string Position { get; init; } = "";
+    }
+
+    private readonly List<Employee> _employees =
+    [
+        new() { Id = "1", Name = "Alice", Department = "Engineering", Position = "Director" },
+        new() { Id = "2", ParentId = "1", Name = "Bob", Department = "Engineering", Position = "Lead" },
+        new() { Id = "3", ParentId = "1", Name = "Carol", Department = "Engineering", Position = "Dev" },
+        new() { Id = "4", Name = "Dave", Department = "Marketing", Position = "Director" },
+        new() { Id = "5", ParentId = "4", Name = "Eve", Department = "Marketing", Position = "Analyst" },
+    ];
+}

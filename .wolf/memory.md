@@ -689,3 +689,181 @@
 | 07:44 | Created .github/rulesets/main-branch.json | — | ~313 |
 | 07:44 | Created .github/rulesets/release-tags.json | — | ~120 |
 | 07:45 | Created .github/rulesets/README.md | — | ~1287 |
+| 09:08 | Edited Directory.Packages.props | 2→2 lines | ~55 |
+| 09:08 | Edited Directory.Packages.props | 4→4 lines | ~104 |
+| 09:10 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 4→5 lines | ~121 |
+| 09:10 | Edited packages/ui-adapters-blazor/tests/Components/XlsxExportTests.cs | 4→5 lines | ~84 |
+| 09:10 | Edited packages/ui-adapters-blazor/tests/Components/PdfExportTests.cs | 4→5 lines | ~71 |
+| 09:10 | Edited packages/ui-adapters-blazor/tests/Components/PdfExportTests.cs | inline fix | ~28 |
+| 09:11 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 1→4 lines | ~89 |
+| 09:16 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/reference_efcore_npgsql_preview_lock.md | — | ~323 |
+| 09:16 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~120 |
+| 09:16 | Session end: 9 writes across 6 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 6 reads | ~5129 tok |
+| 09:21 | Session end: 9 writes across 6 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 6 reads | ~5129 tok |
+| 09:22 | Created global.json | — | ~29 |
+| 09:22 | Edited .github/workflows/ci.yml | 3→3 lines | ~26 |
+| 09:22 | Edited .github/workflows/codeql.yml | 3→3 lines | ~26 |
+| 09:22 | Edited .github/workflows/docs.yml | 4→4 lines | ~34 |
+| 09:23 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+| 09:36 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+| 09:38 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+| 09:51 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+| 10:02 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+| 10:04 | Session end: 13 writes across 10 files (Directory.Packages.props, Sunfish.Anchor.csproj, XlsxExportTests.cs, PdfExportTests.cs, reference_efcore_npgsql_preview_lock.md) | 9 reads | ~5244 tok |
+
+## Session: 2026-04-21 10:18
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-21 10:28
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:31 | Created docs/adrs/0017-web-components-lit-technical-basis.md | — | ~5499 |
+| 10:33 | Created icm/00_intake/output/web-components-migration-intake-2026-04-20.md | — | ~3846 |
+| 10:34 | Session end: 2 writes across 2 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md) | 1 reads | ~13880 tok |
+| 10:42 | Session end: 2 writes across 2 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md) | 1 reads | ~13880 tok |
+| 10:42 | Session end: 2 writes across 2 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md) | 1 reads | ~13880 tok |
+| 10:47 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/project_pre_release_latest_first_policy.md | — | ~496 |
+| 10:47 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~116 |
+| 10:48 | Session end: 4 writes across 4 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md) | 2 reads | ~14536 tok |
+| 10:56 | Session end: 4 writes across 4 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md) | 6 reads | ~17342 tok |
+| 11:09 | Edited Directory.Packages.props | inline fix | ~17 |
+| 11:13 | Session end: 5 writes across 5 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 7 reads | ~17360 tok |
+| 11:16 | Session end: 5 writes across 5 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 7 reads | ~17360 tok |
+| 11:31 | Created .vscode/tasks.json | — | ~556 |
+| 11:31 | Created .vscode/launch.json | — | ~735 |
+| 11:31 | Edited apps/docs/docfx.json | inline fix | ~2 |
+| 11:32 | Session end: 8 writes across 8 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 13 reads | ~19084 tok |
+| 12:48 | Session end: 8 writes across 8 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 13 reads | ~19084 tok |
+| 12:58 | Session end: 8 writes across 8 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 13 reads | ~19084 tok |
+| 13:16 | Session end: 8 writes across 8 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 13 reads | ~19084 tok |
+| 13:45 | Created docs/adrs/0022-example-catalog-and-docs-taxonomy.md | — | ~4830 |
+| 13:47 | Created _shared/product/example-catalog.yaml | — | ~9383 |
+| 13:50 | Created packages/ui-adapters-blazor/Components/Showcase/SunfishExamplePanel.razor | — | ~2717 |
+| 13:50 | Created packages/ui-adapters-blazor/Components/Showcase/SunfishSourceFile.cs | — | ~128 |
+| 13:51 | Created packages/ui-adapters-blazor/Components/Showcase/SunfishExamplePanel.razor.css | — | ~1793 |
+| 13:52 | Created apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor | — | ~1485 |
+| 13:55 | Session end: 14 writes across 14 files (0017-web-components-lit-technical-basis.md, web-components-migration-intake-2026-04-20.md, project_pre_release_latest_first_policy.md, MEMORY.md, Directory.Packages.props) | 18 reads | ~49457 tok |
+
+## Session: 2026-04-21 14:06
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-21 16:42
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:47 | Created apps/kitchen-sink/build/SunfishDemoSources.targets | — | ~1665 |
+| 16:47 | Edited apps/kitchen-sink/Sunfish.KitchenSink.csproj | 2→4 lines | ~46 |
+| 16:47 | Edited apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor | removed 54 lines | ~19 |
+| 16:47 | Edited apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/Demo.razor | "@_sources" → "@GeneratedSources" | ~14 |
+| 16:49 | Edited apps/kitchen-sink/build/SunfishDemoSources.targets | 16→15 lines | ~192 |
+| 16:49 | Edited apps/kitchen-sink/build/SunfishDemoSources.targets | 6→7 lines | ~108 |
+| 16:49 | Edited apps/kitchen-sink/build/SunfishDemoSources.targets | LogError() → TrimEnd() | ~155 |
+| 16:49 | Edited apps/kitchen-sink/build/SunfishDemoSources.targets | 4→5 lines | ~64 |
+| 16:51 | Created icm/working-notes/2026-04-21-component-inventory-gap-report.md | — | ~1181 |
+| 16:53 | Created icm/working-notes/2026-04-21-wave-1-subagent-brief.md | — | ~1291 |
+| 16:54 | Session end: 10 writes across 5 files (SunfishDemoSources.targets, Sunfish.KitchenSink.csproj, Demo.razor, 2026-04-21-component-inventory-gap-report.md, 2026-04-21-wave-1-subagent-brief.md) | 10 reads | ~16684 tok |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~13 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~12 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~13 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~13 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~12 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | inline fix | ~12 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~38 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~35 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~38 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~46 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~44 |
+| 16:59 | Edited _shared/product/example-catalog.yaml | 4→4 lines | ~36 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~34 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~32 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~31 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~36 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~32 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~34 |
+| 17:00 | Edited _shared/product/example-catalog.yaml | 3→4 lines | ~32 |
+
+## Session: 2026-04-21 17:02
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/AppBar/Overview/Demo.razor | — | ~448 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/Drawer/Overview/Demo.razor | — | ~554 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/GridLayout/Overview/Demo.razor | — | ~723 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Overview/Demo.razor | — | ~692 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/Splitter/Overview/Demo.razor | — | ~574 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Buttons/SplitButton/Overview/Demo.razor | — | ~458 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/Demo.razor | — | ~512 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Overview/Demo.razor | — | ~613 |
+| 17:05 | Created apps/kitchen-sink/Pages/Components/Layout/MediaQuery/Overview/Demo.razor | — | ~362 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Charts/Chart/Overview/Demo.razor | — | ~1090 |
+| 17:06 | Created .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/Editor/Overview/Demo.razor | — | ~629 |
+| 17:06 | Created .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/PdfViewer/Overview/Demo.razor | — | ~472 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Index.razor | — | ~898 |
+| 17:06 | Edited apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Overview/Demo.razor | inline fix | ~27 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Charts/StockChart/Overview/Demo.razor | — | ~437 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Charts/Sankey/Overview/Demo.razor | — | ~836 |
+| 17:06 | Created .claude/worktrees/agent-aeedc7e0/apps/kitchen-sink/Pages/Components/Editor/FileManager/Overview/Demo.razor | — | ~1018 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Charts/LinearGauge/Overview/Demo.razor | — | ~467 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/SmartAi/AIPrompt/Overview/Demo.razor | — | ~670 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Overview/Demo.razor | — | ~553 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/SmartAi/Chat/Overview/Demo.razor | — | ~734 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/SmartAi/PromptBox/Overview/Demo.razor | — | ~671 |
+| 17:06 | Created apps/kitchen-sink/Pages/Components/Navigation/Menu/Overview/Demo.razor | — | ~598 |
+| 17:06 | Created .claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/Demo.razor | — | ~970 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Forms/Form/Overview/Demo.razor | — | ~909 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/SmartAi/SmartPasteButton/Overview/Demo.razor | — | ~617 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/Dialog/Overview/Demo.razor | — | ~840 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Navigation/ContextMenu/Overview/Demo.razor | — | ~600 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/SmartAi/SpeechToTextButton/Overview/Demo.razor | — | ~813 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Forms/Validation/Overview/Demo.razor | — | ~951 |
+| 17:07 | Edited .claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/Demo.razor | inline fix | ~27 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/Window/Overview/Demo.razor | — | ~968 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Overview/Demo.razor | — | ~948 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Navigation/Stepper/Overview/Demo.razor | — | ~628 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Overview/Demo.razor | — | ~676 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/Demo.razor | — | ~851 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Overview/Demo.razor | — | ~611 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Overview/Demo.razor | — | ~621 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Overview/Demo.razor | — | ~960 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/ChunkProgressBar/Overview/Demo.razor | — | ~611 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/DataDisplay/ListView/Overview/Demo.razor | — | ~524 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Editors/ComboBox/Overview/Demo.razor | — | ~662 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Overview/Demo.razor | — | ~787 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Overview/Demo.razor | — | ~658 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/Loader/Overview/Demo.razor | — | ~766 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Editors/MultiColumnComboBox/Overview/Demo.razor | — | ~773 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Feedback/LoaderContainer/Overview/Demo.razor | — | ~618 |
+| 17:07 | Created apps/kitchen-sink/Pages/Components/Navigation/Wizard/Overview/Demo.razor | — | ~826 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/DropDownList/Overview/Demo.razor | — | ~665 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Feedback/Skeleton/Overview/Demo.razor | — | ~480 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Overview/Demo.razor | — | ~1306 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Overview/Demo.razor | — | ~692 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Feedback/AnimationContainer/Overview/Demo.razor | — | ~439 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Overview/Demo.razor | — | ~739 |
+| 17:08 | Edited apps/kitchen-sink/Pages/Components/Forms/Validation/Overview/Demo.razor | modified if() | ~318 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Overview/Demo.razor | — | ~790 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/Checkbox/Overview/Demo.razor | — | ~502 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/RadioGroup/Overview/Demo.razor | — | ~469 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor | — | ~714 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/Switch/Overview/Demo.razor | — | ~404 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/Demo.razor | — | ~657 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/Slider/Overview/Demo.razor | — | ~462 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/RangeSlider/Overview/Demo.razor | — | ~394 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Card/Overview/Demo.razor | — | ~695 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/NumericTextBox/Overview/Demo.razor | — | ~518 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Overview/Demo.razor | — | ~504 |
+| 17:08 | Created apps/kitchen-sink/Pages/Components/Editors/TextBox/Overview/Demo.razor | — | ~516 |
+| 17:09 | Edited apps/kitchen-sink/Pages/Components/Feedback/Dialog/Overview/Demo.razor | inline fix | ~17 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Map/Overview/Demo.razor | — | ~690 |
+| 17:09 | Edited apps/kitchen-sink/Pages/Components/Feedback/Window/Overview/Demo.razor | inline fix | ~12 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/TextArea/Overview/Demo.razor | — | ~472 |
+| 17:09 | Edited apps/kitchen-sink/Pages/Components/Feedback/AnimationContainer/Overview/Demo.razor | 2→2 lines | ~16 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Avatar/Overview/Demo.razor | — | ~626 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/Demo.razor | — | ~561 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Overview/Demo.razor | — | ~712 |
+| 17:09 | Created apps/kitchen-sink/Pages/Components/Editors/DateInput/Overview/Demo.razor | — | ~437 |

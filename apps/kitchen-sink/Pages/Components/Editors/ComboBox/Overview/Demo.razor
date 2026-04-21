@@ -1,0 +1,62 @@
+@page "/components/editors/combobox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ComboBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ComboBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ComboBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishComboBox</code> pairs a free-text input with a filtered dropdown of selectable items.
+            Bind data with <code>Data</code>, <code>TextField</code>, and <code>ValueField</code>; capture the
+            selected key through <code>Value</code> / <code>ValueChanged</code>. Configure <code>FilterMode</code>
+            to switch between <em>Contains</em> and <em>StartsWith</em>, and toggle
+            <code>ShowClearButton</code> to expose a reset affordance.
+        </p>
+        <p>
+            See <a href="/components/editors/combobox/virtualization">virtualization</a>,
+            <a href="/components/editors/combobox/templates">templates</a>, and
+            <a href="/components/editors/combobox/custom-value">custom-value</a> for feature-specific demos.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishField>
+                <SunfishLabel>Country</SunfishLabel>
+                <SunfishComboBox TItem="Country"
+                                TValue="int?"
+                                Data="@_countries"
+                                TextField="Name"
+                                ValueField="Id"
+                                Value="@_selectedValue"
+                                ValueChanged="@(v => _selectedValue = v)"
+                                Placeholder="Type to search..." />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "ComboBox", "Overview"];
+
+    private int? _selectedValue;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

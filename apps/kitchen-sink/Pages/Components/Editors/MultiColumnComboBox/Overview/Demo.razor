@@ -1,0 +1,64 @@
+@page "/components/editors/multicolumncombobox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MultiColumnComboBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MultiColumnComboBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MultiColumnComboBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMultiColumnComboBox</code> is a combo box with a tabular dropdown so users can
+            compare multiple fields (name, department, title, etc.) while selecting a single value.
+            Configure columns via the default data binding (<code>Data</code>, <code>TextField</code>,
+            <code>ValueField</code>) and enable type-to-search through <code>Filterable</code> with
+            <code>FilterFields</code>.
+        </p>
+        <p>
+            See <a href="/components/editors/multicolumncombobox/templates">templates</a> and
+            <a href="/components/editors/multicolumncombobox/virtualization">virtualization</a>
+            for feature-specific demos.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishMultiColumnComboBox Data="@_employees"
+                                       TextField="Name"
+                                       ValueField="Id"
+                                       @bind-Value="_selectedValue"
+                                       Filterable="true"
+                                       FilterFields="Name,Department"
+                                       Placeholder="Select an employee"
+                                       Width="320px" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "MultiColumnComboBox", "Overview"];
+
+    private object? _selectedValue;
+
+    private readonly List<object> _employees = new()
+    {
+        new Employee { Id = "1", Name = "Alice Johnson", Department = "Engineering", Title = "Senior Developer" },
+        new Employee { Id = "2", Name = "Bob Smith", Department = "Design", Title = "UX Lead" },
+        new Employee { Id = "3", Name = "Carol Williams", Department = "Engineering", Title = "Staff Engineer" },
+        new Employee { Id = "4", Name = "David Brown", Department = "Marketing", Title = "Product Manager" },
+        new Employee { Id = "5", Name = "Eve Davis", Department = "Engineering", Title = "Junior Developer" },
+    };
+
+    private class Employee
+    {
+        public string Id { get; set; } = "";
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public string Title { get; set; } = "";
+    }
+}

@@ -1,0 +1,46 @@
+@page "/components/editors/checkbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Checkbox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Checkbox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Checkbox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCheckbox</code> is a binary form control with optional tri-state support. Two-way bind
+            the state through <code>Checked</code> (or <code>@@bind-Checked</code>), label it with
+            <code>Label</code>, and opt into the partial-check visual via <code>Indeterminate</code>.
+            The <code>LabelPosition</code> parameter controls whether text appears before or after the box.
+        </p>
+        <p>
+            See <a href="/components/editors/checkbox/indeterminate-state">indeterminate-state</a>,
+            <a href="/components/editors/checkbox/events">events</a>, and
+            <a href="/components/editors/checkbox/validation">validation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <SunfishField>
+                <SunfishCheckbox @bind-Checked="_checked" Label="Accept terms and conditions" />
+            </SunfishField>
+            <p>Checked: <strong>@_checked</strong></p>
+
+            <SunfishField>
+                <SunfishCheckbox Indeterminate="true" Label="Select all (indeterminate)" />
+            </SunfishField>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Checkbox", "Overview"];
+
+    private bool _checked;
+}

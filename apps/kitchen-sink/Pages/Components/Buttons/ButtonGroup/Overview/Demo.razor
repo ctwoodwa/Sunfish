@@ -1,0 +1,54 @@
+@page "/components/buttons/buttongroup/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ButtonGroup / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ButtonGroup / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButtonGroup</code> combines related <code>SunfishButton</code> instances into a single
+            visual unit, making it clear that the actions belong together. Children are projected through a
+            cascading parameter so the group can coordinate layout and state across the set.
+        </p>
+        <p>
+            Primary parameters: <code>SelectionMode</code> for optional toggle selection,
+            <code>Enabled</code> to disable the entire group, <code>Width</code> to constrain the container,
+            and <code>SelectedChanged</code> to observe selection. See sibling demos for
+            <a href="/components/buttons/buttongroup/appearance">appearance</a>,
+            <a href="/components/buttons/buttongroup/selection">selection</a>,
+            <a href="/components/buttons/buttongroup/events">events</a>, and
+            <a href="/components/buttons/buttongroup/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Center</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
+                </SunfishButtonGroup>
+            </div>
+
+            <div class="demo-row">
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                </SunfishButtonGroup>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ButtonGroup", "Overview"];
+}
