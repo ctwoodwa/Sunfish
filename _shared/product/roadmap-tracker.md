@@ -7,6 +7,10 @@
 
 ---
 
+> **Aspirational, not committed.** Per [vision.md §Project Mode](vision.md), Sunfish is a self-funded AI-coding-learning vehicle with a bus factor of 1. The ADRs, packages, and phase markers (P1–P6) enumerated below are the *ambitious scope* the project is aiming at — a learning target, not a delivery contract. Treat "Pending" rows as "planned if the project continues on its current trajectory," not as commitments to users or contributors. Only rows marked **Shipped** / **Accepted** reflect completed work.
+
+---
+
 ## Overview
 
 The planning phase produced ADRs 0005–0014, 7 Foundation-tier packages, 5 reference bundle manifests + a meta-schema, 1 audit doc, and 2 platform-spec reconciliation preambles. Every artifact is cross-referenced below. Net cost: ~10 focused planning iterations with build+test verification between each.
