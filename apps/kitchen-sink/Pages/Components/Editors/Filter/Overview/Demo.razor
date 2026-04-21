@@ -1,4 +1,4 @@
-@page "/components/editors/filter/overview"
+@page "/components/forms/filter/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
 @using CompositeFilterDescriptor = Sunfish.Foundation.Models.CompositeFilterDescriptor
@@ -52,7 +52,7 @@
 
 @code {
     private static readonly string[] _breadcrumb =
-        ["Components", "Editors", "Filter", "Overview"];
+        ["Components", "Forms", "Filter", "Overview"];
 
     private CompositeFilterDescriptor? _filter = new();
     private bool _applied;

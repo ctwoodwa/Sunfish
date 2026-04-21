@@ -20,14 +20,14 @@
     <nav class="next-prev-nav">
         @if (prev is not null)
         {
-            <a class="next-prev-link prev" href="/components/@prev.Slug">
+            <a class="next-prev-link prev" href="@prev.OverviewUrl">
                 <span class="next-prev-label">Previous</span>
                 <span class="next-prev-title">@prev.Name</span>
             </a>
         }
         @if (next is not null)
         {
-            <a class="next-prev-link next" href="/components/@next.Slug">
+            <a class="next-prev-link next" href="@next.OverviewUrl">
                 <span class="next-prev-label">Next</span>
                 <span class="next-prev-title">@next.Name</span>
             </a>

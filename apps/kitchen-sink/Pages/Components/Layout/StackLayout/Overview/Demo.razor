@@ -1,0 +1,31 @@
+@page "/components/layout/stacklayout/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>StackLayout / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="StackLayout / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/StackLayout/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>Horizontal or vertical stack layout arrangement.</p>
+        <p>
+            This overview page is a stub — the live demo is forthcoming. The component is tracked
+            in the Sunfish example catalog for cross-provider parity.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
+            <strong>StackLayout</strong> — overview demo coming soon.
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "StackLayout", "Overview"];
+}

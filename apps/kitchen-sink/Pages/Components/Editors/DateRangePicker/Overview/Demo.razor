@@ -1,4 +1,4 @@
-@page "/components/editors/daterangepicker/overview"
+@page "/components/forms/daterangepicker/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
 
@@ -33,7 +33,7 @@
 
 @code {
     private static readonly string[] _breadcrumb =
-        ["Components", "Editors", "DateRangePicker", "Overview"];
+        ["Components", "Forms", "DateRangePicker", "Overview"];
 
     private DateOnly? _start = DateOnly.FromDateTime(DateTime.Today);
     private DateOnly? _end = DateOnly.FromDateTime(DateTime.Today.AddDays(7));

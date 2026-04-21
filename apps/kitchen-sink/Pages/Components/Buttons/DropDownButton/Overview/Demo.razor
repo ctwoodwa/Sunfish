@@ -1,0 +1,31 @@
+@page "/components/buttons/dropdownbutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DropDownButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropDownButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/DropDownButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>A button that opens a dropdown menu of actions.</p>
+        <p>
+            This overview page is a stub — the live demo is forthcoming. The component is tracked
+            in the Sunfish example catalog for cross-provider parity.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
+            <strong>DropDownButton</strong> — overview demo coming soon.
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "DropDownButton", "Overview"];
+}

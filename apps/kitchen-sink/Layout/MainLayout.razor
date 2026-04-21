@@ -197,7 +197,7 @@
                                         var isCurrent = sibling.Slug == comp.Slug;
                                         <div class="toc-item @(isCurrent ? "expanded" : "")">
                                             <a class="toc-link @(isCurrent ? "active" : "")"
-                                               href="/components/@sibling.Slug">@sibling.Name</a>
+                                               href="@sibling.OverviewUrl">@sibling.Name</a>
                                         </div>
                                     }
                                 }
@@ -211,7 +211,7 @@
                                     @foreach (var comp in components)
                                     {
                                         <a class="toc-link @(IsComponentActive(comp.Slug) ? "active" : "")"
-                                           href="/components/@comp.Slug">@comp.Name</a>
+                                           href="@comp.OverviewUrl">@comp.Name</a>
                                     }
                                 }
                                 <div class="toc-section-title">Resources</div>

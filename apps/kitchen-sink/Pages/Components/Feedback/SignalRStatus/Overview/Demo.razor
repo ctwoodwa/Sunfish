@@ -1,0 +1,31 @@
+@page "/components/feedback/signalr-connection-status/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SignalR Status / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SignalR Status / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SignalRStatus/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>Displays aggregate SignalR hub health as a toolbar icon with a popup listing every registered hub connection.</p>
+        <p>
+            This overview page is a stub — the live demo is forthcoming. The component is tracked
+            in the Sunfish example catalog for cross-provider parity.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
+            <strong>SignalR Status</strong> — overview demo coming soon.
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SignalR Status", "Overview"];
+}

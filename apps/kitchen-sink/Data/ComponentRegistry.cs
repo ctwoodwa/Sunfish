@@ -10,7 +10,13 @@ public static class ComponentRegistry
         string Description,
         string ApiPath,
         string[] SubPages
-    );
+    )
+    {
+        public string OverviewUrl => $"/components/{CategorySlug}/{Slug.ToLowerInvariant()}/overview";
+
+        public string SubPageUrl(string subPage) =>
+            $"/components/{CategorySlug}/{Slug.ToLowerInvariant()}/{subPage.ToLowerInvariant()}";
+    }
 
     public record CategoryInfo(string Name, string Slug);
 
@@ -166,6 +172,9 @@ public static class ComponentRegistry
             ApiNs("Utility"), OverviewOnly),
         new("Filter", "filter", "Forms", "forms",
             "Composable filter builder for constructing query expressions.",
+            ApiNs("Forms.Inputs"), OverviewOnly),
+        new("Label", "label", "Forms", "forms",
+            "Form label with accessibility association to a target input.",
             ApiNs("Forms.Inputs"), OverviewOnly),
 
         // ── Data Display ────────────────────────────────────────────────
@@ -419,6 +428,9 @@ public static class ComponentRegistry
         new("RootComponent", "rootcomponent", "Miscellaneous", "miscellaneous",
             "Application root wrapper for theme and provider setup.",
             "/api/Sunfish.UIAdapters.Blazor.Components.SunfishThemeProvider.html", OverviewOnly),
+        new("Icon", "icon", "Miscellaneous", "miscellaneous",
+            "Semantic icon rendering with built-in icon library and custom SVG support.",
+            ApiNs("Utility"), OverviewOnly),
     ];
 
     private static readonly Dictionary<string, ComponentInfo> _bySlug =
