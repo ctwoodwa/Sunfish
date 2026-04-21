@@ -1,0 +1,125 @@
+@page "/components/editors/editor/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Editor / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Editor / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/Editor/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishEditor</code> is built to be operable without a mouse. The content surface
+            is a <code>role="textbox"</code> element with <code>aria-multiline="true"</code>, the
+            toolbar is a <code>role="toolbar"</code> with every tool carrying an <code>aria-label</code>
+            and <code>aria-pressed</code> state, and the outer wrapper is
+            <code>role="application"</code> with an <code>aria-label="Rich text editor"</code>.
+        </p>
+        <ul>
+            <li>
+                <strong>Keyboard shortcuts</strong> (handled inside the content area):
+                <kbd>Ctrl</kbd>+<kbd>B</kbd> bold,
+                <kbd>Ctrl</kbd>+<kbd>I</kbd> italic,
+                <kbd>Ctrl</kbd>+<kbd>U</kbd> underline,
+                <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo,
+                <kbd>Ctrl</kbd>+<kbd>Y</kbd> redo.
+            </li>
+            <li>
+                <strong>Tab order</strong>: the content area has <code>tabindex="0"</code>, the
+                toolbar buttons are focusable in source order, and <kbd>Esc</kbd> dismisses image
+                resize handles.
+            </li>
+            <li>
+                <strong>Screen-reader hooks</strong>: pass <code>AriaLabelledBy</code> and
+                <code>AriaDescribedBy</code> to wire the content area to your own
+                <code>&lt;label&gt;</code> and help text, or supply a
+                <code>SunfishField</code> + <code>SunfishLabel</code> to have the association made
+                for you.
+            </li>
+            <li>
+                <strong>Read-only and disabled states</strong> are surfaced via
+                <code>aria-readonly</code> and the native <code>disabled</code> attribute so
+                assistive tech announces them correctly.
+            </li>
+        </ul>
+        <p>
+            The examples below show a labelled editor with a visible help text association, a
+            read-only rendering, and a keyboard-shortcut cheat-sheet.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled editor with described help text</h3>
+                <label id="bio-label" style="display:block; font-weight:600; margin-bottom:.25rem;">Short biography</label>
+                <span id="bio-help" style="display:block; color:#666; font-size:.85rem; margin-bottom:.5rem;">
+                    Plain text plus basic formatting. Screen readers will announce both the label and this help text.
+                </span>
+                <SunfishEditor @bind-Value="_bio"
+                               AriaLabelledBy="bio-label"
+                               AriaDescribedBy="bio-help"
+                               Height="160px"
+                               Placeholder="Tell us about yourself..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Read-only rendering</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    When <code>ReadOnly</code> is set, the toolbar is hidden and the content area exposes
+                    <code>aria-readonly="true"</code>.
+                </p>
+                <SunfishEditor Value="@_readonlyContent" ReadOnly="true" Height="140px" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard shortcut reference</h3>
+                <table style="border-collapse:collapse; width:100%; max-width:420px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Shortcut</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">
+                                    @((MarkupString)keys)
+                                </td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Editor", "Accessibility"];
+
+    private string? _bio = "<p>Edit me. I am associated with a visible label and help text.</p>";
+    private string _readonlyContent =
+        "<p>This editor is <strong>read-only</strong> — no toolbar, no contenteditable, and "
+        + "<code>aria-readonly=\"true\"</code> on the content area.</p>";
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Ctrl</kbd>+<kbd>B</kbd>",  "Bold"),
+        ("<kbd>Ctrl</kbd>+<kbd>I</kbd>",  "Italic"),
+        ("<kbd>Ctrl</kbd>+<kbd>U</kbd>",  "Underline"),
+        ("<kbd>Ctrl</kbd>+<kbd>Z</kbd>",  "Undo"),
+        ("<kbd>Ctrl</kbd>+<kbd>Y</kbd>",  "Redo"),
+        ("<kbd>Tab</kbd>",                "Move focus to / from the editor"),
+        ("<kbd>Esc</kbd>",                "Dismiss image resize handles")
+    ];
+}

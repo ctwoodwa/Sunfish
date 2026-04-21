@@ -1,0 +1,107 @@
+@page "/components/editors/editor/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Editor / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Editor / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/Editor/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishEditor</code> publishes four event callbacks that together cover the common
+            integration surface:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — two-way binding companion for <code>@@bind-Value</code>, fires every debounced input.</li>
+            <li><code>OnChange</code> — coarse-grained "content changed" notification (also fires after debounce).</li>
+            <li><code>OnSelectionChange</code> — fires when the caret or selection moves; pair it with <code>queryCommandState</code> to drive custom toolbars.</li>
+            <li><code>OnCommand</code> — fires whenever a toolbar tool or programmatic <code>ExecuteCommandAsync</code> runs; payload is the command name.</li>
+            <li><code>EditModeChanged</code> — fires when the editor flips between <code>Edit</code>, <code>Preview</code>, and <code>Source</code>.</li>
+        </ul>
+        <p>
+            The append-only log on the right records every event in order. Type, format, move the
+            caret, or toggle the source view to see the stream populate.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 280px; gap:1rem; align-items:start;">
+
+            <div>
+                <SunfishEditor Value="@_content"
+                               ValueChanged="HandleValueChanged"
+                               OnChange="HandleOnChange"
+                               OnSelectionChange="HandleSelectionChange"
+                               OnCommand="HandleCommand"
+                               EditModeChanged="HandleEditModeChanged"
+                               Height="240px"
+                               Placeholder="Type, select, format, and toggle View Source..." />
+                <div style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="align-self:center; color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:340px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li><strong>@entry.Event</strong> — @entry.Detail</li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Editor", "Events"];
+
+    private string? _content = "<p>Select some <strong>text</strong> and click <em>Bold</em> to watch events fire.</p>";
+
+    private record LogEntry(string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(evt, detail));
+        // cap log so the UI stays snappy
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void HandleValueChanged(string value)
+    {
+        _content = value;
+        Append("ValueChanged", $"{value?.Length ?? 0} chars");
+    }
+
+    private void HandleOnChange(string value) =>
+        Append("OnChange", $"{value?.Length ?? 0} chars");
+
+    private void HandleSelectionChange() =>
+        Append("OnSelectionChange", "caret/selection moved");
+
+    private void HandleCommand(string command) =>
+        Append("OnCommand", command);
+
+    private void HandleEditModeChanged(EditorEditMode mode) =>
+        Append("EditModeChanged", mode.ToString());
+
+    private void ClearLog() => _log.Clear();
+}

@@ -1,0 +1,106 @@
+@page "/components/editors/editor/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Editor / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Editor / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editor/Editor/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishEditor</code> exposes three layout dials —
+            <code>Height</code>, <code>Width</code>, and <code>Adaptive</code> — plus full control over
+            which toolbar actions render via the <code>Tools</code> parameter. Visual chrome is driven
+            entirely from Sunfish design tokens (<code>--sf-color-surface</code>,
+            <code>--sf-color-border</code>, <code>--sf-color-text</code>), so the editor picks up
+            light/dark themes from its enclosing provider without component-level overrides.
+        </p>
+        <p>
+            The examples below contrast a compact minimal-toolbar editor, a tall full-featured editor
+            with an adaptive overflow menu, and a tokenised dark surface applied through CSS custom
+            properties — all three share the same component, only parameters and surrounding tokens
+            differ.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Compact — minimal toolbar, 120px</h3>
+                <SunfishEditor @bind-Value="_compactContent"
+                               Tools="_minimalTools"
+                               Height="120px"
+                               Placeholder="Short note..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standard — default tools, 220px</h3>
+                <SunfishEditor @bind-Value="_standardContent"
+                               Height="220px"
+                               Placeholder="Write something..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Tall + adaptive — overflows toolbar items into a menu when narrow</h3>
+                <SunfishEditor @bind-Value="_tallContent"
+                               Tools="_fullTools"
+                               Height="320px"
+                               Width="480px"
+                               Adaptive="true"
+                               Placeholder="Drag the panel narrower to see the overflow menu..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Dark surface — theme via design tokens</h3>
+                <div style="--sf-color-surface:#1e1e22; --sf-color-border:#3a3a42; --sf-color-text:#e8e8ea; padding:12px; border-radius:6px; background:var(--sf-color-surface); color:var(--sf-color-text);">
+                    <SunfishEditor @bind-Value="_darkContent"
+                                   Tools="_standardTools"
+                                   Height="180px"
+                                   Placeholder="Dark-themed editor..." />
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Editors", "Editor", "Appearance"];
+
+    private string? _compactContent  = "<p>A short inline note.</p>";
+    private string? _standardContent = "<p>The <strong>standard</strong> toolbar ships with formatting, lists, alignment, links, and history.</p>";
+    private string? _tallContent     = "<p>Try resizing this panel — the toolbar collapses extra items into a <em>More</em> menu.</p>";
+    private string? _darkContent     = "<p>Tokenised dark surface.</p>";
+
+    private static readonly EditorTool[] _minimalTools =
+    [
+        EditorTool.Bold, EditorTool.Italic, EditorTool.Underline,
+        EditorTool.Undo, EditorTool.Redo
+    ];
+
+    private static readonly EditorTool[] _standardTools =
+    [
+        EditorTool.Bold, EditorTool.Italic, EditorTool.Underline, EditorTool.Strikethrough,
+        EditorTool.OrderedList, EditorTool.UnorderedList,
+        EditorTool.Link, EditorTool.Unlink,
+        EditorTool.Undo, EditorTool.Redo
+    ];
+
+    private static readonly EditorTool[] _fullTools =
+    [
+        EditorTool.Bold, EditorTool.Italic, EditorTool.Underline, EditorTool.Strikethrough,
+        EditorTool.Subscript, EditorTool.Superscript,
+        EditorTool.OrderedList, EditorTool.UnorderedList,
+        EditorTool.Indent, EditorTool.Outdent,
+        EditorTool.AlignLeft, EditorTool.AlignCenter, EditorTool.AlignRight, EditorTool.AlignJustify,
+        EditorTool.Link, EditorTool.Unlink, EditorTool.Image, EditorTool.HorizontalRule,
+        EditorTool.Undo, EditorTool.Redo,
+        EditorTool.ClearFormatting, EditorTool.ViewSource
+    ];
+}
