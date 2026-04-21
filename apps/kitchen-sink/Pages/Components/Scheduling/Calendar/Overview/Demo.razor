@@ -1,0 +1,118 @@
+@page "/components/scheduling/calendar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Calendar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Calendar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Scheduling/Calendar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCalendar</code> is an inline calendar for browsing and selecting dates.
+            It supports three <code>SelectionMode</code>s — <code>Single</code>,
+            <code>Multiple</code>, and <code>Range</code> — four <code>View</code> levels
+            (<code>Month</code>, <code>Year</code>, <code>Decade</code>, <code>Century</code>),
+            and rich keyboard navigation.
+        </p>
+        <p>
+            See <a href="/components/scheduling/calendar/events">events</a> for the event
+            surface (<code>OnChange</code>, <code>OnViewChange</code>, <code>OnNavigate</code>).
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:2rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Single selection</h3>
+                <p style="margin:0 0 .5rem; color:#555;">
+                    Two-way bind a <code>DateTime?</code> via <code>@@bind-Value</code>.
+                </p>
+                <div class="demo-row" style="display:flex; gap:1rem; align-items:flex-start;">
+                    <SunfishCalendar SelectionMode="CalendarSelectionMode.Single"
+                                     @bind-Value="_singleDate"
+                                     WeekNumber="true" />
+                    <div style="min-width:200px;">
+                        <strong>Selected:</strong>
+                        @if (_singleDate.HasValue)
+                        {
+                            <span>@_singleDate.Value.ToString("D")</span>
+                        }
+                        else
+                        {
+                            <em>(none)</em>
+                        }
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Multiple selection</h3>
+                <p style="margin:0 0 .5rem; color:#555;">
+                    Use <code>SelectionMode="CalendarSelectionMode.Multiple"</code> and bind
+                    <code>SelectedDates</code>. Click each date to toggle.
+                </p>
+                <div class="demo-row" style="display:flex; gap:1rem; align-items:flex-start;">
+                    <SunfishCalendar SelectionMode="CalendarSelectionMode.Multiple"
+                                     @bind-SelectedDates="_multipleDates" />
+                    <div style="min-width:200px;">
+                        <strong>Selected (@_multipleDates.Count):</strong>
+                        <ul style="margin:.25rem 0 0; padding-left:1rem;">
+                            @foreach (var d in _multipleDates.OrderBy(d => d))
+                            {
+                                <li>@d.ToString("ddd, MMM d")</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Range selection</h3>
+                <p style="margin:0 0 .5rem; color:#555;">
+                    Use <code>SelectionMode="CalendarSelectionMode.Range"</code> with
+                    <code>Start</code> / <code>End</code>. First click sets the start, second
+                    the end.
+                </p>
+                <div class="demo-row" style="display:flex; gap:1rem; align-items:flex-start;">
+                    <SunfishCalendar SelectionMode="CalendarSelectionMode.Range"
+                                     @bind-Start="_rangeStart"
+                                     @bind-End="_rangeEnd" />
+                    <div style="min-width:200px;">
+                        <div><strong>Start:</strong> @(_rangeStart?.ToString("D") ?? "(none)")</div>
+                        <div><strong>End:</strong> @(_rangeEnd?.ToString("D") ?? "(none)")</div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Bounds &amp; disabled dates</h3>
+                <p style="margin:0 0 .5rem; color:#555;">
+                    <code>Min</code> / <code>Max</code> constrain the selectable range;
+                    <code>DisabledDates</code> greys out arbitrary days.
+                </p>
+                <SunfishCalendar Min="@_today.AddDays(-14)"
+                                 Max="@_today.AddDays(30)"
+                                 DisabledDates="@(d => d.DayOfWeek == DayOfWeek.Sunday)" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Scheduling", "Calendar", "Overview"];
+
+    private readonly DateTime _today = DateTime.Today;
+
+    private DateTime? _singleDate = DateTime.Today;
+    private IList<DateTime> _multipleDates = new List<DateTime>();
+    private DateTime? _rangeStart;
+    private DateTime? _rangeEnd;
+}

@@ -1,0 +1,145 @@
+@page "/components/utility/popup/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Popup / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Popup / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Utility/Popup/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPopup</code> exposes four alignment dials —
+            <code>AnchorHorizontalAlign</code>, <code>AnchorVerticalAlign</code>,
+            <code>PopupHorizontalAlign</code>, <code>PopupVerticalAlign</code> — plus per-axis
+            <code>Collision</code> overrides (<code>Fit</code>, <code>Flip</code>,
+            <code>None</code>), <code>HorizontalOffset</code> / <code>VerticalOffset</code>,
+            and the full <code>Width</code> / <code>Height</code> / <code>Min*</code> /
+            <code>Max*</code> size surface.
+        </p>
+        <p>
+            Pick any combination of enum values below, then click <em>Show popup</em> to see
+            how the popup reflows. The anchor swatch is intentionally placed near the top of
+            the viewport so collision behaviour is observable.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: 320px minmax(0, 1fr); gap:1rem;">
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; padding:.75rem; background:var(--sf-color-surface, #fafafa); display:flex; flex-direction:column; gap:.5rem;">
+                <strong>Configuration</strong>
+
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Anchor horizontal
+                    <select @bind="_anchorH">
+                        @foreach (var v in Enum.GetValues<PopupAnchorHorizontalAlign>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Anchor vertical
+                    <select @bind="_anchorV">
+                        @foreach (var v in Enum.GetValues<PopupAnchorVerticalAlign>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Popup horizontal
+                    <select @bind="_popupH">
+                        @foreach (var v in Enum.GetValues<PopupHorizontalAlign>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Popup vertical
+                    <select @bind="_popupV">
+                        @foreach (var v in Enum.GetValues<PopupVerticalAlign>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Horizontal collision
+                    <select @bind="_collisionH">
+                        @foreach (var v in Enum.GetValues<PopupCollision>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Vertical collision
+                    <select @bind="_collisionV">
+                        @foreach (var v in Enum.GetValues<PopupCollision>()) { <option value="@v">@v</option> }
+                    </select>
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Horizontal offset (px)
+                    <input type="number" @bind="_offsetH" />
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Vertical offset (px)
+                    <input type="number" @bind="_offsetV" />
+                </label>
+                <label style="display:flex; flex-direction:column; font-size:.85rem;">
+                    Width
+                    <input type="text" @bind="_width" placeholder="e.g. 240px" />
+                </label>
+                <label style="display:flex; gap:.25rem; align-items:center; font-size:.85rem;">
+                    <input type="checkbox" @bind="_animate" />
+                    Animate
+                </label>
+
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _visible = !_visible)">
+                    @(_visible ? "Hide popup" : "Show popup")
+                </SunfishButton>
+            </aside>
+
+            <div style="position:relative; min-height:400px; border:1px dashed var(--sf-color-border, #ccc); border-radius:4px; padding:1rem; overflow:hidden;">
+                <div id="appearance-anchor"
+                     style="display:inline-block; padding:.5rem 1rem; background:#fde68a; border:1px solid #f59e0b; border-radius:.25rem;">
+                    Anchor
+                </div>
+
+                <SunfishPopup @bind-Visible="_visible"
+                              AnchorSelector="#appearance-anchor"
+                              AnchorHorizontalAlign="_anchorH"
+                              AnchorVerticalAlign="_anchorV"
+                              PopupHorizontalAlign="_popupH"
+                              PopupVerticalAlign="_popupV"
+                              HorizontalCollision="_collisionH"
+                              VerticalCollision="_collisionV"
+                              HorizontalOffset="_offsetH"
+                              VerticalOffset="_offsetV"
+                              Width="@_width"
+                              Animate="_animate"
+                              AnimationDuration="200">
+                    <div style="padding:.75rem; background:#1e293b; color:#f8fafc; border-radius:.25rem; box-shadow:0 4px 12px rgba(0,0,0,.25);">
+                        <strong>Popup content</strong>
+                        <ul style="margin:.25rem 0 0; padding-left:1rem; font-size:.8rem; line-height:1.4;">
+                            <li>Anchor H/V: @_anchorH / @_anchorV</li>
+                            <li>Popup H/V: @_popupH / @_popupV</li>
+                            <li>Collision H/V: @_collisionH / @_collisionV</li>
+                            <li>Offset H/V: @_offsetH / @_offsetV</li>
+                        </ul>
+                    </div>
+                </SunfishPopup>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Utility", "Popup", "Appearance"];
+
+    private bool _visible;
+
+    private PopupAnchorHorizontalAlign _anchorH = PopupAnchorHorizontalAlign.Left;
+    private PopupAnchorVerticalAlign   _anchorV = PopupAnchorVerticalAlign.Bottom;
+    private PopupHorizontalAlign       _popupH  = PopupHorizontalAlign.Left;
+    private PopupVerticalAlign         _popupV  = PopupVerticalAlign.Top;
+    private PopupCollision _collisionH = PopupCollision.Flip;
+    private PopupCollision _collisionV = PopupCollision.Flip;
+    private int _offsetH;
+    private int _offsetV;
+    private string? _width = "260px";
+    private bool _animate = true;
+}

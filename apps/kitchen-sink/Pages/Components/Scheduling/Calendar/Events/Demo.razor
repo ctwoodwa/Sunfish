@@ -1,0 +1,97 @@
+@page "/components/scheduling/calendar/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Calendar / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Calendar / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Scheduling/Calendar/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCalendar</code> surfaces three semantic events:
+            <code>OnChange</code> (fires after any selection change regardless of mode),
+            <code>OnViewChange</code> (fires when switching between Month / Year / Decade /
+            Century), and <code>OnNavigate</code> (fires when the displayed page moves forward
+            or backward).
+        </p>
+        <p>
+            Click dates, use arrow keys, or press <kbd>PageUp</kbd> / <kbd>PageDown</kbd> to
+            watch events fire. <kbd>Ctrl</kbd>+<kbd>PageUp</kbd> moves by a year.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+            <div>
+                <SunfishCalendar @bind-Value="_selectedDate"
+                                 OnChange="HandleChange"
+                                 OnViewChange="HandleViewChange"
+                                 OnNavigate="HandleNavigate" />
+
+                <div style="margin-top:1rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — click a date or press an arrow key)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Scheduling", "Calendar", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+    private DateTime? _selectedDate = DateTime.Today;
+
+    private void HandleChange()
+    {
+        Append("OnChange", _selectedDate?.ToString("D") ?? "(cleared)");
+    }
+
+    private void HandleViewChange(CalendarView view)
+    {
+        Append("OnViewChange", view.ToString());
+    }
+
+    private void HandleNavigate(DateTime displayDate)
+    {
+        Append("OnNavigate", displayDate.ToString("yyyy-MM"));
+    }
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}
