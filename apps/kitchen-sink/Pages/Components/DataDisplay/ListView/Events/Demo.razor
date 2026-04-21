@@ -26,10 +26,10 @@
                                  TItem="Person"
                                  Width="100%"
                                  SelectionMode="GridSelectionMode.Multiple"
-                                 @bind-SelectedItems="_selected"
+                                 SelectedItems="_selected"
                                  Pageable="true"
                                  PageSize="3"
-                                 @bind-Page="_page"
+                                 Page="_page"
                                  PageChanged="HandlePageChanged"
                                  SelectedItemsChanged="HandleSelectionChanged">
                     <ItemTemplate Context="p">
@@ -87,10 +87,15 @@
         if (_log.Count > 50) _log.RemoveRange(50, _log.Count - 50);
     }
 
-    private void HandlePageChanged(int page) => Log($"PageChanged → page {page}");
+    private void HandlePageChanged(int page)
+    {
+        _page = page;
+        Log($"PageChanged → page {page}");
+    }
 
     private void HandleSelectionChanged(IEnumerable<Person> items)
     {
+        _selected = items;
         var names = string.Join(", ", items.Select(p => p.Name));
         Log($"SelectedItemsChanged → [{names}]");
     }

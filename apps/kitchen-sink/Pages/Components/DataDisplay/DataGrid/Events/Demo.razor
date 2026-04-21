@@ -33,9 +33,9 @@
                                  Sortable="true"
                                  Pageable="true"
                                  PageSize="3"
-                                 @bind-Page="_page"
+                                 Page="_page"
                                  SelectionMode="GridSelectionMode.Single"
-                                 @bind-SelectedItems="_selected"
+                                 SelectedItems="_selected"
                                  OnRowClick="HandleRowClick"
                                  OnRowDoubleClick="HandleRowDoubleClick"
                                  OnRowContextMenu="HandleRowContextMenu"
@@ -108,10 +108,15 @@
     private void HandleRowContextMenu(GridRowClickEventArgs<Product> args) =>
         Log($"OnRowContextMenu → {args.Item.Name}");
 
-    private void HandlePageChanged(int page) => Log($"PageChanged → page {page}");
+    private void HandlePageChanged(int page)
+    {
+        _page = page;
+        Log($"PageChanged → page {page}");
+    }
 
     private void HandleSelectionChanged(IEnumerable<Product> items)
     {
+        _selected = items;
         var names = string.Join(", ", items.Select(p => p.Name));
         Log($"SelectedItemsChanged → [{names}]");
     }
