@@ -2,6 +2,13 @@
 uid: foundation-featuremanagement-overview
 title: Feature Management — Overview
 description: Declarative feature flags and bundle-driven entitlements, backed by a pluggable provider seam.
+keywords:
+  - feature management
+  - feature flags
+  - entitlements
+  - feature evaluator
+  - OpenFeature
+  - ADR 0009
 ---
 
 # Feature Management — Overview
@@ -43,6 +50,47 @@ If none of the three produces a value, the evaluator throws `InvalidOperationExc
 | [`IEditionResolver`](xref:Sunfish.Foundation.FeatureManagement.IEditionResolver) | Returns the edition key (`lite`, `standard`, `enterprise`, …) for a tenant. |
 | [`IFeatureEvaluator`](xref:Sunfish.Foundation.FeatureManagement.IFeatureEvaluator) | Top-level consumer surface. |
 
+## `FeatureKey` and `FeatureValue`
+
+`FeatureKey` is a `readonly record struct` wrapping a non-empty string; the `Of` factory rejects null, empty, and whitespace-only values, and the type provides an implicit conversion to `string` for logging and dictionary keys. Feature keys are reverse-DNS style by convention (`ui.exports.visible`, `exports.batch.max`) so they sort cleanly and stay globally unique.
+
+`FeatureValue` wraps a single raw string and provides typed accessors:
+
+```csharp
+public sealed record FeatureValue
+{
+    public required string Raw { get; init; }
+
+    public bool    AsBoolean();     // throws if Raw is not a boolean literal
+    public int     AsInt32();       // invariant-culture parse
+    public decimal AsDecimal();     // invariant-culture parse
+    public string  AsString() => Raw;
+
+    public static FeatureValue Of(bool value);
+    public static FeatureValue Of(int value);
+    public static FeatureValue Of(decimal value);
+    public static FeatureValue Of(string value);
+}
+```
+
+Casts use invariant culture so a value written in one region decodes identically in another. Callers choose their accessor based on the catalog's declared `FeatureValueKind`.
+
+## Evaluation context
+
+`FeatureEvaluationContext` is a `sealed record` — typically constructed per evaluation or cached per request:
+
+| Field | Type | Notes |
+|---|---|---|
+| `TenantId` | `TenantId?` | Current tenant, when known. |
+| `Edition` | `string?` | `lite`, `standard`, `enterprise`, … Often filled from `IEditionResolver`. |
+| `ActiveBundleKeys` | `IReadOnlyList<string>` | Bundles the tenant has installed. |
+| `ActiveModuleKeys` | `IReadOnlyList<string>` | Modules (via bundle activation) that are live. |
+| `UserId` | `string?` | Caller identity, when known. |
+| `Environment` | `string` | Defaults to `"production"`; providers often key off this. |
+| `Attributes` | `IReadOnlyDictionary<string, string>` | Region, locale, device class, A/B cohort. |
+
+Every field is optional. The evaluator does not require a tenant; features that reference tenant state rely on the provider or resolver to check.
+
 ## Registering the defaults
 
 ```csharp
@@ -51,10 +99,13 @@ using Sunfish.Foundation.FeatureManagement;
 services.AddSunfishFeatureManagement();
 ```
 
-`AddSunfishFeatureManagement` wires the default stack: `InMemoryFeatureCatalog`, `InMemoryFeatureProvider`, `NoOpEntitlementResolver`, and `DefaultFeatureEvaluator`. Callers replace individual services as they adopt richer providers (a real OpenFeature adapter, a bundle-manifest-backed entitlement resolver).
+`AddSunfishFeatureManagement` wires the default stack: `InMemoryFeatureCatalog`, `InMemoryFeatureProvider`, `NoOpEntitlementResolver`, and `DefaultFeatureEvaluator`. Callers replace individual services as they adopt richer providers (a real OpenFeature adapter, a bundle-manifest-backed entitlement resolver). Because every entry is a singleton, replacing one does not disturb the others — a host can keep the in-memory catalog for static feature declarations while pointing `IFeatureProvider` at a cloud-hosted flag backend.
 
 ## Related
 
 - [Feature Evaluator](feature-evaluator.md)
 - [Entitlement Resolver](entitlement-resolver.md)
 - [Catalog — Bundle Manifests](../catalog/bundle-manifests.md)
+- [ADR 0009 — Foundation.FeatureManagement](xref:adr-0009-foundation-featuremanagement)
+</content>
+</invoke>

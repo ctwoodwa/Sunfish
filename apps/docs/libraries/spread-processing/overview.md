@@ -1,7 +1,15 @@
 ---
 uid: library-spread-processing-overview
 title: Spread Processing — Overview
-description: aspirational library doc
+description: Aspirational library doc — spreadsheet authoring capability target against the ADR 0021 reporting pipeline.
+keywords:
+  - spread processing
+  - xlsx
+  - spreadsheet
+  - ClosedXML
+  - aspirational
+  - ADR 0021
+  - reporting
 ---
 
 # Spread Processing — Overview
@@ -29,6 +37,23 @@ This sits on the Sunfish reporting pipeline's XLSX track. Bundle authors target
 the `IXlsxExportWriter` contract from `Sunfish.Foundation.Reporting`; the concrete
 spread-processing engine is a deployer choice.
 
+## Where this fits in the ADR 0021 contract set
+
+ADR 0021 specifies five format contracts under `Sunfish.Foundation.Reporting`:
+
+| Contract | Default adapter | License |
+|---|---|---|
+| `IPdfExportWriter` | `Sunfish.Reporting.PdfSharp` (PDFsharp + MigraDoc) | MIT |
+| `IXlsxExportWriter` | `Sunfish.Reporting.ClosedXml` (ClosedXML) | MIT |
+| `IDocxExportWriter` | `Sunfish.Reporting.Npoi` (NPOI) | Apache-2.0 |
+| `IPptxExportWriter` | `Sunfish.Reporting.Npoi` or `Sunfish.Reporting.ShapeCrawler` | Apache-2.0 / MIT |
+| `ICsvExportWriter` | `Sunfish.Reporting.CsvHelper` (CsvHelper) | Apache-2.0 + MS-PL |
+
+All five contracts are export-only in the current ADR scope. The spread-processing
+pages catalog the richer document-model surface that a Telerik-like library ships
+(read, write, formulas, styling, templates) — a target capability rather than a
+landed feature.
+
 ## Telerik parity reference
 
 - Telerik package: `Telerik.Documents.Spreadsheet`
@@ -46,6 +71,24 @@ reporting work and is not yet in flight. Bundle authors that need document-model
 operations today should use the chosen adapter's native API behind the
 `IXlsxExportWriter` seam.
 
+## Adapter swap example (ADR 0021 pattern)
+
+The contract-and-adapter split means deployers choose XLSX engines at composition
+time without changing bundle code:
+
+```csharp
+// default pure-OSS
+services.AddClosedXmlXlsxExport();
+
+// or opt-in commercial
+services.AddTelerikXlsxExport();
+```
+
+Bundle code resolves `IXlsxExportWriter` without knowing which adapter is active.
+When a Sunfish-owned high-level spread-processing API lands, it will sit **above**
+this contract — a bundle author reaches for document-model semantics, the library
+resolves the active `IXlsxExportWriter` to persist the result.
+
 ## Related
 
 - [Overview](overview.md)
@@ -53,3 +96,6 @@ operations today should use the chosen adapter's native API behind the
 - [Styling](styling.md)
 - [Templates](templates.md)
 - [Import and Export](import-export.md)
+- [ADR 0021 — Reporting Pipeline Policy](xref:adr-0021-reporting-pipeline-policy)
+</content>
+</invoke>

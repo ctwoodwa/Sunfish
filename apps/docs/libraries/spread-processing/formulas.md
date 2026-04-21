@@ -1,7 +1,14 @@
 ---
 uid: library-spread-processing-formulas
 title: Spread Processing — Formulas
-description: aspirational library doc
+description: Aspirational library doc — formula persistence and evaluation targets against the ADR 0021 reporting pipeline.
+keywords:
+  - formulas
+  - XLSX
+  - formula evaluation
+  - VLOOKUP
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Processing — Formulas

@@ -2,6 +2,13 @@
 uid: foundation-catalog-bundle-manifests
 title: Catalog — Bundle Manifests
 description: The BusinessCaseBundleManifest shape, how it is loaded, and how it is queried.
+keywords:
+  - bundle manifest
+  - BusinessCaseBundleManifest
+  - BundleManifestLoader
+  - IBundleCatalog
+  - deployment mode
+  - ADR 0007
 ---
 
 # Catalog — Bundle Manifests

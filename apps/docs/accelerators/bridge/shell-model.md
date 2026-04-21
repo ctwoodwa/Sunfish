@@ -2,6 +2,13 @@
 uid: accelerator-bridge-shell-model
 title: Bridge — Shell Model
 description: How the Bridge app shell composes — app chrome, layouts, navigation, notifications, theming, and runtime-switchable design providers.
+keywords:
+  - Bridge
+  - shell model
+  - app chrome
+  - navigation
+  - theming
+  - design provider
 ---
 
 # Bridge — Shell Model

@@ -2,6 +2,13 @@
 uid: foundation-multitenancy-tenant-context
 title: Multitenancy — Tenant Context
 description: The ITenantContext abstraction — what it exposes, how it is populated, and how consumers read it.
+keywords:
+  - ITenantContext
+  - tenant context
+  - ITenantResolver
+  - tenant resolution
+  - TenantMetadata
+  - ADR 0008
 ---
 
 # Multitenancy — Tenant Context

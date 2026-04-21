@@ -2,6 +2,13 @@
 uid: foundation-localfirst-offline-store
 title: Local-First — Offline Store
 description: The IOfflineStore keyed-binary abstraction over local storage, and the in-memory reference implementation.
+keywords:
+  - IOfflineStore
+  - offline storage
+  - keyed binary
+  - InMemoryOfflineStore
+  - IOfflineQueue
+  - ADR 0012
 ---
 
 # Local-First — Offline Store

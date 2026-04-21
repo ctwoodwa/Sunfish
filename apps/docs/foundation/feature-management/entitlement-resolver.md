@@ -2,6 +2,13 @@
 uid: foundation-featuremanagement-entitlement-resolver
 title: Feature Management — Entitlement Resolver
 description: Bundle-driven entitlement resolution — how tenant bundle selections map to feature values.
+keywords:
+  - entitlement resolver
+  - IEntitlementResolver
+  - bundle entitlement
+  - FeatureEvaluationContext
+  - edition gating
+  - ADR 0009
 ---
 
 # Feature Management — Entitlement Resolver

@@ -1,7 +1,14 @@
 ---
 uid: library-spread-processing-styling
 title: Spread Processing — Styling
-description: aspirational library doc
+description: Aspirational library doc — cell and range styling surface targets against the ADR 0021 reporting pipeline.
+keywords:
+  - styling
+  - cell style
+  - XLSX formatting
+  - conditional formatting
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Processing — Styling

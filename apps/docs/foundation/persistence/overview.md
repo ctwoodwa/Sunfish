@@ -2,6 +2,13 @@
 uid: foundation-persistence-overview
 title: Persistence — Overview
 description: The EF Core seam that lets blocks contribute entity configurations into Bridge's shared DbContext.
+keywords:
+  - persistence
+  - EF Core
+  - DbContext
+  - entity module
+  - ADR 0015
+  - module registration
 ---
 
 # Persistence — Overview
@@ -20,6 +27,9 @@ public interface ISunfishEntityModule
 }
 ```
 
+- `ModuleKey` is a stable, reverse-DNS identifier (`sunfish.blocks.subscriptions`) that matches the module keys referenced by bundle manifests (`BusinessCaseBundleManifest.RequiredModules` / `OptionalModules`).
+- `Configure(ModelBuilder)` is called once per `DbContext` model build, after the base `DbContext.OnModelCreating` has run. Implementations typically delegate to `ModelBuilder.ApplyConfigurationsFromAssembly` against the block's own assembly so each entity's `IEntityTypeConfiguration<T>` class is discovered without per-entity boilerplate.
+
 The package source lives at `packages/foundation-persistence/`.
 
 ## Why it exists
@@ -32,6 +42,10 @@ The package source lives at `packages/foundation-persistence/`.
 4. **Tenant query filters should land once.** [`IMustHaveTenant`](xref:Sunfish.Foundation.MultiTenancy.IMustHaveTenant) (from `Sunfish.Foundation.MultiTenancy`) can be enforced uniformly across every registered entity only if the entities all live in one model-build pass.
 
 The `foundation-persistence` package bridges Foundation and EF Core without contaminating core Foundation. It mirrors the `foundation-assets-postgres` pattern — a targeted persistence-adapter package that brings in EF Core so blocks can import EF-adjacent abstractions without pulling EF into Foundation itself.
+
+## Why this package, not `Sunfish.Foundation`
+
+`Sunfish.Foundation` is EF-Core-free on purpose. Blocks that will never need EF (capability code, pure domain logic, reporting pipelines) must be able to take a dependency on core Foundation without inheriting `Microsoft.EntityFrameworkCore.*` as a transitive. Splitting the `ISunfishEntityModule` contract into `Sunfish.Foundation.Persistence` lets EF-persisting blocks import one extra package; EF-free modules import nothing.
 
 ## Connection lifecycle, migrations, one DbContext
 
@@ -51,8 +65,12 @@ The ADR's decision applies to every `blocks-*` package that owns EF-persisted en
 - **Blob storage** — `packages/kernel-blob-store` and its federation replication live on a separate contract.
 - **Ingestion pipelines** — they write into the shell `DbContext` through kernel entity APIs, not directly through EF.
 
+A block that does not persist through EF Core simply skips this package.
+
 ## Related
 
 - [Entity-Module Pattern](entity-module-pattern.md)
 - [Multitenancy — Tenant-Scoped Markers](../multitenancy/tenant-scoped-markers.md)
 - [ADR 0015 — Module-Entity Registration Pattern](xref:adr-0015-module-entity-registration)
+</content>
+</invoke>

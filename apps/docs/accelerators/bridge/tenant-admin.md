@@ -2,6 +2,13 @@
 uid: accelerator-bridge-tenant-admin
 title: Bridge — Tenant Admin
 description: The Bridge tenant-admin surface — account and workspace settings pages, the SettingsSidebar layout, and where each surface maps to packages in the Sunfish stack.
+keywords:
+  - Bridge
+  - tenant admin
+  - account settings
+  - workspace settings
+  - SettingsSidebar
+  - admin surface
 ---
 
 # Bridge — Tenant Admin

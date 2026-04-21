@@ -2,6 +2,13 @@
 uid: foundation-integrations-registry
 title: Integrations — Provider Registry
 description: How provider adapters register themselves, how consumers look them up, and how the registry pairs with bundle provider requirements.
+keywords:
+  - provider registry
+  - IProviderRegistry
+  - ProviderDescriptor
+  - IProviderHealthCheck
+  - adapter registration
+  - ADR 0013
 ---
 
 # Integrations — Provider Registry

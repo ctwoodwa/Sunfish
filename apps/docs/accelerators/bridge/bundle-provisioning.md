@@ -2,6 +2,13 @@
 uid: accelerator-bridge-bundle-provisioning
 title: Bridge — Bundle Provisioning
 description: How a tenant activates a business-case bundle in Bridge, which services drive activation and entitlement resolution, and how resolved entitlements surface in the shell.
+keywords:
+  - Bridge
+  - bundle provisioning
+  - tenant activation
+  - entitlement resolver
+  - IBundleCatalog
+  - ADR 0007
 ---
 
 # Bridge — Bundle Provisioning

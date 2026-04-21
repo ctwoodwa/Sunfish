@@ -2,6 +2,13 @@
 uid: accelerator-anchor-getting-started
 title: Anchor — Getting Started
 description: Build and launch the Anchor MAUI Blazor Hybrid accelerator today — prerequisites, target-framework flags, F5 from VS Code, and the scaffolded first-launch experience.
+keywords:
+  - Anchor
+  - MAUI Blazor Hybrid
+  - getting started
+  - F5 launch
+  - accelerator
+  - local-first
 ---
 
 # Anchor — Getting Started

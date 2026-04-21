@@ -1,7 +1,14 @@
 ---
 uid: library-words-processing-overview
 title: Words Processing — Overview
-description: aspirational library doc
+description: Aspirational library doc — DOCX authoring and document-model capability against the ADR 0021 reporting pipeline.
+keywords:
+  - words processing
+  - DOCX
+  - document model
+  - NPOI
+  - aspirational
+  - ADR 0021
 ---
 
 # Words Processing — Overview

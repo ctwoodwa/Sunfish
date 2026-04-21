@@ -1,7 +1,14 @@
 ---
 uid: library-zip-library-overview
 title: Zip Library — Overview
-description: aspirational library doc
+description: Aspirational library doc — ZIP archive capability not in current Sunfish reporting-pipeline scope.
+keywords:
+  - zip
+  - archive
+  - compression
+  - System.IO.Compression
+  - aspirational
+  - ADR 0021
 ---
 
 # Zip Library — Overview

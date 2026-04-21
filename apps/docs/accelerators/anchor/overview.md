@@ -2,6 +2,13 @@
 uid: accelerator-anchor-overview
 title: Anchor — Overview
 description: Anchor is Sunfish's local-first desktop reports and admin dashboard accelerator — the on-device counterpart to the Bridge SaaS shell, scaffolded as a .NET MAUI Blazor Hybrid app with scope deliberately deferred behind the Web Components migration.
+keywords:
+  - Anchor
+  - accelerator
+  - MAUI Blazor Hybrid
+  - local-first
+  - desktop
+  - admin dashboard
 ---
 
 # Anchor — Overview

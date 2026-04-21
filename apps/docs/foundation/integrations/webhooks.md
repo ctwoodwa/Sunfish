@@ -2,6 +2,13 @@
 uid: foundation-integrations-webhooks
 title: Integrations — Webhooks
 description: The webhook envelope, dispatcher, handlers, and the boundary where provider-specific signatures are verified.
+keywords:
+  - webhooks
+  - IWebhookEventDispatcher
+  - IWebhookEventHandler
+  - WebhookEventEnvelope
+  - signature verification
+  - ADR 0013
 ---
 
 # Integrations — Webhooks

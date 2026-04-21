@@ -2,6 +2,13 @@
 uid: accelerator-bridge-getting-started
 title: Bridge — Getting Started
 description: Clone the Sunfish repo, launch the Bridge AppHost via .NET Aspire, verify the dashboard and the shell, and understand the first-login (demo auth) flow.
+keywords:
+  - Bridge
+  - getting started
+  - .NET Aspire
+  - AppHost
+  - demo auth
+  - Postgres
 ---
 
 # Bridge — Getting Started

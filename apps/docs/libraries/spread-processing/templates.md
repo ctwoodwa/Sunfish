@@ -1,7 +1,14 @@
 ---
 uid: library-spread-processing-templates
 title: Spread Processing — Templates
-description: aspirational library doc
+description: Aspirational library doc — template-based spreadsheet generation against the ADR 0021 reporting pipeline.
+keywords:
+  - templates
+  - XLSX template
+  - named range
+  - placeholder tokens
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Processing — Templates

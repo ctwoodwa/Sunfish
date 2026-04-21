@@ -2,6 +2,13 @@
 uid: foundation-multitenancy-overview
 title: Multitenancy — Overview
 description: Framework-agnostic tenancy primitives that keep tenant identity separate from caller identity and authorization.
+keywords:
+  - multitenancy
+  - tenant context
+  - tenant catalog
+  - tenant resolver
+  - Finbuckle boundary
+  - ADR 0008
 ---
 
 # Multitenancy — Overview
@@ -30,6 +37,36 @@ A second goal was to establish a **Finbuckle boundary**. Bridge, the SaaS-shell 
 | [`ITenantScoped`](xref:Sunfish.Foundation.MultiTenancy.ITenantScoped) / `IMustHaveTenant` / `IMayHaveTenant` | Entity markers used by persistence adapters to apply tenant filters. |
 | `InMemoryTenantCatalog` | Reference implementation of both the catalog and the resolver; suitable for tests, demos, and lite-mode. |
 
+## `TenantMetadata` shape
+
+Every piece of tenant state the platform needs lives on one immutable record:
+
+```csharp
+public sealed record TenantMetadata
+{
+    public required TenantId Id { get; init; }
+    public required string Name { get; init; }
+    public TenantStatus Status { get; init; } = TenantStatus.Active;
+    public string? DisplayName { get; init; }
+    public string? Locale { get; init; }      // BCP-47 locale tag
+    public DateTimeOffset? CreatedAt { get; init; }
+    public IReadOnlyDictionary<string, string> Properties { get; init; } = new Dictionary<string, string>();
+}
+```
+
+`Id` is the stable machine identity; `Name` is a short routable slug (suitable for subdomains or path segments). `DisplayName`, `Locale`, and `CreatedAt` are optional metadata for UI and audit. The free-form `Properties` bag carries host-specific metadata without forcing every deployment onto the same structural schema.
+
+## Lifecycle
+
+`TenantStatus` has four stages:
+
+- `Active` — serving traffic.
+- `Suspended` — registered but temporarily not servicing requests (billing hold, manual freeze).
+- `Decommissioning` — deactivation in progress; data retained.
+- `Archived` — fully deactivated; only read-only historical access allowed.
+
+Hosts choose how each status maps to request-level behaviour — rejecting suspended tenants at the edge, surfacing banner warnings in the UI, or routing decommissioning tenants to a read-only view.
+
 ## Registering the defaults
 
 ```csharp
@@ -38,10 +75,24 @@ using Sunfish.Foundation.MultiTenancy;
 services.AddSunfishTenantCatalog();
 ```
 
-`AddSunfishTenantCatalog` registers `InMemoryTenantCatalog` as a singleton and exposes it as both `ITenantCatalog` and `ITenantResolver`. Seed tenants from configuration or test fixtures.
+`AddSunfishTenantCatalog` registers `InMemoryTenantCatalog` as a singleton and exposes it as both `ITenantCatalog` and `ITenantResolver`. The in-memory catalog supports concurrent reads after registration and throws on duplicate tenant ids, which makes it a safe default for tests, demos, and lite-mode. Seed tenants from configuration or test fixtures.
+
+For hosts that need durable storage, register a custom `ITenantCatalog` (and typically a separate `ITenantResolver`) that reads from the persistent store of record.
+
+## Typical composition
+
+A production Bridge deployment composes three tenancy adapters:
+
+- `ITenantCatalog` backed by Postgres (the authoritative tenant list).
+- `ITenantResolver` from a Finbuckle `IMultiTenantContext` adapter, resolving via host header / subdomain / claim.
+- `ITenantContext` scoped per request, populated by the resolver middleware.
+
+A lite-mode or single-tenant desktop app collapses the three into one: a `FixedTenantContext` returning a single configured tenant, with `ITenantResolver` unused and `InMemoryTenantCatalog` seeded with the single row.
 
 ## Related
 
 - [Tenant Context](tenant-context.md)
 - [Tenant-Scoped Markers](tenant-scoped-markers.md)
 - [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](xref:adr-0008-foundation-multitenancy)
+</content>
+</invoke>

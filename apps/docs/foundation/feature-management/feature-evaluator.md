@@ -2,6 +2,13 @@
 uid: foundation-featuremanagement-feature-evaluator
 title: Feature Management — Feature Evaluator
 description: The IFeatureEvaluator surface, its evaluation order, and the context inputs it consumes.
+keywords:
+  - IFeatureEvaluator
+  - feature evaluator
+  - FeatureValue
+  - FeatureKey
+  - evaluation pipeline
+  - ADR 0009
 ---
 
 # Feature Management — Feature Evaluator

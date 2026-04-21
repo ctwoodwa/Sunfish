@@ -1,7 +1,14 @@
 ---
 uid: library-spread-stream-processing-overview
 title: Spread Stream Processing — Overview
-description: aspirational library doc
+description: Aspirational library doc — streaming XLSX writer capability target against the ADR 0021 reporting pipeline.
+keywords:
+  - spread stream processing
+  - streaming XLSX
+  - large data export
+  - OpenXML
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Stream Processing — Overview

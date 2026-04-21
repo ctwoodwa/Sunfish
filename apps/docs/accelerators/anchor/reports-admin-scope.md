@@ -2,6 +2,13 @@
 uid: accelerator-anchor-reports-admin-scope
 title: Anchor - Reports and Admin Scope
 description: How the reporting and admin surfaces plug into Anchor - the ADR 0021 reporting pipeline as the canonical demo, the planned admin surfaces, and how bundle selection shapes the catalog.
+keywords:
+  - Anchor
+  - reports
+  - admin
+  - ADR 0021
+  - reporting pipeline
+  - bundle catalog
 ---
 
 # Anchor - Reports and Admin Scope

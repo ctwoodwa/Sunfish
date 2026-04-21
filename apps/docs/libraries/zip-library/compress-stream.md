@@ -1,7 +1,14 @@
 ---
 uid: library-zip-library-compress-stream
 title: Zip Library — Compress Stream
-description: aspirational library doc
+description: Aspirational library doc — streaming ZIP compression capability not in current Sunfish reporting-pipeline scope.
+keywords:
+  - streaming compression
+  - ZipArchive
+  - DeflateStream
+  - SharpZipLib
+  - aspirational
+  - ADR 0021
 ---
 
 # Zip Library — Compress Stream

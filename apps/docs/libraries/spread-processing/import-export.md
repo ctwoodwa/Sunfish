@@ -1,7 +1,14 @@
 ---
 uid: library-spread-processing-import-export
 title: Spread Processing — Import and Export
-description: aspirational library doc
+description: Aspirational library doc — format import / export surface (XLSX, CSV, PDF) against the ADR 0021 reporting pipeline.
+keywords:
+  - import export
+  - XLSX
+  - CSV
+  - PDF
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Processing — Import and Export

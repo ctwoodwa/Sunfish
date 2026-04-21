@@ -2,6 +2,13 @@
 uid: foundation-integrations-credentials
 title: Integrations — Credentials
 description: The CredentialsReference shape, why it never holds plaintext secrets, and how rotation and expiry are tracked.
+keywords:
+  - credentials
+  - CredentialsReference
+  - secret rotation
+  - key vault
+  - ICredentialsResolver
+  - ADR 0013
 ---
 
 # Integrations — Credentials

@@ -2,6 +2,13 @@
 uid: foundation-catalog-overview
 title: Catalog — Overview
 description: The bundle and module registry — what a tenant can activate, which editions unlock which modules, and which providers a bundle requires.
+keywords:
+  - catalog
+  - bundle manifest
+  - business case
+  - extension fields
+  - templates
+  - ADR 0007
 ---
 
 # Catalog — Overview
@@ -16,7 +23,7 @@ The package source lives at `packages/foundation-catalog/`. It has three areas:
 - **`ExtensionFields/`** — `IExtensionFieldCatalog` and spec types for per-tenant extension fields.
 - **`Templates/`** — `TemplateDefinition`, `TenantTemplateOverlay`, and `TemplateMerger` for default-versus-tenant template resolution.
 
-This page focuses on the bundles surface because it is the one that feature-management, persistence, and integrations all read from. Extension fields and templates are covered in separate pages as their adapters ship.
+All three areas expose small, in-memory registries that hosts seed at startup. Durable back-ends (Postgres-backed catalogs, tenant-authored templates persisted per tenant) slot in behind the same contracts.
 
 ## Why bundles are declarative
 
@@ -43,6 +50,25 @@ See [ADR 0007](xref:adr-0007-bundle-manifest-schema) for the historical rational
 | [`BundleCatalog`](xref:Sunfish.Foundation.Catalog.Bundles.BundleCatalog) | Default in-memory implementation. |
 | [`BundleManifestLoader`](xref:Sunfish.Foundation.Catalog.Bundles.BundleManifestLoader) | JSON parser + embedded-resource loader for manifests. |
 
+## Extension fields
+
+`Sunfish.Foundation.Catalog.ExtensionFields` complements bundles with a per-entity registry of custom fields. An `ExtensionFieldSpec` names a key, a CLR `ValueType`, a scope (`Bundle` vs. `Tenant`), and a storage strategy (`JsonBag` vs. `PromotedColumn`), plus optional `IsRequired`, `IsSearchable`, `DisplayName`, and `Description`. Persistence adapters, UI renderers, and validators all read `IExtensionFieldCatalog` instead of discovering fields ad hoc:
+
+```csharp
+public interface IExtensionFieldCatalog
+{
+    void Register(Type entityType, ExtensionFieldSpec spec);
+    IReadOnlyList<ExtensionFieldSpec> GetFields(Type entityType);
+    bool TryGetField(Type entityType, ExtensionFieldKey key, out ExtensionFieldSpec? spec);
+}
+```
+
+Bundles contribute fields at startup; tenant-scoped fields author themselves at admin time. The same catalog drives both.
+
+## Templates
+
+`Sunfish.Foundation.Catalog.Templates` carries the "designer-authored form / checklist / report" shape. A `TemplateDefinition` pairs a JSON Schema 2020-12 `DataSchema` with a renderer-facing `UiSchema` (e.g. JSONForms-style layout), identified by an id and version. `TenantTemplateOverlay` captures per-tenant customizations as RFC 7396 merge patches against data and UI schemas. `TemplateMerger.Resolve` applies the overlay and returns a fresh `TemplateDefinition`, validating that the overlay's `BaseRef` matches the base template's `id` or `id@version`.
+
 ## Registering the defaults
 
 ```csharp
@@ -51,10 +77,23 @@ using Sunfish.Foundation.Catalog.Bundles;
 services.AddSunfishBundleCatalog();
 ```
 
-`AddSunfishBundleCatalog` registers `BundleCatalog` as a singleton `IBundleCatalog`. Hosts seed manifests from embedded JSON resources or `appsettings`-style configuration at startup.
+`AddSunfishBundleCatalog` registers `BundleCatalog` as a singleton `IBundleCatalog`. The in-memory implementation is safe for concurrent reads after startup and throws on duplicate bundle keys. Hosts seed manifests from embedded JSON resources or `appsettings`-style configuration at startup, typically one call per shipped bundle:
+
+```csharp
+var catalog = sp.GetRequiredService<IBundleCatalog>();
+foreach (var resource in BundleManifestLoader.ListEmbeddedBundleResourceNames())
+{
+    catalog.Register(BundleManifestLoader.LoadEmbedded(resource));
+}
+```
+
+Sibling DI extensions (`ExtensionFieldCatalogExtensions.AddSunfishExtensionFieldCatalog`, template-registry helpers) register the extension-field and template catalogs the same way.
 
 ## Related
 
 - [Bundle Manifests](bundle-manifests.md)
 - [Feature Management — Entitlement Resolver](../feature-management/entitlement-resolver.md)
 - [Integrations — Provider Registry](../integrations/registry.md)
+- [ADR 0007 — Bundle Manifest Schema](xref:adr-0007-bundle-manifest-schema)
+</content>
+</invoke>

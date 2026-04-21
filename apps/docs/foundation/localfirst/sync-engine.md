@@ -2,6 +2,13 @@
 uid: foundation-localfirst-sync-engine
 title: Local-First — Sync Engine
 description: The ISyncEngine surface, conflict resolution, triggers, and the queue-plus-replay contract.
+keywords:
+  - ISyncEngine
+  - sync engine
+  - SyncResult
+  - ISyncConflictResolver
+  - conflict resolution
+  - ADR 0012
 ---
 
 # Local-First — Sync Engine

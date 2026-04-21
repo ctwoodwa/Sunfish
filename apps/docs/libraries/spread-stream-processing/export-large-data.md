@@ -1,7 +1,14 @@
 ---
 uid: library-spread-stream-processing-export-large-data
 title: Spread Stream Processing — Export Large Data
-description: aspirational library doc
+description: Aspirational library doc — large-data XLSX export guidance for streaming vs. document model.
+keywords:
+  - large data export
+  - streaming
+  - XLSX
+  - memory constrained
+  - aspirational
+  - ADR 0021
 ---
 
 # Spread Stream Processing — Export Large Data

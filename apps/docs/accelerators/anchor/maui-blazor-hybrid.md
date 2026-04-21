@@ -2,6 +2,13 @@
 uid: accelerator-anchor-maui-blazor-hybrid
 title: Anchor — MAUI Blazor Hybrid
 description: How Anchor composes .NET MAUI and Blazor — the MauiProgram wiring, BlazorWebView, target-framework matrix, and per-platform caveats (Windows, macOS, iOS, Android).
+keywords:
+  - Anchor
+  - MAUI
+  - Blazor Hybrid
+  - BlazorWebView
+  - MauiProgram
+  - target framework
 ---
 
 # Anchor — MAUI Blazor Hybrid

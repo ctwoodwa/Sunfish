@@ -2,6 +2,13 @@
 uid: foundation-multitenancy-tenant-scoped-markers
 title: Multitenancy — Tenant-Scoped Markers
 description: Declarative markers that let persistence adapters apply tenant filters, enforce isolation, and surface per-tenant indexes.
+keywords:
+  - tenant scoped
+  - IMustHaveTenant
+  - IMayHaveTenant
+  - ITenantScoped
+  - EF Core query filter
+  - tenant isolation
 ---
 
 # Multitenancy — Tenant-Scoped Markers
@@ -44,15 +51,58 @@ public sealed class Subscription : IMustHaveTenant
 }
 ```
 
+Every persisted subscription carries a non-null `TenantId`. Bridge rejects writes where `TenantId` is the default value before `SaveChangesAsync` touches the database.
+
+## Example — an `IMayHaveTenant` entity
+
+```csharp
+public sealed class FeatureCatalogEntry : IMayHaveTenant
+{
+    public required string Key { get; init; }
+    public TenantId? TenantId { get; init; }    // null for platform-wide entries
+    public required string DefaultValue { get; init; }
+}
+```
+
+Platform-authored catalog entries leave `TenantId` null and show up in every tenant's view. A tenant admin can override one by writing a second row scoped to their own `TenantId`.
+
 ## How persistence enforces the contract
 
 Bridge's shared `SunfishBridgeDbContext` (see [ADR 0015](xref:adr-0015-module-entity-registration)) combines the markers with EF Core query filters.
 
 At model-build time, Bridge's `OnModelCreating` walks every registered entity type. For any type that implements `IMustHaveTenant` it registers a global query filter of the form `e => e.TenantId == _currentTenantId`, where `_currentTenantId` is injected per-`DbContext` from `ITenantContext`. Each scoped DbContext sees only its own tenant's rows — no hand-rolled `.Where()` calls, no leakage risk from a module that forgets to filter.
 
-The same pass can attach `IMayHaveTenant` filters that additionally admit system-level rows (`TenantId == null`).
+The same pass can attach `IMayHaveTenant` filters that additionally admit system-level rows (`TenantId == null`):
+
+```csharp
+// Pseudocode for the tenant filter logic in OnModelCreating.
+foreach (var entityType in modelBuilder.Model.GetEntityTypes().ToList())
+{
+    if (typeof(IMustHaveTenant).IsAssignableFrom(entityType.ClrType))
+    {
+        // e => e.TenantId == _currentTenantId
+    }
+    else if (typeof(IMayHaveTenant).IsAssignableFrom(entityType.ClrType))
+    {
+        // e => e.TenantId == null || e.TenantId == _currentTenantId
+    }
+}
+```
 
 Because enforcement happens centrally, blocks that implement [`ISunfishEntityModule`](xref:Sunfish.Foundation.Persistence.ISunfishEntityModule) and register their entity configurations via standard `IEntityTypeConfiguration<T>` classes pick up tenant isolation for free — they just mark the entity and the shell does the rest.
+
+## Escape hatches
+
+There are a handful of scenarios where the tenant filter needs to be bypassed (cross-tenant admin tooling, platform telemetry jobs, data export). EF Core's `IgnoreQueryFilters()` disables the filter for a single query:
+
+```csharp
+var allTenants = await db.Subscriptions
+    .IgnoreQueryFilters()
+    .Where(s => s.Plan == "enterprise")
+    .ToListAsync();
+```
+
+These calls are rare and deliberate — every `IgnoreQueryFilters()` site is a review-worthy moment. Prefer cross-tenant admin services that expose explicit `TenantId` parameters over silently removing the filter.
 
 ## Non-EF adapters
 
@@ -65,3 +115,5 @@ Nothing in the markers is EF-specific. Non-EF storage adapters (blob-backed stor
 - [Persistence — Entity-Module Pattern](../persistence/entity-module-pattern.md)
 - [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](xref:adr-0008-foundation-multitenancy)
 - [ADR 0015 — Module-Entity Registration Pattern](xref:adr-0015-module-entity-registration)
+</content>
+</invoke>

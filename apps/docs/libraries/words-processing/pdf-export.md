@@ -1,7 +1,14 @@
 ---
 uid: library-words-processing-pdf-export
 title: Words Processing — PDF Export
-description: aspirational library doc
+description: Aspirational library doc — DOCX-to-PDF conversion target against the ADR 0021 reporting pipeline.
+keywords:
+  - PDF export
+  - DOCX to PDF
+  - PDF/A
+  - font embedding
+  - aspirational
+  - ADR 0021
 ---
 
 # Words Processing — PDF Export

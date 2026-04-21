@@ -2,6 +2,13 @@
 uid: foundation-persistence-entity-module-pattern
 title: Persistence — Entity-Module Pattern
 description: The ADR-0015 pattern — each block registers entity configurations via ISunfishEntityModule, one shared DbContext, no per-block DbContext.
+keywords:
+  - ISunfishEntityModule
+  - entity module
+  - shared DbContext
+  - IEntityTypeConfiguration
+  - EF Core
+  - ADR 0015
 ---
 
 # Persistence — Entity-Module Pattern

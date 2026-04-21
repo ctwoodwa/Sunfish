@@ -2,6 +2,13 @@
 uid: accelerator-bridge-overview
 title: Bridge — Overview
 description: Bridge is the Sunfish reference SaaS shell accelerator — a generic multi-tenant Blazor Server host that composes the full Sunfish stack around tenant lifecycle, bundle activation, and admin backoffice concerns.
+keywords:
+  - Bridge
+  - accelerator
+  - SaaS shell
+  - Blazor Server
+  - multi-tenant
+  - ADR 0006
 ---
 
 # Bridge — Overview
