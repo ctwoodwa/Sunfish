@@ -36,20 +36,24 @@
     }
 
     <section class="components-landing__family" id="aspirational">
-        <h2>Aspirational <span class="components-landing__count">@_aspirational.Length</span></h2>
+        <h2>Aspirational (non-navigable) <span class="components-landing__count">@_aspirational.Length</span></h2>
         <p class="components-landing__note">
-            Planned components tracked in the catalog for cross-provider parity but
-            not yet implemented in the Sunfish Blazor adapter. Listed here for visibility.
+            Aspirational catalog entries that do not have their own page — either they
+            embed into another component's demo, or they are documented in
+            <a href="/docs/">apps/docs/</a> rather than shown as a live example.
+            Standalone aspirational components (StackLayout, PanelBar, Pager,
+            DropDownButton, Sparkline, Heatmap, PopupBox, ImageEditor, FontIcon) are
+            listed inline in their family section above with an <em>aspirational</em> badge.
         </p>
         <div class="components-landing__grid">
             @foreach (var a in _aspirational)
             {
                 <div class="components-landing__card components-landing__card--aspirational">
                     <div class="components-landing__card-title">
-                        @a.Name <span class="components-landing__badge">planned</span>
+                        @a.Name <span class="components-landing__badge">@a.BadgeKind</span>
                     </div>
                     <div class="components-landing__card-desc">
-                        <code>@a.TelerikEquivalent</code> — @a.Family
+                        <code>@a.TelerikEquivalent</code> — @a.Reason
                     </div>
                 </div>
             }
@@ -58,22 +62,13 @@
 </div>
 
 @code {
-    private record AspirationalEntry(string Name, string Family, string TelerikEquivalent);
+    private record AspirationalEntry(string Name, string TelerikEquivalent, string BadgeKind, string Reason);
 
     private static readonly AspirationalEntry[] _aspirational =
     [
-        new("StackLayout", "layout", "TelerikStackLayout"),
-        new("PanelBar", "navigation", "TelerikPanelBar"),
-        new("Pager", "navigation", "TelerikPager"),
-        new("DropDownButton", "buttons", "TelerikDropDownButton"),
-        new("Sparkline", "charts", "TelerikSparkline"),
-        new("Heatmap", "charts", "TelerikHeatmap"),
-        new("PopupBox", "feedback", "TelerikPopupBox"),
-        new("ImageEditor", "editor", "TelerikImageEditor"),
-        new("FontIcon", "icons", "TelerikFontIcon"),
-        new("ReportingIntegration", "integrations", "Telerik Reporting"),
-        new("Grid AISmartBox", "smart-ai", "Grid.AISmartBox (embedded)"),
-        new("Chart AISmartBox", "smart-ai", "Chart.AISmartBox (embedded)"),
+        new("Grid AISmartBox", "Grid.AISmartBox", "embedded", "embedded into Grid / Overview"),
+        new("Chart AISmartBox", "Chart.AISmartBox", "embedded", "embedded into Chart / Overview"),
+        new("ReportingIntegration", "Telerik Reporting", "docs-only", "documented in apps/docs per ADR 0021"),
     ];
 }
 

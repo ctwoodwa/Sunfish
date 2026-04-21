@@ -431,6 +431,21 @@ public static class ComponentRegistry
         new("Icon", "icon", "Miscellaneous", "miscellaneous",
             "Semantic icon rendering with built-in icon library and custom SVG support.",
             ApiNs("Utility"), OverviewOnly),
+        new("FontIcon", "fonticon", "Miscellaneous", "miscellaneous",
+            "Font-glyph icon rendering. Aspirational — planned as a peer to Icon.",
+            ApiNs("Utility"), OverviewOnly),
+        new("Sparkline", "sparkline", "Data Display", "data-display",
+            "Compact inline chart for trend visualization. Aspirational — no Sunfish implementation yet.",
+            ApiNs("Charts"), OverviewOnly),
+        new("Heatmap", "heatmap", "Data Display", "data-display",
+            "2-D value grid visualization with color gradients. Aspirational — no Sunfish implementation yet.",
+            ApiNs("Charts"), OverviewOnly),
+        new("PopupBox", "popupbox", "Feedback", "feedback",
+            "Positionable popup container. Aspirational — Sunfish's PromptBox/Window cover most cases today.",
+            ApiNs("Overlays"), OverviewOnly),
+        new("ImageEditor", "imageeditor", "Editors", "editors",
+            "In-browser image editor with crop, resize, and annotation. Aspirational — no Sunfish implementation yet.",
+            ApiNs("Editors"), OverviewOnly),
     ];
 
     private static readonly Dictionary<string, ComponentInfo> _bySlug =
