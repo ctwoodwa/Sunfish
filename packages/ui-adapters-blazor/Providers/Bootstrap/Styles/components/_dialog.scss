@@ -2,9 +2,16 @@
 // Sunfish Bootstrap Provider — Dialog
 // =================================================================
 // Bootstrap's modal component handles dialogs natively.
-// From _bridge-feedback.scss: .sf-bs-dialog--draggable
+// ADR 0023 / 0025 — dialog slot classes follow BEM (`__slot`, `--modifier`).
+// Skin still targets BS5's native `.modal-*` vocabulary for structural
+// styling because the BS5 provider emits those literal classes from
+// `Dialog{Dialog,Content,Header,Title,Body,Footer}Class()`.
 // =================================================================
 
+// ADR 0023 — draggable modifier (canonical) is `.sf-dialog--draggable`.
+// `.sf-bs-dialog--draggable` retained for back-compat with any prior
+// consumer overrides that referenced the BS-specific name.
+.sf-dialog--draggable,
 .sf-bs-dialog--draggable {
   cursor: move;
 }
@@ -17,11 +24,11 @@ body.sf-dialog-open {
 }
 
 // SYNTHESIS Theme 1 — dead-CSS fix. Parity with Fluent's `.sf-dialog--*` size
-// classes. The BS5 provider emits `.modal-dialog` today (no emission path for
-// these modifiers yet — tracked as deferred Razor/provider change), but when
-// a consumer applies `sf-dialog--*` via `CssClass`, these rules override
-// Bootstrap's `--bs-modal-width` token so the classes behave as expected.
+// classes. When a consumer applies `sf-dialog--*` via `CssClass`, these rules
+// override Bootstrap's `--bs-modal-width` token so the size modifiers behave
+// as expected on the `.modal-dialog` wrapper that BS5 provider emits.
 .modal-dialog,
+.sf-dialog--draggable,
 .sf-bs-dialog--draggable {
   &.sf-dialog--small { --bs-modal-width: 400px; }
   &.sf-dialog--medium { --bs-modal-width: 600px; }
@@ -50,6 +57,7 @@ body.sf-dialog-open {
 @media (forced-colors: active) {
   .modal-content,
   .sf-dialog,
+  .sf-dialog--draggable,
   .sf-bs-dialog--draggable {
     border: 1px solid CanvasText;
     background: Canvas;
@@ -57,7 +65,7 @@ body.sf-dialog-open {
   }
 
   .btn-close:focus-visible,
-  .sf-dialog-close:focus-visible {
+  .sf-dialog__close:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -71,6 +79,7 @@ body.sf-dialog-open {
   .modal-dialog,
   .modal-backdrop,
   .sf-dialog,
+  .sf-dialog--draggable,
   .sf-bs-dialog--draggable {
     transition: none !important;
     animation: none !important;

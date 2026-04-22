@@ -660,13 +660,20 @@ public class BootstrapCssProvider : ISunfishCssProvider
 
     public string SnackbarHostClass() => "toast-container position-fixed p-3";
 
-    public string DialogClass() => "modal-dialog";
+    // BS5 renders a dialog as `<div class="modal">` → `<div class="modal-dialog">`
+    // → `<div class="modal-content">`. `DialogClass()` is the outer `.modal`
+    // shell; `DialogDialogClass()` is the sizing/centering wrapper; and
+    // `DialogContentClass()` is the elevation surface that hosts header/body/
+    // footer. ADR 0023 widened the contract so each slot has its own hook.
+    public string DialogClass() => "modal";
 
-    public string DialogClass(bool isDraggable) =>
-        new CssClassBuilder()
-            .AddClass("modal-dialog")
-            .AddClass("sf-bs-dialog--draggable", isDraggable)
-            .Build();
+    // ── Dialog slot classes (ADR 0023) ──
+    public string DialogDialogClass() => "modal-dialog";
+    public string DialogContentClass() => "modal-content";
+    public string DialogHeaderClass() => "modal-header";
+    public string DialogTitleClass() => "modal-title";
+    public string DialogBodyClass() => "modal-body";
+    public string DialogFooterClass() => "modal-footer";
 
     public string DialogOverlayClass() => "modal-backdrop fade show";
 

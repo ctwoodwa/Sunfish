@@ -79,20 +79,26 @@ body.sf-dialog-open {
     overflow: hidden;
 }
 
-// Dialog inner structure (Phase 3)
-// Batch 2f — title line-height explicit 1.4 so title-wrap gets the spec
-// leading the Fluent v9 Dialog uses (previously inherited document leading).
-.sf-dialog-title {
+// Dialog inner structure (Phase 3) — ADR 0023 / 0025 BEM slot vocabulary.
+// Header row hosts the title + optional close button.
+.sf-dialog__header {
     display: flex;
     align-items: center;
     gap: var(--sf-space-md);
     margin-bottom: var(--sf-space-lg);
+}
+
+// Batch 2f — title line-height explicit 1.4 so title-wrap gets the spec
+// leading the Fluent v9 Dialog uses (previously inherited document leading).
+.sf-dialog__title {
+    flex: 1 1 auto;
+    min-width: 0;
     font-size: var(--sf-font-size-lg);
     font-weight: var(--sf-font-weight-semibold);
     line-height: 1.4;
 }
 
-.sf-dialog-body {
+.sf-dialog__body {
     margin-bottom: var(--sf-space-xl);
     color: var(--sf-color-text-secondary);
     // Batch 3 — scrollable body cap. Long content scrolls inside the dialog
@@ -100,12 +106,13 @@ body.sf-dialog-open {
     max-height: min(80vh, 600px);
     overflow-y: auto;
 }
-.sf-dialog-body p { margin: 0; }
+.sf-dialog__body p { margin: 0; }
 
 // Batch 3 — actions row: 16px top padding (Fluent v9 spec) + 8px gap between
 // action buttons. Replaces the body-margin-bottom spacing carried over from
-// pre-Fluent layouts.
-.sf-dialog-actions {
+// pre-Fluent layouts. ADR 0023 renamed `.sf-dialog-actions` → `__footer`
+// to match the provider slot vocabulary.
+.sf-dialog__footer {
     display: flex;
     justify-content: flex-end;
     padding-top: 16px;
@@ -117,7 +124,7 @@ body.sf-dialog-open {
 // Fluent status-danger background/foreground pair for the header lane so the
 // severity reads at a glance. Matches MD3 "alert" cue without diverging from
 // the neutral dialog surface below.
-.sf-dialog--alert .sf-dialog-title {
+.sf-dialog--alert .sf-dialog__header {
     background: var(--colorStatusDangerBackground1, var(--sf-color-danger-light));
     color: var(--colorStatusDangerForeground1, var(--sf-color-danger));
     margin: calc(-1 * var(--sf-space-xl)) calc(-1 * var(--sf-space-xl)) var(--sf-space-lg);
@@ -129,23 +136,23 @@ body.sf-dialog-open {
 // Batch 3 — stacked action row on narrow viewports (<=480px). Reverse the
 // order so the primary action (rendered last) lands on top when stacked.
 @media (max-width: 480px) {
-    .sf-dialog-actions {
+    .sf-dialog__footer {
         flex-direction: column-reverse;
     }
 }
 
 // Batch 2f — focus ring on action buttons (primary/secondary in the footer).
 // Close button already ships the double-stroke via `.sf-fluent-dialog-close`
-// (#99 Agent J). Re-assert the provider mixin here because `.sf-dialog-actions
+// (#99 Agent J). Re-assert the provider mixin here because `.sf-dialog__footer
 // button` may not otherwise match `.sf-button:focus-visible` when the action
 // markup uses a bare <button>.
-.sf-dialog-actions .sf-button:focus-visible,
-.sf-dialog-actions button:focus-visible {
+.sf-dialog__footer .sf-button:focus-visible,
+.sf-dialog__footer button:focus-visible {
     @include sf-focus-ring;
 }
 
 // Phase 2B — SYNTHESIS Theme 9 (polished): Fluent v9 "Subtle" close button.
-// Razor emits `.sf-dialog-close .sf-fluent-dialog-close` on the button; the
+// Razor emits `.sf-dialog__close .sf-fluent-dialog-close` on the button; the
 // provider returns an inline dismiss SVG. Follows the Fluent v9 Subtle button
 // pattern: transparent idle, neutral-subtle tint on hover/pressed, neutral
 // foreground shift toward brand on hover, and the double-stroke focus ring.
@@ -183,11 +190,12 @@ body.sf-dialog-open {
     }
 }
 
-// SYNTHESIS Theme 1 — dead-CSS fix. Razor emits `.sf-dialog-title` (not
-// `.sf-dialog-header`). Re-target the draggable cursor to the actual element.
+// ADR 0023 — Razor now emits `.sf-dialog__header` (slot container) with
+// `.sf-dialog__title` as the inner label. Draggable cursor lives on the
+// header row since that's the affordance the user grabs.
 .sf-dialog--draggable {
-    .sf-dialog-title { cursor: grab; user-select: none; }
-    .sf-dialog-title:active { cursor: grabbing; }
+    .sf-dialog__header { cursor: grab; user-select: none; }
+    .sf-dialog__header:active { cursor: grabbing; }
 }
 
 /* === Dialog Size Variants ===
@@ -224,7 +232,7 @@ body.sf-dialog-open {
         background: Canvas;
     }
 
-    .sf-dialog-close:focus-visible {
+    .sf-dialog__close:focus-visible {
         outline: 2px solid Highlight;
         outline-offset: 2px;
     }

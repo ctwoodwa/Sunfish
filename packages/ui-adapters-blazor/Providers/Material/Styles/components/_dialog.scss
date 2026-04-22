@@ -2,22 +2,22 @@
 // Component: Dialog — Material 3
 // Source: https://m3.material.io/components/dialogs/overview
 //
-// SunfishDialog.razor emits the following class surface (confirmed from
-// Components/Feedback/Dialog/SunfishDialog.razor — do not change selectors
-// without updating the razor):
+// SunfishDialog.razor emits the following class surface (ADR 0023 slot
+// vocabulary — BEM double-underscore per ADR 0025). Do not change
+// selectors without updating the razor:
 //
 //   .sf-dialog-overlay                (only when Modal=true; composes scrim)
 //   .sf-dialog                        (container; root of sized variants)
 //   .sf-dialog--draggable             (modifier on container)
-//   .sf-dialog-title                  (header row: title + optional close)
-//   .sf-dialog-close                  (close icon-button; currently a glyph)
-//   .sf-dialog-body                   (scrollable content region)
-//   .sf-dialog-actions                (action row at foot)
+//   .sf-dialog__content               (inner surface)
+//   .sf-dialog__header                (row containing title + optional close)
+//   .sf-dialog__title                 (headline label inside the header)
+//   .sf-dialog__close                 (close icon-button; currently a glyph)
+//   .sf-dialog__body                  (scrollable content region)
+//   .sf-dialog__footer                (action row at foot; was `.sf-dialog-actions`)
 //
 // Size modifiers (.sf-dialog--small|medium|large|full) are consumer-applied
-// on the dialog root via the Style/class passthrough. The FluentUI skin
-// targets a non-existent `.sf-dialog__panel` — per audit Theme 1 we apply
-// sizing directly to `.sf-dialog` here.
+// on the dialog root via the Style/class passthrough.
 //
 // M3 type-scale values are inlined (headline-small / body-medium / label-large).
 // The `sf-type-role` mixin exists in foundation/_mixins but its Sass-variable
@@ -108,7 +108,7 @@ body.sf-dialog-open {
 // M3 headline-small: 1.5rem / 2rem / 400 / 0 tracking, on-surface color
 // ----------------------------------------------------------------------------
 
-.sf-dialog-title {
+.sf-dialog__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -119,21 +119,23 @@ body.sf-dialog-open {
   line-height: 2rem;
   font-weight: var(--sf-font-weight-normal);
   letter-spacing: 0;
+}
 
-  > span {
-    flex: 1 1 auto;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
+.sf-dialog__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: inherit;
+  font: inherit;
 }
 
 // ----------------------------------------------------------------------------
 // Close button — 40×40 icon-button with state-layer overlay
 // ----------------------------------------------------------------------------
 
-.sf-dialog-close {
+.sf-dialog__close {
   position: relative;
   flex: 0 0 auto;
   display: inline-flex;
@@ -179,7 +181,7 @@ body.sf-dialog-open {
 // in on-surface-variant, scrollable when overflowing
 // ----------------------------------------------------------------------------
 
-.sf-dialog-body {
+.sf-dialog__body {
   flex: 1 1 auto;
   min-height: 0;
   // Packet 3C (P2) — explicit max-height guards against very tall content
@@ -204,7 +206,7 @@ body.sf-dialog-open {
 // M3 label-large: 0.875rem / 1.25rem / 500 / 0.00625rem tracking
 // ----------------------------------------------------------------------------
 
-.sf-dialog-actions {
+.sf-dialog__footer {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -260,7 +262,7 @@ body.sf-dialog-open {
 // so the primary action (typically the LAST `.sf-btn`) ends up visually on top
 // per M3 stacked-action guidance.
 @media (max-width: 480px) {
-  .sf-dialog-actions {
+  .sf-dialog__footer {
     flex-direction: column-reverse;
     align-items: stretch;
     gap: var(--sf-space-sm);
@@ -304,17 +306,17 @@ body.sf-dialog-open {
 }
 
 // ----------------------------------------------------------------------------
-// Draggable — Sunfish extension to M3; cursor affordance on the title bar
-// (The razor emits .sf-dialog-title as the drag handle, not .sf-dialog-header.)
+// Draggable — Sunfish extension to M3; cursor affordance on the header bar.
+// ADR 0023 — Razor emits `.sf-dialog__header` as the drag handle.
 // ----------------------------------------------------------------------------
 
 .sf-dialog--draggable {
-  .sf-dialog-title {
+  .sf-dialog__header {
     cursor: grab;
     user-select: none;
   }
 
-  .sf-dialog-title:active { cursor: grabbing; }
+  .sf-dialog__header:active { cursor: grabbing; }
 }
 
 // ----------------------------------------------------------------------------
@@ -357,8 +359,8 @@ body.sf-dialog-open {
     background: Canvas;
   }
 
-  .sf-dialog-close:focus-visible,
-  .sf-dialog-actions .sf-btn:focus-visible {
+  .sf-dialog__close:focus-visible,
+  .sf-dialog__footer .sf-btn:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -368,10 +370,10 @@ body.sf-dialog-open {
   .sf-dialog,
   .sf-dialog-overlay,
   .sf-dialog-overlay::before,
-  .sf-dialog-close,
-  .sf-dialog-close::before,
-  .sf-dialog-actions .sf-btn,
-  .sf-dialog-actions .sf-btn::before {
+  .sf-dialog__close,
+  .sf-dialog__close::before,
+  .sf-dialog__footer .sf-btn,
+  .sf-dialog__footer .sf-btn::before {
     transition: none !important;
     animation: none !important;
   }

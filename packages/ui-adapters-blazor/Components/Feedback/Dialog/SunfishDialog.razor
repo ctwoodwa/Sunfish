@@ -157,8 +157,20 @@
             .AddStyle(Style)
             .Build();
 
+        @* ADR 0023 — dialog root emits the outer `DialogClass()` shell
+           (BS5: `.modal`; Fluent/Material: `.sf-dialog`). Inside we nest
+           `DialogDialogClass()` (BS5: `.modal-dialog` sizing wrapper) and
+           `DialogContentClass()` (BS5: `.modal-content` surface). For
+           Fluent/Material the wrapper and content both resolve to BEM
+           descendants of `.sf-dialog`, so the extra nesting is visually
+           transparent. Draggable is a modifier class on the root. *@
+        var rootClass = new CssClassBuilder()
+            .AddClass(CssProvider.DialogClass())
+            .AddClass("sf-dialog--draggable", Draggable)
+            .Build();
+
         <div id="@_dialogId"
-             class="@CssProvider.DialogClass(Draggable)"
+             class="@rootClass"
              style="@dimensionStyle"
              role="dialog"
              aria-modal="@Modal.ToString().ToLower()"
@@ -166,62 +178,66 @@
              @ref="_dialogRef"
              @onclick:stopPropagation="true"
              @attributes="AdditionalAttributes">
-            @if (!string.IsNullOrEmpty(Title) || ShowCloseButton)
-            {
-                <div class="sf-dialog-title">
-                    <span>@Title</span>
-                    @if (ShowCloseButton)
+            <div class="@CssProvider.DialogDialogClass()">
+                <div class="@CssProvider.DialogContentClass()">
+                    @if (!string.IsNullOrEmpty(Title) || ShowCloseButton)
                     {
-                        @* Theme 9 (Phase 2B) — close glyph is provider-driven.
-                           Bootstrap returns empty markup because `.btn-close` draws
-                           its own SVG via CSS; Fluent returns an inline dismiss SVG;
-                           Material returns a Material Symbols <span>. The shared
-                           `sf-dialog-close` class is kept for existing SCSS hooks
-                           (drag, focus-visible, forced-colors/reduced-motion). *@
-                        <button type="button"
-                                class="@($"sf-dialog-close {CssProvider.DialogCloseButtonClass()}".Trim())"
-                                aria-label="Close"
-                                @onclick="CloseAsync">@((MarkupString)CssProvider.DialogCloseMarkup())</button>
+                        <div class="@CssProvider.DialogHeaderClass()">
+                            <span class="@CssProvider.DialogTitleClass()">@Title</span>
+                            @if (ShowCloseButton)
+                            {
+                                @* Theme 9 (Phase 2B) — close glyph is provider-driven.
+                                   Bootstrap returns empty markup because `.btn-close` draws
+                                   its own SVG via CSS; Fluent returns an inline dismiss SVG;
+                                   Material returns a Material Symbols <span>. The shared
+                                   `sf-dialog__close` class is kept for existing SCSS hooks
+                                   (drag, focus-visible, forced-colors/reduced-motion). *@
+                                <button type="button"
+                                        class="@($"sf-dialog__close {CssProvider.DialogCloseButtonClass()}".Trim())"
+                                        aria-label="Close"
+                                        @onclick="CloseAsync">@((MarkupString)CssProvider.DialogCloseMarkup())</button>
+                            }
+                        </div>
+                    }
+                    <div class="@CssProvider.DialogBodyClass()">
+                        @(DialogContent ?? ChildContent)
+                    </div>
+                    @if (DialogActions != null)
+                    {
+                        <div class="@CssProvider.DialogFooterClass()">
+                            @DialogActions
+                        </div>
+                    }
+                    else if (Buttons != DialogButtons.None)
+                    {
+                        <div class="@CssProvider.DialogFooterClass()">
+                            @switch (Buttons)
+                            {
+                                case DialogButtons.Ok:
+                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                                    break;
+                                case DialogButtons.OkCancel:
+                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
+                                    break;
+                                case DialogButtons.YesNo:
+                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                                    break;
+                                case DialogButtons.YesNoCancel:
+                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
+                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
+                                    break;
+                                case DialogButtons.RetryCancel:
+                                    <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
+                                    <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Retry)">Retry</button>
+                                    break;
+                            }
+                        </div>
                     }
                 </div>
-            }
-            <div class="sf-dialog-body">
-                @(DialogContent ?? ChildContent)
             </div>
-            @if (DialogActions != null)
-            {
-                <div class="sf-dialog-actions">
-                    @DialogActions
-                </div>
-            }
-            else if (Buttons != DialogButtons.None)
-            {
-                <div class="sf-dialog-actions">
-                    @switch (Buttons)
-                    {
-                        case DialogButtons.Ok:
-                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
-                            break;
-                        case DialogButtons.OkCancel:
-                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Ok)">OK</button>
-                            break;
-                        case DialogButtons.YesNo:
-                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
-                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
-                            break;
-                        case DialogButtons.YesNoCancel:
-                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.No)">No</button>
-                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Yes)">Yes</button>
-                            break;
-                        case DialogButtons.RetryCancel:
-                            <button class="sf-btn mar-btn--flat" @onclick="() => HandleButtonClick(DialogResult.Cancel)">Cancel</button>
-                            <button class="sf-btn mar-btn--primary" @onclick="() => HandleButtonClick(DialogResult.Retry)">Retry</button>
-                            break;
-                    }
-                </div>
-            }
         </div>
     };
 

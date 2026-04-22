@@ -144,7 +144,64 @@ public interface ISunfishCssProvider
     string SnackbarClass(NotificationVerticalPosition vertical, NotificationHorizontalPosition horizontal);
     string SnackbarHostClass();
     string DialogClass();
-    string DialogClass(bool isDraggable);
+
+    // ── Dialog slot classes (ADR 0023) ─────────────────────────────────
+    // Per-slot classes let each first-party skin target the idiomatic
+    // structural vocabulary of its framework (BS5 `.modal-dialog/content/
+    // header/title/body/footer`, Fluent v9 surface/title/content/actions,
+    // M3 headline/supporting-text/actions). Required on every provider —
+    // these are abstract, not default-implemented, per the ADR 0023
+    // pre-release strengthening ("third-party providers silently render
+    // unstyled slots" risk removed).
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog container wrapper.
+    /// Bootstrap returns <c>"modal-dialog"</c>; Fluent/Material return the
+    /// outer dialog wrapper class their skin CSS targets (e.g., <c>"sf-dialog"</c>).
+    /// Size / draggable modifiers are composed onto this class in Razor.
+    /// </summary>
+    string DialogDialogClass();
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog inner content surface.
+    /// Bootstrap returns <c>"modal-content"</c>; Fluent/Material return the
+    /// inner surface class (e.g., <c>"sf-dialog__content"</c>) that hosts the
+    /// elevation / surface-tint styles for the skin.
+    /// </summary>
+    string DialogContentClass();
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog header slot (the row that
+    /// contains the title and optional close button). Bootstrap returns
+    /// <c>"modal-header"</c>; Fluent returns the title-row class; Material
+    /// returns the headline-row class.
+    /// </summary>
+    string DialogHeaderClass();
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog title element.
+    /// Bootstrap returns <c>"modal-title"</c>; Fluent returns the
+    /// <c>fui-DialogTitle</c>-equivalent class; Material returns the
+    /// headline-small typography class.
+    /// </summary>
+    string DialogTitleClass();
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog body / main content slot.
+    /// Bootstrap returns <c>"modal-body"</c>; Fluent returns the
+    /// <c>fui-DialogContent</c>-equivalent class; Material returns the
+    /// supporting-text typography class.
+    /// </summary>
+    string DialogBodyClass();
+
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog footer / actions row slot.
+    /// Bootstrap returns <c>"modal-footer"</c>; Fluent returns the
+    /// <c>fui-DialogActions</c>-equivalent class; Material returns the
+    /// label-large actions row class.
+    /// </summary>
+    string DialogFooterClass();
+
     string DialogOverlayClass();
     /// <summary>
     /// Returns the HTML markup fragment rendered inside the dialog close button

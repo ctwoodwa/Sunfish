@@ -239,7 +239,13 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     public string SnackbarClass(NotificationVerticalPosition vertical, NotificationHorizontalPosition horizontal) => Css.SnackbarClass(vertical, horizontal);
     public string SnackbarHostClass() => Css.SnackbarHostClass();
     public string DialogClass() => Css.DialogClass();
-    public string DialogClass(bool isDraggable) => Css.DialogClass(isDraggable);
+    // ADR 0023 — per-slot classes. `DialogClass(bool isDraggable)` removed.
+    public string DialogDialogClass() => Css.DialogDialogClass();
+    public string DialogContentClass() => Css.DialogContentClass();
+    public string DialogHeaderClass() => Css.DialogHeaderClass();
+    public string DialogTitleClass() => Css.DialogTitleClass();
+    public string DialogBodyClass() => Css.DialogBodyClass();
+    public string DialogFooterClass() => Css.DialogFooterClass();
     public string DialogOverlayClass() => Css.DialogOverlayClass();
     public string DialogCloseMarkup() => Css.DialogCloseMarkup();
     public string DialogCloseButtonClass() => Css.DialogCloseButtonClass();

@@ -15401,6 +15401,7 @@ tr.is-row-dragging-source {
     animation: none !important;
   }
 }
+.sf-dialog--draggable,
 .sf-bs-dialog--draggable {
   cursor: move;
 }
@@ -15410,18 +15411,22 @@ body.sf-dialog-open {
 }
 
 .modal-dialog.sf-dialog--small,
+.sf-dialog--draggable.sf-dialog--small,
 .sf-bs-dialog--draggable.sf-dialog--small {
   --bs-modal-width: 400px;
 }
 .modal-dialog.sf-dialog--medium,
+.sf-dialog--draggable.sf-dialog--medium,
 .sf-bs-dialog--draggable.sf-dialog--medium {
   --bs-modal-width: 600px;
 }
 .modal-dialog.sf-dialog--large,
+.sf-dialog--draggable.sf-dialog--large,
 .sf-bs-dialog--draggable.sf-dialog--large {
   --bs-modal-width: 900px;
 }
 .modal-dialog.sf-dialog--full,
+.sf-dialog--draggable.sf-dialog--full,
 .sf-bs-dialog--draggable.sf-dialog--full {
   --bs-modal-width: 100%;
   max-width: 100%;
@@ -15430,6 +15435,7 @@ body.sf-dialog-open {
   margin: 0;
 }
 .modal-dialog.sf-dialog--full .modal-content,
+.sf-dialog--draggable.sf-dialog--full .modal-content,
 .sf-bs-dialog--draggable.sf-dialog--full .modal-content {
   border-radius: 0;
   min-height: 100vh;
@@ -15438,13 +15444,14 @@ body.sf-dialog-open {
 @media (forced-colors: active) {
   .modal-content,
   .sf-dialog,
+  .sf-dialog--draggable,
   .sf-bs-dialog--draggable {
     border: 1px solid CanvasText;
     background: Canvas;
     color: CanvasText;
   }
   .btn-close:focus-visible, .sf-signalr-popup__close:focus-visible,
-  .sf-dialog-close:focus-visible {
+  .sf-dialog__close:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }
@@ -15454,6 +15461,7 @@ body.sf-dialog-open {
   .modal-dialog,
   .modal-backdrop,
   .sf-dialog,
+  .sf-dialog--draggable,
   .sf-bs-dialog--draggable {
     transition: none !important;
     animation: none !important;

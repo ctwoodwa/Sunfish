@@ -159,4 +159,47 @@ public class CssProviderContractTests
                 $"{providerName}.ButtonClass({variant}) returned empty.");
         }
     }
+
+    // -------------------------------------------------------------------------
+    // ADR 0023 — Dialog Provider-Interface Expansion. Every first-party
+    // provider must return a non-empty class string for each of the six new
+    // per-slot methods. These are `abstract` on the interface (pre-release
+    // strengthening — no default returning `""`), so the test here guards
+    // against a future refactor accidentally reintroducing an empty return.
+    //
+    // Assertion count: 6 slot methods × 3 providers = 18 assertions per run.
+    // -------------------------------------------------------------------------
+
+    [Theory]
+    [MemberData(nameof(CssProviders))]
+    public void Dialog_SlotMethods_AllReturn_NonEmpty(
+        ISunfishCssProvider provider, string providerName)
+    {
+        var slots = new (string name, string cls)[]
+        {
+            ("DialogDialogClass",  provider.DialogDialogClass()),
+            ("DialogContentClass", provider.DialogContentClass()),
+            ("DialogHeaderClass",  provider.DialogHeaderClass()),
+            ("DialogTitleClass",   provider.DialogTitleClass()),
+            ("DialogBodyClass",    provider.DialogBodyClass()),
+            ("DialogFooterClass",  provider.DialogFooterClass()),
+        };
+
+        foreach (var (name, cls) in slots)
+        {
+            Assert.False(
+                string.IsNullOrWhiteSpace(cls),
+                $"{providerName}.{name}() returned empty — ADR 0023 requires every first-party provider to emit a non-empty slot class.");
+        }
+    }
+
+    [Fact]
+    public void Dialog_LegacyDraggableOverload_Removed()
+    {
+        // ADR 0023 pre-release strengthening — `DialogClass(bool isDraggable)`
+        // was deleted outright (no `[Obsolete]` cycle). Consumers now wire the
+        // `Draggable` parameter to a `sf-dialog--draggable` modifier in Razor.
+        var method = ContractType.GetMethod("DialogClass", [typeof(bool)]);
+        Assert.Null(method);
+    }
 }

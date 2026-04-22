@@ -4314,35 +4314,40 @@ body.sf-dialog-open {
   overflow: hidden;
 }
 
-.sf-dialog-title {
+.sf-dialog__header {
   display: flex;
   align-items: center;
   gap: var(--sf-space-md);
   margin-bottom: var(--sf-space-lg);
+}
+
+.sf-dialog__title {
+  flex: 1 1 auto;
+  min-width: 0;
   font-size: var(--sf-font-size-lg);
   font-weight: var(--sf-font-weight-semibold);
   line-height: 1.4;
 }
 
-.sf-dialog-body {
+.sf-dialog__body {
   margin-bottom: var(--sf-space-xl);
   color: var(--sf-color-text-secondary);
   max-height: min(80vh, 600px);
   overflow-y: auto;
 }
 
-.sf-dialog-body p {
+.sf-dialog__body p {
   margin: 0;
 }
 
-.sf-dialog-actions {
+.sf-dialog__footer {
   display: flex;
   justify-content: flex-end;
   padding-top: 16px;
   gap: 8px;
 }
 
-.sf-dialog--alert .sf-dialog-title {
+.sf-dialog--alert .sf-dialog__header {
   background: var(--colorStatusDangerBackground1, var(--sf-color-danger-light));
   color: var(--colorStatusDangerForeground1, var(--sf-color-danger));
   margin: calc(-1 * var(--sf-space-xl)) calc(-1 * var(--sf-space-xl)) var(--sf-space-lg);
@@ -4352,12 +4357,12 @@ body.sf-dialog-open {
 }
 
 @media (max-width: 480px) {
-  .sf-dialog-actions {
+  .sf-dialog__footer {
     flex-direction: column-reverse;
   }
 }
-.sf-dialog-actions .sf-button:focus-visible,
-.sf-dialog-actions button:focus-visible {
+.sf-dialog__footer .sf-button:focus-visible,
+.sf-dialog__footer button:focus-visible {
   outline: 2px solid transparent;
   box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
 }
@@ -4393,11 +4398,11 @@ body.sf-dialog-open {
   box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
 }
 
-.sf-dialog--draggable .sf-dialog-title {
+.sf-dialog--draggable .sf-dialog__header {
   cursor: grab;
   user-select: none;
 }
-.sf-dialog--draggable .sf-dialog-title:active {
+.sf-dialog--draggable .sf-dialog__header:active {
   cursor: grabbing;
 }
 
@@ -4436,7 +4441,7 @@ body.sf-dialog-open {
   .sf-dialog-overlay {
     background: Canvas;
   }
-  .sf-dialog-close:focus-visible {
+  .sf-dialog__close:focus-visible {
     outline: 2px solid Highlight;
     outline-offset: 2px;
   }

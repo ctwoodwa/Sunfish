@@ -495,11 +495,17 @@ public class MaterialCssProvider : ISunfishCssProvider
 
     public string DialogClass() => "sf-dialog";
 
-    public string DialogClass(bool isDraggable) =>
-        new CssClassBuilder()
-            .AddClass("sf-dialog")
-            .AddClass("sf-dialog--draggable", isDraggable)
-            .Build();
+    // ── Dialog slot classes (ADR 0023) ──
+    // Material 3 dialog surface is a single element under `sf-dialog`; the
+    // skin CSS targets BEM slot classes (`sf-dialog__content/header/title/
+    // body/footer`) emitted by SunfishDialog.razor. M3 typography tokens
+    // (headline-small, body-medium, label-large) are applied in `_dialog.scss`.
+    public string DialogDialogClass() => "sf-dialog";
+    public string DialogContentClass() => "sf-dialog__content";
+    public string DialogHeaderClass() => "sf-dialog__header";
+    public string DialogTitleClass() => "sf-dialog__title";
+    public string DialogBodyClass() => "sf-dialog__body";
+    public string DialogFooterClass() => "sf-dialog__footer";
 
     public string DialogOverlayClass() => "sf-dialog-overlay";
 

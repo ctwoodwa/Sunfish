@@ -497,11 +497,17 @@ public class FluentUICssProvider : ISunfishCssProvider
 
     public string DialogClass() => "sf-dialog";
 
-    public string DialogClass(bool isDraggable) =>
-        new CssClassBuilder()
-            .AddClass("sf-dialog")
-            .AddClass("sf-dialog--draggable", isDraggable)
-            .Build();
+    // ── Dialog slot classes (ADR 0023) ──
+    // Fluent v9 Dialog surface is a single element under `sf-dialog`; the
+    // skin CSS targets BEM slot classes (`sf-dialog__content/header/title/
+    // body/footer`) emitted by SunfishDialog.razor. The Fluent CSS (see
+    // `_dialog.scss`) restyles these slots to match `fui-Dialog*` vocabulary.
+    public string DialogDialogClass() => "sf-dialog";
+    public string DialogContentClass() => "sf-dialog__content";
+    public string DialogHeaderClass() => "sf-dialog__header";
+    public string DialogTitleClass() => "sf-dialog__title";
+    public string DialogBodyClass() => "sf-dialog__body";
+    public string DialogFooterClass() => "sf-dialog__footer";
 
     public string DialogOverlayClass() => "sf-dialog-overlay";
 

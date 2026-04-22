@@ -3,32 +3,39 @@
 
 @if (Visible)
 {
+    @* ADR 0023 — slot emission through provider. BS5 nesting is modal →
+       modal-dialog → modal-content; Fluent/Material both collapse to a
+       single `.sf-dialog` surface with BEM descendants. *@
     <div class="@CombineClasses(CssProvider.DialogOverlayClass())" @onclick="HandleOverlayClick">
         <div class="@CssProvider.DialogClass()" style="@BuildStyles()" role="alertdialog" aria-modal="true" @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
-            <div class="sf-dialog-title">
-                <span>@Title</span>
-                @if (ShowCloseButton)
-                {
-                    <button type="button" class="sf-dialog-close" aria-label="Close" @onclick="CancelAsync">&times;</button>
-                }
-            </div>
-            <div class="sf-dialog-body">
-                @if (DialogContent != null)
-                {
-                    @DialogContent
-                }
-                else
-                {
-                    @Message
-                }
-            </div>
-            <div class="sf-dialog-actions">
-                <button type="button" class="sf-btn mar-btn--flat" @onclick="CancelAsync">@CancelText</button>
-                <button type="button"
-                        class="@(IsDangerous ? "mar-btn mar-btn--danger" : "mar-btn mar-btn--primary")"
-                        @onclick="ConfirmAsync">
-                    @ConfirmText
-                </button>
+            <div class="@CssProvider.DialogDialogClass()">
+                <div class="@CssProvider.DialogContentClass()">
+                    <div class="@CssProvider.DialogHeaderClass()">
+                        <span class="@CssProvider.DialogTitleClass()">@Title</span>
+                        @if (ShowCloseButton)
+                        {
+                            <button type="button" class="sf-dialog__close" aria-label="Close" @onclick="CancelAsync">&times;</button>
+                        }
+                    </div>
+                    <div class="@CssProvider.DialogBodyClass()">
+                        @if (DialogContent != null)
+                        {
+                            @DialogContent
+                        }
+                        else
+                        {
+                            @Message
+                        }
+                    </div>
+                    <div class="@CssProvider.DialogFooterClass()">
+                        <button type="button" class="sf-btn mar-btn--flat" @onclick="CancelAsync">@CancelText</button>
+                        <button type="button"
+                                class="@(IsDangerous ? "mar-btn mar-btn--danger" : "mar-btn mar-btn--primary")"
+                                @onclick="ConfirmAsync">
+                            @ConfirmText
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -125,7 +125,15 @@ internal sealed class StubCssProvider : ISunfishCssProvider
     public string SnackbarClass(NotificationVerticalPosition vertical, NotificationHorizontalPosition horizontal) => string.Empty;
     public string SnackbarHostClass() => string.Empty;
     public string DialogClass() => string.Empty;
-    public string DialogClass(bool isDraggable) => string.Empty;
+    // ADR 0023 — per-slot dialog classes. Stubs return non-empty tokens so
+    // the `Dialog_SlotMethods_AllReturn_NonEmpty` parity contract is mirrored
+    // by any test-local provider as well.
+    public string DialogDialogClass() => "stub-dialog";
+    public string DialogContentClass() => "stub-dialog__content";
+    public string DialogHeaderClass() => "stub-dialog__header";
+    public string DialogTitleClass() => "stub-dialog__title";
+    public string DialogBodyClass() => "stub-dialog__body";
+    public string DialogFooterClass() => "stub-dialog__footer";
     public string DialogOverlayClass() => string.Empty;
     public string DialogCloseMarkup() => string.Empty;
     public string DialogCloseButtonClass() => string.Empty;
