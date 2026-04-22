@@ -197,26 +197,11 @@ Both are passed through when Sunfish supports them; logged+dropped otherwise.
 | `OnRead` | `EventCallback<GridReadEventArgs>` | **Throws**. Hint: "Use `Data` with an in-memory or server-bound collection. Telerik `GridReadEventArgs` is not shimmed." |
 | `ChildContent` | `RenderFragment?` | Passthrough — but see divergence below. |
 
-### Divergences — GridColumn (LARGEST)
+### GridColumn child markup — **now shimmed** (gap closed 2026-04-22)
 
-Telerik's child markup `<GridColumn Field="X" Title="Y">` has **no compat shim** in Phase 6.
-Consumers MUST migrate column markup manually:
-
-```razor
-<!-- Before (Telerik) -->
-<TelerikGrid Data="@data">
-  <GridColumns>
-    <GridColumn Field="Name" Title="Name" />
-  </GridColumns>
-</TelerikGrid>
-
-<!-- After (compat-telerik + manual column migration) -->
-<TelerikGrid Data="@data">
-  <SunfishDataGridColumn Field="@((MyItem x) => x.Name)" Title="Name" />
-</TelerikGrid>
-```
-
-A future policy-gated PR may ship `TelerikGridColumn` as a shim if demand warrants.
+Telerik's `<GridColumns>`/`<GridColumn>` child markup is shimmed as
+`<GridColumns>`/`<TelerikGridColumn TItem="...">` — see the `TelerikGridColumn<TItem>` and
+`GridColumns` entries below.
 
 ---
 
@@ -271,10 +256,146 @@ A future policy-gated PR may ship `TelerikGridColumn` as a shim if demand warran
 
 ---
 
+## TelerikGridColumn\<TItem\>
+
+_Added 2026-04-22 as part of the Decision-4 gap-closure milestone
+(`icm/00_intake/output/compat-expansion-intake.md`)._
+
+- **Telerik target:** `Telerik.Blazor.Components.GridColumn` (note: Telerik's child element is
+  *not* `TelerikGrid`-prefixed; we use `TelerikGridColumn` for type-name disambiguation and
+  consistency with the other compat-telerik shims).
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.DataDisplay.SunfishGridColumn<TItem>`
+
+Parent discovery: the shim declares itself as a child of `SunfishDataGrid<TItem>` via
+`CompatChildComponent<TParent>` (the `TelerikGrid` wrapper forwards its `ChildContent`
+verbatim, so the inner `SunfishGridColumn` picks up the existing cascading grid parent).
+
+| Telerik parameter | Type | Mapping |
+|---|---|---|
+| `Field` | `string?` | Passthrough; coerced to `""` when null (Sunfish requires non-null). |
+| `Title` | `string?` | Passthrough. |
+| `Width` | `string?` | Passthrough. |
+| `Sortable` | `bool` | Passthrough; default `true`. |
+| `Filterable` | `bool` | Passthrough; default `true`. |
+| `Visible` | `bool` | Passthrough; default `true`. |
+| `Editable` | `bool` | Passthrough; default `true`. |
+| `Locked` | `bool` | Passthrough. |
+| `Format` / `DisplayFormat` | `string?` | Passthrough. |
+| `TextAlign` | `string?` (enum-name OR raw CSS) | `"Left"/"Center"/"Right"/"Justify"` → lowercase CSS value; unrecognised → passthrough (e.g. `"start"`, `"end"`). |
+| `Template` | `RenderFragment<TItem>?` | Passthrough. |
+| `HeaderTemplate` | `RenderFragment?` | Passthrough. |
+| `EditorTemplate` | `RenderFragment<TItem>?` | Passthrough. |
+| `FooterTemplate` | `RenderFragment?` | Passthrough. |
+
+### Divergences
+
+- Telerik's `GridColumn` exposes many more parameters (e.g. aggregate descriptors,
+  context-menu configuration, lockable-position). These are not mapped in this gap-closure;
+  future policy-gated PRs can extend the surface without breaking the existing mapping.
+- Telerik's `TextAlign` is a typed enum (`ColumnTextAlign`). The shim accepts the enum-name
+  string for source-shape parity; consumers using the typed enum must update to the string
+  form.
+
+---
+
+## GridColumns (container shim)
+
+- **Telerik target:** `Telerik.Blazor.Components.GridColumns`
+- **Sunfish target:** no component — pass-through of `ChildContent`.
+
+Telerik uses `<GridColumns>` as a semantic wrapper around `<GridColumn>` children inside
+`<TelerikGrid>`. The shim mirrors that shape with a content-only passthrough. No parameters
+beyond `ChildContent`.
+
+### Divergences
+
+- This is the one shim whose type name does **not** carry the `Telerik` prefix (Telerik
+  itself ships the element as `GridColumns`). Matches Telerik's source-shape exactly.
+
+---
+
+## TelerikValidationSummary
+
+_Added 2026-04-22 as part of the Decision-4 gap-closure milestone._
+
+- **Telerik target:** `Telerik.Blazor.Components.TelerikValidationSummary`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Containers.SunfishValidationSummary`
+
+| Telerik parameter | Type | Mapping |
+|---|---|---|
+| `Template` | `RenderFragment<IEnumerable<string>>?` | Passthrough. |
+| `Class` / others | `string?` | Forwarded via `AdditionalAttributes`. |
+
+### Divergences
+
+- Must be used inside a cascading `EditContext` (i.e. under `SunfishForm`, `TelerikForm`, or
+  a plain `EditForm`). Rendering outside one throws `InvalidOperationException` — matches
+  Telerik's own contract.
+- Telerik's `AllFieldsErrorLabel` / `NoValidFieldErrorLabel` / visual-customization
+  parameters are not mapped — use the `Template` override to customize rendering.
+
+---
+
+## TelerikValidationMessage\<TValue\>
+
+_Added 2026-04-22 as part of the Decision-4 gap-closure milestone._
+
+- **Telerik target:** `Telerik.Blazor.Components.TelerikValidationMessage<TValue>`
+- **Sunfish target:** `Sunfish.UIAdapters.Blazor.Components.Forms.Containers.SunfishValidationMessage<TValue>`
+
+| Telerik parameter | Type | Mapping |
+|---|---|---|
+| `For` | `Expression<Func<TValue>>?` | Passthrough (same shape as Sunfish / stock Blazor). |
+| `Template` | `RenderFragment<IEnumerable<string>>?` | Passthrough. |
+| `Class` / others | `string?` | Forwarded via `AdditionalAttributes`. |
+
+### Divergences
+
+- `For` is **required**; omitting it throws `InvalidOperationException`. Matches
+  `SunfishValidationMessage` and Telerik behavior.
+
+---
+
+## Grid EventArgs shims
+
+_Added 2026-04-22 as part of the Decision-4 gap-closure milestone._
+
+These types let consumers keep their existing Telerik handler signatures compiling after
+the using-swap. They are data-only types — the functional wiring from `TelerikGrid` to each
+args type lands incrementally as individual grid-event surfaces are shimmed.
+
+| Compat type | Telerik target | Notes |
+|---|---|---|
+| `Sunfish.Compat.Telerik.GridRowClickEventArgs` | `Telerik.Blazor.Components.GridRowClickEventArgs` | `Item` typed as `object` (Telerik-shape erasure); consumer casts. Carries `EventArgs` and optional `Field`. Translated at the delegation boundary from Sunfish's generic `GridRowClickEventArgs<TItem>`. |
+| `Sunfish.Compat.Telerik.GridCommandEventArgs` | `Telerik.Blazor.Components.GridCommandEventArgs` | `Item` erased to `object`. Exposes `Command`, `Field`, `IsCancelled`, `IsNew`. Grid-wrapper routing of command buttons is not plumbed in this gap-closure — type shipped so signatures compile. |
+| `Sunfish.Compat.Telerik.GridReadEventArgs` | `Telerik.Blazor.Components.GridReadEventArgs` | Weakly-typed (`Data` is `IEnumerable`). `TelerikGrid.OnRead` still throws in Phase 6 (see `TelerikGrid` entry above); type exists so consumer handler signatures compile. |
+| `Sunfish.Compat.Telerik.DatePickerChangeEventArgs` | `Telerik.Blazor.Components.DatePickerChangeEventArgs` | Single-property (`Value`). `TelerikDatePicker` uses the `ValueChanged` pattern directly; type shipped so consumers using the explicit args name compile. |
+
+### Divergences
+
+- Telerik's generic-erasure (`Item` as `object`) is preserved in the shim for source-shape
+  parity — migrators keep their existing handler signatures. If a consumer prefers the
+  strongly-typed Sunfish shape, they can target `Sunfish.UIAdapters.Blazor.Components.DataDisplay.GridRowClickEventArgs<TItem>`
+  directly on the compat wrapper.
+- Types ship without full bi-directional wiring on each event surface. See the event-args
+  type-level XML doc for the current status per type.
+
+### Shared pattern: `CompatChildComponent<TParent>`
+
+`packages/compat-telerik/Internal/CompatChildComponent.cs` formalises the
+"cascading-parent child component" pattern used by `TelerikGridColumn`. It lives inside
+compat-telerik for now; if Syncfusion / DevExpress / Infragistics compat packages adopt the
+same shape (expected — `SfGridColumn`, `DxGridDataColumn`, `IgbColumn` are all children of
+their grids), lift this helper to a shared `compat-shared` package. Tracked in
+`icm/00_intake/output/compat-expansion-intake.md` Decision 4 implementation note.
+
+---
+
 ## Notes for Future Phases
 
-- A `TelerikGridColumn` shim can be added under the policy gate if demand warrants.
-- `Telerik.Blazor.EventArgs.*` types (e.g., `GridReadEventArgs`, `DatePickerChangeEventArgs`)
-  are not shimmed in Phase 6. Consumers using these must migrate signatures.
+- Additional grid-event surfaces (`OnRowClick`, `OnRowContextMenu`, command column,
+  `OnRead` server-side binding) wire through the existing `TelerikGrid` wrapper in
+  follow-up policy-gated PRs now that the args types are shipped.
 - A Roslyn analyzer that flags `using Telerik.Blazor.Components` and suggests the compat
-  replacement is tracked as a separate scaffolding ticket.
+  replacement is tracked as Task #105 (scheduled after compat-syncfusion lands per
+  Decision 3 of the compat-expansion intake).

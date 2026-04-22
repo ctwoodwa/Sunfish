@@ -1,0 +1,17 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+
+@*
+    Telerik uses <GridColumns>...</GridColumns> as a semantic wrapper inside <TelerikGrid> to
+    group the <GridColumn> children. It has no functional behavior beyond rendering its
+    children — this shim mirrors that shape so consumer markup flips cleanly.
+
+    Named <GridColumns> (not <TelerikGridColumns>) to match Telerik's actual element name.
+    This is the one documented exception to the "Telerik-prefixed names" convention: Telerik
+    itself ships this child element without the Telerik prefix.
+*@
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

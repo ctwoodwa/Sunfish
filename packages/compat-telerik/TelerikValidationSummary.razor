@@ -1,0 +1,26 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Containers
+
+@*
+    Telerik-shaped validation-summary child. Wraps Sunfish's <SunfishValidationSummary>.
+
+    Telerik's TelerikValidationSummary renders a summary of all validation errors in the
+    enclosing EditContext. SunfishValidationSummary already does exactly this and picks up
+    the cascading EditContext from the enclosing SunfishForm / EditForm — no extra wiring
+    required. When rendered outside an EditContext, SunfishValidationSummary throws
+    InvalidOperationException (matches Telerik's "must be inside a form" contract).
+*@
+<SunfishValidationSummary Template="Template"
+                          @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>
+    /// Custom template for rendering the validation summary. Receives all validation messages.
+    /// Shape matches Sunfish's <c>SunfishValidationSummary.Template</c>.
+    /// </summary>
+    [Parameter] public RenderFragment<IEnumerable<string>>? Template { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

@@ -1,0 +1,92 @@
+@namespace Sunfish.Compat.Telerik
+@typeparam TItem
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Telerik.Internal
+@inherits CompatChildComponent<SunfishDataGrid<TItem>>
+
+@*
+    Telerik-shaped child-column declaration.
+
+    Telerik: <TelerikGrid><GridColumns><GridColumn Field="Name" Title="Name" /></GridColumns></TelerikGrid>
+    Compat : <TelerikGrid><GridColumns><TelerikGridColumn Field="Name" Title="Name" /></GridColumns></TelerikGrid>
+             (GridColumns is a pass-through container; TelerikGridColumn delegates to SunfishGridColumn.)
+
+    The inner SunfishGridColumn picks up the cascading SunfishDataGrid parent that TelerikGrid's
+    underlying render tree publishes — no extra wiring required at this level.
+*@
+<SunfishGridColumn TItem="TItem"
+                   Field="@(Field ?? string.Empty)"
+                   Title="Title"
+                   Width="Width"
+                   Sortable="Sortable"
+                   Filterable="Filterable"
+                   Visible="Visible"
+                   Template="Template"
+                   HeaderTemplate="HeaderTemplate"
+                   EditorTemplate="EditorTemplate"
+                   FooterTemplate="FooterTemplate"
+                   TextAlign="_textAlign"
+                   Format="Format"
+                   Editable="Editable"
+                   Locked="Locked"
+                   DisplayFormat="DisplayFormat" />
+
+@code {
+    // --- Telerik-shaped parameters ---
+    // Telerik's `GridColumn.Field` is nullable; Sunfish requires non-null. Coerce at the boundary.
+    [Parameter] public string? Field { get; set; }
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public bool Sortable { get; set; } = true;
+    [Parameter] public bool Filterable { get; set; } = true;
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public bool Editable { get; set; } = true;
+    [Parameter] public bool Locked { get; set; }
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public string? DisplayFormat { get; set; }
+
+    /// <summary>
+    /// Telerik-shaped text alignment. Telerik exposes this as a
+    /// <c>ColumnTextAlign</c> enum (<c>Left/Center/Right/Justify</c>); Sunfish takes a CSS string.
+    /// Accepts either the enum name (case-insensitive) or a raw CSS value.
+    /// </summary>
+    [Parameter] public string? TextAlign { get; set; }
+
+    /// <summary>Cell template (Telerik calls this <c>Template</c>). Passthrough.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    /// <summary>Header template. Passthrough.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Editor template for inline/popup editing. Passthrough.</summary>
+    [Parameter] public RenderFragment<TItem>? EditorTemplate { get; set; }
+
+    /// <summary>Footer template. Passthrough.</summary>
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+
+    private string? _textAlign;
+
+    protected override string ShimName => "TelerikGridColumn";
+    protected override string ParentName => "TelerikGrid";
+
+    protected override void OnParametersSet()
+    {
+        // NOTE on parent discovery: we do NOT call RequireParent() here. TelerikGrid forwards its
+        // ChildContent verbatim into SunfishDataGrid, and SunfishDataGrid publishes itself as a
+        // CascadingValue. The inner SunfishGridColumn picks up that cascading parent directly.
+        // This wrapper's own CompatChildComponent<SunfishDataGrid<TItem>> cascading-parameter
+        // lookup is best-effort and useful for diagnostics; it is not a hard prerequisite to
+        // render.
+
+        _textAlign = TextAlign?.Trim() switch
+        {
+            null or "" => null,
+            var s when s.Equals("Left", System.StringComparison.OrdinalIgnoreCase) => "left",
+            var s when s.Equals("Center", System.StringComparison.OrdinalIgnoreCase) => "center",
+            var s when s.Equals("Right", System.StringComparison.OrdinalIgnoreCase) => "right",
+            var s when s.Equals("Justify", System.StringComparison.OrdinalIgnoreCase) => "justify",
+            var raw => raw // already a CSS value like "start", "end" — passthrough.
+        };
+    }
+}
