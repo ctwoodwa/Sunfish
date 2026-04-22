@@ -1,0 +1,84 @@
+@page "/components/forms/colorpalette/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>ColorPalette / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPalette / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ColorPalette/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <em>ColorPalette</em> is the swatch-grid surface in isolation. In Sunfish it is provided
+            by <code>SunfishColorPicker</code> in <code>FlatMode="true"</code> with
+            <code>View="ColorPickerView.Palette"</code> and a palette preset or explicit list.
+        </p>
+        <p>
+            Presets include <code>"basic"</code> (20), <code>"officecolors"</code> (70),
+            <code>"extended"</code> (40), <code>"flat"</code> (20) and <code>"applea"</code> (12).
+            Configure the layout via <code>Columns</code> and <code>PaletteTileSize</code>. You can
+            also pass an arbitrary <code>IEnumerable&lt;string&gt;</code> as the palette.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:620px;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem 0;">Office colors (10 columns)</h4>
+                <SunfishColorPicker @bind-Value="_officeColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Palette"
+                                    Palette='@("officecolors")'
+                                    Columns="10"
+                                    PaletteTileSize="22"
+                                    Format="ColorPickerFormat.Hex" />
+                <p style="margin-top:.25rem;">Selected: <strong style="color:@_officeColor;">@_officeColor</strong></p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem 0;">Apple accents (6 columns, large tiles)</h4>
+                <SunfishColorPicker @bind-Value="_appleColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Palette"
+                                    Palette='@("applea")'
+                                    Columns="6"
+                                    PaletteTileSize="32"
+                                    Format="ColorPickerFormat.Hex" />
+                <p style="margin-top:.25rem;">Selected: <strong style="color:@_appleColor;">@_appleColor</strong></p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem 0;">Custom list</h4>
+                <SunfishColorPicker @bind-Value="_customColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Palette"
+                                    Palette="_customPalette"
+                                    Columns="4"
+                                    PaletteTileSize="28"
+                                    Format="ColorPickerFormat.Hex" />
+                <p style="margin-top:.25rem;">Selected: <strong style="color:@_customColor;">@_customColor</strong></p>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorPalette", "Overview"];
+
+    private string? _officeColor = "#4472c4";
+    private string? _appleColor = "#007aff";
+    private string? _customColor = "#663399";
+
+    private static readonly string[] _customPalette =
+    [
+        "#663399", "#88aa55", "#ee8822", "#229988",
+        "#cc3355", "#3355cc", "#aa7733", "#222222"
+    ];
+}

@@ -1,0 +1,53 @@
+@page "/components/forms/colorgradient/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>ColorGradient / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorGradient / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ColorGradient/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <em>ColorGradient</em> is the HSV gradient-canvas surface in isolation. In Sunfish it is
+            provided by <code>SunfishColorPicker</code> in <code>FlatMode="true"</code> with
+            <code>View="ColorPickerView.Gradient"</code>: an inline canvas with a hue bar, alpha
+            slider, and text input for the selected color.
+        </p>
+        <p>
+            Choose <code>Format</code> (<code>Hex</code>, <code>Rgb</code>, <code>Hsl</code>) to
+            control how the component emits values. Pointer events drag the reticle; the hue and
+            opacity sliders update the output in real time. Enable <code>ContrastTool</code> to
+            show a live WCAG contrast ratio against a chosen background.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem; max-width:560px;">
+
+            <SunfishColorPicker @bind-Value="_color"
+                                FlatMode="true"
+                                View="ColorPickerView.Gradient"
+                                Format="ColorPickerFormat.Rgb"
+                                Preview="true"
+                                ShowButtons="true"
+                                ContrastTool="true"
+                                ContrastBackground="#ffffff" />
+
+            <div style="padding:.75rem 1rem; border-radius:.5rem; background:@(_color ?? "#fff"); color:#fff; font-weight:600;">
+                Live swatch · @(_color ?? "(none)")
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorGradient", "Overview"];
+
+    private string? _color = "rgb(68, 114, 196)";
+}

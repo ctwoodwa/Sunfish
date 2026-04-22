@@ -21,5 +21,23 @@ public enum ColorPickerView
     Gradient,
 
     /// <summary>A palette of predefined color swatches.</summary>
-    Palette
+    Palette,
+
+    /// <summary>Render both the gradient canvas and a palette side-by-side in the same view.</summary>
+    GradientPalette
+}
+
+/// <summary>
+/// Specifies the text-input format shown inside a ColorPicker / ColorGradient.
+/// </summary>
+public enum ColorPickerFormat
+{
+    /// <summary>CSS hex strings (e.g. <c>#rrggbb</c>).</summary>
+    Hex,
+
+    /// <summary>CSS <c>rgb(r, g, b)</c> / <c>rgba(r, g, b, a)</c> strings.</summary>
+    Rgb,
+
+    /// <summary>CSS <c>hsl(h, s%, l%)</c> / <c>hsla(h, s%, l%, a)</c> strings.</summary>
+    Hsl
 }

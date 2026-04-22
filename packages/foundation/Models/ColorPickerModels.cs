@@ -75,4 +75,30 @@ public static class ColorPalettePresets
         "#9b59b6", "#8e44ad", "#34495e", "#2c3e50", "#95a5a6", "#7f8c8d",
         "#ecf0f1", "#bdc3c7"
     };
+
+    /// <summary>
+    /// Apple's system-accent palette (inspired by macOS accent-color swatches).
+    /// </summary>
+    public static readonly IEnumerable<string> Applea = new[]
+    {
+        "#ff3b30", "#ff9500", "#ffcc00", "#34c759",
+        "#00c7be", "#30b0c7", "#32ade6", "#007aff",
+        "#5856d6", "#af52de", "#ff2d55", "#a2845e"
+    };
+
+    /// <summary>
+    /// Resolves a palette-preset name (case-insensitive) to its color list.
+    /// Accepts <c>"basic"</c>, <c>"office"</c>/<c>"officecolors"</c>,
+    /// <c>"extended"</c>, <c>"flat"</c>, <c>"applea"</c>.
+    /// Returns <see cref="Basic"/> when the name is unknown or empty.
+    /// </summary>
+    public static IEnumerable<string> Resolve(string? name) => (name ?? string.Empty).Trim().ToLowerInvariant() switch
+    {
+        "office" or "officecolors" => Office,
+        "extended" => Extended,
+        "flat" => Flat,
+        "applea" => Applea,
+        "basic" => Basic,
+        _ => Basic,
+    };
 }

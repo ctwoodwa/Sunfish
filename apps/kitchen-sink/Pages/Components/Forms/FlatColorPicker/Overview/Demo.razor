@@ -1,6 +1,7 @@
 @page "/components/forms/flatcolorpicker/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
 
 <PageTitle>FlatColorPicker / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -10,16 +11,50 @@
                      Sources="@GeneratedSources">
 
     <Narrative>
-        <p>Inline flat color picker rendered without a popup wrapper.</p>
         <p>
-            This overview page is a stub — the live demo is forthcoming. The component is tracked
-            in the Sunfish example catalog for cross-provider parity.
+            <em>FlatColorPicker</em> is the inline form of <code>SunfishColorPicker</code>. It is
+            the unified component rendered with <code>FlatMode="true"</code>, which omits the
+            trigger button and popup and instead renders the gradient, palette, or both surfaces
+            directly in the page flow. Ideal for settings panels, tool palettes, or any place
+            where the picker should always be visible.
+        </p>
+        <p>
+            All the regular parameters apply — <code>View</code>, <code>Palette</code>,
+            <code>Format</code>, <code>Preview</code>, <code>ClearButton</code>,
+            <code>ContrastTool</code>, <code>ShowButtons</code>, and two-way
+            <code>@@bind-Value</code>.
         </p>
     </Narrative>
 
     <Example>
-        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
-            <strong>FlatColorPicker</strong> — overview demo coming soon.
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:640px;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem 0;">Flat + GradientPalette</h4>
+                <SunfishColorPicker @bind-Value="_color"
+                                    FlatMode="true"
+                                    View="ColorPickerView.GradientPalette"
+                                    Palette='@("flat")'
+                                    Columns="6"
+                                    Format="ColorPickerFormat.Hex"
+                                    Preview="true" />
+                <p style="margin-top:.5rem;">
+                    Current: <strong style="color:@_color;">@_color</strong>
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem 0;">Flat + Gradient only (HSL output)</h4>
+                <SunfishColorPicker @bind-Value="_hslColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Gradient"
+                                    Format="ColorPickerFormat.Hsl"
+                                    ShowButtons="false"
+                                    Preview="true"
+                                    ClearButton="false" />
+                <p style="margin-top:.5rem;">HSL value: <strong>@_hslColor</strong></p>
+            </div>
+
         </div>
     </Example>
 
@@ -28,4 +63,7 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "FlatColorPicker", "Overview"];
+
+    private string? _color = "#1abc9c";
+    private string? _hslColor = "hsl(210, 65%, 45%)";
 }

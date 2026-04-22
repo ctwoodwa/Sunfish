@@ -6,371 +6,231 @@
 @using Sunfish.Foundation.Enums
 @using Sunfish.Foundation.Models
 
+@*
+    SunfishColorPicker — unified Gradient + Palette + Flat color picker (Tier 2 W2).
+
+    Spec mapping:
+      colorpicker      → default (FlatMode=false, View=Gradient)  — dropdown trigger with popup.
+      flatcolorpicker  → FlatMode=true                            — same UI inline (no popup).
+      colorgradient    → FlatMode=true, View=Gradient             — gradient surface only.
+      colorpalette     → FlatMode=true, View=Palette              — palette swatches only.
+
+    Views:
+      Gradient         — HSV canvas + hue + (opacity) + text inputs.
+      Palette          — swatch grid.
+      GradientPalette  — both, side-by-side.
+*@
+
 @* View child-tag registrations (outside popup so they persist across open/close) *@
 <CascadingValue Value="(IColorPickerViewHost)this" IsFixed="true">
     @ColorPickerViews
 </CascadingValue>
 
-<div class="@CombineClasses("mar-colorpicker " + SizeClass + " " + RoundedClass + " " + FillModeClass + (Enabled ? "" : " mar-colorpicker--disabled"))"
-     style="@CombineStyles()"
-     @attributes="AdditionalAttributes"
-     @ref="_rootRef">
+@if (FlatMode)
+{
+    @* ── Flat (inline) layout — no trigger, no popup ────────────────── *@
+    <div class="@CombineClasses("mar-colorpicker mar-colorpicker--flat " + SizeClass + " " + RoundedClass + " " + FillModeClass + (Enabled ? "" : " mar-colorpicker--disabled"))"
+         style="@CombineStyles()"
+         @attributes="AdditionalAttributes"
+         @ref="_rootRef"
+         role="group"
+         aria-label="Color picker">
+        @RenderPickerBody
+    </div>
+}
+else
+{
+    @* ── Dropdown layout: trigger + popup ──────────────────────────── *@
+    <div class="@CombineClasses("mar-colorpicker " + SizeClass + " " + RoundedClass + " " + FillModeClass + (Enabled ? "" : " mar-colorpicker--disabled"))"
+         style="@CombineStyles()"
+         @attributes="AdditionalAttributes"
+         @ref="_rootRef">
 
-    @* ── Trigger button ──────────────────────────────────────────── *@
-    <button type="button"
-            class="sf-colorpicker__btn"
-            disabled="@(!Enabled)"
-            aria-haspopup="dialog"
-            aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
-            aria-label="@($"Color picker, current color: {Value}")"
-            @onclick="TogglePopupAsync"
-            @onkeydown="OnTriggerKeyDown">
-        <span class="sf-colorpicker__color-swatch"
-              style="background-color: @(_currentColor ?? "transparent");"
-              aria-hidden="true"></span>
-        @if (Icon is not null)
+        <button type="button"
+                class="sf-colorpicker__btn"
+                disabled="@(!Enabled)"
+                aria-haspopup="dialog"
+                aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+                aria-label="@($"Color picker, current color: {Value}")"
+                @onclick="TogglePopupAsync"
+                @onkeydown="OnTriggerKeyDown">
+            <span class="sf-colorpicker__color-swatch"
+                  style="background-color: @(_currentColor ?? "transparent");"
+                  aria-hidden="true"></span>
+            @if (!string.IsNullOrEmpty(Icon))
+            {
+                <span class="sf-colorpicker__icon" aria-hidden="true">
+                    <span class="sf-icon sf-icon-@Icon"></span>
+                </span>
+            }
+            <span class="sf-colorpicker__arrow" aria-hidden="true">&#9660;</span>
+        </button>
+
+        @if (Preview && !string.IsNullOrEmpty(_currentColor))
         {
-            <span class="sf-colorpicker__icon" aria-hidden="true">@Icon</span>
+            <span class="sf-colorpicker__preview-ext"
+                  style="background-color: @_currentColor;"
+                  aria-hidden="true"></span>
         }
-        <span class="sf-colorpicker__arrow" aria-hidden="true">&#9660;</span>
-    </button>
 
-    @* ── Preview (outside popup) ─────────────────────────────────── *@
-    @if (ShowPreview && !string.IsNullOrEmpty(_currentColor))
-    {
-        <span class="sf-colorpicker__preview-ext"
-              style="background-color: @_currentColor;"
-              aria-hidden="true"></span>
-    }
-
-    @* ── Popup ───────────────────────────────────────────────────── *@
-    @if (_isOpen)
-    {
-        <div class="sf-colorpicker__popup @CssProvider.ColorPickerPopupClass()"
-             role="dialog"
-             aria-label="Color picker"
-             aria-modal="true"
-             @onclick:stopPropagation="true"
-             @onkeydown="OnPopupKeyDown">
-
-            @* ── Popup header: view toggles + preview ─────────────── *@
-            <div class="sf-colorpicker__popup-header">
-                @if (_hasGradientView && _hasPaletteView)
-                {
-                    <div class="sf-colorpicker__view-toggle" role="group" aria-label="Color picker view">
-                        <button type="button"
-                                class="sf-colorpicker__view-btn @(_activeView == ColorPickerView.Gradient ? "mar-colorpicker__view-btn--active" : "")"
-                                aria-pressed="@(_activeView == ColorPickerView.Gradient ? "true" : "false")"
-                                @onclick="() => SwitchViewAsync(ColorPickerView.Gradient)">
-                            <span aria-hidden="true">&#9639;</span>
-                            <span class="sf-sr-only">Gradient</span>
-                        </button>
-                        <button type="button"
-                                class="sf-colorpicker__view-btn @(_activeView == ColorPickerView.Palette ? "mar-colorpicker__view-btn--active" : "")"
-                                aria-pressed="@(_activeView == ColorPickerView.Palette ? "true" : "false")"
-                                @onclick="() => SwitchViewAsync(ColorPickerView.Palette)">
-                            <span aria-hidden="true">&#9638;</span>
-                            <span class="sf-sr-only">Palette</span>
-                        </button>
-                    </div>
-                }
-
-                @if (ShowPreview)
-                {
-                    <div class="sf-colorpicker__preview-container" aria-label="Color preview">
-                        <span class="sf-colorpicker__preview-new"
-                              style="background-color: @(_previewColor ?? _currentColor ?? "transparent");"
-                              title="New color"></span>
-                        <span class="sf-colorpicker__preview-current"
-                              style="background-color: @(_currentColor ?? "transparent");"
-                              title="Current color"></span>
-                    </div>
-                }
-
-                @if (ShowClearButton && Enabled)
-                {
-                    <button type="button"
-                            class="sf-colorpicker__clear-btn"
-                            aria-label="Clear color"
-                            @onclick="ClearColorAsync">
-                        &#x2715;
-                    </button>
-                }
+        @if (_isOpen)
+        {
+            <div class="sf-colorpicker__popup"
+                 role="dialog"
+                 aria-label="Color picker"
+                 aria-modal="true"
+                 @onclick:stopPropagation="true"
+                 @onkeydown="OnPopupKeyDown">
+                @RenderPickerBody
             </div>
 
-            @* ── Gradient view ────────────────────────────────────── *@
-            @if (_activeView == ColorPickerView.Gradient && _hasGradientView)
-            {
-                <div class="sf-colorpicker__gradient-view">
-
-                    @* HSV canvas *@
-                    <div class="sf-colorpicker__canvas-container">
-                        <canvas @ref="_canvasRef"
-                                class="sf-colorpicker__canvas"
-                                width="220"
-                                height="150"
-                                aria-label="Color saturation and brightness selector. Use arrow keys to adjust."
-                                tabindex="0"
-                                @onkeydown="OnCanvasKeyDown" />
-                        <div class="sf-colorpicker__canvas-thumb"
-                             style="left: @($"{_thumbX:F1}px"); top: @($"{_thumbY:F1}px");"
-                             aria-hidden="true"></div>
-                    </div>
-
-                    @* Hue slider *@
-                    <div class="sf-colorpicker__hue-container">
-                        <label class="sf-sr-only" for="@_hueInputId">Hue</label>
-                        <input id="@_hueInputId"
-                               type="range"
-                               class="sf-colorpicker__hue-slider"
-                               min="0" max="360" step="1"
-                               value="@((int)_hue)"
-                               aria-label="Hue: @((int)_hue) degrees"
-                               @oninput="OnHueInput" />
-                    </div>
-
-                    @* Opacity slider (if ShowOpacityEditor) *@
-                    @if (_showOpacity)
-                    {
-                        <div class="sf-colorpicker__opacity-container">
-                            <label class="sf-sr-only" for="@_opacityInputId">Opacity</label>
-                            <div class="sf-colorpicker__opacity-track"
-                                 style="background: linear-gradient(to right, transparent, @HsvToRgbCss(_hue, 1, 1));">
-                                <input id="@_opacityInputId"
-                                       type="range"
-                                       class="sf-colorpicker__opacity-slider"
-                                       min="0" max="100" step="1"
-                                       value="@((int)(_alpha * 100))"
-                                       aria-label="Opacity: @((int)(_alpha * 100))%"
-                                       @oninput="OnOpacityInput" />
-                            </div>
-                        </div>
-                    }
-
-                    @* Text inputs for hex / rgb *@
-                    <div class="sf-colorpicker__inputs">
-                        @if (_textFormat == ColorFormat.Hex)
-                        {
-                            <div class="sf-colorpicker__input-group">
-                                <label class="sf-sr-only" for="@_hexInputId">Hex</label>
-                                <input id="@_hexInputId"
-                                       type="text"
-                                       class="sf-colorpicker__hex-input"
-                                       maxlength="9"
-                                       value="@_hexText"
-                                       aria-label="Hex color value"
-                                       @onchange="OnHexInputChange"
-                                       @oninput="OnHexInputInput" />
-                                <span class="sf-colorpicker__input-label" aria-hidden="true">HEX</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="sf-colorpicker__input-group">
-                                <label class="sf-sr-only" for="@_rInputId">Red</label>
-                                <input id="@_rInputId" type="number" class="sf-colorpicker__rgb-input"
-                                       min="0" max="255" value="@_r" aria-label="Red: @_r"
-                                       @onchange="e => OnRgbChannelChange(e, 0)" />
-                                <span class="sf-colorpicker__input-label" aria-hidden="true">R</span>
-                            </div>
-                            <div class="sf-colorpicker__input-group">
-                                <label class="sf-sr-only" for="@_gInputId">Green</label>
-                                <input id="@_gInputId" type="number" class="sf-colorpicker__rgb-input"
-                                       min="0" max="255" value="@_g" aria-label="Green: @_g"
-                                       @onchange="e => OnRgbChannelChange(e, 1)" />
-                                <span class="sf-colorpicker__input-label" aria-hidden="true">G</span>
-                            </div>
-                            <div class="sf-colorpicker__input-group">
-                                <label class="sf-sr-only" for="@_bInputId">Blue</label>
-                                <input id="@_bInputId" type="number" class="sf-colorpicker__rgb-input"
-                                       min="0" max="255" value="@_b" aria-label="Blue: @_b"
-                                       @onchange="e => OnRgbChannelChange(e, 2)" />
-                                <span class="sf-colorpicker__input-label" aria-hidden="true">B</span>
-                            </div>
-                            @if (_showOpacity)
-                            {
-                                <div class="sf-colorpicker__input-group">
-                                    <label class="sf-sr-only" for="@_aInputId">Alpha</label>
-                                    <input id="@_aInputId" type="number" class="sf-colorpicker__rgb-input"
-                                           min="0" max="100" value="@((int)(_alpha * 100))" aria-label="Alpha: @((int)(_alpha * 100))%"
-                                           @onchange="e => OnRgbChannelChange(e, 3)" />
-                                    <span class="sf-colorpicker__input-label" aria-hidden="true">A</span>
-                                </div>
-                            }
-                        }
-
-                        @if (_hasHexFormat && _hasRgbFormat)
-                        {
-                            <button type="button"
-                                    class="sf-colorpicker__format-toggle"
-                                    aria-label="Toggle color format"
-                                    title="Toggle between HEX and RGB"
-                                    @onclick="ToggleTextFormat">
-                                &#8644;
-                            </button>
-                        }
-                    </div>
-                </div>
-            }
-
-            @* ── Palette view ─────────────────────────────────────── *@
-            @if (_activeView == ColorPickerView.Palette && _hasPaletteView)
-            {
-                <div class="sf-colorpicker__palette-view">
-                    <div class="sf-colorpicker__palette"
-                         role="grid"
-                         aria-label="Color palette"
-                         style="grid-template-columns: repeat(@_paletteColumns, @_paletteTileWidth);">
-                        @foreach (var color in _paletteColors)
-                        {
-                            var c = color;
-                            var isSelected = string.Equals(c, _currentColor, StringComparison.OrdinalIgnoreCase);
-                            <button type="button"
-                                    role="gridcell"
-                                    class="sf-colorpicker__palette-tile @(isSelected ? "mar-colorpicker__palette-tile--selected" : "")"
-                                    style="background-color: @c; width: @_paletteTileWidth; height: @_paletteTileHeight;"
-                                    aria-label="@c"
-                                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
-                                    @onclick="() => SelectPaletteColorAsync(c)"></button>
-                        }
-                    </div>
-                </div>
-            }
-
-            @* ── Action buttons ───────────────────────────────────── *@
-            @if (ShowButtons)
-            {
-                <div class="sf-colorpicker__actions">
-                    <button type="button"
-                            class="sf-colorpicker__apply-btn"
-                            aria-label="Apply color"
-                            @onclick="ApplyAsync">
-                        Apply
-                    </button>
-                    <button type="button"
-                            class="sf-colorpicker__cancel-btn"
-                            aria-label="Cancel"
-                            @onclick="CancelAsync">
-                        Cancel
-                    </button>
-                </div>
-            }
-
-        </div>
-
-        @* Click-outside backdrop *@
-        <div class="sf-colorpicker__backdrop"
-             aria-hidden="true"
-             @onclick="OnBackdropClickAsync"
-             @onclick:stopPropagation="false"></div>
-    }
-
-</div>
+            <div class="sf-colorpicker__backdrop"
+                 aria-hidden="true"
+                 @onclick="OnBackdropClickAsync"
+                 @onclick:stopPropagation="false"></div>
+        }
+    </div>
+}
 
 @code {
     // ── Parameters: Value / Format ──────────────────────────────────────
-    /// <summary>The current color value string. Supports two-way binding.</summary>
+    /// <summary>The current color value string (hex or rgb / rgba / hsl). Supports two-way binding.</summary>
     [Parameter] public string? Value { get; set; }
+
+    /// <summary>Fires on every value change (two-way binding callback).</summary>
     [Parameter] public EventCallback<string?> ValueChanged { get; set; }
 
-    /// <summary>The color format returned to the application (Rgb or Hex).</summary>
+    /// <summary>
+    /// The value format returned to the application (Rgb or Hex).
+    /// Retained for compat; prefer the new <see cref="Format"/> parameter.
+    /// </summary>
     [Parameter] public ColorFormat ValueFormat { get; set; } = ColorFormat.Rgb;
 
+    /// <summary>
+    /// The text-input format shown inside the picker (Hex / Rgb / Hsl).
+    /// When set, this drives both the displayed channel boxes and the emitted <see cref="Value"/>.
+    /// </summary>
+    [Parameter] public ColorPickerFormat? Format { get; set; }
+
     // ── Parameters: Views ───────────────────────────────────────────────
-    /// <summary>The currently active view (Gradient or Palette). Supports two-way binding.</summary>
+    /// <summary>
+    /// Which view is active. <see cref="ColorPickerView.GradientPalette"/> renders both
+    /// the gradient surface and the palette tiles side by side. Supports two-way binding.
+    /// </summary>
     [Parameter] public ColorPickerView View { get; set; } = ColorPickerView.Gradient;
     [Parameter] public EventCallback<ColorPickerView> ViewChanged { get; set; }
+
+    /// <summary>
+    /// The views the user can switch between (shown as toolbar tabs).
+    /// When null, defaults to both Gradient and Palette. Pass a single-item list
+    /// to hide the view toggle entirely.
+    /// </summary>
+    [Parameter] public IList<ColorPickerView>? Views { get; set; }
 
     /// <summary>Custom views configuration child content.</summary>
     [Parameter] public RenderFragment? ColorPickerViews { get; set; }
 
+    // ── Parameters: Palette ─────────────────────────────────────────────
+    /// <summary>
+    /// Palette source. Accepts a preset name string
+    /// (<c>"basic"</c>, <c>"officecolors"</c>, <c>"applea"</c>, <c>"extended"</c>, <c>"flat"</c>)
+    /// or an <see cref="IList{String}"/> / <see cref="IEnumerable{String}"/> of CSS colors.
+    /// </summary>
+    [Parameter] public object? Palette { get; set; }
+
+    /// <summary>Number of palette columns. Default <c>10</c>.</summary>
+    [Parameter] public int Columns { get; set; } = 10;
+
+    /// <summary>Palette tile size in pixels (applied to both width and height). Default <c>24</c>.</summary>
+    [Parameter] public int PaletteTileSize { get; set; } = 24;
+
     // ── Parameters: Behavior ────────────────────────────────────────────
-    /// <summary>Whether the component is enabled for user interaction.</summary>
+    /// <summary>
+    /// When <c>true</c>, renders inline (no dropdown trigger / no popup).
+    /// Corresponds to the <c>SunfishFlatColorPicker</c> spec.
+    /// </summary>
+    [Parameter] public bool FlatMode { get; set; }
+
+    /// <summary>Whether the component is enabled.</summary>
     [Parameter] public bool Enabled { get; set; } = true;
 
     /// <summary>Convenience alias: when <c>true</c> the component is disabled (sets Enabled = false).</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    /// <summary>Whether to show Apply/Cancel buttons in the popup.</summary>
+    /// <summary>Whether to show Apply / Cancel buttons.</summary>
     [Parameter] public bool ShowButtons { get; set; } = true;
 
-    /// <summary>Whether to show the clear button in the popup.</summary>
-    [Parameter] public bool ShowClearButton { get; set; } = true;
+    /// <summary>Whether to show the clear (×) button.</summary>
+    [Parameter] public bool ClearButton { get; set; } = true;
 
-    /// <summary>Whether to show the color preview box in the popup header.</summary>
-    [Parameter] public bool ShowPreview { get; set; } = true;
+    /// <summary>Whether to show the before/after preview strip.</summary>
+    [Parameter] public bool Preview { get; set; } = true;
 
-    /// <summary>Optional icon content to display inside the trigger button.</summary>
-    [Parameter] public RenderFragment? Icon { get; set; }
+    /// <summary>
+    /// Whether to show the WCAG contrast-ratio checker beneath the color inputs.
+    /// Compares the selected color against <see cref="ContrastBackground"/>.
+    /// </summary>
+    [Parameter] public bool ContrastTool { get; set; }
 
-    // ── Parameters: Appearance ──────────────────────────────────────────
-    /// <summary>Size of the trigger button. Use ThemeConstants.ColorPicker.Size values.</summary>
-    [Parameter] public string? Size { get; set; }
+    /// <summary>Background color used by <see cref="ContrastTool"/> (default <c>#ffffff</c>).</summary>
+    [Parameter] public string ContrastBackground { get; set; } = "#ffffff";
 
-    /// <summary>Border-radius rounding. Use ThemeConstants.ColorPicker.Rounded values.</summary>
-    [Parameter] public string? Rounded { get; set; }
-
-    /// <summary>Fill mode (solid, flat, outline). Use ThemeConstants.ColorPicker.FillMode values.</summary>
-    [Parameter] public string? FillMode { get; set; }
+    /// <summary>Optional icon identifier (font-icon name) rendered inside the trigger button.</summary>
+    [Parameter] public string? Icon { get; set; }
 
     // ── Parameters: Events ──────────────────────────────────────────────
-    /// <summary>Fires when the user commits a color (Apply, Enter, or blur).</summary>
-    [Parameter] public EventCallback<object> OnChange { get; set; }
+    /// <summary>Fires when a color is committed (Apply, palette click with no buttons, or Enter).</summary>
+    [Parameter] public EventCallback<object?> OnChange { get; set; }
 
-    /// <summary>Fires before the popup opens. Set IsCancelled = true to prevent opening.</summary>
+    /// <summary>Fires before the popup opens. Set <c>IsCancelled = true</c> to prevent opening.</summary>
     [Parameter] public EventCallback<ColorPickerOpenEventArgs> OnOpen { get; set; }
 
-    /// <summary>Fires before the popup closes. Set IsCancelled = true to prevent closing.</summary>
+    /// <summary>Fires before the popup closes. Set <c>IsCancelled = true</c> to prevent closing.</summary>
     [Parameter] public EventCallback<ColorPickerCloseEventArgs> OnClose { get; set; }
 
-    /// <summary>Specifies the adaptive rendering mode for the popup on mobile devices.</summary>
+    // ── Parameters: Appearance ──────────────────────────────────────────
+    [Parameter] public string? Size { get; set; }
+    [Parameter] public string? Rounded { get; set; }
+    [Parameter] public string? FillMode { get; set; }
+
+    /// <summary>Adaptive rendering mode for the popup on mobile devices.</summary>
     [Parameter] public AdaptiveMode AdaptiveMode { get; set; } = AdaptiveMode.None;
 
-    // ── Internal: Gradient view state ───────────────────────────────────
-    // HSV color model: H 0–360, S 0–1, V 0–1, A 0–1
+    // ── Internal: HSV state ─────────────────────────────────────────────
     private double _hue;
     private double _sat;
     private double _val = 1.0;
     private double _alpha = 1.0;
-
-    // Canvas thumb position (pixels within the 220×150 canvas)
     private double _thumbX;
     private double _thumbY;
-
-    // RGB breakdown (0–255) for the text inputs
     private int _r, _g, _b;
-
-    // Current hex string in the text input
     private string _hexText = "#000000";
-
-    // Text input format toggle
-    private ColorFormat _textFormat;
-    private bool _hasHexFormat = true;
-    private bool _hasRgbFormat = true;
+    private ColorPickerFormat _textFormat = ColorPickerFormat.Hex;
     private bool _showOpacity = true;
 
-    // ── Internal: Palette view state ────────────────────────────────────
-    private IEnumerable<string> _paletteColors = ColorPalettePresets.Basic;
-    private int _paletteColumns = 5;
-    private string _paletteTileWidth = "24px";
-    private string _paletteTileHeight = "24px";
+    // ── Internal: Palette state ─────────────────────────────────────────
+    private List<string> _paletteColors = new();
+    private int _effectiveColumns = 10;
+    private string _paletteTilePx = "24px";
 
     // ── Internal: View configuration ────────────────────────────────────
     private readonly List<ColorPickerViewBase> _registeredViews = new();
-    /// <summary>Whether a gradient view is available. True when no views are explicitly configured (default) or when a GradientView child is present.</summary>
-    private bool _hasGradientView => _registeredViews.Count == 0 || _registeredViews.Any(v => v.ViewType == ColorPickerView.Gradient);
-    /// <summary>Whether a palette view is available. True when no views are explicitly configured (default) or when a PaletteView child is present.</summary>
-    private bool _hasPaletteView => _registeredViews.Count == 0 || _registeredViews.Any(v => v.ViewType == ColorPickerView.Palette);
+    private ColorPickerView _activeView = ColorPickerView.Gradient;
+    private bool _hasGradientView => ResolveAvailableViews().Contains(ColorPickerView.Gradient)
+        || ResolveAvailableViews().Contains(ColorPickerView.GradientPalette);
+    private bool _hasPaletteView => ResolveAvailableViews().Contains(ColorPickerView.Palette)
+        || ResolveAvailableViews().Contains(ColorPickerView.GradientPalette);
 
     // ── Internal: Popup state ───────────────────────────────────────────
     private bool _isOpen;
-    private string? _currentColor;   // committed color
-    private string? _previewColor;   // in-progress preview
+    private string? _currentColor;
+    private string? _previewColor;
 
     // ── Internal: JS interop ────────────────────────────────────────────
     private ElementReference _canvasRef;
     private ElementReference _rootRef;
     private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<SunfishColorPicker>? _dotNetRef;
 
     // ── Internal: Unique IDs for accessibility ──────────────────────────
     private readonly string _uid = Guid.NewGuid().ToString("N")[..8];
@@ -382,12 +242,12 @@
     private string _bInputId => $"mar-cp-b-{_uid}";
     private string _aInputId => $"mar-cp-a-{_uid}";
 
-    // ── Computed CSS helpers ────────────────────────────────────────────
+    // ── CSS helpers ─────────────────────────────────────────────────────
     private string SizeClass => Size is { Length: > 0 } s ? $"mar-colorpicker--{s}" : "mar-colorpicker--md";
     private string RoundedClass => Rounded is { Length: > 0 } r ? $"mar-colorpicker--rounded-{r}" : "";
     private string FillModeClass => FillMode is { Length: > 0 } f ? $"mar-colorpicker--{f}" : "mar-colorpicker--solid";
 
-    // ── View management (IColorPickerViewHost) ───────────────────────────
+    // ── View management (IColorPickerViewHost) ──────────────────────────
     void IColorPickerViewHost.RegisterView(ColorPickerViewBase view)
     {
         if (!_registeredViews.Contains(view))
@@ -410,52 +270,64 @@
         });
     }
 
-    /// <summary>Applies configuration from registered view child components to internal state.</summary>
+    private IReadOnlyCollection<ColorPickerView> ResolveAvailableViews()
+    {
+        if (Views is { Count: > 0 })
+            return Views.Distinct().ToList();
+        if (_registeredViews.Count > 0)
+            return _registeredViews.Select(v => v.ViewType).Distinct().ToList();
+        return new[] { ColorPickerView.Gradient, ColorPickerView.Palette };
+    }
+
     private void ApplyViewSettings()
     {
-        // Apply gradient view settings
+        // Gradient child config
         var gradient = _registeredViews.OfType<ColorPickerGradientView>().FirstOrDefault();
         if (gradient is not null)
         {
             _showOpacity = gradient.ShowOpacityEditor;
-            if (gradient.Format is { } fmt)
-                _textFormat = fmt;
-            if (gradient.Formats is { } fmts)
-            {
-                var fmtList = fmts.ToList();
-                _hasHexFormat = fmtList.Contains(ColorFormat.Hex);
-                _hasRgbFormat = fmtList.Contains(ColorFormat.Rgb);
-            }
+            if (gradient.Format is ColorFormat fmt)
+                _textFormat = fmt == ColorFormat.Hex ? ColorPickerFormat.Hex : ColorPickerFormat.Rgb;
         }
 
-        // Apply palette view settings
+        // Palette child config
         var palette = _registeredViews.OfType<ColorPickerPaletteView>().FirstOrDefault();
         if (palette is not null)
         {
-            _paletteColumns = palette.Columns;
-            _paletteTileWidth = palette.TileWidth;
-            _paletteTileHeight = palette.TileHeight;
+            _effectiveColumns = palette.Columns;
+            _paletteTilePx = palette.TileWidth;
             if (palette.Colors is not null)
-                _paletteColors = palette.Colors;
+                _paletteColors = palette.Colors.ToList();
         }
-
-        // If active view is no longer available, switch to the first available
-        if (_activeView == ColorPickerView.Gradient && !_hasGradientView)
-            _activeView = ColorPickerView.Palette;
-        else if (_activeView == ColorPickerView.Palette && !_hasPaletteView)
-            _activeView = ColorPickerView.Gradient;
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────
     protected override void OnParametersSet()
     {
-        // Disabled=true overrides Enabled=true
         if (Disabled) Enabled = false;
 
-        _activeView = View;
-        _textFormat = ValueFormat == ColorFormat.Hex ? ColorFormat.Hex : ColorFormat.Rgb;
+        // Resolve text-input format (Format param wins, else ValueFormat, else Hex default).
+        _textFormat = Format ?? (ValueFormat == ColorFormat.Hex ? ColorPickerFormat.Hex : ColorPickerFormat.Rgb);
 
-        // Parse the incoming Value to initialize internal state
+        // Active view follows the View parameter.
+        _activeView = View;
+        // If the requested view isn't in the allowed list, fall back to the first allowed.
+        var allowed = ResolveAvailableViews();
+        if (!allowed.Contains(_activeView))
+            _activeView = allowed.FirstOrDefault();
+
+        _effectiveColumns = Math.Max(1, Columns);
+        _paletteTilePx = $"{Math.Max(8, PaletteTileSize)}px";
+
+        // Resolve palette colors from the Palette parameter.
+        _paletteColors = Palette switch
+        {
+            string name when !string.IsNullOrWhiteSpace(name) => ColorPalettePresets.Resolve(name).ToList(),
+            IEnumerable<string> list => list.ToList(),
+            _ => ColorPalettePresets.Basic.ToList(),
+        };
+
+        // Parse incoming Value into HSV/RGB state.
         if (Value is { Length: > 0 } v && !string.Equals(v, _currentColor, StringComparison.OrdinalIgnoreCase))
         {
             _currentColor = v;
@@ -468,8 +340,6 @@
         }
     }
 
-    private ColorPickerView _activeView = ColorPickerView.Gradient;
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -477,23 +347,28 @@
             _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetCanvasScript());
         }
 
-        // Initialize canvas when popup opens with the gradient view
-        if (_isOpen && _activeView == ColorPickerView.Gradient && _jsModule is not null)
+        // Initialise canvas when the gradient surface is visible.
+        var gradientVisible = (FlatMode || _isOpen)
+            && (_activeView == ColorPickerView.Gradient || _activeView == ColorPickerView.GradientPalette)
+            && _hasGradientView
+            && _jsModule is not null;
+
+        if (gradientVisible)
         {
             try
             {
-                await _jsModule.InvokeVoidAsync("initCanvas", _canvasRef, DotNetObjectReference.Create(this),
-                    _hue, _sat, _val);
-                await _jsModule.InvokeVoidAsync("moveThumb", _thumbX, _thumbY);
+                _dotNetRef ??= DotNetObjectReference.Create(this);
+                await _jsModule!.InvokeVoidAsync("initCanvas", _canvasRef, _dotNetRef, _hue, _sat, _val);
+                await _jsModule!.InvokeVoidAsync("moveThumb", _thumbX, _thumbY);
             }
-            catch { /* canvas not yet in DOM on this cycle */ }
+            catch { /* canvas not yet in DOM */ }
         }
     }
 
     // ── Popup open / close ──────────────────────────────────────────────
     public async Task Open()
     {
-        if (_isOpen || !Enabled) return;
+        if (_isOpen || !Enabled || FlatMode) return;
         var args = new ColorPickerOpenEventArgs();
         await OnOpen.InvokeAsync(args);
         if (args.IsCancelled) return;
@@ -535,7 +410,7 @@
 
     private async Task OnBackdropClickAsync()
     {
-        // Clicking outside popup = apply (as per spec)
+        // Apply-on-outside-click matches spec.
         await ApplyAsync();
     }
 
@@ -553,9 +428,8 @@
         _previewColor = color;
         ParseColorToHsv(color);
         SyncTextInputs();
-        if (!ShowButtons)
+        if (!ShowButtons || FlatMode)
         {
-            // No Apply button — commit immediately
             await CommitColorAsync(color);
         }
     }
@@ -564,12 +438,11 @@
     {
         var color = BuildOutputColor();
         await CommitColorAsync(color);
-        await CloseWithoutApplyAsync();
+        if (!FlatMode) await CloseWithoutApplyAsync();
     }
 
     private async Task CancelAsync()
     {
-        // Restore original color
         if (_currentColor is { Length: > 0 } c)
             ParseColorToHsv(c);
         else
@@ -578,14 +451,14 @@
         }
         SyncTextInputs();
         _previewColor = null;
-        await CloseWithoutApplyAsync();
+        if (!FlatMode) await CloseWithoutApplyAsync();
     }
 
     private async Task ClearColorAsync()
     {
         _previewColor = null;
         await CommitColorAsync(null);
-        await CloseWithoutApplyAsync();
+        if (!FlatMode) await CloseWithoutApplyAsync();
     }
 
     private async Task CommitColorAsync(string? color)
@@ -593,12 +466,13 @@
         _currentColor = color;
         Value = color;
         await ValueChanged.InvokeAsync(color);
-        await OnChange.InvokeAsync(color as object);
+        await OnChange.InvokeAsync(color);
     }
 
-    // ── Hue slider ──────────────────────────────────────────────────────
+    // ── Sliders & inputs ────────────────────────────────────────────────
     private async Task OnHueInput(ChangeEventArgs e)
     {
+        if (!Enabled) return;
         if (double.TryParse(e.Value?.ToString(), out var h))
         {
             _hue = h;
@@ -609,9 +483,9 @@
         }
     }
 
-    // ── Opacity slider ──────────────────────────────────────────────────
     private void OnOpacityInput(ChangeEventArgs e)
     {
+        if (!Enabled) return;
         if (double.TryParse(e.Value?.ToString(), out var pct))
         {
             _alpha = pct / 100.0;
@@ -620,7 +494,6 @@
         }
     }
 
-    // ── Hex text input ──────────────────────────────────────────────────
     private void OnHexInputInput(ChangeEventArgs e)
     {
         _hexText = e.Value?.ToString() ?? "";
@@ -628,6 +501,7 @@
 
     private void OnHexInputChange(ChangeEventArgs e)
     {
+        if (!Enabled) return;
         var raw = (e.Value?.ToString() ?? "").Trim();
         if (!raw.StartsWith('#')) raw = "#" + raw;
         if (TryParseHex(raw, out var r, out var g, out var b, out var a))
@@ -640,11 +514,11 @@
         }
     }
 
-    // ── RGB channel inputs ──────────────────────────────────────────────
     private void OnRgbChannelChange(ChangeEventArgs e, int channel)
     {
+        if (!Enabled) return;
         if (!int.TryParse(e.Value?.ToString(), out var v)) return;
-        v = Math.Clamp(v, channel == 3 ? 0 : 0, channel == 3 ? 100 : 255);
+        v = Math.Clamp(v, 0, channel == 3 ? 100 : 255);
         switch (channel)
         {
             case 0: _r = v; break;
@@ -663,6 +537,7 @@
     [JSInvokable]
     public void OnCanvasPick(double saturation, double brightness, double thumbX, double thumbY)
     {
+        if (!Enabled) return;
         _sat = saturation;
         _val = brightness;
         _thumbX = thumbX;
@@ -672,9 +547,9 @@
         StateHasChanged();
     }
 
-    // ── Canvas keyboard navigation ───────────────────────────────────────
     private async Task OnCanvasKeyDown(KeyboardEventArgs e)
     {
+        if (!Enabled) return;
         const double step = 0.02;
         switch (e.Key)
         {
@@ -691,7 +566,6 @@
             await _jsModule.InvokeVoidAsync("updateHue", _hue, _sat, _val);
     }
 
-    // ── Keyboard: trigger button ────────────────────────────────────────
     private async Task OnTriggerKeyDown(KeyboardEventArgs e)
     {
         if (e.Key is "Enter" or " ")
@@ -700,7 +574,6 @@
             await CancelAsync();
     }
 
-    // ── Keyboard: popup ─────────────────────────────────────────────────
     private async Task OnPopupKeyDown(KeyboardEventArgs e)
     {
         if (e.Key == "Escape")
@@ -709,11 +582,375 @@
             await ApplyAsync();
     }
 
-    // ── Format toggle ───────────────────────────────────────────────────
     private void ToggleTextFormat()
     {
-        _textFormat = _textFormat == ColorFormat.Hex ? ColorFormat.Rgb : ColorFormat.Hex;
+        _textFormat = _textFormat switch
+        {
+            ColorPickerFormat.Hex => ColorPickerFormat.Rgb,
+            ColorPickerFormat.Rgb => ColorPickerFormat.Hsl,
+            _ => ColorPickerFormat.Hex,
+        };
     }
+
+    // ── Body render fragment (shared between Flat and Popup layouts) ────
+    private RenderFragment RenderPickerBody => builder =>
+    {
+        var seq = 0;
+
+        // Header (view toggles + preview + clear)
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__popup-header");
+
+        var available = ResolveAvailableViews();
+        if (available.Count > 1)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__view-toggle");
+            builder.AddAttribute(seq++, "role", "group");
+            builder.AddAttribute(seq++, "aria-label", "Color picker view");
+
+            foreach (var view in available)
+            {
+                var isActive = _activeView == view;
+                builder.OpenElement(seq++, "button");
+                builder.AddAttribute(seq++, "type", "button");
+                builder.AddAttribute(seq++, "class",
+                    "sf-colorpicker__view-btn " + (isActive ? "mar-colorpicker__view-btn--active" : ""));
+                builder.AddAttribute(seq++, "aria-pressed", isActive ? "true" : "false");
+                var captured = view;
+                builder.AddAttribute(seq++, "onclick",
+                    EventCallback.Factory.Create(this, () => SwitchViewAsync(captured)));
+                builder.AddContent(seq++, view switch
+                {
+                    ColorPickerView.Gradient        => "Gradient",
+                    ColorPickerView.Palette         => "Palette",
+                    ColorPickerView.GradientPalette => "Both",
+                    _                               => view.ToString(),
+                });
+                builder.CloseElement();
+            }
+            builder.CloseElement();
+        }
+
+        if (Preview)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__preview-container");
+            builder.AddAttribute(seq++, "aria-label", "Color preview");
+
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__preview-new");
+            builder.AddAttribute(seq++, "style",
+                $"background-color: {_previewColor ?? _currentColor ?? "transparent"};");
+            builder.AddAttribute(seq++, "title", "New color");
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__preview-current");
+            builder.AddAttribute(seq++, "style", $"background-color: {_currentColor ?? "transparent"};");
+            builder.AddAttribute(seq++, "title", "Current color");
+            builder.CloseElement();
+
+            builder.CloseElement();
+        }
+
+        if (ClearButton && Enabled)
+        {
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__clear-btn");
+            builder.AddAttribute(seq++, "aria-label", "Clear color");
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, ClearColorAsync));
+            builder.AddMarkupContent(seq++, "&#x2715;");
+            builder.CloseElement();
+        }
+
+        builder.CloseElement(); // header
+
+        // Views container — may render gradient, palette, or both.
+        var showGradient = (_activeView == ColorPickerView.Gradient
+                            || _activeView == ColorPickerView.GradientPalette)
+                           && _hasGradientView;
+        var showPalette = (_activeView == ColorPickerView.Palette
+                           || _activeView == ColorPickerView.GradientPalette)
+                          && _hasPaletteView;
+
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class",
+            "sf-colorpicker__views "
+            + (_activeView == ColorPickerView.GradientPalette ? "sf-colorpicker__views--split" : ""));
+
+        if (showGradient)
+        {
+            builder.AddContent(seq++, RenderGradientView);
+        }
+        if (showPalette)
+        {
+            builder.AddContent(seq++, RenderPaletteView);
+        }
+
+        builder.CloseElement(); // views
+
+        if (ContrastTool)
+        {
+            builder.AddContent(seq++, RenderContrastTool);
+        }
+
+        if (ShowButtons && !FlatMode)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__actions");
+
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__apply-btn");
+            builder.AddAttribute(seq++, "aria-label", "Apply color");
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, ApplyAsync));
+            builder.AddContent(seq++, "Apply");
+            builder.CloseElement();
+
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__cancel-btn");
+            builder.AddAttribute(seq++, "aria-label", "Cancel");
+            builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, CancelAsync));
+            builder.AddContent(seq++, "Cancel");
+            builder.CloseElement();
+
+            builder.CloseElement();
+        }
+    };
+
+    // ── Gradient sub-view (HSV canvas + hue + opacity + text inputs) ────
+    private RenderFragment RenderGradientView => builder =>
+    {
+        var seq = 0;
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__gradient-view");
+
+        // Canvas
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__canvas-container");
+        builder.OpenElement(seq++, "canvas");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__canvas");
+        builder.AddAttribute(seq++, "width", "220");
+        builder.AddAttribute(seq++, "height", "150");
+        builder.AddAttribute(seq++, "aria-label",
+            "Color saturation and brightness selector. Use arrow keys to adjust.");
+        builder.AddAttribute(seq++, "tabindex", "0");
+        builder.AddAttribute(seq++, "onkeydown",
+            EventCallback.Factory.Create<KeyboardEventArgs>(this, OnCanvasKeyDown));
+        builder.AddElementReferenceCapture(seq++, r => _canvasRef = r);
+        builder.CloseElement();
+
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__canvas-thumb");
+        builder.AddAttribute(seq++, "style", $"left: {_thumbX:F1}px; top: {_thumbY:F1}px;");
+        builder.AddAttribute(seq++, "aria-hidden", "true");
+        builder.CloseElement();
+
+        builder.CloseElement(); // canvas-container
+
+        // Hue slider
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__hue-container");
+        builder.OpenElement(seq++, "input");
+        builder.AddAttribute(seq++, "id", _hueInputId);
+        builder.AddAttribute(seq++, "type", "range");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__hue-slider");
+        builder.AddAttribute(seq++, "min", "0");
+        builder.AddAttribute(seq++, "max", "360");
+        builder.AddAttribute(seq++, "step", "1");
+        builder.AddAttribute(seq++, "value", ((int)_hue).ToString());
+        builder.AddAttribute(seq++, "aria-label", $"Hue: {(int)_hue} degrees");
+        builder.AddAttribute(seq++, "oninput",
+            EventCallback.Factory.Create<ChangeEventArgs>(this, OnHueInput));
+        builder.CloseElement();
+        builder.CloseElement();
+
+        // Opacity slider
+        if (_showOpacity)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__opacity-container");
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__opacity-track");
+            builder.AddAttribute(seq++, "style",
+                $"background: linear-gradient(to right, transparent, {HsvToRgbCss(_hue, 1, 1)});");
+            builder.OpenElement(seq++, "input");
+            builder.AddAttribute(seq++, "id", _opacityInputId);
+            builder.AddAttribute(seq++, "type", "range");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__opacity-slider");
+            builder.AddAttribute(seq++, "min", "0");
+            builder.AddAttribute(seq++, "max", "100");
+            builder.AddAttribute(seq++, "step", "1");
+            builder.AddAttribute(seq++, "value", ((int)(_alpha * 100)).ToString());
+            builder.AddAttribute(seq++, "aria-label", $"Opacity: {(int)(_alpha * 100)}%");
+            builder.AddAttribute(seq++, "oninput",
+                EventCallback.Factory.Create<ChangeEventArgs>(this, OnOpacityInput));
+            builder.CloseElement();
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+
+        // Text inputs
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__inputs");
+
+        if (_textFormat == ColorPickerFormat.Hex)
+        {
+            builder.OpenElement(seq++, "div");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__input-group");
+            builder.OpenElement(seq++, "input");
+            builder.AddAttribute(seq++, "id", _hexInputId);
+            builder.AddAttribute(seq++, "type", "text");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__hex-input");
+            builder.AddAttribute(seq++, "maxlength", "9");
+            builder.AddAttribute(seq++, "value", _hexText);
+            builder.AddAttribute(seq++, "aria-label", "Hex color value");
+            builder.AddAttribute(seq++, "onchange",
+                EventCallback.Factory.Create<ChangeEventArgs>(this, OnHexInputChange));
+            builder.AddAttribute(seq++, "oninput",
+                EventCallback.Factory.Create<ChangeEventArgs>(this, OnHexInputInput));
+            builder.CloseElement();
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "sf-colorpicker__input-label");
+            builder.AddContent(seq++, "HEX");
+            builder.CloseElement();
+            builder.CloseElement();
+        }
+        else if (_textFormat == ColorPickerFormat.Rgb)
+        {
+            RenderNumberInput(builder, ref seq, _rInputId, "R", _r, 255, 0);
+            RenderNumberInput(builder, ref seq, _gInputId, "G", _g, 255, 1);
+            RenderNumberInput(builder, ref seq, _bInputId, "B", _b, 255, 2);
+            if (_showOpacity)
+                RenderNumberInput(builder, ref seq, _aInputId, "A", (int)(_alpha * 100), 100, 3);
+        }
+        else // Hsl
+        {
+            RenderNumberInput(builder, ref seq, _rInputId, "H", (int)_hue, 360, -1);
+            RenderNumberInput(builder, ref seq, _gInputId, "S", (int)(_sat * 100), 100, -2);
+            RenderNumberInput(builder, ref seq, _bInputId, "L", (int)(_val * 100), 100, -3);
+        }
+
+        // Format toggle (Hex ↔ Rgb ↔ Hsl)
+        builder.OpenElement(seq++, "button");
+        builder.AddAttribute(seq++, "type", "button");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__format-toggle");
+        builder.AddAttribute(seq++, "aria-label", "Toggle color format");
+        builder.AddAttribute(seq++, "title", "Toggle between HEX, RGB, and HSL");
+        builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, ToggleTextFormat));
+        builder.AddMarkupContent(seq++, "&#8644;");
+        builder.CloseElement();
+
+        builder.CloseElement(); // inputs
+        builder.CloseElement(); // gradient-view
+    };
+
+    private void RenderNumberInput(
+        Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder,
+        ref int seq, string id, string label, int value, int max, int channel)
+    {
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__input-group");
+        builder.OpenElement(seq++, "input");
+        builder.AddAttribute(seq++, "id", id);
+        builder.AddAttribute(seq++, "type", "number");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__rgb-input");
+        builder.AddAttribute(seq++, "min", "0");
+        builder.AddAttribute(seq++, "max", max.ToString());
+        builder.AddAttribute(seq++, "value", value.ToString());
+        builder.AddAttribute(seq++, "aria-label", $"{label}: {value}");
+        if (channel >= 0)
+        {
+            var captured = channel;
+            builder.AddAttribute(seq++, "onchange",
+                EventCallback.Factory.Create<ChangeEventArgs>(this, e => OnRgbChannelChange(e, captured)));
+        }
+        builder.CloseElement();
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__input-label");
+        builder.AddContent(seq++, label);
+        builder.CloseElement();
+        builder.CloseElement();
+    }
+
+    // ── Palette sub-view ────────────────────────────────────────────────
+    private RenderFragment RenderPaletteView => builder =>
+    {
+        var seq = 0;
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__palette-view");
+
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__palette");
+        builder.AddAttribute(seq++, "role", "grid");
+        builder.AddAttribute(seq++, "aria-label", "Color palette");
+        builder.AddAttribute(seq++, "style",
+            $"grid-template-columns: repeat({_effectiveColumns}, {_paletteTilePx});");
+
+        foreach (var color in _paletteColors)
+        {
+            var c = color;
+            var isSelected = string.Equals(c, _currentColor, StringComparison.OrdinalIgnoreCase);
+            builder.OpenElement(seq++, "button");
+            builder.AddAttribute(seq++, "type", "button");
+            builder.AddAttribute(seq++, "role", "gridcell");
+            builder.AddAttribute(seq++, "class",
+                "sf-colorpicker__palette-tile "
+                + (isSelected ? "mar-colorpicker__palette-tile--selected" : ""));
+            builder.AddAttribute(seq++, "style",
+                $"background-color: {c}; width: {_paletteTilePx}; height: {_paletteTilePx};");
+            builder.AddAttribute(seq++, "aria-label", c);
+            builder.AddAttribute(seq++, "aria-selected", isSelected ? "true" : "false");
+            builder.AddAttribute(seq++, "onclick",
+                EventCallback.Factory.Create(this, () => SelectPaletteColorAsync(c)));
+            builder.CloseElement();
+        }
+
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+
+    // ── Contrast sub-tool ───────────────────────────────────────────────
+    private RenderFragment RenderContrastTool => builder =>
+    {
+        var seq = 0;
+        var sampleColor = _previewColor ?? _currentColor ?? "#000000";
+        var ratio = ComputeContrastRatio(sampleColor, ContrastBackground);
+        var aa = ratio >= 4.5 ? "Pass" : ratio >= 3.0 ? "Large" : "Fail";
+        var aaa = ratio >= 7.0 ? "Pass" : "Fail";
+
+        builder.OpenElement(seq++, "div");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__contrast");
+        builder.AddAttribute(seq++, "role", "group");
+        builder.AddAttribute(seq++, "aria-label", "WCAG contrast ratio");
+
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__contrast-swatch");
+        builder.AddAttribute(seq++, "style",
+            $"background:{ContrastBackground}; color:{sampleColor};");
+        builder.AddContent(seq++, "Aa");
+        builder.CloseElement();
+
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__contrast-ratio");
+        builder.AddContent(seq++, $"{ratio:F2}:1");
+        builder.CloseElement();
+
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__contrast-aa");
+        builder.AddContent(seq++, $"AA {aa}");
+        builder.CloseElement();
+
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-colorpicker__contrast-aaa");
+        builder.AddContent(seq++, $"AAA {aaa}");
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
 
     // ── Color math helpers ──────────────────────────────────────────────
     private void ParseColorToHsv(string? color)
@@ -767,16 +1004,27 @@
 
     private string BuildOutputColor()
     {
-        if (ValueFormat == ColorFormat.Hex)
-            return BuildHex();
-
-        // RGB / RGBA
-        if (_alpha >= 1.0)
-            return $"rgb({_r}, {_g}, {_b})";
-        return $"rgba({_r}, {_g}, {_b}, {_alpha:F2})";
+        var format = Format ?? (ValueFormat == ColorFormat.Hex ? ColorPickerFormat.Hex : ColorPickerFormat.Rgb);
+        switch (format)
+        {
+            case ColorPickerFormat.Hex:
+                return BuildHex();
+            case ColorPickerFormat.Hsl:
+                {
+                    var h = (int)Math.Round(_hue);
+                    var s = (int)Math.Round(_sat * 100);
+                    var l = (int)Math.Round(_val * 100);
+                    return _alpha >= 1.0
+                        ? $"hsl({h}, {s}%, {l}%)"
+                        : $"hsla({h}, {s}%, {l}%, {_alpha:F2})";
+                }
+            default:
+                return _alpha >= 1.0
+                    ? $"rgb({_r}, {_g}, {_b})"
+                    : $"rgba({_r}, {_g}, {_b}, {_alpha:F2})";
+        }
     }
 
-    /// <summary>Returns an rgb() string for the pure hue at full S/V — used by the opacity slider gradient.</summary>
     private static string HsvToRgbCss(double hue, double s, double v)
     {
         HsvToRgb(hue, s, v, out var r, out var g, out var b);
@@ -869,7 +1117,35 @@
         catch { return false; }
     }
 
-    // ── JS module: canvas HSV picker + utility ──────────────────────────
+    private static double ComputeContrastRatio(string fg, string bg)
+    {
+        double l1 = RelativeLuminance(fg);
+        double l2 = RelativeLuminance(bg);
+        var (lighter, darker) = l1 >= l2 ? (l1, l2) : (l2, l1);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    private static double RelativeLuminance(string color)
+    {
+        int r = 0, g = 0, b = 0;
+        if (color.StartsWith('#'))
+        {
+            if (!TryParseHex(color, out r, out g, out b, out _)) return 0;
+        }
+        else if (color.StartsWith("rgb", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!TryParseRgb(color, out r, out g, out b, out _)) return 0;
+        }
+        double R = SrgbToLinear(r / 255.0);
+        double G = SrgbToLinear(g / 255.0);
+        double B = SrgbToLinear(b / 255.0);
+        return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+    }
+
+    private static double SrgbToLinear(double c) =>
+        c <= 0.03928 ? c / 12.92 : Math.Pow((c + 0.055) / 1.055, 2.4);
+
+    // ── JS module ───────────────────────────────────────────────────────
     private static string GetCanvasScript() => """
     (() => {
         const mod = {};
@@ -878,14 +1154,12 @@
 
         function drawCanvas(hue, sat, val) {
             if (!canvas || !ctx) return;
-            // Fill with white-to-hue horizontal gradient
             const hueRgb = hsvToRgb(hue, 1, 1);
             const gradH = ctx.createLinearGradient(0, 0, CANVAS_W, 0);
             gradH.addColorStop(0, 'rgb(255,255,255)');
             gradH.addColorStop(1, `rgb(${hueRgb.r},${hueRgb.g},${hueRgb.b})`);
             ctx.fillStyle = gradH;
             ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-            // Overlay transparent-to-black vertical gradient
             const gradV = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
             gradV.addColorStop(0, 'rgba(0,0,0,0)');
             gradV.addColorStop(1, 'rgba(0,0,0,1)');
@@ -933,7 +1207,7 @@
         mod.moveThumb = (x, y) => { /* thumb position managed from Blazor */ };
 
         mod.focusElement = (el) => { if (el) el.focus(); };
-        mod.dispose = () => { canvas = null; ctx = null; };
+        mod.dispose = () => { canvas = null; ctx = null; dotNet = null; };
         return mod;
     })()
     """;
@@ -946,5 +1220,6 @@
             try { await _jsModule.InvokeVoidAsync("dispose"); } catch { }
             await _jsModule.DisposeAsync();
         }
+        _dotNetRef?.Dispose();
     }
 }
