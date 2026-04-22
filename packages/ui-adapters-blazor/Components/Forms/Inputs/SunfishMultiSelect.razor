@@ -2,6 +2,8 @@
 @typeparam TItem
 @typeparam TValue
 @implements IMultiSelectSettingsSink
+@using Sunfish.UIAdapters.Blazor.Enums
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
 <div class="@CombineClasses(CssProvider.MultiSelectClass(_isOpen, !IsEnabled, IsInvalid))"
      style="@CombineStyles(_widthStyle)"
@@ -25,7 +27,7 @@
         @* Selected tags *@
         @if (_selectedItems.Count > 0)
         {
-            @if (TagMode == MultiSelectTagMode.Single)
+            @if (TagMode == TagMode.Single)
             {
                 <span class="@CssProvider.MultiSelectTagClass() mar-multiselect-tag--summary">
                     @if (SummaryTagTemplate != null)
@@ -47,7 +49,11 @@
                 {
                     var tagItem = _selectedItems[ti];
                     <span class="@CssProvider.MultiSelectTagClass()">
-                        @if (TagTemplate != null)
+                        @if (ChipTemplate != null)
+                        {
+                            @ChipTemplate(tagItem)
+                        }
+                        else if (TagTemplate != null)
                         {
                             @TagTemplate(tagItem)
                         }
@@ -133,12 +139,12 @@
                 <div class="sf-multiselect__header">@HeaderTemplate</div>
             }
 
-            @if (EnableVirtualization)
+            @if (IsVirtual)
             {
                 <div class="sf-multiselect__virtual-container" style="height:@(EffectivePopupHeight ?? "200px"); overflow-y:auto;">
                     <Microsoft.AspNetCore.Components.Web.Virtualization.Virtualize Items="@_filteredItems"
                                                                                     Context="item"
-                                                                                    ItemSize="@ItemHeight"
+                                                                                    ItemSize="@EffectiveVirtualItemHeight"
                                                                                     OverscanCount="@PageSize">
                         @{
                             var idx = _filteredItems.IndexOf(item);
@@ -317,22 +323,54 @@
 
     // Filtering
     [Parameter] public bool Filterable { get; set; }
-    [Parameter] public ComboBoxFilterMode FilterOperator { get; set; } = ComboBoxFilterMode.StartsWith;
+
+    /// <summary>
+    /// String filter operator used for client-side filtering and forwarded in
+    /// <see cref="OnRead"/> args. Mirrors <see cref="SunfishComboBox{TItem, TValue}.FilterOperator"/>.
+    /// </summary>
+    [Parameter] public FilterOperator FilterOperator { get; set; } = FilterOperator.StartsWith;
+
+    /// <summary>Minimum characters required before filtering kicks in.</summary>
     [Parameter] public int MinLength { get; set; } = 1;
     [Parameter] public bool PersistFilterOnSelect { get; set; }
+
+    /// <summary>Debounce window (ms) applied to filter input. <c>0</c> fires synchronously.</summary>
     [Parameter] public int DebounceDelay { get; set; } = 150;
 
     // Behavior
     [Parameter] public bool AutoClose { get; set; } = true;
-    [Parameter] public MultiSelectTagMode TagMode { get; set; } = MultiSelectTagMode.Multiple;
+
+    /// <summary>
+    /// Controls how selected items are rendered in the trigger: <see cref="Enums.TagMode.Single"/>
+    /// shows a summary chip ("3 items"); <see cref="Enums.TagMode.Multiple"/> renders one chip
+    /// per value (default).
+    /// </summary>
+    [Parameter] public TagMode TagMode { get; set; } = TagMode.Multiple;
     [Parameter] public int? MaxVisibleTags { get; set; }
     [Parameter] public bool ShowClearButton { get; set; }
     [Parameter] public bool ShowArrowButton { get; set; } = true;
 
     // Virtualization
+    /// <summary>Enables virtualization of the dropdown list.</summary>
     [Parameter] public bool EnableVirtualization { get; set; }
+
+    /// <summary>
+    /// ComboBox-parity alias for <see cref="EnableVirtualization"/>. When either is <c>true</c>
+    /// the list is virtualized.
+    /// </summary>
+    [Parameter] public bool Virtual { get; set; }
+
+    /// <summary>
+    /// ComboBox-parity alias for <see cref="ItemHeight"/>. When set (non-zero) it wins over
+    /// <see cref="ItemHeight"/> as the pixel height of each virtualized row.
+    /// </summary>
+    [Parameter] public int VirtualItemHeight { get; set; }
+
     [Parameter] public string? PopupHeight { get; set; }
     [Parameter] public string? PopupMaxHeight { get; set; }
+
+    private bool IsVirtual => EnableVirtualization || Virtual;
+    private float EffectiveVirtualItemHeight => VirtualItemHeight > 0 ? VirtualItemHeight : ItemHeight;
 
     // Appearance
     [Parameter] public string? Width { get; set; }
@@ -345,6 +383,14 @@
 
     // Templates
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>
+    /// Template for selected chips rendered in the trigger. Takes precedence over
+    /// <see cref="TagTemplate"/> when both are supplied.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ChipTemplate { get; set; }
+
+    /// <summary>Alias of <see cref="ChipTemplate"/> kept for existing consumers.</summary>
     [Parameter] public RenderFragment<TItem>? TagTemplate { get; set; }
     [Parameter] public RenderFragment<List<TValue>>? SummaryTagTemplate { get; set; }
     [Parameter] public RenderFragment? HeaderTemplate { get; set; }
@@ -573,8 +619,11 @@
                 if (text is null) return false;
                 return FilterOperator switch
                 {
-                    ComboBoxFilterMode.StartsWith => text.StartsWith(_filterText, StringComparison.OrdinalIgnoreCase),
-                    ComboBoxFilterMode.EndsWith => text.EndsWith(_filterText, StringComparison.OrdinalIgnoreCase),
+                    FilterOperator.Contains => text.Contains(_filterText, StringComparison.OrdinalIgnoreCase),
+                    FilterOperator.StartsWith => text.StartsWith(_filterText, StringComparison.OrdinalIgnoreCase),
+                    FilterOperator.EndsWith => text.EndsWith(_filterText, StringComparison.OrdinalIgnoreCase),
+                    FilterOperator.Equals => text.Equals(_filterText, StringComparison.OrdinalIgnoreCase),
+                    FilterOperator.NotEquals => !text.Equals(_filterText, StringComparison.OrdinalIgnoreCase),
                     _ => text.Contains(_filterText, StringComparison.OrdinalIgnoreCase)
                 };
             })
@@ -780,7 +829,14 @@
 
         var args = new MultiSelectReadEventArgs<TItem>
         {
-            Filter = _filterText,
+            Filter = string.IsNullOrEmpty(_filterText) ? null : _filterText,
+            FilterOperator = FilterOperator,
+            Skip = 0,
+            Take = 0,
+            Sorts = Array.Empty<SortDescriptor>(),
+            Values = _selectedValues
+                .Select(v => (object?)v)
+                .ToList(),
             CancellationToken = _readCts.Token
         };
 

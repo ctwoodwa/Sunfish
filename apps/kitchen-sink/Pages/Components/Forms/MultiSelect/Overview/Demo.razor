@@ -1,43 +1,163 @@
 @page "/components/forms/multiselect/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using Sunfish.UIAdapters.Blazor.Enums
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
 <PageTitle>MultiSelect / Overview · Sunfish Kitchen Sink</PageTitle>
 
 <SunfishExamplePanel Title="MultiSelect / Overview"
                      Breadcrumb="@_breadcrumb"
-                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MultiSelect/Overview/Demo.razor"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/MultiSelect/Overview/Demo.razor"
                      Sources="@GeneratedSources">
 
     <Narrative>
         <p>
-            <code>SunfishMultiSelect</code> lets users pick one or many items from a filterable list,
-            rendering each selection as a tag. Provide data through <code>Data</code>, <code>TextField</code>,
-            and <code>ValueField</code>; the selected keys flow through <code>Value</code> /
-            <code>ValueChanged</code> as a <code>List&lt;TValue&gt;</code>. Use <code>TagMode</code> to
-            collapse selections into a single summary tag, and <code>AutoClose</code> /
-            <code>ShowClearButton</code> to tune interaction.
+            <code>SunfishMultiSelect&lt;TItem, TValue&gt;</code> lets users pick one or many items
+            from a filterable list, rendering each selection as a chip in the trigger. Bind data with
+            <code>Data</code>, <code>TextField</code>, and <code>ValueField</code>; the selected keys
+            flow through <code>Value</code> / <code>ValueChanged</code> as a
+            <code>List&lt;TValue&gt;</code>.
         </p>
         <p>
-            See <a href="/components/editors/multiselect/checkboxes">checkboxes</a>,
-            <a href="/components/editors/multiselect/grouping">grouping</a>, and
-            <a href="/components/editors/multiselect/virtualization">virtualization</a>.
+            Mirroring the <a href="/components/forms/combobox/overview">ComboBox</a> shape, the
+            multi-select supports <code>GroupField</code> (dotted paths welcome) for sticky group
+            headers, <code>Virtual</code> with <code>VirtualItemHeight</code> for large datasets, and
+            templates for items, chips, header, footer, and empty state. See
+            <a href="/components/forms/multiselect/events">events</a> for
+            <code>OnRead</code>, <code>OnOpen</code>, <code>OnClose</code>, <code>OnChange</code>.
         </p>
     </Narrative>
 
     <Example>
-        <div class="demo-row">
-            <SunfishField>
-                <SunfishLabel>Countries</SunfishLabel>
-                <SunfishMultiSelect TItem="Country"
-                                   TValue="int"
-                                   Data="@_countries"
-                                   TextField="Name"
-                                   ValueField="Id"
-                                   Value="@_selectedValues"
-                                   ValueChanged="@((List<int> v) => _selectedValues = v)"
-                                   Placeholder="Select countries..." />
-            </SunfishField>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:640px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Basic</h3>
+                <SunfishField>
+                    <SunfishLabel>Countries</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country"
+                                        TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        @bind-Value="@_basicValue"
+                                        Filterable="true"
+                                        ShowClearButton="true"
+                                        FilterOperator="FilterOperator.Contains"
+                                        Placeholder="Pick one or more..." />
+                </SunfishField>
+                <p style="margin:.25rem 0 0; font-size:.8rem; color:#555;">
+                    Selected: <strong>@(_basicValue.Count == 0 ? "(none)" : string.Join(", ", _basicValue))</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Grouping</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>GroupField="Category.CategoryName"</code> emits sticky group headers; dotted
+                    paths traverse nested properties.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Products</SunfishLabel>
+                    <SunfishMultiSelect TItem="Product"
+                                        TValue="int"
+                                        Data="@_products"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        GroupField="Category.CategoryName"
+                                        @bind-Value="@_groupedValue"
+                                        Filterable="true"
+                                        ShowClearButton="true"
+                                        Placeholder="Pick products..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Virtualization (12,345 rows)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>Virtual="true"</code> renders only the visible rows through
+                    <code>&lt;Virtualize&gt;</code>. Tune <code>VirtualItemHeight</code> to match your
+                    row CSS.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Large dataset</SunfishLabel>
+                    <SunfishMultiSelect TItem="Person"
+                                        TValue="int"
+                                        Data="@_largeData"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        Virtual="true"
+                                        VirtualItemHeight="32"
+                                        PopupHeight="280px"
+                                        @bind-Value="@_virtualValue"
+                                        Filterable="true"
+                                        ShowClearButton="true"
+                                        Placeholder="Scroll — only visible rows render" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Templates (ChipTemplate + ItemTemplate)</h3>
+                <SunfishField>
+                    <SunfishLabel>Countries with flags</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country"
+                                        TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        @bind-Value="@_templatedValue"
+                                        Filterable="true"
+                                        ShowClearButton="true"
+                                        Placeholder="Pick a country...">
+                        <HeaderTemplate>
+                            <strong style="padding:.25rem .75rem; display:block;">Select countries</strong>
+                        </HeaderTemplate>
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                        <ChipTemplate Context="country">
+                            <span style="display:inline-flex; align-items:center; gap:.25rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; font-size:.75rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ChipTemplate>
+                        <FooterTemplate>
+                            <em style="padding:.25rem .75rem; display:block; color:#555;">
+                                @_countries.Count countries total
+                            </em>
+                        </FooterTemplate>
+                        <NoDataTemplate>
+                            <div style="padding:.5rem .75rem; color:#888;">No countries match your filter.</div>
+                        </NoDataTemplate>
+                    </SunfishMultiSelect>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">TagMode.Single (summary chip)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>TagMode="TagMode.Single"</code> collapses all selections into a single
+                    summary chip.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Countries (summary)</SunfishLabel>
+                    <SunfishMultiSelect TItem="Country"
+                                        TValue="int"
+                                        Data="@_countries"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        @bind-Value="@_summaryValue"
+                                        TagMode="TagMode.Single"
+                                        ShowClearButton="true"
+                                        Placeholder="Pick several..." />
+                </SunfishField>
+            </section>
+
         </div>
     </Example>
 
@@ -47,9 +167,16 @@
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "MultiSelect", "Overview"];
 
-    private List<int> _selectedValues = new();
+    private List<int> _basicValue = new();
+    private List<int> _groupedValue = new();
+    private List<int> _virtualValue = new();
+    private List<int> _templatedValue = new();
+    private List<int> _summaryValue = new();
 
     private record Country(int Id, string Name, string Code);
+    private record Category(int CategoryId, string CategoryName);
+    private record Product(int Id, string Name, Category Category);
+    private record Person(int Id, string Name);
 
     private readonly List<Country> _countries = new()
     {
@@ -59,5 +186,22 @@
         new(4, "Germany", "DE"),
         new(5, "France", "FR"),
         new(6, "Japan", "JP"),
+        new(7, "Finland", "FI"),
+        new(8, "Ireland", "IE"),
     };
+
+    private List<Product> _products = new();
+    private List<Person> _largeData = new();
+
+    protected override void OnInitialized()
+    {
+        _products = Enumerable.Range(1, 20)
+            .Select(i => new Product(i, $"Product {i}",
+                new Category(i % 4, $"Category {i % 4}")))
+            .ToList();
+
+        _largeData = Enumerable.Range(1, 12345)
+            .Select(i => new Person(i, $"Name {i}"))
+            .ToList();
+    }
 }

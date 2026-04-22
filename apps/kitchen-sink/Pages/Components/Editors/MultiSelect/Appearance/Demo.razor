@@ -1,6 +1,8 @@
 @page "/components/forms/multiselect/appearance"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
 <PageTitle>MultiSelect / Appearance · Sunfish Kitchen Sink</PageTitle>
 
@@ -58,7 +60,7 @@
                                         TextField="Name" ValueField="Id"
                                         @bind-Value="@_filterable"
                                         Filterable="true"
-                                        FilterOperator="ComboBoxFilterMode.Contains"
+                                        FilterOperator="FilterOperator.Contains"
                                         Placeholder="Type 'land'..." />
                 </SunfishField>
             </section>
@@ -66,7 +68,7 @@
             <section>
                 <h3 style="margin:0 0 .5rem;">Summary-tag mode</h3>
                 <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
-                    With <code>TagMode="MultiSelectTagMode.Single"</code> and
+                    With <code>TagMode="TagMode.Single"</code> and
                     <code>MaxVisibleTags="2"</code>, picks past the threshold collapse into a
                     summary chip like <em>&ldquo;+3 more&rdquo;</em>.
                 </p>
@@ -76,7 +78,7 @@
                                         Data="@_countries"
                                         TextField="Name" ValueField="Id"
                                         @bind-Value="@_summary"
-                                        TagMode="MultiSelectTagMode.Single"
+                                        TagMode="TagMode.Single"
                                         MaxVisibleTags="2"
                                         Placeholder="Pick several..." />
                 </SunfishField>
