@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-21T21:12:44.860Z
-> Files: 178 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-22T11:42:56.777Z
+> Files: 220 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -263,6 +263,10 @@
 
 - `docfx.json` — .yml", "api/index.md"] (~431 tok)
 
+## apps/docs/component-specs/
+
+- `component-mapping.json` (~2952 tok)
+
 ## apps/kitchen-sink/
 
 - `Sunfish.KitchenSink.csproj` (~609 tok)
@@ -270,6 +274,34 @@
 ## apps/kitchen-sink/Pages/Components/
 
 - `Index.razor` (~898 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/AIPrompt/Overview/
+
+- `Demo.razor` (~938 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/Chat/Overview/
+
+- `Demo.razor` (~747 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/InlineAIPrompt/Overview/
+
+- `Demo.razor` (~676 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/PromptBox/Overview/
+
+- `Demo.razor` (~680 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/SmartPasteButton/Overview/
+
+- `Demo.razor` (~490 tok)
+
+## apps/kitchen-sink/Pages/Components/AI/SpeechToTextButton/Overview/
+
+- `Demo.razor` (~606 tok)
+
+## apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/
+
+- `Demo.razor` (~725 tok)
 
 ## apps/kitchen-sink/Pages/Components/Buttons/Button/Overview/
 
@@ -341,7 +373,7 @@
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/
 
-- `Demo.razor` (~714 tok)
+- `Demo.razor` (~888 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Overview/
 
@@ -349,7 +381,7 @@
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/
 
-- `Demo.razor` (~657 tok)
+- `Demo.razor` (~977 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/
 
@@ -409,7 +441,7 @@
 
 ## apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/
 
-- `Demo.razor` (~456 tok)
+- `Demo.razor` (~448 tok)
 
 ## apps/kitchen-sink/Pages/Components/Editors/FileSelect/Overview/
 
@@ -417,7 +449,7 @@
 
 ## apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/
 
-- `Demo.razor` (~641 tok)
+- `Demo.razor` (~731 tok)
 
 ## apps/kitchen-sink/Pages/Components/Editors/FloatingLabel/Overview/
 
@@ -519,6 +551,18 @@
 
 - `Demo.razor` (~969 tok)
 
+## apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Overview/
+
+- `Demo.razor` — Declares TreeNode (~847 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/
+
+- `Demo.razor` (~746 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/FileManager/Overview/
+
+- `Demo.razor` (~902 tok)
+
 ## apps/kitchen-sink/Pages/Components/Forms/Form/Overview/
 
 - `Demo.razor` — Declares ContactModel (~909 tok)
@@ -530,6 +574,10 @@
 ## apps/kitchen-sink/Pages/Components/Layout/AppBar/Overview/
 
 - `Demo.razor` (~448 tok)
+
+## apps/kitchen-sink/Pages/Components/Layout/DockManager/Overview/
+
+- `Demo.razor` — Declares Hello (~1164 tok)
 
 ## apps/kitchen-sink/Pages/Components/Layout/Drawer/Overview/
 
@@ -549,7 +597,19 @@
 
 ## apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/
 
-- `Demo.razor` (~512 tok)
+- `Demo.razor` (~1195 tok)
+
+## apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/
+
+- `Demo.razor` (~847 tok)
+
+## apps/kitchen-sink/Pages/Components/Media/Map/Overview/
+
+- `Demo.razor` (~923 tok)
+
+## apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/
+
+- `Demo.razor` — Declares string (~879 tok)
 
 ## apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Overview/
 
@@ -598,6 +658,14 @@
 ## apps/kitchen-sink/Pages/Components/SmartAi/SpeechToTextButton/Overview/
 
 - `Demo.razor` (~813 tok)
+
+## apps/kitchen-sink/Pages/Components/Utility/Diagram/Overview/
+
+- `Demo.razor` (~1112 tok)
+
+## apps/kitchen-sink/Pages/Components/Utility/DropZone/Overview/
+
+- `Demo.razor` — Declares string (~978 tok)
 
 ## apps/kitchen-sink/build/
 
@@ -716,6 +784,7 @@
 
 ## packages/foundation/Models/
 
+- `FileManagerModels.cs` — Represents a file or folder entry in the SunfishFileManager. Use as <c>TItem</c> when you don't need (~1804 tok)
 
 ## packages/foundation/Models/DataSheet/
 
@@ -733,6 +802,13 @@
 
 - `Sunfish.UIAdapters.Blazor.csproj` — /*.cs" /> (~479 tok)
 
+## packages/ui-adapters-blazor/Components/AI/
+
+- `SunfishInlineAIPrompt.razor` (~1023 tok)
+- `SunfishPromptBox.razor` (~964 tok)
+- `SunfishSmartPasteButton.razor` (~525 tok)
+- `SunfishSpeechToTextButton.razor` (~904 tok)
+
 ## packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/
 
 - `SunfishDataGrid.Pdf.cs` — PDF export logic for <see cref="SunfishDataGrid{TItem}"/>. (~1746 tok)
@@ -745,11 +821,46 @@
 - `SunfishPdfServiceExtensions.cs` — Extension methods for registering Playwright-based PDF export with SunfishDataGrid. (~320 tok)
 - `SunfishPlaywrightBrowserService.cs` — Class: SunfishPlaywrightBrowserService (~283 tok)
 
+## packages/ui-adapters-blazor/Components/DataDisplay/Spreadsheet/
+
+- `SunfishSpreadsheet.razor` (~739 tok)
+
+## packages/ui-adapters-blazor/Components/Forms/Inputs/
+
+- `MultiColumnComboBoxModels.cs` — Column configuration for <c>SunfishMultiColumnComboBox</c>'s popup table. (~473 tok)
+- `SunfishDropDownTree.razor` (~451 tok)
+- `SunfishDropDownTree.razor.cs` — A dropdown that presents hierarchical (tree) data inside a popup panel. Selection on a node sets <c> (~2392 tok)
+- `SunfishEditor.razor` (~567 tok)
+- `SunfishEditor.razor.cs` — MVP rich-text editor using <c>contenteditable</c> + <c>document.execCommand</c>. <para> This is the (~2003 tok)
+- `SunfishFilter.razor` — Declares switch (~1567 tok)
+- `SunfishFilter.razor.cs` — Query-builder UI. Users compose a tree of filter rows (field + operator + value) inside AND/OR group (~2233 tok)
+- `SunfishMultiColumnComboBox.razor` (~1976 tok)
+
+## packages/ui-adapters-blazor/Components/Scheduling/
+
+- `GanttEventArgs.cs` — Cancellable event arguments for <c>SunfishGantt&lt;TItem&gt;</c> task-level callbacks (<c>OnTaskClic (~340 tok)
+- `SchedulerEventArgs.cs` — Cancellable event arguments for <c>SunfishScheduler&lt;TEvent&gt;</c> event-level callbacks (<c>OnEv (~463 tok)
+- `SchedulerModels.cs` — A resource column definition for <c>SunfishScheduler&lt;TEvent&gt;</c> Day view. Optional: when <c>R (~358 tok)
+- `SunfishGantt.razor` (~1169 tok)
+- `SunfishGantt.razor.cs` — Canonical MVP Gantt chart for the Sunfish Scheduling component family. Displays a flat or hierarchic (~3944 tok)
+- `SunfishScheduler.razor` (~2066 tok)
+- `SunfishScheduler.razor.cs` — Canonical MVP scheduler for the Sunfish Scheduling component family. Renders a calendar with pluggab (~4034 tok)
+
 ## packages/ui-adapters-blazor/Components/Showcase/
 
 - `SunfishExamplePanel.razor` — Declares Tab (~2717 tok)
 - `SunfishExamplePanel.razor.css` — Styles: 31 rules (~1793 tok)
 - `SunfishSourceFile.cs` — A single source file exposed by <see cref="SunfishExamplePanel"/>'s VIEW SOURCE tab. (~128 tok)
+
+## packages/ui-adapters-blazor/Components/Utility/
+
+- `SunfishDiagram.razor` (~1780 tok)
+- `SunfishDropZone.razor.cs` — A generic file drop target. Renders its <see cref="ChildContent"/> inside a wrapper div wired with t (~1402 tok)
+
+## packages/ui-adapters-blazor/Enums/
+
+- `GanttView.cs` — Timeline granularity for <c>Sunfish.UIAdapters.Blazor.Components.Scheduling.SunfishGantt&lt;TItem&gt (~260 tok)
+- `SchedulerView.cs` — Calendar view mode for <c>Sunfish.UIAdapters.Blazor.Components.Scheduling.SunfishScheduler&lt;TEvent (~326 tok)
 
 ## packages/ui-adapters-blazor/tests/Components/
 

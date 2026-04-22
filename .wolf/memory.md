@@ -903,3 +903,125 @@
 | 17:12 | Edited apps/kitchen-sink/Pages/Components/Editors/Calendar/Overview/Demo.razor | inline fix | ~10 |
 | 17:12 | Edited apps/kitchen-sink/Pages/Components/Editors/Rating/Overview/Demo.razor | inline fix | ~8 |
 | 17:12 | Session end: 10 writes across 1 files (Demo.razor) | 3 reads | ~3951 tok |
+| 20:15 | Created packages/ui-adapters-blazor/Components/Utility/SunfishDropZone.razor.cs | — | ~1402 |
+| 20:15 | Created apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | — | ~924 |
+| 20:15 | Created packages/ui-adapters-blazor/Components/AI/SunfishInlineAIPrompt.razor | — | ~1023 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishDropDownTree.razor | — | ~451 |
+| 20:16 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor | — | ~826 |
+| 20:16 | Created apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | — | ~920 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/AI/SunfishPromptBox.razor | — | ~964 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~25 |
+| 20:16 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/Demo.razor | — | ~959 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~25 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~26 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~28 |
+| 20:16 | Created apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | — | ~872 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/AI/SunfishSmartPasteButton.razor | — | ~525 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~29 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~30 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~26 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~24 |
+| 20:16 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~27 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishDropDownTree.razor.cs | — | ~2380 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/Utility/SunfishDiagram.razor | — | ~1780 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/AI/SunfishSpeechToTextButton.razor | — | ~904 |
+| 20:16 | Created apps/kitchen-sink/Pages/Components/Layout/DockManager/Overview/Demo.razor | — | ~1164 |
+| 20:16 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishEditor.razor | — | ~567 |
+| 20:17 | Created packages/ui-adapters-blazor/Enums/GanttView.cs | — | ~260 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor | — | ~798 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/Demo.razor | — | ~1100 |
+| 20:17 | Created packages/ui-adapters-blazor/Enums/SchedulerView.cs | — | ~326 |
+| 20:17 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~28 |
+| 20:17 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~28 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor | — | ~838 |
+| 20:17 | Created packages/ui-adapters-blazor/Components/Scheduling/GanttEventArgs.cs | — | ~340 |
+| 20:17 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishEditor.razor.cs | — | ~2003 |
+| 20:17 | Created packages/ui-adapters-blazor/Components/Scheduling/SchedulerModels.cs | — | ~358 |
+| 20:17 | Created packages/ui-adapters-blazor/Components/Scheduling/SchedulerEventArgs.cs | — | ~463 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/Demo.razor | — | ~888 |
+| 20:17 | Edited packages/foundation/Models/FileManagerModels.cs | expanded (+50 lines) | ~701 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/AI/AIPrompt/Overview/Demo.razor | — | ~938 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/Demo.razor | — | ~977 |
+| 20:17 | Edited packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishFilter.razor | modified if() | ~1550 |
+| 20:17 | Created apps/kitchen-sink/Pages/Components/Utility/Diagram/Overview/Demo.razor | — | ~1112 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/AI/Chat/Overview/Demo.razor | — | ~747 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor | — | ~766 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/Utility/DropZone/Overview/Demo.razor | — | ~978 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/AI/InlineAIPrompt/Overview/Demo.razor | — | ~676 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/Forms/FileManager/Overview/Demo.razor | — | ~902 |
+| 20:18 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~26 |
+| 20:18 | Edited packages/ui-adapters-blazor/Components/DataDisplay/Spreadsheet/SunfishSpreadsheet.razor | 2→3 lines | ~38 |
+| 20:18 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~28 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Overview/Demo.razor | — | ~847 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/AI/PromptBox/Overview/Demo.razor | — | ~680 |
+| 20:18 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishFilter.razor.cs | — | ~2233 |
+| 20:18 | Created packages/ui-adapters-blazor/Components/Scheduling/SunfishGantt.razor.cs | — | ~3944 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/AI/SmartPasteButton/Overview/Demo.razor | — | ~490 |
+| 20:18 | Edited apps/docs/component-specs/component-mapping.json | 4→4 lines | ~111 |
+| 20:18 | Created packages/ui-adapters-blazor/Components/Scheduling/SunfishGantt.razor | — | ~1169 |
+| 20:18 | Created apps/kitchen-sink/Pages/Components/AI/SpeechToTextButton/Overview/Demo.razor | — | ~606 |
+| 20:19 | Edited packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishDropDownTree.razor.cs | 4→5 lines | ~54 |
+| 20:19 | Created packages/ui-adapters-blazor/Components/Forms/Inputs/MultiColumnComboBoxModels.cs | — | ~473 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~26 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~23 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~29 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~27 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~31 |
+| 20:19 | Edited apps/docs/component-specs/component-mapping.json | inline fix | ~31 |
+| 20:20 | Created packages/ui-adapters-blazor/Components/Scheduling/SunfishScheduler.razor.cs | — | ~4034 |
+| 20:20 | Edited packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishMultiColumnComboBox.razor | modified if() | ~875 |
+| 07:18 | Edited packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishMultiColumnComboBox.razor | added optional chaining | ~1114 |
+| 07:18 | Edited packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishFilter.razor | 5→6 lines | ~65 |
+
+## Session: 2026-04-22 07:21
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:28 | Created packages/ui-adapters-blazor/Components/Scheduling/SunfishScheduler.razor | — | ~2047 |
+| 07:28 | Edited packages/ui-adapters-blazor/Components/Scheduling/SunfishScheduler.razor | 1→2 lines | ~29 |
+
+## Session: 2026-04-22 07:32
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:34 | Edited apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor | 5→3 lines | ~37 |
+| 07:34 | Edited apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor | 4→4 lines | ~59 |
+| 07:34 | Edited apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor | AIChatMessage() → ChatMessage() | ~218 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | 4→4 lines | ~39 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | modified if() | ~207 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | modified HandleApply() | ~47 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor | 3→3 lines | ~43 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor | 4→4 lines | ~52 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Layout/TileLayout/Overview/Demo.razor | expanded (+10 lines) | ~440 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 5→5 lines | ~55 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 24→24 lines | ~271 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | 5→5 lines | ~54 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | 6→6 lines | ~75 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | modified new() | ~123 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 5→5 lines | ~55 |
+| 07:35 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 5→5 lines | ~78 |
+| 07:36 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 3→3 lines | ~48 |
+
+## Session: 2026-04-22 07:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 07:37 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | inline fix | ~19 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor | 2→2 lines | ~30 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor | 4→5 lines | ~67 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | 2→2 lines | ~39 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor | 3→2 lines | ~25 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor | 4→5 lines | ~63 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 3→2 lines | ~25 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 2→2 lines | ~44 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 7→8 lines | ~110 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 2→3 lines | ~64 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Barcode/Overview/Demo.razor | 2→3 lines | ~58 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | 3→5 lines | ~87 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/Map/Overview/Demo.razor | 6→7 lines | ~81 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 3→2 lines | ~25 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 5→6 lines | ~79 |
+| 07:41 | Edited apps/kitchen-sink/Pages/Components/Media/PdfViewer/Overview/Demo.razor | 3→4 lines | ~58 |
+| 07:42 | Edited apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/Demo.razor | modified HandleDrop() | ~34 |
+| 07:42 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | added 1 condition(s) | ~275 |
+| 07:44 | Session end: 18 writes across 1 files (Demo.razor) | 7 reads | ~5267 tok |

@@ -1424,6 +1424,102 @@
       "related_bugs": [],
       "occurrences": 2,
       "last_seen": "2026-04-21T21:12:44.871Z"
+    },
+    {
+      "id": "bug-090",
+      "timestamp": "2026-04-22T00:16:15.242Z",
+      "error_message": "Incorrect value in code",
+      "file": "apps/docs/component-specs/component-mapping.json",
+      "root_cause": "Had \"status\"",
+      "fix": "Changed to \"SunfishChart\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "json"
+      ],
+      "related_bugs": [],
+      "occurrences": 19,
+      "last_seen": "2026-04-22T00:19:45.358Z"
+    },
+    {
+      "id": "bug-091",
+      "timestamp": "2026-04-22T00:20:04.578Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishMultiColumnComboBox.razor",
+      "root_cause": "94 lines replaced/restructured",
+      "fix": "Rewrote 193→84 lines (94 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T00:20:04.578Z"
+    },
+    {
+      "id": "bug-092",
+      "timestamp": "2026-04-22T11:18:24.659Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishMultiColumnComboBox.razor",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T11:18:24.659Z"
+    },
+    {
+      "id": "bug-093",
+      "timestamp": "2026-04-22T11:34:50.943Z",
+      "error_message": "Significant refactor of ",
+      "file": "apps/kitchen-sink/Pages/Components/Ai/Chat/Overview/Demo.razor",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 5→3 lines (2 removed) | Also: private CompositeFilterDescriptor? _filter = new(); private void HandleApply() => _applied = true;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T11:35:09.127Z"
+    },
+    {
+      "id": "bug-094",
+      "timestamp": "2026-04-22T11:41:26.456Z",
+      "error_message": "Wrong reference: Components should be Enums",
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor",
+      "root_cause": "Used \"Components\" instead of \"Enums\"",
+      "fix": "Changed Components → Enums",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T11:41:26.456Z"
+    },
+    {
+      "id": "bug-095",
+      "timestamp": "2026-04-22T11:42:56.790Z",
+      "error_message": "Significant refactor of ",
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 16→22 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T11:42:56.790Z"
     }
   ]
 }
