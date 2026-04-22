@@ -3,7 +3,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.Logging
 @using Sunfish.UIAdapters.Blazor.Components.Buttons
-@using Sunfish.Compat.Telerik.Internal
+@using Sunfish.Compat.Shared
 @using FoundationEnums = Sunfish.Foundation.Enums
 @using CompatEnums = Sunfish.Compat.Telerik.Enums
 @inject ILogger<TelerikButton> Logger
@@ -61,7 +61,7 @@
         _fillMode = MapFillMode(FillMode);
         _rounded = MapRounded(Rounded);
         _buttonType = MapButtonType(ButtonType);
-        _iconFragment = SvgIconAdapter.ToRenderFragment(Icon);
+        _iconFragment = CompatIconAdapter.ToRenderFragment(Icon);
     }
 
     // ADR 0024 — Telerik ThemeColor ↔ Sunfish ButtonVariant mapping.

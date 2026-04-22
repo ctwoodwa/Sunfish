@@ -1,7 +1,7 @@
 @namespace Sunfish.Compat.Telerik
 @using Microsoft.AspNetCore.Components
 @using Sunfish.UIAdapters.Blazor.Components.Utility
-@using Sunfish.Compat.Telerik.Internal
+@using Sunfish.Compat.Shared
 
 <SunfishIcon Name="@_nameFromIcon"
              Icon="_iconFragment"
@@ -62,7 +62,7 @@
                 break;
             default:
                 _nameFromIcon = null;
-                _iconFragment = SvgIconAdapter.ToRenderFragment(Icon);
+                _iconFragment = CompatIconAdapter.ToRenderFragment(Icon);
                 break;
         }
     }

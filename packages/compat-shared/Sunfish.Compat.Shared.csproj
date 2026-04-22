@@ -1,0 +1,26 @@
+<!--
+    Shared primitives for all Sunfish.Compat.* packages (Telerik, Syncfusion,
+    DevExpress, Infragistics). Vendor-agnostic — this package MUST NOT take
+    a dependency on any vendor NuGet and MUST NOT contain vendor-branded
+    type names or constants.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.Shared</PackageId>
+    <Description>Shared primitives for Sunfish.Compat.* packages — cascading-parent child-component base, unsupported-parameter helper, icon adapter. Vendor-agnostic.</Description>
+    <PackageTags>blazor;compat;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.Shared</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

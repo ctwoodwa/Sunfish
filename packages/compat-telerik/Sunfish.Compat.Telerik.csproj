@@ -24,6 +24,7 @@
     <InternalsVisibleTo Include="Sunfish.Compat.Telerik.Tests" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />

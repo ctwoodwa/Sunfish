@@ -123,6 +123,9 @@
     <Project Path="packages/blocks-businesscases/Sunfish.Blocks.BusinessCases.csproj" />
     <Project Path="packages/blocks-businesscases/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/compat/shared/">
+    <Project Path="packages/compat-shared/Sunfish.Compat.Shared.csproj" />
+  </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
     <Project Path="packages/compat-telerik/tests/tests.csproj" />

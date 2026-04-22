@@ -1,23 +1,23 @@
 using System;
 using Microsoft.AspNetCore.Components;
 
-namespace Sunfish.Compat.Telerik.Internal;
+namespace Sunfish.Compat.Shared;
 
 /// <summary>
 /// Base class for compat-shim child components that must resolve a cascading parent of a
-/// known type (e.g. <c>TelerikGridColumn</c> inside <c>TelerikGrid</c>, or a future
-/// <c>TelerikTabStripTab</c> inside <c>TelerikTabStrip</c>). Factors out:
+/// known type (e.g. a grid-column shim inside its grid, or a tab-strip-tab shim inside its
+/// tab strip). Factors out:
 /// <list type="bullet">
 ///   <item><description>The <c>[CascadingParameter]</c> lookup for the parent.</description></item>
 ///   <item><description>A hard guard that throws <see cref="InvalidOperationException"/> when the
-///     component is rendered outside its expected parent — matches Telerik's own behavior where
-///     <c>GridColumn</c>, <c>ValidationSummary</c>, etc. are meaningless outside their container.</description></item>
+///     component is rendered outside its expected parent — matching most commercial vendors'
+///     behavior where column / validation / tab children are meaningless outside their container.</description></item>
 /// </list>
 ///
-/// <para>This base lives in compat-telerik for now. If the pattern proves reusable when
-/// compat-syncfusion / compat-devexpress / compat-infragistics start scaffolding, lift it to a
-/// shared <c>compat-shared</c> package (see <c>icm/00_intake/output/compat-expansion-intake.md</c>
-/// Decision 4 rationale).</para>
+/// <para>Used by <c>compat-telerik</c>, <c>compat-syncfusion</c>, <c>compat-devexpress</c>,
+/// and <c>compat-infragistics</c>. Vendor packages typically subclass indirectly (via a
+/// vendor-specific intermediate) to layer vendor-branded error messages or extra cascading
+/// parameters on top of this base.</para>
 /// </summary>
 /// <typeparam name="TParent">The expected cascading parent type.</typeparam>
 public abstract class CompatChildComponent<TParent> : ComponentBase where TParent : class
@@ -34,22 +34,21 @@ public abstract class CompatChildComponent<TParent> : ComponentBase where TParen
     /// <summary>
     /// Name of the expected parent type for the "outside parent" exception message. Defaults to
     /// the open <typeparamref name="TParent"/> name — override when the expected parent has a
-    /// different Telerik-shaped marketing name than its CLR name.
+    /// different vendor-shaped marketing name than its CLR name.
     /// </summary>
     protected virtual string ParentName => typeof(TParent).Name;
 
     /// <summary>
     /// Asserts that <see cref="Parent"/> is non-null and returns it. Call at the top of
     /// <c>OnParametersSet</c> or <c>OnInitialized</c> in subclasses that require the parent to
-    /// function. Mirrors Telerik's "column outside a grid throws" behavior.
+    /// function.
     /// </summary>
     protected TParent RequireParent()
     {
         if (Parent is null)
         {
             throw new InvalidOperationException(
-                $"compat-telerik: <{ShimName}> must be used inside a <{ParentName}>. " +
-                $"See docs/compat-telerik-mapping.md.");
+                $"<{ShimName}> must be used inside a <{ParentName}>.");
         }
         return Parent;
     }
