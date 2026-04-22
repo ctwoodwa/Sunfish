@@ -140,6 +140,17 @@ None — `compat-shared` already shipped (`0eff43b`).
 3. **After Phase 1 lands** — Phase 2 batch (BS icons + Material icons + Fluent icons — one per adapter, can fan out 3 ways).
 4. **After Phase 2** — Phase 3 batch (modern OSS — Lucide / Heroicons / Tabler / Phosphor / Feather / Octicons, ranked by Stage 01 output).
 
+### Stage 01 Discovery — post-survey update (2026-04-22)
+
+Discovery output at [`icm/01_discovery/output/compat-icon-library-survey-2026-04-22.md`](../../01_discovery/output/compat-icon-library-survey-2026-04-22.md) (13 libraries surveyed, top-6 API inventory). Key deltas:
+
+- **Phase 2 reorder by popularity:** `compat-fluent-icons` → `compat-material-icons` → `compat-bootstrap-icons` (was BS → Material → Fluent). Fluent UI System Icons outrank Material by ~2.5× on Blazor NuGet downloads.
+- **Phase 3 revised list:** `compat-lucide`, `compat-heroicons`, `compat-simple-icons` (CC0-1.0 — most license-friendly), `compat-octicons`, `compat-tabler-icons`. Five packages instead of six.
+- **Dropped from scope:** `compat-feather-icons` (Lucide replaced it — 2,335 Blazor DL vs Lucide's 75,887), `compat-radix-icons` (2,030 Blazor DL), `compat-phosphor-icons` (1,570 Blazor DL). Adoption data doesn't justify maintenance cost.
+- **Iconify deferred:** architecturally different (aggregator of 150+ icon sets). Needs a separate mini-intake to decide shim shape.
+- **FA package-landscape correction:** the intake-cited `Blazored.FontAwesome` is effectively retired (404 on NuGet). Realistic standalone-wrapper target is `Blazicons.FontAwesome` (79K downloads), though the source-shape `<FontAwesomeIcon Icon="@FasIcons.Star" />` remains the correct compat target. Blazorise.Icons.FontAwesome (3.86M DL) dominates adoption but ships FA as a Blazorise-internal dependency — not a direct compat shape.
+- **Material Icons + Material Symbols merged:** ship as one `compat-material-icons` package with a `Variant` discriminator (same upstream library, two forms).
+
 ---
 
 ## 10. Discovery Sources (Stage 01)
