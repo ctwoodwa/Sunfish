@@ -1,0 +1,34 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-octicons/POLICY.md.
+    This package MUST NOT reference any Octicons NuGet. It also does NOT bundle Octicons
+    assets (SVG/font/CSS) — consumers remain responsible for loading the Octicons
+    SVG sprite / CSS themselves (CDN `<link>`, NPM `@primer/octicons`, or self-hosted).
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.Octicons</PackageId>
+    <Description>Octicons-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Octicons Blazor consumers (BlazorOcticons / BlazorOcticonsGenerator / NgIcons.Octicons). Does not ship Octicons assets. Policy-gated.</Description>
+    <PackageTags>blazor;compat;octicons;github;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.Octicons</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.Octicons.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>
