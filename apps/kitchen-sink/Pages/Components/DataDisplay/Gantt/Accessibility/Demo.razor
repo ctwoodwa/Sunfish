@@ -1,0 +1,145 @@
+@page "/components/data-display/gantt/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Gantt / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Gantt / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishGantt&lt;TItem&gt;</code> ships with full hierarchical tree-grid semantics. The task-list
+            panel is <code>role="treegrid"</code> with <code>aria-label="Task list"</code>. Every task row is
+            <code>role="row"</code> and carries <code>aria-level</code>, <code>aria-setsize</code>,
+            <code>aria-posinset</code>, and <code>aria-expanded</code> (when a parent task has children). Each cell
+            is <code>role="gridcell"</code>, and column headers are <code>role="columnheader"</code> with
+            <code>aria-sort</code>.
+        </p>
+        <p>
+            The timeline panel uses <code>role="img"</code> on each bar and milestone with an
+            <code>aria-label</code> of the form <em>"Task Title: 4/1/2026 – 4/15/2026"</em> — that text alternative
+            replaces the purely visual bar width / position. Milestones get <em>"Milestone: Title: 4/10/2026"</em>.
+            Summary and selected bars carry the same label; CSS variants provide the visual differentiation.
+        </p>
+        <p>
+            A <code>role="status"</code> region with <code>aria-live="polite"</code> sits at the top of the Gantt
+            and announces task-focus moves, expand / collapse, and edit confirmations. Two skip-links
+            (<em>Skip to task list</em> and <em>Skip to timeline</em>) let keyboard users bypass the toolbar.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 id="a11y-gantt-demo" style="margin:0 0 .5rem;">Hierarchical Gantt with keyboard task focus</h4>
+                <SunfishGantt TItem="GanttTask"
+                              Data="@_tasks"
+                              IdField="Id"
+                              ParentIdField="ParentId"
+                              aria-labelledby="a11y-gantt-demo"
+                              Height="420px"
+                              Width="100%">
+                    <GanttColumns>
+                        <GanttColumn TItem="GanttTask"
+                                     Field="Title"
+                                     Expandable="true"
+                                     Sortable="true"
+                                     Width="240px"
+                                     Title="Task" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="PercentComplete"
+                                     Sortable="true"
+                                     Width="90px"
+                                     Title="% Done"
+                                     DisplayFormat="{0:N0}%"
+                                     TextAlign="right" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="Start"
+                                     Width="100px"
+                                     DisplayFormat="{0:d}" />
+                        <GanttColumn TItem="GanttTask"
+                                     Field="End"
+                                     Width="100px"
+                                     DisplayFormat="{0:d}" />
+                    </GanttColumns>
+                    <GanttViews>
+                        <GanttWeekView />
+                        <GanttMonthView />
+                    </GanttViews>
+                </SunfishGantt>
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Click into the task list to focus a row, then navigate rows with the arrow keys.
+                </p>
+            </div>
+
+            <div>
+                <h5 style="margin:0 0 .5rem;">Keyboard (task-list panel)</h5>
+                <table style="border-collapse:collapse; font-size:.875rem;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <th style="padding:.35rem .75rem;">Key</th>
+                            <th style="padding:.35rem .75rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Move focus into / out of the task list. Inside, rows use a roving <code>tabindex</code>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd></td><td style="padding:.35rem .75rem;">Move focus to the next / previous visible row; announced via the polite live region.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Home</kbd> / <kbd>End</kbd></td><td style="padding:.35rem .75rem;">Jump to the first / last visible row.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowRight</kbd></td><td style="padding:.35rem .75rem;">Expand a collapsed parent (toggles <code>aria-expanded</code>).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowLeft</kbd></td><td style="padding:.35rem .75rem;">Collapse an expanded parent.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd> / <kbd>F2</kbd></td><td style="padding:.35rem .75rem;">Begin editing the focused row (when <code>Editable="true"</code> and an edit mode is configured).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Esc</kbd></td><td style="padding:.35rem .75rem;">Cancel the current edit; focus returns to the row.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:720px;">
+                <dt><strong>role</strong> on task list</dt>
+                <dd><code>treegrid</code> with a static <code>aria-label="Task list"</code>. Use <code>aria-labelledby</code> on the outer container (as shown above) to add the richer, page-level name.</dd>
+                <dt><strong>Rows</strong></dt>
+                <dd><code>role="row"</code> + <code>aria-level</code> (1-based depth), <code>aria-setsize</code> + <code>aria-posinset</code> for sibling position, and <code>aria-expanded</code> when a parent has children.</dd>
+                <dt><strong>Cells</strong></dt>
+                <dd><code>role="gridcell"</code>. The expand / collapse chevron is a native <code>&lt;button&gt;</code> with <code>aria-expanded</code> and a descriptive <code>aria-label</code> like <em>"Expand Planning"</em>.</dd>
+                <dt><strong>Column headers</strong></dt>
+                <dd><code>role="columnheader"</code> + <code>aria-sort</code> (<code>ascending</code> / <code>descending</code> / <code>none</code>) when <code>Sortable="true"</code>.</dd>
+                <dt><strong>Timeline bars (text alternative)</strong></dt>
+                <dd><code>role="img"</code> + <code>aria-label="Title: MM/DD/YYYY – MM/DD/YYYY"</code>. This replaces the geometry — screen readers do not need to interpret the bar width.</dd>
+                <dt><strong>Milestones</strong></dt>
+                <dd><code>role="img"</code> + <code>aria-label="Milestone: Title: MM/DD/YYYY"</code>.</dd>
+                <dt><strong>Live region</strong></dt>
+                <dd>A <code>role="status"</code> + <code>aria-live="polite"</code> + <code>aria-atomic="true"</code> announcer is part of the Gantt root. The component updates it on focus move, expand / collapse, and edit commit.</dd>
+                <dt><strong>Skip links</strong></dt>
+                <dd>Two visible-on-focus anchors (<em>Skip to task list</em>, <em>Skip to timeline</em>) land focus on each panel's container.</dd>
+                <dt><strong>Duration alternative (planned — MVP)</strong></dt>
+                <dd>The current bar label is the date range. A <em>duration in days</em> alternative (e.g. <em>"Planning: 12 days, 80% complete"</em>) is <strong>planned — MVP</strong>; until it lands, expose a "% Done" column as shown so assistive tech can read the same value in tabular form.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Gantt", "Accessibility"];
+
+    private readonly List<GanttTask> _tasks = BuildSample();
+
+    private static List<GanttTask> BuildSample()
+    {
+        var today = DateTime.Today;
+        return
+        [
+            new() { Id = "1", Title = "Planning", Start = today, End = today.AddDays(12), PercentComplete = 80 },
+            new() { Id = "1.1", ParentId = "1", Title = "Requirements", Start = today, End = today.AddDays(4), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Stakeholder Review", Start = today.AddDays(4), End = today.AddDays(7), PercentComplete = 100 },
+            new() { Id = "2", Title = "Design", Start = today.AddDays(10), End = today.AddDays(22), PercentComplete = 50 },
+            new() { Id = "2.1", ParentId = "2", Title = "Wireframes", Start = today.AddDays(10), End = today.AddDays(14), PercentComplete = 100 },
+            new() { Id = "2.2", ParentId = "2", Title = "UI Mockups", Start = today.AddDays(14), End = today.AddDays(19), PercentComplete = 30 },
+            new() { Id = "3", Title = "Development", Start = today.AddDays(20), End = today.AddDays(40), PercentComplete = 15 },
+        ];
+    }
+}

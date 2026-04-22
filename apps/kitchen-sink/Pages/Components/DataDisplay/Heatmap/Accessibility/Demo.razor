@@ -1,0 +1,196 @@
+@page "/components/data-display/heatmap/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Heatmap / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Heatmap / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <span style="display:inline-block; font-size:.6875rem; font-weight:600; letter-spacing:.05em;
+                         color:#92400e; background:#fef3c7; padding:.125rem .5rem; border-radius:999px;
+                         margin-right:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
+            <code>SunfishHeatmap</code> is not yet implemented. This page documents the
+            accessibility contract the component will ship with, using a hand-authored HTML
+            heatmap as the working demo so the patterns are concrete and reviewable today.
+        </p>
+        <p>
+            A heatmap is a color-intensity grid — per WCAG 1.4.1 Use of Color, color cannot be
+            the only channel for the underlying value. Every cell exposes its numeric value in
+            text (via <code>aria-label</code> and a visible tooltip), the color scale is paired
+            with a labelled legend, and a parallel <code>&lt;table&gt;</code> view gives screen
+            reader users and users with color-vision differences the full dataset as rows and
+            columns without colour.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Heatmap grid — role="grid" with per-cell labels</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Rows are days, columns are hours. Each cell carries an <code>aria-label</code>
+                    of the form <em>"Tuesday 14:00, 42 visitors"</em> so the numeric value is
+                    announced even when color alone would be ambiguous.
+                </p>
+                <div role="grid"
+                     aria-labelledby="hm-caption"
+                     aria-describedby="hm-scale-desc"
+                     style="display:grid; grid-template-columns:4rem repeat(@_hours.Length, 1fr); gap:2px; font-size:.75rem;">
+                    <div role="row" style="display:contents;">
+                        <div role="columnheader" aria-hidden="true"></div>
+                        @foreach (var h in _hours)
+                        {
+                            <div role="columnheader" style="text-align:center; opacity:.7;">@h:00</div>
+                        }
+                    </div>
+                    @for (int r = 0; r < _days.Length; r++)
+                    {
+                        var dayIndex = r;
+                        <div role="row" style="display:contents;">
+                            <div role="rowheader" style="padding:.35rem .5rem; opacity:.7;">@_days[dayIndex]</div>
+                            @for (int c = 0; c < _hours.Length; c++)
+                            {
+                                var val = _values[dayIndex, c];
+                                var intensity = Math.Clamp(val / 60.0, 0, 1);
+                                var color = $"hsl(212, 70%, {100 - (intensity * 55):F0}%)";
+                                var textColor = intensity > 0.55 ? "#fff" : "#111";
+                                <div role="gridcell"
+                                     aria-label="@($"{_days[dayIndex]} {_hours[c]}:00, {val} visitors")"
+                                     title="@($"{_days[dayIndex]} {_hours[c]}:00 — {val} visitors")"
+                                     style="@($"background:{color}; color:{textColor}; padding:.5rem .25rem; text-align:center; min-width:2rem;")">
+                                    @val
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div id="hm-caption" style="margin-top:.5rem; font-size:.9rem;"><strong>Visitors by day &amp; hour</strong></div>
+                <div id="hm-scale-desc" style="margin-top:.25rem; font-size:.85rem; opacity:.85;">
+                    Cell color encodes visitor count — lighter = fewer, darker = more. Every
+                    cell also shows the exact number in text so color alone is never the
+                    message.
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Legend — color scale with value ranges</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    The legend names each band so screen-reader users can reason about color
+                    (e.g. "this cell is in the <em>medium</em> band"). The legend is not the
+                    text alternative — the per-cell value is — it is a secondary aid.
+                </p>
+                <ul style="display:flex; gap:1rem; list-style:none; margin:0; padding:0; font-size:.85rem; flex-wrap:wrap;"
+                    aria-label="Color scale">
+                    <li style="display:flex; align-items:center; gap:.4rem;">
+                        <span aria-hidden="true" style="display:inline-block; width:18px; height:18px; background:hsl(212,70%,95%); border:1px solid #999;"></span>
+                        Low (0 – 14)
+                    </li>
+                    <li style="display:flex; align-items:center; gap:.4rem;">
+                        <span aria-hidden="true" style="display:inline-block; width:18px; height:18px; background:hsl(212,70%,75%); border:1px solid #999;"></span>
+                        Medium (15 – 34)
+                    </li>
+                    <li style="display:flex; align-items:center; gap:.4rem;">
+                        <span aria-hidden="true" style="display:inline-block; width:18px; height:18px; background:hsl(212,70%,55%); border:1px solid #999;"></span>
+                        High (35 – 49)
+                    </li>
+                    <li style="display:flex; align-items:center; gap:.4rem;">
+                        <span aria-hidden="true" style="display:inline-block; width:18px; height:18px; background:hsl(212,70%,45%); border:1px solid #999;"></span>
+                        Peak (50 +)
+                    </li>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Data-table fallback</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    The same data rendered as a plain <code>&lt;table&gt;</code>. Screen-reader
+                    users can inspect the grid cell by cell with standard table-navigation
+                    commands. Users with monochromacy or Reduce-Motion preferences get full
+                    access without colour.
+                </p>
+                <table style="border-collapse:collapse; font-size:.85rem;">
+                    <caption style="text-align:left; font-weight:600; margin-bottom:.25rem;">
+                        Visitors by day &amp; hour (accessible alternative to the heatmap above)
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;">Day</th>
+                            @foreach (var h in _hours)
+                            {
+                                <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;">@h:00</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int r = 0; r < _days.Length; r++)
+                        {
+                            var dayIndex = r;
+                            <tr>
+                                <th scope="row" style="padding:.35rem .5rem; text-align:left; font-weight:500;">@_days[dayIndex]</th>
+                                @for (int c = 0; c < _hours.Length; c++)
+                                {
+                                    <td style="padding:.35rem .5rem; text-align:right;">@_values[dayIndex, c]</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract (planned for SunfishHeatmap)</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.875rem;">
+                    <dt><code>role="grid"</code></dt>
+                    <dd>Root container — declared explicitly because styled <code>&lt;div&gt;</code>s replace table semantics.</dd>
+                    <dt><code>role="row"</code> / <code>role="columnheader"</code> / <code>role="rowheader"</code></dt>
+                    <dd>Preserve the row / column structure so screen readers announce header + cell.</dd>
+                    <dt><code>role="gridcell"</code></dt>
+                    <dd>Each cell; carries <code>aria-label</code> with row, column, and numeric value.</dd>
+                    <dt><code>aria-labelledby</code> / <code>aria-describedby</code></dt>
+                    <dd>Point at a visible caption (<em>Visitors by day &amp; hour</em>) and the scale description.</dd>
+                    <dt><strong>Alternate data table</strong></dt>
+                    <dd>The same dataset as a real <code>&lt;table&gt;</code> — the canonical text alternative.</dd>
+                    <dt><strong>WCAG 1.4.1 Use of Color</strong></dt>
+                    <dd>Color is redundant — the numeric value is always in each cell and in the table fallback.</dd>
+                    <dt><strong>Keyboard (planned)</strong></dt>
+                    <dd>Arrow keys move between cells, <kbd>Home</kbd> / <kbd>End</kbd> jump within the row, <kbd>Ctrl</kbd>+<kbd>Home</kbd> / <kbd>End</kbd> jump to the grid extremes, <kbd>Enter</kbd> / <kbd>Space</kbd> fire a cell-click event.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Known gaps</h3>
+                <ul style="margin:0; font-size:.875rem;">
+                    <li><code>SunfishHeatmap</code> is aspirational — the live demo is hand-built HTML that stands in for the planned component.</li>
+                    <li>Parity reference: <code>TelerikHeatmap</code>. When Sunfish ships the component, this page becomes the canonical a11y contract.</li>
+                    <li>Keyboard grid navigation is not yet specified in code — documented above as the target contract.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Heatmap", "Accessibility"];
+
+    private readonly string[] _days = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+    private readonly int[] _hours = [9, 10, 11, 12, 13, 14, 15, 16];
+
+    private readonly int[,] _values = new int[,]
+    {
+        { 12, 22, 34, 45, 38, 52, 28,  9 },
+        {  8, 18, 30, 41, 47, 55, 33, 12 },
+        { 14, 24, 29, 44, 41, 49, 31, 10 },
+        { 11, 19, 33, 48, 42, 58, 36, 14 },
+        {  6, 15, 27, 36, 30, 42, 22,  5 },
+    };
+}

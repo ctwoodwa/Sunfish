@@ -1,0 +1,123 @@
+@page "/components/data-display/scheduler/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Scheduler / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Scheduler / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishScheduler</code> renders a calendar surface with Day, Week, MultiDay, Month, Timeline, and
+            Agenda views. The toolbar uses native <code>&lt;button&gt;</code> elements (previous / next / view-switch)
+            so those controls are keyboard-reachable and screen-reader announced out of the box. Appointments and
+            day cells are ordinary clickable elements — click to open, double-click (with <code>Editable="true"</code>)
+            to edit.
+        </p>
+        <p style="background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;">
+            <strong>Scheduling MVP (planned):</strong> the scheduler surface is stub-level for screen-reader semantics.
+            Full WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/grid/" target="_blank" rel="noopener">grid</a> roles,
+            <code>aria-current="date"</code> on today, cell focus rings, arrow-key / <kbd>Home</kbd> / <kbd>End</kbd> /
+            <kbd>PageUp</kbd> / <kbd>PageDown</kbd> cell navigation, and <kbd>Enter</kbd>-to-open-event-dialog are
+            <strong>planned — MVP</strong>. The guidance below documents the target contract so applications can
+            wrap the component with interim ARIA and track parity when the built-in support lands.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 id="a11y-scheduler-demo" style="margin:0 0 .5rem;">Scheduler with keyboard-operable toolbar</h4>
+                <SunfishScheduler Appointments="@_sampleAppointments"
+                                  CurrentDate="@_currentDate"
+                                  aria-labelledby="a11y-scheduler-demo"
+                                  Style="height:420px;" />
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    <kbd>Tab</kbd> the previous / next arrows and the <em>Day / Week / Month</em> buttons.
+                    Click an event to fire <code>OnAppointmentClick</code>; double-click (when editable) to open the
+                    edit popup, which is a focus-trapped dialog.
+                </p>
+            </div>
+
+            <div>
+                <h5 style="margin:0 0 .5rem;">Target keyboard contract (planned — MVP)</h5>
+                <table style="border-collapse:collapse; font-size:.875rem;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <th style="padding:.35rem .75rem;">Key</th>
+                            <th style="padding:.35rem .75rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Move focus between toolbar and the grid; grid takes a single tab stop (roving focus inside).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd></td><td style="padding:.35rem .75rem;">Move focus to the previous / next day cell <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd></td><td style="padding:.35rem .75rem;">Move focus up / down one week (month view) or one time-slot (day / week view) <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Home</kbd> / <kbd>End</kbd></td><td style="padding:.35rem .75rem;">First / last cell of the current row <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>PageUp</kbd> / <kbd>PageDown</kbd></td><td style="padding:.35rem .75rem;">Previous / next month (month view) or previous / next week (week view) <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Open the edit popup for the focused event (when <code>Editable="true"</code>), or fire <code>OnDateClick</code> on the focused day cell.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Esc</kbd></td><td style="padding:.35rem .75rem;">Close the edit popup; focus returns to the triggering cell / event.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:680px;">
+                <dt><strong>role</strong> on root (planned)</dt>
+                <dd><code>grid</code> for Day / Week / Month views, <code>application</code> only if full custom-key handling is authored. Today the root is a plain <code>&lt;div&gt;</code>.</dd>
+                <dt><strong>Accessible name</strong></dt>
+                <dd>Wire <code>aria-labelledby</code> (or <code>aria-label</code>) on the scheduler via <code>AdditionalAttributes</code> — the example above points at a visible heading.</dd>
+                <dt><strong>Each day / time cell (planned)</strong></dt>
+                <dd><code>role="gridcell"</code> with an accessible name such as <em>"Tuesday, April 14, 2026, 3 events"</em>, plus <code>aria-current="date"</code> for today.</dd>
+                <dt><strong>Each event (planned)</strong></dt>
+                <dd>Either <code>aria-labelledby</code> pointing at the title element or an <code>aria-label</code> combining title, time range, and resource. Expose busy state via <code>aria-pressed</code> when multi-select lands.</dd>
+                <dt><strong>Edit popup</strong></dt>
+                <dd>The built-in <code>EditMode="Popup"</code> surface is already a focus-trapped dialog with Esc-to-close wired via the shared <code>SunfishPopup</code> / <code>SunfishDialog</code> primitives.</dd>
+                <dt><strong>Live updates</strong></dt>
+                <dd>Planned: a polite <code>aria-live</code> announcer surfaces navigation changes ("Week of April 12, 2026") and event create / update / delete confirmations.</dd>
+            </dl>
+
+            <p style="font-size:.85rem; opacity:.8;">
+                Until the grid semantics ship, if you need a screen-reader-first calendar, consider pairing the
+                scheduler with the <a href="/components/data-display/scheduler/views-agenda">Agenda view</a> — its
+                flat list of date → event text is already readable in document order.
+            </p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Scheduler", "Accessibility"];
+
+    private readonly DateTime _currentDate = new(2026, 4, 12);
+
+    private readonly List<SchedulerAppointment> _sampleAppointments = new()
+    {
+        new SchedulerAppointment
+        {
+            Title = "Sprint Planning",
+            Start = new DateTime(2026, 4, 13, 9, 0, 0),
+            End = new DateTime(2026, 4, 13, 11, 0, 0),
+            Color = "#0078d4"
+        },
+        new SchedulerAppointment
+        {
+            Title = "Design Review",
+            Start = new DateTime(2026, 4, 14, 14, 0, 0),
+            End = new DateTime(2026, 4, 14, 15, 30, 0),
+            Color = "#107c10"
+        },
+        new SchedulerAppointment
+        {
+            Title = "Team Standup",
+            Start = new DateTime(2026, 4, 12, 9, 30, 0),
+            End = new DateTime(2026, 4, 12, 9, 45, 0),
+            Color = "#5c2d91"
+        },
+    };
+}

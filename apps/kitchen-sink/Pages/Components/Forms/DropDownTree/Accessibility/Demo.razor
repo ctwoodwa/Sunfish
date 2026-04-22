@@ -1,0 +1,241 @@
+@page "/components/forms/dropdowntree/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+@*
+    Accessibility demo for SunfishDropDownTree.
+
+    Component coverage today (confirmed in packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishDropDownTree.razor):
+      • Trigger emits role="combobox", aria-expanded, aria-disabled, aria-readonly.
+      • Popup tree has role="tree"; each node renders role="treeitem".
+      • Decorative arrow glyph is aria-hidden.
+
+    Known gaps vs. WAI-ARIA 1.2 combobox+tree pattern (flagged as "planned" in UI, not faked):
+      • aria-controls on the trigger pointing to the tree id — not emitted.
+      • aria-activedescendant for roving-focus across tree items — not emitted.
+      • aria-level / aria-setsize / aria-posinset on treeitem — not emitted.
+      • aria-selected on the active treeitem — not emitted.
+      • Keyboard navigation inside the tree (Arrow keys / Home / End / type-ahead) is not implemented;
+        selection today is pointer-driven.
+    These are left as UI callouts below so the demo reflects the real state rather than fabricating parameters.
+*@
+
+<PageTitle>DropDownTree / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropDownTree / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropDownTree</code> follows the WAI-ARIA 1.2
+            <em>combobox-with-tree</em> pattern: a focusable trigger exposes
+            <code>role="combobox"</code> with <code>aria-expanded</code>, and the popup surface
+            carries <code>role="tree"</code> with child nodes as <code>role="treeitem"</code>.
+            The collapse arrow is <code>aria-hidden</code> so it does not clutter the accessible
+            name. Disabled / read-only states are announced via <code>aria-disabled</code> and
+            <code>aria-readonly</code>.
+        </p>
+        <p>
+            Pair the control with a visible <code>SunfishLabel</code> (or
+            <code>aria-labelledby</code>) so screen readers announce the field name, and use
+            <code>aria-describedby</code> for a help hint. For invalid state, pass
+            <code>aria-invalid="true"</code> plus an alert region via <code>aria-describedby</code>.
+        </p>
+        <p style="color:#6a4c00; background:#fff4d6; padding:.6rem .8rem; border-radius:.375rem; font-size:.9rem; margin:0;">
+            <strong>Planned, not yet implemented:</strong>
+            <code>aria-controls</code> on the trigger, <code>aria-activedescendant</code>
+            roving focus, and treeitem keyboard navigation
+            (<kbd>Arrow</kbd>/<kbd>Home</kbd>/<kbd>End</kbd>/type-ahead).
+            See <code>icm/07_review/spec-verification-2026-04-21/a11y-forms-datadisplay.md</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA contract emitted today</h3>
+                <dl style="margin:0; display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.4rem; font-size:.9rem;">
+                    <dt><code>role="combobox"</code></dt>
+                    <dd>Applied to the trigger element that opens the tree popup.</dd>
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Reflects whether the popup is currently open (<code>true</code> / <code>false</code>).</dd>
+                    <dt><code>aria-disabled</code></dt>
+                    <dd>Set to <code>true</code> when <code>Disabled</code> or <code>Enabled="false"</code>.</dd>
+                    <dt><code>aria-readonly</code></dt>
+                    <dd>Set to <code>true</code> when <code>ReadOnly</code> is on.</dd>
+                    <dt><code>role="tree"</code></dt>
+                    <dd>Applied to the popup's node container.</dd>
+                    <dt><code>role="treeitem"</code></dt>
+                    <dd>Applied to each selectable node.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled via aria-labelledby</h3>
+                <SunfishLabel Id="category-label">Product category</SunfishLabel>
+                <SunfishDropDownTree Data="@_treeData"
+                                     TextField="Text"
+                                     ValueField="Id"
+                                     ItemsField="Children"
+                                     @bind-Value="_category"
+                                     Placeholder="Select a category"
+                                     PopupWidth="300px"
+                                     PopupHeight="220px"
+                                     Width="280px"
+                                     aria-labelledby="category-label" />
+                <p style="margin:.35rem 0 0; font-size:.85rem;">
+                    Selected: <strong>@(_category?.ToString() ?? "(none)")</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Required + described-by hint</h3>
+                <SunfishLabel Id="dept-label">Department</SunfishLabel>
+                <SunfishDropDownTree Data="@_treeData"
+                                     TextField="Text"
+                                     ValueField="Id"
+                                     ItemsField="Children"
+                                     @bind-Value="_department"
+                                     Placeholder="Pick one"
+                                     Width="280px"
+                                     aria-labelledby="dept-label"
+                                     aria-required="true"
+                                     aria-describedby="dept-hint" />
+                <span id="dept-hint" style="display:block; margin-top:.35rem; color:#555; font-size:.85rem;">
+                    Assign the tree node closest to this ticket's subject.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Invalid announced via aria-invalid + role="alert"</h3>
+                <SunfishLabel Id="owner-label">Owning team</SunfishLabel>
+                <SunfishDropDownTree Data="@_treeData"
+                                     TextField="Text"
+                                     ValueField="Id"
+                                     ItemsField="Children"
+                                     @bind-Value="_owner"
+                                     Placeholder="Choose a team"
+                                     Width="280px"
+                                     aria-labelledby="owner-label"
+                                     aria-invalid="true"
+                                     aria-describedby="owner-error" />
+                <span id="owner-error" role="alert" style="display:block; margin-top:.35rem; color:#a33; font-size:.85rem;">
+                    Owning team is required.
+                </span>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Read-only announced</h3>
+                <p style="margin:0 0 .4rem; color:#666; font-size:.85rem;">
+                    <code>ReadOnly</code> keeps the control focusable (so screen readers can still
+                    announce its value) but blocks opening the popup. <code>aria-readonly="true"</code>
+                    is emitted.
+                </p>
+                <SunfishDropDownTree Data="@_treeData"
+                                     TextField="Text"
+                                     ValueField="Id"
+                                     ItemsField="Children"
+                                     Value="@("1-2")"
+                                     ReadOnly="true"
+                                     Width="280px"
+                                     aria-label="Category (read-only)" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled announced</h3>
+                <SunfishDropDownTree Data="@_treeData"
+                                     TextField="Text"
+                                     ValueField="Id"
+                                     ItemsField="Children"
+                                     Value="@("3")"
+                                     Disabled="true"
+                                     Width="280px"
+                                     aria-label="Category (locked)" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DropDownTree", "Accessibility"];
+
+    private object? _category;
+    private object? _department;
+    private object? _owner;
+
+    private readonly List<object> _treeData = new()
+    {
+        new TreeNode
+        {
+            Id = "1", Text = "Electronics",
+            Children = new List<object>
+            {
+                new TreeNode { Id = "1-1", Text = "Phones" },
+                new TreeNode { Id = "1-2", Text = "Laptops",
+                    Children = new List<object>
+                    {
+                        new TreeNode { Id = "1-2-1", Text = "Gaming" },
+                        new TreeNode { Id = "1-2-2", Text = "Business" },
+                    }},
+            }
+        },
+        new TreeNode
+        {
+            Id = "2", Text = "Clothing",
+            Children = new List<object>
+            {
+                new TreeNode { Id = "2-1", Text = "Men" },
+                new TreeNode { Id = "2-2", Text = "Women" },
+            }
+        },
+        new TreeNode { Id = "3", Text = "Books" },
+    };
+
+    private sealed class TreeNode
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public List<object>? Children { get; set; }
+    }
+
+    // "Planned" entries are listed so the keyboard table documents the target WAI-ARIA
+    // pattern even though the implementation is not there yet. See the yellow callout above.
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                            "Move focus to / out of the trigger"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",            "Move focus backward"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>",        "Toggle the tree popup (via click today)"),
+        ("<kbd>Esc</kbd>",                             "Close the popup (planned for keyboard; click-away works today)"),
+        ("<kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd>",  "Planned — move between treeitems via aria-activedescendant"),
+        ("<kbd>ArrowRight</kbd> / <kbd>ArrowLeft</kbd>", "Planned — expand / collapse current node"),
+        ("<kbd>Home</kbd> / <kbd>End</kbd>",           "Planned — jump to first / last visible treeitem"),
+        ("Character keys",                             "Planned — type-ahead filter (Filterable input works when popup is open)"),
+    ];
+}

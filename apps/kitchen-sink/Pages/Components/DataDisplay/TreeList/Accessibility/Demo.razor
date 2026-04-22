@@ -1,0 +1,159 @@
+@page "/components/data-display/treelist/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+
+<PageTitle>TreeList / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeList / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeList&lt;TItem&gt;</code> implements the
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/treegrid/" target="_blank" rel="noopener">WAI-ARIA
+            TreeGrid pattern</a>: a table that is also a tree. The outer table is marked
+            <code>role="treegrid"</code>, every data row carries <code>role="row"</code> plus
+            <code>aria-level</code> (1-based depth), and parent rows add
+            <code>aria-expanded="true" / "false"</code> so assistive tech can announce and toggle the
+            hierarchy in place.
+        </p>
+        <p>
+            Sortable column headers expose <code>aria-sort</code>; sorting and paging work identically to
+            the flat DataGrid. Enable <code>Navigable="true"</code> to turn on the TreeGrid keyboard
+            pattern: arrow keys move between cells, <kbd>ArrowRight</kbd> / <kbd>ArrowLeft</kbd> expand /
+            collapse, and <kbd>Home</kbd> / <kbd>End</kbd> jump to the first / last cell in the row.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 id="treelist-a11y-heading" style="margin:0 0 .5rem 0; font-size:.95rem;">Reporting chain</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem; opacity:.85;">
+                    Tab into the grid, then use arrow keys to navigate. Try expanding a parent row with
+                    <kbd>ArrowRight</kbd> and watch <code>aria-expanded</code> flip in the DOM.
+                </p>
+                <SunfishTreeList TItem="OrgNode"
+                                 Data="_orgChart"
+                                 ItemsField="@nameof(OrgNode.Reports)"
+                                 aria-labelledby="treelist-a11y-heading"
+                                 Sortable="true"
+                                 Navigable="true"
+                                 SelectionMode="TreeListSelectionMode.Single">
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Name)" Title="Name" Expandable="true" Width="260px" />
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Title)" Title="Role" Width="200px" />
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Department)" Title="Department" />
+                    <SunfishTreeListColumn Field="@nameof(OrgNode.Headcount)" Title="Team size" Width="120px" />
+                </SunfishTreeList>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.9rem;">
+                    <dt><code>role="treegrid"</code></dt>
+                    <dd>Applied to the outer <code>&lt;table&gt;</code> — tells AT this is a tree-flavoured grid, not a flat table.</dd>
+                    <dt><code>role="columnheader"</code> + <code>aria-sort</code></dt>
+                    <dd>On <code>&lt;th&gt;</code> for sortable columns; values are <code>"ascending" / "descending" / "none"</code>.</dd>
+                    <dt><code>role="row"</code> + <code>aria-level</code></dt>
+                    <dd>Every data row carries its 1-based depth (<code>aria-level="1"</code> for roots, <code>"2"</code> for children, etc.).</dd>
+                    <dt><code>aria-expanded="true" / "false"</code></dt>
+                    <dd>Set on rows that have children. Absent on leaf rows.</dd>
+                    <dt><code>aria-labelledby</code> / <code>aria-label</code></dt>
+                    <dd>Forwarded to the root wrapper to give the grid an accessible name.</dd>
+                    <dt><code>aria-posinset</code> / <code>aria-setsize</code></dt>
+                    <dd><em>Planned.</em> Not currently emitted per row. Screen readers fall back to DOM order — acceptable for non-virtual data but should be added for virtualized trees.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Keyboard shortcuts (Navigable="true")</h3>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Keys</th>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Enter / leave the grid.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Arrow Up</kbd> / <kbd>Down</kbd></td><td style="padding:.35rem .75rem;">Move to the previous / next visible row (same column).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Arrow Left</kbd></td><td style="padding:.35rem .75rem;">Collapse an expanded parent, or move one cell left.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Arrow Right</kbd></td><td style="padding:.35rem .75rem;">Expand a collapsed parent, or move one cell right.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Home</kbd> / <kbd>End</kbd></td><td style="padding:.35rem .75rem;">Jump to the first / last cell in the focused row.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd></td><td style="padding:.35rem .75rem;">Start inline edit (when <code>EditMode</code> is <code>Inline</code>).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Escape</kbd></td><td style="padding:.35rem .75rem;">Cancel inline edit without committing.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Toggle the focused row's selection checkbox (when enabled).</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Screen-reader output (expected)</h3>
+                <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.85rem; overflow:auto;"><code>Reporting chain, tree grid, 4 columns
+  Column header: Name, sort none
+  Row, level 1, expanded: Ada Lovelace, CEO, Executive, 42
+    Row, level 2, expanded: Grace Hopper, VP Engineering, Engineering, 28
+      Row, level 3: Alan Turing, Eng. Manager, Platform, 9
+      Row, level 3: Linus Torvalds, Eng. Manager, Kernel, 12
+    Row, level 2, collapsed: Margaret Hamilton, VP Product, Product, 8</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "TreeList", "Accessibility"];
+
+    private sealed record OrgNode
+    {
+        public string Name { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Department { get; init; } = "";
+        public int Headcount { get; init; }
+        public List<OrgNode> Reports { get; init; } = new();
+    }
+
+    private readonly List<OrgNode> _orgChart =
+    [
+        new()
+        {
+            Name = "Ada Lovelace",
+            Title = "CEO",
+            Department = "Executive",
+            Headcount = 42,
+            Reports =
+            [
+                new()
+                {
+                    Name = "Grace Hopper",
+                    Title = "VP Engineering",
+                    Department = "Engineering",
+                    Headcount = 28,
+                    Reports =
+                    [
+                        new() { Name = "Alan Turing",    Title = "Eng. Manager", Department = "Platform", Headcount = 9 },
+                        new() { Name = "Linus Torvalds", Title = "Eng. Manager", Department = "Kernel",   Headcount = 12 },
+                    ],
+                },
+                new()
+                {
+                    Name = "Margaret Hamilton",
+                    Title = "VP Product",
+                    Department = "Product",
+                    Headcount = 8,
+                    Reports =
+                    [
+                        new() { Name = "Don Knuth", Title = "Principal PM", Department = "Product", Headcount = 0 },
+                    ],
+                },
+            ],
+        },
+    ];
+}

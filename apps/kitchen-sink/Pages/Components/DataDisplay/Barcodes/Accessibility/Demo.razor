@@ -1,0 +1,154 @@
+@page "/components/data-display/barcodes/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Barcodes / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Barcodes / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Barcodes/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            A barcode is a visual encoding of a text value — by itself it carries no semantic
+            meaning for a screen reader or for a user who cannot see it. The single most
+            important accessibility rule for barcode components is therefore
+            <strong>WCAG 1.1.1 Non-text Content</strong>: the rendered output must expose the
+            encoded value as text, so the information is available without relying on a scanner
+            camera or on sight.
+        </p>
+        <p>
+            <code>SunfishBarcode</code> renders an inline <code>&lt;svg role="img"&gt;</code> with
+            an auto-generated <code>aria-label</code> of the form <em>"Barcode: &lt;value&gt;"</em>,
+            so the encoded value is always announced. Setting <code>ShowLabel="true"</code>
+            (default) also prints the value as visible sibling text for sighted users who cannot
+            scan the code. Keep both on whenever the value is user-meaningful (order number,
+            SKU); use only the label when the raw SVG bars are decorative or the value is
+            displayed as data elsewhere.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Default — text alternative + visible label</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    <code>aria-label</code> contains the encoded value, and
+                    <code>ShowLabel="true"</code> prints it underneath. This is the baseline —
+                    never ship a barcode without both unless the value is redundant with nearby
+                    text.
+                </p>
+                <SunfishBarcode Value="SUNFISH-0001"
+                                Type="BarcodeType.Code128"
+                                Height="70"
+                                ShowLabel="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Figure pattern — value exposed via caption</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    When the barcode is a piece of content rather than an inline label, wrap it
+                    in a <code>&lt;figure&gt;</code> / <code>&lt;figcaption&gt;</code> and use
+                    <code>aria-labelledby</code> to name it explicitly. This reads as
+                    <em>"Figure, Order SUNFISH-0001"</em> instead of the raw value alone.
+                </p>
+                <figure style="margin:0; display:inline-flex; flex-direction:column; gap:.5rem; align-items:flex-start;">
+                    <SunfishBarcode Value="SUNFISH-0001"
+                                    Type="BarcodeType.Code128"
+                                    Height="70"
+                                    ShowLabel="false"
+                                    aria-labelledby="bc-cap-order" />
+                    <figcaption id="bc-cap-order" style="font-size:.85rem;">
+                        Order number <strong>SUNFISH-0001</strong>
+                    </figcaption>
+                </figure>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Don't: barcode-only with no text alternative</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Avoid rendering the SVG bars while hiding the value. Even though
+                    <code>SunfishBarcode</code> adds a default <code>aria-label</code>, a user
+                    who cannot decode the bars should never depend on that alone when the value
+                    is important business data.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:.5rem; padding:.75rem; border:1px dashed #c5a000; border-radius:.375rem; background:#fffbeb;">
+                    <SunfishBarcode Value="SUNFISH-0001"
+                                    Type="BarcodeType.Code128"
+                                    Height="70"
+                                    ShowLabel="false" />
+                    <span style="font-size:.8rem; color:#78350f;">
+                        Anti-pattern — the visible value is missing. Fix by setting
+                        <code>ShowLabel="true"</code> or adding a visible caption / adjacent text.
+                    </span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Color contrast &amp; high-contrast</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Bars need high contrast against their surface for both scanners and users
+                    with low vision. Default is black on transparent; if you override
+                    <code>Color</code>, verify the bar / background pair meets at least 3:1
+                    (WCAG 1.4.11 Non-text Contrast).
+                </p>
+                <div style="display:flex; gap:1.5rem; flex-wrap:wrap;">
+                    <div>
+                        <SunfishBarcode Value="HIGH-CONTRAST"
+                                        Color="#000000"
+                                        Height="70" />
+                        <div style="font-size:.8rem; margin-top:.25rem;">Black on white — passes.</div>
+                    </div>
+                    <div style="background:#111; padding:.75rem;">
+                        <SunfishBarcode Value="HIGH-CONTRAST"
+                                        Color="#ffffff"
+                                        Height="70" />
+                        <div style="font-size:.8rem; margin-top:.25rem; color:#fff;">White on black — passes.</div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.875rem;">
+                    <dt><code>role="img"</code></dt>
+                    <dd>Applied to the inner <code>&lt;svg&gt;</code> so screen readers treat it as a single graphic with a name.</dd>
+                    <dt><code>aria-label="Barcode: {Value}"</code></dt>
+                    <dd>Auto-generated — the encoded value is always in the accessibility tree.</dd>
+                    <dt><code>ShowLabel="true"</code> (default)</dt>
+                    <dd>Renders the value as visible text inside the SVG; required when the barcode is the user's only view of the value.</dd>
+                    <dt><strong>WCAG 1.1.1 Non-text Content</strong></dt>
+                    <dd>Satisfied by the combination of <code>aria-label</code> + visible label. Both paths expose the same text.</dd>
+                    <dt><strong>WCAG 1.4.1 Use of Color</strong></dt>
+                    <dd>The encoded information is not communicated by color — only by bar pattern and the text label.</dd>
+                    <dt><strong>WCAG 1.4.11 Non-text Contrast</strong></dt>
+                    <dd>Bar color must reach 3:1 against the surface — verify any custom <code>Color</code> override.</dd>
+                    <dt><strong>Keyboard</strong></dt>
+                    <dd>Barcode is purely decorative output — not focusable. Interactive scanners, print buttons, etc. are layered on top and carry their own semantics.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Known gaps</h3>
+                <ul style="margin:0; font-size:.875rem;">
+                    <li>The MVP Code128 encoder is deterministic but not a scannable payload — the
+                        a11y contract (text alternative) is unaffected, but production
+                        scan-accuracy work is pending.</li>
+                    <li>Only <code>Code128</code> and <code>Code39</code> are implemented on the
+                        <code>DataDisplay/SunfishBarcode</code> surface today. Other symbologies
+                        (QR, DataMatrix, EAN) are planned — the text-alternative rule applies
+                        identically to all of them.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Barcodes", "Accessibility"];
+}

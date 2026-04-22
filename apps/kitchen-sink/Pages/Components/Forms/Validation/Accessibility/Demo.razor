@@ -1,0 +1,259 @@
+@page "/components/forms/validation/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using System.ComponentModel.DataAnnotations
+
+@*
+    Accessibility demo for SunfishValidation* (Message / Summary).
+
+    Component coverage today (confirmed in packages/ui-adapters-blazor/Components/Forms/Containers/SunfishValidationSummary.razor
+    and SunfishValidationMessage.razor):
+      • SunfishValidationSummary renders a block with role="alert" → assertive live region.
+        Screen readers announce the complete summary as soon as validation fails.
+      • SunfishValidationMessage renders inline text bound to a FieldIdentifier via the For
+        expression. It does NOT currently set role="alert" on itself — inline field-level
+        messages appear without an assertive announcement.
+      • SunfishField adds a "mar-field--invalid" class when any validation message is present
+        for the bound Id, but does NOT automatically set aria-invalid / aria-errormessage on
+        the input. Those must be passed through manually (demonstrated below).
+
+    Gaps vs. full WAI-ARIA validation pattern (called out in UI, not fabricated):
+      • SunfishValidationMessage has no stable Id the developer can point aria-errormessage at;
+        we wire aria-errormessage to a sibling <span id="..."> alongside the message in the
+        Example below.
+      • aria-invalid is not auto-wired from the EditContext to the input; see the EditContext-
+        driven IsInvalid helper below.
+      • SunfishValidationMessage does not emit role="alert" (only the Summary does). Planned.
+*@
+
+<PageTitle>Validation / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Validation / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Validation accessibility has three moving pieces:
+            <strong><code>aria-invalid</code></strong> on the input (so assistive tech knows the
+            field is in an error state);
+            <strong><code>aria-errormessage</code></strong> pointing at the element that holds
+            the text of the error; and a
+            <strong>live region</strong> so the error is actually announced. Sunfish
+            <code>SunfishValidationSummary</code> covers the live-region case with
+            <code>role="alert"</code>; field-level <code>SunfishValidationMessage</code> renders
+            the text but does not (yet) attach its own live-region role, so you should pair it
+            with a stable <code>id</code> that the input's <code>aria-errormessage</code> can
+            reference.
+        </p>
+        <p>
+            Summary-vs-inline: the summary pattern is best for form-wide "scan all errors at
+            once"; inline messages are best for immediate per-field feedback. Many forms use
+            both — the summary acts as the assertive announcement, the inline messages let
+            users visually locate the field with the problem.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA contract emitted today</h3>
+                <dl style="margin:0; display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.4rem; font-size:.9rem;">
+                    <dt><code>role="alert"</code></dt>
+                    <dd>Emitted by <code>SunfishValidationSummary</code>. Assertive live region — announces the complete error list as soon as it becomes non-empty.</dd>
+                    <dt><code>aria-invalid</code></dt>
+                    <dd>Pass-through: set on the input by the developer. Use the EditContext to drive the value (see <code>IsInvalid</code> helper).</dd>
+                    <dt><code>aria-errormessage</code></dt>
+                    <dd>Pass-through: point at a sibling element that holds the error text. The element should either have a stable <code>id</code> or live inside <code>SunfishValidationMessage</code> wrapped in a span with an <code>id</code>.</dd>
+                    <dt><code>aria-describedby</code></dt>
+                    <dd>Use instead of <code>aria-errormessage</code> when the text is a hint rather than an error.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Summary + inline, with aria-invalid &amp; aria-errormessage wired per field</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Submit the form blank to hear the summary announce all errors (assertive),
+                    then visit each field — the input's <code>aria-invalid="true"</code> and
+                    <code>aria-errormessage</code> pointer make the specific error discoverable
+                    on a per-field basis.
+                </p>
+
+                <SunfishForm Model="_model"
+                             OnValidSubmit="HandleValidSubmit"
+                             OnInvalidSubmit="HandleInvalidSubmit">
+                    <FormValidation>
+                        <DataAnnotationsValidator />
+                        <SunfishValidationSummary />
+                    </FormValidation>
+                    <ChildContent>
+
+                        <SunfishField Text="Username" Id="v-username">
+                            <SunfishTextBox @bind-Value="_model.Username"
+                                            aria-required="true"
+                                            aria-invalid="@IsInvalid(nameof(_model.Username))"
+                                            aria-errormessage="@(IsInvalid(nameof(_model.Username)) ? "v-username-error" : null)" />
+                            <span id="v-username-error">
+                                <SunfishValidationMessage For="@(() => _model.Username)" />
+                            </span>
+                        </SunfishField>
+
+                        <SunfishField Text="Email" Id="v-email">
+                            <SunfishTextBox @bind-Value="_model.Email"
+                                            aria-required="true"
+                                            aria-invalid="@IsInvalid(nameof(_model.Email))"
+                                            aria-errormessage="@(IsInvalid(nameof(_model.Email)) ? "v-email-error" : null)" />
+                            <span id="v-email-error">
+                                <SunfishValidationMessage For="@(() => _model.Email)" />
+                            </span>
+                        </SunfishField>
+
+                        <SunfishField Text="Password" Id="v-password">
+                            <SunfishTextBox @bind-Value="_model.Password"
+                                            InputType="password"
+                                            aria-required="true"
+                                            aria-invalid="@IsInvalid(nameof(_model.Password))"
+                                            aria-errormessage="@(IsInvalid(nameof(_model.Password)) ? "v-password-error" : null)"
+                                            aria-describedby="v-password-hint" />
+                            <span id="v-password-hint" style="display:block; margin-top:.25rem; color:#555; font-size:.8rem;">
+                                Minimum 8 characters.
+                            </span>
+                            <span id="v-password-error">
+                                <SunfishValidationMessage For="@(() => _model.Password)" />
+                            </span>
+                        </SunfishField>
+
+                        <div class="demo-row">
+                            <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Validate</SunfishButton>
+                        </div>
+
+                    </ChildContent>
+                </SunfishForm>
+
+                @if (_submitted)
+                {
+                    <SunfishAlert Severity="AlertSeverity.Success" Style="margin-top:.5rem;">
+                        All fields are valid.
+                    </SunfishAlert>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Inline-only announcement pattern</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    If you prefer per-field announcements without a top-of-form summary, wrap
+                    <code>SunfishValidationMessage</code> in a <code>role="alert"</code> live
+                    region so the new text is announced as soon as it appears. This supplements
+                    the inline message until the component gains a built-in assertive role.
+                </p>
+                <SunfishForm Model="_inlineModel">
+                    <FormValidation>
+                        <DataAnnotationsValidator />
+                    </FormValidation>
+                    <ChildContent>
+                        <SunfishField Text="Display name" Id="v-display">
+                            <SunfishTextBox @bind-Value="_inlineModel.DisplayName"
+                                            aria-required="true"
+                                            aria-errormessage="v-display-error" />
+                            <div id="v-display-error" role="alert" aria-live="assertive">
+                                <SunfishValidationMessage For="@(() => _inlineModel.DisplayName)" />
+                            </div>
+                        </SunfishField>
+
+                        <div class="demo-row">
+                            <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Check</SunfishButton>
+                        </div>
+                    </ChildContent>
+                </SunfishForm>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Validation", "Accessibility"];
+
+    private readonly SignupModel _model = new();
+    private readonly InlineModel _inlineModel = new();
+    private bool _submitted;
+
+    // aria-invalid is refreshed from the EditContext on every submit attempt (valid or
+    // invalid) so the input's flag stays authoritative against the latest validation run.
+    private readonly HashSet<string> _invalidFields = new(StringComparer.Ordinal);
+
+    private bool IsInvalid(string fieldName) => _invalidFields.Contains(fieldName);
+
+    private void HandleValidSubmit(EditContext ctx)
+    {
+        _invalidFields.Clear();
+        _submitted = true;
+    }
+
+    private void HandleInvalidSubmit(EditContext ctx)
+    {
+        _invalidFields.Clear();
+        foreach (var name in new[] { nameof(_model.Username), nameof(_model.Email), nameof(_model.Password) })
+        {
+            var field = ctx.Field(name);
+            if (ctx.GetValidationMessages(field).Any())
+            {
+                _invalidFields.Add(name);
+            }
+        }
+        _submitted = false;
+    }
+
+    private sealed class SignupModel
+    {
+        [Required(ErrorMessage = "Username is required.")]
+        [MinLength(3, ErrorMessage = "Username must be at least 3 characters.")]
+        public string? Username { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string? Email { get; set; }
+
+        [Required(ErrorMessage = "Password is required.")]
+        [MinLength(8, ErrorMessage = "Password must be at least 8 characters.")]
+        public string? Password { get; set; }
+    }
+
+    private sealed class InlineModel
+    {
+        [Required(ErrorMessage = "Display name is required.")]
+        public string? DisplayName { get; set; }
+    }
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                   "Move focus to the next form control or error region"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",   "Move focus to the previous form control or error region"),
+        ("<kbd>Enter</kbd>",                  "Submit the form (triggers summary + inline announcements)"),
+    ];
+}

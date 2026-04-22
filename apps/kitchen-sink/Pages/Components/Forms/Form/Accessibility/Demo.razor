@@ -1,0 +1,244 @@
+@page "/components/forms/form/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using System.ComponentModel.DataAnnotations
+
+@*
+    Accessibility demo for SunfishForm.
+
+    Component coverage today (confirmed in packages/ui-adapters-blazor/Components/Forms/Containers/SunfishForm.razor):
+      • Renders a native <form> element (implicit role="form" when labelled).
+      • Cascades an EditContext so downstream SunfishField / SunfishValidationMessage /
+        SunfishValidationSummary receive validation state.
+      • SunfishField renders a native <label for="..."> when Text + Id are provided.
+      • SunfishValidationSummary renders role="alert" on the summary block, so screen readers
+        announce the aggregated errors as soon as they appear.
+
+    Gaps vs. full WAI-ARIA form pattern (not fabricated in this demo):
+      • SunfishForm does not emit a form-wide live region for "Form submitted successfully"
+        announcements; we roll our own aria-live="polite" region below.
+      • SunfishField does not yet auto-wire aria-invalid on the child input when its field has
+        validation errors; inputs need aria-invalid passed manually.
+      • <fieldset> / <legend> grouping is not offered as a first-class SunfishForm feature; the
+        Example below uses native <fieldset>/<legend> directly to show the pattern.
+*@
+
+<PageTitle>Form / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Form / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Form/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishForm</code> renders a real HTML <code>&lt;form&gt;</code>, so it inherits
+            implicit form semantics: submit on <kbd>Enter</kbd> in a text input, a labelled region
+            once you attach <code>aria-labelledby</code> or <code>aria-label</code>, and native
+            reset via a <code>type="reset"</code> button. Below we layer the standard WAI-ARIA
+            form accessibility patterns on top: <code>&lt;fieldset&gt;</code> / <code>&lt;legend&gt;</code>
+            grouping, an error-summary region, and a polite live-region status announcement on
+            successful submit.
+        </p>
+        <p>
+            <code>SunfishField</code> wires a real <code>&lt;label for="..."&gt;</code> to the
+            child input when you pass both <code>Text</code> and <code>Id</code>.
+            <code>SunfishValidationSummary</code> already renders <code>role="alert"</code>, which
+            makes it an assertive live region — errors are read aloud as soon as they appear.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem; max-width:560px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA contract emitted today</h3>
+                <dl style="margin:0; display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.4rem; font-size:.9rem;">
+                    <dt><code>&lt;form&gt;</code></dt>
+                    <dd>Rendered by <code>SunfishForm</code>. Becomes a <em>form landmark</em> when you attach <code>aria-labelledby</code> (shown below).</dd>
+                    <dt><code>&lt;label for&gt;</code></dt>
+                    <dd>Rendered by <code>SunfishField</code> when <code>Text</code> + <code>Id</code> are set, explicitly associated with the child input.</dd>
+                    <dt><code>role="alert"</code></dt>
+                    <dd>Rendered by <code>SunfishValidationSummary</code>. Screen readers announce the summary as soon as errors appear.</dd>
+                    <dt><code>&lt;fieldset&gt;</code> + <code>&lt;legend&gt;</code></dt>
+                    <dd>Not auto-emitted by <code>SunfishForm</code>; use them directly to group related fields (demonstrated below).</dd>
+                    <dt><code>aria-live="polite"</code></dt>
+                    <dd>Attach to a status region so screen readers announce "Form submitted" on success without interrupting.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Fieldset + legend grouping, error summary, and submit announcement</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Submit the form with blank fields to hear the summary announce errors;
+                    fill everything in and submit to hear the polite-live success message.
+                </p>
+
+                <h4 id="signup-form-heading" style="margin:.25rem 0 .5rem;">Create your account</h4>
+
+                <SunfishForm Model="_model"
+                             OnValidSubmit="HandleValidSubmit"
+                             OnInvalidSubmit="HandleInvalidSubmit"
+                             aria-labelledby="signup-form-heading">
+
+                    <FormValidation>
+                        <DataAnnotationsValidator />
+                        <SunfishValidationSummary />
+                    </FormValidation>
+
+                    <ChildContent>
+                        <fieldset style="border:1px solid var(--sf-color-border, #d1d5db); border-radius:.375rem; padding:.75rem 1rem; margin-bottom:1rem;">
+                            <legend style="padding:0 .4rem; font-weight:600; font-size:.9rem;">
+                                Personal details
+                            </legend>
+
+                            <SunfishField Text="First name" Id="first-name">
+                                <SunfishTextBox @bind-Value="_model.FirstName"
+                                                aria-required="true"
+                                                aria-invalid="@IsInvalid(nameof(_model.FirstName))" />
+                                <SunfishValidationMessage For="@(() => _model.FirstName)" />
+                            </SunfishField>
+
+                            <SunfishField Text="Last name" Id="last-name">
+                                <SunfishTextBox @bind-Value="_model.LastName"
+                                                aria-required="true"
+                                                aria-invalid="@IsInvalid(nameof(_model.LastName))" />
+                                <SunfishValidationMessage For="@(() => _model.LastName)" />
+                            </SunfishField>
+                        </fieldset>
+
+                        <fieldset style="border:1px solid var(--sf-color-border, #d1d5db); border-radius:.375rem; padding:.75rem 1rem; margin-bottom:1rem;">
+                            <legend style="padding:0 .4rem; font-weight:600; font-size:.9rem;">
+                                Contact
+                            </legend>
+
+                            <SunfishField Text="Email" Id="email">
+                                <SunfishTextBox @bind-Value="_model.Email"
+                                                aria-required="true"
+                                                aria-invalid="@IsInvalid(nameof(_model.Email))"
+                                                aria-describedby="email-hint" />
+                                <span id="email-hint" style="display:block; margin-top:.25rem; color:#555; font-size:.8rem;">
+                                    We'll send a verification link here.
+                                </span>
+                                <SunfishValidationMessage For="@(() => _model.Email)" />
+                            </SunfishField>
+                        </fieldset>
+
+                        <div class="demo-row">
+                            <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Create account</SunfishButton>
+                            <SunfishButton Variant="ButtonVariant.Secondary" ButtonType="ButtonType.Reset" OnClick="HandleReset">Reset</SunfishButton>
+                        </div>
+                    </ChildContent>
+                </SunfishForm>
+
+                @* Polite live-region status — separate from the role="alert" summary above.
+                   role="alert" is assertive (interrupts); role="status" + aria-live="polite"
+                   is the right channel for non-urgent confirmations. *@
+                <div id="signup-status"
+                     role="status"
+                     aria-live="polite"
+                     aria-atomic="true"
+                     style="min-height:1.4rem; margin-top:.75rem; font-size:.9rem;">
+                    @_statusMessage
+                </div>
+
+                @if (_submitted)
+                {
+                    <SunfishAlert Severity="AlertSeverity.Success" Style="margin-top:.5rem;">
+                        Created account for @_model.FirstName @_model.LastName (@_model.Email).
+                    </SunfishAlert>
+                }
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Form", "Accessibility"];
+
+    private readonly SignupModel _model = new();
+    private bool _submitted;
+    private string? _statusMessage;
+    private readonly HashSet<string> _invalidFields = new(StringComparer.Ordinal);
+
+    private bool IsInvalid(string fieldName) => _invalidFields.Contains(fieldName);
+
+    private void HandleValidSubmit()
+    {
+        _submitted = true;
+        _invalidFields.Clear();
+        _statusMessage = "Account created successfully.";
+    }
+
+    private void HandleInvalidSubmit(EditContext ctx)
+    {
+        // Refresh the aria-invalid flags for each field from the EditContext so
+        // the input's aria-invalid reflects the live validation state.
+        _invalidFields.Clear();
+        foreach (var name in new[] { nameof(_model.FirstName), nameof(_model.LastName), nameof(_model.Email) })
+        {
+            var field = ctx.Field(name);
+            if (ctx.GetValidationMessages(field).Any())
+            {
+                _invalidFields.Add(name);
+            }
+        }
+        _submitted = false;
+        _statusMessage = "Please correct the errors above before submitting.";
+    }
+
+    private void HandleReset()
+    {
+        _model.FirstName = null;
+        _model.LastName = null;
+        _model.Email = null;
+        _submitted = false;
+        _invalidFields.Clear();
+        _statusMessage = "Form reset.";
+    }
+
+    private sealed class SignupModel
+    {
+        [Required(ErrorMessage = "First name is required.")]
+        public string? FirstName { get; set; }
+
+        [Required(ErrorMessage = "Last name is required.")]
+        public string? LastName { get; set; }
+
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string? Email { get; set; }
+    }
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                   "Move focus to the next form control"),
+        ("<kbd>Shift</kbd>+<kbd>Tab</kbd>",   "Move focus to the previous form control"),
+        ("<kbd>Enter</kbd>",                  "Submit the form from any text input"),
+        ("<kbd>Space</kbd>",                  "Activate the focused submit / reset button"),
+    ];
+}

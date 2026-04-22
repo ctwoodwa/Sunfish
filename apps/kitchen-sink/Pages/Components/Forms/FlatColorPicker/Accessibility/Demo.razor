@@ -1,0 +1,211 @@
+@page "/components/forms/flatcolorpicker/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+@*
+    Accessibility demo for SunfishFlatColorPicker (SunfishColorPicker with FlatMode="true").
+
+    Component coverage today (confirmed in packages/ui-adapters-blazor/Components/Forms/Inputs/SunfishColorPicker.razor):
+      • Flat root has role="group" with aria-label="Color picker".
+      • Gradient HSV canvas is keyboard-focusable (tabindex=0) with aria-label and arrow-key
+        navigation (±saturation / ±brightness).
+      • Palette surface has role="grid" aria-label="Color palette"; each swatch is a <button
+        role="gridcell"> with aria-label set to the CSS color value and aria-selected reflecting the
+        active swatch.
+      • Hue / opacity sliders are native <input type="range"> with dynamic aria-label that
+        announces the current value.
+      • Optional ContrastTool renders an aria-labelled group with WCAG AA/AAA pass/fail badges
+        (WCAG 1.4.11 + 1.4.3 story) — demonstrates non-text contrast reporting.
+      • Format-toggle and clear/apply/cancel buttons each carry aria-label.
+
+    Gaps vs. full WAI-ARIA pattern for color pickers:
+      • Swatches emit aria-label="#abc123" (the raw CSS color). WCAG 1.4.1 ("use of color")
+        recommends pairing every swatch with a human-readable name (e.g. "Cornflower blue").
+        Pass a named-color Palette list if you need this; the component will pass the strings
+        through verbatim.
+      • Palette grid uses role="grid" but does not implement 2-D arrow-key roving focus across
+        cells yet; cells are tab-stops (native <button>).
+      • aria-activedescendant is not used.
+*@
+
+<PageTitle>FlatColorPicker / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FlatColorPicker / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FlatColorPicker/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The flat (inline) form of <code>SunfishColorPicker</code> is a <code>role="group"</code>
+            landmark containing three interactive surfaces: an HSV gradient canvas, a hue /
+            opacity slider pair, and a palette grid of swatches. Each surface is independently
+            keyboard-operable: arrow keys on the canvas adjust saturation and brightness; native
+            range sliders handle hue and opacity; palette swatches are focusable buttons.
+        </p>
+        <p>
+            Two WCAG themes this demo exercises:
+        </p>
+        <ul>
+            <li>
+                <strong>1.4.1 Use of Color</strong> — pair every swatch with a readable color
+                <em>name</em> so the UI does not convey meaning by hue alone. Pass a list of
+                named colors as <code>Palette</code> and the component will use the name as the
+                accessible name on the swatch.
+            </li>
+            <li>
+                <strong>1.4.11 Non-text Contrast</strong> / <strong>1.4.3 Contrast (Minimum)</strong> —
+                turn on <code>ContrastTool="true"</code> to surface live WCAG AA/AAA pass/fail
+                badges against a configurable background.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem; max-width:640px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard reference</h3>
+                <table style="border-collapse:collapse; width:100%;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (keys, action) in _shortcuts)
+                        {
+                            <tr>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@((MarkupString)keys)</td>
+                                <td style="padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #eee);">@action</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA contract emitted today</h3>
+                <dl style="margin:0; display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.4rem; font-size:.9rem;">
+                    <dt><code>role="group"</code></dt>
+                    <dd>Applied to the flat root with <code>aria-label="Color picker"</code>.</dd>
+                    <dt><code>role="grid"</code></dt>
+                    <dd>Applied to the palette surface with <code>aria-label="Color palette"</code>.</dd>
+                    <dt><code>role="gridcell"</code> + <code>aria-selected</code></dt>
+                    <dd>On each palette swatch; <code>aria-selected="true"</code> marks the active tile.</dd>
+                    <dt><code>aria-label</code></dt>
+                    <dd>On each swatch (the CSS color string or name), on the canvas, on hue / opacity / HEX / RGB inputs, and on action buttons (Clear, Apply, Cancel, Toggle format).</dd>
+                    <dt><code>tabindex="0"</code> + <code>onkeydown</code></dt>
+                    <dd>On the HSV canvas; arrow keys nudge saturation and brightness by 2%.</dd>
+                    <dt><code>role="group"</code> (ContrastTool)</dt>
+                    <dd>Wraps the WCAG contrast readout; badges announce <em>AA Pass/Fail</em> and <em>AAA Pass/Fail</em>.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Pair swatches with names (WCAG 1.4.1)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    When the <code>Palette</code> is a list of CSS colors without names, screen
+                    readers read the raw value (e.g. "#1abc9c"). Pass a list of named CSS colors
+                    instead and the swatch's accessible name becomes human-readable.
+                </p>
+                <SunfishColorPicker @bind-Value="_namedColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Palette"
+                                    Palette="@_namedSwatches"
+                                    Columns="4"
+                                    PaletteTileSize="32"
+                                    ShowButtons="false" />
+                <p style="margin:.5rem 0 0; font-size:.85rem;">
+                    Current: <strong style="color:@_namedColor;">@_namedColor</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Live contrast readout (WCAG 1.4.3 / 1.4.11)</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    With <code>ContrastTool="true"</code>, the picker shows the WCAG contrast
+                    ratio of the selected color against the <code>ContrastBackground</code>, plus
+                    AA / AAA pass-fail badges. This is a non-text-contrast companion for UI
+                    swatches that would otherwise fail WCAG 1.4.11.
+                </p>
+                <SunfishColorPicker @bind-Value="_foreground"
+                                    FlatMode="true"
+                                    View="ColorPickerView.GradientPalette"
+                                    Palette='@("flat")'
+                                    Columns="6"
+                                    Format="ColorPickerFormat.Hex"
+                                    ContrastTool="true"
+                                    ContrastBackground="#ffffff"
+                                    Preview="true" />
+                <p style="margin:.5rem 0 0; font-size:.85rem;">
+                    Picked foreground <strong style="color:@_foreground;">@_foreground</strong>
+                    — rendered against a white background for the badges above.
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Gradient-only surface — arrow-key nav on canvas</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The HSV canvas is focusable and arrow keys move the thumb by 2% at a time.
+                    Screen readers announce "Color saturation and brightness selector. Use arrow
+                    keys to adjust."
+                </p>
+                <SunfishColorPicker @bind-Value="_hslColor"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Gradient"
+                                    Format="ColorPickerFormat.Hsl"
+                                    ShowButtons="false"
+                                    Preview="true"
+                                    ClearButton="false" />
+                <p style="margin:.5rem 0 0; font-size:.85rem;">HSL value: <strong>@_hslColor</strong></p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled announced</h3>
+                <SunfishColorPicker Value="#808080"
+                                    FlatMode="true"
+                                    View="ColorPickerView.Palette"
+                                    Palette='@("basic")'
+                                    Disabled="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FlatColorPicker", "Accessibility"];
+
+    // Named swatches — passed through to the swatch's accessible name, satisfying
+    // the WCAG 1.4.1 ("use of color") story for palette pickers.
+    private readonly List<string> _namedSwatches = new()
+    {
+        "cornflowerblue",
+        "mediumseagreen",
+        "goldenrod",
+        "indianred",
+        "slateblue",
+        "darkorange",
+        "teal",
+        "crimson",
+    };
+
+    private string? _namedColor = "cornflowerblue";
+    private string? _foreground = "#1abc9c";
+    private string? _hslColor = "hsl(210, 65%, 45%)";
+
+    private static readonly (string Keys, string Action)[] _shortcuts =
+    [
+        ("<kbd>Tab</kbd>",                              "Move focus between canvas, sliders, inputs, swatches, and buttons"),
+        ("<kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd>", "Decrease / increase saturation on the HSV canvas (±2%)"),
+        ("<kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd>",    "Increase / decrease brightness on the HSV canvas (±2%)"),
+        ("<kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd>", "On the hue / opacity sliders: native range step"),
+        ("<kbd>Home</kbd> / <kbd>End</kbd>",             "On the hue / opacity sliders: snap to Min / Max (native)"),
+        ("<kbd>Enter</kbd> / <kbd>Space</kbd>",          "Activate a palette swatch or action button"),
+    ];
+}

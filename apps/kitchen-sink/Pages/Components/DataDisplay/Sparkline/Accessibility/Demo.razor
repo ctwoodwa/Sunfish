@@ -1,0 +1,233 @@
+@page "/components/data-display/sparkline/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Sparkline / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Sparkline / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <span style="display:inline-block; font-size:.6875rem; font-weight:600; letter-spacing:.05em;
+                         color:#92400e; background:#fef3c7; padding:.125rem .5rem; border-radius:999px;
+                         margin-right:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
+            <code>SunfishSparkline</code> is not yet implemented. This page documents the
+            accessibility contract the component will ship with, using a hand-authored inline
+            SVG as the working demo so the patterns are concrete and reviewable today.
+        </p>
+        <p>
+            A sparkline is a tiny inline trend chart with no axes and no data labels — so the
+            whole a11y story is about the <em>summary</em>. Screen-reader users should hear the
+            trend direction, the first and last values, and the minimum / maximum at minimum.
+            The surrounding text usually already contains the latest value (e.g. "Revenue
+            $124k"); the sparkline then adds a short <code>aria-label</code> of the form
+            <em>"Trend up. 7-day revenue, 94 to 124, range 80 to 130."</em>
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Inline sparkline with trend summary</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    The sparkline sits inline with a value. Screen readers announce the value
+                    directly from the visible text and the sparkline as a single image with the
+                    trend summary — never the individual data points.
+                </p>
+                <div style="display:flex; align-items:center; gap:1rem; font-size:1.1rem;">
+                    <strong>Revenue</strong>
+                    <span>$124k</span>
+                    <svg role="img"
+                         aria-label="@_revenueLabel"
+                         viewBox="0 0 120 32"
+                         width="120"
+                         height="32"
+                         style="overflow:visible;">
+                        <polyline fill="none"
+                                  stroke="#0ea5e9"
+                                  stroke-width="2"
+                                  points="@_revenuePolyline" />
+                        <circle cx="@_revenueLastX" cy="@_revenueLastY" r="2.5" fill="#0ea5e9" />
+                    </svg>
+                    <span class="sf-badge sf-badge--success" aria-hidden="true" style="padding:.1rem .5rem; background:#dcfce7; color:#166534; border-radius:999px; font-size:.8rem;">+5%</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Sparkline with adjacent text equivalent</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Alternate pattern — mark the SVG <code>aria-hidden="true"</code> and supply
+                    the summary as real text. Preferred when the dataset is business data users
+                    may want to inspect in a screen reader verbatim, or when the sparkline needs
+                    to sit in a forced-colors-hostile spot.
+                </p>
+                <div style="display:flex; align-items:center; gap:1rem; font-size:1rem;">
+                    <svg aria-hidden="true"
+                         viewBox="0 0 120 32"
+                         width="120"
+                         height="32"
+                         style="overflow:visible;">
+                        <polyline fill="none"
+                                  stroke="#dc2626"
+                                  stroke-width="2"
+                                  points="@_errorPolyline" />
+                    </svg>
+                    <span>
+                        Error rate trending <strong>down</strong> — 12 &rarr; 3 over the last 7
+                        days, range 3 to 14.
+                    </span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Data-table fallback</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    When the individual points matter — KPI dashboards, for instance — provide
+                    an adjacent <code>&lt;table&gt;</code> (visible or visually hidden). This is
+                    the text equivalent for WCAG 1.1.1 when the summary label is not enough.
+                </p>
+                <table style="border-collapse:collapse; font-size:.85rem;">
+                    <caption style="text-align:left; font-weight:600; margin-bottom:.25rem;">
+                        Daily revenue (thousands USD) — data behind the sparkline
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;">Day</th>
+                            @for (int i = 0; i < _revenue.Length; i++)
+                            {
+                                <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;">D@(i + 1)</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" style="padding:.35rem .75rem; text-align:left;">Revenue</th>
+                            @foreach (var v in _revenue)
+                            {
+                                <td style="padding:.35rem .75rem; text-align:right;">@v</td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Color-not-alone (trend direction)</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    Green-up / red-down is a common sparkline idiom that fails for users with
+                    red-green color-vision deficiencies. Always pair the color with a glyph
+                    (arrow, ±%) or with the summary text so the direction is never carried by
+                    hue alone (WCAG 1.4.1).
+                </p>
+                <div style="display:flex; gap:2rem; flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <span aria-hidden="true">&#9650;</span>
+                        <span>Up 5%</span>
+                        <svg role="img" aria-label="Trend up 5 percent" viewBox="0 0 60 20" width="60" height="20">
+                            <polyline fill="none" stroke="#0ea5e9" stroke-width="2" points="0,16 12,14 24,11 36,8 48,5 60,3" />
+                        </svg>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <span aria-hidden="true">&#9660;</span>
+                        <span>Down 3%</span>
+                        <svg role="img" aria-label="Trend down 3 percent" viewBox="0 0 60 20" width="60" height="20">
+                            <polyline fill="none" stroke="#dc2626" stroke-width="2" points="0,4 12,6 24,9 36,12 48,15 60,16" />
+                        </svg>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:.5rem;">
+                        <span aria-hidden="true">&#9644;</span>
+                        <span>Flat</span>
+                        <svg role="img" aria-label="Trend flat" viewBox="0 0 60 20" width="60" height="20">
+                            <polyline fill="none" stroke="#6b7280" stroke-width="2" points="0,10 12,9 24,11 36,10 48,11 60,10" />
+                        </svg>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract (planned for SunfishSparkline)</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.875rem;">
+                    <dt><code>role="img"</code></dt>
+                    <dd>On the inner <code>&lt;svg&gt;</code> — the sparkline is a single graphic.</dd>
+                    <dt><code>aria-label</code></dt>
+                    <dd>Auto-generated trend summary: direction + first / last value + optional min / max.</dd>
+                    <dt><strong>Or</strong> <code>aria-hidden="true"</code> + adjacent text</dt>
+                    <dd>When the surrounding text already carries the summary, hide the SVG and keep one announcement.</dd>
+                    <dt><strong>Data-table fallback</strong></dt>
+                    <dd>Opt-in parameter on the planned component — renders a sibling <code>&lt;table&gt;</code> for the full series.</dd>
+                    <dt><strong>WCAG 1.4.1 Use of Color</strong></dt>
+                    <dd>Trend direction paired with an arrow glyph or explicit "up / down / flat" word.</dd>
+                    <dt><strong>WCAG 1.4.11 Non-text Contrast</strong></dt>
+                    <dd>Line stroke must reach 3:1 against the surface — verify custom palettes.</dd>
+                    <dt><strong>Keyboard</strong></dt>
+                    <dd>Non-interactive by default; if the sparkline opens a details view on activation, the wrapper must be a real <code>&lt;button&gt;</code>.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Known gaps</h3>
+                <ul style="margin:0; font-size:.875rem;">
+                    <li><code>SunfishSparkline</code> is aspirational — the live demo is hand-authored SVG that stands in for the planned component.</li>
+                    <li>Parity reference: <code>TelerikSparkline</code>. The a11y contract documented here is the target shape when Sunfish ships the component.</li>
+                    <li>Auto-generated trend summaries and the opt-in data-table fallback are future API work, not yet specified in code.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Sparkline", "Accessibility"];
+
+    private readonly int[] _revenue = [94, 101, 98, 108, 115, 118, 124];
+
+    private string _revenuePolyline = string.Empty;
+    private string _errorPolyline = string.Empty;
+    private double _revenueLastX;
+    private double _revenueLastY;
+    private string _revenueLabel = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _revenuePolyline = BuildPolyline(_revenue, 120, 32, out var lastX, out var lastY);
+        _revenueLastX = lastX;
+        _revenueLastY = lastY;
+        _revenueLabel =
+            $"Trend up. 7-day revenue, {_revenue[0]} to {_revenue[^1]}, " +
+            $"range {_revenue.Min()} to {_revenue.Max()}.";
+
+        var errors = new[] { 12, 10, 14, 8, 7, 5, 3 };
+        _errorPolyline = BuildPolyline(errors, 120, 32, out _, out _);
+    }
+
+    private static string BuildPolyline(int[] data, double width, double height,
+        out double lastX, out double lastY)
+    {
+        var min = data.Min();
+        var max = data.Max();
+        var range = Math.Max(1, max - min);
+        var step = width / Math.Max(1, data.Length - 1);
+        var parts = new List<string>(data.Length);
+
+        lastX = 0;
+        lastY = 0;
+        for (int i = 0; i < data.Length; i++)
+        {
+            var x = i * step;
+            var norm = (data[i] - min) / (double)range;
+            var y = (height - 2) - norm * (height - 4);
+            parts.Add($"{x:F1},{y:F1}");
+            lastX = x;
+            lastY = y;
+        }
+
+        return string.Join(" ", parts);
+    }
+}

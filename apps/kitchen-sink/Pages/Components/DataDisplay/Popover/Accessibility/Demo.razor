@@ -1,0 +1,161 @@
+@page "/components/data-display/popover/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Popover / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Popover / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Popover/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPopover</code> is a transient panel anchored to a trigger. Accessibility
+            for popovers is a focus-management problem: the trigger must advertise the popover
+            exists (<code>aria-haspopup</code>, <code>aria-expanded</code>, <code>aria-controls</code>),
+            the panel itself must have the right role for its content (<code>tooltip</code> when it
+            is static informational text, <code>dialog</code> when it contains focusable controls),
+            and the user must be able to dismiss it with <kbd>Escape</kbd> and return focus to the
+            trigger.
+        </p>
+        <p>
+            The component already wires up the trigger ARIA attributes, generates stable ids for
+            <code>aria-controls</code>, <code>aria-labelledby</code>, and <code>aria-describedby</code>,
+            picks <code>role="dialog"</code> when an <code>ActionsContent</code> region is present
+            (otherwise <code>role="tooltip"</code>), and handles the <kbd>Escape</kbd> key. Focus
+            management (return-to-trigger, optional focus trap for dialog-style popovers,
+            outside-click dismissal) is application-level behavior you layer on top.
+        </p>
+        <p>
+            <strong>Keyboard</strong> — the inline trigger is a <code>&lt;div&gt;</code> wrapping
+            your content; if you rely on keyboard activation, make the trigger content a real
+            <code>&lt;button&gt;</code> (shown below) so Enter / Space work natively.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.75rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Informational popover (role="tooltip")</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    No actions region — renders with <code>role="tooltip"</code>. The popover body
+                    is referenced by <code>aria-describedby</code>, so screen readers announce the
+                    body text when the trigger receives focus after opening.
+                </p>
+                <SunfishPopover ShowOn="PopoverShowOn.Click"
+                                Position="TooltipPosition.Bottom"
+                                ShowCallout="true"
+                                Width="280px">
+                    <ChildContent>
+                        <SunfishButton Variant="ButtonVariant.Secondary">What is this?</SunfishButton>
+                    </ChildContent>
+                    <HeaderContent>
+                        <strong>Account status</strong>
+                    </HeaderContent>
+                    <PopoverContent>
+                        <p style="margin:0;font-size:.9rem;">
+                            Your plan renews on the 1st of every month. No action is needed.
+                        </p>
+                    </PopoverContent>
+                </SunfishPopover>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Interactive popover (role="dialog")</h3>
+                <p style="margin:.25rem 0 .75rem 0; font-size:.9rem;">
+                    With an <code>ActionsContent</code> region the popover flips to
+                    <code>role="dialog"</code>. For a dialog-style popover, applications should
+                    move initial focus into the first focusable control when it opens, and return
+                    focus to the trigger on close. <kbd>Escape</kbd> dismisses natively.
+                </p>
+                <SunfishPopover @bind-IsOpen="_confirmOpen"
+                                ShowOn="PopoverShowOn.Click"
+                                Position="TooltipPosition.Bottom"
+                                ShowCallout="true"
+                                Width="320px">
+                    <ChildContent>
+                        <SunfishButton Variant="ButtonVariant.Danger">Delete file</SunfishButton>
+                    </ChildContent>
+                    <HeaderContent>
+                        <strong id="pop-confirm-title">Delete this file?</strong>
+                    </HeaderContent>
+                    <PopoverContent>
+                        <p style="margin:0;font-size:.9rem;">
+                            This action cannot be undone. Removed files stay in the recycle bin for 30 days.
+                        </p>
+                    </PopoverContent>
+                    <ActionsContent>
+                        <SunfishButton Variant="ButtonVariant.Secondary"
+                                       Size="ButtonSize.Small"
+                                       OnClick="() => _confirmOpen = false">Cancel</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Danger"
+                                       Size="ButtonSize.Small"
+                                       OnClick="() => _confirmOpen = false">Delete</SunfishButton>
+                    </ActionsContent>
+                </SunfishPopover>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.875rem;">
+                    <dt><code>aria-haspopup="true"</code></dt>
+                    <dd>On the trigger — advertises that activation reveals a popover.</dd>
+                    <dt><code>aria-expanded="true" / "false"</code></dt>
+                    <dd>On the trigger — mirrors <code>IsOpen</code>.</dd>
+                    <dt><code>aria-controls</code></dt>
+                    <dd>On the trigger (when open) — points at the popover id so AT can jump to it.</dd>
+                    <dt><code>role="tooltip"</code> / <code>role="dialog"</code></dt>
+                    <dd>Picked automatically: <code>tooltip</code> when no actions, <code>dialog</code> when <code>ActionsContent</code> is supplied.</dd>
+                    <dt><code>aria-labelledby</code></dt>
+                    <dd>Points at the header id when <code>HeaderContent</code> is set.</dd>
+                    <dt><code>aria-describedby</code></dt>
+                    <dd>Points at the body id so the description is announced alongside the role.</dd>
+                    <dt><code>aria-modal="false"</code></dt>
+                    <dd>Popovers are non-modal by default — the page behind remains reachable.</dd>
+                    <dt><strong>Escape</strong></dt>
+                    <dd>Closes the popover; handled inside the component via <code>OnKeyDown</code>.</dd>
+                    <dt><strong>Focus management</strong></dt>
+                    <dd>Application-level: move focus into the dialog on open, return it to the trigger on close, optionally trap Tab inside.</dd>
+                    <dt><strong>Outside-click dismissal</strong></dt>
+                    <dd>Not built-in — wire it up with a click handler on a backdrop, or close via <code>IsOpenChanged</code> in response to focusout events.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Keyboard shortcuts</h3>
+                <table style="border-collapse:collapse; font-size:.9rem;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Keys</th>
+                            <th style="text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);">Effect</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Activate the trigger to open / close (when the trigger is a real <code>&lt;button&gt;</code>).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Move focus into the popover body (dialog-style) or past the trigger (tooltip-style).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Escape</kbd></td><td style="padding:.35rem .75rem;">Close the popover; return focus to the trigger.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Known gaps</h3>
+                <ul style="margin:0; font-size:.875rem;">
+                    <li>Focus trap and return-to-trigger are not yet built in — track the dialog-style popover focus story separately and compose with <code>SunfishDialog</code> for fully modal flows.</li>
+                    <li>Outside-click dismissal is opt-in and must be wired by the application.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Popover", "Accessibility"];
+
+    private bool _confirmOpen;
+}

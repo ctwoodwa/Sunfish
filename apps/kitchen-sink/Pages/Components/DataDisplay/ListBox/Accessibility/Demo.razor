@@ -1,0 +1,151 @@
+@page "/components/data-display/listbox/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>ListBox / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListBox / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListBox&lt;TItem&gt;</code> implements the WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/listbox/" target="_blank" rel="noopener">listbox pattern</a>
+            at the markup layer. The list element is <code>role="listbox"</code> with
+            <code>aria-multiselectable="true"</code> when <code>SelectionMode="ListBoxSelectionMode.Multiple"</code>.
+            Every option is <code>role="option"</code> carrying both <code>aria-selected</code> (reflecting selection
+            state) and <code>aria-disabled</code>. Supply an accessible name through <code>AriaLabel</code> or
+            <code>AriaLabelledBy</code>.
+        </p>
+        <p>
+            When <code>Toolbar="true"</code>, the action column is a <code>role="toolbar"</code> region; each button
+            has an <code>aria-label</code> and matching <code>title</code> for tooltip parity. The connected-listbox
+            pair (used for "move between two lists") works through the same toolbar and via HTML5 drag-and-drop —
+            assistive-tech users rely on the MoveUp / MoveDown / TransferTo buttons since drag is pointer-only.
+        </p>
+        <p style="background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;">
+            <strong>Keyboard support (planned — MVP):</strong> full keyboard operability (<kbd>Arrow</kbd> navigation,
+            <kbd>Home</kbd> / <kbd>End</kbd>, <kbd>Space</kbd> to toggle, <kbd>Ctrl</kbd>+<kbd>A</kbd> to select all,
+            <kbd>Shift</kbd>+<kbd>Arrow</kbd> to range-extend, and <code>aria-activedescendant</code>-based roving focus)
+            is <strong>planned — MVP</strong>. Today the listbox is pointer-driven: selection occurs on click, and
+            toolbar buttons are keyboard-reachable via <kbd>Tab</kbd>. The keyboard table below documents the target
+            contract. For a fully keyboard-operable selectable list right now, use the sibling
+            <a href="/components/data-display/list/accessibility"><code>SunfishList</code></a>, which is the
+            general-purpose listbox implementation and already supports <code>aria-activedescendant</code>,
+            roving focus, and arrow-key navigation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h4 id="pick-fruit-multi" style="margin:0 0 .5rem;">Multi-select listbox with named accessible name</h4>
+                <SunfishListBox TItem="Fruit"
+                                Data="@_fruits"
+                                TextField="Name"
+                                ValueField="Id"
+                                SelectionMode="ListBoxSelectionMode.Multiple"
+                                AriaLabelledBy="pick-fruit-multi"
+                                @bind-SelectedItems="_selected"
+                                Width="240px"
+                                Height="200px" />
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Selected:
+                    <strong>
+                        @(_selected.Any() ? string.Join(", ", _selected.Select(f => f.Name)) : "(none)")
+                    </strong>
+                </p>
+            </section>
+
+            <section>
+                <h4 id="pick-fruit-toolbar" style="margin:0 0 .5rem;">Listbox + toolbar (reorder / remove)</h4>
+                <SunfishListBox TItem="Fruit"
+                                Data="@_reorderFruits"
+                                TextField="Name"
+                                ValueField="Id"
+                                SelectionMode="ListBoxSelectionMode.Multiple"
+                                AriaLabelledBy="pick-fruit-toolbar"
+                                Toolbar="true"
+                                ToolBarPosition="ListBoxToolBarPosition.Right"
+                                Width="320px"
+                                Height="220px" />
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    The toolbar is a <code>role="toolbar"</code> region; each button is an ordinary
+                    <code>&lt;button&gt;</code> with <code>aria-label</code> (<em>Move up</em>, <em>Move down</em>,
+                    <em>Remove</em>, etc.). <kbd>Tab</kbd> into the toolbar and activate with
+                    <kbd>Enter</kbd> / <kbd>Space</kbd>.
+                </p>
+            </section>
+
+            <section>
+                <h5 style="margin:0 0 .5rem;">Target keyboard contract</h5>
+                <table style="border-collapse:collapse; font-size:.875rem;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <th style="padding:.35rem .75rem;">Key</th>
+                            <th style="padding:.35rem .75rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Move focus in / out of the listbox. Inside, focus stays on the root and <code>aria-activedescendant</code> tracks the active option <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd></td><td style="padding:.35rem .75rem;">Move the active option one down / up <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Home</kbd> / <kbd>End</kbd></td><td style="padding:.35rem .75rem;">Jump to the first / last option <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Toggle the active option's selection (multi-select) or select it (single-select) <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd></td><td style="padding:.35rem .75rem;">Commit the active option in single-select mode <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Shift</kbd> + <kbd>ArrowDown</kbd> / <kbd>ArrowUp</kbd></td><td style="padding:.35rem .75rem;">Extend the selection range (multi-select) <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Ctrl</kbd> + <kbd>A</kbd></td><td style="padding:.35rem .75rem;">Select all enabled options (multi-select) <em>(planned)</em>.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;">Click</td><td style="padding:.35rem .75rem;">Select the clicked option. <kbd>Ctrl</kbd>+click toggles (multi-select); <kbd>Shift</kbd>+click extends the range <em>(planned — MVP)</em>.</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <dl style="font-size:0.875rem; max-width:720px;">
+                <dt><strong>role</strong> on the list</dt>
+                <dd><code>listbox</code> with <code>aria-multiselectable="true"</code> when <code>SelectionMode="Multiple"</code>.</dd>
+                <dt><strong>role</strong> on each item</dt>
+                <dd><code>option</code> with <code>aria-selected</code> reflecting selection state and <code>aria-disabled</code> reflecting per-item disabled state.</dd>
+                <dt><strong>Accessible name</strong></dt>
+                <dd>Use <code>AriaLabel</code> for a short inline name, or <code>AriaLabelledBy</code> to point at a visible heading. The listbox does not render its own label.</dd>
+                <dt><strong>Toolbar</strong></dt>
+                <dd>When <code>Toolbar="true"</code> the toolbar is <code>role="toolbar"</code> and each action button has an <code>aria-label</code> matching its tooltip (<em>Move up</em>, <em>Move down</em>, <em>Transfer to</em>, <em>Transfer all to</em>, <em>Remove</em>, <em>Remove all</em>).</dd>
+                <dt><strong>Connected pair</strong></dt>
+                <dd>Set <code>Connected</code> on both lists to the peer's <code>Id</code>. Transfer buttons move items between the two listboxes with their existing selection preserved. Drag-and-drop is pointer-only, so always leave the toolbar enabled as the accessible path.</dd>
+                <dt><strong>aria-activedescendant (planned — MVP)</strong></dt>
+                <dd>The ListBox renders per-item <code>id</code>s (<code>listbox-id-opt-n</code>) ready to be the target of <code>aria-activedescendant</code>; the root-level keyboard handler that drives it is <em>planned</em>.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "ListBox", "Accessibility"];
+
+    private record Fruit(string Id, string Name);
+
+    private readonly List<Fruit> _fruits =
+    [
+        new("1", "Apple"),
+        new("2", "Banana"),
+        new("3", "Cherry"),
+        new("4", "Date"),
+        new("5", "Elderberry"),
+    ];
+
+    private readonly List<Fruit> _reorderFruits =
+    [
+        new("r1", "Red"),
+        new("r2", "Orange"),
+        new("r3", "Yellow"),
+        new("r4", "Green"),
+        new("r5", "Blue"),
+        new("r6", "Violet"),
+    ];
+
+    private IEnumerable<Fruit> _selected = new List<Fruit>();
+}

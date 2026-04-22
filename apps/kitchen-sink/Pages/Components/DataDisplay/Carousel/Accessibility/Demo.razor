@@ -1,0 +1,138 @@
+@page "/components/data-display/carousel/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Carousel / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Carousel / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCarousel</code> implements the WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/carousel/" target="_blank" rel="noopener">carousel pattern</a>.
+            The root is <code>role="region"</code> with <code>aria-roledescription="carousel"</code> and an accessible
+            name via <code>AriaLabel</code>. The inner track carries <code>aria-live="polite"</code> so screen readers
+            announce the active slide as it changes. Each declarative <code>SunfishCarouselSlide</code> wraps its
+            content in <code>role="group"</code> + <code>aria-roledescription="slide"</code>; the data-driven mode
+            adds <code>aria-label="Slide n of N"</code> automatically.
+        </p>
+        <p>
+            Previous / Next buttons expose <code>aria-label="Previous slide"</code> / <code>"Next slide"</code> and
+            set <code>disabled</code> when <code>LoopItems="false"</code> reaches an end. Pagination dots form a
+            <code>role="tablist"</code> where each dot is a <code>role="tab"</code> with <code>aria-selected</code>
+            and an <code>aria-label="Go to slide n"</code>. Arrow-key navigation is wired to the root region — focus
+            the carousel then press <kbd>&larr;</kbd> / <kbd>&rarr;</kbd>.
+        </p>
+        <p style="background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;">
+            <strong>WCAG 2.2.2 gap (planned — MVP):</strong> the underlying <code>AutoPlay</code> timer does <em>not</em>
+            currently pause on hover or keyboard focus. Until the pause-control is implemented, only enable
+            <code>AutoPlay</code> when you can guarantee user agency (for example, render an explicit
+            <em>Pause / Play</em> toggle outside the carousel and clear <code>AutoPlay</code> from there). The
+            example below shows that pattern.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 id="a11y-showcase" style="margin:0 0 .5rem;">Carousel with user-controlled auto-advance</h4>
+                <div style="display:flex; gap:.75rem; align-items:center; margin-bottom:.5rem;">
+                    <button type="button"
+                            class="sf-btn"
+                            aria-pressed="@_autoPlay.ToString().ToLowerInvariant()"
+                            @onclick="() => _autoPlay = !_autoPlay">
+                        @(_autoPlay ? "Pause auto-advance" : "Resume auto-advance")
+                    </button>
+                    <span style="font-size:.85rem; opacity:.75;">
+                        Status: <strong>@(_autoPlay ? "playing" : "paused")</strong>. Interval 4000ms.
+                    </span>
+                </div>
+
+                <SunfishCarousel @bind-CurrentSlideIndex="_slide"
+                                 AutoPlay="@_autoPlay"
+                                 AutoPlayInterval="4000"
+                                 LoopItems="true"
+                                 AriaLabel="Feature showcase"
+                                 Width="480px"
+                                 Height="220px">
+                    <SunfishCarouselSlide AriaLabel="Slide 1 of 3: Accessible by default">
+                        <div style="background:#e3f2fd; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <strong>Accessible by default</strong>
+                            <small style="opacity:.7;">Slide 1 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Slide 2 of 3: Keyboard navigable">
+                        <div style="background:#f3e5f5; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <strong>Keyboard navigable</strong>
+                            <small style="opacity:.7;">Slide 2 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Slide 3 of 3: Screen-reader friendly">
+                        <div style="background:#e8f5e9; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <strong>Screen-reader friendly</strong>
+                            <small style="opacity:.7;">Slide 3 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                </SunfishCarousel>
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Slide <strong>@(_slide + 1) of 3</strong> — focus the carousel and use
+                    <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> to navigate, or click the dots below the region.
+                </p>
+            </div>
+
+            <div>
+                <h5 style="margin:0 0 .5rem;">Keyboard</h5>
+                <table style="border-collapse:collapse; font-size:.875rem;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <th style="padding:.35rem .75rem;">Key</th>
+                            <th style="padding:.35rem .75rem;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Tab</kbd></td><td style="padding:.35rem .75rem;">Move focus into the carousel region.</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowLeft</kbd></td><td style="padding:.35rem .75rem;">Previous slide (honours <code>LoopItems</code>).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>ArrowRight</kbd></td><td style="padding:.35rem .75rem;">Next slide (honours <code>LoopItems</code>).</td></tr>
+                        <tr><td style="padding:.35rem .75rem;"><kbd>Enter</kbd> / <kbd>Space</kbd></td><td style="padding:.35rem .75rem;">Activates focused Prev / Next button or pagination dot.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:680px;">
+                <dt><strong>role</strong> on root</dt>
+                <dd><code>region</code> with <code>aria-roledescription="carousel"</code> and <code>aria-label</code>.</dd>
+                <dt><strong>aria-live</strong></dt>
+                <dd><code>polite</code> on the inner track so slide changes are announced without interrupting.</dd>
+                <dt><strong>role</strong> on each slide</dt>
+                <dd><code>group</code> with <code>aria-roledescription="slide"</code>. Add a per-slide <code>AriaLabel</code> such as <em>"Slide 1 of 3: Fast"</em>.</dd>
+                <dt><strong>Prev / Next buttons</strong></dt>
+                <dd>Native <code>&lt;button&gt;</code> with <code>aria-label="Previous slide"</code> / <code>"Next slide"</code> and the <code>disabled</code> attribute when not looping.</dd>
+                <dt><strong>Pagination</strong></dt>
+                <dd><code>role="tablist"</code> with dot <code>role="tab"</code> + <code>aria-selected</code> + <code>aria-label="Go to slide n"</code>.</dd>
+                <dt><strong>Auto-advance (WCAG 2.2.2)</strong></dt>
+                <dd>
+                    Provide a <em>visible, keyboard-reachable</em> Pause / Play control whenever
+                    <code>AutoPlay="true"</code>. Pause-on-hover / pause-on-focus is <em>planned — MVP</em> and not yet
+                    emitted by <code>SunfishCarousel</code>; gate <code>AutoPlay</code> on a user setting until the
+                    built-in pause lands.
+                </dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Carousel", "Accessibility"];
+
+    private int _slide;
+    private bool _autoPlay;
+}

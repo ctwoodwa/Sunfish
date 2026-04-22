@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Sunfish Component Gallery</title>
     <base href="/" />
+    <link id="sunfish-provider-fluentui-tokens" rel="stylesheet" href="_content/Sunfish.Providers.FluentUI/css/fluent-v9-tokens.css" />
     <link id="sunfish-provider-fluentui" rel="stylesheet" href="_content/Sunfish.Providers.FluentUI/css/sunfish-fluentui.css" />
     <link id="sunfish-provider-bootstrap" rel="stylesheet" href="_content/Sunfish.Providers.Bootstrap/css/sunfish-bootstrap.css" disabled />
     <link id="sunfish-provider-material" rel="stylesheet" href="_content/Sunfish.Providers.Material/css/sunfish-material.css" disabled />
@@ -14,9 +15,11 @@
             var p = localStorage.getItem('sunfish:provider');
             if (p === 'bootstrap') {
                 document.getElementById('sunfish-provider-fluentui').disabled = true;
+                document.getElementById('sunfish-provider-fluentui-tokens').disabled = true;
                 document.getElementById('sunfish-provider-bootstrap').disabled = false;
             } else if (p === 'material') {
                 document.getElementById('sunfish-provider-fluentui').disabled = true;
+                document.getElementById('sunfish-provider-fluentui-tokens').disabled = true;
                 document.getElementById('sunfish-provider-material').disabled = false;
             }
         } catch(e) {}

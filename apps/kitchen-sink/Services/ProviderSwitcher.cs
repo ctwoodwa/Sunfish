@@ -241,6 +241,8 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
     public string DialogClass() => Css.DialogClass();
     public string DialogClass(bool isDraggable) => Css.DialogClass(isDraggable);
     public string DialogOverlayClass() => Css.DialogOverlayClass();
+    public string DialogCloseMarkup() => Css.DialogCloseMarkup();
+    public string DialogCloseButtonClass() => Css.DialogCloseButtonClass();
     public string ProgressBarClass() => Css.ProgressBarClass();
     public string ProgressCircleClass() => Css.ProgressCircleClass();
     public string SpinnerClass(SpinnerSize size) => Css.SpinnerClass(size);
@@ -249,10 +251,12 @@ public class ProviderSwitcher : ISunfishCssProvider, ISunfishIconProvider, ISunf
 
     // ── DataGrid ──
     public string DataGridClass() => Css.DataGridClass();
+    public string DataGridTableClass() => Css.DataGridTableClass();
     public string DataGridHeaderClass() => Css.DataGridHeaderClass();
     public string DataGridHeaderCellClass(bool isSortable, bool isSorted) => Css.DataGridHeaderCellClass(isSortable, isSorted);
     public string DataGridRowClass(bool isSelected, bool isStriped) => Css.DataGridRowClass(isSelected, isStriped);
     public string DataGridCellClass() => Css.DataGridCellClass();
+    public string DataGridCommandButtonClass() => Css.DataGridCommandButtonClass();
     public string DataGridPagerClass() => Css.DataGridPagerClass();
     public string DataGridToolbarClass() => Css.DataGridToolbarClass();
     public string DataGridFilterRowClass() => Css.DataGridFilterRowClass();
