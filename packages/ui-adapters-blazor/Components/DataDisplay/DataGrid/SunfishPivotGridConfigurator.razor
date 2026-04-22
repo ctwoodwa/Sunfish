@@ -1,7 +1,7 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses("mar-pivotgrid-configurator")"
+<div class="@CombineClasses("sf-pivotgrid-configurator")"
      @attributes="AdditionalAttributes">
     <div class="sf-pivotgrid-configurator__section">
         <h4 class="sf-pivotgrid-configurator__section-title">Rows</h4>
@@ -10,7 +10,7 @@
             <ul class="sf-pivotgrid-configurator__field-list">
                 @foreach (var field in RowFields)
                 {
-                    <li class="sf-pivotgrid-configurator__field-item mar-pivotgrid-configurator__field-item--row">
+                    <li class="sf-pivotgrid-configurator__field-item sf-pivotgrid-configurator__field-item--row">
                         @(field.Title ?? field.Name)
                     </li>
                 }
@@ -29,7 +29,7 @@
             <ul class="sf-pivotgrid-configurator__field-list">
                 @foreach (var field in ColumnFields)
                 {
-                    <li class="sf-pivotgrid-configurator__field-item mar-pivotgrid-configurator__field-item--column">
+                    <li class="sf-pivotgrid-configurator__field-item sf-pivotgrid-configurator__field-item--column">
                         @(field.Title ?? field.Name)
                     </li>
                 }
@@ -48,7 +48,7 @@
             <ul class="sf-pivotgrid-configurator__field-list">
                 @foreach (var field in MeasureFields)
                 {
-                    <li class="sf-pivotgrid-configurator__field-item mar-pivotgrid-configurator__field-item--measure">
+                    <li class="sf-pivotgrid-configurator__field-item sf-pivotgrid-configurator__field-item--measure">
                         @(field.Title ?? field.Name)
                     </li>
                 }

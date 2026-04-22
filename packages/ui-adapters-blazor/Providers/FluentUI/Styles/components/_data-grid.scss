@@ -51,7 +51,7 @@
 // with `!important`; route to the Fluent marigold palette token with a sane
 // amber fallback so the rule composes with row hover/selection without the
 // specificity club.
-.mar-datagrid-row--highlighted,
+.sf-datagrid__row--highlighted,
 .sf-datagrid-row--highlighted {
     background: var(--colorPaletteMarigoldBackground2, rgb(255, 232, 179));
 }
@@ -353,29 +353,29 @@
     }
 }
 
-// B5: Frozen / locked columns — provider-agnostic class (mar- prefix, emitted by C# renderer)
-.mar-datagrid-col--locked {
+// B5: Frozen / locked columns — provider-agnostic class (sf-datagrid__ BEM, emitted by C# renderer)
+.sf-datagrid__col--locked {
     position: sticky;
     z-index: 1;
-    background-color: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
-    inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
-    inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+    background-color: var(--sf-datagrid-row-bg, var(--sf-color-surface, #fff));
+    inset-inline-start: var(--sf-datagrid-col-offset-start, auto);
+    inset-inline-end: var(--sf-datagrid-col-offset-end, auto);
 }
 
 // B5.6: header-level frozen cells sit above body-level frozen cells during horizontal scroll.
-th.mar-datagrid-col--locked {
+th.sf-datagrid__col--locked {
     z-index: 2;
-    background-color: var(--mar-datagrid-header-bg, var(--sf-color-surface-container, #f5f5f5));
+    background-color: var(--sf-datagrid-header-bg, var(--sf-color-surface-container, #f5f5f5));
 }
 
 // B5.5: boundary shadow — indicates the frozen ↔ scrollable transition.
-.mar-datagrid-col--locked-end {
+.sf-datagrid__col--locked-end {
     box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
 // Right-side boundary casts the shadow in the opposite direction.
-.mar-datagrid-col--locked-end[style*="inset-inline-end"],
-.mar-datagrid-col--locked-end[data-frozen-position="End"] {
+.sf-datagrid__col--locked-end[style*="inset-inline-end"],
+.sf-datagrid__col--locked-end[data-frozen-position="End"] {
     box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
@@ -427,16 +427,16 @@ th.mar-datagrid-col--locked {
 // B3: Column Reordering — drag clone, drop indicator, source highlight
 // =================================================================
 
-.mar-datagrid-col-drag-clone {
-    background: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
-    border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-border, #e0e0e0));
+.sf-datagrid__col-drag-clone {
+    background: var(--sf-datagrid-row-bg, var(--sf-color-surface, #fff));
+    border: 1px solid var(--sf-datagrid-border-color, var(--sf-color-border, #e0e0e0));
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 0.5rem 0.75rem;
     font-size: inherit;
     border-radius: 2px;
 }
 
-.mar-datagrid-col-drop-line {
+.sf-datagrid__col-drop-line {
     // Styled inline by JS; this class exists for future theming.
 }
 
@@ -448,18 +448,18 @@ th.is-dragging-source {
 // B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
 // =================================================================
 
-.mar-datagrid-row-drag-handle {
+.sf-datagrid__row-drag-handle {
     cursor: grab;
     user-select: none;
     padding: 0 4px;
-    color: var(--mar-datagrid-row-drag-handle-color, #999);
+    color: var(--sf-datagrid__row-drag-handle-color, #999);
 
     &:active {
         cursor: grabbing;
     }
 }
 
-.mar-datagrid-drag-cell {
+.sf-datagrid__drag-cell {
     width: 2rem;
     text-align: center;
     padding: 0;
@@ -469,31 +469,31 @@ tr.is-row-dragging-source {
     opacity: 0.4;
 }
 
-.mar-datagrid-row-drop-line {
+.sf-datagrid__row-drop-line {
     position: absolute;
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+    background: var(--sf-datagrid-reorder-line-color, #1e90ff);
     pointer-events: none;
 }
 
 // ── C3: Column Menu ───────────────────────────────────────────────────────────
 
-.mar-datagrid-column-menu {
+.sf-datagrid__column-menu {
     position: absolute;
     top: 100%;
     right: 0;
     z-index: 10;
     min-width: 180px;
-    background: var(--mar-datagrid-menu-bg, #fff);
-    border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
+    background: var(--sf-datagrid-menu-bg, #fff);
+    border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
     border-radius: 4px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     padding: 4px 0;
 }
 
-.mar-datagrid-column-menu-item {
+.sf-datagrid__column-menu-item {
     display: block;
     width: 100%;
     padding: 8px 16px;
@@ -513,16 +513,16 @@ tr.is-row-dragging-source {
     }
 }
 
-.mar-datagrid-column-menu-divider {
+.sf-datagrid__column-menu-divider {
     height: 1px;
     margin: 4px 0;
-    background: var(--mar-datagrid-border-color, #dee2e6);
+    background: var(--sf-datagrid-border-color, #dee2e6);
 }
 
 // Batch 3 — column-menu trigger routed to Fluent neutral foreground 2 with
 // the standard medium border-radius and the v9 subtle hover overlay. Prior
 // revision emitted a muted fallback hex; this routes to the token ladder.
-.mar-datagrid-column-menu-trigger {
+.sf-datagrid__column-menu-trigger {
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -530,7 +530,7 @@ tr.is-row-dragging-source {
     background: var(--colorSubtleBackground, transparent);
     border: none;
     padding: 0 4px;
-    color: var(--colorNeutralForeground2, var(--mar-datagrid-muted-color, #6c757d));
+    color: var(--colorNeutralForeground2, var(--sf-datagrid-muted-color, #6c757d));
     border-radius: var(--borderRadiusMedium, 4px);
     line-height: 1;
     transition:

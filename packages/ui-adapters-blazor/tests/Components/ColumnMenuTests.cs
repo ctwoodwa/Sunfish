@@ -101,7 +101,7 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Data, TwoEmployees())
             .Add(x => x.ChildContent, OneColumnNoMenu()));
 
-        var triggers = cut.FindAll(".mar-datagrid-column-menu-trigger");
+        var triggers = cut.FindAll(".sf-datagrid__column-menu-trigger");
         Assert.Empty(triggers);
     }
 
@@ -115,7 +115,7 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Data, TwoEmployees())
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
-        var triggers = cut.FindAll(".mar-datagrid-column-menu-trigger");
+        var triggers = cut.FindAll(".sf-datagrid__column-menu-trigger");
         Assert.Single(triggers);
     }
 
@@ -134,14 +134,14 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
         // Menu should be closed initially.
-        Assert.Empty(cut.FindAll(".mar-datagrid-column-menu"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__column-menu"));
 
         // Click the trigger.
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
         // Menu markup appears and aria-expanded is true.
-        Assert.NotEmpty(cut.FindAll(".mar-datagrid-column-menu"));
-        var trigger = cut.Find(".mar-datagrid-column-menu-trigger");
+        Assert.NotEmpty(cut.FindAll(".sf-datagrid__column-menu"));
+        var trigger = cut.Find(".sf-datagrid__column-menu-trigger");
         Assert.Equal("true", trigger.GetAttribute("aria-expanded"));
     }
 
@@ -155,11 +155,11 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Data, TwoEmployees())
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
-        var trigger = cut.Find(".mar-datagrid-column-menu-trigger");
+        var trigger = cut.Find(".sf-datagrid__column-menu-trigger");
         trigger.Click();  // open
         trigger.Click();  // close
 
-        Assert.Empty(cut.FindAll(".mar-datagrid-column-menu"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__column-menu"));
         Assert.Equal("false", trigger.GetAttribute("aria-expanded"));
     }
 
@@ -178,9 +178,9 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Sortable, true)
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var buttons = cut.FindAll(".mar-datagrid-column-menu-item");
+        var buttons = cut.FindAll(".sf-datagrid__column-menu-item");
         var labels = buttons.Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Sort ascending", labels);
         Assert.Contains("Sort descending", labels);
@@ -204,9 +204,9 @@ public class ColumnMenuTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.DoesNotContain("Sort ascending", labels);
         Assert.DoesNotContain("Sort descending", labels);
         Assert.DoesNotContain("Clear sort", labels);
@@ -227,9 +227,9 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.FilterMode, GridFilterMode.FilterMenu)
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Filter\u2026", labels);
     }
 
@@ -255,9 +255,9 @@ public class ColumnMenuTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Lock column", labels);
     }
 
@@ -279,9 +279,9 @@ public class ColumnMenuTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Unlock column", labels);
     }
 
@@ -302,9 +302,9 @@ public class ColumnMenuTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.DoesNotContain("Lock column", labels);
         Assert.DoesNotContain("Unlock column", labels);
     }
@@ -324,14 +324,14 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Sortable, true)
             .Add(x => x.ChildContent, OneMenuOneNoMenu()));
 
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
 
-        var sortAscBtn = cut.FindAll(".mar-datagrid-column-menu-item")
+        var sortAscBtn = cut.FindAll(".sf-datagrid__column-menu-item")
             .First(b => b.TextContent.Trim() == "Sort ascending");
         sortAscBtn.Click();
 
         // Menu should be closed after action.
-        Assert.Empty(cut.FindAll(".mar-datagrid-column-menu"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__column-menu"));
 
         // The column sort indicator should appear (ascending arrow ▲).
         var sortIndicator = cut.Find(".sf-datagrid-sort-indicator");
@@ -362,21 +362,21 @@ public class ColumnMenuTests : BunitContext
             }));
 
         // Open and click Lock.
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
-        var lockBtn = cut.FindAll(".mar-datagrid-column-menu-item")
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
+        var lockBtn = cut.FindAll(".sf-datagrid__column-menu-item")
             .First(b => b.TextContent.Trim() == "Lock column");
         lockBtn.Click();
 
         // Menu should be closed.
-        Assert.Empty(cut.FindAll(".mar-datagrid-column-menu"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__column-menu"));
 
         // The column should now be frozen — CSS class applied.
         var ths = cut.FindAll("thead th");
-        Assert.Contains(ths, th => th.ClassList.Contains("mar-datagrid-col--locked"));
+        Assert.Contains(ths, th => th.ClassList.Contains("sf-datagrid__col--locked"));
 
         // Re-open: label should now be "Unlock column".
-        cut.Find(".mar-datagrid-column-menu-trigger").Click();
-        var labels = cut.FindAll(".mar-datagrid-column-menu-item").Select(b => b.TextContent.Trim()).ToList();
+        cut.Find(".sf-datagrid__column-menu-trigger").Click();
+        var labels = cut.FindAll(".sf-datagrid__column-menu-item").Select(b => b.TextContent.Trim()).ToList();
         Assert.Contains("Unlock column", labels);
     }
 
@@ -395,17 +395,17 @@ public class ColumnMenuTests : BunitContext
             .Add(x => x.Data, TwoEmployees())
             .Add(x => x.ChildContent, TwoMenuColumns()));
 
-        Assert.Equal(2, cut.FindAll(".mar-datagrid-column-menu-trigger").Count);
+        Assert.Equal(2, cut.FindAll(".sf-datagrid__column-menu-trigger").Count);
 
         // Open column A's menu.
-        cut.FindAll(".mar-datagrid-column-menu-trigger")[0].Click();
-        Assert.Single(cut.FindAll(".mar-datagrid-column-menu"));
-        Assert.Equal("true", cut.FindAll(".mar-datagrid-column-menu-trigger")[0].GetAttribute("aria-expanded"));
+        cut.FindAll(".sf-datagrid__column-menu-trigger")[0].Click();
+        Assert.Single(cut.FindAll(".sf-datagrid__column-menu"));
+        Assert.Equal("true", cut.FindAll(".sf-datagrid__column-menu-trigger")[0].GetAttribute("aria-expanded"));
 
         // Open column B's menu — column A's menu should close.
-        cut.FindAll(".mar-datagrid-column-menu-trigger")[1].Click();
-        Assert.Single(cut.FindAll(".mar-datagrid-column-menu"));
-        Assert.Equal("false", cut.FindAll(".mar-datagrid-column-menu-trigger")[0].GetAttribute("aria-expanded"));
-        Assert.Equal("true", cut.FindAll(".mar-datagrid-column-menu-trigger")[1].GetAttribute("aria-expanded"));
+        cut.FindAll(".sf-datagrid__column-menu-trigger")[1].Click();
+        Assert.Single(cut.FindAll(".sf-datagrid__column-menu"));
+        Assert.Equal("false", cut.FindAll(".sf-datagrid__column-menu-trigger")[0].GetAttribute("aria-expanded"));
+        Assert.Equal("true", cut.FindAll(".sf-datagrid__column-menu-trigger")[1].GetAttribute("aria-expanded"));
     }
 }

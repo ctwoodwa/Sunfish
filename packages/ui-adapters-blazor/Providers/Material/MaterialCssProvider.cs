@@ -542,8 +542,8 @@ public class MaterialCssProvider : ISunfishCssProvider
     public string DataGridCellClass() => "sf-datagrid-cell";
 
     // Material uses its M3 text-button icon-button density for command column actions.
-    // Keep mar-datagrid-cmd-btn as the existing hook that sunfish-material.css styles.
-    public string DataGridCommandButtonClass() => "mar-datagrid-cmd-btn";
+    // Keep sf-datagrid__cmd-btn as the existing hook that sunfish-material.css styles.
+    public string DataGridCommandButtonClass() => "sf-datagrid__cmd-btn";
 
     public string DataGridPagerClass() => "sf-datagrid-pager";
 

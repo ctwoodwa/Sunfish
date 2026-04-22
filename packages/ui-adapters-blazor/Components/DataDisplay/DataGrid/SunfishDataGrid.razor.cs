@@ -182,18 +182,18 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     /// <summary>
     /// Controls the visual density of the grid. Maps to a root-level CSS class:
     /// <list type="bullet">
-    ///   <item><description><see cref="DataGridSize.Small"/> → <c>mar-datagrid--size-small</c></description></item>
-    ///   <item><description><see cref="DataGridSize.Medium"/> → <c>mar-datagrid--size-medium</c> (default)</description></item>
-    ///   <item><description><see cref="DataGridSize.Large"/> → <c>mar-datagrid--size-large</c></description></item>
+    ///   <item><description><see cref="DataGridSize.Small"/> → <c>sf-datagrid--size-small</c></description></item>
+    ///   <item><description><see cref="DataGridSize.Medium"/> → <c>sf-datagrid--size-medium</c> (default)</description></item>
+    ///   <item><description><see cref="DataGridSize.Large"/> → <c>sf-datagrid--size-large</c></description></item>
     /// </list>
-    /// Each tier sets CSS custom properties <c>--mar-datagrid-font-size</c>, <c>--mar-datagrid-cell-padding</c>,
-    /// and <c>--mar-datagrid-row-height</c> which are consumed by cell and row styling.
+    /// Each tier sets CSS custom properties <c>--sf-datagrid-font-size</c>, <c>--sf-datagrid-cell-padding</c>,
+    /// and <c>--sf-datagrid-row-height</c> which are consumed by cell and row styling.
     /// </summary>
     [Parameter] public DataGridSize Size { get; set; } = DataGridSize.Medium;
 
     /// <summary>
     /// Items that should be visually highlighted. When an item in this collection matches a rendered
-    /// row, the CSS class <c>mar-datagrid-row--highlighted</c> is applied to that row's <c>&lt;tr&gt;</c> element.
+    /// row, the CSS class <c>sf-datagrid__row--highlighted</c> is applied to that row's <c>&lt;tr&gt;</c> element.
     /// <para><b>Equality model:</b> reference equality is used by default (matching on the exact same
     /// object reference). For <c>record</c> types where value equality is desired, pass instances that
     /// compare equal to the items in <see cref="Data"/> or the server-loaded data. Internally the grid
@@ -378,9 +378,9 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     /// </summary>
     private string SizeClass => Size switch
     {
-        DataGridSize.Small  => "mar-datagrid--size-small",
-        DataGridSize.Large  => "mar-datagrid--size-large",
-        _                   => "mar-datagrid--size-medium",  // DataGridSize.Medium is the default
+        DataGridSize.Small  => "sf-datagrid--size-small",
+        DataGridSize.Large  => "sf-datagrid--size-large",
+        _                   => "sf-datagrid--size-medium",  // DataGridSize.Medium is the default
     };
 
     private string? RootStyle
@@ -533,7 +533,7 @@ public partial class SunfishDataGrid<TItem> : SunfishComponentBase
     /// Returns <c>true</c> when <paramref name="column"/> is the boundary frozen column on its side —
     /// i.e., it is the last <c>Start</c>-frozen column before a non-frozen (or <c>End</c>-frozen) column,
     /// or the first <c>End</c>-frozen column from the right edge.
-    /// The boundary column receives the <c>mar-datagrid-col--locked-end</c> CSS class which renders the
+    /// The boundary column receives the <c>sf-datagrid__col--locked-end</c> CSS class which renders the
     /// visual drop-shadow that separates the frozen region from the scrollable content.
     /// </summary>
     internal bool IsBoundaryFrozenColumn(SunfishGridColumn<TItem> column)

@@ -14,8 +14,8 @@ namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 
 /// <summary>
 /// bUnit tests for G37 B5 — SunfishDataGrid frozen / locked columns.
-/// Covers: Locked/FrozenPosition/Lockable parameters, mar-datagrid-col--locked class on th+td,
-/// mar-datagrid-col--locked-end boundary detection, data-locked/data-frozen-position on col elements,
+/// Covers: Locked/FrozenPosition/Lockable parameters, sf-datagrid__col--locked class on th+td,
+/// sf-datagrid__col--locked-end boundary detection, data-locked/data-frozen-position on col elements,
 /// attachGrid frozenColumns option, and z-index class semantics.
 /// </summary>
 public class FrozenColumnsTests : BunitContext
@@ -48,7 +48,7 @@ public class FrozenColumnsTests : BunitContext
     ];
 
     // ═══════════════════════════════════════════════════════════════════════
-    // B5.1 + B5.5 — No column locked → no mar-datagrid-col--locked anywhere
+    // B5.1 + B5.5 — No column locked → no sf-datagrid__col--locked anywhere
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
@@ -67,7 +67,7 @@ public class FrozenColumnsTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        Assert.Empty(cut.FindAll(".mar-datagrid-col--locked"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__col--locked"));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -92,11 +92,11 @@ public class FrozenColumnsTests : BunitContext
             }));
 
         // The th in the header must have the locked class.
-        var lockedTh = cut.FindAll("th.mar-datagrid-col--locked");
+        var lockedTh = cut.FindAll("th.sf-datagrid__col--locked");
         Assert.NotEmpty(lockedTh);
 
         // All td cells for that locked column must have the locked class.
-        var lockedTd = cut.FindAll("td.mar-datagrid-col--locked");
+        var lockedTd = cut.FindAll("td.sf-datagrid__col--locked");
         // Three employees → three locked tds.
         Assert.Equal(3, lockedTd.Count);
     }
@@ -175,17 +175,17 @@ public class FrozenColumnsTests : BunitContext
             }));
 
         // Boundary class only on the second locked header.
-        var boundaryThs = cut.FindAll("th.mar-datagrid-col--locked-end");
+        var boundaryThs = cut.FindAll("th.sf-datagrid__col--locked-end");
         Assert.Single(boundaryThs);
 
         // Verify the boundary th belongs to the second column (Department).
         Assert.Equal("Department", boundaryThs[0].TextContent.Trim());
 
         // First column th must NOT have the boundary class.
-        var allLockedThs = cut.FindAll("th.mar-datagrid-col--locked");
+        var allLockedThs = cut.FindAll("th.sf-datagrid__col--locked");
         var nameTh = allLockedThs.FirstOrDefault(th => th.TextContent.Trim() == "Name");
         Assert.NotNull(nameTh);
-        Assert.DoesNotContain("mar-datagrid-col--locked-end", nameTh!.ClassList);
+        Assert.DoesNotContain("sf-datagrid__col--locked-end", nameTh!.ClassList);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -211,9 +211,9 @@ public class FrozenColumnsTests : BunitContext
             }));
 
         // Single locked header is both locked and boundary.
-        var lockedThs = cut.FindAll("th.mar-datagrid-col--locked");
+        var lockedThs = cut.FindAll("th.sf-datagrid__col--locked");
         Assert.Single(lockedThs);
-        Assert.Contains("mar-datagrid-col--locked-end", lockedThs[0].ClassList);
+        Assert.Contains("sf-datagrid__col--locked-end", lockedThs[0].ClassList);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -239,7 +239,7 @@ public class FrozenColumnsTests : BunitContext
         Assert.NotEmpty(headers);
 
         // No locked class (Locked defaults to false).
-        Assert.Empty(cut.FindAll(".mar-datagrid-col--locked"));
+        Assert.Empty(cut.FindAll(".sf-datagrid__col--locked"));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -345,9 +345,9 @@ public class FrozenColumnsTests : BunitContext
 
     // ═══════════════════════════════════════════════════════════════════════
     // B5.6 — Locked th has the class; td does not have th-specific z-index class.
-    //         (CSS `.th.mar-datagrid-col--locked` is a CSS selector, not a second class;
+    //         (CSS `.th.sf-datagrid__col--locked` is a CSS selector, not a second class;
     //          bUnit doesn't evaluate CSS, so we assert the class structure is correct:
-    //          both th and td get mar-datagrid-col--locked, and no extra z-index class is
+    //          both th and td get sf-datagrid__col--locked, and no extra z-index class is
     //          added on th — the higher z-index is handled purely by CSS selector.)
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -364,9 +364,9 @@ public class FrozenColumnsTests : BunitContext
                 builder.CloseComponent();
             }));
 
-        // Both th and td must have the locked class (CSS selector `th.mar-datagrid-col--locked`
+        // Both th and td must have the locked class (CSS selector `th.sf-datagrid__col--locked`
         // applies higher z-index to the th variant via the stylesheet, not a separate class).
-        Assert.NotEmpty(cut.FindAll("th.mar-datagrid-col--locked"));
-        Assert.NotEmpty(cut.FindAll("td.mar-datagrid-col--locked"));
+        Assert.NotEmpty(cut.FindAll("th.sf-datagrid__col--locked"));
+        Assert.NotEmpty(cut.FindAll("td.sf-datagrid__col--locked"));
     }
 }

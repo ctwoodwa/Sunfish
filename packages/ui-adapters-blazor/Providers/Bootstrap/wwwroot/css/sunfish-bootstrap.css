@@ -2105,8 +2105,8 @@ progress {
   color: var(--bs-secondary-color);
 }
 
-.form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
+.form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input {
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
@@ -2123,50 +2123,50 @@ progress {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
-  .sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
+  .form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-datagrid__filter-menu-value,
+  .sf-bs-datagrid .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input {
     transition: none;
   }
 }
-.form-control[type=file], .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input, .sf-bs-datagrid [type=file].mar-datagrid-filter-menu-value,
-.sf-bs-datagrid [type=file].mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input[type=file] {
+.form-control[type=file], .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input, .sf-bs-datagrid [type=file].sf-datagrid__filter-menu-value,
+.sf-bs-datagrid [type=file].sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input[type=file] {
   overflow: hidden;
 }
-.form-control[type=file]:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].mar-datagrid-filter-menu-value:not(:disabled):not([readonly]),
-.sf-bs-datagrid [type=file].mar-datagrid-filter-menu-operator:not(:disabled):not([readonly]), .sf-bs-datagrid-searchbox input[type=file]:not(:disabled):not([readonly]) {
+.form-control[type=file]:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].sf-datagrid__filter-menu-value:not(:disabled):not([readonly]),
+.sf-bs-datagrid [type=file].sf-datagrid__filter-menu-operator:not(:disabled):not([readonly]), .sf-bs-datagrid-searchbox input[type=file]:not(:disabled):not([readonly]) {
   cursor: pointer;
 }
-.form-control:focus, .sf-bs-datagrid .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .mar-datagrid-filter-menu-value:focus,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input:focus {
+.form-control:focus, .sf-bs-datagrid .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .sf-datagrid__filter-menu-value:focus,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator:focus, .sf-bs-datagrid-searchbox input:focus {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
   border-color: rgb(134, 182.5, 254);
   outline: 0;
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-.form-control::-webkit-date-and-time-value, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-date-and-time-value, .sf-bs-datagrid .mar-datagrid-filter-menu-value::-webkit-date-and-time-value,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator::-webkit-date-and-time-value, .sf-bs-datagrid-searchbox input::-webkit-date-and-time-value {
+.form-control::-webkit-date-and-time-value, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-date-and-time-value, .sf-bs-datagrid .sf-datagrid__filter-menu-value::-webkit-date-and-time-value,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator::-webkit-date-and-time-value, .sf-bs-datagrid-searchbox input::-webkit-date-and-time-value {
   min-width: 85px;
   height: 1.5em;
   margin: 0;
 }
-.form-control::-webkit-datetime-edit, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-datetime-edit, .sf-bs-datagrid .mar-datagrid-filter-menu-value::-webkit-datetime-edit,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator::-webkit-datetime-edit, .sf-bs-datagrid-searchbox input::-webkit-datetime-edit {
+.form-control::-webkit-datetime-edit, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-datetime-edit, .sf-bs-datagrid .sf-datagrid__filter-menu-value::-webkit-datetime-edit,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator::-webkit-datetime-edit, .sf-bs-datagrid-searchbox input::-webkit-datetime-edit {
   display: block;
   padding: 0;
 }
-.form-control::placeholder, .sf-bs-datagrid .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .mar-datagrid-filter-menu-value::placeholder,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox input::placeholder {
+.form-control::placeholder, .sf-bs-datagrid .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .sf-datagrid__filter-menu-value::placeholder,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox input::placeholder {
   color: var(--bs-secondary-color);
   opacity: 1;
 }
-.form-control:disabled, .sf-bs-datagrid .sf-datagrid-searchbox-input:disabled, .sf-bs-datagrid .mar-datagrid-filter-menu-value:disabled,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator:disabled, .sf-bs-datagrid-searchbox input:disabled {
+.form-control:disabled, .sf-bs-datagrid .sf-datagrid-searchbox-input:disabled, .sf-bs-datagrid .sf-datagrid__filter-menu-value:disabled,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator:disabled, .sf-bs-datagrid-searchbox input:disabled {
   background-color: var(--bs-secondary-bg);
   opacity: 1;
 }
-.form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+.form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .sf-datagrid__filter-menu-value::file-selector-button,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
   padding: 0.375rem 0.75rem;
   margin: -0.375rem -0.75rem;
   margin-inline-end: 0.75rem;
@@ -2181,13 +2181,13 @@ progress {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
-  .sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+  .form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .sf-datagrid__filter-menu-value::file-selector-button,
+  .sf-bs-datagrid .sf-datagrid__filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
     transition: none;
   }
 }
-.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value:hover:not(:disabled):not([readonly])::file-selector-button,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid-searchbox input:hover:not(:disabled):not([readonly])::file-selector-button {
+.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .sf-datagrid__filter-menu-value:hover:not(:disabled):not([readonly])::file-selector-button,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid-searchbox input:hover:not(:disabled):not([readonly])::file-selector-button {
   background-color: var(--bs-secondary-bg);
 }
 
@@ -2205,21 +2205,21 @@ progress {
 .form-control-plaintext:focus {
   outline: 0;
 }
-.form-control-plaintext.form-control-sm, .sf-bs-datagrid .form-control-plaintext.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-plaintext.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .form-control-plaintext.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-plaintext, .form-control-plaintext.form-control-lg {
+.form-control-plaintext.form-control-sm, .sf-bs-datagrid .form-control-plaintext.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-plaintext.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .form-control-plaintext.sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-plaintext, .form-control-plaintext.form-control-lg {
   padding-right: 0;
   padding-left: 0;
 }
 
-.form-control-sm, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
+.form-control-sm, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input {
   min-height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
   border-radius: var(--bs-border-radius-sm);
 }
-.form-control-sm::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
-.sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+.form-control-sm::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .sf-datagrid__filter-menu-value::file-selector-button,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
   padding: 0.25rem 0.5rem;
   margin: -0.25rem -0.5rem;
   margin-inline-end: 0.5rem;
@@ -2237,12 +2237,12 @@ progress {
   margin-inline-end: 1rem;
 }
 
-textarea.form-control, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator {
+textarea.form-control, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid textarea.sf-datagrid__filter-menu-operator {
   min-height: calc(1.5em + 0.75rem + calc(var(--bs-border-width) * 2));
 }
-textarea.form-control-sm, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator {
+textarea.form-control-sm, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid textarea.sf-datagrid__filter-menu-operator {
   min-height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
 }
 textarea.form-control-lg {
@@ -2265,8 +2265,8 @@ textarea.form-control-lg {
   border: 0 !important;
   border-radius: var(--bs-border-radius);
 }
-.form-control-color.form-control-sm, .sf-bs-datagrid .form-control-color.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-color.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .form-control-color.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-color {
+.form-control-color.form-control-sm, .sf-bs-datagrid .form-control-color.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-color.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .form-control-color.sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-color {
   height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
 }
 .form-control-color.form-control-lg {
@@ -2554,8 +2554,8 @@ textarea.form-control-lg {
 .form-floating {
   position: relative;
 }
-.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
+.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
 .form-floating > .form-control-plaintext,
 .form-floating > .form-select {
   height: calc(3.5rem + calc(var(--bs-border-width) * 2));
@@ -2585,26 +2585,26 @@ textarea.form-control-lg {
     transition: none;
   }
 }
-.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
+.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
 .form-floating > .form-control-plaintext {
   padding: 1rem 0.75rem;
 }
-.form-floating > .form-control::placeholder, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value::placeholder,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox .form-floating > input::placeholder,
+.form-floating > .form-control::placeholder, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value::placeholder,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox .form-floating > input::placeholder,
 .form-floating > .form-control-plaintext::placeholder {
   color: transparent;
 }
-.form-floating > .form-control:focus, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:focus,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox .form-floating > input:focus, .form-floating > .form-control:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:not(:placeholder-shown),
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:not(:placeholder-shown), .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown),
+.form-floating > .form-control:focus, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:focus,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:focus, .sf-bs-datagrid-searchbox .form-floating > input:focus, .form-floating > .form-control:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:not(:placeholder-shown),
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:not(:placeholder-shown), .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown),
 .form-floating > .form-control-plaintext:focus,
 .form-floating > .form-control-plaintext:not(:placeholder-shown) {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
 }
-.form-floating > .form-control:-webkit-autofill, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:-webkit-autofill,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:-webkit-autofill, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill,
+.form-floating > .form-control:-webkit-autofill, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:-webkit-autofill,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:-webkit-autofill, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill,
 .form-floating > .form-control-plaintext:-webkit-autofill {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
@@ -2614,19 +2614,19 @@ textarea.form-control-lg {
   padding-bottom: 0.625rem;
   padding-left: 0.75rem;
 }
-.form-floating > .form-control:focus ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus ~ label, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:focus ~ label,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:focus ~ label, .sf-bs-datagrid-searchbox .form-floating > input:focus ~ label,
+.form-floating > .form-control:focus ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:focus ~ label,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:focus ~ label, .sf-bs-datagrid-searchbox .form-floating > input:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
 .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:not(:placeholder-shown) ~ label,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:not(:placeholder-shown) ~ label,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:not(:placeholder-shown) ~ label,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:not(:placeholder-shown) ~ label,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:not(:placeholder-shown) ~ label,
 .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown) ~ label,
 .form-floating > .form-control-plaintext ~ label,
 .form-floating > .form-select ~ label {
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
-.form-floating > .form-control:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:-webkit-autofill ~ label,
-.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:-webkit-autofill ~ label, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill ~ label {
+.form-floating > .form-control:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-value:-webkit-autofill ~ label,
+.sf-bs-datagrid .form-floating > .sf-datagrid__filter-menu-operator:-webkit-autofill ~ label, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill ~ label {
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 .form-floating > textarea:focus ~ label::after,
@@ -2657,8 +2657,8 @@ textarea.form-control-lg {
   align-items: stretch;
   width: 100%;
 }
-.input-group > .form-control, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > input,
+.input-group > .form-control, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > input,
 .input-group > .form-select,
 .input-group > .form-floating {
   position: relative;
@@ -2666,8 +2666,8 @@ textarea.form-control-lg {
   width: 1%;
   min-width: 0;
 }
-.input-group > .form-control:focus, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:focus,
-.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox .input-group > input:focus,
+.input-group > .form-control:focus, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value:focus,
+.sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator:focus, .sf-bs-datagrid-searchbox .input-group > input:focus,
 .input-group > .form-select:focus,
 .input-group > .form-floating:focus-within {
   z-index: 5;
@@ -2695,8 +2695,8 @@ textarea.form-control-lg {
   border-radius: var(--bs-border-radius);
 }
 
-.input-group-lg > .form-control, .sf-bs-datagrid .input-group-lg > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-lg > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group-lg > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-lg > input,
+.input-group-lg > .form-control, .sf-bs-datagrid .input-group-lg > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-lg > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group-lg > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-lg > input,
 .input-group-lg > .form-select,
 .input-group-lg > .input-group-text,
 .input-group-lg > .btn,
@@ -2709,8 +2709,8 @@ textarea.form-control-lg {
   border-radius: var(--bs-border-radius-lg);
 }
 
-.input-group-sm > .form-control, .sf-bs-datagrid .input-group-sm > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-sm > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group-sm > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-sm > input,
+.input-group-sm > .form-control, .sf-bs-datagrid .input-group-sm > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-sm > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group-sm > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-sm > input,
 .input-group-sm > .form-select,
 .input-group-sm > .input-group-text,
 .input-group-sm > .btn,
@@ -2732,8 +2732,8 @@ textarea.form-control-lg {
 .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
 .sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .sf-datagrid-searchbox-input,
-.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .sf-datagrid__filter-menu-operator,
 .sf-bs-datagrid-searchbox .input-group:not(.has-validation) > .form-floating:not(:last-child) > input,
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select {
   border-top-right-radius: 0;
@@ -2743,8 +2743,8 @@ textarea.form-control-lg {
 .input-group.has-validation > .dropdown-toggle:nth-last-child(n+4),
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-control,
 .sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .sf-datagrid-searchbox-input,
-.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .sf-datagrid__filter-menu-operator,
 .sf-bs-datagrid-searchbox .input-group.has-validation > .form-floating:nth-last-child(n+3) > input,
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-select {
   border-top-right-radius: 0;
@@ -2755,8 +2755,8 @@ textarea.form-control-lg {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
-.input-group > .form-floating:not(:first-child) > .form-control, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > .form-floating:not(:first-child) > input,
+.input-group > .form-floating:not(:first-child) > .form-control, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > .form-floating:not(:first-child) > input,
 .input-group > .form-floating:not(:first-child) > .form-select {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -2791,10 +2791,10 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:valid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:valid, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:valid,
-.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:valid,
-.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:valid, .was-validated .sf-bs-datagrid-searchbox input:valid, .sf-bs-datagrid-searchbox .was-validated input:valid, .form-control.is-valid, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.is-valid {
+.was-validated .form-control:valid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-value:valid, .sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-value:valid,
+.was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-operator:valid,
+.sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-operator:valid, .was-validated .sf-bs-datagrid-searchbox input:valid, .sf-bs-datagrid-searchbox .was-validated input:valid, .form-control.is-valid, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-valid.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .is-valid.sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input.is-valid {
   border-color: var(--bs-form-valid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1'/%3e%3c/svg%3e");
@@ -2802,18 +2802,18 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:valid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid:focus, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:valid:focus, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:valid:focus,
-.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:valid:focus,
-.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:valid:focus, .was-validated .sf-bs-datagrid-searchbox input:valid:focus, .sf-bs-datagrid-searchbox .was-validated input:valid:focus, .form-control.is-valid:focus, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-value:focus,
-.sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-valid:focus {
+.was-validated .form-control:valid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid:focus, .was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-value:valid:focus, .sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-value:valid:focus,
+.was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-operator:valid:focus,
+.sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-operator:valid:focus, .was-validated .sf-bs-datagrid-searchbox input:valid:focus, .sf-bs-datagrid-searchbox .was-validated input:valid:focus, .form-control.is-valid:focus, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-valid.sf-datagrid__filter-menu-value:focus,
+.sf-bs-datagrid .is-valid.sf-datagrid__filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-valid:focus {
   border-color: var(--bs-form-valid-border-color);
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
 }
 
-.was-validated textarea.form-control:valid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value:valid, .sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-value:valid,
-.was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator:valid,
-.sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-operator:valid, textarea.form-control.is-valid, .sf-bs-datagrid textarea.is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-valid.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid textarea.is-valid.mar-datagrid-filter-menu-operator {
+.was-validated textarea.form-control:valid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid textarea.sf-datagrid__filter-menu-value:valid, .sf-bs-datagrid .was-validated textarea.sf-datagrid__filter-menu-value:valid,
+.was-validated .sf-bs-datagrid textarea.sf-datagrid__filter-menu-operator:valid,
+.sf-bs-datagrid .was-validated textarea.sf-datagrid__filter-menu-operator:valid, textarea.form-control.is-valid, .sf-bs-datagrid textarea.is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-valid.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid textarea.is-valid.sf-datagrid__filter-menu-operator {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem);
 }
@@ -2853,10 +2853,10 @@ textarea.form-control-lg {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-value:not(:focus):valid,
-.was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus):valid,
-.sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-operator:not(:focus):valid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):valid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):valid, .input-group > .form-control:not(:focus).is-valid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-valid, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus).is-valid,
-.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus).is-valid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-valid,
+.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid__filter-menu-value:not(:focus):valid,
+.was-validated .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator:not(:focus):valid,
+.sf-bs-datagrid .was-validated .input-group > .sf-datagrid__filter-menu-operator:not(:focus):valid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):valid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):valid, .input-group > .form-control:not(:focus).is-valid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-valid, .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value:not(:focus).is-valid,
+.sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator:not(:focus).is-valid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-valid,
 .was-validated .input-group > .form-select:not(:focus):valid,
 .input-group > .form-select:not(:focus).is-valid,
 .was-validated .input-group > .form-floating:not(:focus-within):valid,
@@ -2893,10 +2893,10 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:invalid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:invalid, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:invalid,
-.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:invalid,
-.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:invalid, .was-validated .sf-bs-datagrid-searchbox input:invalid, .sf-bs-datagrid-searchbox .was-validated input:invalid, .form-control.is-invalid, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.is-invalid {
+.was-validated .form-control:invalid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-value:invalid, .sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-value:invalid,
+.was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-operator:invalid,
+.sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-operator:invalid, .was-validated .sf-bs-datagrid-searchbox input:invalid, .sf-bs-datagrid-searchbox .was-validated input:invalid, .form-control.is-invalid, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-invalid.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .is-invalid.sf-datagrid__filter-menu-operator, .sf-bs-datagrid-searchbox input.is-invalid {
   border-color: var(--bs-form-invalid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
@@ -2904,18 +2904,18 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:invalid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid:focus, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:invalid:focus, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:invalid:focus,
-.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:invalid:focus,
-.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:invalid:focus, .was-validated .sf-bs-datagrid-searchbox input:invalid:focus, .sf-bs-datagrid-searchbox .was-validated input:invalid:focus, .form-control.is-invalid:focus, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-value:focus,
-.sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-invalid:focus {
+.was-validated .form-control:invalid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid:focus, .was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-value:invalid:focus, .sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-value:invalid:focus,
+.was-validated .sf-bs-datagrid .sf-datagrid__filter-menu-operator:invalid:focus,
+.sf-bs-datagrid .was-validated .sf-datagrid__filter-menu-operator:invalid:focus, .was-validated .sf-bs-datagrid-searchbox input:invalid:focus, .sf-bs-datagrid-searchbox .was-validated input:invalid:focus, .form-control.is-invalid:focus, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-invalid.sf-datagrid__filter-menu-value:focus,
+.sf-bs-datagrid .is-invalid.sf-datagrid__filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-invalid:focus {
   border-color: var(--bs-form-invalid-border-color);
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }
 
-.was-validated textarea.form-control:invalid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value:invalid, .sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-value:invalid,
-.was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator:invalid,
-.sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-operator:invalid, textarea.form-control.is-invalid, .sf-bs-datagrid textarea.is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-invalid.mar-datagrid-filter-menu-value,
-.sf-bs-datagrid textarea.is-invalid.mar-datagrid-filter-menu-operator {
+.was-validated textarea.form-control:invalid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid textarea.sf-datagrid__filter-menu-value:invalid, .sf-bs-datagrid .was-validated textarea.sf-datagrid__filter-menu-value:invalid,
+.was-validated .sf-bs-datagrid textarea.sf-datagrid__filter-menu-operator:invalid,
+.sf-bs-datagrid .was-validated textarea.sf-datagrid__filter-menu-operator:invalid, textarea.form-control.is-invalid, .sf-bs-datagrid textarea.is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-invalid.sf-datagrid__filter-menu-value,
+.sf-bs-datagrid textarea.is-invalid.sf-datagrid__filter-menu-operator {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem);
 }
@@ -2955,10 +2955,10 @@ textarea.form-control-lg {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-value:not(:focus):invalid,
-.was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus):invalid,
-.sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-operator:not(:focus):invalid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):invalid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):invalid, .input-group > .form-control:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus).is-invalid,
-.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus).is-invalid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-invalid,
+.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid__filter-menu-value:not(:focus):invalid,
+.was-validated .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator:not(:focus):invalid,
+.sf-bs-datagrid .was-validated .input-group > .sf-datagrid__filter-menu-operator:not(:focus):invalid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):invalid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):invalid, .input-group > .form-control:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-value:not(:focus).is-invalid,
+.sf-bs-datagrid .input-group > .sf-datagrid__filter-menu-operator:not(:focus).is-invalid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-invalid,
 .was-validated .input-group > .form-select:not(:focus):invalid,
 .input-group > .form-select:not(:focus).is-invalid,
 .was-validated .input-group > .form-floating:not(:focus-within):invalid,
@@ -14033,9 +14033,9 @@ textarea.form-control-lg {
 .sf-bs-combobox {
   position: relative;
 }
-.sf-bs-combobox .form-control, .sf-bs-combobox .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-combobox .sf-datagrid-searchbox-input, .sf-bs-combobox .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-combobox .mar-datagrid-filter-menu-value,
-.sf-bs-combobox .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
-.sf-bs-datagrid .sf-bs-combobox .mar-datagrid-filter-menu-operator, .sf-bs-combobox .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-combobox input,
+.sf-bs-combobox .form-control, .sf-bs-combobox .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-combobox .sf-datagrid-searchbox-input, .sf-bs-combobox .sf-bs-datagrid .sf-datagrid__filter-menu-value, .sf-bs-datagrid .sf-bs-combobox .sf-datagrid__filter-menu-value,
+.sf-bs-combobox .sf-bs-datagrid .sf-datagrid__filter-menu-operator,
+.sf-bs-datagrid .sf-bs-combobox .sf-datagrid__filter-menu-operator, .sf-bs-combobox .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-combobox input,
 .sf-bs-combobox .form-select {
   cursor: pointer;
 }
@@ -14148,9 +14148,9 @@ textarea.form-control-lg {
 .sf-bs-datagrid-filter-cell {
   padding: var(--sf-space-xs) var(--sf-space-sm);
 }
-.sf-bs-datagrid-filter-cell .form-control, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .sf-datagrid-searchbox-input, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .mar-datagrid-filter-menu-value,
-.sf-bs-datagrid-filter-cell .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
-.sf-bs-datagrid .sf-bs-datagrid-filter-cell .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-filter-cell .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-datagrid-filter-cell input {
+.sf-bs-datagrid-filter-cell .form-control, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .sf-datagrid-searchbox-input, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .sf-datagrid__filter-menu-value, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid-filter-cell .sf-bs-datagrid .sf-datagrid__filter-menu-operator,
+.sf-bs-datagrid .sf-bs-datagrid-filter-cell .sf-datagrid__filter-menu-operator, .sf-bs-datagrid-filter-cell .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-datagrid-filter-cell input {
   font-size: var(--sf-font-size-sm);
   padding: 0.25rem 0.5rem;
 }
@@ -14320,25 +14320,25 @@ textarea.form-control-lg {
   padding: var(--sf-space-sm) var(--sf-space-md);
 }
 
-.mar-datagrid-col--locked {
+.sf-datagrid__col--locked {
   position: sticky;
   z-index: 1;
-  background-color: var(--mar-datagrid-row-bg, var(--bs-body-bg, #fff));
-  inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
-  inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+  background-color: var(--sf-datagrid-row-bg, var(--bs-body-bg, #fff));
+  inset-inline-start: var(--sf-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--sf-datagrid-col-offset-end, auto);
 }
 
-th.mar-datagrid-col--locked {
+th.sf-datagrid__col--locked {
   z-index: 2;
-  background-color: var(--mar-datagrid-header-bg, var(--bs-body-bg, #f8f9fa));
+  background-color: var(--sf-datagrid-header-bg, var(--bs-body-bg, #f8f9fa));
 }
 
-.mar-datagrid-col--locked-end {
+.sf-datagrid__col--locked-end {
   box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
-.mar-datagrid-col--locked-end[style*=inset-inline-end],
-.mar-datagrid-col--locked-end[data-frozen-position=End] {
+.sf-datagrid__col--locked-end[style*=inset-inline-end],
+.sf-datagrid__col--locked-end[data-frozen-position=End] {
   box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
@@ -14362,7 +14362,7 @@ th.mar-datagrid-col--locked {
   box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
 }
 
-.mar-datagrid-col-drag-clone {
+.sf-datagrid__col-drag-clone {
   background: var(--bs-body-bg, #fff);
   border: 1px solid var(--sf-color-border, #dee2e6);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -14375,17 +14375,17 @@ th.is-dragging-source {
   opacity: 0.4;
 }
 
-.mar-datagrid-row-drag-handle {
+.sf-datagrid__row-drag-handle {
   cursor: grab;
   user-select: none;
   padding: 0 4px;
-  color: var(--mar-datagrid-row-drag-handle-color, #999);
+  color: var(--sf-datagrid__row-drag-handle-color, #999);
 }
-.mar-datagrid-row-drag-handle:active {
+.sf-datagrid__row-drag-handle:active {
   cursor: grabbing;
 }
 
-.mar-datagrid-drag-cell {
+.sf-datagrid__drag-cell {
   width: 2rem;
   text-align: center;
   padding: 0;
@@ -14395,29 +14395,29 @@ tr.is-row-dragging-source {
   opacity: 0.4;
 }
 
-.mar-datagrid-row-drop-line {
+.sf-datagrid__row-drop-line {
   position: absolute;
   left: 0;
   right: 0;
   height: 2px;
-  background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+  background: var(--sf-datagrid-reorder-line-color, #1e90ff);
   pointer-events: none;
 }
 
-.mar-datagrid-column-menu {
+.sf-datagrid__column-menu {
   position: absolute;
   top: 100%;
   right: 0;
   z-index: 10;
   min-width: 180px;
-  background: var(--mar-datagrid-menu-bg, #fff);
-  border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-menu-bg, #fff);
+  border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 4px 0;
 }
 
-.mar-datagrid-column-menu-item {
+.sf-datagrid__column-menu-item {
   display: block;
   width: 100%;
   padding: 8px 16px;
@@ -14427,33 +14427,33 @@ tr.is-row-dragging-source {
   cursor: pointer;
   font-size: inherit;
 }
-.mar-datagrid-column-menu-item:hover:not(:disabled) {
+.sf-datagrid__column-menu-item:hover:not(:disabled) {
   background: rgba(0, 0, 0, 0.05);
 }
-.mar-datagrid-column-menu-item:disabled {
+.sf-datagrid__column-menu-item:disabled {
   color: #999;
   cursor: not-allowed;
 }
 
-.mar-datagrid-column-menu-divider {
+.sf-datagrid__column-menu-divider {
   height: 1px;
   margin: 4px 0;
-  background: var(--mar-datagrid-border-color, #dee2e6);
+  background: var(--sf-datagrid-border-color, #dee2e6);
 }
 
-.mar-datagrid-column-menu-trigger {
+.sf-datagrid__column-menu-trigger {
   cursor: pointer;
   background: transparent;
   border: none;
   padding: 0 4px;
-  color: var(--mar-datagrid-muted-color, #6c757d);
+  color: var(--sf-datagrid-muted-color, #6c757d);
   line-height: 1;
 }
-.mar-datagrid-column-menu-trigger:hover {
+.sf-datagrid__column-menu-trigger:hover {
   color: inherit;
 }
 
-.sf-bs-datagrid .mar-datagrid-cmd-btn {
+.sf-bs-datagrid .sf-datagrid__cmd-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -14468,39 +14468,39 @@ tr.is-row-dragging-source {
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn:hover:not(:disabled) {
+.sf-bs-datagrid .sf-datagrid__cmd-btn:hover:not(:disabled) {
   background: var(--sf-color-surface, rgba(0, 0, 0, 0.04));
   border-color: var(--sf-color-border, #dee2e6);
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn:focus-visible {
+.sf-bs-datagrid .sf-datagrid__cmd-btn:focus-visible {
   outline: 0;
   box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn:disabled {
+.sf-bs-datagrid .sf-datagrid__cmd-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn--sm {
+.sf-bs-datagrid .sf-datagrid__cmd-btn--sm {
   padding: 0.125rem 0.375rem;
   font-size: 0.75rem;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn--delete {
+.sf-bs-datagrid .sf-datagrid__cmd-btn--delete {
   color: #dc3545;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn--delete:hover:not(:disabled) {
+.sf-bs-datagrid .sf-datagrid__cmd-btn--delete:hover:not(:disabled) {
   background: rgba(220, 53, 69, 0.08);
   border-color: #dc3545;
   color: #dc3545;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn--add {
+.sf-bs-datagrid .sf-datagrid__cmd-btn--add {
   color: #198754;
 }
-.sf-bs-datagrid .mar-datagrid-cmd-btn--add:hover:not(:disabled) {
+.sf-bs-datagrid .sf-datagrid__cmd-btn--add:hover:not(:disabled) {
   background: rgba(25, 135, 84, 0.08);
   border-color: #198754;
   color: #198754;
 }
-.sf-bs-datagrid .mar-datagrid-column-menu-trigger {
+.sf-bs-datagrid .sf-datagrid__column-menu-trigger {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -14513,11 +14513,11 @@ tr.is-row-dragging-source {
   cursor: pointer;
   line-height: 1;
 }
-.sf-bs-datagrid .mar-datagrid-column-menu-trigger:hover {
+.sf-bs-datagrid .sf-datagrid__column-menu-trigger:hover {
   border-color: var(--sf-color-border, #dee2e6);
   color: var(--sf-color-primary, #0d6efd);
 }
-.sf-bs-datagrid .mar-datagrid-column-menu-trigger:focus-visible {
+.sf-bs-datagrid .sf-datagrid__column-menu-trigger:focus-visible {
   outline: 0;
   box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
 }
@@ -14571,7 +14571,7 @@ tr.is-row-dragging-source {
 }
 
 [data-bs-theme=dark] .sf-datagrid-resize-handle,
-[data-bs-theme=dark] .mar-datagrid-col-resize-handle {
+[data-bs-theme=dark] .sf-datagrid__col-resize-handle {
   background: var(--bs-border-color);
 }
 
@@ -15682,9 +15682,9 @@ body.sf-dialog-open {
 .sf-bs-dropdownlist {
   position: relative;
 }
-.sf-bs-dropdownlist .form-control, .sf-bs-dropdownlist .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-dropdownlist input, .sf-bs-dropdownlist .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-dropdownlist .mar-datagrid-filter-menu-value,
-.sf-bs-dropdownlist .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
-.sf-bs-datagrid .sf-bs-dropdownlist .mar-datagrid-filter-menu-operator, .sf-bs-dropdownlist .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-dropdownlist .sf-datagrid-searchbox-input,
+.sf-bs-dropdownlist .form-control, .sf-bs-dropdownlist .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-dropdownlist input, .sf-bs-dropdownlist .sf-bs-datagrid .sf-datagrid__filter-menu-value, .sf-bs-datagrid .sf-bs-dropdownlist .sf-datagrid__filter-menu-value,
+.sf-bs-dropdownlist .sf-bs-datagrid .sf-datagrid__filter-menu-operator,
+.sf-bs-datagrid .sf-bs-dropdownlist .sf-datagrid__filter-menu-operator, .sf-bs-dropdownlist .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-dropdownlist .sf-datagrid-searchbox-input,
 .sf-bs-dropdownlist .form-select {
   cursor: pointer;
 }
@@ -16760,9 +16760,9 @@ body.sf-dialog-open {
 .sf-bs-multiselect {
   position: relative;
 }
-.sf-bs-multiselect .form-control, .sf-bs-multiselect .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-multiselect input, .sf-bs-multiselect .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-multiselect .mar-datagrid-filter-menu-value,
-.sf-bs-multiselect .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
-.sf-bs-datagrid .sf-bs-multiselect .mar-datagrid-filter-menu-operator, .sf-bs-multiselect .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-multiselect .sf-datagrid-searchbox-input,
+.sf-bs-multiselect .form-control, .sf-bs-multiselect .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-multiselect input, .sf-bs-multiselect .sf-bs-datagrid .sf-datagrid__filter-menu-value, .sf-bs-datagrid .sf-bs-multiselect .sf-datagrid__filter-menu-value,
+.sf-bs-multiselect .sf-bs-datagrid .sf-datagrid__filter-menu-operator,
+.sf-bs-datagrid .sf-bs-multiselect .sf-datagrid__filter-menu-operator, .sf-bs-multiselect .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-multiselect .sf-datagrid-searchbox-input,
 .sf-bs-multiselect .form-select {
   cursor: pointer;
 }

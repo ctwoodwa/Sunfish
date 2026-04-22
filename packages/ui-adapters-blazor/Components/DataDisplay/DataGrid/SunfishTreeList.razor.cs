@@ -435,10 +435,10 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
             var isFocused = Navigable && _focusedRowIndex == _currentRenderRowIndex;
             var rowIndex = _currentRenderRowIndex;
             _currentRenderRowIndex++;
-            var rowCss = isEditingRow ? "mar-treelist__row mar-treelist__row--editing" : isSelected ? "mar-treelist__row mar-treelist__row--selected" : "mar-treelist__row";
-            if (isFocused) rowCss += " mar-treelist__row--focused";
-            if (RowDraggable && _rowDragSourceIndex == rowIndex) rowCss += " mar-treelist__row--dragging";
-            if (RowDraggable && _rowDragOverIndex == rowIndex && _rowDragSourceIndex != rowIndex) rowCss += " mar-treelist__row--drop-target";
+            var rowCss = isEditingRow ? "sf-treelist__row sf-treelist__row--editing" : isSelected ? "sf-treelist__row sf-treelist__row--selected" : "sf-treelist__row";
+            if (isFocused) rowCss += " sf-treelist__row--focused";
+            if (RowDraggable && _rowDragSourceIndex == rowIndex) rowCss += " sf-treelist__row--dragging";
+            if (RowDraggable && _rowDragOverIndex == rowIndex && _rowDragSourceIndex != rowIndex) rowCss += " sf-treelist__row--drop-target";
             builder.OpenElement(seq++, "tr");
             builder.AddAttribute(seq++, "class", rowCss);
             builder.AddAttribute(seq++, "role", "row");
@@ -460,7 +460,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
             for (var ci = 0; ci < columns.Count; ci++)
             {
                 var col = columns[ci]; var cellTemplate = (col as SunfishTreeListColumn)?.Template;
-                builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
+                builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "sf-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
                 var tdStyle = GetColumnWidthStyle(col);
                 if (!string.IsNullOrEmpty(tdStyle)) builder.AddAttribute(seq++, "style", tdStyle);
                 if (isEditingRow)
@@ -474,7 +474,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                         if (editTpl is not null) { builder.AddContent(seq++, editTpl((object)node.Item!)); }
                         else
                         {
-                            builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "mar-treelist__edit-input");
+                            builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "sf-treelist__edit-input");
                             builder.AddAttribute(seq++, "value", currentVal);
                             builder.AddAttribute(seq++, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetEditValue(fieldName, e.Value?.ToString() ?? "")));
                             builder.CloseElement();
@@ -487,7 +487,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                     }
                     else
                     {
-                        builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "mar-treelist__edit-input");
+                        builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "sf-treelist__edit-input");
                         builder.AddAttribute(seq++, "value", currentVal);
                         builder.AddAttribute(seq++, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetEditValue(fieldName, e.Value?.ToString() ?? "")));
                         builder.CloseElement();
@@ -496,7 +496,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
                 else if (ci == expandCol)
                 {
                     builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", $"padding-left: {depth * 20}px; display: inline-flex; align-items: center; gap: 4px;");
-                    if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
+                    if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
                     else { builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", "width: 20px;"); builder.CloseElement(); }
                     if (cellTemplate is not null) builder.AddContent(seq++, cellTemplate((object)node.Item!));
                     else builder.AddContent(seq++, col.GetDisplayValue(node.Item));
@@ -511,15 +511,15 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
             }
             if (EditMode == TreeListEditMode.Inline)
             {
-                builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td mar-treelist__td--commands"); builder.AddAttribute(seq++, "role", "gridcell");
+                builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "sf-treelist__td sf-treelist__td--commands"); builder.AddAttribute(seq++, "role", "gridcell");
                 if (isEditingRow)
                 {
-                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-treelist__cmd-btn mar-treelist__cmd-btn--save"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, SaveEditInternalAsync)); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Save"); builder.CloseElement();
-                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-treelist__cmd-btn mar-treelist__cmd-btn--cancel"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, CancelEditInternal)); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Cancel"); builder.CloseElement();
+                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-treelist__cmd-btn sf-treelist__cmd-btn--save"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, SaveEditInternalAsync)); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Save"); builder.CloseElement();
+                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-treelist__cmd-btn sf-treelist__cmd-btn--cancel"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, CancelEditInternal)); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Cancel"); builder.CloseElement();
                 }
                 else
                 {
-                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-treelist__cmd-btn mar-treelist__cmd-btn--delete"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => DeleteItem(node.Item))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Delete"); builder.CloseElement();
+                    builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-treelist__cmd-btn sf-treelist__cmd-btn--delete"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => DeleteItem(node.Item))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, "Delete"); builder.CloseElement();
                 }
                 builder.CloseElement();
             }
@@ -539,7 +539,7 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
         var nodeId = node.Id; var nodeItem = node.Item;
         var isSelected = IsItemSelected(node.Item);
         var isEditingRow = IsEditing(node.Item);
-        var rowCss = isEditingRow ? "mar-treelist__row mar-treelist__row--editing" : isSelected ? "mar-treelist__row mar-treelist__row--selected" : "mar-treelist__row";
+        var rowCss = isEditingRow ? "sf-treelist__row sf-treelist__row--editing" : isSelected ? "sf-treelist__row sf-treelist__row--selected" : "sf-treelist__row";
         builder.OpenElement(seq++, "tr");
         builder.AddAttribute(seq++, "class", rowCss);
         builder.AddAttribute(seq++, "style", $"height:{ItemHeight}px;");
@@ -553,13 +553,13 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
         for (var ci = 0; ci < columns.Count; ci++)
         {
             var col = columns[ci]; var cellTemplate = (col as SunfishTreeListColumn)?.Template;
-            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
+            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "sf-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
             var tdStyle = GetColumnWidthStyle(col);
             if (!string.IsNullOrEmpty(tdStyle)) builder.AddAttribute(seq++, "style", tdStyle);
             if (ci == expandCol)
             {
                 builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", $"padding-left: {depth * 20}px; display: inline-flex; align-items: center; gap: 4px;");
-                if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
+                if (hasKids) { builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-tree-item__toggle"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, () => ToggleExpand(nodeId, nodeItem))); builder.AddEventStopPropagationAttribute(seq++, "onclick", true); builder.AddContent(seq++, isExpanded ? "\u25BC" : "\u25B6"); builder.CloseElement(); }
                 else { builder.OpenElement(seq++, "span"); builder.AddAttribute(seq++, "style", "width: 20px;"); builder.CloseElement(); }
                 if (cellTemplate is not null) builder.AddContent(seq++, cellTemplate((object)node.Item!));
                 else builder.AddContent(seq++, col.GetDisplayValue(node.Item));
@@ -578,20 +578,20 @@ public partial class SunfishTreeList<TItem> : SunfishComponentBase, IColumnHost,
     private RenderFragment RenderEditRow(TItem item, int depth) => builder =>
     {
         int seq = 0; var columns = OrderedColumns;
-        builder.OpenElement(seq++, "tr"); builder.AddAttribute(seq++, "class", "mar-treelist__row mar-treelist__row--editing mar-treelist__row--new"); builder.AddAttribute(seq++, "role", "row"); builder.AddAttribute(seq++, "aria-level", 1);
+        builder.OpenElement(seq++, "tr"); builder.AddAttribute(seq++, "class", "sf-treelist__row sf-treelist__row--editing sf-treelist__row--new"); builder.AddAttribute(seq++, "role", "row"); builder.AddAttribute(seq++, "aria-level", 1);
         for (var ci = 0; ci < columns.Count; ci++)
         {
             var col = columns[ci]; var fieldName = col.Field; var currentVal = GetEditValue(fieldName)?.ToString() ?? "";
-            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
-            builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "mar-treelist__edit-input"); builder.AddAttribute(seq++, "value", currentVal);
+            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "sf-treelist__td"); builder.AddAttribute(seq++, "role", "gridcell");
+            builder.OpenElement(seq++, "input"); builder.AddAttribute(seq++, "type", "text"); builder.AddAttribute(seq++, "class", "sf-treelist__edit-input"); builder.AddAttribute(seq++, "value", currentVal);
             builder.AddAttribute(seq++, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, e => SetEditValue(fieldName, e.Value?.ToString() ?? "")));
             builder.CloseElement(); builder.CloseElement();
         }
         if (EditMode == TreeListEditMode.Inline)
         {
-            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "mar-treelist__td mar-treelist__td--commands"); builder.AddAttribute(seq++, "role", "gridcell");
-            builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-treelist__cmd-btn mar-treelist__cmd-btn--save"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, SaveEditInternalAsync)); builder.AddContent(seq++, "Save"); builder.CloseElement();
-            builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "mar-treelist__cmd-btn mar-treelist__cmd-btn--cancel"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, CancelEditInternal)); builder.AddContent(seq++, "Cancel"); builder.CloseElement();
+            builder.OpenElement(seq++, "td"); builder.AddAttribute(seq++, "class", "sf-treelist__td sf-treelist__td--commands"); builder.AddAttribute(seq++, "role", "gridcell");
+            builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-treelist__cmd-btn sf-treelist__cmd-btn--save"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, SaveEditInternalAsync)); builder.AddContent(seq++, "Save"); builder.CloseElement();
+            builder.OpenElement(seq++, "button"); builder.AddAttribute(seq++, "type", "button"); builder.AddAttribute(seq++, "class", "sf-treelist__cmd-btn sf-treelist__cmd-btn--cancel"); builder.AddAttribute(seq++, "onclick", EventCallback.Factory.Create(this, CancelEditInternal)); builder.AddContent(seq++, "Cancel"); builder.CloseElement();
             builder.CloseElement();
         }
         builder.CloseElement();

@@ -13,7 +13,7 @@ namespace Sunfish.UIAdapters.Blazor.Tests.Components;
 /// <summary>
 /// bUnit tests for <see cref="SunfishDataGrid{TItem}"/> Size + HighlightedItems (G37 A7).
 /// Covers A7.1 (Size parameter), A7.2 (CSS class mapping), A7.3 (HighlightedItems parameter),
-/// and A7.4 (mar-datagrid-row--highlighted applied to matching rows).
+/// and A7.4 (sf-datagrid__row--highlighted applied to matching rows).
 /// </summary>
 public class SizeAndHighlightingTests : BunitContext
 {
@@ -44,7 +44,7 @@ public class SizeAndHighlightingTests : BunitContext
     // ── A7.1 + A7.2 — Size parameter and CSS class mapping ────────────────
 
     /// <summary>
-    /// Default Size is Medium → root element carries mar-datagrid--size-medium.
+    /// Default Size is Medium → root element carries sf-datagrid--size-medium.
     /// </summary>
     [Fact]
     public void Size_DefaultsMedium_RootHasMediumClass()
@@ -56,11 +56,11 @@ public class SizeAndHighlightingTests : BunitContext
         Assert.Equal(DataGridSize.Medium, grid.Size);
 
         var root = cut.Find("[role='grid']");
-        Assert.Contains("mar-datagrid--size-medium", root.ClassList);
+        Assert.Contains("sf-datagrid--size-medium", root.ClassList);
     }
 
     /// <summary>
-    /// Size=Small → root element carries mar-datagrid--size-small (and NOT medium or large).
+    /// Size=Small → root element carries sf-datagrid--size-small (and NOT medium or large).
     /// </summary>
     [Fact]
     public void Size_Small_RootHasSmallClass()
@@ -70,13 +70,13 @@ public class SizeAndHighlightingTests : BunitContext
             .Add(x => x.Size, DataGridSize.Small));
 
         var root = cut.Find("[role='grid']");
-        Assert.Contains("mar-datagrid--size-small", root.ClassList);
-        Assert.DoesNotContain("mar-datagrid--size-medium", root.ClassList);
-        Assert.DoesNotContain("mar-datagrid--size-large", root.ClassList);
+        Assert.Contains("sf-datagrid--size-small", root.ClassList);
+        Assert.DoesNotContain("sf-datagrid--size-medium", root.ClassList);
+        Assert.DoesNotContain("sf-datagrid--size-large", root.ClassList);
     }
 
     /// <summary>
-    /// Size=Large → root element carries mar-datagrid--size-large (and NOT small or medium).
+    /// Size=Large → root element carries sf-datagrid--size-large (and NOT small or medium).
     /// </summary>
     [Fact]
     public void Size_Large_RootHasLargeClass()
@@ -86,9 +86,9 @@ public class SizeAndHighlightingTests : BunitContext
             .Add(x => x.Size, DataGridSize.Large));
 
         var root = cut.Find("[role='grid']");
-        Assert.Contains("mar-datagrid--size-large", root.ClassList);
-        Assert.DoesNotContain("mar-datagrid--size-small", root.ClassList);
-        Assert.DoesNotContain("mar-datagrid--size-medium", root.ClassList);
+        Assert.Contains("sf-datagrid--size-large", root.ClassList);
+        Assert.DoesNotContain("sf-datagrid--size-small", root.ClassList);
+        Assert.DoesNotContain("sf-datagrid--size-medium", root.ClassList);
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ public class SizeAndHighlightingTests : BunitContext
 
         var root = cut.Find("[role='grid']");
         // Size class is present
-        Assert.Contains("mar-datagrid--size-large", root.ClassList);
+        Assert.Contains("sf-datagrid--size-large", root.ClassList);
         // Consumer-supplied class is also present
         Assert.Contains("my-custom-class", root.ClassList);
     }
@@ -125,7 +125,7 @@ public class SizeAndHighlightingTests : BunitContext
         var rows = cut.FindAll("tr[role='row']");
         foreach (var row in rows)
         {
-            Assert.DoesNotContain("mar-datagrid-row--highlighted", row.ClassList);
+            Assert.DoesNotContain("sf-datagrid__row--highlighted", row.ClassList);
         }
     }
 
@@ -149,18 +149,18 @@ public class SizeAndHighlightingTests : BunitContext
         Assert.Equal(3, dataRows.Count);
 
         var highlightedRows = dataRows
-            .Where(r => r.ClassList.Contains("mar-datagrid-row--highlighted"))
+            .Where(r => r.ClassList.Contains("sf-datagrid__row--highlighted"))
             .ToList();
 
         // Exactly one row is highlighted
         Assert.Single(highlightedRows);
 
         // The highlighted row is the second row (index 1), not first (Alpha) or third (Gamma)
-        Assert.False(dataRows[0].ClassList.Contains("mar-datagrid-row--highlighted"),
+        Assert.False(dataRows[0].ClassList.Contains("sf-datagrid__row--highlighted"),
             "First row (Alpha) should not be highlighted");
-        Assert.True(dataRows[1].ClassList.Contains("mar-datagrid-row--highlighted"),
+        Assert.True(dataRows[1].ClassList.Contains("sf-datagrid__row--highlighted"),
             "Second row (Beta) should be highlighted");
-        Assert.False(dataRows[2].ClassList.Contains("mar-datagrid-row--highlighted"),
+        Assert.False(dataRows[2].ClassList.Contains("sf-datagrid__row--highlighted"),
             "Third row (Gamma) should not be highlighted");
     }
 
@@ -180,7 +180,7 @@ public class SizeAndHighlightingTests : BunitContext
         Assert.Equal(3, dataRows.Count);
 
         var highlightedRows = dataRows
-            .Where(r => r.ClassList.Contains("mar-datagrid-row--highlighted"))
+            .Where(r => r.ClassList.Contains("sf-datagrid__row--highlighted"))
             .ToList();
 
         Assert.Equal(3, highlightedRows.Count);
@@ -205,9 +205,9 @@ public class SizeAndHighlightingTests : BunitContext
             // Initially: row[1] (Beta) is highlighted
             var rows = cut.FindAll("tbody tr[role='row']");
             Assert.Equal(3, rows.Count);
-            Assert.True(rows[1].ClassList.Contains("mar-datagrid-row--highlighted"),
+            Assert.True(rows[1].ClassList.Contains("sf-datagrid__row--highlighted"),
                 "Row[1] (Beta) should be highlighted initially");
-            Assert.False(rows[2].ClassList.Contains("mar-datagrid-row--highlighted"),
+            Assert.False(rows[2].ClassList.Contains("sf-datagrid__row--highlighted"),
                 "Row[2] (Gamma) should not be highlighted initially");
         }
 
@@ -226,9 +226,9 @@ public class SizeAndHighlightingTests : BunitContext
             var rows = cut.FindAll("tbody tr[role='row']");
             Assert.Equal(3, rows.Count);
             // After change: row[2] (Gamma) is highlighted, row[1] (Beta) is not
-            Assert.False(rows[1].ClassList.Contains("mar-datagrid-row--highlighted"),
+            Assert.False(rows[1].ClassList.Contains("sf-datagrid__row--highlighted"),
                 "Row[1] (Beta) should no longer be highlighted after parameter change");
-            Assert.True(rows[2].ClassList.Contains("mar-datagrid-row--highlighted"),
+            Assert.True(rows[2].ClassList.Contains("sf-datagrid__row--highlighted"),
                 "Row[2] (Gamma) should be highlighted after parameter change");
         }
     }

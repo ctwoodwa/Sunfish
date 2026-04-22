@@ -64,7 +64,7 @@ public class ColumnResizingTests : BunitContext
     // ═══════════════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// When AllowColumnResize is false (default), no mar-datagrid-col-resize-handle elements
+    /// When AllowColumnResize is false (default), no sf-datagrid__col-resize-handle elements
     /// should be rendered in any header cell.
     /// </summary>
     [Fact]
@@ -75,7 +75,7 @@ public class ColumnResizingTests : BunitContext
             .Add(x => x.AllowColumnResize, false)
             .Add(x => x.ChildContent, TwoColumns()));
 
-        var handles = cut.FindAll(".mar-datagrid-col-resize-handle");
+        var handles = cut.FindAll(".sf-datagrid__col-resize-handle");
         Assert.Empty(handles);
     }
 
@@ -85,7 +85,7 @@ public class ColumnResizingTests : BunitContext
 
     /// <summary>
     /// When AllowColumnResize is true, every resizable column header must contain exactly one
-    /// mar-datagrid-col-resize-handle element.
+    /// sf-datagrid__col-resize-handle element.
     /// </summary>
     [Fact]
     public void AllowColumnResize_True_HandlesRenderedInEveryResizableHeader()
@@ -95,7 +95,7 @@ public class ColumnResizingTests : BunitContext
             .Add(x => x.AllowColumnResize, true)
             .Add(x => x.ChildContent, TwoColumns()));
 
-        var handles = cut.FindAll(".mar-datagrid-col-resize-handle");
+        var handles = cut.FindAll(".sf-datagrid__col-resize-handle");
         // Two data columns, both default Resizable=true → two handles.
         Assert.Equal(2, handles.Count);
     }
@@ -130,7 +130,7 @@ public class ColumnResizingTests : BunitContext
             .Add(x => x.AllowColumnResize, true)
             .Add(x => x.ChildContent, colsWithOneNonResizable));
 
-        var handles = cut.FindAll(".mar-datagrid-col-resize-handle");
+        var handles = cut.FindAll(".sf-datagrid__col-resize-handle");
         // Only the Name column should have a handle.
         var handle = Assert.Single(handles);
 
@@ -164,7 +164,7 @@ public class ColumnResizingTests : BunitContext
             .Add(x => x.AllowColumnResize, true)
             .Add(x => x.ChildContent, colWithConstraints));
 
-        var handle = cut.Find(".mar-datagrid-col-resize-handle");
+        var handle = cut.Find(".sf-datagrid__col-resize-handle");
         Assert.Equal("80px",  handle.GetAttribute("data-min-width"));
         Assert.Equal("400px", handle.GetAttribute("data-max-width"));
     }
@@ -364,7 +364,7 @@ public class ColumnResizingTests : BunitContext
             .Add(x => x.AllowColumnResize, true)
             .Add(x => x.ChildContent, TwoColumns()));
 
-        var handles = cut.FindAll(".mar-datagrid-col-resize-handle");
+        var handles = cut.FindAll(".sf-datagrid__col-resize-handle");
         Assert.Equal(2, handles.Count);
 
         // First handle: Name column at index 0

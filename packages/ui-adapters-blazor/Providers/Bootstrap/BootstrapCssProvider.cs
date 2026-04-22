@@ -723,9 +723,9 @@ public class BootstrapCssProvider : ISunfishCssProvider
     // BS5 command button — Phase 2a-2. Emitted on Edit/Save/Cancel/Delete action
     // buttons in the command column (and inline filter/checkbox-filter popups).
     // Uses native `btn btn-sm btn-outline-secondary` so BS5 typography/hover/focus
-    // cascades apply; `mar-datagrid-cmd-btn` preserves any custom SCSS overrides
+    // cascades apply; `sf-datagrid__cmd-btn` preserves any custom SCSS overrides
     // already authored for the grid's command column density.
-    public string DataGridCommandButtonClass() => "btn btn-sm btn-outline-secondary mar-datagrid-cmd-btn";
+    public string DataGridCommandButtonClass() => "btn btn-sm btn-outline-secondary sf-datagrid__cmd-btn";
 
     public string DataGridPagerClass() => "d-flex justify-content-between align-items-center sf-bs-datagrid-pager";
 

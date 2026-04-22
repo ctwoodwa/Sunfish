@@ -140,7 +140,7 @@ public class ColumnEnhancementsTests : BunitContext
         var cls = nameHeader.GetAttribute("class") ?? "";
 
         // Both the lock class AND the custom HeaderClass must be present
-        Assert.Contains("mar-datagrid-col--locked", cls);
+        Assert.Contains("sf-datagrid__col--locked", cls);
         Assert.Contains("extra-class", cls);
     }
 

@@ -79,7 +79,7 @@ public class RowDragDropTests : BunitContext
         var draggableRows = cut.FindAll("tr[draggable='true']");
         Assert.Empty(draggableRows);
 
-        var dragHandleCells = cut.FindAll("td.mar-datagrid-drag-cell");
+        var dragHandleCells = cut.FindAll("td.sf-datagrid__drag-cell");
         Assert.Empty(dragHandleCells);
     }
 
@@ -113,7 +113,7 @@ public class RowDragDropTests : BunitContext
 
     /// <summary>
     /// When RowDraggable=true, every data row must contain a drag handle cell
-    /// with class mar-datagrid-drag-cell containing a span.mar-datagrid-row-drag-handle.
+    /// with class sf-datagrid__drag-cell containing a span.sf-datagrid__row-drag-handle.
     /// </summary>
     [Fact]
     public void RowDraggable_True_DragHandleCellRendersInEachRow()
@@ -123,14 +123,14 @@ public class RowDragDropTests : BunitContext
             .Add(x => x.RowDraggable, true)
             .Add(x => x.ChildContent, TwoColumns()));
 
-        var dragHandleCells = cut.FindAll("td.mar-datagrid-drag-cell");
+        var dragHandleCells = cut.FindAll("td.sf-datagrid__drag-cell");
         // One drag-handle cell per data row.
         Assert.Equal(3, dragHandleCells.Count);
 
         // Each drag-handle cell must contain the handle span.
         foreach (var cell in dragHandleCells)
         {
-            var handle = cell.QuerySelector("span.mar-datagrid-row-drag-handle");
+            var handle = cell.QuerySelector("span.sf-datagrid__row-drag-handle");
             Assert.NotNull(handle);
         }
     }

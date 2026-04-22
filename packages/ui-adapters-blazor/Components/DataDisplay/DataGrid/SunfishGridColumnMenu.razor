@@ -3,27 +3,27 @@
 
 @if (IsOpen)
 {
-    <div class="mar-datagrid-column-menu" @ref="_menuRef" role="menu" aria-label="Column options">
+    <div class="sf-datagrid__column-menu" @ref="_menuRef" role="menu" aria-label="Column options">
         @if (ShowSort)
         {
-            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
                     @onclick="HandleSortAsc">Sort ascending</button>
-            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
                     @onclick="HandleSortDesc">Sort descending</button>
-            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
                     @onclick="HandleClearSort"
                     disabled="@(!HasSort)">Clear sort</button>
-            <div class="mar-datagrid-column-menu-divider" role="separator"></div>
+            <div class="sf-datagrid__column-menu-divider" role="separator"></div>
         }
         @if (ShowFilter)
         {
-            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
                     @onclick="HandleFilter">Filter&#x2026;</button>
-            <div class="mar-datagrid-column-menu-divider" role="separator"></div>
+            <div class="sf-datagrid__column-menu-divider" role="separator"></div>
         }
         @if (ShowLock)
         {
-            <button type="button" class="mar-datagrid-column-menu-item" role="menuitem"
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
                     @onclick="HandleToggleLock">
                 @(IsLocked ? "Unlock column" : "Lock column")
             </button>

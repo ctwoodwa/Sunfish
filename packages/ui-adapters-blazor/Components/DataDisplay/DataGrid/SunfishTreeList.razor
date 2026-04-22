@@ -3,7 +3,7 @@
 @inherits SunfishComponentBase
 @implements IColumnHost
 
-<div class="@CombineClasses("mar-treelist")"
+<div class="@CombineClasses("sf-treelist")"
      style="@CombineStyles()"
      @attributes="AdditionalAttributes">
 
@@ -31,11 +31,11 @@
                     var isSorted = _sortField == col.Field && _sortDirection is not null;
                     var sortCss = isSorted
                         ? (_sortDirection == Sunfish.Foundation.Enums.SortDirection.Ascending
-                            ? "mar-treelist__sort-asc"
-                            : "mar-treelist__sort-desc")
+                            ? "sf-treelist__sort-asc"
+                            : "sf-treelist__sort-desc")
                         : "";
-                    var dragOverCss = Reorderable && _dragOverIndex == idx && _dragSourceIndex != idx ? " mar-treelist__th--drag-over" : "";
-                    var thClass = $"mar-treelist__th{(isSortable ? " mar-treelist__th--sortable" : "")}{(isSorted ? $" {sortCss}" : "")}{dragOverCss}";
+                    var dragOverCss = Reorderable && _dragOverIndex == idx && _dragSourceIndex != idx ? " sf-treelist__th--drag-over" : "";
+                    var thClass = $"sf-treelist__th{(isSortable ? " sf-treelist__th--sortable" : "")}{(isSorted ? $" {sortCss}" : "")}{dragOverCss}";
 
                     <th class="@thClass"
                         role="columnheader"
@@ -73,7 +73,7 @@
                 }
                 @if (EditMode == Sunfish.Foundation.Enums.TreeListEditMode.Inline)
                 {
-                    <th class="sf-treelist__th mar-treelist__th--commands" role="columnheader">Commands</th>
+                    <th class="sf-treelist__th sf-treelist__th--commands" role="columnheader">Commands</th>
                 }
             </tr>
             @if (FilterMode == Sunfish.Foundation.Enums.TreeListFilterMode.FilterRow)
@@ -130,7 +130,7 @@
     {
         <nav class="sf-treelist__pager" role="navigation" aria-label="TreeList pagination">
             <button type="button"
-                    class="sf-treelist__pager-btn mar-treelist__pager-btn--prev"
+                    class="sf-treelist__pager-btn sf-treelist__pager-btn--prev"
                     disabled="@(Page <= 1)"
                     @onclick="GoToPreviousPageAsync">
                 &laquo; Prev
@@ -139,13 +139,13 @@
             {
                 var pageNum = p;
                 <button type="button"
-                        class="@($"mar-treelist__pager-btn{(pageNum == Page ? " mar-treelist__pager-btn--active" : "")}")"
+                        class="@($"sf-treelist__pager-btn{(pageNum == Page ? " sf-treelist__pager-btn--active" : "")}")"
                         @onclick="() => GoToPageAsync(pageNum)">
                     @pageNum
                 </button>
             }
             <button type="button"
-                    class="sf-treelist__pager-btn mar-treelist__pager-btn--next"
+                    class="sf-treelist__pager-btn sf-treelist__pager-btn--next"
                     disabled="@(Page >= TotalPages)"
                     @onclick="GoToNextPageAsync">
                 Next &raquo;

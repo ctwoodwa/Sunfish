@@ -22,8 +22,8 @@ public partial class SunfishDataGrid<TItem>
         var rowClass = CssProvider.DataGridRowClass(isSelected, isStripedRow);
         var rowRenderArgs = GetRowRenderArgs(item);
         var finalRowClass = rowRenderArgs?.Class != null ? $"{rowClass} {rowRenderArgs.Class}" : rowClass;
-        if (isEditing) finalRowClass += " mar-datagrid-row--editing";
-        if (isHighlighted) finalRowClass += " mar-datagrid-row--highlighted";
+        if (isEditing) finalRowClass += " sf-datagrid__row--editing";
+        if (isHighlighted) finalRowClass += " sf-datagrid__row--highlighted";
         var rowStyle = rowRenderArgs?.Style;
 
         builder.OpenElement(0, "tr");
@@ -43,11 +43,11 @@ public partial class SunfishDataGrid<TItem>
         if (RowDraggable)
         {
             builder.OpenElement(10, "td");
-            builder.AddAttribute(11, "class", "mar-datagrid-drag-cell");
+            builder.AddAttribute(11, "class", "sf-datagrid__drag-cell");
             builder.AddAttribute(12, "role", "gridcell");
             builder.AddAttribute(13, "aria-label", "Drag row");
             builder.OpenElement(14, "span");
-            builder.AddAttribute(15, "class", "mar-datagrid-row-drag-handle");
+            builder.AddAttribute(15, "class", "sf-datagrid__row-drag-handle");
             builder.AddAttribute(16, "aria-hidden", "true");
             builder.AddContent(17, "\u2807"); // ⠇ drag dots icon
             builder.CloseElement(); // span
@@ -60,11 +60,11 @@ public partial class SunfishDataGrid<TItem>
             var detailItem = item;
             var isExpanded = _expandedDetailItems.Contains(item);
             builder.OpenElement(20, "td");
-            builder.AddAttribute(21, "class", "mar-datagrid-detail-cell");
+            builder.AddAttribute(21, "class", "sf-datagrid__detail-cell");
             builder.AddAttribute(22, "role", "gridcell");
             builder.OpenElement(23, "button");
             builder.AddAttribute(24, "type", "button");
-            builder.AddAttribute(25, "class", "mar-datagrid-detail-btn");
+            builder.AddAttribute(25, "class", "sf-datagrid__detail-btn");
             builder.AddAttribute(26, "aria-label", isExpanded ? "Collapse detail" : "Expand detail");
             builder.AddAttribute(27, "aria-expanded", isExpanded.ToString().ToLower());
             builder.AddAttribute(28, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ToggleDetailRow(detailItem)));
@@ -79,7 +79,7 @@ public partial class SunfishDataGrid<TItem>
         {
             var cbItem = item;
             builder.OpenElement(30, "td");
-            builder.AddAttribute(31, "class", "mar-datagrid-checkbox-cell");
+            builder.AddAttribute(31, "class", "sf-datagrid__checkbox-cell");
             builder.AddAttribute(32, "role", "gridcell");
             builder.OpenElement(33, "input");
             builder.AddAttribute(34, "type", "checkbox");
@@ -108,9 +108,9 @@ public partial class SunfishDataGrid<TItem>
                 var cellRenderArgs = GetCellRenderArgs(column, item);
                 var cellClass = CssProvider.DataGridCellClass();
                 if (cellRenderArgs?.Class != null) cellClass = $"{cellClass} {cellRenderArgs.Class}";
-                if (IsCellSelected(index, column.Field)) cellClass = $"{cellClass} mar-datagrid-cell--selected";
-                if (column.Locked) cellClass = $"{cellClass} mar-datagrid-col--locked";
-                if (column.Locked && IsBoundaryFrozenColumn(column)) cellClass = $"{cellClass} mar-datagrid-col--locked-end";
+                if (IsCellSelected(index, column.Field)) cellClass = $"{cellClass} sf-datagrid__cell--selected";
+                if (column.Locked) cellClass = $"{cellClass} sf-datagrid__col--locked";
+                if (column.Locked && IsBoundaryFrozenColumn(column)) cellClass = $"{cellClass} sf-datagrid__col--locked-end";
                 var frozenCellStyle = GetFrozenCellStyle(column);
                 var combinedExtra = string.Join("", new[] { cellRenderArgs?.Style, frozenCellStyle }.Where(s => !string.IsNullOrEmpty(s)));
                 var finalCellStyle = GetColumnCellStyle(column, string.IsNullOrEmpty(combinedExtra) ? null : combinedExtra);
@@ -147,17 +147,17 @@ public partial class SunfishDataGrid<TItem>
                     builder.AddContent(60, column.EditorTemplate(item));
                     // InCell: inline save/cancel buttons
                     builder.OpenElement(61, "div");
-                    builder.AddAttribute(62, "class", "mar-datagrid-incell-actions");
+                    builder.AddAttribute(62, "class", "sf-datagrid__incell-actions");
                     builder.OpenElement(63, "button");
                     builder.AddAttribute(64, "type", "button");
-                    builder.AddAttribute(65, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(65, "class", $"{CssProvider.DataGridCommandButtonClass()} sf-datagrid__cmd-btn--sm");
                     builder.AddAttribute(66, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
                     builder.AddEventStopPropagationAttribute(67, "onclick", true);
                     builder.AddContent(68, "\u2713"); // checkmark
                     builder.CloseElement();
                     builder.OpenElement(69, "button");
                     builder.AddAttribute(70, "type", "button");
-                    builder.AddAttribute(71, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(71, "class", $"{CssProvider.DataGridCommandButtonClass()} sf-datagrid__cmd-btn--sm");
                     builder.AddAttribute(72, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
                     builder.AddEventStopPropagationAttribute(73, "onclick", true);
                     builder.AddContent(74, "\u2717"); // X mark
@@ -185,7 +185,7 @@ public partial class SunfishDataGrid<TItem>
             if (EditMode != GridEditMode.None && EditMode != GridEditMode.InCell)
             {
                 builder.OpenElement(80, "td");
-                builder.AddAttribute(81, "class", "mar-datagrid-command-cell");
+                builder.AddAttribute(81, "class", "sf-datagrid__command-cell");
                 builder.AddAttribute(82, "role", "gridcell");
 
                 if (isEditing && EditMode == GridEditMode.Inline)
@@ -219,7 +219,7 @@ public partial class SunfishDataGrid<TItem>
 
                     builder.OpenElement(88, "button");
                     builder.AddAttribute(89, "type", "button");
-                    builder.AddAttribute(90, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--delete");
+                    builder.AddAttribute(90, "class", $"{CssProvider.DataGridCommandButtonClass()} sf-datagrid__cmd-btn--delete");
                     builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await DeleteItem(editItem)));
                     builder.AddEventStopPropagationAttribute(92, "onclick", true);
                     builder.AddContent(93, "Delete");
@@ -238,7 +238,7 @@ public partial class SunfishDataGrid<TItem>
     internal RenderFragment RenderEditRow(TItem item) => builder =>
     {
         builder.OpenElement(0, "tr");
-        builder.AddAttribute(1, "class", "mar-datagrid-row--editing mar-datagrid-row--new");
+        builder.AddAttribute(1, "class", "sf-datagrid__row--editing sf-datagrid__row--new");
         builder.AddAttribute(2, "role", "row");
 
         if (RowDraggable)
@@ -283,7 +283,7 @@ public partial class SunfishDataGrid<TItem>
 
         // Command cell
         builder.OpenElement(20, "td");
-        builder.AddAttribute(21, "class", "mar-datagrid-command-cell");
+        builder.AddAttribute(21, "class", "sf-datagrid__command-cell");
         builder.AddAttribute(22, "role", "gridcell");
 
         builder.OpenElement(23, "button");
@@ -309,7 +309,7 @@ public partial class SunfishDataGrid<TItem>
     internal RenderFragment RenderFilterMenu() => builder =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "mar-datagrid-filter-menu");
+        builder.AddAttribute(1, "class", "sf-datagrid__filter-menu");
 
         // Operator dropdown
         builder.OpenElement(10, "label");
@@ -317,7 +317,7 @@ public partial class SunfishDataGrid<TItem>
         builder.CloseElement();
 
         builder.OpenElement(12, "select");
-        builder.AddAttribute(13, "class", "mar-datagrid-filter-menu-operator");
+        builder.AddAttribute(13, "class", "sf-datagrid__filter-menu-operator");
         builder.AddAttribute(14, "value", _filterMenuOperator.ToString());
         builder.AddAttribute(15, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, (e) =>
         {
@@ -355,7 +355,7 @@ public partial class SunfishDataGrid<TItem>
         {
             builder.OpenElement(20, "input");
             builder.AddAttribute(21, "type", "text");
-            builder.AddAttribute(22, "class", "mar-datagrid-filter-menu-value");
+            builder.AddAttribute(22, "class", "sf-datagrid__filter-menu-value");
             builder.AddAttribute(23, "placeholder", "Filter value...");
             builder.AddAttribute(24, "value", _filterMenuValue);
             builder.AddAttribute(25, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, (e) =>
@@ -367,7 +367,7 @@ public partial class SunfishDataGrid<TItem>
 
         // Apply / Clear buttons
         builder.OpenElement(30, "div");
-        builder.AddAttribute(31, "class", "mar-datagrid-filter-menu-actions");
+        builder.AddAttribute(31, "class", "sf-datagrid__filter-menu-actions");
 
         builder.OpenElement(32, "button");
         builder.AddAttribute(33, "type", "button");
@@ -390,15 +390,15 @@ public partial class SunfishDataGrid<TItem>
     internal RenderFragment RenderCheckBoxFilterMenu() => builder =>
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "mar-datagrid-filter-menu mar-datagrid-filter-checkbox");
+        builder.AddAttribute(1, "class", "sf-datagrid__filter-menu sf-datagrid__filter-checkbox");
 
         // Select All / Deselect All
         builder.OpenElement(2, "div");
-        builder.AddAttribute(3, "class", "mar-datagrid-filter-checkbox-actions");
+        builder.AddAttribute(3, "class", "sf-datagrid__filter-checkbox-actions");
 
         builder.OpenElement(4, "button");
         builder.AddAttribute(5, "type", "button");
-        builder.AddAttribute(6, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
+        builder.AddAttribute(6, "class", $"{CssProvider.DataGridCommandButtonClass()} sf-datagrid__cmd-btn--sm");
         builder.AddAttribute(7, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (_) =>
         {
             _checkBoxFilterSelected = new HashSet<string>(_checkBoxFilterDistinct);
@@ -409,7 +409,7 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(9, "button");
         builder.AddAttribute(10, "type", "button");
-        builder.AddAttribute(11, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
+        builder.AddAttribute(11, "class", $"{CssProvider.DataGridCommandButtonClass()} sf-datagrid__cmd-btn--sm");
         builder.AddAttribute(12, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (_) =>
         {
             _checkBoxFilterSelected.Clear();
@@ -422,7 +422,7 @@ public partial class SunfishDataGrid<TItem>
 
         // Checkbox list
         builder.OpenElement(20, "div");
-        builder.AddAttribute(21, "class", "mar-datagrid-filter-checkbox-list");
+        builder.AddAttribute(21, "class", "sf-datagrid__filter-checkbox-list");
         builder.AddAttribute(22, "role", "listbox");
         builder.AddAttribute(23, "aria-label", "Filter values");
 
@@ -432,7 +432,7 @@ public partial class SunfishDataGrid<TItem>
             var isChecked = _checkBoxFilterSelected.Contains(value);
 
             builder.OpenElement(30, "label");
-            builder.AddAttribute(31, "class", "mar-datagrid-filter-checkbox-item");
+            builder.AddAttribute(31, "class", "sf-datagrid__filter-checkbox-item");
             builder.AddAttribute(32, "role", "option");
             builder.AddAttribute(33, "aria-selected", isChecked.ToString().ToLowerInvariant());
 
@@ -454,7 +454,7 @@ public partial class SunfishDataGrid<TItem>
 
         // Apply / Clear buttons
         builder.OpenElement(40, "div");
-        builder.AddAttribute(41, "class", "mar-datagrid-filter-menu-actions");
+        builder.AddAttribute(41, "class", "sf-datagrid__filter-menu-actions");
 
         builder.OpenElement(42, "button");
         builder.AddAttribute(43, "type", "button");
@@ -484,12 +484,12 @@ public partial class SunfishDataGrid<TItem>
         var indent = group.Depth * 20;
 
         builder.OpenElement(0, "tr");
-        builder.AddAttribute(1, "class", $"{CssProvider.DataGridGroupHeaderClass()} mar-datagrid-group-depth-{group.Depth}");
+        builder.AddAttribute(1, "class", $"{CssProvider.DataGridGroupHeaderClass()} sf-datagrid__group-depth-{group.Depth}");
         builder.AddAttribute(2, "role", "row");
 
         builder.OpenElement(3, "td");
         builder.AddAttribute(4, "colspan", TotalColumnCount.ToString());
-        builder.AddAttribute(5, "class", "mar-datagrid-group-cell");
+        builder.AddAttribute(5, "class", "sf-datagrid__group-cell");
         builder.AddAttribute(6, "role", "gridcell");
         if (indent > 0) builder.AddAttribute(7, "style", $"padding-left:{indent}px;");
 
@@ -497,7 +497,7 @@ public partial class SunfishDataGrid<TItem>
         var gk = group.GroupKey;
         builder.OpenElement(10, "button");
         builder.AddAttribute(11, "type", "button");
-        builder.AddAttribute(12, "class", "mar-datagrid-group-toggle");
+        builder.AddAttribute(12, "class", "sf-datagrid__group-toggle");
         builder.AddAttribute(13, "aria-expanded", (!isCollapsed).ToString().ToLower());
         builder.AddAttribute(14, "aria-label", isCollapsed ? $"Expand group {group.KeyText}" : $"Collapse group {group.KeyText}");
         builder.AddAttribute(15, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ToggleGroup(gk)));
@@ -520,7 +520,7 @@ public partial class SunfishDataGrid<TItem>
         else
         {
             builder.OpenElement(20, "span");
-            builder.AddAttribute(21, "class", "mar-datagrid-group-text");
+            builder.AddAttribute(21, "class", "sf-datagrid__group-text");
             builder.AddContent(22, $"{displayField}: {group.KeyText} ({group.Count} {(group.Count == 1 ? "item" : "items")})");
             builder.CloseElement();
         }
@@ -543,12 +543,12 @@ public partial class SunfishDataGrid<TItem>
         };
 
         builder.OpenElement(0, "tr");
-        builder.AddAttribute(1, "class", "mar-datagrid-group-footer mar-datagrid-group-depth-" + group.Depth);
+        builder.AddAttribute(1, "class", "sf-datagrid__group-footer sf-datagrid__group-depth-" + group.Depth);
         builder.AddAttribute(2, "role", "row");
 
         builder.OpenElement(3, "td");
         builder.AddAttribute(4, "colspan", TotalColumnCount.ToString());
-        builder.AddAttribute(5, "class", "mar-datagrid-group-footer-cell");
+        builder.AddAttribute(5, "class", "sf-datagrid__group-footer-cell");
         builder.AddAttribute(6, "role", "gridcell");
         builder.AddContent(7, GroupFooterTemplate(context));
         builder.CloseElement(); // td
@@ -582,7 +582,7 @@ public partial class SunfishDataGrid<TItem>
                         if (DetailTemplate != null && _expandedDetailItems.Contains(item))
                         {
                             builder.OpenElement(3, "tr");
-                            builder.AddAttribute(4, "class", "mar-datagrid-detail-row");
+                            builder.AddAttribute(4, "class", "sf-datagrid__detail-row");
                             builder.AddAttribute(5, "role", "row");
                             builder.OpenElement(6, "td");
                             builder.AddAttribute(7, "colspan", TotalColumnCount.ToString());

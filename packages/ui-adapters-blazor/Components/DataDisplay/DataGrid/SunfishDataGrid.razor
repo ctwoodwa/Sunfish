@@ -107,8 +107,8 @@
                         var isSorted = _state.SortDescriptors.Any(s => s.Field == column.Field);
                         var sortDir = _state.SortDescriptors.FirstOrDefault(s => s.Field == column.Field);
                         var headerCellClass = CssProvider.DataGridHeaderCellClass(isSortable, isSorted);
-                        if (column.Locked) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked";
-                        if (column.Locked && IsBoundaryFrozenColumn(column)) headerCellClass = $"{headerCellClass} mar-datagrid-col--locked-end";
+                        if (column.Locked) headerCellClass = $"{headerCellClass} sf-datagrid__col--locked";
+                        if (column.Locked && IsBoundaryFrozenColumn(column)) headerCellClass = $"{headerCellClass} sf-datagrid__col--locked-end";
                         if (!string.IsNullOrEmpty(column.HeaderClass)) headerCellClass = string.IsNullOrEmpty(headerCellClass) ? column.HeaderClass : $"{headerCellClass} {column.HeaderClass}";
                         var frozenHeaderStyle = GetFrozenCellStyle(column, isHeader: true);
                         // B2.4: header must be position:relative so the absolutely-positioned handle aligns.
@@ -149,7 +149,7 @@
                                 var col = column;
                                 var isFilterMenuOpen = _filterMenuField == col.Field;
                                 <button type="button"
-                                        class="sf-datagrid-filter-menu-btn @(_state.FilterDescriptors.Any(f => f.Field == col.Field) ? "mar-datagrid-filter-menu-btn--active" : "")"
+                                        class="sf-datagrid-filter-menu-btn @(_state.FilterDescriptors.Any(f => f.Field == col.Field) ? "sf-datagrid__filter-menu-btn--active" : "")"
                                         aria-label="@($"Filter {column.DisplayTitle}")"
                                         aria-expanded="@(isFilterMenuOpen ? "true" : "false")"
                                         @onclick:stopPropagation="true"
@@ -172,7 +172,7 @@
                                 var isCheckBoxFilterOpen = _checkBoxFilterField == col.Field;
                                 var hasActiveCheckBoxFilter = _state.CompositeFilterDescriptors.Any(c => c.Filters.Count > 0 && c.Filters[0].Field == col.Field);
                                 <button type="button"
-                                        class="sf-datagrid-filter-menu-btn @(hasActiveCheckBoxFilter ? "mar-datagrid-filter-menu-btn--active" : "")"
+                                        class="sf-datagrid-filter-menu-btn @(hasActiveCheckBoxFilter ? "sf-datagrid__filter-menu-btn--active" : "")"
                                         aria-label="@($"Filter {column.DisplayTitle}")"
                                         aria-expanded="@(isCheckBoxFilterOpen ? "true" : "false")"
                                         @onclick:stopPropagation="true"
@@ -195,7 +195,7 @@
                                 var colMenuIndex = _visibleColumns.IndexOf(column);
                                 var colMenuOpen = _openMenuColumnIndex == colMenuIndex;
                                 <button type="button"
-                                        class="mar-datagrid-column-menu-trigger"
+                                        class="sf-datagrid__column-menu-trigger"
                                         aria-label="@($"Column menu for {column.DisplayTitle}")"
                                         aria-haspopup="menu"
                                         aria-expanded="@(colMenuOpen ? "true" : "false")"
@@ -220,7 +220,7 @@
                             @* B2.4: column resize drag handle — rendered only when both grid and column allow resizing. *@
                             @if (column.IsResizable(AllowColumnResize || Resizable))
                             {
-                                <div class="mar-datagrid-col-resize-handle"
+                                <div class="sf-datagrid__col-resize-handle"
                                      data-column-index="@_visibleColumns.IndexOf(column)"
                                      data-column-id="@column.EffectiveId"
                                      data-min-width="@column.MinResizableWidth"

@@ -90,7 +90,7 @@ function installColumnResize(handle) {
 
     const onMouseDown = (ev) => {
         const target = ev.target;
-        if (!target?.classList?.contains('mar-datagrid-col-resize-handle')) return;
+        if (!target?.classList?.contains('sf-datagrid__col-resize-handle')) return;
 
         ev.preventDefault();
         ev.stopPropagation();
@@ -211,7 +211,7 @@ function installColumnReorder(handle) {
 
         // Build floating clone positioned under the cursor.
         cloneEl = th.cloneNode(true);
-        cloneEl.classList.add('mar-datagrid-col-drag-clone');
+        cloneEl.classList.add('sf-datagrid__col-drag-clone');
         cloneEl.style.position = 'fixed';
         cloneEl.style.left = ev.clientX + 'px';
         cloneEl.style.top = ev.clientY + 'px';
@@ -223,12 +223,12 @@ function installColumnReorder(handle) {
 
         // Vertical drop-indicator line (positioned relative to root element).
         dropLineEl = document.createElement('div');
-        dropLineEl.className = 'mar-datagrid-col-drop-line';
+        dropLineEl.className = 'sf-datagrid__col-drop-line';
         dropLineEl.style.position = 'absolute';
         dropLineEl.style.top = '0';
         dropLineEl.style.bottom = '0';
         dropLineEl.style.width = '2px';
-        dropLineEl.style.background = 'var(--mar-datagrid-reorder-line-color, #1e90ff)';
+        dropLineEl.style.background = 'var(--sf-datagrid-reorder-line-color, #1e90ff)';
         dropLineEl.style.pointerEvents = 'none';
         dropLineEl.style.display = 'none';
         // Root element must be positioned for the absolute line to align correctly.
@@ -363,20 +363,20 @@ function installRowDragDrop(handle) {
 
         // Build floating clone positioned under the cursor.
         cloneEl = tr.cloneNode(true);
-        cloneEl.classList.add('mar-datagrid-row-drag-clone');
+        cloneEl.classList.add('sf-datagrid__row-drag-clone');
         cloneEl.style.position = 'fixed';
         cloneEl.style.left = ev.clientX + 'px';
         cloneEl.style.top = ev.clientY + 'px';
         cloneEl.style.pointerEvents = 'none';
         cloneEl.style.opacity = '0.75';
         cloneEl.style.zIndex = '10000';
-        cloneEl.style.background = 'var(--mar-datagrid-row-bg, #fff)';
+        cloneEl.style.background = 'var(--sf-datagrid-row-bg, #fff)';
         cloneEl.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
         document.body.appendChild(cloneEl);
 
         // Horizontal drop-indicator line (positioned relative to root element).
         dropLineEl = document.createElement('div');
-        dropLineEl.className = 'mar-datagrid-row-drop-line';
+        dropLineEl.className = 'sf-datagrid__row-drop-line';
         dropLineEl.style.display = 'none';
         // Root element must be positioned for the absolute line to align correctly.
         const currentPosition = getComputedStyle(rootElement).position;
@@ -470,7 +470,7 @@ function installRowDragDrop(handle) {
 //   • End-frozen (right in LTR): offset = cumulative width of all following End-frozen cols.
 //
 // CSS custom properties are written directly onto each locked <th>/<td>. The CSS class
-// `.mar-datagrid-col--locked` uses `inset-inline-start`/`inset-inline-end` referencing
+// `.sf-datagrid__col--locked` uses `inset-inline-start`/`inset-inline-end` referencing
 // these properties (the C# inline style also sets position:sticky + the pixel side value
 // as a fallback). This JS pass runs on:
 //   1. attachGrid mount (initial)
@@ -478,7 +478,7 @@ function installRowDragDrop(handle) {
 //   3. After column reorder commits (drop → OnColumnReordered)
 
 /**
- * Recalculate `--mar-datagrid-col-offset-start` and `--mar-datagrid-col-offset-end`
+ * Recalculate `--sf-datagrid-col-offset-start` and `--sf-datagrid-col-offset-end`
  * custom properties on every locked `<th>` and `<td>`. The values are derived from the
  * rendered widths of the `<col>` elements which are always up to date after resize/reorder.
  *
@@ -529,8 +529,8 @@ function applyFrozenOffset(rootElement, columnId, side, offsetPx) {
     const cells = rootElement.querySelectorAll(
         `th[data-column-id="${escaped}"], td[data-column-id="${escaped}"]`);
     const prop = side === 'start'
-        ? '--mar-datagrid-col-offset-start'
-        : '--mar-datagrid-col-offset-end';
+        ? '--sf-datagrid-col-offset-start'
+        : '--sf-datagrid-col-offset-end';
     cells.forEach(c => c.style.setProperty(prop, offsetPx + 'px'));
 }
 
@@ -540,8 +540,8 @@ function applyFrozenOffset(rootElement, columnId, side, offsetPx) {
 // Rationale: simpler lifecycle — the listener is installed once in attachGrid and
 // removed once in detachGrid, matching the existing B2/B3/B4 pattern.
 //
-// When a mousedown lands outside ALL .mar-datagrid-column-menu elements in this
-// grid AND the click did NOT originate from a .mar-datagrid-column-menu-trigger
+// When a mousedown lands outside ALL .sf-datagrid__column-menu elements in this
+// grid AND the click did NOT originate from a .sf-datagrid__column-menu-trigger
 // button, we call CloseColumnMenu on the .NET side.
 
 /**
@@ -555,7 +555,7 @@ function installColumnMenuClickOutside(handle) {
 
     const onMouseDown = (ev) => {
         // If there is no open menu in this grid, nothing to do.
-        const openMenu = rootElement.querySelector('.mar-datagrid-column-menu');
+        const openMenu = rootElement.querySelector('.sf-datagrid__column-menu');
         if (!openMenu) return;
 
         // Click is inside an open menu — let the menu's own button handler run.
@@ -564,7 +564,7 @@ function installColumnMenuClickOutside(handle) {
         // Click is on the trigger that opened this menu — ToggleColumnMenu on the .NET
         // side will handle toggling it closed, so we must NOT also fire CloseColumnMenu
         // or the menu will immediately re-open (toggle then close = net open).
-        if (ev.target.closest('.mar-datagrid-column-menu-trigger')) return;
+        if (ev.target.closest('.sf-datagrid__column-menu-trigger')) return;
 
         dotnetRef.invokeMethodAsync('CloseColumnMenu');
     };

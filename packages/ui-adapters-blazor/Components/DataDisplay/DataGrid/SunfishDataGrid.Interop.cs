@@ -13,7 +13,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
 
     private IJSObjectReference? _jsModule;
     private DotNetObjectReference<SunfishDataGrid<TItem>>? _dotNetRef;
-    private string _gridId = $"mar-grid-{Guid.NewGuid():N}";
+    private string _gridId = $"sf-grid-{Guid.NewGuid():N}";
 
     // B0: dedicated ES module for Phase B interactive features (keyboard nav, resize, reorder, DnD, frozen columns).
     // Loaded lazily on first render; B1-B5 populate the feature hooks inside marilo-datagrid.js.
@@ -392,12 +392,12 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     function initResize() {
         const headers = grid.querySelectorAll('thead th');
         headers.forEach((th, i) => {
-            if (th.classList.contains('mar-datagrid-detail-cell') ||
-                th.classList.contains('mar-datagrid-checkbox-cell') ||
-                th.classList.contains('mar-datagrid-command-header')) return;
+            if (th.classList.contains('sf-datagrid__detail-cell') ||
+                th.classList.contains('sf-datagrid__checkbox-cell') ||
+                th.classList.contains('sf-datagrid__command-header')) return;
 
             const handle = document.createElement('div');
-            handle.className = 'mar-datagrid-resize-handle';
+            handle.className = 'sf-datagrid__resize-handle';
             handle.style.cssText = 'position:absolute;right:0;top:0;bottom:0;width:4px;cursor:col-resize;z-index:1;';
             th.style.position = 'relative';
             th.appendChild(handle);
@@ -435,32 +435,32 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     function initReorder() {
         const headers = grid.querySelectorAll('thead th');
         headers.forEach((th) => {
-            if (th.classList.contains('mar-datagrid-detail-cell') ||
-                th.classList.contains('mar-datagrid-checkbox-cell') ||
-                th.classList.contains('mar-datagrid-command-header') ||
-                th.classList.contains('mar-datagrid-col--locked')) return;
+            if (th.classList.contains('sf-datagrid__detail-cell') ||
+                th.classList.contains('sf-datagrid__checkbox-cell') ||
+                th.classList.contains('sf-datagrid__command-header') ||
+                th.classList.contains('sf-datagrid__col--locked')) return;
 
             th.setAttribute('draggable', 'true');
 
             th.addEventListener('dragstart', (e) => {
                 dragState = { fromIndex: getDataColumnIndex(th) };
-                th.classList.add('mar-datagrid-dragging');
+                th.classList.add('sf-datagrid__col--dragging');
                 e.dataTransfer.effectAllowed = 'move';
             });
 
             th.addEventListener('dragover', (e) => {
                 e.preventDefault();
                 e.dataTransfer.dropEffect = 'move';
-                th.classList.add('mar-datagrid-drop-target');
+                th.classList.add('sf-datagrid__col--drop-target');
             });
 
             th.addEventListener('dragleave', () => {
-                th.classList.remove('mar-datagrid-drop-target');
+                th.classList.remove('sf-datagrid__col--drop-target');
             });
 
             th.addEventListener('drop', (e) => {
                 e.preventDefault();
-                th.classList.remove('mar-datagrid-drop-target');
+                th.classList.remove('sf-datagrid__col--drop-target');
                 if (dragState) {
                     const toIndex = getDataColumnIndex(th);
                     if (dragState.fromIndex !== toIndex && dragState.fromIndex >= 0 && toIndex >= 0) {
@@ -470,7 +470,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             });
 
             th.addEventListener('dragend', () => {
-                th.classList.remove('mar-datagrid-dragging');
+                th.classList.remove('sf-datagrid__col--dragging');
                 dragState = null;
             });
         });
@@ -542,7 +542,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             dragSourceIndex = parseInt(cell.dataset.rowIndex, 10);
             e.dataTransfer.effectAllowed = 'move';
             e.dataTransfer.setData('text/plain', dragSourceIndex.toString());
-            cell.closest('tr')?.classList.add('mar-datagrid-row--dragging');
+            cell.closest('tr')?.classList.add('sf-datagrid__row--dragging');
         });
 
         tbody.addEventListener('dragover', (e) => {
@@ -553,14 +553,14 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             const rect = tr.getBoundingClientRect();
             const midY = rect.top + rect.height / 2;
             tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after')
-                .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after'));
-            tr.classList.add(e.clientY < midY ? 'mar-datagrid-row--drop-before' : 'mar-datagrid-row--drop-after');
+                .forEach(el => el.classList.remove('sf-datagrid__row--drop-before', 'sf-datagrid__row--drop-after'));
+            tr.classList.add(e.clientY < midY ? 'sf-datagrid__row--drop-before' : 'sf-datagrid__row--drop-after');
         });
 
         tbody.addEventListener('dragleave', (e) => {
             const tr = e.target.closest('tr');
             if (tr) {
-                tr.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after');
+                tr.classList.remove('sf-datagrid__row--drop-before', 'sf-datagrid__row--drop-after');
             }
         });
 
@@ -576,7 +576,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
             const dropPosition = e.clientY < (rect.top + rect.height / 2) ? 'before' : 'after';
 
             tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after, .sf-datagrid-row--dragging')
-                .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after', 'mar-datagrid-row--dragging'));
+                .forEach(el => el.classList.remove('sf-datagrid__row--drop-before', 'sf-datagrid__row--drop-after', 'sf-datagrid__row--dragging'));
 
             if (destIndex >= 0 && destIndex !== dragSourceIndex) {
                 dotNetRef.invokeMethodAsync('OnRowDropped', dragSourceIndex, destIndex, dropPosition);
@@ -586,7 +586,7 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
 
         tbody.addEventListener('dragend', () => {
             tbody.querySelectorAll('.sf-datagrid-row--drop-before, .sf-datagrid-row--drop-after, .sf-datagrid-row--dragging')
-                .forEach(el => el.classList.remove('mar-datagrid-row--drop-before', 'mar-datagrid-row--drop-after', 'mar-datagrid-row--dragging'));
+                .forEach(el => el.classList.remove('sf-datagrid__row--drop-before', 'sf-datagrid__row--drop-after', 'sf-datagrid__row--dragging'));
             dragSourceIndex = -1;
         });
     }
@@ -594,10 +594,10 @@ public partial class SunfishDataGrid<TItem> : IAsyncDisposable
     function getDataColumnIndex(th) {
         const allTh = Array.from(grid.querySelectorAll('thead tr:first-child th'));
         const dataTh = allTh.filter(h =>
-            !h.classList.contains('mar-datagrid-drag-header') &&
-            !h.classList.contains('mar-datagrid-detail-cell') &&
-            !h.classList.contains('mar-datagrid-checkbox-cell') &&
-            !h.classList.contains('mar-datagrid-command-header'));
+            !h.classList.contains('sf-datagrid__drag-header') &&
+            !h.classList.contains('sf-datagrid__detail-cell') &&
+            !h.classList.contains('sf-datagrid__checkbox-cell') &&
+            !h.classList.contains('sf-datagrid__command-header'));
         return dataTh.indexOf(th);
     }
 })()

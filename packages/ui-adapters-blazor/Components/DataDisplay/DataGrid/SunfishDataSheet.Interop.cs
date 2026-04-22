@@ -12,7 +12,7 @@ public partial class SunfishDataSheet<TItem> : IAsyncDisposable
 
     private IJSObjectReference? _jsModule;
     private DotNetObjectReference<SunfishDataSheet<TItem>>? _dotNetRef;
-    private string _gridId = $"mar-datasheet-{Guid.NewGuid():N}";
+    private string _gridId = $"sf-datasheet-{Guid.NewGuid():N}";
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

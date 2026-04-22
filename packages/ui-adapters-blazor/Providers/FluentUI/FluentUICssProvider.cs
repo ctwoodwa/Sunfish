@@ -546,8 +546,8 @@ public class FluentUICssProvider : ISunfishCssProvider
     public string DataGridCellClass() => "sf-datagrid-cell";
 
     // Fluent v9 command column actions use subtle button styling. Keep the existing
-    // mar-datagrid-cmd-btn hook; sunfish-fluentui.css already styles it.
-    public string DataGridCommandButtonClass() => "mar-datagrid-cmd-btn";
+    // sf-datagrid__cmd-btn hook; sunfish-fluentui.css already styles it.
+    public string DataGridCommandButtonClass() => "sf-datagrid__cmd-btn";
 
     public string DataGridPagerClass() => "sf-datagrid-pager";
 
