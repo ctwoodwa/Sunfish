@@ -1,0 +1,139 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Media
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+@*
+    SunfishPdfViewer — canonical MVP surface for the `pdfviewer` catalog leaf (Tier 3 media).
+    Renders the document via a native <iframe>; browsers provide the in-built PDF renderer.
+    Toolbar chrome is scoped by the ToolbarMode enum.
+
+    Gaps:
+    - The browser's native PDF viewer does not raise page-change events into the host page,
+      so OnPageChange is a no-op API parameter for MVP. Full page-change wiring requires a
+      JS-backed renderer such as PDF.js.
+    - Page navigation uses the URL fragment (#page=N) which most browser renderers honor.
+*@
+
+<div class="@CombineClasses("sf-pdfviewer")"
+     style="@CombineStyles($"width:{Width};height:{Height};display:flex;flex-direction:column;border:1px solid #c5d2e0;border-radius:4px;overflow:hidden;background:#fff;")"
+     @attributes="AdditionalAttributes">
+
+    @if (ToolbarMode != PdfToolbarMode.Hidden)
+    {
+        <div class="sf-pdfviewer__toolbar"
+             role="toolbar" aria-label="PDF toolbar"
+             style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:#f5f6f8;border-bottom:1px solid #e0e4ea;flex-shrink:0;font-family:system-ui,sans-serif;">
+
+            @if (ToolbarMode == PdfToolbarMode.Full)
+            {
+                <button type="button" class="sf-pdfviewer__btn" style="@_btnStyle"
+                        disabled="@(_currentPage <= 1)"
+                        @onclick="PreviousPageAsync" aria-label="Previous page">◀ Prev</button>
+
+                <span style="font-size:13px;min-width:88px;text-align:center;">
+                    Page @_currentPage@(PageCount > 0 ? $" / {PageCount}" : "")
+                </span>
+
+                <button type="button" class="sf-pdfviewer__btn" style="@_btnStyle"
+                        disabled="@(PageCount > 0 && _currentPage >= PageCount)"
+                        @onclick="NextPageAsync" aria-label="Next page">Next ▶</button>
+
+                <span style="width:1px;height:20px;background:#d0d5dc;margin:0 4px;"></span>
+
+                <button type="button" class="sf-pdfviewer__btn" style="@_btnStyle"
+                        @onclick="ZoomOut" aria-label="Zoom out">−</button>
+                <span style="font-size:13px;min-width:48px;text-align:center;">@((int)(_zoom * 100))%</span>
+                <button type="button" class="sf-pdfviewer__btn" style="@_btnStyle"
+                        @onclick="ZoomIn" aria-label="Zoom in">+</button>
+            }
+
+            <span style="flex:1;"></span>
+
+            @if (!string.IsNullOrEmpty(Source))
+            {
+                <a class="sf-pdfviewer__btn" style="@_btnStyle;text-decoration:none;color:#1a3a5c;"
+                   href="@Source" download target="_blank" rel="noopener" aria-label="Download">
+                    ⬇ Download
+                </a>
+            }
+        </div>
+    }
+
+    <div class="sf-pdfviewer__content" style="flex:1;overflow:auto;background:#e0e4ea;">
+        @if (!string.IsNullOrEmpty(Source))
+        {
+            <iframe src="@FramedSource"
+                    style="@($"width:100%;height:100%;border:none;transform:scale({_zoom.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)});transform-origin:top left;")"
+                    title="PDF document"></iframe>
+        }
+        else
+        {
+            <div style="display:flex;align-items:center;justify-content:center;height:100%;padding:24px;color:#666;text-align:center;font-family:system-ui,sans-serif;">
+                <div>
+                    <div style="font-size:40px;margin-bottom:8px;">📄</div>
+                    <div>No PDF loaded. Set <code>Source</code> to a URL or data URI.</div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>PDF URL or base64 data URI (e.g. <c>data:application/pdf;base64,...</c>).</summary>
+    [Parameter] public string? Source { get; set; }
+
+    /// <summary>CSS width.</summary>
+    [Parameter] public string Width { get; set; } = "100%";
+
+    /// <summary>CSS height.</summary>
+    [Parameter] public string Height { get; set; } = "600px";
+
+    /// <summary>Toolbar density. Default <see cref="PdfToolbarMode.Full"/>.</summary>
+    [Parameter] public PdfToolbarMode ToolbarMode { get; set; } = PdfToolbarMode.Full;
+
+    /// <summary>Initial page. 1-based.</summary>
+    [Parameter] public int InitialPage { get; set; } = 1;
+
+    /// <summary>Total page count (optional hint for toolbar bounds).</summary>
+    [Parameter] public int PageCount { get; set; }
+
+    /// <summary>
+    /// Fired when the current page changes via toolbar nav. No-op at the iframe level
+    /// because browser-native PDF viewers do not emit page events — see class remarks.
+    /// </summary>
+    [Parameter] public EventCallback<int> OnPageChange { get; set; }
+
+    private int _currentPage = 1;
+    private double _zoom = 1.0;
+    private const string _btnStyle =
+        "padding:4px 10px;border:1px solid #c5d2e0;background:#fff;border-radius:3px;cursor:pointer;font-size:12px;";
+
+    private string FramedSource => string.IsNullOrEmpty(Source) ? "" : $"{Source}#page={_currentPage}&zoom={(int)(_zoom * 100)}";
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (_currentPage < 1) _currentPage = Math.Max(1, InitialPage);
+    }
+
+    private async Task PreviousPageAsync()
+    {
+        if (_currentPage > 1)
+        {
+            _currentPage--;
+            await OnPageChange.InvokeAsync(_currentPage);
+        }
+    }
+
+    private async Task NextPageAsync()
+    {
+        if (PageCount <= 0 || _currentPage < PageCount)
+        {
+            _currentPage++;
+            await OnPageChange.InvokeAsync(_currentPage);
+        }
+    }
+
+    private void ZoomIn() => _zoom = Math.Min(_zoom + 0.25, 3.0);
+    private void ZoomOut() => _zoom = Math.Max(_zoom - 0.25, 0.25);
+}
