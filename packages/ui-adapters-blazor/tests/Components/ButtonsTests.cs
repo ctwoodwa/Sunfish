@@ -20,13 +20,14 @@ public class ButtonsTests
         {
             typeof(SunfishButton), typeof(SunfishButtonGroup), typeof(SunfishChip),
             typeof(SunfishChipSet<>), typeof(SunfishFab), typeof(SunfishIconButton),
-            typeof(SunfishSegmentedControl), typeof(SunfishSmartPasteButton),
-            typeof(SunfishSpeechToTextButton), typeof(SunfishSplitButton),
+            typeof(SunfishSegmentedControl), typeof(SunfishSplitButton),
             typeof(SunfishToggleButton),
         };
         foreach (var t in expected)
         {
             Assert.Equal("Sunfish.UIAdapters.Blazor.Components.Buttons", t.Namespace);
         }
+        // SunfishSmartPasteButton and SunfishSpeechToTextButton intentionally live
+        // in Components.AI, not Components.Buttons — they are asserted elsewhere.
     }
 }
