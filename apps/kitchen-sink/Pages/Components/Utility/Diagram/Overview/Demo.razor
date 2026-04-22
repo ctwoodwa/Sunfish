@@ -1,0 +1,115 @@
+@page "/components/utility/diagram/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Diagram / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Diagram / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Utility/Diagram/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDiagram</code> renders an SVG node/edge surface with draggable nodes and
+            curved (or straight / orthogonal) connections. This MVP overview shows a three-node
+            graph with a Bezier and an orthogonal connection — drag any node with the pointer to
+            re-route its edges in real time. Handlers for <code>OnNodeClick</code>,
+            <code>OnConnectionClick</code> and the cancellable <code>OnNodeDragEnd</code> complete
+            the surface.
+        </p>
+        <p>
+            Status: <strong>partial</strong>. Connector attach points, arrowheads, selection state,
+            zoom/pan, and keyboard-accessible drag are deferred to follow-up waves.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div style="display:flex; gap:1rem; align-items:center; font-size:.9rem; color:#374151;">
+                <span>Last event: <strong>@_lastEvent</strong></span>
+            </div>
+            <SunfishDiagram Nodes="_nodes"
+                            Connections="_connections"
+                            Width="100%"
+                            Height="360px"
+                            OnNodeClick="HandleNodeClick"
+                            OnConnectionClick="HandleConnectionClick"
+                            OnNodeDragEnd="HandleNodeDragEnd"
+                            Class="demo-diagram"
+                            Style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:.5rem;" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Utility", "Diagram", "Overview"];
+
+    private string _lastEvent = "(none)";
+
+    private readonly List<DiagramNode> _nodes = new()
+    {
+        new DiagramNode
+        {
+            Id = "start",
+            X = 40, Y = 140,
+            Width = 120, Height = 56,
+            Shape = DiagramNodeShape.Rounded,
+            Label = "Start",
+            Fill = "#ecfdf5",
+            Stroke = "#059669"
+        },
+        new DiagramNode
+        {
+            Id = "decision",
+            X = 260, Y = 140,
+            Width = 140, Height = 80,
+            Shape = DiagramNodeShape.Diamond,
+            Label = "Approved?",
+            Fill = "#fefce8",
+            Stroke = "#ca8a04"
+        },
+        new DiagramNode
+        {
+            Id = "finish",
+            X = 500, Y = 140,
+            Width = 120, Height = 56,
+            Shape = DiagramNodeShape.Ellipse,
+            Label = "Finish",
+            Fill = "#eff6ff",
+            Stroke = "#2563eb"
+        }
+    };
+
+    private readonly List<DiagramConnection> _connections = new()
+    {
+        new DiagramConnection
+        {
+            Id = "c1",
+            SourceNodeId = "start",
+            TargetNodeId = "decision",
+            Type = DiagramConnectionType.Bezier,
+            Label = "submit"
+        },
+        new DiagramConnection
+        {
+            Id = "c2",
+            SourceNodeId = "decision",
+            TargetNodeId = "finish",
+            Type = DiagramConnectionType.Orthogonal,
+            Label = "yes",
+            Color = "#059669"
+        }
+    };
+
+    private void HandleNodeClick(DiagramNode node) => _lastEvent = $"click node '{node.Id}'";
+
+    private void HandleConnectionClick(DiagramConnection conn) => _lastEvent = $"click connection '{conn.Id}'";
+
+    private void HandleNodeDragEnd(DiagramNodeDragEndEventArgs e) =>
+        _lastEvent = $"drag end '{e.Id}' -> ({e.NewX:F0},{e.NewY:F0})";
+}

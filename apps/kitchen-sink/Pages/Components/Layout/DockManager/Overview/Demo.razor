@@ -1,0 +1,96 @@
+@page "/components/layout/dockmanager/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout.Dock
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>DockManager / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DockManager / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/DockManager/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDockManager</code> (new MVP surface under
+            <code>Sunfish.UIAdapters.Blazor.Components.Layout.Dock</code>)
+            arranges nested <code>SunfishDockSplit</code> containers and
+            <code>SunfishDockPane</code> leaves into a recursive dock layout.
+            The MVP renders the declared tree via CSS flex; draggable tabs,
+            drag-to-dock, splitter handles, and save/load layout are tracked
+            as documented gaps and will land in follow-up waves.
+        </p>
+        <ul>
+            <li><code>SunfishDockSplit</code> — <code>Orientation</code> (<code>Horizontal</code> / <code>Vertical</code>) and <code>Proportions</code> (<code>double[]</code> summing to ~1.0).</li>
+            <li><code>SunfishDockPane</code> — <code>Title</code>, <code>Closable</code>, <code>Position</code> (defaults to <code>Center</code>).</li>
+            <li><code>OnLayoutChanged</code>, <code>OnPaneClosed</code>, <code>OnPaneMoved</code> — cancellable event callbacks.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <SunfishDockManager Width="100%" Height="360px"
+                            OnLayoutChanged="HandleLayoutChanged"
+                            OnPaneClosed="HandlePaneClosed">
+            @* Top-level split: left column vs. right column (2 : 3) *@
+            <SunfishDockSplit Orientation="DockOrientation.Horizontal" Proportions="_columnProportions">
+                @* Left column: single pane spanning full height *@
+                <SunfishDockPane Title="Explorer" SplitIndex="0">
+                    <ul style="list-style:none;padding:0;margin:0;line-height:1.8;">
+                        <li>src/</li>
+                        <li>tests/</li>
+                        <li>docs/</li>
+                        <li>README.md</li>
+                    </ul>
+                </SunfishDockPane>
+                @* Right column: vertical split — 3 stacked rows *@
+                <SunfishDockSplit Orientation="DockOrientation.Vertical"
+                                  Proportions="_rowProportions"
+                                  Id="right-column">
+                    <SunfishDockPane Title="Editor" SplitIndex="0">
+                        <pre style="margin:0;font-size:.85rem;">public class Hello
+{
+    public void World() =&gt; Console.WriteLine("Hi");
+}</pre>
+                    </SunfishDockPane>
+                    <SunfishDockPane Title="Output" SplitIndex="1">
+                        Build succeeded. 0 warning(s), 0 error(s).
+                    </SunfishDockPane>
+                    <SunfishDockPane Title="Problems" SplitIndex="2" Closable="true">
+                        No problems detected.
+                    </SunfishDockPane>
+                </SunfishDockSplit>
+            </SunfishDockSplit>
+        </SunfishDockManager>
+
+        @if (!string.IsNullOrEmpty(_lastEvent))
+        {
+            <p style="margin-top:.75rem;font-size:.85rem;opacity:.75;">
+                Last event: <code>@_lastEvent</code>
+            </p>
+        }
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "DockManager", "Overview"];
+
+    private readonly double[] _columnProportions = { 0.4, 0.6 };
+    private readonly double[] _rowProportions = { 0.45, 0.3, 0.25 };
+
+    private string _lastEvent = string.Empty;
+
+    private Task HandleLayoutChanged(DockLayoutEventArgs args)
+    {
+        _lastEvent = $"layout-changed: {args.Reason} ({args.ChangedNodeId})";
+        return Task.CompletedTask;
+    }
+
+    private Task HandlePaneClosed(DockPaneCloseEventArgs args)
+    {
+        _lastEvent = $"pane-closed: {args.PaneId} ({args.Title})";
+        return Task.CompletedTask;
+    }
+}

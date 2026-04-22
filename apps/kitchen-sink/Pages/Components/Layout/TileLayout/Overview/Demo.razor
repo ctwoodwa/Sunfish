@@ -1,6 +1,8 @@
 @page "/components/layout/tilelayout/overview"
 @layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout.Tiles
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
 
 <PageTitle>TileLayout / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,28 +13,62 @@
 
     <Narrative>
         <p>
-            <code>SunfishTileLayout</code> arranges dashboard-style tiles on a responsive grid. Each tile can be
-            reordered and resized interactively, making it a good fit for configurable home screens and KPI
-            dashboards. Typical parameters control the column count, row height, and drag/resize behaviour on
-            child tiles.
+            <code>SunfishTileLayout</code> (new MVP surface under
+            <code>Sunfish.UIAdapters.Blazor.Components.Layout.Tiles</code>)
+            arranges dashboard-style tiles on a CSS grid. Each
+            <code>SunfishTile</code> specifies its <code>Col</code>,
+            <code>Row</code>, <code>ColSpan</code>, and <code>RowSpan</code>
+            within a parent grid of <code>Columns</code> columns and
+            <code>RowHeight</code>-pixel rows separated by <code>Gap</code>.
+            Drag-to-reorder and drag-to-resize handles are tracked as
+            documented gaps and arrive alongside the dock drag-to-dock wave.
         </p>
-        <p>
-            Sibling feature demos cover
-            <a href="/components/layout/tilelayout/draggable">draggable</a>,
-            <a href="/components/layout/tilelayout/resizable">resizable</a>,
-            <a href="/components/layout/tilelayout/columns-and-rows">columns &amp; rows</a>,
-            <a href="/components/layout/tilelayout/state">state</a>,
-            <a href="/components/layout/tilelayout/events">events</a>,
-            <a href="/components/layout/tilelayout/keyboard-navigation">keyboard navigation</a>, and
-            <a href="/components/layout/tilelayout/rtl">RTL</a>.
-        </p>
-        @* TODO: Flesh out a richer Overview example once the SunfishTileLayout child-tile API is stabilised. *@
+        <ul>
+            <li><code>Columns</code> (default 4), <code>RowHeight</code> (px), <code>Gap</code> (px).</li>
+            <li><code>Reorderable</code> (<c>bool</c>) &amp; <code>Resizable</code> (<c>TileLayoutResizing</c>) — parameters wired; interaction deferred.</li>
+            <li><code>OnTileReorder</code> &amp; <code>OnTileResize</code> — cancellable event callbacks.</li>
+        </ul>
     </Narrative>
 
     <Example>
-        <div class="demo-row">
-            <SunfishTileLayout Style="min-height:300px;" />
-        </div>
+        <SunfishTileLayout Columns="4" RowHeight="120" Gap="12"
+                           Reorderable="true"
+                           Resizable="TileLayoutResizing.Enabled"
+                           OnTileReorder="HandleReorder"
+                           OnTileResize="HandleResize">
+            <SunfishTile Id="sales" Col="1" Row="1" ColSpan="2" RowSpan="2">
+                <Header>Sales this quarter</Header>
+                <div style="font-size:1.75rem;font-weight:700;">$1.42M</div>
+                <small style="opacity:.75;">+12.4% vs prior quarter</small>
+            </SunfishTile>
+            <SunfishTile Id="active-users" Col="3" Row="1" ColSpan="2" RowSpan="1">
+                <Header>Active users</Header>
+                <div style="font-size:1.25rem;">18,204</div>
+            </SunfishTile>
+            <SunfishTile Id="latency" Col="3" Row="2" ColSpan="1" RowSpan="1">
+                <Header>p95 latency</Header>
+                <div>142 ms</div>
+            </SunfishTile>
+            <SunfishTile Id="errors" Col="4" Row="2" ColSpan="1" RowSpan="1">
+                <Header>Errors / hour</Header>
+                <div>7</div>
+            </SunfishTile>
+            <SunfishTile Id="releases" Col="1" Row="3" ColSpan="4" RowSpan="1">
+                <Header>Recent releases</Header>
+                <div style="display:flex;gap:.75rem;font-size:.85rem;opacity:.8;">
+                    <span>v2.4.0 - Fri</span>
+                    <span>v2.3.9 - Wed</span>
+                    <span>v2.3.8 - Mon</span>
+                </div>
+            </SunfishTile>
+        </SunfishTileLayout>
+
+        @if (!string.IsNullOrEmpty(_lastEvent))
+        {
+            <p style="margin-top:.75rem;font-size:.85rem;opacity:.75;">
+                Last event: <code>@_lastEvent</code>
+            </p>
+        }
     </Example>
 
 </SunfishExamplePanel>
@@ -40,4 +76,18 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "Layout", "TileLayout", "Overview"];
+
+    private string _lastEvent = string.Empty;
+
+    private Task HandleReorder(TileReorderCancellableEventArgs args)
+    {
+        _lastEvent = $"reorder {args.TileId}: {args.OldIndex} -> {args.NewIndex}";
+        return Task.CompletedTask;
+    }
+
+    private Task HandleResize(TileResizeEventArgs args)
+    {
+        _lastEvent = $"resize {args.TileId}: {args.NewColSpan}x{args.NewRowSpan}";
+        return Task.CompletedTask;
+    }
 }

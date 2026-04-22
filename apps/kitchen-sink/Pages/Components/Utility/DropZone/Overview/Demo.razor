@@ -1,0 +1,91 @@
+@page "/components/utility/dropzone/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+
+<PageTitle>Drop Zone / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Drop Zone / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Utility/DropZone/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropZone</code> is a generic external drop target. Wrap any content with
+            the component and subscribe to <code>OnDrop</code> — the wrapper applies
+            <code>preventDefault</code> on <code>dragover</code> and <code>drop</code> so the
+            browser does not open the file, and tracks enter/leave depth so nested children do not
+            flicker the drag-active styling.
+        </p>
+        <p>
+            Pair the zone's <code>ElementId</code> with <code>SunfishFileUpload</code>'s
+            <code>DropZoneElement</code> parameter to route dropped files through the shared
+            <code>IDropZoneService</code> into a hidden file input. Status: <strong>implemented</strong>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <SunfishDropZone ElementId="sf-dropzone-demo"
+                             Accept="image/*,.pdf"
+                             OnDrop="HandleDrop"
+                             OnDragEnter="HandleEnter"
+                             OnDragLeave="HandleLeave"
+                             Style="@_zoneStyle">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+                    <strong>@(_isOver ? "Release to drop" : "Drag files here")</strong>
+                    <span style="color:#6b7280; font-size:.85rem;">
+                        Accepts images and PDFs — @(_files.Count) file(s) captured so far.
+                    </span>
+                </div>
+            </SunfishDropZone>
+
+            @if (_files.Count > 0)
+            {
+                <ul style="margin:0; padding-left:1.25rem; font-size:.9rem;">
+                    @foreach (var file in _files)
+                    {
+                        <li><code>@file.Name</code> <span style="color:#6b7280;">(@file.ContentType)</span></li>
+                    }
+                </ul>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Utility", "DropZone", "Overview"];
+
+    private const string _baseStyle =
+        "display:flex; align-items:center; justify-content:center; min-height:140px; border-radius:.5rem; padding:1rem; text-align:center; transition:background .15s ease,border-color .15s ease;";
+
+    private const string _idleStyle = _baseStyle + " border:2px dashed #cbd5e1; background:#f8fafc;";
+    private const string _activeStyle = _baseStyle + " border:2px solid #2563eb; background:#eff6ff;";
+
+    private bool _isOver;
+    private readonly List<DropZoneFileInfo> _files = new();
+    private string _zoneStyle = _idleStyle;
+
+    private void HandleEnter()
+    {
+        _isOver = true;
+        _zoneStyle = _activeStyle;
+    }
+
+    private void HandleLeave()
+    {
+        _isOver = false;
+        _zoneStyle = _idleStyle;
+    }
+
+    private void HandleDrop(DropZoneDropEventArgs e)
+    {
+        _isOver = false;
+        _zoneStyle = _idleStyle;
+        _files.Clear();
+        _files.AddRange(e.Files);
+    }
+}

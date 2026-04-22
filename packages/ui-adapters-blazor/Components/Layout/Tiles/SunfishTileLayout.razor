@@ -1,0 +1,20 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout.Tiles
+@inherits SunfishComponentBase
+
+@* ──────────────────────────────────────────────────────────────────────
+   SunfishTileLayout (MVP surface — Tier 3 W3-6)
+
+   Canonical composition root for a CSS-grid-based tile dashboard. The MVP
+   renders each declared SunfishTile into a fixed grid-column / row span;
+   drag-to-reorder and drag-to-resize handles arrive alongside the dock
+   drag-to-dock wave (see component-mapping.json: status "partial").
+   ────────────────────────────────────────────────────────────────────── *@
+
+<div class="@CombineClasses("sf-tilelayout")"
+     style="@CombineStyles(GridStyle())"
+     data-sf-tilelayout-root="true"
+     @attributes="AdditionalAttributes">
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>

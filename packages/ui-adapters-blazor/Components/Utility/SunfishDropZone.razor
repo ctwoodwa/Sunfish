@@ -1,0 +1,30 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Utility
+@inherits SunfishComponentBase
+
+@*
+    SunfishDropZone — generic file drop target.
+
+    The wrapper div renders the four drag events (@ondragenter / @ondragleave / @ondragover /
+    @ondrop) and suppresses the browser's default "open file" behaviour on dragover + drop.
+    When dragover is not prevented the drop event never fires.
+
+    The component exposes its ElementId so callers can pair it with a
+    <SunfishFileUpload DropZoneElement="..." /> to bridge dropped files into that input — this is
+    the pattern exercised by the existing IDropZoneService. If callers only need plain file-drop
+    semantics, they can use OnDrop directly without any service wiring.
+*@
+
+<div id="@ElementId"
+     class="@CombineClasses(GetRootClass())"
+     style="@CombineStyles()"
+     @ondragenter="HandleDragEnter"
+     @ondragenter:preventDefault="true"
+     @ondragleave="HandleDragLeave"
+     @ondragleave:preventDefault="true"
+     @ondragover="HandleDragOver"
+     @ondragover:preventDefault="true"
+     @ondrop="HandleDrop"
+     @ondrop:preventDefault="true"
+     @attributes="AdditionalAttributes">
+    @ChildContent
+</div>
