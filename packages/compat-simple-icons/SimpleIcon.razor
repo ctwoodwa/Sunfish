@@ -1,0 +1,122 @@
+@namespace Sunfish.Compat.SimpleIcons
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<SimpleIcon> Logger
+
+<i class="@_cssClass" style="@_styleAttr" role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")" aria-label="@AriaLabel" aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)" @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Simple-Icons-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Simple Icons brand slug. Translates to the canonical lowercase
+    /// <c>si-*</c> CSS class via <see cref="SimpleIconSlugExtensions.ToSlug(SimpleIconSlug)"/>.
+    /// Simple Icons' upstream catalog is ~2,800 brands; the
+    /// <see cref="SimpleIconSlug"/> enum is an intentionally-small starter set.
+    /// </summary>
+    /// <remarks>
+    /// For brands outside the starter-set, use <see cref="SlugString"/>. Because
+    /// Simple Icons is a brand-logo catalog, the raw-string escape hatch is expected
+    /// to see heavier traffic than on <c>BootstrapIcon</c>'s <c>NameString</c>.
+    /// If both <see cref="Slug"/> and <see cref="SlugString"/> are provided,
+    /// <see cref="SlugString"/> wins and a warning is logged — specify only one.
+    /// </remarks>
+    [Parameter] public SimpleIconSlug? Slug { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Simple Icons slug (e.g. <c>"opentelemetry"</c>,
+    /// <c>"x"</c>). The value is emitted verbatim as the <c>si-*</c> class — no
+    /// validation is performed against the upstream catalog. Critical for Simple
+    /// Icons consumers since the 50-slug starter set covers under 2% of the upstream
+    /// ~2,800 brands.
+    /// </summary>
+    [Parameter] public string? SlugString { get; set; }
+
+    /// <summary>
+    /// Simple Icons size keyword. Optional — when null, the icon inherits its
+    /// surrounding font-size. Accepted values map to font-size utility classes
+    /// emitted on the wrapper element.
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Optional brand color. Passed through to the element's inline <c>style</c> as
+    /// <c>color: &lt;value&gt;</c>. Simple Icons' distinguishing feature vs. other
+    /// icon libraries is its curated per-brand official-color palette — consumers
+    /// typically pass each brand's hex (e.g. <c>"#181717"</c> for GitHub's black,
+    /// <c>"#1DA1F2"</c> for Twitter blue) or <c>"currentColor"</c> for monochrome.
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "si sf-simple-icon";
+    private string? _styleAttr;
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Map size → size-class suffix (nullable — when null, no size class is emitted
+        // and the icon inherits its surrounding font-size).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `si si-*` alongside the Sunfish
+        // prefix `sf-simple-icon` — lets migrators keep their Simple Icons stylesheet
+        // loaded without visual regressions and lets Sunfish-aware styles target the
+        // wrapper independently.
+        _cssClass = string.IsNullOrEmpty(slug)
+            ? $"si sf-simple-icon{AppendSizeClass(sizeClass)}"
+            : $"si si-{slug} sf-simple-icon{AppendSizeClass(sizeClass)}";
+
+        // Simple Icons' curated per-brand color palette — expose via inline style so
+        // consumers can pass a brand hex (e.g. "#181717" for GitHub) or
+        // "currentColor" for monochrome rendering.
+        _styleAttr = string.IsNullOrEmpty(Color) ? null : $"color: {Color}";
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(SlugString))
+        {
+            if (Slug.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-simple-icons: Both Slug='{Slug}' and SlugString='{SlugString}' specified on SimpleIcon. SlugString wins. See docs/compat-simple-icons-mapping.md.",
+                    Slug.Value, SlugString);
+            }
+            return SlugString;
+        }
+
+        return Slug.HasValue ? Slug.Value.ToSlug() : null;
+    }
+
+    private static string AppendSizeClass(string? sizeClass)
+        => string.IsNullOrEmpty(sizeClass) ? string.Empty : " " + sizeClass;
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "fs-6",
+        FoundationEnums.IconSize.Medium => "fs-5",
+        FoundationEnums.IconSize.Large => "fs-3",
+        FoundationEnums.IconSize.ExtraLarge => "fs-1",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-simple-icons: Unrecognized Size value '{Value}' on SimpleIcon. Inheriting ambient font-size. See docs/compat-simple-icons-mapping.md.",
+            received);
+        return null;
+    }
+}

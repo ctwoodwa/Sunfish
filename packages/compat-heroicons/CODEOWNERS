@@ -1,0 +1,4 @@
+# packages/compat-heroicons/CODEOWNERS
+# Policy-gated package. All changes require sign-off from a listed owner.
+# Replace placeholder handle with real GitHub handles before merge.
+* @sunfish-maintainers

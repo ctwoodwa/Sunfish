@@ -138,9 +138,21 @@
     <Project Path="packages/compat-font-awesome/Sunfish.Compat.FontAwesome.csproj" />
     <Project Path="packages/compat-font-awesome/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/compat/heroicons/">
+    <Project Path="packages/compat-heroicons/Sunfish.Compat.Heroicons.csproj" />
+    <Project Path="packages/compat-heroicons/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/lucide/">
+    <Project Path="packages/compat-lucide/Sunfish.Compat.Lucide.csproj" />
+    <Project Path="packages/compat-lucide/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/compat/material-icons/">
     <Project Path="packages/compat-material-icons/Sunfish.Compat.MaterialIcons.csproj" />
     <Project Path="packages/compat-material-icons/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/simple-icons/">
+    <Project Path="packages/compat-simple-icons/Sunfish.Compat.SimpleIcons.csproj" />
+    <Project Path="packages/compat-simple-icons/tests/tests.csproj" />
   </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
