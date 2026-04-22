@@ -1,0 +1,43 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+
+@*
+    Child of <FaList>. Renders <li> with a FontAwesomeIcon wrapped in a `fa-li` span so
+    consumer CSS keyed to FA's own styles keeps working. Content is the list item's text.
+*@
+
+<li class="@_classAttr" @attributes="AdditionalAttributes">
+    <span class="fa-li">
+        <FontAwesomeIcon Icon="@Icon" Size="@Size" />
+    </span>
+    @ChildContent
+</li>
+
+@code {
+    /// <summary>Icon identifier — same shapes as <see cref="FontAwesomeIcon.Icon"/>.</summary>
+    [Parameter] public object? Icon { get; set; }
+
+    /// <summary>Icon size — same mapping as <see cref="FontAwesomeIcon.Size"/>.</summary>
+    [Parameter] public string? Size { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter] public FaList? Parent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _classAttr = "sf-fa-list-item";
+
+    protected override void OnParametersSet()
+    {
+        if (AdditionalAttributes is not null
+            && AdditionalAttributes.TryGetValue("class", out var userClass)
+            && userClass is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            _classAttr = $"sf-fa-list-item {s}";
+            AdditionalAttributes = new Dictionary<string, object>(AdditionalAttributes);
+            AdditionalAttributes.Remove("class");
+        }
+    }
+}

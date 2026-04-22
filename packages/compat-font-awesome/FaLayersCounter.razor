@@ -1,0 +1,30 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+
+@*
+    Counter-overlay child of <FaLayers>. Renders a small badge typically displaying an
+    integer count. Sunfish has no equivalent primitive, so positioning is left to the
+    FA-compatible class (`fa-layers-counter`); consumers migrating away from FA assets
+    will need to style this themselves.
+*@
+
+<span class="sf-fa-layers-counter fa-layers-counter" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        @Value
+    }
+    else
+    {
+        @ChildContent
+    }
+</span>
+
+@code {
+    /// <summary>Counter text (typically an integer). If null/empty, <see cref="ChildContent"/> is used instead.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

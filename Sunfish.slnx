@@ -126,6 +126,10 @@
   <Folder Name="/compat/shared/">
     <Project Path="packages/compat-shared/Sunfish.Compat.Shared.csproj" />
   </Folder>
+  <Folder Name="/compat/font-awesome/">
+    <Project Path="packages/compat-font-awesome/Sunfish.Compat.FontAwesome.csproj" />
+    <Project Path="packages/compat-font-awesome/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
     <Project Path="packages/compat-telerik/tests/tests.csproj" />

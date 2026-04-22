@@ -1,0 +1,30 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+
+@*
+    Text-overlay child of <FaLayers>. Renders the passed `Value` as a positioned span
+    sitting on top of the surrounding layer stack. Sunfish has no equivalent primitive,
+    so positioning is left to the FA-compatible class (`fa-layers-text`); consumers who
+    migrate away from FA assets will need to style this themselves.
+*@
+
+<span class="sf-fa-layers-text fa-layers-text" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Value))
+    {
+        @Value
+    }
+    else
+    {
+        @ChildContent
+    }
+</span>
+
+@code {
+    /// <summary>Text content to render. If null/empty, <see cref="ChildContent"/> is used instead.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+}

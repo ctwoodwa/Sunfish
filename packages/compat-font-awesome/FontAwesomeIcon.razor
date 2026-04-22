@@ -1,0 +1,166 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<FontAwesomeIcon> Logger
+
+<SunfishIcon Name="@_iconName"
+             Icon="@_iconFragment"
+             Size="@_mappedSize"
+             AriaLabel="@AriaLabel"
+             @attributes="AdditionalAttributes" />
+
+@code {
+    // --- Font-Awesome-shaped public parameters ---
+
+    /// <summary>
+    /// Font Awesome icon identifier. Accepts:
+    /// <list type="bullet">
+    ///   <item><description>A <c>string</c> (kebab-case icon name) — e.g. <c>"star"</c>, or any <see cref="FasIcons"/> / <see cref="FarIcons"/> / <see cref="FabIcons"/> member.</description></item>
+    ///   <item><description>A <see cref="RenderFragment"/> — rendered verbatim as the icon body.</description></item>
+    ///   <item><description>Any other <see cref="object"/> — routed through <see cref="CompatIconAdapter.ToRenderFragment(object?)"/>.</description></item>
+    /// </list>
+    /// </summary>
+    [Parameter] public object? Icon { get; set; }
+
+    /// <summary>
+    /// Font-Awesome-shaped size keyword. Accepts <c>"xs"</c>, <c>"sm"</c>, <c>"lg"</c>,
+    /// <c>"xl"</c>, <c>"2xl"</c>, or the numeric family <c>"1x"</c>..<c>"6x"</c>.
+    /// Values above <c>"6x"</c> (i.e. <c>"7x"</c>..<c>"10x"</c>) have no Sunfish equivalent
+    /// and throw <see cref="NotSupportedException"/>.
+    /// </summary>
+    [Parameter] public string? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the underlying element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Font Awesome <c>fixedWidth</c> toggle. LogAndFallback — Sunfish does not model a
+    /// dedicated fixed-width mode; the rendered glyph inherits the active provider's
+    /// sizing. See <c>docs/compat-font-awesome-mapping.md</c>.
+    /// </summary>
+    [Parameter] public bool FixedWidth { get; set; }
+
+    /// <summary>
+    /// Font Awesome <c>listItem</c> toggle — used when nested in <see cref="FaList"/>.
+    /// LogAndFallback — the parent <see cref="FaList"/> takes care of list semantics.
+    /// </summary>
+    [Parameter] public bool ListItem { get; set; }
+
+    /// <summary>Font Awesome <c>pull</c> — <c>"left"</c> or <c>"right"</c>. LogAndFallback.</summary>
+    [Parameter] public string? Pull { get; set; }
+
+    /// <summary>Font Awesome <c>border</c> toggle. LogAndFallback.</summary>
+    [Parameter] public bool Border { get; set; }
+
+    /// <summary>Font Awesome <c>rotation</c> — supports <c>90</c>, <c>180</c>, <c>270</c>. Other values throw.</summary>
+    [Parameter] public int? Rotation { get; set; }
+
+    /// <summary>Font Awesome <c>flip</c> — <c>"horizontal"</c>, <c>"vertical"</c>, or <c>"both"</c>.</summary>
+    [Parameter] public string? Flip { get; set; }
+
+    /// <summary>Font Awesome <c>spin</c> animation. LogAndFallback — Sunfish providers may render a static glyph.</summary>
+    [Parameter] public bool Spin { get; set; }
+
+    /// <summary>Font Awesome <c>pulse</c> animation. LogAndFallback.</summary>
+    [Parameter] public bool Pulse { get; set; }
+
+    /// <summary>Font Awesome <c>transform</c> mini-language (e.g. <c>"shrink-6 rotate-45"</c>). Throws — out of scope for Phase 1.</summary>
+    [Parameter] public string? Transform { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Mapped Sunfish values ---
+    private string? _iconName;
+    private RenderFragment? _iconFragment;
+    private FoundationEnums.IconSize _mappedSize = FoundationEnums.IconSize.Medium;
+
+    protected override void OnParametersSet()
+    {
+        // Icon identifier normalization — mirrors TelerikIcon.razor shape.
+        switch (Icon)
+        {
+            case null:
+                _iconName = null;
+                _iconFragment = ChildContent; // fall through to child content if caller provided one
+                break;
+            case string s:
+                _iconName = s;
+                _iconFragment = null;
+                break;
+            case RenderFragment rf:
+                _iconName = null;
+                _iconFragment = rf;
+                break;
+            default:
+                _iconName = null;
+                _iconFragment = CompatIconAdapter.ToRenderFragment(Icon);
+                break;
+        }
+
+        _mappedSize = MapSize(Size);
+
+        // Rotation: FA supports 90 / 180 / 270; Sunfish has no rotation model in Phase 1.
+        if (Rotation is int r && r != 90 && r != 180 && r != 270)
+        {
+            throw UnsupportedParam.Throw(
+                nameof(Rotation), r.ToString(),
+                "Font Awesome rotation supports 90/180/270 only. See docs/compat-font-awesome-mapping.md.");
+        }
+        if (Rotation is int)
+        {
+            LogDrop(nameof(Rotation), Rotation!.Value.ToString(),
+                "Sunfish has no rotation model in Phase 1 — glyph renders at 0deg.");
+        }
+
+        // Transform: mini-language is out of scope for Phase 1.
+        if (!string.IsNullOrEmpty(Transform))
+        {
+            throw UnsupportedParam.Throw(
+                nameof(Transform), Transform,
+                "Font Awesome transform mini-language is not supported in Phase 1. See docs/compat-font-awesome-mapping.md.");
+        }
+
+        // LogAndFallback for cosmetic-only FA parameters.
+        if (FixedWidth) LogDrop(nameof(FixedWidth), "true", "Sunfish has no fixed-width icon mode.");
+        if (ListItem) LogDrop(nameof(ListItem), "true", "Parent FaList owns list-item semantics.");
+        if (!string.IsNullOrEmpty(Pull)) LogDrop(nameof(Pull), Pull, "Sunfish has no float/pull model; style manually.");
+        if (Border) LogDrop(nameof(Border), "true", "Sunfish has no built-in bordered-icon mode.");
+        if (!string.IsNullOrEmpty(Flip)) LogDrop(nameof(Flip), Flip, "Sunfish IconFlip enum is not exposed through this wrapper in Phase 1.");
+        if (Spin) LogDrop(nameof(Spin), "true", "Spin animation not modeled by Sunfish providers.");
+        if (Pulse) LogDrop(nameof(Pulse), "true", "Pulse animation not modeled by Sunfish providers.");
+    }
+
+    private FoundationEnums.IconSize MapSize(string? s) => s switch
+    {
+        null or "" => FoundationEnums.IconSize.Medium,
+        "xs" or "sm" or "1x" => FoundationEnums.IconSize.Small,
+        "md" or "2x" => FoundationEnums.IconSize.Medium,
+        "lg" or "3x" => FoundationEnums.IconSize.Large,
+        "xl" or "2xl" or "4x" or "5x" or "6x" => FoundationEnums.IconSize.ExtraLarge,
+        "7x" or "8x" or "9x" or "10x" => throw UnsupportedParam.Throw(
+            nameof(Size), s,
+            "Sunfish IconSize caps at ExtraLarge; FA 7x-10x have no equivalent. See docs/compat-font-awesome-mapping.md."),
+        _ => LogAndFallbackSize(s)
+    };
+
+    private FoundationEnums.IconSize LogAndFallbackSize(string received)
+    {
+        Logger.LogWarning(
+            "compat-font-awesome: Unrecognized Size value '{Value}' on FontAwesomeIcon. Falling back to Medium. See docs/compat-font-awesome-mapping.md.",
+            received);
+        return FoundationEnums.IconSize.Medium;
+    }
+
+    private void LogDrop(string paramName, string? value, string reason)
+    {
+        Logger.LogWarning(
+            "compat-font-awesome: Parameter '{Param}={Value}' on FontAwesomeIcon is not implemented in Phase 1. {Reason} See docs/compat-font-awesome-mapping.md.",
+            paramName, value, reason);
+    }
+}

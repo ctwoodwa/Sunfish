@@ -1,0 +1,39 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+
+@*
+    Font Awesome's <FaList> renders as <ul class="fa-ul"> — a flat bulletless list whose
+    <li> children contain an inline icon followed by content text. Sunfish has no first-
+    class icon-list primitive, so we render a minimally-styled <ul> under the
+    namespace-prefixed CSS class `sf-fa-list` (consumers can style this themselves).
+    The `fa-ul` class is also forwarded to preserve source-shape parity for consumers
+    who still have FA's CSS loaded.
+*@
+
+<CascadingValue Value="this" IsFixed="true">
+    <ul class="@_classAttr" @attributes="AdditionalAttributes">
+        @ChildContent
+    </ul>
+</CascadingValue>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _classAttr = "sf-fa-list fa-ul";
+
+    protected override void OnParametersSet()
+    {
+        // If consumer passed a `class` attribute, merge rather than replace.
+        if (AdditionalAttributes is not null
+            && AdditionalAttributes.TryGetValue("class", out var userClass)
+            && userClass is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            _classAttr = $"sf-fa-list fa-ul {s}";
+            AdditionalAttributes = new Dictionary<string, object>(AdditionalAttributes);
+            AdditionalAttributes.Remove("class");
+        }
+    }
+}
