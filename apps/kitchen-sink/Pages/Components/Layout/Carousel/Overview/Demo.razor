@@ -1,0 +1,144 @@
+@page "/components/layout/carousel/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Carousel / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Carousel / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Carousel/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCarousel</code> cycles through a set of slides with arrow buttons, dot
+            pagination, keyboard arrow-key navigation, and optional autoplay. Provide slides
+            declaratively with <code>SunfishCarouselSlide</code> children, or drive the carousel
+            from data by setting <code>Items</code> + <code>ItemTemplate</code>.
+        </p>
+        <ul>
+            <li><code>@("@bind-CurrentSlideIndex")</code> — two-way binding on the zero-based index.</li>
+            <li><code>AutoPlay</code> + <code>AutoPlayInterval</code> (default 5000ms) — automatic cycling.</li>
+            <li><code>ShowButtons</code> / <code>ShowPagination</code> — toggle chrome.</li>
+            <li><code>LoopItems</code> — wrap-around past the last slide (default <code>true</code>).</li>
+            <li><code>Animation</code> — <code>CarouselAnimation.Slide</code> (default) or <code>Fade</code>.</li>
+        </ul>
+        <p>
+            The carousel exposes <code>role="region"</code> with
+            <code>aria-roledescription="carousel"</code> and an <code>aria-live="polite"</code>
+            track so screen readers announce slide changes. Each slide wraps itself in
+            <code>role="group"</code> with <code>aria-roledescription="slide"</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Three declarative slides with autoplay toggle</h4>
+                <div style="display:flex; gap:.75rem; align-items:center; margin-bottom:.5rem;">
+                    <label style="display:inline-flex; gap:.5rem; align-items:center;">
+                        <input type="checkbox" @bind="_autoPlay" /> AutoPlay
+                    </label>
+                    <label style="display:inline-flex; gap:.5rem; align-items:center;">
+                        Interval (ms):
+                        <input type="number" min="1000" step="500" @bind="_interval"
+                               style="width:90px;" />
+                    </label>
+                    <label style="display:inline-flex; gap:.5rem; align-items:center;">
+                        <input type="checkbox" @bind="_loop" /> Loop
+                    </label>
+                    <label style="display:inline-flex; gap:.5rem; align-items:center;">
+                        Animation:
+                        <select @bind="_animation">
+                            <option value="@CarouselAnimation.Slide">Slide</option>
+                            <option value="@CarouselAnimation.Fade">Fade</option>
+                        </select>
+                    </label>
+                </div>
+
+                <SunfishCarousel @bind-CurrentSlideIndex="_slide"
+                                 AutoPlay="@_autoPlay"
+                                 AutoPlayInterval="@_interval"
+                                 LoopItems="@_loop"
+                                 Animation="@_animation"
+                                 AriaLabel="Product showcase"
+                                 Width="480px"
+                                 Height="220px">
+                    <SunfishCarouselSlide AriaLabel="Slide 1: Fast">
+                        <div style="background:#e3f2fd; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <div style="font-size:2rem;">&#128640;</div>
+                            <strong>Fast</strong>
+                            <small style="opacity:.7;">Slide 1 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Slide 2: Secure">
+                        <div style="background:#f3e5f5; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <div style="font-size:2rem;">&#128274;</div>
+                            <strong>Secure</strong>
+                            <small style="opacity:.7;">Slide 2 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Slide 3: Scalable">
+                        <div style="background:#e8f5e9; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:.5rem;">
+                            <div style="font-size:2rem;">&#127760;</div>
+                            <strong>Scalable</strong>
+                            <small style="opacity:.7;">Slide 3 of 3</small>
+                        </div>
+                    </SunfishCarouselSlide>
+                </SunfishCarousel>
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Current slide: <strong>@(_slide + 1) of 3</strong>.
+                    Tip: focus the carousel then press <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> to navigate.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Data-driven carousel</h4>
+                <p style="margin:.25rem 0 .5rem; font-size:.85rem; opacity:.75;">
+                    Same behaviour, powered by <code>Items</code> + <code>ItemTemplate</code>.
+                </p>
+                <SunfishCarousel Items="@_cards"
+                                 Width="480px"
+                                 Height="180px"
+                                 ShowButtons="true"
+                                 ShowPagination="true">
+                    <ItemTemplate Context="item">
+                        @{
+                            var card = (CarouselCard)item;
+                        }
+                        <div style="@($"background:{card.Background}; height:100%; display:flex; align-items:center; justify-content:center; font-weight:600;")">
+                            @card.Title
+                        </div>
+                    </ItemTemplate>
+                </SunfishCarousel>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Carousel", "Overview"];
+
+    private int _slide;
+    private bool _autoPlay;
+    private int _interval = 2500;
+    private bool _loop = true;
+    private CarouselAnimation _animation = CarouselAnimation.Slide;
+
+    private record CarouselCard(string Title, string Background);
+
+    private readonly List<object> _cards = new()
+    {
+        new CarouselCard("Dashboard", "#fde7f3"),
+        new CarouselCard("Reports", "#e0f7fa"),
+        new CarouselCard("Settings", "#fff3e0"),
+        new CarouselCard("Profile", "#ede7f6"),
+    };
+}

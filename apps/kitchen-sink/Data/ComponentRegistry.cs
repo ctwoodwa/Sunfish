@@ -23,6 +23,7 @@ public static class ComponentRegistry
     private static readonly string[] FullSubPages = ["overview", "appearance", "events", "accessibility"];
     private static readonly string[] NoEventsSubPages = ["overview", "appearance", "accessibility"];
     private static readonly string[] MinimalSubPages = ["overview", "appearance"];
+    private static readonly string[] CoreSubPages = ["overview", "events"];
     private static readonly string[] OverviewOnly = ["overview"];
     private static readonly string[] DataSheetSubPages = ["overview", "editing-and-validation", "bulk-operations", "keyboard-and-accessibility"];
 
@@ -223,9 +224,9 @@ public static class ComponentRegistry
         new("Sankey", "sankey", "Data Display", "data-display",
             "Flow diagram showing quantities moving through a system.",
             ApiNs("DataDisplay"), OverviewOnly),
-        new("Carousel", "carousel", "Data Display", "data-display",
+        new("Carousel", "carousel", "Layout", "layout",
             "Cycles through a set of content slides with navigation controls.",
-            Api("DataDisplay", "Carousel"), OverviewOnly),
+            Api("Layout", "Carousel"), CoreSubPages),
 
         // ── Feedback ────────────────────────────────────────────────────
         new("Alert", "Alert", "Feedback", "feedback",

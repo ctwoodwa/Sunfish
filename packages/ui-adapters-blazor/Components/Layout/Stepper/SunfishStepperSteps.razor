@@ -1,0 +1,23 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+
+@*
+    SunfishStepperSteps — spec-compatible passthrough wrapper.
+
+    Spec markup wraps StepperStep children in a <StepperSteps> tag:
+
+        <SunfishStepper>
+            <StepperSteps>
+                <StepperStep Label="…" />
+            </StepperSteps>
+        </SunfishStepper>
+
+    Children register themselves with the parent stepper via the cascading
+    stepper value — this wrapper just renders its ChildContent in-place so
+    the registration flow is identical whether or not the wrapper is used.
+*@
+
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

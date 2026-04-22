@@ -1,0 +1,41 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@inherits SunfishComponentBase
+
+@*
+    SunfishCarouselSlide — declarative slide for SunfishCarousel.
+
+    Registers with the parent carousel via cascading value. Renders its
+    ChildContent only when active. Wraps the slide in a <div role="group"
+    aria-roledescription="slide"> for WAI-ARIA carousel compliance.
+*@
+
+@if (_carousel != null && _carousel.IsSlideActive(this))
+{
+    <div class="sf-carousel__slide"
+         role="group"
+         aria-roledescription="slide"
+         aria-label="@AriaLabel">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [CascadingParameter] private SunfishCarousel? _carousel { get; set; }
+
+    /// <summary>Slide body rendered when this slide is active.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional accessible name for this slide.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _carousel?.RegisterSlide(this);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _carousel?.UnregisterSlide(this);
+        base.Dispose(disposing);
+    }
+}

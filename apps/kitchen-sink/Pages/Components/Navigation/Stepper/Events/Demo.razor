@@ -1,5 +1,6 @@
 @page "/components/layout/stepper/events"
 @layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
 @using Sunfish.Foundation.Enums
 
@@ -12,21 +13,24 @@
 
     <Narrative>
         <p>
-            <code>SunfishStepper</code> exposes two events:
+            <code>SunfishStepper</code> surfaces three navigation callbacks, plus a per-step
+            <code>OnChange</code> on <code>SunfishStepperStep</code>:
         </p>
         <ul>
-            <li><code>ActiveStepChanged</code> — fires whenever the active step changes, whether
-                from a user click, the public API (<code>NextAsync</code>,
-                <code>PreviousAsync</code>, <code>GoToStepAsync</code>), or external binding.
-                Supports <code>@@bind-ActiveStep</code>.</li>
-            <li><code>OnStepClick</code> — fires specifically when the user clicks a step
-                indicator. Provides the target index. Useful for validation gates where you want
-                to intercept a click <em>in addition</em> to updating
-                <code>ActiveStep</code>.</li>
+            <li><code>OnStepChange</code> — fires on the stepper <em>before</em> navigation.
+                Receives <code>StepperStepChangeEventArgs</code>; set <code>IsCancelled = true</code>
+                to veto the transition.</li>
+            <li><code>OnActivate</code> — fires <em>after</em> the active step changes; receives
+                the new index.</li>
+            <li><code>ValueChanged</code> / <code>ActiveStepChanged</code> — two-way binding
+                callbacks; fire after navigation commits.</li>
+            <li><code>SunfishStepperStep.OnChange</code> — fires on the step being <em>left</em>
+                before the stepper-level callback; also cancellable.</li>
         </ul>
         <p>
-            The event log below captures both callbacks alongside button-driven programmatic
-            transitions.
+            This demo is a <em>linear</em> stepper with three-state validity. Step 1 requires an
+            email containing <code>@@</code>; step 2 requires a non-empty name. The per-step
+            <code>OnChange</code> on step 2 also vetoes the first forward attempt as a gate demo.
         </p>
     </Narrative>
 
@@ -34,32 +38,66 @@
         <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 360px); gap:1.25rem;">
 
             <div>
-                <h4 style="margin:0 0 .5rem;">Live stepper</h4>
+                <h4 style="margin:0 0 .5rem;">Linear stepper with validation</h4>
                 <SunfishStepper @ref="_stepper"
-                                ActiveStep="_active"
-                                ActiveStepChanged="HandleActiveStepChanged"
-                                OnStepClick="HandleStepClick">
-                    <SunfishStep Title="Choose plan"><p style="margin:0;">Plan selection body.</p></SunfishStep>
-                    <SunfishStep Title="Enter details"><p style="margin:0;">Details body.</p></SunfishStep>
-                    <SunfishStep Title="Review"><p style="margin:0;">Review body.</p></SunfishStep>
-                    <SunfishStep Title="Confirm"><p style="margin:0;">Confirm body.</p></SunfishStep>
+                                @bind-Value="_active"
+                                Linear="true"
+                                OnStepChange="HandleStepChange"
+                                OnActivate="HandleActivate">
+                    <SunfishStepperStep Label="Account" Valid="@IsAccountValid">
+                        <div style="display:flex; flex-direction:column; gap:.5rem; padding:16px;">
+                            <strong>1 · Account</strong>
+                            <label>Email
+                                <input type="email" value="@_email"
+                                       @oninput="e => _email = e.Value?.ToString() ?? string.Empty"
+                                       placeholder="user@example.com"
+                                       style="width:260px;" />
+                            </label>
+                            <small style="opacity:.7;">Required — must contain <code>@@</code>.</small>
+                        </div>
+                    </SunfishStepperStep>
+                    <SunfishStepperStep Label="Profile" Valid="@IsProfileValid" OnChange="HandleStep2Change">
+                        <div style="display:flex; flex-direction:column; gap:.5rem; padding:16px;">
+                            <strong>2 · Profile</strong>
+                            <label>Full name
+                                <input type="text" value="@_name"
+                                       @oninput="e => _name = e.Value?.ToString() ?? string.Empty"
+                                       placeholder="Ada Lovelace"
+                                       style="width:260px;" />
+                            </label>
+                            <small style="opacity:.7;">Required — at least 2 characters. First forward attempt is vetoed.</small>
+                        </div>
+                    </SunfishStepperStep>
+                    <SunfishStepperStep Label="Review" Successful="@_reviewed">
+                        <div style="padding:16px;">
+                            <strong>3 · Review</strong>
+                            <div>Email: <code>@(_email.Length > 0 ? _email : "(not set)")</code></div>
+                            <div>Name: <code>@(_name.Length > 0 ? _name : "(not set)")</code></div>
+                            <div style="margin-top:.5rem;">
+                                <SunfishButton Variant="ButtonVariant.Primary"
+                                               OnClick="() => _reviewed = true">
+                                    Mark as reviewed
+                                </SunfishButton>
+                            </div>
+                        </div>
+                    </SunfishStepperStep>
                 </SunfishStepper>
 
                 <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
                     <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokePrevious">Previous (API)</SunfishButton>
                     <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokeNext">Next (API)</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="GoToLast">GoToStepAsync(3)</SunfishButton>
-                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ClearLog">Clear Log</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="GoToLast">GoToStepAsync(2)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ResetDemo">Reset</SunfishButton>
                 </div>
 
                 <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
-                    Current ActiveStep: <strong>@_active</strong>
+                    Value: <strong>@_active</strong> · Step2Vetoed: <strong>@_step2Vetoed</strong>
                 </p>
             </div>
 
             <div>
                 <h4 style="margin:0 0 .5rem;">Event log</h4>
-                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.78rem;">
                     @if (_log.Count == 0)
                     {
                         <em style="opacity:.6;">No events yet — click a step indicator or a button.</em>
@@ -72,6 +110,10 @@
                         }
                     }
                 </div>
+                <button type="button" class="sf-btn" style="margin-top:.5rem;"
+                        @onclick="ClearLog">
+                    Clear log
+                </button>
             </div>
 
         </div>
@@ -85,8 +127,18 @@
 
     private SunfishStepper? _stepper;
     private int _active;
+    private string _email = "";
+    private string _name = "";
+    private bool _reviewed;
+    private bool _step2Vetoed;
 
     private readonly List<string> _log = new();
+
+    private bool? IsAccountValid
+        => _email.Length == 0 ? null : _email.Contains('@');
+
+    private bool? IsProfileValid
+        => _name.Length == 0 ? null : _name.Trim().Length >= 2;
 
     private void Log(string message)
     {
@@ -97,15 +149,40 @@
 
     private void ClearLog() => _log.Clear();
 
-    private void HandleActiveStepChanged(int index)
+    private void ResetDemo()
     {
-        _active = index;
-        Log($"ActiveStepChanged -> {index}");
+        _active = 0;
+        _email = string.Empty;
+        _name = string.Empty;
+        _reviewed = false;
+        _step2Vetoed = false;
+        _log.Clear();
     }
 
-    private void HandleStepClick(int index)
+    private Task HandleStepChange(StepperStepChangeEventArgs args)
     {
-        Log($"OnStepClick -> {index}");
+        Log($"stepper OnStepChange: {args.PreviousStep} -> {args.CurrentStep} (cancelled={args.IsCancelled})");
+        return Task.CompletedTask;
+    }
+
+    private void HandleActivate(int index)
+    {
+        Log($"stepper OnActivate -> index={index}");
+    }
+
+    private Task HandleStep2Change(StepperStepChangeEventArgs args)
+    {
+        if (args.CurrentStep > args.PreviousStep && !_step2Vetoed)
+        {
+            _step2Vetoed = true;
+            args.IsCancelled = true;
+            Log("step[1] OnChange -> vetoed forward navigation (first attempt)");
+        }
+        else
+        {
+            Log($"step[1] OnChange -> {args.PreviousStep} -> {args.CurrentStep}");
+        }
+        return Task.CompletedTask;
     }
 
     private async Task InvokeNext()
@@ -130,8 +207,8 @@
     {
         if (_stepper is not null)
         {
-            await _stepper.GoToStepAsync(3);
-            Log("Invoked GoToStepAsync(3)");
+            await _stepper.GoToStepAsync(2);
+            Log("Invoked GoToStepAsync(2)");
         }
     }
 }

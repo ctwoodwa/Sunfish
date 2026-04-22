@@ -1,0 +1,365 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Enums
+@inherits SunfishComponentBase
+
+@*
+    SunfishCarousel — a slide/fade carousel with autoplay, keyboard, pagination,
+    and accessible ARIA live-region semantics.
+
+    Content modes (pick ONE):
+      - Declarative: nest SunfishCarouselSlide components as ChildContent.
+      - Data-driven: set Items + ItemTemplate.
+*@
+
+<div class="@CombineClasses(CssProvider.CarouselClass())"
+     style="@CombineStyles(SizeStyle)"
+     @attributes="AdditionalAttributes"
+     role="region"
+     aria-roledescription="carousel"
+     aria-label="@AriaLabel"
+     tabindex="0"
+     @onkeydown="HandleKeyDown"
+     @onkeydown:preventDefault="@_preventKeyDefault">
+    <div class="sf-carousel__track @(Animation == CarouselAnimation.Fade ? "mar-carousel__track--fade" : "mar-carousel__track--slide")"
+         aria-live="polite">
+        @if (Items != null)
+        {
+            @* Data-driven mode *@
+            var itemList = Items.ToList();
+            @if (CurrentSlideIndex >= 0 && CurrentSlideIndex < itemList.Count && ItemTemplate != null)
+            {
+                <div class="sf-carousel__slide"
+                     role="group"
+                     aria-roledescription="slide"
+                     aria-label="Slide @(CurrentSlideIndex + 1) of @itemList.Count">
+                    @ItemTemplate(itemList[CurrentSlideIndex])
+                </div>
+            }
+        }
+        else if (_slides.Count > 0)
+        {
+            @* Declarative mode — parent controls visibility via cascade *@
+            <CascadingValue Value="this">
+                @ChildContent
+            </CascadingValue>
+        }
+        else
+        {
+            @* Raw child markup fallback (legacy) — render all, visibility via slide index *@
+            <CascadingValue Value="this">
+                @ChildContent
+            </CascadingValue>
+        }
+    </div>
+
+    @if (ShowButtons)
+    {
+        <button type="button" class="sf-carousel__prev" @onclick="PreviousAsync" aria-label="Previous slide" disabled="@(!CanGoPrevious)">
+            @IconProvider.GetIconMarkup("chevron-left", IconSize.Medium)
+        </button>
+        <button type="button" class="sf-carousel__next" @onclick="NextAsync" aria-label="Next slide" disabled="@(!CanGoNext)">
+            @IconProvider.GetIconMarkup("chevron-right", IconSize.Medium)
+        </button>
+    }
+
+    @if (ShowPagination && EffectiveSlideCount > 0)
+    {
+        <div class="sf-carousel__dots" role="tablist" aria-label="Carousel pagination">
+            @for (var i = 0; i < EffectiveSlideCount; i++)
+            {
+                var idx = i;
+                var isActive = idx == CurrentSlideIndex;
+                @if (PaginationTemplate != null)
+                {
+                    <button type="button"
+                            class="sf-carousel__dot @(isActive ? "mar-carousel__dot--active" : "")"
+                            role="tab"
+                            aria-selected="@isActive.ToString().ToLowerInvariant()"
+                            aria-label="Go to slide @(idx + 1)"
+                            @onclick="() => GoToAsync(idx)">
+                        @PaginationTemplate(idx)
+                    </button>
+                }
+                else
+                {
+                    <button type="button"
+                            class="sf-carousel__dot @(isActive ? "mar-carousel__dot--active" : "")"
+                            role="tab"
+                            aria-selected="@isActive.ToString().ToLowerInvariant()"
+                            aria-label="Go to slide @(idx + 1)"
+                            @onclick="() => GoToAsync(idx)"></button>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<SunfishCarouselSlide> _slides = [];
+    private System.Timers.Timer? _timer;
+    private bool _preventKeyDefault;
+
+    // ── Parameters: current slide (dual-named for spec + legacy) ───────
+
+    /// <summary>Zero-based index of the active slide. Supports two-way binding.</summary>
+    [Parameter] public int CurrentSlideIndex { get; set; }
+
+    /// <summary>Change callback for <see cref="CurrentSlideIndex"/>.</summary>
+    [Parameter] public EventCallback<int> CurrentSlideIndexChanged { get; set; }
+
+    /// <summary>Legacy zero-based alias for <see cref="CurrentSlideIndex"/>.</summary>
+    [Parameter]
+    public int ActiveIndex
+    {
+        get => CurrentSlideIndex;
+        set => CurrentSlideIndex = value;
+    }
+
+    /// <summary>Legacy change callback for <see cref="ActiveIndex"/>.</summary>
+    [Parameter] public EventCallback<int> ActiveIndexChanged { get; set; }
+
+    /// <summary>Fallback slide count when no data or slides are registered.</summary>
+    [Parameter] public int ItemCount { get; set; }
+
+    // ── Parameters: behaviour ──────────────────────────────────────────
+
+    /// <summary>Enables automatic forward cycling on a timer.</summary>
+    [Parameter] public bool AutoPlay { get; set; }
+
+    /// <summary>Autoplay interval in milliseconds. Defaults to 5000.</summary>
+    [Parameter] public int AutoPlayInterval { get; set; } = 5000;
+
+    /// <summary>Legacy alias for <see cref="AutoPlayInterval"/>.</summary>
+    [Parameter]
+    public int IntervalMs
+    {
+        get => AutoPlayInterval;
+        set => AutoPlayInterval = value;
+    }
+
+    /// <summary>Shows previous/next arrow buttons.</summary>
+    [Parameter] public bool ShowButtons { get; set; } = true;
+
+    /// <summary>Legacy alias for <see cref="ShowButtons"/>.</summary>
+    [Parameter]
+    public bool ShowArrows
+    {
+        get => ShowButtons;
+        set => ShowButtons = value;
+    }
+
+    /// <summary>Shows the dot-pagination indicator.</summary>
+    [Parameter] public bool ShowPagination { get; set; } = true;
+
+    /// <summary>Legacy alias for <see cref="ShowPagination"/>.</summary>
+    [Parameter]
+    public bool Pageable
+    {
+        get => ShowPagination;
+        set => ShowPagination = value;
+    }
+
+    /// <summary>Optional custom dot template. Receives the zero-based slide index.</summary>
+    [Parameter] public RenderFragment<int>? PaginationTemplate { get; set; }
+
+    /// <summary>When <c>true</c> (default), advancing past the last slide wraps back to the first.</summary>
+    [Parameter] public bool LoopItems { get; set; } = true;
+
+    /// <summary>Legacy alias for <see cref="LoopItems"/>.</summary>
+    [Parameter]
+    public bool LoopPages
+    {
+        get => LoopItems;
+        set => LoopItems = value;
+    }
+
+    /// <summary>Animation style between slides.</summary>
+    [Parameter] public CarouselAnimation Animation { get; set; } = CarouselAnimation.Slide;
+
+    // ── Parameters: sizing + data ──────────────────────────────────────
+
+    /// <summary>Optional width on the root element.</summary>
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>Optional height on the root element.</summary>
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Accessible name surfaced on the root region.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Declarative slide content — nest <c>SunfishCarouselSlide</c> children here.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Data-driven slide source.</summary>
+    [Parameter] public IEnumerable<object>? Items { get; set; }
+
+    /// <summary>Legacy alias for <see cref="Items"/>.</summary>
+    [Parameter]
+    public IEnumerable<object>? Data
+    {
+        get => Items;
+        set => Items = value;
+    }
+
+    /// <summary>Template applied per item when <see cref="Items"/> is set.</summary>
+    [Parameter] public RenderFragment<object>? ItemTemplate { get; set; }
+
+    // ── Events ─────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Fires before the active slide changes. Receives a
+    /// <see cref="CarouselSlideChangeEventArgs"/> — set <c>IsCancelled = true</c> to veto.
+    /// </summary>
+    [Parameter] public EventCallback<CarouselSlideChangeEventArgs> OnSlideChange { get; set; }
+
+    // ── Computed ────────────────────────────────────────────────────────
+
+    private int EffectiveSlideCount
+    {
+        get
+        {
+            if (Items != null) return Items.Count();
+            if (_slides.Count > 0) return _slides.Count;
+            return ItemCount;
+        }
+    }
+
+    private bool CanGoPrevious => LoopItems || CurrentSlideIndex > 0;
+    private bool CanGoNext => LoopItems || CurrentSlideIndex < EffectiveSlideCount - 1;
+
+    private string? SizeStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+
+    protected override void OnParametersSet()
+    {
+        if (AutoPlay && _timer == null)
+        {
+            _timer = new System.Timers.Timer(AutoPlayInterval);
+            _timer.Elapsed += async (_, _) => await InvokeAsync(NextAsync);
+            _timer.Start();
+        }
+        else if (!AutoPlay && _timer != null)
+        {
+            _timer.Stop();
+            _timer.Dispose();
+            _timer = null;
+        }
+        else if (AutoPlay && _timer != null && Math.Abs(_timer.Interval - AutoPlayInterval) > 0.5)
+        {
+            _timer.Interval = AutoPlayInterval;
+        }
+    }
+
+    // ── Public API ──────────────────────────────────────────────────────
+
+    /// <summary>Refresh the component (re-project data, re-render).</summary>
+    public void Rebind() => StateHasChanged();
+
+    /// <summary>Advance one slide (honours <see cref="LoopItems"/>).</summary>
+    public async Task NextAsync()
+    {
+        var count = EffectiveSlideCount;
+        if (count <= 0) return;
+        var next = CurrentSlideIndex + 1;
+        if (next >= count) next = LoopItems ? 0 : count - 1;
+        if (next == CurrentSlideIndex) return;
+        await TransitionTo(next);
+    }
+
+    /// <summary>Go back one slide (honours <see cref="LoopItems"/>).</summary>
+    public async Task PreviousAsync()
+    {
+        var count = EffectiveSlideCount;
+        if (count <= 0) return;
+        var prev = CurrentSlideIndex - 1;
+        if (prev < 0) prev = LoopItems ? count - 1 : 0;
+        if (prev == CurrentSlideIndex) return;
+        await TransitionTo(prev);
+    }
+
+    /// <summary>Jump to a specific slide by zero-based index.</summary>
+    public async Task GoToAsync(int index)
+    {
+        if (index < 0 || index >= EffectiveSlideCount) return;
+        if (index == CurrentSlideIndex) return;
+        await TransitionTo(index);
+    }
+
+    // ── Internal API for slides ─────────────────────────────────────────
+
+    internal void RegisterSlide(SunfishCarouselSlide slide)
+    {
+        if (!_slides.Contains(slide))
+        {
+            _slides.Add(slide);
+            StateHasChanged();
+        }
+    }
+
+    internal void UnregisterSlide(SunfishCarouselSlide slide)
+    {
+        _slides.Remove(slide);
+        StateHasChanged();
+    }
+
+    internal bool IsSlideActive(SunfishCarouselSlide slide) => _slides.IndexOf(slide) == CurrentSlideIndex;
+
+    // ── Core transition ────────────────────────────────────────────────
+
+    private async Task TransitionTo(int targetIndex)
+    {
+        var previous = CurrentSlideIndex;
+
+        if (OnSlideChange.HasDelegate)
+        {
+            var args = new CarouselSlideChangeEventArgs
+            {
+                PreviousSlideIndex = previous,
+                CurrentSlideIndex = targetIndex,
+            };
+            await OnSlideChange.InvokeAsync(args);
+            if (args.IsCancelled) return;
+        }
+
+        CurrentSlideIndex = targetIndex;
+        await CurrentSlideIndexChanged.InvokeAsync(CurrentSlideIndex);
+        await ActiveIndexChanged.InvokeAsync(CurrentSlideIndex);
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        _preventKeyDefault = false;
+        if (e.Key == "ArrowLeft")
+        {
+            _preventKeyDefault = true;
+            await PreviousAsync();
+        }
+        else if (e.Key == "ArrowRight")
+        {
+            _preventKeyDefault = true;
+            await NextAsync();
+        }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _timer?.Stop();
+            _timer?.Dispose();
+            _timer = null;
+        }
+        base.Dispose(disposing);
+    }
+}

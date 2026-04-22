@@ -1,45 +1,100 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
+
+@*
+    SunfishStepper — spec-canonical stepper.
+
+    Two usage modes:
+      - Declarative: nest SunfishStepperStep (or legacy SunfishStep) children,
+        optionally wrapped in <StepperSteps>. Each child registers with the
+        parent via cascading parameter.
+      - Data-driven: set Steps to an IEnumerable<object> and (optionally)
+        override the field selectors (TextField, IconField, LabelField, etc.).
+
+    Both modes honour:
+      - Value / ValueChanged (spec-canonical) or ActiveStep / ActiveStepChanged (legacy alias).
+      - Linear mode (cannot skip ahead past the highest reached step).
+      - StepType (Full / Steps / Labels / Text).
+      - OnStepChange (cancellable) + OnActivate (after-nav).
+*@
 
 <div class="@CombineClasses(StepperRootClass)"
      style="@CombineStyles()"
      @attributes="AdditionalAttributes">
-    <div class="sf-stepper__indicators">
-        @for (var i = 0; i < _steps.Count; i++)
+    <div class="sf-stepper__indicators" role="tablist" @onkeydown="HandleKeyDown">
+        @for (var i = 0; i < EffectiveStepCount; i++)
         {
             var index = i;
-            var step = _steps[i];
-            var status = GetStepStatus(index, step);
+            var status = GetStepStatus(index);
             var isClickable = !Linear || index <= _highestReachedStep;
-            var isDisabled = step.Disabled;
+            var isDisabled = IsStepDisabled(index);
+            var label = GetStepLabel(index);
+            var text = GetStepText(index);
+            var icon = GetStepIcon(index);
+            var optional = GetStepOptional(index);
+            var showIndicator = StepType is Enums.StepType.Steps or Enums.StepType.Full;
+            var showLabel = StepType is Enums.StepType.Full or Enums.StepType.Labels or Enums.StepType.Text;
 
-            <div class="@CssProvider.StepClass(status) @(isDisabled ? "mar-step--disabled" : "")">
-                <div class="sf-step__indicator @(isClickable && !isDisabled ? "mar-step__indicator--clickable" : "")"
-                     @onclick="() => OnIndicatorClick(index, isClickable, isDisabled)">
-                    @if (step.Icon != null)
-                    {
-                        <span>@step.Icon</span>
-                    }
-                    else if (status == StepStatus.Completed)
-                    {
-                        <span>&#x2713;</span>
-                    }
-                    else if (status == StepStatus.Error)
-                    {
-                        <span>&#x2717;</span>
-                    }
-                    else
-                    {
-                        <span>@(index + 1)</span>
-                    }
-                </div>
-                <div class="sf-step__label">
-                    <div class="sf-step__title">@step.Title</div>
-                    @if (step.Optional)
-                    {
-                        <div class="sf-step__optional">Optional</div>
-                    }
-                </div>
+            <div class="@CssProvider.StepClass(status) @(isDisabled ? "mar-step--disabled" : "")"
+                 role="tab"
+                 aria-selected="@((index == Value).ToString().ToLowerInvariant())"
+                 aria-current="@(index == Value ? "step" : null)">
+                @if (showIndicator || StepType == Enums.StepType.Text)
+                {
+                    <div class="sf-step__indicator @(isClickable && !isDisabled ? "mar-step__indicator--clickable" : "")"
+                         @onclick="() => OnIndicatorClick(index, isClickable, isDisabled)">
+                        @if (icon != null)
+                        {
+                            <span>@icon</span>
+                        }
+                        else if (status == StepStatus.Completed)
+                        {
+                            <span>&#x2713;</span>
+                        }
+                        else if (status == StepStatus.Error)
+                        {
+                            <span>&#x2717;</span>
+                        }
+                        else if (!string.IsNullOrEmpty(text))
+                        {
+                            <span>@text</span>
+                        }
+                        else
+                        {
+                            <span>@(index + 1)</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    @* Labels mode: no indicator, but label must still be clickable. *@
+                    <div class="sf-step__label-click @(isClickable && !isDisabled ? "mar-step__indicator--clickable" : "")"
+                         @onclick="() => OnIndicatorClick(index, isClickable, isDisabled)"></div>
+                }
+                @if (showLabel && !string.IsNullOrEmpty(label))
+                {
+                    <div class="sf-step__label">
+                        <div class="sf-step__title">
+                            @label
+                            @if (StepType == Enums.StepType.Labels)
+                            {
+                                @if (status == StepStatus.Completed)
+                                {
+                                    <span class="sf-step__validity sf-step__validity--ok">&nbsp;&#x2713;</span>
+                                }
+                                else if (status == StepStatus.Error)
+                                {
+                                    <span class="sf-step__validity sf-step__validity--err">&nbsp;&#x2717;</span>
+                                }
+                            }
+                        </div>
+                        @if (optional)
+                        {
+                            <div class="sf-step__optional">Optional</div>
+                        }
+                    </div>
+                }
             </div>
         }
     </div>
@@ -51,31 +106,83 @@
 </div>
 
 @code {
-    private readonly List<SunfishStep> _steps = [];
+    private readonly List<SunfishStepBase> _steps = [];
     private int _highestReachedStep;
 
-    /// <summary>The index of the active step (0-based). Supports two-way binding.</summary>
-    [Parameter] public int ActiveStep { get; set; }
+    // ── Parameters: current index (dual-named for spec + legacy) ───────
 
-    /// <summary>Fires when the active step changes.</summary>
+    /// <summary>Zero-based index of the active step. Spec-canonical name. Supports two-way binding.</summary>
+    [Parameter] public int Value { get; set; }
+
+    /// <summary>Change callback for <see cref="Value"/>.</summary>
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+
+    /// <summary>Legacy alias for <see cref="Value"/>. Prefer <see cref="Value"/> in new code.</summary>
+    [Parameter]
+    public int ActiveStep
+    {
+        get => Value;
+        set => Value = value;
+    }
+
+    /// <summary>Legacy alias for <see cref="ValueChanged"/>.</summary>
     [Parameter] public EventCallback<int> ActiveStepChanged { get; set; }
 
-    /// <summary>Layout orientation. Defaults to Horizontal.</summary>
+    // ── Parameters: layout / behaviour ─────────────────────────────────
+
+    /// <summary>Layout orientation. Defaults to <see cref="StepperOrientation.Horizontal"/>.</summary>
     [Parameter] public StepperOrientation Orientation { get; set; } = StepperOrientation.Horizontal;
 
     /// <summary>
-    /// When true, steps must be completed in order. Users can only navigate to
+    /// When <c>true</c>, steps must be completed in order. Users can only navigate to
     /// the current step or previously completed steps.
     /// </summary>
     [Parameter] public bool Linear { get; set; }
 
-    /// <summary>Fires when a step indicator is clicked, providing the target step index.</summary>
+    /// <summary>Controls what each step renders: chip, label, both (default), or text-only.</summary>
+    [Parameter] public StepType StepType { get; set; } = Enums.StepType.Full;
+
+    // ── Parameters: data-driven mode ───────────────────────────────────
+
+    /// <summary>Data-driven step source. Used in addition to (or instead of) declarative children.</summary>
+    [Parameter] public IEnumerable<object>? Steps { get; set; }
+
+    /// <summary>Property name on each data item that supplies the step label/text.</summary>
+    [Parameter] public string TextField { get; set; } = "Text";
+
+    /// <summary>Property name on each data item that supplies the step icon.</summary>
+    [Parameter] public string IconField { get; set; } = "Icon";
+
+    /// <summary>Property name on each data item that supplies the step label (alias for <see cref="TextField"/>).</summary>
+    [Parameter] public string? LabelField { get; set; }
+
+    /// <summary>Property name on each data item for the disabled flag.</summary>
+    [Parameter] public string DisabledField { get; set; } = "Disabled";
+
+    /// <summary>Property name on each data item for the optional flag.</summary>
+    [Parameter] public string OptionalField { get; set; } = "Optional";
+
+    // ── Parameters: events ─────────────────────────────────────────────
+
+    /// <summary>
+    /// Fires before the active step changes. Receives a
+    /// <see cref="StepperStepChangeEventArgs"/> — set <c>IsCancelled = true</c> to veto.
+    /// Runs after any per-step <c>OnChange</c> fires on the step being left.
+    /// </summary>
+    [Parameter] public EventCallback<StepperStepChangeEventArgs> OnStepChange { get; set; }
+
+    /// <summary>Fires after the active step changes. Receives the new index.</summary>
+    [Parameter] public EventCallback<int> OnActivate { get; set; }
+
+    /// <summary>Legacy click-only callback — fires when a step indicator is clicked.</summary>
     [Parameter] public EventCallback<int> OnStepClick { get; set; }
 
-    /// <summary>Child content (SunfishStep components).</summary>
+    /// <summary>Child content (SunfishStepperStep or legacy SunfishStep components).</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     // ── Computed ────────────────────────────────────────────────────────
+
+    private int EffectiveStepCount => Steps != null ? Steps.Count() : _steps.Count;
 
     private string StepperRootClass
     {
@@ -83,68 +190,119 @@
         {
             var cls = CssProvider.StepperClass();
             if (Orientation == StepperOrientation.Vertical) cls += " mar-stepper--vertical";
+            if (StepType == Enums.StepType.Labels) cls += " mar-stepper--labels";
             return cls;
         }
     }
 
-    private StepStatus GetStepStatus(int index, SunfishStep step)
+    private StepStatus GetStepStatus(int index)
     {
-        if (step.StepStatus.HasValue) return step.StepStatus.Value;
-        if (index < ActiveStep) return StepStatus.Completed;
-        if (index == ActiveStep) return StepStatus.Active;
+        if (Steps == null && index < _steps.Count)
+        {
+            var step = _steps[index];
+            if (step.Error == true) return StepStatus.Error;
+            if (step.Successful == true) return StepStatus.Completed;
+            if (step.Valid == false) return StepStatus.Error;
+            if (step.Valid == true && index < Value) return StepStatus.Completed;
+            if (step.StepStatus.HasValue) return step.StepStatus.Value;
+        }
+        if (index < Value) return StepStatus.Completed;
+        if (index == Value) return StepStatus.Active;
         return StepStatus.Pending;
+    }
+
+    private bool IsStepDisabled(int index)
+    {
+        if (Steps == null && index < _steps.Count) return _steps[index].Disabled;
+        if (Steps != null)
+        {
+            var item = Steps.ElementAtOrDefault(index);
+            return item != null && GetBoolProperty(item, DisabledField);
+        }
+        return false;
+    }
+
+    private bool GetStepOptional(int index)
+    {
+        if (Steps == null && index < _steps.Count) return _steps[index].Optional;
+        if (Steps != null)
+        {
+            var item = Steps.ElementAtOrDefault(index);
+            return item != null && GetBoolProperty(item, OptionalField);
+        }
+        return false;
+    }
+
+    private string? GetStepLabel(int index)
+    {
+        if (Steps == null && index < _steps.Count) return _steps[index].EffectiveLabel;
+        if (Steps != null)
+        {
+            var item = Steps.ElementAtOrDefault(index);
+            if (item == null) return null;
+            return GetStringProperty(item, LabelField ?? TextField);
+        }
+        return null;
+    }
+
+    private string? GetStepText(int index)
+    {
+        if (Steps == null && index < _steps.Count) return _steps[index].Text;
+        return null;
+    }
+
+    private string? GetStepIcon(int index)
+    {
+        if (Steps == null && index < _steps.Count) return _steps[index].Icon;
+        if (Steps != null)
+        {
+            var item = Steps.ElementAtOrDefault(index);
+            if (item == null) return null;
+            return GetStringProperty(item, IconField);
+        }
+        return null;
+    }
+
+    private static string? GetStringProperty(object item, string propertyName)
+    {
+        var prop = item.GetType().GetProperty(propertyName);
+        return prop?.GetValue(item) as string;
+    }
+
+    private static bool GetBoolProperty(object item, string propertyName)
+    {
+        var prop = item.GetType().GetProperty(propertyName);
+        var val = prop?.GetValue(item);
+        return val is bool b && b;
     }
 
     // ── Lifecycle ───────────────────────────────────────────────────────
 
     protected override void OnParametersSet()
     {
-        if (ActiveStep > _highestReachedStep)
-            _highestReachedStep = ActiveStep;
+        if (Value > _highestReachedStep)
+            _highestReachedStep = Value;
     }
 
     // ── Public API ──────────────────────────────────────────────────────
 
     /// <summary>Navigates to the next step.</summary>
-    public async Task NextAsync()
-    {
-        if (ActiveStep < _steps.Count - 1)
-        {
-            ActiveStep++;
-            if (ActiveStep > _highestReachedStep)
-                _highestReachedStep = ActiveStep;
-            await ActiveStepChanged.InvokeAsync(ActiveStep);
-            StateHasChanged();
-        }
-    }
+    public Task NextAsync() => GoToStepAsync(Value + 1);
 
     /// <summary>Navigates to the previous step.</summary>
-    public async Task PreviousAsync()
-    {
-        if (ActiveStep > 0)
-        {
-            ActiveStep--;
-            await ActiveStepChanged.InvokeAsync(ActiveStep);
-            StateHasChanged();
-        }
-    }
+    public Task PreviousAsync() => GoToStepAsync(Value - 1);
 
-    /// <summary>Navigates to a specific step by index.</summary>
+    /// <summary>Navigates to a specific step by index. Fires <see cref="OnStepChange"/> and <see cref="OnActivate"/>.</summary>
     public async Task GoToStepAsync(int index)
     {
-        if (index >= 0 && index < _steps.Count)
-        {
-            ActiveStep = index;
-            if (ActiveStep > _highestReachedStep)
-                _highestReachedStep = ActiveStep;
-            await ActiveStepChanged.InvokeAsync(ActiveStep);
-            StateHasChanged();
-        }
+        if (index < 0 || index >= EffectiveStepCount) return;
+        if (index == Value) return;
+        await TransitionTo(index);
     }
 
     // ── Internal API for child steps ────────────────────────────────────
 
-    internal void RegisterStep(SunfishStep step)
+    internal void RegisterStep(SunfishStepBase step)
     {
         if (!_steps.Contains(step))
         {
@@ -153,27 +311,74 @@
         }
     }
 
-    internal void UnregisterStep(SunfishStep step)
+    internal void UnregisterStep(SunfishStepBase step)
     {
         _steps.Remove(step);
         StateHasChanged();
     }
 
-    internal bool IsStepActive(SunfishStep step) => _steps.IndexOf(step) == ActiveStep;
+    internal bool IsStepActive(SunfishStepBase step) => _steps.IndexOf(step) == Value;
 
     // ── Event handlers ──────────────────────────────────────────────────
 
     private async Task OnIndicatorClick(int index, bool isClickable, bool isDisabled)
     {
         if (isDisabled || !isClickable) return;
+        if (OnStepClick.HasDelegate) await OnStepClick.InvokeAsync(index);
+        if (index == Value) return;
+        await TransitionTo(index);
+    }
 
-        ActiveStep = index;
-        if (ActiveStep > _highestReachedStep)
-            _highestReachedStep = ActiveStep;
+    private async Task TransitionTo(int index)
+    {
+        var previous = Value;
 
-        await ActiveStepChanged.InvokeAsync(ActiveStep);
+        // Per-step OnChange on the step being left (declarative only).
+        if (Steps == null && previous >= 0 && previous < _steps.Count)
+        {
+            var leaving = _steps[previous];
+            if (leaving.OnChange.HasDelegate)
+            {
+                var stepArgs = new StepperStepChangeEventArgs
+                {
+                    PreviousStep = previous,
+                    CurrentStep = index,
+                };
+                await leaving.OnChange.InvokeAsync(stepArgs);
+                if (stepArgs.IsCancelled) return;
+            }
+        }
 
-        if (OnStepClick.HasDelegate)
-            await OnStepClick.InvokeAsync(index);
+        // Stepper-level OnStepChange (cancellable).
+        if (OnStepChange.HasDelegate)
+        {
+            var args = new StepperStepChangeEventArgs
+            {
+                PreviousStep = previous,
+                CurrentStep = index,
+            };
+            await OnStepChange.InvokeAsync(args);
+            if (args.IsCancelled) return;
+        }
+
+        Value = index;
+        if (Value > _highestReachedStep) _highestReachedStep = Value;
+        await ValueChanged.InvokeAsync(Value);
+        await ActiveStepChanged.InvokeAsync(Value);
+        await OnActivate.InvokeAsync(Value);
+        StateHasChanged();
+    }
+
+    private async Task HandleKeyDown(Microsoft.AspNetCore.Components.Web.KeyboardEventArgs e)
+    {
+        if (EffectiveStepCount == 0) return;
+        var isVertical = Orientation == StepperOrientation.Vertical;
+        var nextKey = isVertical ? "ArrowDown" : "ArrowRight";
+        var prevKey = isVertical ? "ArrowUp" : "ArrowLeft";
+
+        if (e.Key == nextKey && Value < EffectiveStepCount - 1)
+            await NextAsync();
+        else if (e.Key == prevKey && Value > 0)
+            await PreviousAsync();
     }
 }

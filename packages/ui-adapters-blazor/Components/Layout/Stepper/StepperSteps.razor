@@ -1,0 +1,12 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+
+@*
+    StepperSteps — spec-canonical tag name for the steps wrapper. Simple
+    passthrough; see SunfishStepperSteps for rationale.
+*@
+
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,6 +1,9 @@
 @page "/components/layout/stepper/overview"
 @layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.Foundation.Enums
 
 <PageTitle>Stepper / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,35 +14,86 @@
 
     <Narrative>
         <p>
-            <code>SunfishStepper</code> shows progress through a sequence of numbered steps. Bind the
-            zero-based <code>ActiveStep</code> (or subscribe to <code>ActiveStepChanged</code>), list
-            steps via <code>SunfishStep</code> with <code>Title</code> and optional
-            <code>Description</code>, and switch between horizontal and vertical layouts with
-            <code>Orientation</code> (<code>StepperOrientation.Horizontal</code> /
-            <code>Vertical</code>).
+            <code>SunfishStepper</code> tracks progress through a sequence of named steps. The
+            spec-canonical child is <code>SunfishStepperStep</code> with <code>Label</code>,
+            <code>Icon</code>, <code>Optional</code>, <code>Disabled</code>, and three-state validity
+            (<code>Valid</code>, <code>Successful</code>, <code>Error</code>). Legacy
+            <code>SunfishStep</code> with <code>Title</code> is also supported for back-compat.
         </p>
         <p>
-            Sibling demos cover
-            <a href="/components/navigation/stepper/linear-mode">linear mode</a>,
-            <a href="/components/navigation/stepper/templates">templates</a>,
-            <a href="/components/navigation/stepper/validation">validation</a>,
-            <a href="/components/navigation/stepper/events">events</a>,
-            <a href="/components/navigation/stepper/keyboard-navigation">keyboard navigation</a>,
-            and <a href="/components/navigation/stepper/rtl">RTL</a>.
+            Bind the zero-based index with <code>@("@bind-Value")</code> (spec-canonical) or
+            <code>@("@bind-ActiveStep")</code> (legacy alias — both target the same state). Use
+            <code>StepType</code> to pick between <em>Full</em> (chip + label),
+            <em>Steps</em> (chip only), <em>Labels</em> (label only), and <em>Text</em> (text-only
+            chip). Switch layouts with <code>Orientation</code>.
         </p>
     </Narrative>
 
     <Example>
-        <div style="display:flex; flex-direction:column; gap:1.25rem;">
-            <SunfishStepper ActiveStep="@_step">
-                <SunfishStep Title="Account" />
-                <SunfishStep Title="Profile" />
-                <SunfishStep Title="Review" />
-            </SunfishStepper>
-            <div class="demo-row">
-                <SunfishButton Enabled="@(_step > 0)" OnClick="@(() => _step--)">Previous</SunfishButton>
-                <SunfishButton Enabled="@(_step < 2)" OnClick="@(() => _step++)">Next</SunfishButton>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal stepper with icons</h4>
+                <SunfishStepper @bind-Value="_step">
+                    <SunfishStepperStep Label="Account" Icon="&#128100;">
+                        <p style="margin:0;">1 · Create your account.</p>
+                    </SunfishStepperStep>
+                    <SunfishStepperStep Label="Profile" Icon="&#128196;">
+                        <p style="margin:0;">2 · Tell us about yourself.</p>
+                    </SunfishStepperStep>
+                    <SunfishStepperStep Label="Preferences" Icon="&#9881;" Optional="true">
+                        <p style="margin:0;">3 · Optional — choose notifications.</p>
+                    </SunfishStepperStep>
+                    <SunfishStepperStep Label="Review" Icon="&#9989;">
+                        <p style="margin:0;">4 · Review and submit.</p>
+                    </SunfishStepperStep>
+                </SunfishStepper>
+                <div style="display:flex; gap:.5rem; margin-top:.75rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary"
+                                   Enabled="@(_step > 0)"
+                                   OnClick="() => _step = Math.Max(0, _step - 1)">Previous</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary"
+                                   Enabled="@(_step < 3)"
+                                   OnClick="() => _step = Math.Min(3, _step + 1)">Next</SunfishButton>
+                </div>
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Current step: <strong>@(_step + 1) of 4</strong>
+                </p>
             </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">StepType variants</h4>
+                <p style="margin:.25rem 0 .75rem; font-size:.85rem; opacity:.75;">
+                    Same four steps, four different render modes.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:1rem;">
+                    <div>
+                        <small style="opacity:.7;">StepType.Full (default)</small>
+                        <SunfishStepper Value="1" StepType="Sunfish.UIAdapters.Blazor.Enums.StepType.Full">
+                            <SunfishStepperStep Label="One" />
+                            <SunfishStepperStep Label="Two" />
+                            <SunfishStepperStep Label="Three" />
+                        </SunfishStepper>
+                    </div>
+                    <div>
+                        <small style="opacity:.7;">StepType.Steps (chip only)</small>
+                        <SunfishStepper Value="1" StepType="Sunfish.UIAdapters.Blazor.Enums.StepType.Steps">
+                            <SunfishStepperStep Label="One" />
+                            <SunfishStepperStep Label="Two" />
+                            <SunfishStepperStep Label="Three" />
+                        </SunfishStepper>
+                    </div>
+                    <div>
+                        <small style="opacity:.7;">StepType.Labels (labels only)</small>
+                        <SunfishStepper Value="1" StepType="Sunfish.UIAdapters.Blazor.Enums.StepType.Labels">
+                            <SunfishStepperStep Label="One" />
+                            <SunfishStepperStep Label="Two" />
+                            <SunfishStepperStep Label="Three" />
+                        </SunfishStepper>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </Example>
 
