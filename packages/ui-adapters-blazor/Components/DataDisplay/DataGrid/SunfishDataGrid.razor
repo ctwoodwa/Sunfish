@@ -51,7 +51,7 @@
     }
 
     <div class="sf-datagrid-content" style="@ContentContainerStyle">
-        <table style="width:100%;table-layout:fixed;">
+        <table class="@($"{CssProvider.DataGridTableClass()} sf-datagrid-table".Trim())" style="width:100%;table-layout:fixed;">
             <colgroup>
                 @if (RowDraggable)
                 {
@@ -397,8 +397,8 @@
                         }
                     </div>
                     <div class="sf-datagrid-popup-actions">
-                        <button type="submit" class="sf-datagrid-cmd-btn">Save</button>
-                        <button type="button" class="sf-datagrid-cmd-btn" @onclick="CancelEdit">Cancel</button>
+                        <button type="submit" class="@CssProvider.DataGridCommandButtonClass()">Save</button>
+                        <button type="button" class="@CssProvider.DataGridCommandButtonClass()" @onclick="CancelEdit">Cancel</button>
                     </div>
                 </EditForm>
             </div>

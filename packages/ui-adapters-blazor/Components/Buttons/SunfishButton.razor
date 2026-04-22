@@ -1,6 +1,6 @@
 @inherits SunfishComponentBase
 
-<button class="@CombineClasses(CssProvider.ButtonClass(Variant, Size, FillMode, Rounded, !Enabled))"
+<button class="@CombineClasses(CssProvider.ButtonClass(Variant, Size, FillMode, Rounded, !Enabled), IsIconOnly ? "sf-button--icon-only" : null)"
         style="@CombineStyles()"
         type="@ButtonType.ToString().ToLowerInvariant()"
         disabled="@(!Enabled)"
@@ -32,4 +32,11 @@
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>
+    /// True when the button renders only an Icon (no text/ChildContent).
+    /// Emits the sf-button--icon-only modifier so providers can apply square
+    /// icon-button sizing (aspect-ratio 1:1, matched to density tier).
+    /// </summary>
+    private bool IsIconOnly => Icon != null && ChildContent == null;
 }

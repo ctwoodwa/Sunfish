@@ -3,7 +3,7 @@
 @inherits SunfishComponentBase
 
 <button type="button"
-        class="@CombineClasses($"mar-datagrid-cmd-btn {CommandClass}")"
+        class="@CombineClasses($"{CssProvider.DataGridCommandButtonClass()} {CommandClass}")"
         style="@CombineStyles()"
         disabled="@(!Enabled)"
         aria-label="@(string.IsNullOrEmpty(Text) ? Command : Text)"

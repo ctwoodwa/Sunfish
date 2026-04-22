@@ -487,6 +487,12 @@ public class MaterialCssProvider : ISunfishCssProvider
 
     public string DialogOverlayClass() => "sf-dialog-overlay";
 
+    // Theme 9 (Phase 2B) — Material Symbols "close" glyph. `aria-hidden` because
+    // the button itself carries `aria-label="Close"` (set in SunfishDialog.razor).
+    public string DialogCloseMarkup() =>
+        "<span class=\"material-symbols-outlined\" aria-hidden=\"true\">close</span>";
+    public string DialogCloseButtonClass() => "sf-m3-dialog-close";
+
     public string ProgressBarClass() => "sf-progress-bar";
 
     public string ProgressCircleClass() => "sf-progress-circle";
@@ -512,6 +518,11 @@ public class MaterialCssProvider : ISunfishCssProvider
     // DataGrid
     public string DataGridClass() => "sf-datagrid";
 
+    // Material doesn't have a native HTML-table base class; the data grid surface
+    // is fully styled via sf-datagrid-* BEM. Return empty so the Razor <table>
+    // carries only the Sunfish classes.
+    public string DataGridTableClass() => string.Empty;
+
     public string DataGridHeaderClass() => "sf-datagrid-header";
 
     public string DataGridHeaderCellClass(bool isSortable, bool isSorted) =>
@@ -529,6 +540,10 @@ public class MaterialCssProvider : ISunfishCssProvider
             .Build();
 
     public string DataGridCellClass() => "sf-datagrid-cell";
+
+    // Material uses its M3 text-button icon-button density for command column actions.
+    // Keep mar-datagrid-cmd-btn as the existing hook that sunfish-material.css styles.
+    public string DataGridCommandButtonClass() => "mar-datagrid-cmd-btn";
 
     public string DataGridPagerClass() => "sf-datagrid-pager";
 

@@ -150,14 +150,14 @@ public partial class SunfishDataGrid<TItem>
                     builder.AddAttribute(62, "class", "mar-datagrid-incell-actions");
                     builder.OpenElement(63, "button");
                     builder.AddAttribute(64, "type", "button");
-                    builder.AddAttribute(65, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(65, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
                     builder.AddAttribute(66, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
                     builder.AddEventStopPropagationAttribute(67, "onclick", true);
                     builder.AddContent(68, "\u2713"); // checkmark
                     builder.CloseElement();
                     builder.OpenElement(69, "button");
                     builder.AddAttribute(70, "type", "button");
-                    builder.AddAttribute(71, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+                    builder.AddAttribute(71, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
                     builder.AddAttribute(72, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
                     builder.AddEventStopPropagationAttribute(73, "onclick", true);
                     builder.AddContent(74, "\u2717"); // X mark
@@ -192,14 +192,14 @@ public partial class SunfishDataGrid<TItem>
                 {
                     builder.OpenElement(82, "button");
                     builder.AddAttribute(83, "type", "button");
-                    builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(84, "class", CssProvider.DataGridCommandButtonClass());
                     builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
                     builder.AddContent(87, "Save");
                     builder.CloseElement();
 
                     builder.OpenElement(88, "button");
                     builder.AddAttribute(89, "type", "button");
-                    builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(90, "class", CssProvider.DataGridCommandButtonClass());
                     builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
                     builder.AddEventStopPropagationAttribute(92, "onclick", true);
                     builder.AddContent(93, "Cancel");
@@ -211,7 +211,7 @@ public partial class SunfishDataGrid<TItem>
                     var editItem = item;
                     builder.OpenElement(82, "button");
                     builder.AddAttribute(83, "type", "button");
-                    builder.AddAttribute(84, "class", "mar-datagrid-cmd-btn");
+                    builder.AddAttribute(84, "class", CssProvider.DataGridCommandButtonClass());
                     builder.AddAttribute(85, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await BeginEdit(editItem)));
                     builder.AddEventStopPropagationAttribute(86, "onclick", true);
                     builder.AddContent(87, "Edit");
@@ -219,7 +219,7 @@ public partial class SunfishDataGrid<TItem>
 
                     builder.OpenElement(88, "button");
                     builder.AddAttribute(89, "type", "button");
-                    builder.AddAttribute(90, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--delete");
+                    builder.AddAttribute(90, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--delete");
                     builder.AddAttribute(91, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await DeleteItem(editItem)));
                     builder.AddEventStopPropagationAttribute(92, "onclick", true);
                     builder.AddContent(93, "Delete");
@@ -288,14 +288,14 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(23, "button");
         builder.AddAttribute(24, "type", "button");
-        builder.AddAttribute(25, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(25, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(26, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await SaveEdit()));
         builder.AddContent(27, "Save");
         builder.CloseElement();
 
         builder.OpenElement(28, "button");
         builder.AddAttribute(29, "type", "button");
-        builder.AddAttribute(30, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(30, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(31, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await CancelEdit()));
         builder.AddContent(32, "Cancel");
         builder.CloseElement();
@@ -371,14 +371,14 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(32, "button");
         builder.AddAttribute(33, "type", "button");
-        builder.AddAttribute(34, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(34, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(35, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ApplyFilterMenu()));
         builder.AddContent(36, "Apply");
         builder.CloseElement();
 
         builder.OpenElement(37, "button");
         builder.AddAttribute(38, "type", "button");
-        builder.AddAttribute(39, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(39, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(40, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ClearFilterMenu()));
         builder.AddContent(41, "Clear");
         builder.CloseElement();
@@ -398,7 +398,7 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(4, "button");
         builder.AddAttribute(5, "type", "button");
-        builder.AddAttribute(6, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+        builder.AddAttribute(6, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
         builder.AddAttribute(7, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (_) =>
         {
             _checkBoxFilterSelected = new HashSet<string>(_checkBoxFilterDistinct);
@@ -409,7 +409,7 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(9, "button");
         builder.AddAttribute(10, "type", "button");
-        builder.AddAttribute(11, "class", "mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm");
+        builder.AddAttribute(11, "class", $"{CssProvider.DataGridCommandButtonClass()} mar-datagrid-cmd-btn--sm");
         builder.AddAttribute(12, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (_) =>
         {
             _checkBoxFilterSelected.Clear();
@@ -458,14 +458,14 @@ public partial class SunfishDataGrid<TItem>
 
         builder.OpenElement(42, "button");
         builder.AddAttribute(43, "type", "button");
-        builder.AddAttribute(44, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(44, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(45, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ApplyCheckBoxFilter()));
         builder.AddContent(46, "Apply");
         builder.CloseElement();
 
         builder.OpenElement(47, "button");
         builder.AddAttribute(48, "type", "button");
-        builder.AddAttribute(49, "class", "mar-datagrid-cmd-btn");
+        builder.AddAttribute(49, "class", CssProvider.DataGridCommandButtonClass());
         builder.AddAttribute(50, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, async (_) => await ClearCheckBoxFilter()));
         builder.AddContent(51, "Clear");
         builder.CloseElement();

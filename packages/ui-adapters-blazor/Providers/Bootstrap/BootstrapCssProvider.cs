@@ -645,6 +645,12 @@ public class BootstrapCssProvider : ISunfishCssProvider
 
     public string DialogOverlayClass() => "modal-backdrop fade show";
 
+    // Theme 9 (Phase 2B) — Bootstrap's `.btn-close` renders a native SVG via CSS
+    // background; the button element must have class="btn-close" and no inner
+    // content. Keep aria-label="Close" on the button (set in SunfishDialog.razor).
+    public string DialogCloseMarkup() => string.Empty;
+    public string DialogCloseButtonClass() => "btn-close";
+
     public string ProgressBarClass() => "progress";
 
     public string ProgressCircleClass() => "sf-bs-progress-circle";
@@ -689,6 +695,13 @@ public class BootstrapCssProvider : ISunfishCssProvider
 
     public string DataGridClass() => "table-responsive sf-bs-datagrid";
 
+    // BS5 table base class — Phase 2a-1. Emitted on the rendered <table> element so
+    // Bootstrap's table CSS (borders, padding, colour tokens) cascades into the grid.
+    // Row-level striping is applied via DataGridRowClass; we do NOT append
+    // `table-striped` here because that enables whole-table zebra stripes which
+    // would override per-row striping decisions.
+    public string DataGridTableClass() => "table";
+
     public string DataGridHeaderClass() => "sf-bs-datagrid-header";
 
     public string DataGridHeaderCellClass(bool isSortable, bool isSorted) =>
@@ -706,6 +719,13 @@ public class BootstrapCssProvider : ISunfishCssProvider
             .Build();
 
     public string DataGridCellClass() => "sf-bs-datagrid-cell";
+
+    // BS5 command button — Phase 2a-2. Emitted on Edit/Save/Cancel/Delete action
+    // buttons in the command column (and inline filter/checkbox-filter popups).
+    // Uses native `btn btn-sm btn-outline-secondary` so BS5 typography/hover/focus
+    // cascades apply; `mar-datagrid-cmd-btn` preserves any custom SCSS overrides
+    // already authored for the grid's command column density.
+    public string DataGridCommandButtonClass() => "btn btn-sm btn-outline-secondary mar-datagrid-cmd-btn";
 
     public string DataGridPagerClass() => "d-flex justify-content-between align-items-center sf-bs-datagrid-pager";
 

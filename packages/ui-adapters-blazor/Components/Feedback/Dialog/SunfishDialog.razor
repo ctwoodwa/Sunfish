@@ -1,5 +1,7 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Feedback
 @inherits SunfishComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
 
 @if (Visible)
 {
@@ -47,7 +49,7 @@
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
     /// <summary>
-    /// Fired when the dialog is closed (via close button, overlay click, or Cancel/No button).
+    /// Fired when the dialog is closed (via close button, overlay click, Esc, or Cancel/No button).
     /// </summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
@@ -67,6 +69,11 @@
     [Parameter] public bool CloseOnOverlayClick { get; set; } = true;
 
     /// <summary>
+    /// Whether pressing Escape closes the dialog. Default is true. WCAG 2.1.2 pattern.
+    /// </summary>
+    [Parameter] public bool CloseOnEsc { get; set; } = true;
+
+    /// <summary>
     /// Predefined button set for the dialog footer. Ignored when DialogActions is set.
     /// </summary>
     [Parameter] public DialogButtons Buttons { get; set; } = DialogButtons.None;
@@ -76,6 +83,72 @@
     /// </summary>
     [Parameter] public EventCallback<DialogResult> OnButtonClick { get; set; }
 
+    // ── A11y interop state ──────────────────────────────────────────────
+
+    private readonly string _dialogId = $"sf-dialog-{Guid.NewGuid():N}";
+    private ElementReference _dialogRef;
+    private IJSObjectReference? _a11yModule;
+    private DotNetObjectReference<SunfishDialog>? _dotNetRef;
+    private bool _a11yAttached;
+    private bool _wasVisible;
+
+    private const string A11yModulePath = "./_content/Sunfish.UIAdapters.Blazor/js/sunfish-dialog-a11y.js";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (Visible && !_wasVisible)
+        {
+            await AttachA11yAsync();
+            _wasVisible = true;
+        }
+        else if (!Visible && _wasVisible)
+        {
+            await DetachA11yAsync();
+            _wasVisible = false;
+        }
+    }
+
+    private async Task AttachA11yAsync()
+    {
+        if (_a11yAttached) return;
+        try
+        {
+            _a11yModule ??= await JS.InvokeAsync<IJSObjectReference>("import", A11yModulePath);
+            _dotNetRef ??= DotNetObjectReference.Create(this);
+            await _a11yModule.InvokeVoidAsync(
+                "attach",
+                _dialogId,
+                _dialogRef,
+                _dotNetRef,
+                new { closeOnEsc = CloseOnEsc, escMethod = nameof(OnEscFromJs) });
+            _a11yAttached = true;
+        }
+        catch (JSException) { /* JS module not shipped / prerendering race */ }
+        catch (InvalidOperationException) { /* prerender */ }
+    }
+
+    private async Task DetachA11yAsync()
+    {
+        if (!_a11yAttached || _a11yModule is null) return;
+        try
+        {
+            await _a11yModule.InvokeVoidAsync("detach", _dialogId);
+        }
+        catch (JSException) { }
+        catch (InvalidOperationException) { }
+        _a11yAttached = false;
+    }
+
+    /// <summary>
+    /// Invoked by the JS a11y module when the user presses Escape.
+    /// </summary>
+    [JSInvokable]
+    public async Task OnEscFromJs()
+    {
+        if (!CloseOnEsc || !Visible) return;
+        await CloseAsync();
+    }
+
     private RenderFragment RenderDialogContent() => __builder =>
     {
         var dimensionStyle = new StyleBuilder()
@@ -84,14 +157,31 @@
             .AddStyle(Style)
             .Build();
 
-        <div class="@CssProvider.DialogClass(Draggable)" style="@dimensionStyle" role="dialog" aria-modal="@Modal.ToString().ToLower()" @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
+        <div id="@_dialogId"
+             class="@CssProvider.DialogClass(Draggable)"
+             style="@dimensionStyle"
+             role="dialog"
+             aria-modal="@Modal.ToString().ToLower()"
+             tabindex="-1"
+             @ref="_dialogRef"
+             @onclick:stopPropagation="true"
+             @attributes="AdditionalAttributes">
             @if (!string.IsNullOrEmpty(Title) || ShowCloseButton)
             {
                 <div class="sf-dialog-title">
                     <span>@Title</span>
                     @if (ShowCloseButton)
                     {
-                        <button type="button" class="sf-dialog-close" aria-label="Close" @onclick="CloseAsync">&times;</button>
+                        @* Theme 9 (Phase 2B) — close glyph is provider-driven.
+                           Bootstrap returns empty markup because `.btn-close` draws
+                           its own SVG via CSS; Fluent returns an inline dismiss SVG;
+                           Material returns a Material Symbols <span>. The shared
+                           `sf-dialog-close` class is kept for existing SCSS hooks
+                           (drag, focus-visible, forced-colors/reduced-motion). *@
+                        <button type="button"
+                                class="@($"sf-dialog-close {CssProvider.DialogCloseButtonClass()}".Trim())"
+                                aria-label="Close"
+                                @onclick="CloseAsync">@((MarkupString)CssProvider.DialogCloseMarkup())</button>
                     }
                 </div>
             }
@@ -163,4 +253,17 @@
     /// Triggers a re-render of the dialog content.
     /// </summary>
     public void Refresh() => StateHasChanged();
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await DetachA11yAsync();
+            if (_a11yModule is not null) await _a11yModule.DisposeAsync();
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        _dotNetRef?.Dispose();
+    }
 }

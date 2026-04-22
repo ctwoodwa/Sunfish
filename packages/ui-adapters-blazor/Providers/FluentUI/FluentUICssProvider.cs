@@ -488,6 +488,15 @@ public class FluentUICssProvider : ISunfishCssProvider
 
     public string DialogOverlayClass() => "sf-dialog-overlay";
 
+    // Theme 9 (Phase 2B) — Fluent v9 dismiss glyph. Inline SVG keeps the dialog
+    // close-button icon-font-free and theme-color-aware via `fill="currentColor"`.
+    // Matches the 16×16 Fluent dismiss viewBox path.
+    public string DialogCloseMarkup() =>
+        "<svg viewBox=\"0 0 16 16\" width=\"16\" height=\"16\" aria-hidden=\"true\">" +
+        "<path d=\"M2.22 2.22a.75.75 0 0 1 1.06 0L8 6.94l4.72-4.72a.75.75 0 1 1 1.06 1.06L9.06 8l4.72 4.72a.75.75 0 1 1-1.06 1.06L8 9.06l-4.72 4.72a.75.75 0 0 1-1.06-1.06L6.94 8 2.22 3.28a.75.75 0 0 1 0-1.06Z\" fill=\"currentColor\"/>" +
+        "</svg>";
+    public string DialogCloseButtonClass() => "sf-fluent-dialog-close";
+
     public string ProgressBarClass() => "sf-progress-bar";
 
     public string ProgressCircleClass() => "sf-progress-circle";
@@ -513,6 +522,11 @@ public class FluentUICssProvider : ISunfishCssProvider
     // DataGrid
     public string DataGridClass() => "sf-datagrid";
 
+    // Fluent v9 DataGrid uses custom role="grid" surfaces, not a raw <table>. The
+    // Razor still renders a <table> element for semantics; Fluent has no base table
+    // class, so emit empty and rely on sf-datagrid-* rules to style it.
+    public string DataGridTableClass() => string.Empty;
+
     public string DataGridHeaderClass() => "sf-datagrid-header";
 
     public string DataGridHeaderCellClass(bool isSortable, bool isSorted) =>
@@ -530,6 +544,10 @@ public class FluentUICssProvider : ISunfishCssProvider
             .Build();
 
     public string DataGridCellClass() => "sf-datagrid-cell";
+
+    // Fluent v9 command column actions use subtle button styling. Keep the existing
+    // mar-datagrid-cmd-btn hook; sunfish-fluentui.css already styles it.
+    public string DataGridCommandButtonClass() => "mar-datagrid-cmd-btn";
 
     public string DataGridPagerClass() => "sf-datagrid-pager";
 

@@ -146,6 +146,18 @@ public interface ISunfishCssProvider
     string DialogClass();
     string DialogClass(bool isDraggable);
     string DialogOverlayClass();
+    /// <summary>
+    /// Returns the HTML markup fragment rendered inside the dialog close button
+    /// (e.g., an inline SVG or icon-font span). Each provider chooses its framework's
+    /// idiomatic glyph. Bootstrap returns string.Empty because `.btn-close` renders
+    /// its own SVG via CSS background.
+    /// </summary>
+    string DialogCloseMarkup();
+    /// <summary>
+    /// Returns the CSS class(es) for the dialog close button. Bootstrap returns
+    /// "btn-close"; Fluent and Material return their skin-scoped icon-button class.
+    /// </summary>
+    string DialogCloseButtonClass();
     string ProgressBarClass();
     string ProgressCircleClass();
     string SpinnerClass(SpinnerSize size);
@@ -154,10 +166,12 @@ public interface ISunfishCssProvider
 
     // ── DataGrid ────────────────────────────────────────────────────────
     string DataGridClass();
+    string DataGridTableClass();
     string DataGridHeaderClass();
     string DataGridHeaderCellClass(bool isSortable, bool isSorted);
     string DataGridRowClass(bool isSelected, bool isStriped);
     string DataGridCellClass();
+    string DataGridCommandButtonClass();
     string DataGridPagerClass();
     string DataGridToolbarClass();
     string DataGridFilterRowClass();
