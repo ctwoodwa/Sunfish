@@ -1,8 +1,7 @@
 @page "/components/media/barcode/overview"
 @layout MainLayout
-@using MediaComponents = Sunfish.UIAdapters.Blazor.Components.Media
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
-@using SunfishEnums = Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Enums
 
 <PageTitle>Barcode / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -37,27 +36,30 @@
         <div style="display:flex; flex-direction:column; gap:1.5rem;">
             <div>
                 <h4 style="margin:0 0 .5rem;">Default Code128</h4>
-                <MediaComponents.SunfishBarcode Value="SUNFISH-2026" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishBarcode Value="SUNFISH-2026" />
             </div>
 
             <div>
                 <h4 style="margin:0 0 .5rem;">Custom color and compact sizing</h4>
-                <MediaComponents.SunfishBarcode Value="ORDER-00042"
-                                                Symbology="SunfishEnums.BarcodeSymbology.Code128"
-                                                Color="#6a1b9a"
-                                                Width="3"
-                                                Height="60"
-                                                TextAlignment="SunfishEnums.TextAlignment.Center" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishBarcode
+                    Value="ORDER-00042"
+                    Symbology="BarcodeSymbology.Code128"
+                    Color="#6a1b9a"
+                    Width="3"
+                    Height="60"
+                    TextAlignment="TextAlignment.Center" />
             </div>
 
             <div>
                 <h4 style="margin:0 0 .5rem;">Not-yet symbology (QR code placeholder)</h4>
-                <MediaComponents.SunfishBarcode Value="hello" Symbology="SunfishEnums.BarcodeSymbology.QrCode" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishBarcode
+                    Value="hello" Symbology="BarcodeSymbology.QrCode" />
             </div>
 
             <div>
                 <h4 style="margin:0 0 .5rem;">Without text</h4>
-                <MediaComponents.SunfishBarcode Value="SKU-XYZ" ShowText="false" Width="3" Height="100" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishBarcode
+                    Value="SKU-XYZ" ShowText="false" Width="3" Height="100" />
             </div>
         </div>
     </Example>

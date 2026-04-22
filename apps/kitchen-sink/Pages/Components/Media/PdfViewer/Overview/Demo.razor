@@ -1,6 +1,5 @@
 @page "/components/media/pdfviewer/overview"
 @layout MainLayout
-@using MediaComponents = Sunfish.UIAdapters.Blazor.Components.Media
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
 @using Sunfish.UIAdapters.Blazor.Enums
 
@@ -39,11 +38,12 @@
         <div style="display:flex; flex-direction:column; gap:1.25rem;">
             <div>
                 <h4 style="margin:0 0 .5rem;">Full toolbar</h4>
-                <MediaComponents.SunfishPdfViewer Source="@_sampleSource"
-                                                  PageCount="10"
-                                                  ToolbarMode="PdfToolbarMode.Full"
-                                                  Height="420px"
-                                                  OnPageChange="OnPageChanged" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishPdfViewer
+                    Source="@_sampleSource"
+                    PageCount="10"
+                    ToolbarMode="PdfToolbarMode.Full"
+                    Height="420px"
+                    OnPageChange="OnPageChanged" />
                 <p style="margin:.5rem 0 0;font-size:.85rem;">
                     Toolbar page nav observed: <code>@_lastPage</code>
                 </p>
@@ -51,9 +51,10 @@
 
             <div>
                 <h4 style="margin:0 0 .5rem;">Compact toolbar (download only)</h4>
-                <MediaComponents.SunfishPdfViewer Source="@_sampleSource"
-                                                  ToolbarMode="PdfToolbarMode.Compact"
-                                                  Height="260px" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishPdfViewer
+                    Source="@_sampleSource"
+                    ToolbarMode="PdfToolbarMode.Compact"
+                    Height="260px" />
             </div>
         </div>
     </Example>

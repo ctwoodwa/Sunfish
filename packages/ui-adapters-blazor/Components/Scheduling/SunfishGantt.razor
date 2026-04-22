@@ -1,0 +1,96 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Scheduling
+@typeparam TItem where TItem : class
+@inherits SunfishComponentBase
+
+@{
+    var columnWidth = ColumnWidth;
+    var rowHeight = RowHeight;
+    var titleWidth = TitleColumnWidth;
+    var headerCells = BuildHeaderCells();
+    var visible = _flattened;
+    var timelineWidth = TotalTimelineWidth;
+
+    var containerStyle = new System.Text.StringBuilder();
+    if (!string.IsNullOrEmpty(Width))  containerStyle.Append($"width:{Width};");
+    if (!string.IsNullOrEmpty(Height)) containerStyle.Append($"height:{Height};");
+}
+
+<div class="@CombineClasses("sf-gantt")"
+     style="@CombineStyles(containerStyle.ToString())"
+     role="grid"
+     aria-label="Gantt chart"
+     @attributes="AdditionalAttributes">
+
+    @* Left pane: task list *@
+    <div class="sf-gantt__tasklist" style="width:@(titleWidth)px;min-width:@(titleWidth)px;">
+        <div class="sf-gantt__tasklist-header" style="height:@(rowHeight)px;line-height:@(rowHeight)px;">
+            Task
+        </div>
+        <div class="sf-gantt__tasklist-body">
+            @foreach (var item in visible)
+            {
+                var captured = item;
+                <div class="sf-gantt__tasklist-row"
+                     role="row"
+                     style="height:@(rowHeight)px;line-height:@(rowHeight)px;"
+                     @onclick="() => InvokeTaskClick(captured)">
+                    <span class="sf-gantt__tasklist-title" title="@GetTitle(captured)">@GetTitle(captured)</span>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Right pane: timeline *@
+    <div class="sf-gantt__timeline" role="presentation">
+        <div class="sf-gantt__timeline-scroll">
+            <div class="sf-gantt__timeline-inner" style="width:@(timelineWidth)px;">
+
+                @* Header row *@
+                <div class="sf-gantt__timeline-header"
+                     style="height:@(rowHeight)px;line-height:@(rowHeight)px;">
+                    @foreach (var cell in headerCells)
+                    {
+                        var cellRef = cell;
+                        <div class="sf-gantt__timeline-header-cell @(cellRef.IsMonthBoundary ? "sf-gantt__timeline-header-cell--boundary" : "")"
+                             style="width:@(columnWidth)px;min-width:@(columnWidth)px;">
+                            @cellRef.Label
+                        </div>
+                    }
+                </div>
+
+                @* Body rows + bars *@
+                <div class="sf-gantt__timeline-body">
+                    @foreach (var item in visible)
+                    {
+                        var captured = item;
+                        var geom = ComputeBarGeometry(captured);
+                        var pct = GetPercentComplete(captured);
+                        <div class="sf-gantt__timeline-row"
+                             role="row"
+                             style="height:@(rowHeight)px;">
+                            @for (int i = 0; i < TotalDays; i++)
+                            {
+                                <div class="sf-gantt__timeline-cell"
+                                     style="width:@(columnWidth)px;min-width:@(columnWidth)px;"></div>
+                            }
+                            <div class="sf-gantt__bar"
+                                 role="gridcell"
+                                 aria-label="@GetTitle(captured)"
+                                 title="@GetTitle(captured)"
+                                 style="left:@(geom.left.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))px;width:@(geom.width.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))px;height:@(rowHeight - 8)px;top:4px;"
+                                 @onclick="() => InvokeTaskClick(captured)">
+                                @if (pct > 0)
+                                {
+                                    <span class="sf-gantt__bar-progress"
+                                          style="width:@(pct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))%;"></span>
+                                }
+                                <span class="sf-gantt__bar-label">@GetTitle(captured)</span>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>

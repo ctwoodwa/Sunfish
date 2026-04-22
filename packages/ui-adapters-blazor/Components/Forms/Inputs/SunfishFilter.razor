@@ -1,160 +1,146 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@typeparam TItem
 @inherits SunfishComponentBase
-@using CompositeFilterDescriptor = Sunfish.Foundation.Models.CompositeFilterDescriptor
-@using FilterDescriptor = Sunfish.Foundation.Models.FilterDescriptor
-@using FilterOperator = Sunfish.Foundation.Models.FilterOperator
+@using Sunfish.Foundation.Enums
+@using Sunfish.UIAdapters.Blazor.Enums
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
 
-<div class="@CombineClasses("mar-filter")"
+<div class="@CombineClasses("sf-filter")"
      style="@CombineStyles()"
      @attributes="AdditionalAttributes">
 
-    <div class="sf-filter__header">
-        <span class="sf-filter__title">Filter</span>
-        <button type="button" class="sf-filter__add-btn" @onclick="AddRow">+ Add Filter</button>
-    </div>
-
-    <div class="sf-filter__rows">
-        @if (_descriptors.FilterDescriptors.Count == 0)
-        {
-            <div class="sf-filter__empty">No filters applied.</div>
-        }
-        else
-        {
-            @for (var i = 0; i < _descriptors.FilterDescriptors.Count; i++)
-            {
-                var index = i;
-                var descriptor = _descriptors.FilterDescriptors[index];
-
-                <div class="sf-filter__row">
-                    @if (index > 0)
-                    {
-                        <select class="sf-filter__logic"
-                                value="@_descriptors.LogicalOperator"
-                                @onchange="OnLogicChanged">
-                            <option value="@FilterCompositionLogicalOperator.And">AND</option>
-                            <option value="@FilterCompositionLogicalOperator.Or">OR</option>
-                        </select>
-                    }
-
-                    <input type="text"
-                           class="sf-filter__field"
-                           placeholder="Field"
-                           value="@descriptor.Field"
-                           @onchange="e => UpdateField(index, e)" />
-
-                    <select class="sf-filter__operator"
-                            value="@descriptor.Operator"
-                            @onchange="e => UpdateOperator(index, e)">
-                        @foreach (var op in Enum.GetValues<FilterOperator>())
-                        {
-                            <option value="@op">@FormatOperator(op)</option>
-                        }
-                    </select>
-
-                    <input type="text"
-                           class="sf-filter__value"
-                           placeholder="Value"
-                           value="@(descriptor.Value?.ToString() ?? "")"
-                           @onchange="e => UpdateValue(index, e)" />
-
-                    <button type="button"
-                            class="sf-filter__remove-btn"
-                            @onclick="() => RemoveRow(index)"
-                            aria-label="Remove filter">
-                        &times;
-                    </button>
-                </div>
-            }
-        }
-    </div>
+    @RenderComposite(_root, null)
 
     <div class="sf-filter__actions">
         <button type="button" class="sf-filter__apply-btn" @onclick="ApplyFilter">Apply</button>
     </div>
-
-    @if (ChildContent is not null)
-    {
-        @ChildContent
-    }
 </div>
 
-@code {
-    [Parameter] public CompositeFilterDescriptor? Value { get; set; }
-    [Parameter] public EventCallback<CompositeFilterDescriptor?> ValueChanged { get; set; }
-    [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public EventCallback OnApply { get; set; }
+@code
+{
+    private RenderFragment RenderComposite(FilterCompositeDescriptor composite, FilterCompositeDescriptor? parent) =>
+        @<div class="sf-filter__group">
+            <div class="sf-filter__group-header">
+                <select class="sf-filter__logic"
+                        value="@composite.Logic"
+                        @onchange="e => OnLogicChanged(composite, e)">
+                    <option value="@FilterLogic.And">AND</option>
+                    <option value="@FilterLogic.Or">OR</option>
+                </select>
+                <button type="button"
+                        class="sf-filter__add-row-btn"
+                        @onclick="() => AddLeaf(composite)">
+                    + Filter
+                </button>
+                <button type="button"
+                        class="sf-filter__add-group-btn"
+                        @onclick="() => AddGroup(composite)">
+                    + Group
+                </button>
+                @if (parent is not null)
+                {
+                    <button type="button"
+                            class="sf-filter__remove-btn"
+                            @onclick="() => Remove(parent, composite)"
+                            aria-label="Remove group">&times;</button>
+                }
+            </div>
+            <div class="sf-filter__group-body">
+                @if (composite.Filters.Count == 0)
+                {
+                    <div class="sf-filter__empty">No filters applied.</div>
+                }
+                else
+                {
+                    @foreach (var child in composite.Filters.ToList())
+                    {
+                        @if (child is FilterCompositeDescriptor c)
+                        {
+                            @RenderComposite(c, composite)
+                        }
+                        else if (child is FilterLeafDescriptor l)
+                        {
+                            @RenderLeaf(l, composite)
+                        }
+                    }
+                }
+            </div>
+        </div>;
 
-    private CompositeFilterDescriptor _descriptors = new();
-
-    protected override void OnParametersSet()
+    private RenderFragment RenderLeaf(FilterLeafDescriptor leaf, FilterCompositeDescriptor parent)
     {
-        if (Value is not null)
+        var field = ResolveField(leaf.Field);
+        return
+            @<div class="sf-filter__row">
+                <select class="sf-filter__field"
+                        value="@leaf.Field"
+                        @onchange="e => OnFieldChanged(leaf, e)">
+                    <option value="">(select field)</option>
+                    @foreach (var f in Fields)
+                    {
+                        <option value="@f.Name">@(string.IsNullOrEmpty(f.Label) ? f.Name : f.Label)</option>
+                    }
+                </select>
+
+                <select class="sf-filter__operator"
+                        value="@leaf.Operator"
+                        @onchange="e => OnOperatorChanged(leaf, e)">
+                    @foreach (var op in OperatorsFor(field))
+                    {
+                        <option value="@op">@FormatOperator(op)</option>
+                    }
+                </select>
+
+                @RenderValueInput(leaf, field)
+
+                <button type="button"
+                        class="sf-filter__remove-btn"
+                        @onclick="() => Remove(parent, leaf)"
+                        aria-label="Remove filter">&times;</button>
+            </div>;
+    }
+
+    private RenderFragment RenderValueInput(FilterLeafDescriptor leaf, FilterField? field)
+    {
+        if (leaf.Operator is FilterOperator.IsNull or FilterOperator.IsNotNull)
         {
-            _descriptors = Value;
+            return @<text></text>;
         }
-    }
 
-    private void AddRow()
-    {
-        _descriptors.FilterDescriptors.Add(new FilterDescriptor
+        var type = field?.Type ?? FilterFieldType.Text;
+        return type switch
         {
-            Operator = FilterOperator.Contains
-        });
+            FilterFieldType.Number =>
+                @<input type="number"
+                        class="sf-filter__value"
+                        value="@(leaf.Value?.ToString() ?? string.Empty)"
+                        @onchange="e => OnValueChanged(leaf, e)" />,
+            FilterFieldType.Date =>
+                @<input type="date"
+                        class="sf-filter__value"
+                        value="@(leaf.Value?.ToString() ?? string.Empty)"
+                        @onchange="e => OnValueChanged(leaf, e)" />,
+            FilterFieldType.Boolean =>
+                @<input type="checkbox"
+                        class="sf-filter__value sf-filter__value--bool"
+                        checked="@(leaf.Value is bool b && b)"
+                        @onchange="e => OnValueChanged(leaf, e)" />,
+            FilterFieldType.Enum =>
+                @<select class="sf-filter__value"
+                         value="@(leaf.Value?.ToString() ?? string.Empty)"
+                         @onchange="e => OnValueChanged(leaf, e)">
+                    <option value=""></option>
+                    @foreach (var ev in field?.EnumValues ?? Array.Empty<string>())
+                    {
+                        <option value="@ev">@ev</option>
+                    }
+                </select>,
+            _ =>
+                @<input type="text"
+                        class="sf-filter__value"
+                        placeholder="Value"
+                        value="@(leaf.Value?.ToString() ?? string.Empty)"
+                        @onchange="e => OnValueChanged(leaf, e)" />
+        };
     }
-
-    private void RemoveRow(int index)
-    {
-        if (index >= 0 && index < _descriptors.FilterDescriptors.Count)
-        {
-            _descriptors.FilterDescriptors.RemoveAt(index);
-        }
-    }
-
-    private void UpdateField(int index, ChangeEventArgs e)
-    {
-        _descriptors.FilterDescriptors[index].Field = e.Value?.ToString() ?? "";
-    }
-
-    private void UpdateOperator(int index, ChangeEventArgs e)
-    {
-        if (Enum.TryParse<FilterOperator>(e.Value?.ToString(), out var op))
-        {
-            _descriptors.FilterDescriptors[index].Operator = op;
-        }
-    }
-
-    private void UpdateValue(int index, ChangeEventArgs e)
-    {
-        _descriptors.FilterDescriptors[index].Value = e.Value?.ToString();
-    }
-
-    private void OnLogicChanged(ChangeEventArgs e)
-    {
-        if (Enum.TryParse<FilterCompositionLogicalOperator>(e.Value?.ToString(), out var logic))
-        {
-            _descriptors.LogicalOperator = logic;
-        }
-    }
-
-    private async Task ApplyFilter()
-    {
-        await ValueChanged.InvokeAsync(_descriptors);
-        await OnApply.InvokeAsync();
-    }
-
-    private static string FormatOperator(FilterOperator op) => op switch
-    {
-        FilterOperator.IsEqualTo => "Is Equal To",
-        FilterOperator.IsNotEqualTo => "Is Not Equal To",
-        FilterOperator.Contains => "Contains",
-        FilterOperator.DoesNotContain => "Does Not Contain",
-        FilterOperator.StartsWith => "Starts With",
-        FilterOperator.EndsWith => "Ends With",
-        FilterOperator.IsGreaterThan => "Greater Than",
-        FilterOperator.IsLessThan => "Less Than",
-        FilterOperator.IsGreaterThanOrEqualTo => "Greater or Equal",
-        FilterOperator.IsLessThanOrEqualTo => "Less or Equal",
-        FilterOperator.IsNull => "Is Null",
-        FilterOperator.IsNotNull => "Is Not Null",
-        _ => op.ToString()
-    };
 }

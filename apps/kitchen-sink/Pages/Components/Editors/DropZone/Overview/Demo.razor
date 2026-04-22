@@ -39,8 +39,8 @@
 
     private string? _status;
 
-    private void HandleDrop(Sunfish.Foundation.Models.DropZoneEventArgs args)
+    private void HandleDrop(DropZoneDropEventArgs args)
     {
-        _status = $"Dropped {args.FileNames.Length} file(s).";
+        _status = $"Dropped {args.Files.Count} file(s).";
     }
 }

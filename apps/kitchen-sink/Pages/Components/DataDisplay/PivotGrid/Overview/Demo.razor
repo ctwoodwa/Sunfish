@@ -1,6 +1,8 @@
-@page "/components/grids/pivotgrid/overview"
+@page "/components/data-display/pivotgrid/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay.Pivot
 
 <PageTitle>PivotGrid / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,30 +13,28 @@
 
     <Narrative>
         <p>
-            <code>SunfishPivotGrid</code> cross-tabulates flat data into row groups, column groups, and
-            measure aggregates. Declare dimensions with <code>SunfishPivotGridRowField</code> and
-            <code>SunfishPivotGridColumnField</code>; declare the numeric measure with
-            <code>SunfishPivotGridMeasureField</code>; and choose an aggregate with
-            <code>AggregateFunction</code> (Sum, Count, Average, Min, Max).
+            <code>SunfishPivotGrid&lt;TItem&gt;</code> cross-tabulates a flat data source into row groups,
+            column groups, and measure aggregates. Declare dimensions via <code>RowFields</code> /
+            <code>ColumnFields</code>, add one or more <code>Measures</code> (each with a
+            <code>PivotAggregation</code>), and toggle <code>ShowGrandTotals</code> /
+            <code>ShowSubTotals</code>.
         </p>
         <p>
-            Sibling demos cover
-            <a href="/components/data-display/pivotgrid/data-binding-local">local data</a>,
-            <a href="/components/data-display/pivotgrid/filtering">filtering</a>, and
-            <a href="/components/data-display/pivotgrid/export-excel">Excel export</a>.
+            The MVP surface uses server-side reflection and in-memory <code>GroupBy</code>; virtualization,
+            cell merging, named ranges, and export are deferred.
         </p>
     </Narrative>
 
     <Example>
         <div style="display:flex; flex-direction:column; gap:1.25rem;">
             <div class="demo-row">
-                <SunfishPivotGrid Data="_salesData"
-                                  AggregateFunction="PivotGridAggregateFunction.Sum"
-                                  Height="300px">
-                    <SunfishPivotGridRowField Field="Region" Title="Region" />
-                    <SunfishPivotGridColumnField Field="Product" Title="Product" />
-                    <SunfishPivotGridMeasureField Field="Revenue" Title="Revenue" />
-                </SunfishPivotGrid>
+                <Sunfish.UIAdapters.Blazor.Components.DataDisplay.Pivot.SunfishPivotGrid TItem="SalesRecord"
+                                                                                        Data="_salesData"
+                                                                                        RowFields="_rowFields"
+                                                                                        ColumnFields="_columnFields"
+                                                                                        Measures="_measures"
+                                                                                        ShowGrandTotals="true"
+                                                                                        Height="320px" />
             </div>
         </div>
     </Example>
@@ -43,19 +43,32 @@
 
 @code {
     private static readonly string[] _breadcrumb =
-        ["Components", "Grids", "PivotGrid", "Overview"];
+        ["Components", "Data Display", "PivotGrid", "Overview"];
 
-    private readonly List<object> _salesData = new()
+    private readonly List<string> _rowFields = new() { "Region" };
+    private readonly List<string> _columnFields = new() { "Product" };
+    private readonly List<PivotMeasure> _measures = new()
+    {
+        new PivotMeasure
+        {
+            Field = "Revenue",
+            Aggregation = PivotAggregation.Sum,
+            DisplayName = "Revenue",
+            Format = "C0",
+        },
+    };
+
+    private readonly List<SalesRecord> _salesData = new()
     {
         new SalesRecord("North", "Widget A", 1200),
         new SalesRecord("North", "Widget B", 800),
         new SalesRecord("South", "Widget A", 950),
         new SalesRecord("South", "Widget B", 1100),
-        new SalesRecord("East", "Widget A", 700),
-        new SalesRecord("East", "Widget B", 1500),
-        new SalesRecord("West", "Widget A", 1300),
-        new SalesRecord("West", "Widget B", 600),
+        new SalesRecord("East",  "Widget A", 700),
+        new SalesRecord("East",  "Widget B", 1500),
+        new SalesRecord("West",  "Widget A", 1300),
+        new SalesRecord("West",  "Widget B", 600),
     };
 
-    private record SalesRecord(string Region, string Product, double Revenue);
+    public record SalesRecord(string Region, string Product, double Revenue);
 }

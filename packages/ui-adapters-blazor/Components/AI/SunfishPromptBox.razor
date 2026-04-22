@@ -1,0 +1,117 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.AI
+@inherits SunfishComponentBase
+
+@*
+    SunfishPromptBox — MVP spec-aligned shell (Tier 3 W3-1).
+
+    Single-line prompt input with submit button and history dropdown. Acts as a
+    lightweight "send box" — for the richer AI workflow (model picker, streaming
+    output, commands) use SunfishAIPrompt.
+*@
+
+<div class="@CombineClasses("sf-promptbox")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-promptbox__row">
+        <input type="text"
+               class="sf-promptbox__input"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               value="@Value"
+               @oninput="HandleInput"
+               @onkeydown="HandleKeyDown" />
+
+        @if (History is { Count: > 0 })
+        {
+            <button type="button"
+                    class="sf-promptbox__history-toggle"
+                    aria-haspopup="listbox"
+                    aria-expanded="@_historyOpen"
+                    disabled="@Disabled"
+                    @onclick="ToggleHistory">
+                ▾
+            </button>
+        }
+
+        <button type="button"
+                class="sf-promptbox__submit"
+                disabled="@(Disabled || string.IsNullOrWhiteSpace(Value))"
+                @onclick="SubmitAsync">
+            Send
+        </button>
+    </div>
+
+    @if (_historyOpen && History is { Count: > 0 })
+    {
+        <ul class="sf-promptbox__history" role="listbox">
+            @foreach (var item in History)
+            {
+                <li class="sf-promptbox__history-item"
+                    role="option"
+                    @onclick="() => PickHistoryAsync(item)">
+                    @item
+                </li>
+            }
+        </ul>
+    }
+</div>
+
+@code {
+    private bool _historyOpen;
+
+    /// <summary>The current prompt text. Supports two-way binding.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Two-way binding callback for <see cref="Value"/>.</summary>
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>Fires when the user submits (Enter / Send click). Cancellable.</summary>
+    [Parameter] public EventCallback<PromptBoxSubmitEventArgs> OnSubmit { get; set; }
+
+    /// <summary>Prior prompts shown in the dropdown history list.</summary>
+    [Parameter] public IReadOnlyList<string>? History { get; set; }
+
+    /// <summary>Placeholder shown when the input is empty.</summary>
+    [Parameter] public string Placeholder { get; set; } = "Enter a prompt…";
+
+    /// <summary>Whether the input is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SubmitAsync();
+        }
+    }
+
+    private void ToggleHistory() => _historyOpen = !_historyOpen;
+
+    private async Task PickHistoryAsync(string item)
+    {
+        _historyOpen = false;
+        Value = item;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (Disabled || string.IsNullOrWhiteSpace(Value)) return;
+
+        var args = new PromptBoxSubmitEventArgs(Value);
+        if (OnSubmit.HasDelegate) await OnSubmit.InvokeAsync(args);
+
+        if (!args.IsCancelled)
+        {
+            Value = string.Empty;
+            await ValueChanged.InvokeAsync(Value);
+        }
+    }
+}

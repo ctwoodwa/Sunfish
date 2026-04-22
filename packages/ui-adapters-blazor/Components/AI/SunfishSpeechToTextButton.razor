@@ -1,0 +1,84 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.AI
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+
+@*
+    SunfishSpeechToTextButton — MVP spec-aligned shell (Tier 3 W3-1).
+
+    Mic-toggle button that uses the browser's Web Speech API (the non-standard
+    but near-universal `webkitSpeechRecognition` / `SpeechRecognition` surface)
+    to capture spoken input and emit transcribed text via OnTranscribe.
+
+    Status: partial — the JS interop module below is a stub that resolves
+    `window.SpeechRecognition || window.webkitSpeechRecognition`, but wiring
+    the start/stop/callback plumbing through Blazor is deferred to a follow-up
+    (the MVP fires OnTranscribe with an empty string when Web Speech is
+    unavailable so hosts can branch on non-supporting browsers).
+*@
+
+<button type="button"
+        class="@CombineClasses($"sf-speech-button {(_listening ? "sf-speech-button--listening" : string.Empty)}")"
+        style="@CombineStyles()"
+        disabled="@Disabled"
+        aria-pressed="@_listening"
+        @onclick="ToggleAsync"
+        @attributes="AdditionalAttributes">
+    <span class="sf-speech-button__icon" aria-hidden="true">
+        @(_listening ? "⏺" : "🎤")
+    </span>
+    <span class="sf-speech-button__label">@(_listening ? "Listening…" : "Speak")</span>
+</button>
+
+@code {
+    private bool _listening;
+
+    /// <summary>Fires with the transcribed text after speech recognition resolves.</summary>
+    [Parameter] public EventCallback<string> OnTranscribe { get; set; }
+
+    /// <summary>BCP-47 language code passed to the Web Speech API. Default "en-US".</summary>
+    [Parameter] public string Language { get; set; } = "en-US";
+
+    /// <summary>
+    /// Whether the underlying <c>SpeechRecognition.continuous</c> flag is set. When
+    /// true the browser keeps recognising until the button is clicked again.
+    /// </summary>
+    [Parameter] public bool Continuous { get; set; }
+
+    /// <summary>Whether the button is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private async Task ToggleAsync()
+    {
+        if (Disabled) return;
+        _listening = !_listening;
+
+        // MVP: Web Speech API plumbing (window.SpeechRecognition
+        // || window.webkitSpeechRecognition) is deferred. The interop below is a
+        // feature-detect stub so the button remains non-destructive in unsupported
+        // hosts. Full start/stop/callback wiring lands in a follow-up that adds a
+        // dedicated JS module under wwwroot/js.
+        //
+        //   var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+        //   if (!Rec) return "";
+        //   var rec = new Rec();
+        //   rec.lang = Language;
+        //   rec.continuous = Continuous;
+        //   rec.onresult = e => dotnet.invoke("OnTranscribe", e.results[0][0].transcript);
+        //   rec.start();
+        try
+        {
+            await JS.InvokeVoidAsync("eval",
+                "(function(){var R=window.SpeechRecognition||window.webkitSpeechRecognition; return !!R;})();");
+        }
+        catch
+        {
+            // Pre-rendering / non-browser host — leave _listening visual toggle only.
+        }
+
+        if (!_listening && OnTranscribe.HasDelegate)
+        {
+            // Stub: fire empty transcript on stop so hosts can unblock their UI.
+            await OnTranscribe.InvokeAsync(string.Empty);
+        }
+    }
+}

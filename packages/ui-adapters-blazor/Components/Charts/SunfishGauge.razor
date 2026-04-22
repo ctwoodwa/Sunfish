@@ -1,0 +1,105 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Charts
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+
+@*
+    SunfishGauge — polymorphic gauge wrapper (Tier 3 W3-2 MVP).
+
+    Dispatches to the appropriate underlying gauge renderer based on the
+    GaugeType parameter. Existing gauge primitives remain available directly
+    for advanced scenarios, but most consumers should prefer this component
+    because it provides a single, uniform API surface.
+*@
+
+<div class="@CombineClasses("mar-gauge")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <div class="sf-gauge__label" style="text-align:center;font-size:13px;color:#555;padding-bottom:4px;">
+            @Label
+        </div>
+    }
+
+    @switch (Type)
+    {
+        case GaugeType.Radial:
+            <SunfishRadialGauge Value="Value"
+                                Min="Min"
+                                Max="Max"
+                                Size="Size"
+                                ShowLabel="ShowValue"
+                                Format="@Format"
+                                Ranges="Ranges" />
+            break;
+
+        case GaugeType.Circular:
+            <SunfishCircularGauge Value="Value"
+                                  Min="Min"
+                                  Max="Max"
+                                  Size="Size"
+                                  ShowLabel="ShowValue"
+                                  Format="@Format"
+                                  Color="@ThemeColor"
+                                  Ranges="Ranges" />
+            break;
+
+        case GaugeType.Linear:
+            <SunfishLinearGauge Value="Value"
+                                Min="Min"
+                                Max="Max"
+                                ShowLabel="ShowValue"
+                                Format="@Format"
+                                Ranges="Ranges" />
+            break;
+
+        case GaugeType.Arc:
+        default:
+            <SunfishArcGauge Value="Value"
+                             Min="Min"
+                             Max="Max"
+                             Size="Size"
+                             ShowLabel="ShowValue"
+                             Format="@Format"
+                             Color="@ThemeColor"
+                             Ranges="Ranges" />
+            break;
+    }
+</div>
+
+@code {
+    /// <summary>The current value to display on the gauge.</summary>
+    [Parameter] public double Value { get; set; }
+
+    /// <summary>Minimum value of the gauge scale.</summary>
+    [Parameter] public double Min { get; set; } = 0;
+
+    /// <summary>Maximum value of the gauge scale.</summary>
+    [Parameter] public double Max { get; set; } = 100;
+
+    /// <summary>Visual style used to render the gauge.</summary>
+    [Parameter] public GaugeType Type { get; set; } = GaugeType.Arc;
+
+    /// <summary>
+    /// Theme color applied to the gauge fill. CSS color value
+    /// (hex, named, or var reference). Falls back to the theme primary.
+    /// </summary>
+    [Parameter] public string? ThemeColor { get; set; }
+
+    /// <summary>Optional label displayed above the gauge.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Whether to show the current value as a centered label.</summary>
+    [Parameter] public bool ShowValue { get; set; } = true;
+
+    /// <summary>Rendered size in pixels (width == height). Ignored for Linear type.</summary>
+    [Parameter] public int Size { get; set; } = 200;
+
+    /// <summary>Numeric format string for the displayed value (e.g., "F0", "F1", "N0").</summary>
+    [Parameter] public string? Format { get; set; }
+
+    /// <summary>Optional colored ranges that override the default fill color.</summary>
+    [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+}

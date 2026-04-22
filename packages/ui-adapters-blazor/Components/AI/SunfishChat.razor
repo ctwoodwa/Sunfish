@@ -1,0 +1,120 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.AI
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+@*
+    SunfishChat — MVP spec-aligned shell (Tier 3 W3-1).
+
+    Conversation surface with message list + composer + typing indicator. Models
+    messages as role-tagged ChatMessage records (see ChatMessage.cs in this
+    folder) so user/assistant/system map directly onto LLM chat APIs.
+
+    Distinct from the legacy Sunfish.UIAdapters.Blazor.Components.Feedback.SunfishChat,
+    which models an Author+Text+IsUser shape for generic human-to-human chat.
+*@
+
+<div class="@CombineClasses("sf-chat")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-chat__messages" role="log" aria-live="polite">
+        @if (Messages is not null)
+        {
+            foreach (var message in Messages)
+            {
+                var roleClass = message.Role switch
+                {
+                    ChatRole.User => "sf-chat__message--user",
+                    ChatRole.Assistant => "sf-chat__message--assistant",
+                    ChatRole.System => "sf-chat__message--system",
+                    _ => ""
+                };
+
+                <div class="sf-chat__message @roleClass">
+                    @if (MessageTemplate is not null)
+                    {
+                        @MessageTemplate(message)
+                    }
+                    else
+                    {
+                        <div class="sf-chat__bubble">
+                            <span class="sf-chat__role">@message.Role</span>
+                            <span class="sf-chat__content">@message.Content</span>
+                            <span class="sf-chat__timestamp">@message.Timestamp.ToString("HH:mm")</span>
+                        </div>
+                    }
+                </div>
+            }
+        }
+
+        @if (TypingIndicator)
+        {
+            <div class="sf-chat__message sf-chat__message--assistant sf-chat__message--typing">
+                <div class="sf-chat__bubble sf-chat__bubble--typing" aria-label="Assistant is typing">
+                    <span class="sf-chat__dot"></span>
+                    <span class="sf-chat__dot"></span>
+                    <span class="sf-chat__dot"></span>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="sf-chat__composer">
+        <input type="text"
+               class="sf-chat__input"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               value="@_draft"
+               @oninput="HandleInput"
+               @onkeydown="HandleKeyDown" />
+        <button type="button"
+                class="sf-chat__send"
+                disabled="@(Disabled || string.IsNullOrWhiteSpace(_draft))"
+                @onclick="SendAsync">
+            Send
+        </button>
+    </div>
+</div>
+
+@code {
+    private string _draft = string.Empty;
+
+    /// <summary>The set of messages to render. Iterated in source order.</summary>
+    [Parameter] public IEnumerable<ChatMessage>? Messages { get; set; }
+
+    /// <summary>Fires with the composer text when the user presses Enter or clicks Send.</summary>
+    [Parameter] public EventCallback<string> OnSend { get; set; }
+
+    /// <summary>Per-message template. Receives the <see cref="ChatMessage"/> to render.</summary>
+    [Parameter] public RenderFragment<ChatMessage>? MessageTemplate { get; set; }
+
+    /// <summary>Whether to render the assistant-typing placeholder at the bottom of the list.</summary>
+    [Parameter] public bool TypingIndicator { get; set; }
+
+    /// <summary>Whether the composer is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Placeholder shown in the composer input.</summary>
+    [Parameter] public string Placeholder { get; set; } = "Message…";
+
+    private void HandleInput(ChangeEventArgs e)
+    {
+        _draft = e.Value?.ToString() ?? string.Empty;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey)
+        {
+            await SendAsync();
+        }
+    }
+
+    private async Task SendAsync()
+    {
+        if (Disabled || string.IsNullOrWhiteSpace(_draft)) return;
+        var text = _draft;
+        _draft = string.Empty;
+        if (OnSend.HasDelegate) await OnSend.InvokeAsync(text);
+    }
+}

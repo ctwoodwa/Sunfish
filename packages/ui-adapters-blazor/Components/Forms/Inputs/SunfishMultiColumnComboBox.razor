@@ -1,6 +1,9 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@typeparam TItem
+@typeparam TValue
 @inherits SunfishComponentBase
 
-<div class="@CombineClasses("mar-multicolumncombobox")"
+<div class="@CombineClasses("sf-multicolumncombobox")"
      style="@CombineStyles(WidthStyle())"
      @attributes="AdditionalAttributes">
 
@@ -9,7 +12,7 @@
                class="sf-multicolumncombobox__input"
                value="@_inputText"
                placeholder="@(Placeholder ?? "Select...")"
-               disabled="@(!Enabled)"
+               disabled="@EffectiveDisabled"
                role="combobox"
                aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
                @oninput="OnInput"
@@ -18,45 +21,61 @@
         <button type="button"
                 class="sf-multicolumncombobox__toggle"
                 tabindex="-1"
-                disabled="@(!Enabled)"
+                disabled="@EffectiveDisabled"
                 @onclick="Toggle"
                 @onclick:stopPropagation="true">
             &#9660;
         </button>
     </div>
 
-    @if (_isOpen && Enabled)
+    @if (_isOpen && !EffectiveDisabled)
     {
         <div class="sf-multicolumncombobox__popup"
              style="@PopupStyles()">
             <table class="sf-multicolumncombobox__table">
                 <thead>
                     <tr>
-                        @if (Columns is not null)
+                        @foreach (var col in EffectiveColumns)
                         {
-                            @Columns
-                        }
-                        else if (_columnNames.Count > 0)
-                        {
-                            @foreach (var col in _columnNames)
-                            {
-                                <th>@col</th>
-                            }
+                            <th style="@(col.Width is null ? null : $"width:{col.Width}")">
+                                @(string.IsNullOrEmpty(col.Title) ? col.Field : col.Title)
+                            </th>
                         }
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in FilteredData())
+                    @{
+                        var rows = VisibleItems;
+                    }
+                    @if (rows.Count == 0)
                     {
-                        var isSelected = IsSelected(item);
-                        <tr class="@(isSelected ? "mar-multicolumncombobox__row--selected" : "")"
-                            @onmousedown="() => SelectItem(item)"
-                            @onmousedown:preventDefault="true">
-                            @foreach (var col in _columnNames)
-                            {
-                                <td>@GetFieldValue(item, col)</td>
-                            }
+                        <tr class="sf-multicolumncombobox__empty">
+                            <td colspan="@EffectiveColumns.Count">No items found</td>
                         </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in rows)
+                        {
+                            var selected = IsSelected(item);
+                            <tr class="@(selected ? "sf-multicolumncombobox__row--selected" : null)"
+                                @onmousedown="() => SelectItem(item)"
+                                @onmousedown:preventDefault="true">
+                                @foreach (var col in EffectiveColumns)
+                                {
+                                    <td>
+                                        @if (col.Template is not null)
+                                        {
+                                            @col.Template(item!)
+                                        }
+                                        else
+                                        {
+                                            @GetFieldValue(item, col.Field)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
                     }
                 </tbody>
             </table>
@@ -65,129 +84,128 @@
 </div>
 
 @code {
-    [Parameter] public IEnumerable<object>? Data { get; set; }
-    [Parameter] public object? Value { get; set; }
-    [Parameter] public EventCallback<object?> ValueChanged { get; set; }
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public List<ComboBoxColumn>? Columns { get; set; }
     [Parameter] public string TextField { get; set; } = "Text";
-    [Parameter] public string ValueField { get; set; } = "Value";
-    [Parameter] public RenderFragment? Columns { get; set; }
-    [Parameter] public bool Filterable { get; set; }
-    [Parameter] public string? FilterFields { get; set; }
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<MultiColumnComboBoxReadEventArgs<TItem>> OnRead { get; set; }
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public string? Width { get; set; }
-    [Parameter] public string? PopupHeight { get; set; } = "200px";
     [Parameter] public string? PopupWidth { get; set; }
-    [Parameter] public bool Enabled { get; set; } = true;
-    [Parameter] public EventCallback<object?> OnChange { get; set; }
+    [Parameter] public string? PopupHeight { get; set; } = "240px";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public int PageSize { get; set; }
 
+    private string? _inputText;
     private bool _isOpen;
-    private string _inputText = string.Empty;
-    private List<string> _columnNames = new();
-    private object? _selectedItem;
+    private List<TItem>? _loadedData;
+    private int _total;
 
-    protected override void OnParametersSet()
+    private bool EffectiveDisabled => Disabled || ReadOnly;
+
+    private List<ComboBoxColumn> EffectiveColumns =>
+        Columns ?? new List<ComboBoxColumn> { new() { Field = TextField } };
+
+    private List<TItem> VisibleItems
     {
-        DetectColumns();
-
-        if (Value is not null && Data is not null)
+        get
         {
-            var match = Data.FirstOrDefault(d => GetFieldValue(d, ValueField) == Value.ToString());
-            if (match is not null)
-            {
-                _selectedItem = match;
-                _inputText = GetFieldValue(match, TextField);
-            }
+            var source = _loadedData ?? Data?.ToList() ?? new List<TItem>();
+            if (string.IsNullOrEmpty(_inputText)) return source;
+            var needle = _inputText;
+            return source
+                .Where(item => (GetFieldValue(item, TextField)?.ToString() ?? string.Empty)
+                    .Contains(needle, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
     }
 
-    private void DetectColumns()
-    {
-        if (Data is null) return;
-        var first = Data.FirstOrDefault();
-        if (first is null) return;
-
-        _columnNames = first.GetType()
-            .GetProperties()
-            .Select(p => p.Name)
-            .ToList();
-    }
-
-    private string? WidthStyle()
-    {
-        return !string.IsNullOrEmpty(Width) ? $"width:{Width}" : null;
-    }
+    private string WidthStyle() =>
+        string.IsNullOrEmpty(Width) ? string.Empty : $"width:{Width};";
 
     private string PopupStyles()
     {
-        var styles = new List<string>();
-        if (!string.IsNullOrEmpty(PopupHeight)) styles.Add($"max-height:{PopupHeight}");
-        if (!string.IsNullOrEmpty(PopupWidth)) styles.Add($"width:{PopupWidth}");
-        styles.Add("overflow-y:auto");
-        return string.Join(";", styles);
+        var parts = new List<string>();
+        if (!string.IsNullOrEmpty(PopupWidth)) parts.Add($"width:{PopupWidth}");
+        if (!string.IsNullOrEmpty(PopupHeight)) parts.Add($"max-height:{PopupHeight}");
+        return string.Join(";", parts);
     }
 
-    private IEnumerable<object> FilteredData()
+    protected override void OnParametersSet()
     {
-        if (Data is null) return Enumerable.Empty<object>();
-        if (!Filterable || string.IsNullOrEmpty(_inputText)) return Data;
-
-        var fieldsToSearch = !string.IsNullOrEmpty(FilterFields)
-            ? FilterFields.Split(',').Select(f => f.Trim()).ToList()
-            : new List<string> { TextField };
-
-        return Data.Where(item =>
-            fieldsToSearch.Any(field =>
-                GetFieldValue(item, field)
-                    .Contains(_inputText, StringComparison.OrdinalIgnoreCase)));
+        if (Value is not null)
+        {
+            var source = _loadedData ?? Data?.ToList() ?? new List<TItem>();
+            var match = source.FirstOrDefault(IsSelected);
+            if (match is not null)
+                _inputText = GetFieldValue(match, TextField)?.ToString();
+        }
     }
 
-    private bool IsSelected(object item)
+    private async Task OnInput(ChangeEventArgs e)
     {
-        return _selectedItem is not null &&
-               GetFieldValue(_selectedItem, ValueField) == GetFieldValue(item, ValueField);
+        _inputText = e.Value?.ToString();
+        _isOpen = true;
+        if (OnRead.HasDelegate)
+        {
+            var args = new MultiColumnComboBoxReadEventArgs<TItem>
+            {
+                Filter = _inputText,
+                Skip = 0,
+                Take = PageSize,
+            };
+            await OnRead.InvokeAsync(args);
+            _loadedData = args.Data.ToList();
+            _total = args.Total;
+        }
+    }
+
+    private Task Open()
+    {
+        if (!EffectiveDisabled) _isOpen = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task CloseDelayed()
+    {
+        await Task.Delay(120);
+        _isOpen = false;
+        StateHasChanged();
     }
 
     private void Toggle()
     {
-        if (!Enabled) return;
-        _isOpen = !_isOpen;
+        if (!EffectiveDisabled) _isOpen = !_isOpen;
     }
 
-    private void Open()
+    private bool IsSelected(TItem item)
     {
-        if (!Enabled) return;
-        _isOpen = true;
+        if (Value is null || item is null) return false;
+        var fieldName = ValueField ?? TextField;
+        var val = GetFieldValue(item, fieldName);
+        return Equals(val, Value);
     }
 
-    private void CloseDelayed()
+    private async Task SelectItem(TItem item)
     {
-        _ = Task.Delay(200).ContinueWith(_ =>
+        var fieldName = ValueField ?? TextField;
+        var raw = GetFieldValue(item, fieldName);
+        if (raw is TValue tv)
         {
-            _isOpen = false;
-            InvokeAsync(StateHasChanged);
-        });
-    }
-
-    private void OnInput(ChangeEventArgs e)
-    {
-        _inputText = e.Value?.ToString() ?? string.Empty;
-        _isOpen = true;
-    }
-
-    private async Task SelectItem(object item)
-    {
-        _selectedItem = item;
-        var value = GetFieldValue(item, ValueField);
-        _inputText = GetFieldValue(item, TextField);
+            Value = tv;
+            await ValueChanged.InvokeAsync(tv);
+        }
+        _inputText = GetFieldValue(item, TextField)?.ToString();
         _isOpen = false;
-        Value = value;
-        await ValueChanged.InvokeAsync(value);
-        await OnChange.InvokeAsync(value);
     }
 
-    private string GetFieldValue(object item, string fieldName)
+    private static object? GetFieldValue(TItem item, string fieldName)
     {
-        var prop = item.GetType().GetProperty(fieldName);
-        return prop?.GetValue(item)?.ToString() ?? "";
+        if (item is null || string.IsNullOrEmpty(fieldName)) return null;
+        var prop = typeof(TItem).GetProperty(fieldName);
+        return prop?.GetValue(item);
     }
 }

@@ -1,0 +1,74 @@
+@page "/components/charts/gauges/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Charts
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Gauge / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Gauge / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Gauge/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishGauge</code> is the polymorphic MVP wrapper for the Sunfish gauge family.
+            A single <code>Type</code> parameter selects the visual style — <code>Arc</code> (default),
+            <code>Radial</code>, <code>Circular</code>, or <code>Linear</code> — and the remaining
+            parameters (<code>Value</code>, <code>Min</code>, <code>Max</code>, <code>ThemeColor</code>,
+            <code>Label</code>, <code>ShowValue</code>) stay uniform across all four shapes.
+        </p>
+        <p>
+            The underlying primitives (<code>SunfishArcGauge</code>, <code>SunfishRadialGauge</code>,
+            <code>SunfishCircularGauge</code>, <code>SunfishLinearGauge</code>) remain available for
+            advanced scenarios — <code>SunfishGauge</code> simply dispatches to them.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem; align-items:start;">
+
+            <div class="demo-card" style="text-align:center;">
+                <SunfishGauge Value="62"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Arc"
+                              Label="CPU Usage"
+                              ThemeColor="#1976d2" />
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <SunfishGauge Value="78"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Radial"
+                              Label="Engine RPM" />
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <SunfishGauge Value="45"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Circular"
+                              Label="Battery"
+                              ThemeColor="#4caf50" />
+            </div>
+
+            <div class="demo-card" style="text-align:center; max-width:220px;">
+                <div style="font-size:13px; color:#555; margin-bottom:8px;">Disk Space</div>
+                <SunfishGauge Value="34"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Linear" />
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Charts", "Gauge", "Overview"];
+}

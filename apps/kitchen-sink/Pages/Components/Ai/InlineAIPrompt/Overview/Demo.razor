@@ -1,25 +1,44 @@
 @page "/components/ai/inlineaiprompt/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.AI
 
 <PageTitle>InlineAIPrompt / Overview · Sunfish Kitchen Sink</PageTitle>
 
 <SunfishExamplePanel Title="InlineAIPrompt / Overview"
                      Breadcrumb="@_breadcrumb"
-                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Ai/InlineAIPrompt/Overview/Demo.razor"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/AI/InlineAIPrompt/Overview/Demo.razor"
                      Sources="@GeneratedSources">
 
     <Narrative>
-        <p>Embedded inline AI prompt for contextual suggestions.</p>
         <p>
-            This overview page is a stub — the live demo is forthcoming. The component is tracked
-            in the Sunfish example catalog for cross-provider parity.
+            <code>SunfishInlineAIPrompt</code> is the contextual inline prompt popover for
+            rewriting or expanding a selection of text. The surface is toggled via the
+            <code>Show</code> parameter (two-way bound), the editor content is bound to
+            <code>Value</code>, and confirmation fires a cancellable
+            <code>OnInline</code> event carrying an
+            <code>InlineAIPromptEventArgs</code>. Optional <code>Suggestions</code> render as
+            quick-action chips under the editor.
         </p>
     </Narrative>
 
     <Example>
-        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
-            <strong>InlineAIPrompt</strong> — overview demo coming soon.
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div>
+                <button type="button" class="sf-btn sf-btn--primary"
+                        style="padding:.5rem 1rem; cursor:pointer;"
+                        @onclick="() => _show = true">
+                    Open inline prompt
+                </button>
+            </div>
+            <SunfishInlineAIPrompt @bind-Show="_show"
+                                   @bind-Value="_value"
+                                   Suggestions="_suggestions"
+                                   OnInline="HandleInlineAsync" />
+            @if (!string.IsNullOrEmpty(_lastResult))
+            {
+                <p style="font-size:.85rem; opacity:.8;">Last result: <strong>@_lastResult</strong></p>
+            }
         </div>
     </Example>
 
@@ -28,4 +47,22 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "AI", "InlineAIPrompt", "Overview"];
+
+    private bool _show;
+    private string? _value = "Sunfish is a UI toolkit.";
+    private string? _lastResult;
+
+    private readonly List<string> _suggestions = new()
+    {
+        "Shorten",
+        "Expand",
+        "Fix grammar",
+        "Make it friendlier",
+    };
+
+    private Task HandleInlineAsync(InlineAIPromptEventArgs args)
+    {
+        _lastResult = args.Prompt;
+        return Task.CompletedTask;
+    }
 }

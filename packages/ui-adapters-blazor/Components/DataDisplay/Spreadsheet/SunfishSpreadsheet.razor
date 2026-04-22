@@ -1,0 +1,60 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Spreadsheet
+@using Sunfish.UIAdapters.Blazor.Enums
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("sf-spreadsheet")"
+     style="@CombineStyles(SizeStyle())"
+     role="grid"
+     aria-label="@(AriaLabel ?? "Spreadsheet")"
+     @attributes="AdditionalAttributes">
+    <table class="sf-spreadsheet__table">
+        <thead>
+            <tr>
+                <th class="sf-spreadsheet__corner" scope="col"></th>
+                @for (var c = 0; c < EffectiveColumns; c++)
+                {
+                    <th class="sf-spreadsheet__col-header" scope="col">@ColumnLetter(c)</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (var r = 0; r < EffectiveRows; r++)
+            {
+                var rowIndex = r;
+                <tr>
+                    <th class="sf-spreadsheet__row-header" scope="row">@(rowIndex + 1)</th>
+                    @for (var c = 0; c < EffectiveColumns; c++)
+                    {
+                        var colIndex = c;
+                        var selected = IsSelected(rowIndex, colIndex);
+                        var cell = GetCell(rowIndex, colIndex);
+                        var align = cell.Align ?? cell.Type switch
+                        {
+                            SpreadsheetCellType.Number => "right",
+                            SpreadsheetCellType.Boolean => "center",
+                            SpreadsheetCellType.Date => "right",
+                            _ => "left",
+                        };
+                        <td class="@("sf-spreadsheet__cell" + (selected ? " sf-spreadsheet__cell--selected" : ""))"
+                            role="gridcell"
+                            style="@($"text-align:{align}")">
+                            @if (ReadOnly)
+                            {
+                                <span class="sf-spreadsheet__readonly">@RenderCell(rowIndex, colIndex)</span>
+                            }
+                            else
+                            {
+                                <input type="text"
+                                       class="sf-spreadsheet__input"
+                                       value="@(selected ? EditValue(rowIndex, colIndex) : RenderCell(rowIndex, colIndex))"
+                                       @onfocus="() => HandleCellFocused(rowIndex, colIndex)"
+                                       @onchange="e => HandleCellCommitted(rowIndex, colIndex, e.Value?.ToString())"
+                                       aria-label="@SpreadsheetAddress.ToA1(rowIndex, colIndex)" />
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

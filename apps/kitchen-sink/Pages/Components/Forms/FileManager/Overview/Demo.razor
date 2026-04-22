@@ -1,0 +1,57 @@
+@page "/components/forms/filemanager/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>FileManager / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileManager / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FileManager/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFileManager&lt;TItem&gt;</code> is a Windows-Explorer-style
+            browser: a folder-tree sidebar, a grid/list of items in the current
+            folder, and a toolbar with breadcrumb, view toggle, sort, and (optional)
+            upload. The MVP surface emits intents only — no filesystem access is
+            performed.
+        </p>
+        <p>
+            Status: <strong>partial</strong>. Known gaps: drag-and-drop move, keyboard
+            reorder, in-place thumbnail rendering, and per-row preview wiring are
+            follow-ups. Server-side <code>OnRead</code>-driven data loading is
+            wired but requires a consumer-provided backend.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <SunfishFileManager TItem="FileManagerEntry"
+                                Data="@_data"
+                                Height="380px"
+                                @bind-Path="_currentPath" />
+            <div>Current path: <strong>@_currentPath</strong></div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FileManager", "Overview"];
+
+    private string _currentPath = "/";
+
+    private readonly List<FileManagerEntry> _data =
+    [
+        new() { Id = "1",  Name = "Documents",     Path = "/Documents",                  IsDirectory = true,  HasDirectories = true,  DateModified = new DateTime(2026, 3, 15) },
+        new() { Id = "2",  Name = "Images",        Path = "/Images",                     IsDirectory = true,  HasDirectories = false, DateModified = new DateTime(2026, 3, 20) },
+        new() { Id = "3",  Name = "Downloads",     Path = "/Downloads",                  IsDirectory = true,  HasDirectories = false, DateModified = new DateTime(2026, 4, 1)  },
+        new() { Id = "4",  Name = "readme.md",     Path = "/readme.md",                  IsDirectory = false, Extension = ".md",      Size = 2048,   DateModified = new DateTime(2026, 4, 5)  },
+        new() { Id = "5",  Name = "budget.xlsx",   Path = "/budget.xlsx",                IsDirectory = false, Extension = ".xlsx",    Size = 15360,  DateModified = new DateTime(2026, 4, 8)  },
+        new() { Id = "6",  Name = "notes.txt",     Path = "/notes.txt",                  IsDirectory = false, Extension = ".txt",     Size = 512,    DateModified = new DateTime(2026, 4, 10) },
+        new() { Id = "10", ParentId = "1", Name = "Reports",     Path = "/Documents/Reports",     IsDirectory = true,  HasDirectories = false, DateModified = new DateTime(2026, 3, 10) },
+        new() { Id = "11", ParentId = "1", Name = "invoice.pdf", Path = "/Documents/invoice.pdf", IsDirectory = false, Extension = ".pdf", Size = 102400, DateModified = new DateTime(2026, 3, 12) },
+    ];
+}

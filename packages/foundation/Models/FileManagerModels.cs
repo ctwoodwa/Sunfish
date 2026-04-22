@@ -23,6 +23,56 @@ public class FileManagerEntry
 }
 
 /// <summary>
+/// Canonical MVP row type for the <c>Components/Forms/Inputs/SunfishFileManager</c>
+/// surface (ADR 0022, Tier 3 W3-7). A lighter sibling of
+/// <see cref="FileManagerEntry"/>, exposing only the fields consumers need
+/// for a read-only MVP file-browser demo.
+/// </summary>
+public class FileManagerItem
+{
+    /// <summary>Full path (e.g. <c>"/Documents/invoice.pdf"</c>).</summary>
+    public string Path { get; set; } = string.Empty;
+
+    /// <summary>Display name.</summary>
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>When <c>true</c>, the row represents a folder.</summary>
+    public bool IsDirectory { get; set; }
+
+    /// <summary>File size in bytes (0 for directories).</summary>
+    public long Size { get; set; }
+
+    /// <summary>Last-modified timestamp.</summary>
+    public DateTime? Modified { get; set; }
+
+    /// <summary>File extension (e.g. <c>".pdf"</c>).</summary>
+    public string? Extension { get; set; }
+}
+
+/// <summary>
+/// Arguments for cancellable item-intent events
+/// (<c>OnItemUpload</c>, <c>OnItemDelete</c>, <c>OnItemRename</c>) on
+/// the MVP SunfishFileManager surface.
+/// </summary>
+public class FileManagerItemEventArgs
+{
+    /// <summary>The item the intent targets, if any.</summary>
+    public FileManagerItem? Item { get; init; }
+
+    /// <summary>
+    /// For rename intents, the new name proposed by the user.
+    /// For upload intents, the upload file name (if known).
+    /// </summary>
+    public string? NewName { get; init; }
+
+    /// <summary>
+    /// Set to <c>true</c> in the handler to cancel the intent.
+    /// The MVP UI emits the intent only — no filesystem access is performed.
+    /// </summary>
+    public bool IsCancelled { get; set; }
+}
+
+/// <summary>
 /// Specifies the view type for the file manager. Use <see cref="FileManagerViewType"/>.
 /// </summary>
 [Obsolete("Use FileManagerViewType instead. FileManagerViewMode will be removed in a future version.")]

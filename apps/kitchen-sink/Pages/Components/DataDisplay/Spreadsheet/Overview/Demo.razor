@@ -1,6 +1,8 @@
-@page "/components/editors/spreadsheet/overview"
+@page "/components/data-display/spreadsheet/overview"
 @layout MainLayout
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay.Spreadsheet
 
 <PageTitle>Spreadsheet / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -11,33 +13,30 @@
 
     <Narrative>
         <p>
-            <code>SunfishSpreadsheet</code> provides an Excel-like grid with lettered column headers and
-            numbered rows. Size the grid with <code>RowCount</code> / <code>ColumnCount</code>, constrain
-            with <code>Height</code> / <code>Width</code>, and react to edits through <code>OnCellEdit</code>.
-            Toggle <code>ReadOnly</code> to disable cell mutation.
+            <code>SunfishSpreadsheet</code> renders an Excel-style grid with A/B/C column headers, 1/2/3
+            row headers, and per-cell text inputs. Back the grid with a <code>Data</code> matrix
+            (<code>string[,]</code>), a list of <code>Rows</code> with typed cells, or just
+            <code>RowCount</code> + <code>ColumnCount</code> for an empty canvas.
         </p>
         <p>
-            Sibling demos cover
-            <a href="/components/data-display/spreadsheet/data-binding-local">data binding</a>,
-            <a href="/components/data-display/spreadsheet/export">export</a>,
-            <a href="/components/data-display/spreadsheet/formulas">formulas</a>, and
-            <a href="/components/data-display/spreadsheet/selection">selection</a>.
+            Formulas are evaluated at render time. Supported forms: <code>=SUM(A1:A3)</code>,
+            <code>=AVG(A1:A3)</code>, <code>=MIN</code>/<code>MAX</code>/<code>COUNT</code>, and basic
+            <code>=A1+B2</code> arithmetic with <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>.
         </p>
     </Narrative>
 
     <Example>
         <div style="display:flex; flex-direction:column; gap:1.25rem;">
             <div class="demo-row">
-                <SunfishSpreadsheet RowCount="10"
-                                    ColumnCount="6"
-                                    Height="300px"
-                                    OnCellEdit="HandleCellEdit" />
+                <Sunfish.UIAdapters.Blazor.Components.DataDisplay.Spreadsheet.SunfishSpreadsheet Rows="_rows"
+                                                                                                 Height="280px"
+                                                                                                 OnCellChanged="HandleCellChanged" />
             </div>
             @if (_lastEdit is not null)
             {
                 <div style="padding:8px;background:#e3f2fd;border-radius:4px;font-size:13px;">
-                    Last edit: Cell (@(_lastEdit.Row + 1), col @(_lastEdit.Column + 1))
-                    changed from "@(_lastEdit.OldValue ?? "")" to "@(_lastEdit.NewValue ?? "")"
+                    Last edit: <strong>@SpreadsheetAddress.ToA1(_lastEdit.Row, _lastEdit.Column)</strong>
+                    changed from "@(_lastEdit.OldValue ?? string.Empty)" to "@(_lastEdit.NewValue ?? string.Empty)"
                 </div>
             }
         </div>
@@ -47,11 +46,39 @@
 
 @code {
     private static readonly string[] _breadcrumb =
-        ["Components", "Editors", "Spreadsheet", "Overview"];
+        ["Components", "Data Display", "Spreadsheet", "Overview"];
 
-    private SpreadsheetCellEditEventArgs? _lastEdit;
+    private SpreadsheetCellChangedEventArgs? _lastEdit;
 
-    private Task HandleCellEdit(SpreadsheetCellEditEventArgs args)
+    private readonly List<SpreadsheetRow> _rows = new()
+    {
+        new SpreadsheetRow { Cells = new() {
+            SpreadsheetCell.Text("Item"),
+            SpreadsheetCell.Text("Qty"),
+            SpreadsheetCell.Text("Price"),
+            SpreadsheetCell.Text("Total"),
+        } },
+        new SpreadsheetRow { Cells = new() {
+            SpreadsheetCell.Text("Widget A"),
+            SpreadsheetCell.Number(3),
+            SpreadsheetCell.Number(12.5),
+            SpreadsheetCell.FormulaExpr("=B2*C2"),
+        } },
+        new SpreadsheetRow { Cells = new() {
+            SpreadsheetCell.Text("Widget B"),
+            SpreadsheetCell.Number(5),
+            SpreadsheetCell.Number(8),
+            SpreadsheetCell.FormulaExpr("=B3*C3"),
+        } },
+        new SpreadsheetRow { Cells = new() {
+            SpreadsheetCell.Text("Sum"),
+            new SpreadsheetCell(),
+            new SpreadsheetCell(),
+            SpreadsheetCell.FormulaExpr("=SUM(D2:D3)"),
+        } },
+    };
+
+    private Task HandleCellChanged(SpreadsheetCellChangedEventArgs args)
     {
         _lastEdit = args;
         return Task.CompletedTask;

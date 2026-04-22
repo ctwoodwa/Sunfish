@@ -10,16 +10,32 @@
                      Sources="@GeneratedSources">
 
     <Narrative>
-        <p>Hierarchical tree selection presented in a dropdown popup.</p>
         <p>
-            This overview page is a stub — the live demo is forthcoming. The component is tracked
-            in the Sunfish example catalog for cross-provider parity.
+            <code>SunfishDropDownTree</code> presents hierarchical data inside a
+            popup panel. Bind the selected value with <code>@@bind-Value</code>,
+            map item properties via <code>TextField</code> / <code>ValueField</code> /
+            <code>ItemsField</code>, and size the popup through
+            <code>PopupWidth</code> / <code>PopupHeight</code>. The MVP emits
+            cancellable <code>OnOpen</code> and <code>OnClose</code> events.
+        </p>
+        <p>
+            Status: <strong>implemented</strong>.
         </p>
     </Narrative>
 
     <Example>
-        <div class="demo-placeholder" style="padding: 1.5rem; border: 1px dashed var(--sunfish-border, #d1d5db); border-radius: .5rem; color: var(--sunfish-muted, #6b7280); text-align: center;">
-            <strong>DropDownTree</strong> — overview demo coming soon.
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width: 320px;">
+            <SunfishDropDownTree Data="@_treeData"
+                                 TextField="Text"
+                                 ValueField="Id"
+                                 ItemsField="Children"
+                                 @bind-Value="_selectedValue"
+                                 Placeholder="Select a category"
+                                 PopupWidth="300px"
+                                 PopupHeight="220px"
+                                 Width="280px"
+                                 Filterable="true" />
+            <p style="margin:0;">Selected: <strong>@(_selectedValue?.ToString() ?? "(none)")</strong></p>
         </div>
     </Example>
 
@@ -28,4 +44,41 @@
 @code {
     private static readonly string[] _breadcrumb =
         ["Components", "Forms", "DropDownTree", "Overview"];
+
+    private object? _selectedValue;
+
+    private readonly List<object> _treeData = new()
+    {
+        new TreeNode
+        {
+            Id = "1", Text = "Electronics",
+            Children = new List<object>
+            {
+                new TreeNode { Id = "1-1", Text = "Phones" },
+                new TreeNode { Id = "1-2", Text = "Laptops",
+                    Children = new List<object>
+                    {
+                        new TreeNode { Id = "1-2-1", Text = "Gaming" },
+                        new TreeNode { Id = "1-2-2", Text = "Business" },
+                    }},
+            }
+        },
+        new TreeNode
+        {
+            Id = "2", Text = "Clothing",
+            Children = new List<object>
+            {
+                new TreeNode { Id = "2-1", Text = "Men" },
+                new TreeNode { Id = "2-2", Text = "Women" },
+            }
+        },
+        new TreeNode { Id = "3", Text = "Books" },
+    };
+
+    private sealed class TreeNode
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Text { get; set; } = string.Empty;
+        public List<object>? Children { get; set; }
+    }
 }

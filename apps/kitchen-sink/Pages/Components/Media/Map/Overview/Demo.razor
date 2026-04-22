@@ -1,8 +1,10 @@
 @page "/components/media/map/overview"
 @layout MainLayout
-@using MediaComponents = Sunfish.UIAdapters.Blazor.Components.Media
 @using Sunfish.UIAdapters.Blazor.Components.Showcase
 @using Sunfish.UIAdapters.Blazor.Enums
+@using MapMarker = Sunfish.UIAdapters.Blazor.Components.Media.MapMarker
+@using MapClickEventArgs = Sunfish.UIAdapters.Blazor.Components.Media.MapClickEventArgs
+@using SunfishMap = Sunfish.UIAdapters.Blazor.Components.Media.SunfishMap
 
 <PageTitle>Map / Overview · Sunfish Kitchen Sink</PageTitle>
 
@@ -15,7 +17,7 @@
             <code>SunfishMap</code> (<code>Sunfish.UIAdapters.Blazor.Components.Media</code>) is the
             MVP Media-family map surface. It renders a framed preview client-side and delegates
             tile-layer rendering, marker placement, and popup display to a Leaflet-compatible JS
-            module loaded from <code>@MediaComponents.SunfishMap.JsModulePath</code>.
+            module loaded from <code>@SunfishMap.JsModulePath</code>.
         </p>
         <p>
             This MVP is marked <strong>partial</strong> in the component-mapping catalog: the
@@ -37,12 +39,13 @@
         <div style="display:flex; flex-direction:column; gap:1.25rem;">
             <div>
                 <h4 style="margin:0 0 .5rem;">World map, centered on London</h4>
-                <MediaComponents.SunfishMap Latitude="51.5074"
-                                            Longitude="-0.1278"
-                                            Zoom="6"
-                                            Markers="_markers"
-                                            OnMapClick="OnMapClicked"
-                                            Height="360px" />
+                <Sunfish.UIAdapters.Blazor.Components.Media.SunfishMap
+                    Latitude="51.5074"
+                    Longitude="-0.1278"
+                    Zoom="6"
+                    Markers="_markers"
+                    OnMapClick="OnMapClicked"
+                    Height="360px" />
                 <p style="margin:.5rem 0 0;font-size:.85rem;">
                     Last click: <code>@_lastClick</code>
                 </p>
@@ -58,14 +61,14 @@
 
     private string _lastClick = "(none)";
 
-    private readonly List<MediaComponents.MapMarker> _markers = new()
+    private readonly List<MapMarker> _markers = new()
     {
-        new MediaComponents.MapMarker { Latitude = 51.5074, Longitude = -0.1278, Title = "London", Icon = MapMarkerIcon.Pin },
-        new MediaComponents.MapMarker { Latitude = 48.8566, Longitude = 2.3522,  Title = "Paris",  Icon = MapMarkerIcon.Circle },
-        new MediaComponents.MapMarker { Latitude = 52.5200, Longitude = 13.4050, Title = "Berlin", Icon = MapMarkerIcon.Default },
+        new MapMarker { Latitude = 51.5074, Longitude = -0.1278, Title = "London", Icon = MapMarkerIcon.Pin },
+        new MapMarker { Latitude = 48.8566, Longitude = 2.3522,  Title = "Paris",  Icon = MapMarkerIcon.Circle },
+        new MapMarker { Latitude = 52.5200, Longitude = 13.4050, Title = "Berlin", Icon = MapMarkerIcon.Default },
     };
 
-    private Task OnMapClicked(MediaComponents.MapClickEventArgs args)
+    private Task OnMapClicked(MapClickEventArgs args)
     {
         _lastClick = $"({args.Latitude:0.##}, {args.Longitude:0.##})";
         return Task.CompletedTask;

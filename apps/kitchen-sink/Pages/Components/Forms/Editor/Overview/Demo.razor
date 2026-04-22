@@ -1,0 +1,67 @@
+@page "/components/forms/editor/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Editor / Overview (MVP) · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Editor / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Editor/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The Forms/Inputs <code>SunfishEditor</code> is the lean MVP surface: a
+            <code>contenteditable</code> region plus a toolbar backed by the
+            (deprecated but widely supported) <code>document.execCommand</code> API.
+        </p>
+        <p>
+            For the richer, production editor with paste cleanup, format converters,
+            validation integration, and adaptive overflow, see
+            <a href="/components/editors/editor/overview">Editors / Editor / Overview</a>.
+            Both components can coexist — this page deliberately uses the MVP type
+            (<code>Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.MvpEditor.SunfishEditor</code>).
+        </p>
+        <p>
+            Status: <strong>partial</strong>. Known gaps: execCommand is deprecated,
+            selection restoration across focus changes is best-effort, and advanced
+            features (tables, custom tools, paste cleanup) live in the Editors variant.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem; max-width: 640px;">
+            <Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.MvpEditor.SunfishEditor
+                @bind-Value="_html"
+                Placeholder="Start typing..."
+                MinHeight="220px"
+                Tools="_tools" />
+            <details>
+                <summary style="cursor:pointer;">HTML value</summary>
+                <pre style="background:#f5f5f5;padding:8px;border-radius:4px;overflow-x:auto;max-height:180px;">@_html</pre>
+            </details>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Editor", "Overview"];
+
+    private string? _html = "<p>Hello, <strong>Sunfish</strong>! Start typing to edit this content.</p>";
+
+    private readonly List<EditorToolbarItem> _tools = new()
+    {
+        EditorToolbarItem.Bold,
+        EditorToolbarItem.Italic,
+        EditorToolbarItem.Underline,
+        EditorToolbarItem.BulletList,
+        EditorToolbarItem.NumberedList,
+        EditorToolbarItem.Heading,
+        EditorToolbarItem.Link,
+        EditorToolbarItem.Undo,
+        EditorToolbarItem.Redo,
+    };
+}

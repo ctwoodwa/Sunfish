@@ -38,28 +38,38 @@
                            OnTileResize="HandleResize">
             <SunfishTile Id="sales" Col="1" Row="1" ColSpan="2" RowSpan="2">
                 <Header>Sales this quarter</Header>
-                <div style="font-size:1.75rem;font-weight:700;">$1.42M</div>
-                <small style="opacity:.75;">+12.4% vs prior quarter</small>
+                <ChildContent>
+                    <div style="font-size:1.75rem;font-weight:700;">$1.42M</div>
+                    <small style="opacity:.75;">+12.4% vs prior quarter</small>
+                </ChildContent>
             </SunfishTile>
             <SunfishTile Id="active-users" Col="3" Row="1" ColSpan="2" RowSpan="1">
                 <Header>Active users</Header>
-                <div style="font-size:1.25rem;">18,204</div>
+                <ChildContent>
+                    <div style="font-size:1.25rem;">18,204</div>
+                </ChildContent>
             </SunfishTile>
             <SunfishTile Id="latency" Col="3" Row="2" ColSpan="1" RowSpan="1">
                 <Header>p95 latency</Header>
-                <div>142 ms</div>
+                <ChildContent>
+                    <div>142 ms</div>
+                </ChildContent>
             </SunfishTile>
             <SunfishTile Id="errors" Col="4" Row="2" ColSpan="1" RowSpan="1">
                 <Header>Errors / hour</Header>
-                <div>7</div>
+                <ChildContent>
+                    <div>7</div>
+                </ChildContent>
             </SunfishTile>
             <SunfishTile Id="releases" Col="1" Row="3" ColSpan="4" RowSpan="1">
                 <Header>Recent releases</Header>
-                <div style="display:flex;gap:.75rem;font-size:.85rem;opacity:.8;">
-                    <span>v2.4.0 - Fri</span>
-                    <span>v2.3.9 - Wed</span>
-                    <span>v2.3.8 - Mon</span>
-                </div>
+                <ChildContent>
+                    <div style="display:flex;gap:.75rem;font-size:.85rem;opacity:.8;">
+                        <span>v2.4.0 - Fri</span>
+                        <span>v2.3.9 - Wed</span>
+                        <span>v2.3.8 - Mon</span>
+                    </div>
+                </ChildContent>
             </SunfishTile>
         </SunfishTileLayout>
 

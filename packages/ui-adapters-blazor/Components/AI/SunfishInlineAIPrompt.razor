@@ -1,0 +1,108 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.AI
+@inherits SunfishComponentBase
+
+@*
+    SunfishInlineAIPrompt — MVP spec-aligned shell (Tier 3 W3-1).
+
+    Inline prompt widget for rewriting/expanding selected text. Renders a
+    contenteditable area bound to Value plus a compact toolbar of Suggestions.
+    Toggle-able with Show so it can be surfaced/dismissed from a host gesture.
+*@
+
+@if (Show)
+{
+    <div class="@CombineClasses("sf-inline-aiprompt")"
+         style="@CombineStyles()"
+         role="dialog"
+         aria-label="Inline AI prompt"
+         @attributes="AdditionalAttributes">
+
+        <div class="sf-inline-aiprompt__body">
+            <div class="sf-inline-aiprompt__editor"
+                 contenteditable="true"
+                 spellcheck="true"
+                 @oninput="HandleInput">@Value</div>
+
+            @if (Suggestions is { Count: > 0 })
+            {
+                <div class="sf-inline-aiprompt__suggestions" role="toolbar" aria-label="Suggestions">
+                    @foreach (var suggestion in Suggestions)
+                    {
+                        <button type="button"
+                                class="sf-inline-aiprompt__chip"
+                                @onclick="() => ApplySuggestionAsync(suggestion)">
+                            @suggestion
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="sf-inline-aiprompt__actions">
+            <button type="button"
+                    class="sf-inline-aiprompt__submit"
+                    disabled="@(string.IsNullOrWhiteSpace(Value))"
+                    @onclick="SubmitAsync">
+                Apply
+            </button>
+            <button type="button"
+                    class="sf-inline-aiprompt__cancel"
+                    @onclick="DismissAsync">
+                Cancel
+            </button>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Whether the inline prompt popover is currently shown. Two-way bound.</summary>
+    [Parameter] public bool Show { get; set; }
+
+    /// <summary>Two-way binding callback for <see cref="Show"/>.</summary>
+    [Parameter] public EventCallback<bool> ShowChanged { get; set; }
+
+    /// <summary>The current text value being rewritten/expanded.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Two-way binding callback for <see cref="Value"/>.</summary>
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>Fires when the user confirms the inline prompt. Cancellable.</summary>
+    [Parameter] public EventCallback<InlineAIPromptEventArgs> OnInline { get; set; }
+
+    /// <summary>Quick-action chips rendered under the editor (e.g. "Shorten", "Fix grammar").</summary>
+    [Parameter] public IReadOnlyList<string>? Suggestions { get; set; }
+
+    private async Task HandleInput(ChangeEventArgs e)
+    {
+        Value = e.Value?.ToString();
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task ApplySuggestionAsync(string suggestion)
+    {
+        // MVP behaviour: treat the suggestion as the replacement prompt; fire OnInline.
+        var args = new InlineAIPromptEventArgs(suggestion);
+        if (OnInline.HasDelegate) await OnInline.InvokeAsync(args);
+        if (args.IsCancelled) return;
+        Value = suggestion;
+        await ValueChanged.InvokeAsync(Value);
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Value)) return;
+        var args = new InlineAIPromptEventArgs(Value);
+        if (OnInline.HasDelegate) await OnInline.InvokeAsync(args);
+        if (!args.IsCancelled)
+        {
+            await DismissAsync();
+        }
+    }
+
+    private async Task DismissAsync()
+    {
+        Show = false;
+        await ShowChanged.InvokeAsync(Show);
+    }
+}

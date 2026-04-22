@@ -1,0 +1,158 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Scheduling
+@typeparam TEvent where TEvent : class
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using SchedulerView = Sunfish.UIAdapters.Blazor.Enums.SchedulerView
+
+@{
+    var containerStyle = new System.Text.StringBuilder();
+    if (!string.IsNullOrEmpty(Width))  containerStyle.Append($"width:{Width};");
+    if (!string.IsNullOrEmpty(Height)) containerStyle.Append($"height:{Height};");
+
+    var days = GetVisibleDays();
+}
+
+<div class="@CombineClasses("sf-scheduler", $"sf-scheduler--{View.ToString().ToLowerInvariant()}")"
+     style="@CombineStyles(containerStyle.ToString())"
+     role="group"
+     aria-label="Scheduler"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-scheduler__toolbar">
+        <div class="sf-scheduler__nav">
+            <button type="button" class="sf-scheduler__nav-btn" @onclick="NavigatePrevious" aria-label="Previous">‹</button>
+            <div class="sf-scheduler__title" aria-live="polite">@GetHeaderTitle()</div>
+            <button type="button" class="sf-scheduler__nav-btn" @onclick="NavigateNext" aria-label="Next">›</button>
+        </div>
+        <div class="sf-scheduler__views" role="tablist">
+            @foreach (var v in Enum.GetValues<SchedulerView>())
+            {
+                var isActive = v == View;
+                <button type="button"
+                        role="tab"
+                        aria-selected="@isActive.ToString().ToLowerInvariant()"
+                        class="@CombineClasses("sf-scheduler__view-btn", isActive ? "sf-scheduler__view-btn--active" : null)"
+                        @onclick="() => SwitchView(v)">
+                    @v
+                </button>
+            }
+        </div>
+    </div>
+
+    @switch (View)
+    {
+        case SchedulerView.Month:
+            <div class="sf-scheduler__month">
+                <div class="sf-scheduler__month-grid">
+                    @for (int w = 0; w < 6; w++)
+                    {
+                        <div class="sf-scheduler__month-row" role="row">
+                            @for (int d = 0; d < 7; d++)
+                            {
+                                var cellDay = days[w * 7 + d];
+                                var dayEvents = GetEventsOnDay(cellDay);
+                                var isOtherMonth = cellDay.Month != CurrentDate.Month;
+                                <div class="@CombineClasses("sf-scheduler__month-cell", isOtherMonth ? "sf-scheduler__month-cell--other" : null)"
+                                     role="gridcell">
+                                    <div class="sf-scheduler__month-cell-date">@cellDay.Day</div>
+                                    @foreach (var evt in dayEvents.Take(3))
+                                    {
+                                        var captured = evt;
+                                        var color = GetColor(captured) ?? "#1976d2";
+                                        <button type="button"
+                                                class="sf-scheduler__month-event"
+                                                style="background:@color"
+                                                @onclick="() => InvokeEventClick(captured)">
+                                            @GetTitle(captured)
+                                        </button>
+                                    }
+                                    @if (dayEvents.Count > 3)
+                                    {
+                                        <div class="sf-scheduler__month-more">+@(dayEvents.Count - 3) more</div>
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            break;
+
+        case SchedulerView.Agenda:
+            <div class="sf-scheduler__agenda">
+                @{
+                    var agendaEvents = GetAgendaEvents();
+                }
+                @if (agendaEvents.Count == 0)
+                {
+                    <div class="sf-scheduler__agenda-empty">No upcoming events.</div>
+                }
+                else
+                {
+                    <ul class="sf-scheduler__agenda-list" role="list">
+                        @foreach (var evt in agendaEvents)
+                        {
+                            var captured = evt;
+                            var color = GetColor(captured) ?? "#1976d2";
+                            <li class="sf-scheduler__agenda-item"
+                                @onclick="() => InvokeEventClick(captured)">
+                                <span class="sf-scheduler__agenda-color" style="background:@color"></span>
+                                <div class="sf-scheduler__agenda-when">
+                                    @GetStart(captured).ToString("ddd MMM d, h:mm tt")
+                                </div>
+                                <div class="sf-scheduler__agenda-title">@GetTitle(captured)</div>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+            break;
+
+        default: // Day / Week / WorkWeek — time grid
+            <div class="sf-scheduler__time-grid">
+                <div class="sf-scheduler__time-header" role="row">
+                    <div class="sf-scheduler__time-gutter" style="width:@(TimeGutterWidth)px"></div>
+                    @foreach (var day in days)
+                    {
+                        <div class="sf-scheduler__time-header-cell" role="columnheader">
+                            <div class="sf-scheduler__time-header-dow">@day.ToString("ddd")</div>
+                            <div class="sf-scheduler__time-header-date">@day.Day</div>
+                        </div>
+                    }
+                </div>
+                <div class="sf-scheduler__time-body">
+                    <div class="sf-scheduler__time-gutter-col" style="width:@(TimeGutterWidth)px">
+                        @for (int h = StartHour; h < EndHour; h++)
+                        {
+                            <div class="sf-scheduler__time-gutter-row" style="height:@(HourSlotHeight)px">
+                                @h:00
+                            </div>
+                        }
+                    </div>
+                    @foreach (var day in days)
+                    {
+                        <div class="sf-scheduler__time-col" role="gridcell">
+                            @for (int h = StartHour; h < EndHour; h++)
+                            {
+                                <div class="sf-scheduler__time-slot" style="height:@(HourSlotHeight)px"></div>
+                            }
+                            @foreach (var evt in GetEventsOnDay(day))
+                            {
+                                var captured = evt;
+                                if (GetAllDay(captured)) continue;
+                                var (top, height) = ComputeTimedGeometry(captured);
+                                var color = GetColor(captured) ?? "#1976d2";
+                                <button type="button"
+                                        class="sf-scheduler__time-event"
+                                        style="top:@(top)px;height:@(height)px;background:@color"
+                                        @onclick="() => InvokeEventClick(captured)">
+                                    <span class="sf-scheduler__time-event-title">@GetTitle(captured)</span>
+                                </button>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            break;
+    }
+</div>
