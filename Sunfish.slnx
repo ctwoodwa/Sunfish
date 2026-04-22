@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/analyzers/compat-vendor-usings/">
+    <Project Path="packages/analyzers/compat-vendor-usings/Sunfish.Analyzers.CompatVendorUsings.csproj" />
+    <Project Path="packages/analyzers/compat-vendor-usings/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/foundation/">
     <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
     <Project Path="packages/foundation/tests/tests.csproj" />
