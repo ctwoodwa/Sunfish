@@ -21,3 +21,64 @@
     background-color: var(--sf-color-surface);
   }
 }
+
+// SYNTHESIS Theme 1 — dead-CSS fix. BootstrapCssProvider.IconButtonClass
+// emits `btn btn-icon sf-bs-icon-button [btn-sm|btn-lg]` but no rule set
+// actually sized the `btn` as a square icon target — it inherited `.btn`'s
+// default horizontal padding. These selectors flatten the box by overriding
+// the Bootstrap `--bs-btn-padding-*` tokens, delivering a proper icon button
+// across the three size tiers.
+.btn.sf-bs-icon-button,
+.btn-icon.sf-bs-icon-button,
+.sf-signalr-row__action.sf-bs-icon-button,
+.sf-bs-datagrid-pager-btn.sf-bs-icon-button {
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0.5rem;
+  aspect-ratio: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.btn-sm.sf-bs-icon-button {
+  --bs-btn-padding-x: 0.375rem;
+  --bs-btn-padding-y: 0.375rem;
+}
+
+.btn-lg.sf-bs-icon-button {
+  --bs-btn-padding-x: 0.625rem;
+  --bs-btn-padding-y: 0.625rem;
+}
+
+// Phase 2a-3 — SunfishButton icon-only collapse mode.
+// SunfishButton.razor emits `sf-button--icon-only` when Icon is set and
+// ChildContent is empty. Bootstrap's default .btn has asymmetric padding
+// (x:0.75rem, y:0.375rem) producing a wide pill; this block squares the
+// button into a 1:1 target, preserves size-tier heights (btn-sm / default /
+// btn-lg) matched to existing icon-button ratios above, and centres the icon.
+.btn.sf-button--icon-only {
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0.5rem;
+  aspect-ratio: 1 / 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+
+  &.btn-sm {
+    --bs-btn-padding-x: 0.375rem;
+    --bs-btn-padding-y: 0.375rem;
+    width: 2rem;
+    height: 2rem;
+  }
+
+  &.btn-lg {
+    --bs-btn-padding-x: 0.625rem;
+    --bs-btn-padding-y: 0.625rem;
+    width: 3rem;
+    height: 3rem;
+  }
+}

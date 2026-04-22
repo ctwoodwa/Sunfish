@@ -62,17 +62,11 @@
 
 // ----------------------------------------------------------------------------
 // sf-focus-ring()
-// Standard M3-style keyboard focus ring.
-// Matches Sunfish's cross-provider focus token.
+// Moved to foundation/_focus.scss (Phase 2B, SYNTHESIS Theme 5) — the new
+// implementation emits the M3 3px secondary outline + 2px offset directly
+// so callers use `:focus-visible { @include sf-focus-ring; }` with no extra
+// nesting. See foundation/_focus.scss for the canonical mixin.
 // ----------------------------------------------------------------------------
-
-@mixin sf-focus-ring() {
-  outline: none;
-
-  &:focus-visible {
-    box-shadow: var(--sf-focus-ring);
-  }
-}
 
 // ----------------------------------------------------------------------------
 // sf-truncate()

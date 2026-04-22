@@ -1,0 +1,24 @@
+// =============================================================================
+// Sunfish Material 3 Provider — Focus Ring Mixin (SYNTHESIS Theme 5)
+// =============================================================================
+// Phase 2B: M3 spec focus indicator is a solid 3px secondary-keyed outline
+// offset 2px from the element edge:
+//   outline: 3px solid var(--md-sys-color-secondary)
+//   outline-offset: 2px
+//
+// Uses `--sf-color-secondary` as the canonical Sunfish-M3 token mapped to
+// `--md-sys-color-secondary`. `outline` (not `box-shadow`) is used because
+// it is drawn outside the element box — identical to M3 spec and does
+// not clip against parent overflow.
+//
+// Usage:
+//   :focus-visible { @include sf-focus-ring; }
+// =============================================================================
+
+@mixin sf-focus-ring {
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  // Clear any box-shadow focus ring left behind by a lower-specificity rule
+  // so the outline renders cleanly.
+  box-shadow: none;
+}

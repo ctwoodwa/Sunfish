@@ -1,5 +1,378 @@
 // =============================================================================
 // Component: Dialog — Material 3
-// TODO: Placeholder — no Material 3 styles defined yet.
-//       Implement when the Material provider runtime project is created.
+// Source: https://m3.material.io/components/dialogs/overview
+//
+// SunfishDialog.razor emits the following class surface (confirmed from
+// Components/Feedback/Dialog/SunfishDialog.razor — do not change selectors
+// without updating the razor):
+//
+//   .sf-dialog-overlay                (only when Modal=true; composes scrim)
+//   .sf-dialog                        (container; root of sized variants)
+//   .sf-dialog--draggable             (modifier on container)
+//   .sf-dialog-title                  (header row: title + optional close)
+//   .sf-dialog-close                  (close icon-button; currently a glyph)
+//   .sf-dialog-body                   (scrollable content region)
+//   .sf-dialog-actions                (action row at foot)
+//
+// Size modifiers (.sf-dialog--small|medium|large|full) are consumer-applied
+// on the dialog root via the Style/class passthrough. The FluentUI skin
+// targets a non-existent `.sf-dialog__panel` — per audit Theme 1 we apply
+// sizing directly to `.sf-dialog` here.
+//
+// M3 type-scale values are inlined (headline-small / body-medium / label-large).
+// The `sf-type-role` mixin exists in foundation/_mixins but its Sass-variable
+// lookup does not cross @use boundaries in this project, so components use
+// CSS custom properties + literal type-scale values. See _typography.scss.
 // =============================================================================
+
+// ----------------------------------------------------------------------------
+// Scrim / overlay — 32% scrim role alpha, identical in light + dark
+// (M3 spec: do NOT bump to 52% in dark; the global --sf-color-overlay override
+// in _colors.scss for dark mode is a deviation we intentionally bypass here.)
+//
+// Use a ::before pseudo-element for the scrim so the overlay container itself
+// stays at full opacity (hosts the dialog at normal alpha) while the scrim
+// tint holds exactly 32%.
+// ----------------------------------------------------------------------------
+
+// SYNTHESIS Theme 10 — body scroll-lock when a dialog is open.
+// Class applied by sunfish-dialog-a11y.js (reference-counted for nested dialogs).
+body.sf-dialog-open {
+  overflow: hidden;
+}
+
+.sf-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sf-z-modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sf-space-xl);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: var(--sf-color-scrim);
+    opacity: 0.32;
+    pointer-events: none;
+    animation: sf-dialog-scrim-enter var(--sf-motion-duration-short4)
+               var(--sf-motion-easing-linear) both;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Dialog surface — basic M3 dialog
+//   surface-container-high / corner-extra-large / elevation-3
+//   padding 24dp, column flex with 24dp gap between title, body, actions
+// ----------------------------------------------------------------------------
+
+.sf-dialog {
+  position: relative;
+  z-index: var(--sf-z-modal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sf-space-xl);
+  min-width: 280px;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  padding: var(--sf-space-xl);
+  // Packet 3C (P2) — M3 elevation-3 surfaces apply a 5% primary surface tint on
+  // top of surface-container-high. color-mix handles the composite; the
+  // @supports-not fallback keeps pre-color-mix() browsers on the plain token.
+  background-color: color-mix(
+    in srgb,
+    var(--sf-surface-tint, var(--sf-color-primary)) 5%,
+    var(--sf-color-surface-container-high)
+  );
+  color: var(--sf-color-on-surface);
+  border-radius: var(--sf-radius-xl); // corner-extra-large (28px)
+  box-shadow: var(--sf-elevation-3);
+  animation: sf-dialog-enter var(--sf-motion-duration-medium2)
+             var(--sf-motion-easing-emphasized-decel) both;
+
+  // M3 dialogs do not elevate on hover — no box-shadow change here.
+
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    background-color: var(--sf-color-surface-container-high);
+  }
+}
+
+.sf-dialog-overlay > .sf-dialog {
+  margin: auto;
+}
+
+// ----------------------------------------------------------------------------
+// Header — title row + close button
+// M3 headline-small: 1.5rem / 2rem / 400 / 0 tracking, on-surface color
+// ----------------------------------------------------------------------------
+
+.sf-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sf-space-md);
+  margin: 0;
+  color: var(--sf-color-on-surface);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0;
+
+  > span {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Close button — 40×40 icon-button with state-layer overlay
+// ----------------------------------------------------------------------------
+
+.sf-dialog-close {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color var(--sf-transition-fast);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+  &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+  &:focus-visible {
+    outline: 3px solid var(--sf-color-secondary);
+    outline-offset: 2px;
+
+    &::before { opacity: var(--sf-state-focus-opacity); }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Body — M3 body-medium: 0.875rem / 1.25rem / 400 / 0.015625rem tracking
+// in on-surface-variant, scrollable when overflowing
+// ----------------------------------------------------------------------------
+
+.sf-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  // Packet 3C (P2) — explicit max-height guards against very tall content
+  // stretching the dialog past the viewport when the container's max-height
+  // rule isn't decisive (e.g., deeply-nested flex parents). 200px reserves
+  // room for the title + actions + 48px breathing.
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  margin: 0;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.015625rem;
+
+  > p { margin: 0; }
+  > p + p { margin-top: var(--sf-space-md); }
+}
+
+// ----------------------------------------------------------------------------
+// Action row — label-large text buttons, 8dp gap, end-aligned, 52px min height
+// M3 label-large: 0.875rem / 1.25rem / 500 / 0.00625rem tracking
+// ----------------------------------------------------------------------------
+
+.sf-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sf-space-sm);
+  min-height: 52px;
+  margin: 0;
+
+  // Dialog text buttons — primary ink, label-large, primary-keyed state layer
+  .sf-btn {
+    position: relative;
+    overflow: hidden;
+    color: var(--sf-color-primary);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: var(--sf-font-weight-medium);
+    letter-spacing: 0.00625rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background-color: var(--sf-color-primary);
+      opacity: 0;
+      transition: opacity var(--sf-transition-fast);
+      pointer-events: none;
+    }
+
+    &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+    &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+    &:focus-visible {
+      outline: 3px solid var(--sf-color-secondary);
+      outline-offset: 2px;
+
+      &::before { opacity: var(--sf-state-focus-opacity); }
+    }
+
+    &:disabled,
+    &[aria-disabled='true'] {
+      opacity: var(--sf-disabled-opacity);
+      cursor: default;
+
+      &::before { display: none; }
+    }
+  }
+}
+
+// Packet 3C (P2) — Narrow breakpoint: stack action buttons full-width so long
+// labels don't wrap mid-pill or push the dialog over the viewport. M3 spec
+// calls for stacked actions below ~480px. Uses `flex-direction: column-reverse`
+// so the primary action (typically the LAST `.sf-btn`) ends up visually on top
+// per M3 stacked-action guidance.
+@media (max-width: 480px) {
+  .sf-dialog-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--sf-space-sm);
+
+    .sf-btn {
+      width: 100%;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Size modifiers — target the actually-rendered .sf-dialog root
+// (NOT .sf-dialog__panel — that element is never emitted by the razor)
+// ----------------------------------------------------------------------------
+
+.sf-dialog--small  { max-width: 400px; }
+.sf-dialog--medium { max-width: 560px; } // default; explicit for clarity
+.sf-dialog--large  { max-width: 900px; }
+.sf-dialog--full {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  box-shadow: none; // elevation-0 for full-screen per M3
+}
+
+// Responsive: below the M3 compact breakpoint (≤600px) dialogs go full-screen.
+// Batch 2g — satisfies the "breakpoint fullscreen variant" item. The
+// action-button state-layer + 3px secondary focus-ring (Batch 2g item 1) is
+// already implemented on `.sf-dialog-actions .sf-btn` above.
+@media (max-width: 600px) {
+  .sf-dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Draggable — Sunfish extension to M3; cursor affordance on the title bar
+// (The razor emits .sf-dialog-title as the drag handle, not .sf-dialog-header.)
+// ----------------------------------------------------------------------------
+
+.sf-dialog--draggable {
+  .sf-dialog-title {
+    cursor: grab;
+    user-select: none;
+  }
+
+  .sf-dialog-title:active { cursor: grabbing; }
+}
+
+// ----------------------------------------------------------------------------
+// Motion — enter keyframes (scale from 0.8, opacity 0→1)
+// Reduced-motion zeros durations via the global block in foundation/_motion.scss.
+// ----------------------------------------------------------------------------
+
+@keyframes sf-dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sf-dialog-scrim-enter {
+  from { opacity: 0; }
+  to   { opacity: 0.32; }
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors + reduced-motion support for the Material dialog surface.
+// The foundation/_motion.scss block already zeros global durations in
+// prefers-reduced-motion; repeating the rule here keeps this partial
+// self-contained and explicit for skin-level audits.
+// =============================================================================
+
+@media (forced-colors: active) {
+  .sf-dialog {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .sf-dialog-overlay::before {
+    background: Canvas;
+  }
+
+  .sf-dialog-close:focus-visible,
+  .sf-dialog-actions .sf-btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-dialog,
+  .sf-dialog-overlay,
+  .sf-dialog-overlay::before,
+  .sf-dialog-close,
+  .sf-dialog-close::before,
+  .sf-dialog-actions .sf-btn,
+  .sf-dialog-actions .sf-btn::before {
+    transition: none !important;
+    animation: none !important;
+  }
+}

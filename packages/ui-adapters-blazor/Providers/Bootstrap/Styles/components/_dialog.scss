@@ -8,3 +8,155 @@
 .sf-bs-dialog--draggable {
   cursor: move;
 }
+
+// SYNTHESIS Theme 10 — body scroll-lock when a dialog is open.
+// Class is added by the sunfish-dialog-a11y.js module and reference-counted
+// so nested dialogs compose. Set on <body> while any dialog is open.
+body.sf-dialog-open {
+  overflow: hidden;
+}
+
+// SYNTHESIS Theme 1 — dead-CSS fix. Parity with Fluent's `.sf-dialog--*` size
+// classes. The BS5 provider emits `.modal-dialog` today (no emission path for
+// these modifiers yet — tracked as deferred Razor/provider change), but when
+// a consumer applies `sf-dialog--*` via `CssClass`, these rules override
+// Bootstrap's `--bs-modal-width` token so the classes behave as expected.
+.modal-dialog,
+.sf-bs-dialog--draggable {
+  &.sf-dialog--small { --bs-modal-width: 400px; }
+  &.sf-dialog--medium { --bs-modal-width: 600px; }
+  &.sf-dialog--large { --bs-modal-width: 900px; }
+  &.sf-dialog--full {
+    --bs-modal-width: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+
+    .modal-content {
+      border-radius: 0;
+      min-height: 100vh;
+    }
+  }
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors support for Windows High Contrast — use system CanvasText /
+// Canvas / Highlight tokens so the dialog chrome remains perceivable when the
+// user's OS forces a color scheme. WCAG 1.4.11 (non-text contrast).
+// =============================================================================
+
+@media (forced-colors: active) {
+  .modal-content,
+  .sf-dialog,
+  .sf-bs-dialog--draggable {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .btn-close:focus-visible,
+  .sf-dialog-close:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+
+// Respect user motion preferences — disable modal transition / fade animation
+// so screen-reader and vestibular-sensitive users don't get forced movement.
+// WCAG 2.3.3 (animation from interactions).
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-dialog,
+  .modal-backdrop,
+  .sf-dialog,
+  .sf-bs-dialog--draggable {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  // SYNTHESIS Batch 3 (P2) — explicit fade-transform override so the modal
+  // dialog materialises in place instead of sliding in from `-50px`. BS5's
+  // default `.modal.fade .modal-dialog` sets a transform transition; this
+  // branch neutralises both the transition and the transform so the dialog
+  // appears without motion for vestibular-sensitive users.
+  .modal.fade {
+    transition: none;
+  }
+  .modal.fade .modal-dialog {
+    transition: none;
+    transform: none;
+  }
+}
+
+// =================================================================
+// SYNTHESIS Batch 3 (Dialog × BS5) — P2 CSS-only items
+// =================================================================
+
+// P2 — Actions top-spacing. BS5 default `.modal-footer` gap is `.5rem`
+// with `.75rem` padding. Audit recommends 16px gap + 16px top padding so
+// action buttons read as a distinct footer band rather than hugging the
+// body content directly. `gap` replaces the per-child margin dance; the
+// padding ensures the top border (native BS5) isn't visually flush with
+// the first button.
+.modal-footer {
+  gap: 16px;
+  padding-top: 16px;
+}
+
+// P2 — Max-height scrollable body. When the consumer opts into
+// `.modal-dialog-scrollable`, constrain the body so it can scroll within
+// viewport instead of forcing the whole dialog to be tall. The
+// `calc(100vh - 200px)` reserves ~100px each for header+footer+viewport
+// gutter, matching BS5's documented behaviour.
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(100vh - 200px);
+}
+
+// P2 — Surface-tint. Subtle primary wash over the modal-content surface
+// so consumers who theme `--bs-primary` see a hint of brand on dialogs.
+// `::before` sits behind the slotted children (z-index: 0 on the
+// pseudo; children need `position: relative` or a stacking context to
+// render above — BS5's header/body/footer inherit `position: relative`
+// from the flex layout on `.modal-content`).
+.modal-content {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--bs-primary-bg-subtle);
+    opacity: 0.04;
+    pointer-events: none;
+    border-radius: inherit;
+    z-index: 0;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// P2 — Action-row stacked layout on xs viewports. Below BS5's `sm`
+// breakpoint (575.98px), stack the footer buttons vertically with the
+// primary/confirm action on top (column-reverse reads correctly with
+// the DOM order "cancel, confirm"). Gives full-width buttons on narrow
+// screens which matches BS5's mobile convention.
+@media (max-width: 575.98px) {
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .modal-footer > * {
+    margin: 0 0 0.5rem 0;
+  }
+}
+
+// SKIP (API-gated / class not emitted):
+//   - Alert variant styling (.sf-dialog--alert) → class not emitted anywhere
+//   - Icon slot above headline → requires Razor change
+//   - Close button semantics fullscreen vs basic → requires provider branch

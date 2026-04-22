@@ -2105,7 +2105,8 @@ progress {
   color: var(--bs-secondary-color);
 }
 
-.form-control, .sf-bs-datagrid-searchbox input {
+.form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
   display: block;
   width: 100%;
   padding: 0.375rem 0.75rem;
@@ -2122,41 +2123,50 @@ progress {
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control, .sf-bs-datagrid-searchbox input {
+  .form-control, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
+  .sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
     transition: none;
   }
 }
-.form-control[type=file], .sf-bs-datagrid-searchbox input[type=file] {
+.form-control[type=file], .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input, .sf-bs-datagrid [type=file].mar-datagrid-filter-menu-value,
+.sf-bs-datagrid [type=file].mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input[type=file] {
   overflow: hidden;
 }
-.form-control[type=file]:not(:disabled):not([readonly]), .sf-bs-datagrid-searchbox input[type=file]:not(:disabled):not([readonly]) {
+.form-control[type=file]:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].sf-datagrid-searchbox-input:not(:disabled):not([readonly]), .sf-bs-datagrid [type=file].mar-datagrid-filter-menu-value:not(:disabled):not([readonly]),
+.sf-bs-datagrid [type=file].mar-datagrid-filter-menu-operator:not(:disabled):not([readonly]), .sf-bs-datagrid-searchbox input[type=file]:not(:disabled):not([readonly]) {
   cursor: pointer;
 }
-.form-control:focus, .sf-bs-datagrid-searchbox input:focus {
+.form-control:focus, .sf-bs-datagrid .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .mar-datagrid-filter-menu-value:focus,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input:focus {
   color: var(--bs-body-color);
   background-color: var(--bs-body-bg);
   border-color: rgb(134, 182.5, 254);
   outline: 0;
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
-.form-control::-webkit-date-and-time-value, .sf-bs-datagrid-searchbox input::-webkit-date-and-time-value {
+.form-control::-webkit-date-and-time-value, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-date-and-time-value, .sf-bs-datagrid .mar-datagrid-filter-menu-value::-webkit-date-and-time-value,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator::-webkit-date-and-time-value, .sf-bs-datagrid-searchbox input::-webkit-date-and-time-value {
   min-width: 85px;
   height: 1.5em;
   margin: 0;
 }
-.form-control::-webkit-datetime-edit, .sf-bs-datagrid-searchbox input::-webkit-datetime-edit {
+.form-control::-webkit-datetime-edit, .sf-bs-datagrid .sf-datagrid-searchbox-input::-webkit-datetime-edit, .sf-bs-datagrid .mar-datagrid-filter-menu-value::-webkit-datetime-edit,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator::-webkit-datetime-edit, .sf-bs-datagrid-searchbox input::-webkit-datetime-edit {
   display: block;
   padding: 0;
 }
-.form-control::placeholder, .sf-bs-datagrid-searchbox input::placeholder {
+.form-control::placeholder, .sf-bs-datagrid .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .mar-datagrid-filter-menu-value::placeholder,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox input::placeholder {
   color: var(--bs-secondary-color);
   opacity: 1;
 }
-.form-control:disabled, .sf-bs-datagrid-searchbox input:disabled {
+.form-control:disabled, .sf-bs-datagrid .sf-datagrid-searchbox-input:disabled, .sf-bs-datagrid .mar-datagrid-filter-menu-value:disabled,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator:disabled, .sf-bs-datagrid-searchbox input:disabled {
   background-color: var(--bs-secondary-bg);
   opacity: 1;
 }
-.form-control::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+.form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
   padding: 0.375rem 0.75rem;
   margin: -0.375rem -0.75rem;
   margin-inline-end: 0.75rem;
@@ -2171,11 +2181,13 @@ progress {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .form-control::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+  .form-control::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
+  .sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
     transition: none;
   }
 }
-.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid-searchbox input:hover:not(:disabled):not([readonly])::file-selector-button {
+.form-control:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value:hover:not(:disabled):not([readonly])::file-selector-button,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator:hover:not(:disabled):not([readonly])::file-selector-button, .sf-bs-datagrid-searchbox input:hover:not(:disabled):not([readonly])::file-selector-button {
   background-color: var(--bs-secondary-bg);
 }
 
@@ -2193,18 +2205,21 @@ progress {
 .form-control-plaintext:focus {
   outline: 0;
 }
-.form-control-plaintext.form-control-sm, .sf-bs-datagrid-searchbox input.form-control-plaintext, .form-control-plaintext.form-control-lg {
+.form-control-plaintext.form-control-sm, .sf-bs-datagrid .form-control-plaintext.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-plaintext.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .form-control-plaintext.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-plaintext, .form-control-plaintext.form-control-lg {
   padding-right: 0;
   padding-left: 0;
 }
 
-.form-control-sm, .sf-bs-datagrid-searchbox input {
+.form-control-sm, .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input {
   min-height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
   border-radius: var(--bs-border-radius-sm);
 }
-.form-control-sm::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
+.form-control-sm::file-selector-button, .sf-bs-datagrid .sf-datagrid-searchbox-input::file-selector-button, .sf-bs-datagrid .mar-datagrid-filter-menu-value::file-selector-button,
+.sf-bs-datagrid .mar-datagrid-filter-menu-operator::file-selector-button, .sf-bs-datagrid-searchbox input::file-selector-button {
   padding: 0.25rem 0.5rem;
   margin: -0.25rem -0.5rem;
   margin-inline-end: 0.5rem;
@@ -2222,10 +2237,12 @@ progress {
   margin-inline-end: 1rem;
 }
 
-textarea.form-control {
+textarea.form-control, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator {
   min-height: calc(1.5em + 0.75rem + calc(var(--bs-border-width) * 2));
 }
-textarea.form-control-sm {
+textarea.form-control-sm, .sf-bs-datagrid textarea.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator {
   min-height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
 }
 textarea.form-control-lg {
@@ -2248,7 +2265,8 @@ textarea.form-control-lg {
   border: 0 !important;
   border-radius: var(--bs-border-radius);
 }
-.form-control-color.form-control-sm, .sf-bs-datagrid-searchbox input.form-control-color {
+.form-control-color.form-control-sm, .sf-bs-datagrid .form-control-color.sf-datagrid-searchbox-input, .sf-bs-datagrid .form-control-color.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .form-control-color.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.form-control-color {
   height: calc(1.5em + 0.5rem + calc(var(--bs-border-width) * 2));
 }
 .form-control-color.form-control-lg {
@@ -2437,7 +2455,7 @@ textarea.form-control-lg {
   clip: rect(0, 0, 0, 0);
   pointer-events: none;
 }
-.btn-check[disabled] + .btn, .btn-check[disabled] + .sf-signalr-row__action, .btn-check[disabled] + .sf-bs-datagrid-pager-btn, .btn-check:disabled + .btn, .btn-check:disabled + .sf-signalr-row__action, .btn-check:disabled + .sf-bs-datagrid-pager-btn {
+.btn-check[disabled] + .btn, .btn-check[disabled] + .sf-signalr-row__action, .btn-check[disabled] + .sf-calendar__title, .btn-check[disabled] + .sf-calendar__nav-btn, .btn-check[disabled] + .sf-bs-datagrid-pager-btn, .btn-check:disabled + .btn, .btn-check:disabled + .sf-signalr-row__action, .btn-check:disabled + .sf-calendar__title, .btn-check:disabled + .sf-calendar__nav-btn, .btn-check:disabled + .sf-bs-datagrid-pager-btn {
   pointer-events: none;
   filter: none;
   opacity: 0.65;
@@ -2536,7 +2554,8 @@ textarea.form-control-lg {
 .form-floating {
   position: relative;
 }
-.form-floating > .form-control, .sf-bs-datagrid-searchbox .form-floating > input,
+.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
 .form-floating > .form-control-plaintext,
 .form-floating > .form-select {
   height: calc(3.5rem + calc(var(--bs-border-width) * 2));
@@ -2566,21 +2585,26 @@ textarea.form-control-lg {
     transition: none;
   }
 }
-.form-floating > .form-control, .sf-bs-datagrid-searchbox .form-floating > input,
+.form-floating > .form-control, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .form-floating > input,
 .form-floating > .form-control-plaintext {
   padding: 1rem 0.75rem;
 }
-.form-floating > .form-control::placeholder, .sf-bs-datagrid-searchbox .form-floating > input::placeholder,
+.form-floating > .form-control::placeholder, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input::placeholder, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value::placeholder,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator::placeholder, .sf-bs-datagrid-searchbox .form-floating > input::placeholder,
 .form-floating > .form-control-plaintext::placeholder {
   color: transparent;
 }
-.form-floating > .form-control:focus, .sf-bs-datagrid-searchbox .form-floating > input:focus, .form-floating > .form-control:not(:placeholder-shown), .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown),
+.form-floating > .form-control:focus, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:focus,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox .form-floating > input:focus, .form-floating > .form-control:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:not(:placeholder-shown), .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:not(:placeholder-shown),
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:not(:placeholder-shown), .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown),
 .form-floating > .form-control-plaintext:focus,
 .form-floating > .form-control-plaintext:not(:placeholder-shown) {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
 }
-.form-floating > .form-control:-webkit-autofill, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill,
+.form-floating > .form-control:-webkit-autofill, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:-webkit-autofill,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:-webkit-autofill, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill,
 .form-floating > .form-control-plaintext:-webkit-autofill {
   padding-top: 1.625rem;
   padding-bottom: 0.625rem;
@@ -2590,14 +2614,19 @@ textarea.form-control-lg {
   padding-bottom: 0.625rem;
   padding-left: 0.75rem;
 }
-.form-floating > .form-control:focus ~ label, .sf-bs-datagrid-searchbox .form-floating > input:focus ~ label,
+.form-floating > .form-control:focus ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:focus ~ label, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:focus ~ label,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:focus ~ label, .sf-bs-datagrid-searchbox .form-floating > input:focus ~ label,
 .form-floating > .form-control:not(:placeholder-shown) ~ label,
+.sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:not(:placeholder-shown) ~ label,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:not(:placeholder-shown) ~ label,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:not(:placeholder-shown) ~ label,
 .sf-bs-datagrid-searchbox .form-floating > input:not(:placeholder-shown) ~ label,
 .form-floating > .form-control-plaintext ~ label,
 .form-floating > .form-select ~ label {
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
-.form-floating > .form-control:-webkit-autofill ~ label, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill ~ label {
+.form-floating > .form-control:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .sf-datagrid-searchbox-input:-webkit-autofill ~ label, .sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-value:-webkit-autofill ~ label,
+.sf-bs-datagrid .form-floating > .mar-datagrid-filter-menu-operator:-webkit-autofill ~ label, .sf-bs-datagrid-searchbox .form-floating > input:-webkit-autofill ~ label {
   transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem);
 }
 .form-floating > textarea:focus ~ label::after,
@@ -2628,7 +2657,8 @@ textarea.form-control-lg {
   align-items: stretch;
   width: 100%;
 }
-.input-group > .form-control, .sf-bs-datagrid-searchbox .input-group > input,
+.input-group > .form-control, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > input,
 .input-group > .form-select,
 .input-group > .form-floating {
   position: relative;
@@ -2636,16 +2666,17 @@ textarea.form-control-lg {
   width: 1%;
   min-width: 0;
 }
-.input-group > .form-control:focus, .sf-bs-datagrid-searchbox .input-group > input:focus,
+.input-group > .form-control:focus, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:focus,
+.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox .input-group > input:focus,
 .input-group > .form-select:focus,
 .input-group > .form-floating:focus-within {
   z-index: 5;
 }
-.input-group .btn, .input-group .sf-signalr-row__action, .input-group .sf-bs-datagrid-pager-btn {
+.input-group .btn, .input-group .sf-signalr-row__action, .input-group .sf-calendar__title, .input-group .sf-calendar__nav-btn, .input-group .sf-bs-datagrid-pager-btn {
   position: relative;
   z-index: 2;
 }
-.input-group .btn:focus, .input-group .sf-signalr-row__action:focus, .input-group .sf-bs-datagrid-pager-btn:focus {
+.input-group .btn:focus, .input-group .sf-signalr-row__action:focus, .input-group .sf-calendar__title:focus, .input-group .sf-calendar__nav-btn:focus, .input-group .sf-bs-datagrid-pager-btn:focus {
   z-index: 5;
 }
 
@@ -2664,22 +2695,28 @@ textarea.form-control-lg {
   border-radius: var(--bs-border-radius);
 }
 
-.input-group-lg > .form-control, .sf-bs-datagrid-searchbox .input-group-lg > input,
+.input-group-lg > .form-control, .sf-bs-datagrid .input-group-lg > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-lg > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group-lg > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-lg > input,
 .input-group-lg > .form-select,
 .input-group-lg > .input-group-text,
 .input-group-lg > .btn,
 .input-group-lg > .sf-signalr-row__action,
+.input-group-lg > .sf-calendar__title,
+.input-group-lg > .sf-calendar__nav-btn,
 .input-group-lg > .sf-bs-datagrid-pager-btn {
   padding: 0.5rem 1rem;
   font-size: 1.25rem;
   border-radius: var(--bs-border-radius-lg);
 }
 
-.input-group-sm > .form-control, .sf-bs-datagrid-searchbox .input-group-sm > input,
+.input-group-sm > .form-control, .sf-bs-datagrid .input-group-sm > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group-sm > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group-sm > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group-sm > input,
 .input-group-sm > .form-select,
 .input-group-sm > .input-group-text,
 .input-group-sm > .btn,
 .input-group-sm > .sf-signalr-row__action,
+.input-group-sm > .sf-calendar__title,
+.input-group-sm > .sf-calendar__nav-btn,
 .input-group-sm > .sf-bs-datagrid-pager-btn {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
@@ -2694,6 +2731,9 @@ textarea.form-control-lg {
 .input-group:not(.has-validation) > :not(:last-child):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
 .input-group:not(.has-validation) > .dropdown-toggle:nth-last-child(n+3),
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-control,
+.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .sf-datagrid-searchbox-input,
+.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group:not(.has-validation) > .form-floating:not(:last-child) > .mar-datagrid-filter-menu-operator,
 .sf-bs-datagrid-searchbox .input-group:not(.has-validation) > .form-floating:not(:last-child) > input,
 .input-group:not(.has-validation) > .form-floating:not(:last-child) > .form-select {
   border-top-right-radius: 0;
@@ -2702,6 +2742,9 @@ textarea.form-control-lg {
 .input-group.has-validation > :nth-last-child(n+3):not(.dropdown-toggle):not(.dropdown-menu):not(.form-floating),
 .input-group.has-validation > .dropdown-toggle:nth-last-child(n+4),
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-control,
+.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .sf-datagrid-searchbox-input,
+.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group.has-validation > .form-floating:nth-last-child(n+3) > .mar-datagrid-filter-menu-operator,
 .sf-bs-datagrid-searchbox .input-group.has-validation > .form-floating:nth-last-child(n+3) > input,
 .input-group.has-validation > .form-floating:nth-last-child(n+3) > .form-select {
   border-top-right-radius: 0;
@@ -2712,7 +2755,8 @@ textarea.form-control-lg {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
 }
-.input-group > .form-floating:not(:first-child) > .form-control, .sf-bs-datagrid-searchbox .input-group > .form-floating:not(:first-child) > input,
+.input-group > .form-floating:not(:first-child) > .form-control, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .sf-datagrid-searchbox-input, .sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .input-group > .form-floating:not(:first-child) > .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox .input-group > .form-floating:not(:first-child) > input,
 .input-group > .form-floating:not(:first-child) > .form-select {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -2747,7 +2791,10 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:valid, .was-validated .sf-bs-datagrid-searchbox input:valid, .sf-bs-datagrid-searchbox .was-validated input:valid, .form-control.is-valid, .sf-bs-datagrid-searchbox input.is-valid {
+.was-validated .form-control:valid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:valid, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:valid,
+.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:valid,
+.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:valid, .was-validated .sf-bs-datagrid-searchbox input:valid, .sf-bs-datagrid-searchbox .was-validated input:valid, .form-control.is-valid, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.is-valid {
   border-color: var(--bs-form-valid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%23198754' d='M2.3 6.73.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1'/%3e%3c/svg%3e");
@@ -2755,12 +2802,18 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:valid:focus, .was-validated .sf-bs-datagrid-searchbox input:valid:focus, .sf-bs-datagrid-searchbox .was-validated input:valid:focus, .form-control.is-valid:focus, .sf-bs-datagrid-searchbox input.is-valid:focus {
+.was-validated .form-control:valid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:valid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:valid:focus, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:valid:focus, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:valid:focus,
+.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:valid:focus,
+.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:valid:focus, .was-validated .sf-bs-datagrid-searchbox input:valid:focus, .sf-bs-datagrid-searchbox .was-validated input:valid:focus, .form-control.is-valid:focus, .sf-bs-datagrid .is-valid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-value:focus,
+.sf-bs-datagrid .is-valid.mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-valid:focus {
   border-color: var(--bs-form-valid-border-color);
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(var(--bs-success-rgb), 0.25);
 }
 
-.was-validated textarea.form-control:valid, textarea.form-control.is-valid {
+.was-validated textarea.form-control:valid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:valid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:valid, .was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value:valid, .sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-value:valid,
+.was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator:valid,
+.sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-operator:valid, textarea.form-control.is-valid, .sf-bs-datagrid textarea.is-valid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-valid.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid textarea.is-valid.mar-datagrid-filter-menu-operator {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem);
 }
@@ -2800,7 +2853,10 @@ textarea.form-control-lg {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):valid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):valid, .input-group > .form-control:not(:focus).is-valid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-valid,
+.was-validated .input-group > .form-control:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):valid, .was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus):valid, .sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-value:not(:focus):valid,
+.was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus):valid,
+.sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-operator:not(:focus):valid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):valid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):valid, .input-group > .form-control:not(:focus).is-valid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-valid, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus).is-valid,
+.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus).is-valid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-valid,
 .was-validated .input-group > .form-select:not(:focus):valid,
 .input-group > .form-select:not(:focus).is-valid,
 .was-validated .input-group > .form-floating:not(:focus-within):valid,
@@ -2837,7 +2893,10 @@ textarea.form-control-lg {
   display: block;
 }
 
-.was-validated .form-control:invalid, .was-validated .sf-bs-datagrid-searchbox input:invalid, .sf-bs-datagrid-searchbox .was-validated input:invalid, .form-control.is-invalid, .sf-bs-datagrid-searchbox input.is-invalid {
+.was-validated .form-control:invalid, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:invalid, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:invalid,
+.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:invalid,
+.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:invalid, .was-validated .sf-bs-datagrid-searchbox input:invalid, .sf-bs-datagrid-searchbox .was-validated input:invalid, .form-control.is-invalid, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-operator, .sf-bs-datagrid-searchbox input.is-invalid {
   border-color: var(--bs-form-invalid-border-color);
   padding-right: calc(1.5em + 0.75rem);
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e");
@@ -2845,12 +2904,18 @@ textarea.form-control-lg {
   background-position: right calc(0.375em + 0.1875rem) center;
   background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
 }
-.was-validated .form-control:invalid:focus, .was-validated .sf-bs-datagrid-searchbox input:invalid:focus, .sf-bs-datagrid-searchbox .was-validated input:invalid:focus, .form-control.is-invalid:focus, .sf-bs-datagrid-searchbox input.is-invalid:focus {
+.was-validated .form-control:invalid:focus, .was-validated .sf-bs-datagrid .sf-datagrid-searchbox-input:invalid:focus, .sf-bs-datagrid .was-validated .sf-datagrid-searchbox-input:invalid:focus, .was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-value:invalid:focus, .sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-value:invalid:focus,
+.was-validated .sf-bs-datagrid .mar-datagrid-filter-menu-operator:invalid:focus,
+.sf-bs-datagrid .was-validated .mar-datagrid-filter-menu-operator:invalid:focus, .was-validated .sf-bs-datagrid-searchbox input:invalid:focus, .sf-bs-datagrid-searchbox .was-validated input:invalid:focus, .form-control.is-invalid:focus, .sf-bs-datagrid .is-invalid.sf-datagrid-searchbox-input:focus, .sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-value:focus,
+.sf-bs-datagrid .is-invalid.mar-datagrid-filter-menu-operator:focus, .sf-bs-datagrid-searchbox input.is-invalid:focus {
   border-color: var(--bs-form-invalid-border-color);
   box-shadow: var(--bs-box-shadow-inset), 0 0 0 0.25rem rgba(var(--bs-danger-rgb), 0.25);
 }
 
-.was-validated textarea.form-control:invalid, textarea.form-control.is-invalid {
+.was-validated textarea.form-control:invalid, .was-validated .sf-bs-datagrid textarea.sf-datagrid-searchbox-input:invalid, .sf-bs-datagrid .was-validated textarea.sf-datagrid-searchbox-input:invalid, .was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-value:invalid, .sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-value:invalid,
+.was-validated .sf-bs-datagrid textarea.mar-datagrid-filter-menu-operator:invalid,
+.sf-bs-datagrid .was-validated textarea.mar-datagrid-filter-menu-operator:invalid, textarea.form-control.is-invalid, .sf-bs-datagrid textarea.is-invalid.sf-datagrid-searchbox-input, .sf-bs-datagrid textarea.is-invalid.mar-datagrid-filter-menu-value,
+.sf-bs-datagrid textarea.is-invalid.mar-datagrid-filter-menu-operator {
   padding-right: calc(1.5em + 0.75rem);
   background-position: top calc(0.375em + 0.1875rem) right calc(0.375em + 0.1875rem);
 }
@@ -2890,7 +2955,10 @@ textarea.form-control-lg {
   margin-left: 0.5em;
 }
 
-.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):invalid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):invalid, .input-group > .form-control:not(:focus).is-invalid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-invalid,
+.was-validated .input-group > .form-control:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .sf-datagrid-searchbox-input:not(:focus):invalid, .was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus):invalid, .sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-value:not(:focus):invalid,
+.was-validated .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus):invalid,
+.sf-bs-datagrid .was-validated .input-group > .mar-datagrid-filter-menu-operator:not(:focus):invalid, .was-validated .sf-bs-datagrid-searchbox .input-group > input:not(:focus):invalid, .sf-bs-datagrid-searchbox .was-validated .input-group > input:not(:focus):invalid, .input-group > .form-control:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .sf-datagrid-searchbox-input:not(:focus).is-invalid, .sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-value:not(:focus).is-invalid,
+.sf-bs-datagrid .input-group > .mar-datagrid-filter-menu-operator:not(:focus).is-invalid, .sf-bs-datagrid-searchbox .input-group > input:not(:focus).is-invalid,
 .was-validated .input-group > .form-select:not(:focus):invalid,
 .input-group > .form-select:not(:focus).is-invalid,
 .was-validated .input-group > .form-floating:not(:focus-within):invalid,
@@ -2898,7 +2966,7 @@ textarea.form-control-lg {
   z-index: 4;
 }
 
-.btn, .sf-signalr-row__action, .sf-bs-datagrid-pager-btn {
+.btn, .sf-signalr-row__action, .sf-calendar__title, .sf-calendar__nav-btn, .sf-bs-datagrid-pager-btn {
   --bs-btn-padding-x: 0.75rem;
   --bs-btn-padding-y: 0.375rem;
   --bs-btn-font-family: ;
@@ -2933,45 +3001,45 @@ textarea.form-control-lg {
   transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 @media (prefers-reduced-motion: reduce) {
-  .btn, .sf-signalr-row__action, .sf-bs-datagrid-pager-btn {
+  .btn, .sf-signalr-row__action, .sf-calendar__title, .sf-calendar__nav-btn, .sf-bs-datagrid-pager-btn {
     transition: none;
   }
 }
-.btn:hover, .sf-signalr-row__action:hover, .sf-bs-datagrid-pager-btn:hover {
+.btn:hover, .sf-signalr-row__action:hover, .sf-calendar__title:hover, .sf-calendar__nav-btn:hover, .sf-bs-datagrid-pager-btn:hover {
   color: var(--bs-btn-hover-color);
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
 }
-.btn-check + .btn:hover, .btn-check + .sf-signalr-row__action:hover, .btn-check + .sf-bs-datagrid-pager-btn:hover {
+.btn-check + .btn:hover, .btn-check + .sf-signalr-row__action:hover, .btn-check + .sf-calendar__title:hover, .btn-check + .sf-calendar__nav-btn:hover, .btn-check + .sf-bs-datagrid-pager-btn:hover {
   color: var(--bs-btn-color);
   background-color: var(--bs-btn-bg);
   border-color: var(--bs-btn-border-color);
 }
-.btn:focus-visible, .sf-signalr-row__action:focus-visible, .sf-bs-datagrid-pager-btn:focus-visible {
+.btn:focus-visible, .sf-signalr-row__action:focus-visible, .sf-calendar__title:focus-visible, .sf-calendar__nav-btn:focus-visible, .sf-bs-datagrid-pager-btn:focus-visible {
   color: var(--bs-btn-hover-color);
   background-color: var(--bs-btn-hover-bg);
   border-color: var(--bs-btn-hover-border-color);
   outline: 0;
   box-shadow: var(--bs-btn-box-shadow), var(--bs-btn-focus-box-shadow);
 }
-.btn-check:focus-visible + .btn, .btn-check:focus-visible + .sf-signalr-row__action, .btn-check:focus-visible + .sf-bs-datagrid-pager-btn {
+.btn-check:focus-visible + .btn, .btn-check:focus-visible + .sf-signalr-row__action, .btn-check:focus-visible + .sf-calendar__title, .btn-check:focus-visible + .sf-calendar__nav-btn, .btn-check:focus-visible + .sf-bs-datagrid-pager-btn {
   border-color: var(--bs-btn-hover-border-color);
   outline: 0;
   box-shadow: var(--bs-btn-box-shadow), var(--bs-btn-focus-box-shadow);
 }
-.btn-check:checked + .btn, .btn-check:checked + .sf-signalr-row__action, .btn-check:checked + .sf-bs-datagrid-pager-btn, :not(.btn-check) + .btn:active, :not(.btn-check) + .sf-signalr-row__action:active, :not(.btn-check) + .sf-bs-datagrid-pager-btn:active, .btn:first-child:active, .sf-signalr-row__action:first-child:active, .sf-bs-datagrid-pager-btn:first-child:active, .btn.active, .active.sf-signalr-row__action, .active.sf-bs-datagrid-pager-btn, .btn.show, .show.sf-signalr-row__action, .show.sf-bs-datagrid-pager-btn {
+.btn-check:checked + .btn, .btn-check:checked + .sf-signalr-row__action, .btn-check:checked + .sf-calendar__title, .btn-check:checked + .sf-calendar__nav-btn, .btn-check:checked + .sf-bs-datagrid-pager-btn, :not(.btn-check) + .btn:active, :not(.btn-check) + .sf-signalr-row__action:active, :not(.btn-check) + .sf-calendar__title:active, :not(.btn-check) + .sf-calendar__nav-btn:active, :not(.btn-check) + .sf-bs-datagrid-pager-btn:active, .btn:first-child:active, .sf-signalr-row__action:first-child:active, .sf-calendar__title:first-child:active, .sf-calendar__nav-btn:first-child:active, .sf-bs-datagrid-pager-btn:first-child:active, .btn.active, .active.sf-signalr-row__action, .active.sf-calendar__title, .active.sf-calendar__nav-btn, .active.sf-bs-datagrid-pager-btn, .btn.show, .show.sf-signalr-row__action, .show.sf-calendar__title, .show.sf-calendar__nav-btn, .show.sf-bs-datagrid-pager-btn {
   color: var(--bs-btn-active-color);
   background-color: var(--bs-btn-active-bg);
   border-color: var(--bs-btn-active-border-color);
   box-shadow: var(--bs-btn-active-shadow);
 }
-.btn-check:checked + .btn:focus-visible, .btn-check:checked + .sf-signalr-row__action:focus-visible, .btn-check:checked + .sf-bs-datagrid-pager-btn:focus-visible, :not(.btn-check) + .btn:active:focus-visible, :not(.btn-check) + .sf-signalr-row__action:active:focus-visible, :not(.btn-check) + .sf-bs-datagrid-pager-btn:active:focus-visible, .btn:first-child:active:focus-visible, .sf-signalr-row__action:first-child:active:focus-visible, .sf-bs-datagrid-pager-btn:first-child:active:focus-visible, .btn.active:focus-visible, .active.sf-signalr-row__action:focus-visible, .active.sf-bs-datagrid-pager-btn:focus-visible, .btn.show:focus-visible, .show.sf-signalr-row__action:focus-visible, .show.sf-bs-datagrid-pager-btn:focus-visible {
+.btn-check:checked + .btn:focus-visible, .btn-check:checked + .sf-signalr-row__action:focus-visible, .btn-check:checked + .sf-calendar__title:focus-visible, .btn-check:checked + .sf-calendar__nav-btn:focus-visible, .btn-check:checked + .sf-bs-datagrid-pager-btn:focus-visible, :not(.btn-check) + .btn:active:focus-visible, :not(.btn-check) + .sf-signalr-row__action:active:focus-visible, :not(.btn-check) + .sf-calendar__title:active:focus-visible, :not(.btn-check) + .sf-calendar__nav-btn:active:focus-visible, :not(.btn-check) + .sf-bs-datagrid-pager-btn:active:focus-visible, .btn:first-child:active:focus-visible, .sf-signalr-row__action:first-child:active:focus-visible, .sf-calendar__title:first-child:active:focus-visible, .sf-calendar__nav-btn:first-child:active:focus-visible, .sf-bs-datagrid-pager-btn:first-child:active:focus-visible, .btn.active:focus-visible, .active.sf-signalr-row__action:focus-visible, .active.sf-calendar__title:focus-visible, .active.sf-calendar__nav-btn:focus-visible, .active.sf-bs-datagrid-pager-btn:focus-visible, .btn.show:focus-visible, .show.sf-signalr-row__action:focus-visible, .show.sf-calendar__title:focus-visible, .show.sf-calendar__nav-btn:focus-visible, .show.sf-bs-datagrid-pager-btn:focus-visible {
   box-shadow: var(--bs-btn-active-shadow), var(--bs-btn-focus-box-shadow);
 }
-.btn-check:checked:focus-visible + .btn, .btn-check:checked:focus-visible + .sf-signalr-row__action, .btn-check:checked:focus-visible + .sf-bs-datagrid-pager-btn {
+.btn-check:checked:focus-visible + .btn, .btn-check:checked:focus-visible + .sf-signalr-row__action, .btn-check:checked:focus-visible + .sf-calendar__title, .btn-check:checked:focus-visible + .sf-calendar__nav-btn, .btn-check:checked:focus-visible + .sf-bs-datagrid-pager-btn {
   box-shadow: var(--bs-btn-active-shadow), var(--bs-btn-focus-box-shadow);
 }
-.btn:disabled, .sf-signalr-row__action:disabled, .sf-bs-datagrid-pager-btn:disabled, .btn.disabled, .disabled.sf-signalr-row__action, .disabled.sf-bs-datagrid-pager-btn, fieldset:disabled .btn, fieldset:disabled .sf-signalr-row__action, fieldset:disabled .sf-bs-datagrid-pager-btn {
+.btn:disabled, .sf-signalr-row__action:disabled, .sf-calendar__title:disabled, .sf-calendar__nav-btn:disabled, .sf-bs-datagrid-pager-btn:disabled, .btn.disabled, .disabled.sf-signalr-row__action, .disabled.sf-calendar__title, .disabled.sf-calendar__nav-btn, .disabled.sf-bs-datagrid-pager-btn, fieldset:disabled .btn, fieldset:disabled .sf-signalr-row__action, fieldset:disabled .sf-calendar__title, fieldset:disabled .sf-calendar__nav-btn, fieldset:disabled .sf-bs-datagrid-pager-btn {
   color: var(--bs-btn-disabled-color);
   pointer-events: none;
   background-color: var(--bs-btn-disabled-bg);
@@ -3133,7 +3201,7 @@ textarea.form-control-lg {
   --bs-gradient: none;
 }
 
-.btn-outline-secondary, .sf-bs-datagrid-pager-btn {
+.btn-outline-secondary, .sf-calendar__nav-btn, .sf-bs-datagrid-pager-btn {
   --bs-btn-color: #6c757d;
   --bs-btn-border-color: #6c757d;
   --bs-btn-hover-color: #fff;
@@ -3252,7 +3320,7 @@ textarea.form-control-lg {
   --bs-gradient: none;
 }
 
-.btn-link {
+.btn-link, .sf-calendar__title {
   --bs-btn-font-weight: 400;
   --bs-btn-color: var(--bs-link-color);
   --bs-btn-bg: transparent;
@@ -3267,21 +3335,21 @@ textarea.form-control-lg {
   --bs-btn-focus-shadow-rgb: 49, 132, 253;
   text-decoration: underline;
 }
-.btn-link:focus-visible {
+.btn-link:focus-visible, .sf-calendar__title:focus-visible {
   color: var(--bs-btn-color);
 }
-.btn-link:hover {
+.btn-link:hover, .sf-calendar__title:hover {
   color: var(--bs-btn-hover-color);
 }
 
-.btn-lg, .btn-group-lg > .btn, .btn-group-lg > .sf-signalr-row__action, .btn-group-lg > .sf-bs-datagrid-pager-btn {
+.btn-lg, .btn-group-lg > .btn, .btn-group-lg > .sf-signalr-row__action, .btn-group-lg > .sf-calendar__title, .btn-group-lg > .sf-calendar__nav-btn, .btn-group-lg > .sf-bs-datagrid-pager-btn {
   --bs-btn-padding-y: 0.5rem;
   --bs-btn-padding-x: 1rem;
   --bs-btn-font-size: 1.25rem;
   --bs-btn-border-radius: var(--bs-border-radius-lg);
 }
 
-.btn-sm, .sf-signalr-row__action, .btn-group-sm > .btn, .btn-group-sm > .sf-signalr-row__action, .btn-group-sm > .sf-bs-datagrid-pager-btn {
+.btn-sm, .sf-signalr-row__action, .sf-calendar__nav-btn, .btn-group-sm > .btn, .btn-group-sm > .sf-signalr-row__action, .btn-group-sm > .sf-calendar__title, .btn-group-sm > .sf-calendar__nav-btn, .btn-group-sm > .sf-bs-datagrid-pager-btn {
   --bs-btn-padding-y: 0.25rem;
   --bs-btn-padding-x: 0.5rem;
   --bs-btn-font-size: 0.875rem;
@@ -3649,46 +3717,70 @@ textarea.form-control-lg {
   display: inline-flex;
   vertical-align: middle;
 }
-.btn-group > .btn, .btn-group > .sf-signalr-row__action, .btn-group > .sf-bs-datagrid-pager-btn,
+.btn-group > .btn, .btn-group > .sf-signalr-row__action, .btn-group > .sf-calendar__title, .btn-group > .sf-calendar__nav-btn, .btn-group > .sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn,
 .btn-group-vertical > .sf-signalr-row__action,
+.btn-group-vertical > .sf-calendar__title,
+.btn-group-vertical > .sf-calendar__nav-btn,
 .btn-group-vertical > .sf-bs-datagrid-pager-btn {
   position: relative;
   flex: 1 1 auto;
 }
-.btn-group > .btn-check:checked + .btn, .btn-group > .btn-check:checked + .sf-signalr-row__action, .btn-group > .btn-check:checked + .sf-bs-datagrid-pager-btn,
+.btn-group > .btn-check:checked + .btn, .btn-group > .btn-check:checked + .sf-signalr-row__action, .btn-group > .btn-check:checked + .sf-calendar__title, .btn-group > .btn-check:checked + .sf-calendar__nav-btn, .btn-group > .btn-check:checked + .sf-bs-datagrid-pager-btn,
 .btn-group > .btn-check:focus + .btn,
 .btn-group > .btn-check:focus + .sf-signalr-row__action,
+.btn-group > .btn-check:focus + .sf-calendar__title,
+.btn-group > .btn-check:focus + .sf-calendar__nav-btn,
 .btn-group > .btn-check:focus + .sf-bs-datagrid-pager-btn,
 .btn-group > .btn:hover,
 .btn-group > .sf-signalr-row__action:hover,
+.btn-group > .sf-calendar__title:hover,
+.btn-group > .sf-calendar__nav-btn:hover,
 .btn-group > .sf-bs-datagrid-pager-btn:hover,
 .btn-group > .btn:focus,
 .btn-group > .sf-signalr-row__action:focus,
+.btn-group > .sf-calendar__title:focus,
+.btn-group > .sf-calendar__nav-btn:focus,
 .btn-group > .sf-bs-datagrid-pager-btn:focus,
 .btn-group > .btn:active,
 .btn-group > .sf-signalr-row__action:active,
+.btn-group > .sf-calendar__title:active,
+.btn-group > .sf-calendar__nav-btn:active,
 .btn-group > .sf-bs-datagrid-pager-btn:active,
 .btn-group > .btn.active,
 .btn-group > .active.sf-signalr-row__action,
+.btn-group > .active.sf-calendar__title,
+.btn-group > .active.sf-calendar__nav-btn,
 .btn-group > .active.sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn-check:checked + .btn,
 .btn-group-vertical > .btn-check:checked + .sf-signalr-row__action,
+.btn-group-vertical > .btn-check:checked + .sf-calendar__title,
+.btn-group-vertical > .btn-check:checked + .sf-calendar__nav-btn,
 .btn-group-vertical > .btn-check:checked + .sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn-check:focus + .btn,
 .btn-group-vertical > .btn-check:focus + .sf-signalr-row__action,
+.btn-group-vertical > .btn-check:focus + .sf-calendar__title,
+.btn-group-vertical > .btn-check:focus + .sf-calendar__nav-btn,
 .btn-group-vertical > .btn-check:focus + .sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn:hover,
 .btn-group-vertical > .sf-signalr-row__action:hover,
+.btn-group-vertical > .sf-calendar__title:hover,
+.btn-group-vertical > .sf-calendar__nav-btn:hover,
 .btn-group-vertical > .sf-bs-datagrid-pager-btn:hover,
 .btn-group-vertical > .btn:focus,
 .btn-group-vertical > .sf-signalr-row__action:focus,
+.btn-group-vertical > .sf-calendar__title:focus,
+.btn-group-vertical > .sf-calendar__nav-btn:focus,
 .btn-group-vertical > .sf-bs-datagrid-pager-btn:focus,
 .btn-group-vertical > .btn:active,
 .btn-group-vertical > .sf-signalr-row__action:active,
+.btn-group-vertical > .sf-calendar__title:active,
+.btn-group-vertical > .sf-calendar__nav-btn:active,
 .btn-group-vertical > .sf-bs-datagrid-pager-btn:active,
 .btn-group-vertical > .btn.active,
 .btn-group-vertical > .active.sf-signalr-row__action,
+.btn-group-vertical > .active.sf-calendar__title,
+.btn-group-vertical > .active.sf-calendar__nav-btn,
 .btn-group-vertical > .active.sf-bs-datagrid-pager-btn {
   z-index: 1;
 }
@@ -3705,26 +3797,34 @@ textarea.form-control-lg {
 .btn-group {
   border-radius: var(--bs-border-radius);
 }
-.btn-group > :not(.btn-check:first-child) + .btn, .btn-group > :not(.btn-check:first-child) + .sf-signalr-row__action, .btn-group > :not(.btn-check:first-child) + .sf-bs-datagrid-pager-btn,
+.btn-group > :not(.btn-check:first-child) + .btn, .btn-group > :not(.btn-check:first-child) + .sf-signalr-row__action, .btn-group > :not(.btn-check:first-child) + .sf-calendar__title, .btn-group > :not(.btn-check:first-child) + .sf-calendar__nav-btn, .btn-group > :not(.btn-check:first-child) + .sf-bs-datagrid-pager-btn,
 .btn-group > .btn-group:not(:first-child) {
   margin-left: calc(-1 * var(--bs-border-width));
 }
-.btn-group > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-signalr-row__action:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-bs-datagrid-pager-btn:not(:last-child):not(.dropdown-toggle),
+.btn-group > .btn:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-signalr-row__action:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-calendar__title:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-calendar__nav-btn:not(:last-child):not(.dropdown-toggle), .btn-group > .sf-bs-datagrid-pager-btn:not(:last-child):not(.dropdown-toggle),
 .btn-group > .btn.dropdown-toggle-split:first-child,
 .btn-group > .dropdown-toggle-split.sf-signalr-row__action:first-child,
+.btn-group > .dropdown-toggle-split.sf-calendar__title:first-child,
+.btn-group > .dropdown-toggle-split.sf-calendar__nav-btn:first-child,
 .btn-group > .dropdown-toggle-split.sf-bs-datagrid-pager-btn:first-child,
 .btn-group > .btn-group:not(:last-child) > .btn,
 .btn-group > .btn-group:not(:last-child) > .sf-signalr-row__action,
+.btn-group > .btn-group:not(:last-child) > .sf-calendar__title,
+.btn-group > .btn-group:not(:last-child) > .sf-calendar__nav-btn,
 .btn-group > .btn-group:not(:last-child) > .sf-bs-datagrid-pager-btn {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
-.btn-group > .btn:nth-child(n+3), .btn-group > .sf-signalr-row__action:nth-child(n+3), .btn-group > .sf-bs-datagrid-pager-btn:nth-child(n+3),
+.btn-group > .btn:nth-child(n+3), .btn-group > .sf-signalr-row__action:nth-child(n+3), .btn-group > .sf-calendar__title:nth-child(n+3), .btn-group > .sf-calendar__nav-btn:nth-child(n+3), .btn-group > .sf-bs-datagrid-pager-btn:nth-child(n+3),
 .btn-group > :not(.btn-check) + .btn,
 .btn-group > :not(.btn-check) + .sf-signalr-row__action,
+.btn-group > :not(.btn-check) + .sf-calendar__title,
+.btn-group > :not(.btn-check) + .sf-calendar__nav-btn,
 .btn-group > :not(.btn-check) + .sf-bs-datagrid-pager-btn,
 .btn-group > .btn-group:not(:first-child) > .btn,
 .btn-group > .btn-group:not(:first-child) > .sf-signalr-row__action,
+.btn-group > .btn-group:not(:first-child) > .sf-calendar__title,
+.btn-group > .btn-group:not(:first-child) > .sf-calendar__nav-btn,
 .btn-group > .btn-group:not(:first-child) > .sf-bs-datagrid-pager-btn {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
@@ -3741,12 +3841,12 @@ textarea.form-control-lg {
   margin-right: 0;
 }
 
-.btn-sm + .dropdown-toggle-split, .sf-signalr-row__action + .dropdown-toggle-split, .btn-group-sm > .btn + .dropdown-toggle-split, .btn-group-sm > .sf-bs-datagrid-pager-btn + .dropdown-toggle-split {
+.btn-sm + .dropdown-toggle-split, .sf-signalr-row__action + .dropdown-toggle-split, .sf-calendar__nav-btn + .dropdown-toggle-split, .btn-group-sm > .btn + .dropdown-toggle-split, .btn-group-sm > .sf-calendar__title + .dropdown-toggle-split, .btn-group-sm > .sf-bs-datagrid-pager-btn + .dropdown-toggle-split {
   padding-right: 0.375rem;
   padding-left: 0.375rem;
 }
 
-.btn-lg + .dropdown-toggle-split, .btn-group-lg > .btn + .dropdown-toggle-split, .btn-group-lg > .sf-signalr-row__action + .dropdown-toggle-split, .btn-group-lg > .sf-bs-datagrid-pager-btn + .dropdown-toggle-split {
+.btn-lg + .dropdown-toggle-split, .btn-group-lg > .btn + .dropdown-toggle-split, .btn-group-lg > .sf-signalr-row__action + .dropdown-toggle-split, .btn-group-lg > .sf-calendar__title + .dropdown-toggle-split, .btn-group-lg > .sf-calendar__nav-btn + .dropdown-toggle-split, .btn-group-lg > .sf-bs-datagrid-pager-btn + .dropdown-toggle-split {
   padding-right: 0.75rem;
   padding-left: 0.75rem;
 }
@@ -3754,7 +3854,7 @@ textarea.form-control-lg {
 .btn-group.show .dropdown-toggle {
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
-.btn-group.show .dropdown-toggle.btn-link {
+.btn-group.show .dropdown-toggle.btn-link, .btn-group.show .dropdown-toggle.sf-calendar__title {
   box-shadow: none;
 }
 
@@ -3763,27 +3863,33 @@ textarea.form-control-lg {
   align-items: flex-start;
   justify-content: center;
 }
-.btn-group-vertical > .btn, .btn-group-vertical > .sf-signalr-row__action, .btn-group-vertical > .sf-bs-datagrid-pager-btn,
+.btn-group-vertical > .btn, .btn-group-vertical > .sf-signalr-row__action, .btn-group-vertical > .sf-calendar__title, .btn-group-vertical > .sf-calendar__nav-btn, .btn-group-vertical > .sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn-group {
   width: 100%;
 }
-.btn-group-vertical > .btn:not(:first-child), .btn-group-vertical > .sf-signalr-row__action:not(:first-child), .btn-group-vertical > .sf-bs-datagrid-pager-btn:not(:first-child),
+.btn-group-vertical > .btn:not(:first-child), .btn-group-vertical > .sf-signalr-row__action:not(:first-child), .btn-group-vertical > .sf-calendar__title:not(:first-child), .btn-group-vertical > .sf-calendar__nav-btn:not(:first-child), .btn-group-vertical > .sf-bs-datagrid-pager-btn:not(:first-child),
 .btn-group-vertical > .btn-group:not(:first-child) {
   margin-top: calc(-1 * var(--bs-border-width));
 }
-.btn-group-vertical > .btn:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-signalr-row__action:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-bs-datagrid-pager-btn:not(:last-child):not(.dropdown-toggle),
+.btn-group-vertical > .btn:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-signalr-row__action:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-calendar__title:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-calendar__nav-btn:not(:last-child):not(.dropdown-toggle), .btn-group-vertical > .sf-bs-datagrid-pager-btn:not(:last-child):not(.dropdown-toggle),
 .btn-group-vertical > .btn-group:not(:last-child) > .btn,
 .btn-group-vertical > .btn-group:not(:last-child) > .sf-signalr-row__action,
+.btn-group-vertical > .btn-group:not(:last-child) > .sf-calendar__title,
+.btn-group-vertical > .btn-group:not(:last-child) > .sf-calendar__nav-btn,
 .btn-group-vertical > .btn-group:not(:last-child) > .sf-bs-datagrid-pager-btn {
   border-bottom-right-radius: 0;
   border-bottom-left-radius: 0;
 }
-.btn-group-vertical > .btn:nth-child(n+3), .btn-group-vertical > .sf-signalr-row__action:nth-child(n+3), .btn-group-vertical > .sf-bs-datagrid-pager-btn:nth-child(n+3),
+.btn-group-vertical > .btn:nth-child(n+3), .btn-group-vertical > .sf-signalr-row__action:nth-child(n+3), .btn-group-vertical > .sf-calendar__title:nth-child(n+3), .btn-group-vertical > .sf-calendar__nav-btn:nth-child(n+3), .btn-group-vertical > .sf-bs-datagrid-pager-btn:nth-child(n+3),
 .btn-group-vertical > :not(.btn-check) + .btn,
 .btn-group-vertical > :not(.btn-check) + .sf-signalr-row__action,
+.btn-group-vertical > :not(.btn-check) + .sf-calendar__title,
+.btn-group-vertical > :not(.btn-check) + .sf-calendar__nav-btn,
 .btn-group-vertical > :not(.btn-check) + .sf-bs-datagrid-pager-btn,
 .btn-group-vertical > .btn-group:not(:first-child) > .btn,
 .btn-group-vertical > .btn-group:not(:first-child) > .sf-signalr-row__action,
+.btn-group-vertical > .btn-group:not(:first-child) > .sf-calendar__title,
+.btn-group-vertical > .btn-group:not(:first-child) > .sf-calendar__nav-btn,
 .btn-group-vertical > .btn-group:not(:first-child) > .sf-bs-datagrid-pager-btn {
   border-top-left-radius: 0;
   border-top-right-radius: 0;
@@ -4830,12 +4936,12 @@ textarea.form-control-lg {
   display: none;
 }
 
-.btn .badge, .sf-signalr-row__action .badge, .sf-bs-datagrid-pager-btn .badge {
+.btn .badge, .sf-signalr-row__action .badge, .sf-calendar__title .badge, .sf-calendar__nav-btn .badge, .sf-bs-datagrid-pager-btn .badge {
   position: relative;
   top: -1px;
 }
 
-.alert, .sf-bs-datagrid-validation-summary {
+.alert, .sf-bs-datagrid .sf-datagrid-empty, .sf-bs-datagrid-validation-summary {
   --bs-alert-bg: transparent;
   --bs-alert-padding-x: 1rem;
   --bs-alert-padding-y: 1rem;
@@ -4881,7 +4987,7 @@ textarea.form-control-lg {
   --bs-alert-link-color: var(--bs-primary-text-emphasis);
 }
 
-.alert-secondary {
+.alert-secondary, .sf-bs-datagrid .sf-datagrid-empty {
   --bs-alert-color: var(--bs-secondary-text-emphasis);
   --bs-alert-bg: var(--bs-secondary-bg-subtle);
   --bs-alert-border-color: var(--bs-secondary-border-subtle);
@@ -6210,7 +6316,8 @@ textarea.form-control-lg {
 }
 
 .spinner-grow,
-.spinner-border {
+.spinner-border,
+.sf-bs-datagrid .sf-datagrid-loading-spinner {
   display: inline-block;
   flex-shrink: 0;
   width: var(--bs-spinner-width);
@@ -6225,7 +6332,7 @@ textarea.form-control-lg {
     transform: rotate(360deg) /* rtl:ignore */;
   }
 }
-.spinner-border {
+.spinner-border, .sf-bs-datagrid .sf-datagrid-loading-spinner {
   --bs-spinner-width: 2rem;
   --bs-spinner-height: 2rem;
   --bs-spinner-vertical-align: -0.125em;
@@ -6267,7 +6374,7 @@ textarea.form-control-lg {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .spinner-border,
+  .spinner-border, .sf-bs-datagrid .sf-datagrid-loading-spinner,
   .spinner-grow {
     --bs-spinner-animation-speed: 1.5s;
   }
@@ -6788,7 +6895,7 @@ textarea.form-control-lg {
   background-color: currentcolor;
   opacity: 0.5;
 }
-.placeholder.btn::before, .placeholder.sf-signalr-row__action::before, .placeholder.sf-bs-datagrid-pager-btn::before {
+.placeholder.btn::before, .placeholder.sf-signalr-row__action::before, .placeholder.sf-calendar__title::before, .placeholder.sf-calendar__nav-btn::before, .placeholder.sf-bs-datagrid-pager-btn::before {
   display: inline-block;
   content: "";
 }
@@ -7117,7 +7224,7 @@ textarea.form-control-lg {
   align-self: stretch;
 }
 
-.visually-hidden,
+.visually-hidden, .sf-bs-datagrid .sf-datagrid-loading-text,
 .visually-hidden-focusable:not(:focus):not(:focus-within) {
   width: 1px !important;
   height: 1px !important;
@@ -7128,11 +7235,11 @@ textarea.form-control-lg {
   white-space: nowrap !important;
   border: 0 !important;
 }
-.visually-hidden:not(caption),
+.visually-hidden:not(caption), .sf-bs-datagrid .sf-datagrid-loading-text:not(caption),
 .visually-hidden-focusable:not(:focus):not(:focus-within):not(caption) {
   position: absolute !important;
 }
-.visually-hidden *,
+.visually-hidden *, .sf-bs-datagrid .sf-datagrid-loading-text *,
 .visually-hidden-focusable:not(:focus):not(:focus-within) * {
   overflow: hidden !important;
 }
@@ -8599,7 +8706,7 @@ textarea.form-control-lg {
 }
 
 /* rtl:end:remove */
-.text-primary {
+.text-primary, .sf-bs-datagrid .sf-datagrid-loading-spinner {
   --bs-text-opacity: 1;
   color: rgba(var(--bs-primary-rgb), var(--bs-text-opacity)) !important;
 }
@@ -13506,11 +13613,11 @@ textarea.form-control-lg {
   min-height: 2rem;
 }
 
-.sf-bs-split-button .btn:first-child, .sf-bs-split-button .sf-signalr-row__action:first-child, .sf-bs-split-button .sf-bs-datagrid-pager-btn:first-child {
+.sf-bs-split-button .btn:first-child, .sf-bs-split-button .sf-signalr-row__action:first-child, .sf-bs-split-button .sf-calendar__title:first-child, .sf-bs-split-button .sf-calendar__nav-btn:first-child, .sf-bs-split-button .sf-bs-datagrid-pager-btn:first-child {
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
 }
-.sf-bs-split-button .btn:last-child, .sf-bs-split-button .sf-signalr-row__action:last-child, .sf-bs-split-button .sf-bs-datagrid-pager-btn:last-child {
+.sf-bs-split-button .btn:last-child, .sf-bs-split-button .sf-signalr-row__action:last-child, .sf-bs-split-button .sf-calendar__title:last-child, .sf-bs-split-button .sf-calendar__nav-btn:last-child, .sf-bs-split-button .sf-bs-datagrid-pager-btn:last-child {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   padding-left: 0.5rem;
@@ -13543,6 +13650,18 @@ textarea.form-control-lg {
   width: 72px;
   height: 72px;
   font-size: var(--sf-font-size-lg);
+}
+
+.btn.sf-button--icon-only, .sf-button--icon-only.sf-signalr-row__action, .sf-button--icon-only.sf-calendar__title, .sf-button--icon-only.sf-calendar__nav-btn, .sf-button--icon-only.sf-bs-datagrid-pager-btn {
+  --bs-btn-padding-x: var(--bs-btn-padding-y, 0.375rem);
+  aspect-ratio: 1/1;
+  border-radius: var(--bs-border-radius);
+}
+.btn.sf-button--icon-only.btn-sm, .sf-button--icon-only.sf-signalr-row__action, .sf-button--icon-only.btn-sm.sf-calendar__title, .sf-button--icon-only.sf-calendar__nav-btn, .sf-button--icon-only.btn-sm.sf-bs-datagrid-pager-btn, .btn-group-sm > .btn.sf-button--icon-only, .btn-group-sm > .sf-button--icon-only.sf-calendar__title, .btn-group-sm > .sf-button--icon-only.sf-bs-datagrid-pager-btn {
+  --bs-btn-padding-x: var(--bs-btn-padding-y, 0.25rem);
+}
+.btn.sf-button--icon-only.btn-lg, .sf-button--icon-only.btn-lg.sf-signalr-row__action, .sf-button--icon-only.btn-lg.sf-calendar__title, .sf-button--icon-only.btn-lg.sf-calendar__nav-btn, .sf-button--icon-only.btn-lg.sf-bs-datagrid-pager-btn, .btn-group-lg > .btn.sf-button--icon-only, .btn-group-lg > .sf-button--icon-only.sf-signalr-row__action, .btn-group-lg > .sf-button--icon-only.sf-calendar__title, .btn-group-lg > .sf-button--icon-only.sf-calendar__nav-btn, .btn-group-lg > .sf-button--icon-only.sf-bs-datagrid-pager-btn {
+  --bs-btn-padding-x: var(--bs-btn-padding-y, 0.5rem);
 }
 
 .sf-bs-btn--tonal-primary {
@@ -13631,6 +13750,71 @@ textarea.form-control-lg {
 .sf-bs-btn--tonal-dark:hover {
   background-color: rgba(33, 37, 41, 0.25);
   color: rgb(29.7, 33.3, 36.9);
+}
+
+.btn:has(.sf-button__icon), .sf-signalr-row__action:has(.sf-button__icon), .sf-calendar__title:has(.sf-button__icon), .sf-calendar__nav-btn:has(.sf-button__icon), .sf-bs-datagrid-pager-btn:has(.sf-button__icon),
+.btn.sf-button--has-icon,
+.sf-button--has-icon.sf-signalr-row__action,
+.sf-button--has-icon.sf-calendar__title,
+.sf-button--has-icon.sf-calendar__nav-btn,
+.sf-button--has-icon.sf-bs-datagrid-pager-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.btn.sf-btn-flat, .sf-btn-flat.sf-signalr-row__action, .sf-btn-flat.sf-calendar__title, .sf-btn-flat.sf-calendar__nav-btn, .sf-btn-flat.sf-bs-datagrid-pager-btn {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.075);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+.btn.sf-btn-clear, .sf-btn-clear.sf-signalr-row__action, .sf-btn-clear.sf-calendar__title, .sf-btn-clear.sf-calendar__nav-btn, .sf-btn-clear.sf-bs-datagrid-pager-btn {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-box-shadow: none;
+  text-decoration: none;
+}
+.btn.sf-btn-clear:hover, .sf-btn-clear.sf-signalr-row__action:hover, .sf-btn-clear.sf-calendar__title:hover, .sf-btn-clear.sf-calendar__nav-btn:hover, .sf-btn-clear.sf-bs-datagrid-pager-btn:hover {
+  text-decoration: underline;
+}
+
+.btn:focus-visible, .sf-signalr-row__action:focus-visible, .sf-calendar__title:focus-visible, .sf-calendar__nav-btn:focus-visible, .sf-bs-datagrid-pager-btn:focus-visible {
+  box-shadow: 0 0 0 var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(var(--bs-primary-rgb), 0.25));
+}
+
+.btn.btn-link, .btn-link.sf-signalr-row__action, .sf-calendar__title, .btn-link.sf-calendar__nav-btn, .btn-link.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: var(--bs-link-color);
+  --bs-btn-hover-color: var(--bs-link-hover-color);
+  --bs-btn-active-color: var(--bs-link-hover-color);
+}
+
+.btn, .sf-signalr-row__action, .sf-calendar__title, .sf-calendar__nav-btn, .sf-bs-datagrid-pager-btn {
+  min-width: 0;
+}
+
+.btn > *, .sf-signalr-row__action > *, .sf-calendar__title > *, .sf-calendar__nav-btn > *, .sf-bs-datagrid-pager-btn > * {
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .sf-bs-callout {
@@ -13849,7 +14033,9 @@ textarea.form-control-lg {
 .sf-bs-combobox {
   position: relative;
 }
-.sf-bs-combobox .form-control, .sf-bs-combobox .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-combobox input,
+.sf-bs-combobox .form-control, .sf-bs-combobox .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-combobox .sf-datagrid-searchbox-input, .sf-bs-combobox .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-combobox .mar-datagrid-filter-menu-value,
+.sf-bs-combobox .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-bs-combobox .mar-datagrid-filter-menu-operator, .sf-bs-combobox .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-combobox input,
 .sf-bs-combobox .form-select {
   cursor: pointer;
 }
@@ -13869,11 +14055,36 @@ textarea.form-control-lg {
 .sf-bs-datagrid {
   border: 1px solid var(--sf-color-border);
   border-radius: var(--sf-radius-md);
+  --bs-table-color: var(--bs-emphasis-color);
+  --bs-table-bg: var(--bs-body-bg);
+  --bs-table-border-color: var(--bs-border-color);
+  --bs-table-accent-bg: transparent;
+  --bs-table-striped-bg: rgba(var(--bs-emphasis-color-rgb), 0.05);
+  --bs-table-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.075);
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
 }
 .sf-bs-datagrid table {
   margin-bottom: 0;
   border-collapse: collapse;
   width: 100%;
+  color: var(--bs-table-color);
+  background-color: var(--bs-table-bg);
+  border-color: var(--bs-table-border-color);
+  vertical-align: top;
+}
+.sf-bs-datagrid table > :not(caption) > * > * {
+  background-color: var(--bs-table-bg);
+  border-bottom: var(--bs-border-width) solid var(--bs-table-border-color);
+}
+.sf-bs-datagrid table > tbody {
+  vertical-align: inherit;
+}
+.sf-bs-datagrid table > thead {
+  vertical-align: bottom;
+}
+.sf-bs-datagrid table > tbody > tr:hover > * {
+  background-color: var(--bs-table-hover-bg);
 }
 
 .sf-bs-datagrid-header-cell {
@@ -13900,15 +14111,11 @@ textarea.form-control-lg {
 }
 
 .sf-bs-datagrid-row {
-  border-bottom: 1px solid var(--sf-color-border);
-  min-height: var(--mar-datagrid-row-height, 36px);
+  border-bottom: 1px solid var(--bs-border-color, var(--sf-color-border));
   transition: background 0.15s;
 }
 .sf-bs-datagrid-row:last-child {
   border-bottom: none;
-}
-.sf-bs-datagrid-row:hover {
-  background: var(--sf-color-surface);
 }
 .sf-bs-datagrid-row--selected {
   background: var(--sf-color-primary-light);
@@ -13918,15 +14125,10 @@ textarea.form-control-lg {
 }
 
 .sf-bs-datagrid-cell {
-  padding: var(--mar-datagrid-cell-padding, var(--sf-space-sm) var(--sf-space-md));
-  font-size: var(--mar-datagrid-font-size, inherit);
+  padding: var(--sf-space-sm) var(--sf-space-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.sf-bs-datagrid-row--striped:nth-child(even) {
-  background-color: rgba(var(--bs-emphasis-color-rgb), 0.05);
 }
 
 .sf-bs-datagrid-pager {
@@ -13936,7 +14138,7 @@ textarea.form-control-lg {
 
 .sf-bs-datagrid-toolbar {
   padding: var(--sf-space-sm);
-  border-bottom: 1px solid var(--sf-color-border);
+  border-bottom: 1px solid var(--bs-border-color-translucent, var(--sf-color-border));
 }
 
 .sf-bs-datagrid-filter-row {
@@ -13946,7 +14148,9 @@ textarea.form-control-lg {
 .sf-bs-datagrid-filter-cell {
   padding: var(--sf-space-xs) var(--sf-space-sm);
 }
-.sf-bs-datagrid-filter-cell .form-control, .sf-bs-datagrid-filter-cell .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-datagrid-filter-cell input {
+.sf-bs-datagrid-filter-cell .form-control, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .sf-datagrid-searchbox-input, .sf-bs-datagrid-filter-cell .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-datagrid-filter-cell .mar-datagrid-filter-menu-value,
+.sf-bs-datagrid-filter-cell .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-bs-datagrid-filter-cell .mar-datagrid-filter-menu-operator, .sf-bs-datagrid-filter-cell .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-datagrid-filter-cell input {
   font-size: var(--sf-font-size-sm);
   padding: 0.25rem 0.5rem;
 }
@@ -14100,19 +14304,42 @@ textarea.form-control-lg {
   font-weight: 600;
 }
 
-.sf-bs-datagrid-detail-row {
-  background-color: var(--bs-secondary-bg);
-  border-bottom: 1px solid var(--sf-color-border);
+.sf-bs-datagrid .table-group-divider,
+.sf-bs-datagrid .sf-bs-datagrid-group-header {
+  background-color: var(--bs-tertiary-bg);
 }
-.sf-bs-datagrid-detail-row > td {
+
+.sf-bs-datagrid-detail-row,
+.sf-datagrid-detail-row {
+  background-color: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color, var(--sf-color-border));
+  border-left: 3px solid var(--bs-primary);
+}
+.sf-bs-datagrid-detail-row > td,
+.sf-datagrid-detail-row > td {
   padding: var(--sf-space-sm) var(--sf-space-md);
 }
 
-.sf-bs-datagrid-col--locked {
+.mar-datagrid-col--locked {
   position: sticky;
+  z-index: 1;
+  background-color: var(--mar-datagrid-row-bg, var(--bs-body-bg, #fff));
+  inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+}
+
+th.mar-datagrid-col--locked {
   z-index: 2;
-  background-color: var(--bs-body-bg);
-  border-right: 2px solid var(--sf-color-border);
+  background-color: var(--mar-datagrid-header-bg, var(--bs-body-bg, #f8f9fa));
+}
+
+.mar-datagrid-col--locked-end {
+  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.mar-datagrid-col--locked-end[style*=inset-inline-end],
+.mar-datagrid-col--locked-end[data-frozen-position=End] {
+  box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
 .sf-bs-datagrid-searchbox {
@@ -14122,68 +14349,250 @@ textarea.form-control-lg {
   padding: var(--sf-space-xs) var(--sf-space-md);
   border-bottom: 1px solid var(--sf-color-border);
 }
-.sf-bs-datagrid-cell:focus,
-.sf-bs-datagrid-header-cell:focus {
-  outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
-  outline-offset: -2px;
+.sf-bs-datagrid-cell:focus-visible,
+.sf-bs-datagrid-header-cell:focus-visible {
+  outline: 0;
+  box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
   position: relative;
   z-index: 1;
 }
 
 .sf-bs-datagrid-row--focused {
-  outline: 2px solid var(--bs-focus-ring-color, var(--sf-color-primary));
-  outline-offset: -1px;
+  outline: 0;
+  box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
 }
 
-/* ── DataGrid size tiers (A7.1 + A7.2) ──────────────────────────────────────
-   Each tier sets CSS custom properties consumed by .sf-bs-datagrid-cell and
-   .sf-bs-datagrid-row. The variables are scoped to the grid root so they
-   cascade to all descendant cells/rows without touching header or filter rows.
-   Design choice: we retrofit the existing .sf-bs-datagrid-cell and
-   .sf-bs-datagrid-row rules to consume the variables; size classes thus work
-   even when the grid is inside a provider-less host.
-   --------------------------------------------------------------------------- */
-.mar-datagrid--size-small {
-  --mar-datagrid-font-size: 0.8125rem;
-  --mar-datagrid-cell-padding: 0.25rem 0.5rem;
-  --mar-datagrid-row-height: 28px;
-}
-.mar-datagrid--size-medium {
-  --mar-datagrid-font-size: 0.875rem;
-  --mar-datagrid-cell-padding: 0.5rem 0.75rem;
-  --mar-datagrid-row-height: 36px;
-}
-.mar-datagrid--size-large {
-  --mar-datagrid-font-size: 1rem;
-  --mar-datagrid-cell-padding: 0.75rem 1rem;
-  --mar-datagrid-row-height: 48px;
+.mar-datagrid-col-drag-clone {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--sf-color-border, #dee2e6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  border-radius: 2px;
 }
 
-/* ── DataGrid highlighted rows (A7.3 + A7.4) ───────────────────────────────── */
-.mar-datagrid-row--highlighted {
-  background-color: rgba(var(--bs-warning-rgb, 255, 193, 7), 0.18) !important;
-  outline: 1px solid rgba(var(--bs-warning-rgb, 255, 193, 7), 0.5);
-  outline-offset: -1px;
+th.is-dragging-source {
+  opacity: 0.4;
 }
 
-/* ── DataGrid column resize handle (B2.4) ───────────────────────────────────── */
-.mar-datagrid-col-resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  cursor: col-resize;
+.mar-datagrid-row-drag-handle {
+  cursor: grab;
   user-select: none;
-  touch-action: none;
-  z-index: 1;
+  padding: 0 4px;
+  color: var(--mar-datagrid-row-drag-handle-color, #999);
+}
+.mar-datagrid-row-drag-handle:active {
+  cursor: grabbing;
 }
 
-.mar-datagrid-col-resize-handle:hover,
-.mar-datagrid-col-resize-handle.is-dragging {
-  background-color: var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2));
+.mar-datagrid-drag-cell {
+  width: 2rem;
+  text-align: center;
+  padding: 0;
 }
 
+tr.is-row-dragging-source {
+  opacity: 0.4;
+}
+
+.mar-datagrid-row-drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+  pointer-events: none;
+}
+
+.mar-datagrid-column-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: var(--mar-datagrid-menu-bg, #fff);
+  border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+}
+
+.mar-datagrid-column-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: inherit;
+}
+.mar-datagrid-column-menu-item:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+.mar-datagrid-column-menu-item:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.mar-datagrid-column-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--mar-datagrid-border-color, #dee2e6);
+}
+
+.mar-datagrid-column-menu-trigger {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+  color: var(--mar-datagrid-muted-color, #6c757d);
+  line-height: 1;
+}
+.mar-datagrid-column-menu-trigger:hover {
+  color: inherit;
+}
+
+.sf-bs-datagrid .mar-datagrid-cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--sf-font-size-sm, 0.875rem);
+  line-height: 1.2;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: #212529;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn:hover:not(:disabled) {
+  background: var(--sf-color-surface, rgba(0, 0, 0, 0.04));
+  border-color: var(--sf-color-border, #dee2e6);
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn:focus-visible {
+  outline: 0;
+  box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn--sm {
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn--delete {
+  color: #dc3545;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn--delete:hover:not(:disabled) {
+  background: rgba(220, 53, 69, 0.08);
+  border-color: #dc3545;
+  color: #dc3545;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn--add {
+  color: #198754;
+}
+.sf-bs-datagrid .mar-datagrid-cmd-btn--add:hover:not(:disabled) {
+  background: rgba(25, 135, 84, 0.08);
+  border-color: #198754;
+  color: #198754;
+}
+.sf-bs-datagrid .mar-datagrid-column-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--sf-color-text-secondary, var(--bs-secondary-color));
+  cursor: pointer;
+  line-height: 1;
+}
+.sf-bs-datagrid .mar-datagrid-column-menu-trigger:hover {
+  border-color: var(--sf-color-border, #dee2e6);
+  color: var(--sf-color-primary, #0d6efd);
+}
+.sf-bs-datagrid .mar-datagrid-column-menu-trigger:focus-visible {
+  outline: 0;
+  box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0) var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem) var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
+}
+.sf-bs-datagrid .sf-datagrid-loading-spinner {
+  display: inline-block;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 3px solid var(--sf-color-border, #dee2e6);
+  border-top-color: var(--sf-color-primary, #0d6efd);
+  border-radius: 50%;
+  animation: sf-bs-datagrid-spin 0.9s linear infinite;
+}
+.sf-bs-datagrid .sf-datagrid-loading-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes sf-bs-datagrid-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.sf-bs-datagrid .sf-datagrid-loading-text {
+  clip: rect(0, 0, 0, 0);
+}
+
+.sf-bs-datagrid .sf-datagrid-empty {
+  margin: var(--sf-space-md);
+  text-align: center;
+  border-radius: var(--bs-border-radius);
+}
+
+.sf-bs-datagrid-pager-btn:focus,
+.sf-bs-datagrid-pager-btn:focus-visible {
+  outline: 0;
+}
+
+.sf-bs-datagrid-pager-btn:focus-visible {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+.sf-bs-datagrid .sf-datagrid-content {
+  scrollbar-gutter: stable;
+}
+
+[data-bs-theme=dark] .sf-datagrid-resize-handle,
+[data-bs-theme=dark] .mar-datagrid-col-resize-handle {
+  background: var(--bs-border-color);
+}
+
+.sf-datagrid-selection-cell--neutral {
+  color: var(--bs-secondary-color);
+}
+
+.sf-datagrid-searchbox-input:focus-visible {
+  box-shadow: inset 0 -2px 0 var(--bs-primary);
+}
+
+@media (forced-colors: active) {
+  .sf-bs-datagrid-row {
+    border: 1px solid CanvasText;
+  }
+  .sf-bs-datagrid-row--selected {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
 .sf-bs-datasheet {
   border: 1px solid var(--sf-color-border);
   border-radius: var(--sf-radius-md);
@@ -14561,30 +14970,22 @@ textarea.form-control-lg {
 }
 
 .sf-calendar__nav-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
   padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  color: #212529;
   font-size: 0.75rem;
-}
-.sf-calendar__nav-btn:hover:not(:disabled) {
-  background: #e9ecef;
-}
-.sf-calendar__nav-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+  line-height: 1;
 }
 
 .sf-calendar__title {
   font-weight: 600;
   font-size: 0.875rem;
+  padding: 0.125rem 0.5rem;
+  text-decoration: none;
 }
 
 .sf-calendar__grid {
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .sf-calendar__weekdays {
@@ -14621,38 +15022,87 @@ textarea.form-control-lg {
   font-size: 0.875rem;
   color: #212529;
 }
-.sf-calendar__day:hover:not(:disabled) {
+
+.sf-calendar__cell {
+  padding: 0;
+  text-align: center;
+}
+.sf-calendar__cell:hover:not(.sf-calendar__cell--disabled) .sf-calendar__day {
   background: #e9ecef;
 }
-.sf-calendar__day--today {
+.sf-calendar__cell--today .sf-calendar__day {
   font-weight: 700;
-  border: 1px solid #0d6efd;
+  box-shadow: inset 0 0 0 1px var(--bs-primary);
+  outline-offset: 2px;
 }
-.sf-calendar__day--selected {
+.sf-calendar__cell--selected .sf-calendar__day {
   background: #0d6efd !important;
   color: #fff !important;
 }
-.sf-calendar__day--disabled {
-  opacity: 0.35;
+.sf-calendar__cell--disabled {
+  opacity: var(--bs-btn-disabled-opacity, 0.65);
   cursor: not-allowed;
   pointer-events: none;
 }
-.sf-calendar__day--outside {
-  color: var(--bs-secondary-color);
-  opacity: 0.5;
+.sf-calendar__cell--disabled .sf-calendar__day {
+  cursor: not-allowed;
 }
-.sf-calendar__day--placeholder {
+.sf-calendar__cell--other-month .sf-calendar__day {
+  color: var(--bs-secondary-color);
+  opacity: 0.55;
+}
+.sf-calendar__cell--focused .sf-calendar__day,
+.sf-calendar__cell .sf-calendar__day:focus-visible {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+  z-index: 1;
+}
+.sf-calendar__cell--empty {
   pointer-events: none;
 }
-.sf-calendar__day--in-range {
+.sf-calendar__cell--in-range {
   background: rgba(13, 110, 253, 0.12);
+}
+.sf-calendar__cell--in-range .sf-calendar__day {
   border-radius: 0;
 }
-.sf-calendar__day--range-start {
+.sf-calendar__cell--range-start .sf-calendar__day, .sf-calendar__cell--range-end .sf-calendar__day, .sf-calendar__cell--range-edge .sf-calendar__day {
+  background: #0d6efd !important;
+  color: #fff !important;
+}
+.sf-calendar__cell--range-start .sf-calendar__day {
   border-radius: 0.25rem 0 0 0.25rem;
 }
-.sf-calendar__day--range-end {
+.sf-calendar__cell--range-end .sf-calendar__day {
   border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.sf-calendar__weeknum,
+.sf-calendar__weeknum-header {
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+}
+
+.sf-calendar__view--year .sf-calendar__cell,
+.sf-calendar__view--decade .sf-calendar__cell,
+.sf-calendar__view--century .sf-calendar__cell {
+  width: 33.33%;
+  padding: 1rem 0.5rem;
+  font: var(--bs-body-font-style, normal) var(--bs-body-font-weight, 400) var(--bs-body-font-size, 1rem)/var(--bs-body-line-height, 1.5) var(--bs-body-font-family, inherit);
+}
+
+.sf-calendar__popup {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.5rem);
+  box-shadow: var(--bs-box-shadow, 0 1rem 3rem rgba(0, 0, 0, 0.175));
+}
+
+.sf-calendar__view {
+  transition: opacity 150ms ease-in-out;
 }
 
 .sf-date-range-picker__popup {
@@ -14660,10 +15110,10 @@ textarea.form-control-lg {
   top: calc(100% + 4px);
   left: 0;
   z-index: 1050;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 0.5rem;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  background: var(--bs-tertiary-bg, #fff);
+  border: 1px solid var(--bs-border-color-translucent, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.5rem);
+  box-shadow: var(--bs-box-shadow, 0 1rem 3rem rgba(0, 0, 0, 0.175));
   padding: 1rem;
   min-width: 560px;
 }
@@ -14699,10 +15149,10 @@ textarea.form-control-lg {
   top: calc(100% + 4px);
   left: 0;
   z-index: 1050;
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: 0.5rem;
-  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+  background: var(--bs-tertiary-bg, #fff);
+  border: 1px solid var(--bs-border-color-translucent, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.5rem);
+  box-shadow: var(--bs-box-shadow, 0 1rem 3rem rgba(0, 0, 0, 0.175));
   padding: 1rem;
   min-width: 280px;
 }
@@ -14780,10 +15230,143 @@ textarea.form-control-lg {
   z-index: 1;
 }
 
+@media (forced-colors: active) {
+  .sf-calendar,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .sf-calendar__cell:focus-visible,
+  .sf-calendar__nav-btn:focus-visible,
+  .sf-calendar__title:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .sf-calendar__cell--selected .sf-calendar__day,
+  .sf-calendar__cell--range-start .sf-calendar__day,
+  .sf-calendar__cell--range-end .sf-calendar__day,
+  .sf-calendar__cell--range-edge .sf-calendar__day {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-calendar,
+  .sf-calendar__cell,
+  .sf-calendar__day,
+  .sf-calendar__view,
+  .sf-datepicker__overlay,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 .sf-bs-dialog--draggable {
   cursor: move;
 }
 
+body.sf-dialog-open {
+  overflow: hidden;
+}
+
+.modal-dialog.sf-dialog--small,
+.sf-bs-dialog--draggable.sf-dialog--small {
+  --bs-modal-width: 400px;
+}
+.modal-dialog.sf-dialog--medium,
+.sf-bs-dialog--draggable.sf-dialog--medium {
+  --bs-modal-width: 600px;
+}
+.modal-dialog.sf-dialog--large,
+.sf-bs-dialog--draggable.sf-dialog--large {
+  --bs-modal-width: 900px;
+}
+.modal-dialog.sf-dialog--full,
+.sf-bs-dialog--draggable.sf-dialog--full {
+  --bs-modal-width: 100%;
+  max-width: 100%;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+.modal-dialog.sf-dialog--full .modal-content,
+.sf-bs-dialog--draggable.sf-dialog--full .modal-content {
+  border-radius: 0;
+  min-height: 100vh;
+}
+
+@media (forced-colors: active) {
+  .modal-content,
+  .sf-dialog,
+  .sf-bs-dialog--draggable {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .btn-close:focus-visible, .sf-signalr-popup__close:focus-visible,
+  .sf-dialog-close:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-dialog,
+  .modal-backdrop,
+  .sf-dialog,
+  .sf-bs-dialog--draggable {
+    transition: none !important;
+    animation: none !important;
+  }
+  .modal.fade {
+    transition: none;
+  }
+  .modal.fade .modal-dialog {
+    transition: none;
+    transform: none;
+  }
+}
+.modal-footer {
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.modal-dialog-scrollable .modal-body {
+  max-height: calc(100vh - 200px);
+}
+
+.modal-content {
+  position: relative;
+  overflow: hidden;
+}
+.modal-content::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--bs-primary-bg-subtle);
+  opacity: 0.04;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+.modal-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 575.98px) {
+  .modal-footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .modal-footer > * {
+    margin: 0 0 0.5rem 0;
+  }
+}
 .sf-bs-divider {
   margin: var(--sf-space-md) 0;
   border: 0;
@@ -15099,7 +15682,9 @@ textarea.form-control-lg {
 .sf-bs-dropdownlist {
   position: relative;
 }
-.sf-bs-dropdownlist .form-control, .sf-bs-dropdownlist .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-dropdownlist input,
+.sf-bs-dropdownlist .form-control, .sf-bs-dropdownlist .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-dropdownlist input, .sf-bs-dropdownlist .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-dropdownlist .mar-datagrid-filter-menu-value,
+.sf-bs-dropdownlist .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-bs-dropdownlist .mar-datagrid-filter-menu-operator, .sf-bs-dropdownlist .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-dropdownlist .sf-datagrid-searchbox-input,
 .sf-bs-dropdownlist .form-select {
   cursor: pointer;
 }
@@ -15116,7 +15701,7 @@ textarea.form-control-lg {
 .sf-bs-editor-toolbar {
   background-color: var(--sf-color-surface);
 }
-.sf-bs-editor-toolbar .btn, .sf-bs-editor-toolbar .sf-signalr-row__action, .sf-bs-editor-toolbar .sf-bs-datagrid-pager-btn {
+.sf-bs-editor-toolbar .btn, .sf-bs-editor-toolbar .sf-signalr-row__action, .sf-bs-editor-toolbar .sf-bs-datagrid-pager-btn, .sf-bs-editor-toolbar .sf-calendar__nav-btn, .sf-bs-editor-toolbar .sf-calendar__title {
   padding: 0.25rem 0.5rem;
   font-size: var(--sf-font-size-sm);
 }
@@ -15924,6 +16509,53 @@ textarea.form-control-lg {
   background-color: var(--sf-color-surface);
 }
 
+.btn.sf-bs-icon-button, .sf-bs-icon-button.sf-calendar__nav-btn, .sf-bs-icon-button.sf-calendar__title,
+.btn-icon.sf-bs-icon-button,
+.sf-signalr-row__action.sf-bs-icon-button,
+.sf-bs-datagrid-pager-btn.sf-bs-icon-button {
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0.5rem;
+  aspect-ratio: 1/1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.btn-sm.sf-bs-icon-button, .sf-bs-icon-button.sf-signalr-row__action, .btn-group-sm > .sf-bs-icon-button.btn, .btn-group-sm > .sf-bs-icon-button.sf-bs-datagrid-pager-btn, .sf-bs-icon-button.sf-calendar__nav-btn, .btn-group-sm > .sf-bs-icon-button.sf-calendar__title {
+  --bs-btn-padding-x: 0.375rem;
+  --bs-btn-padding-y: 0.375rem;
+}
+
+.btn-lg.sf-bs-icon-button, .btn-group-lg > .sf-bs-icon-button.btn, .btn-group-lg > .sf-bs-icon-button.sf-signalr-row__action, .btn-group-lg > .sf-bs-icon-button.sf-bs-datagrid-pager-btn, .btn-group-lg > .sf-bs-icon-button.sf-calendar__nav-btn, .btn-group-lg > .sf-bs-icon-button.sf-calendar__title {
+  --bs-btn-padding-x: 0.625rem;
+  --bs-btn-padding-y: 0.625rem;
+}
+
+.btn.sf-button--icon-only, .sf-button--icon-only.sf-signalr-row__action, .sf-button--icon-only.sf-bs-datagrid-pager-btn, .sf-button--icon-only.sf-calendar__nav-btn, .sf-button--icon-only.sf-calendar__title {
+  --bs-btn-padding-x: 0.5rem;
+  --bs-btn-padding-y: 0.5rem;
+  aspect-ratio: 1/1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+.btn.sf-button--icon-only.btn-sm, .sf-button--icon-only.sf-signalr-row__action, .sf-button--icon-only.btn-sm.sf-bs-datagrid-pager-btn, .sf-button--icon-only.btn-sm.sf-calendar__title, .btn-group-sm > .btn.sf-button--icon-only, .btn-group-sm > .sf-button--icon-only.sf-bs-datagrid-pager-btn, .sf-button--icon-only.sf-calendar__nav-btn, .btn-group-sm > .sf-button--icon-only.sf-calendar__title {
+  --bs-btn-padding-x: 0.375rem;
+  --bs-btn-padding-y: 0.375rem;
+  width: 2rem;
+  height: 2rem;
+}
+.btn.sf-button--icon-only.btn-lg, .sf-button--icon-only.btn-lg.sf-signalr-row__action, .sf-button--icon-only.btn-lg.sf-bs-datagrid-pager-btn, .sf-button--icon-only.btn-lg.sf-calendar__nav-btn, .sf-button--icon-only.btn-lg.sf-calendar__title, .btn-group-lg > .btn.sf-button--icon-only, .btn-group-lg > .sf-button--icon-only.sf-signalr-row__action, .btn-group-lg > .sf-button--icon-only.sf-bs-datagrid-pager-btn, .btn-group-lg > .sf-button--icon-only.sf-calendar__nav-btn, .btn-group-lg > .sf-button--icon-only.sf-calendar__title {
+  --bs-btn-padding-x: 0.625rem;
+  --bs-btn-padding-y: 0.625rem;
+  width: 3rem;
+  height: 3rem;
+}
+
 .sf-bs-link {
   color: var(--sf-color-primary);
   text-decoration: underline;
@@ -16128,7 +16760,9 @@ textarea.form-control-lg {
 .sf-bs-multiselect {
   position: relative;
 }
-.sf-bs-multiselect .form-control, .sf-bs-multiselect .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-multiselect input,
+.sf-bs-multiselect .form-control, .sf-bs-multiselect .sf-bs-datagrid-searchbox input, .sf-bs-datagrid-searchbox .sf-bs-multiselect input, .sf-bs-multiselect .sf-bs-datagrid .mar-datagrid-filter-menu-value, .sf-bs-datagrid .sf-bs-multiselect .mar-datagrid-filter-menu-value,
+.sf-bs-multiselect .sf-bs-datagrid .mar-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-bs-multiselect .mar-datagrid-filter-menu-operator, .sf-bs-multiselect .sf-bs-datagrid .sf-datagrid-searchbox-input, .sf-bs-datagrid .sf-bs-multiselect .sf-datagrid-searchbox-input,
 .sf-bs-multiselect .form-select {
   cursor: pointer;
 }

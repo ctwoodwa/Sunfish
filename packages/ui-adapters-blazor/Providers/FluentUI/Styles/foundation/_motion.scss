@@ -8,4 +8,11 @@
     --sf-transition-fast: 120ms ease;
     --sf-transition-normal: 200ms ease;
     --sf-transition-slow: 300ms ease;
+
+    /* Phase 2B / Batch 2i — Fluent v9 duration + curve primitives.
+       Components (Button, Dialog close) consume these as
+       `var(--sf-duration-faster) var(--sf-curve-easy-ease)`. Values track the
+       Fluent v9 tokens in fluent-v9-tokens.css (--durationFaster, --curveEasyEase). */
+    --sf-duration-faster: 100ms;
+    --sf-curve-easy-ease: cubic-bezier(0.33, 0, 0.67, 1);
 }

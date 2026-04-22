@@ -1,3 +1,4 @@
+@charset "UTF-8";
 :root {
   --sf-color-primary: #6750A4;
   --sf-color-on-primary: #FFFFFF;
@@ -405,6 +406,7 @@
   justify-content: center;
   gap: var(--sf-space-sm);
   height: 40px;
+  max-width: 100%;
   padding: 0 var(--sf-space-xl);
   border: none;
   border-radius: var(--sf-radius-full);
@@ -417,6 +419,7 @@
   text-decoration: none;
   cursor: pointer;
   overflow: hidden;
+  text-overflow: ellipsis;
   user-select: none;
   vertical-align: middle;
   white-space: nowrap;
@@ -432,14 +435,13 @@
   transition: opacity var(--sf-transition-fast);
   pointer-events: none;
 }
-.sf-button:hover {
-  box-shadow: var(--sf-elevation-1);
-}
 .sf-button:hover::before {
   opacity: var(--sf-state-hover-opacity);
 }
 .sf-button:focus-visible {
-  box-shadow: var(--sf-focus-ring);
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
 }
 .sf-button:focus-visible::before {
   opacity: var(--sf-state-focus-opacity);
@@ -456,6 +458,12 @@
 .sf-button:disabled::before, .sf-button[aria-disabled=true]::before {
   display: none;
 }
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-button:disabled, .sf-button[aria-disabled=true] {
+    background-color: var(--sf-color-surface-container);
+    color: var(--sf-color-on-surface-variant);
+  }
+}
 
 .sf-button--tonal {
   background-color: var(--sf-color-secondary-container);
@@ -463,9 +471,6 @@
 }
 .sf-button--tonal::before {
   background-color: var(--sf-color-on-secondary-container);
-}
-.sf-button--tonal:hover {
-  box-shadow: var(--sf-elevation-1);
 }
 
 .sf-button--elevated {
@@ -497,7 +502,9 @@
 }
 .sf-button--outlined:focus-visible {
   border-color: var(--sf-color-primary);
-  box-shadow: var(--sf-focus-ring);
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
 }
 .sf-button--outlined:disabled, .sf-button--outlined[aria-disabled=true] {
   border-color: color-mix(in srgb, var(--sf-color-on-surface) 12%, transparent);
@@ -506,7 +513,7 @@
 .sf-button--text {
   background-color: transparent;
   color: var(--sf-color-primary);
-  padding: 0 var(--sf-space-sm);
+  padding: 0 12px;
   box-shadow: none;
 }
 .sf-button--text::before {
@@ -548,6 +555,13 @@
 .sf-datagrid-content > table {
   border-collapse: collapse;
   width: 100%;
+  table-layout: auto;
+}
+
+.sf-datagrid-content {
+  position: relative;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
 }
 
 .sf-datagrid-header {
@@ -565,9 +579,26 @@
 }
 .sf-datagrid-header-cell--sortable {
   cursor: pointer;
+  overflow: hidden;
 }
-.sf-datagrid-header-cell--sortable:hover {
-  background: var(--sf-color-surface-container-high);
+.sf-datagrid-header-cell--sortable::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-datagrid-header-cell--sortable:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-datagrid-header-cell--sortable:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-datagrid-header-cell--sortable:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
 }
 .sf-datagrid-header-cell--sorted {
   color: var(--sf-color-primary);
@@ -583,7 +614,6 @@
 
 .sf-datagrid-row {
   border-bottom: 1px solid var(--sf-color-border);
-  min-height: var(--mar-datagrid-row-height, 36px);
   transition: background var(--sf-transition-fast);
 }
 
@@ -592,15 +622,20 @@
 }
 
 .sf-datagrid-row:hover {
-  background: var(--sf-color-surface-container-high);
+  background: color-mix(in srgb, currentColor calc(var(--sf-state-hover-opacity) * 100%), transparent);
+}
+
+.sf-datagrid-row:active {
+  background: color-mix(in srgb, currentColor calc(var(--sf-state-pressed-opacity) * 100%), transparent);
 }
 
 .sf-datagrid-row--selected {
-  background: var(--sf-color-primary-light);
+  background: var(--sf-color-secondary-container);
+  color: var(--sf-color-on-secondary-container);
 }
 
 .sf-datagrid-row--selected:hover {
-  background: var(--sf-color-primary-light);
+  background: color-mix(in srgb, currentColor calc(var(--sf-state-hover-opacity) * 100%), var(--sf-color-secondary-container));
 }
 
 .sf-datagrid-row--striped:nth-child(even) {
@@ -608,11 +643,23 @@
 }
 
 .sf-datagrid-cell {
-  padding: var(--mar-datagrid-cell-padding, var(--sf-space-sm) var(--sf-space-md));
-  font-size: var(--mar-datagrid-font-size, inherit);
+  position: relative;
+  padding: var(--sf-space-sm) var(--sf-space-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.sf-datagrid-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-datagrid-cell:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
 }
 
 .sf-datagrid-cell--selected {
@@ -653,6 +700,7 @@
 .sf-datagrid-searchbox input:focus {
   outline: none;
   border-color: var(--sf-color-primary);
+  box-shadow: inset 0 -1px 0 0 var(--sf-color-primary);
 }
 
 .sf-datagrid-filter-row {
@@ -675,19 +723,39 @@
   align-items: center;
   justify-content: center;
   margin-left: 0.35rem;
-  border: 1px solid var(--sf-color-border);
-  background: var(--sf-color-surface);
-  color: var(--sf-color-text-muted);
-  border-radius: 4px;
+  border: none;
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  border-radius: 50%;
   line-height: 1;
-  min-width: 1.5rem;
-  height: 1.5rem;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  overflow: hidden;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+.sf-datagrid .sf-datagrid-filter-menu-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-datagrid .sf-datagrid-filter-menu-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-datagrid .sf-datagrid-filter-menu-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-datagrid .sf-datagrid-filter-menu-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn:hover {
-  border-color: var(--sf-color-primary);
   color: var(--sf-color-primary);
 }
 
@@ -697,10 +765,8 @@
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn--active {
-  border-color: var(--sf-color-primary);
   background: color-mix(in srgb, var(--sf-color-primary) 10%, var(--sf-color-surface, #ffffff));
   color: var(--sf-color-primary);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--sf-color-primary) 35%, transparent);
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn--active::after {
@@ -730,7 +796,7 @@
   border: 1px solid var(--sf-color-border);
   border-radius: 8px;
   background: var(--sf-color-surface);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--sf-elevation-2);
 }
 
 .sf-datagrid .sf-datagrid-filter-menu label {
@@ -765,22 +831,55 @@
 
 .sf-datagrid-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--sf-space-xl) var(--sf-space-md);
-  color: var(--sf-color-text-muted);
-  font-size: var(--sf-font-size-base);
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-2xl) var(--sf-space-md);
+  color: var(--sf-color-on-surface-variant);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0;
+  text-align: center;
+}
+.sf-datagrid-empty::before {
+  content: "📭";
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: var(--sf-space-xs);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--sf-color-on-surface-variant);
+  opacity: 0.6;
+}
+.sf-datagrid-empty::after {
+  content: "There are no rows to display.";
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.015625rem;
+  color: var(--sf-color-on-surface-variant);
 }
 
-.sf-datagrid-group-header {
-  font-weight: var(--sf-font-weight-semibold);
+.sf-datagrid-group-header,
+.sf-datagrid-group-footer {
   background: var(--sf-color-surface-container);
+  color: var(--sf-color-on-surface);
   padding: var(--sf-space-xs) var(--sf-space-md);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.00625rem;
 }
 
 .sf-datagrid-detail-row {
   background: var(--sf-color-surface);
   border-bottom: 1px solid var(--sf-color-border);
+  border-left: 4px solid var(--sf-color-primary);
 }
 .sf-datagrid-detail-row > td, .sf-datagrid-detail-row > .sf-datagrid-cell {
   padding: var(--sf-space-sm) var(--sf-space-md);
@@ -792,10 +891,50 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--sf-color-surface) 70%, transparent);
+  background: color-mix(in srgb, var(--sf-color-scrim) calc(var(--sf-state-hover-opacity) * 100%), color-mix(in srgb, var(--sf-color-surface) 70%, transparent));
   z-index: 10;
+  overflow: hidden;
+}
+.sf-datagrid-loading-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  overflow: hidden;
+  background-color: color-mix(in srgb, var(--sf-color-primary) 20%, transparent);
+  pointer-events: none;
+}
+.sf-datagrid-loading-overlay::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 40%;
+  background-color: var(--sf-color-primary);
+  animation: sf-datagrid-loading-bar 1.4s linear infinite;
+  pointer-events: none;
 }
 
+@keyframes sf-datagrid-loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  60% {
+    transform: translateX(250%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-datagrid-loading-overlay::after {
+    animation: none;
+    width: 100%;
+  }
+}
 .sf-datagrid-footer-row {
   background: var(--sf-color-surface-container);
   border-top: 1px solid var(--sf-color-border);
@@ -806,11 +945,26 @@
   padding: var(--sf-space-sm) var(--sf-space-md);
 }
 
-.sf-datagrid-col--locked {
+.mar-datagrid-col--locked {
   position: sticky;
+  z-index: 1;
+  background-color: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
+  inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+}
+
+th.mar-datagrid-col--locked {
   z-index: 2;
-  background: var(--sf-color-surface);
-  border-right: 2px solid var(--sf-color-border);
+  background-color: var(--mar-datagrid-header-bg, var(--sf-color-surface-container, #f5f5f5));
+}
+
+.mar-datagrid-col--locked-end {
+  box-shadow: 4px 0 6px -2px color-mix(in srgb, var(--sf-color-shadow) 10%, transparent);
+}
+
+.mar-datagrid-col--locked-end[style*=inset-inline-end],
+.mar-datagrid-col--locked-end[data-frozen-position=End] {
+  box-shadow: -4px 0 6px -2px color-mix(in srgb, var(--sf-color-shadow) 10%, transparent);
 }
 
 .sf-datagrid-pager {
@@ -823,6 +977,7 @@
 }
 
 .sf-datagrid-pager-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -834,10 +989,26 @@
   background: var(--sf-color-surface);
   color: var(--sf-color-text);
   cursor: pointer;
-  transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+  overflow: hidden;
 }
-.sf-datagrid-pager-btn:hover {
-  background: var(--sf-color-surface-container-high);
+.sf-datagrid-pager-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-datagrid-pager-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-datagrid-pager-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-datagrid-pager-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
 }
 .sf-datagrid-pager-btn--active {
   background: var(--sf-color-primary);
@@ -847,6 +1018,9 @@
 .sf-datagrid-pager-btn:disabled {
   color: var(--sf-color-text-muted);
   cursor: not-allowed;
+}
+.sf-datagrid-pager-btn:disabled::before {
+  display: none;
 }
 
 .sf-datagrid-pager-ellipsis {
@@ -873,7 +1047,7 @@
 .sf-datagrid-popup-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.3);
+  background: color-mix(in srgb, var(--sf-color-scrim) 32%, transparent);
   z-index: 200;
   display: flex;
   align-items: center;
@@ -884,7 +1058,7 @@
   background: var(--sf-color-surface);
   border: 1px solid var(--sf-color-border);
   border-radius: var(--sf-radius-md);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+  box-shadow: var(--sf-elevation-3);
   min-width: 320px;
   max-width: 600px;
   width: 100%;
@@ -933,6 +1107,7 @@
 }
 
 .sf-datagrid-cmd-btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--sf-space-xs);
@@ -943,10 +1118,26 @@
   color: var(--sf-color-text);
   font-size: var(--sf-font-size-sm);
   cursor: pointer;
-  transition: background var(--sf-transition-fast);
+  overflow: hidden;
 }
-.sf-datagrid-cmd-btn:hover {
-  background: var(--sf-color-surface-container-high);
+.sf-datagrid-cmd-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-datagrid-cmd-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-datagrid-cmd-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-datagrid-cmd-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
 }
 
 .sf-datagrid-command-header {
@@ -969,64 +1160,244 @@
   padding: 0;
 }
 
+.mar-datagrid-detail-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  border-radius: var(--sf-radius-full);
+  cursor: pointer;
+  overflow: hidden;
+  line-height: 1;
+}
+.mar-datagrid-detail-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.mar-datagrid-detail-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.mar-datagrid-detail-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.mar-datagrid-detail-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+
 .sf-datagrid-cell:focus-visible,
 .sf-datagrid-header-cell:focus-visible {
-  box-shadow: var(--sf-focus-ring);
-  outline: none;
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
   position: relative;
   z-index: 1;
 }
 
 .sf-datagrid-row--focused {
-  box-shadow: var(--sf-focus-ring);
-  outline: none;
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
   position: relative;
   z-index: 1;
 }
 
-/* ── DataGrid size tiers (A7.1 + A7.2) ──────────────────────────────────────
-   See Bootstrap provider for full design rationale. */
-.mar-datagrid--size-small {
-  --mar-datagrid-font-size: 0.8125rem;
-  --mar-datagrid-cell-padding: 0.25rem 0.5rem;
-  --mar-datagrid-row-height: 28px;
-}
-.mar-datagrid--size-medium {
-  --mar-datagrid-font-size: 0.875rem;
-  --mar-datagrid-cell-padding: 0.5rem 0.75rem;
-  --mar-datagrid-row-height: 36px;
-}
-.mar-datagrid--size-large {
-  --mar-datagrid-font-size: 1rem;
-  --mar-datagrid-cell-padding: 0.75rem 1rem;
-  --mar-datagrid-row-height: 48px;
+.mar-datagrid-col-drag-clone {
+  background: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
+  border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
+  box-shadow: var(--sf-elevation-2);
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  border-radius: var(--sf-radius-sm);
 }
 
-/* ── DataGrid highlighted rows (A7.3 + A7.4) ───────────────────────────────── */
-.mar-datagrid-row--highlighted {
-  background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important;
-  outline: 1px solid rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.5);
-  outline-offset: -1px;
+th.is-dragging-source {
+  opacity: 0.4;
 }
 
-/* ── DataGrid column resize handle (B2.4) ───────────────────────────────────── */
-.mar-datagrid-col-resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  cursor: col-resize;
+.mar-datagrid-row-drag-handle {
+  position: relative;
+  cursor: grab;
   user-select: none;
-  touch-action: none;
-  z-index: 1;
+  padding: 0 4px;
+  border-radius: var(--sf-radius-sm);
+  overflow: hidden;
+  color: var(--mar-datagrid-row-drag-handle-color, #999);
+}
+.mar-datagrid-row-drag-handle::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.mar-datagrid-row-drag-handle:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.mar-datagrid-row-drag-handle:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.mar-datagrid-row-drag-handle:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+.mar-datagrid-row-drag-handle:active {
+  cursor: grabbing;
+}
+tr.is-row-dragging-source .mar-datagrid-row-drag-handle::before {
+  opacity: var(--sf-state-dragged-opacity);
 }
 
-.mar-datagrid-col-resize-handle:hover,
-.mar-datagrid-col-resize-handle.is-dragging {
-  background-color: var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2));
+.mar-datagrid-drag-cell {
+  width: 2rem;
+  text-align: center;
+  padding: 0;
 }
 
+tr.is-row-dragging-source {
+  opacity: 0.4;
+}
+
+.mar-datagrid-row-drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+  pointer-events: none;
+}
+
+.mar-datagrid-column-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: var(--mar-datagrid-menu-bg, var(--sf-color-surface));
+  color: var(--sf-color-on-surface);
+  border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
+  border-radius: var(--sf-radius-sm);
+  box-shadow: var(--sf-elevation-2);
+  padding: 4px 0;
+}
+
+.mar-datagrid-column-menu-item {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: inherit;
+  overflow: hidden;
+}
+.mar-datagrid-column-menu-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.mar-datagrid-column-menu-item:hover:not(:disabled)::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.mar-datagrid-column-menu-item:active:not(:disabled)::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.mar-datagrid-column-menu-item:disabled {
+  color: var(--sf-color-on-surface-variant);
+  opacity: var(--sf-disabled-opacity);
+  cursor: not-allowed;
+}
+.mar-datagrid-column-menu-item:disabled::before {
+  display: none;
+}
+
+.mar-datagrid-column-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
+}
+
+.mar-datagrid-column-menu-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--mar-datagrid-muted-color, var(--sf-color-on-surface-variant));
+  line-height: 1;
+  border-radius: var(--sf-radius-full);
+  overflow: hidden;
+}
+.mar-datagrid-column-menu-trigger::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.mar-datagrid-column-menu-trigger:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.mar-datagrid-column-menu-trigger:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.mar-datagrid-column-menu-trigger:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+.mar-datagrid-column-menu-trigger:hover {
+  color: inherit;
+}
+
+.sf-datagrid-selection-cell--neutral {
+  color: var(--sf-color-on-surface-variant);
+}
+
+@media (forced-colors: active) {
+  .sf-datagrid-row {
+    border: 1px solid CanvasText;
+  }
+  .sf-datagrid-row--selected {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+  .sf-datagrid-header,
+  .sf-datagrid-footer-row {
+    border-bottom: 1px solid CanvasText;
+  }
+  .sf-datagrid-detail-row {
+    border-left: 4px solid Highlight;
+  }
+}
 .sf-datasheet {
   width: 100%;
   border: 1px solid var(--sf-color-border);
@@ -1431,6 +1802,697 @@
   }
   100% {
     background: transparent;
+  }
+}
+.sf-calendar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sf-space-md);
+  padding: var(--sf-space-md);
+  min-width: 280px;
+  background-color: var(--sf-color-surface-container-high);
+  color: var(--sf-color-on-surface);
+  border-radius: var(--sf-radius-xl);
+  box-shadow: none;
+  font-family: var(--sf-font-family);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+}
+.sf-calendar:focus {
+  outline: none;
+}
+
+.sf-calendar--horizontal {
+  flex-direction: column;
+}
+
+.sf-calendar--vertical {
+  flex-direction: row;
+  gap: var(--sf-space-lg);
+}
+
+.sf-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sf-space-sm);
+  min-height: 40px;
+}
+
+.sf-calendar__title {
+  position: relative;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--sf-space-md);
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface);
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.00625rem;
+}
+.sf-calendar__title::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-calendar__title:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-calendar__title:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-calendar__title:focus-visible {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+}
+.sf-calendar__title:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+
+span.sf-calendar__title {
+  cursor: default;
+}
+span.sf-calendar__title::before {
+  display: none;
+}
+
+.sf-calendar__nav-btn {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.sf-calendar__nav-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-calendar__nav-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-calendar__nav-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-calendar__nav-btn:focus-visible {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+}
+.sf-calendar__nav-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+.sf-calendar__nav-btn:disabled {
+  opacity: var(--sf-disabled-opacity);
+  cursor: default;
+}
+.sf-calendar__nav-btn:disabled::before {
+  display: none;
+}
+
+.sf-calendar__grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.sf-calendar__grid th,
+.sf-calendar__grid td {
+  padding: 2px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.sf-calendar__day-header {
+  height: 32px;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.03125rem;
+  text-transform: none;
+}
+
+.sf-calendar__weeknum-header,
+.sf-calendar__weeknum {
+  width: 32px;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.03125rem;
+  opacity: 0.7;
+}
+
+.sf-calendar__cell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--sf-radius-full);
+  cursor: pointer;
+  user-select: none;
+  color: var(--sf-color-on-surface);
+  background-color: transparent;
+  overflow: hidden;
+  transition: background-color var(--sf-transition-fast), color var(--sf-transition-fast);
+}
+.sf-calendar__cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-calendar__cell:not(.sf-calendar__cell--disabled):not(.sf-calendar__cell--empty):hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-calendar__cell:not(.sf-calendar__cell--disabled):not(.sf-calendar__cell--empty):focus-visible::before {
+  opacity: 0.1;
+}
+.sf-calendar__cell:not(.sf-calendar__cell--disabled):not(.sf-calendar__cell--empty):active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-calendar__cell:focus-visible, .sf-calendar__cell.sf-calendar__cell--focused {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+  z-index: 1;
+}
+
+[data-sf-density=compact] .sf-calendar__cell {
+  width: 32px;
+  height: 32px;
+}
+
+.sf-calendar__day {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+}
+
+.sf-calendar__cell--today:not(.sf-calendar__cell--selected):not(.sf-calendar__cell--range-edge) {
+  color: var(--sf-color-primary);
+  box-shadow: inset 0 0 0 1px var(--sf-color-primary);
+}
+
+.sf-calendar__cell--selected {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+}
+
+.sf-calendar__cell--range-edge {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+}
+
+.sf-calendar__cell--in-range {
+  background-color: var(--sf-color-secondary-container);
+  color: var(--sf-color-on-secondary-container);
+  border-radius: 0;
+}
+
+.sf-calendar__cell--other-month {
+  color: var(--sf-color-on-surface-variant);
+  opacity: var(--sf-disabled-opacity);
+  background-color: transparent;
+}
+
+.sf-calendar__cell--disabled {
+  color: var(--sf-color-on-surface);
+  opacity: var(--sf-disabled-opacity);
+  cursor: default;
+  pointer-events: none;
+}
+.sf-calendar__cell--disabled::before {
+  display: none;
+}
+
+.sf-calendar__cell--empty {
+  cursor: default;
+  background-color: transparent;
+}
+.sf-calendar__cell--empty::before {
+  display: none;
+}
+
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  animation: sf-calendar-view-enter var(--sf-motion-duration-medium2) var(--sf-motion-easing-standard) both;
+}
+
+.sf-calendar__year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-sm) 0;
+}
+
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-sm) 0;
+}
+
+@keyframes sf-calendar-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.sf-calendar__month-cell,
+.sf-calendar__year-cell,
+.sf-calendar__decade-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: var(--sf-space-xs) var(--sf-space-md);
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface);
+  cursor: pointer;
+  overflow: hidden;
+  font-family: var(--sf-font-family);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+  transition: background-color var(--sf-transition-fast), color var(--sf-transition-fast);
+}
+.sf-calendar__month-cell::before,
+.sf-calendar__year-cell::before,
+.sf-calendar__decade-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-calendar__month-cell:hover::before,
+.sf-calendar__year-cell:hover::before,
+.sf-calendar__decade-cell:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-calendar__month-cell:active::before,
+.sf-calendar__year-cell:active::before,
+.sf-calendar__decade-cell:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-calendar__month-cell:focus-visible,
+.sf-calendar__year-cell:focus-visible,
+.sf-calendar__decade-cell:focus-visible {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+}
+.sf-calendar__month-cell:focus-visible::before,
+.sf-calendar__year-cell:focus-visible::before,
+.sf-calendar__decade-cell:focus-visible::before {
+  opacity: 0.1;
+}
+
+.sf-calendar__month-cell--current,
+.sf-calendar__year-cell--current,
+.sf-calendar__decade-cell--current {
+  color: var(--sf-color-primary);
+  box-shadow: inset 0 0 0 1px var(--sf-color-primary);
+}
+
+.sf-calendar__month-cell--selected,
+.sf-calendar__year-cell--selected {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+  box-shadow: none;
+}
+
+@media (forced-colors: active) {
+  .sf-calendar {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .sf-calendar__cell:focus-visible,
+  .sf-calendar__cell.sf-calendar__cell--focused,
+  .sf-calendar__nav-btn:focus-visible,
+  .sf-calendar__title:focus-visible,
+  .sf-calendar__month-cell:focus-visible,
+  .sf-calendar__year-cell:focus-visible,
+  .sf-calendar__decade-cell:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .sf-calendar__cell--selected,
+  .sf-calendar__cell--range-edge,
+  .sf-calendar__month-cell--selected,
+  .sf-calendar__year-cell--selected {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-calendar,
+  .sf-calendar__cell,
+  .sf-calendar__cell::before,
+  .sf-calendar__nav-btn,
+  .sf-calendar__nav-btn::before,
+  .sf-calendar__title,
+  .sf-calendar__title::before,
+  .sf-calendar__month-cell,
+  .sf-calendar__month-cell::before,
+  .sf-calendar__year-cell,
+  .sf-calendar__year-cell::before,
+  .sf-calendar__decade-cell,
+  .sf-calendar__decade-cell::before,
+  .sf-calendar__year-grid,
+  .sf-calendar__decade-grid,
+  .sf-calendar__century-grid {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+body.sf-dialog-open {
+  overflow: hidden;
+}
+
+.sf-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sf-z-modal-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sf-space-xl);
+}
+.sf-dialog-overlay::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--sf-color-scrim);
+  opacity: 0.32;
+  pointer-events: none;
+  animation: sf-dialog-scrim-enter var(--sf-motion-duration-short4) var(--sf-motion-easing-linear) both;
+}
+
+.sf-dialog {
+  position: relative;
+  z-index: var(--sf-z-modal);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sf-space-xl);
+  min-width: 280px;
+  max-width: 560px;
+  max-height: calc(100vh - 48px);
+  padding: var(--sf-space-xl);
+  background-color: color-mix(in srgb, var(--sf-surface-tint, var(--sf-color-primary)) 5%, var(--sf-color-surface-container-high));
+  color: var(--sf-color-on-surface);
+  border-radius: var(--sf-radius-xl);
+  box-shadow: var(--sf-elevation-3);
+  animation: sf-dialog-enter var(--sf-motion-duration-medium2) var(--sf-motion-easing-emphasized-decel) both;
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-dialog {
+    background-color: var(--sf-color-surface-container-high);
+  }
+}
+
+.sf-dialog-overlay > .sf-dialog {
+  margin: auto;
+}
+
+.sf-dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sf-space-md);
+  margin: 0;
+  color: var(--sf-color-on-surface);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0;
+}
+.sf-dialog-title > span {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sf-dialog-close {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  overflow: hidden;
+  transition: color var(--sf-transition-fast);
+}
+.sf-dialog-close::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: currentColor;
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-dialog-close:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-dialog-close:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-dialog-close:focus-visible {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+}
+.sf-dialog-close:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+
+.sf-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  margin: 0;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.015625rem;
+}
+.sf-dialog-body > p {
+  margin: 0;
+}
+.sf-dialog-body > p + p {
+  margin-top: var(--sf-space-md);
+}
+
+.sf-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--sf-space-sm);
+  min-height: 52px;
+  margin: 0;
+}
+.sf-dialog-actions .sf-btn {
+  position: relative;
+  overflow: hidden;
+  color: var(--sf-color-primary);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.00625rem;
+}
+.sf-dialog-actions .sf-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--sf-color-primary);
+  opacity: 0;
+  transition: opacity var(--sf-transition-fast);
+  pointer-events: none;
+}
+.sf-dialog-actions .sf-btn:hover::before {
+  opacity: var(--sf-state-hover-opacity);
+}
+.sf-dialog-actions .sf-btn:active::before {
+  opacity: var(--sf-state-pressed-opacity);
+}
+.sf-dialog-actions .sf-btn:focus-visible {
+  outline: 3px solid var(--sf-color-secondary);
+  outline-offset: 2px;
+}
+.sf-dialog-actions .sf-btn:focus-visible::before {
+  opacity: var(--sf-state-focus-opacity);
+}
+.sf-dialog-actions .sf-btn:disabled, .sf-dialog-actions .sf-btn[aria-disabled=true] {
+  opacity: var(--sf-disabled-opacity);
+  cursor: default;
+}
+.sf-dialog-actions .sf-btn:disabled::before, .sf-dialog-actions .sf-btn[aria-disabled=true]::before {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .sf-dialog-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--sf-space-sm);
+  }
+  .sf-dialog-actions .sf-btn {
+    width: 100%;
+  }
+}
+.sf-dialog--small {
+  max-width: 400px;
+}
+
+.sf-dialog--medium {
+  max-width: 560px;
+}
+
+.sf-dialog--large {
+  max-width: 900px;
+}
+
+.sf-dialog--full {
+  width: 100%;
+  max-width: 100%;
+  height: 100%;
+  max-height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+@media (max-width: 600px) {
+  .sf-dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+.sf-dialog--draggable .sf-dialog-title {
+  cursor: grab;
+  user-select: none;
+}
+.sf-dialog--draggable .sf-dialog-title:active {
+  cursor: grabbing;
+}
+
+@keyframes sf-dialog-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes sf-dialog-scrim-enter {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.32;
+  }
+}
+@media (forced-colors: active) {
+  .sf-dialog {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .sf-dialog-overlay::before {
+    background: Canvas;
+  }
+  .sf-dialog-close:focus-visible,
+  .sf-dialog-actions .sf-btn:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-dialog,
+  .sf-dialog-overlay,
+  .sf-dialog-overlay::before,
+  .sf-dialog-close,
+  .sf-dialog-close::before,
+  .sf-dialog-actions .sf-btn,
+  .sf-dialog-actions .sf-btn::before {
+    transition: none !important;
+    animation: none !important;
   }
 }
 .sf-splitter {

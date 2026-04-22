@@ -1,6 +1,32 @@
 // =============================================================================
 // Component: DataGrid — Material 3
 // =============================================================================
+@use '../foundation/focus' as *;
+@use '../patterns/interactive-states' as *;
+
+// -----------------------------------------------------------------------------
+// Local state-layer mixin — matches Phase 1B pattern (date-picker, dialog).
+// Writes a ::before pseudo-element; host must have `position: relative` and
+// `overflow: hidden`. currentColor + token-driven opacity auto-inherits light
+// vs. dark mode via the --sf-color-on-surface flip in foundation/_colors.scss.
+// =============================================================================
+
+@mixin sf-datagrid-state-layer {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before       { opacity: var(--sf-state-hover-opacity); }
+  &:active::before      { opacity: var(--sf-state-pressed-opacity); }
+  &:focus-visible::before { opacity: var(--sf-state-focus-opacity); }
+}
 
 .sf-datagrid {
     width: 100%;
@@ -14,6 +40,18 @@
 .sf-datagrid-content > table {
     border-collapse: collapse;
     width: 100%;
+    // Packet 3C (P2) — M3 doesn't strictly prescribe table-layout. Default to
+    // `auto` so columns size to content; a consumer attribute or explicit column
+    // widths can flip to `fixed` externally.
+    table-layout: auto;
+}
+
+// Packet 3C (P2) — scrollbar gutter + thin scrollbars on the scroll wrapper
+// (reduces layout shift when vertical scrollbar appears/disappears).
+.sf-datagrid-content {
+    position: relative;
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
 }
 
 // --- Header ---
@@ -31,8 +69,15 @@
     white-space: nowrap;
     user-select: none;
 
-    &--sortable { cursor: pointer; }
-    &--sortable:hover { background: var(--sf-color-surface-container-high); }
+    // SYNTHESIS Theme 4 — state layer on sortable headers (surface 3, also covers
+    // sort trigger surface 4 since the header cell itself is the sort click target).
+    // Replaces flat `background: surface-container-high` swap with M3 currentColor
+    // overlay. `position: relative` is declared further down (filter-menu block).
+    &--sortable {
+        cursor: pointer;
+        overflow: hidden;
+        @include sf-datagrid-state-layer;
+    }
     &--sorted { color: var(--sf-color-primary); }
 }
 
@@ -46,24 +91,64 @@
 
 // --- Rows ---
 
+// SYNTHESIS Theme 4 — state layer on rows (surface 1).
+// Pseudo-element overlays are unreliable on <tr> across browsers, so the
+// state-layer spec is realised as a `color-mix(currentColor, …)` background
+// swap at the tokenised hover/pressed opacities. `currentColor` inherits
+// `--sf-color-on-surface`, which auto-flips in dark mode via foundation/_colors.scss.
 .sf-datagrid-row {
     border-bottom: 1px solid var(--sf-color-border);
     transition: background var(--sf-transition-fast);
 }
 
 .sf-datagrid-row:last-child { border-bottom: none; }
-.sf-datagrid-row:hover { background: var(--sf-color-surface-container-high); }
-.sf-datagrid-row--selected { background: var(--sf-color-primary-light); }
-.sf-datagrid-row--selected:hover { background: var(--sf-color-primary-light); }
+.sf-datagrid-row:hover {
+    background: color-mix(in srgb, currentColor calc(var(--sf-state-hover-opacity) * 100%), transparent);
+}
+.sf-datagrid-row:active {
+    background: color-mix(in srgb, currentColor calc(var(--sf-state-pressed-opacity) * 100%), transparent);
+}
+// Batch 2d — Selected row switches from primary-container (which was actually
+// `--sf-color-primary-light`, a non-M3 token) to M3 `secondary-container` /
+// `on-secondary-container` per the spec. Hover continues to stack a
+// state-layer mix of currentColor (which now inherits on-secondary-container)
+// so the selection cue remains visible while communicating interaction.
+.sf-datagrid-row--selected {
+    background: var(--sf-color-secondary-container);
+    color: var(--sf-color-on-secondary-container);
+}
+.sf-datagrid-row--selected:hover {
+    background: color-mix(
+        in srgb,
+        currentColor calc(var(--sf-state-hover-opacity) * 100%),
+        var(--sf-color-secondary-container)
+    );
+}
 .sf-datagrid-row--striped:nth-child(even) { background: var(--sf-color-surface-container); }
 
 // --- Cells ---
 
+// SYNTHESIS Theme 4 — state layer on cells (surface 2, focus only).
+// Cells don't hover or press independently of the row; the focus layer
+// differentiates keyboard focus from the ambient row hover/press state.
 .sf-datagrid-cell {
+    position: relative;
     padding: var(--sf-space-sm) var(--sf-space-md);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: currentColor;
+        opacity: 0;
+        transition: opacity var(--sf-transition-fast);
+        pointer-events: none;
+    }
+
+    &:focus-visible::before { opacity: var(--sf-state-focus-opacity); }
 }
 
 .sf-datagrid-cell--selected {
@@ -101,7 +186,15 @@
         color: var(--sf-color-text);
 
         &::placeholder { color: var(--sf-color-text-muted); }
-        &:focus { outline: none; border-color: var(--sf-color-primary); }
+
+        // Packet 3C (P2) — M3 text-field focus pattern. The box-shadow doubles
+        // the bottom border to 2px on focus (primary ink) without shifting
+        // layout; outline is suppressed because the shadow is the affordance.
+        &:focus {
+            outline: none;
+            border-color: var(--sf-color-primary);
+            box-shadow: inset 0 -1px 0 0 var(--sf-color-primary);
+        }
     }
 }
 
@@ -123,25 +216,34 @@
     position: relative;
 }
 
+// Batch 2d — Filter-menu icon button now follows the M3 40×40 circular
+// icon-button pattern (radius-full / `border-radius: 50%`). Border + solid
+// surface are dropped so the button is a transparent chip until the filter is
+// active, matching the Calendar nav-btn / Dialog close-btn idiom.
 .sf-datagrid .sf-datagrid-filter-menu-btn {
     position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     margin-left: 0.35rem;
-    border: 1px solid var(--sf-color-border);
-    background: var(--sf-color-surface);
-    color: var(--sf-color-text-muted);
-    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--sf-color-on-surface-variant);
+    border-radius: 50%;
     line-height: 1;
-    min-width: 1.5rem;
-    height: 1.5rem;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     cursor: pointer;
-    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+    overflow: hidden;
+    transition: color 0.15s ease, background-color 0.15s ease;
+
+    // SYNTHESIS Theme 4 — M3 state layer (surface 11). Overlay stacks on top of
+    // the border-color swap so both the original colour cue and the M3 tint apply.
+    @include sf-datagrid-state-layer;
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn:hover {
-    border-color: var(--sf-color-primary);
     color: var(--sf-color-primary);
 }
 
@@ -151,10 +253,8 @@
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn--active {
-    border-color: var(--sf-color-primary);
     background: color-mix(in srgb, var(--sf-color-primary) 10%, var(--sf-color-surface, #ffffff));
     color: var(--sf-color-primary);
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--sf-color-primary) 35%, transparent);
 }
 
 .sf-datagrid .sf-datagrid-filter-menu-btn--active::after {
@@ -176,6 +276,9 @@
     min-width: 260px;
 }
 
+// Batch 2d — filter popup surface adopts the M3 elevation-2 token so the
+// shadow auto-adjusts between light + dark and stays consistent with the
+// menu/autocomplete drop-shadow tier.
 .sf-datagrid .sf-datagrid-filter-menu {
     display: flex;
     flex-direction: column;
@@ -184,7 +287,7 @@
     border: 1px solid var(--sf-color-border);
     border-radius: 8px;
     background: var(--sf-color-surface);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--sf-elevation-2);
 }
 
 .sf-datagrid .sf-datagrid-filter-menu label {
@@ -219,38 +322,143 @@
 
 // --- Empty, loading, group, detail ---
 
+// Batch 2d — M3 empty-state pattern: vertically stacked with a centered icon,
+// headline (headline-small typography) and supporting text (body-medium).
+// The icon is drawn via a ::before pseudo-element using a Unicode inbox glyph
+// so the skin stays CSS-only (Razor template can still provide a richer
+// `NoDataTemplate` which this selector will gracefully no-op for thanks to
+// the `:only-child` check on the implicit text node).
 .sf-datagrid-empty {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--sf-space-xl) var(--sf-space-md);
-    color: var(--sf-color-text-muted);
-    font-size: var(--sf-font-size-base);
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-2xl) var(--sf-space-md);
+    color: var(--sf-color-on-surface-variant);
+    font-size: 1.5rem;             // M3 headline-small
+    line-height: 2rem;
+    font-weight: var(--sf-font-weight-normal);
+    letter-spacing: 0;
+    text-align: center;
+
+    // Centered icon (Unicode inbox/empty glyph in a 48px circle).
+    &::before {
+        content: '\1F4ED';         // U+1F4ED OPEN MAILBOX WITH LOWERED FLAG
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        margin-bottom: var(--sf-space-xs);
+        font-size: 2rem;
+        line-height: 1;
+        color: var(--sf-color-on-surface-variant);
+        opacity: 0.6;
+    }
+
+    // Supporting text line — rendered after the headline. Because the Razor
+    // emits plain text as a sibling text-node we cannot select the supporting
+    // line specifically; instead we treat the whole node as the headline and
+    // append a brief supporting line via ::after. Custom `NoDataTemplate`
+    // wins because it replaces the text content and the pseudo-elements will
+    // still center-align gracefully.
+    &::after {
+        content: 'There are no rows to display.';
+        font-size: 0.875rem;       // M3 body-medium
+        line-height: 1.25rem;
+        font-weight: var(--sf-font-weight-normal);
+        letter-spacing: 0.015625rem;
+        color: var(--sf-color-on-surface-variant);
+    }
 }
 
-.sf-datagrid-group-header {
-    font-weight: var(--sf-font-weight-semibold);
+// Packet 3C (P2) — Group header/footer: M3 title-small (0.875rem / 1.25rem /
+// 500 / 0.00625rem tracking) over surface-container with on-surface ink.
+.sf-datagrid-group-header,
+.sf-datagrid-group-footer {
     background: var(--sf-color-surface-container);
+    color: var(--sf-color-on-surface);
     padding: var(--sf-space-xs) var(--sf-space-md);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: var(--sf-font-weight-medium);
+    letter-spacing: 0.00625rem;
 }
 
+// Packet 3C (P2) — Detail-row accent: M3 "related content" pattern uses a 4px
+// primary leading border to tie the detail content back to its parent row.
 .sf-datagrid-detail-row {
     background: var(--sf-color-surface);
     border-bottom: 1px solid var(--sf-color-border);
+    border-left: 4px solid var(--sf-color-primary);
 
     > td, > .sf-datagrid-cell {
         padding: var(--sf-space-sm) var(--sf-space-md);
     }
 }
 
+// Batch 2d — Loading overlay.
+// Surface tint composes the M3 scrim token at the dialog-spec 32% alpha so the
+// overlay auto-inverts with the dark-mode scrim flip in foundation/_colors.scss.
+// `.sf-datagrid-loading-bar` is rendered as a ::before pseudo-element so no
+// razor change is needed — the indeterminate bar sits on the top edge of the
+// overlay at M3 spec (2px height, primary color, linear indeterminate).
 .sf-datagrid-loading-overlay {
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: color-mix(in srgb, var(--sf-color-surface) 70%, transparent);
+    background: color-mix(
+        in srgb,
+        var(--sf-color-scrim) calc(var(--sf-state-hover-opacity) * 100%),
+        color-mix(in srgb, var(--sf-color-surface) 70%, transparent)
+    );
     z-index: 10;
+    overflow: hidden;
+
+    // M3 indeterminate linear-progress bar, 2px top-edge.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        overflow: hidden;
+        background-color: color-mix(
+            in srgb,
+            var(--sf-color-primary) 20%,
+            transparent
+        );
+        pointer-events: none;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 2px;
+        width: 40%;
+        background-color: var(--sf-color-primary);
+        animation: sf-datagrid-loading-bar 1.4s linear infinite;
+        pointer-events: none;
+    }
+}
+
+@keyframes sf-datagrid-loading-bar {
+    0%   { transform: translateX(-100%); }
+    60%  { transform: translateX(250%); }
+    100% { transform: translateX(250%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sf-datagrid-loading-overlay::after {
+        animation: none;
+        width: 100%;
+    }
 }
 
 // --- Footer ---
@@ -283,14 +491,16 @@ th.mar-datagrid-col--locked {
 }
 
 // B5.5: boundary shadow — indicates the frozen ↔ scrollable transition.
+// Packet 3C (P2) — replaces literal rgba(0,0,0,…) with tokenised shadow that
+// auto-inverts in dark mode via --sf-color-shadow in foundation/_colors.scss.
 .mar-datagrid-col--locked-end {
-    box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+    box-shadow: 4px 0 6px -2px color-mix(in srgb, var(--sf-color-shadow) 10%, transparent);
 }
 
 // Right-side boundary casts the shadow in the opposite direction.
 .mar-datagrid-col--locked-end[style*="inset-inline-end"],
 .mar-datagrid-col--locked-end[data-frozen-position="End"] {
-    box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
+    box-shadow: -4px 0 6px -2px color-mix(in srgb, var(--sf-color-shadow) 10%, transparent);
 }
 
 // --- Pager ---
@@ -304,7 +514,12 @@ th.mar-datagrid-col--locked {
     background: var(--sf-color-surface-container);
 }
 
+// SYNTHESIS Theme 4 — state layer on pagination prev/next/page buttons (surface 9).
+// Replaces flat hover swap with M3 currentColor overlay. Active page keeps the
+// primary fill; state layer still composes on top via currentColor inheriting
+// `--sf-color-on-primary` in that branch.
 .sf-datagrid-pager-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -316,11 +531,16 @@ th.mar-datagrid-col--locked {
     background: var(--sf-color-surface);
     color: var(--sf-color-text);
     cursor: pointer;
-    transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+    overflow: hidden;
 
-    &:hover { background: var(--sf-color-surface-container-high); }
+    @include sf-datagrid-state-layer;
+
     &--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
-    &:disabled { color: var(--sf-color-text-muted); cursor: not-allowed; }
+    &:disabled {
+        color: var(--sf-color-text-muted);
+        cursor: not-allowed;
+        &::before { display: none; }
+    }
 }
 
 .sf-datagrid-pager-ellipsis {
@@ -346,10 +566,13 @@ th.mar-datagrid-col--locked {
 
 // --- Popup edit ---
 
+// Batch 2d — Popup overlay now uses the M3 scrim token (auto-inverts in dark
+// mode via --sf-color-scrim in foundation/_colors.scss) at the dialog-spec
+// 32% alpha. Popup dialog uses the elevation-3 token (tier matches SunfishDialog).
 .sf-datagrid-popup-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.3);
+    background: color-mix(in srgb, var(--sf-color-scrim) 32%, transparent);
     z-index: 200;
     display: flex;
     align-items: center;
@@ -360,7 +583,7 @@ th.mar-datagrid-col--locked {
     background: var(--sf-color-surface);
     border: 1px solid var(--sf-color-border);
     border-radius: var(--sf-radius-md);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+    box-shadow: var(--sf-elevation-3);
     min-width: 320px;
     max-width: 600px;
     width: 100%;
@@ -413,7 +636,11 @@ th.mar-datagrid-col--locked {
 
 // --- Command buttons ---
 
+// SYNTHESIS Theme 4 — state layer on the Material command button (surface 6).
+// Replaces the flat surface-container-high hover swap with an M3 currentColor
+// overlay driven by the shared opacity tokens.
 .sf-datagrid-cmd-btn {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: var(--sf-space-xs);
@@ -424,9 +651,9 @@ th.mar-datagrid-col--locked {
     color: var(--sf-color-text);
     font-size: var(--sf-font-size-sm);
     cursor: pointer;
-    transition: background var(--sf-transition-fast);
+    overflow: hidden;
 
-    &:hover { background: var(--sf-color-surface-container-high); }
+    @include sf-datagrid-state-layer;
 }
 
 .sf-datagrid-command-header {
@@ -449,19 +676,42 @@ th.mar-datagrid-col--locked {
     padding: 0;
 }
 
+// SYNTHESIS Theme 4 — state layer on the row expander toggle (surface 8).
+// The button is emitted by SunfishDataGrid.Rendering.cs (`mar-datagrid-detail-btn`)
+// and previously had no Material styling at all; this rule gives it the standard
+// 28×28 circular icon-button shell with an M3 state layer.
+.mar-datagrid-detail-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--sf-color-on-surface-variant);
+    border-radius: var(--sf-radius-full);
+    cursor: pointer;
+    overflow: hidden;
+    line-height: 1;
+
+    @include sf-datagrid-state-layer;
+}
+
 // --- Focus rings ---
+// Phase 2B — SYNTHESIS Theme 5: M3 3px secondary outline + 2px offset.
+// See Providers/Material/Styles/foundation/_focus.scss for the mixin body.
 
 .sf-datagrid-cell:focus-visible,
 .sf-datagrid-header-cell:focus-visible {
-    box-shadow: var(--sf-focus-ring);
-    outline: none;
+    @include sf-focus-ring;
     position: relative;
     z-index: 1;
 }
 
 .sf-datagrid-row--focused {
-    box-shadow: var(--sf-focus-ring);
-    outline: none;
+    @include sf-focus-ring;
     position: relative;
     z-index: 1;
 }
@@ -472,11 +722,13 @@ th.mar-datagrid-col--locked {
 
 .mar-datagrid-col-drag-clone {
     background: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
-    border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-border, #e0e0e0));
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
+    // Packet 3C (P2) — elevation-2 token replaces literal rgba shadow; radius
+    // bumped to radius-sm to match M3 dragged-surface corner.
+    box-shadow: var(--sf-elevation-2);
     padding: 0.5rem 0.75rem;
     font-size: inherit;
-    border-radius: 2px;
+    border-radius: var(--sf-radius-sm);
 }
 
 .mar-datagrid-col-drop-line {
@@ -491,14 +743,29 @@ th.is-dragging-source {
 // B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
 // =================================================================
 
+// SYNTHESIS Theme 4 — state layer on the row drag handle (surface 12).
+// Uses the dragged opacity token when the row is actively being dragged via
+// the sibling `is-row-dragging-source` marker on the tr.
 .mar-datagrid-row-drag-handle {
+    position: relative;
     cursor: grab;
     user-select: none;
     padding: 0 4px;
+    border-radius: var(--sf-radius-sm);
+    overflow: hidden;
     color: var(--mar-datagrid-row-drag-handle-color, #999);
+
+    @include sf-datagrid-state-layer;
 
     &:active {
         cursor: grabbing;
+    }
+
+    // Dragged state (handle retains hover opacity while the tr carries
+    // is-row-dragging-source — the bump to --sf-state-dragged-opacity is
+    // matched to the token already defined in _interactive-states.scss).
+    tr.is-row-dragging-source &::before {
+        opacity: var(--sf-state-dragged-opacity);
     }
 }
 
@@ -523,54 +790,123 @@ tr.is-row-dragging-source {
 
 // ── C3: Column Menu ───────────────────────────────────────────────────────────
 
+// Packet 3C (P2) — column menu uses M3 surface/elevation tokens; hover state
+// switches from a literal 5% black mix to a currentColor state-layer overlay.
 .mar-datagrid-column-menu {
     position: absolute;
     top: 100%;
     right: 0;
     z-index: 10;
     min-width: 180px;
-    background: var(--mar-datagrid-menu-bg, #fff);
-    border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
-    border-radius: 4px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: var(--mar-datagrid-menu-bg, var(--sf-color-surface));
+    color: var(--sf-color-on-surface);
+    border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
+    border-radius: var(--sf-radius-sm);
+    box-shadow: var(--sf-elevation-2);
     padding: 4px 0;
 }
 
 .mar-datagrid-column-menu-item {
+    position: relative;
     display: block;
     width: 100%;
     padding: 8px 16px;
     text-align: left;
     border: none;
     background: transparent;
+    color: inherit;
     cursor: pointer;
     font-size: inherit;
+    overflow: hidden;
 
-    &:hover:not(:disabled) {
-        background: rgba(0, 0, 0, 0.05);
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-color: currentColor;
+        opacity: 0;
+        transition: opacity var(--sf-transition-fast);
+        pointer-events: none;
     }
 
+    &:hover:not(:disabled)::before  { opacity: var(--sf-state-hover-opacity); }
+    &:active:not(:disabled)::before { opacity: var(--sf-state-pressed-opacity); }
+
     &:disabled {
-        color: #999;
+        color: var(--sf-color-on-surface-variant);
+        opacity: var(--sf-disabled-opacity);
         cursor: not-allowed;
+
+        &::before { display: none; }
     }
 }
 
 .mar-datagrid-column-menu-divider {
     height: 1px;
     margin: 4px 0;
-    background: var(--mar-datagrid-border-color, #dee2e6);
+    background: var(--mar-datagrid-border-color, var(--sf-color-outline-variant));
 }
 
+// SYNTHESIS Theme 4 — state layer on the column menu trigger (surface 5).
+// Previous implementation only swapped colour on hover. Overlay now gives a
+// proper M3 press affordance. `border-radius` is required so the overlay clips
+// cleanly.
+// Packet 3C (P2) — upsized to the shared M3 40×40 circular icon-button
+// affordance so the column-menu trigger matches the sibling filter-menu-btn
+// target footprint (A11y 24×24 min tap-target satisfied).
 .mar-datagrid-column-menu-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
     cursor: pointer;
     background: transparent;
     border: none;
-    padding: 0 4px;
-    color: var(--mar-datagrid-muted-color, #6c757d);
+    padding: 0;
+    color: var(--mar-datagrid-muted-color, var(--sf-color-on-surface-variant));
     line-height: 1;
+    border-radius: var(--sf-radius-full);
+    overflow: hidden;
+
+    @include sf-datagrid-state-layer;
 
     &:hover {
         color: inherit;
+    }
+}
+
+// Packet 3C (P2) — selection-cell neutral mode. Used when a row is selectable
+// but the checkbox itself is not emphasised (e.g., multi-select without a
+// primary action). Reads as a quiet on-surface-variant ink.
+.sf-datagrid-selection-cell--neutral {
+    color: var(--sf-color-on-surface-variant);
+}
+
+// =============================================================================
+// Packet 3C (P2) — Forced-colors high-contrast support.
+// Ensures row borders + selection highlight survive Windows High Contrast modes.
+// =============================================================================
+
+@media (forced-colors: active) {
+    .sf-datagrid-row {
+        border: 1px solid CanvasText;
+    }
+
+    .sf-datagrid-row--selected {
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
+    }
+
+    .sf-datagrid-header,
+    .sf-datagrid-footer-row {
+        border-bottom: 1px solid CanvasText;
+    }
+
+    .sf-datagrid-detail-row {
+        border-left: 4px solid Highlight;
     }
 }

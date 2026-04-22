@@ -1,3 +1,5 @@
+@use '../foundation/focus' as *;
+
 // =============================================================================
 // Component: Button — Material 3 Reference Implementation
 // Demonstrates the full M3 token consumption pattern for Sunfish components.
@@ -23,6 +25,7 @@
   justify-content: center;
   gap: var(--sf-space-sm);
   height: 40px;
+  max-width: 100%;
   padding: 0 var(--sf-space-xl);
   border: none;
   border-radius: var(--sf-radius-full);  // M3 pill shape for buttons
@@ -35,6 +38,11 @@
   text-decoration: none;
   cursor: pointer;
   overflow: hidden;
+  // Packet 3C (P2) — label ellipsis applied on the button root because the
+  // razor does not emit a `.sf-button__label` wrapper. `white-space: nowrap`
+  // keeps labels single-line; `text-overflow: ellipsis` needs `overflow: hidden`
+  // which is already set above.
+  text-overflow: ellipsis;
   user-select: none;
   vertical-align: middle;
   white-space: nowrap;
@@ -52,14 +60,17 @@
     pointer-events: none;
   }
 
+  // Batch 2j — M3 spec: filled buttons do NOT elevate on hover; only
+  // `.sf-button--elevated` gets a box-shadow bump. Keep the state-layer
+  // overlay as the hover affordance.
   &:hover {
-    box-shadow: var(--sf-elevation-1);
-
     &::before { opacity: var(--sf-state-hover-opacity); }
   }
 
+  // Phase 2B — SYNTHESIS Theme 5: M3 3px secondary outline + 2px offset.
+  // See Providers/Material/Styles/foundation/_focus.scss for the mixin body.
   &:focus-visible {
-    box-shadow: var(--sf-focus-ring);
+    @include sf-focus-ring;
 
     &::before { opacity: var(--sf-state-focus-opacity); }
   }
@@ -75,6 +86,18 @@
 
     &::before { display: none; }
   }
+
+  // Batch 2j — fallback for browsers without color-mix() support.
+  // The @supports negative query is the M3-recommended pattern; the
+  // primary-container/on-primary-container tokens approximate the 12%/38%
+  // disabled surface in sRGB when color-mix is unavailable.
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    &:disabled,
+    &[aria-disabled="true"] {
+      background-color: var(--sf-color-surface-container);
+      color: var(--sf-color-on-surface-variant);
+    }
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -89,7 +112,9 @@
     background-color: var(--sf-color-on-secondary-container);
   }
 
-  &:hover { box-shadow: var(--sf-elevation-1); }
+  // Batch 2j — M3 spec: tonal buttons do NOT elevate on hover (only
+  // `.sf-button--elevated` does). Hover affordance is the state-layer
+  // overlay inherited from the base rule.
 }
 
 // ----------------------------------------------------------------------------
@@ -131,7 +156,7 @@
 
   &:focus-visible {
     border-color: var(--sf-color-primary);
-    box-shadow: var(--sf-focus-ring);
+    @include sf-focus-ring;
   }
 
   &:disabled,
@@ -147,7 +172,8 @@
 .sf-button--text {
   background-color: transparent;
   color: var(--sf-color-primary);
-  padding: 0 var(--sf-space-sm);
+  // Batch 2j — M3 spec: text-button horizontal padding is 12dp (not 8dp).
+  padding: 0 12px;
   box-shadow: none;
 
   &::before {
@@ -186,3 +212,21 @@
   font-size: var(--sf-font-size-md);
   padding: 0 var(--sf-space-2xl);
 }
+
+// ----------------------------------------------------------------------------
+// Batch 2j — audit notes (documented deferrals, CSS-only scope):
+//
+//   • `Shape` parameter: SunfishButton.razor does NOT expose a Shape parameter
+//     (only Variant/Size/FillMode/Rounded). The audit flag was a stale note;
+//     no CSS changes are required on this skin. The existing `Rounded` enum
+//     already produces `.sf-button--rounded-{mode}` classes — see the
+//     MaterialCssProvider.ButtonClass signature — and those modifiers are
+//     already consumed via `_radius.scss` tokens.
+//
+//   • Leading/trailing icon asymmetric padding (M3 spec: 16dp leading,
+//     24dp trailing): the current razor emits a single `.sf-button__icon`
+//     wrapper with no `--with-leading-icon` / `--with-trailing-icon`
+//     modifier class. Until the razor is taught to emit a slot-side
+//     modifier, there is nothing for this skin to target. Deferred to
+//     a future razor/CSS pair change.
+// ----------------------------------------------------------------------------

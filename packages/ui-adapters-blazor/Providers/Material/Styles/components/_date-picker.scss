@@ -1,5 +1,526 @@
 // =============================================================================
-// Component: Date Picker — Material 3
-// TODO: Placeholder — no Material 3 styles defined yet.
-//       Implement when the Material provider runtime project is created.
+// Component: Date Picker / Calendar — Material 3
+// Source: https://m3.material.io/components/date-pickers/overview
+//
+// SunfishCalendar.razor emits the following class surface (confirmed from
+// Components/DataDisplay/SunfishCalendar.razor — do not change selectors
+// without updating the razor):
+//
+//   .sf-calendar                       (container root)
+//   .sf-calendar--horizontal           (orientation modifier)
+//   .sf-calendar--vertical             (orientation modifier)
+//   .sf-calendar__header               (title + chevron row)
+//   .sf-calendar__nav-btn              (prev/next chevron buttons)
+//   .sf-calendar__title                (month-year / year / decade label)
+//   .sf-calendar__grid                 (<table> for month view)
+//   .sf-calendar__weeknum-header       (Sunfish extension — not in M3 spec)
+//   .sf-calendar__weeknum
+//   .sf-calendar__day-header           (Mon/Tue/... column headers)
+//   .sf-calendar__cell                 (<td> in month view)
+//   .sf-calendar__cell--empty
+//   .sf-calendar__cell--other-month
+//   .sf-calendar__cell--selected
+//   .sf-calendar__cell--range-edge
+//   .sf-calendar__cell--today
+//   .sf-calendar__cell--disabled
+//   .sf-calendar__cell--focused
+//   .sf-calendar__day                  (span inside a cell holding the day number)
+//   .sf-calendar__year-grid            (year view — 12 month buttons)
+//   .sf-calendar__month-cell
+//   .sf-calendar__month-cell--selected
+//   .sf-calendar__month-cell--current
+//   .sf-calendar__decade-grid          (decade view — 10 year buttons)
+//   .sf-calendar__year-cell
+//   .sf-calendar__year-cell--selected
+//   .sf-calendar__year-cell--current
+//   .sf-calendar__century-grid         (century view — 10 decade buttons)
+//   .sf-calendar__decade-cell
+//   .sf-calendar__decade-cell--current
+//
+// The audit notes that `--in-range` (interior of a range selection) is NOT
+// yet emitted by the razor; we add the selector so the styling is ready
+// once the razor is updated (audit Batch 1a / Theme 1 item 1).
 // =============================================================================
+
+// ----------------------------------------------------------------------------
+// Container — surface-container-high, corner-extra-large, elevation-0 (docked)
+// Modal variant is handled by SunfishDialog.
+// Base typography: M3 body-large (1rem / 1.5rem / 400 / 0.03125rem).
+// ----------------------------------------------------------------------------
+
+.sf-calendar {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--sf-space-md);
+  padding: var(--sf-space-md);
+  min-width: 280px;
+  background-color: var(--sf-color-surface-container-high);
+  color: var(--sf-color-on-surface);
+  border-radius: var(--sf-radius-xl); // 28px — corner-extra-large
+  box-shadow: none; // elevation-0 for docked
+  font-family: var(--sf-font-family);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+
+  &:focus { outline: none; }
+}
+
+.sf-calendar--horizontal { flex-direction: column; }
+.sf-calendar--vertical {
+  flex-direction: row;
+  gap: var(--sf-space-lg);
+}
+
+// ----------------------------------------------------------------------------
+// Header row — prev chevron, title button, next chevron
+// ----------------------------------------------------------------------------
+
+.sf-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sf-space-sm);
+  min-height: 40px;
+}
+
+// ----------------------------------------------------------------------------
+// Title — M3 title-small (0.875rem / 1.25rem / 500 / 0.00625rem tracking)
+// Transparent pill-button shape with state-layer overlay.
+// ----------------------------------------------------------------------------
+
+.sf-calendar__title {
+  position: relative;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 var(--sf-space-md);
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface);
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.00625rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+  &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+  &:focus-visible {
+    outline: 3px solid var(--sf-color-secondary);
+    outline-offset: 2px;
+
+    &::before { opacity: var(--sf-state-focus-opacity); }
+  }
+}
+
+// Plain <span> title for the century view (not a button)
+span.sf-calendar__title {
+  cursor: default;
+
+  &::before { display: none; }
+}
+
+// ----------------------------------------------------------------------------
+// Nav chevrons — 40×40 circular icon button with state layer
+// (Razor emits `&lsaquo;` / `&rsaquo;` glyphs today; swap for SunfishIcon
+// in a follow-up per audit P3-2.)
+// ----------------------------------------------------------------------------
+
+.sf-calendar__nav-btn {
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface-variant);
+  cursor: pointer;
+  overflow: hidden;
+  font-size: 1.25rem;
+  line-height: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+  &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+  &:focus-visible {
+    outline: 3px solid var(--sf-color-secondary);
+    outline-offset: 2px;
+
+    &::before { opacity: var(--sf-state-focus-opacity); }
+  }
+
+  &:disabled {
+    opacity: var(--sf-disabled-opacity);
+    cursor: default;
+
+    &::before { display: none; }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Month grid — <table> layout, equal-width columns, no borders
+// ----------------------------------------------------------------------------
+
+.sf-calendar__grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 2px;
+    text-align: center;
+    vertical-align: middle;
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Day-of-week header — M3 label-medium (0.75rem / 1rem / 500 / 0.03125rem)
+// in on-surface-variant
+// ----------------------------------------------------------------------------
+
+.sf-calendar__day-header {
+  height: 32px;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.03125rem;
+  text-transform: none;
+}
+
+// Week-number column — Sunfish extension, not in M3 spec. Styled quietly.
+// M3 label-small typography: 0.6875rem / 1rem / 500 / 0.03125rem
+.sf-calendar__weeknum-header,
+.sf-calendar__weeknum {
+  width: 32px;
+  color: var(--sf-color-on-surface-variant);
+  font-size: 0.6875rem;
+  line-height: 1rem;
+  font-weight: var(--sf-font-weight-medium);
+  letter-spacing: 0.03125rem;
+  opacity: 0.7;
+}
+
+// ----------------------------------------------------------------------------
+// Day cell — circular 40×40 with state-layer overlay
+// Comfortable density default; [data-sf-density='compact'] → 32×32.
+// ----------------------------------------------------------------------------
+
+.sf-calendar__cell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--sf-radius-full);
+  cursor: pointer;
+  user-select: none;
+  color: var(--sf-color-on-surface);
+  background-color: transparent;
+  overflow: hidden;
+  transition: background-color var(--sf-transition-fast),
+              color var(--sf-transition-fast);
+
+  // State-layer overlay (currentColor at 8/10/12 opacity per M3 spec)
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:not(.sf-calendar__cell--disabled):not(.sf-calendar__cell--empty) {
+    &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+    // M3 spec: focus overlay at 10% (not the global 12%). Local override only.
+    &:focus-visible::before { opacity: 0.10; }
+    &:active::before { opacity: var(--sf-state-pressed-opacity); }
+  }
+
+  &:focus-visible,
+  &.sf-calendar__cell--focused {
+    outline: 3px solid var(--sf-color-secondary);
+    outline-offset: 2px;
+    z-index: 1; // bring ring above adjacent cells
+  }
+}
+
+// Compact-density support — 32×32 cells when the parent sets compact density
+[data-sf-density='compact'] .sf-calendar__cell {
+  width: 32px;
+  height: 32px;
+}
+
+// Day number span (inside the cell)
+// M3 body-large: 1rem / 1.5rem / 400 / 0.03125rem
+.sf-calendar__day {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+}
+
+// ----------------------------------------------------------------------------
+// Cell state modifiers
+// ----------------------------------------------------------------------------
+
+// Today (not selected) — 1px primary ring, no fill
+.sf-calendar__cell--today:not(.sf-calendar__cell--selected):not(.sf-calendar__cell--range-edge) {
+  color: var(--sf-color-primary);
+  box-shadow: inset 0 0 0 1px var(--sf-color-primary);
+}
+
+// Selected single day — primary fill, on-primary text
+.sf-calendar__cell--selected {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+}
+
+// Range edges (start / end) — primary fill, match selected semantics
+.sf-calendar__cell--range-edge {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+}
+
+// In-range interior — secondary-container fill.
+// NOTE: razor does not yet emit this modifier; selector is ready for the
+// Calendar Theme 1 class-name reconciliation pass (audit Batch 1a item 1).
+.sf-calendar__cell--in-range {
+  background-color: var(--sf-color-secondary-container);
+  color: var(--sf-color-on-secondary-container);
+  border-radius: 0; // rectangle for interior; edges keep circular shape
+}
+
+// Other-month day — 38% opacity, transparent background
+.sf-calendar__cell--other-month {
+  color: var(--sf-color-on-surface-variant);
+  opacity: var(--sf-disabled-opacity); // 0.38
+  background-color: transparent;
+}
+
+// Disabled cell — 38% opacity, no state layer
+.sf-calendar__cell--disabled {
+  color: var(--sf-color-on-surface);
+  opacity: var(--sf-disabled-opacity);
+  cursor: default;
+  pointer-events: none;
+
+  &::before { display: none; }
+}
+
+// Empty cell — no interaction, no shape, no hover
+.sf-calendar__cell--empty {
+  cursor: default;
+  background-color: transparent;
+
+  &::before { display: none; }
+}
+
+// ----------------------------------------------------------------------------
+// Year view — 12 month buttons in a 3-column grid (4 rows)
+// Decade view — 10 year buttons in a 4-column grid
+// Century view — 10 decade buttons in a 4-column grid
+// All three share pill-shaped buttons with selected/current semantics.
+// ----------------------------------------------------------------------------
+
+// Packet 3C (P2) — view-transition motion. When the calendar flips between
+// month → year → decade → century views, fade the incoming grid with a short
+// M3 "medium2" duration + standard easing. Duration zeroes automatically in
+// prefers-reduced-motion via the block at the foot of this partial.
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  animation: sf-calendar-view-enter var(--sf-motion-duration-medium2)
+             var(--sf-motion-easing-standard) both;
+}
+
+.sf-calendar__year-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-sm) 0;
+}
+
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-sm) 0;
+}
+
+@keyframes sf-calendar-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Shared pill button — month-cell / year-cell / decade-cell
+// Typography: M3 body-large for the label
+.sf-calendar__month-cell,
+.sf-calendar__year-cell,
+.sf-calendar__decade-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: var(--sf-space-xs) var(--sf-space-md);
+  border: none;
+  border-radius: var(--sf-radius-full);
+  background: transparent;
+  color: var(--sf-color-on-surface);
+  cursor: pointer;
+  overflow: hidden;
+  font-family: var(--sf-font-family);
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: var(--sf-font-weight-normal);
+  letter-spacing: 0.03125rem;
+  transition: background-color var(--sf-transition-fast),
+              color var(--sf-transition-fast);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before  { opacity: var(--sf-state-hover-opacity); }
+  &:active::before { opacity: var(--sf-state-pressed-opacity); }
+
+  &:focus-visible {
+    outline: 3px solid var(--sf-color-secondary);
+    outline-offset: 2px;
+
+    &::before { opacity: 0.10; }
+  }
+}
+
+// Current (today falls in this month/year/decade) — 1px primary ring, no fill
+.sf-calendar__month-cell--current,
+.sf-calendar__year-cell--current,
+.sf-calendar__decade-cell--current {
+  color: var(--sf-color-primary);
+  box-shadow: inset 0 0 0 1px var(--sf-color-primary);
+}
+
+// Selected — primary fill, on-primary text
+.sf-calendar__month-cell--selected,
+.sf-calendar__year-cell--selected {
+  background-color: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+  box-shadow: none; // selected wins over current ring
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors + reduced-motion support for the Material calendar surface.
+// =============================================================================
+
+@media (forced-colors: active) {
+  .sf-calendar {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .sf-calendar__cell:focus-visible,
+  .sf-calendar__cell.sf-calendar__cell--focused,
+  .sf-calendar__nav-btn:focus-visible,
+  .sf-calendar__title:focus-visible,
+  .sf-calendar__month-cell:focus-visible,
+  .sf-calendar__year-cell:focus-visible,
+  .sf-calendar__decade-cell:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  // Selected / range-edge / month-selected / year-selected all want a visible
+  // Highlight fill when the OS forces colors; forced-color-adjust:none lets
+  // the HighlightText/Highlight pair survive.
+  .sf-calendar__cell--selected,
+  .sf-calendar__cell--range-edge,
+  .sf-calendar__month-cell--selected,
+  .sf-calendar__year-cell--selected {
+    background-color: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-calendar,
+  .sf-calendar__cell,
+  .sf-calendar__cell::before,
+  .sf-calendar__nav-btn,
+  .sf-calendar__nav-btn::before,
+  .sf-calendar__title,
+  .sf-calendar__title::before,
+  .sf-calendar__month-cell,
+  .sf-calendar__month-cell::before,
+  .sf-calendar__year-cell,
+  .sf-calendar__year-cell::before,
+  .sf-calendar__decade-cell,
+  .sf-calendar__decade-cell::before,
+  // Packet 3C (P2) — zero the year/decade/century view-transition animation.
+  .sf-calendar__year-grid,
+  .sf-calendar__decade-grid,
+  .sf-calendar__century-grid {
+    transition: none !important;
+    animation: none !important;
+  }
+}

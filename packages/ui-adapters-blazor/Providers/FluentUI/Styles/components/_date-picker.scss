@@ -1,6 +1,7 @@
 // =============================================================================
 // Component: DatePicker / TimePicker / DateRangePicker / DateTimePicker
 // =============================================================================
+@use '../foundation/focus' as *;
 
 // Shared input-with-icon chrome
 .sf-datepicker,
@@ -100,8 +101,13 @@
     pointer-events: none;
 }
 
+// SYNTHESIS Theme 1 — dead-CSS fix. Razor emits BEM double-underscore
+// (`sf-calendar__header`, `sf-calendar__cell`, `sf-calendar__day`, ...)
+// but FluentUI CSS was single-hyphen (`sf-calendar-header`, ...). This
+// block realigns to the emitted markup.
+
 // Calendar header navigation
-.sf-calendar-header {
+.sf-calendar__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -109,7 +115,7 @@
     border-bottom: 1px solid var(--sf-color-border);
 }
 
-.sf-calendar-title {
+.sf-calendar__title {
     font-family: var(--sf-font-family);
     font-size: var(--sf-font-size-base);
     font-weight: var(--sf-font-weight-semibold);
@@ -123,7 +129,7 @@
     }
 }
 
-.sf-calendar-nav-btn {
+.sf-calendar__nav-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -139,34 +145,61 @@
         background: var(--sf-color-surface);
         color: var(--sf-color-on-background);
     }
+    // Batch 2h — nav chevrons are keyboard-reachable now that the Razor no
+    // longer sets tabindex="-1"; give them the Fluent double-stroke focus ring.
+    &:focus-visible {
+        @include sf-focus-ring;
+    }
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
 }
 
 // Calendar grid
-.sf-calendar-grid {
+.sf-calendar__grid {
     padding: var(--sf-space-sm);
 }
 
-.sf-calendar-weekdays {
+.sf-calendar__weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     text-align: center;
     padding: var(--sf-space-xs) 0;
 }
 
-.sf-calendar-weekday {
-    font-size: var(--sf-font-size-xs);
-    font-weight: var(--sf-font-weight-semibold);
-    color: var(--sf-color-text-secondary);
+// Batch 2h — day-of-week typography. Fluent v9 Calendar uses regular (not
+// semibold) weight on the Mon/Tue/… header row, `fontSizeBase200` (12px), and
+// the tertiary neutral foreground. Also covers the table-semantics header
+// cells (`__day-header`) Razor emits when DisplayWeekNumbers is wired.
+.sf-calendar__weekday,
+.sf-calendar__day-header {
+    font-size: var(--fontSizeBase200, 12px);
+    font-weight: var(--fontWeightRegular, 400);
+    color: var(--colorNeutralForeground3, var(--sf-color-text-secondary));
     text-align: center;
 }
 
-.sf-calendar-days {
+// Batch 3 — week-number column. Fluent v9 week-number cells read as tertiary
+// chrome (smaller + tertiary foreground) so the actual day cells stay the
+// visual focus. Covers both the emitted `__weeknum` pair and the forward-
+// compat `__week-number` alias referenced in upstream specs.
+.sf-calendar__weeknum,
+.sf-calendar__weeknum-header,
+.sf-calendar__week-number {
+    color: var(--colorNeutralForeground3, var(--sf-color-text-secondary));
+    font-size: var(--fontSizeBase200, 12px);
+    font-weight: var(--fontWeightRegular, 400);
+    text-align: center;
+}
+
+.sf-calendar__days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: var(--sf-space-xxs);
 }
 
-.sf-calendar-day {
+.sf-calendar__day {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -180,40 +213,243 @@
     cursor: pointer;
     color: var(--sf-color-on-background);
     transition: background var(--sf-transition-fast);
+}
 
-    &:hover {
+.sf-calendar__cell {
+    padding: 0;
+    text-align: center;
+
+    &:hover:not(.sf-calendar__cell--disabled) .sf-calendar__day {
         background: var(--sf-color-surface);
     }
 
+    // Batch 2h — today ring. Fluent v9 marks today with an inset compound-brand
+    // stroke (not a weight swap) so the visual cue survives over selected/
+    // hover backgrounds. Composes with selection and range-start/end.
     &--today {
-        font-weight: var(--sf-font-weight-semibold);
-        color: var(--sf-color-primary);
+        box-shadow: inset 0 0 0 1px var(--colorCompoundBrandStroke, var(--sf-color-primary));
+        border-radius: 50%;
+    }
+
+    &--today .sf-calendar__day {
+        font-weight: var(--fontWeightSemibold, 600);
+        color: var(--colorCompoundBrandForeground1, var(--sf-color-primary));
+    }
+
+    &--selected .sf-calendar__day {
+        background: var(--sf-color-primary);
+        color: var(--sf-color-on-primary);
+    }
+
+    &--selected:hover .sf-calendar__day {
+        background: var(--sf-color-primary-hover);
+    }
+
+    &--in-range {
+        background: var(--colorBrandBackground2, var(--sf-color-primary-light));
+
+        .sf-calendar__day { border-radius: 0; }
+    }
+
+    &--range-start .sf-calendar__day,
+    &--range-end .sf-calendar__day,
+    &--range-edge .sf-calendar__day {
+        background: var(--sf-color-primary);
+        color: var(--sf-color-on-primary);
+    }
+
+    // Batch 2h — range-edge start/end distinction. Razor emits both
+    // `--range-start` and `--range-end`; the Fluent v9 convention is pill-
+    // rounded on the outer edge (50% on the leading side for start, trailing
+    // side for end) to visually anchor the range bar to the selected days.
+    &--range-start {
+        border-radius: 50% 0 0 50%;
+    }
+
+    &--range-end {
+        border-radius: 0 50% 50% 0;
+    }
+
+    &--range-start .sf-calendar__day {
+        border-radius: var(--sf-radius-sm) 0 0 var(--sf-radius-sm);
+    }
+
+    &--range-end .sf-calendar__day {
+        border-radius: 0 var(--sf-radius-sm) var(--sf-radius-sm) 0;
+    }
+
+    // Batch 3 — out-of-month cells use NeutralForeground3 at .5 opacity so
+    // they visually recede without being confused with disabled. Fluent v9
+    // separates these two states; we mirror that distinction here.
+    &--other-month {
+        opacity: 0.5;
+
+        .sf-calendar__day {
+            color: var(--colorNeutralForeground3, var(--sf-color-text-disabled));
+        }
+    }
+
+    // Batch 3 — disabled cells go further: .4 opacity + explicit disabled
+    // foreground token + cursor/pointer-event suppression. The lower opacity
+    // reliably separates the disabled state from `--other-month` at a glance.
+    &--disabled {
+        opacity: 0.4;
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        cursor: not-allowed;
+        pointer-events: none;
+
+        .sf-calendar__day {
+            color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+            cursor: not-allowed;
+        }
+    }
+
+    &--focused .sf-calendar__day {
+        @include sf-focus-ring;
+        position: relative;
+        z-index: 1;
+    }
+
+    &--empty {
+        pointer-events: none;
+    }
+}
+
+// =============================================================================
+// Batch 2h — Year / Decade / Century grid baselines
+// Razor emits `.sf-calendar__year-grid` + `__month-cell`, `.sf-calendar__decade-grid`
+// + `__year-cell`, `.sf-calendar__century-grid` + `__decade-cell`. Provide a
+// consistent 48×48 hit-box with the Fluent v9 border-radius medium so the
+// secondary views match the day grid's interactive rhythm.
+// =============================================================================
+
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--sf-space-xs);
+    padding: var(--sf-space-sm);
+}
+
+.sf-calendar__month-cell,
+.sf-calendar__year-cell,
+.sf-calendar__decade-cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 48px;
+    min-height: 48px;
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    background: transparent;
+    color: var(--colorNeutralForeground1, var(--sf-color-on-background));
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    border: none;
+    border-radius: var(--borderRadiusMedium, 4px);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, var(--sf-color-surface));
+    }
+
+    &:focus-visible {
+        @include sf-focus-ring;
+        position: relative;
+        z-index: 1;
     }
 
     &--selected {
         background: var(--sf-color-primary);
         color: var(--sf-color-on-primary);
-
-        &:hover {
-            background: var(--sf-color-primary-hover);
-        }
     }
 
-    &--in-range {
-        background: var(--sf-color-primary-light);
-        border-radius: 0;
+    &--current {
+        box-shadow: inset 0 0 0 1px var(--colorCompoundBrandStroke, var(--sf-color-primary));
     }
+}
 
-    &--other-month {
-        color: var(--sf-color-text-disabled);
-    }
+// =============================================================================
+// Batch 3 — view-transition motion + forward-compat view-modifier grid
+// =============================================================================
 
-    // QUALITY FIX: explicit color token for disabled day, not opacity
-    &--disabled {
-        color: var(--sf-color-text-disabled);
-        cursor: not-allowed;
-        pointer-events: none;
+// Opacity crossfade between month/year/decade views. Applied to any node
+// carrying `.sf-calendar__view` (forward-compat slot) or the existing grid
+// wrappers. The transition respects reduced-motion via the existing media
+// query at the bottom of the file.
+.sf-calendar__view,
+.sf-calendar__grid,
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+    transition: opacity var(--durationNormal, 200ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+}
+
+// Forward-compat shortcut: when Razor emits a container with
+// `.sf-calendar__view--year` or `--decade`, each direct `__cell` descendant
+// lays out in a 3-column grid with square cells and the medium border-radius.
+// Coexists with the 4-column `__year-grid` / `__decade-grid` layout currently
+// emitted; this block only engages when the new view-modifier class lands.
+.sf-calendar__view--year .sf-calendar__cell,
+.sf-calendar__view--decade .sf-calendar__cell {
+    width: 33.33%;
+    aspect-ratio: 1;
+    border-radius: var(--borderRadiusMedium, 4px);
+}
+
+// =============================================================================
+// Batch 2h — Popover surface elevation
+// Used by Calendar and by the DatePicker popover container. Fluent v9 Calendar
+// emits with `shadow16` + `borderRadiusMedium` + `colorNeutralBackground1`.
+// =============================================================================
+
+.sf-calendar {
+    background: var(--colorNeutralBackground1, var(--sf-color-background));
+    border-radius: var(--borderRadiusMedium, 4px);
+}
+
+// When the Calendar appears inside a DatePicker popover, elevate per Fluent
+// v9. Also apply the same elevation to sibling popover surfaces.
+.sf-datepicker__popup,
+.sf-date-range-picker__popup,
+.sf-datetime-picker__popup,
+.sf-timepicker__popup,
+.sf-calendar__popup {
+    box-shadow: var(--shadow16, var(--sf-shadow-lg));
+    border-radius: var(--borderRadiusMedium, 4px);
+    background: var(--colorNeutralBackground1, var(--sf-color-background));
+}
+
+// =============================================================================
+// Batch 2h — Dark-theme overrides for calendar surfaces
+// Fluent v9 tokens already flip dark via [data-sf-theme="dark"]; re-assert here
+// for rules whose fallbacks still reach `--sf-*` literal chains.
+// =============================================================================
+
+[data-sf-theme="dark"] .sf-calendar,
+[data-sf-theme="dark"] .sf-datepicker__popup,
+[data-sf-theme="dark"] .sf-date-range-picker__popup,
+[data-sf-theme="dark"] .sf-datetime-picker__popup,
+[data-sf-theme="dark"] .sf-timepicker__popup,
+[data-sf-theme="dark"] .sf-calendar__popup {
+    background: var(--colorNeutralBackground1, #292929);
+    color: var(--colorNeutralForeground1, #ffffff);
+}
+
+[data-sf-theme="dark"] .sf-calendar__month-cell,
+[data-sf-theme="dark"] .sf-calendar__year-cell,
+[data-sf-theme="dark"] .sf-calendar__decade-cell {
+    color: var(--colorNeutralForeground1, #ffffff);
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, #383838);
     }
+}
+
+[data-sf-theme="dark"] .sf-calendar__weekday,
+[data-sf-theme="dark"] .sf-calendar__day-header {
+    color: var(--colorNeutralForeground3, #adadad);
 }
 
 // Time picker clock list
@@ -255,5 +491,58 @@
         &:hover {
             background: var(--sf-color-primary-hover);
         }
+    }
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors + reduced-motion support for calendar / date-picker popups.
+// =============================================================================
+
+@media (forced-colors: active) {
+    .sf-calendar,
+    .sf-datepicker,
+    .sf-timepicker,
+    .sf-date-range-picker,
+    .sf-datetime-picker,
+    .sf-timepicker__popup,
+    .sf-date-range-picker__popup,
+    .sf-datetime-picker__popup {
+        border: 1px solid CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+
+    .sf-calendar__cell:focus-visible,
+    .sf-calendar__nav-btn:focus-visible,
+    .sf-calendar__title:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+
+    .sf-calendar__cell--selected .sf-calendar__day,
+    .sf-calendar__cell--range-start .sf-calendar__day,
+    .sf-calendar__cell--range-end .sf-calendar__day,
+    .sf-calendar__cell--range-edge .sf-calendar__day {
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sf-calendar,
+    .sf-calendar__day,
+    .sf-calendar__cell,
+    .sf-calendar__view,
+    .sf-calendar__grid,
+    .sf-calendar__year-grid,
+    .sf-calendar__decade-grid,
+    .sf-calendar__century-grid,
+    .sf-timepicker__popup,
+    .sf-date-range-picker__popup,
+    .sf-datetime-picker__popup {
+        transition: none !important;
+        animation: none !important;
     }
 }

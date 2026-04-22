@@ -51,6 +51,28 @@
   }
 }
 
+// ----------------------------------------------------------------------------
+// Icon-only variant — SYNTHESIS Theme 1 / ADR 0025 canonical class
+// Squares the button into a 1:1 target using Bootstrap's --bs-btn-padding-*
+// tokens and --bs-border-radius, so the icon-only button inherits BS5's
+// visual language (border-radius, focus ring, theme colors) from the base
+// .btn. Size follows the existing .btn-sm / .btn-lg modifiers.
+// ----------------------------------------------------------------------------
+
+.btn.sf-button--icon-only {
+  --bs-btn-padding-x: var(--bs-btn-padding-y, 0.375rem);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bs-border-radius);
+
+  &.btn-sm {
+    --bs-btn-padding-x: var(--bs-btn-padding-y, 0.25rem);
+  }
+
+  &.btn-lg {
+    --bs-btn-padding-x: var(--bs-btn-padding-y, 0.5rem);
+  }
+}
+
 // Tonal button variant — uses $theme-colors map with Sass color values
 @each $color, $value in $theme-colors {
   .sf-bs-btn--tonal-#{$color} {
@@ -65,3 +87,121 @@
     }
   }
 }
+
+// ----------------------------------------------------------------------------
+// Icon-with-text layout — SYNTHESIS Batch 2a (Button × BS5)
+// SunfishButton.razor emits <span class="sf-button__icon"> when Icon is set
+// but no CSS sized the icon row or gapped the text. Primary rule uses :has
+// (Chromium/Safari/Firefox 121+). Fallback rule keys off a modifier class
+// that providers MAY add (sf-button--has-icon) for engines without :has.
+// ----------------------------------------------------------------------------
+
+.btn:has(.sf-button__icon),
+.btn.sf-button--has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+// ----------------------------------------------------------------------------
+// FillMode.Flat + FillMode.Clear — SYNTHESIS Batch 2a (Button × BS5)
+// BootstrapCssProvider emits "btn-light border-0 text-{variant}" for Flat and
+// "btn-link text-decoration-none" for Clear. These leave hover/active/focus
+// using Bootstrap-Light defaults which don't match the audit's requested
+// transparent treatment. These rules define .sf-btn-flat / .sf-btn-clear as
+// opt-in hooks that zero out the Bootstrap --bs-btn-* surface tokens. A
+// follow-up Provider change will emit these classes alongside Flat / Clear;
+// until then they're latent hooks (safe to leave in place — no consumer picks
+// them up without opting in via class). Keeps the BS5 button machinery
+// (focus ring, disabled state, sizing) working through the existing .btn.
+//
+// NOTE: new enum values (Tonal, Subtle, etc.) are ADR-0024-gated. This
+// implementation only realigns the existing Flat / Clear FillModes to BS5
+// idioms without expanding the enum surface.
+// ----------------------------------------------------------------------------
+
+.btn.sf-btn-flat {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.075);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+.btn.sf-btn-clear {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-box-shadow: none;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// =================================================================
+// SYNTHESIS Batch 3 (Button × BS5) — P2 CSS-only items
+// =================================================================
+
+// P2 — Focus-ring utility hook. Expose a consistent diffused-glow ring
+// on every `.btn:focus-visible` so the helper matches BS5's documented
+// `.focus-ring` recipe (https://getbootstrap.com/docs/5.3/helpers/focus-ring/).
+// Bootstrap's bundled .btn:focus-visible already box-shadows the button's
+// own focus color, but the ring width tracks button CSS vars rather than
+// `--bs-focus-ring-*`. This rule re-homes the ring to the documented
+// helper tokens so any consumer who sets `--bs-focus-ring-width` or
+// `--bs-focus-ring-color` sees a consistent ring across their chrome.
+.btn:focus-visible {
+  box-shadow: 0 0 0 var(--bs-focus-ring-width, 0.25rem)
+              var(--bs-focus-ring-color, rgba(var(--bs-primary-rgb), 0.25));
+}
+
+// P2 — Link-variant color defaults. `.btn.btn-link` should pick up
+// `--bs-link-color` and transition to `--bs-link-hover-color`, matching
+// the native <a> treatment in BS5. The bundled Bootstrap output already
+// sets these via `--bs-btn-*` CSS vars, but routing them through
+// `--bs-link-*` keeps buttons in sync with any consumer who themes
+// their link palette.
+.btn.btn-link {
+  --bs-btn-color: var(--bs-link-color);
+  --bs-btn-hover-color: var(--bs-link-hover-color);
+  --bs-btn-active-color: var(--bs-link-hover-color);
+}
+
+// P2 — Text-overflow ellipsis on button root. Prevents long labels
+// from blowing out button width when the consumer constrains the
+// button to a fixed container (e.g., a sidebar). `min-width: 0` on
+// the button allows flex children to shrink; the inner `> *` selector
+// picks up label spans / icon spans and clips them with an ellipsis.
+.btn {
+  min-width: 0;
+}
+.btn > * {
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+// SKIP (API-gated, per Batch 3 scope):
+//   - FullWidth API → requires ButtonParameter
+//   - btn-check segmented control → requires Razor input+label refactor
+//   - Vertical button-group + toolbar → requires ButtonGroupClass overload
+//   - Split-button dropdown toggle → new component
+//   - Outline taxonomy rename → enum change
+//   - Icon-filled/regular hover swap → BS5 doesn't distinguish variants

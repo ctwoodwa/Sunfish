@@ -25,7 +25,8 @@ Styles/
 - **`_motion.scss`**: M3 easing curves (emphasized, standard) + duration scale
 - **`_spacing.scss`**: 4px base unit scale
 - **`_functions.scss`**: `material-palette()`, `material-type()`, `material-shape()`, `rem()` helpers
-- **`_mixins.scss`**: `sf-type-role()`, `sf-elevation()`, `sf-shape()`, `sf-state-layer()`, `sf-focus-ring()`
+- **`_mixins.scss`**: `sf-type-role()`, `sf-elevation()`, `sf-shape()`, `sf-state-layer()`
+- **`_focus.scss`**: `sf-focus-ring()` — M3 3px secondary outline + 2px offset (Phase 2B, SYNTHESIS Theme 5)
 - **`_tokens.scss`**: Z-index, focus ring, disabled opacity, box-sizing reset
 
 ### `patterns/`

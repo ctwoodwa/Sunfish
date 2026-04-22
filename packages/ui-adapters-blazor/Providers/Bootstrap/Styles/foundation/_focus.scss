@@ -1,0 +1,22 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Focus Ring Mixin (SYNTHESIS Theme 5)
+// =================================================================
+// Phase 2B: single `--sf-focus-ring` CSS variable doesn't match BS5's
+// diffused-glow focus idiom. BS5 spec is:
+//   box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25)
+// which consumes the native `--bs-focus-ring-*` custom properties so
+// the ring recolors with theme-overridable rgba values.
+//
+// Usage in a component partial:
+//   :focus-visible { @include sf-focus-ring; }
+//
+// Deliberately uses `box-shadow` rather than `outline` so the ring
+// respects the button's border-radius (BS5 default behavior).
+// =================================================================
+
+@mixin sf-focus-ring {
+  outline: 0;
+  box-shadow: var(--bs-focus-ring-x, 0) var(--bs-focus-ring-y, 0)
+              var(--bs-focus-ring-blur, 0) var(--bs-focus-ring-width, 0.25rem)
+              var(--bs-focus-ring-color, rgba(13, 110, 253, 0.25));
+}

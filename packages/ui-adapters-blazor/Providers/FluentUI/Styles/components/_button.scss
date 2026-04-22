@@ -1,6 +1,7 @@
 // =============================================================================
 // Component: Button
 // =============================================================================
+@use '../foundation/focus' as *;
 
 .sf-button {
     display: inline-flex;
@@ -9,27 +10,96 @@
     gap: var(--sf-space-sm);
     font-family: var(--sf-font-family);
     font-size: var(--sf-font-size-base);
-    font-weight: var(--sf-font-weight-semibold);
+    font-weight: var(--fontWeightSemibold, 600);
     line-height: 1;
+    min-width: 0; // Batch 3 — allow flex-item shrink so ellipsis can engage
     border: 1px solid transparent;
     border-radius: var(--sf-radius-md);
     cursor: pointer;
-    transition: background var(--sf-transition-fast), border-color var(--sf-transition-fast), color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+    transition:
+        background   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        border-color var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        color        var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        box-shadow   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1));
+    // Batch 3 (P2-4) — text-overflow safety net. Fluent v9 root ships
+    // `overflow: hidden`; we pair with an ellipsis cascade on `.sf-button__label`
+    // below so truncated labels render a "…" glyph instead of visual clipping.
+    overflow: hidden;
     white-space: nowrap;
     text-decoration: none;
     user-select: none;
     vertical-align: middle;
 }
 
-.sf-button:focus-visible {
-    outline: none;
-    box-shadow: var(--sf-focus-ring);
+// Batch 3 — ellipsis for the inner label slot. The min-width:0 on the root
+// lets the label shrink; the label itself runs the ellipsis cascade.
+.sf-button__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-/* Button Sizes */
-.sf-button--small { padding: 4px 8px; font-size: var(--sf-font-size-sm); min-height: 24px; }
-.sf-button--medium { padding: 6px 12px; font-size: var(--sf-font-size-base); min-height: 32px; }
-.sf-button--large { padding: 8px 20px; font-size: var(--sf-font-size-md); min-height: 40px; }
+// Phase 2B — SYNTHESIS Theme 5: Fluent v9 double-stroke focus ring.
+// See Providers/FluentUI/Styles/foundation/_focus.scss for the mixin body.
+.sf-button:focus-visible {
+    @include sf-focus-ring;
+}
+
+/* Button Sizes — per Fluent v9 sizing ladder.
+   Batch 2i: size-coupled font-weight (small = regular, medium/large = semibold)
+   and size-coupled min-width (small = 64px, medium/large = 96px). */
+.sf-button--small {
+    padding: 4px 8px;
+    font-size: var(--sf-font-size-sm);
+    font-weight: var(--fontWeightRegular, 400);
+    min-height: 24px;
+    min-width: 64px;
+}
+.sf-button--medium {
+    padding: 6px 12px;
+    font-size: var(--sf-font-size-base);
+    font-weight: var(--fontWeightSemibold, 600);
+    min-height: 32px;
+    min-width: 96px;
+}
+.sf-button--large {
+    padding: 8px 20px;
+    font-size: var(--sf-font-size-md);
+    font-weight: var(--fontWeightSemibold, 600);
+    min-height: 40px;
+    min-width: 96px;
+}
+
+/* Icon slot — Batch 2i: inline-flex with size-coupled icon box.
+   Default 20x20; small 16x16; large 24x24 per Fluent v9 Button icon sizing. */
+.sf-button__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+
+    > svg,
+    > img {
+        width: 100%;
+        height: 100%;
+    }
+}
+.sf-button--small .sf-button__icon { width: 16px; height: 16px; }
+.sf-button--large .sf-button__icon { width: 24px; height: 24px; }
+
+/* Icon-only collapse — Batch 2i: square aspect ratio, no horizontal padding,
+   no min-width so the icon box drives the footprint. */
+.sf-button--icon-only {
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    min-width: 0;
+}
+.sf-button--icon-only.sf-button--small { width: 24px; }
+.sf-button--icon-only.sf-button--medium { width: 32px; }
+.sf-button--icon-only.sf-button--large { width: 40px; }
 
 /* Button Variants */
 .sf-button--primary { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
@@ -41,20 +111,20 @@
 .sf-button--secondary:active { background: var(--sf-color-border); }
 
 .sf-button--danger { background: var(--sf-color-danger); color: var(--sf-color-on-danger); border-color: var(--sf-color-danger); }
-.sf-button--danger:hover { background: #c43035; }
-.sf-button--danger:active { background: #a52b2f; }
+.sf-button--danger:hover { background: var(--sf-color-danger-hover); border-color: var(--sf-color-danger-hover); }
+.sf-button--danger:active { background: var(--sf-color-danger-active); border-color: var(--sf-color-danger-active); }
 
 .sf-button--warning { background: var(--sf-color-warning); color: var(--sf-color-on-warning); border-color: var(--sf-color-warning); }
-.sf-button--warning:hover { background: #e69a3e; }
-.sf-button--warning:active { background: #cc8a38; }
+.sf-button--warning:hover { background: var(--sf-color-warning-hover); border-color: var(--sf-color-warning-hover); }
+.sf-button--warning:active { background: var(--sf-color-warning-active); border-color: var(--sf-color-warning-active); }
 
 .sf-button--info { background: var(--sf-color-info); color: var(--sf-color-on-info); border-color: var(--sf-color-info); }
-.sf-button--info:hover { background: #00a8d6; }
-.sf-button--info:active { background: #0094bd; }
+.sf-button--info:hover { background: var(--sf-color-info-hover); border-color: var(--sf-color-info-hover); }
+.sf-button--info:active { background: var(--sf-color-info-active); border-color: var(--sf-color-info-active); }
 
 .sf-button--success { background: var(--sf-color-success); color: var(--sf-color-on-success); border-color: var(--sf-color-success); }
-.sf-button--success:hover { background: #0e6e0e; }
-.sf-button--success:active { background: #0c5e0c; }
+.sf-button--success:hover { background: var(--sf-color-success-hover); border-color: var(--sf-color-success-hover); }
+.sf-button--success:active { background: var(--sf-color-success-active); border-color: var(--sf-color-success-active); }
 
 /* Button Outline */
 .sf-button--outline { background: transparent; }
@@ -87,6 +157,23 @@
 .sf-button--fill-flat:hover { background: var(--sf-color-surface-hover); }
 .sf-button--fill-link { background: transparent; border-color: transparent; text-decoration: underline; padding: 0; min-height: auto; }
 .sf-button--fill-clear { background: transparent; border-color: transparent; }
+
+// Batch 3 (P2-6) — link variant. Fluent v9 routes link color through the
+// dedicated `BrandForegroundLink*` ladder so links land at a slightly
+// higher contrast than the brand foreground used for buttons/pills.
+// Matches `.sf-button--link` and the legacy `.sf-button--fill-link` alias.
+.sf-button--link,
+.sf-button--fill-link {
+    color: var(--colorBrandForegroundLink, var(--sf-color-primary));
+}
+.sf-button--link:hover,
+.sf-button--fill-link:hover {
+    color: var(--colorBrandForegroundLinkHover, var(--sf-color-primary-hover));
+}
+.sf-button--link:active,
+.sf-button--fill-link:active {
+    color: var(--colorBrandForegroundLinkPressed, var(--sf-color-primary-active));
+}
 
 .sf-button--rounded-none { border-radius: 0; }
 .sf-button--rounded-small { border-radius: var(--sf-radius-sm); }
@@ -160,7 +247,7 @@
 }
 
 .sf-fab:hover { background: var(--sf-color-primary-hover); box-shadow: var(--sf-shadow-xl); }
-.sf-fab:focus-visible { outline: none; box-shadow: var(--sf-focus-ring); }
+.sf-fab:focus-visible { @include sf-focus-ring; }
 .sf-fab--small { width: 40px; height: 40px; }
 .sf-fab--medium { width: 56px; height: 56px; }
 .sf-fab--large { width: 72px; height: 72px; }

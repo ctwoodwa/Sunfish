@@ -1,6 +1,7 @@
 // =============================================================================
 // Component: Dialog
 // =============================================================================
+@use '../foundation/focus' as *;
 
 .sf-dialog {
     position: fixed;
@@ -11,21 +12,76 @@
     border-radius: var(--sf-radius-lg);
     box-shadow: var(--sf-shadow-xl);
     padding: var(--sf-space-xl);
+    // Batch 3 — explicit min/max width constraints per Fluent v9 Dialog:
+    // 320px floor and 640px/90vw cap so small viewports get a responsive
+    // dialog without the surface pushing past the scrim edge.
     min-width: 320px;
-    max-width: 600px;
+    max-width: min(90vw, 640px);
     z-index: var(--sf-z-modal);
     animation: sf-fade-in var(--sf-transition-normal);
+    // Batch 3 — host for the brand surface-tint wash. See `::before` below.
+    isolation: isolate;
+}
+
+// Batch 3 — subtle brand surface tint. Fluent v9 dialogs emit a 4%
+// compound-brand wash behind the content so the surface reads as a
+// branded elevation, not a flat neutral panel. The pseudo is pointer-inert
+// and z-negative so it never intercepts clicks.
+.sf-dialog::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--colorBrandBackgroundStatic, var(--sf-color-primary));
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: -1;
+}
+
+// Batch 2f — exit animation. Consumers (SunfishDialog JS interop) can toggle
+// `.sf-dialog--exiting` before the element unmounts to play the scale-down
+// fade. Sizing scales from 1 → .95; opacity 1 → 0 over the normal transition
+// duration. Mirrors the Fluent v9 Dialog "hiding" motion primitive.
+@keyframes sf-dialog-exit {
+    from {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0;
+    }
+}
+
+.sf-dialog--exiting {
+    animation: sf-dialog-exit var(--sf-transition-normal) forwards;
 }
 
 .sf-dialog-overlay {
     position: fixed;
     inset: 0;
-    background: var(--sf-color-overlay);
+    background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
     z-index: var(--sf-z-modal-overlay);
     animation: sf-fade-in var(--sf-transition-fast);
 }
 
+// Batch 2f — backdrop dark-theme clamp. Sunfish previously went 0.6 alpha in
+// dark mode; the Fluent v9 spec keeps the backdrop at the same 0.4 alpha as
+// light mode. Token shim already preserves the value but some surfaces may
+// still reach the legacy `--sf-color-overlay`. Re-assert 0.4 here.
+[data-sf-theme="dark"] .sf-dialog-overlay {
+    background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
+}
+
+// SYNTHESIS Theme 10 — body scroll-lock when a dialog is open.
+// Class applied by sunfish-dialog-a11y.js (reference-counted for nested dialogs).
+body.sf-dialog-open {
+    overflow: hidden;
+}
+
 // Dialog inner structure (Phase 3)
+// Batch 2f — title line-height explicit 1.4 so title-wrap gets the spec
+// leading the Fluent v9 Dialog uses (previously inherited document leading).
 .sf-dialog-title {
     display: flex;
     align-items: center;
@@ -33,27 +89,156 @@
     margin-bottom: var(--sf-space-lg);
     font-size: var(--sf-font-size-lg);
     font-weight: var(--sf-font-weight-semibold);
+    line-height: 1.4;
 }
 
-.sf-dialog-body { margin-bottom: var(--sf-space-xl); color: var(--sf-color-text-secondary); }
+.sf-dialog-body {
+    margin-bottom: var(--sf-space-xl);
+    color: var(--sf-color-text-secondary);
+    // Batch 3 — scrollable body cap. Long content scrolls inside the dialog
+    // instead of forcing the page to scroll behind the scrim.
+    max-height: min(80vh, 600px);
+    overflow-y: auto;
+}
 .sf-dialog-body p { margin: 0; }
 
-.sf-dialog-actions { display: flex; justify-content: flex-end; gap: var(--sf-space-sm); }
-
-// Draggable dialog (Phase 3)
-.sf-dialog--draggable {
-    .sf-dialog-header { cursor: grab; user-select: none; }
-    .sf-dialog-header:active { cursor: grabbing; }
+// Batch 3 — actions row: 16px top padding (Fluent v9 spec) + 8px gap between
+// action buttons. Replaces the body-margin-bottom spacing carried over from
+// pre-Fluent layouts.
+.sf-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 16px;
+    gap: 8px;
 }
 
-/* === Dialog Size Variants === */
+// Batch 3 — alert variant header styling. Emitted when the component renders
+// as `role="alertdialog"` via an opt-in `sf-dialog--alert` modifier. Uses the
+// Fluent status-danger background/foreground pair for the header lane so the
+// severity reads at a glance. Matches MD3 "alert" cue without diverging from
+// the neutral dialog surface below.
+.sf-dialog--alert .sf-dialog-title {
+    background: var(--colorStatusDangerBackground1, var(--sf-color-danger-light));
+    color: var(--colorStatusDangerForeground1, var(--sf-color-danger));
+    margin: calc(-1 * var(--sf-space-xl)) calc(-1 * var(--sf-space-xl)) var(--sf-space-lg);
+    padding: var(--sf-space-md) var(--sf-space-xl);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
 
-.sf-dialog--small  .sf-dialog__panel { max-width: var(--sf-dialog-sm-max-width, 400px); }
-.sf-dialog--medium .sf-dialog__panel { max-width: var(--sf-dialog-md-max-width, 600px); } // default
-.sf-dialog--large  .sf-dialog__panel { max-width: var(--sf-dialog-lg-max-width, 900px); }
-.sf-dialog--full   .sf-dialog__panel {
+// Batch 3 — stacked action row on narrow viewports (<=480px). Reverse the
+// order so the primary action (rendered last) lands on top when stacked.
+@media (max-width: 480px) {
+    .sf-dialog-actions {
+        flex-direction: column-reverse;
+    }
+}
+
+// Batch 2f — focus ring on action buttons (primary/secondary in the footer).
+// Close button already ships the double-stroke via `.sf-fluent-dialog-close`
+// (#99 Agent J). Re-assert the provider mixin here because `.sf-dialog-actions
+// button` may not otherwise match `.sf-button:focus-visible` when the action
+// markup uses a bare <button>.
+.sf-dialog-actions .sf-button:focus-visible,
+.sf-dialog-actions button:focus-visible {
+    @include sf-focus-ring;
+}
+
+// Phase 2B — SYNTHESIS Theme 9 (polished): Fluent v9 "Subtle" close button.
+// Razor emits `.sf-dialog-close .sf-fluent-dialog-close` on the button; the
+// provider returns an inline dismiss SVG. Follows the Fluent v9 Subtle button
+// pattern: transparent idle, neutral-subtle tint on hover/pressed, neutral
+// foreground shift toward brand on hover, and the double-stroke focus ring.
+.sf-fluent-dialog-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--borderRadiusMedium, 4px);
+    background: var(--colorSubtleBackground, transparent);
+    color: var(--colorNeutralForeground2, #424242);
+    cursor: pointer;
+    line-height: 1;
+    transition:
+        background var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1)),
+        color      var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+
+    > svg { display: block; }
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, rgba(0, 0, 0, 0.06));
+        color: var(--colorNeutralForeground2BrandHover, #0f6cbd);
+    }
+
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, rgba(0, 0, 0, 0.10));
+        color: var(--colorNeutralForeground2BrandPressed, #115ea3);
+    }
+
+    &:focus-visible {
+        @include sf-focus-ring;
+    }
+}
+
+// SYNTHESIS Theme 1 — dead-CSS fix. Razor emits `.sf-dialog-title` (not
+// `.sf-dialog-header`). Re-target the draggable cursor to the actual element.
+.sf-dialog--draggable {
+    .sf-dialog-title { cursor: grab; user-select: none; }
+    .sf-dialog-title:active { cursor: grabbing; }
+}
+
+/* === Dialog Size Variants ===
+   SYNTHESIS Theme 1 — dead-CSS fix. Razor does not emit a `.sf-dialog__panel`
+   child; size modifiers attach directly to the root `.sf-dialog`. Apply
+   `max-width` on the root instead of a nonexistent descendant. */
+
+.sf-dialog--small  { max-width: var(--sf-dialog-sm-max-width, 400px); }
+.sf-dialog--medium { max-width: var(--sf-dialog-md-max-width, 600px); } // default
+.sf-dialog--large  { max-width: var(--sf-dialog-lg-max-width, 900px); }
+.sf-dialog--full {
+    top: 0;
+    left: 0;
+    transform: none;
     max-width: 100%;
     width: 100%;
     height: 100%;
     border-radius: 0;
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors + reduced-motion support for the Fluent dialog surface.
+// =============================================================================
+
+@media (forced-colors: active) {
+    .sf-dialog {
+        border: 1px solid CanvasText;
+        background: Canvas;
+        color: CanvasText;
+    }
+
+    .sf-dialog-overlay {
+        background: Canvas;
+    }
+
+    .sf-dialog-close:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    // Batch 3 — include forward-compat Fluent class aliases alongside the
+    // currently-emitted classes so future markup doesn't regress motion
+    // suppression.
+    .sf-dialog,
+    .sf-dialog-overlay,
+    .sf-fluent-dialog,
+    .sf-fluent-dialog__backdrop {
+        transition: none !important;
+        animation: none !important;
+    }
 }

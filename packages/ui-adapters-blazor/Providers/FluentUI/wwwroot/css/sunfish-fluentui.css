@@ -1,38 +1,49 @@
+@charset "UTF-8";
 :root {
-  /* Primary */
-  --sf-color-primary: #0078d4;
-  --sf-color-primary-hover: #106ebe;
-  --sf-color-primary-active: #005a9e;
-  --sf-color-primary-light: #deecf9;
-  --sf-color-on-primary: #ffffff;
-  /* Semantic */
-  --sf-color-success: #107c10;
-  --sf-color-success-light: #dff6dd;
-  --sf-color-on-success: #ffffff;
-  --sf-color-warning: #ffaa44;
-  --sf-color-warning-light: #fff4ce;
-  --sf-color-on-warning: #323130;
-  --sf-color-danger: #d13438;
-  --sf-color-danger-light: #fde7e9;
-  --sf-color-on-danger: #ffffff;
-  --sf-color-info: #00bcf2;
-  --sf-color-info-light: #cce4f6;
-  --sf-color-on-info: #ffffff;
-  /* Neutral */
-  --sf-color-background: #ffffff;
-  --sf-color-surface: #f3f2f1;
-  --sf-color-surface-hover: #edebe9;
-  --sf-color-on-background: #323130;
-  --sf-color-on-surface: #323130;
-  --sf-color-text-secondary: #605e5c;
-  --sf-color-text-disabled: #a19f9d;
-  --sf-color-border: #e1dfdd;
-  --sf-color-border-strong: #8a8886;
-  --sf-color-overlay: rgba(0, 0, 0, 0.4);
+  /* Primary — brand. v9: colorBrandBackground #0f6cbd (was Fabric v8 #0078d4) */
+  --sf-color-primary: var(--colorBrandBackground, #0f6cbd);
+  --sf-color-primary-hover: var(--colorBrandBackgroundHover, #115ea3);
+  --sf-color-primary-active: var(--colorBrandBackgroundPressed, #0c3b5e);
+  --sf-color-primary-light: var(--colorBrandBackground2, #ebf3fc);
+  --sf-color-on-primary: var(--colorNeutralForegroundOnBrand, #ffffff);
+  /* Semantic status */
+  --sf-color-success: var(--colorStatusSuccessBackground3, #107c10);
+  --sf-color-success-light: var(--colorStatusSuccessBackground1, #f1faf1);
+  --sf-color-on-success: var(--colorNeutralForegroundOnBrand, #ffffff);
+  --sf-color-warning: var(--colorStatusWarningBackground3, #f7630c);
+  --sf-color-warning-light: var(--colorStatusWarningBackground1, #fff9f5);
+  --sf-color-on-warning: var(--colorNeutralForeground1, #242424);
+  --sf-color-danger: var(--colorStatusDangerBackground3, #c50f1f);
+  --sf-color-danger-light: var(--colorStatusDangerBackground1, #fdf3f4);
+  --sf-color-on-danger: var(--colorNeutralForegroundOnBrand, #ffffff);
+  --sf-color-info: var(--colorPaletteInfoBackground3, #0078d4);
+  --sf-color-info-light: var(--colorPaletteInfoBackground1, #f0f8ff);
+  --sf-color-on-info: var(--colorNeutralForegroundOnBrand, #ffffff);
+  /* Button hover/active — v9 status foreground1 for hover, foreground2 for active */
+  --sf-color-danger-hover: var(--colorStatusDangerForeground1, #b10e1c);
+  --sf-color-danger-active: var(--colorStatusDangerForeground2, #bc2f32);
+  --sf-color-warning-hover: var(--colorStatusWarningForeground1, #bc4b09);
+  --sf-color-warning-active: var(--colorStatusWarningForeground2, #8a3707);
+  --sf-color-info-hover: var(--colorPaletteInfoForeground1, #005a9e);
+  --sf-color-info-active: var(--colorPaletteInfoForeground2, #004578);
+  --sf-color-success-hover: var(--colorStatusSuccessForeground1, #0e700e);
+  --sf-color-success-active: var(--colorStatusSuccessForeground2, #054b16);
+  /* Neutral surfaces */
+  --sf-color-background: var(--colorNeutralBackground1, #ffffff);
+  --sf-color-surface: var(--colorNeutralBackground2, #fafafa);
+  --sf-color-surface-hover: var(--colorSubtleBackgroundHover, #f5f5f5);
+  --sf-color-on-background: var(--colorNeutralForeground1, #242424);
+  --sf-color-on-surface: var(--colorNeutralForeground1, #242424);
+  --sf-color-text-secondary: var(--colorNeutralForeground2, #424242);
+  --sf-color-text-disabled: var(--colorNeutralForegroundDisabled, #bdbdbd);
+  --sf-color-border: var(--colorNeutralStroke2, #e0e0e0);
+  --sf-color-border-strong: var(--colorNeutralStroke1, #d1d1d1);
+  --sf-color-stroke-focus: var(--colorStrokeFocus2, #000000);
+  --sf-color-overlay: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
   /* Fluent Color System */
   --base-layer-luminance: 0.98;
   --neutral-base-color: #808080;
-  --accent-base-color: #0078d4;
+  --accent-base-color: #0f6cbd;
   /* Fluent Neutral Fills */
   --fill-color: #fbfbfb;
   --neutral-fill-rest: #ffffff;
@@ -117,33 +128,44 @@
 }
 
 [data-sf-theme=dark] {
-  --sf-color-primary: #60cdff;
-  --sf-color-primary-hover: #98d9ff;
-  --sf-color-primary-active: #3abfff;
-  --sf-color-primary-light: #0a2e4a;
-  --sf-color-on-primary: #003a5c;
-  --sf-color-success: #6ccb5f;
-  --sf-color-success-light: #1a3a1a;
-  --sf-color-on-success: #0a3a0a;
-  --sf-color-warning: #fce100;
-  --sf-color-warning-light: #3a3000;
-  --sf-color-on-warning: #1a1a00;
-  --sf-color-danger: #ff6347;
-  --sf-color-danger-light: #4a1a1a;
-  --sf-color-on-danger: #3a0a0a;
-  --sf-color-info: #60cdff;
-  --sf-color-info-light: #0a2e4a;
-  --sf-color-on-info: #003a5c;
-  --sf-color-background: #1b1a19;
-  --sf-color-surface: #252423;
-  --sf-color-surface-hover: #323130;
-  --sf-color-on-background: #ffffff;
-  --sf-color-on-surface: #ffffff;
-  --sf-color-text-secondary: #d2d0ce;
-  --sf-color-text-disabled: #605e5c;
-  --sf-color-border: #484644;
-  --sf-color-border-strong: #8a8886;
-  --sf-color-overlay: rgba(0, 0, 0, 0.6);
+  /* Brand — dark theme lifts to lighter tint */
+  --sf-color-primary: var(--colorBrandBackground, #115ea3);
+  --sf-color-primary-hover: var(--colorBrandBackgroundHover, #0f6cbd);
+  --sf-color-primary-active: var(--colorBrandBackgroundPressed, #0c3b5e);
+  --sf-color-primary-light: var(--colorBrandBackground2, #0c3b5e);
+  --sf-color-on-primary: var(--colorNeutralForegroundOnBrand, #ffffff);
+  --sf-color-success: var(--colorStatusSuccessBackground3, #54b054);
+  --sf-color-success-light: var(--colorStatusSuccessBackground1, #052505);
+  --sf-color-on-success: var(--colorNeutralForegroundOnBrand, #ffffff);
+  --sf-color-warning: var(--colorStatusWarningBackground3, #faa06b);
+  --sf-color-warning-light: var(--colorStatusWarningBackground1, #4a1e04);
+  --sf-color-on-warning: var(--colorNeutralForeground1, #ffffff);
+  --sf-color-danger: var(--colorStatusDangerBackground3, #dc626d);
+  --sf-color-danger-light: var(--colorStatusDangerBackground1, #3b0509);
+  --sf-color-on-danger: var(--colorNeutralForegroundOnBrand, #ffffff);
+  --sf-color-info: var(--colorPaletteInfoBackground3, #60cdff);
+  --sf-color-info-light: var(--colorPaletteInfoBackground1, #0a1a2a);
+  --sf-color-on-info: var(--colorNeutralForegroundOnBrand, #ffffff);
+  /* Status hover/active — dark theme uses Foreground1/2 which flip to tints */
+  --sf-color-danger-hover: var(--colorStatusDangerForeground1, #e37d87);
+  --sf-color-danger-active: var(--colorStatusDangerForeground2, #dc626d);
+  --sf-color-warning-hover: var(--colorStatusWarningForeground1, #faa06b);
+  --sf-color-warning-active: var(--colorStatusWarningForeground2, #fdcfb4);
+  --sf-color-info-hover: var(--colorPaletteInfoForeground1, #60cdff);
+  --sf-color-info-active: var(--colorPaletteInfoForeground2, #98d9ff);
+  --sf-color-success-hover: var(--colorStatusSuccessForeground1, #54b054);
+  --sf-color-success-active: var(--colorStatusSuccessForeground2, #7cc77c);
+  --sf-color-background: var(--colorNeutralBackground1, #292929);
+  --sf-color-surface: var(--colorNeutralBackground2, #1f1f1f);
+  --sf-color-surface-hover: var(--colorSubtleBackgroundHover, #383838);
+  --sf-color-on-background: var(--colorNeutralForeground1, #ffffff);
+  --sf-color-on-surface: var(--colorNeutralForeground1, #ffffff);
+  --sf-color-text-secondary: var(--colorNeutralForeground2, #d6d6d6);
+  --sf-color-text-disabled: var(--colorNeutralForegroundDisabled, #5c5c5c);
+  --sf-color-border: var(--colorNeutralStroke2, #525252);
+  --sf-color-border-strong: var(--colorNeutralStroke1, #666666);
+  --sf-color-stroke-focus: var(--colorStrokeFocus2, #ffffff);
+  --sf-color-overlay: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
 }
 
 :root {
@@ -240,6 +262,12 @@
   --sf-transition-fast: 120ms ease;
   --sf-transition-normal: 200ms ease;
   --sf-transition-slow: 300ms ease;
+  /* Phase 2B / Batch 2i — Fluent v9 duration + curve primitives.
+     Components (Button, Dialog close) consume these as
+     `var(--sf-duration-faster) var(--sf-curve-easy-ease)`. Values track the
+     Fluent v9 tokens in fluent-v9-tokens.css (--durationFaster, --curveEasyEase). */
+  --sf-duration-faster: 100ms;
+  --sf-curve-easy-ease: cubic-bezier(0.33, 0, 0.67, 1);
 }
 
 :root {
@@ -1370,40 +1398,103 @@
   gap: var(--sf-space-sm);
   font-family: var(--sf-font-family);
   font-size: var(--sf-font-size-base);
-  font-weight: var(--sf-font-weight-semibold);
+  font-weight: var(--fontWeightSemibold, 600);
   line-height: 1;
+  min-width: 0;
   border: 1px solid transparent;
   border-radius: var(--sf-radius-md);
   cursor: pointer;
-  transition: background var(--sf-transition-fast), border-color var(--sf-transition-fast), color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+  transition: background var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)), border-color var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)), color var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)), box-shadow var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1));
+  overflow: hidden;
   white-space: nowrap;
   text-decoration: none;
   user-select: none;
   vertical-align: middle;
 }
 
-.sf-button:focus-visible {
-  outline: none;
-  box-shadow: var(--sf-focus-ring);
+.sf-button__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Button Sizes */
+.sf-button:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+
+/* Button Sizes — per Fluent v9 sizing ladder.
+   Batch 2i: size-coupled font-weight (small = regular, medium/large = semibold)
+   and size-coupled min-width (small = 64px, medium/large = 96px). */
 .sf-button--small {
   padding: 4px 8px;
   font-size: var(--sf-font-size-sm);
+  font-weight: var(--fontWeightRegular, 400);
   min-height: 24px;
+  min-width: 64px;
 }
 
 .sf-button--medium {
   padding: 6px 12px;
   font-size: var(--sf-font-size-base);
+  font-weight: var(--fontWeightSemibold, 600);
   min-height: 32px;
+  min-width: 96px;
 }
 
 .sf-button--large {
   padding: 8px 20px;
   font-size: var(--sf-font-size-md);
+  font-weight: var(--fontWeightSemibold, 600);
   min-height: 40px;
+  min-width: 96px;
+}
+
+/* Icon slot — Batch 2i: inline-flex with size-coupled icon box.
+   Default 20x20; small 16x16; large 24x24 per Fluent v9 Button icon sizing. */
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.sf-button__icon > svg,
+.sf-button__icon > img {
+  width: 100%;
+  height: 100%;
+}
+
+.sf-button--small .sf-button__icon {
+  width: 16px;
+  height: 16px;
+}
+
+.sf-button--large .sf-button__icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* Icon-only collapse — Batch 2i: square aspect ratio, no horizontal padding,
+   no min-width so the icon box drives the footprint. */
+.sf-button--icon-only {
+  aspect-ratio: 1/1;
+  padding: 0;
+  min-width: 0;
+}
+
+.sf-button--icon-only.sf-button--small {
+  width: 24px;
+}
+
+.sf-button--icon-only.sf-button--medium {
+  width: 32px;
+}
+
+.sf-button--icon-only.sf-button--large {
+  width: 40px;
 }
 
 /* Button Variants */
@@ -1444,11 +1535,13 @@
 }
 
 .sf-button--danger:hover {
-  background: #c43035;
+  background: var(--sf-color-danger-hover);
+  border-color: var(--sf-color-danger-hover);
 }
 
 .sf-button--danger:active {
-  background: #a52b2f;
+  background: var(--sf-color-danger-active);
+  border-color: var(--sf-color-danger-active);
 }
 
 .sf-button--warning {
@@ -1458,11 +1551,13 @@
 }
 
 .sf-button--warning:hover {
-  background: #e69a3e;
+  background: var(--sf-color-warning-hover);
+  border-color: var(--sf-color-warning-hover);
 }
 
 .sf-button--warning:active {
-  background: #cc8a38;
+  background: var(--sf-color-warning-active);
+  border-color: var(--sf-color-warning-active);
 }
 
 .sf-button--info {
@@ -1472,11 +1567,13 @@
 }
 
 .sf-button--info:hover {
-  background: #00a8d6;
+  background: var(--sf-color-info-hover);
+  border-color: var(--sf-color-info-hover);
 }
 
 .sf-button--info:active {
-  background: #0094bd;
+  background: var(--sf-color-info-active);
+  border-color: var(--sf-color-info-active);
 }
 
 .sf-button--success {
@@ -1486,11 +1583,13 @@
 }
 
 .sf-button--success:hover {
-  background: #0e6e0e;
+  background: var(--sf-color-success-hover);
+  border-color: var(--sf-color-success-hover);
 }
 
 .sf-button--success:active {
-  background: #0c5e0c;
+  background: var(--sf-color-success-active);
+  border-color: var(--sf-color-success-active);
 }
 
 /* Button Outline */
@@ -1588,6 +1687,21 @@
 .sf-button--fill-clear {
   background: transparent;
   border-color: transparent;
+}
+
+.sf-button--link,
+.sf-button--fill-link {
+  color: var(--colorBrandForegroundLink, var(--sf-color-primary));
+}
+
+.sf-button--link:hover,
+.sf-button--fill-link:hover {
+  color: var(--colorBrandForegroundLinkHover, var(--sf-color-primary-hover));
+}
+
+.sf-button--link:active,
+.sf-button--fill-link:active {
+  color: var(--colorBrandForegroundLinkPressed, var(--sf-color-primary-active));
 }
 
 .sf-button--rounded-none {
@@ -1724,8 +1838,8 @@
 }
 
 .sf-fab:focus-visible {
-  outline: none;
-  box-shadow: var(--sf-focus-ring);
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
 }
 
 .sf-fab--small {
@@ -2601,6 +2715,7 @@
   overflow: hidden;
   font-family: var(--sf-font-family);
   font-size: var(--sf-font-size-base);
+  scrollbar-gutter: stable both-edges;
 }
 
 .sf-datagrid-content > table {
@@ -2615,8 +2730,7 @@
 }
 
 .sf-datagrid-row {
-  border-bottom: 1px solid var(--sf-color-border);
-  min-height: var(--mar-datagrid-row-height, 36px);
+  border-bottom: 1px solid var(--colorNeutralStroke1, var(--sf-color-border));
   transition: background var(--sf-transition-fast);
 }
 
@@ -2637,12 +2751,29 @@
 }
 
 .sf-datagrid-row--striped:nth-child(even) {
-  background: var(--sf-color-surface);
+  background: var(--colorNeutralBackground1Hover, var(--sf-color-surface));
+}
+
+.mar-datagrid-row--highlighted,
+.sf-datagrid-row--highlighted {
+  background: var(--colorPaletteMarigoldBackground2, rgb(255, 232, 179));
+}
+
+.sf-datagrid-selection-cell--subtle {
+  opacity: 0;
+  transition: opacity var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1));
+}
+
+.sf-datagrid-row:hover .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-row:focus-within .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-row--selected .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-selection-cell--subtle:focus-visible,
+.sf-datagrid-selection-cell--subtle:focus-within {
+  opacity: 1;
 }
 
 .sf-datagrid-cell {
-  padding: var(--mar-datagrid-cell-padding, var(--sf-space-sm) var(--sf-space-md));
-  font-size: var(--mar-datagrid-font-size, inherit);
+  padding: var(--sf-space-sm) var(--sf-space-md);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2679,7 +2810,7 @@
   align-items: center;
   gap: var(--sf-space-sm);
   padding: var(--sf-space-sm) var(--sf-space-md);
-  border-bottom: 1px solid var(--sf-color-border);
+  border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
 }
 
 .sf-datagrid-filter-row {
@@ -2692,8 +2823,10 @@
 
 .sf-datagrid-group-header {
   font-weight: var(--sf-font-weight-semibold);
-  background: var(--sf-color-surface);
+  background: var(--colorNeutralBackground2, var(--sf-color-surface));
+  color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
   padding: var(--sf-space-xs) var(--sf-space-md);
+  border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
 }
 
 .sf-datagrid .sf-datagrid-header-cell,
@@ -2744,7 +2877,7 @@
   width: 6px;
   height: 6px;
   border-radius: 999px;
-  background: var(--sf-color-primary, #0f6cbd);
+  background: var(--colorCompoundBrandBackground, var(--sf-color-primary, #0f6cbd));
 }
 
 .sf-datagrid .sf-datagrid-filter-popup {
@@ -2838,7 +2971,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--sf-color-surface) 70%, transparent);
+  background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
   z-index: 10;
 }
 
@@ -2856,8 +2989,26 @@
   display: inline-flex;
   align-items: center;
   margin-left: 0.25rem;
-  color: var(--sf-color-primary);
+  color: var(--colorNeutralForeground2, #424242);
   font-size: 0.75rem;
+}
+.sf-datagrid-sort-indicator > :is(*) {
+  display: none;
+}
+.sf-datagrid-sort-indicator::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background-color: currentColor;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.8 3.2 3.4 5.6a.5.5 0 1 0 .7.7L5.3 5.1V15.5a.5.5 0 0 0 1 0V5.1l1.2 1.2a.5.5 0 1 0 .7-.7L5.8 3.2ZM14.2 16.8l2.4-2.4a.5.5 0 1 0-.7-.7l-1.2 1.2V4.5a.5.5 0 1 0-1 0v10.4l-1.2-1.2a.5.5 0 1 0-.7.7l2.4 2.4Z' fill='currentColor'/></svg>");
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.8 3.2 3.4 5.6a.5.5 0 1 0 .7.7L5.3 5.1V15.5a.5.5 0 0 0 1 0V5.1l1.2 1.2a.5.5 0 1 0 .7-.7L5.8 3.2ZM14.2 16.8l2.4-2.4a.5.5 0 1 0-.7-.7l-1.2 1.2V4.5a.5.5 0 1 0-1 0v10.4l-1.2-1.2a.5.5 0 1 0-.7.7l2.4 2.4Z' fill='currentColor'/></svg>");
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+  mask-size: contain;
+  -webkit-mask-size: contain;
 }
 
 .sf-datagrid-validation-summary {
@@ -2870,24 +3021,41 @@
 }
 
 .sf-datagrid-footer-row {
-  background: var(--sf-color-surface);
-  border-top: 1px solid var(--sf-color-border);
+  background: var(--colorNeutralBackground2, var(--sf-color-surface));
+  color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+  border-top: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
   font-weight: var(--sf-font-weight-semibold);
 }
 
 .sf-datagrid-detail-row {
-  background: var(--sf-color-surface);
-  border-bottom: 1px solid var(--sf-color-border);
+  background: var(--colorNeutralBackground3, var(--sf-color-surface));
+  border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+  border-left: 3px solid var(--colorCompoundBrandStroke, var(--sf-color-primary));
 }
 .sf-datagrid-detail-row > td, .sf-datagrid-detail-row > .sf-datagrid-cell {
   padding: var(--sf-space-sm) var(--sf-space-md);
 }
 
-.sf-datagrid-col--locked {
+.mar-datagrid-col--locked {
   position: sticky;
+  z-index: 1;
+  background-color: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
+  inset-inline-start: var(--mar-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--mar-datagrid-col-offset-end, auto);
+}
+
+th.mar-datagrid-col--locked {
   z-index: 2;
-  background: var(--sf-color-surface);
-  border-right: 2px solid var(--sf-color-border);
+  background-color: var(--mar-datagrid-header-bg, var(--sf-color-surface-container, #f5f5f5));
+}
+
+.mar-datagrid-col--locked-end {
+  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.mar-datagrid-col--locked-end[style*=inset-inline-end],
+.mar-datagrid-col--locked-end[data-frozen-position=End] {
+  box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
 }
 
 .sf-datagrid-searchbox {
@@ -2895,7 +3063,7 @@
   align-items: center;
   gap: var(--sf-space-sm);
   padding: var(--sf-space-xs) var(--sf-space-md);
-  border-bottom: 1px solid var(--sf-color-border);
+  border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
 }
 .sf-datagrid-searchbox input {
   flex: 1;
@@ -2909,67 +3077,148 @@
 .sf-datagrid-searchbox input::placeholder {
   color: var(--sf-color-text-muted);
 }
-.sf-datagrid-searchbox input:focus {
-  outline: none;
-  border-color: var(--sf-color-primary);
+.sf-datagrid-searchbox input:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+  border-color: var(--colorCompoundBrandStroke, var(--sf-color-primary));
 }
 
 .sf-datagrid-cell:focus-visible,
 .sf-datagrid-header-cell:focus-visible {
-  outline: 2px solid var(--sf-color-focus-ring, var(--sf-color-primary));
-  outline-offset: -2px;
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
   position: relative;
   z-index: 1;
 }
 
 .sf-datagrid-row--focused {
-  outline: 2px solid var(--sf-color-focus-ring, var(--sf-color-primary));
-  outline-offset: -1px;
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
 }
 
-/* ── DataGrid size tiers (A7.1 + A7.2) ──────────────────────────────────────
-   See Bootstrap provider for full design rationale. */
-.mar-datagrid--size-small {
-  --mar-datagrid-font-size: 0.8125rem;
-  --mar-datagrid-cell-padding: 0.25rem 0.5rem;
-  --mar-datagrid-row-height: 28px;
-}
-.mar-datagrid--size-medium {
-  --mar-datagrid-font-size: 0.875rem;
-  --mar-datagrid-cell-padding: 0.5rem 0.75rem;
-  --mar-datagrid-row-height: 36px;
-}
-.mar-datagrid--size-large {
-  --mar-datagrid-font-size: 1rem;
-  --mar-datagrid-cell-padding: 0.75rem 1rem;
-  --mar-datagrid-row-height: 48px;
+.mar-datagrid-col-drag-clone {
+  background: var(--mar-datagrid-row-bg, var(--sf-color-surface, #fff));
+  border: 1px solid var(--mar-datagrid-border-color, var(--sf-color-border, #e0e0e0));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  border-radius: 2px;
 }
 
-/* ── DataGrid highlighted rows (A7.3 + A7.4) ───────────────────────────────── */
-.mar-datagrid-row--highlighted {
-  background-color: rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.18) !important;
-  outline: 1px solid rgba(var(--sf-color-warning-rgb, 255, 193, 7), 0.5);
-  outline-offset: -1px;
+th.is-dragging-source {
+  opacity: 0.4;
 }
 
-/* ── DataGrid column resize handle (B2.4) ───────────────────────────────────── */
-.mar-datagrid-col-resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 6px;
-  cursor: col-resize;
+.mar-datagrid-row-drag-handle {
+  cursor: grab;
   user-select: none;
-  touch-action: none;
-  z-index: 1;
+  padding: 0 4px;
+  color: var(--mar-datagrid-row-drag-handle-color, #999);
+}
+.mar-datagrid-row-drag-handle:active {
+  cursor: grabbing;
 }
 
-.mar-datagrid-col-resize-handle:hover,
-.mar-datagrid-col-resize-handle.is-dragging {
-  background-color: var(--mar-datagrid-resize-handle-color, rgba(0, 0, 0, 0.2));
+.mar-datagrid-drag-cell {
+  width: 2rem;
+  text-align: center;
+  padding: 0;
 }
 
+tr.is-row-dragging-source {
+  opacity: 0.4;
+}
+
+.mar-datagrid-row-drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--mar-datagrid-reorder-line-color, #1e90ff);
+  pointer-events: none;
+}
+
+.mar-datagrid-column-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: var(--mar-datagrid-menu-bg, #fff);
+  border: 1px solid var(--mar-datagrid-border-color, #dee2e6);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+}
+
+.mar-datagrid-column-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: inherit;
+}
+.mar-datagrid-column-menu-item:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.05);
+}
+.mar-datagrid-column-menu-item:disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+.mar-datagrid-column-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--mar-datagrid-border-color, #dee2e6);
+}
+
+.mar-datagrid-column-menu-trigger {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--colorSubtleBackground, transparent);
+  border: none;
+  padding: 0 4px;
+  color: var(--colorNeutralForeground2, var(--mar-datagrid-muted-color, #6c757d));
+  border-radius: var(--borderRadiusMedium, 4px);
+  line-height: 1;
+  transition: background var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1)), color var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+}
+.mar-datagrid-column-menu-trigger:hover {
+  background: var(--colorSubtleBackgroundHover, rgba(0, 0, 0, 0.06));
+  color: var(--colorNeutralForeground2Hover, inherit);
+}
+.mar-datagrid-column-menu-trigger:active {
+  background: var(--colorSubtleBackgroundPressed, rgba(0, 0, 0, 0.1));
+}
+.mar-datagrid-column-menu-trigger:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+
+.sf-datagrid-selection-cell--neutral {
+  color: var(--colorNeutralForeground3, var(--sf-color-text-muted));
+}
+
+@media (forced-colors: active) {
+  .sf-datagrid-row {
+    border: 1px solid CanvasText;
+  }
+  .sf-datagrid-row--selected {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+  .sf-datagrid-cell:focus-visible,
+  .sf-datagrid-header-cell:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
 .sf-datasheet {
   width: 100%;
   border: 1px solid var(--sf-color-border);
@@ -3464,7 +3713,7 @@
   pointer-events: none;
 }
 
-.sf-calendar-header {
+.sf-calendar__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3472,7 +3721,7 @@
   border-bottom: 1px solid var(--sf-color-border);
 }
 
-.sf-calendar-title {
+.sf-calendar__title {
   font-family: var(--sf-font-family);
   font-size: var(--sf-font-size-base);
   font-weight: var(--sf-font-weight-semibold);
@@ -3481,11 +3730,11 @@
   border: none;
   cursor: pointer;
 }
-.sf-calendar-title:hover {
+.sf-calendar__title:hover {
   color: var(--sf-color-primary);
 }
 
-.sf-calendar-nav-btn {
+.sf-calendar__nav-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3497,36 +3746,54 @@
   cursor: pointer;
   color: var(--sf-color-text-secondary);
 }
-.sf-calendar-nav-btn:hover {
+.sf-calendar__nav-btn:hover {
   background: var(--sf-color-surface);
   color: var(--sf-color-on-background);
 }
+.sf-calendar__nav-btn:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+.sf-calendar__nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
-.sf-calendar-grid {
+.sf-calendar__grid {
   padding: var(--sf-space-sm);
 }
 
-.sf-calendar-weekdays {
+.sf-calendar__weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   padding: var(--sf-space-xs) 0;
 }
 
-.sf-calendar-weekday {
-  font-size: var(--sf-font-size-xs);
-  font-weight: var(--sf-font-weight-semibold);
-  color: var(--sf-color-text-secondary);
+.sf-calendar__weekday,
+.sf-calendar__day-header {
+  font-size: var(--fontSizeBase200, 12px);
+  font-weight: var(--fontWeightRegular, 400);
+  color: var(--colorNeutralForeground3, var(--sf-color-text-secondary));
   text-align: center;
 }
 
-.sf-calendar-days {
+.sf-calendar__weeknum,
+.sf-calendar__weeknum-header,
+.sf-calendar__week-number {
+  color: var(--colorNeutralForeground3, var(--sf-color-text-secondary));
+  font-size: var(--fontSizeBase200, 12px);
+  font-weight: var(--fontWeightRegular, 400);
+  text-align: center;
+}
+
+.sf-calendar__days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: var(--sf-space-xxs);
 }
 
-.sf-calendar-day {
+.sf-calendar__day {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3541,31 +3808,183 @@
   color: var(--sf-color-on-background);
   transition: background var(--sf-transition-fast);
 }
-.sf-calendar-day:hover {
+
+.sf-calendar__cell {
+  padding: 0;
+  text-align: center;
+}
+.sf-calendar__cell:hover:not(.sf-calendar__cell--disabled) .sf-calendar__day {
   background: var(--sf-color-surface);
 }
-.sf-calendar-day--today {
-  font-weight: var(--sf-font-weight-semibold);
-  color: var(--sf-color-primary);
+.sf-calendar__cell--today {
+  box-shadow: inset 0 0 0 1px var(--colorCompoundBrandStroke, var(--sf-color-primary));
+  border-radius: 50%;
 }
-.sf-calendar-day--selected {
+.sf-calendar__cell--today .sf-calendar__day {
+  font-weight: var(--fontWeightSemibold, 600);
+  color: var(--colorCompoundBrandForeground1, var(--sf-color-primary));
+}
+.sf-calendar__cell--selected .sf-calendar__day {
   background: var(--sf-color-primary);
   color: var(--sf-color-on-primary);
 }
-.sf-calendar-day--selected:hover {
+.sf-calendar__cell--selected:hover .sf-calendar__day {
   background: var(--sf-color-primary-hover);
 }
-.sf-calendar-day--in-range {
-  background: var(--sf-color-primary-light);
+.sf-calendar__cell--in-range {
+  background: var(--colorBrandBackground2, var(--sf-color-primary-light));
+}
+.sf-calendar__cell--in-range .sf-calendar__day {
   border-radius: 0;
 }
-.sf-calendar-day--other-month {
-  color: var(--sf-color-text-disabled);
+.sf-calendar__cell--range-start .sf-calendar__day, .sf-calendar__cell--range-end .sf-calendar__day, .sf-calendar__cell--range-edge .sf-calendar__day {
+  background: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
 }
-.sf-calendar-day--disabled {
-  color: var(--sf-color-text-disabled);
+.sf-calendar__cell--range-start {
+  border-radius: 50% 0 0 50%;
+}
+.sf-calendar__cell--range-end {
+  border-radius: 0 50% 50% 0;
+}
+.sf-calendar__cell--range-start .sf-calendar__day {
+  border-radius: var(--sf-radius-sm) 0 0 var(--sf-radius-sm);
+}
+.sf-calendar__cell--range-end .sf-calendar__day {
+  border-radius: 0 var(--sf-radius-sm) var(--sf-radius-sm) 0;
+}
+.sf-calendar__cell--other-month {
+  opacity: 0.5;
+}
+.sf-calendar__cell--other-month .sf-calendar__day {
+  color: var(--colorNeutralForeground3, var(--sf-color-text-disabled));
+}
+.sf-calendar__cell--disabled {
+  opacity: 0.4;
+  color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
   cursor: not-allowed;
   pointer-events: none;
+}
+.sf-calendar__cell--disabled .sf-calendar__day {
+  color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+  cursor: not-allowed;
+}
+.sf-calendar__cell--focused .sf-calendar__day {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+  position: relative;
+  z-index: 1;
+}
+.sf-calendar__cell--empty {
+  pointer-events: none;
+}
+
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sf-space-xs);
+  padding: var(--sf-space-sm);
+}
+
+.sf-calendar__month-cell,
+.sf-calendar__year-cell,
+.sf-calendar__decade-cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  padding: var(--sf-space-xs) var(--sf-space-sm);
+  background: transparent;
+  color: var(--colorNeutralForeground1, var(--sf-color-on-background));
+  font-family: var(--sf-font-family);
+  font-size: var(--sf-font-size-sm);
+  border: none;
+  border-radius: var(--borderRadiusMedium, 4px);
+  cursor: pointer;
+  transition: background var(--sf-transition-fast);
+}
+.sf-calendar__month-cell:hover,
+.sf-calendar__year-cell:hover,
+.sf-calendar__decade-cell:hover {
+  background: var(--colorSubtleBackgroundHover, var(--sf-color-surface));
+}
+.sf-calendar__month-cell:focus-visible,
+.sf-calendar__year-cell:focus-visible,
+.sf-calendar__decade-cell:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+  position: relative;
+  z-index: 1;
+}
+.sf-calendar__month-cell--selected,
+.sf-calendar__year-cell--selected,
+.sf-calendar__decade-cell--selected {
+  background: var(--sf-color-primary);
+  color: var(--sf-color-on-primary);
+}
+.sf-calendar__month-cell--current,
+.sf-calendar__year-cell--current,
+.sf-calendar__decade-cell--current {
+  box-shadow: inset 0 0 0 1px var(--colorCompoundBrandStroke, var(--sf-color-primary));
+}
+
+.sf-calendar__view,
+.sf-calendar__grid,
+.sf-calendar__year-grid,
+.sf-calendar__decade-grid,
+.sf-calendar__century-grid {
+  transition: opacity var(--durationNormal, 200ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+}
+
+.sf-calendar__view--year .sf-calendar__cell,
+.sf-calendar__view--decade .sf-calendar__cell {
+  width: 33.33%;
+  aspect-ratio: 1;
+  border-radius: var(--borderRadiusMedium, 4px);
+}
+
+.sf-calendar {
+  background: var(--colorNeutralBackground1, var(--sf-color-background));
+  border-radius: var(--borderRadiusMedium, 4px);
+}
+
+.sf-datepicker__popup,
+.sf-date-range-picker__popup,
+.sf-datetime-picker__popup,
+.sf-timepicker__popup,
+.sf-calendar__popup {
+  box-shadow: var(--shadow16, var(--sf-shadow-lg));
+  border-radius: var(--borderRadiusMedium, 4px);
+  background: var(--colorNeutralBackground1, var(--sf-color-background));
+}
+
+[data-sf-theme=dark] .sf-calendar,
+[data-sf-theme=dark] .sf-datepicker__popup,
+[data-sf-theme=dark] .sf-date-range-picker__popup,
+[data-sf-theme=dark] .sf-datetime-picker__popup,
+[data-sf-theme=dark] .sf-timepicker__popup,
+[data-sf-theme=dark] .sf-calendar__popup {
+  background: var(--colorNeutralBackground1, #292929);
+  color: var(--colorNeutralForeground1, #ffffff);
+}
+
+[data-sf-theme=dark] .sf-calendar__month-cell,
+[data-sf-theme=dark] .sf-calendar__year-cell,
+[data-sf-theme=dark] .sf-calendar__decade-cell {
+  color: var(--colorNeutralForeground1, #ffffff);
+}
+[data-sf-theme=dark] .sf-calendar__month-cell:hover,
+[data-sf-theme=dark] .sf-calendar__year-cell:hover,
+[data-sf-theme=dark] .sf-calendar__decade-cell:hover {
+  background: var(--colorSubtleBackgroundHover, #383838);
+}
+
+[data-sf-theme=dark] .sf-calendar__weekday,
+[data-sf-theme=dark] .sf-calendar__day-header {
+  color: var(--colorNeutralForeground3, #adadad);
 }
 
 .sf-timepicker__list {
@@ -3605,6 +4024,50 @@
   background: var(--sf-color-primary-hover);
 }
 
+@media (forced-colors: active) {
+  .sf-calendar,
+  .sf-datepicker,
+  .sf-timepicker,
+  .sf-date-range-picker,
+  .sf-datetime-picker,
+  .sf-timepicker__popup,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .sf-calendar__cell:focus-visible,
+  .sf-calendar__nav-btn:focus-visible,
+  .sf-calendar__title:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .sf-calendar__cell--selected .sf-calendar__day,
+  .sf-calendar__cell--range-start .sf-calendar__day,
+  .sf-calendar__cell--range-end .sf-calendar__day,
+  .sf-calendar__cell--range-edge .sf-calendar__day {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-calendar,
+  .sf-calendar__day,
+  .sf-calendar__cell,
+  .sf-calendar__view,
+  .sf-calendar__grid,
+  .sf-calendar__year-grid,
+  .sf-calendar__decade-grid,
+  .sf-calendar__century-grid,
+  .sf-timepicker__popup,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 .sf-dialog {
   position: fixed;
   top: 50%;
@@ -3615,17 +4078,51 @@
   box-shadow: var(--sf-shadow-xl);
   padding: var(--sf-space-xl);
   min-width: 320px;
-  max-width: 600px;
+  max-width: min(90vw, 640px);
   z-index: var(--sf-z-modal);
   animation: sf-fade-in var(--sf-transition-normal);
+  isolation: isolate;
+}
+
+.sf-dialog::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--colorBrandBackgroundStatic, var(--sf-color-primary));
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes sf-dialog-exit {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+  }
+}
+.sf-dialog--exiting {
+  animation: sf-dialog-exit var(--sf-transition-normal) forwards;
 }
 
 .sf-dialog-overlay {
   position: fixed;
   inset: 0;
-  background: var(--sf-color-overlay);
+  background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
   z-index: var(--sf-z-modal-overlay);
   animation: sf-fade-in var(--sf-transition-fast);
+}
+
+[data-sf-theme=dark] .sf-dialog-overlay {
+  background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
+}
+
+body.sf-dialog-open {
+  overflow: hidden;
 }
 
 .sf-dialog-title {
@@ -3635,11 +4132,14 @@
   margin-bottom: var(--sf-space-lg);
   font-size: var(--sf-font-size-lg);
   font-weight: var(--sf-font-weight-semibold);
+  line-height: 1.4;
 }
 
 .sf-dialog-body {
   margin-bottom: var(--sf-space-xl);
   color: var(--sf-color-text-secondary);
+  max-height: min(80vh, 600px);
+  overflow-y: auto;
 }
 
 .sf-dialog-body p {
@@ -3649,37 +4149,118 @@
 .sf-dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: var(--sf-space-sm);
+  padding-top: 16px;
+  gap: 8px;
 }
 
-.sf-dialog--draggable .sf-dialog-header {
+.sf-dialog--alert .sf-dialog-title {
+  background: var(--colorStatusDangerBackground1, var(--sf-color-danger-light));
+  color: var(--colorStatusDangerForeground1, var(--sf-color-danger));
+  margin: calc(-1 * var(--sf-space-xl)) calc(-1 * var(--sf-space-xl)) var(--sf-space-lg);
+  padding: var(--sf-space-md) var(--sf-space-xl);
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+}
+
+@media (max-width: 480px) {
+  .sf-dialog-actions {
+    flex-direction: column-reverse;
+  }
+}
+.sf-dialog-actions .sf-button:focus-visible,
+.sf-dialog-actions button:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+
+.sf-fluent-dialog-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--borderRadiusMedium, 4px);
+  background: var(--colorSubtleBackground, transparent);
+  color: var(--colorNeutralForeground2, #424242);
+  cursor: pointer;
+  line-height: 1;
+  transition: background var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1)), color var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+}
+.sf-fluent-dialog-close > svg {
+  display: block;
+}
+.sf-fluent-dialog-close:hover {
+  background: var(--colorSubtleBackgroundHover, rgba(0, 0, 0, 0.06));
+  color: var(--colorNeutralForeground2BrandHover, #0f6cbd);
+}
+.sf-fluent-dialog-close:active {
+  background: var(--colorSubtleBackgroundPressed, rgba(0, 0, 0, 0.1));
+  color: var(--colorNeutralForeground2BrandPressed, #115ea3);
+}
+.sf-fluent-dialog-close:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+
+.sf-dialog--draggable .sf-dialog-title {
   cursor: grab;
   user-select: none;
 }
-.sf-dialog--draggable .sf-dialog-header:active {
+.sf-dialog--draggable .sf-dialog-title:active {
   cursor: grabbing;
 }
 
-/* === Dialog Size Variants === */
-.sf-dialog--small .sf-dialog__panel {
+/* === Dialog Size Variants ===
+   SYNTHESIS Theme 1 — dead-CSS fix. Razor does not emit a `.sf-dialog__panel`
+   child; size modifiers attach directly to the root `.sf-dialog`. Apply
+   `max-width` on the root instead of a nonexistent descendant. */
+.sf-dialog--small {
   max-width: var(--sf-dialog-sm-max-width, 400px);
 }
 
-.sf-dialog--medium .sf-dialog__panel {
+.sf-dialog--medium {
   max-width: var(--sf-dialog-md-max-width, 600px);
 }
 
-.sf-dialog--large .sf-dialog__panel {
+.sf-dialog--large {
   max-width: var(--sf-dialog-lg-max-width, 900px);
 }
 
-.sf-dialog--full .sf-dialog__panel {
+.sf-dialog--full {
+  top: 0;
+  left: 0;
+  transform: none;
   max-width: 100%;
   width: 100%;
   height: 100%;
   border-radius: 0;
 }
 
+@media (forced-colors: active) {
+  .sf-dialog {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+  .sf-dialog-overlay {
+    background: Canvas;
+  }
+  .sf-dialog-close:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sf-dialog,
+  .sf-dialog-overlay,
+  .sf-fluent-dialog,
+  .sf-fluent-dialog__backdrop {
+    transition: none !important;
+    animation: none !important;
+  }
+}
 .sf-divider {
   border: 0;
   border-top: 1px solid var(--sf-color-border);
