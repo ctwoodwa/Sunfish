@@ -1,0 +1,105 @@
+@namespace Sunfish.Compat.BootstrapIcons
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<BootstrapIcon> Logger
+
+<i class="@_cssClass" role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")" aria-label="@AriaLabel" aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)" @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Bootstrap-Icons / BlazorBootstrap-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Bootstrap Icons identifier. Mirrors BlazorBootstrap's
+    /// <c>&lt;Icon Name="IconName.Star" /&gt;</c> shape. Translates to the canonical
+    /// <c>bi-*</c> CSS class via <see cref="IconNameExtensions.ToSlug(IconName)"/>.
+    /// </summary>
+    /// <remarks>
+    /// For icons outside the starter-set <see cref="IconName"/> enum, use
+    /// <see cref="NameString"/> to pass the raw Bootstrap Icons slug (e.g.
+    /// <c>"rocket-takeoff"</c>). If both are provided, <see cref="NameString"/> wins and
+    /// a warning is logged — specify only one.
+    /// </remarks>
+    [Parameter] public IconName? Name { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Bootstrap Icons slug (e.g. <c>"rocket-takeoff"</c>). Useful
+    /// for icons not yet covered by the <see cref="IconName"/> starter-set enum. The
+    /// value is emitted verbatim as the <c>bi-*</c> class — no validation is performed
+    /// (upstream <c>bootstrap-icons.css</c> will silently fail to style an unknown
+    /// class).
+    /// </summary>
+    [Parameter] public string? NameString { get; set; }
+
+    /// <summary>
+    /// Bootstrap Icons size keyword. Optional — when null, the icon inherits its
+    /// surrounding font-size (upstream Bootstrap Icons behavior). Accepted values map to
+    /// font-size utility classes emitted on the wrapper element.
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "bi sf-bi-icon";
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Map size → size-class suffix (nullable — when null, no size class is emitted
+        // and the icon inherits its surrounding font-size).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `bi bi-*` alongside the Sunfish
+        // prefix `sf-bi-icon` — this lets migrators keep bootstrap-icons.css loaded
+        // without visual regressions and lets Sunfish-aware styles target the wrapper
+        // independently.
+        _cssClass = string.IsNullOrEmpty(slug)
+            ? $"bi sf-bi-icon{AppendSizeClass(sizeClass)}"
+            : $"bi bi-{slug} sf-bi-icon{AppendSizeClass(sizeClass)}";
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(NameString))
+        {
+            if (Name.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-bootstrap-icons: Both Name='{Name}' and NameString='{NameString}' specified on BootstrapIcon. NameString wins. See docs/compat-bootstrap-icons-mapping.md.",
+                    Name.Value, NameString);
+            }
+            return NameString;
+        }
+
+        return Name.HasValue ? Name.Value.ToSlug() : null;
+    }
+
+    private static string AppendSizeClass(string? sizeClass)
+        => string.IsNullOrEmpty(sizeClass) ? string.Empty : " " + sizeClass;
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "fs-6",
+        FoundationEnums.IconSize.Medium => "fs-5",
+        FoundationEnums.IconSize.Large => "fs-3",
+        FoundationEnums.IconSize.ExtraLarge => "fs-1",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-bootstrap-icons: Unrecognized Size value '{Value}' on BootstrapIcon. Inheriting ambient font-size. See docs/compat-bootstrap-icons-mapping.md.",
+            received);
+        return null;
+    }
+}

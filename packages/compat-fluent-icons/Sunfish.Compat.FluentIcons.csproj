@@ -1,0 +1,36 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-fluent-icons/POLICY.md.
+    This package MUST NOT reference any Microsoft.FluentUI.AspNetCore.Components.Icons NuGet
+    (or any other Fluent UI System Icons package). It also does NOT bundle Fluent UI System
+    Icons assets (SVGs) — consumers remain responsible for their existing asset pipeline
+    (either the Fluent UI Blazor components, self-hosted SVGs, or the active Sunfish
+    ISunfishIconProvider's icon set).
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.FluentIcons</PackageId>
+    <Description>Fluent-UI-System-Icons-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Microsoft.FluentUI.AspNetCore.Components.Icons consumers. Does not ship Fluent icon assets. Policy-gated.</Description>
+    <PackageTags>blazor;compat;fluent;fluentui;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.FluentIcons</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.FluentIcons.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

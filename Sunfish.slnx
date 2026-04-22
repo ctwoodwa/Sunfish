@@ -126,9 +126,21 @@
   <Folder Name="/compat/shared/">
     <Project Path="packages/compat-shared/Sunfish.Compat.Shared.csproj" />
   </Folder>
+  <Folder Name="/compat/bootstrap-icons/">
+    <Project Path="packages/compat-bootstrap-icons/Sunfish.Compat.BootstrapIcons.csproj" />
+    <Project Path="packages/compat-bootstrap-icons/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/fluent-icons/">
+    <Project Path="packages/compat-fluent-icons/Sunfish.Compat.FluentIcons.csproj" />
+    <Project Path="packages/compat-fluent-icons/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/compat/font-awesome/">
     <Project Path="packages/compat-font-awesome/Sunfish.Compat.FontAwesome.csproj" />
     <Project Path="packages/compat-font-awesome/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/material-icons/">
+    <Project Path="packages/compat-material-icons/Sunfish.Compat.MaterialIcons.csproj" />
+    <Project Path="packages/compat-material-icons/tests/tests.csproj" />
   </Folder>
   <Folder Name="/compat/telerik/">
     <Project Path="packages/compat-telerik/Sunfish.Compat.Telerik.csproj" />
