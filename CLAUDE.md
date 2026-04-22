@@ -8,6 +8,18 @@ scaffold, prototype, and ship real-world applications with interchangeable UI an
 This document explains how to work with Claude on Sunfish, including how to use the Integrated
 Change Management (ICM) pipeline system.
 
+### Foundational paper (read first)
+
+The repo implements the architecture specified in
+[`_shared/product/local-node-architecture-paper.md`](./_shared/product/local-node-architecture-paper.md)
+— *Inverting the SaaS Paradigm: A Local-Node Architecture for Collaborative Software* (Version 10.0,
+April 2026). Every structural choice in the codebase traces back to the decisions described there:
+the kernel/plugin split, the UI-kernel four-tier layering (Foundation / Framework-Agnostic / Blocks
+/ Compat-and-Adapter), the CP/AP per-record-class position, event-sourced ledger, schema epoch
+coordination, the managed-relay sustainability model, and the compat-vendor-adapter pattern. When
+in doubt about whether a change belongs in the repo, consult the paper — it defines the "why" that
+makes the directory structure legible.
+
 ---
 
 ## Tool Boundaries
