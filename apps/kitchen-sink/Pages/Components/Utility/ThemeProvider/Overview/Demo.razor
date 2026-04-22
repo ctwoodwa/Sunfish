@@ -158,24 +158,4 @@
         [""--sf-color-primary""] = ""#3b82f6"",
     };
 }";
-
-    /// <summary>
-    /// Tiny inspector component that reads every cascading surface the provider
-    /// publishes — direct evidence that descendants adopt them without extra wiring.
-    /// </summary>
-    private sealed class NestedChildInspector : ComponentBase
-    {
-        [CascadingParameter(Name = "GlobalDir")] public TextDirection GlobalDir { get; set; }
-        [CascadingParameter(Name = "DefaultLocalization")] public IDictionary<string, string>? Strings { get; set; }
-        [CascadingParameter(Name = "SunfishLogLevel")] public SunfishLogLevel LogLevel { get; set; }
-
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
-        {
-            var count = Strings?.Count ?? 0;
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "style", "font-size:.8rem; color:#64748b;");
-            builder.AddContent(2, $"Cascading values seen by nested child — GlobalDir: {GlobalDir}, LogLevel: {LogLevel}, localized strings: {count}");
-            builder.CloseElement();
-        }
-    }
 }
