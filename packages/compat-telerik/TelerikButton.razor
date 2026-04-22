@@ -64,6 +64,16 @@
         _iconFragment = SvgIconAdapter.ToRenderFragment(Icon);
     }
 
+    // ADR 0024 — Telerik ThemeColor ↔ Sunfish ButtonVariant mapping.
+    // The enum was expanded with Subtle / Transparent / Light / Dark, which
+    // unlocks a 1:1 mapping for the Telerik-native values that used to collapse
+    // to Secondary. Direction inverse of ADR's `SunfishVariantToTelerikThemeColor`
+    // (the helper lives on this side of the bridge):
+    //   Subtle      ← "tertiary"  (Telerik Tertiary is the closest equivalent)
+    //   Transparent ← "base"      (Telerik Base is the chromeless treatment)
+    //   Light       ← "light"     (native 1:1)
+    //   Dark        ← "dark"      (native 1:1)
+    //   Inverse     → Secondary   (no Sunfish equivalent; documented semantic loss)
     private FoundationEnums.ButtonVariant MapVariant(string? s) => s switch
     {
         null or "" or "primary" => FoundationEnums.ButtonVariant.Primary,
@@ -72,10 +82,14 @@
         "success" => FoundationEnums.ButtonVariant.Success,
         "warning" => FoundationEnums.ButtonVariant.Warning,
         "error" => FoundationEnums.ButtonVariant.Danger,
-        // Sunfish ButtonVariant lacks Tertiary/Dark/Light/Inverse/Base — collapse to Secondary.
-        "tertiary" or "dark" or "light" or "inverse" or "base"
+        "tertiary" => FoundationEnums.ButtonVariant.Subtle,
+        "base" => FoundationEnums.ButtonVariant.Transparent,
+        "light" => FoundationEnums.ButtonVariant.Light,
+        "dark" => FoundationEnums.ButtonVariant.Dark,
+        // Telerik's "inverse" has no Sunfish equivalent; fall back to Secondary.
+        "inverse"
             => LogAndFallback(s, FoundationEnums.ButtonVariant.Secondary, nameof(ThemeColor),
-                "Sunfish ButtonVariant lacks this value; falling back to Secondary."),
+                "Sunfish ButtonVariant has no 'inverse' equivalent; falling back to Secondary."),
         _ => LogAndFallback(s, FoundationEnums.ButtonVariant.Primary, nameof(ThemeColor), null)
     };
 

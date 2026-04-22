@@ -543,6 +543,218 @@
   padding: 0 var(--sf-space-2xl);
 }
 
+.sf-button.sf-btn-subtle,
+.sf-btn-subtle {
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant, var(--sf-color-on-surface));
+  border: none;
+  box-shadow: none;
+  padding: 0 12px;
+}
+.sf-button.sf-btn-subtle::before,
+.sf-btn-subtle::before {
+  background-color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+}
+.sf-button.sf-btn-subtle:hover,
+.sf-btn-subtle:hover {
+  box-shadow: none;
+}
+.sf-button.sf-btn-subtle:focus-visible,
+.sf-btn-subtle:focus-visible {
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.sf-button.sf-btn-subtle:disabled, .sf-button.sf-btn-subtle[aria-disabled=true],
+.sf-btn-subtle:disabled,
+.sf-btn-subtle[aria-disabled=true] {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+}
+.sf-button.sf-btn-subtle:disabled::before, .sf-button.sf-btn-subtle[aria-disabled=true]::before,
+.sf-btn-subtle:disabled::before,
+.sf-btn-subtle[aria-disabled=true]::before {
+  display: none;
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-button.sf-btn-subtle:disabled, .sf-button.sf-btn-subtle[aria-disabled=true],
+  .sf-btn-subtle:disabled,
+  .sf-btn-subtle[aria-disabled=true] {
+    color: var(--sf-color-text-disabled);
+  }
+}
+
+.sf-button.sf-btn-transparent,
+.sf-btn-transparent {
+  background-color: transparent;
+  color: var(--md-sys-color-primary, var(--sf-color-primary));
+  border: none;
+  box-shadow: none;
+  padding: 0 12px;
+}
+.sf-button.sf-btn-transparent::before,
+.sf-btn-transparent::before {
+  background-color: var(--md-sys-color-primary, var(--sf-color-primary));
+}
+.sf-button.sf-btn-transparent:hover,
+.sf-btn-transparent:hover {
+  box-shadow: none;
+}
+.sf-button.sf-btn-transparent:focus-visible,
+.sf-btn-transparent:focus-visible {
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.sf-button.sf-btn-transparent:disabled, .sf-button.sf-btn-transparent[aria-disabled=true],
+.sf-btn-transparent:disabled,
+.sf-btn-transparent[aria-disabled=true] {
+  background-color: transparent;
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+}
+.sf-button.sf-btn-transparent:disabled::before, .sf-button.sf-btn-transparent[aria-disabled=true]::before,
+.sf-btn-transparent:disabled::before,
+.sf-btn-transparent[aria-disabled=true]::before {
+  display: none;
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-button.sf-btn-transparent:disabled, .sf-button.sf-btn-transparent[aria-disabled=true],
+  .sf-btn-transparent:disabled,
+  .sf-btn-transparent[aria-disabled=true] {
+    color: var(--sf-color-text-disabled);
+  }
+}
+
+.sf-button.sf-btn-light,
+.sf-btn-light {
+  background-color: var(--md-sys-color-surface, var(--sf-color-surface));
+  color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+  border: 1px solid var(--md-sys-color-outline, var(--sf-color-border-strong));
+  box-shadow: none;
+}
+.sf-button.sf-btn-light::before,
+.sf-btn-light::before {
+  background-color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+}
+.sf-button.sf-btn-light:hover,
+.sf-btn-light:hover {
+  box-shadow: none;
+}
+.sf-button.sf-btn-light:focus-visible,
+.sf-btn-light:focus-visible {
+  border-color: var(--md-sys-color-primary, var(--sf-color-primary));
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.sf-button.sf-btn-light:disabled, .sf-button.sf-btn-light[aria-disabled=true],
+.sf-btn-light:disabled,
+.sf-btn-light[aria-disabled=true] {
+  border-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+  background-color: transparent;
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-button.sf-btn-light:disabled, .sf-button.sf-btn-light[aria-disabled=true],
+  .sf-btn-light:disabled,
+  .sf-btn-light[aria-disabled=true] {
+    border-color: var(--sf-color-border);
+    color: var(--sf-color-text-disabled);
+  }
+}
+
+.sf-button.sf-btn-dark,
+.sf-btn-dark {
+  background-color: var(--md-sys-color-inverse-surface, #322f35);
+  color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  border: none;
+}
+.sf-button.sf-btn-dark::before,
+.sf-btn-dark::before {
+  background-color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+}
+.sf-button.sf-btn-dark:focus-visible,
+.sf-btn-dark:focus-visible {
+  outline: 3px solid var(--sf-color-secondary, var(--md-sys-color-secondary, #625b71));
+  outline-offset: 2px;
+  box-shadow: none;
+}
+.sf-button.sf-btn-dark:disabled, .sf-button.sf-btn-dark[aria-disabled=true],
+.sf-btn-dark:disabled,
+.sf-btn-dark[aria-disabled=true] {
+  background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 12%, transparent);
+  color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+  box-shadow: none;
+}
+.sf-button.sf-btn-dark:disabled::before, .sf-button.sf-btn-dark[aria-disabled=true]::before,
+.sf-btn-dark:disabled::before,
+.sf-btn-dark[aria-disabled=true]::before {
+  display: none;
+}
+@supports not (color: color-mix(in srgb, red, blue)) {
+  .sf-button.sf-btn-dark:disabled, .sf-button.sf-btn-dark[aria-disabled=true],
+  .sf-btn-dark:disabled,
+  .sf-btn-dark[aria-disabled=true] {
+    background-color: var(--sf-color-surface-container);
+    color: var(--sf-color-on-surface-variant);
+  }
+}
+
+[data-theme=dark] .sf-button.sf-btn-light,
+[data-theme=dark] .sf-btn-light {
+  background-color: var(--md-sys-color-surface, #1c1b1f);
+  color: var(--md-sys-color-on-surface, #e6e1e5);
+  border-color: var(--md-sys-color-outline, #938f99);
+}
+[data-theme=dark] .sf-button.sf-btn-dark,
+[data-theme=dark] .sf-btn-dark {
+  background-color: var(--md-sys-color-inverse-surface, #e6e1e5);
+  color: var(--md-sys-color-inverse-on-surface, #313033);
+}
+
+@media (forced-colors: active) {
+  .sf-button.sf-btn-subtle,
+  .sf-btn-subtle,
+  .sf-button.sf-btn-transparent,
+  .sf-btn-transparent,
+  .sf-button.sf-btn-light,
+  .sf-btn-light,
+  .sf-button.sf-btn-dark,
+  .sf-btn-dark {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+  .sf-button.sf-btn-subtle::before,
+  .sf-btn-subtle::before,
+  .sf-button.sf-btn-transparent::before,
+  .sf-btn-transparent::before,
+  .sf-button.sf-btn-light::before,
+  .sf-btn-light::before,
+  .sf-button.sf-btn-dark::before,
+  .sf-btn-dark::before {
+    display: none;
+  }
+  .sf-button.sf-btn-subtle:disabled, .sf-button.sf-btn-subtle[aria-disabled=true],
+  .sf-btn-subtle:disabled,
+  .sf-btn-subtle[aria-disabled=true],
+  .sf-button.sf-btn-transparent:disabled,
+  .sf-button.sf-btn-transparent[aria-disabled=true],
+  .sf-btn-transparent:disabled,
+  .sf-btn-transparent[aria-disabled=true],
+  .sf-button.sf-btn-light:disabled,
+  .sf-button.sf-btn-light[aria-disabled=true],
+  .sf-btn-light:disabled,
+  .sf-btn-light[aria-disabled=true],
+  .sf-button.sf-btn-dark:disabled,
+  .sf-button.sf-btn-dark[aria-disabled=true],
+  .sf-btn-dark:disabled,
+  .sf-btn-dark[aria-disabled=true] {
+    color: GrayText;
+    border-color: GrayText;
+  }
+}
 .sf-datagrid {
   width: 100%;
   border: 1px solid var(--sf-color-border);

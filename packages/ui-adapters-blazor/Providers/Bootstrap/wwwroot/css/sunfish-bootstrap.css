@@ -13817,6 +13817,142 @@ textarea.form-control-lg {
   overflow: hidden;
 }
 
+.btn.sf-btn-subtle, .sf-btn-subtle.sf-signalr-row__action, .sf-btn-subtle.sf-calendar__title, .sf-btn-subtle.sf-calendar__nav-btn, .sf-btn-subtle.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: var(--bs-secondary-text-emphasis, var(--bs-secondary-color));
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-secondary-rgb), 0.12);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-secondary-rgb), 0.18);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+.btn.sf-btn-transparent, .sf-btn-transparent.sf-signalr-row__action, .sf-btn-transparent.sf-calendar__title, .sf-btn-transparent.sf-calendar__nav-btn, .sf-btn-transparent.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.06);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  text-decoration: none;
+}
+.btn.sf-btn-transparent:hover, .sf-btn-transparent.sf-signalr-row__action:hover, .sf-btn-transparent.sf-calendar__title:hover, .sf-btn-transparent.sf-calendar__nav-btn:hover, .sf-btn-transparent.sf-bs-datagrid-pager-btn:hover {
+  text-decoration: none;
+}
+
+.btn.sf-btn-light, .sf-btn-light.sf-signalr-row__action, .sf-btn-light.sf-calendar__title, .sf-btn-light.sf-calendar__nav-btn, .sf-btn-light.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: var(--bs-light-text-emphasis, var(--bs-body-color));
+  --bs-btn-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-light-bg-subtle, #fcfcfd);
+  --bs-btn-hover-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-active-border-color: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-border-color: var(--bs-light, #f8f9fa);
+}
+
+.btn.sf-btn-dark, .sf-btn-dark.sf-signalr-row__action, .sf-btn-dark.sf-calendar__title, .sf-btn-dark.sf-calendar__nav-btn, .sf-btn-dark.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--bs-dark, #212529);
+  --bs-btn-border-color: var(--bs-dark, #212529);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #424649;
+  --bs-btn-hover-border-color: #373b3e;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4d5154;
+  --bs-btn-active-border-color: #373b3e;
+  --bs-btn-disabled-color: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-bg: var(--bs-secondary-color);
+  --bs-btn-disabled-border-color: var(--bs-secondary-color);
+}
+
+[data-bs-theme=dark] .btn.sf-btn-light, [data-bs-theme=dark] .sf-btn-light.sf-signalr-row__action, [data-bs-theme=dark] .sf-btn-light.sf-calendar__title, [data-bs-theme=dark] .sf-btn-light.sf-calendar__nav-btn, [data-bs-theme=dark] .sf-btn-light.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: var(--bs-tertiary-bg, #343a40);
+  --bs-btn-border-color: var(--bs-border-color);
+  --bs-btn-hover-bg: var(--bs-secondary-bg, #495057);
+  --bs-btn-active-bg: var(--bs-secondary-bg, #495057);
+}
+[data-bs-theme=dark] .btn.sf-btn-dark, [data-bs-theme=dark] .sf-btn-dark.sf-signalr-row__action, [data-bs-theme=dark] .sf-btn-dark.sf-calendar__title, [data-bs-theme=dark] .sf-btn-dark.sf-calendar__nav-btn, [data-bs-theme=dark] .sf-btn-dark.sf-bs-datagrid-pager-btn {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: #0d0f11;
+  --bs-btn-border-color: #0d0f11;
+  --bs-btn-hover-bg: #1a1d20;
+  --bs-btn-active-bg: #26292c;
+}
+
+@media (forced-colors: active) {
+  .btn.sf-btn-subtle, .sf-btn-subtle.sf-signalr-row__action, .sf-btn-subtle.sf-calendar__title, .sf-btn-subtle.sf-calendar__nav-btn, .sf-btn-subtle.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-transparent,
+  .sf-btn-transparent.sf-signalr-row__action,
+  .sf-btn-transparent.sf-calendar__title,
+  .sf-btn-transparent.sf-calendar__nav-btn,
+  .sf-btn-transparent.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-light,
+  .sf-btn-light.sf-signalr-row__action,
+  .sf-btn-light.sf-calendar__title,
+  .sf-btn-light.sf-calendar__nav-btn,
+  .sf-btn-light.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-dark,
+  .sf-btn-dark.sf-signalr-row__action,
+  .sf-btn-dark.sf-calendar__title,
+  .sf-btn-dark.sf-calendar__nav-btn,
+  .sf-btn-dark.sf-bs-datagrid-pager-btn {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+  .btn.sf-btn-subtle:disabled, .sf-btn-subtle.sf-signalr-row__action:disabled, .sf-btn-subtle.sf-calendar__title:disabled, .sf-btn-subtle.sf-calendar__nav-btn:disabled, .sf-btn-subtle.sf-bs-datagrid-pager-btn:disabled, .btn.sf-btn-subtle.disabled, .sf-btn-subtle.disabled.sf-signalr-row__action, .sf-btn-subtle.disabled.sf-calendar__title, .sf-btn-subtle.disabled.sf-calendar__nav-btn, .sf-btn-subtle.disabled.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-transparent:disabled,
+  .sf-btn-transparent.sf-signalr-row__action:disabled,
+  .sf-btn-transparent.sf-calendar__title:disabled,
+  .sf-btn-transparent.sf-calendar__nav-btn:disabled,
+  .sf-btn-transparent.sf-bs-datagrid-pager-btn:disabled,
+  .btn.sf-btn-transparent.disabled,
+  .sf-btn-transparent.disabled.sf-signalr-row__action,
+  .sf-btn-transparent.disabled.sf-calendar__title,
+  .sf-btn-transparent.disabled.sf-calendar__nav-btn,
+  .sf-btn-transparent.disabled.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-light:disabled,
+  .sf-btn-light.sf-signalr-row__action:disabled,
+  .sf-btn-light.sf-calendar__title:disabled,
+  .sf-btn-light.sf-calendar__nav-btn:disabled,
+  .sf-btn-light.sf-bs-datagrid-pager-btn:disabled,
+  .btn.sf-btn-light.disabled,
+  .sf-btn-light.disabled.sf-signalr-row__action,
+  .sf-btn-light.disabled.sf-calendar__title,
+  .sf-btn-light.disabled.sf-calendar__nav-btn,
+  .sf-btn-light.disabled.sf-bs-datagrid-pager-btn,
+  .btn.sf-btn-dark:disabled,
+  .sf-btn-dark.sf-signalr-row__action:disabled,
+  .sf-btn-dark.sf-calendar__title:disabled,
+  .sf-btn-dark.sf-calendar__nav-btn:disabled,
+  .sf-btn-dark.sf-bs-datagrid-pager-btn:disabled,
+  .btn.sf-btn-dark.disabled,
+  .sf-btn-dark.disabled.sf-signalr-row__action,
+  .sf-btn-dark.disabled.sf-calendar__title,
+  .sf-btn-dark.disabled.sf-calendar__nav-btn,
+  .sf-btn-dark.disabled.sf-bs-datagrid-pager-btn {
+    color: GrayText;
+    border-color: GrayText;
+  }
+}
 .sf-bs-callout {
   padding: var(--sf-space-md) var(--sf-space-lg);
   margin-bottom: var(--sf-space-md);

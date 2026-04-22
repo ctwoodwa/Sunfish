@@ -205,3 +205,129 @@
 //   - Split-button dropdown toggle → new component
 //   - Outline taxonomy rename → enum change
 //   - Icon-filled/regular hover swap → BS5 doesn't distinguish variants
+
+// =================================================================
+// ADR 0024 — ButtonVariant expansion (Subtle / Transparent / Light / Dark)
+// =================================================================
+// Bootstrap 5 already ships .btn-light / .btn-dark / .btn-outline-secondary /
+// .btn-link natively, so these Sunfish-authored rules are thin enhancers that
+// route the new variant vocabulary through Bootstrap's own --bs-btn-* token
+// ladder. Full hover/focus/disabled/active states and forced-colors HC
+// fallback for accessibility.
+// ----------------------------------------------------------------------------
+
+// Subtle — BS5 has no native btn-subtle; BootstrapCssProvider maps Subtle to
+// `btn-outline-secondary`. These rules ensure any caller that emits .sf-btn-subtle
+// directly gets a consistent subtle surface via BS5's --bs-btn-* vars.
+.btn.sf-btn-subtle {
+  --bs-btn-color: var(--bs-secondary-text-emphasis, var(--bs-secondary-color));
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-secondary-rgb), 0.12);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-secondary-rgb), 0.18);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+// Transparent — BS5 maps Transparent to .btn-link; this rule zeros out
+// underline-on-rest (BS5 default) and lets hover surface the underline to
+// avoid visual noise when the button sits next to non-link affordances.
+.btn.sf-btn-transparent {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.06);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  text-decoration: none;
+
+  &:hover { text-decoration: none; }
+}
+
+// Light — BS5 native .btn-light already provides full state coverage. The
+// Sunfish .sf-btn-light alias keeps the cross-framework class name available
+// and pairs a consistent dark-mode override (BS5's built-in .btn-light is
+// legible on light surfaces but needs a bump in dark mode).
+.btn.sf-btn-light {
+  --bs-btn-color: var(--bs-light-text-emphasis, var(--bs-body-color));
+  --bs-btn-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-light-bg-subtle, #fcfcfd);
+  --bs-btn-hover-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-active-border-color: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-border-color: var(--bs-light, #f8f9fa);
+}
+
+// Dark — BS5 native .btn-dark; Sunfish alias follows the same token routing.
+.btn.sf-btn-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--bs-dark, #212529);
+  --bs-btn-border-color: var(--bs-dark, #212529);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #424649;
+  --bs-btn-hover-border-color: #373b3e;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4d5154;
+  --bs-btn-active-border-color: #373b3e;
+  --bs-btn-disabled-color: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-bg: var(--bs-secondary-color);
+  --bs-btn-disabled-border-color: var(--bs-secondary-color);
+}
+
+// Dark-mode branch — SYNTHESIS Theme 6. Swap Light / Dark polarity so the
+// neutral-surface treatment remains readable when [data-bs-theme="dark"] is
+// applied to the ancestor element.
+[data-bs-theme="dark"] {
+  .btn.sf-btn-light {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-bg: var(--bs-tertiary-bg, #343a40);
+    --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-hover-bg: var(--bs-secondary-bg, #495057);
+    --bs-btn-active-bg: var(--bs-secondary-bg, #495057);
+  }
+
+  .btn.sf-btn-dark {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #0d0f11;
+    --bs-btn-border-color: #0d0f11;
+    --bs-btn-hover-bg: #1a1d20;
+    --bs-btn-active-bg: #26292c;
+  }
+}
+
+// Forced-colors (HC) fallback — keep the new variants legible in Windows HC
+// mode where --bs-* tokens collapse to system colors. ButtonFace / ButtonText
+// are the HC-equivalent of the BS5 neutral-surface pair.
+@media (forced-colors: active) {
+  .btn.sf-btn-subtle,
+  .btn.sf-btn-transparent,
+  .btn.sf-btn-light,
+  .btn.sf-btn-dark {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+
+    &:disabled,
+    &.disabled {
+      color: GrayText;
+      border-color: GrayText;
+    }
+  }
+}

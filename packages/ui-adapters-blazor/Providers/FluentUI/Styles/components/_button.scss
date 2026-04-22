@@ -270,3 +270,188 @@
 
 .sf-link:hover { text-decoration: underline; color: var(--sf-color-primary-hover); }
 .sf-link:focus-visible { outline: none; box-shadow: var(--sf-focus-ring); border-radius: var(--sf-radius-sm); }
+
+// =============================================================================
+// ADR 0024 — ButtonVariant expansion (Subtle / Transparent / Light / Dark)
+// -----------------------------------------------------------------------------
+// Token-backed to Fluent v9's `--colorNeutral*` / `--colorBrand*` ramp. When
+// the v9 CSS-variables bundle (`fluent-v9-tokens.css`) is loaded, these rules
+// inherit Fluent's documented subtle / transparent / neutral-surface values.
+// Sunfish `--sf-*` fallbacks keep each rule legible even when the Fluent
+// token bundle is not yet loaded.
+// =============================================================================
+
+// Subtle — mirrors Fluent `fui-Button--subtle`. Resting state is transparent
+// with neutral-foreground text; hover lifts onto `colorSubtleBackgroundHover`.
+.sf-button.sf-btn-subtle,
+.sf-btn-subtle {
+    background: transparent;
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    border-color: transparent;
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, var(--sf-color-surface-hover));
+        color: var(--colorNeutralForeground2Hover, var(--sf-color-on-surface));
+        border-color: transparent;
+    }
+
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, var(--sf-color-border));
+        color: var(--colorNeutralForeground2Pressed, var(--sf-color-on-surface));
+        border-color: transparent;
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: transparent;
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: transparent;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Transparent — Fluent `fui-Button--transparent`. Resting, hover, and
+// pressed are all transparent surfaces; the hierarchy is carried solely
+// by the foreground color ladder.
+.sf-button.sf-btn-transparent,
+.sf-btn-transparent {
+    background: transparent;
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    border-color: transparent;
+
+    &:hover {
+        background: transparent;
+        color: var(--colorNeutralForeground2BrandHover, var(--sf-color-primary-hover));
+        border-color: transparent;
+    }
+
+    &:active {
+        background: transparent;
+        color: var(--colorNeutralForeground2BrandPressed, var(--sf-color-primary-active));
+        border-color: transparent;
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: transparent;
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: transparent;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Light — subtle surface on the light-neutral background ramp. Acts like
+// a resting card surface with a button affordance.
+.sf-button.sf-btn-light,
+.sf-btn-light {
+    background: var(--colorNeutralBackground1, var(--sf-color-surface));
+    color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+    border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+
+    &:hover {
+        background: var(--colorNeutralBackground1Hover, var(--sf-color-surface-hover));
+        color: var(--colorNeutralForeground1Hover, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1Hover, var(--sf-color-border-strong));
+    }
+
+    &:active {
+        background: var(--colorNeutralBackground1Pressed, var(--sf-color-border));
+        color: var(--colorNeutralForeground1Pressed, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1Pressed, var(--sf-color-border-strong));
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: var(--colorNeutralBackgroundDisabled, var(--sf-color-surface));
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: var(--colorNeutralStrokeDisabled, var(--sf-color-border));
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Dark — subtle surface on the inverted / dark neutral ramp. High-contrast
+// against the default light surface, used for callout affordances.
+.sf-button.sf-btn-dark,
+.sf-btn-dark {
+    background: var(--colorNeutralBackgroundInverted, #292929);
+    color: var(--colorNeutralForegroundInverted, #ffffff);
+    border-color: var(--colorNeutralBackgroundInverted, #292929);
+
+    &:hover {
+        background: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+        color: var(--colorNeutralForegroundInvertedHover, #ffffff);
+        border-color: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+    }
+
+    &:active {
+        background: var(--colorNeutralBackgroundInvertedPressed, #525252);
+        color: var(--colorNeutralForegroundInvertedPressed, #ffffff);
+        border-color: var(--colorNeutralBackgroundInvertedPressed, #525252);
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+        color: var(--colorNeutralForegroundInvertedDisabled, #b3b3b3);
+        border-color: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Dark-mode branch — SYNTHESIS Theme 6. When [data-theme="dark"] is applied,
+// swap Light / Dark polarity so the neutral-surface treatment remains legible.
+[data-theme="dark"] {
+    .sf-button.sf-btn-light,
+    .sf-btn-light {
+        background: var(--colorNeutralBackground3, var(--sf-color-surface));
+        color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+    }
+
+    .sf-button.sf-btn-dark,
+    .sf-btn-dark {
+        background: var(--colorNeutralBackground1, #1a1a1a);
+        color: var(--colorNeutralForeground1, #ffffff);
+        border-color: var(--colorNeutralStroke1, #3d3d3d);
+    }
+}
+
+// Forced-colors (HC) fallback — system palette for accessibility.
+@media (forced-colors: active) {
+    .sf-button.sf-btn-subtle,
+    .sf-btn-subtle,
+    .sf-button.sf-btn-transparent,
+    .sf-btn-transparent,
+    .sf-button.sf-btn-light,
+    .sf-btn-light,
+    .sf-button.sf-btn-dark,
+    .sf-btn-dark {
+        border: 1px solid ButtonText;
+        background: ButtonFace;
+        color: ButtonText;
+        forced-color-adjust: none;
+
+        &:disabled,
+        &[aria-disabled="true"],
+        &.sf-button--disabled {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}

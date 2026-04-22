@@ -12,5 +12,15 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Sunfish.UICore.csproj" />
+    <!--
+      ADR 0024 parity test references — CssProviderContractTests instantiates
+      the three first-party providers to verify every ButtonVariant × ButtonSize
+      × FillMode combination renders a non-empty class string. Each provider
+      lives in its own Razor class library project under the ui-adapters-blazor
+      Providers/ tree.
+    -->
+    <ProjectReference Include="..\..\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
+    <ProjectReference Include="..\..\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj" />
   </ItemGroup>
 </Project>

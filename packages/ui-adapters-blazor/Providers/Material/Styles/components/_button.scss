@@ -230,3 +230,188 @@
 //     modifier, there is nothing for this skin to target. Deferred to
 //     a future razor/CSS pair change.
 // ----------------------------------------------------------------------------
+
+// =============================================================================
+// ADR 0024 — ButtonVariant expansion (Subtle / Transparent / Light / Dark)
+// -----------------------------------------------------------------------------
+// Token-backed to M3's `--md-sys-color-*` ramp with `--sf-*` fallbacks for
+// unopinionated consumers. Subtle / Transparent map onto the M3 text-button
+// family; Light maps onto M3 outlined; Dark maps onto M3 filled-on-inverse-
+// surface. State-layer overlay inherits from the base `.sf-button::before`.
+// =============================================================================
+
+// Subtle — M3 text button; chromeless except for state-layer on hover.
+.sf-button.sf-btn-subtle,
+.sf-btn-subtle {
+  background-color: transparent;
+  color: var(--md-sys-color-on-surface-variant, var(--sf-color-on-surface));
+  border: none;
+  box-shadow: none;
+  padding: 0 12px; // M3 text-button horizontal padding
+
+  &::before {
+    background-color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+  }
+
+  &:hover { box-shadow: none; }
+
+  &:focus-visible { @include sf-focus-ring; }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-color: transparent;
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+
+    &::before { display: none; }
+  }
+
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    &:disabled,
+    &[aria-disabled="true"] { color: var(--sf-color-text-disabled); }
+  }
+}
+
+// Transparent — M3 text button with the primary accent ladder, visually close
+// to Subtle but uses --md-sys-color-primary for color hierarchy.
+.sf-button.sf-btn-transparent,
+.sf-btn-transparent {
+  background-color: transparent;
+  color: var(--md-sys-color-primary, var(--sf-color-primary));
+  border: none;
+  box-shadow: none;
+  padding: 0 12px;
+
+  &::before {
+    background-color: var(--md-sys-color-primary, var(--sf-color-primary));
+  }
+
+  &:hover { box-shadow: none; }
+
+  &:focus-visible { @include sf-focus-ring; }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-color: transparent;
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+
+    &::before { display: none; }
+  }
+
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    &:disabled,
+    &[aria-disabled="true"] { color: var(--sf-color-text-disabled); }
+  }
+}
+
+// Light — M3 outlined button on the neutral surface. Visible stroke, no fill.
+.sf-button.sf-btn-light,
+.sf-btn-light {
+  background-color: var(--md-sys-color-surface, var(--sf-color-surface));
+  color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+  border: 1px solid var(--md-sys-color-outline, var(--sf-color-border-strong));
+  box-shadow: none;
+
+  &::before {
+    background-color: var(--md-sys-color-on-surface, var(--sf-color-on-surface));
+  }
+
+  &:hover { box-shadow: none; }
+
+  &:focus-visible {
+    border-color: var(--md-sys-color-primary, var(--sf-color-primary));
+    @include sf-focus-ring;
+  }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    border-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 12%, transparent);
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+    background-color: transparent;
+  }
+
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    &:disabled,
+    &[aria-disabled="true"] {
+      border-color: var(--sf-color-border);
+      color: var(--sf-color-text-disabled);
+    }
+  }
+}
+
+// Dark — M3 filled-on-inverse-surface. High-contrast dark chip against a
+// light application surface, used for call-to-action affordances.
+.sf-button.sf-btn-dark,
+.sf-btn-dark {
+  background-color: var(--md-sys-color-inverse-surface, #322f35);
+  color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  border: none;
+
+  &::before {
+    background-color: var(--md-sys-color-inverse-on-surface, #f5eff7);
+  }
+
+  &:focus-visible { @include sf-focus-ring; }
+
+  &:disabled,
+  &[aria-disabled="true"] {
+    background-color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 12%, transparent);
+    color: color-mix(in srgb, var(--md-sys-color-on-surface, var(--sf-color-on-surface)) 38%, transparent);
+    box-shadow: none;
+
+    &::before { display: none; }
+  }
+
+  @supports not (color: color-mix(in srgb, red, blue)) {
+    &:disabled,
+    &[aria-disabled="true"] {
+      background-color: var(--sf-color-surface-container);
+      color: var(--sf-color-on-surface-variant);
+    }
+  }
+}
+
+// Dark-mode branch — SYNTHESIS Theme 6. M3 tokens flip automatically when
+// the consumer sets [data-theme="dark"] or @media (prefers-color-scheme: dark)
+// is honoured, so no explicit override is required for the Light variant.
+// The Dark variant keeps its high-contrast chip appearance under dark mode.
+[data-theme="dark"] {
+  .sf-button.sf-btn-light,
+  .sf-btn-light {
+    background-color: var(--md-sys-color-surface, #1c1b1f);
+    color: var(--md-sys-color-on-surface, #e6e1e5);
+    border-color: var(--md-sys-color-outline, #938f99);
+  }
+
+  .sf-button.sf-btn-dark,
+  .sf-btn-dark {
+    // Under dark mode, "inverse-surface" is a light chip — keep the same
+    // token routing so M3's semantic inversion is preserved.
+    background-color: var(--md-sys-color-inverse-surface, #e6e1e5);
+    color: var(--md-sys-color-inverse-on-surface, #313033);
+  }
+}
+
+// Forced-colors (HC) fallback — system palette for accessibility.
+@media (forced-colors: active) {
+  .sf-button.sf-btn-subtle,
+  .sf-btn-subtle,
+  .sf-button.sf-btn-transparent,
+  .sf-btn-transparent,
+  .sf-button.sf-btn-light,
+  .sf-btn-light,
+  .sf-button.sf-btn-dark,
+  .sf-btn-dark {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+
+    &::before { display: none; }
+
+    &:disabled,
+    &[aria-disabled="true"] {
+      color: GrayText;
+      border-color: GrayText;
+    }
+  }
+}

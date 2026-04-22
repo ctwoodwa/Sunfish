@@ -1910,6 +1910,195 @@
   border-radius: var(--sf-radius-sm);
 }
 
+.sf-button.sf-btn-subtle,
+.sf-btn-subtle {
+  background: transparent;
+  color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+  border-color: transparent;
+}
+.sf-button.sf-btn-subtle:hover,
+.sf-btn-subtle:hover {
+  background: var(--colorSubtleBackgroundHover, var(--sf-color-surface-hover));
+  color: var(--colorNeutralForeground2Hover, var(--sf-color-on-surface));
+  border-color: transparent;
+}
+.sf-button.sf-btn-subtle:active,
+.sf-btn-subtle:active {
+  background: var(--colorSubtleBackgroundPressed, var(--sf-color-border));
+  color: var(--colorNeutralForeground2Pressed, var(--sf-color-on-surface));
+  border-color: transparent;
+}
+.sf-button.sf-btn-subtle:focus-visible,
+.sf-btn-subtle:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+.sf-button.sf-btn-subtle:disabled, .sf-button.sf-btn-subtle[aria-disabled=true], .sf-button.sf-btn-subtle.sf-button--disabled,
+.sf-btn-subtle:disabled,
+.sf-btn-subtle[aria-disabled=true],
+.sf-btn-subtle.sf-button--disabled {
+  background: transparent;
+  color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+  border-color: transparent;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sf-button.sf-btn-transparent,
+.sf-btn-transparent {
+  background: transparent;
+  color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+  border-color: transparent;
+}
+.sf-button.sf-btn-transparent:hover,
+.sf-btn-transparent:hover {
+  background: transparent;
+  color: var(--colorNeutralForeground2BrandHover, var(--sf-color-primary-hover));
+  border-color: transparent;
+}
+.sf-button.sf-btn-transparent:active,
+.sf-btn-transparent:active {
+  background: transparent;
+  color: var(--colorNeutralForeground2BrandPressed, var(--sf-color-primary-active));
+  border-color: transparent;
+}
+.sf-button.sf-btn-transparent:focus-visible,
+.sf-btn-transparent:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+.sf-button.sf-btn-transparent:disabled, .sf-button.sf-btn-transparent[aria-disabled=true], .sf-button.sf-btn-transparent.sf-button--disabled,
+.sf-btn-transparent:disabled,
+.sf-btn-transparent[aria-disabled=true],
+.sf-btn-transparent.sf-button--disabled {
+  background: transparent;
+  color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+  border-color: transparent;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sf-button.sf-btn-light,
+.sf-btn-light {
+  background: var(--colorNeutralBackground1, var(--sf-color-surface));
+  color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+  border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+}
+.sf-button.sf-btn-light:hover,
+.sf-btn-light:hover {
+  background: var(--colorNeutralBackground1Hover, var(--sf-color-surface-hover));
+  color: var(--colorNeutralForeground1Hover, var(--sf-color-on-surface));
+  border-color: var(--colorNeutralStroke1Hover, var(--sf-color-border-strong));
+}
+.sf-button.sf-btn-light:active,
+.sf-btn-light:active {
+  background: var(--colorNeutralBackground1Pressed, var(--sf-color-border));
+  color: var(--colorNeutralForeground1Pressed, var(--sf-color-on-surface));
+  border-color: var(--colorNeutralStroke1Pressed, var(--sf-color-border-strong));
+}
+.sf-button.sf-btn-light:focus-visible,
+.sf-btn-light:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+.sf-button.sf-btn-light:disabled, .sf-button.sf-btn-light[aria-disabled=true], .sf-button.sf-btn-light.sf-button--disabled,
+.sf-btn-light:disabled,
+.sf-btn-light[aria-disabled=true],
+.sf-btn-light.sf-button--disabled {
+  background: var(--colorNeutralBackgroundDisabled, var(--sf-color-surface));
+  color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+  border-color: var(--colorNeutralStrokeDisabled, var(--sf-color-border));
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sf-button.sf-btn-dark,
+.sf-btn-dark {
+  background: var(--colorNeutralBackgroundInverted, #292929);
+  color: var(--colorNeutralForegroundInverted, #ffffff);
+  border-color: var(--colorNeutralBackgroundInverted, #292929);
+}
+.sf-button.sf-btn-dark:hover,
+.sf-btn-dark:hover {
+  background: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+  color: var(--colorNeutralForegroundInvertedHover, #ffffff);
+  border-color: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+}
+.sf-button.sf-btn-dark:active,
+.sf-btn-dark:active {
+  background: var(--colorNeutralBackgroundInvertedPressed, #525252);
+  color: var(--colorNeutralForegroundInvertedPressed, #ffffff);
+  border-color: var(--colorNeutralBackgroundInvertedPressed, #525252);
+}
+.sf-button.sf-btn-dark:focus-visible,
+.sf-btn-dark:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff), inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}
+.sf-button.sf-btn-dark:disabled, .sf-button.sf-btn-dark[aria-disabled=true], .sf-button.sf-btn-dark.sf-button--disabled,
+.sf-btn-dark:disabled,
+.sf-btn-dark[aria-disabled=true],
+.sf-btn-dark.sf-button--disabled {
+  background: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+  color: var(--colorNeutralForegroundInvertedDisabled, #b3b3b3);
+  border-color: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+[data-theme=dark] .sf-button.sf-btn-light,
+[data-theme=dark] .sf-btn-light {
+  background: var(--colorNeutralBackground3, var(--sf-color-surface));
+  color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+  border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+}
+[data-theme=dark] .sf-button.sf-btn-dark,
+[data-theme=dark] .sf-btn-dark {
+  background: var(--colorNeutralBackground1, #1a1a1a);
+  color: var(--colorNeutralForeground1, #ffffff);
+  border-color: var(--colorNeutralStroke1, #3d3d3d);
+}
+
+@media (forced-colors: active) {
+  .sf-button.sf-btn-subtle,
+  .sf-btn-subtle,
+  .sf-button.sf-btn-transparent,
+  .sf-btn-transparent,
+  .sf-button.sf-btn-light,
+  .sf-btn-light,
+  .sf-button.sf-btn-dark,
+  .sf-btn-dark {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+  }
+  .sf-button.sf-btn-subtle:disabled, .sf-button.sf-btn-subtle[aria-disabled=true], .sf-button.sf-btn-subtle.sf-button--disabled,
+  .sf-btn-subtle:disabled,
+  .sf-btn-subtle[aria-disabled=true],
+  .sf-btn-subtle.sf-button--disabled,
+  .sf-button.sf-btn-transparent:disabled,
+  .sf-button.sf-btn-transparent[aria-disabled=true],
+  .sf-button.sf-btn-transparent.sf-button--disabled,
+  .sf-btn-transparent:disabled,
+  .sf-btn-transparent[aria-disabled=true],
+  .sf-btn-transparent.sf-button--disabled,
+  .sf-button.sf-btn-light:disabled,
+  .sf-button.sf-btn-light[aria-disabled=true],
+  .sf-button.sf-btn-light.sf-button--disabled,
+  .sf-btn-light:disabled,
+  .sf-btn-light[aria-disabled=true],
+  .sf-btn-light.sf-button--disabled,
+  .sf-button.sf-btn-dark:disabled,
+  .sf-button.sf-btn-dark[aria-disabled=true],
+  .sf-button.sf-btn-dark.sf-button--disabled,
+  .sf-btn-dark:disabled,
+  .sf-btn-dark[aria-disabled=true],
+  .sf-btn-dark.sf-button--disabled {
+    color: GrayText;
+    border-color: GrayText;
+  }
+}
 /* Button Group */
 .sf-button-group {
   display: inline-flex;

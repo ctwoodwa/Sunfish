@@ -213,6 +213,12 @@ public class BootstrapCssProvider : ISunfishCssProvider
     // Buttons
     // ───────────────────────────────────────────────
 
+    // Maps Sunfish ButtonVariant to the Bootstrap color-suffix token used by the
+    // `btn-{suffix}` / `btn-outline-{suffix}` class families. ADR 0024 extends
+    // ButtonVariant with Subtle/Transparent/Light/Dark — the first two have no
+    // native single-token Bootstrap color suffix and are handled directly in
+    // ButtonClass (they emit dedicated classes), so this helper maps them to
+    // the closest semantic compromise (`secondary` for outline-style fallbacks).
     private static string BootstrapVariant(ButtonVariant variant) =>
         variant switch
         {
@@ -222,6 +228,13 @@ public class BootstrapCssProvider : ISunfishCssProvider
             ButtonVariant.Warning => "warning",
             ButtonVariant.Info => "info",
             ButtonVariant.Success => "success",
+            ButtonVariant.Light => "light",
+            ButtonVariant.Dark => "dark",
+            // Subtle → documented BS5 mapping is btn-outline-secondary.
+            ButtonVariant.Subtle => "secondary",
+            // Transparent → emitted as btn-link; suffix used only in edge cases
+            // (e.g., outline combinator) where we fall back to secondary tone.
+            ButtonVariant.Transparent => "secondary",
             _ => "primary"
         };
 
@@ -233,11 +246,23 @@ public class BootstrapCssProvider : ISunfishCssProvider
             _ => ""
         };
 
+    // ADR 0024 — emit the variant-defining class for each ButtonVariant value.
+    // For Subtle / Transparent, Bootstrap has no native single-token color class,
+    // so we use its closest semantic equivalent (btn-outline-secondary / btn-link)
+    // as the "solid" rendering.
+    private static string BootstrapButtonSolidClass(ButtonVariant variant) =>
+        variant switch
+        {
+            ButtonVariant.Subtle => "btn-outline-secondary",
+            ButtonVariant.Transparent => "btn-link",
+            _ => $"btn-{BootstrapVariant(variant)}"
+        };
+
     public string ButtonClass(ButtonVariant variant, ButtonSize size, bool isOutline, bool isDisabled) =>
         new CssClassBuilder()
             .AddClass("btn")
             .AddClass($"btn-outline-{BootstrapVariant(variant)}", isOutline)
-            .AddClass($"btn-{BootstrapVariant(variant)}", !isOutline)
+            .AddClass(BootstrapButtonSolidClass(variant), !isOutline)
             .AddClass(BootstrapSize(size), size != ButtonSize.Medium)
             .AddClass("disabled", isDisabled)
             .Build();
@@ -245,7 +270,7 @@ public class BootstrapCssProvider : ISunfishCssProvider
     public string ButtonClass(ButtonVariant variant, ButtonSize size, FillMode fillMode, RoundedMode rounded, bool isDisabled) =>
         new CssClassBuilder()
             .AddClass("btn")
-            .AddClass($"btn-{BootstrapVariant(variant)}", fillMode == FillMode.Solid)
+            .AddClass(BootstrapButtonSolidClass(variant), fillMode == FillMode.Solid)
             .AddClass($"btn-outline-{BootstrapVariant(variant)}", fillMode == FillMode.Outline)
             .AddClass("btn-link", fillMode == FillMode.Link)
             .AddClass($"btn-light border-0 text-{BootstrapVariant(variant)}", fillMode == FillMode.Flat)

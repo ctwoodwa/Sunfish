@@ -172,10 +172,26 @@ public class FluentUICssProvider : ISunfishCssProvider
     public string LinkClass() => "sf-link";
 
     // Buttons
+    // ADR 0024 — Subtle / Transparent / Light / Dark emit dedicated `sf-btn-*`
+    // classes that are token-backed in Providers/FluentUI/Styles/components/_button.scss.
+    // The generic `sf-button--{variant}` class is still emitted for backward-compat
+    // (tests and consumers keying off the variant slug), and the `sf-btn-*` class
+    // provides the Fluent-specific subtle / transparent / neutral-surface treatment.
+    private static string FluentVariantAdditionalClass(ButtonVariant variant) =>
+        variant switch
+        {
+            ButtonVariant.Subtle => "sf-btn-subtle",
+            ButtonVariant.Transparent => "sf-btn-transparent",
+            ButtonVariant.Light => "sf-btn-light",
+            ButtonVariant.Dark => "sf-btn-dark",
+            _ => string.Empty
+        };
+
     public string ButtonClass(ButtonVariant variant, ButtonSize size, bool isOutline, bool isDisabled) =>
         new CssClassBuilder()
             .AddClass("sf-button")
             .AddClass($"sf-button--{variant.ToString().ToLower()}")
+            .AddClass(FluentVariantAdditionalClass(variant), !string.IsNullOrEmpty(FluentVariantAdditionalClass(variant)))
             .AddClass($"sf-button--{size.ToString().ToLower()}")
             .AddClass("sf-button--outline", isOutline)
             .AddClass("sf-button--disabled", isDisabled)
@@ -185,6 +201,7 @@ public class FluentUICssProvider : ISunfishCssProvider
         new CssClassBuilder()
             .AddClass("sf-button")
             .AddClass($"sf-button--{variant.ToString().ToLower()}")
+            .AddClass(FluentVariantAdditionalClass(variant), !string.IsNullOrEmpty(FluentVariantAdditionalClass(variant)))
             .AddClass($"sf-button--{size.ToString().ToLower()}")
             .AddClass($"sf-button--fill-{fillMode.ToString().ToLower()}", fillMode != FillMode.Solid)
             .AddClass($"sf-button--rounded-{rounded.ToString().ToLower()}", rounded != RoundedMode.Medium)
