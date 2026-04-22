@@ -211,6 +211,20 @@ Before Stage 01 Discovery dispatches agents against the three vendors' documenta
 3. **In parallel with #104** — Task #108 Decision-2 spike (Infragistics WC architecture prototype).
 4. **After #106 lands** — Task #105 (Roslyn analyzer).
 
+### Scope reduction — 2026-04-22 — DevExpress dropped
+
+**BDFL decision:** `compat-devexpress` is **dropped from scope** and will not ship.
+
+**Reason:** DevExpress Universal EULA §7(a) — "LICENSEE shall not develop software applications that provide an application programming interface to the SOFTWARE DEVELOPMENT PRODUCT(S)" — is ambiguously worded but the conservative reading directly targets the compat-shim pattern (type-name parity without NuGet reference). Stage 01 Discovery (see [`icm/01_discovery/output/compat-devexpress-surface-inventory-2026-04-22.md`](../../01_discovery/output/compat-devexpress-surface-inventory-2026-04-22.md) §3 Licensing) flagged this as requiring a ≤0.5-day Stage 02 legal-review spike before implementation. BDFL has chosen to drop rather than run the legal review — the pragmatic read is: even if legal deems it permissible, DevExpress's historical aggressiveness on derivative-work enforcement means the compat package's maintenance cost carries an asymmetric risk profile relative to Telerik/Syncfusion/Infragistics (all of which have unambiguously permissive stances).
+
+**Impact:**
+- Task #107 is deleted (no implementation will be done).
+- Discovery artifact at `icm/01_discovery/output/compat-devexpress-surface-inventory-2026-04-22.md` is kept as-is — useful future record if DevExpress's EULA clarifies or if a licensing change makes the compat viable.
+- §3 of this intake (Affected Sunfish Areas) should be read as: compat-devexpress is a paper-only line; the remaining three vendor packages (compat-telerik + compat-syncfusion + compat-infragistics) plus the shared compat-shared constitute the full commercial-vendor-compat surface for Sunfish's pre-v1 release.
+- DevExpress consumers migrating to Sunfish: manual migration path via canonical Sunfish types; no flip-your-usings off-ramp. Document in a future migration guide if DevExpress traffic warrants it.
+
+**Not reversed later unless:** DevExpress publishes a clarifying license amendment, OR a specific strategic partnership opportunity with them makes it worthwhile. Default is "no."
+
 ---
 
 ## 10. Discovery Doc Sources (per vendor)
