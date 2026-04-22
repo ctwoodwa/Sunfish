@@ -138,6 +138,10 @@
     <Project Path="packages/compat-font-awesome/Sunfish.Compat.FontAwesome.csproj" />
     <Project Path="packages/compat-font-awesome/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/compat/infragistics/">
+    <Project Path="packages/compat-infragistics/Sunfish.Compat.Infragistics.csproj" />
+    <Project Path="packages/compat-infragistics/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/compat/heroicons/">
     <Project Path="packages/compat-heroicons/Sunfish.Compat.Heroicons.csproj" />
     <Project Path="packages/compat-heroicons/tests/tests.csproj" />
@@ -157,6 +161,10 @@
   <Folder Name="/compat/simple-icons/">
     <Project Path="packages/compat-simple-icons/Sunfish.Compat.SimpleIcons.csproj" />
     <Project Path="packages/compat-simple-icons/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/compat/syncfusion/">
+    <Project Path="packages/compat-syncfusion/Sunfish.Compat.Syncfusion.csproj" />
+    <Project Path="packages/compat-syncfusion/tests/tests.csproj" />
   </Folder>
   <Folder Name="/compat/tabler-icons/">
     <Project Path="packages/compat-tabler-icons/Sunfish.Compat.TablerIcons.csproj" />

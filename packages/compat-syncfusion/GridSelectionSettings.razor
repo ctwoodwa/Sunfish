@@ -1,0 +1,37 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inherits CompatChildComponent<SfGrid<TValue>>
+
+@*
+    Child-settings for SfGrid selection. Publishes SelectionMode back to the parent SfGrid.
+*@
+
+@code {
+    /// <summary>Selection mode: Row, Cell, or Both.</summary>
+    [Parameter] public CompatEnums.SelectionMode Mode { get; set; } = CompatEnums.SelectionMode.Row;
+
+    /// <summary>Selection type: Single or Multiple.</summary>
+    [Parameter] public CompatEnums.SelectionType Type { get; set; } = CompatEnums.SelectionType.Single;
+
+    [Parameter] public bool EnableToggle { get; set; }
+    [Parameter] public bool PersistSelection { get; set; }
+
+    protected override string ShimName => "GridSelectionSettings";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        var parent = RequireParent();
+        parent.SelectionModeFromChildren = Type switch
+        {
+            CompatEnums.SelectionType.Single => FoundationEnums.GridSelectionMode.Single,
+            CompatEnums.SelectionType.Multiple => FoundationEnums.GridSelectionMode.Multiple,
+            _ => FoundationEnums.GridSelectionMode.None
+        };
+        parent.RequestRefresh();
+    }
+}

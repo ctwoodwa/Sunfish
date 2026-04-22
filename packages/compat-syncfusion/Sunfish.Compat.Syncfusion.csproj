@@ -1,0 +1,32 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-syncfusion/POLICY.md.
+    This package MUST NOT reference Syncfusion.Blazor or any Syncfusion NuGet.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.Syncfusion</PackageId>
+    <Description>Syncfusion-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Syncfusion Blazor consumers. Policy-gated.</Description>
+    <PackageTags>blazor;compat;syncfusion;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.Syncfusion</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.Syncfusion.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

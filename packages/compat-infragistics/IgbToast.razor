@@ -1,0 +1,67 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Feedback
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<IgbToast> Logger
+
+@*
+    Ignite-UI-shaped toast wrapper.
+    Delegates to SunfishSnackbarHost; position is translated from Ignite UI's
+    ToastPosition enum to Sunfish's separate vertical/horizontal position enums.
+*@
+<SunfishSnackbarHost VerticalPosition="_vertical"
+                     HorizontalPosition="_horizontal"
+                     @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>Ignite-UI-shaped open state.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Auto-hide duration in ms. Ignite UI default is 4000; Sunfish controls this per-message.</summary>
+    [Parameter] public int DisplayTime { get; set; } = 4000;
+
+    /// <summary>When true, suppresses auto-hide. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public bool KeepOpen { get; set; }
+
+    /// <summary>Ignite-UI-shaped toast position.</summary>
+    [Parameter] public CompatEnums.ToastPosition Position { get; set; } = CompatEnums.ToastPosition.Bottom;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.NotificationVerticalPosition _vertical = FoundationEnums.NotificationVerticalPosition.Bottom;
+    private FoundationEnums.NotificationHorizontalPosition _horizontal = FoundationEnums.NotificationHorizontalPosition.Center;
+
+    protected override void OnParametersSet()
+    {
+        (_vertical, _horizontal) = Position switch
+        {
+            CompatEnums.ToastPosition.Top =>
+                (FoundationEnums.NotificationVerticalPosition.Top,
+                 FoundationEnums.NotificationHorizontalPosition.Center),
+            CompatEnums.ToastPosition.Middle =>
+                // Sunfish has no "middle" vertical; fall back to bottom with warning.
+                LogMiddleFallback(),
+            _ =>
+                (FoundationEnums.NotificationVerticalPosition.Bottom,
+                 FoundationEnums.NotificationHorizontalPosition.Center)
+        };
+
+        if (KeepOpen)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbToast.KeepOpen is cosmetic-dropped — Sunfish's snackbar " +
+                "auto-hide is controlled per-message. See docs/compat-infragistics-mapping.md.");
+        }
+    }
+
+    private (FoundationEnums.NotificationVerticalPosition, FoundationEnums.NotificationHorizontalPosition) LogMiddleFallback()
+    {
+        Logger.LogWarning(
+            "compat-infragistics: IgbToast.Position=Middle has no Sunfish equivalent; falling back to Bottom.");
+        return (FoundationEnums.NotificationVerticalPosition.Bottom,
+                FoundationEnums.NotificationHorizontalPosition.Center);
+    }
+}

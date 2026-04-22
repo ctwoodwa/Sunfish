@@ -1,0 +1,24 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfGrid<TValue>>
+
+@*
+    Child-settings for SfGrid sorting. Container for <GridSortColumn> descriptors.
+    The parent SfGrid.AllowSorting drives the feature flag.
+*@
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool AllowUnsort { get; set; } = true;
+
+    protected override string ShimName => "GridSortSettings";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        _ = RequireParent(); // Validate parent is present.
+    }
+}

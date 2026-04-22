@@ -1,0 +1,97 @@
+@namespace Sunfish.Compat.Infragistics
+@typeparam TItem
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<IgbGrid<TItem>> Logger
+
+@*
+    Ignite-UI-shaped grid wrapper.
+
+    COMMERCIAL-LICENSE NOTE: The underlying igniteui-webcomponents Data Grid is
+    commercial-licensed. compat-infragistics declares the API shape WITHOUT pulling the
+    commercial runtime. Any future change that ports runtime grid behavior from Ignite UI
+    into this wrapper requires explicit BDFL sign-off (see POLICY.md §IgbGrid BDFL clause).
+
+    JS-template divergence: IgbColumn.BodyTemplateScript / InlineEditorTemplateScript are
+    WC-side string-references to JS functions (necessary because the WC renders inside
+    a shadow root where Blazor RenderFragments aren't reachable). Compat throws
+    NotSupportedException on these values — consumers must migrate to RenderFragment-based
+    templates on SunfishGridColumn.
+*@
+<SunfishDataGrid TItem="TItem"
+                 Data="Data"
+                 @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishDataGrid>
+
+@code {
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+
+    /// <summary>Auto-generate columns from the data shape. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public bool AutoGenerate { get; set; }
+
+    [Parameter] public bool AllowFiltering { get; set; }
+    [Parameter] public bool AllowAdvancedFiltering { get; set; }
+
+    /// <summary>Paging can be bool or a config object per Ignite UI; simplified to bool here.</summary>
+    [Parameter] public bool Paging { get; set; }
+
+    /// <summary>Row-selection mode: "none", "single", "multiple", "multipleCascade".</summary>
+    [Parameter] public string? RowSelection { get; set; }
+
+    /// <summary>Cell-selection mode: "none", "single", "multiple".</summary>
+    [Parameter] public string? CellSelection { get; set; }
+
+    /// <summary>Primary-key field name. Cosmetic — Sunfish's equivalent is implicit per row reference.</summary>
+    [Parameter] public string? PrimaryKey { get; set; }
+
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Forward Height/Width/Class via AdditionalAttributes where possible.
+        if (Height is not null || Width is not null || Class is not null || Id is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Id is not null && !AdditionalAttributes.ContainsKey("id"))
+                AdditionalAttributes["id"] = Id;
+            if (Class is not null && !AdditionalAttributes.ContainsKey("class"))
+                AdditionalAttributes["class"] = Class;
+
+            if (Height is not null || Width is not null)
+            {
+                var existingStyle = AdditionalAttributes.TryGetValue("style", out var s) ? s?.ToString() ?? "" : "";
+                var styleParts = new List<string>();
+                if (!string.IsNullOrEmpty(existingStyle)) styleParts.Add(existingStyle);
+                if (Width is not null) styleParts.Add($"width: {Width}");
+                if (Height is not null) styleParts.Add($"height: {Height}");
+                AdditionalAttributes["style"] = string.Join("; ", styleParts);
+            }
+        }
+
+        if (AutoGenerate)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbGrid.AutoGenerate is not shimmed — declare columns explicitly with " +
+                "<IgbColumn> children. See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (AllowAdvancedFiltering)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbGrid.AllowAdvancedFiltering has no direct Sunfish equivalent; " +
+                "basic filtering is available via SunfishDataGrid's filter-row/filter-menu modes.");
+        }
+    }
+}

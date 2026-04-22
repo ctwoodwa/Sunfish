@@ -1,0 +1,91 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Feedback
+@using Sunfish.Foundation.Models
+@using Sunfish.Foundation.Services
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfToast> Logger
+@inject ISunfishNotificationService NotificationService
+
+@*
+    Divergences (see docs/compat-syncfusion-mapping.md §SfToast):
+    - Syncfusion exposes imperative ShowAsync(ToastModel) via @ref. Sunfish uses a scoped
+      ISunfishNotificationService. The shim mirrors ShowAsync by forwarding a Sunfish
+      NotificationModel built from the component's Title + Content defaults.
+    - NewestOnTop / ExtendedTimeout / ProgressDirection are cosmetic — log-and-drop.
+*@
+<SunfishSnackbarHost @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Content { get; set; }
+    [Parameter] public int Timeout { get; set; } = 5000;
+    [Parameter] public bool ShowCloseButton { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string Width { get; set; } = "300px";
+    [Parameter] public string Height { get; set; } = "auto";
+
+    /// <summary>Stack order. Log-and-drop.</summary>
+    [Parameter] public bool NewestOnTop { get; set; }
+
+    [Parameter] public bool ShowProgressBar { get; set; }
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>Auto-dismiss extension on user interaction. Log-and-drop.</summary>
+    [Parameter] public int ExtendedTimeout { get; set; } = 1000;
+
+    /// <summary>Progress-bar direction. Log-and-drop.</summary>
+    [Parameter] public CompatEnums.ProgressDirection ProgressDirection { get; set; } = CompatEnums.ProgressDirection.Ltr;
+
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    [Parameter] public EventCallback<ToastBeforeOpenArgs> BeforeOpen { get; set; }
+    [Parameter] public EventCallback<ToastOpenArgs> Opened { get; set; }
+    [Parameter] public EventCallback<ToastCloseArgs> Closed { get; set; }
+    [Parameter] public EventCallback<ToastClickEventArgs> OnClick { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (NewestOnTop)
+            Logger.LogWarning("compat-syncfusion: SfToast.NewestOnTop dropped — cosmetic. See docs/compat-syncfusion-mapping.md.");
+        if (ExtendedTimeout != 1000)
+            Logger.LogWarning("compat-syncfusion: SfToast.ExtendedTimeout='{Value}' dropped — cosmetic.", ExtendedTimeout);
+        if (ProgressDirection != CompatEnums.ProgressDirection.Ltr)
+            Logger.LogWarning("compat-syncfusion: SfToast.ProgressDirection='{Value}' dropped — cosmetic.", ProgressDirection);
+    }
+
+    /// <summary>
+    /// Syncfusion-shaped imperative show. Forwards to <see cref="ISunfishNotificationService.Show"/>.
+    /// Consumers migrating <c>toastRef.ShowAsync(model)</c> call sites keep the same shape.
+    /// </summary>
+    public Task ShowAsync(NotificationModel model)
+    {
+        NotificationService.Show(model);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Imperative show using the component's own <see cref="Title"/> / <see cref="Content"/> defaults.</summary>
+    public Task ShowAsync()
+    {
+        NotificationService.Show(new NotificationModel
+        {
+            Message = Content ?? Title ?? string.Empty,
+            CloseAfterMs = Timeout,
+            Closeable = ShowCloseButton
+        });
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Imperative hide-all. Forwards to <see cref="ISunfishNotificationService.HideAll"/>.</summary>
+    public Task HideAsync()
+    {
+        NotificationService.HideAll();
+        return Task.CompletedTask;
+    }
+}

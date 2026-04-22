@@ -1,0 +1,120 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Buttons
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfButton> Logger
+
+<SunfishButton Variant="_variant"
+               Enabled="!Disabled"
+               ButtonType="FoundationEnums.ButtonType.Button"
+               OnClick="OnClick"
+               Icon="_iconFragment"
+               @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Content))
+    {
+        @Content
+    }
+    else
+    {
+        @ChildContent
+    }
+</SunfishButton>
+
+@code {
+    // --- Syncfusion-shaped public parameters ---
+    /// <summary>Button text (alternative to <see cref="ChildContent"/>).</summary>
+    [Parameter] public string? Content { get; set; }
+
+    /// <summary>Syncfusion-shaped CssClass. Forwarded via <c>AdditionalAttributes["class"]</c>.</summary>
+    [Parameter] public string? CssClass { get; set; }
+
+    /// <summary>Disabled state. Inverted to Sunfish's <c>Enabled</c>.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>CSS class(es) for font-icon (e.g. <c>"e-icons e-save"</c>). Wrapped as a RenderFragment.</summary>
+    [Parameter] public string? IconCss { get; set; }
+
+    /// <summary>Syncfusion-shaped icon-position. Currently cosmetic — log-and-drop.</summary>
+    [Parameter] public CompatEnums.IconPosition IconPosition { get; set; } = CompatEnums.IconPosition.Left;
+
+    /// <summary>Primary-action styling. Maps to <c>Variant=Primary</c>.</summary>
+    [Parameter] public bool IsPrimary { get; set; }
+
+    /// <summary>Toggle-button behavior. Not supported in Sunfish Button; use SunfishToggleButton.</summary>
+    [Parameter] public bool IsToggle { get; set; }
+
+    /// <summary>RTL support. Log-and-drop (global Sunfish theme controls RTL).</summary>
+    [Parameter] public bool EnableRtl { get; set; }
+
+    /// <summary>Syncfusion fires <c>Created</c> after the initial render. Currently a no-op shim.</summary>
+    [Parameter] public EventCallback<object> Created { get; set; }
+
+    /// <summary>Click handler. Syncfusion wires @onclick through AdditionalAttributes; we surface it explicitly too.</summary>
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.ButtonVariant _variant;
+    private RenderFragment? _iconFragment;
+
+    protected override void OnParametersSet()
+    {
+        _variant = IsPrimary
+            ? FoundationEnums.ButtonVariant.Primary
+            : FoundationEnums.ButtonVariant.Secondary;
+
+        // Construct an icon RenderFragment from IconCss if provided.
+        if (!string.IsNullOrEmpty(IconCss))
+        {
+            var cssClass = IconCss;
+            _iconFragment = builder =>
+            {
+                builder.OpenElement(0, "span");
+                builder.AddAttribute(1, "class", cssClass);
+                builder.CloseElement();
+            };
+        }
+        else
+        {
+            _iconFragment = null;
+        }
+
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("class"))
+            {
+                AdditionalAttributes["class"] = CssClass!;
+            }
+        }
+
+        if (IsToggle)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfButton.IsToggle is not supported. Use SunfishToggleButton. " +
+                "See docs/compat-syncfusion-mapping.md.");
+        }
+
+        if (IconPosition != CompatEnums.IconPosition.Left)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfButton.IconPosition='{Value}' dropped (Sunfish icon always renders before content). " +
+                "See docs/compat-syncfusion-mapping.md.",
+                IconPosition);
+        }
+
+        if (EnableRtl)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfButton.EnableRtl dropped — RTL is controlled by the Sunfish theme. " +
+                "See docs/compat-syncfusion-mapping.md.");
+        }
+    }
+}

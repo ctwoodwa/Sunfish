@@ -1,0 +1,111 @@
+@namespace Sunfish.Compat.Infragistics
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@inject ILogger<IgbSelect<TValue>> Logger
+
+@*
+    Ignite-UI-shaped select wrapper.
+
+    IgbSelect uses a child-component option model (IgbSelectItem); Sunfish's
+    SunfishDropDownList uses a Data-bound model. The wrapper collects IgbSelectItem children
+    into a buffered list via cascading value, then rebinds as the SunfishDropDownList Data
+    source. See IgbSelectItem.razor for the child shim.
+*@
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+<SunfishDropDownList TItem="IgbSelectItemModel<TValue>"
+                     TValue="TValue"
+                     Data="_items"
+                     TextField="Text"
+                     ValueField="Value"
+                     Value="Value"
+                     ValueChanged="OnSunfishValueChanged"
+                     Placeholder="Placeholder"
+                     Enabled="!Disabled"
+                     @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>Selected value.</summary>
+    [Parameter] public TValue? Value { get; set; }
+
+    /// <summary>Two-way binding companion.</summary>
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>Ignite-UI-shaped change event.</summary>
+    [Parameter] public EventCallback<IgbInputChangeEventArgs> Change { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    /// <summary>Open state for the dropdown panel. Cosmetic-dropped with a warning when set.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Force the dropdown to match the select's width. Cosmetic-dropped in Phase 0.</summary>
+    [Parameter] public bool SameWidth { get; set; } = true;
+
+    /// <summary>Floating-element placement.</summary>
+    [Parameter] public CompatEnums.IgbPlacement Placement { get; set; } = CompatEnums.IgbPlacement.Bottom;
+
+    /// <summary>Distance from the anchor in pixels. Cosmetic-dropped.</summary>
+    [Parameter] public double DistanceFromTarget { get; set; }
+
+    /// <summary>Flip strategy for edge-avoidance. Cosmetic-dropped.</summary>
+    [Parameter] public string? FlipStrategy { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private readonly List<IgbSelectItemModel<TValue>> _items = new();
+
+    internal void RegisterItem(TValue? value, string? text, bool selected, bool disabled)
+    {
+        _items.Add(new IgbSelectItemModel<TValue>
+        {
+            Value = value,
+            Text = text ?? value?.ToString() ?? string.Empty,
+            Selected = selected,
+            Disabled = disabled
+        });
+        StateHasChanged();
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Open || DistanceFromTarget != 0 || FlipStrategy is not null)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbSelect.Open / DistanceFromTarget / FlipStrategy are cosmetic-dropped. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (Name is not null || Required || Invalid)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Name is not null && !AdditionalAttributes.ContainsKey("name"))
+                AdditionalAttributes["name"] = Name;
+            if (Required && !AdditionalAttributes.ContainsKey("required"))
+                AdditionalAttributes["required"] = true;
+            if (Invalid && !AdditionalAttributes.ContainsKey("aria-invalid"))
+                AdditionalAttributes["aria-invalid"] = true;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(TValue? newValue)
+    {
+        Value = newValue;
+        if (ValueChanged.HasDelegate)
+            await ValueChanged.InvokeAsync(newValue);
+        if (Change.HasDelegate)
+            await Change.InvokeAsync(new IgbInputChangeEventArgs { Value = newValue, Name = Name });
+    }
+}

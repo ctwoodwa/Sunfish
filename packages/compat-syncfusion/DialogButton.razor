@@ -1,0 +1,30 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Sunfish.UIAdapters.Blazor.Components.Buttons
+@using FoundationEnums = Sunfish.Foundation.Enums
+
+@*
+    Syncfusion: <SfDialog><DialogButtons><DialogButton Content="OK" OnClick="@OnOk" IsPrimary="true" /></DialogButtons></SfDialog>
+    Renders as a SunfishButton inline (DialogButtons forwards its ChildContent to the parent
+    dialog's footer slot).
+*@
+<SunfishButton Variant="_variant"
+               Enabled="!Disabled"
+               OnClick="OnClick">
+    @Content
+</SunfishButton>
+
+@code {
+    [Parameter] public string? Content { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool IsPrimary { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+    private FoundationEnums.ButtonVariant _variant;
+
+    protected override void OnParametersSet()
+    {
+        _variant = IsPrimary ? FoundationEnums.ButtonVariant.Primary : FoundationEnums.ButtonVariant.Secondary;
+    }
+}

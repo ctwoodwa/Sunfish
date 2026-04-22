@@ -1,0 +1,32 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inherits CompatChildComponent<SfGrid<TValue>>
+@inject ILogger<GridFilterSettings<TValue>> Logger
+
+@*
+    Child-settings for SfGrid filtering. Currently diagnostic only — the parent
+    SfGrid.AllowFiltering parameter drives the feature flag; Syncfusion's Type/Operator
+    distinctions are not modeled in Sunfish's grid. Log on construction.
+*@
+
+@code {
+    [Parameter] public CompatEnums.FilterType Type { get; set; } = CompatEnums.FilterType.FilterBar;
+    [Parameter] public bool IgnoreAccent { get; set; }
+    [Parameter] public bool ShowFilterBarStatus { get; set; }
+
+    protected override string ShimName => "GridFilterSettings";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        _ = RequireParent(); // Validate parent is present.
+        Logger.LogDebug(
+            "compat-syncfusion: GridFilterSettings.Type='{Type}' registered. " +
+            "Sunfish grid uses its own filter-mode surface; see docs/compat-syncfusion-mapping.md.",
+            Type);
+    }
+}

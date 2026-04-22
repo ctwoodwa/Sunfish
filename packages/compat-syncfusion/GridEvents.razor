@@ -1,0 +1,47 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfGrid<TValue>>
+@inject ILogger<GridEvents<TValue>> Logger
+
+@*
+    Syncfusion's GridEvents<TValue> is a unique idiom: grid event callbacks are
+    declared as properties on a child component rather than on <SfGrid> itself. The shim
+    accepts the callbacks and currently logs when registered — functional wiring from
+    SunfishDataGrid events is incremental, tracked as a future gap-closure PR.
+
+    Consumers get compile-time parity: their <GridEvents RowSelected="@OnSel" TValue="Order" />
+    markup continues to work post-migration even if the wiring is not yet plumbed through
+    (Syncfusion would have no-op'd the callback if the grid never fired the event either).
+*@
+
+@code {
+    [Parameter] public EventCallback<RowSelectEventArgs<TValue>> RowSelected { get; set; }
+    [Parameter] public EventCallback<RowSelectingEventArgs<TValue>> RowSelecting { get; set; }
+    [Parameter] public EventCallback<RowDataBoundEventArgs<TValue>> RowDataBound { get; set; }
+    [Parameter] public EventCallback<ActionBeginArgs> OnActionBegin { get; set; }
+    [Parameter] public EventCallback<ActionCompleteArgs> OnActionComplete { get; set; }
+    [Parameter] public EventCallback<ActionFailureArgs> OnActionFailure { get; set; }
+    [Parameter] public EventCallback<FilterEventArgs> OnFiltering { get; set; }
+    [Parameter] public EventCallback<SortEventArgs> OnSorting { get; set; }
+    [Parameter] public EventCallback OnLoad { get; set; }
+    [Parameter] public EventCallback OnDataBound { get; set; }
+
+    protected override string ShimName => "GridEvents";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        _ = RequireParent();
+        // Functional wiring is incremental; see docs/compat-syncfusion-mapping.md §SfGrid.
+        if (RowSelected.HasDelegate || RowSelecting.HasDelegate || OnActionBegin.HasDelegate)
+        {
+            Logger.LogDebug(
+                "compat-syncfusion: GridEvents<{T}> registered. Functional wiring is incremental — " +
+                "handlers currently no-op. See docs/compat-syncfusion-mapping.md §SfGrid.",
+                typeof(TValue).Name);
+        }
+    }
+}

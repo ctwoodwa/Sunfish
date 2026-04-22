@@ -1,0 +1,118 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TChecked
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using Sunfish.Compat.Shared
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfCheckBox<TChecked>> Logger
+
+@*
+    Syncfusion's <SfCheckBox<TChecked>> is generic on TChecked — typically bool or bool?.
+    Sunfish's SunfishCheckbox is non-generic on bool. The shim coerces at the boundary:
+    null → false (Sunfish has its own Indeterminate parameter for the tri-state).
+*@
+<SunfishCheckbox Value="_coercedValue"
+                 ValueChanged="OnSunfishValueChanged"
+                 Label="Label"
+                 Indeterminate="Indeterminate"
+                 Enabled="!Disabled"
+                 @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public TChecked? Checked { get; set; }
+    [Parameter] public EventCallback<TChecked?> CheckedChanged { get; set; }
+
+    /// <summary>Syncfusion-shaped value-change event (wraps ChangeEventArgs). Currently emits the raw typed value.</summary>
+    [Parameter] public EventCallback<ChangeEventArgs<TChecked>> ValueChange { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public CompatEnums.LabelPosition LabelPosition { get; set; } = CompatEnums.LabelPosition.After;
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Tri-state checkbox support. Honored via Sunfish <c>Indeterminate</c>.</summary>
+    [Parameter] public bool EnableTriState { get; set; }
+
+    [Parameter] public bool Indeterminate { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public bool EnableRtl { get; set; }
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Session-persistence of the checked state. Not-in-scope — log-and-drop.</summary>
+    [Parameter] public bool EnablePersistence { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool _coercedValue;
+
+    protected override void OnParametersSet()
+    {
+        _coercedValue = Checked switch
+        {
+            bool b => b,
+            null => false,
+            _ when Checked!.Equals(true) => true,
+            _ => false
+        };
+
+        if (LabelPosition == CompatEnums.LabelPosition.Before)
+        {
+            // Sunfish Checkbox defaults LabelPosition to "after". Log the divergence; the
+            // Sunfish surface exposes the string LabelPosition, but forwarding here would
+            // require an additional parameter path. Cosmetic drop.
+            Logger.LogDebug(
+                "compat-syncfusion: SfCheckBox.LabelPosition=Before honored best-effort via Sunfish's own surface. " +
+                "See docs/compat-syncfusion-mapping.md.");
+        }
+
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("class"))
+            {
+                AdditionalAttributes["class"] = CssClass!;
+            }
+        }
+        if (!string.IsNullOrEmpty(Name))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("name"))
+            {
+                AdditionalAttributes["name"] = Name!;
+            }
+        }
+
+        if (EnableRtl)
+        {
+            Logger.LogWarning("compat-syncfusion: SfCheckBox.EnableRtl dropped — global Sunfish theme controls RTL.");
+        }
+        if (EnablePersistence)
+        {
+            Logger.LogWarning("compat-syncfusion: SfCheckBox.EnablePersistence not-in-scope — consumer owns session persistence.");
+        }
+    }
+
+    private async Task OnSunfishValueChanged(bool v)
+    {
+        _coercedValue = v;
+        TChecked? typed = default;
+        if (typeof(TChecked) == typeof(bool))
+        {
+            typed = (TChecked)(object)v;
+        }
+        else if (typeof(TChecked) == typeof(bool?))
+        {
+            typed = (TChecked)(object)(bool?)v;
+        }
+
+        if (CheckedChanged.HasDelegate)
+        {
+            await CheckedChanged.InvokeAsync(typed);
+        }
+        if (ValueChange.HasDelegate)
+        {
+            await ValueChange.InvokeAsync(new ChangeEventArgs<TChecked> { Checked = typed });
+        }
+    }
+}

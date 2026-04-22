@@ -1,0 +1,108 @@
+@namespace Sunfish.Compat.Infragistics
+@using System.Collections.Concurrent
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using Sunfish.Compat.Shared
+@inject ILogger<IgbIcon> Logger
+
+@*
+    Ignite-UI-shaped icon wrapper.
+
+    Ignite UI exposes a global icon registry (IgbIcon.RegisterIconFromText /
+    IgbIcon.RegisterIcon) that rounds-trips to the underlying WC library. compat-infragistics
+    does NOT preserve the WC runtime, so the registry is reimplemented as an in-process
+    lookup table keyed by (collection, name). If a registered icon is requested, its
+    pre-registered SVG markup is rendered; otherwise the shim falls back to treating IconName
+    as a Sunfish Name value (font-icon name), matching the compat-telerik IgbIcon pattern.
+*@
+<SunfishIcon Name="@_nameForSunfish"
+             Icon="_iconFragment"
+             AriaLabel="AriaLabel"
+             @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>Ignite-UI-shaped icon name. Combined with <see cref="Collection"/> for registry lookup.</summary>
+    [Parameter] public string? IconName { get; set; }
+
+    /// <summary>Ignite-UI-shaped icon-set identifier. Used with <see cref="IconName"/> for registry lookup.</summary>
+    [Parameter] public string? Collection { get; set; }
+
+    /// <summary>RTL mirror (cosmetic-dropped with warning in Phase 0). Passthrough when forwarded via style.</summary>
+    [Parameter] public bool Mirrored { get; set; }
+
+    /// <summary>Accessible label for the icon.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string? _nameForSunfish;
+    private RenderFragment? _iconFragment;
+
+    // In-process shim registry. Ignite UI's real registry rounds-trips to the WC library;
+    // compat-infragistics does not load the WC library, so we keep a process-local fallback.
+    // Keyed by "<collection>/<name>" (collection defaults to "default").
+    private static readonly ConcurrentDictionary<string, string> _registeredSvg = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Mirrored)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbIcon.Mirrored has no Sunfish equivalent; ignored. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (string.IsNullOrEmpty(IconName))
+        {
+            _nameForSunfish = null;
+            _iconFragment = null;
+            return;
+        }
+
+        var key = KeyFor(Collection, IconName);
+        if (_registeredSvg.TryGetValue(key, out var svg))
+        {
+            _nameForSunfish = null;
+            _iconFragment = builder =>
+            {
+                builder.AddMarkupContent(0, svg);
+            };
+        }
+        else
+        {
+            // Fall back to using IconName as a Sunfish font-icon name.
+            _nameForSunfish = IconName;
+            _iconFragment = null;
+        }
+    }
+
+    /// <summary>
+    /// Ignite-UI-shaped icon registration. Stores SVG markup in the process-local shim
+    /// registry so that subsequent <see cref="IgbIcon"/> renders with matching
+    /// <see cref="IconName"/> + <see cref="Collection"/> emit the registered markup.
+    /// </summary>
+    public static void RegisterIconFromText(string name, string iconText, string? collection = null)
+    {
+        if (string.IsNullOrEmpty(name)) return;
+        _registeredSvg[KeyFor(collection, name)] = iconText ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Ignite-UI-shaped URL-based icon registration. Because compat-infragistics does not
+    /// load the WC library, URL registration is recorded in the shim registry as a
+    /// placeholder <c>&lt;img&gt;</c> markup with a logged warning. Consumers migrating to
+    /// Sunfish should move to <c>SunfishIcon</c>'s native surface for full parity.
+    /// </summary>
+    public static void RegisterIcon(string name, string url, string? collection = null)
+    {
+        if (string.IsNullOrEmpty(name)) return;
+        // Reasonable, safe fallback — emit an <img> tag referencing the URL.
+        var markup = $"<img src=\"{System.Net.WebUtility.HtmlEncode(url ?? string.Empty)}\" alt=\"{System.Net.WebUtility.HtmlEncode(name)}\" />";
+        _registeredSvg[KeyFor(collection, name)] = markup;
+    }
+
+    private static string KeyFor(string? collection, string name)
+        => $"{collection ?? "default"}/{name}";
+}

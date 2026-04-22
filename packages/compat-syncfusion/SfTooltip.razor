@@ -1,0 +1,105 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfTooltip> Logger
+
+<SunfishTooltip Text="@(Content ?? string.Empty)"
+                TargetSelector="Target"
+                Position="_position"
+                ShowOn="_showOn"
+                Width="Width"
+                Height="Height"
+                TooltipTemplate="ContentTemplate"
+                @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishTooltip>
+
+@code {
+    [Parameter] public string? Content { get; set; }
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>Syncfusion's 12-value Position enum. Collapses to 4 Sunfish cardinals via LogAndFallback.</summary>
+    [Parameter] public CompatEnums.Position Position { get; set; } = CompatEnums.Position.TopCenter;
+
+    [Parameter] public double OpenDelay { get; set; }
+    [Parameter] public double CloseDelay { get; set; }
+    [Parameter] public bool ShowTipPointer { get; set; } = true;
+
+    /// <summary>Trigger behavior. Accepts "Auto", "Hover", "Click", "Focus", "Custom".</summary>
+    [Parameter] public string OpensOn { get; set; } = "Auto";
+
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+
+    /// <summary>Tooltip stays open until manually closed. Log-and-drop in the initial shim.</summary>
+    [Parameter] public bool IsSticky { get; set; }
+
+    /// <summary>Follow cursor. Log-and-drop.</summary>
+    [Parameter] public bool MouseTrail { get; set; }
+
+    /// <summary>Viewport-collision avoidance mode. Log-and-drop.</summary>
+    [Parameter] public bool WindowCollision { get; set; }
+
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private FoundationEnums.TooltipPosition _position;
+    private FoundationEnums.TooltipShowOn _showOn;
+
+    protected override void OnParametersSet()
+    {
+        _position = Position switch
+        {
+            CompatEnums.Position.TopLeft or CompatEnums.Position.TopCenter or CompatEnums.Position.TopRight
+                => FoundationEnums.TooltipPosition.Top,
+            CompatEnums.Position.BottomLeft or CompatEnums.Position.BottomCenter or CompatEnums.Position.BottomRight
+                => FoundationEnums.TooltipPosition.Bottom,
+            CompatEnums.Position.LeftTop or CompatEnums.Position.LeftCenter or CompatEnums.Position.LeftBottom
+                => FoundationEnums.TooltipPosition.Left,
+            CompatEnums.Position.RightTop or CompatEnums.Position.RightCenter or CompatEnums.Position.RightBottom
+                => FoundationEnums.TooltipPosition.Right,
+            _ => LogPositionFallback()
+        };
+
+        _showOn = OpensOn switch
+        {
+            "Hover" or "hover" or "Auto" or "auto" or null or "" => FoundationEnums.TooltipShowOn.Hover,
+            "Click" or "click" => FoundationEnums.TooltipShowOn.Click,
+            "Focus" or "focus" => FoundationEnums.TooltipShowOn.Focus,
+            "Custom" or "custom" => LogShowOnFallback("Custom"),
+            _ => LogShowOnFallback(OpensOn)
+        };
+
+        if (IsSticky)
+        {
+            Logger.LogWarning("compat-syncfusion: SfTooltip.IsSticky dropped — Sunfish tooltip uses standard show/hide. See docs/compat-syncfusion-mapping.md.");
+        }
+        if (MouseTrail)
+        {
+            Logger.LogWarning("compat-syncfusion: SfTooltip.MouseTrail dropped — Sunfish tooltip is target-anchored. See docs/compat-syncfusion-mapping.md.");
+        }
+        if (WindowCollision)
+        {
+            Logger.LogWarning("compat-syncfusion: SfTooltip.WindowCollision dropped — Sunfish tooltip uses default collision handling.");
+        }
+    }
+
+    private FoundationEnums.TooltipPosition LogPositionFallback()
+    {
+        Logger.LogWarning("compat-syncfusion: Unrecognized Position '{Value}' on SfTooltip. Falling back to Top.", Position);
+        return FoundationEnums.TooltipPosition.Top;
+    }
+
+    private FoundationEnums.TooltipShowOn LogShowOnFallback(string received)
+    {
+        Logger.LogWarning("compat-syncfusion: OpensOn '{Value}' not supported. Falling back to Hover.", received);
+        return FoundationEnums.TooltipShowOn.Hover;
+    }
+}

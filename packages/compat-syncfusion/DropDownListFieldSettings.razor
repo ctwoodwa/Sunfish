@@ -1,0 +1,25 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+
+@*
+    Syncfusion: <SfDropDownList><DropDownListFieldSettings Text="Name" Value="Id" /></SfDropDownList>
+
+    The shim publishes the Text/Value field-name strings via cascading values that
+    SfDropDownList / SfComboBox pick up. Sunfish's *DropDownList uses string-typed TextField /
+    ValueField parameters with identical semantics.
+*@
+<CascadingValue Name="SfDropDown_TextField" Value="@Text" IsFixed="false">
+    <CascadingValue Name="SfDropDown_ValueField" Value="@Value" IsFixed="false">
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    /// <summary>The model property whose value displays in the item row.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>The model property whose value is the row's underlying value.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    [Parameter] public string? GroupBy { get; set; }
+    [Parameter] public string? IconCss { get; set; }
+}

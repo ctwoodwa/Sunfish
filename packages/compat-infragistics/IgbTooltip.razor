@@ -1,0 +1,92 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<IgbTooltip> Logger
+
+@*
+    Ignite-UI-shaped tooltip wrapper.
+
+    Note: Ignite UI docs page returned 404 at Stage 01; the parameter list here reflects the
+    underlying igc-tooltip WC inventory. Stage 02 will re-verify against the Tooltip.cs
+    source file. Consumers relying on tooltip behavior should test after the using-swap.
+*@
+<SunfishTooltip TargetSelector="@_targetSelector"
+                Position="_position"
+                ShowOn="_showOn"
+                Text="@(Content ?? string.Empty)"
+                @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishTooltip>
+
+@code {
+    /// <summary>Ignite-UI-shaped open state.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>
+    /// Anchor element ID or CSS selector. Ignite UI uses an element reference; the shim
+    /// accepts a string and forwards as the Sunfish <c>TargetSelector</c>.
+    /// </summary>
+    [Parameter] public string? Anchor { get; set; }
+
+    /// <summary>Ignite-UI-shaped placement.</summary>
+    [Parameter] public CompatEnums.IgbPlacement Placement { get; set; } = CompatEnums.IgbPlacement.Top;
+
+    /// <summary>Offset from the anchor in pixels. Cosmetic-dropped with a warning if non-zero.</summary>
+    [Parameter] public double Offset { get; set; }
+
+    /// <summary>Show-delay in ms. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public int ShowDelay { get; set; }
+
+    /// <summary>Hide-delay in ms. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public int HideDelay { get; set; }
+
+    /// <summary>Suppresses the arrow indicator. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public bool DisableArrow { get; set; }
+
+    /// <summary>Sticky tooltip. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public bool Sticky { get; set; }
+
+    /// <summary>Body text. Takes precedence over ChildContent.</summary>
+    [Parameter] public string? Content { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string? _targetSelector;
+    private FoundationEnums.TooltipPosition _position;
+    private FoundationEnums.TooltipShowOn _showOn = FoundationEnums.TooltipShowOn.Hover;
+
+    protected override void OnParametersSet()
+    {
+        _targetSelector = Anchor;
+        _position = MapPlacement(Placement);
+
+        // Ignite UI's tooltip defaults to hover trigger; no ShowOn parameter exposed.
+        _showOn = FoundationEnums.TooltipShowOn.Hover;
+
+        if (Offset != 0 || ShowDelay != 0 || HideDelay != 0 || DisableArrow || Sticky)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbTooltip Offset/ShowDelay/HideDelay/DisableArrow/Sticky are cosmetic-dropped; " +
+                "Sunfish has no direct analogs. See docs/compat-infragistics-mapping.md.");
+        }
+    }
+
+    private FoundationEnums.TooltipPosition MapPlacement(CompatEnums.IgbPlacement p) => p switch
+    {
+        CompatEnums.IgbPlacement.Top or CompatEnums.IgbPlacement.TopStart or CompatEnums.IgbPlacement.TopEnd
+            => FoundationEnums.TooltipPosition.Top,
+        CompatEnums.IgbPlacement.Bottom or CompatEnums.IgbPlacement.BottomStart or CompatEnums.IgbPlacement.BottomEnd
+            => FoundationEnums.TooltipPosition.Bottom,
+        CompatEnums.IgbPlacement.Left or CompatEnums.IgbPlacement.LeftStart or CompatEnums.IgbPlacement.LeftEnd
+            => FoundationEnums.TooltipPosition.Left,
+        CompatEnums.IgbPlacement.Right or CompatEnums.IgbPlacement.RightStart or CompatEnums.IgbPlacement.RightEnd
+            => FoundationEnums.TooltipPosition.Right,
+        _ => FoundationEnums.TooltipPosition.Top
+    };
+}

@@ -1,0 +1,91 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfDatePicker<TValue>> Logger
+
+@*
+    Syncfusion's <SfDatePicker<TValue>> is generic on TValue (typically DateTime / DateTime?).
+    Sunfish's SunfishDatePicker binds to DateTime?. The shim coerces at the boundary.
+*@
+<SunfishDatePicker Value="_coercedValue"
+                   ValueChanged="OnSunfishValueChanged"
+                   Min="_coercedMin"
+                   Max="_coercedMax"
+                   Placeholder="Placeholder"
+                   Enabled="Enabled"
+                   ReadOnly="Readonly"
+                   ShowClearButton="ShowClearButton"
+                   Format="Format"
+                   @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public TValue? Min { get; set; }
+    [Parameter] public TValue? Max { get; set; }
+    [Parameter] public string Format { get; set; } = "yyyy-MM-dd";
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public int FirstDayOfWeek { get; set; }
+
+    /// <summary>Initial calendar view. Cosmetic in the initial shim — log-and-drop.</summary>
+    [Parameter] public CompatEnums.CalendarView Start { get; set; } = CompatEnums.CalendarView.Month;
+
+    /// <summary>Deepest navigable view. Cosmetic — log-and-drop.</summary>
+    [Parameter] public CompatEnums.CalendarView Depth { get; set; } = CompatEnums.CalendarView.Month;
+
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public bool AllowEdit { get; set; } = true;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private DateTime? _coercedValue;
+    private DateTime? _coercedMin;
+    private DateTime? _coercedMax;
+
+    protected override void OnParametersSet()
+    {
+        _coercedValue = CoerceDate(Value);
+        _coercedMin = CoerceDate(Min);
+        _coercedMax = CoerceDate(Max);
+
+        if (Start != CompatEnums.CalendarView.Month)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfDatePicker.Start='{Value}' cosmetic — Sunfish calendar always opens in Month view. " +
+                "See docs/compat-syncfusion-mapping.md.", Start);
+        }
+        if (Depth != CompatEnums.CalendarView.Month)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfDatePicker.Depth='{Value}' cosmetic — Sunfish calendar has fixed depth. " +
+                "See docs/compat-syncfusion-mapping.md.", Depth);
+        }
+    }
+
+    private static DateTime? CoerceDate(TValue? v)
+    {
+        if (v is null) return null;
+        if (v is DateTime dt) return dt;
+        // TValue may be DateTime? — boxed value is a DateTime when non-null.
+        return null;
+    }
+
+    private async Task OnSunfishValueChanged(DateTime? v)
+    {
+        TValue? typed = default;
+        if (v is not null)
+        {
+            if (typeof(TValue) == typeof(DateTime)) typed = (TValue)(object)v.Value;
+            else if (typeof(TValue) == typeof(DateTime?)) typed = (TValue)(object)(DateTime?)v.Value;
+        }
+        await ValueChanged.InvokeAsync(typed);
+    }
+}
