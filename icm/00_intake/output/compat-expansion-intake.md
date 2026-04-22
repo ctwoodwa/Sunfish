@@ -194,6 +194,23 @@ Before Stage 01 Discovery dispatches agents against the three vendors' documenta
 
 **Sign-off format:** BDFL approves §5 decisions en bloc (or redirects specific decisions with rationale). On approval, Stage 01 Discovery dispatches.
 
+### BDFL sign-off — 2026-04-22
+
+**All four decisions approved en bloc, as recommended:**
+
+- ✅ **Decision 1** — Option A (per-vendor packages).
+- ✅ **Decision 2** — Option A (Infragistics WC spike first, 1-day time-box).
+- ✅ **Decision 3** — Option B (Roslyn analyzer after compat-syncfusion lands).
+- ✅ **Decision 4** — Option A (generic gap-closure on compat-telerik as prerequisite).
+
+**Pre-release note:** Sunfish is pre-v1, breaking changes approved, third-party provider compatibility relaxed until first public release. This did not change any decision — all four are risk/design-fit calls, not compat-preservation calls. Recommendations stand as-written.
+
+**Dispatch order:**
+1. **Now** — Task #104 (compat-telerik gap closure) — unblocks #106/#107/#108.
+2. **In parallel with #104** — Task #103 (Stage 01 Discovery, 3 vendor agents) when MCP/Context7 quota is available.
+3. **In parallel with #104** — Task #108 Decision-2 spike (Infragistics WC architecture prototype).
+4. **After #106 lands** — Task #105 (Roslyn analyzer).
+
 ---
 
 ## 10. Discovery Doc Sources (per vendor)

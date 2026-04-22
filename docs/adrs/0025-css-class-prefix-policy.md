@@ -1,7 +1,8 @@
 # ADR 0025 — CSS Class Prefix Policy (`sf-*`, `mar-*`, `k-*`)
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
+**Pre-release modification:** Because Sunfish is pre-v1 with breaking changes approved, the compat-alias cycle for single-hyphen → BEM renames (e.g., `.sf-dialog-title` → `.sf-dialog__title`) is **dropped**. Renames execute directly in one sweep, no one-minor deprecation window. `mar-*` and `k-*` already had no alias per the original recommendation; that stands. Verified 2026-04-22 that `sf-*` does **not** collide with Syncfusion (`e-*`), DevExpress (`dx-*`), or Infragistics (`igc-*`/`igx-*`) CSS vocabularies — only Telerik's `k-*` was ever in our namespace and is already scoped for deletion.
 **Resolves:** Sunfish CSS and Razor class emission today uses three prefix conventions inconsistently: `sf-*` (Sunfish-generic, dominant), `mar-*` (Marilo legacy, scattered in DataGrid), and `k-*` (Kendo-inspired, one survivor). The Tier 4 re-audit ([`TIER-4-RE-AUDIT.md`](../../icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md)) and the style-audit synthesis ([`SYNTHESIS.md`](../../icm/07_review/output/style-audits/SYNTHESIS.md) cross-cutting decision #1; task #48) flagged the prefix inconsistency as a systemic issue blocking further style-parity work. This ADR picks a single canonical prefix policy, documents the migration path, and sets the compat-alias rules so downstream consumers don't break.
 
 ---

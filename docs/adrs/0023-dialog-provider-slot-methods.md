@@ -1,7 +1,8 @@
 # ADR 0023 — Dialog Provider-Interface Expansion (Per-Slot Class Methods)
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
+**Pre-release modification:** Because Sunfish is pre-v1 with breaking changes approved and third-party provider compatibility relaxed until first public release, the recommended Option A is adopted with two strengthenings: (1) new slot methods are **abstract** (required) rather than C# default-interface-methods returning `""` — this removes the "third-party providers silently render unstyled slots" negative consequence; (2) `DialogClass(bool isDraggable)` is **deleted outright** with no `[Obsolete]` deprecation cycle. See `project_pre_release_latest_first_policy` memory.
 **Resolves:** `SunfishDialog` currently exposes only `DialogClass()`, `DialogClass(bool isDraggable)`, `DialogOverlayClass()`, `DialogCloseButtonClass()`, and `DialogCloseMarkup()` on `ISunfishCssProvider`. The Tier 4 re-audit ([`TIER-4-RE-AUDIT.md`](../../icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md)) confirms this is the one remaining P0 from Phase 1 that was explicitly deferred: Bootstrap 5's `.modal` pattern, Fluent v9's surface/body/actions slots, and Material 3's headline/supporting-text/actions slots all require per-slot class emission that the current flat contract cannot express. This ADR decides the shape of the expanded contract, the compatibility plan for third-party providers, and the React-adapter parity requirement.
 
 ---

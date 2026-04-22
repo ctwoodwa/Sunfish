@@ -1,7 +1,8 @@
 # ADR 0024 — ButtonVariant Enum Expansion for Cross-Framework Style Parity
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
+**Pre-release note:** Sunfish is pre-v1 with breaking changes approved; Option B (full split to `ButtonAppearance` + `ButtonIntent`) is now technically viable but **not** adopted. Recommendation stands: Option D (additive enum + Variant × FillMode axis matrix). No audit finding yet shows axis-conflation hurting consumers; keep scope minimal. Option B remains available for a future ADR if adoption patterns demand it.
 **Resolves:** Today's `ButtonVariant` enum (`packages/foundation/Enums/ButtonVariant.cs`) has six values — `Primary`, `Secondary`, `Danger`, `Warning`, `Info`, `Success`. The style-parity audits ([`SYNTHESIS.md`](../../icm/07_review/output/style-audits/SYNTHESIS.md) Theme 2a, cross-cutting decision #5; Button × Fluent finding #23) flagged missing values that each target framework needs — `Subtle` and `Transparent` for Fluent v9; `Light` and `Dark` for Bootstrap 5. This ADR decides the final enum shape, naming (`ButtonVariant` vs. splitting to `ButtonAppearance` + `ButtonIntent`), and the provider-mapping contract for the new values.
 
 ---
