@@ -1,16 +1,21 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-22T11:42:56.777Z
-> Files: 220 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-22T15:24:24.401Z
+> Files: 299 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
+- `.mcp.json` (~63 tok)
 - `settings.json` (~1684 tok)
 
 ## ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/
 
-- `MEMORY.md` — Memory Index (~223 tok)
+- `feedback_sleep_on_claude_code_token_exhaustion.md` (~439 tok)
+- `feedback_sleep_on_quota_exhaustion.md` (~361 tok)
+- `MEMORY.md` — Memory Index (~444 tok)
+- `project_compat_expansion_workstream.md` (~718 tok)
 - `project_pre_release_latest_first_policy.md` (~479 tok)
+- `project_style_audit_synthesis_2026_04.md` — The 10 systemic themes (ordered by severity) (~889 tok)
 - `project_sunfish_private_until_llc.md` (~562 tok)
 - `reference_efcore_npgsql_preview_lock.md` (~316 tok)
 
@@ -269,6 +274,7 @@
 
 ## apps/kitchen-sink/
 
+- `App.razor` (~756 tok)
 - `Sunfish.KitchenSink.csproj` (~609 tok)
 
 ## apps/kitchen-sink/Pages/Components/
@@ -343,21 +349,45 @@
 
 - `Demo.razor` (~712 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Barcodes/Accessibility/
+
+- `Demo.razor` (~2526 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Card/Overview/
 
 - `Demo.razor` (~695 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Accessibility/
+
+- `Demo.razor` (~2342 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Overview/
 
 - `Demo.razor` (~504 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Accessibility/
+
+- `Demo.razor` (~2653 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Overview/
 
 - `Demo.razor` (~1306 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Accessibility/
+
+- `Demo.razor` (~2146 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Overview/
 
 - `Demo.razor` — Declares Employee (~948 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/
+
+- `Demo.razor` (~3229 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Accessibility/
+
+- `Demo.razor` (~2664 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Overview/
 
@@ -367,21 +397,49 @@
 
 - `Demo.razor` (~524 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/
+
+- `Demo.razor` — Declares string (~2956 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Map/Overview/
 
 - `Demo.razor` — Declares string (~690 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Accessibility/
+
+- `Demo.razor` (~2060 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Overview/
 
 - `Demo.razor` (~888 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Popover/Accessibility/
+
+- `Demo.razor` (~2680 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Accessibility/
+
+- `Demo.razor` (~2164 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Overview/
 
 - `Demo.razor` (~790 tok)
 
+## apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/
+
+- `Demo.razor` (~3466 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/
+
+- `Demo.razor` (~3151 tok)
+
 ## apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Overview/
 
 - `Demo.razor` (~977 tok)
+
+## apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Accessibility/
+
+- `Demo.razor` (~2530 tok)
 
 ## apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/
 
@@ -551,6 +609,10 @@
 
 - `Demo.razor` (~969 tok)
 
+## apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Accessibility/
+
+- `Demo.razor` — Declares TreeNode (~3310 tok)
+
 ## apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Overview/
 
 - `Demo.razor` — Declares TreeNode (~847 tok)
@@ -563,9 +625,21 @@
 
 - `Demo.razor` (~902 tok)
 
+## apps/kitchen-sink/Pages/Components/Forms/FlatColorPicker/Accessibility/
+
+- `Demo.razor` (~3056 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/Form/Accessibility/
+
+- `Demo.razor` — Declares SunfishForm (~3340 tok)
+
 ## apps/kitchen-sink/Pages/Components/Forms/Form/Overview/
 
 - `Demo.razor` — Declares ContactModel (~909 tok)
+
+## apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/
+
+- `Demo.razor` — Declares when (~3616 tok)
 
 ## apps/kitchen-sink/Pages/Components/Forms/Validation/Overview/
 
@@ -667,6 +741,10 @@
 
 - `Demo.razor` — Declares string (~978 tok)
 
+## apps/kitchen-sink/Services/
+
+- `ProviderSwitcher.cs` — Class: ProviderSwitcher (~6054 tok)
+
 ## apps/kitchen-sink/build/
 
 - `SunfishDemoSources.targets` — /Demo.razor, gathers companion files in the same (~1678 tok)
@@ -678,6 +756,9 @@
 - `0018-governance-and-license-posture.md` — ADR 0018 — Governance Model and License Posture (~2120 tok)
 - `0021-reporting-pipeline-policy.md` — ADR 0021 — Document and Report Generation Pipeline (~2887 tok)
 - `0022-example-catalog-and-docs-taxonomy.md` — ADR 0022 — Canonical Example Catalog, Documentation Taxonomy, and the Demo-Page Panel (~4528 tok)
+- `0023-dialog-provider-slot-methods.md` — ADR 0023 — Dialog Provider-Interface Expansion (Per-Slot Class Methods) (~3420 tok)
+- `0024-button-variant-enum-expansion.md` — ADR 0024 — ButtonVariant Enum Expansion for Cross-Framework Style Parity (~3824 tok)
+- `0025-css-class-prefix-policy.md` — ADR 0025 — CSS Class Prefix Policy (`sf-*`, `mar-*`, `k-*`) (~3752 tok)
 - `README.md` — Project documentation (~678 tok)
 
 ## docs/specifications/
@@ -691,7 +772,24 @@
 
 ## icm/00_intake/output/
 
+- `compat-expansion-intake.md` — Intake Note — Compat Package Expansion (Syncfusion / DevExpress / Infragistics) (~5975 tok)
 - `web-components-migration-intake-2026-04-20.md` — Intake Note — UI Architecture Migration (ADR 0017, revised) (~3606 tok)
+
+## icm/07_review/output/style-audits/
+
+- `SunfishButton-Bootstrap5.md` — Style Audit: SunfishButton vs Bootstrap 5.3 Button (~4244 tok)
+- `SunfishButton-FluentUI-v9.md` — Style Audit — SunfishButton vs Fluent UI v9 Button (~6558 tok)
+- `SunfishButton-MaterialDesign3.md` — Style Audit: `SunfishButton` vs Material Design 3 (~4899 tok)
+- `SunfishCalendar-Bootstrap5.md` — SunfishCalendar vs Bootstrap 5.3 — Styling Completeness Audit (~5574 tok)
+- `SunfishCalendar-FluentUI-v9.md` — Style Audit — SunfishCalendar vs Fluent UI v9 Calendar / DatePicker (~5385 tok)
+- `SunfishCalendar-MaterialDesign3.md` — Styling-Completeness Audit — SunfishCalendar vs Material Design 3 (~5355 tok)
+- `SunfishDataGrid-Bootstrap5.md` — Style Audit: SunfishDataGrid vs Bootstrap 5.3 (~9727 tok)
+- `SunfishDataGrid-FluentUI-v9.md` — SunfishDataGrid vs. Fluent UI v9 — Deep Style-Completeness Audit (~8312 tok)
+- `SunfishDataGrid-MaterialDesign3.md` — Style Audit: SunfishDataGrid vs Material Design 3 (~6929 tok)
+- `SunfishDialog-Bootstrap5.md` — Style Audit — SunfishDialog vs Bootstrap 5.3 Modal (~4241 tok)
+- `SunfishDialog-FluentUI-v9.md` — Style Audit: SunfishDialog vs Fluent UI v9 Dialog (~4350 tok)
+- `SunfishDialog-MaterialDesign3.md` — Style Audit: SunfishDialog vs Material Design 3 (~4147 tok)
+- `SYNTHESIS.md` — Style Parity Audit — Cross-Framework Synthesis (~10551 tok)
 
 ## icm/working-notes/
 
@@ -809,9 +907,20 @@
 - `SunfishSmartPasteButton.razor` (~525 tok)
 - `SunfishSpeechToTextButton.razor` (~904 tok)
 
+## packages/ui-adapters-blazor/Components/Buttons/
+
+- `SunfishButton.razor` (~478 tok)
+
+## packages/ui-adapters-blazor/Components/DataDisplay/
+
+- `SunfishCalendar.razor` (~3004 tok)
+
 ## packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/
 
 - `SunfishDataGrid.Pdf.cs` — PDF export logic for <see cref="SunfishDataGrid{TItem}"/>. (~1746 tok)
+- `SunfishDataGrid.razor` (~6118 tok)
+- `SunfishDataGrid.Rendering.cs` — Row, cell, and fragment rendering logic for SunfishDataGrid. (~7881 tok)
+- `SunfishGridCommandButton.razor` (~746 tok)
 
 ## packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/Export/
 
@@ -824,6 +933,10 @@
 ## packages/ui-adapters-blazor/Components/DataDisplay/Spreadsheet/
 
 - `SunfishSpreadsheet.razor` (~739 tok)
+
+## packages/ui-adapters-blazor/Components/Feedback/Dialog/
+
+- `SunfishDialog.razor` — Declares string (~2655 tok)
 
 ## packages/ui-adapters-blazor/Components/Forms/Inputs/
 
@@ -862,10 +975,93 @@
 - `GanttView.cs` — Timeline granularity for <c>Sunfish.UIAdapters.Blazor.Components.Scheduling.SunfishGantt&lt;TItem&gt (~260 tok)
 - `SchedulerView.cs` — Calendar view mode for <c>Sunfish.UIAdapters.Blazor.Components.Scheduling.SunfishScheduler&lt;TEvent (~326 tok)
 
+## packages/ui-adapters-blazor/Providers/Bootstrap/
+
+- `BootstrapCssProvider.cs` — Maps Sunfish component state to Bootstrap 5.3 CSS classes. Uses native Bootstrap classes where a dir (~12162 tok)
+
+## packages/ui-adapters-blazor/Providers/Bootstrap/Styles/
+
+- `_index.scss` — ============================================================================= (~994 tok)
+
+## packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/
+
+- `_button.scss` — ================================================================= (~2019 tok)
+- `_data-grid.scss` — ================================================================= (~5465 tok)
+- `_date-picker.scss` — ================================================================= (~3440 tok)
+- `_dialog.scss` — ================================================================= (~1491 tok)
+- `_icon-button.scss` — ================================================================= (~701 tok)
+
+## packages/ui-adapters-blazor/Providers/Bootstrap/Styles/foundation/
+
+- `_focus.scss` — ================================================================= (~278 tok)
+
+## packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/
+
+- `sunfish-bootstrap.css` — Styles: 7 rules, 170 vars (~130347 tok)
+
+## packages/ui-adapters-blazor/Providers/FluentUI/
+
+- `FluentUICssProvider.cs` — Class: FluentUICssProvider (~9045 tok)
+
+## packages/ui-adapters-blazor/Providers/FluentUI/Styles/
+
+- `_index.scss` — ============================================================================= (~1024 tok)
+
+## packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/
+
+- `_button.scss` — ============================================================================= (~3384 tok)
+- `_data-grid.scss` — ============================================================================= (~5439 tok)
+- `_date-picker.scss` — ============================================================================= (~4606 tok)
+- `_dialog.scss` — ============================================================================= (~2323 tok)
+
+## packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/
+
+- `_colors.scss` — ============================================================================= (~2650 tok)
+- `_focus.scss` — ============================================================================= (~303 tok)
+- `_motion.scss` — ============================================================================= (~209 tok)
+
+## packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/
+
+- `fluent-v9-tokens.css` — Styles: 229 vars (~6670 tok)
+- `sunfish-fluentui.css` — Styles: 214 vars (~73221 tok)
+
+## packages/ui-adapters-blazor/Providers/Material/
+
+- `MaterialCssProvider.cs` — Class: MaterialCssProvider (~8956 tok)
+- `STYLES_README.md` — Sunfish Material 3 Provider — Styles Architecture (~1494 tok)
+
+## packages/ui-adapters-blazor/Providers/Material/Styles/
+
+- `_index.scss` — ============================================================================= (~997 tok)
+
+## packages/ui-adapters-blazor/Providers/Material/Styles/components/
+
+- `_button.scss` — Styles: 9 rules (~2119 tok)
+- `_data-grid.scss` — ============================================================================= (~7805 tok)
+- `_date-picker.scss` — ============================================================================= (~4412 tok)
+- `_dialog.scss` — ============================================================================= (~3270 tok)
+
+## packages/ui-adapters-blazor/Providers/Material/Styles/foundation/
+
+- `_focus.scss` — ============================================================================= (~294 tok)
+- `_mixins.scss` — ============================================================================= (~1363 tok)
+
+## packages/ui-adapters-blazor/tests/
+
+- `Stubs.cs` — Class: StubCssProvider (~4060 tok)
+
 ## packages/ui-adapters-blazor/tests/Components/
 
 - `PdfExportTests.cs` — Tests for SunfishDataGrid PDF export via Playwright. Covers HtmlTableBuilder (pure unit tests, no bu (~2871 tok)
 - `XlsxExportTests.cs` — Tests for G37 C1 — SunfishDataGrid Excel export via ClosedXML. Covers both the pure <c>XlsxExportWri (~3675 tok)
+
+## packages/ui-adapters-blazor/wwwroot/js/
+
+- `sunfish-dialog-a11y.js` — Attaches a focus trap, Esc handler, scroll-lock, and focus capture to a (~1891 tok)
+
+## packages/ui-core/Contracts/
+
+- `ISunfishCssProvider.cs` — Defines the contract for a design-system CSS provider. Each implementation (e.g., Fluent UI, Materia (~3232 tok)
 
 ## scripts/
 

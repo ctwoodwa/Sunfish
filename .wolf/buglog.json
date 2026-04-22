@@ -1520,6 +1520,1000 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-22T11:42:56.790Z"
+    },
+    {
+      "id": "bug-096",
+      "timestamp": "2026-04-22T12:22:25.482Z",
+      "error_message": "CSS fix: background, color",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css",
+      "root_cause": "background: rgba(13, 110, 253, 0.12) → #0d6efd !important; color: var(--bs-secondary-color) → #fff !important",
+      "fix": "Changed background: rgba(13, 110, 253, 0.12) → #0d6efd !important; color: var(--bs-secondary-color) → #fff !important",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T12:25:35.216Z"
+    },
+    {
+      "id": "bug-097",
+      "timestamp": "2026-04-22T12:23:09.689Z",
+      "error_message": "CSS fix: padding, background, border-radius",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css",
+      "root_cause": "padding: var(--sf-space-xs) 0 → 0; background: var(--sf-color-primary-light) → var(--sf-color-primary); border-radius: 0 → 0 var(--sf-radius-sm) var(--sf-radius-sm) 0",
+      "fix": "Changed padding: var(--sf-space-xs) 0 → 0; background: var(--sf-color-primary-light) → var(--sf-color-primary); border-radius: 0 → 0 var(--sf-radius-sm) var(--sf-radius-sm) 0",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T12:25:44.058Z"
+    },
+    {
+      "id": "bug-098",
+      "timestamp": "2026-04-22T12:23:55.632Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 15→15 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:23:55.632Z"
+    },
+    {
+      "id": "bug-099",
+      "timestamp": "2026-04-22T12:24:50.176Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css",
+      "root_cause": "30 lines replaced/restructured",
+      "fix": "Rewrote 32→42 lines (30 removed) | Also: --sf-color-primary: #60cdff;; --sf-color-primary-hover: #98d9ff; | Also: background: #c43035;; background: #a52b2f;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T12:25:35.042Z"
+    },
+    {
+      "id": "bug-100",
+      "timestamp": "2026-04-22T12:25:50.335Z",
+      "error_message": "Incorrect value in code",
+      "file": "apps/kitchen-sink/App.razor",
+      "root_cause": "Had \"sunfish-provider-fluentui\"",
+      "fix": "Changed to \"sunfish-provider-fluentui-tokens\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:25:50.335Z"
+    },
+    {
+      "id": "bug-101",
+      "timestamp": "2026-04-22T00:00:00.000Z",
+      "error_message": "SunfishDialog renders with browser defaults under Material provider (no surface, no elevation, no typography, no motion)",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss",
+      "root_cause": "Partial was a 5-line TODO stub — compiled sunfish-material.css contained zero .sf-dialog rules, so MaterialCssProvider.DialogClass() emission (sf-dialog / sf-dialog-overlay / sf-dialog-title / sf-dialog-body / sf-dialog-actions / sf-dialog-close) had nothing to bind to",
+      "fix": "Authored full M3 dialog partial (297 lines): surface-container-high on corner-extra-large (28px), elevation-3, headline-small title / body-medium body / label-large actions, 24dp padding column flex with 24dp gap, 8dp action gap, 40x40 close icon-button with currentColor state layer (8/12/12), 3px outer secondary focus stroke with 2px offset, 32% scrim via overlay ::before (identical in dark — NOT bumped to 52%), enter keyframe scale(0.8)->1 + opacity 0->1 over duration-medium2 with easing-emphasized-decel, size modifiers .sf-dialog--small/medium/large/full applied directly to .sf-dialog root (NOT the non-existent .sf-dialog__panel the FluentUI skin targets), responsive full-screen below 600px. Mixins sf-type-role / sf-responsive-breakpoint inlined because foundation Sass variables do not cross @use boundaries in this repo.",
+      "tags": [
+        "material",
+        "dialog",
+        "scss-stub",
+        "unstyled-component",
+        "m3",
+        "bem"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "bug-102",
+      "timestamp": "2026-04-22T00:00:00.000Z",
+      "error_message": "SunfishCalendar renders with browser <table> defaults under Material provider (no surface, no cell shape, no state layers, no typography)",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss",
+      "root_cause": "Partial was a 5-line TODO stub — compiled sunfish-material.css contained zero .sf-calendar rules, so every class emitted by SunfishCalendar.razor (sf-calendar__cell and its 7 modifiers, __day-header, __nav-btn, __title, __grid, __year-grid / __decade-grid / __century-grid and their cell variants) fell back to user-agent defaults",
+      "fix": "Authored full M3 date-picker partial (445 lines): surface-container-high on corner-extra-large container, circular 40x40 day cells (32x32 under [data-sf-density=compact]) with currentColor state-layer ::before at 8/10/12 opacity (focus overridden to 10% per M3 spec rather than global 12%), selected cells primary/on-primary, today 1px primary inset ring unselected, .sf-calendar__cell--in-range selector pre-wired with secondary-container fill (razor does not yet emit — flagged for Theme 1 follow-up), other-month and disabled at 38% opacity, body-large day numbers / label-medium day-of-week / title-small header button / label-small week-number column (Sunfish extension flagged in comment), 40x40 circular nav chevrons, 3px secondary outer-stroke focus rings with 2px offset on every interactive cell, year view 3-col grid / decade + century views 4-col grid with pill-shaped buttons sharing the same state-layer + selected/current semantics. Typography inlined rather than via sf-type-role mixin for the same Sass scope reason as bug-101.",
+      "tags": [
+        "material",
+        "calendar",
+        "date-picker",
+        "scss-stub",
+        "unstyled-component",
+        "m3",
+        "state-layers",
+        "bem"
+      ],
+      "related_bugs": [
+        "bug-101"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T00:00:00.000Z"
+    },
+    {
+      "id": "bug-103",
+      "timestamp": "2026-04-22T12:29:09.409Z",
+      "error_message": "CSS fix: background, color, hover",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "background: rgba($primary, 0.12) → $primary !important; color: $text-muted → $white !important; hover: not(:disabled) { → not(.sf-calendar__cell--disabled) .sf-calendar__day {",
+      "fix": "Changed background: rgba($primary, 0.12) → $primary !important; color: $text-muted → $white !important; hover: not(:disabled) { → not(.sf-calendar__cell--disabled) .sf-calendar__day {",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:29:09.409Z"
+    },
+    {
+      "id": "bug-104",
+      "timestamp": "2026-04-22T12:30:07.353Z",
+      "error_message": "CSS fix: border, padding, color",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "border: none → 0; padding: 0 4px → 0; color: inherit → var(--sf-color-primary, $primary)",
+      "fix": "Changed border: none → 0; padding: 0 4px → 0; color: inherit → var(--sf-color-primary, $primary)",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:30:07.353Z"
+    },
+    {
+      "id": "bug-105",
+      "timestamp": "2026-04-22T12:35:00.000Z",
+      "error_message": "Fluent skin rendered Fabric-flavored instead of Fluent v9 — wrong surface colors, too-bold selection, hardcoded button hover/active hexes broke dark mode",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/_colors.scss",
+      "root_cause": "--sf-color-primary was Fluent v8 (Fabric) #0078d4 instead of Fluent v9 colorBrandBackground #0f6cbd; no v9 token shim existed so v9-only tokens (colorNeutralBackground1/2/3, colorStrokeFocus2, colorSubtleBackgroundHover, shadow16, spacingHorizontal*, strokeWidth*, borderRadius*, full typescale) were missing. Button-Fluent danger/warning/info/success hover/active hardcoded Fabric-era hex (#c43035, #e69a3e, #00a8d6, #0e6e0e, #a52b2f, #cc8a38, #0094bd, #0c5e0c) bypassing the token system, so dark mode left them as light-theme reds/greens.",
+      "fix": "Shipped fluent-v9-tokens.css (537 lines) at packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/fluent-v9-tokens.css emitting the full Fluent v9 token ladder on :root and [data-sf-theme=dark] (neutral/brand/status color families with Background1/2/3 + Foreground1/2/3, typescale fontSizeBase100-1000 + lineHeights + weights, spacingHorizontal/Vertical None-XXXL, strokeWidth Thin/Thick/Thicker/Thickest, borderRadius None-Circular, shadow2/4/8/16/28/64 + shadowBrand variants, durationUltraFast-UltraSlow, curves). Rewired foundation/_colors.scss so every --sf-color-* reads via var(--colorXxx, fabric-fallback) — e.g. --sf-color-primary: var(--colorBrandBackground, #0f6cbd). Added --sf-color-{danger|warning|info|success}-{hover|active} routed through colorStatus*Foreground1/2 (light + dark override). Retrofitted components/_button.scss to replace the 8 hardcoded button hex values with those new hover/active tokens and added border-color on hover/active. Wired fluent-v9-tokens.css into apps/kitchen-sink/App.razor ahead of sunfish-fluentui.css and extended the provider-toggle script to disable the tokens link when switching providers. Context7 MCP quota was exhausted so token values were sourced from @fluentui/tokens on GitHub (microsoft/fluentui/tree/master/packages/tokens/src).",
+      "tags": [
+        "fluent",
+        "tokens",
+        "v8-v9-migration",
+        "token-shim",
+        "css",
+        "dark-mode"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:35:00.000Z"
+    },
+    {
+      "id": "bug-106",
+      "timestamp": "2026-04-22T12:31:38.497Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss",
+      "root_cause": "13 lines replaced/restructured",
+      "fix": "Rewrote 115→159 lines (13 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:31:38.497Z"
+    },
+    {
+      "id": "bug-107",
+      "timestamp": "2026-04-22T12:31:51.715Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss",
+      "root_cause": "8 lines replaced/restructured",
+      "fix": "Rewrote 17→24 lines (8 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T12:31:51.715Z"
+    },
+    {
+      "id": "bug-108",
+      "timestamp": "2026-04-22T13:00:00.000Z",
+      "error_message": "Calendar cells in Bootstrap skin rendered with user-agent defaults (no today/selected/in-range visuals); range mode never highlighted endpoints or span",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "SCSS styled a non-existent .sf-calendar__day--today / --selected / --in-range element, but Razor emits the modifier on the .sf-calendar__cell <td> and nests a plain <span class='sf-calendar__day'> inside. Result: the rules selected nothing. Razor also never emitted range-start, range-end, or in-range classes so there were no hooks for a range visual even with correct selectors.",
+      "fix": "Rewrote the dead .sf-calendar__day--* block to the cell-descendant pattern (.sf-calendar__cell { &--today .sf-calendar__day {...} &--selected .sf-calendar__day {...} &--range-start/--range-end/--range-edge .sf-calendar__day {...} &--in-range { background: rgba($primary,0.12); .sf-calendar__day { border-radius: 0; } } }) and appended conditional emissions in SunfishCalendar.razor for isRangeStart / isRangeEnd / isInRange.",
+      "tags": [
+        "css",
+        "scss",
+        "bem",
+        "razor",
+        "bootstrap5",
+        "dead-css",
+        "calendar"
+      ],
+      "related_bugs": [
+        "bug-109"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:00.000Z"
+    },
+    {
+      "id": "bug-109",
+      "timestamp": "2026-04-22T13:00:05.000Z",
+      "error_message": "Calendar in Fluent skin rendered with user-agent defaults — no header, no weekday headers, no cell visuals",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss",
+      "root_cause": "Fluent SCSS used single-hyphen class names (.sf-calendar-header, .sf-calendar-nav-btn, .sf-calendar-title, .sf-calendar-grid, .sf-calendar-day-*) but Razor emits BEM double-underscore (.sf-calendar__header, .sf-calendar__nav-btn, .sf-calendar__title, .sf-calendar__grid, .sf-calendar__cell, .sf-calendar__day). Every rule selected nothing.",
+      "fix": "Rewrote the .sf-calendar-* block as .sf-calendar__* using BEM double-underscore. Added the full modifier ladder — &--today, &--selected, &--range-start, &--range-end, &--range-edge, &--in-range, &--focused, &--other-month, &--disabled, &--empty — using the cell-descendant pattern so .sf-calendar__day inside .sf-calendar__cell gets styled correctly.",
+      "tags": [
+        "css",
+        "scss",
+        "bem",
+        "fluentui-v9",
+        "dead-css",
+        "calendar"
+      ],
+      "related_bugs": [
+        "bug-108"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:05.000Z"
+    },
+    {
+      "id": "bug-110",
+      "timestamp": "2026-04-22T13:00:10.000Z",
+      "error_message": "Dialog title was not draggable in Fluent skin even with Draggable=true; size modifiers (Small/Medium/Large/Full) had no visual effect",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss",
+      "root_cause": "Two dead-CSS bugs in one file. (a) .sf-dialog--draggable nested rules targeted .sf-dialog-header but Razor emits .sf-dialog-title — drag-cursor rule selected nothing. (b) Size selectors targeted .sf-dialog--small .sf-dialog__panel / --medium / --large / --full but Razor never emits a .sf-dialog__panel descendant; size modifier classes attach directly to the .sf-dialog root.",
+      "fix": "Re-targeted the draggable cursor rule to .sf-dialog--draggable .sf-dialog-title (and :active → grabbing). Moved size-modifier rules onto the root: .sf-dialog--small/--medium/--large { max-width: var(--sf-dialog-{sm|md|lg}-max-width, 400|600|900px); } and .sf-dialog--full { top:0; left:0; transform:none; max-width:100%; width:100%; height:100%; border-radius:0; }.",
+      "tags": [
+        "css",
+        "scss",
+        "fluentui-v9",
+        "dead-css",
+        "dialog"
+      ],
+      "related_bugs": [
+        "bug-113"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:10.000Z"
+    },
+    {
+      "id": "bug-111",
+      "timestamp": "2026-04-22T13:00:15.000Z",
+      "error_message": "Bootstrap DataGrid rendered as unstyled rows/cells — no border, no stripes, no hover — because the inner <table> was not receiving Bootstrap .table semantics",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "The inner <table> element emitted by the Razor tree carries only .sf-bs-datagrid-table (or a grid container class) — it does not carry the .table class that Bootstrap's _tables.scss keys every rule off of (Bootstrap's table styles are scoped as .table > tr > td { --bs-table-color-state: ... } via CSS custom properties). Without .table, none of the BS table tokens (--bs-table-color, --bs-table-bg, --bs-table-border-color, --bs-table-hover-bg) applied. Adding a new ISunfishCssProvider.DataGridTableClass() method was out of scope for this pass.",
+      "fix": "CSS-only shim: declare the Bootstrap table tokens on .sf-bs-datagrid (--bs-table-color, --bs-table-bg, --bs-table-border-color, --bs-table-hover-bg with theme-aware fallbacks) and add `> tbody > tr:hover > *` hover-row rule. This delivers the .table visuals without touching the Razor tree or the provider contract. Adding a DataGridTableClass() provider method is deferred.",
+      "tags": [
+        "css",
+        "scss",
+        "bootstrap5",
+        "dead-css",
+        "datagrid",
+        "token-shim"
+      ],
+      "related_bugs": [
+        "bug-112"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:15.000Z"
+    },
+    {
+      "id": "bug-112",
+      "timestamp": "2026-04-22T13:00:20.000Z",
+      "error_message": "DataGrid command buttons, column-menu trigger, and loading spinner had no visuals in Bootstrap skin — legacy marilo-era class names carried over but no CSS ever defined them",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "Razor still emits three marilo-legacy hooks — .mar-datagrid-cmd-btn (and variants --sm, --delete, --add), .mar-datagrid-column-menu-trigger, and .sf-datagrid-loading-spinner — but no Bootstrap provider rule matched any of them. The spinner in particular had no @keyframes so it rendered as a static character.",
+      "fix": "Appended a scoped block under .sf-bs-datagrid styling all three: .mar-datagrid-cmd-btn with size and role variants (--sm, --delete, --add), .mar-datagrid-column-menu-trigger as an icon button, and .sf-datagrid-loading-spinner with a fresh @keyframes sf-bs-datagrid-spin (0→360deg, 0.9s linear infinite). All values route through Bootstrap tokens (--bs-btn-*, --bs-danger-rgb, --bs-success-rgb, --bs-emphasis-color-rgb) so dark mode inherits automatically.",
+      "tags": [
+        "css",
+        "scss",
+        "bootstrap5",
+        "dead-css",
+        "datagrid",
+        "marilo-legacy"
+      ],
+      "related_bugs": [
+        "bug-111"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:20.000Z"
+    },
+    {
+      "id": "bug-113",
+      "timestamp": "2026-04-22T13:00:25.000Z",
+      "error_message": "Dialog Size parameter had no visual effect in Bootstrap skin — Small/Medium/Large/Full dialogs all rendered at default width",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss",
+      "root_cause": "Bootstrap 5 sizes modal width via --bs-modal-width on .modal-dialog, but no Sunfish size modifiers were wired to override that token. Adding a Size parameter to the Razor component and emitting .sf-dialog--small/--medium/--large/--full from the provider was out of scope for this pass; all we had to work with was the CSS class a consumer might attach via CssClass.",
+      "fix": "Added narrowly-scoped rules on .modal-dialog, .sf-bs-dialog--draggable that respond to .sf-dialog--small/--medium/--large/--full when consumers attach them via CssClass: { &.sf-dialog--small { --bs-modal-width: 400px; } &.sf-dialog--medium { --bs-modal-width: 600px; } &.sf-dialog--large { --bs-modal-width: 900px; } &.sf-dialog--full { max-width:100%; width:100%; height:100%; margin:0; .modal-content { border-radius:0; min-height:100vh; } } }. Adding the Size parameter to SunfishDialog.razor + per-provider class emission is deferred.",
+      "tags": [
+        "css",
+        "scss",
+        "bootstrap5",
+        "dead-css",
+        "dialog",
+        "token-shim"
+      ],
+      "related_bugs": [
+        "bug-110"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:25.000Z"
+    },
+    {
+      "id": "bug-114",
+      "timestamp": "2026-04-22T13:00:30.000Z",
+      "error_message": "Icon buttons in Bootstrap skin rendered as wide pill-shaped buttons instead of square icon targets",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_icon-button.scss",
+      "root_cause": "BootstrapCssProvider.IconButtonClass() emits `btn btn-icon sf-bs-icon-button` plus optional `btn-sm` / `btn-lg`, but no rule overrode Bootstrap's default .btn horizontal padding (--bs-btn-padding-x: 0.75rem). The existing .sf-bs-icon-button rule was never strong enough to beat .btn in specificity, so the padding stayed rectangular and no aspect-ratio was applied — the element rendered as a wide pill.",
+      "fix": "Added a compound-selector block (.btn.sf-bs-icon-button, .btn-icon.sf-bs-icon-button, plus two sibling hooks used by the SignalR row and datagrid pager: .sf-signalr-row__action.sf-bs-icon-button, .sf-bs-datagrid-pager-btn.sf-bs-icon-button) that sets --bs-btn-padding-x/y to 0.5rem, aspect-ratio: 1/1, and inline-flex centering. Added .btn-sm.sf-bs-icon-button (0.375rem) and .btn-lg.sf-bs-icon-button (0.625rem) to cover all three size tiers.",
+      "tags": [
+        "css",
+        "scss",
+        "bootstrap5",
+        "dead-css",
+        "icon-button",
+        "specificity"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:00:30.000Z"
+    },
+    {
+      "id": "bug-115",
+      "timestamp": "2026-04-22T13:03:49.199Z",
+      "error_message": "CSS fix: color",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "color: $text-muted → HighlightText",
+      "fix": "Changed color: $text-muted → HighlightText",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T13:04:24.626Z"
+    },
+    {
+      "id": "bug-116",
+      "timestamp": "2026-04-22T14:00:00.000Z",
+      "error_message": "SunfishDialog opens without focus trap / Esc close / body scroll-lock / focus restoration — WCAG 2.1.2 + screen-reader navigation regression",
+      "file": "packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor",
+      "root_cause": "The dialog was rendered with @if (Visible) { ... } alone — no lifecycle hook managed focus, no JS handled Tab cycling or Esc, and nested dialogs could leave <body> permanently scroll-locked because nothing reference-counted an overflow-hidden class. Tab escaped the modal to background content; Esc was a no-op; page scrolled behind the dialog; focus was lost to <body> when the dialog closed.",
+      "fix": "(1) Added sunfish-dialog-a11y.js ES module under packages/ui-adapters-blazor/wwwroot/js/, loaded lazily via IJSRuntime.InvokeAsync<IJSObjectReference>(\"import\", ...) matching the existing Sunfish convention (sunfish-positioning.js, sunfish-dragdrop.js). (2) Exposes attach(dialogId, dialogEl, dotNetRef, {closeOnEsc, escMethod}) and detach(dialogId). Captures document.activeElement on attach, moves focus to first focusable descendant, traps Tab / Shift+Tab by redirecting at boundaries, and restores focus to the captured element on detach. (3) Adds / removes body.sf-dialog-open class with a module-scoped reference count so nested dialogs compose — only the last detach removes the class. (4) SunfishDialog.razor now @implements IAsyncDisposable, @injects IJSRuntime, holds a _dialogRef ElementReference + _dialogId (stable Guid), binds tabindex=-1 on the root (for focus() fallback), wires OnAfterRenderAsync to attach/detach on Visible transitions, exposes [JSInvokable] OnEscFromJs, and disposes both the module and DotNetObjectReference. New [Parameter] public bool CloseOnEsc = true. (5) Three provider dialog partials (_dialog.scss × Bootstrap/FluentUI/Material) got `body.sf-dialog-open { overflow: hidden; }` so the class actually locks scroll.",
+      "tags": [
+        "a11y",
+        "phase-3",
+        "dialog",
+        "focus-trap",
+        "scroll-lock",
+        "js-interop",
+        "wcag-2.1.2"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:00:00.000Z"
+    },
+    {
+      "id": "bug-117",
+      "timestamp": "2026-04-22T14:00:30.000Z",
+      "error_message": "SunfishCalendar used role=\"application\" on outer wrapper — suppressed screen-reader virtual-cursor navigation across the month grid",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor",
+      "root_cause": "role=\"application\" instructs screen readers to abandon virtual-cursor mode and forward every key event raw to the widget. That is only appropriate for fully custom keyboard interfaces (e.g., a CAD canvas) — not a date picker, whose expected interaction is the WAI-ARIA Grid pattern (arrow keys, Home/End, Page Up/Down). NVDA / JAWS users reported they could not arrow across the day grid because virtual cursor was disabled.",
+      "fix": "Removed role=\"application\" from the outer .sf-calendar div. The inner <table class=\"sf-calendar__grid\"> already had role=\"grid\"; added aria-rowcount (weeks.Count + 1 to include the header row), aria-colcount (7 or 8 depending on week-number column), aria-label bound to the current \"MMMM yyyy\" display. Added role=\"row\" to each <tr>, role=\"columnheader\" scope=\"col\" to each <th>, and role=\"rowheader\" to the week-number <td>. Added aria-current=\"date\" on the <td> where isToday so the today cell announces correctly to screen readers (replacement signal for the dropped application role's \"active cell\" semantic).",
+      "tags": [
+        "a11y",
+        "phase-3",
+        "calendar",
+        "aria",
+        "composite-widget",
+        "wai-aria-apg"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:00:30.000Z"
+    },
+    {
+      "id": "bug-118",
+      "timestamp": "2026-04-22T14:01:00.000Z",
+      "error_message": "Dialog and Calendar skin partials ship zero @media (forced-colors: active) branches — Windows High Contrast users cannot perceive selection, focus, or surface edges",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss",
+      "root_cause": "All three provider skins styled dialog and calendar using --sf-color-* / --bs-* token references. In Windows forced-colors mode the browser overrides those to system Canvas/CanvasText — selected cells, range edges, and focus rings all collapse to the same flat color. WCAG 1.4.11 (non-text contrast) fails for every a11y-critical surface of both components in Windows HC.",
+      "fix": "Appended @media (forced-colors: active) blocks to all six relevant partials: Bootstrap/FluentUI/Material × _dialog.scss + _date-picker.scss. Each block sets a 1px solid CanvasText border + Canvas background on the component surface, 2px Highlight outline on :focus-visible for the close button / day cell / nav chevron / title button, and (on selection states) background: Highlight + color: HighlightText + forced-color-adjust: none so the inverse-video pair survives the forced-colors clamp. Also added @media (prefers-reduced-motion: reduce) blocks that zero transition and animation on the interactive surfaces so vestibular-sensitive users don't see the scale-in / state-layer fade. Selectors in each file tailored to the actual classes emitted by the razor under that provider (verified file-by-file, not templated).",
+      "tags": [
+        "a11y",
+        "phase-3",
+        "forced-colors",
+        "reduced-motion",
+        "scss",
+        "wcag-1.4.11",
+        "wcag-2.3.3"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:01:00.000Z"
+    },
+    {
+      "id": "bug-119",
+      "timestamp": "2026-04-22T13:09:53.176Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor",
+      "root_cause": "Had \"width:100%;table-layout:fixed;\"",
+      "fix": "Changed to \"@CombineClasses(CssProvider.DataGridTableClass(),",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T13:10:06.568Z"
+    },
+    {
+      "id": "bug-120",
+      "timestamp": "2026-04-22T13:10:31.026Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs",
+      "root_cause": "Had \"mar-datagrid-cmd-btn mar-datagrid-cmd-btn--sm\"",
+      "fix": "Changed to \"{CssProvider.DataGridCommandButtonClass()} mar-da",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T13:10:34.730Z"
+    },
+    {
+      "id": "bug-121",
+      "timestamp": "2026-04-22T13:11:09.811Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor/Components/Buttons/SunfishButton.razor",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:11:09.811Z"
+    },
+    {
+      "id": "bug-122",
+      "timestamp": "2026-04-22T13:15:00.000Z",
+      "error_message": "DataGrid <table> missing Bootstrap .table class; BS5 styling not applied (TIER-4-RE-AUDIT Item 1 PARTIAL)",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor",
+      "root_cause": "SunfishDataGrid.razor line 54 rendered <table style=\"...\"> with no class attribute, so BootstrapCssProvider could not contribute the .table class required for BS5 table styling (striping, borders, responsive behavior).",
+      "fix": "Added DataGridTableClass() to ISunfishCssProvider. Bootstrap returns \"table\"; Fluent/Material return string.Empty. SunfishDataGrid.razor now emits class=\"@($\"{CssProvider.DataGridTableClass()} sf-datagrid-table\".Trim())\". Did not use CombineClasses because that would append the consumer's outer Class property onto the inner <table>.",
+      "tags": [
+        "phase-2",
+        "bootstrap",
+        "datagrid",
+        "css-provider",
+        "style-parity"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:15:00.000Z"
+    },
+    {
+      "id": "bug-123",
+      "timestamp": "2026-04-22T13:15:30.000Z",
+      "error_message": "DataGrid command buttons hardcoded mar-datagrid-cmd-btn; BS5 .btn/.btn-sm/.btn-outline-secondary never emitted (TIER-4-RE-AUDIT Item 2 PARTIAL)",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs",
+      "root_cause": "SunfishDataGrid.Rendering.cs and SunfishGridCommandButton.razor emitted literal \"mar-datagrid-cmd-btn\" strings. BootstrapCssProvider had no way to inject Bootstrap button vocabulary, so grid command buttons lacked .btn .btn-sm .btn-outline-secondary.",
+      "fix": "Added DataGridCommandButtonClass() to ISunfishCssProvider. Bootstrap returns \"btn btn-sm btn-outline-secondary mar-datagrid-cmd-btn\" (keeps mar-* so existing SCSS still targets). Fluent/Material return \"mar-datagrid-cmd-btn\". Replaced three hardcoded call-sites in Rendering.cs via replace_all and updated SunfishGridCommandButton.razor.",
+      "tags": [
+        "phase-2",
+        "bootstrap",
+        "datagrid",
+        "css-provider",
+        "style-parity"
+      ],
+      "related_bugs": [
+        "bug-122"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:15:30.000Z"
+    },
+    {
+      "id": "bug-124",
+      "timestamp": "2026-04-22T13:16:00.000Z",
+      "error_message": "Icon-only SunfishButton not square under Bootstrap 5; rectangular with default btn padding (TIER-4-RE-AUDIT Item 3 PARTIAL)",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_icon-button.scss",
+      "root_cause": "SunfishButton with only an Icon prop (no ChildContent) rendered as a regular .btn with text padding. Under BS5 this produced a wide rectangular button instead of a 1:1 square icon button at sm/md/lg tiers.",
+      "fix": "Added IsIconOnly computed property (Icon != null && ChildContent == null) and emitted .sf-button--icon-only class. Added .btn.sf-button--icon-only { aspect-ratio: 1/1; width:2.5rem; height:2.5rem; } plus &.btn-sm (2rem) and &.btn-lg (3rem) overrides, using --bs-btn-padding-x/y custom properties to tame BS5 default padding.",
+      "tags": [
+        "phase-2",
+        "bootstrap",
+        "button",
+        "scss",
+        "style-parity"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:16:00.000Z"
+    },
+    {
+      "id": "bug-125",
+      "timestamp": "2026-04-22T13:23:15.878Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/_index.scss",
+      "root_cause": "Had 'foundation/tokens'",
+      "fix": "Changed to 'foundation/focus'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T13:23:22.677Z"
+    },
+    {
+      "id": "bug-126",
+      "timestamp": "2026-04-22T13:23:39.223Z",
+      "error_message": "CSS fix: sf-bs-datagrid-cell, sf-bs-datagrid-header-cell",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "sf-bs-datagrid-cell: focus, → focus-visible,; sf-bs-datagrid-header-cell: focus { → focus-visible {",
+      "fix": "Changed sf-bs-datagrid-cell: focus, → focus-visible,; sf-bs-datagrid-header-cell: focus { → focus-visible {",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:23:39.223Z"
+    },
+    {
+      "id": "bug-127",
+      "timestamp": "2026-04-22T13:23:45.722Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 8→7 lines (2 removed) | Also: outline: 2px solid var(--bs-focus-ring-color, $pri; outline-offset: 1px;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T13:23:50.430Z"
+    },
+    {
+      "id": "bug-128",
+      "timestamp": "2026-04-22T13:23:59.991Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 4→5 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:23:59.991Z"
+    },
+    {
+      "id": "bug-129",
+      "timestamp": "2026-04-22T13:24:03.910Z",
+      "error_message": "CSS fix: sf-fab",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss",
+      "root_cause": "sf-fab: focus-visible { outline: none → focus-visible { @include sf-focus-ring",
+      "fix": "Changed sf-fab: focus-visible { outline: none → focus-visible { @include sf-focus-ring",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:24:03.910Z"
+    },
+    {
+      "id": "bug-130",
+      "timestamp": "2026-04-22T13:25:07.543Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Providers/Material/STYLES_README.md",
+      "root_cause": "Had `sf-focus-ring()`",
+      "fix": "Changed to `_focus.scss`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:25:07.543Z"
+    },
+    {
+      "id": "bug-131",
+      "timestamp": "2026-04-22T13:25:22.152Z",
+      "error_message": "CSS fix: display, justify-content",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss",
+      "root_cause": "display: flex → block; justify-content: flex-end → center",
+      "fix": "Changed display: flex → block; justify-content: flex-end → center",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:25:22.152Z"
+    },
+    {
+      "id": "bug-132",
+      "timestamp": "2026-04-22T14:00:00.000Z",
+      "error_message": "SunfishDialog close button rendered literal &times; text glyph; ignored framework icon conventions and theme colors (SYNTHESIS Theme 9, Phase 2B Item 1)",
+      "file": "packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor",
+      "root_cause": "SunfishDialog.razor line 175 hard-coded <button>&times;</button>. Fails on icon fonts, doesn't match Bootstrap's native .btn-close SVG, doesn't pick up Fluent's currentColor or Material's state-layer chrome.",
+      "fix": "Added DialogCloseMarkup() and DialogCloseButtonClass() to ISunfishCssProvider. Bootstrap returns empty markup + 'btn-close' class (BS5 draws its own SVG via CSS background). Fluent returns an inline dismiss SVG + 'sf-fluent-dialog-close'. Material returns a <span class='material-symbols-outlined'>close</span> + 'sf-m3-dialog-close'. Razor now emits class='sf-dialog-close {provider-class}' and renders @((MarkupString)CssProvider.DialogCloseMarkup()). Added CSS for '.sf-fluent-dialog-close' (32x32 subtle button). Updated Stubs.cs and apps/kitchen-sink/Services/ProviderSwitcher.cs to avoid CS0535.",
+      "tags": [
+        "phase-2b",
+        "theme-9",
+        "dialog",
+        "css-provider",
+        "style-parity"
+      ],
+      "related_bugs": [
+        "bug-122",
+        "bug-123",
+        "bug-124"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:00:00.000Z"
+    },
+    {
+      "id": "bug-133",
+      "timestamp": "2026-04-22T14:00:30.000Z",
+      "error_message": "Single --sf-focus-ring CSS variable doesn't match Bootstrap/Fluent/Material focus idioms (SYNTHESIS Theme 5, Phase 2B Item 2)",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/foundation/_mixins.scss",
+      "root_cause": "A single --sf-focus-ring variable was defined once as '2px bg + 2px primary' and reused across all skins. BS5 spec is box-shadow diffused glow via --bs-focus-ring-*; Fluent v9 is a double-stroke inset using colorStrokeFocus1/2; M3 is 3px secondary outline with 2px offset. The shared variable matched none of them.",
+      "fix": "Added @mixin sf-focus-ring in a new foundation partial per provider: Providers/{Bootstrap,FluentUI,Material}/Styles/foundation/_focus.scss. Each emits its framework's idiomatic composition. Registered each partial in the provider's _index.scss. Replaced :focus-visible { box-shadow: var(--sf-focus-ring) } (and equivalent outline patterns under Bootstrap) in _button.scss and _data-grid.scss for each provider with :focus-visible { @include sf-focus-ring }. Removed the now-obsolete sf-focus-ring() definition from Material's foundation/_mixins.scss (replaced by a pointer comment). Did NOT touch dialog or calendar partials (Phase 3 just landed there).",
+      "tags": [
+        "phase-2b",
+        "theme-5",
+        "focus-ring",
+        "scss",
+        "style-parity"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:00:30.000Z"
+    },
+    {
+      "id": "bug-134",
+      "timestamp": "2026-04-22T14:15:00.000Z",
+      "error_message": "Sass compile failed: 'Undefined mixin' at '@include sf-focus-ring' in FluentUI and Material _button.scss and _data-grid.scss after Phase 2B landed.",
+      "file": "packages/ui-adapters-blazor/Providers/{FluentUI,Material,Bootstrap}/Styles/components/_button.scss and _data-grid.scss",
+      "root_cause": "Phase 2B defined @mixin sf-focus-ring in foundation/_focus.scss and added @forward 'foundation/focus' to each _index.scss, but component files don't @use the index — they're siblings forwarded by the same index. Sass modules don't make mixins globally visible; each consumer needs its own @use. The existing codebase has no prior @include pattern at the component level (foundation/_mixins.scss was populated but not consumed), so this was uncharted territory.",
+      "fix": "Added '@use '../foundation/focus' as *;' at the top of each consuming component file (5 files: FluentUI _button.scss + _data-grid.scss, Material _button.scss + _data-grid.scss, Bootstrap _data-grid.scss). Re-ran 'npm run scss:build' — all three providers now compile and wwwroot CSS regenerated with the correct per-provider focus-ring rules (Bootstrap bs-focus-ring diffused glow 16 hits; Fluent colorStrokeFocus double-stroke 6 hits; Material 3px outline 10 hits).",
+      "tags": [
+        "sass",
+        "module-scoping",
+        "phase-2b",
+        "scss",
+        "build"
+      ],
+      "related_bugs": [
+        "bug-133"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:15:00.000Z"
+    },
+    {
+      "id": "bug-135",
+      "timestamp": "2026-04-22T13:40:40.099Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11→18 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:40:40.099Z"
+    },
+    {
+      "id": "bug-136",
+      "timestamp": "2026-04-22T13:40:52.382Z",
+      "error_message": "CSS fix: sf-datagrid-row, background, sf-datagrid-row--selected",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss",
+      "root_cause": "sf-datagrid-row: hover { background: var(--sf-color-surface-container-high) → active {; background: var(--sf-color-primary-light) → linear-gradient(currentColor, currentColor) var(--sf-color-primary-light); sf-datagrid-row--selected: hover { background: var(--sf-color-primary-light) → hover {",
+      "fix": "Changed sf-datagrid-row: hover { background: var(--sf-color-surface-container-high) → active {; background: var(--sf-color-primary-light) → linear-gradient(currentColor, currentColor) var(--sf-color-primary-light); sf-datagrid-row--selected: hover { background: var(--sf-color-primary-light) → hover {",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-04-22T13:41:39.957Z"
+    },
+    {
+      "id": "bug-137",
+      "timestamp": "2026-04-22T14:45:00.000Z",
+      "error_message": "SYNTHESIS Theme 4 P1 — Material DataGrid does not consume the existing .sf-state-layer helper on interactive surfaces; flat background swaps fake hover/focus/pressed feedback.",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss",
+      "root_cause": "The sf-state-layer mixin and utility class plus --sf-state-{hover,focus,pressed}-opacity tokens were built in Phase 1B inside patterns/_interactive-states.scss, but _data-grid.scss never imported or invoked them. Surfaces (rows, cells, sortable headers, filter-menu-btn, column-menu-trigger, cmd-btn, pager-btn, detail-btn, row-drag-handle) used flat background swaps (`background: var(--sf-color-surface-container-high)` on hover, border-color swaps on the filter button, etc.). No overlay composition, no interaction-state differentiation between hover and focus.",
+      "fix": "Added @use '../patterns/interactive-states' as *; at the top of _data-grid.scss (also authored a local @mixin sf-datagrid-state-layer that mirrors the Phase 1B ::before pattern from _date-picker.scss / _dialog.scss since the upstream sf-state-layer mixin requires overflow:hidden semantics the datagrid already needs anyway). Wired 10 of the 15 M3 datagrid interactive surfaces defined in the SYNTHESIS brief: (1) .sf-datagrid-row — replaced flat bg swap with color-mix(currentColor) because ::before on <tr> is unreliable cross-browser; (2) .sf-datagrid-cell — focus-only ::before overlay (cells don't hover/press independently of rows); (3) .sf-datagrid-header-cell--sortable — mixin replaces old background swap (also covers sort-trigger since header is the click target); (5) .mar-datagrid-column-menu-trigger — added border-radius + mixin; (6) .sf-datagrid-cmd-btn — replaced flat hover with mixin; (8) .mar-datagrid-detail-btn — new rule (selector was in Rendering.cs but unstyled in Material); (9) .sf-datagrid-pager-btn — replaced flat hover with mixin, disabled branch kills ::before; (11) .sf-datagrid-filter-menu-btn — mixin stacks atop existing border-color swap; (12) .mar-datagrid-row-drag-handle — mixin + tr.is-row-dragging-source hook using --sf-state-dragged-opacity token; plus --selected:hover stacks via color-mix. Skipped 5 surfaces per spec: (4) sort-button not a separate element (covered by #3); (7) checkbox row covered by row hover; (10) pagesize <select> can't host pseudo-overlay; (13) scroll-thumb not in SCSS; (14) col-resize-handle not in Material SCSS; (15) toolbar has no per-button selector. Dark mode: inherited for free — currentColor reads --sf-color-on-surface which already flips at [data-sf-theme=\"dark\"] in foundation/_colors.scss. No per-theme overlay rules added. Did NOT compile SCSS (main agent will) and did NOT touch Razor (surfaces already emit correct classes).",
+      "tags": [
+        "phase-2c",
+        "theme-4",
+        "state-layer",
+        "material",
+        "data-grid"
+      ],
+      "related_bugs": [
+        "bug-133",
+        "bug-134"
+      ],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:45:00.000Z"
+    },
+    {
+      "id": "bug-138",
+      "timestamp": "2026-04-22T13:47:39.487Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor",
+      "root_cause": "Had \"sf-datagrid-cmd-btn\"",
+      "fix": "Changed to \"@CssProvider.DataGridCommandButtonClass()\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:47:39.487Z"
+    },
+    {
+      "id": "bug-139",
+      "timestamp": "2026-04-22T13:47:51.302Z",
+      "error_message": "CSS fix: border-radius, color",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss",
+      "root_cause": "border-radius: var(--sf-radius-md) → var(--borderRadiusMedium, 4px); color: var(--sf-color-on-surface, var(--colorNeutralForeground1, #242424)) → var(--colorNeutralForeground2BrandPressed, #115ea3)",
+      "fix": "Changed border-radius: var(--sf-radius-md) → var(--borderRadiusMedium, 4px); color: var(--sf-color-on-surface, var(--colorNeutralForeground1, #242424)) → var(--colorNeutralForeground2BrandPressed, #115ea3)",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T13:47:51.302Z"
+    },
+    {
+      "id": "bug-140",
+      "timestamp": "2026-04-22T14:21:34.026Z",
+      "error_message": "Significant refactor of ",
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor",
+      "root_cause": "14 lines replaced/restructured",
+      "fix": "Rewrote 42→29 lines (14 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:21:34.026Z"
+    },
+    {
+      "id": "bug-141",
+      "timestamp": "2026-04-22T14:56:57.354Z",
+      "error_message": "CSS fix: font-weight, transition, padding",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss",
+      "root_cause": "font-weight: var(--sf-font-weight-semibold) → var(--fontWeightSemibold, 600); transition: background var(--sf-transition-fast), border-color var(--sf-transition-fast), color var(--sf-transition-fast), box-shadow var(--sf-transition-fast) → background   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),; padding: 8px 20px → 0",
+      "fix": "Changed font-weight: var(--sf-font-weight-semibold) → var(--fontWeightSemibold, 600); transition: background var(--sf-transition-fast), border-color var(--sf-transition-fast), color var(--sf-transition-fast), box-shadow var(--sf-transition-fast) → background   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),; padding: 8px 20px → 0",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-04-22T14:58:55.788Z"
+    },
+    {
+      "id": "bug-142",
+      "timestamp": "2026-04-22T14:57:39.235Z",
+      "error_message": "CSS fix: background",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss",
+      "root_cause": "background: var(--sf-color-primary, #0f6cbd) → var(--colorCompoundBrandBackground, var(--sf-color-primary, #0f6cbd))",
+      "fix": "Changed background: var(--sf-color-primary, #0f6cbd) → var(--colorCompoundBrandBackground, var(--sf-color-primary, #0f6cbd))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 6,
+      "last_seen": "2026-04-22T14:59:44.216Z"
+    },
+    {
+      "id": "bug-143",
+      "timestamp": "2026-04-22T14:58:05.715Z",
+      "error_message": "CSS fix: padding, flex-direction",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "padding: 0.25rem 0.5rem → 0.125rem 0.5rem; flex-direction: column → column` which collapsed",
+      "fix": "Changed padding: 0.25rem 0.5rem → 0.125rem 0.5rem; flex-direction: column → column` which collapsed",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T14:59:02.493Z"
+    },
+    {
+      "id": "bug-144",
+      "timestamp": "2026-04-22T14:58:18.839Z",
+      "error_message": "CSS fix: transform, background",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss",
+      "root_cause": "transform: translate(-50%, -50%) → translate(-50%, -50%) scale(0.95); background: var(--sf-color-overlay) → var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4))",
+      "fix": "Changed transform: translate(-50%, -50%) → translate(-50%, -50%) scale(0.95); background: var(--sf-color-overlay) → var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T15:00:52.180Z"
+    },
+    {
+      "id": "bug-145",
+      "timestamp": "2026-04-22T14:59:26.677Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 9→119 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T14:59:26.677Z"
+    },
+    {
+      "id": "bug-146",
+      "timestamp": "2026-04-22T14:59:54.650Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 11→16 lines (5 removed) | Also: padding: var(--sf-space-xl) var(--sf-space-md);; color: var(--sf-color-text-muted); | Also: border: 1px solid var(--sf-color-border);; background: var(--sf-color-surface); | Also: border-color: var(--sf-color-primary);; box-shadow: 0 0 0 1px color-mix(in srgb, var(--sf-",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-04-22T15:00:42.637Z"
+    },
+    {
+      "id": "bug-147",
+      "timestamp": "2026-04-22T15:17:58.480Z",
+      "error_message": "CSS fix: border-bottom",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss",
+      "root_cause": "border-bottom: 1px solid var(--sf-color-border) → 1px solid var(--colorNeutralStroke1, var(--sf-color-border))",
+      "fix": "Changed border-bottom: 1px solid var(--sf-color-border) → 1px solid var(--colorNeutralStroke1, var(--sf-color-border))",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 12,
+      "last_seen": "2026-04-22T15:22:46.271Z"
+    },
+    {
+      "id": "bug-148",
+      "timestamp": "2026-04-22T15:18:10.745Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 5→7 lines (5 removed) | Also: background: var(--mar-datagrid-menu-bg, #fff);; border: 1px solid var(--mar-datagrid-border-color, | Also: // cleanly; 4px matches the sibling filter-menu-bt; padding: 0 4px;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T15:23:18.293Z"
+    },
+    {
+      "id": "bug-149",
+      "timestamp": "2026-04-22T15:19:21.007Z",
+      "error_message": "CSS fix: min-width",
+      "file": "packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss",
+      "root_cause": "min-width: 96px → 0",
+      "fix": "Changed min-width: 96px → 0",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-22T15:19:21.007Z"
+    },
+    {
+      "id": "bug-150",
+      "timestamp": "2026-04-22T15:20:07.664Z",
+      "error_message": "CSS fix: transition",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss",
+      "root_cause": "transition: none !important → none",
+      "fix": "Changed transition: none !important → none",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 3,
+      "last_seen": "2026-04-22T15:23:54.019Z"
+    },
+    {
+      "id": "bug-151",
+      "timestamp": "2026-04-22T15:20:28.716Z",
+      "error_message": "CSS fix: outline-offset, opacity, outline",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "outline-offset: -2px → 2px; opacity: 0.5 → 0.55; outline: 2px solid rgba($primary, 0.5) → 0",
+      "fix": "Changed outline-offset: -2px → 2px; opacity: 0.5 → 0.55; outline: 2px solid rgba($primary, 0.5) → 0",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 4,
+      "last_seen": "2026-04-22T15:24:24.414Z"
+    },
+    {
+      "id": "bug-152",
+      "timestamp": "2026-04-22T15:20:39.623Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 21→23 lines (5 removed) | Also: // DateTimePicker popup; background: $white;",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "scss"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-22T15:20:48.177Z"
     }
   ]
 }

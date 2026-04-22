@@ -1025,3 +1025,326 @@
 | 07:42 | Edited apps/kitchen-sink/Pages/Components/Editors/DropZone/Overview/Demo.razor | modified HandleDrop() | ~34 |
 | 07:42 | Edited apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor | added 1 condition(s) | ~275 |
 | 07:44 | Session end: 18 writes across 1 files (Demo.razor) | 7 reads | ~5267 tok |
+| 08:01 | Session end: 18 writes across 1 files (Demo.razor) | 46 reads | ~5267 tok |
+| 08:01 | Created icm/07_review/output/style-audits/SunfishButton-MaterialDesign3.md | — | ~5225 |
+| 08:01 | Created icm/07_review/output/style-audits/SunfishButton-Bootstrap5.md | — | ~4527 |
+| 08:01 | Created icm/07_review/output/style-audits/SunfishDialog-Bootstrap5.md | — | ~4524 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishDialog-FluentUI-v9.md | — | ~4640 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishDataGrid-Bootstrap5.md | — | ~10376 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishDialog-MaterialDesign3.md | — | ~4424 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishCalendar-FluentUI-v9.md | — | ~5744 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishCalendar-Bootstrap5.md | — | ~5946 |
+| 08:02 | Created icm/07_review/output/style-audits/SunfishDataGrid-FluentUI-v9.md | — | ~8867 |
+| 08:03 | Created icm/07_review/output/style-audits/SunfishDataGrid-MaterialDesign3.md | — | ~7391 |
+| 08:03 | Created icm/07_review/output/style-audits/SunfishButton-FluentUI-v9.md | — | ~6995 |
+| 08:03 | Created icm/07_review/output/style-audits/SunfishCalendar-MaterialDesign3.md | — | ~5712 |
+
+## Session: 2026-04-22 08:07
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:13 | Created icm/07_review/output/style-audits/SYNTHESIS.md | — | ~11254 |
+
+## Session: 2026-04-22 08:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:20 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/project_style_audit_synthesis_2026_04.md | — | ~935 |
+| 08:20 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~120 |
+| 08:21 | Session end: 2 writes across 2 files (project_style_audit_synthesis_2026_04.md, MEMORY.md) | 45 reads | ~50463 tok |
+| 08:21 | Created packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | — | ~2506 |
+
+## Session: 2026-04-22 08:21
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:21 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: a | ~187 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 4→8 lines | ~142 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 4→8 lines | ~57 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css | expanded (+19 lines) | ~463 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 4→8 lines | ~69 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 4→8 lines | ~68 |
+| 08:22 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | added 3 condition(s) | ~531 |
+| 08:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | modified media() | ~67 |
+| 08:22 | Created packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/fluent-v9-tokens.css | — | ~6670 |
+| 08:23 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | expanded (+33 lines) | ~1019 |
+| 08:23 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | 27→30 lines | ~154 |
+| 08:23 | Created packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/_colors.scss | — | ~2650 |
+| 08:23 | Created packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss | — | ~3752 |
+| 08:23 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | 15→15 lines | ~389 |
+| 08:24 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | expanded (+10 lines) | ~792 |
+| 08:24 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css | expanded (+30 lines) | ~431 |
+| 08:24 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | 4→4 lines | ~36 |
+| 08:25 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | added 3 condition(s) | ~531 |
+| 08:25 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | expanded (+11 lines) | ~759 |
+| 08:25 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | expanded (+6 lines) | ~325 |
+| 08:25 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css | modified not() | ~1095 |
+| 08:25 | Edited packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css | CSS: border-color, border-color | ~71 |
+| 08:25 | Edited apps/kitchen-sink/App.razor | 1→2 lines | ~71 |
+| 08:25 | Edited apps/kitchen-sink/App.razor | modified if() | ~184 |
+| 08:28 | Created packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | — | ~2518 |
+| 08:29 | Created packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss | — | ~3737 |
+| 08:29 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | expanded (+24 lines) | ~480 |
+| 08:29 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | expanded (+24 lines) | ~321 |
+| 08:30 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | modified not() | ~807 |
+| 08:30 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss | expanded (+24 lines) | ~221 |
+
+## Session: 2026-04-22 08:30
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:31 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_icon-button.scss | expanded (+29 lines) | ~354 |
+| 08:31 | Session end: 1 writes across 1 files (_icon-button.scss) | 1 reads | ~379 tok |
+| 08:31 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | expanded (+44 lines) | ~1070 |
+| 08:31 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | expanded (+7 lines) | ~243 |
+| 08:32 | Session end: 3 writes across 3 files (_icon-button.scss, _date-picker.scss, _dialog.scss) | 2 reads | ~1786 tok |
+| 08:33 | Session end: 3 writes across 3 files (_icon-button.scss, _date-picker.scss, _dialog.scss) | 4 reads | ~4726 tok |
+| 08:33 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | added 3 condition(s) | ~531 |
+| 08:35 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | inline fix | ~16 |
+
+## Session: 2026-04-22 08:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:41 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/feedback_sleep_on_quota_exhaustion.md | — | ~371 |
+| 08:41 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~118 |
+| 08:41 | Session end: 2 writes across 2 files (feedback_sleep_on_quota_exhaustion.md, MEMORY.md) | 0 reads | ~524 tok |
+| 08:44 | Session end: 2 writes across 2 files (feedback_sleep_on_quota_exhaustion.md, MEMORY.md) | 5 reads | ~524 tok |
+| 08:48 | Created ../../Users/Chris/.claude/.mcp.json | — | ~63 |
+| 08:48 | Session end: 3 writes across 3 files (feedback_sleep_on_quota_exhaustion.md, MEMORY.md, .mcp.json) | 7 reads | ~587 tok |
+| 08:51 | Session end: 3 writes across 3 files (feedback_sleep_on_quota_exhaustion.md, MEMORY.md, .mcp.json) | 7 reads | ~587 tok |
+| 08:52 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~115 |
+| 08:52 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/project_compat_expansion_workstream.md | — | ~752 |
+
+## Session: 2026-04-22 08:55
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 08:56 | Created ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/feedback_sleep_on_claude_code_token_exhaustion.md | — | ~454 |
+| 08:56 | Edited ../../Users/Chris/.claude/projects/C--Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~109 |
+| 08:59 | Session end: 2 writes across 2 files (feedback_sleep_on_claude_code_token_exhaustion.md, MEMORY.md) | 16 reads | ~43173 tok |
+| 09:01 | Created packages/ui-adapters-blazor/wwwroot/js/sunfish-dialog-a11y.js | — | ~1891 |
+| 09:02 | Created packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor | — | ~2472 |
+| 09:03 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | 7→6 lines | ~56 |
+| 09:03 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | modified if() | ~415 |
+| 09:03 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | 5→6 lines | ~117 |
+| 09:03 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss | modified media() | ~413 |
+| 09:03 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified media() | ~423 |
+| 09:03 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | modified media() | ~245 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | modified media() | ~446 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | modified media() | ~321 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss | modified media() | ~523 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss | CSS: overflow | ~176 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: overflow | ~103 |
+| 09:04 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: overflow | ~102 |
+| 09:04 | Session end: 16 writes across 7 files (feedback_sleep_on_claude_code_token_exhaustion.md, MEMORY.md, sunfish-dialog-a11y.js, SunfishDialog.razor, SunfishCalendar.razor) | 26 reads | ~69124 tok |
+| 09:05 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | 5→3 lines | ~66 |
+| 09:09 | Edited packages/ui-core/Contracts/ISunfishCssProvider.cs | 11→13 lines | ~148 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+7 lines) | ~153 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+7 lines) | ~182 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | 4→9 lines | ~106 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | 3→7 lines | ~100 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | 4→9 lines | ~115 |
+| 09:09 | Edited packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | 3→7 lines | ~96 |
+| 09:09 | Edited packages/ui-adapters-blazor/tests/Stubs.cs | 6→8 lines | ~138 |
+| 09:09 | Session end: 25 writes across 12 files (feedback_sleep_on_claude_code_token_exhaustion.md, MEMORY.md, sunfish-dialog-a11y.js, SunfishDialog.razor, SunfishCalendar.razor) | 43 reads | ~81282 tok |
+| 09:09 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor | 3→3 lines | ~60 |
+| 09:10 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor | CombineClasses() → Trim() | ~59 |
+| 09:10 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs | inline fix | ~22 |
+| 09:10 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs | inline fix | ~23 |
+| 09:10 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.Rendering.cs | inline fix | ~14 |
+| 09:10 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishGridCommandButton.razor | 3→3 lines | ~40 |
+| 09:11 | Edited packages/ui-adapters-blazor/Components/Buttons/SunfishButton.razor | modified if() | ~135 |
+| 09:11 | Edited packages/ui-adapters-blazor/Components/Buttons/SunfishButton.razor | expanded (+7 lines) | ~142 |
+| 09:11 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_icon-button.scss | expanded (+32 lines) | ~294 |
+| 09:12 | Edited apps/kitchen-sink/Services/ProviderSwitcher.cs | 7→9 lines | ~182 |
+
+## Session: 2026-04-22 09:15
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:21 | Edited packages/ui-core/Contracts/ISunfishCssProvider.cs | expanded (+12 lines) | ~188 |
+| 09:21 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+6 lines) | ~115 |
+| 09:21 | Edited packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | expanded (+9 lines) | ~198 |
+| 09:22 | Edited packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | expanded (+6 lines) | ~114 |
+| 09:22 | Edited packages/ui-adapters-blazor/tests/Stubs.cs | 3→5 lines | ~76 |
+| 09:22 | Edited apps/kitchen-sink/Services/ProviderSwitcher.cs | 3→5 lines | ~92 |
+| 09:22 | Edited packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor | modified if() | ~241 |
+| 09:22 | Created packages/ui-adapters-blazor/Providers/Bootstrap/Styles/foundation/_focus.scss | — | ~278 |
+| 09:23 | Created packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/_focus.scss | — | ~303 |
+| 09:23 | Created packages/ui-adapters-blazor/Providers/Material/Styles/foundation/_focus.scss | — | ~294 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/_index.scss | 2→3 lines | ~23 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/_index.scss | 2→3 lines | ~24 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/_index.scss | 2→3 lines | ~24 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | CSS: 2B | ~121 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 8→7 lines | ~34 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 7→6 lines | ~26 |
+| 09:23 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | CSS: 5 | ~54 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | inline fix | ~14 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: 2B | ~134 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: 5 | ~88 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | 4→4 lines | ~26 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: 5 | ~111 |
+| 09:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/foundation/_mixins.scss | reduced (-6 lines) | ~152 |
+| 09:25 | Edited packages/ui-adapters-blazor/Providers/Material/STYLES_README.md | 2→3 lines | ~74 |
+| 09:25 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | expanded (+24 lines) | ~251 |
+| 09:31 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | 5→6 lines | ~62 |
+| 09:31 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | 5→6 lines | ~63 |
+| 09:32 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | 2→4 lines | ~47 |
+| 09:32 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 5→6 lines | ~66 |
+| 09:32 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 7→8 lines | ~98 |
+| 09:34 | Session end: 30 writes across 14 files (ISunfishCssProvider.cs, BootstrapCssProvider.cs, FluentUICssProvider.cs, MaterialCssProvider.cs, Stubs.cs) | 28 reads | ~82130 tok |
+| 09:38 | Session end: 30 writes across 14 files (ISunfishCssProvider.cs, BootstrapCssProvider.cs, FluentUICssProvider.cs, MaterialCssProvider.cs, Stubs.cs) | 44 reads | ~91112 tok |
+| 09:38 | Created docs/adrs/0023-dialog-provider-slot-methods.md | — | ~3648 |
+| 09:40 | Created docs/adrs/0024-button-variant-enum-expansion.md | — | ~4079 |
+| 09:40 | Created icm/00_intake/output/compat-expansion-intake.md | — | ~6373 |
+| 09:40 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+25 lines) | ~327 |
+| 09:40 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: position, overflow | ~188 |
+| 09:40 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: background-blend-mode, box-shadow | ~389 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 9→11 lines | ~123 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+16 lines) | ~186 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: overflow | ~235 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: position, overflow | ~175 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: position, overflow | ~266 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: position, border-radius, overflow | ~172 |
+| 09:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+15 lines) | ~228 |
+| 09:41 | Created docs/adrs/0025-css-class-prefix-policy.md | — | ~4002 |
+| 09:42 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+23 lines) | ~206 |
+
+## Session: 2026-04-22 09:42
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 09:47 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | 5→6 lines | ~62 |
+| 09:47 | Edited packages/ui-adapters-blazor/Components/DataDisplay/DataGrid/SunfishDataGrid.razor | 2→2 lines | ~65 |
+| 09:47 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_button.scss | expanded (+22 lines) | ~249 |
+| 09:47 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: pattern, transition | ~375 |
+| 09:51 | Session end: 4 writes across 3 files (_dialog.scss, SunfishDataGrid.razor, _button.scss) | 19 reads | ~30522 tok |
+| 10:17 | Created apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Accessibility/Demo.razor | — | ~3310 |
+| 10:18 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Accessibility/Demo.razor | — | ~2342 |
+| 10:18 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Accessibility/Demo.razor | — | ~2146 |
+| 10:18 | Created apps/kitchen-sink/Pages/Components/Forms/FlatColorPicker/Accessibility/Demo.razor | — | ~3056 |
+| 10:18 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Accessibility/Demo.razor | — | ~2164 |
+| 10:19 | Created apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Accessibility/Demo.razor | — | ~2530 |
+| 10:19 | Created apps/kitchen-sink/Pages/Components/Forms/Form/Accessibility/Demo.razor | — | ~3340 |
+| 10:19 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Accessibility/Demo.razor | — | ~2653 |
+| 10:19 | Created apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Accessibility/Demo.razor | — | ~1934 |
+| 10:19 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Popover/Accessibility/Demo.razor | — | ~2680 |
+| 10:20 | Created apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Accessibility/Demo.razor | — | ~2664 |
+| 10:20 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/Demo.razor | — | ~2956 |
+| 10:20 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor | — | ~3011 |
+| 10:21 | Created apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor | — | ~3799 |
+| 10:21 | Edited apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor | 5→7 lines | ~95 |
+| 10:21 | Edited apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor | modified HandleValidSubmit() | ~275 |
+| 10:21 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Barcodes/Accessibility/Demo.razor | — | ~2526 |
+| 10:22 | Edited apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor | 7→7 lines | ~155 |
+| 10:22 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor | — | ~3229 |
+| 10:23 | Created apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor | — | ~3466 |
+| 10:24 | Session end: 24 writes across 4 files (_dialog.scss, SunfishDataGrid.razor, _button.scss, Demo.razor) | 72 reads | ~95068 tok |
+| 10:26 | Edited apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Accessibility/Demo.razor | 2→3 lines | ~41 |
+| 10:26 | Edited apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Accessibility/Demo.razor | 8→8 lines | ~243 |
+| 10:26 | Edited apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor | 2→3 lines | ~43 |
+| 10:26 | Edited apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor | 4→4 lines | ~131 |
+
+## Session: 2026-04-22 10:28
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 10:29 | Edited apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor | 4→4 lines | ~128 |
+| 10:31 | Session end: 1 writes across 1 files (Demo.razor) | 2 reads | ~138 tok |
+| 10:56 | Session end: 1 writes across 1 files (Demo.razor) | 25 reads | ~65444 tok |
+| 10:56 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | expanded (+55 lines) | ~756 |
+| 10:56 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_button.scss | expanded (+64 lines) | ~758 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/_motion.scss | CSS: --sf-duration-faster, --sf-curve-easy-ease | ~142 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_button.scss | machinery() → hooks() | ~520 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | modified child() | ~485 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 9→12 lines | ~146 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | 10→13 lines | ~131 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | mix() → rgba() | ~126 |
+| 10:57 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | expanded (+62 lines) | ~669 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | modified is() | ~491 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | expanded (+7 lines) | ~345 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: opacity, opacity | ~433 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | expanded (+13 lines) | ~297 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: spec | ~68 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | 5→6 lines | ~81 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: spec | ~375 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | 6→11 lines | ~146 |
+| 10:58 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: spec | ~54 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | CSS: box-shadow | ~476 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: parameter, spec | ~311 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | modified media() | ~478 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | expanded (+110 lines) | ~1087 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 19→22 lines | ~195 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 10→13 lines | ~124 |
+| 10:59 | Edited packages/ui-adapters-blazor/Components/DataDisplay/SunfishCalendar.razor | 2→2 lines | ~18 |
+| 10:59 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: color | ~189 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | 21→26 lines | ~191 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+42 lines) | ~558 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: width | ~260 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 4→3 lines | ~24 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 6→4 lines | ~51 |
+| 11:00 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | modified media() | ~123 |
+| 11:04 | Session end: 33 writes across 7 files (Demo.razor, _button.scss, _motion.scss, _data-grid.scss, _date-picker.scss) | 34 reads | ~99542 tok |
+| 11:16 | Session end: 33 writes across 7 files (Demo.razor, _button.scss, _motion.scss, _data-grid.scss, _date-picker.scss) | 40 reads | ~128800 tok |
+| 11:17 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: scrollbar-gutter | ~123 |
+| 11:17 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: hierarchy | ~84 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | 7→9 lines | ~98 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | CSS: sf-bs-datagrid-row--striped | ~130 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: color, border-bottom | ~152 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 12→16 lines | ~228 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: group-header, color | ~120 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | 4→6 lines | ~76 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | CSS: border-left | ~150 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | CSS: border-left | ~198 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | expanded (+7 lines) | ~257 |
+| 11:18 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | CSS: use | ~192 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | modified media() | ~564 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | modified media() | ~583 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | expanded (+13 lines) | ~410 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | expanded (+17 lines) | ~315 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_button.scss | modified SKIP() | ~735 |
+| 11:19 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | expanded (+20 lines) | ~325 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss | modified media() | ~907 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | modified media() | ~436 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified ordering() | ~583 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | modified media() | ~104 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified 3() | ~183 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified 3() | ~141 |
+| 11:20 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | CSS: opacity, further, opacity | ~260 |
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified 3() | ~642 |
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | expanded (+13 lines) | ~296 |
+
+## Session: 2026-04-22 11:21
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_date-picker.scss | modified media() | ~76 |
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 5→6 lines | ~83 |
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | expanded (+28 lines) | ~408 |
+| 11:21 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_date-picker.scss | modified media() | ~113 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 6→5 lines | ~74 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+12 lines) | ~151 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | CSS: box-shadow | ~203 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | expanded (+10 lines) | ~242 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 10→12 lines | ~170 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | 8→10 lines | ~126 |
+| 11:22 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | modified not() | ~426 |
+| 11:23 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | modified media() | ~537 |
+| 11:23 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | CSS: max-width, text-overflow, text-overflow | ~265 |
+| 11:23 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: max-height | ~171 |
+| 11:23 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | expanded (+11 lines) | ~288 |
+| 11:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | modified media() | ~183 |
+| 11:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss | expanded (+22 lines) | ~269 |
+| 11:24 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_date-picker.scss | modified media() | ~174 |
+| 11:31 | Session end: 18 writes across 4 files (_date-picker.scss, _data-grid.scss, _button.scss, _dialog.scss) | 5 reads | ~151119 tok |
+
+## Session: 2026-04-22 11:35
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-22 11:49
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
