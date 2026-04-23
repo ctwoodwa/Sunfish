@@ -1,6 +1,6 @@
 # ADR 0026 — Bridge Posture (SaaS Shell vs. Managed Relay)
 
-**Status:** Accepted (2026-04-22)
+**Status:** Superseded by [ADR 0031](./0031-bridge-hybrid-multi-tenant-saas.md) (2026-04-23)
 **Date:** 2026-04-22
 **Resolves:** Bridge's current multi-tenant-SaaS-shell framing ([ADR 0006](0006-bridge-is-saas-shell.md)) is structurally the inverse of the [local-node architecture paper](../../_shared/product/local-node-architecture-paper.md) §3 inversion thesis. The paper mandates *"the local node is primary; the cloud is a sync peer"*; Bridge today ships as *"hosted Postgres is primary; the local device is a client."* The paper-alignment audit ([`paper-alignment-audit-2026-04-22.md`](../../icm/07_review/output/paper-alignment-audit-2026-04-22.md) §3.2, §5.2, conflict α) explicitly flagged this as the first-order structural tension in the repo and called for an ADR. This ADR decides how to reconcile. Wave 0.2 of the paper-alignment plan.
 

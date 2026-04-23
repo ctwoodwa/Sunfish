@@ -5,12 +5,21 @@
 **Platform:** .NET MAUI Blazor Hybrid (Windows, macOS, iOS, Android)
 
 Anchor is the **local-first desktop reports and admin dashboard** accelerator for
-Sunfish. It is the desktop counterpart to Bridge (the multi-tenant SaaS shell
-per [ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md)) and exists to
-validate that the platform's local-first pillar (vision Pillar 1) has a
+Sunfish. It is the desktop counterpart to Bridge (the Zone-C Hybrid multi-tenant
+SaaS per [ADR 0031](../../docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md)) and
+exists to validate that the platform's local-first pillar (vision Pillar 1) has a
 first-class deliverable — not just a principle.
 
 ## Role in the architecture
+
+> **Paper §20.7 Zone A — Local-First Node.** Anchor is the canonical Zone-A
+> implementation of the local-node architecture paper — a hardware-bound
+> desktop node running the full kernel stack (§5.1) with ciphertext-at-rest
+> (§11.2) and optional managed-relay peering (§17.2). Its sibling is Bridge,
+> the Zone-C Hybrid implementation
+> ([ADR 0031](../../docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md)).
+> Together they cover the two canonical deployment shapes identified by the
+> paper; any future accelerator inherits from one.
 
 | | Bridge | Anchor |
 |---|---|---|
@@ -36,10 +45,10 @@ report-catalog scope remain deferred.
 
 Deliverable checklist:
 
-- [x] **LocalFirst store wiring** — `AddSunfishEncryptedStore()` + `AddSunfishKernelRuntime()`
-      + `AddSunfishKernelSecurity()` wired in `MauiProgram.cs` (Wave 3.3). Actual
-      encrypted-DB open-on-login + export-as-first-class-operation still pending the
-      follow-up slice — Wave 4 work.
+- [x] **LocalFirst store wiring (Wave 3.3 — landed)** — `AddSunfishEncryptedStore()`
+      + `AddSunfishKernelRuntime()` + `AddSunfishKernelSecurity()` wired in
+      `MauiProgram.cs`. Actual encrypted-DB open-on-login + export-as-first-class-operation
+      still pending the follow-up slice — Wave 4 work.
 - [ ] **Bundle selection UI** — which bundles does Anchor compose? For the small-landlord
       reference vertical: `blocks-rent-collection`, `blocks-leases`, `blocks-maintenance`,
       `blocks-accounting`. For small-medical-office: TBD based on practice workflow.
@@ -50,10 +59,10 @@ Deliverable checklist:
 - [ ] **Sync toggle** — per-bundle opt-in sync UI against a federated peer (ADR 0013).
       The three-indicator status bar (paper §13.2) is live via `SunfishNodeHealthBar`;
       the per-bundle toggle is still pending.
-- [x] **Authentication model** (partial) — device-bound Ed25519 keypair issued at
-      onboarding, self-signed founder attestation vs. joiner attestation issued by
-      the founder's key (Wave 3.4). Passphrase recovery + OS-keystore cache of the
-      derived encrypted-DB key still pending.
+- [x] **Authentication model (Wave 3.4 — landed partial)** — device-bound Ed25519
+      keypair issued at onboarding, self-signed founder attestation vs. joiner
+      attestation issued by the founder's key. Passphrase recovery + OS-keystore
+      cache of the derived encrypted-DB key still pending.
 - [ ] **Platform packaging** — .msix (Windows Store + sideload), .dmg (macOS),
       Mac Catalyst notarization, App Store submission flows.
 - [ ] **Auto-update** — delivery channel (Sparkle for macOS, MSIX AppInstaller for Windows,
@@ -120,9 +129,51 @@ setup overhead. These are acceptable for a first-party desktop accelerator; a le
 alternative (Photino.Blazor or Tauri 2) can ship as a second accelerator later if a specific
 deployment demands smaller binaries.
 
+## Multi-team Anchor (v2 roadmap)
+
+Anchor v1 ships **single-team per install**. v2 adopts the Slack-style
+workspace-switcher model — one installation, one UI shell, a workspace
+switcher, per-workspace state isolation — per
+[ADR 0032](../../docs/adrs/0032-multi-team-anchor-workspace-switching.md).
+
+Key properties of the v2 model:
+
+- **Non-destructive upgrade.** v1's single team becomes `team-0` in v2 with
+  no data migration required; the first-launch handler migrates the data
+  directory layout in place.
+- **In-process per-team scoping.** A new `TeamContext` type (kernel-runtime)
+  holds everything team-scoped — SQLCipher DB, event log, CRDT documents,
+  gossip daemon state, role attestations, plugin set. `ITeamContextFactory`
+  resolves contexts lazily; `IActiveTeamAccessor` exposes the foreground team
+  to UI bindings.
+- **Per-team HKDF subkeys defeat operator cross-team correlation.** The
+  install holds one root Ed25519 keypair; each team gets a subkey derived via
+  `HKDF(root_private, "sunfish-team-subkey-v1:" + team_id)`. Operators of
+  different teams see different public keys and cannot correlate the same
+  user across teams.
+- **All teams sync, only one renders.** Background gossip runs for every
+  joined team; a `ResourceGovernor` caps concurrent-rounds-per-tick so small
+  laptops stay bounded.
+- **Slack-style switcher component.** `SunfishTeamSwitcher` (Blazor first;
+  React parity backlog for Wave 3.5 extension) renders known teams as a
+  sidebar with per-team badge counts.
+- **Compliance escape hatch.** Regulated-industry tenants opt into
+  `"isolation": "process"` which spawns a dedicated `local-node-host` child
+  process per-team — OS-level isolation for teams that can't accept
+  intra-process sharing.
+
+See [ADR 0032](../../docs/adrs/0032-multi-team-anchor-workspace-switching.md)
+for the full decision (isolation boundary, device-identity model, concurrency
+policy) and [`docs/specifications/multi-team-settings-scoping.md`](../../docs/specifications/multi-team-settings-scoping.md)
+for the global-vs-per-team settings scope.
+
+Implementation rolls out as Wave 6 of the paper-alignment plan.
+
 ## References
 
 - [ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md) — Bridge's scope; Anchor is the complementary non-SaaS shell.
+- [ADR 0031](../../docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md) — Bridge as Zone-C Hybrid; Anchor's Zone-A sibling deployment shape.
+- [ADR 0032](../../docs/adrs/0032-multi-team-anchor-workspace-switching.md) — multi-team Anchor v2 roadmap.
 - [ADR 0012](../../docs/adrs/0012-foundation-localfirst.md) — Foundation.LocalFirst contracts (Anchor's data layer).
 - [ADR 0013](../../docs/adrs/0013-foundation-integrations.md) — federation relationship for optional sync.
 - [ADR 0014](../../docs/adrs/0014-adapter-parity-policy.md) — the adapter parity Anchor's multi-platform reach exercises.

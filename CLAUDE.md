@@ -20,6 +20,14 @@ coordination, the managed-relay sustainability model, and the compat-vendor-adap
 in doubt about whether a change belongs in the repo, consult the paper — it defines the "why" that
 makes the directory structure legible.
 
+**Accelerator zone mapping per paper §20.7:** Anchor (`accelerators/anchor/`) is the Zone A
+local-first desktop implementation. Bridge (`accelerators/bridge/`) is the Zone C Hybrid
+implementation — hosted-node-as-SaaS with per-tenant data-plane isolation. These are the two
+canonical deployment shapes; any future accelerator inherits from one. See
+[ADR 0031](./docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md) for Bridge's Zone-C model and
+[ADR 0032](./docs/adrs/0032-multi-team-anchor-workspace-switching.md) for Anchor's v2
+multi-team shape.
+
 ---
 
 ## Tool Boundaries

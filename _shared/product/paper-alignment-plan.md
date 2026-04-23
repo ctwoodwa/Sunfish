@@ -110,6 +110,56 @@ The paper is now the source of truth. This plan sequences the work required to c
 
 ---
 
+## Wave 5 — Bridge Zone-C Hybrid Implementation (ADR 0031)
+
+**Goal:** Execute [ADR 0031](../../docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md)'s
+Zone-C Hybrid decision end-to-end. Today's Bridge is reshaped from a
+classic multi-tenant SaaS into the paper's hosted-node-as-SaaS model:
+shared control plane, per-tenant data plane (one `local-node-host` per
+tenant), shared stateless relay tier, new per-tenant browser shell.
+Supersedes Wave 4.2's "Bridge reposition" scope.
+
+| # | Deliverable | Path | Paper § | Depends on |
+|---|---|---|---|---|
+| 5.1 | **Control-plane scope narrowing** (~1 week). Refactor `ITenantContext`, `DemoTenantContext`, `Bridge.Data/*` to serve only `{tenant_id, plan, billing, team_public_key}` concerns. Delete authoritative-tenant-data code paths. Introduce a `TenantRegistration` entity + signup flow skeleton. | `accelerators/bridge/` | §17.2 | ADR 0031 |
+| 5.2 | **Per-tenant data-plane orchestration** (~2 weeks). `Bridge.AppHost` spawns one `local-node-host` process per tenant, wired to the tenant's SQLCipher DB. Monitoring + health checks. Graceful tenant lifecycle (create, pause, delete). | `accelerators/bridge/`, `apps/local-node-host/` | §17.2, §20.7 | 2.5, 5.1 |
+| 5.3 | **Browser shell v1** (~2-3 weeks). New Blazor Server app per tenant subdomain. Passphrase-derived device-key auth. WebSocket connection to per-tenant hosted-node process. Ephemeral in-memory node — session keys wiped on tab close. First usable browser-accessible paper-aligned experience. | `accelerators/bridge/` (new sub-app) | §17.2 | 5.2, 1.6 |
+| 5.4 | **Founder + joiner flows via browser** (~1 week). Adapt Anchor's QR onboarding (Wave 3.4) for browser-first signup. Operator-side = tenant record creation; tenant-side = founder bundle generation on first admin device. | `accelerators/bridge/` | §13.4 | 5.3, 3.4 |
+| 5.5 | **Dedicated-deployment packaging (Option B)** (~1 week). IaC templates (Bicep / Terraform / k8s manifests) for spinning up a dedicated Bridge per enterprise contract. Same codebase, same sync protocol — only the hosted-node process moves. | `accelerators/bridge/deploy/` | §17.2 | 5.2 |
+
+**Dispatch strategy:** Sequential within Wave 5 — 5.1 → 5.2 → (5.3 + 5.5 in parallel) → 5.4. Wave 5 is entirely server-side and can run in parallel with Wave 6 (client-side). The only synchronization point between the two is the `apps/local-node-host/` project itself: Wave 5.2's per-tenant orchestration uses the same `local-node-host` that Wave 6 reshapes for multi-team.
+
+**Exit criterion:** Three tenants signed up via browser shell, each with an isolated hosted-node peer, gossiping through the shared relay, successfully surviving a per-tenant process restart without cross-tenant impact.
+
+---
+
+## Wave 6 — Multi-Team Anchor (ADR 0032)
+
+**Goal:** Execute [ADR 0032](../../docs/adrs/0032-multi-team-anchor-workspace-switching.md)'s
+Slack-style workspace-switcher decision. One Anchor install hosts
+membership in N teams via in-process `TeamContext` scoping; Option B
+(process-per-team) escape hatch for compliance-sensitive teams is
+scaffolded but not MVP. v1 installs upgrade non-destructively.
+
+| # | Deliverable | Package | Paper § | Depends on |
+|---|---|---|---|---|
+| 6.1 | **`TeamContext` + `ITeamContextFactory` + `IActiveTeamAccessor`** (~1 week) in `packages/kernel-runtime/`. `TeamContext` holds everything team-scoped: `TeamId`, `INodeIdentity`, `IEncryptedStore`, `IEventLog`, `IQuarantineQueue`, `ICrdtEngine`, `IGossipDaemon`, `ILeaseCoordinator`, `IBucketRegistry`, `IPluginRegistry`, `IAttestationVerifier`, `IRoleKeyManager`. | `packages/kernel-runtime/` | §5.1 | ADR 0032 |
+| 6.2 | **Per-team HKDF subkey derivation + extended `NodeIdentity`** (~few days). Add `HKDF(root_private, "sunfish-team-subkey-v1:" + team_id)` in `packages/kernel-security/Keys/`. Extend `NodeIdentity` to carry root + per-team derived public keys. | `packages/kernel-security/` | §11.3 | ADR 0032 |
+| 6.3 | **Per-team service factory rewiring** (~1-2 weeks). Reshape `IGossipDaemon`, `ILeaseCoordinator`, `IEventLog`, `IEncryptedStore`, `IQuarantineQueue`, `IBucketRegistry` from singletons to factory-resolved-via-`TeamContextFactory`. Update cross-process consumers (local-node-host, anchor, bridge) composition roots. | `packages/kernel-*` (multiple) | §5.1 | 6.1 |
+| 6.4 | **`ResourceGovernor` cap on concurrent-gossip-rounds-per-tick** (~few days). `MaxActiveRoundsPerTick = 2` default; keeps network + CPU bounded when user is in 4+ teams. | `packages/kernel-runtime/` | §6.1 | 6.1 |
+| 6.5 | **`INotificationAggregator` with per-team streams + cross-team fan-in** (~1 week). Sits above `IActiveTeamAccessor`; subscribes every TeamContext's notification stream. UI shows per-team badges + aggregate count. | `packages/kernel-runtime/` | §13.2 | 6.1 |
+| 6.6 | **`SunfishTeamSwitcher` component** (~1 week). Blazor first at `packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor`. Slack-style sidebar with per-team badge counts; click switches `IActiveTeamAccessor`. React parity is backlog for Wave 3.5 extension. | `packages/ui-adapters-blazor/` | §13.1 | 6.1, 6.5 |
+| 6.7 | **Anchor v1 → v2 migration code** (~few days) in first-launch handler. Detects legacy `DataDirectory/sunfish.db` layout; migrates in place to `DataDirectory/teams/{legacy_team_id}/`. Keeps `legacy-backup/` for one minor version cycle before deletion. | `accelerators/anchor/` | §13 | 6.3 |
+| 6.8 | **Join-additional-team QR onboarding flow extension** (~few days). Extend `QrOnboardingService` (Wave 3.4) with "add additional team" entry point; each join creates a fresh per-team subkey and new `TeamContext` without touching existing teams. | `accelerators/anchor/` | §13.4 | 6.2, 6.6 |
+
+**Dispatch strategy:** 6.1 + 6.2 in parallel (both small, independent). 6.3 sequentially after 6.1 (it depends on the TeamContext type). 6.4 + 6.5 + 6.6 in parallel after 6.3. 6.7 + 6.8 last.
+
+**Parallelism with Wave 5:** Wave 5 is entirely server-side; Wave 6 is entirely client-side. The only synchronization point is `apps/local-node-host/` — Wave 5.2 uses it per-tenant and Wave 6.3 reshapes its kernel composition for per-team scoping. Coordinate the `local-node-host` change window between the two workstreams.
+
+**Exit criterion:** One Anchor install joins three teams via the switcher, each with its own subkey / SQLCipher DB / event log; background gossip runs for all three on the 30-second tick; switching teams is a view-swap not a service-start; OS keystore contains one root keypair plus three team-subkey entries; a v1 → v2 upgrade test migrates a legacy install non-destructively.
+
+---
+
 ## Meta — Testing and Governance
 
 Parallel to every code wave:
