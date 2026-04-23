@@ -137,6 +137,16 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // Wave 5.2.C supervisor can subscribe without coupling to the registry.
     builder.Services.AddBridgeOrchestration();
 
+    // Wave 5.2.D — per-tenant health-monitoring surface. Registers the
+    // endpoint registry + background poller.
+    builder.Services.AddBridgeOrchestrationHealth();
+
+    // Wave 5.2.C.1 — Process.Start-based per-tenant supervisor + the
+    // lifecycle coordinator that bridges the registry event bus to it. Aspire
+    // AddProject boot path layers on top in 5.2.C.2 once stop-work #3 is
+    // resolved.
+    builder.Services.AddBridgeOrchestrationSupervisor();
+
     // ADR 0031 Wave 5.1 — control-plane tenant registry. Scoped to match the
     // DbContext lifetime. Holds no team data; see TenantRegistry.cs.
     builder.Services.AddScoped<ITenantRegistry, TenantRegistry>();

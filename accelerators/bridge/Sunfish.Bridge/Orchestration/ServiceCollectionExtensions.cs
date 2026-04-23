@@ -83,4 +83,46 @@ public static class ServiceCollectionExtensions
         services.AddHostedService(sp => sp.GetRequiredService<TenantHealthMonitor>());
         return services;
     }
+
+    /// <summary>
+    /// Registers Wave 5.2.C.1's supervisor surface:
+    /// <see cref="ITenantProcessSupervisor"/> (singleton
+    /// <see cref="TenantProcessSupervisor"/>),
+    /// <see cref="IProcessStarter"/> (singleton
+    /// <see cref="SystemDiagnosticsProcessStarter"/>), and
+    /// <see cref="TenantLifecycleCoordinator"/> as an
+    /// <see cref="IHostedService"/> that subscribes to the lifecycle event bus
+    /// and drives supervisor transitions.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Opt-in — kept separate from <see cref="AddBridgeOrchestration"/> so
+    /// the Relay posture (ADR 0026 Posture B) can register the 5.2.A contracts
+    /// without pulling the supervisor. Callers MUST have already invoked
+    /// <see cref="AddBridgeOrchestration"/> (the supervisor depends on
+    /// <see cref="BridgeOrchestrationOptions"/> and
+    /// <see cref="ITenantRegistryEventBus"/>) and
+    /// <see cref="AddBridgeOrchestrationHealth"/> (the supervisor depends on
+    /// <see cref="ITenantEndpointRegistry"/>; the coordinator optionally reads
+    /// <see cref="TenantHealthMonitor"/>).
+    /// </para>
+    /// <para>
+    /// Registers <see cref="ITenantProcessSupervisor"/> both as the interface
+    /// and as the concrete <see cref="TenantProcessSupervisor"/> so callers
+    /// (the coordinator, the admin UI in Wave 5.3) can resolve the same
+    /// singleton instance.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddBridgeOrchestrationSupervisor(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IProcessStarter, SystemDiagnosticsProcessStarter>();
+        services.AddSingleton<TenantProcessSupervisor>();
+        services.AddSingleton<ITenantProcessSupervisor>(
+            sp => sp.GetRequiredService<TenantProcessSupervisor>());
+        services.AddHostedService<TenantLifecycleCoordinator>();
+        return services;
+    }
 }
