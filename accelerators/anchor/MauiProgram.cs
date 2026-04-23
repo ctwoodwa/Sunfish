@@ -1,10 +1,13 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Foundation.Extensions;
-using Sunfish.Foundation.LocalFirst;
 using Sunfish.Kernel.Runtime.DependencyInjection;
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
+using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Providers.Bootstrap.Extensions;
 
 namespace Sunfish.Anchor;
@@ -32,14 +35,44 @@ public static class MauiProgram
 		builder.Services.AddSunfish()
 			.AddSunfishBootstrap();
 
-		// Paper §11.2 Layer 1 — encrypted local store + keystore.
-		builder.Services.AddSunfishEncryptedStore();
+		// Wave 6.3.F — bind Anchor shell to TeamContext per ADR 0032.
+		//
+		// Anchor today owns a single active team at a time (it's a client shell,
+		// not a server); the per-team factory still mediates access so the
+		// switcher (Wave 6.6) and join-additional-team flow (Wave 6.8) can
+		// extend the surface without touching service contracts.
+		//
+		// Root seed + identity + KDFs mirror local-node-host's composition root
+		// (apps/local-node-host/Program.cs) so the two composition roots stay
+		// byte-for-byte consistent on their team-scoped key derivation.
+		var rootSeed = AnchorRootSeedReader.Read();
+		var dataDirectory = AnchorRootSeedReader.GetDefaultDataDirectory();
+
+		var signer = new Ed25519Signer();
+		var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
+		var rootIdentity = new NodeIdentity(
+			NodeId: Convert.ToHexString(rootPublicKey.AsSpan(0, 16)).ToLowerInvariant(),
+			PublicKey: rootPublicKey,
+			PrivateKey: rootPrivateKey);
+
+		var subkeyDerivation = new TeamSubkeyDerivation(signer);
+		var sqlCipherKeyDerivation = new SqlCipherKeyDerivation();
 
 		// Paper §11.3 — Ed25519 signer, attestation issuer/verifier, role-key manager.
-		builder.Services.AddSunfishKernelSecurity();
-
 		// Paper §5.1 — node host + plugin registry.
-		builder.Services.AddSunfishKernelRuntime();
+		// Wave 6.3.E.1 — per-team service registrar + per-team store activator.
+		// Wave 6.3.F — Anchor's single-team bootstrap hosted service.
+		builder.Services
+			.AddSunfishKernelRuntime()
+			.AddSunfishKernelSecurity()
+			.AddSunfishDefaultTeamRegistrar(
+				dataDirectory: dataDirectory,
+				rootIdentity: rootIdentity,
+				subkeyDerivation: subkeyDerivation,
+				sqlCipherKeyDerivation: sqlCipherKeyDerivation)
+			.AddSunfishTeamStoreActivator(rootSeed);
+
+		builder.Services.AddHostedService<AnchorBootstrapHostedService>();
 
 		// Anchor-specific session state + onboarding service.
 		builder.Services.AddSingleton<AnchorSessionService>();

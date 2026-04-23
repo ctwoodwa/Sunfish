@@ -25,13 +25,17 @@
   <ItemGroup>
     <!-- Compile only the MAUI-free Anchor services directly. We deliberately
          do NOT ProjectReference the Anchor csproj because it targets
-         net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload. -->
+         net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload.
+         AnchorBootstrapHostedService + AnchorRootSeedReader are excluded
+         because they reference Microsoft.Maui.Storage (Preferences,
+         FileSystem) which is only available in the MAUI-workload targets. -->
     <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
     <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
     <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
   </ItemGroup>

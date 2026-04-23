@@ -1,5 +1,7 @@
+using Microsoft.Extensions.DependencyInjection;
 using Sunfish.Anchor.Services;
 using Sunfish.Foundation.LocalFirst.Encryption;
+using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Attestation;
 using Sunfish.Kernel.Security.Crypto;
 
@@ -8,7 +10,7 @@ namespace Sunfish.Anchor.Tests;
 public sealed class QrOnboardingServiceTests
 {
     private readonly Ed25519Signer _signer = new();
-    private readonly IEncryptedStore _store = new NoopEncryptedStore();
+    private readonly TestActiveTeamAccessor _activeTeam = new();
     private readonly StubTimeProvider _clock = new(new DateTimeOffset(2026, 4, 22, 12, 0, 0, TimeSpan.Zero));
 
     private QrOnboardingService MakeService(TimeProvider? clock = null)
@@ -16,7 +18,7 @@ public sealed class QrOnboardingServiceTests
         var effectiveClock = clock ?? _clock;
         var issuer = new AttestationIssuer(_signer, effectiveClock);
         var verifier = new AttestationVerifier(_signer);
-        return new QrOnboardingService(_signer, _store, verifier, issuer, effectiveClock);
+        return new QrOnboardingService(_signer, _activeTeam, verifier, issuer, effectiveClock);
     }
 
     [Fact]
@@ -167,8 +169,39 @@ public sealed class QrOnboardingServiceTests
     }
 
     /// <summary>
-    /// No-op <see cref="IEncryptedStore"/> — QrOnboardingService keeps a field
-    /// reference for future wiring but doesn't exercise the store in tests.
+    /// Test double for <see cref="IActiveTeamAccessor"/> that exposes a single
+    /// hand-rolled <see cref="TeamContext"/> whose service provider carries a
+    /// <see cref="NoopEncryptedStore"/>. Wave 6.3.F: <c>QrOnboardingService</c>
+    /// resolves its <see cref="IEncryptedStore"/> through the active team's
+    /// services rather than a ctor-injected singleton, so the test surface now
+    /// supplies a fake team context instead of a direct store.
+    /// </summary>
+    private sealed class TestActiveTeamAccessor : IActiveTeamAccessor
+    {
+        public TestActiveTeamAccessor()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IEncryptedStore, NoopEncryptedStore>();
+            var provider = services.BuildServiceProvider();
+            var teamId = new TeamId(Guid.Parse("11111111-1111-1111-1111-111111111111"));
+            Active = new TeamContext(teamId, "Test Team", provider);
+        }
+
+        public TeamContext? Active { get; }
+
+        public Task SetActiveAsync(TeamId teamId, CancellationToken ct) => Task.CompletedTask;
+
+        public event EventHandler<ActiveTeamChangedEventArgs>? ActiveChanged
+        {
+            add { /* unused in these tests */ }
+            remove { /* unused in these tests */ }
+        }
+    }
+
+    /// <summary>
+    /// No-op <see cref="IEncryptedStore"/> — QrOnboardingService keeps a
+    /// Store accessor reference for future wiring but doesn't exercise the
+    /// store in tests.
     /// </summary>
     private sealed class NoopEncryptedStore : IEncryptedStore
     {

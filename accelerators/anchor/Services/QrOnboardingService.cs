@@ -1,5 +1,7 @@
 using System.Buffers.Binary;
+using Microsoft.Extensions.DependencyInjection;
 using Sunfish.Foundation.LocalFirst.Encryption;
+using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Attestation;
 using Sunfish.Kernel.Security.Crypto;
 
@@ -31,21 +33,26 @@ public sealed class QrOnboardingService
     private static readonly TimeSpan DefaultAttestationValidity = TimeSpan.FromDays(365);
 
     private readonly IEd25519Signer _signer;
-    private readonly IEncryptedStore _store;
+    private readonly IActiveTeamAccessor _activeTeam;
     private readonly IAttestationVerifier _verifier;
     private readonly IAttestationIssuer _issuer;
     private readonly TimeProvider _clock;
 
-    /// <summary>Creates a new onboarding service.</summary>
+    /// <summary>
+    /// Creates a new onboarding service. Wave 6.3.F: the
+    /// <see cref="IEncryptedStore"/> is resolved on demand through the active
+    /// <see cref="TeamContext"/> rather than taken as a direct ctor dep; the
+    /// Anchor shell binds its encrypted store per-team per ADR 0032.
+    /// </summary>
     public QrOnboardingService(
         IEd25519Signer signer,
-        IEncryptedStore store,
+        IActiveTeamAccessor activeTeam,
         IAttestationVerifier verifier,
         IAttestationIssuer issuer,
         TimeProvider? clock = null)
     {
         _signer = signer ?? throw new ArgumentNullException(nameof(signer));
-        _store = store ?? throw new ArgumentNullException(nameof(store));
+        _activeTeam = activeTeam ?? throw new ArgumentNullException(nameof(activeTeam));
         _verifier = verifier ?? throw new ArgumentNullException(nameof(verifier));
         _issuer = issuer ?? throw new ArgumentNullException(nameof(issuer));
         _clock = clock ?? TimeProvider.System;
@@ -228,9 +235,23 @@ public sealed class QrOnboardingService
         return Task.FromResult(new AttestationBundle(new[] { attestation }));
     }
 
-    // Kept as a private hook for the future "store the encrypted snapshot on
-    // decode" path; referenced so analyzers don't flag the field unused.
-    private IEncryptedStore Store => _store;
+    /// <summary>
+    /// Resolve the active team's <see cref="IEncryptedStore"/>. Wave 6.3.F:
+    /// the service no longer owns a singleton store reference; instead it
+    /// pulls the store from the active <see cref="TeamContext"/>'s services on
+    /// every access so team-switcher flows (Wave 6.6) see the right team's
+    /// data immediately after
+    /// <see cref="IActiveTeamAccessor.SetActiveAsync"/>.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">No team is currently
+    /// active — the caller must drive
+    /// <see cref="IActiveTeamAccessor.SetActiveAsync"/> (normally via
+    /// <see cref="AnchorBootstrapHostedService"/> at app launch) before any
+    /// store-touching path runs.</exception>
+    private IEncryptedStore Store =>
+        _activeTeam.Active?.Services.GetRequiredService<IEncryptedStore>()
+        ?? throw new InvalidOperationException(
+            "No active team — call IActiveTeamAccessor.SetActiveAsync first.");
 }
 
 /// <summary>
