@@ -8,3 +8,6 @@ global using Xunit;
 
 global using Sunfish.Kernel.Crdt;
 global using Sunfish.Kernel.Crdt.Backends;
+global using Sunfish.Kernel.Crdt.GarbageCollection;
+global using Sunfish.Kernel.Crdt.Sharding;
+global using Sunfish.Kernel.Crdt.SnapshotScheduling;

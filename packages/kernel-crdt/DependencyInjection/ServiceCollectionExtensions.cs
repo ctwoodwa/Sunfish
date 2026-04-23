@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Sunfish.Kernel.Crdt.Backends;
+using Sunfish.Kernel.Crdt.GarbageCollection;
+using Sunfish.Kernel.Crdt.SnapshotScheduling;
 
 namespace Sunfish.Kernel.Crdt.DependencyInjection;
 
@@ -27,6 +29,35 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton<ICrdtEngine, StubCrdtEngine>();
+        return services;
+    }
+
+    /// <summary>
+    /// Register the paper §9 CRDT growth-mitigation services: shallow-snapshot manager,
+    /// default (conservative) policy, and document garbage collector facade.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Registers as singletons:
+    /// <list type="bullet">
+    ///   <item><see cref="IShallowSnapshotPolicy"/> → <see cref="NeverShallowSnapshotPolicy"/>
+    ///     (paper §9: "default policy is conservative: full history is retained").</item>
+    ///   <item><see cref="IShallowSnapshotManager"/> → <see cref="ShallowSnapshotManager"/>.</item>
+    ///   <item><see cref="IDocumentGarbageCollector"/> → <see cref="DocumentGarbageCollector"/>.</item>
+    /// </list>
+    /// Uses <c>TryAddSingleton</c> throughout so a host can override any of these with a
+    /// per-document-type policy or a differently-wired manager before calling this
+    /// extension.
+    /// </para>
+    /// </remarks>
+    /// <param name="services">The service collection to add to.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishCrdtGarbageCollection(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<IShallowSnapshotPolicy, NeverShallowSnapshotPolicy>();
+        services.TryAddSingleton<IShallowSnapshotManager, ShallowSnapshotManager>();
+        services.TryAddSingleton<IDocumentGarbageCollector, DocumentGarbageCollector>();
         return services;
     }
 }

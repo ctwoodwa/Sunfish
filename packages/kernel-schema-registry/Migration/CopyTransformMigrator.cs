@@ -28,7 +28,7 @@ namespace Sunfish.Kernel.SchemaRegistry.Migration;
 /// need another migration strategy (typically a hand-written upcaster or a drop).
 /// </para>
 /// </remarks>
-public sealed class CopyTransformMigrator
+public class CopyTransformMigrator
 {
     /// <summary>Payload key the migrator reads to discover each event's schema version.</summary>
     public const string SchemaVersionPayloadKey = "_schemaVersion";
@@ -46,7 +46,7 @@ public sealed class CopyTransformMigrator
     /// <param name="lensGraph">Graph of lenses used for transformation.</param>
     /// <param name="targetSchemaVersion">The schema version every written event should declare.</param>
     /// <param name="ct">Cancellation token.</param>
-    public async Task<MigrationResult> MigrateAsync(
+    public virtual async Task<MigrationResult> MigrateAsync(
         IEventLog sourceLog,
         IEventLog targetLog,
         LensGraph lensGraph,
