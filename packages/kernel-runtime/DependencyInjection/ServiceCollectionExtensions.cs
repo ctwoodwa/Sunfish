@@ -3,6 +3,9 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Runtime.Scheduling;
 using Sunfish.Kernel.Runtime.Teams;
+using Sunfish.Kernel.Security.Crypto;
+using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Identity;
 
 namespace Sunfish.Kernel.Runtime.DependencyInjection;
 
@@ -80,6 +83,125 @@ public static class ServiceCollectionExtensions
         }
 
         services.TryAddSingleton<IResourceGovernor, ResourceGovernor>();
+        return services;
+    }
+
+    /// <summary>
+    /// Installs <c>AddSunfishMultiTeam</c> with the stock
+    /// <see cref="DefaultTeamServiceRegistrar"/> composed against the install's
+    /// root identity + the per-install data directory. Composition roots that
+    /// want the standard Wave 6.3 behaviour call this instead of assembling
+    /// the registrar themselves.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// We take the install-level dependencies as explicit arguments rather
+    /// than resolving them from the outer service provider because
+    /// <see cref="TeamServiceRegistrar"/> is a synchronous
+    /// <c>delegate void (IServiceCollection, TeamId)</c> invoked inside
+    /// <c>TeamContextFactory.CreateAsync</c> — there is no
+    /// <see cref="IServiceProvider"/> in scope when the registrar runs. The
+    /// composition root resolves <paramref name="rootIdentity"/>,
+    /// <paramref name="subkeyDerivation"/>, and
+    /// <paramref name="sqlCipherKeyDerivation"/> up front (the two derivation
+    /// services are pure, side-effect-free utilities, so instantiating them
+    /// directly at Program-level is equivalent to resolving them from a
+    /// mini-provider and avoids the two-phase DI build) and passes them in
+    /// here.
+    /// </para>
+    /// <para>
+    /// This is the Wave 6.3.E composition-root-sugar layer bundled with the
+    /// <c>local-node-host</c> rewire. Callers outside <c>local-node-host</c>
+    /// (tests, future composition roots) use the same overload; the
+    /// <see cref="DefaultTeamServiceRegistrar"/> factory they wrap is unchanged.
+    /// </para>
+    /// </remarks>
+    /// <param name="services">The service collection to add to.</param>
+    /// <param name="dataDirectory">Install-level data directory that
+    /// <see cref="TeamPaths"/> combines with each team id to produce per-team
+    /// paths. Must be non-null and non-empty.</param>
+    /// <param name="rootIdentity">The install's root Ed25519 identity
+    /// (<see cref="NodeIdentity.NodeId"/> + raw public + raw private key).
+    /// Used together with <paramref name="subkeyDerivation"/> to produce each
+    /// team-scoped keypair.</param>
+    /// <param name="subkeyDerivation">Derivation that turns the root private
+    /// key + team id into a team-scoped Ed25519 keypair. Must match the
+    /// <see cref="ITeamSubkeyDerivation"/> implementation registered via
+    /// <c>AddSunfishKernelSecurity</c> (byte-for-byte — the same HKDF info
+    /// label is used on both sides of the multi-team key boundary).</param>
+    /// <param name="sqlCipherKeyDerivation">Derivation that produces the
+    /// 32-byte SQLCipher key from the root seed + team id. Captured inside
+    /// the registrar closure for later use by the Wave 6.3.E
+    /// <c>ITeamStoreActivator</c> — it is NOT invoked at registrar-compose
+    /// time (the encrypted store is registered unopened).</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishDefaultTeamRegistrar(
+        this IServiceCollection services,
+        string dataDirectory,
+        NodeIdentity rootIdentity,
+        ITeamSubkeyDerivation subkeyDerivation,
+        ISqlCipherKeyDerivation sqlCipherKeyDerivation)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentException.ThrowIfNullOrEmpty(dataDirectory);
+        ArgumentNullException.ThrowIfNull(rootIdentity);
+        ArgumentNullException.ThrowIfNull(subkeyDerivation);
+        ArgumentNullException.ThrowIfNull(sqlCipherKeyDerivation);
+
+        services.AddSunfishMultiTeam(DefaultTeamServiceRegistrar.Compose(
+            dataDirectory, subkeyDerivation, rootIdentity, sqlCipherKeyDerivation));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Wave 6.3.E <see cref="ITeamStoreActivator"/> as a
+    /// singleton. The activator, on demand (typically from a hosted service
+    /// that runs after team materialization), derives the 32-byte SQLCipher
+    /// key for a team via <see cref="ISqlCipherKeyDerivation"/> and calls
+    /// <c>IEncryptedStore.OpenAsync</c> against the per-team database path.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The activator takes a copy of the 32-byte root seed in its ctor — the
+    /// composition root reads it from the keystore once at startup and passes
+    /// it here. The activator itself never exposes the seed; callers only see
+    /// the single-method <see cref="ITeamStoreActivator.ActivateAsync"/>
+    /// contract.
+    /// </para>
+    /// <para>
+    /// Depends on <see cref="ITeamContextFactory"/> and
+    /// <see cref="ISqlCipherKeyDerivation"/> being registered. Call
+    /// <see cref="AddSunfishMultiTeam"/> (or
+    /// <see cref="AddSunfishDefaultTeamRegistrar"/>) and
+    /// <c>AddSunfishKernelSecurity</c> first.
+    /// </para>
+    /// </remarks>
+    /// <param name="services">The service collection to add to.</param>
+    /// <param name="rootSeed">The install's 32-byte Ed25519 root seed.
+    /// Captured by the activator and reused for every team's key derivation;
+    /// must be exactly 32 bytes.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishTeamStoreActivator(
+        this IServiceCollection services,
+        ReadOnlyMemory<byte> rootSeed)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        if (rootSeed.Length != 32)
+        {
+            throw new ArgumentException(
+                $"Root seed must be 32 bytes (was {rootSeed.Length}).",
+                nameof(rootSeed));
+        }
+
+        // Copy the seed so the caller can zero their own buffer without
+        // corrupting the activator's key material.
+        var seedCopy = rootSeed.ToArray();
+        services.TryAddSingleton<ITeamStoreActivator>(sp =>
+        {
+            var factory = sp.GetRequiredService<ITeamContextFactory>();
+            var derivation = sp.GetRequiredService<ISqlCipherKeyDerivation>();
+            return new TeamStoreActivator(factory, derivation, seedCopy);
+        });
         return services;
     }
 
