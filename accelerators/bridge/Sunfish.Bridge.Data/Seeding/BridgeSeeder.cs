@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Sunfish.Bridge.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,10 @@ public sealed class BridgeSeeder : IHostedService
                 {
                     new SupportContact { Name = "Demo Admin", Email = "admin@demo.local", Role = "Admin" },
                 },
+                // Wave 5.3.A — seeder bypasses TenantRegistry.CreateAsync, so populate
+                // the browser-shell auth salt here to mirror the registry's behaviour
+                // (see wave-5.3-decomposition.md §2.2).
+                AuthSalt = RandomNumberGenerator.GetBytes(16),
             });
         }
 

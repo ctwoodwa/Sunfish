@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Entities;
@@ -150,6 +151,10 @@ public sealed class TenantRegistry : ITenantRegistry
             TeamPublicKey = null,
             CreatedAt = now,
             UpdatedAt = now,
+            // Wave 5.3.A — per-tenant Argon2id salt for browser-shell passphrase
+            // auth (see wave-5.3-decomposition.md §2.2). Non-secret; the browser
+            // fetches it by slug at login via the Wave 5.3.B /auth/salt endpoint.
+            AuthSalt = RandomNumberGenerator.GetBytes(16),
         };
 
         _db.TenantRegistrations.Add(registration);

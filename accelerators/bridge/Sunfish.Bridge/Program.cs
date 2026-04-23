@@ -17,6 +17,7 @@ using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Seeding;
 using Sunfish.Bridge.Hubs;
+using Sunfish.Bridge.Middleware;
 using Sunfish.Bridge.Relay;
 using Sunfish.Foundation.Catalog.Bundles;
 using Sunfish.Foundation.FeatureManagement;
@@ -90,6 +91,12 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+// Wave 5.3.A — resolve the tenant off the request subdomain and bind
+// IBrowserTenantContext before downstream auth/authorization sees the
+// request. Registered in the SaaS-posture composition root only (Relay
+// returns early above).
+app.UseMiddleware<TenantSubdomainResolutionMiddleware>();
 
 app.UseAntiforgery();
 app.UseAuthorization();
@@ -174,6 +181,16 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // ADR 0031 Wave 5.1 — control-plane tenant registry. Scoped to match the
     // DbContext lifetime. Holds no team data; see TenantRegistry.cs.
     builder.Services.AddScoped<ITenantRegistry, TenantRegistry>();
+
+    // Wave 5.3.A — browser-shell tenant-resolution surface (see
+    // _shared/product/wave-5.3-decomposition.md §5.3.A). IBrowserTenantContext
+    // is distinct from ITenantContext (registered above); the two coexist
+    // but must not be mixed in a single request pipeline. Only composed in
+    // the SaaS posture — Relay has no browser shell and Demo's static
+    // DemoTenantContext covers dev-loop needs.
+    builder.Services.Configure<TenantResolutionOptions>(
+        builder.Configuration.GetSection("Bridge:BrowserShell:TenantResolution"));
+    builder.Services.AddScoped<IBrowserTenantContext, BrowserTenantContext>();
 
     builder.AddRedisOutputCache("bridge-redis");
 

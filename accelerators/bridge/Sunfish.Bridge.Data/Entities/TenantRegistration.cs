@@ -92,6 +92,17 @@ public sealed class TenantRegistration
     /// supervisor when naming the graveyard folder under
     /// <c>{TenantDataRoot}/graveyard/{TenantId:D}/{CancelledAt:yyyyMMdd-HHmmss}/</c>.</summary>
     public DateTime? CancelledAt { get; set; }
+
+    /// <summary>Per-tenant Argon2id salt for browser-shell passphrase auth
+    /// (Wave 5.3, see <c>_shared/product/wave-5.3-decomposition.md</c> §2.2).
+    /// 16 bytes when set; populated at <c>CreateAsync</c> time via
+    /// <see cref="System.Security.Cryptography.RandomNumberGenerator.GetBytes(int)"/>.
+    /// Never secret — the browser fetches it by slug on the login page
+    /// (<c>GET /auth/salt?slug=…</c>, Wave 5.3.B) so Argon2 key derivation is
+    /// deterministic across login attempts. <see langword="null"/> for rows that
+    /// existed before the Wave 5.3.A migration; a separate backfill pass
+    /// populates those lazily.</summary>
+    public byte[]? AuthSalt { get; set; }
 }
 
 /// <summary>Operator-owned contact for billing or support. Not a team member —
