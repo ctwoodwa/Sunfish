@@ -31,6 +31,7 @@
          FileSystem) which is only available in the MAUI-workload targets. -->
     <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
     <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
+    <Compile Include="..\Services\MauiHostedServiceLifetime.cs" Link="Anchor\MauiHostedServiceLifetime.cs" />
   </ItemGroup>
 
   <ItemGroup>

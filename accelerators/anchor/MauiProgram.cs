@@ -72,6 +72,13 @@ public static class MauiProgram
 				sqlCipherKeyDerivation: sqlCipherKeyDerivation)
 			.AddSunfishTeamStoreActivator(rootSeed);
 
+		// AddHostedService registers the bootstrap service in DI, but MAUI's
+		// MauiApp does NOT implement IHost — it exposes only IServiceProvider
+		// (verified against MAUI 10 preview docs). The lifecycle is pumped
+		// manually from App.xaml.cs via Window.Created / Window.Destroying,
+		// through Services/MauiHostedServiceLifetime. This preserves the same
+		// AddHostedService<T>() composition pattern used by
+		// apps/local-node-host (which does get an IHost and thus auto-pump).
 		builder.Services.AddHostedService<AnchorBootstrapHostedService>();
 
 		// Anchor-specific session state + onboarding service.
