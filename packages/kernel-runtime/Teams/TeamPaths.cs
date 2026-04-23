@@ -152,6 +152,34 @@ public static class TeamPaths
     }
 
     /// <summary>
+    /// Returns the legacy v1 single-team keystore key name —
+    /// literally <c>"sunfish-primary"</c>. Consumed by the Wave 6.7
+    /// v1→v2 migration path: the legacy team keeps its original
+    /// keystore slot so the existing SQLCipher database does not need
+    /// rekeying (Option 1 of the Wave 6.7 keystore-resolution decision;
+    /// see ADR 0032 lines 183-187).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only the single legacy team produced by the v1→v2 migration uses
+    /// this name. Every other team — including any team added after
+    /// migration — uses <see cref="KeystoreKeyName(TeamId)"/>, which
+    /// namespaces by <see cref="TeamId"/>. Callers distinguish legacy
+    /// from v2 teams via the <c>.migration-v2</c> marker file written
+    /// by <c>AnchorV1MigrationService</c>.
+    /// </para>
+    /// <para>
+    /// Returned string is deliberately lowercase with a hyphen
+    /// separator (not a colon) to match the v1 convention verbatim.
+    /// Callers MUST NOT case-normalize or re-punctuate.
+    /// </para>
+    /// </remarks>
+    public static string LegacyKeystoreKeyName()
+    {
+        return "sunfish-primary";
+    }
+
+    /// <summary>
     /// Returns the directory into which v1 single-team data is copied by the
     /// v1→v2 migration (Wave 6.7) before it is restructured under
     /// <c>teams/{teamId:D}/</c> — literally

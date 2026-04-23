@@ -86,12 +86,23 @@ public sealed class LocalNodeOptions
 public sealed class MultiTeamOptions
 {
     /// <summary>
-    /// When <c>true</c>, the <c>MultiTeamBootstrapHostedService</c> iterates
+    /// When <c>true</c> (the default as of Wave 6.7), the
+    /// <c>MultiTeamBootstrapHostedService</c> iterates
     /// <see cref="TeamBootstraps"/> and materializes each listed team. When
-    /// <c>false</c> (the default — legacy single-team mode), a single team is
-    /// materialized from <see cref="LocalNodeOptions.TeamId"/>.
+    /// <c>false</c>, a single legacy team is materialized from
+    /// <see cref="LocalNodeOptions.TeamId"/>.
     /// </summary>
-    public bool Enabled { get; set; } = false;
+    /// <remarks>
+    /// Wave 6.3 shipped this gated to <c>false</c> so v1 installs would not
+    /// strand their top-level <c>sunfish.db</c> under the new
+    /// <c>teams/{id}/</c> layout before the migration landed. Wave 6.7
+    /// introduces <c>AnchorV1MigrationService</c> (accelerators/anchor) which
+    /// detects the v1 layout on first launch and moves it into place, so
+    /// multi-team is now the safe default. Downstream composition roots can
+    /// still opt out by explicitly setting
+    /// <c>LocalNode:MultiTeam:Enabled = false</c> in configuration.
+    /// </remarks>
+    public bool Enabled { get; set; } = true;
 
     /// <summary>
     /// Ordered list of teams to materialize at startup when

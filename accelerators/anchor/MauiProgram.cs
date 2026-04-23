@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Kernel.Runtime.DependencyInjection;
+using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
@@ -71,6 +72,31 @@ public static class MauiProgram
 				subkeyDerivation: subkeyDerivation,
 				sqlCipherKeyDerivation: sqlCipherKeyDerivation)
 			.AddSunfishTeamStoreActivator(rootSeed);
+
+		// Wave 6.7 — v1→v2 migration runs BEFORE the bootstrap hosted service
+		// so the default-team materialization sees the v2 layout. Hosted
+		// services start in registration order, and the migration's
+		// StartAsync runs the move inline before returning.
+		//
+		// The legacy team id is derived deterministically from the first 16
+		// bytes of the install's root Ed25519 public key — identical to the
+		// NodeId convention used elsewhere in this composition root. Because
+		// the root seed is install-scoped and deterministic, the same
+		// machine produces the same legacy team id across relaunches; the
+		// migration persists the value in its .migration-v2 marker so
+		// subsequent launches never re-derive it even if the seed source
+		// changes.
+		var legacyTeamIdBytes = new byte[16];
+		Buffer.BlockCopy(rootPublicKey, 0, legacyTeamIdBytes, 0, 16);
+		var legacyTeamId = new TeamId(new Guid(legacyTeamIdBytes));
+
+		builder.Services.AddSingleton<AnchorV1MigrationService>(sp =>
+			new AnchorV1MigrationService(
+				dataDirectory: dataDirectory,
+				legacyTeamIdProvider: () => legacyTeamId,
+				logger: sp.GetRequiredService<ILogger<AnchorV1MigrationService>>()));
+		builder.Services.AddHostedService(sp =>
+			sp.GetRequiredService<AnchorV1MigrationService>());
 
 		// AddHostedService registers the bootstrap service in DI, but MAUI's
 		// MauiApp does NOT implement IHost — it exposes only IServiceProvider

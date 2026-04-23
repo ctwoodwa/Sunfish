@@ -28,10 +28,13 @@
          net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload.
          AnchorBootstrapHostedService + AnchorRootSeedReader are excluded
          because they reference Microsoft.Maui.Storage (Preferences,
-         FileSystem) which is only available in the MAUI-workload targets. -->
+         FileSystem) which is only available in the MAUI-workload targets.
+         AnchorV1MigrationService is MAUI-free (takes dataDirectory in ctor)
+         so it compiles here for Wave 6.7 migration tests. -->
     <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
     <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
     <Compile Include="..\Services\MauiHostedServiceLifetime.cs" Link="Anchor\MauiHostedServiceLifetime.cs" />
+    <Compile Include="..\Services\AnchorV1MigrationService.cs" Link="Anchor\AnchorV1MigrationService.cs" />
   </ItemGroup>
 
   <ItemGroup>
