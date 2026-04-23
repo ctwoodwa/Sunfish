@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="System.Formats.Cbor" />
+    <PackageReference Include="Makaretu.Dns.Multicast.New" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />

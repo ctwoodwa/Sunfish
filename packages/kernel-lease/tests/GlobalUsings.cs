@@ -6,7 +6,6 @@ global using System.Threading.Tasks;
 
 global using Xunit;
 
-global using Sunfish.Kernel.Sync.Discovery;
+global using Sunfish.Kernel.Lease;
 global using Sunfish.Kernel.Sync.Gossip;
-global using Sunfish.Kernel.Sync.Handshake;
 global using Sunfish.Kernel.Sync.Protocol;

@@ -34,6 +34,14 @@
     <Project Path="packages/kernel-sync/Sunfish.Kernel.Sync.csproj" />
     <Project Path="packages/kernel-sync/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/lease/">
+    <Project Path="packages/kernel-lease/Sunfish.Kernel.Lease.csproj" />
+    <Project Path="packages/kernel-lease/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/kernel/buckets/">
+    <Project Path="packages/kernel-buckets/Sunfish.Kernel.Buckets.csproj" />
+    <Project Path="packages/kernel-buckets/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/apps/local-node-host/">
     <Project Path="apps/local-node-host/Sunfish.LocalNodeHost.csproj" />
     <Project Path="apps/local-node-host/tests/tests.csproj" />

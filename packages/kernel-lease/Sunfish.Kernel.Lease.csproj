@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Lease</PackageId>
+    <RootNamespace>Sunfish.Kernel.Lease</RootNamespace>
+    <Description>Flease-inspired distributed lease coordinator for Sunfish CP-class record writes (paper §6.3; sync-daemon-protocol §6). Rides the LEASE_REQUEST / LEASE_GRANT / LEASE_RELEASE / LEASE_DENIED messages defined in Sunfish.Kernel.Sync over the shared ISyncDaemonTransport. Grants a lease when a quorum of peers acknowledge the request (default ceil(N/2)+1); blocks writes when quorum is unreachable. Leases auto-expire (default 30 s) so a node that goes offline releases at expiry rather than holding the resource indefinitely.</Description>
+    <PackageTags>sunfish;kernel;lease;flease;quorum;cp</PackageTags>
+    <!-- Parity with sibling kernel-* packages: CS1591 is suppressed until the
+         first stable release so type-forwarded and stub surfaces don't drown
+         the build in missing-xmldoc warnings. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Lease.Tests" />
+  </ItemGroup>
+</Project>

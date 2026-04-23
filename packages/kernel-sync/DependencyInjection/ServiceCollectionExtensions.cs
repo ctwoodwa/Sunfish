@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
+using Sunfish.Kernel.Sync.Discovery;
 using Sunfish.Kernel.Sync.Gossip;
 using Sunfish.Kernel.Sync.Protocol;
 
@@ -45,6 +46,67 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<VectorClock>(_ => new VectorClock());
         services.TryAddSingleton<IGossipDaemon, GossipDaemon>();
 
+        return services;
+    }
+
+    /// <summary>
+    /// Register <see cref="MdnsPeerDiscovery"/> as the <see cref="IPeerDiscovery"/>
+    /// implementation (paper §6.1 tier-1, LAN-only). Call after
+    /// <see cref="AddSunfishKernelSync"/> — the gossip daemon is resolved
+    /// lazily, so registration order only matters for options binding.
+    /// </summary>
+    /// <remarks>
+    /// This registration does not wire the discovery source into the gossip
+    /// daemon automatically — the caller must call
+    /// <see cref="GossipDaemonDiscoveryExtensions.AttachDiscovery"/> in their
+    /// startup path. The bridge is explicit because the lifecycle (when to
+    /// start advertising, what <see cref="PeerAdvertisement"/> to publish) is
+    /// application-owned.
+    /// </remarks>
+    public static IServiceCollection AddMdnsPeerDiscovery(
+        this IServiceCollection services,
+        Action<PeerDiscoveryOptions>? configureOptions = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (configureOptions is not null)
+        {
+            services.Configure(configureOptions);
+        }
+        else
+        {
+            services.AddOptions<PeerDiscoveryOptions>();
+        }
+
+        services.TryAddSingleton<IPeerDiscovery, MdnsPeerDiscovery>();
+        return services;
+    }
+
+    /// <summary>
+    /// Register <see cref="InMemoryPeerDiscovery"/> as the
+    /// <see cref="IPeerDiscovery"/> implementation. Tests and integration
+    /// harnesses only — the shared broker is process-wide.
+    /// </summary>
+    public static IServiceCollection AddInMemoryPeerDiscovery(
+        this IServiceCollection services,
+        Action<PeerDiscoveryOptions>? configureOptions = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (configureOptions is not null)
+        {
+            services.Configure(configureOptions);
+        }
+        else
+        {
+            services.AddOptions<PeerDiscoveryOptions>();
+        }
+
+        services.TryAddSingleton<InMemoryPeerDiscoveryBroker>(_ => InMemoryPeerDiscoveryBroker.Shared);
+        services.TryAddSingleton<IPeerDiscovery>(sp =>
+            new InMemoryPeerDiscovery(
+                sp.GetRequiredService<InMemoryPeerDiscoveryBroker>(),
+                sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PeerDiscoveryOptions>>().Value));
         return services;
     }
 }

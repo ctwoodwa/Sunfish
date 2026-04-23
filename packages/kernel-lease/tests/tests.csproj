@@ -4,8 +4,8 @@
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <AssemblyName>Sunfish.Kernel.Sync.Tests</AssemblyName>
-    <RootNamespace>Sunfish.Kernel.Sync.Tests</RootNamespace>
+    <AssemblyName>Sunfish.Kernel.Lease.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Kernel.Lease.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,14 +13,13 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
-    <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\Sunfish.Kernel.Lease.csproj" />
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\kernel\Sunfish.Kernel.csproj" />
-    <ProjectReference Include="..\..\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\kernel-sync\Sunfish.Kernel.Sync.csproj" />
   </ItemGroup>
 
 </Project>

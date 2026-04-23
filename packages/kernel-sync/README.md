@@ -15,10 +15,15 @@ operational but not yet exercised by the round-loop harness — the Wave 2.1
 test suite runs over `InMemorySyncDaemonTransport` to keep the CI matrix
 single-platform.
 
+Wave 2.2 (mDNS peer discovery) has landed — see the `Discovery/` folder and
+the "Peer Discovery" section below.
+
 Deferred to later waves (per ADR 0029 and the paper-alignment plan):
 
-- **Wave 2.2** — mDNS + WireGuard peer discovery (this package receives a
-  pre-resolved peer endpoint; discovery is upstream).
+- **Wave 2.2 (tier-2)** — WireGuard mesh-VPN peer discovery. The
+  `IPeerDiscovery` abstraction is in place; WireGuard implementation is a
+  future wave.
+- **Wave 4.2** — Managed-relay peer discovery (tier-3, cross-segment).
 - **Wave 2.3** — Flease lease coordination (the wire messages are speced and
   codec-tested here; the algorithm lives in a sibling package).
 - **Wave 2.4** — Bucket-eligibility evaluation against
@@ -40,7 +45,12 @@ Deferred to later waves (per ADR 0029 and the paper-alignment plan):
 | `Gossip/GossipDaemon.cs` | `PeriodicTimer`-driven round scheduler. |
 | `Gossip/GossipDaemonOptions.cs` | `IOptions` knobs — round interval, peer pick count, connect timeout, dead-peer backoff. |
 | `Handshake/HandshakeProtocol.cs` | `InitiateAsync` / `RespondAsync` ladder per spec §4. |
-| `DependencyInjection/ServiceCollectionExtensions.cs` | `AddSunfishKernelSync()`. |
+| `Discovery/IPeerDiscovery.cs` | Peer-discovery abstraction + `PeerAdvertisement` record. |
+| `Discovery/MdnsPeerDiscovery.cs` | Paper §6.1 tier-1 mDNS discovery (LAN-only, zero-config). |
+| `Discovery/InMemoryPeerDiscovery.cs` | In-process test harness for discovery (broker-based). |
+| `Discovery/PeerDiscoveryOptions.cs` | `IOptions` knobs — service type, port, interval, TTL, team filter. |
+| `Discovery/GossipDaemonDiscoveryExtensions.cs` | Glue: `daemon.AttachDiscovery(discovery)`. |
+| `DependencyInjection/ServiceCollectionExtensions.cs` | `AddSunfishKernelSync()`, `AddMdnsPeerDiscovery()`, `AddInMemoryPeerDiscovery()`. |
 | `tests/` | xUnit harness for the above. |
 
 ## Using it
@@ -65,6 +75,68 @@ daemon.AddPeer("/run/sunfish/peer-b.sock", peerBPublicKey);
 
 await daemon.StartAsync(CancellationToken.None);
 ```
+
+## Peer Discovery (Wave 2.2)
+
+Paper §6.1 defines three discovery tiers:
+
+1. **mDNS** — zero-config, LAN-only. Shipped in Wave 2.2 via
+   `MdnsPeerDiscovery`.
+2. **Mesh VPN / WireGuard** — cross-segment, enumerated. Deferred.
+3. **Managed relay** — cross-organization. Wave 4.2.
+
+### mDNS library choice
+
+This package depends on **`Makaretu.Dns.Multicast.New` 0.38.0** — the
+actively-maintained fork of the original `Makaretu.Dns.Multicast` (last
+published November 2019). Rationale:
+
+- Pure-managed; no Bonjour runtime required on Windows.
+- Full advertise + browse support with TXT records.
+- Targets .NET 9; forward-compatible with the .NET 11 preview the rest of
+  Sunfish runs on.
+- Alternative considered — `Zeroconf` — has weaker cross-platform
+  advertising support and requires a Bonjour runtime on Windows.
+
+### Wiring into the gossip daemon
+
+```csharp
+services
+    .AddSunfishKernelSync()
+    .AddMdnsPeerDiscovery(opts =>
+    {
+        opts.ServiceType = "_sunfish-node._tcp.local";
+        opts.Port = 8765;
+        opts.FilterByTeamId = true;
+    });
+
+// In the startup path:
+var daemon    = provider.GetRequiredService<IGossipDaemon>();
+var discovery = provider.GetRequiredService<IPeerDiscovery>();
+
+using var bridge = daemon.AttachDiscovery(discovery);
+
+await discovery.StartAsync(new PeerAdvertisement(
+    NodeId: nodeId,
+    Endpoint: "tcp://<addr>:8765",
+    PublicKey: publicKey,
+    TeamId: teamId,
+    SchemaVersion: "1.0",
+    Metadata: new Dictionary<string, string>()), ct);
+
+await daemon.StartAsync(ct);
+```
+
+### Platform notes
+
+- **Windows Defender Firewall.** First-run usually prompts the user to allow
+  inbound UDP/5353 on the host binary. Managed deployments should
+  pre-provision the firewall rule.
+- **CI / headless containers.** Multicast is typically unavailable; the
+  smoke-test suite `MdnsPeerDiscoveryTests` is gated on
+  `SUNFISH_MDNS_TESTS=1` and is skipped by default.
+- **TTL sweep** is user-space: peers unheard-from for `PeerTtlSeconds`
+  (default 30s) emit `PeerLost`.
 
 ## Why this is *not* `federation-*`
 
