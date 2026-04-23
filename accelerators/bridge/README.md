@@ -1,5 +1,17 @@
 # Bridge - Solution Accelerator
 
+> **Dual-posture since ADR 0026.** Bridge ships in two install-time postures:
+>
+> - **Posture A — SaaS shell (default, `Mode=SaaS`).** The generic multi-tenant
+>   Blazor Server host described below. ADR 0006 framing. Runs the full
+>   Aspire + Postgres + DAB + SignalR + Wolverine stack.
+> - **Posture B — managed relay (`Mode=Relay`).** Paper §6.1 tier-3 peer-
+>   coordination service; §17.2 sustainable-revenue SKU. Stateless,
+>   kernel-sync-only, no authority semantics. See the
+>   [Relay posture](#relay-posture-adr-0026) section below.
+>
+> See [ADR 0026](../../docs/adrs/0026-bridge-posture.md) for the decision.
+
 Bridge is the Sunfish reference **SaaS shell accelerator**: a generic
 multi-tenant platform host that composes every tier of the Sunfish stack into
 a single working solution. Bridge is **not** a vertical app. Its job is shell
@@ -80,3 +92,50 @@ Bridge has its own `Sunfish.Bridge.slnx` - it is **not** part of the root
 `accelerators/bridge/` to build only the accelerator and its Sunfish package
 dependencies. Bridge consumes Sunfish packages via relative ProjectReference
 (not NuGet PackageReference) while both live in the same git repo.
+
+## Relay posture (ADR 0026)
+
+Posture B — the paper §6.1 tier-3 **managed relay**. Bridge in this mode is
+a stateless peer-coordination service: it accepts inbound sync-daemon
+connections, runs the handshake ladder, and fan-outs `DELTA_STREAM` and
+`GOSSIP_PING` frames to co-tenant peers. It has no authority semantics, no
+Postgres, no DAB, no SignalR, no Razor components.
+
+### Run in relay mode
+
+Relay mode bypasses the Aspire AppHost entirely — the relay needs nothing
+the AppHost orchestrates. Invoke the `Sunfish.Bridge` project directly:
+
+```bash
+cd accelerators/bridge
+dotnet run --project Sunfish.Bridge -- --environment Relay
+```
+
+`ASPNETCORE_ENVIRONMENT=Relay` causes `appsettings.Relay.json` to layer on
+top of `appsettings.json` and flip `Bridge:Mode` to `Relay`. The composition
+root in `Program.cs` reads that value once at startup and wires the
+`RelayWorker` hosted service plus `Sunfish.Kernel.Sync` +
+`Sunfish.Kernel.Security` only — the SaaS wiring is skipped entirely.
+
+### Relay configuration reference
+
+`BridgeOptions.Relay` is bound from the `Bridge:Relay` configuration
+section. Defaults live in `appsettings.json`; override via
+`appsettings.Relay.json` or `BRIDGE__RELAY__*` environment variables.
+
+| Key | Default | Purpose |
+|---|---|---|
+| `ListenEndpoint` | `null` (transport default) | Address the relay listens on. Unix-socket path on POSIX, named-pipe name on Windows. |
+| `MaxConnectedNodes` | `500` | Inbound-connection cap. Extra connections get `ERROR { Code: RATE_LIMIT_EXCEEDED, Recoverable: false }`. Sizing per paper §17.2 per-relay cost model. |
+| `AdvertiseHostname` | `null` | Hostname advertised via future discovery integration. |
+| `AllowedTeamIds` | `[]` | Empty = accept any team. Non-empty = only peers whose agreed team-id matches one of these values are accepted; others get an ERROR frame and are disconnected. |
+
+### Running the default SaaS posture
+
+```bash
+cd accelerators/bridge
+dotnet run --project Sunfish.Bridge.AppHost
+```
+
+This starts the full Aspire orchestration (Postgres, Redis, RabbitMQ, DAB,
+MockOkta) that Posture A requires. `Bridge:Mode` defaults to `SaaS`.

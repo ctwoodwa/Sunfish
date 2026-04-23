@@ -16,10 +16,15 @@
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sunfish.Bridge.Data\Sunfish.Bridge.Data.csproj" />
+    <!-- ADR 0026 relay-posture tests reach into Sunfish.Bridge + kernel-sync/kernel-security. -->
+    <ProjectReference Include="..\..\Sunfish.Bridge\Sunfish.Bridge.csproj" />
+    <ProjectReference Include="..\..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunfish.example/schemas/mdm-config/v1.json",
+  "title": "Sunfish MDM Pre-Seeded Node Configuration",
+  "description": "v1 schema for the node-config.json file a managed-device MDM operator pre-seeds before the Sunfish local-node host first runs. See docs/specifications/mdm-config-schema.md.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "teamId",
+    "enterpriseAttestationIssuerPublicKey"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "description": "Schema version tag. v1 hosts reject any other value.",
+      "type": "string",
+      "const": "v1"
+    },
+    "teamId": {
+      "description": "Stable team identifier; UUID recommended. Immutable after first sync.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "relayEndpoint": {
+      "description": "HTTPS URL of the team's Bridge relay. Absent means peer-to-peer only.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "allowedBuckets": {
+      "description": "Whitelist of subscription buckets the host will sync. Client-side filter; not a security boundary.",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      },
+      "uniqueItems": true
+    },
+    "dataDirectory": {
+      "description": "Override for LocalNodeOptions.DataDirectory. MUST resolve to a path under the platform MDM-wipe-target tree.",
+      "type": "string",
+      "minLength": 1
+    },
+    "logLevel": {
+      "description": "Microsoft.Extensions.Logging level.",
+      "type": "string",
+      "enum": [
+        "Trace",
+        "Debug",
+        "Information",
+        "Warning",
+        "Error",
+        "Critical"
+      ],
+      "default": "Information"
+    },
+    "updateServerUrl": {
+      "description": "HTTPS base URL of the internal update server. Absent disables auto-update.",
+      "type": "string",
+      "format": "uri",
+      "pattern": "^https://"
+    },
+    "enterpriseAttestationIssuerPublicKey": {
+      "description": "Base64-encoded 32-byte Ed25519 public key of the org's role attestation issuer.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/=]+$",
+      "minLength": 40,
+      "maxLength": 128
+    }
+  }
+}

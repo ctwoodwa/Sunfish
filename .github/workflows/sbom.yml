@@ -1,0 +1,41 @@
+name: SBOM
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate CycloneDX SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Generate SBOM
+        run: bash tooling/sbom/generate-sbom.sh
+
+      - name: Upload SBOM as workflow artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: sunfish-sbom
+          path: |
+            sbom/Sunfish.cdx.json
+            sbom/Sunfish.cdx.sha256
+
+      - name: Attach SBOM to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            sbom/Sunfish.cdx.json \
+            sbom/Sunfish.cdx.sha256 \
+            --clobber

@@ -1,10 +1,19 @@
 # Bridge Platform Alignment
 
+> **ADR 0026 — dual-posture note.** Bridge now ships in two postures per
+> [ADR 0026](../../docs/adrs/0026-bridge-posture.md). The tables below track
+> **Posture A (SaaS shell)**. Posture B (managed relay) has no per-tenant
+> authority semantics — the kernel primitives, decentralization rows, and
+> Property Management MVP coverage below should be read as **N/A against
+> Posture B**. A split per-posture table is a follow-up deliverable; until it
+> lands, assume rows on this page describe the SaaS posture only.
+
 This document tracks Bridge's adoption of Sunfish platform primitives as defined in
 `docs/specifications/sunfish-platform-specification.md`. Per
-[ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md), **Bridge is a generic
-multi-tenant SaaS shell, not a vertical reference implementation.** It hosts
-business-case bundles ([ADR 0007](../../docs/adrs/0007-bundle-manifest-schema.md));
+[ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md) (superseded by
+[ADR 0026](../../docs/adrs/0026-bridge-posture.md)), **Bridge in Posture A is
+a generic multi-tenant SaaS shell, not a vertical reference implementation.**
+It hosts business-case bundles ([ADR 0007](../../docs/adrs/0007-bundle-manifest-schema.md));
 Property Management is its first reference bundle.
 
 **How to read this document:**

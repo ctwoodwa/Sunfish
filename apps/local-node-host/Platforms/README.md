@@ -1,28 +1,39 @@
-# Platforms — service-manager integration stubs
+# Platforms — service-manager integration
 
-**Status:** placeholder. Wave 4.5 territory.
+**Status:** Wave 4.5 — delegates platform packaging to `installers/*`.
 
 Paper §4 calls for the local-node host to run as a persistent background
-service under each OS's service manager:
+service under each OS's service manager. Wave 2.5 ships the host process
+itself — a standard .NET generic-host Worker Service. Wave 4.5 ships the
+platform-packaging scaffolding that installs that process as a service.
 
-| Platform | Service manager | Expected artifact (Wave 4.5) |
-|---|---|---|
-| Linux | systemd (user scope) | `linux/sunfish-local-node.service` |
-| macOS | launchd (LaunchAgent) | `macos/com.sunfish.localnode.plist` |
-| Windows | Windows Service (per-user where possible) | `windows/SunfishLocalNode.wxs` + installer target |
+The service-manager artifacts no longer live in this folder. They live
+next to the installer scripts that consume them:
 
-Wave 2.5 (the current wave) ships the host process itself — a standard .NET
-generic-host Worker Service. No host-code changes are required to run under
-any of the above; service-manager integration is a packaging concern layered
-on top of the binary produced by `dotnet publish`.
+| Platform | Service manager | Installer location                                                         | Service-manager artifact |
+|----------|-----------------|----------------------------------------------------------------------------|--------------------------|
+| Windows  | Windows Service | [`installers/windows/`](../../../installers/windows/README.md)             | WiX v4 authoring inlined into `build-msi.ps1`; registers `SunfishLocalNode` via `ServiceInstall`. |
+| Linux    | systemd         | [`installers/linux/`](../../../installers/linux/README.md)                 | [`debian/sunfish-local-node.service`](../../../installers/linux/debian/sunfish-local-node.service) |
+| macOS    | launchd         | [`installers/macos/`](../../../installers/macos/README.md)                 | [`launchd/com.sunfish.local-node-host.plist`](../../../installers/macos/launchd/com.sunfish.local-node-host.plist) |
 
-## When Wave 4.5 lands
+## Related specifications
 
-1. Each sub-folder gets the appropriate unit / plist / installer fragment.
-2. An installer tool (`tooling/local-node-installer/`, out of scope here)
-   renders the template against the user's install path and registers the
-   service.
-3. The CI publish pipeline produces per-OS install bundles.
+- [`docs/specifications/air-gap-deployment.md`](../../../docs/specifications/air-gap-deployment.md)
+  — operating the host with no internet access.
+- [`docs/specifications/mdm-config-schema.md`](../../../docs/specifications/mdm-config-schema.md)
+  — pre-seeded `node-config.json` schema.
+- [`docs/specifications/byod-path-separation.md`](../../../docs/specifications/byod-path-separation.md)
+  — team-data vs. user-preferences path split; paper §16.3.
 
-Until then this folder is intentionally empty apart from this README so the
-project layout already signals where those artifacts will live.
+## Why this folder still exists
+
+Kept as a stable in-tree anchor for future host-code that is genuinely
+platform-specific (e.g., a Windows Service installer helper CLI, or
+launchd notify-socket glue for macOS). For now it is documentation only.
+
+## Carve-outs (still deferred)
+
+- Code signing of the built installers — separate operational workstream.
+- MDM-vendor-specific wrappers (Intune `.intunewin`, Jamf `.mobileconfig`).
+- Auto-update implementation — design spec in `air-gap-deployment.md` §3.3.
+- macOS notarization / stapling pipeline.
