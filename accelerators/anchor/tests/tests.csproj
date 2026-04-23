@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Anchor.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Anchor.Tests</RootNamespace>
+    <!--
+      The Anchor csproj multi-targets net11.0-windows10.0.19041.0; we only need
+      the pure-.NET services for unit tests (AnchorSessionService, QrOnboardingService).
+      Compile the source files directly against net11.0 to sidestep the MAUI
+      workload requirement on CI.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="System.Formats.Cbor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile only the MAUI-free Anchor services directly. We deliberately
+         do NOT ProjectReference the Anchor csproj because it targets
+         net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload. -->
+    <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
+    <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

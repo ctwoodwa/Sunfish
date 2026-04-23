@@ -1,0 +1,81 @@
+@*
+    QrScanner — MAUI camera placeholder + paste-bundle fallback.
+
+    The .NET 11 MAUI preview does not ship a ready-to-use camera abstraction
+    for Blazor Hybrid code-behind in every target platform; we surface a
+    text-paste fallback and keep the camera path as a TODO so the onboarding
+    flow works today. Consumers bind <see cref="BundleDecoded"/> to receive
+    the raw base64 payload, then decode via QrOnboardingService.
+*@
+
+<div class="anchor-qr-scanner">
+    <div class="anchor-qr-camera-placeholder" role="img" aria-label="QR scanner placeholder">
+        <span class="anchor-qr-camera-icon" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="6" y="6" width="10" height="10" />
+                <rect x="32" y="6" width="10" height="10" />
+                <rect x="6" y="32" width="10" height="10" />
+                <rect x="21" y="21" width="6" height="6" />
+            </svg>
+        </span>
+        <p>Camera integration coming in a later wave.</p>
+        <p class="anchor-muted">Paste the onboarding bundle below instead.</p>
+    </div>
+
+    <label class="anchor-label" for="qr-bundle-input">Bundle (base64)</label>
+    <textarea id="qr-bundle-input"
+              class="anchor-qr-input"
+              rows="5"
+              placeholder="base64-encoded onboarding payload…"
+              @bind="_value"
+              @bind:event="oninput"></textarea>
+    <div class="anchor-qr-actions">
+        <button type="button"
+                class="anchor-btn anchor-btn-primary"
+                disabled="@string.IsNullOrWhiteSpace(_value)"
+                @onclick="SubmitAsync">
+            Accept bundle
+        </button>
+    </div>
+</div>
+
+@code {
+    private string _value = string.Empty;
+
+    /// <summary>Invoked with the base64-decoded bundle bytes when the user accepts.</summary>
+    [Parameter] public EventCallback<byte[]> BundleDecoded { get; set; }
+
+    /// <summary>Invoked with a human-readable error message when the input can't be decoded.</summary>
+    [Parameter] public EventCallback<string> DecodeError { get; set; }
+
+    private async Task SubmitAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_value))
+        {
+            return;
+        }
+        try
+        {
+            var bytes = Convert.FromBase64String(_value.Trim());
+            await BundleDecoded.InvokeAsync(bytes);
+        }
+        catch (FormatException)
+        {
+            await DecodeError.InvokeAsync("Pasted bundle is not valid base64.");
+        }
+    }
+}
+
+<style>
+    .anchor-qr-scanner { display: flex; flex-direction: column; gap: 0.5rem; }
+    .anchor-qr-camera-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1rem; border: 1px dashed #ccc; border-radius: 6px; background: #fafafa; color: #555; }
+    .anchor-qr-camera-placeholder p { margin: 0.25rem 0; font-size: 0.8125rem; }
+    .anchor-qr-camera-icon { color: #aaa; }
+    .anchor-qr-input { font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; padding: 0.5rem 0.625rem; border: 1px solid #ccc; border-radius: 4px; }
+    .anchor-qr-actions { display: flex; justify-content: flex-end; }
+    .anchor-label { font-size: 0.8125rem; color: #444; font-weight: 500; }
+    .anchor-muted { color: #999; }
+    .anchor-btn { font: inherit; padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; }
+    .anchor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .anchor-btn-primary { background: #1e6b3c; color: #fff; }
+</style>

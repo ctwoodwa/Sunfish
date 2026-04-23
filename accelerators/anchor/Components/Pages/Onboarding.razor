@@ -1,0 +1,239 @@
+@page "/onboarding"
+@using Sunfish.Anchor.Services
+@using Sunfish.Kernel.Security.Attestation
+@inject AnchorSessionService Session
+@inject QrOnboardingService OnboardingService
+@inject NavigationManager Nav
+
+<PageTitle>Sunfish Anchor — Onboarding</PageTitle>
+
+<div class="anchor-onboard">
+    <h1>Welcome to Sunfish Anchor</h1>
+    <p class="anchor-onboard-sub">
+        Per paper §13.4 your new node joins a team in three steps:
+        <strong>install</strong>, <strong>authenticate</strong>, <strong>sync</strong>.
+    </p>
+
+    <ol class="anchor-stepper" aria-label="Onboarding progress">
+        <li class="@StepClass(OnboardingStep.Install)" aria-current="@AriaCurrent(OnboardingStep.Install)">
+            <span class="anchor-step-index">1</span>
+            <span class="anchor-step-label">Install</span>
+        </li>
+        <li class="@StepClass(OnboardingStep.Authenticate)" aria-current="@AriaCurrent(OnboardingStep.Authenticate)">
+            <span class="anchor-step-index">2</span>
+            <span class="anchor-step-label">Authenticate</span>
+        </li>
+        <li class="@StepClass(OnboardingStep.Sync)" aria-current="@AriaCurrent(OnboardingStep.Sync)">
+            <span class="anchor-step-index">3</span>
+            <span class="anchor-step-label">Sync</span>
+        </li>
+    </ol>
+
+    @if (_step == OnboardingStep.Install)
+    {
+        <section class="anchor-step-panel">
+            <h2>Step 1 — Install</h2>
+            <p>
+                Application installed. The local node runtime is ready.
+                Proceed to authenticate this device with your team.
+            </p>
+            <div class="anchor-actions">
+                <button type="button" class="anchor-btn anchor-btn-primary" @onclick="GoToAuthenticate">
+                    Continue
+                </button>
+            </div>
+        </section>
+    }
+    else if (_step == OnboardingStep.Authenticate)
+    {
+        <section class="anchor-step-panel">
+            <h2>Step 2 — Authenticate</h2>
+            <p>
+                Choose how this device joins the team.
+            </p>
+
+            <div class="anchor-choice-group">
+                <div class="anchor-choice">
+                    <h3>Join an existing team</h3>
+                    <p class="anchor-muted">
+                        Scan a QR code from an existing team member's device, or paste a
+                        base64-encoded bundle below. The camera path requires MAUI
+                        camera permissions (TODO on .NET 11 preview).
+                    </p>
+                    <label class="anchor-label" for="paste-bundle">Paste bundle (base64)</label>
+                    <textarea id="paste-bundle"
+                              class="anchor-textarea"
+                              rows="6"
+                              placeholder="base64-encoded onboarding payload…"
+                              @bind="_pastedBundle"
+                              @bind:event="oninput"></textarea>
+                    <button type="button"
+                            class="anchor-btn anchor-btn-primary"
+                            disabled="@string.IsNullOrWhiteSpace(_pastedBundle)"
+                            @onclick="JoinFromPastedBundleAsync">
+                        Join team
+                    </button>
+                </div>
+
+                <div class="anchor-choice">
+                    <h3>First node on this team</h3>
+                    <p class="anchor-muted">
+                        Generate a new team. This device becomes the founder and issues
+                        a self-signed administrator attestation. You can invite further
+                        devices once onboarding completes.
+                    </p>
+                    <label class="anchor-label" for="team-name">Team name</label>
+                    <input id="team-name"
+                           class="anchor-input"
+                           type="text"
+                           placeholder="My Team"
+                           @bind="_teamName"
+                           @bind:event="oninput" />
+                    <button type="button"
+                            class="anchor-btn anchor-btn-secondary"
+                            disabled="@string.IsNullOrWhiteSpace(_teamName)"
+                            @onclick="GenerateFounderAsync">
+                        Generate founder bundle
+                    </button>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_error))
+            {
+                <div role="alert" class="anchor-error">@_error</div>
+            }
+        </section>
+    }
+    else if (_step == OnboardingStep.Sync)
+    {
+        <section class="anchor-step-panel">
+            <h2>Step 3 — Sync</h2>
+            <p>
+                Applying initial snapshot and establishing node identity…
+            </p>
+            <div class="anchor-progress" role="progressbar" aria-label="Sync in progress">
+                <div class="anchor-progress-bar"></div>
+            </div>
+        </section>
+    }
+</div>
+
+@code {
+    private enum OnboardingStep { Install, Authenticate, Sync }
+
+    private OnboardingStep _step = OnboardingStep.Install;
+    private string _pastedBundle = string.Empty;
+    private string _teamName = string.Empty;
+    private string? _error;
+
+    protected override void OnInitialized()
+    {
+        if (Session.IsOnboarded)
+        {
+            Nav.NavigateTo("/", replace: true);
+        }
+    }
+
+    private string StepClass(OnboardingStep s) =>
+        s == _step ? "anchor-step anchor-step--current"
+        : s < _step ? "anchor-step anchor-step--done"
+        : "anchor-step";
+
+    private string? AriaCurrent(OnboardingStep s) => s == _step ? "step" : null;
+
+    private void GoToAuthenticate()
+    {
+        _error = null;
+        _step = OnboardingStep.Authenticate;
+    }
+
+    private async Task JoinFromPastedBundleAsync()
+    {
+        _error = null;
+        try
+        {
+            var bytes = Convert.FromBase64String(_pastedBundle.Trim());
+            await CompleteOnboardingAsync(bytes);
+        }
+        catch (FormatException)
+        {
+            _error = "Pasted bundle is not valid base64.";
+        }
+        catch (ArgumentException ex)
+        {
+            _error = $"Malformed onboarding payload: {ex.Message}";
+        }
+        catch (InvalidOnboardingPayloadException ex)
+        {
+            _error = $"Onboarding rejected: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+    }
+
+    private async Task GenerateFounderAsync()
+    {
+        _error = null;
+        try
+        {
+            _step = OnboardingStep.Sync;
+            var result = await OnboardingService.GenerateFounderBundleAsync(_teamName.Trim(), CancellationToken.None);
+            await Session.OnboardAsync(result.Bundle.Attestations[0], result.InitialSnapshot, CancellationToken.None);
+            Nav.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to generate founder bundle: {ex.Message}";
+            _step = OnboardingStep.Authenticate;
+        }
+    }
+
+    private async Task CompleteOnboardingAsync(byte[] payload)
+    {
+        _step = OnboardingStep.Sync;
+        try
+        {
+            var result = await OnboardingService.DecodePayloadAsync(payload, CancellationToken.None);
+            await Session.OnboardAsync(result.Bundle.Attestations[0], result.InitialSnapshot, CancellationToken.None);
+            Nav.NavigateTo("/");
+        }
+        catch
+        {
+            _step = OnboardingStep.Authenticate;
+            throw;
+        }
+    }
+}
+
+<style>
+    .anchor-onboard { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-onboard h1 { font-size: 1.75rem; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+    .anchor-onboard-sub { color: #555; margin: 0 0 1.5rem; line-height: 1.5; }
+    .anchor-stepper { display: flex; gap: 0.5rem; list-style: none; padding: 0; margin: 0 0 1.5rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
+    .anchor-step { display: flex; gap: 0.5rem; align-items: center; padding: 0.25rem 0.75rem; border-radius: 999px; background: #f1f1f1; color: #666; font-size: 0.875rem; }
+    .anchor-step--current { background: #1e6b3c; color: #fff; }
+    .anchor-step--done { background: #e6f4ea; color: #1e6b3c; }
+    .anchor-step-index { display: inline-flex; width: 1.25rem; height: 1.25rem; align-items: center; justify-content: center; border-radius: 999px; background: rgba(0,0,0,0.15); font-weight: 600; font-size: 0.75rem; }
+    .anchor-step--current .anchor-step-index { background: rgba(255,255,255,0.25); }
+    .anchor-step-panel { padding: 1.25rem 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; background: #fff; }
+    .anchor-step-panel h2 { margin: 0 0 0.75rem; font-size: 1.0625rem; }
+    .anchor-choice-group { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1rem; }
+    @@media (min-width: 720px) { .anchor-choice-group { grid-template-columns: 1fr 1fr; } }
+    .anchor-choice { padding: 1rem; border: 1px solid #eee; border-radius: 6px; background: #fafafa; display: flex; flex-direction: column; gap: 0.5rem; }
+    .anchor-choice h3 { margin: 0; font-size: 0.9375rem; }
+    .anchor-muted { color: #666; margin: 0; font-size: 0.8125rem; line-height: 1.5; }
+    .anchor-label { font-size: 0.8125rem; color: #444; font-weight: 500; }
+    .anchor-input, .anchor-textarea { font: inherit; padding: 0.5rem 0.625rem; border: 1px solid #ccc; border-radius: 4px; background: #fff; }
+    .anchor-textarea { font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; }
+    .anchor-actions { margin-top: 1rem; }
+    .anchor-btn { font: inherit; padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; }
+    .anchor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .anchor-btn-primary { background: #1e6b3c; color: #fff; }
+    .anchor-btn-secondary { background: #fff; color: #1e6b3c; border-color: #1e6b3c; }
+    .anchor-error { margin-top: 1rem; padding: 0.625rem 0.875rem; border-radius: 4px; background: #fdecea; color: #8a1c1c; font-size: 0.875rem; }
+    .anchor-progress { height: 6px; background: #eee; border-radius: 999px; overflow: hidden; margin-top: 0.75rem; }
+    .anchor-progress-bar { width: 40%; height: 100%; background: linear-gradient(90deg, #1e6b3c, #7fc794); animation: anchor-progress 1.2s ease-in-out infinite; }
+    @@keyframes anchor-progress { 0% { margin-left: -40%; } 100% { margin-left: 100%; } }
+</style>

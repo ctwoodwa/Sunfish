@@ -82,9 +82,30 @@
     </ItemGroup>
 
     <ItemGroup>
+        <!-- Tests live alongside the accelerator but compile as a separate
+             project (tests/tests.csproj). Exclude their sources from the MAUI
+             build so xunit attributes don't need to resolve here. -->
+        <Compile Remove="tests/**/*.cs" />
+        <Content Remove="tests/**/*" />
+        <None Remove="tests/**/*" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+        <PackageReference Include="System.Formats.Cbor" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Wave 3.3+3.4 paper-alignment wiring:
+             LocalFirst encrypted store, kernel-security attestation + Ed25519,
+             kernel-runtime node host, and the Blazor LocalFirst components. -->
+        <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+        <ProjectReference Include="..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+        <ProjectReference Include="..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+        <ProjectReference Include="..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+        <ProjectReference Include="..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj" />
     </ItemGroup>
 
 </Project>

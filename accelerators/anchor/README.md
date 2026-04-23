@@ -1,6 +1,6 @@
 # Sunfish Anchor
 
-**Status:** Scaffolded. Scope deliberately deferred.
+**Status:** Re-activated (Wave 3.3 + 3.4). Three deferred items landed; five still deferred.
 **Tier:** Accelerator
 **Platform:** .NET MAUI Blazor Hybrid (Windows, macOS, iOS, Android)
 
@@ -25,20 +25,21 @@ Anchor exists to prove that the same component surface, bundle manifests, and
 Foundation primitives compose cleanly into both shapes — if something only works
 in the SaaS case, it isn't really local-first.
 
-## Scope — deliberately deferred
+## Scope — Wave 3.3 + 3.4 landed; further scope still deferred
 
-Per user direction, Anchor's scope is **reserved for a future build-out**. The
-current state is scaffolded skeleton only: solution entry, project file, one
-placeholder page. Landing the scope now would either (a) produce Blazor-only code
-that has to be rewritten during the [ADR 0017](../../docs/adrs/0017-web-components-lit-technical-basis.md)
-Web Components migration, or (b) pre-commit to bundle-selection and
-auth-model decisions before the migration surfaces the right answers.
+Paper-alignment Wave 3.3 + 3.4 de-gates Anchor from the [ADR 0017](../../docs/adrs/0017-web-components-lit-technical-basis.md)
+Web Components migration (the paper at `_shared/product/local-node-architecture-paper.md`
+is now the load-bearing spec; WC migration is downstream). The current slice wires
+LocalFirst + kernel-security + kernel-runtime into the MAUI shell and ships the
+three-step QR-code onboarding flow from paper §13.4. Bundle-selection and
+report-catalog scope remain deferred.
 
-Deferred deliverables — each triggers its own intake when Web Components migration
-reaches the relevant milestone:
+Deliverable checklist:
 
-- [ ] **LocalFirst store wiring** — register `Sunfish.Foundation.LocalFirst` contracts,
-      wire embedded SQLite, expose export as a first-class operation per ADR 0012.
+- [x] **LocalFirst store wiring** — `AddSunfishEncryptedStore()` + `AddSunfishKernelRuntime()`
+      + `AddSunfishKernelSecurity()` wired in `MauiProgram.cs` (Wave 3.3). Actual
+      encrypted-DB open-on-login + export-as-first-class-operation still pending the
+      follow-up slice — Wave 4 work.
 - [ ] **Bundle selection UI** — which bundles does Anchor compose? For the small-landlord
       reference vertical: `blocks-rent-collection`, `blocks-leases`, `blocks-maintenance`,
       `blocks-accounting`. For small-medical-office: TBD based on practice workflow.
@@ -47,14 +48,46 @@ reaches the relevant milestone:
       model end-to-end.
 - [ ] **Audit log surface** — read-only view over the Foundation audit log for compliance posture.
 - [ ] **Sync toggle** — per-bundle opt-in sync UI against a federated peer (ADR 0013).
-- [ ] **Authentication model** — how does a single-user desktop app authenticate? Device-bound
-      credentials, optional passphrase, recovery mechanism. Ties to Foundation.MultiTenancy
-      contracts (ADR 0008) in single-tenant mode.
+      The three-indicator status bar (paper §13.2) is live via `SunfishNodeHealthBar`;
+      the per-bundle toggle is still pending.
+- [x] **Authentication model** (partial) — device-bound Ed25519 keypair issued at
+      onboarding, self-signed founder attestation vs. joiner attestation issued by
+      the founder's key (Wave 3.4). Passphrase recovery + OS-keystore cache of the
+      derived encrypted-DB key still pending.
 - [ ] **Platform packaging** — .msix (Windows Store + sideload), .dmg (macOS),
       Mac Catalyst notarization, App Store submission flows.
 - [ ] **Auto-update** — delivery channel (Sparkle for macOS, MSIX AppInstaller for Windows,
       or an OSS alternative).
 - [ ] **Crash reporting** — pre-production OTel pipeline per `_shared/engineering/operations-sre.md`.
+
+### Onboarding flow (paper §13.4)
+
+Three steps surfaced by `Components/Pages/Onboarding.razor`:
+
+1. **Install** — the MAUI app is installed; the local node runtime is ready.
+2. **Authenticate** — the user either (a) pastes a base64 onboarding bundle
+   (`QrOnboardingService.DecodePayloadAsync`) or (b) generates a new team with the
+   founder flow (`QrOnboardingService.GenerateFounderBundleAsync`). The camera /
+   QR-decode path is documented as a TODO in `Components/QrScanner.razor` — the
+   .NET 11 MAUI preview's camera surface wasn't readily available in this wave,
+   so the paste-bundle fallback is the reference transport.
+3. **Sync** — `AnchorSessionService.OnboardAsync(attestation, snapshot, ct)` applies
+   the attestation, stamps `LastSyncedAt`, and transitions `NodeHealth` + `DataFreshness`
+   to `Healthy`. `LinkStatus` stays `Offline` until a peer is reached (Wave 4+).
+
+### QR payload wire format
+
+```
+[4 bytes: CBOR bundle length, little-endian uint32]
+[N bytes: CBOR-encoded AttestationBundle (kernel-security §11.3)]
+[4 bytes: snapshot length, little-endian uint32]
+[M bytes: raw snapshot bytes]
+```
+
+The bundle uses the canonical-CBOR encoding defined by `AttestationBundle.ToCbor`.
+Each attestation in the bundle is verified with `IAttestationVerifier` against its
+own declared `IssuerPublicKey` at decode time; founder bundles are self-signed
+(issuer == subject), joiner bundles are signed by the founder's Ed25519 private key.
 
 ## Running it today
 
