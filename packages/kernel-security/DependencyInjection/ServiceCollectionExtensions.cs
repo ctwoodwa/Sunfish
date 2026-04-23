@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IAttestationIssuer, AttestationIssuer>();
         services.AddSingleton<IAttestationVerifier, AttestationVerifier>();
         services.AddSingleton<IRoleKeyManager, RoleKeyManager>();
+        services.AddSingleton<ITeamSubkeyDerivation, TeamSubkeyDerivation>();
 
         return services;
     }

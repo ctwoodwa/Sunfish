@@ -30,6 +30,16 @@ public interface IEd25519Signer
     /// </summary>
     (byte[] PublicKey, byte[] PrivateKey) GenerateKeyPair();
 
+    /// <summary>
+    /// Deterministically derives an Ed25519 keypair from a 32-byte seed (the "raw
+    /// private key" form NSec uses for Ed25519). Same seed → same keypair. Used by
+    /// per-team subkey derivation in <c>ITeamSubkeyDerivation</c> (ADR 0032).
+    /// </summary>
+    /// <param name="seed">32-byte seed. The private key returned is a copy of this seed
+    /// (Ed25519's raw-private-key form).</param>
+    /// <exception cref="ArgumentException"><paramref name="seed"/> is not 32 bytes.</exception>
+    (byte[] PublicKey, byte[] PrivateKey) GenerateFromSeed(ReadOnlySpan<byte> seed);
+
     /// <summary>Signs <paramref name="message"/> with the 32-byte raw Ed25519 seed.</summary>
     /// <exception cref="ArgumentException">The private key is not 32 bytes.</exception>
     byte[] Sign(ReadOnlySpan<byte> message, ReadOnlySpan<byte> privateKey);

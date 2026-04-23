@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\kernel-sync\Sunfish.Kernel.Sync.csproj" />
   </ItemGroup>
 
 </Project>

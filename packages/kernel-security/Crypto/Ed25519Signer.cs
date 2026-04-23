@@ -34,6 +34,27 @@ public sealed class Ed25519Signer : IEd25519Signer
     }
 
     /// <inheritdoc />
+    public (byte[] PublicKey, byte[] PrivateKey) GenerateFromSeed(ReadOnlySpan<byte> seed)
+    {
+        if (seed.Length != PrivateKeyLength)
+        {
+            throw new ArgumentException(
+                $"Ed25519 seed must be {PrivateKeyLength} bytes (was {seed.Length}).",
+                nameof(seed));
+        }
+
+        var creationParams = new KeyCreationParameters
+        {
+            ExportPolicy = KeyExportPolicies.AllowPlaintextExport,
+        };
+        using var key = Key.Import(Alg, seed, KeyBlobFormat.RawPrivateKey, creationParams);
+
+        var privateKey = key.Export(KeyBlobFormat.RawPrivateKey);
+        var publicKey = key.PublicKey.Export(KeyBlobFormat.RawPublicKey);
+        return (publicKey, privateKey);
+    }
+
+    /// <inheritdoc />
     public byte[] Sign(ReadOnlySpan<byte> message, ReadOnlySpan<byte> privateKey)
     {
         if (privateKey.Length != PrivateKeyLength)
