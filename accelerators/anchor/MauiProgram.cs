@@ -5,6 +5,7 @@ using Sunfish.Anchor.Services;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Kernel.Runtime.DependencyInjection;
 using Sunfish.Kernel.Runtime.Teams;
+using Sunfish.Kernel.Security.Attestation;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
@@ -127,7 +128,24 @@ public static class MauiProgram
 
 		// Anchor-specific session state + onboarding service.
 		builder.Services.AddSingleton<AnchorSessionService>();
-		builder.Services.AddSingleton<QrOnboardingService>();
+
+		// Wave 6.8 — QrOnboardingService is wired with the multi-team Wave 6.8
+		// dependencies (ITeamContextFactory, ITeamStoreActivator,
+		// ITeamSubkeyDerivation, root NodeIdentity) so the team-switcher page
+		// can drive the join-additional-team flow. Subkey derivation + root
+		// identity are closures over the composition-time values above so the
+		// service matches the same byte-for-byte derivation the default team
+		// registrar performs (keeps Wave 6.2 + Wave 6.3.E semantics aligned).
+		builder.Services.AddSingleton<QrOnboardingService>(sp =>
+			new QrOnboardingService(
+				signer: sp.GetRequiredService<IEd25519Signer>(),
+				activeTeam: sp.GetRequiredService<IActiveTeamAccessor>(),
+				verifier: sp.GetRequiredService<IAttestationVerifier>(),
+				issuer: sp.GetRequiredService<IAttestationIssuer>(),
+				factory: sp.GetRequiredService<ITeamContextFactory>(),
+				storeActivator: sp.GetRequiredService<ITeamStoreActivator>(),
+				subkeyDerivation: subkeyDerivation,
+				rootIdentity: rootIdentity));
 
 #if DEBUG
 		builder.Services.AddBlazorWebViewDeveloperTools();

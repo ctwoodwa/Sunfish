@@ -1,0 +1,191 @@
+@page "/teams"
+@using Sunfish.Anchor.Services
+@using Sunfish.Kernel.Runtime.Teams
+@inject QrOnboardingService OnboardingService
+@inject IActiveTeamAccessor ActiveTeam
+
+<PageTitle>Sunfish Anchor — Teams</PageTitle>
+
+@*
+    Wave 6.8 — team-switcher host page for Anchor. The Wave 6.6
+    SunfishTeamSwitcher sidebar exposes an OnAddTeamRequested callback that
+    was deliberately a no-op in 6.6; this page wires it to
+    QrOnboardingService.BeginAdditionalTeamJoinAsync so the Anchor shell can
+    actually complete a second, third, Nth team join without disturbing the
+    existing TeamContexts. Camera-scan of the founder's response is future
+    work; v0 accepts the response via a base64 paste textbox.
+*@
+
+<div class="anchor-teams-page">
+    <aside class="anchor-teams-sidebar">
+        <SunfishTeamSwitcher OnAddTeamRequested="HandleAddTeamRequestedAsync" />
+    </aside>
+
+    <section class="anchor-teams-panel">
+        <h1>Teams</h1>
+        <p class="anchor-muted">
+            Per ADR 0032 §Onboarding flow for joining additional teams — each
+            join creates a fresh per-team subkey and a new TeamContext without
+            touching your existing teams.
+        </p>
+
+        @if (_invitation is null)
+        {
+            <button type="button"
+                    class="anchor-btn anchor-btn-primary"
+                    @onclick="HandleAddTeamRequestedAsync">
+                Add team
+            </button>
+        }
+        else
+        {
+            <div class="anchor-invitation">
+                <h2>Invitation ready</h2>
+                <p class="anchor-muted">
+                    Scan this payload on the team's founder device, or copy +
+                    paste it into their Anchor onboarding screen. The founder
+                    signs a response bundle; paste that signed bundle below to
+                    complete the join.
+                </p>
+
+                <dl class="anchor-invitation-meta">
+                    <dt>New team id</dt>
+                    <dd><code>@_invitation.TeamId.Value.ToString("D")</code></dd>
+                    <dt>Expires</dt>
+                    <dd>@_invitation.ExpiresAt.ToString("yyyy-MM-dd HH:mm:ss 'UTC'")</dd>
+                </dl>
+
+                <label class="anchor-label" for="invitation-payload">Invitation payload (base64)</label>
+                <textarea id="invitation-payload"
+                          class="anchor-textarea"
+                          rows="4"
+                          readonly>@InvitationPayloadBase64</textarea>
+
+                <label class="anchor-label" for="response-bundle">Signed response bundle (base64)</label>
+                <textarea id="response-bundle"
+                          class="anchor-textarea"
+                          rows="4"
+                          placeholder="Paste the base64-encoded AttestationBundle returned by the founder…"
+                          @bind="_pastedResponse"
+                          @bind:event="oninput"></textarea>
+
+                <div class="anchor-actions">
+                    <button type="button"
+                            class="anchor-btn anchor-btn-primary"
+                            disabled="@string.IsNullOrWhiteSpace(_pastedResponse)"
+                            @onclick="HandleCompleteJoinAsync">
+                        Complete join
+                    </button>
+                    <button type="button"
+                            class="anchor-btn anchor-btn-secondary"
+                            @onclick="HandleCancelInvitation">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(_error))
+        {
+            <div role="alert" class="anchor-error">@_error</div>
+        }
+
+        @if (!string.IsNullOrEmpty(_status))
+        {
+            <div role="status" class="anchor-status">@_status</div>
+        }
+    </section>
+</div>
+
+@code {
+    private AdditionalTeamJoinInvitation? _invitation;
+    private string _pastedResponse = string.Empty;
+    private string? _error;
+    private string? _status;
+
+    private string InvitationPayloadBase64 =>
+        _invitation is null ? string.Empty : Convert.ToBase64String(_invitation.QrPayload);
+
+    private async Task HandleAddTeamRequestedAsync()
+    {
+        _error = null;
+        _status = null;
+        try
+        {
+            _invitation = await OnboardingService
+                .BeginAdditionalTeamJoinAsync(CancellationToken.None)
+                .ConfigureAwait(true);
+            _status = $"Invitation created for team {_invitation.TeamId.Value:D}. Share the payload with the founder device.";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not begin additional-team join: {ex.Message}";
+        }
+    }
+
+    private async Task HandleCompleteJoinAsync()
+    {
+        if (_invitation is null)
+        {
+            return;
+        }
+
+        _error = null;
+        _status = null;
+        try
+        {
+            var bytes = Convert.FromBase64String(_pastedResponse.Trim());
+            await OnboardingService
+                .CompleteAdditionalTeamJoinAsync(_invitation.TeamId, bytes, CancellationToken.None)
+                .ConfigureAwait(true);
+            _status = $"Team {_invitation.TeamId.Value:D} joined. Use the switcher to activate it.";
+            _invitation = null;
+            _pastedResponse = string.Empty;
+        }
+        catch (FormatException)
+        {
+            _error = "Pasted response bundle is not valid base64.";
+        }
+        catch (ArgumentException ex)
+        {
+            _error = $"Malformed response bundle: {ex.Message}";
+        }
+        catch (InvalidOnboardingPayloadException ex)
+        {
+            _error = $"Response bundle rejected: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            _error = $"Unexpected error: {ex.Message}";
+        }
+    }
+
+    private void HandleCancelInvitation()
+    {
+        _invitation = null;
+        _pastedResponse = string.Empty;
+        _error = null;
+        _status = "Invitation cancelled. The new team context remains materialized in the background; restart to remove it.";
+    }
+}
+
+<style>
+    .anchor-teams-page { display: grid; grid-template-columns: 240px 1fr; gap: 1.5rem; padding: 1rem 1.5rem; font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; }
+    .anchor-teams-sidebar { border-right: 1px solid #eee; padding-right: 1rem; }
+    .anchor-teams-panel h1 { font-size: 1.5rem; margin: 0 0 0.5rem; }
+    .anchor-muted { color: #666; margin: 0 0 1rem; font-size: 0.875rem; line-height: 1.5; }
+    .anchor-invitation { margin-top: 1.5rem; padding: 1.25rem 1.5rem; border: 1px solid #e5e5e5; border-radius: 8px; background: #fafafa; }
+    .anchor-invitation h2 { margin: 0 0 0.75rem; font-size: 1.0625rem; }
+    .anchor-invitation-meta { display: grid; grid-template-columns: auto 1fr; column-gap: 1rem; row-gap: 0.25rem; margin: 0 0 0.75rem; font-size: 0.875rem; }
+    .anchor-invitation-meta dt { color: #666; font-weight: 600; }
+    .anchor-invitation-meta dd { margin: 0; font-family: Consolas, Menlo, monospace; overflow-wrap: anywhere; }
+    .anchor-label { display: block; margin: 0.75rem 0 0.25rem; font-size: 0.8125rem; color: #444; font-weight: 500; }
+    .anchor-textarea { display: block; width: 100%; font-family: Consolas, Menlo, monospace; font-size: 0.8125rem; padding: 0.5rem 0.625rem; border: 1px solid #ccc; border-radius: 4px; background: #fff; box-sizing: border-box; }
+    .anchor-actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
+    .anchor-btn { font: inherit; padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid transparent; cursor: pointer; }
+    .anchor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .anchor-btn-primary { background: #1e6b3c; color: #fff; }
+    .anchor-btn-secondary { background: #fff; color: #1e6b3c; border-color: #1e6b3c; }
+    .anchor-error { margin-top: 1rem; padding: 0.625rem 0.875rem; border-radius: 4px; background: #fdecea; color: #8a1c1c; font-size: 0.875rem; }
+    .anchor-status { margin-top: 1rem; padding: 0.625rem 0.875rem; border-radius: 4px; background: #e6f4ea; color: #1e6b3c; font-size: 0.875rem; }
+</style>
