@@ -26,6 +26,8 @@
     <ProjectReference Include="..\kernel-schema-registry\Sunfish.Kernel.SchemaRegistry.csproj" />
     <ProjectReference Include="..\kernel-security\Sunfish.Kernel.Security.csproj" />
     <ProjectReference Include="..\kernel-buckets\Sunfish.Kernel.Buckets.csproj" />
+    <ProjectReference Include="..\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\kernel-lease\Sunfish.Kernel.Lease.csproj" />
     <ProjectReference Include="..\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
   </ItemGroup>
 </Project>

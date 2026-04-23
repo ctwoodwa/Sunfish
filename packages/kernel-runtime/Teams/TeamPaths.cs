@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace Sunfish.Kernel.Runtime.Teams;
 
@@ -49,6 +50,8 @@ public static class TeamPaths
     private const string BucketsSegment = "buckets";
     private const string LegacyBackupSegment = "legacy-backup";
     private const string DatabaseFileName = "sunfish.db";
+    private const string TransportSocketFileName = "sync.sock";
+    private const string WindowsPipePrefix = @"\\.\pipe\sunfish-";
 
     /// <summary>
     /// Returns the on-disk root directory for the given team —
@@ -164,5 +167,59 @@ public static class TeamPaths
     {
         ArgumentException.ThrowIfNullOrEmpty(dataDirectory);
         return Path.Combine(dataDirectory, LegacyBackupSegment);
+    }
+
+    /// <summary>
+    /// Returns the platform-specific endpoint string that this team's
+    /// <c>ISyncDaemonTransport</c> listens on / connects to. POSIX produces
+    /// a Unix-domain-socket path <c>{dataDirectory}/teams/{teamId:D}/sync.sock</c>;
+    /// Windows produces a named-pipe path <c>\\.\pipe\sunfish-{teamId:D}</c>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Wave 6.3.C stop-work resolution #1 (per
+    /// <c>_shared/product/wave-6.3-decomposition.md</c> §Stop-work). The
+    /// decomposition plan asked whether the install-level
+    /// <c>ISyncDaemonTransport</c> should be shared across per-team gossip
+    /// daemons (forcing a HELLO-level team-id multiplex) or whether each team
+    /// should get its own transport endpoint. The decision is per-team
+    /// endpoints — simpler, no protocol change — and this helper pins the
+    /// convention for every subsequent consumer.
+    /// </para>
+    /// <para>
+    /// <b>Platform split.</b> The same Unix-socket-vs-named-pipe split used
+    /// by <c>UnixSocketSyncDaemonTransport</c> (kernel-sync §2.1 /
+    /// ADR 0029) is mirrored here so the endpoint string produced by this
+    /// helper can be passed straight into the transport's ctor without any
+    /// per-caller normalization. On Windows, the full UNC-ish
+    /// <c>\\.\pipe\sunfish-{teamId:D}</c> form is returned — the transport
+    /// strips the prefix internally if needed.
+    /// </para>
+    /// <para>
+    /// <b>Directory existence.</b> On POSIX the returned path points at a
+    /// file inside the team root directory, which the event-log / SQLCipher
+    /// registrations create lazily. The transport's
+    /// <c>UnixSocketListenerHandle</c> calls <c>File.Delete</c> on any stale
+    /// socket at bind time, but does NOT create the parent directory —
+    /// callers that spin up the listener before the team root exists must
+    /// ensure the directory is present (the event-log registration does this
+    /// implicitly on first write). The listener binds lazily so in practice
+    /// the directory is always present by the time gossip actually starts.
+    /// </para>
+    /// </remarks>
+    public static string TransportEndpoint(string dataDirectory, TeamId teamId)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(dataDirectory);
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            // Named pipe: \\.\pipe\sunfish-{teamId:D}. The pipe namespace is
+            // flat and process-wide on Windows — teamId is enough to avoid
+            // collisions. dataDirectory is ignored on Windows because pipes
+            // are not filesystem-anchored; still validated above so callers
+            // can't accidentally pass null/empty.
+            return WindowsPipePrefix + teamId.Value.ToString("D");
+        }
+        // POSIX Unix-domain socket: {dataDirectory}/teams/{teamId:D}/sync.sock.
+        return Path.Combine(dataDirectory, TeamsSegment, teamId.Value.ToString("D"), TransportSocketFileName);
     }
 }

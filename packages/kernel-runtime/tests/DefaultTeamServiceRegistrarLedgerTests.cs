@@ -6,6 +6,7 @@ using Sunfish.Kernel.Events;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Identity;
 
 namespace Sunfish.Kernel.Runtime.Tests;
 
@@ -25,14 +26,37 @@ namespace Sunfish.Kernel.Runtime.Tests;
 public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
 {
     private readonly string _tempRoot;
-    private readonly ITeamSubkeyDerivation _fakeSubkeyDerivation = new ThrowingSubkeyDerivation();
-    private readonly IEd25519Signer _fakeRootSigner = new ThrowingEd25519Signer();
+    // Wave 6.3.C wires the sync pair into Compose, and that wiring invokes
+    // ITeamSubkeyDerivation.DeriveTeamKeypair at registrar-invocation time.
+    // The 6.3.B ledger tests therefore pass the real security primitives
+    // (they're pure and fast). The tests assert ledger behavior — the sync
+    // pair is covered by DefaultTeamServiceRegistrarSyncTests.
+    private readonly IEd25519Signer _realSigner = new Ed25519Signer();
+    private readonly ITeamSubkeyDerivation _realSubkeyDerivation;
+    private readonly NodeIdentity _rootIdentity;
     private readonly ISqlCipherKeyDerivation _realSqlCipherKeyDerivation = new SqlCipherKeyDerivation();
 
     public DefaultTeamServiceRegistrarLedgerTests()
     {
         _tempRoot = Path.Combine(Path.GetTempPath(), "sunfish-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempRoot);
+
+        _realSubkeyDerivation = new TeamSubkeyDerivation(_realSigner);
+
+        // Deterministic root seed for the 6.3.B ledger tests. The seed value
+        // is not load-bearing — these tests assert ledger isolation, not
+        // identity derivation — but using a fixed seed keeps them
+        // reproducible and avoids per-run keypair generation.
+        var seed = new byte[32];
+        for (var i = 0; i < seed.Length; i++)
+        {
+            seed[i] = (byte)(i + 1);
+        }
+        var (pub, priv) = _realSigner.GenerateFromSeed(seed);
+        var nodeIdBytes = new byte[16];
+        Buffer.BlockCopy(pub, 0, nodeIdBytes, 0, 16);
+        _rootIdentity = new NodeIdentity(
+            Convert.ToHexString(nodeIdBytes).ToLowerInvariant(), pub, priv);
     }
 
     public void Dispose()
@@ -54,7 +78,7 @@ public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
     public async Task Two_teams_get_isolated_IEventLog_instances_with_distinct_directories()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _realSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _realSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -82,7 +106,7 @@ public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
     public async Task Two_teams_get_isolated_IQuarantineQueue_instances_with_no_cross_visibility()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _realSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _realSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -122,7 +146,7 @@ public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
     public async Task Two_teams_get_isolated_IEncryptedStore_instances_with_distinct_database_paths()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _realSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _realSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -156,7 +180,7 @@ public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
         // rewired to share an event log across teams, quarantine writes would
         // cross-pollinate. Assert identity of the IEventLog the queue sees.
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _realSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _realSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -174,49 +198,11 @@ public sealed class DefaultTeamServiceRegistrarLedgerTests : IDisposable
         Assert.NotSame(queueA, queueB);
     }
 
-    // --- Throwing stubs for Compose's identity-dependent parameters ---------------
-    //
-    // Wave 6.3.B only exercises the ledger branch of the composed registrar,
-    // which never calls into ITeamSubkeyDerivation or IEd25519Signer at
-    // registrar-compose time. Passing throwing stubs surfaces any accidental
-    // identity dependency as a loud test failure. ISqlCipherKeyDerivation is
-    // captured in the closure but not invoked until 6.3.E's activator, so we
-    // pass the real implementation (it never gets called here — verified by
-    // the green path of these tests).
-
-    private sealed class ThrowingSubkeyDerivation : ITeamSubkeyDerivation
-    {
-        public byte[] DeriveSubkey(ReadOnlySpan<byte> rootPrivateKey, string teamId) =>
-            throw new InvalidOperationException(
-                "ITeamSubkeyDerivation was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-
-        public (byte[] PublicKey, byte[] PrivateKey) DeriveTeamKeypair(ReadOnlySpan<byte> rootPrivateKey, string teamId) =>
-            throw new InvalidOperationException(
-                "ITeamSubkeyDerivation was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-    }
-
-    private sealed class ThrowingEd25519Signer : IEd25519Signer
-    {
-        public int PublicKeyLength => 32;
-
-        public int PrivateKeyLength => 32;
-
-        public int SignatureLength => 64;
-
-        public (byte[] PublicKey, byte[] PrivateKey) GenerateKeyPair() =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-
-        public (byte[] PublicKey, byte[] PrivateKey) GenerateFromSeed(ReadOnlySpan<byte> seed) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-
-        public byte[] Sign(ReadOnlySpan<byte> message, ReadOnlySpan<byte> privateKey) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-
-        public bool Verify(ReadOnlySpan<byte> message, ReadOnlySpan<byte> signature, ReadOnlySpan<byte> publicKey) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.B ledger-registrar test path.");
-    }
+    // NOTE: Wave 6.3.B's earlier revision used throwing fakes for
+    // ITeamSubkeyDerivation and IEd25519Signer to prove the ledger branch
+    // never invoked them. Wave 6.3.C collapsed that separation: Compose now
+    // invokes ITeamSubkeyDerivation.DeriveTeamKeypair at registrar-invocation
+    // time (the derivation is cheap + pure), so real implementations are
+    // threaded through these tests instead. The ledger-isolation assertions
+    // are unchanged.
 }

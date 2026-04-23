@@ -1,32 +1,39 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Foundation.LocalFirst;
 using Sunfish.Kernel.Buckets.DependencyInjection;
 using Sunfish.Kernel.Events.DependencyInjection;
+using Sunfish.Kernel.Lease.DependencyInjection;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.DependencyInjection;
+using Sunfish.Kernel.Sync.Identity;
+using Sunfish.Kernel.Sync.Protocol;
 
 namespace Sunfish.Kernel.Runtime.Teams;
 
 /// <summary>
 /// Factory for the stock per-team <see cref="TeamServiceRegistrar"/> that
 /// <c>AddSunfishMultiTeam</c> invokes when materializing a fresh
-/// <see cref="TeamContext"/>. Wave 6.3.A lands the scaffold shell; Waves 6.3.B
-/// and 6.3.D fill in the ledger trio and the bucket registry respectively.
-/// 6.3.C (gossip + lease + per-team identity) remains TODO.
+/// <see cref="TeamContext"/>. Wave 6.3.A lands the scaffold shell; Waves 6.3.B,
+/// 6.3.C, and 6.3.D fill in the ledger trio, the sync pair, and the bucket
+/// registry respectively. 6.3.E remains pending (composition-root rewire).
 /// <list type="bullet">
 ///   <item><description>Wave 6.3.B — ledger trio: <c>IEventLog</c>,
 ///     <c>IQuarantineQueue</c>, <c>IEncryptedStore</c> — LANDED.</description></item>
 ///   <item><description>Wave 6.3.C — sync pair: per-team
-///     <c>INodeIdentityProvider</c>, <c>IGossipDaemon</c>,
-///     <c>ILeaseCoordinator</c> — PENDING.</description></item>
+///     <c>INodeIdentityProvider</c>, <c>ISyncDaemonTransport</c>,
+///     <c>IGossipDaemon</c>, <c>ILeaseCoordinator</c> — LANDED.</description></item>
 ///   <item><description>Wave 6.3.D — <c>IBucketRegistry</c> + manifest
 ///     loader bound to <see cref="TeamPaths.BucketsDirectory"/> — LANDED.</description></item>
+///   <item><description>Wave 6.3.E — <c>local-node-host</c> composition-root
+///     rewire + <c>AddSunfishDefaultTeamRegistrar</c> sugar — PENDING.</description></item>
 /// </list>
 /// </summary>
 /// <remarks>
 /// <para>
 /// The composition-root helper <c>AddSunfishDefaultTeamRegistrar</c> is not
-/// shipped in 6.3.A/B/D — callers wire
+/// shipped in 6.3.A/B/C/D — callers wire
 /// <c>AddSunfishMultiTeam(DefaultTeamServiceRegistrar.Compose(...))</c>
 /// themselves. The extension-method sugar is bundled with the
 /// <c>local-node-host</c> composition-root rewire in Wave 6.3.E.
@@ -37,49 +44,54 @@ public static class DefaultTeamServiceRegistrar
     /// <summary>
     /// Compose the per-team service registration callback for
     /// <c>AddSunfishMultiTeam</c>. Fills in the ledger trio (event log,
-    /// quarantine queue, encrypted store) and the bucket registry. The sync
-    /// pair (gossip + lease) lands in Wave 6.3.C.
+    /// quarantine queue, encrypted store), the sync pair (team-scoped node
+    /// identity, per-team transport endpoint, gossip daemon, lease
+    /// coordinator), and the bucket registry.
     /// </summary>
     /// <param name="dataDirectory">Install-level data directory that
     /// <see cref="TeamPaths"/> combines with each team id to produce the
-    /// per-team SQLCipher DB path, event-log directory, and bucket-manifest
-    /// directory. Captured in the returned closure and passed through to the
-    /// per-team registrations.</param>
+    /// per-team SQLCipher DB path, event-log directory, bucket-manifest
+    /// directory, and transport endpoint. Captured in the returned closure
+    /// and passed through to the per-team registrations.</param>
     /// <param name="subkeyDerivation">The installed
-    /// <see cref="ITeamSubkeyDerivation"/> — used by 6.3.C to derive a
-    /// team-scoped Ed25519 keypair from the root signer (via
-    /// <c>TeamScopedNodeIdentity.Derive</c> in <c>Sunfish.Kernel.Sync</c>)
-    /// before the per-team <c>INodeIdentityProvider</c> is registered.</param>
-    /// <param name="rootSigner">The install's root Ed25519 signer. Used
-    /// together with <paramref name="subkeyDerivation"/> to produce the
-    /// team-scoped keypair per ADR 0032 §Device identity. The closure only
-    /// holds the reference — no signing happens until 6.3.C wires the body.</param>
+    /// <see cref="ITeamSubkeyDerivation"/> — used to derive a team-scoped
+    /// Ed25519 keypair from the root identity (via
+    /// <see cref="TeamScopedNodeIdentity.Derive(NodeIdentity, string, ITeamSubkeyDerivation)"/>)
+    /// before the per-team <see cref="INodeIdentityProvider"/> is registered
+    /// (Wave 6.3.C).</param>
+    /// <param name="rootIdentity">The install's root Ed25519 identity
+    /// (<see cref="NodeIdentity.NodeId"/> + raw 32-byte public key + raw 32-byte
+    /// private key). Used together with <paramref name="subkeyDerivation"/> to produce
+    /// the team-scoped keypair per ADR 0032 §Device identity. The closure
+    /// captures the reference; derivation runs once per team at
+    /// registrar-invocation time.</param>
     /// <param name="sqlCipherKeyDerivation">The installed
     /// <see cref="ISqlCipherKeyDerivation"/> — used at store-activation time
     /// (Wave 6.3.E's <c>ITeamStoreActivator</c>) to derive the 32-byte
     /// SQLCipher key from the root seed + team id. Captured in the closure
-    /// so the activator can resolve it alongside <see cref="Sunfish.Foundation.LocalFirst.Encryption.IEncryptedStore"/>
+    /// so the activator can resolve it alongside
+    /// <see cref="Sunfish.Foundation.LocalFirst.Encryption.IEncryptedStore"/>
     /// from the per-team provider. The derivation itself is NOT invoked during
     /// registrar wiring — the store is registered unopened; see
     /// <c>_shared/product/wave-6.3-decomposition.md</c> §6.3.B for the
     /// Option-A rationale (deferred <c>OpenAsync</c>).</param>
     /// <returns>A <see cref="TeamServiceRegistrar"/> whose body wires the
-    /// per-team ledger trio (6.3.B) and bucket registry (6.3.D). 6.3.C will
-    /// append the sync-pair registrations to the same callback.</returns>
+    /// per-team ledger trio (6.3.B), sync pair (6.3.C), and bucket registry
+    /// (6.3.D).</returns>
     /// <exception cref="ArgumentException"><paramref name="dataDirectory"/>
     /// is <c>null</c> or empty.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="subkeyDerivation"/>,
-    /// <paramref name="rootSigner"/>, or <paramref name="sqlCipherKeyDerivation"/>
+    /// <paramref name="rootIdentity"/>, or <paramref name="sqlCipherKeyDerivation"/>
     /// is <c>null</c>.</exception>
     public static TeamServiceRegistrar Compose(
         string dataDirectory,
         ITeamSubkeyDerivation subkeyDerivation,
-        IEd25519Signer rootSigner,
+        NodeIdentity rootIdentity,
         ISqlCipherKeyDerivation sqlCipherKeyDerivation)
     {
         ArgumentException.ThrowIfNullOrEmpty(dataDirectory);
         ArgumentNullException.ThrowIfNull(subkeyDerivation);
-        ArgumentNullException.ThrowIfNull(rootSigner);
+        ArgumentNullException.ThrowIfNull(rootIdentity);
         ArgumentNullException.ThrowIfNull(sqlCipherKeyDerivation);
 
         return (services, teamId) =>
@@ -121,8 +133,54 @@ public static class DefaultTeamServiceRegistrar
             // need to double-resolve it from the outer provider.
             _ = sqlCipherKeyDerivation; // reserved for 6.3.E activator wiring.
 
-            // Wave 6.3.C — gossip + lease + per-team INodeIdentityProvider
-            //             derived via subkeyDerivation + rootSigner.
+            // Wave 6.3.C — sync pair. Derives a team-scoped Ed25519 keypair
+            // from the root identity + team id via TeamScopedNodeIdentity.Derive
+            // (kernel-sync; ADR 0032 §Device identity), registers a per-team
+            // INodeIdentityProvider seeded from it, then wires the gossip
+            // daemon and lease coordinator against that identity. The team id
+            // is rendered in GUID "D" form for the HKDF info string so it
+            // matches the derivation contract in TeamSubkeyDerivation
+            // (kernel-security) byte-for-byte.
+            var teamIdentity = TeamScopedNodeIdentity.Derive(
+                rootIdentity, teamId.Value.ToString("D"), subkeyDerivation);
+
+            // Guard per 6.3.C risk note "Root/team identity conflation": the
+            // install-level INodeIdentityProvider fallback in
+            // AddSunfishKernelSync registers itself via TryAddSingleton and
+            // would win if the outer container had already leaked one in. We
+            // defensively clear any inherited registration and install the
+            // team-scoped one ahead of AddSunfishKernelSync.
+            services.RemoveAll<INodeIdentityProvider>();
+            services.AddSingleton<INodeIdentityProvider>(
+                new InMemoryNodeIdentityProvider(teamIdentity));
+
+            // Per-team transport endpoint resolves the decomposition plan's
+            // stop-work item #1: each team speaks on its own socket / named
+            // pipe, so the install-level daemon does not need HELLO-level
+            // team-id multiplexing. AddSunfishKernelSync's default transport
+            // registration is TryAddSingleton, so we RemoveAll first and
+            // install a concrete listening endpoint for this team.
+            var transportEndpoint = TeamPaths.TransportEndpoint(dataDirectory, teamId);
+            services.RemoveAll<ISyncDaemonTransport>();
+            services.AddSingleton<ISyncDaemonTransport>(_ =>
+                new UnixSocketSyncDaemonTransport(transportEndpoint));
+
+            // AddSunfishKernelSync fills in VectorClock, IEd25519Signer, and
+            // IGossipDaemon against the pre-registered INodeIdentityProvider
+            // and ISyncDaemonTransport. Its TryAddSingleton guards mean our
+            // earlier registrations are honored.
+            services.AddSunfishKernelSync();
+
+            // Lease coordinator's localNodeId is deterministic from the team
+            // subkey's public key (first 16 bytes, lowercase hex). Identically
+            // configured installs on different machines produce the same
+            // localNodeId for the same root seed + team id — the test suite
+            // pins that round-trip.
+            var localNodeId = Convert.ToHexString(
+                teamIdentity.PublicKey.AsSpan(0, 16)).ToLowerInvariant();
+            services.AddSunfishKernelLease(
+                localNodeId: localNodeId,
+                localListenEndpoint: transportEndpoint);
 
             // Wave 6.3.D — buckets per-team. Manifest source directory is
             // TeamPaths.BucketsDirectory(dataDirectory, teamId). IBucketRegistry,

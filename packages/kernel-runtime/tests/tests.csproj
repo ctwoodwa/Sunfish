@@ -18,6 +18,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sunfish.Kernel.Runtime.csproj" />
+    <!-- Direct references needed because the test assembly names NodeIdentity /
+         ISyncDaemonTransport / ILeaseCoordinator directly in 6.3.C tests. -->
+    <ProjectReference Include="..\..\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\..\kernel-lease\Sunfish.Kernel.Lease.csproj" />
   </ItemGroup>
 
 </Project>

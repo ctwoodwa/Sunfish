@@ -5,6 +5,7 @@ using Sunfish.Kernel.Buckets.Storage;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Identity;
 
 namespace Sunfish.Kernel.Runtime.Tests;
 
@@ -17,14 +18,37 @@ namespace Sunfish.Kernel.Runtime.Tests;
 public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
 {
     private readonly string _tempRoot;
-    private readonly ITeamSubkeyDerivation _fakeSubkeyDerivation = new ThrowingSubkeyDerivation();
-    private readonly IEd25519Signer _fakeRootSigner = new ThrowingEd25519Signer();
+    // Wave 6.3.C wires ITeamSubkeyDerivation.DeriveTeamKeypair into the
+    // registrar body itself, so the bucket tests now thread a real subkey
+    // derivation + a deterministic root identity through Compose. Only
+    // ISqlCipherKeyDerivation stays a throwing fake — it's captured in the
+    // closure but not invoked until 6.3.E's activator hosted service, which
+    // these tests don't exercise.
+    private readonly IEd25519Signer _realSigner = new Ed25519Signer();
+    private readonly ITeamSubkeyDerivation _realSubkeyDerivation;
+    private readonly NodeIdentity _rootIdentity;
     private readonly ISqlCipherKeyDerivation _fakeSqlCipherKeyDerivation = new ThrowingSqlCipherKeyDerivation();
 
     public DefaultTeamServiceRegistrarBucketsTests()
     {
         _tempRoot = Path.Combine(Path.GetTempPath(), "sunfish-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempRoot);
+
+        _realSubkeyDerivation = new TeamSubkeyDerivation(_realSigner);
+
+        // Deterministic root seed — bucket isolation assertions do not depend
+        // on the concrete key bytes, only on the fact that the derivation
+        // runs cleanly.
+        var seed = new byte[32];
+        for (var i = 0; i < seed.Length; i++)
+        {
+            seed[i] = (byte)(0x10 + i);
+        }
+        var (pub, priv) = _realSigner.GenerateFromSeed(seed);
+        var nodeIdBytes = new byte[16];
+        Buffer.BlockCopy(pub, 0, nodeIdBytes, 0, 16);
+        _rootIdentity = new NodeIdentity(
+            Convert.ToHexString(nodeIdBytes).ToLowerInvariant(), pub, priv);
     }
 
     public void Dispose()
@@ -46,7 +70,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Two_teams_get_isolated_bucket_registries_populated_from_their_own_manifests()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -87,7 +111,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task All_five_bucket_package_services_are_distinct_instances_across_teams()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -132,7 +156,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Team_with_empty_buckets_directory_produces_empty_registry_without_crashing()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamId = TeamId.New();
@@ -150,7 +174,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Team_with_missing_buckets_directory_produces_empty_registry_without_crashing()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
+            _tempRoot, _realSubkeyDerivation, _rootIdentity, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamId = TeamId.New();
@@ -170,54 +194,17 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
         File.WriteAllText(Path.Combine(dir, filename), yaml);
     }
 
-    // --- Throwing stubs for Compose's identity-dependent parameters ---------------
-    //
-    // Wave 6.3.D only exercises the bucket-registry branch of the composed registrar,
-    // which never calls into ITeamSubkeyDerivation or IEd25519Signer. Passing throwing
-    // stubs (rather than Moq) keeps the test fast and surfaces any accidental identity
-    // dependency in 6.3.D's code path as a loud test failure rather than a silent mock
-    // return. Wave 6.3.C's tests exercise these with real implementations.
-
-    private sealed class ThrowingSubkeyDerivation : ITeamSubkeyDerivation
-    {
-        public byte[] DeriveSubkey(ReadOnlySpan<byte> rootPrivateKey, string teamId) =>
-            throw new InvalidOperationException(
-                "ITeamSubkeyDerivation was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-
-        public (byte[] PublicKey, byte[] PrivateKey) DeriveTeamKeypair(ReadOnlySpan<byte> rootPrivateKey, string teamId) =>
-            throw new InvalidOperationException(
-                "ITeamSubkeyDerivation was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-    }
+    // ISqlCipherKeyDerivation is still a throwing fake — it is captured in
+    // the registrar closure for Wave 6.3.E's activator but never invoked
+    // during the bucket-registration branch these tests exercise. The
+    // ITeamSubkeyDerivation and IEd25519Signer fakes were removed in 6.3.C
+    // (the real primitives are threaded through the fixture) because
+    // DeriveTeamKeypair now runs inside the registrar body.
 
     private sealed class ThrowingSqlCipherKeyDerivation : ISqlCipherKeyDerivation
     {
         public byte[] DeriveSqlCipherKey(ReadOnlySpan<byte> rootSeed, string teamId) =>
             throw new InvalidOperationException(
                 "ISqlCipherKeyDerivation was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-    }
-
-    private sealed class ThrowingEd25519Signer : IEd25519Signer
-    {
-        public int PublicKeyLength => 32;
-
-        public int PrivateKeyLength => 32;
-
-        public int SignatureLength => 64;
-
-        public (byte[] PublicKey, byte[] PrivateKey) GenerateKeyPair() =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-
-        public (byte[] PublicKey, byte[] PrivateKey) GenerateFromSeed(ReadOnlySpan<byte> seed) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-
-        public byte[] Sign(ReadOnlySpan<byte> message, ReadOnlySpan<byte> privateKey) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
-
-        public bool Verify(ReadOnlySpan<byte> message, ReadOnlySpan<byte> signature, ReadOnlySpan<byte> publicKey) =>
-            throw new InvalidOperationException(
-                "IEd25519Signer was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
     }
 }

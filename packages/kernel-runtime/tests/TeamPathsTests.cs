@@ -1,4 +1,5 @@
 using System.IO;
+using System.Runtime.InteropServices;
 using Sunfish.Kernel.Runtime.Teams;
 
 namespace Sunfish.Kernel.Runtime.Tests;
@@ -152,6 +153,46 @@ public sealed class TeamPathsTests
     public void LegacyBackupDirectory_throws_on_empty_dataDirectory()
     {
         Assert.Throws<ArgumentException>(() => TeamPaths.LegacyBackupDirectory(""));
+    }
+
+    [Fact]
+    public void TransportEndpoint_is_platform_specific_and_includes_teamId()
+    {
+        // Wave 6.3.C: per-team transport endpoints. The concrete shape is
+        // platform-dependent (Unix-domain socket vs named pipe), so assert
+        // via the same platform switch the helper uses.
+        var endpoint = TeamPaths.TransportEndpoint("/tmp/data", SampleTeamId);
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            Assert.Equal(@"\\.\pipe\sunfish-" + SampleTeamIdString, endpoint);
+            // Windows pipes are flat-namespace — dataDirectory must NOT be
+            // interpolated into the pipe name.
+            Assert.DoesNotContain("tmp", endpoint);
+            Assert.DoesNotContain("data", endpoint);
+        }
+        else
+        {
+            var expected = Path.Combine("/tmp/data", "teams", SampleTeamIdString, "sync.sock");
+            Assert.Equal(expected, endpoint);
+        }
+    }
+
+    [Fact]
+    public void TransportEndpoint_throws_on_empty_dataDirectory()
+    {
+        Assert.Throws<ArgumentException>(() => TeamPaths.TransportEndpoint("", SampleTeamId));
+    }
+
+    [Fact]
+    public void TransportEndpoint_is_distinct_per_team()
+    {
+        var a = TeamId.Parse("11111111-1111-1111-1111-111111111111");
+        var b = TeamId.Parse("22222222-2222-2222-2222-222222222222");
+
+        Assert.NotEqual(
+            TeamPaths.TransportEndpoint(@"C:\data", a),
+            TeamPaths.TransportEndpoint(@"C:\data", b));
     }
 
     [Fact]
