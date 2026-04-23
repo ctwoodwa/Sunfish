@@ -29,11 +29,15 @@ namespace Sunfish.Bridge.Orchestration;
 /// for the same tenant serialize. Cross-tenant calls are fully parallel.
 /// </para>
 /// <para>
-/// <b>Per-tenant seed isolation is NOT yet enforced.</b> Children boot with
-/// <c>ASPNETCORE_ENVIRONMENT=Development</c> and rely on the Program-time
-/// zero-seed stub — so two tenants on the same install currently share the
-/// same encryption seed. Decomposition plan §8 stop-work #1 tracks the fix;
-/// this supervisor will not drive it.
+/// <b>Per-tenant seed isolation (W5.2 stop-work #1).</b> The supervisor
+/// derives a per-tenant 32-byte Ed25519 seed via
+/// <see cref="ITenantSeedProvider"/> (HKDF-SHA256 over Bridge's install-level
+/// root seed with info <c>"sunfish:bridge:tenant-seed:v1:{TenantId}"</c>)
+/// and passes it to the child in the <c>LocalNode__RootSeedHex</c> environment
+/// variable. The child reads the hex string on boot and skips its own
+/// keystore lookup, so every tenant on one Bridge host derives a
+/// cryptographically independent root identity. Seeds are never logged; only
+/// a redacted length confirmation is emitted.
 /// </para>
 /// <para>
 /// <b>Endpoint assignment.</b> Each spawn binds a <see cref="TcpListener"/> on
@@ -50,6 +54,7 @@ public sealed class TenantProcessSupervisor : ITenantProcessSupervisor, IDisposa
     private readonly IServiceProvider _services;
     private readonly ITenantEndpointRegistry _endpoints;
     private readonly IProcessStarter _processStarter;
+    private readonly ITenantSeedProvider? _tenantSeedProvider;
     private readonly ILogger<TenantProcessSupervisor> _logger;
     private readonly ConcurrentDictionary<Guid, TenantProcessHandle> _handles = new();
     private readonly HttpClient _healthProbeClient;
@@ -63,11 +68,20 @@ public sealed class TenantProcessSupervisor : ITenantProcessSupervisor, IDisposa
     /// captured so each <see cref="StartAsync"/> call can open a fresh scope
     /// and resolve the scoped <see cref="ITenantRegistry"/>.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="tenantSeedProvider"/> is optional for test ergonomics —
+    /// existing unit tests that construct the supervisor directly (without
+    /// DI) continue to work without wiring a fake seed provider, in which
+    /// case the child falls back to its own keystore-backed root-seed lookup
+    /// (matching pre-stop-work behavior). Production DI registration always
+    /// supplies the real <see cref="TenantSeedProvider"/>.
+    /// </remarks>
     public TenantProcessSupervisor(
         IOptions<BridgeOrchestrationOptions> options,
         IServiceProvider services,
         ITenantEndpointRegistry endpoints,
         IProcessStarter processStarter,
+        ITenantSeedProvider? tenantSeedProvider = null,
         HttpClient? healthProbeClient = null,
         ILogger<TenantProcessSupervisor>? logger = null)
     {
@@ -80,6 +94,7 @@ public sealed class TenantProcessSupervisor : ITenantProcessSupervisor, IDisposa
         _services = services;
         _endpoints = endpoints;
         _processStarter = processStarter;
+        _tenantSeedProvider = tenantSeedProvider;
         _logger = logger ?? NullLogger<TenantProcessSupervisor>.Instance;
 
         if (healthProbeClient is not null)
@@ -456,8 +471,22 @@ public sealed class TenantProcessSupervisor : ITenantProcessSupervisor, IDisposa
         startInfo.EnvironmentVariables["LocalNode__DataDirectory"] = dataDir;
         startInfo.EnvironmentVariables["LocalNode__MultiTeam__Enabled"] = "false";
         startInfo.EnvironmentVariables["LocalNode__HealthPort"] = port.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        // W5.2 stop-work #1: children need Development to skip the keystore-
-        // backed seed until W6.7 lands. Tracked as follow-up.
+        // W5.2 stop-work #1 fix: derive a per-tenant seed via HKDF and inject
+        // it as LocalNode__RootSeedHex. The child honors the injected seed
+        // and skips its own keystore lookup, so two tenants on the same
+        // Bridge host derive cryptographically independent Ed25519 +
+        // SQLCipher keys. If no seed provider was wired (legacy test
+        // harnesses), fall back silently — the child then resolves its own
+        // root seed via the keystore (single-tenant isolation only).
+        if (_tenantSeedProvider is not null)
+        {
+            var tenantSeed = _tenantSeedProvider.DeriveTenantSeed(tenantId);
+            startInfo.EnvironmentVariables["LocalNode__RootSeedHex"] =
+                Convert.ToHexString(tenantSeed);
+            _logger.LogInformation(
+                "TenantProcessSupervisor: derived {Length}B tenant seed for {TenantId} (bytes redacted).",
+                tenantSeed.Length, tenantId);
+        }
         startInfo.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
         startInfo.EnvironmentVariables["ASPNETCORE_URLS"] = endpoint.ToString().TrimEnd('/');
 

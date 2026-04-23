@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Sunfish.Kernel.Security.Keys;
 
 namespace Sunfish.Bridge.Orchestration;
 
@@ -104,7 +105,12 @@ public static class ServiceCollectionExtensions
     /// <see cref="ITenantRegistryEventBus"/>) and
     /// <see cref="AddBridgeOrchestrationHealth"/> (the supervisor depends on
     /// <see cref="ITenantEndpointRegistry"/>; the coordinator optionally reads
-    /// <see cref="TenantHealthMonitor"/>).
+    /// <see cref="TenantHealthMonitor"/>). The supervisor also depends on
+    /// <see cref="ITenantSeedProvider"/> — which in turn requires
+    /// <see cref="IRootSeedProvider"/> to already be registered. This method
+    /// registers the default <see cref="TenantSeedProvider"/>; callers MUST
+    /// invoke <c>AddSunfishRootSeedProvider</c> (or otherwise register an
+    /// <see cref="IRootSeedProvider"/>) first.
     /// </para>
     /// <para>
     /// Registers <see cref="ITenantProcessSupervisor"/> both as the interface
@@ -119,6 +125,11 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IProcessStarter, SystemDiagnosticsProcessStarter>();
+        // Wave 5.2 stop-work #1: per-tenant seed derivation. Requires
+        // IRootSeedProvider to be registered first (Program.cs does this
+        // via AddSunfishRootSeedProvider before invoking
+        // AddBridgeOrchestrationSupervisor).
+        services.AddSingleton<ITenantSeedProvider, TenantSeedProvider>();
         services.AddSingleton<TenantProcessSupervisor>();
         services.AddSingleton<ITenantProcessSupervisor>(
             sp => sp.GetRequiredService<TenantProcessSupervisor>());

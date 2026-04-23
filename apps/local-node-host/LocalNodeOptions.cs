@@ -56,6 +56,38 @@ public sealed class LocalNodeOptions
     public int HealthPort { get; set; } = 0;
 
     /// <summary>
+    /// Optional hex-encoded 32-byte Ed25519 root seed injected by a parent
+    /// supervisor. Wave 5.2 stop-work #1: Bridge's
+    /// <see cref="Sunfish.Bridge.Orchestration.ITenantSeedProvider"/>
+    /// HKDF-expands the Bridge install-level root seed with info
+    /// <c>"sunfish:bridge:tenant-seed:v1:{TenantId}"</c> and passes the
+    /// result to each spawned <c>local-node-host</c> child via the
+    /// <c>LocalNode__RootSeedHex</c> environment variable. When set, the
+    /// host honors the injected seed and <b>skips its own keystore
+    /// lookup</b>, giving each tenant on a shared Bridge host a
+    /// cryptographically independent root identity.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Direct installs leave this null.</b> Anchor and standalone
+    /// <c>local-node-host</c> runs continue to use the default keystore-
+    /// backed <see cref="Sunfish.Kernel.Security.Keys.IRootSeedProvider"/>
+    /// path. Only Bridge-spawned children set this value.
+    /// </para>
+    /// <para>
+    /// <b>Validation.</b> The value must be a 64-character hex string
+    /// (32 raw bytes). Any other length / encoding is treated as a
+    /// configuration error and fails the host startup.
+    /// </para>
+    /// <para>
+    /// <b>Trust model.</b> The env-var injection is trusted because parent
+    /// and child share the same OS security domain. Deeper attestation
+    /// (signed seed envelopes, mutual TLS) is a future wave.
+    /// </para>
+    /// </remarks>
+    public string? RootSeedHex { get; set; }
+
+    /// <summary>
     /// Platform-conventional default for <see cref="DataDirectory"/>:
     /// <list type="bullet">
     ///   <item>Windows: <c>%LOCALAPPDATA%\Sunfish\LocalNode</c></item>

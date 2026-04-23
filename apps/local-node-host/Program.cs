@@ -40,27 +40,59 @@ builder.Services.Configure<LocalNodeOptions>(
 var localNodeOptions = new LocalNodeOptions();
 builder.Configuration.GetSection("LocalNode").Bind(localNodeOptions);
 
-// Root seed: keystore-backed IRootSeedProvider. On first launch the provider
-// generates a 32-byte RNG seed and persists it to the platform keystore
-// (Windows DPAPI today; mac/Linux Wave-2 stubs throw PlatformNotSupportedException
-// on first use). Subsequent launches on the same machine read the same seed
-// back, preserving continuity of Ed25519 + SQLCipher derivations.
+// Root seed: either an injected per-tenant seed (Bridge supervisor path) or a
+// keystore-backed IRootSeedProvider (direct-install path).
 //
-// We build a minimal bootstrap provider here so the remaining static
-// registration (registrar closure, store activator) can observe the resolved
-// seed. Blocking on GetAwaiter().GetResult() is acceptable at process
-// startup — no ambient SynchronizationContext, single-threaded bootstrap,
-// well before any hosted service begins its StartAsync.
-using (var bootstrapServices = new ServiceCollection()
-    .AddSunfishRootSeedProvider()
-    .BuildServiceProvider())
+// W5.2 stop-work #1: when Bridge spawns a tenant child, it HKDF-derives a
+// per-tenant 32-byte seed from its own install-level root seed and passes the
+// hex string via LocalNode__RootSeedHex. The child honors it and skips the
+// keystore lookup entirely — two tenants on one Bridge host therefore derive
+// cryptographically independent Ed25519 + SQLCipher keys.
+//
+// Direct installs (Anchor, standalone dotnet run) leave RootSeedHex null and
+// fall back to the keystore path: the provider generates a 32-byte RNG seed
+// on first launch and persists it to the platform keystore (Windows DPAPI
+// today; mac/Linux Wave-2 stubs). Blocking on GetAwaiter().GetResult() is
+// acceptable here — no ambient SynchronizationContext, single-threaded
+// bootstrap, well before any hosted service begins its StartAsync.
+byte[] rootSeed;
+if (!string.IsNullOrWhiteSpace(localNodeOptions.RootSeedHex))
 {
-    var seedProvider = bootstrapServices.GetRequiredService<IRootSeedProvider>();
-    var rootSeed = seedProvider.GetRootSeedAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult().ToArray();
+    // Parse + validate the injected hex seed. Convert.FromHexString throws
+    // FormatException on malformed input — we catch and rethrow with a clearer
+    // message so misconfigured environments fail the host fast.
+    try
+    {
+        rootSeed = Convert.FromHexString(localNodeOptions.RootSeedHex);
+    }
+    catch (FormatException ex)
+    {
+        throw new InvalidOperationException(
+            "LocalNode:RootSeedHex is set but is not valid hex. Expected a 64-character hex string (32 bytes).",
+            ex);
+    }
+    if (rootSeed.Length != 32)
+    {
+        throw new InvalidOperationException(
+            $"LocalNode:RootSeedHex decoded to {rootSeed.Length} bytes; expected exactly 32.");
+    }
 
-    // Derive the root Ed25519 identity from the seed. Kernel-security's
-    // IEd25519Signer is stateless, so we instantiate it directly here rather
-    // than spin up a mini-provider to resolve it.
+    Console.WriteLine(
+        $"[local-node-host] Using injected root seed (length={rootSeed.Length}B) — keystore bypass enabled.");
+}
+else
+{
+    using var bootstrapServices = new ServiceCollection()
+        .AddSunfishRootSeedProvider()
+        .BuildServiceProvider();
+    var seedProvider = bootstrapServices.GetRequiredService<IRootSeedProvider>();
+    rootSeed = seedProvider.GetRootSeedAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult().ToArray();
+}
+
+// Derive the root Ed25519 identity from the seed. Kernel-security's
+// IEd25519Signer is stateless, so we instantiate it directly here rather
+// than spin up a mini-provider to resolve it.
+{
     var signer = new Ed25519Signer();
     var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
     var rootIdentity = new NodeIdentity(
