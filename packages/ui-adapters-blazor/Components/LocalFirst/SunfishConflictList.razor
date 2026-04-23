@@ -1,0 +1,65 @@
+@*
+    SunfishConflictList — paper §5.2 conflict list.
+
+    Renders each conflict as a row with record id, brief description,
+    "Resolve" + "Dismiss" buttons. Empty state centers "No pending conflicts".
+*@
+@inherits SunfishComponentBase
+
+<div class="@Classes"
+     style="@CombineStyles()"
+     role="list"
+     @attributes="AdditionalAttributes">
+    @if (Conflicts is null || Conflicts.Count == 0)
+    {
+        <div class="sf-conflict-list__empty" role="status">
+            No pending conflicts
+        </div>
+    }
+    else
+    {
+        @foreach (var conflict in Conflicts)
+        {
+            <div class="sf-conflict-list__row sf-sync--conflict"
+                 role="listitem"
+                 data-conflict-id="@conflict.Id"
+                 @key="conflict.Id">
+                <div class="sf-conflict-list__main">
+                    <div class="sf-conflict-list__record-id">@conflict.RecordId</div>
+                    <div class="sf-conflict-list__description">@conflict.Description</div>
+                    <div class="sf-conflict-list__meta">
+                        <span class="sf-conflict-list__kind">@conflict.Kind</span>
+                        <span class="sf-conflict-list__detected-at">@conflict.DetectedAt.ToString("u")</span>
+                    </div>
+                </div>
+                <div class="sf-conflict-list__actions">
+                    <button type="button"
+                            class="sf-conflict-list__resolve"
+                            data-action="resolve"
+                            @onclick="@(() => OnResolve.InvokeAsync(conflict))">
+                        Resolve
+                    </button>
+                    <button type="button"
+                            class="sf-conflict-list__dismiss"
+                            data-action="dismiss"
+                            @onclick="@(() => OnDismiss.InvokeAsync(conflict))">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>The conflicts to render.</summary>
+    [Parameter] public IReadOnlyList<ConflictItem>? Conflicts { get; set; }
+
+    /// <summary>Fired when the user resolves a conflict.</summary>
+    [Parameter] public EventCallback<ConflictItem> OnResolve { get; set; }
+
+    /// <summary>Fired when the user dismisses a conflict.</summary>
+    [Parameter] public EventCallback<ConflictItem> OnDismiss { get; set; }
+
+    private string Classes => CombineClasses("sf-conflict-list");
+}

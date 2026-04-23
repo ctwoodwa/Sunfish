@@ -1,0 +1,42 @@
+@*
+    SunfishNodeHealthBar — paper §13.2 three-indicator status bar.
+
+    Renders three side-by-side SunfishSyncStatusIndicator pills covering
+    the three paper-level node health axes:
+      1. NodeHealth     — local node process / background sync worker
+      2. LinkStatus     — transport to upstream / peer nodes
+      3. DataFreshness  — aggregate data-currency across tracked records
+*@
+@inherits SunfishComponentBase
+
+<div class="@Classes"
+     style="@CombineStyles()"
+     role="group"
+     aria-label="@AriaLabel"
+     @attributes="AdditionalAttributes">
+    <SunfishSyncStatusIndicator State="NodeHealth"
+                                Label="Node"
+                                Title="@($"Node health: {NodeHealth}")" />
+    <SunfishSyncStatusIndicator State="LinkStatus"
+                                Label="Link"
+                                Title="@($"Link status: {LinkStatus}")" />
+    <SunfishSyncStatusIndicator State="DataFreshness"
+                                Label="Data"
+                                Title="@($"Data freshness: {DataFreshness}")" />
+</div>
+
+@code {
+    /// <summary>Local node process / background sync worker health.</summary>
+    [Parameter] public SyncState NodeHealth { get; set; } = SyncState.Healthy;
+
+    /// <summary>Transport link to upstream / peer nodes.</summary>
+    [Parameter] public SyncState LinkStatus { get; set; } = SyncState.Healthy;
+
+    /// <summary>Aggregate data-currency across tracked records.</summary>
+    [Parameter] public SyncState DataFreshness { get; set; } = SyncState.Healthy;
+
+    /// <summary>Accessible label for the group (defaults to paper §13.2 wording).</summary>
+    [Parameter] public string AriaLabel { get; set; } = "Node health status";
+
+    private string Classes => CombineClasses("sf-node-health-bar");
+}

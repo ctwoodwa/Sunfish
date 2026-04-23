@@ -1,0 +1,92 @@
+@*
+    SunfishFreshnessBadge — per-record staleness badge (paper §13.2).
+
+    Auto-derives sync state from LastSyncedAt + StalenessThreshold:
+      - null LastSyncedAt      → Offline
+      - within threshold       → Healthy
+      - beyond threshold       → Stale
+*@
+@inherits SunfishComponentBase
+
+<span class="@Classes"
+      style="@CombineStyles()"
+      title="@Tooltip"
+      @attributes="AdditionalAttributes">
+    <span class="sf-freshness-badge__dot" aria-hidden="true"></span>
+    <span class="sf-freshness-badge__label">@DisplayText</span>
+</span>
+
+@code {
+    /// <summary>When the record was last successfully synced. <c>null</c> ⇒ Offline.</summary>
+    [Parameter] public DateTimeOffset? LastSyncedAt { get; set; }
+
+    /// <summary>Paper §13.2 staleness threshold (e.g. 5 min for resource availability).</summary>
+    [Parameter] public TimeSpan? StalenessThreshold { get; set; }
+
+    /// <summary>Label prefix (e.g. <c>"As of "</c> per paper §13.2 financial-balances treatment).</summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    /// <summary>Clock override — test-only.</summary>
+    [Parameter] public Func<DateTimeOffset>? NowProvider { get; set; }
+
+    /// <summary>Current sync state (derived).</summary>
+    public SyncState State => DeriveState();
+
+    private string Classes => CombineClasses(
+        $"sf-freshness-badge sf-sync--{SunfishSyncStatusIndicator.StateClassSuffix(State)}");
+
+    private string DisplayText
+    {
+        get
+        {
+            if (LastSyncedAt is null)
+            {
+                return "Offline";
+            }
+
+            var now = (NowProvider ?? (() => DateTimeOffset.UtcNow))();
+            var age = now - LastSyncedAt.Value;
+            var pretty = FormatAge(age);
+            return string.IsNullOrEmpty(Prefix) ? pretty : $"{Prefix}{pretty}";
+        }
+    }
+
+    private string Tooltip => LastSyncedAt is null
+        ? "No sync data available"
+        : $"Last synced {LastSyncedAt.Value:u}";
+
+    private SyncState DeriveState()
+    {
+        if (LastSyncedAt is null)
+        {
+            return SyncState.Offline;
+        }
+
+        if (StalenessThreshold is null)
+        {
+            return SyncState.Healthy;
+        }
+
+        var now = (NowProvider ?? (() => DateTimeOffset.UtcNow))();
+        var age = now - LastSyncedAt.Value;
+        return age <= StalenessThreshold.Value ? SyncState.Healthy : SyncState.Stale;
+    }
+
+    internal static string FormatAge(TimeSpan age)
+    {
+        if (age.TotalSeconds < 0) return "just now";
+        if (age.TotalSeconds < 60) return "just now";
+        if (age.TotalMinutes < 60)
+        {
+            var m = (int)Math.Floor(age.TotalMinutes);
+            return m == 1 ? "1 minute ago" : $"{m} minutes ago";
+        }
+        if (age.TotalHours < 24)
+        {
+            var h = (int)Math.Floor(age.TotalHours);
+            return h == 1 ? "1 hour ago" : $"{h} hours ago";
+        }
+        var d = (int)Math.Floor(age.TotalDays);
+        return d == 1 ? "1 day ago" : $"{d} days ago";
+    }
+}

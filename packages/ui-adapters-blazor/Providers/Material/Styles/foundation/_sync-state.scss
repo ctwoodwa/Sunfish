@@ -1,0 +1,99 @@
+// =================================================================
+// Foundation: Sync / Freshness State Tokens (paper §5.2, §13.2)
+// =================================================================
+// Encodes node-state visual vocabulary for the LocalFirst components.
+//
+// Material 3 maps:
+//   healthy     -> --md-sys-color-tertiary (M3 positive-action slot)
+//   stale       -> amber / warning (M3 has no amber role; use a local token)
+//   offline     -> --md-sys-color-surface-variant + on-surface-variant ink
+//   conflict    -> --md-sys-color-error (M3 red)
+//   quarantine  -> purple (Sunfish-local; distinct from M3 error)
+//
+// M3 does not ship a named "warning" role — the closest match in the baseline
+// palette is a custom role, so we fall back to semantic hex pairs when the M3
+// tokens are not present.
+// =================================================================
+
+:root {
+  // Healthy — M3 tertiary reads as "positive accent"; pair with on-tertiary-container
+  --sf-sync-healthy-fg: var(--md-sys-color-on-tertiary-container, #31111d);
+  --sf-sync-healthy-bg: var(--md-sys-color-tertiary-container,    #d0f0c0);
+  --sf-sync-healthy-border: var(--md-sys-color-tertiary,          #386a1f);
+
+  // Stale — M3 has no amber role; derive from a local warning token ladder
+  --sf-sync-stale-fg: #5a4300;
+  --sf-sync-stale-bg: #fff5cf;
+  --sf-sync-stale-border: #b08900;
+
+  // Offline — M3 surface-variant + on-surface-variant ink (neutral signal-missing)
+  --sf-sync-offline-fg: var(--md-sys-color-on-surface-variant, #49454f);
+  --sf-sync-offline-bg: var(--md-sys-color-surface-variant,    #e7e0ec);
+  --sf-sync-offline-border: var(--md-sys-color-outline-variant, #cac4d0);
+
+  // Conflict — M3 error role
+  --sf-sync-conflict-fg: var(--md-sys-color-on-error-container, #410002);
+  --sf-sync-conflict-bg: var(--md-sys-color-error-container,    #f9dedc);
+  --sf-sync-conflict-border: var(--md-sys-color-error,          #b3261e);
+
+  // Quarantine — Sunfish-local purple (distinct from M3 primary-purple and error-red)
+  --sf-sync-quarantine-fg: #3b0a66;
+  --sf-sync-quarantine-bg: #ede1fa;
+  --sf-sync-quarantine-border: #7a3fd6;
+}
+
+[data-sf-theme="dark"] {
+  --sf-sync-healthy-fg: var(--md-sys-color-on-tertiary-container, #d0f0c0);
+  --sf-sync-healthy-bg: var(--md-sys-color-tertiary-container,    #1f3a12);
+  --sf-sync-healthy-border: var(--md-sys-color-tertiary,          #9fdc7a);
+
+  --sf-sync-stale-fg: #ffe49a;
+  --sf-sync-stale-bg: #3a2d00;
+  --sf-sync-stale-border: #b08900;
+
+  --sf-sync-offline-fg: var(--md-sys-color-on-surface-variant, #cac4d0);
+  --sf-sync-offline-bg: var(--md-sys-color-surface-variant,    #49454f);
+  --sf-sync-offline-border: var(--md-sys-color-outline-variant, #49454f);
+
+  --sf-sync-conflict-fg: var(--md-sys-color-on-error-container, #f9dedc);
+  --sf-sync-conflict-bg: var(--md-sys-color-error-container,    #601410);
+  --sf-sync-conflict-border: var(--md-sys-color-error,          #f2b8b5);
+
+  --sf-sync-quarantine-fg: #e5d1fb;
+  --sf-sync-quarantine-bg: #2a103f;
+  --sf-sync-quarantine-border: #9466e0;
+}
+
+// ----------------------------------------------------------------------------
+// Utility classes consumed by the LocalFirst Blazor components.
+// ----------------------------------------------------------------------------
+
+.sf-sync--healthy {
+  color: var(--sf-sync-healthy-fg);
+  background-color: var(--sf-sync-healthy-bg);
+  border-color: var(--sf-sync-healthy-border);
+}
+
+.sf-sync--stale {
+  color: var(--sf-sync-stale-fg);
+  background-color: var(--sf-sync-stale-bg);
+  border-color: var(--sf-sync-stale-border);
+}
+
+.sf-sync--offline {
+  color: var(--sf-sync-offline-fg);
+  background-color: var(--sf-sync-offline-bg);
+  border-color: var(--sf-sync-offline-border);
+}
+
+.sf-sync--conflict {
+  color: var(--sf-sync-conflict-fg);
+  background-color: var(--sf-sync-conflict-bg);
+  border-color: var(--sf-sync-conflict-border);
+}
+
+.sf-sync--quarantine {
+  color: var(--sf-sync-quarantine-fg);
+  background-color: var(--sf-sync-quarantine-bg);
+  border-color: var(--sf-sync-quarantine-border);
+}

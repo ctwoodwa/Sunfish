@@ -1,0 +1,57 @@
+@*
+    SunfishSyncStatusIndicator — paper §13.2 status-bar indicator.
+
+    Compact pill with sf-sync--{state} class and optional label.
+    Fires OnStateChanged on click so the consumer can surface a detail view
+    (the indicator itself renders no detail overlay).
+*@
+@inherits SunfishComponentBase
+
+<button type="button"
+        class="@Classes"
+        style="@CombineStyles()"
+        title="@Title"
+        aria-label="@AriaLabel"
+        @onclick="HandleClick"
+        @attributes="AdditionalAttributes">
+    <span class="sf-sync-indicator__dot" aria-hidden="true"></span>
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="sf-sync-indicator__label">@Label</span>
+    }
+</button>
+
+@code {
+    /// <summary>The sync state to render.</summary>
+    [Parameter] public SyncState State { get; set; } = SyncState.Healthy;
+
+    /// <summary>Optional visible label next to the state dot.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Tooltip text (HTML <c>title</c> attribute).</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// Fired when the user clicks the indicator. The consumer is responsible
+    /// for rendering any detail / popover; the indicator surfaces the state only.
+    /// </summary>
+    [Parameter] public EventCallback<SyncState> OnStateChanged { get; set; }
+
+    private string Classes => CombineClasses($"sf-sync-indicator sf-sync--{StateClassSuffix(State)}");
+
+    private string AriaLabel => !string.IsNullOrEmpty(Label)
+        ? Label!
+        : $"Sync status: {State}";
+
+    private Task HandleClick() => OnStateChanged.InvokeAsync(State);
+
+    internal static string StateClassSuffix(SyncState state) => state switch
+    {
+        SyncState.Healthy         => "healthy",
+        SyncState.Stale           => "stale",
+        SyncState.Offline         => "offline",
+        SyncState.ConflictPending => "conflict",
+        SyncState.Quarantine      => "quarantine",
+        _                          => "offline",
+    };
+}

@@ -1,0 +1,129 @@
+@*
+    SunfishOptimisticButton — paper §5.2 optimistic-write button.
+
+    State machine:
+      Idle → Pending (OnClick in flight)
+           → Confirmed (success; reverts to Idle after ConfirmedRevertDelay)
+           → Failed (exception / OnClick returned false; clickable to retry)
+
+    The consumer may pass an explicit State to drive the button externally
+    (e.g. when the write is tracked by a store outside the component). When
+    State is Idle and OnClick is provided, the component runs its own machine.
+*@
+@inherits SunfishComponentBase
+
+<button type="button"
+        class="@Classes"
+        style="@CombineStyles()"
+        disabled="@IsDisabledAttr"
+        aria-busy="@(CurrentState == OptimisticButtonState.Pending ? "true" : null)"
+        @onclick="HandleClick"
+        @attributes="AdditionalAttributes">
+    <span class="sf-optimistic-button__indicator" aria-hidden="true">
+        @switch (CurrentState)
+        {
+            case OptimisticButtonState.Pending:
+                <span class="sf-optimistic-button__spinner"></span>
+                break;
+            case OptimisticButtonState.Confirmed:
+                <span class="sf-optimistic-button__check">&#10003;</span>
+                break;
+            case OptimisticButtonState.Failed:
+                <span class="sf-optimistic-button__error">&#9888;</span>
+                break;
+        }
+    </span>
+    <span class="sf-optimistic-button__label">@DisplayLabel</span>
+</button>
+
+@code {
+    /// <summary>Visible label (falls back to state-specific defaults).</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>
+    /// Externally-driven state. If <c>Idle</c> (default) the component runs its
+    /// own internal state machine; any other value overrides.
+    /// </summary>
+    [Parameter] public OptimisticButtonState State { get; set; } = OptimisticButtonState.Idle;
+
+    /// <summary>
+    /// Click handler. Return <c>true</c> for Confirmed, <c>false</c> for Failed.
+    /// Throwing an exception also routes to Failed.
+    /// </summary>
+    [Parameter] public Func<Task<bool>>? OnClick { get; set; }
+
+    /// <summary>Whether the button is disabled when in the Idle state.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>How long to show the Confirmed check before reverting to Idle.</summary>
+    [Parameter] public TimeSpan ConfirmedRevertDelay { get; set; } = TimeSpan.FromSeconds(2);
+
+    private OptimisticButtonState _internalState = OptimisticButtonState.Idle;
+
+    /// <summary>Externally observable current state (test hook).</summary>
+    public OptimisticButtonState CurrentState =>
+        State != OptimisticButtonState.Idle ? State : _internalState;
+
+    private string Classes => CombineClasses(
+        $"sf-optimistic-button sf-optimistic-button--{StateSuffix(CurrentState)}");
+
+    private bool IsDisabledAttr =>
+        Disabled || CurrentState == OptimisticButtonState.Pending || CurrentState == OptimisticButtonState.Confirmed;
+
+    private string DisplayLabel => !string.IsNullOrEmpty(Label)
+        ? Label!
+        : CurrentState switch
+        {
+            OptimisticButtonState.Pending   => "Saving…",
+            OptimisticButtonState.Confirmed => "Saved",
+            OptimisticButtonState.Failed    => "Retry",
+            _                                => "Save",
+        };
+
+    private async Task HandleClick()
+    {
+        if (OnClick is null) return;
+        if (IsDisabledAttr) return;
+
+        _internalState = OptimisticButtonState.Pending;
+        StateHasChanged();
+
+        try
+        {
+            var ok = await OnClick.Invoke();
+            _internalState = ok ? OptimisticButtonState.Confirmed : OptimisticButtonState.Failed;
+            StateHasChanged();
+
+            if (ok && ConfirmedRevertDelay > TimeSpan.Zero)
+            {
+                try
+                {
+                    await Task.Delay(ConfirmedRevertDelay);
+                }
+                catch (TaskCanceledException)
+                {
+                    // component disposed; ignore
+                }
+                if (_internalState == OptimisticButtonState.Confirmed)
+                {
+                    _internalState = OptimisticButtonState.Idle;
+                    StateHasChanged();
+                }
+            }
+        }
+        catch
+        {
+            _internalState = OptimisticButtonState.Failed;
+            StateHasChanged();
+        }
+    }
+
+    internal static string StateSuffix(OptimisticButtonState state) => state switch
+    {
+        OptimisticButtonState.Idle      => "idle",
+        OptimisticButtonState.Pending   => "pending",
+        OptimisticButtonState.Confirmed => "confirmed",
+        OptimisticButtonState.Failed    => "failed",
+        _                                => "idle",
+    };
+}

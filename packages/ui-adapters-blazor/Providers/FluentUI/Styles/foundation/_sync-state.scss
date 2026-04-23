@@ -1,0 +1,95 @@
+// =================================================================
+// Foundation: Sync / Freshness State Tokens (paper §5.2, §13.2)
+// =================================================================
+// Encodes node-state visual vocabulary for the LocalFirst components.
+//
+// Fluent v9 maps:
+//   healthy     -> colorStatusSuccess*   (green)
+//   stale       -> colorStatusWarning*   (amber)
+//   offline     -> colorNeutral* subtle  (gray; signal-missing)
+//   conflict    -> colorStatusDanger*    (red)
+//   quarantine  -> purple (distinct from danger-red and info-blue)
+//
+// Fluent v9 provides Foreground1 / Background1 / Background3 surface layers;
+// BackgroundN for the chip fill, Foreground1 for ink, Background3 for border.
+// =================================================================
+
+:root {
+  --sf-sync-healthy-fg: var(--colorStatusSuccessForeground1, #0e700e);
+  --sf-sync-healthy-bg: var(--colorStatusSuccessBackground1, #f1faf1);
+  --sf-sync-healthy-border: var(--colorStatusSuccessBackground3, #107c10);
+
+  --sf-sync-stale-fg: var(--colorStatusWarningForeground1, #bc4b09);
+  --sf-sync-stale-bg: var(--colorStatusWarningBackground1, #fff9f5);
+  --sf-sync-stale-border: var(--colorStatusWarningBackground3, #f7630c);
+
+  --sf-sync-offline-fg: var(--colorNeutralForeground3, #616161);
+  --sf-sync-offline-bg: var(--colorNeutralBackground3, #f5f5f5);
+  --sf-sync-offline-border: var(--colorNeutralStroke2, #e0e0e0);
+
+  --sf-sync-conflict-fg: var(--colorStatusDangerForeground1, #b10e1c);
+  --sf-sync-conflict-bg: var(--colorStatusDangerBackground1, #fdf3f4);
+  --sf-sync-conflict-border: var(--colorStatusDangerBackground3, #c50f1f);
+
+  // Quarantine — no Fluent v9 status palette for this; choose an accessible
+  // purple that pairs cleanly with Fluent's neutral background layers.
+  --sf-sync-quarantine-fg: #5c2e91;
+  --sf-sync-quarantine-bg: #f4edfc;
+  --sf-sync-quarantine-border: #9373d0;
+}
+
+[data-sf-theme="dark"] {
+  --sf-sync-healthy-fg: var(--colorStatusSuccessForeground1, #54b054);
+  --sf-sync-healthy-bg: var(--colorStatusSuccessBackground1, #052505);
+  --sf-sync-healthy-border: var(--colorStatusSuccessBackground3, #54b054);
+
+  --sf-sync-stale-fg: var(--colorStatusWarningForeground1, #faa06b);
+  --sf-sync-stale-bg: var(--colorStatusWarningBackground1, #4a1e04);
+  --sf-sync-stale-border: var(--colorStatusWarningBackground3, #faa06b);
+
+  --sf-sync-offline-fg: var(--colorNeutralForeground3, #adadad);
+  --sf-sync-offline-bg: var(--colorNeutralBackground3, #1f1f1f);
+  --sf-sync-offline-border: var(--colorNeutralStroke2, #525252);
+
+  --sf-sync-conflict-fg: var(--colorStatusDangerForeground1, #e37d87);
+  --sf-sync-conflict-bg: var(--colorStatusDangerBackground1, #3b0509);
+  --sf-sync-conflict-border: var(--colorStatusDangerBackground3, #dc626d);
+
+  --sf-sync-quarantine-fg: #d0b5f0;
+  --sf-sync-quarantine-bg: #2a1744;
+  --sf-sync-quarantine-border: #7a4fbf;
+}
+
+// ----------------------------------------------------------------------------
+// Utility classes consumed by the LocalFirst Blazor components.
+// ----------------------------------------------------------------------------
+
+.sf-sync--healthy {
+  color: var(--sf-sync-healthy-fg);
+  background-color: var(--sf-sync-healthy-bg);
+  border-color: var(--sf-sync-healthy-border);
+}
+
+.sf-sync--stale {
+  color: var(--sf-sync-stale-fg);
+  background-color: var(--sf-sync-stale-bg);
+  border-color: var(--sf-sync-stale-border);
+}
+
+.sf-sync--offline {
+  color: var(--sf-sync-offline-fg);
+  background-color: var(--sf-sync-offline-bg);
+  border-color: var(--sf-sync-offline-border);
+}
+
+.sf-sync--conflict {
+  color: var(--sf-sync-conflict-fg);
+  background-color: var(--sf-sync-conflict-bg);
+  border-color: var(--sf-sync-conflict-border);
+}
+
+.sf-sync--quarantine {
+  color: var(--sf-sync-quarantine-fg);
+  background-color: var(--sf-sync-quarantine-bg);
+  border-color: var(--sf-sync-quarantine-border);
+}
