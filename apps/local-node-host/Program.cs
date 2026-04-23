@@ -1,14 +1,11 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sunfish.Foundation.LocalFirst;
-using Sunfish.Kernel.Buckets.DependencyInjection;
-using Sunfish.Kernel.Crdt.DependencyInjection;
-using Sunfish.Kernel.Events.DependencyInjection;
-using Sunfish.Kernel.Ledger.DependencyInjection;
-using Sunfish.Kernel.Lease.DependencyInjection;
 using Sunfish.Kernel.Runtime.DependencyInjection;
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
-using Sunfish.Kernel.Sync.DependencyInjection;
+using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Identity;
 using Sunfish.LocalNodeHost;
 
 // Composition root for the Sunfish local-node host process.
@@ -16,45 +13,68 @@ using Sunfish.LocalNodeHost;
 // Paper §4 + §5.1: this is the persistent background service that owns the
 // kernel runtime. It is intentionally headless — the application shell
 // (Anchor, kitchen-sink, third-party UIs) connects to the already-running
-// stack over the sync-daemon transport. The kernel responsibilities composed
-// here map one-to-one onto paper §5.1:
-//   * Plugin discovery / lifecycle → AddSunfishKernelRuntime
-//   * Event log                   → AddSunfishEventLog
-//   * Encrypted local store       → AddSunfishEncryptedStore
-//   * Quarantine queue (§11.2 L4) → AddSunfishQuarantineQueue
-//   * Security primitives         → AddSunfishKernelSecurity
-//   * CRDT engine                 → AddSunfishCrdtEngine
-//   * Sync transport + gossip     → AddSunfishKernelSync       (Wave 2.1)
-//   * Distributed lease (Flease)  → AddSunfishKernelLease      (Wave 2.3)
-//   * Declarative sync buckets    → AddSunfishKernelBuckets    (Wave 2.4)
-//   * Double-entry ledger         → AddSunfishKernelLedger     (Wave 4.1)
+// stack over the sync-daemon transport. Wave 6.3.E.2 reshaped the composition
+// root: per-team services (event log, encrypted store, quarantine queue,
+// gossip, lease coordinator, bucket registry) live inside each team's
+// TeamContext.Services. The install-level surface here owns only:
+//
+//   * Plugin discovery / lifecycle   → AddSunfishKernelRuntime           (Wave 1.1)
+//   * Security primitives + KDFs     → AddSunfishKernelSecurity          (Wave 1.6)
+//   * Per-tick gossip cap            → AddSunfishResourceGovernor        (Wave 6.4, ADR 0032)
+//   * Per-team service registrar     → AddSunfishDefaultTeamRegistrar    (Wave 6.3.E)
+//   * Per-team store activator       → AddSunfishTeamStoreActivator      (Wave 6.3.E.1)
+//   * Team bootstrap hosted service  → MultiTeamBootstrapHostedService   (Wave 6.3.E.2)
+//   * Node-host lifecycle            → LocalNodeWorker                   (Wave 1.1 + Wave 6.3.E.2)
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Node identity — the stable string that scopes lease ownership + gossip peer
-// identification. Flows from the bound LocalNodeOptions; in production the
-// composition root overrides with an IKeystore-backed value.
-var localNodeId = builder.Configuration["LocalNode:NodeId"]
-    ?? Guid.NewGuid().ToString();
+// Bind host-wide configuration (node id, team id, data directory, multi-team
+// bootstrap). We need the DataDirectory + MultiTeam section available NOW —
+// before service registration — so the default team registrar closure can
+// capture it.
+builder.Services.Configure<LocalNodeOptions>(
+    builder.Configuration.GetSection("LocalNode"));
+
+var localNodeOptions = new LocalNodeOptions();
+builder.Configuration.GetSection("LocalNode").Bind(localNodeOptions);
+
+// Root seed: Wave 6.3.E.2 carve-out. Real keystore-backed loading lands in
+// Wave 6.7. Development environments use a deterministic zero seed; other
+// environments throw.
+var rootSeed = LocalNodeRootSeedReader.Read(builder.Environment);
+
+// Derive the root Ed25519 identity from the seed. Kernel-security's
+// IEd25519Signer is stateless, so we instantiate it directly here rather than
+// spin up a mini-provider to resolve it.
+var signer = new Ed25519Signer();
+var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
+var rootIdentity = new NodeIdentity(
+    NodeId: Convert.ToHexString(rootPublicKey.AsSpan(0, 16)).ToLowerInvariant(),
+    PublicKey: rootPublicKey,
+    PrivateKey: rootPrivateKey);
+
+// Pure, side-effect-free KDF utilities. Constructed directly so the default
+// registrar closure captures the exact derivation instance the activator also
+// observes later.
+var subkeyDerivation = new TeamSubkeyDerivation(signer);
+var sqlCipherKeyDerivation = new SqlCipherKeyDerivation();
 
 builder.Services
     .AddSunfishKernelRuntime()              // plugin registry + INodeHost          (Wave 1.1)
-    .AddSunfishEventLog()                   // persistent event log                 (Wave 1.3)
-    .AddSunfishEncryptedStore()             // SQLCipher + Argon2id                 (Wave 1.4)
-    .AddSunfishQuarantineQueue()            // offline-write quarantine             (Wave 1.5)
-    .AddSunfishKernelSecurity()             // Ed25519 + X25519 + role keys         (Wave 1.6)
-    .AddSunfishCrdtEngine()                 // CRDT abstraction (YDotNet backend)   (Wave 1.2 + spike follow-up)
-    .AddSunfishKernelSync()                 // gossip daemon + transport + identity (Wave 2.1 + Ed25519 follow-up)
-    .AddSunfishKernelLease(localNodeId)     // Flease distributed lease             (Wave 2.3)
-    .AddSunfishKernelBuckets()              // declarative partial-sync             (Wave 2.4)
-    .AddSunfishKernelLedger();              // event-sourced double-entry           (Wave 4.1)
+    .AddSunfishKernelSecurity()             // Ed25519 + X25519 + KDFs              (Wave 1.6)
+    .AddSunfishResourceGovernor()           // per-tick gossip cap                  (Wave 6.4)
+    .AddSunfishDefaultTeamRegistrar(        // per-team service wiring              (Wave 6.3.E)
+        dataDirectory: localNodeOptions.DataDirectory,
+        rootIdentity: rootIdentity,
+        subkeyDerivation: subkeyDerivation,
+        sqlCipherKeyDerivation: sqlCipherKeyDerivation)
+    .AddSunfishTeamStoreActivator(rootSeed); // per-team encrypted-store opener    (Wave 6.3.E.1)
 
-// Hosted service that drives the node lifecycle. One per process.
+// Multi-team bootstrap runs first so the node-host worker sees a materialized
+// active team on StartAsync. Registration order matters — the .NET generic
+// host starts hosted services in registration order.
+builder.Services.AddHostedService<MultiTeamBootstrapHostedService>();
 builder.Services.AddHostedService<LocalNodeWorker>();
-
-// Bind host-wide configuration (node id, team id, data directory).
-builder.Services.Configure<LocalNodeOptions>(
-    builder.Configuration.GetSection("LocalNode"));
 
 var host = builder.Build();
 await host.RunAsync();

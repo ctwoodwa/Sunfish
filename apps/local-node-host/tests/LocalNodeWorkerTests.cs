@@ -3,24 +3,35 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sunfish.Kernel.Runtime.DependencyInjection;
-using Sunfish.Kernel.Sync.DependencyInjection;
+using Sunfish.Kernel.Runtime.Teams;
 
 namespace Sunfish.LocalNodeHost.Tests;
 
 /// <summary>
 /// Integration-style tests for <see cref="LocalNodeWorker"/>. We exercise the
 /// worker against a <see cref="HostApplicationBuilder"/>-composed service
-/// provider using the real <c>AddSunfishKernelRuntime</c> extension, then
-/// start the host and observe lifecycle transitions + log capture.
+/// provider using the real <c>AddSunfishKernelRuntime</c> +
+/// <c>AddSunfishMultiTeam</c> extensions, then start the host and observe
+/// lifecycle transitions + log capture.
 /// </summary>
+/// <remarks>
+/// Wave 6.3.E.2: gossip is now team-scoped. The test host registers an empty
+/// per-team service collection (no <see cref="Sunfish.Kernel.Sync.Gossip.IGossipDaemon"/>)
+/// and pre-materializes a single test team ahead of <c>host.StartAsync</c>;
+/// the worker's null-guard path logs a warning and proceeds with plugin
+/// lifecycle only. Lifecycle log messages + node-state transitions remain
+/// unchanged from the Wave 2.1 baseline so the original assertions still hold.
+/// </remarks>
 public sealed class LocalNodeWorkerTests
 {
+    private static readonly TeamId TestTeamId = new(new Guid("11111111-1111-1111-1111-111111111111"));
+
     /// <summary>
     /// Build a minimal test host that composes the real kernel runtime (plugin
-    /// registry + NodeHost) plus the <see cref="LocalNodeWorker"/>. We swap
-    /// <see cref="ILoggerFactory"/> with a capture factory so tests can assert
-    /// on lifecycle log messages without pulling in a third-party logging
-    /// framework.
+    /// registry + NodeHost) plus the Wave 6.3.E.2 multi-team surface + the
+    /// <see cref="LocalNodeWorker"/>. We swap <see cref="ILoggerFactory"/>
+    /// with a capture factory so tests can assert on lifecycle log messages
+    /// without pulling in a third-party logging framework.
     /// </summary>
     private static IHost BuildHost(
         IEnumerable<ILocalNodePlugin> plugins,
@@ -31,8 +42,14 @@ public sealed class LocalNodeWorkerTests
             DisableDefaults = true,
         });
 
+        // Wave 6.3.E.2: the real composition root calls
+        // AddSunfishDefaultTeamRegistrar + AddSunfishTeamStoreActivator, which
+        // reach into SQLCipher + the filesystem. For unit tests we stay on
+        // AddSunfishMultiTeam (no registrar = empty per-team provider), which
+        // exercises the same ITeamContextFactory + IActiveTeamAccessor surface
+        // the worker depends on without requiring a real keystore + DB path.
         builder.Services.AddSunfishKernelRuntime();
-        builder.Services.AddSunfishKernelSync();  // Wave 2.1 — LocalNodeWorker now starts the gossip daemon.
+        builder.Services.AddSunfishMultiTeam();
 
         // Inject the test plugin set as a concrete IEnumerable<ILocalNodePlugin>.
         foreach (var plugin in plugins)
@@ -53,6 +70,21 @@ public sealed class LocalNodeWorkerTests
         return builder.Build();
     }
 
+    /// <summary>
+    /// Pre-materialize the test team and set it active. Mirrors what
+    /// <c>MultiTeamBootstrapHostedService</c> does at startup in the real
+    /// composition root; doing it explicitly from the test keeps the asserts
+    /// on <c>NodeHost</c> state transitions free of race conditions against
+    /// two competing hosted services.
+    /// </summary>
+    private static async Task MaterializeTestTeamAsync(IHost host)
+    {
+        var factory = host.Services.GetRequiredService<ITeamContextFactory>();
+        var accessor = host.Services.GetRequiredService<IActiveTeamAccessor>();
+        await factory.GetOrCreateAsync(TestTeamId, "Test Team", CancellationToken.None);
+        await accessor.SetActiveAsync(TestTeamId, CancellationToken.None);
+    }
+
     [Fact]
     public async Task Worker_starts_and_loads_plugins()
     {
@@ -65,6 +97,7 @@ public sealed class LocalNodeWorkerTests
         };
 
         using var host = BuildHost(plugins, capture);
+        await MaterializeTestTeamAsync(host);
         var registry = host.Services.GetRequiredService<IPluginRegistry>();
         var nodeHost = host.Services.GetRequiredService<INodeHost>();
 
@@ -85,6 +118,7 @@ public sealed class LocalNodeWorkerTests
     {
         var capture = new CaptureLoggerProvider();
         using var host = BuildHost(Array.Empty<ILocalNodePlugin>(), capture);
+        await MaterializeTestTeamAsync(host);
         var registry = host.Services.GetRequiredService<IPluginRegistry>();
         var nodeHost = host.Services.GetRequiredService<INodeHost>();
 
@@ -102,6 +136,7 @@ public sealed class LocalNodeWorkerTests
     {
         var capture = new CaptureLoggerProvider();
         using var host = BuildHost(Array.Empty<ILocalNodePlugin>(), capture);
+        await MaterializeTestTeamAsync(host);
         var nodeHost = host.Services.GetRequiredService<INodeHost>();
 
         // Before StartAsync is called, the host is freshly Stopped.
@@ -126,6 +161,7 @@ public sealed class LocalNodeWorkerTests
         };
 
         using var host = BuildHost(plugins, capture);
+        await MaterializeTestTeamAsync(host);
         var registry = host.Services.GetRequiredService<IPluginRegistry>();
         var nodeHost = host.Services.GetRequiredService<INodeHost>();
 
@@ -145,6 +181,7 @@ public sealed class LocalNodeWorkerTests
     {
         var capture = new CaptureLoggerProvider();
         using var host = BuildHost(Array.Empty<ILocalNodePlugin>(), capture);
+        await MaterializeTestTeamAsync(host);
         var nodeHost = host.Services.GetRequiredService<INodeHost>();
 
         await host.StartAsync();

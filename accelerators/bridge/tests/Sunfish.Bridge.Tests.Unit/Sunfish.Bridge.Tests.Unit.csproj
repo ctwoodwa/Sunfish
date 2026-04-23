@@ -25,6 +25,10 @@
     <ProjectReference Include="..\..\Sunfish.Bridge\Sunfish.Bridge.csproj" />
     <ProjectReference Include="..\..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
     <ProjectReference Include="..\..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <!-- Wave 6.3.E.2 relay-posture pin-down test reaches into
+         ITeamContextFactory from kernel-runtime to assert that the relay
+         posture does NOT register it (ADR 0031 carve-out). -->
+    <ProjectReference Include="..\..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
   </ItemGroup>
 
 </Project>

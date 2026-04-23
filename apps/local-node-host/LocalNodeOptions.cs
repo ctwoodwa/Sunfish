@@ -20,9 +20,20 @@ public sealed class LocalNodeOptions
 
     /// <summary>
     /// Optional team identifier. Populated once the node is enrolled in a
-    /// Sunfish team; null on a fresh single-user install.
+    /// Sunfish team; null on a fresh single-user install. Consumed by the
+    /// Wave 6.3.E.2 single-team legacy bootstrap path (when
+    /// <see cref="MultiTeamOptions.Enabled"/> is <c>false</c>).
     /// </summary>
     public string? TeamId { get; set; }
+
+    /// <summary>
+    /// Multi-team bootstrap configuration. When
+    /// <see cref="MultiTeamOptions.Enabled"/> is <c>true</c>, the Wave 6.3.E.2
+    /// <c>MultiTeamBootstrapHostedService</c> materializes the configured
+    /// <see cref="MultiTeamOptions.TeamBootstraps"/> instead of the legacy
+    /// single-team <see cref="TeamId"/> path.
+    /// </summary>
+    public MultiTeamOptions MultiTeam { get; set; } = new();
 
     /// <summary>
     /// Root directory for node-local state: encrypted store, event log,
@@ -65,4 +76,45 @@ public sealed class LocalNodeOptions
         var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         return Path.Combine(userHome, ".local", "share", "sunfish", "local-node");
     }
+}
+
+/// <summary>
+/// Wave 6.3.E.2 multi-team bootstrap configuration. Controls whether the host
+/// materializes a single legacy team (via <see cref="LocalNodeOptions.TeamId"/>)
+/// or an explicit list of teams at startup.
+/// </summary>
+public sealed class MultiTeamOptions
+{
+    /// <summary>
+    /// When <c>true</c>, the <c>MultiTeamBootstrapHostedService</c> iterates
+    /// <see cref="TeamBootstraps"/> and materializes each listed team. When
+    /// <c>false</c> (the default — legacy single-team mode), a single team is
+    /// materialized from <see cref="LocalNodeOptions.TeamId"/>.
+    /// </summary>
+    public bool Enabled { get; set; } = false;
+
+    /// <summary>
+    /// Ordered list of teams to materialize at startup when
+    /// <see cref="Enabled"/> is <c>true</c>. The first entry becomes the
+    /// initial active team via <see cref="Sunfish.Kernel.Runtime.Teams.IActiveTeamAccessor"/>.
+    /// </summary>
+    public List<TeamBootstrap> TeamBootstraps { get; set; } = new();
+}
+
+/// <summary>
+/// One configured team in <see cref="MultiTeamOptions.TeamBootstraps"/>. Carries
+/// the team's GUID identifier plus an optional human-readable display name
+/// forwarded to <c>ITeamContextFactory.GetOrCreateAsync</c>.
+/// </summary>
+public sealed class TeamBootstrap
+{
+    /// <summary>The team GUID (will be wrapped in a <see cref="Sunfish.Kernel.Runtime.Teams.TeamId"/>).</summary>
+    public required Guid TeamId { get; set; }
+
+    /// <summary>
+    /// Optional display name surfaced in the team-switcher UI. When
+    /// <c>null</c>, the bootstrap synthesizes a default
+    /// (<c>"Team {guid:D}"</c>).
+    /// </summary>
+    public string? DisplayName { get; set; }
 }
