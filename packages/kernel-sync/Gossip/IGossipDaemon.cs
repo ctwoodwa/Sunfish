@@ -30,6 +30,17 @@ public interface IGossipDaemon : IAsyncDisposable
     /// <summary>Current membership snapshot. Enumeration is safe across rounds.</summary>
     IReadOnlyCollection<PeerInfo> KnownPeers { get; }
 
+    /// <summary>
+    /// Whether the daemon's round loop is currently running. Transitions from
+    /// <c>false</c> to <c>true</c> on <see cref="StartAsync"/> and back to
+    /// <c>false</c> on <see cref="StopAsync"/> / <see cref="IAsyncDisposable.DisposeAsync"/>.
+    /// Surfaced for health-check consumers (Wave 5.2.D
+    /// <c>LocalNodeHealthCheck</c>) that need to distinguish "active team exists
+    /// but gossip is not yet spinning" (Degraded) from "active team + gossip
+    /// running" (Healthy).
+    /// </summary>
+    bool IsRunning { get; }
+
     /// <summary>Fires on every successful gossip round; useful for tests and observability.</summary>
     event EventHandler<GossipRoundCompletedEventArgs>? RoundCompleted;
 }

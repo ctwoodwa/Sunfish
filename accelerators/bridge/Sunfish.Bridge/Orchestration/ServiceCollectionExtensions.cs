@@ -48,4 +48,39 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITenantRegistryEventBus, InMemoryTenantRegistryEventBus>();
         return services;
     }
+
+    /// <summary>
+    /// Registers Wave 5.2.D's health-monitoring surface:
+    /// <see cref="ITenantEndpointRegistry"/> (singleton
+    /// <see cref="InMemoryTenantEndpointRegistry"/>) and
+    /// <see cref="TenantHealthMonitor"/> (hosted service + exposed as a
+    /// singleton for 5.2.C's supervisor to subscribe to
+    /// <see cref="TenantHealthMonitor.HealthChanged"/>).
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Callers MUST have already invoked
+    /// <see cref="AddBridgeOrchestration"/> — the monitor depends on
+    /// <see cref="BridgeOrchestrationOptions"/> being bound. Kept as a
+    /// separate call so the Relay posture (ADR 0026 Posture B) can register
+    /// the 5.2.A contracts without also pulling the hosted service.
+    /// </para>
+    /// <para>
+    /// Registers the monitor both as an <see cref="IHostedService"/> (so the
+    /// generic host drives its lifecycle) and as
+    /// <see cref="TenantHealthMonitor"/> (so consumers — 5.2.C supervisor,
+    /// admin UI — can resolve the same instance and subscribe to
+    /// <see cref="TenantHealthMonitor.HealthChanged"/>).
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddBridgeOrchestrationHealth(
+        this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<ITenantEndpointRegistry, InMemoryTenantEndpointRegistry>();
+        services.AddSingleton<TenantHealthMonitor>();
+        services.AddHostedService(sp => sp.GetRequiredService<TenantHealthMonitor>());
+        return services;
+    }
 }

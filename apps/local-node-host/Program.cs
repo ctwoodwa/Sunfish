@@ -7,6 +7,7 @@ using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
 using Sunfish.Kernel.Sync.Identity;
 using Sunfish.LocalNodeHost;
+using Sunfish.LocalNodeHost.Health;
 
 // Composition root for the Sunfish local-node host process.
 //
@@ -70,11 +71,20 @@ builder.Services
         sqlCipherKeyDerivation: sqlCipherKeyDerivation)
     .AddSunfishTeamStoreActivator(rootSeed); // per-team encrypted-store opener    (Wave 6.3.E.1)
 
+// Wave 5.2.D health surface. Registered before LocalNodeWorker so the
+// endpoint is bound as soon as possible after team bootstrap — Bridge's
+// TenantHealthMonitor begins polling once the child process is spawned and
+// will see "active team not yet materialized" (Unhealthy) during the
+// bootstrap window until MultiTeamBootstrapHostedService completes.
+builder.Services.AddHealthChecks()
+    .AddCheck<LocalNodeHealthCheck>("local-node");
+
 // Multi-team bootstrap runs first so the node-host worker sees a materialized
 // active team on StartAsync. Registration order matters — the .NET generic
 // host starts hosted services in registration order.
 builder.Services.AddHostedService<MultiTeamBootstrapHostedService>();
 builder.Services.AddHostedService<LocalNodeWorker>();
+builder.Services.AddHostedService<HostedHealthEndpoint>();
 
 var host = builder.Build();
 await host.RunAsync();

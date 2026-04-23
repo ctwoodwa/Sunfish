@@ -12,10 +12,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Worker SDK does not transitively pull Microsoft.Extensions.Hosting;
-         the composition root needs the full package (not just Abstractions)
-         for Host.CreateApplicationBuilder. -->
-    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <!-- Wave 5.2.D health endpoint: the Worker SDK does not include Kestrel
+         or the ASP.NET Core health-check middleware. FrameworkReference pulls
+         in Microsoft.AspNetCore.App (Kestrel + minimal-API + HealthChecks +
+         Microsoft.Extensions.Hosting transitively) without switching this
+         project to Microsoft.NET.Sdk.Web. Deployment image implication:
+         self-contained publishes must include the ASP.NET Core shared
+         framework alongside the runtime. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <ItemGroup>

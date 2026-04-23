@@ -44,6 +44,18 @@ public sealed class LocalNodeOptions
     public string DataDirectory { get; set; } = GetDefaultDataDirectory();
 
     /// <summary>
+    /// TCP port the Wave 5.2.D health endpoint binds to. <c>0</c> (the
+    /// default) means "auto-assign" — the host listens on whatever
+    /// <c>ASPNETCORE_URLS</c> specifies, or lets Kestrel pick a free
+    /// ephemeral port when no URL is configured. Bridge's
+    /// <see cref="Sunfish.Bridge.Orchestration.ITenantProcessSupervisor"/>
+    /// sets this explicitly per child (Wave 5.2.C) so
+    /// <see cref="Sunfish.Bridge.Orchestration.TenantHealthMonitor"/> knows
+    /// where to poll.
+    /// </summary>
+    public int HealthPort { get; set; } = 0;
+
+    /// <summary>
     /// Platform-conventional default for <see cref="DataDirectory"/>:
     /// <list type="bullet">
     ///   <item>Windows: <c>%LOCALAPPDATA%\Sunfish\LocalNode</c></item>

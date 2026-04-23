@@ -98,6 +98,16 @@ public sealed class GossipDaemon : IGossipDaemon
     public IReadOnlyCollection<PeerInfo> KnownPeers =>
         _peers.Values.Select(p => p.Info).ToList();
 
+    /// <inheritdoc />
+    /// <remarks>
+    /// Reads the private <c>_runLoop</c> reference under no lock — the field is
+    /// a plain managed reference and the read is a single aligned pointer load,
+    /// so the worst-case observable state is "just-transitioned"; that is
+    /// acceptable for the health-check consumer, which treats this as an
+    /// advisory signal.
+    /// </remarks>
+    public bool IsRunning => _runLoop is not null;
+
     /// <summary>
     /// Exposed for tests and observability. Per-peer DELTA_STREAM budget
     /// enforced against inbound frames in this daemon's receive path.
