@@ -1,6 +1,6 @@
 # ADR 0027 — Kernel Runtime Split
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
 **Resolves:** Today's `packages/kernel` is a type-forwarding façade over Foundation primitives (per the package's own README: "virtual package ... no primitive is (re)implemented here"). The paper's kernel is a runtime with node lifecycle, plugin discovery, sync daemon orchestration, and versioned extension contracts. These are two different things sharing one name; the paper's kernel cannot be built inside the façade without confusing the façade's own semantics.
 

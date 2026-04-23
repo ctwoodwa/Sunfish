@@ -1,6 +1,6 @@
 # ADR 0029 — Federation vs. Gossip Reconciliation
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
 **Resolves:** Sunfish ships four `packages/federation-*` packages implementing a signed-envelope federation model (`ISyncTransport`, `InMemorySyncTransport`, `IPeerRegistry`, `SyncEnvelope`, `EnvelopeSigning`, RIBLT-reconciled entity and capability sync via `IEntitySyncer` / `ICapabilitySyncer` / `CapabilityReconcileResult`, and Kubo-backed IPFS blob replication via `IpfsBlobStore`). The local-node architecture paper's §6.1 (Gossip Anti-Entropy) and §6.2 (Sync Daemon Protocol) mandate a gossip anti-entropy daemon with a specific protocol shape — HELLO, CAPABILITY_NEG, DELTA_STREAM, GOSSIP_PING on a 30-second tick, leaderless, random peer selection. These are materially different sync models; both cannot be the single canonical path. Paper-alignment audit 2026-04-22 §2.4 and §5 conflict γ called this out as a structural conflict that must be resolved before Wave 1 build.
 

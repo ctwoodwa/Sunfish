@@ -1,6 +1,6 @@
 # ADR 0030 — React Adapter Scaffolding
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-22)
 **Date:** 2026-04-22
 **Resolves:** Paper §5.2 (UI Kernel four-tier layering) and [ADR 0014](0014-adapter-parity-policy.md) both require React parity with the Blazor adapter. Today no `packages/ui-adapters-react/` directory exists — the second adapter is zero lines of code while the Blazor adapter is 20+ components deep. This ADR scopes the scaffolding work (project shape, component-surface contract, build pipeline, test strategy) without committing to full component parity in a single pass. Wave 0.6 of the paper-alignment plan.
 
