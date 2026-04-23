@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Sunfish.LocalNodeHost.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
   </ItemGroup>
 
 </Project>

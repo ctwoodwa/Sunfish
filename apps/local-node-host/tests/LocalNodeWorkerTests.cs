@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sunfish.Kernel.Runtime.DependencyInjection;
+using Sunfish.Kernel.Sync.DependencyInjection;
 
 namespace Sunfish.LocalNodeHost.Tests;
 
@@ -31,6 +32,7 @@ public sealed class LocalNodeWorkerTests
         });
 
         builder.Services.AddSunfishKernelRuntime();
+        builder.Services.AddSunfishKernelSync();  // Wave 2.1 — LocalNodeWorker now starts the gossip daemon.
 
         // Inject the test plugin set as a concrete IEnumerable<ILocalNodePlugin>.
         foreach (var plugin in plugins)

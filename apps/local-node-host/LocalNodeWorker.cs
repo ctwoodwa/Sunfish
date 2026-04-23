@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sunfish.Kernel.Runtime;
+using Sunfish.Kernel.Sync.Gossip;
 
 namespace Sunfish.LocalNodeHost;
 
@@ -35,22 +36,26 @@ public sealed class LocalNodeWorker : BackgroundService
     private readonly INodeHost _nodeHost;
     private readonly IPluginRegistry _pluginRegistry;
     private readonly IEnumerable<ILocalNodePlugin> _plugins;
+    private readonly IGossipDaemon _gossip;
     private readonly ILogger<LocalNodeWorker> _logger;
 
     public LocalNodeWorker(
         INodeHost nodeHost,
         IPluginRegistry pluginRegistry,
         IEnumerable<ILocalNodePlugin> plugins,
+        IGossipDaemon gossip,
         ILogger<LocalNodeWorker> logger)
     {
         ArgumentNullException.ThrowIfNull(nodeHost);
         ArgumentNullException.ThrowIfNull(pluginRegistry);
         ArgumentNullException.ThrowIfNull(plugins);
+        ArgumentNullException.ThrowIfNull(gossip);
         ArgumentNullException.ThrowIfNull(logger);
 
         _nodeHost = nodeHost;
         _pluginRegistry = pluginRegistry;
         _plugins = plugins;
+        _gossip = gossip;
         _logger = logger;
     }
 
@@ -59,6 +64,9 @@ public sealed class LocalNodeWorker : BackgroundService
 
     /// <summary>The plugin registry this worker drives; surfaced for tests and diagnostics.</summary>
     public IPluginRegistry PluginRegistry => _pluginRegistry;
+
+    /// <summary>The sync-daemon gossip runtime; surfaced for tests and diagnostics.</summary>
+    public IGossipDaemon Gossip => _gossip;
 
     /// <inheritdoc />
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -79,6 +87,12 @@ public sealed class LocalNodeWorker : BackgroundService
 
         await _nodeHost.StartAsync(stoppingToken).ConfigureAwait(false);
 
+        // Start the gossip daemon — paper §6.1 tier-1 intra-team sync.
+        // The daemon's 30s tick + peer fan-out begin immediately; it's safe
+        // to start with an empty peer list and let peer discovery populate.
+        await _gossip.StartAsync(stoppingToken).ConfigureAwait(false);
+        _logger.LogInformation("Gossip daemon started (peers: {Count})", _gossip.KnownPeers.Count);
+
         // Idle loop — the kernel is the worker; we just wait. Timeout.Infinite
         // so the process burns no CPU; cancellation is the only exit path.
         try
@@ -95,7 +109,9 @@ public sealed class LocalNodeWorker : BackgroundService
         // Shutdown uses a fresh CancellationToken.None so the shutdown path
         // runs to completion even when the caller's token is already cancelled.
         // Errors during unload are logged by the registry itself and do not
-        // block subsequent restarts.
+        // block subsequent restarts. Reverse-order of startup: gossip first,
+        // node host second, plugins last.
+        await _gossip.StopAsync(CancellationToken.None).ConfigureAwait(false);
         await _nodeHost.StopAsync(CancellationToken.None).ConfigureAwait(false);
         await _pluginRegistry.UnloadAllAsync(CancellationToken.None).ConfigureAwait(false);
     }

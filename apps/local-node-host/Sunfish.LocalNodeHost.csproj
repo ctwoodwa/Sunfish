@@ -31,6 +31,10 @@
     <ProjectReference Include="..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
     <ProjectReference Include="..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
     <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-lease\Sunfish.Kernel.Lease.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-buckets\Sunfish.Kernel.Buckets.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-ledger\Sunfish.Kernel.Ledger.csproj" />
   </ItemGroup>
 
   <ItemGroup>
