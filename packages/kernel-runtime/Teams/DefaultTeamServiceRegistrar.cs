@@ -4,9 +4,11 @@ using Sunfish.Foundation.LocalFirst;
 using Sunfish.Kernel.Buckets.DependencyInjection;
 using Sunfish.Kernel.Events.DependencyInjection;
 using Sunfish.Kernel.Lease.DependencyInjection;
+using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
 using Sunfish.Kernel.Sync.DependencyInjection;
+using Sunfish.Kernel.Sync.Gossip;
 using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 
@@ -190,6 +192,18 @@ public static class DefaultTeamServiceRegistrar
             // singletons; each TeamContext's provider owns its own instances).
             var bucketsDirectory = TeamPaths.BucketsDirectory(dataDirectory, teamId);
             services.AddSunfishKernelBuckets(o => o.SourceDirectory = bucketsDirectory);
+
+            // Wave 6.5 — real notification producer. Subscribes to this
+            // team's IGossipDaemon (registered above by AddSunfishKernelSync)
+            // and emits TeamNotifications into the INotificationAggregator.
+            // Without this the aggregator fan-in would still see only the
+            // EmptyTeamNotificationStream placeholder and badge counts would
+            // be pinned at zero even as inter-peer traffic flowed. The
+            // placeholder stays in the package for test harnesses that do
+            // not wire a gossip daemon.
+            services.AddSingleton<ITeamNotificationStream>(sp =>
+                new GossipEventTeamNotificationStream(
+                    teamId, sp.GetRequiredService<IGossipDaemon>()));
         };
     }
 }

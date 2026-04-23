@@ -77,6 +77,9 @@ public sealed class GossipDaemon : IGossipDaemon
 
     public event EventHandler<GossipRoundCompletedEventArgs>? RoundCompleted;
 
+    /// <inheritdoc />
+    public event EventHandler<GossipFrameEventArgs>? FrameReceived;
+
     public GossipDaemon(
         ISyncDaemonTransport transport,
         VectorClock vectorClock,
@@ -304,6 +307,8 @@ public sealed class GossipDaemon : IGossipDaemon
         timeoutCts.CancelAfter(TimeSpan.FromSeconds(_options.ConnectTimeoutSeconds));
 
         ISyncDaemonConnection? conn = null;
+        var peerNodeId = Convert.ToHexString(peer.Info.PublicKey.AsSpan(
+            0, Math.Min(16, peer.Info.PublicKey.Length))).ToLowerInvariant();
         try
         {
             conn = await _transport.ConnectAsync(peer.Info.Endpoint, timeoutCts.Token).ConfigureAwait(false);
@@ -311,16 +316,44 @@ public sealed class GossipDaemon : IGossipDaemon
             var identity = _nodeIdentity.Current;
 
             // The handshake ladder: HELLO (both ways) → CAPABILITY_NEG → ACK.
-            await HandshakeProtocol.InitiateAsync(
-                conn,
-                localIdentity: new LocalIdentity(
-                    NodeId: identity.NodeIdBytes,
-                    PublicKey: identity.PublicKey,
-                    Signer: _signer,
-                    PrivateKey: identity.PrivateKey,
-                    SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
-                    SupportedVersions: HandshakeProtocol.DefaultSupportedVersions),
-                timeoutCts.Token).ConfigureAwait(false);
+            try
+            {
+                await HandshakeProtocol.InitiateAsync(
+                    conn,
+                    localIdentity: new LocalIdentity(
+                        NodeId: identity.NodeIdBytes,
+                        PublicKey: identity.PublicKey,
+                        Signer: _signer,
+                        PrivateKey: identity.PrivateKey,
+                        SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
+                        SupportedVersions: HandshakeProtocol.DefaultSupportedVersions),
+                    timeoutCts.Token).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                // Signed-HELLO failed (bad signature, incompatible schema,
+                // transport dropped mid-handshake). Surface as an observable
+                // HandshakeFailure frame before the outer catch reclassifies
+                // it as a dead-peer round failure — the outer catch re-raises
+                // per-peer backoff, but the notification layer still wants to
+                // know the handshake itself failed rather than a generic
+                // connect error.
+                FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                    PeerEndpoint: peer.Info.Endpoint,
+                    PeerNodeId: peerNodeId,
+                    FrameType: GossipFrameType.HandshakeFailure,
+                    OccurredAt: DateTimeOffset.UtcNow,
+                    Summary: $"handshake with {peerNodeId} failed: {ex.GetType().Name}"));
+                throw;
+            }
+
+            // Successful HELLO → Hello frame event.
+            FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                PeerEndpoint: peer.Info.Endpoint,
+                PeerNodeId: peerNodeId,
+                FrameType: GossipFrameType.Hello,
+                OccurredAt: DateTimeOffset.UtcNow,
+                Summary: $"{peerNodeId} completed handshake"));
 
             // Exchange a GOSSIP_PING carrying our vector-clock snapshot and
             // the next monotonic nonce (spec §8). We accept at most one
@@ -356,6 +389,14 @@ public sealed class GossipDaemon : IGossipDaemon
                         // newer-op frontier for the next round.
                         var peerClock = new VectorClock(inboundPing.VectorClock);
                         _vectorClock.Merge(peerClock);
+
+                        // Successful inbound PING → GossipPing frame event.
+                        FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                            PeerEndpoint: peer.Info.Endpoint,
+                            PeerNodeId: peerNodeId,
+                            FrameType: GossipFrameType.GossipPing,
+                            OccurredAt: DateTimeOffset.UtcNow,
+                            Summary: $"{peerNodeId} sent gossip ping"));
                     }
                 }
             }
@@ -372,12 +413,31 @@ public sealed class GossipDaemon : IGossipDaemon
         {
             peer.OnRoundFailed(_options.DeadPeerBackoffSeconds);
             _logger.LogDebug("Gossip round timed out for {Endpoint}", peer.Info.Endpoint);
+            FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                PeerEndpoint: peer.Info.Endpoint,
+                PeerNodeId: peerNodeId,
+                FrameType: GossipFrameType.GossipError,
+                OccurredAt: DateTimeOffset.UtcNow,
+                Summary: $"gossip round timed out for {peer.Info.Endpoint}"));
             return (0, 0);
         }
         catch (Exception ex)
         {
             peer.OnRoundFailed(_options.DeadPeerBackoffSeconds);
             _logger.LogDebug(ex, "Gossip round failed for {Endpoint}", peer.Info.Endpoint);
+            // The HandshakeFailure path already raised its own FrameReceived
+            // before rethrowing; we still emit a GossipError here so consumers
+            // that only track GossipError see every round failure. If the
+            // double-emit becomes noisy a future enhancement can gate this
+            // on a "did we already raise" flag — today the notification
+            // aggregator de-dupes by TeamNotification.Id (random guid), so a
+            // double event is two benign notifications, not a state bug.
+            FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                PeerEndpoint: peer.Info.Endpoint,
+                PeerNodeId: peerNodeId,
+                FrameType: GossipFrameType.GossipError,
+                OccurredAt: DateTimeOffset.UtcNow,
+                Summary: $"gossip round failed for {peer.Info.Endpoint}: {ex.GetType().Name}"));
             return (0, 0);
         }
         finally

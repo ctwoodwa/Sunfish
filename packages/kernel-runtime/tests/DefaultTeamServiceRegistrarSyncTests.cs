@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Sunfish.Foundation.LocalFirst.Encryption;
 using Sunfish.Kernel.Lease;
+using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
@@ -225,6 +226,33 @@ public sealed class DefaultTeamServiceRegistrarSyncTests : IDisposable
         Assert.NotEqual(endpointA, endpointB);
         Assert.Equal(TeamPaths.TransportEndpoint(_tempRoot, teamA), endpointA);
         Assert.Equal(TeamPaths.TransportEndpoint(_tempRoot, teamB), endpointB);
+    }
+
+    [Fact]
+    public async Task Notification_stream_is_GossipEvent_backed_and_scoped_to_team()
+    {
+        // Wave 6.5 wiring — the registrar must install a real
+        // GossipEventTeamNotificationStream per team, subscribed to that
+        // team's IGossipDaemon. Two teams therefore get two distinct streams
+        // with distinct TeamIds.
+        var registrar = DefaultTeamServiceRegistrar.Compose(
+            _tempRoot, _subkeyDerivation, _rootIdentity, _sqlCipherKeyDerivation);
+        await using var factory = new TeamContextFactory(registrar);
+
+        var teamA = TeamId.New();
+        var teamB = TeamId.New();
+
+        var ctxA = await factory.GetOrCreateAsync(teamA, "Team A", CancellationToken.None);
+        var ctxB = await factory.GetOrCreateAsync(teamB, "Team B", CancellationToken.None);
+
+        var streamA = ctxA.Services.GetRequiredService<ITeamNotificationStream>();
+        var streamB = ctxB.Services.GetRequiredService<ITeamNotificationStream>();
+
+        Assert.NotSame(streamA, streamB);
+        Assert.IsType<GossipEventTeamNotificationStream>(streamA);
+        Assert.IsType<GossipEventTeamNotificationStream>(streamB);
+        Assert.Equal(teamA, streamA.TeamId);
+        Assert.Equal(teamB, streamB.TeamId);
     }
 
     [Fact]
