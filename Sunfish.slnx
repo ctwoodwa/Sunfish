@@ -22,6 +22,14 @@
     <Project Path="packages/kernel-runtime/Sunfish.Kernel.Runtime.csproj" />
     <Project Path="packages/kernel-runtime/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/crdt/">
+    <Project Path="packages/kernel-crdt/Sunfish.Kernel.Crdt.csproj" />
+    <Project Path="packages/kernel-crdt/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/kernel/security/">
+    <Project Path="packages/kernel-security/Sunfish.Kernel.Security.csproj" />
+    <Project Path="packages/kernel-security/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/kernel/schema-registry/">
     <Project Path="packages/kernel-schema-registry/Sunfish.Kernel.SchemaRegistry.csproj" />
     <Project Path="packages/kernel-schema-registry/tests/tests.csproj" />

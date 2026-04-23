@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Crdt</PackageId>
+    <RootNamespace>Sunfish.Kernel.Crdt</RootNamespace>
+    <Description>Sunfish CRDT engine abstraction — Wave 1.2 of the paper-alignment plan (paper §2.2, §9; ADR 0028). Wraps the chosen CRDT backend behind framework-agnostic ICrdtDocument / ICrdtText / ICrdtMap / ICrdtList contracts. Ships with a provisional in-memory stub backend pending the Loro .NET binding maturity resolution noted in ADR 0028.</Description>
+    <PackageTags>sunfish;kernel;crdt;local-first</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Crdt.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+  </ItemGroup>
+</Project>

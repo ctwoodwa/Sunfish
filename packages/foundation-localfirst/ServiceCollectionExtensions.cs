@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Sunfish.Foundation.LocalFirst.Encryption;
+using Sunfish.Foundation.LocalFirst.Quarantine;
+using Sunfish.Kernel.Events;
 
 namespace Sunfish.Foundation.LocalFirst;
 
@@ -8,16 +10,29 @@ namespace Sunfish.Foundation.LocalFirst;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the in-memory <see cref="IOfflineStore"/>, <see cref="IOfflineQueue"/>,
-    /// and the default <see cref="LastWriterWinsConflictResolver"/>. Sync engine,
-    /// export, and import services are bundle / accelerator concerns and are
-    /// not registered here.
+    /// Registers the in-memory <see cref="IOfflineStore"/> and the default
+    /// <see cref="LastWriterWinsConflictResolver"/>. Sync engine, export, and import services are
+    /// bundle / accelerator concerns and are not registered here. The paper §11.2 Layer 4
+    /// quarantine queue is registered separately via
+    /// <see cref="AddSunfishQuarantineQueue"/>.
     /// </summary>
     public static IServiceCollection AddSunfishLocalFirst(this IServiceCollection services)
     {
         services.AddSingleton<IOfflineStore, InMemoryOfflineStore>();
-        services.AddSingleton<IOfflineQueue, InMemoryOfflineQueue>();
         services.AddSingleton<ISyncConflictResolver, LastWriterWinsConflictResolver>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the paper §11.2 Layer 4 quarantine queue, persisted to an
+    /// <see cref="IEventLog"/>. Offline writes that fail validation land here pending review.
+    /// Requires an <see cref="IEventLog"/> to already be registered.
+    /// </summary>
+    public static IServiceCollection AddSunfishQuarantineQueue(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.AddSingleton<IQuarantineQueue>(sp =>
+            new EventLogBackedQuarantineQueue(sp.GetRequiredService<IEventLog>()));
         return services;
     }
 

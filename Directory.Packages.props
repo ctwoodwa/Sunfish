@@ -16,6 +16,8 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="NSubstitute" Version="6.0.0-rc.1"/>
+    <PackageVersion Include="FsCheck" Version="3.3.2"/>
+    <PackageVersion Include="FsCheck.Xunit" Version="3.3.2"/>
     <PackageVersion Include="NSec.Cryptography" Version="26.1.0-preview.1"/>
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0"/>
     <PackageVersion Include="MessagePack" Version="3.1.4"/>
