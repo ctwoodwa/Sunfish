@@ -88,6 +88,13 @@ public sealed class LocalNodeOptions
     public string? RootSeedHex { get; set; }
 
     /// <summary>
+    /// Wave 5.3.C — browser-facing WebSocket sync-daemon endpoint configuration.
+    /// Controls whether <c>/ws</c> is mapped on the shared Kestrel listener and
+    /// what per-message size cap is enforced on the inbound side.
+    /// </summary>
+    public BrowserWebSocketOptions BrowserWebSocket { get; set; } = new();
+
+    /// <summary>
     /// Platform-conventional default for <see cref="DataDirectory"/>:
     /// <list type="bullet">
     ///   <item>Windows: <c>%LOCALAPPDATA%\Sunfish\LocalNode</c></item>
@@ -120,6 +127,32 @@ public sealed class LocalNodeOptions
         var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         return Path.Combine(userHome, ".local", "share", "sunfish", "local-node");
     }
+}
+
+/// <summary>
+/// Wave 5.3.C configuration for the <c>/ws</c> endpoint that carries the
+/// WebSocket-framed sync-daemon transport. See
+/// <c>_shared/product/wave-5.3-decomposition.md</c> §5.3.C for the full
+/// design. Bound from <c>LocalNode:BrowserWebSocket</c>.
+/// </summary>
+public sealed class BrowserWebSocketOptions
+{
+    /// <summary>
+    /// When <c>true</c> (the default) the hosted WebSocket endpoint maps
+    /// <c>/ws</c> on the shared Kestrel listener and hands inbound
+    /// connections to the registered <c>ISyncDaemonAcceptor</c>. When
+    /// <c>false</c> the path is not mapped — useful for tenant children that
+    /// intentionally expose only <c>/health</c> (e.g. Anchor direct-install).
+    /// </summary>
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>
+    /// Maximum inbound WebSocket message size in bytes. Frames exceeding the
+    /// cap are rejected with a <c>MessageTooBig</c> close. Default 4 MiB
+    /// matches the sync-daemon-protocol §2.2 guidance for non-snapshot
+    /// frames while leaving headroom below the 16 MiB hard-cap.
+    /// </summary>
+    public int MaxMessageBytes { get; set; } = 4 * 1024 * 1024;
 }
 
 /// <summary>

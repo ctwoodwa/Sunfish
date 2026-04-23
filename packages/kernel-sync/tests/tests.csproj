@@ -17,6 +17,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Wave 5.3.C WebSocket transport tests exercise Kestrel + minimal-API
+         via loopback, which requires the ASP.NET Core shared framework at
+         test-runtime. The kernel-sync library itself stays SDK-agnostic. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Sunfish.Kernel.Sync.csproj" />
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\kernel\Sunfish.Kernel.csproj" />

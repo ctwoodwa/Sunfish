@@ -18,6 +18,7 @@ using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Seeding;
 using Sunfish.Bridge.Hubs;
 using Sunfish.Bridge.Middleware;
+using Sunfish.Bridge.Proxy;
 using Sunfish.Bridge.Relay;
 using Sunfish.Foundation.Catalog.Bundles;
 using Sunfish.Foundation.FeatureManagement;
@@ -98,11 +99,20 @@ app.UseHttpsRedirection();
 // returns early above).
 app.UseMiddleware<TenantSubdomainResolutionMiddleware>();
 
+// Wave 5.3.C — enable WebSocket upgrades before the /ws reverse proxy is
+// mapped below.
+app.UseWebSockets();
+
 app.UseAntiforgery();
 app.UseAuthorization();
 
 app.MapDefaultEndpoints();
 app.MapHealthChecks("/health");
+// Wave 5.3.C — reverse-proxy browser /ws connections to the tenant child's
+// /ws endpoint on its local-node-host process. Auth gate (Wave 5.3.B) is
+// still pending; IBrowserTenantContext must be resolved by the subdomain
+// middleware above.
+app.MapTenantWebSocketProxy();
 app.MapHub<BridgeHub>("/hubs/bridge");
 
 app.MapStaticAssets();

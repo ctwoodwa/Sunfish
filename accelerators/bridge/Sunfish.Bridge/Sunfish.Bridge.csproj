@@ -24,6 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Wave 5.3.C: TenantWebSocketReverseProxy.PumpAsync is internal so the
+         public surface stays narrow; tests exercise it directly. -->
+    <InternalsVisibleTo Include="Sunfish.Bridge.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
     <PackageReference Include="Aspire.StackExchange.Redis.OutputCaching" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />

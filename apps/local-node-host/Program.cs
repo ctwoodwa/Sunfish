@@ -6,6 +6,7 @@ using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
 using Sunfish.Kernel.Sync.Identity;
+using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.LocalNodeHost;
 using Sunfish.LocalNodeHost.Health;
 
@@ -127,12 +128,29 @@ else
 builder.Services.AddHealthChecks()
     .AddCheck<LocalNodeHealthCheck>("local-node");
 
+// Wave 5.3.C shared Kestrel-backed WebApplication. Singleton so
+// HostedHealthEndpoint and HostedWebSocketEndpoint can register their paths
+// on the same listener. Registered as a singleton FIRST so its constructor
+// (which builds the WebApplication) runs before anything else resolves it.
+builder.Services.AddSingleton<SharedHostedWebApp>();
+
+// Wave 5.3.C sync-daemon accept surface. LoggingSyncDaemonAcceptor is a
+// stub that logs "received WS connection, CBOR-reading not yet wired" and
+// closes the WebSocket cleanly; Wave 5.3.D replaces it with the real
+// session pipeline.
+builder.Services.AddSingleton<ISyncDaemonAcceptor, LoggingSyncDaemonAcceptor>();
+
 // Multi-team bootstrap runs first so the node-host worker sees a materialized
 // active team on StartAsync. Registration order matters — the .NET generic
 // host starts hosted services in registration order.
 builder.Services.AddHostedService<MultiTeamBootstrapHostedService>();
 builder.Services.AddHostedService<LocalNodeWorker>();
+// Wave 5.3.C: HostedHealthEndpoint + HostedWebSocketEndpoint register their
+// paths on the shared app during their StartAsync; the shared app itself is
+// registered LAST so it starts Kestrel after every path has been mapped.
 builder.Services.AddHostedService<HostedHealthEndpoint>();
+builder.Services.AddHostedService<HostedWebSocketEndpoint>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<SharedHostedWebApp>());
 
 var host = builder.Build();
 await host.RunAsync();
