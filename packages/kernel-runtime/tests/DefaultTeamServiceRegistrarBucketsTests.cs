@@ -19,6 +19,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     private readonly string _tempRoot;
     private readonly ITeamSubkeyDerivation _fakeSubkeyDerivation = new ThrowingSubkeyDerivation();
     private readonly IEd25519Signer _fakeRootSigner = new ThrowingEd25519Signer();
+    private readonly ISqlCipherKeyDerivation _fakeSqlCipherKeyDerivation = new ThrowingSqlCipherKeyDerivation();
 
     public DefaultTeamServiceRegistrarBucketsTests()
     {
@@ -45,7 +46,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Two_teams_get_isolated_bucket_registries_populated_from_their_own_manifests()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner);
+            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -86,7 +87,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task All_five_bucket_package_services_are_distinct_instances_across_teams()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner);
+            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamA = TeamId.New();
@@ -131,7 +132,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Team_with_empty_buckets_directory_produces_empty_registry_without_crashing()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner);
+            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamId = TeamId.New();
@@ -149,7 +150,7 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
     public async Task Team_with_missing_buckets_directory_produces_empty_registry_without_crashing()
     {
         var registrar = DefaultTeamServiceRegistrar.Compose(
-            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner);
+            _tempRoot, _fakeSubkeyDerivation, _fakeRootSigner, _fakeSqlCipherKeyDerivation);
         await using var factory = new TeamContextFactory(registrar);
 
         var teamId = TeamId.New();
@@ -186,6 +187,13 @@ public sealed class DefaultTeamServiceRegistrarBucketsTests : IDisposable
         public (byte[] PublicKey, byte[] PrivateKey) DeriveTeamKeypair(ReadOnlySpan<byte> rootPrivateKey, string teamId) =>
             throw new InvalidOperationException(
                 "ITeamSubkeyDerivation was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
+    }
+
+    private sealed class ThrowingSqlCipherKeyDerivation : ISqlCipherKeyDerivation
+    {
+        public byte[] DeriveSqlCipherKey(ReadOnlySpan<byte> rootSeed, string teamId) =>
+            throw new InvalidOperationException(
+                "ISqlCipherKeyDerivation was unexpectedly invoked in the 6.3.D bucket-registrar test path.");
     }
 
     private sealed class ThrowingEd25519Signer : IEd25519Signer
