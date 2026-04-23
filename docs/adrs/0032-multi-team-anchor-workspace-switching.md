@@ -1,6 +1,6 @@
 # ADR 0032 — Multi-Team Anchor (Slack-Style Workspace Switching)
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-23)
 **Date:** 2026-04-23
 **Resolves:** ADR 0031 deferred "multi-team Anchor (workspace-switcher) scope for v2" as one of five follow-up decisions. This ADR decides the architecture of a multi-team Anchor — how one desktop installation can host a user's membership in multiple teams (tenants), how those teams are isolated in-process, how the user switches between them, and where the hard edges lie.
 

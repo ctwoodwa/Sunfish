@@ -1,6 +1,6 @@
 # ADR 0031 — Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual)
 
-**Status:** Proposed
+**Status:** Accepted (2026-04-23)
 **Date:** 2026-04-23
 **Supersedes:** ADR 0026 (Bridge Posture — the dual-posture "SaaS shell + managed relay" framing is replaced by this ADR's Zone-C Hybrid model; both Bridge deployment modes are now paper-aligned).
 **Resolves:** Paper v12.0 §17.2 ("Hosted relay as a SaaS node") and §20 (Architecture Selection Framework) give Bridge a clearer conceptual home than ADR 0026's framing allowed. Bridge is not "SaaS shell vs. relay" — it is the **Zone-C Hybrid implementation** of the paper: a hosted node peer (plus a traditional web layer for signup, billing, and the browser-accessible shell) serving multiple commercial tenants. This ADR decides (a) the tenant-isolation posture, (b) the browser-shell key-bootstrap flow, and (c) the migration path for ADR 0026's current code.
