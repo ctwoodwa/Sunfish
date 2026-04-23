@@ -1,0 +1,202 @@
+@page "/components/local-first/teamswitcher"
+@page "/components/local-first/teamswitcher/overview"
+@layout MainLayout
+@implements IDisposable
+@inject DemoTeamSwitcherFixture Fixture
+@using Sunfish.KitchenSink.Services
+@using Sunfish.Kernel.Runtime.Teams
+@using Sunfish.UIAdapters.Blazor.Components.LocalFirst
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Team Switcher · Multi-Team Demo</PageTitle>
+
+<SunfishExamplePanel Title="Team Switcher — Multi-Team Demo"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/LocalFirst/TeamSwitcher/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTeamSwitcher</code> is the Wave 6.6 Slack-style multi-team sidebar.
+            It binds to the kernel-runtime services
+            <code>IActiveTeamAccessor</code>, <code>ITeamContextFactory</code>, and
+            <code>INotificationAggregator</code> to render one row per materialized team
+            with a per-team unread badge.
+        </p>
+        <p>
+            The footer carries the cross-team aggregate unread count plus a
+            <em>+ Add team</em> button — consumers are expected to surface the Wave 6.8
+            QR-onboarding flow in response to <code>OnAddTeamRequested</code>, per ADR 0032.
+            Switching the variant selector below re-binds the component to a different
+            fixture so you can compare the empty, single-legacy, and multi-team states
+            without restarting the page.
+        </p>
+        <p>
+            Clicking a row writes to <code>IActiveTeamAccessor.SetActiveAsync</code> and
+            fires <code>OnTeamChanged</code>. Clicking <em>+ Add team</em> fires
+            <code>OnAddTeamRequested</code>. Both paths are captured in the event-stream
+            pane to the right.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-tswitcher">
+            <div class="demo-tswitcher__variants">
+                @foreach (var v in Fixture.Variants)
+                {
+                    var variant = v;
+                    var isActive = ReferenceEquals(Fixture.Current, variant);
+                    <button type="button"
+                            class="demo-tswitcher__variant @(isActive ? "demo-tswitcher__variant--active" : "")"
+                            @onclick="() => SelectVariant(variant)">
+                        <span class="demo-tswitcher__variant-name">@variant.Name</span>
+                        <span class="demo-tswitcher__variant-desc">@variant.Description</span>
+                    </button>
+                }
+            </div>
+
+            <div class="demo-tswitcher__stage">
+                <div class="demo-tswitcher__host">
+                    <SunfishTeamSwitcher @key="Fixture.Current.Name"
+                                        LegacyPrimaryTeamId="@Fixture.Current.LegacyPrimaryTeamId"
+                                        OnTeamChanged="OnTeamChanged"
+                                        OnAddTeamRequested="OnAddTeamRequested" />
+                </div>
+
+                <div class="demo-tswitcher__log">
+                    <div class="demo-tswitcher__log-header">
+                        <strong>Event stream</strong>
+                        <button type="button" class="demo-tswitcher__log-clear"
+                                @onclick="ClearLog">clear</button>
+                    </div>
+                    @if (_log.Count == 0)
+                    {
+                        <p class="demo-tswitcher__log-empty">
+                            Click a team row or <em>+ Add team</em> to log events here.
+                        </p>
+                    }
+                    else
+                    {
+                        <pre class="demo-tswitcher__log-body">@FormatLog()</pre>
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+<style>
+    .demo-tswitcher { display: flex; flex-direction: column; gap: 1rem; }
+    .demo-tswitcher__variants { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .demo-tswitcher__variant {
+        flex: 1 1 220px; padding: .625rem .875rem; text-align: left; cursor: pointer;
+        border: 1px solid var(--sunfish-border, #d1d5db);
+        background: var(--sunfish-card-bg, #fff); border-radius: .375rem;
+        transition: border-color .12s, background .12s;
+    }
+    .demo-tswitcher__variant:hover { border-color: var(--sunfish-accent, #2563eb); }
+    .demo-tswitcher__variant--active {
+        border-color: var(--sunfish-accent, #2563eb);
+        background: color-mix(in srgb, var(--sunfish-accent, #2563eb) 8%, transparent);
+    }
+    .demo-tswitcher__variant-name { display: block; font-weight: 600; font-size: .9rem; }
+    .demo-tswitcher__variant-desc { display: block; font-size: .8rem; color: var(--sunfish-muted, #6b7280); margin-top: .125rem; }
+
+    .demo-tswitcher__stage { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: stretch; }
+    .demo-tswitcher__host {
+        height: 420px;
+        border: 1px solid var(--sunfish-border, #d1d5db); border-radius: .375rem;
+        overflow: hidden; display: flex;
+    }
+    .demo-tswitcher__log {
+        display: flex; flex-direction: column; min-height: 420px;
+        border: 1px solid var(--sunfish-border, #d1d5db); border-radius: .375rem;
+        background: #0f1115; color: #e6e6e6;
+    }
+    .demo-tswitcher__log-header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: .5rem .75rem; border-bottom: 1px solid #2a2d33; font-size: .8rem;
+    }
+    .demo-tswitcher__log-clear {
+        background: transparent; border: 1px solid #3a3d44; color: #c0c0c0;
+        font-size: .72rem; padding: .15rem .5rem; border-radius: .25rem; cursor: pointer;
+    }
+    .demo-tswitcher__log-empty { padding: 1rem; color: #9aa0a6; font-size: .82rem; margin: 0; }
+    .demo-tswitcher__log-body {
+        flex: 1; overflow-y: auto; margin: 0; padding: .5rem .75rem;
+        font-family: ui-monospace, Menlo, Consolas, monospace; font-size: .78rem; line-height: 1.45;
+        white-space: pre-wrap;
+    }
+
+    @@media (max-width: 760px) {
+        .demo-tswitcher__stage { grid-template-columns: 1fr; }
+        .demo-tswitcher__host { height: 340px; }
+    }
+</style>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Local-First", "Team Switcher", "Overview"];
+
+    private readonly List<DemoTeamSwitcherEvent> _log = new();
+
+    protected override void OnInitialized()
+    {
+        Fixture.EventLogged += OnEventLogged;
+        Fixture.VariantChanged += OnVariantChanged;
+    }
+
+    private void SelectVariant(DemoTeamSwitcherVariant v)
+    {
+        Fixture.LogEvent("VariantChanged", $"name='{v.Name}', teams={v.Teams.Count}");
+        Fixture.SetVariant(v);
+    }
+
+    private void OnTeamChanged(TeamId teamId)
+    {
+        Fixture.LogEvent("OnTeamChanged (consumer callback)", $"teamId={teamId}");
+    }
+
+    private void OnAddTeamRequested()
+    {
+        Fixture.LogEvent("OnAddTeamRequested",
+            "→ Wave 6.8 would present the QR-onboarding sheet here.");
+    }
+
+    private void OnEventLogged(DemoTeamSwitcherEvent evt)
+    {
+        _log.Insert(0, evt);
+        if (_log.Count > 24) _log.RemoveRange(24, _log.Count - 24);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void OnVariantChanged() => InvokeAsync(StateHasChanged);
+
+    private void ClearLog()
+    {
+        _log.Clear();
+    }
+
+    private string FormatLog()
+    {
+        var sb = new System.Text.StringBuilder();
+        foreach (var e in _log)
+        {
+            sb.Append(e.At.ToString("HH:mm:ss.fff"));
+            sb.Append("  ");
+            sb.Append(e.Kind);
+            sb.Append('\n');
+            sb.Append("    ");
+            sb.Append(e.Payload);
+            sb.Append('\n');
+        }
+        return sb.ToString();
+    }
+
+    public void Dispose()
+    {
+        Fixture.EventLogged -= OnEventLogged;
+        Fixture.VariantChanged -= OnVariantChanged;
+    }
+}

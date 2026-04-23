@@ -1,5 +1,7 @@
 using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Extensions;
+using Sunfish.Kernel.Runtime.Notifications;
+using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.KitchenSink.Data;
 using Sunfish.KitchenSink.Services;
 using Sunfish.Providers.FluentUI;
@@ -66,6 +68,14 @@ builder.Services.AddScoped<ISunfishIconProvider>(sp => sp.GetRequiredService<Pro
 builder.Services.AddScoped<ISunfishJsInterop>(sp => sp.GetRequiredService<ProviderSwitcher>());
 
 builder.Services.AddScoped<FavoritesService>();
+
+// SunfishTeamSwitcher demo (Wave 6.6 deferred deliverable) — register in-memory
+// fakes for the kernel-runtime multi-team services so the showcase page can
+// drive the component without a real kernel wire-up.
+builder.Services.AddScoped<DemoTeamSwitcherFixture>();
+builder.Services.AddScoped<ITeamContextFactory, FakeTeamSwitcherContextFactory>();
+builder.Services.AddScoped<IActiveTeamAccessor, FakeTeamSwitcherActiveAccessor>();
+builder.Services.AddScoped<INotificationAggregator, FakeTeamSwitcherNotificationAggregator>();
 
 var siteLinksPath = Path.Combine(builder.Environment.ContentRootPath, "..", "..", "site-links.json");
 if (File.Exists(siteLinksPath))

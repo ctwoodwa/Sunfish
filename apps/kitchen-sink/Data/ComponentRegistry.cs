@@ -422,6 +422,11 @@ public static class ComponentRegistry
             "Real-time chat interface with message threads and typing indicators.",
             ApiNs("Feedback"), OverviewOnly),
 
+        // ── Local-First ─────────────────────────────────────────────────
+        new("TeamSwitcher", "teamswitcher", "Local-First", "local-first",
+            "Slack-style multi-team sidebar from Wave 6.6. Binds to IActiveTeamAccessor, ITeamContextFactory, and INotificationAggregator (per ADR 0032 / paper §13.1) to show per-team unread badges plus a cross-team aggregate.",
+            "/api/Sunfish.UIAdapters.Blazor.Components.LocalFirst.SunfishTeamSwitcher.html", OverviewOnly),
+
         // ── Miscellaneous ───────────────────────────────────────────────
         new("DockManager", "dockmanager", "Miscellaneous", "miscellaneous",
             "Dockable panel layout manager for complex application shells.",
@@ -470,6 +475,7 @@ public static class ComponentRegistry
         new("Maps", "maps"),
         new("AI", "ai"),
         new("Communication", "communication"),
+        new("Local-First", "local-first"),
         new("Miscellaneous", "miscellaneous"),
     ];
 
