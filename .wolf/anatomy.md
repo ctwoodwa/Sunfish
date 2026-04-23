@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T08:18:38.889Z
-> Files: 939 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T12:42:12.001Z
+> Files: 964 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -335,6 +335,42 @@
 ## accelerators/bridge/Sunfish.Bridge/Services/
 
 - `TenantRegistry.cs` — Façade over <see cref="SunfishBridgeDbContext"/> for the Bridge control-plane's tenant-registry conc (~1911 tok)
+
+## accelerators/bridge/deploy/
+
+- `README.md` — Project documentation (~1905 tok)
+
+## accelerators/bridge/deploy/bicep/
+
+- `main.bicep` — ============================================================================ (~1500 tok)
+- `README.md` — Project documentation (~1378 tok)
+- `sample-parameters.json` (~414 tok)
+
+## accelerators/bridge/deploy/bicep/modules/
+
+- `stack.bicep` — ============================================================================ (~3644 tok)
+
+## accelerators/bridge/deploy/k8s/
+
+- `00-namespace.yaml` — ============================================================================ (~241 tok)
+- `01-secrets.yaml.template` — ============================================================================ (~799 tok)
+- `10-postgres.yaml` — ============================================================================ (~734 tok)
+- `11-redis.yaml` — ============================================================================ (~766 tok)
+- `12-rabbit.yaml` — ============================================================================ (~696 tok)
+- `20-bridge-web.yaml` — ============================================================================ (~1150 tok)
+- `21-bridge-dab.yaml` — ============================================================================ (~558 tok)
+- `30-tenant-nodes.yaml` — ============================================================================ (~1128 tok)
+- `40-network-policies.yaml` — ============================================================================ (~1017 tok)
+- `kustomization.yaml` — ============================================================================ (~509 tok)
+- `README.md` — Project documentation (~1365 tok)
+
+## accelerators/bridge/deploy/terraform/
+
+- `main.tf` — ############################################################################ (~5044 tok)
+- `outputs.tf` — ############################################################################ (~556 tok)
+- `README.md` — Project documentation (~1128 tok)
+- `sample.tfvars` — ############################################################################ (~285 tok)
+- `variables.tf` — ############################################################################ (~585 tok)
 
 ## accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/
 
@@ -1829,7 +1865,7 @@
 ## packages/ui-adapters-blazor/
 
 - `_Imports.razor` (~364 tok)
-- `Sunfish.UIAdapters.Blazor.csproj` — /*.cs" /> (~479 tok)
+- `Sunfish.UIAdapters.Blazor.csproj` — /*.cs" /> (~539 tok)
 
 ## packages/ui-adapters-blazor/Components/AI/
 
@@ -1890,6 +1926,9 @@
 - `SunfishNodeHealthBar.razor` (~484 tok)
 - `SunfishOptimisticButton.razor` (~1283 tok)
 - `SunfishSyncStatusIndicator.razor` — Declares and (~543 tok)
+- `SunfishTeamSwitcher.razor` (~858 tok)
+- `SunfishTeamSwitcher.razor.cs` — Wave 6.6 Slack-style team switcher sidebar. Binds to the kernel-runtime multi-team services (<see cr (~1533 tok)
+- `SunfishTeamSwitcher.razor.css` — Styles: 24 rules, 12 vars (~1526 tok)
 - `SyncState.cs` — Visual-vocabulary states from the Local-Node Architecture paper (§5.2, §13.2). Bound 1:1 to the <c>s (~409 tok)
 
 ## packages/ui-adapters-blazor/Components/Scheduling/
@@ -2009,6 +2048,7 @@
 - `SunfishNodeHealthBarTests.cs` — Class: SunfishNodeHealthBarTests (~593 tok)
 - `SunfishOptimisticButtonTests.cs` — Class: SunfishOptimisticButtonTests (~1037 tok)
 - `SunfishSyncStatusIndicatorTests.cs` — Class: SunfishSyncStatusIndicatorTests (~690 tok)
+- `SunfishTeamSwitcherTests.cs` — Wave 6.6 — Bunit tests for <see cref="SunfishTeamSwitcher"/>. Uses fakes rather than NSubstitute bec (~2729 tok)
 - `SyncStateTests.cs` — Class: SyncStateTests (~259 tok)
 
 ## packages/ui-adapters-blazor/wwwroot/js/

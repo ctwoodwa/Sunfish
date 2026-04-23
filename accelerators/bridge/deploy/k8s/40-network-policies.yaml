@@ -1,0 +1,107 @@
+# ============================================================================
+# NetworkPolicies — deny cross-namespace traffic by default
+# ============================================================================
+# Keeps a shared-cluster Option B posture clean: no pod in this namespace can
+# receive traffic from other namespaces unless explicitly allowed. Requires
+# a CNI that implements NetworkPolicy (Calico, Cilium, Weave with policy,
+# Antrea). Plain flannel does not enforce these.
+
+# ----------------------------------------------------------------------------
+# Default-deny ingress for the whole namespace
+# ----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: sunfish-bridge-acmedemo
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+
+---
+# ----------------------------------------------------------------------------
+# Allow Bridge web ingress from the Ingress controller's namespace only
+# ----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-bridge-web-from-ingress
+  namespace: sunfish-bridge-acmedemo
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: bridge-web
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              # Match your Ingress controller's namespace labels.
+              # Ingress-NGINX default: name=ingress-nginx.
+              kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+          protocol: TCP
+
+---
+# ----------------------------------------------------------------------------
+# Allow intra-namespace pod-to-pod (Bridge <-> Postgres/Redis/Rabbit/DAB/nodes)
+# ----------------------------------------------------------------------------
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-intra-namespace
+  namespace: sunfish-bridge-acmedemo
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: sunfish-bridge-acmedemo
+
+---
+# ----------------------------------------------------------------------------
+# Default-deny egress — force tenant-node traffic to go through the relay
+# ----------------------------------------------------------------------------
+# Allow only:
+#   * DNS (53/UDP, 53/TCP) to kube-system
+#   * Intra-namespace (Bridge <-> its deps)
+#   * HTTPS to the operator's relay endpoint (customer-configured)
+#
+# TODO(w5.5.6): the relay endpoint is deployment-specific. Patch this policy
+# via Kustomize with a CIDR or a FQDN policy (Cilium FQDN).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-egress
+  namespace: sunfish-bridge-acmedemo
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    # DNS
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: kube-system
+      ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Intra-namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: sunfish-bridge-acmedemo
+    # Allow all HTTPS egress for now — narrow via Kustomize patch for
+    # regulated deployments (e.g. to only the relay's CIDR).
+    - ports:
+        - port: 443
+          protocol: TCP

@@ -1,0 +1,55 @@
+# ============================================================================
+# Kustomize base for Bridge Option B
+# ============================================================================
+# Fork into overlays (prod/staging/per-tenant) and patch:
+#   * namespace
+#   * replicas (esp. bridge-tenant-node pool size)
+#   * images (bridge + local-node-host customer-published refs)
+#   * the ingress host
+#
+# Example overlay skeleton:
+#   overlays/acmedemo/kustomization.yaml
+#     bases:
+#       - ../../
+#     namespace: sunfish-bridge-acmedemo
+#     images:
+#       - name: ghcr.io/CHANGE_ME/sunfish-bridge
+#         newName: ghcr.io/acme/sunfish-bridge
+#         newTag: v1.0.0
+#       - name: ghcr.io/CHANGE_ME/sunfish-local-node-host
+#         newName: ghcr.io/acme/sunfish-local-node-host
+#         newTag: v1.0.0
+#     replicas:
+#       - name: bridge-tenant-node
+#         count: 4
+#     patchesStrategicMerge:
+#       - ingress-host.yaml
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Default namespace (overlays should override via `namespace:` directive)
+namespace: sunfish-bridge-acmedemo
+
+commonLabels:
+  app.kubernetes.io/part-of: sunfish-bridge
+  sunfish.io/deployment: option-b
+
+resources:
+  - 00-namespace.yaml
+  # 01-secrets.yaml.template is intentionally NOT listed here — copy it to
+  # 01-secrets.yaml in an overlay, fill in sealed values, then reference it.
+  - 10-postgres.yaml
+  - 11-redis.yaml
+  - 12-rabbit.yaml
+  - 20-bridge-web.yaml
+  - 21-bridge-dab.yaml
+  - 30-tenant-nodes.yaml
+  - 40-network-policies.yaml
+
+# Images to override in overlays. Overlays should swap these with real tags.
+images:
+  - name: ghcr.io/CHANGE_ME/sunfish-bridge
+    newTag: latest
+  - name: ghcr.io/CHANGE_ME/sunfish-local-node-host
+    newTag: latest
