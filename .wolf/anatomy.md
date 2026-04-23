@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T08:12:52.837Z
-> Files: 937 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T08:18:38.889Z
+> Files: 939 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -247,6 +247,7 @@
 - `paper-alignment-plan.md` — Paper-Alignment Plan — Execution Plan to Align the Repo with the Foundational Paper (~5304 tok)
 - `sustainability.md` — Funding and Sustainability (~6685 tok)
 - `vision.md` — Product Vision (~12110 tok)
+- `wave-6.3-decomposition.md` — Wave 6.3 — Per-Team Service Factory Rewiring: Decomposition Plan (~7561 tok)
 
 ## accelerators/anchor/
 
@@ -922,6 +923,7 @@
 ## icm/07_review/output/
 
 - `paper-alignment-audit-2026-04-22.md` — Paper Alignment Audit — Packages + Anchor Accelerator vs. Local-Node Architecture Paper (v10.0) (~6168 tok)
+- `paper-alignment-audit-2026-04-23-post-wave-6-4.md` — Paper-Alignment Audit — Post Waves 5.1 / 6.1 / 6.4 (~3781 tok)
 - `paper-alignment-audit-2026-04-23-refresh.md` — Paper-Alignment Audit — Refresh after Tier-2 follow-ups (~3073 tok)
 
 ## icm/07_review/output/style-audits/
