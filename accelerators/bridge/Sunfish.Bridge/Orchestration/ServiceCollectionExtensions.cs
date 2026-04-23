@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sunfish.Kernel.Security.Keys;
 
 namespace Sunfish.Bridge.Orchestration;
@@ -133,7 +134,17 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<TenantProcessSupervisor>();
         services.AddSingleton<ITenantProcessSupervisor>(
             sp => sp.GetRequiredService<TenantProcessSupervisor>());
-        services.AddHostedService<TenantLifecycleCoordinator>();
+
+        // Wave 5.2.E — the coordinator accepts an optional IServiceProvider
+        // so unit tests can construct it without DI. Use an explicit factory
+        // here so production wiring always supplies the provider (required for
+        // the startup-rebuild Resume Protocol to read ITenantRegistry).
+        services.AddHostedService(sp => new TenantLifecycleCoordinator(
+            sp.GetRequiredService<ITenantRegistryEventBus>(),
+            sp.GetRequiredService<ITenantProcessSupervisor>(),
+            sp.GetService<TenantHealthMonitor>(),
+            sp,
+            sp.GetService<ILogger<TenantLifecycleCoordinator>>()));
         return services;
     }
 }

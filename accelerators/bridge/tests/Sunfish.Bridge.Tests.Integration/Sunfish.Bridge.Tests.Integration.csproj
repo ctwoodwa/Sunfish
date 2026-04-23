@@ -14,10 +14,19 @@
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
     <PackageReference Include="Aspire.Hosting.Testing" />
+    <!-- Wave 5.2.E: the three-tenant smoke test and AppHost-restart Resume
+         Protocol test use a direct composition (not DistributedApplicationTestingBuilder)
+         because the default harness requires Podman/Docker on the CI agent.
+         The direct composition pulls the SaaS posture's orchestration services
+         with an in-memory EF provider so the supervisor + health monitor +
+         lifecycle coordinator exercise their full wiring without Postgres. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\Sunfish.Bridge.AppHost\Sunfish.Bridge.AppHost.csproj" />
+    <ProjectReference Include="..\..\Sunfish.Bridge\Sunfish.Bridge.csproj" />
+    <ProjectReference Include="..\..\Sunfish.Bridge.Data\Sunfish.Bridge.Data.csproj" />
   </ItemGroup>
 
 </Project>

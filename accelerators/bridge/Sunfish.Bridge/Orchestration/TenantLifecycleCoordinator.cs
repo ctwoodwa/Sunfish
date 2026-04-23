@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sunfish.Bridge.Data.Entities;
+using Sunfish.Bridge.Services;
 
 namespace Sunfish.Bridge.Orchestration;
 
@@ -37,43 +38,114 @@ public sealed class TenantLifecycleCoordinator : IHostedService
     private readonly ITenantRegistryEventBus _bus;
     private readonly ITenantProcessSupervisor _supervisor;
     private readonly TenantHealthMonitor? _healthMonitor;
+    private readonly IServiceProvider? _services;
     private readonly ILogger<TenantLifecycleCoordinator> _logger;
 
     private IDisposable? _busSubscription;
 
     /// <summary>
-    /// Construct the coordinator. <paramref name="healthMonitor"/> is optional
-    /// — the coordinator tolerates its absence (relay postures that register
-    /// the supervisor without the monitor still boot cleanly).
+    /// Construct the coordinator. <paramref name="healthMonitor"/> and
+    /// <paramref name="services"/> are optional — the coordinator tolerates
+    /// their absence. Relay postures that register the supervisor without the
+    /// monitor still boot cleanly, and unit tests that construct the
+    /// coordinator directly (without DI) can omit <paramref name="services"/>
+    /// to skip the Wave 5.2.E startup-rebuild path.
     /// </summary>
+    /// <remarks>
+    /// <paramref name="services"/>, when supplied, is captured so
+    /// <see cref="StartAsync"/> can open a fresh scope to read
+    /// <see cref="ITenantRegistry.ListActiveAsync"/> for the Wave 5.2.E
+    /// startup-rebuild Resume Protocol (anti-pattern #6 of the decomposition
+    /// plan). When <see langword="null"/> the rebuild is skipped and the
+    /// coordinator falls back to the event-driven path only.
+    /// </remarks>
     public TenantLifecycleCoordinator(
         ITenantRegistryEventBus bus,
         ITenantProcessSupervisor supervisor,
         TenantHealthMonitor? healthMonitor = null,
+        IServiceProvider? services = null,
         ILogger<TenantLifecycleCoordinator>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(bus);
         ArgumentNullException.ThrowIfNull(supervisor);
         _bus = bus;
         _supervisor = supervisor;
+        _services = services;
         _healthMonitor = healthMonitor;
         _logger = logger ?? NullLogger<TenantLifecycleCoordinator>.Instance;
     }
 
     /// <inheritdoc />
-    public Task StartAsync(CancellationToken cancellationToken)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
         _busSubscription = _bus.Subscribe(HandleLifecycleEvent);
         if (_healthMonitor is not null)
         {
             _healthMonitor.HealthChanged += OnHealthChanged;
         }
-        return Task.CompletedTask;
-        // Wave 5.2.E: a RelayRefreshInterval timer will re-read
-        // TenantRegistry.ListActiveAsync and rebuild the relay's
-        // AllowedTeamIds allowlist. TODO(5.2.E): Bridge's RelayServer is not
-        // resolvable in the SaaS posture's Program.cs — defer to 5.2.E once
-        // the AppHost composition exposes it to the coordinator.
+
+        // Wave 5.2.E startup-rebuild — the Resume Protocol that covers the
+        // decomposition plan §7 anti-pattern #6 "Missing Resume Protocol":
+        // supervisor state is in-memory, so on AppHost restart we re-read
+        // the authoritative ITenantRegistry and re-spawn every Active tenant.
+        // Each tenant's on-disk data dir survived the restart (see TenantPaths);
+        // supervisor.StartAsync is idempotent on already-Running tenants.
+        await RebuildActiveTenantsAsync(cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task RebuildActiveTenantsAsync(CancellationToken ct)
+    {
+        if (_services is null)
+        {
+            _logger.LogDebug(
+                "TenantLifecycleCoordinator: no IServiceProvider supplied; skipping startup rebuild.");
+            return;
+        }
+
+        try
+        {
+            await using var scope = _services.CreateAsyncScope();
+            var registry = scope.ServiceProvider.GetService<ITenantRegistry>();
+            if (registry is null)
+            {
+                _logger.LogDebug(
+                    "TenantLifecycleCoordinator: no ITenantRegistry registered; skipping startup rebuild.");
+                return;
+            }
+
+            var active = await registry.ListActiveAsync(ct).ConfigureAwait(false);
+            _logger.LogInformation(
+                "TenantLifecycleCoordinator: startup-rebuild re-spawning {Count} active tenant(s).",
+                active.Count);
+
+            foreach (var tenant in active)
+            {
+                if (ct.IsCancellationRequested)
+                {
+                    return;
+                }
+                try
+                {
+                    await _supervisor.StartAsync(tenant.TenantId, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(
+                        ex,
+                        "TenantLifecycleCoordinator: startup-rebuild failed to spawn tenant {TenantId}.",
+                        tenant.TenantId);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Startup-rebuild is best-effort — the event-driven path still
+            // works regardless. Don't take the host down if the registry
+            // can't be read (e.g. DB not yet migrated in test scenarios).
+            _logger.LogError(
+                ex,
+                "TenantLifecycleCoordinator: startup-rebuild aborted; event-driven path remains active.");
+        }
     }
 
     /// <inheritdoc />

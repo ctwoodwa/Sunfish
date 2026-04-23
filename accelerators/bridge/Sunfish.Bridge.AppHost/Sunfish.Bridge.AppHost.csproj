@@ -28,6 +28,14 @@
     <ProjectReference Include="..\Sunfish.Bridge\Sunfish.Bridge.csproj" />
     <ProjectReference Include="..\Sunfish.Bridge.MigrationService\Sunfish.Bridge.MigrationService.csproj" />
     <ProjectReference Include="..\MockOktaService\MockOktaService.csproj" />
+    <!-- Wave 5.2.E: per-tenant local-node-host child. We do NOT call
+         AddProject<Projects.Sunfish_LocalNodeHost>() at boot — tenant count is
+         dynamic and spawning happens post-boot via TenantProcessSupervisor.
+         The ProjectReference is here so (a) the host builds as a dependency of
+         AppHost and (b) Program.cs can derive LocalNodeExecutablePath from
+         Projects.Sunfish_LocalNodeHost.ProjectPath. Aspire's AddProject boot
+         path (Wave 5.2.C.2) stays carved-out until stop-work #3 is resolved. -->
+    <ProjectReference Include="..\..\..\apps\local-node-host\Sunfish.LocalNodeHost.csproj" />
   </ItemGroup>
 
 </Project>

@@ -160,15 +160,73 @@ Legend: 🟢 adopted | 🟡 partially adopted | 🔴 not adopted | ⚪ N/A
 > from the Control plane and Relay tier tables because these concerns do
 > not live there.
 
+### Wave 5.2 Zone-C data-plane architecture (ADR 0031 §Zone C)
+
+Bridge's SaaS posture composes four orchestration surfaces, registered
+by `AddBridgeOrchestration` / `AddBridgeOrchestrationHealth` /
+`AddBridgeOrchestrationSupervisor` and wired to the rest of the
+composition in `Sunfish.Bridge/Program.cs::ConfigureSaasPosture`:
+
+- **`ITenantRegistry` (Wave 5.2.B)** — façade over `SunfishBridgeDbContext`
+  that owns signup, trust-level, and lifecycle transitions (`SuspendAsync`,
+  `ResumeAsync`, `CancelAsync`). Publishes `TenantLifecycleEvent`s to
+  `ITenantRegistryEventBus` after every mutation. Holds no team data
+  beyond `{tenant_id, plan, team_public_key}` per paper §17.2.
+- **`ITenantProcessSupervisor` (Wave 5.2.C.1)** — per-tenant process
+  supervisor. `StartAsync` picks an ephemeral port, creates the data
+  directory via `TenantPaths.NodeDataDirectory`, derives a per-tenant
+  seed via `TenantSeedProvider` (HKDF over the install-level root seed),
+  and spawns `local-node-host` via `Process.Start`. `PauseAsync`,
+  `ResumeAsync`, `StopAndEraseAsync(mode)` round out the lifecycle.
+  Per-tenant gate serializes same-tenant concurrent operations;
+  cross-tenant operations are fully parallel.
+- **`TenantHealthMonitor` (Wave 5.2.D)** — hosted service that polls
+  every live tenant's `/health` endpoint every `HealthPollInterval`.
+  Transitions to `Unhealthy` after `HealthFailureStrikeCount` consecutive
+  failures, recovers to `Healthy` on the first subsequent 200, fires
+  `HealthChanged` events consumed by the coordinator.
+- **`TenantLifecycleCoordinator` (Wave 5.2.C.1 + 5.2.E)** — hosted
+  service that subscribes to both the registry event bus and the health
+  monitor. Drives supervisor transitions. On `StartAsync` (i.e.
+  AppHost boot) it re-reads `ListActiveAsync()` and re-spawns every
+  Active tenant — the Wave 5.2 Resume Protocol covering the "supervisor
+  state is in-memory" anti-pattern called out in the decomposition plan.
+
+Bridge's AppHost (`Sunfish.Bridge.AppHost/Program.cs`) passes two
+environment variables to `bridge-web` so the supervisor has what it
+needs before any tenant signup: `Bridge__Orchestration__TenantDataRoot`
+(defaults to `{TempPath}/sunfish-bridge-tenants`) and
+`Bridge__Orchestration__LocalNodeExecutablePath` (resolved from
+`Projects.Sunfish_LocalNodeHost.ProjectPath` metadata at AppHost startup).
+The `local-node-host` project is a `ProjectReference` of the AppHost
+csproj so the dll exists by the time bridge-web boots; the Aspire
+`AddProject<Projects.Sunfish_LocalNodeHost>` boot path (Wave 5.2.C.2)
+remains carved-out pending stop-work #3 on Aspire resource-graph
+mutability.
+
+The Wave 5.2.E three-tenant smoke test
+(`accelerators/bridge/tests/Sunfish.Bridge.Tests.Integration/Wave52/`)
+exercises the full loop against a direct Bridge composition (not
+`DistributedApplicationTestingBuilder` — that requires a container
+runtime). Each test tenant gets a distinct ephemeral port, a distinct
+data directory, and a cryptographically-distinct seed; the restart
+test proves the Resume Protocol re-spawns tenants from
+authoritative DB state and on-disk directories survive.
+
 | Primitive | Data plane | Notes |
 |---|---|---|
-| Per-tenant `local-node-host` spawn orchestration | 🔴 | Wave 5.2. `Bridge.AppHost` spawns one worker per tenant with health checks + graceful lifecycle (create, pause, delete). |
+| Per-tenant `local-node-host` spawn orchestration | 🟡 | Wave 5.2.C.1 landed — `TenantProcessSupervisor` spawns one child per tenant via `Process.Start` with per-tenant data root and ephemeral-port health endpoint. Wave 5.2.E wires it to `Bridge.AppHost` and exercises it via a three-tenant smoke test. Aspire `AddProject` boot path (5.2.C.2) still gated on stop-work #3. See `_shared/product/wave-5.2-decomposition.md` §4. |
 | Per-tenant SQLCipher DB | 🔴 | Wave 5.2. Dedicated DB per tenant at `{DataDirectory}/tenants/{tenant_id}/sunfish.db`; paper §11.2 Layer 1 (encrypted at rest). |
 | Per-tenant subdomain routing | 🔴 | Wave 5.2 / 5.3. `acme.sunfish.example.com` → tenant `acme`'s hosted-node + browser-shell. Operator admin at `admin.sunfish.example.com`. |
 | Per-tenant role-attestation issuance | 🔴 | Wave 5.2. Tenant admin opt-in issues attestation to the hosted-node peer (paper §11.3) — required for the Attested-hosted-peer trust level. |
-| Trust-level configuration (Relay-only / Attested / No hosted peer) | 🔴 | Wave 5.1. Recorded at signup in the tenant-registration entity; enforced by the data-plane orchestrator when spawning the hosted-node peer. |
+| Trust-level configuration (Relay-only / Attested / No hosted peer) | 🟢 | Wave 5.1 landed — `TenantRegistration.TrustLevel` is recorded at signup by `TenantRegistry.CreateAsync` and enforced at spawn by `TenantProcessSupervisor.StartAsync` (5.2.C.1 refuses to spawn `NoHostedPeer` tenants). |
+| Per-tenant seed isolation | 🟢 | Wave 5.2 stop-work #1 resolved — `TenantSeedProvider` HKDF-derives a per-tenant 32-byte Ed25519 seed from the install-level root seed and injects it to the child via `LocalNode__RootSeedHex`. Two tenants on one Bridge host derive cryptographically independent keys. |
+| Per-tenant health-probe surface | 🟢 | Wave 5.2.D landed — `TenantHealthMonitor` polls each live tenant's `/health` endpoint every `HealthPollInterval`, transitions to `Unhealthy` after `HealthFailureStrikeCount` consecutive failures, fires `HealthChanged` consumed by `TenantLifecycleCoordinator`. |
+| Registry → supervisor event routing | 🟢 | Wave 5.2.B + 5.2.C.1 landed — `TenantLifecycleCoordinator` subscribes to `ITenantRegistryEventBus` and drives supervisor `StartAsync` / `PauseAsync` / `ResumeAsync` / `StopAndEraseAsync` on matching lifecycle transitions. |
+| Startup-rebuild / Resume Protocol | 🟡 | Wave 5.2.E added — `TenantLifecycleCoordinator.StartAsync` re-reads `ITenantRegistry.ListActiveAsync()` at host boot and re-spawns every Active tenant (supervisor is in-memory, so this covers AppHost restart). Covered by `AppHostRestart_PreservesTenantStateAndDisk` integration test. Endpoint routing persistence (stop-work #5) is still Wave 5.3 territory. |
+| Relay-allowlist refresh | 🟡 | Wave 5.2.E added — `BridgeRelayAllowlistRefresher` hosted service re-reads `ListActiveAsync` every `RelayRefreshInterval` and updates `RelayOptions.AllowedTeamIds`. Fail-closed sentinel on empty active set. Posture-agnostic: no-ops in SaaS posture when the relay isn't co-hosted. |
 | Ciphertext-only event-log persistence | 🔴 | Wave 5.2. Hosted-node peer persists the tenant's event-log ciphertext for catch-up-on-reconnect; operator cannot decrypt unless the tenant admin issues an attestation. Paper §17.2 invariant. |
-| Tenant lifecycle (create, pause, delete) | 🔴 | Wave 5.2. Graceful lifecycle with in-flight-gossip drain; coordinated with the Relay tier so peers re-home cleanly. |
+| Tenant lifecycle (create, pause, delete) | 🟢 | Wave 5.2.B + 5.2.C.1 landed — `TenantRegistry.SuspendAsync` / `ResumeAsync` / `CancelAsync` publish events; supervisor acts on them via the coordinator. `DeleteMode.RetainCiphertext` moves the disk to `{TenantDataRoot}/graveyard/{id}/{cancelledAt}`; `SecureWipe` removes it. In-flight-gossip drain is a Wave 5.5 concern. |
 
 ## Browser-shell primitives (Wave 5.3)
 

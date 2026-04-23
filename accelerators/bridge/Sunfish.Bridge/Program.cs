@@ -137,6 +137,15 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // Wave 5.2.C supervisor can subscribe without coupling to the registry.
     builder.Services.AddBridgeOrchestration();
 
+    // Wave 5.2.E — bind BridgeOrchestrationOptions from configuration so the
+    // supervisor, health monitor, and lifecycle coordinator all read the same
+    // TenantDataRoot / LocalNodeExecutablePath / RelayRefreshInterval values
+    // that AppHost passes via environment (Bridge__Orchestration__*). The
+    // AddBridgeOrchestration overload only wires a delegate if one is supplied;
+    // we bind from config here so sysadmins can override without recompiling.
+    builder.Services.Configure<BridgeOrchestrationOptions>(
+        builder.Configuration.GetSection("Bridge:Orchestration"));
+
     // Wave 5.2.D — per-tenant health-monitoring surface. Registers the
     // endpoint registry + background poller.
     builder.Services.AddBridgeOrchestrationHealth();
@@ -145,7 +154,22 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // lifecycle coordinator that bridges the registry event bus to it. Aspire
     // AddProject boot path layers on top in 5.2.C.2 once stop-work #3 is
     // resolved.
+    //
+    // AddBridgeOrchestrationSupervisor depends on IRootSeedProvider being
+    // registered for TenantSeedProvider (W5.2 stop-work #1). Register the
+    // keystore-backed provider here so per-tenant seed derivation works out
+    // of the box; tests override with an InMemoryKeystore-backed provider
+    // by inserting their own registration before invoking the supervisor
+    // extension (TryAdd semantics).
+    builder.Services.AddSunfishRootSeedProvider();
     builder.Services.AddBridgeOrchestrationSupervisor();
+
+    // Wave 5.2.E — periodic relay-allowlist refresh. Re-reads
+    // TenantRegistry.ListActiveAsync every RelayRefreshInterval and updates
+    // the RelayServer (if one is resolvable) with the active tenant set. In
+    // the SaaS posture the relay is usually absent (that lives in the Relay
+    // posture); the refresher no-ops when no IRelayServer is registered.
+    builder.Services.AddHostedService<BridgeRelayAllowlistRefresher>();
 
     // ADR 0031 Wave 5.1 — control-plane tenant registry. Scoped to match the
     // DbContext lifetime. Holds no team data; see TenantRegistry.cs.
