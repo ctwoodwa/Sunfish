@@ -24,5 +24,6 @@
     <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
     <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
     <ProjectReference Include="..\kernel-schema-registry\Sunfish.Kernel.SchemaRegistry.csproj" />
+    <ProjectReference Include="..\kernel-security\Sunfish.Kernel.Security.csproj" />
   </ItemGroup>
 </Project>
