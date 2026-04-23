@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T07:54:38.779Z
-> Files: 931 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T08:12:52.837Z
+> Files: 937 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -328,7 +328,7 @@
 ## accelerators/bridge/Sunfish.Bridge/Relay/
 
 - `IRelayServer.cs` — Paper §6.1 tier-3 managed-relay server contract. Accepts inbound peer connections on <c>ISyncDaemonT (~679 tok)
-- `RelayServer.cs` — Default <see cref="IRelayServer"/>. Listens on an <see cref="ISyncDaemonTransport"/>, runs the <see  (~3845 tok)
+- `RelayServer.cs` — Default <see cref="IRelayServer"/>. Listens on an <see cref="ISyncDaemonTransport"/>, runs the <see (~3845 tok)
 - `RelayWorker.cs` — <see cref="BackgroundService"/> wrapper that starts <see cref="IRelayServer"/> when Bridge is deploy (~667 tok)
 
 ## accelerators/bridge/Sunfish.Bridge/Services/
@@ -1637,7 +1637,15 @@
 
 ## packages/kernel-runtime/DependencyInjection/
 
-- `ServiceCollectionExtensions.cs` — DI extensions for registering the Sunfish kernel runtime (paper §5.1). (~997 tok)
+- `ServiceCollectionExtensions.cs` — DI extensions for registering the Sunfish kernel runtime (paper §5.1). (~1314 tok)
+
+## packages/kernel-runtime/Notifications/
+
+- `EmptyTeamNotificationStream.cs` — Null-object <see cref="ITeamNotificationStream"/> that yields nothing and idles until cancellation. (~335 tok)
+- `INotificationAggregator.cs` — Fan-in of every team's <see cref="ITeamNotificationStream"/> plus unread bookkeeping. Implements ADR (~780 tok)
+- `ITeamNotificationStream.cs` — Per-team notification source consumed by <see cref="INotificationAggregator"/>. One implementation i (~297 tok)
+- `NotificationAggregator.cs` — In-memory <see cref="INotificationAggregator"/> that multiplexes every injected <see cref="ITeamNoti (~1422 tok)
+- `TeamNotification.cs` — A single notification sourced from a team's gossip / event-log stream. Part of ADR 0032's "all teams (~476 tok)
 
 ## packages/kernel-runtime/Scheduling/
 
@@ -1660,6 +1668,7 @@
 - `ActiveTeamAccessorTests.cs` — Class: ActiveTeamAccessorTests (~861 tok)
 - `GlobalUsings.cs` — Class: GlobalUsings (~58 tok)
 - `NodeHostTests.cs` — Class: NodeHostTests (~680 tok)
+- `NotificationAggregatorTests.cs` — Test stream that yields from a preloaded list, gated by a semaphore so tests can control emit timing (~2303 tok)
 - `PluginRegistryTests.cs` — Class: PluginRegistryTests (~1982 tok)
 - `ResourceGovernorTests.cs` — Class: ResourceGovernorTests (~1342 tok)
 - `TeamContextFactoryTests.cs` — Class: TeamContextFactoryTests (~1573 tok)

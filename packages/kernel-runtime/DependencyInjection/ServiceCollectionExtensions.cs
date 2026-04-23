@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Runtime.Scheduling;
 using Sunfish.Kernel.Runtime.Teams;
 
@@ -79,6 +80,28 @@ public static class ServiceCollectionExtensions
         }
 
         services.TryAddSingleton<IResourceGovernor, ResourceGovernor>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Wave 6.5 <see cref="INotificationAggregator"/> as a
+    /// singleton backed by <see cref="NotificationAggregator"/>. Per ADR 0032's
+    /// all-teams-sync / one-renders model, the aggregator fans every
+    /// registered <see cref="ITeamNotificationStream"/> into a single feed plus
+    /// per-team + aggregate unread counts for UI binding.
+    /// </summary>
+    /// <remarks>
+    /// Opt-in by the composition root — the caller composes which streams are
+    /// registered (Wave 6.3 does the per-team wiring once real gossip /
+    /// event-log streams exist). No <see cref="ITeamNotificationStream"/>
+    /// instances are registered here.
+    /// </remarks>
+    /// <param name="services">The service collection to add to.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishNotificationAggregator(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<INotificationAggregator, NotificationAggregator>();
         return services;
     }
 }
