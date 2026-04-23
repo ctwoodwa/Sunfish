@@ -35,7 +35,11 @@ public class GossipDaemonDiscoveryIntegrationTests : IAsyncLifetime
             ConnectTimeoutSeconds = 2,
             DeadPeerBackoffSeconds = 60,
         });
-        var daemon = new GossipDaemon(transport, new VectorClock(), opts);
+        var signer = TestIdentityFactory.NewSigner();
+        var identityProvider = new InMemoryNodeIdentityProvider(
+            TestIdentityFactory.NewNodeIdentity(signer));
+        var daemon = new GossipDaemon(
+            transport, new VectorClock(), opts, identityProvider, signer);
         _cleanup.Add(daemon);
         return daemon;
     }

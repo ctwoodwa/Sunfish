@@ -3,7 +3,9 @@ using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Sync.Handshake;
+using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 
 namespace Sunfish.Kernel.Sync.Gossip;
@@ -32,11 +34,23 @@ namespace Sunfish.Kernel.Sync.Gossip;
 /// rotation.
 /// </para>
 /// <para>
-/// <b>What this daemon ships in Wave 2.1.</b> The round loop completes the
-/// HELLO handshake against every picked peer, exchanges a GOSSIP_PING carrying
-/// the current vector-clock snapshot, and logs any received deltas. It does
-/// <b>not</b> yet wire received CRDT ops back into <c>ICrdtDocument</c> — that
-/// wiring lands in Wave 2.5 alongside the application-layer integration.
+/// <b>Replay protection (spec §8).</b> Every outbound GOSSIP_PING carries a
+/// strictly-increasing <c>monotonic_nonce</c> maintained via
+/// <see cref="Interlocked.Increment(ref ulong)"/>. Every inbound PING is
+/// checked against the per-peer <see cref="PeerInfo.LastSeenNonce"/>; a
+/// non-monotonic nonce is dropped (spec "not fatal — recoverable"). The
+/// wraparound at <c>ulong.MaxValue</c> is not a real-world concern: at
+/// 1000 PINGs/sec/peer (≫ the 30 s tick), the counter would take ~5×10^17
+/// seconds — roughly 99 billion years — to wrap.
+/// </para>
+/// <para>
+/// <b>What this daemon ships in Wave 2.5.</b> The round loop completes the
+/// signed HELLO handshake against every picked peer, exchanges a
+/// signed-payload GOSSIP_PING carrying the current vector-clock snapshot
+/// plus the next monotonic nonce, and rate-limits inbound DELTA_STREAM at
+/// <see cref="GossipDaemonOptions.MaxDeltaStreamPerSecondPerPeer"/>. CRDT-op
+/// apply-back into <c>ICrdtDocument</c> still lands in Wave 2.6 alongside
+/// the application-layer integration.
 /// </para>
 /// </remarks>
 public sealed class GossipDaemon : IGossipDaemon
@@ -46,6 +60,13 @@ public sealed class GossipDaemon : IGossipDaemon
     private readonly GossipDaemonOptions _options;
     private readonly ILogger<GossipDaemon> _logger;
     private readonly Random _rng;
+    private readonly INodeIdentityProvider _nodeIdentity;
+    private readonly IEd25519Signer _signer;
+    private readonly DeltaStreamRateLimiter _rateLimiter;
+
+    // Monotonic nonce counter. ulong.MaxValue wrap-around is not a
+    // real-world concern (see class remarks); we do not guard against it.
+    private ulong _pingNonce;
 
     private readonly ConcurrentDictionary<string, PeerState> _peers = new(StringComparer.Ordinal);
     private readonly SemaphoreSlim _lifecycleLock = new(1, 1);
@@ -60,17 +81,28 @@ public sealed class GossipDaemon : IGossipDaemon
         ISyncDaemonTransport transport,
         VectorClock vectorClock,
         IOptions<GossipDaemonOptions> options,
+        INodeIdentityProvider nodeIdentity,
+        IEd25519Signer signer,
         ILogger<GossipDaemon>? logger = null)
     {
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
         _vectorClock = vectorClock ?? throw new ArgumentNullException(nameof(vectorClock));
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
+        _nodeIdentity = nodeIdentity ?? throw new ArgumentNullException(nameof(nodeIdentity));
+        _signer = signer ?? throw new ArgumentNullException(nameof(signer));
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<GossipDaemon>.Instance;
         _rng = new Random();
+        _rateLimiter = new DeltaStreamRateLimiter(_options.MaxDeltaStreamPerSecondPerPeer);
     }
 
     public IReadOnlyCollection<PeerInfo> KnownPeers =>
         _peers.Values.Select(p => p.Info).ToList();
+
+    /// <summary>
+    /// Exposed for tests and observability. Per-peer DELTA_STREAM budget
+    /// enforced against inbound frames in this daemon's receive path.
+    /// </summary>
+    public DeltaStreamRateLimiter RateLimiter => _rateLimiter;
 
     public void AddPeer(string peerEndpoint, byte[] peerPublicKey)
     {
@@ -79,13 +111,52 @@ public sealed class GossipDaemon : IGossipDaemon
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         _peers[peerEndpoint] = new PeerState(
-            new PeerInfo(peerEndpoint, peerPublicKey, DateTimeOffset.MinValue, 0));
+            new PeerInfo(peerEndpoint, peerPublicKey, DateTimeOffset.MinValue, 0, LastSeenNonce: 0));
     }
 
     public void RemovePeer(string peerEndpoint)
     {
         ArgumentException.ThrowIfNullOrEmpty(peerEndpoint);
         _peers.TryRemove(peerEndpoint, out _);
+    }
+
+    /// <summary>
+    /// Validate and record a GOSSIP_PING received from a peer. Returns
+    /// <c>true</c> if the nonce is strictly greater than the peer's
+    /// <see cref="PeerInfo.LastSeenNonce"/> and was advanced; <c>false</c>
+    /// if it was a replay (stale or equal) and the caller should drop it.
+    /// </summary>
+    /// <remarks>
+    /// Exposed as a public entrypoint so receive loops outside the
+    /// round-loop (e.g. a dedicated listener) can share the same replay
+    /// check. An unknown peer returns <c>false</c> — only membership
+    /// advertised via <see cref="AddPeer"/> is subject to replay tracking.
+    /// </remarks>
+    public bool TryAdvancePeerNonce(string peerEndpoint, ulong incomingNonce)
+    {
+        if (!_peers.TryGetValue(peerEndpoint, out var peer))
+        {
+            return false;
+        }
+        return peer.TryAdvanceNonce(incomingNonce);
+    }
+
+    /// <summary>
+    /// Rate-limit check for inbound DELTA_STREAM from <paramref name="peerEndpoint"/>.
+    /// Returns <c>true</c> if the frame may be processed; <c>false</c> if
+    /// the peer exceeded its per-second budget and the frame must be
+    /// dropped. Convenience wrapper over <see cref="RateLimiter"/>.
+    /// </summary>
+    public bool AllowInboundDelta(string peerEndpoint)
+    {
+        var allowed = _rateLimiter.TryConsume(peerEndpoint);
+        if (!allowed)
+        {
+            _logger.LogWarning(
+                "DELTA_STREAM from {Peer} dropped: exceeds {Budget}/s rate limit.",
+                peerEndpoint, _options.MaxDeltaStreamPerSecondPerPeer);
+        }
+        return allowed;
     }
 
     public async Task StartAsync(CancellationToken ct)
@@ -227,26 +298,30 @@ public sealed class GossipDaemon : IGossipDaemon
         {
             conn = await _transport.ConnectAsync(peer.Info.Endpoint, timeoutCts.Token).ConfigureAwait(false);
 
+            var identity = _nodeIdentity.Current;
+
             // The handshake ladder: HELLO (both ways) → CAPABILITY_NEG → ACK.
             await HandshakeProtocol.InitiateAsync(
                 conn,
                 localIdentity: new LocalIdentity(
-                    NodeId: peer.Info.PublicKey, // placeholder: node id is Wave 1.6 IdentityPersistence output
-                    PublicKey: peer.Info.PublicKey,
-                    Signer: null,
+                    NodeId: identity.NodeIdBytes,
+                    PublicKey: identity.PublicKey,
+                    Signer: _signer,
+                    PrivateKey: identity.PrivateKey,
                     SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
                     SupportedVersions: HandshakeProtocol.DefaultSupportedVersions),
                 timeoutCts.Token).ConfigureAwait(false);
 
-            // Exchange a GOSSIP_PING carrying our vector-clock snapshot. The
-            // peer responds with its own ping on the same channel; we accept
-            // at most one inbound ping per round to bound the loop.
+            // Exchange a GOSSIP_PING carrying our vector-clock snapshot and
+            // the next monotonic nonce (spec §8). We accept at most one
+            // inbound ping per round to bound the loop.
+            var nonce = Interlocked.Increment(ref _pingNonce);
             var ping = new GossipPingMessage(
                 VectorClock: _vectorClock.Snapshot(),
                 PeerMembershipDelta: new MembershipDelta(
                     Added: Array.Empty<byte[]>(),
                     Removed: Array.Empty<byte[]>()),
-                MonotonicNonce: unchecked((ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+                MonotonicNonce: nonce);
             await conn.SendAsync(ping, timeoutCts.Token).ConfigureAwait(false);
 
             // Receive-with-timeout — if the peer does not reply within the
@@ -258,10 +333,20 @@ public sealed class GossipDaemon : IGossipDaemon
                 var inbound = await conn.ReceiveAsync(recvCts.Token).ConfigureAwait(false);
                 if (inbound is GossipPingMessage inboundPing)
                 {
-                    // Merge the peer's vector clock so we converge on the
-                    // newer-op frontier for the next round.
-                    var peerClock = new VectorClock(inboundPing.VectorClock);
-                    _vectorClock.Merge(peerClock);
+                    // Replay-check the inbound nonce before merging state.
+                    if (!peer.TryAdvanceNonce(inboundPing.MonotonicNonce))
+                    {
+                        _logger.LogWarning(
+                            "Dropped replayed GOSSIP_PING from {Peer}: nonce {Nonce} <= last seen {Last}.",
+                            peer.Info.Endpoint, inboundPing.MonotonicNonce, peer.Info.LastSeenNonce);
+                    }
+                    else
+                    {
+                        // Merge the peer's vector clock so we converge on the
+                        // newer-op frontier for the next round.
+                        var peerClock = new VectorClock(inboundPing.VectorClock);
+                        _vectorClock.Merge(peerClock);
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -296,11 +381,12 @@ public sealed class GossipDaemon : IGossipDaemon
     }
 
     // ------------------------------------------------------------------
-    // Per-peer state — owns backoff bookkeeping
+    // Per-peer state — owns backoff bookkeeping + last-seen nonce
     // ------------------------------------------------------------------
 
     private sealed class PeerState
     {
+        private readonly object _nonceLock = new();
         private int _strikes;
 
         public PeerInfo Info { get; private set; }
@@ -323,6 +409,23 @@ public sealed class GossipDaemon : IGossipDaemon
             _strikes = Math.Min(_strikes + 1, 3); // cap doubling at 2^3 = 8× ... then we clamp below.
             var multiplier = Math.Min(1 << (_strikes - 1), 4); // 1,2,4,4…
             SkipUntil = DateTimeOffset.UtcNow.AddSeconds(baseBackoffSeconds * multiplier);
+        }
+
+        /// <summary>
+        /// Replay-protection gate: accept <paramref name="incomingNonce"/>
+        /// only if it is strictly greater than the previously seen nonce.
+        /// </summary>
+        public bool TryAdvanceNonce(ulong incomingNonce)
+        {
+            lock (_nonceLock)
+            {
+                if (incomingNonce <= Info.LastSeenNonce)
+                {
+                    return false;
+                }
+                Info = Info with { LastSeenNonce = incomingNonce };
+                return true;
+            }
         }
     }
 }

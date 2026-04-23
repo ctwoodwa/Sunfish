@@ -38,4 +38,12 @@ public sealed class GossipDaemonOptions
     /// the skip window entirely.
     /// </summary>
     public int DeadPeerBackoffSeconds { get; set; } = 60;
+
+    /// <summary>
+    /// Per-peer DELTA_STREAM budget, enforced by
+    /// <see cref="Protocol.DeltaStreamRateLimiter"/>. Default 1000 per
+    /// sync-daemon-protocol §8 "Rate limiting". Incoming DELTA_STREAM
+    /// frames above this rate are dropped and logged at warning level.
+    /// </summary>
+    public int MaxDeltaStreamPerSecondPerPeer { get; set; } = 1000;
 }

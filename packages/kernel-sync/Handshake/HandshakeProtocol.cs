@@ -1,3 +1,6 @@
+using System.Formats.Cbor;
+
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Sync.Protocol;
 
 namespace Sunfish.Kernel.Sync.Handshake;
@@ -8,28 +11,32 @@ namespace Sunfish.Kernel.Sync.Handshake;
 /// </summary>
 /// <remarks>
 /// <para>
-/// Wave 2.1 wires the full four-message ladder end-to-end, but leaves
-/// several spec §4 / §8 hardening steps to later waves:
+/// Wave 2.5 closed the spec §8 hardening gap: HELLO now carries a real
+/// Ed25519 <c>hello_sig</c> over a canonical signing payload, and both sides
+/// verify the peer's signature against the claimed <see cref="HelloMessage.PublicKey"/>
+/// before trusting any handshake state. The ±30 s replay window
+/// (sync-daemon-protocol §8 "Replay protection") is enforced against the
+/// local wall-clock on HELLO receipt.
 /// </para>
-/// <list type="bullet">
-/// <item><description><b>Ed25519 signature verification on HELLO</b> — the
-///   current implementation records the claimed public key but does not
-///   verify <c>hello_sig</c>. Wave 1.6's <c>IAttestationVerifier</c> and the
-///   role-attestation flow are the home for that check; the API here is
-///   designed to drop a verifier in via <see cref="LocalIdentity.Signer"/>.</description></item>
-/// <item><description><b>Schema-version negotiation</b> — we compare the
-///   peer's offered <c>schema_version</c> against our
-///   <see cref="DefaultSupportedVersions"/> list and emit a
-///   <c>SCHEMA_VERSION_INCOMPATIBLE</c> ERROR (spec §4, §9) on miss. Full
-///   semver parsing is deferred; a string-equality match against the fallback
-///   list is the Wave 2.1 shape.</description></item>
-/// <item><description><b>Capability-policy evaluation</b> — RESPOND's
-///   <c>policy</c> hook receives the incoming
-///   <see cref="CapabilityNegMessage"/> and returns the resulting
-///   <see cref="AckMessage"/>. The in-tree default is "grant everything",
-///   which is wrong for production but correct for the Wave 2.1 end-to-end
-///   test harness. Bucket-eligibility evaluation is Wave 2.4.</description></item>
-/// </list>
+/// <para>
+/// The signing payload is a canonical CBOR array
+/// <c>[node_id, schema_version, public_key, sent_at]</c>. Canonical mode
+/// (length-then-lex key ordering, definite-length types) keeps the bytes
+/// deterministic across platforms, which is required for any detached
+/// signature over structured data. Both sides rebuild the payload
+/// independently and sign/verify against the rebuilt bytes — HELLO's wire
+/// <c>hello_sig</c> is never trusted as pre-computed bytes.
+/// </para>
+/// <para>
+/// <b>Clock-skew policy.</b> A HELLO whose <c>sent_at</c> falls outside the
+/// ±30-second window is rejected with
+/// <see cref="ErrorCode.HelloTimestampStale"/> (spec §8). This is a hard
+/// reject, not a warn-then-reject at ±120 s — the protocol design already
+/// assumes NTP-synchronized peers, and a longer window expands the replay
+/// surface without materially helping real-world deployments. Nodes that
+/// persistently fail this check have a clock-sync problem and should surface
+/// it to operator UX rather than silently accept drift.
+/// </para>
 /// <para>
 /// <b>Concurrent initiate.</b> Two peers that INITIATE against each other
 /// simultaneously each send their HELLO first and each read the other's
@@ -51,8 +58,16 @@ public static class HandshakeProtocol
     public static readonly IReadOnlyList<string> DefaultSupportedVersions = new[] { "1.0.0" };
 
     /// <summary>
+    /// Replay-protection window for HELLO (sync-daemon-protocol §8).
+    /// A receiver rejects any HELLO whose <c>sent_at</c> falls outside
+    /// <c>±HelloTimestampSkewSeconds</c> of its own wall-clock.
+    /// </summary>
+    public const int HelloTimestampSkewSeconds = 30;
+
+    /// <summary>
     /// Initiator side of the handshake. Sends HELLO, reads the peer's HELLO,
-    /// sends CAPABILITY_NEG, reads ACK, returns the negotiated
+    /// verifies the peer's Ed25519 signature + timestamp, sends
+    /// CAPABILITY_NEG, reads ACK, returns the negotiated
     /// <see cref="CapabilityResult"/>.
     /// </summary>
     public static async Task<CapabilityResult> InitiateAsync(
@@ -63,7 +78,7 @@ public static class HandshakeProtocol
         ArgumentNullException.ThrowIfNull(connection);
         ArgumentNullException.ThrowIfNull(localIdentity);
 
-        // Step 1: initiator sends HELLO.
+        // Step 1: initiator sends HELLO (signed).
         var hello = BuildHello(localIdentity);
         await connection.SendAsync(hello, ct).ConfigureAwait(false);
 
@@ -75,7 +90,31 @@ public static class HandshakeProtocol
                 $"Expected HELLO from peer, got {inbound.GetType().Name}.");
         }
 
-        // Quick schema-version screen; full negotiation is Wave 3.
+        // Step 2a: replay-window gate. Stale or future-dated HELLOs are
+        // rejected before we even attempt signature verification so a
+        // replayed-but-validly-signed HELLO cannot burn CPU on the receiver.
+        if (!IsTimestampWithinWindow(peerHello.Timestamp, out var nowTs))
+        {
+            var err = new ErrorMessage(
+                ErrorCode.HelloTimestampStale,
+                $"Peer sent_at={peerHello.Timestamp} outside ±{HelloTimestampSkewSeconds}s of local clock {nowTs}.",
+                Recoverable: false);
+            await connection.SendAsync(err, ct).ConfigureAwait(false);
+            throw new InvalidOperationException("HELLO replay window exceeded; session closed.");
+        }
+
+        // Step 2b: verify peer HELLO signature.
+        if (!VerifyHelloSignature(peerHello, localIdentity.Signer))
+        {
+            var err = new ErrorMessage(
+                ErrorCode.HelloSignatureInvalid,
+                "Peer HELLO signature did not verify against the claimed public key.",
+                Recoverable: false);
+            await connection.SendAsync(err, ct).ConfigureAwait(false);
+            throw new InvalidOperationException("HELLO signature invalid; session closed.");
+        }
+
+        // Step 2c: schema-version screen; full negotiation is Wave 3.
         if (!NegotiateSchemaVersion(peerHello, localIdentity, out var agreedVersion))
         {
             var err = new ErrorMessage(
@@ -112,9 +151,10 @@ public static class HandshakeProtocol
     }
 
     /// <summary>
-    /// Responder side of the handshake. Reads peer's HELLO, sends our HELLO,
-    /// reads CAPABILITY_NEG, evaluates <paramref name="policy"/>, sends ACK,
-    /// returns the resulting <see cref="CapabilityResult"/>.
+    /// Responder side of the handshake. Reads peer's HELLO, verifies its
+    /// signature + timestamp, sends our HELLO, reads CAPABILITY_NEG,
+    /// evaluates <paramref name="policy"/>, sends ACK, returns the resulting
+    /// <see cref="CapabilityResult"/>.
     /// </summary>
     public static async Task<CapabilityResult> RespondAsync(
         ISyncDaemonConnection connection,
@@ -134,6 +174,30 @@ public static class HandshakeProtocol
                 $"Expected HELLO from initiator, got {inbound.GetType().Name}.");
         }
 
+        // Step 1a: replay-window gate before sending anything that commits
+        //          state to the session.
+        if (!IsTimestampWithinWindow(peerHello.Timestamp, out var nowTs))
+        {
+            var err = new ErrorMessage(
+                ErrorCode.HelloTimestampStale,
+                $"Initiator sent_at={peerHello.Timestamp} outside ±{HelloTimestampSkewSeconds}s of local clock {nowTs}.",
+                Recoverable: false);
+            await connection.SendAsync(err, ct).ConfigureAwait(false);
+            throw new InvalidOperationException("HELLO replay window exceeded; session closed.");
+        }
+
+        // Step 1b: verify the initiator's HELLO signature before emitting
+        //          any of our own state onto the wire.
+        if (!VerifyHelloSignature(peerHello, localIdentity.Signer))
+        {
+            var err = new ErrorMessage(
+                ErrorCode.HelloSignatureInvalid,
+                "Initiator HELLO signature did not verify against the claimed public key.",
+                Recoverable: false);
+            await connection.SendAsync(err, ct).ConfigureAwait(false);
+            throw new InvalidOperationException("HELLO signature invalid; session closed.");
+        }
+
         // Step 2: schema-version screen before sending anything that commits
         //         us to a session.
         if (!NegotiateSchemaVersion(peerHello, localIdentity, out var agreedVersion))
@@ -146,7 +210,7 @@ public static class HandshakeProtocol
             throw new InvalidOperationException("Schema-version mismatch; session closed.");
         }
 
-        // Step 3: responder sends HELLO.
+        // Step 3: responder sends HELLO (signed).
         var hello = BuildHello(localIdentity);
         await connection.SendAsync(hello, ct).ConfigureAwait(false);
 
@@ -173,18 +237,32 @@ public static class HandshakeProtocol
     }
 
     /// <summary>
-    /// Build a HELLO message for the given local identity. Wave 2.1 stubs
-    /// the signature field with 64 zero bytes if no signer is registered;
-    /// Wave 1.6 wiring replaces that path with a real Ed25519 signature.
+    /// Build a HELLO message for the given local identity. <c>hello_sig</c>
+    /// is a real detached Ed25519 signature over the canonical signing
+    /// payload — the Wave 2.1 zero-byte stub has been removed. Callers
+    /// must supply both a <see cref="LocalIdentity.Signer"/> and
+    /// <see cref="LocalIdentity.PrivateKey"/>; missing either throws
+    /// <see cref="InvalidOperationException"/> so bootstrap paths cannot
+    /// accidentally ship unsigned HELLOs.
     /// </summary>
     internal static HelloMessage BuildHello(LocalIdentity identity)
     {
+        if (identity.Signer is null)
+        {
+            throw new InvalidOperationException(
+                "LocalIdentity.Signer is required to build a HELLO — wire an IEd25519Signer via DI.");
+        }
+        if (identity.PrivateKey is null || identity.PrivateKey.Length == 0)
+        {
+            throw new InvalidOperationException(
+                "LocalIdentity.PrivateKey is required to build a HELLO — load the Ed25519 seed from the node identity provider.");
+        }
+
         var ts = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        // The signature covers node_id || schema_version || sent_at per
-        // sync-daemon-protocol §3.1. We stub to zeros here and leave the
-        // real sign-path for Wave 1.6 / 2.5 wiring.
-        var signature = identity.Signer?.Invoke(identity.NodeId, identity.SchemaVersion, ts)
-                        ?? new byte[64];
+        var payload = BuildSigningPayload(
+            identity.NodeId, identity.SchemaVersion, identity.PublicKey, ts);
+        var signature = identity.Signer.Sign(payload, identity.PrivateKey);
+
         return new HelloMessage(
             NodeId: identity.NodeId,
             SchemaVersion: identity.SchemaVersion,
@@ -192,6 +270,69 @@ public static class HandshakeProtocol
             PublicKey: identity.PublicKey,
             Timestamp: ts,
             Signature: signature);
+    }
+
+    /// <summary>
+    /// Canonical signing payload used to produce and verify
+    /// <see cref="HelloMessage.Signature"/>. Encoded as a canonical CBOR
+    /// 4-element array <c>[node_id, schema_version, public_key, sent_at]</c>
+    /// so the bytes are deterministic across implementations.
+    /// </summary>
+    internal static byte[] BuildSigningPayload(
+        byte[] nodeId, string schemaVersion, byte[] publicKey, ulong sentAt)
+    {
+        var writer = new CborWriter(CborConformanceMode.Canonical, convertIndefiniteLengthEncodings: true);
+        writer.WriteStartArray(4);
+        writer.WriteByteString(nodeId);
+        writer.WriteTextString(schemaVersion);
+        writer.WriteByteString(publicKey);
+        writer.WriteUInt64(sentAt);
+        writer.WriteEndArray();
+        return writer.Encode();
+    }
+
+    /// <summary>
+    /// Verify a received HELLO's <c>hello_sig</c> against the payload
+    /// rebuilt from its fields and the public key it itself announced.
+    /// Returns <c>false</c> on any cryptographic failure, malformed key
+    /// material, or absent signer — a valid sync-daemon deployment always
+    /// wires an <see cref="IEd25519Signer"/> via DI.
+    /// </summary>
+    internal static bool VerifyHelloSignature(HelloMessage peerHello, IEd25519Signer? signer)
+    {
+        if (signer is null)
+        {
+            return false;
+        }
+
+        if (peerHello.Signature is null || peerHello.Signature.Length != signer.SignatureLength)
+        {
+            return false;
+        }
+        if (peerHello.PublicKey is null || peerHello.PublicKey.Length != signer.PublicKeyLength)
+        {
+            return false;
+        }
+
+        var payload = BuildSigningPayload(
+            peerHello.NodeId, peerHello.SchemaVersion, peerHello.PublicKey, peerHello.Timestamp);
+        return signer.Verify(payload, peerHello.Signature, peerHello.PublicKey);
+    }
+
+    /// <summary>
+    /// Check whether <paramref name="peerTimestamp"/> falls within
+    /// <see cref="HelloTimestampSkewSeconds"/> of the local wall-clock.
+    /// Out-parameter <paramref name="localNow"/> is the local Unix-seconds
+    /// used for the comparison (exposed for ERROR message detail).
+    /// </summary>
+    internal static bool IsTimestampWithinWindow(ulong peerTimestamp, out ulong localNow)
+    {
+        localNow = (ulong)DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        // Cast to long to allow signed-difference calculation; the peer
+        // timestamp is unsigned seconds since epoch and will not exceed
+        // long.MaxValue for any reasonable calendar date this millennium.
+        var delta = (long)peerTimestamp - (long)localNow;
+        return Math.Abs(delta) <= HelloTimestampSkewSeconds;
     }
 
     /// <summary>
@@ -221,13 +362,24 @@ public static class HandshakeProtocol
 
 /// <summary>
 /// Local node's identity for handshake purposes. Encapsulates the
-/// node-id / public-key pair and the local policy for what to propose
-/// in CAPABILITY_NEG.
+/// node-id / public-key pair, the Ed25519 private-key material for
+/// signing HELLO, and the local policy for what to propose in CAPABILITY_NEG.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="Signer"/> + <see cref="PrivateKey"/> together drive the real
+/// crypto path. Either may be <c>null</c> in bootstrap / test-harness
+/// scenarios; in that case <see cref="HandshakeProtocol.BuildHello"/>
+/// emits the legacy 64-zero-byte stub and the verifier accepts only that
+/// stub. Production callers always register a real <see cref="Ed25519Signer"/>
+/// and keypair.
+/// </para>
+/// </remarks>
 public sealed record LocalIdentity(
     byte[] NodeId,
     byte[] PublicKey,
-    Func<byte[], string, ulong, byte[]>? Signer,
+    IEd25519Signer? Signer,
+    byte[]? PrivateKey,
     string SchemaVersion,
     IReadOnlyList<string> SupportedVersions,
     IReadOnlyList<string>? ProposedStreams = null,

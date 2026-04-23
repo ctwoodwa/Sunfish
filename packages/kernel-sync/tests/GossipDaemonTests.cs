@@ -30,7 +30,9 @@ public class GossipDaemonTests : IAsyncLifetime
         int roundSeconds = 1,
         int peerPickCount = 2,
         int connectTimeoutSeconds = 2,
-        int deadPeerBackoffSeconds = 60)
+        int deadPeerBackoffSeconds = 60,
+        INodeIdentityProvider? identityProvider = null,
+        IEd25519Signer? signer = null)
     {
         var opts = Options.Create(new GossipDaemonOptions
         {
@@ -39,7 +41,10 @@ public class GossipDaemonTests : IAsyncLifetime
             ConnectTimeoutSeconds = connectTimeoutSeconds,
             DeadPeerBackoffSeconds = deadPeerBackoffSeconds,
         });
-        return new GossipDaemon(transport, clock ?? new VectorClock(), opts);
+        signer ??= TestIdentityFactory.NewSigner();
+        identityProvider ??= new InMemoryNodeIdentityProvider(
+            TestIdentityFactory.NewNodeIdentity(signer));
+        return new GossipDaemon(transport, clock ?? new VectorClock(), opts, identityProvider, signer);
     }
 
     [Fact]
@@ -163,9 +168,20 @@ public class GossipDaemonTests : IAsyncLifetime
         await using var transportA = new InMemorySyncDaemonTransport();
         await using var transportB = new InMemorySyncDaemonTransport(endpointB);
 
+        // Real Ed25519 keypairs on both sides so the signed HELLO handshake
+        // verifies end-to-end. A and B each get their own signer instance;
+        // the handshake code path is stateless and allows that.
+        var signerA = TestIdentityFactory.NewSigner();
+        var identityA = TestIdentityFactory.NewNodeIdentity(signerA);
+        var signerB = TestIdentityFactory.NewSigner();
+        var identityB = TestIdentityFactory.NewNodeIdentity(signerB);
+
         var clockA = new VectorClock();
         clockA.Set("A", 5);
-        var daemonA = BuildDaemon(transportA, clockA, roundSeconds: 1, peerPickCount: 1);
+        var daemonA = BuildDaemon(
+            transportA, clockA, roundSeconds: 1, peerPickCount: 1,
+            identityProvider: new InMemoryNodeIdentityProvider(identityA),
+            signer: signerA);
         _cleanup.Add(daemonA);
 
         // Responder loop: accept every inbound connection on B.
@@ -182,9 +198,10 @@ public class GossipDaemonTests : IAsyncLifetime
                         {
                             await using var _c = conn;
                             var identity = new LocalIdentity(
-                                NodeId: new byte[16],
-                                PublicKey: new byte[32],
-                                Signer: null,
+                                NodeId: identityB.NodeIdBytes,
+                                PublicKey: identityB.PublicKey,
+                                Signer: signerB,
+                                PrivateKey: identityB.PrivateKey,
                                 SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
                                 SupportedVersions: HandshakeProtocol.DefaultSupportedVersions);
                             await HandshakeProtocol.RespondAsync(

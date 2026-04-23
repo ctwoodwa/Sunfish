@@ -39,11 +39,18 @@ public interface IGossipDaemon : IAsyncDisposable
 /// small — richer attributes (role, attestation snapshots, ...) live in
 /// sibling packages and flow through the handshake, not through membership.
 /// </summary>
+/// <remarks>
+/// <see cref="LastSeenNonce"/> tracks the highest <c>monotonic_nonce</c> seen
+/// in a GOSSIP_PING from this peer (sync-daemon-protocol §8 replay
+/// protection). Initial value is <c>0</c> — any real peer PING carries a
+/// strictly-positive nonce, so zero unambiguously means "no PING yet".
+/// </remarks>
 public sealed record PeerInfo(
     string Endpoint,
     byte[] PublicKey,
     DateTimeOffset LastSeenAt,
-    ulong LastSeenVectorClock);
+    ulong LastSeenVectorClock,
+    ulong LastSeenNonce = 0);
 
 /// <summary>Payload of <see cref="IGossipDaemon.RoundCompleted"/>.</summary>
 public sealed record GossipRoundCompletedEventArgs(

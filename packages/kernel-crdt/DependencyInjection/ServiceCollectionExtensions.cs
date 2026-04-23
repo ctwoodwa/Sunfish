@@ -13,19 +13,55 @@ namespace Sunfish.Kernel.Crdt.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Register <see cref="ICrdtEngine"/> as a singleton, backed by the default
-    /// backend for this build. Uses <c>TryAddSingleton</c> so a prior registration
-    /// (for example a Loro or Yjs/yrs backend in a future wave) wins.
+    /// Register <see cref="ICrdtEngine"/> as a singleton, backed by the best available
+    /// backend for this build. Uses <c>TryAddSingleton</c> so a prior explicit
+    /// registration wins.
     /// </summary>
     /// <remarks>
-    /// The current default backend is the provisional in-memory stub
-    /// (<see cref="StubCrdtEngine"/>). See ADR 0028 and the file banner in
-    /// <c>Backends/StubCrdtEngine.cs</c> for the spike outcome and the path to a
-    /// production backend.
+    /// <para>
+    /// As of the 2026-04-22 spike re-validation, the default is
+    /// <see cref="YDotNetCrdtEngine"/> (Yjs/yrs via YDotNet 0.6.0). See
+    /// <c>packages/kernel-crdt/SPIKE-OUTCOME.md</c> and ADR 0028 for why YDotNet
+    /// was selected over Loro for the real backend, and why the stub is retained.
+    /// </para>
+    /// <para>
+    /// To opt out of the native backend (for example in a unit-test host where
+    /// the YDotNet native binaries are not available), call
+    /// <see cref="AddSunfishCrdtEngineStub"/> before any other registration, or
+    /// call <c>services.AddSingleton&lt;ICrdtEngine, StubCrdtEngine&gt;()</c> directly.
+    /// </para>
     /// </remarks>
     /// <param name="services">The service collection to add to.</param>
     /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
     public static IServiceCollection AddSunfishCrdtEngine(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<ICrdtEngine, YDotNetCrdtEngine>();
+        return services;
+    }
+
+    /// <summary>
+    /// Register the YDotNet (Yjs/yrs) CRDT backend explicitly. Use this when you
+    /// want to be explicit in host wiring rather than relying on the default.
+    /// </summary>
+    /// <param name="services">The service collection to add to.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishCrdtEngineYDotNet(this IServiceCollection services)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        services.TryAddSingleton<ICrdtEngine, YDotNetCrdtEngine>();
+        return services;
+    }
+
+    /// <summary>
+    /// Register the in-memory stub backend. Retained as a test harness and as an
+    /// escape hatch for environments where YDotNet's native binaries cannot be
+    /// loaded. See the banner in <c>Backends/StubCrdtEngine.cs</c> — the stub is
+    /// NOT a production CRDT.
+    /// </summary>
+    /// <param name="services">The service collection to add to.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishCrdtEngineStub(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton<ICrdtEngine, StubCrdtEngine>();

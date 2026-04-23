@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Integration.KernelSyncRoundtrip</AssemblyName>
+    <RootNamespace>Sunfish.Integration.KernelSyncRoundtrip</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Xunit.SkippableFact" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Foundation + UICore -->
+    <ProjectReference Include="..\..\packages\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\packages\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+
+    <!-- Kernel facade + every kernel package -->
+    <ProjectReference Include="..\..\packages\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-schema-registry\Sunfish.Kernel.SchemaRegistry.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-lease\Sunfish.Kernel.Lease.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-buckets\Sunfish.Kernel.Buckets.csproj" />
+  </ItemGroup>
+
+</Project>
