@@ -1,8 +1,8 @@
 # ADR 0033 — Browser Shell v1 Render Model + Trust Posture
 
-**Status:** Proposed (2026-04-23)
+**Status:** Accepted (2026-04-23)
 **Date:** 2026-04-23
-**Deciders:** TBD (BDFL sign-off required before W5.3.B dispatches)
+**Deciders:** Chris Wood (BDFL)
 **Resolves:** The three design-time stop-work items raised by `_shared/product/wave-5.3-decomposition.md` §9 and reiterated in `icm/07_review/output/paper-alignment-audit-2026-04-23-eod.md` §6:
 
 1. Decrypted role-keys in Blazor Server circuit memory vs. the paper's "in-browser" language.
