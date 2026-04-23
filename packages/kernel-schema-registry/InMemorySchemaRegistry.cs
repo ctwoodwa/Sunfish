@@ -8,6 +8,9 @@ using Json.Schema;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Blobs;
 using Sunfish.Foundation.Crypto;
+using Sunfish.Kernel.SchemaRegistry.Epochs;
+using Sunfish.Kernel.SchemaRegistry.Lenses;
+using Sunfish.Kernel.SchemaRegistry.Upcasters;
 
 namespace Sunfish.Kernel.Schema;
 
@@ -37,12 +40,48 @@ public sealed class InMemorySchemaRegistry : ISchemaRegistry
     private readonly IBlobStore _blobs;
     private readonly ConcurrentDictionary<SchemaId, Entry> _schemas = new();
 
-    /// <summary>Creates a new <see cref="InMemorySchemaRegistry"/> that side-stores canonical schema bytes in <paramref name="blobs"/>.</summary>
+    /// <summary>
+    /// Creates a new <see cref="InMemorySchemaRegistry"/> that side-stores canonical
+    /// schema bytes in <paramref name="blobs"/>. The migration surface (lenses,
+    /// upcasters, epochs) is initialized with empty in-memory stores; callers mutate
+    /// them via the public <see cref="Lenses"/> / <see cref="Upcasters"/> /
+    /// <see cref="Epochs"/> members.
+    /// </summary>
     public InMemorySchemaRegistry(IBlobStore blobs)
+        : this(blobs, new LensGraph(), new UpcasterChain(), new EpochCoordinator())
+    {
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="InMemorySchemaRegistry"/> with explicitly-supplied
+    /// lens graph / upcaster chain / epoch coordinator. Intended for DI paths where
+    /// the migration primitives are registered as separate singletons so downstream
+    /// components can depend on them directly.
+    /// </summary>
+    public InMemorySchemaRegistry(
+        IBlobStore blobs,
+        LensGraph lenses,
+        UpcasterChain upcasters,
+        IEpochCoordinator epochs)
     {
         ArgumentNullException.ThrowIfNull(blobs);
+        ArgumentNullException.ThrowIfNull(lenses);
+        ArgumentNullException.ThrowIfNull(upcasters);
+        ArgumentNullException.ThrowIfNull(epochs);
         _blobs = blobs;
+        Lenses = lenses;
+        Upcasters = upcasters;
+        Epochs = epochs;
     }
+
+    /// <inheritdoc />
+    public LensGraph Lenses { get; }
+
+    /// <inheritdoc />
+    public UpcasterChain Upcasters { get; }
+
+    /// <inheritdoc />
+    public IEpochCoordinator Epochs { get; }
 
     /// <inheritdoc />
     public ValueTask<Schema?> GetAsync(SchemaId id, CancellationToken ct = default)

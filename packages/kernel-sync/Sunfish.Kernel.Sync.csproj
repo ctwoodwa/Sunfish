@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Sync</PackageId>
+    <RootNamespace>Sunfish.Kernel.Sync</RootNamespace>
+    <Description>Intra-team gossip anti-entropy daemon for the Sunfish local-node architecture (paper §6.1, §6.2; ADR 0029). Implements the sync-daemon wire protocol — HELLO / CAPABILITY_NEG / ACK / DELTA_STREAM / LEASE_* / GOSSIP_PING / ERROR — over a CBOR-framed Unix-socket or named-pipe transport, with a leaderless random-peer-selection gossip scheduler on a configurable tick. Sibling to but distinct from federation-* (cross-organizational) per ADR 0029.</Description>
+    <PackageTags>sunfish;kernel;sync;gossip;p2p;local-first</PackageTags>
+    <!-- Stub interfaces and XML-doc gaps will be filled during review hardening.
+         CS1591 kept noisy-but-off until the first stable release, matching the
+         Foundation and Kernel facade packages. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+    <PackageReference Include="System.Formats.Cbor" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+    <ProjectReference Include="..\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
+    <ProjectReference Include="..\kernel-security\Sunfish.Kernel.Security.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Sync.Tests" />
+  </ItemGroup>
+</Project>

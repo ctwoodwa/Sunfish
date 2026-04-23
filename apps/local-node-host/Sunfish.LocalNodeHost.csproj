@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Sunfish.LocalNodeHost</RootNamespace>
+    <AssemblyName>Sunfish.LocalNodeHost</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <!-- Host process, not a library: no XML-doc generation, no missing-comment warnings. -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <UserSecretsId>sunfish-local-node-host</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Worker SDK does not transitively pull Microsoft.Extensions.Hosting;
+         the composition root needs the full package (not just Abstractions)
+         for Host.CreateApplicationBuilder. -->
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Paper §5.1 kernel responsibilities: node lifecycle, plugin registry, event log,
+         encrypted store, quarantine queue, security primitives, CRDT engine. The host
+         composes these but does not own any of their interfaces. -->
+    <ProjectReference Include="..\..\packages\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\packages\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\..\packages\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-schema-registry\Sunfish.Kernel.SchemaRegistry.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
+    <ProjectReference Include="..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude the sibling test project from host compilation. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
+</Project>

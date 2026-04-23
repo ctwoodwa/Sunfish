@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.LocalNodeHost.Tests</AssemblyName>
+    <RootNamespace>Sunfish.LocalNodeHost.Tests</RootNamespace>
+    <!-- App-level test project; CS1591 would be noisy here. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The host project (so we can reference LocalNodeWorker / LocalNodeOptions)
+         plus the kernel packages whose DI extensions the composition root calls.
+         Tests compose an in-memory event log / in-memory-only host so the full
+         host project doesn't have to be executed. -->
+    <ProjectReference Include="..\Sunfish.LocalNodeHost.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+  </ItemGroup>
+
+</Project>

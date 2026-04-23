@@ -1,4 +1,7 @@
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Kernel.SchemaRegistry.Epochs;
+using Sunfish.Kernel.SchemaRegistry.Lenses;
+using Sunfish.Kernel.SchemaRegistry.Upcasters;
 
 namespace Sunfish.Kernel.Schema;
 
@@ -110,6 +113,27 @@ public interface ISchemaRegistry
     /// <see cref="NotSupportedException"/>. Reserved for the G2 follow-up.
     /// </summary>
     ValueTask<ReadOnlyMemory<byte>> MigrateAsync(SchemaId from, SchemaId to, ReadOnlyMemory<byte> document, CancellationToken ct = default);
+
+    /// <summary>
+    /// Bidirectional lens graph registered against this registry (paper §7.3).
+    /// Lenses transform events between adjacent schema versions in either direction
+    /// and compose into a version graph traversed by the
+    /// <see cref="LensGraph.Transform"/> helper.
+    /// </summary>
+    LensGraph Lenses { get; }
+
+    /// <summary>
+    /// Additive upcaster chain registered against this registry (paper §7.2).
+    /// Narrower than <see cref="Lenses"/> — forward-only, for non-breaking additive
+    /// schema changes.
+    /// </summary>
+    UpcasterChain Upcasters { get; }
+
+    /// <summary>
+    /// Epoch coordinator for this registry (paper §7.4). Tracks announced / active /
+    /// frozen schema epochs and their node-cutover state.
+    /// </summary>
+    IEpochCoordinator Epochs { get; }
 }
 
 /// <summary>

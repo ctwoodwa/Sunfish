@@ -30,6 +30,14 @@
     <Project Path="packages/kernel-security/Sunfish.Kernel.Security.csproj" />
     <Project Path="packages/kernel-security/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/sync/">
+    <Project Path="packages/kernel-sync/Sunfish.Kernel.Sync.csproj" />
+    <Project Path="packages/kernel-sync/tests/tests.csproj" />
+  </Folder>
+  <Folder Name="/apps/local-node-host/">
+    <Project Path="apps/local-node-host/Sunfish.LocalNodeHost.csproj" />
+    <Project Path="apps/local-node-host/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/kernel/schema-registry/">
     <Project Path="packages/kernel-schema-registry/Sunfish.Kernel.SchemaRegistry.csproj" />
     <Project Path="packages/kernel-schema-registry/tests/tests.csproj" />

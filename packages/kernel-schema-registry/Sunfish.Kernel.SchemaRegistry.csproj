@@ -19,5 +19,6 @@
   <ItemGroup>
     <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
   </ItemGroup>
 </Project>
