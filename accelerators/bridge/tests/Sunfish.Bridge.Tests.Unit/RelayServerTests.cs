@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 
 using Sunfish.Bridge;
 using Sunfish.Bridge.Relay;
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Sync.Handshake;
 using Sunfish.Kernel.Sync.Protocol;
 
@@ -19,7 +20,25 @@ namespace Sunfish.Bridge.Tests.Unit;
 /// </summary>
 public class RelayServerTests
 {
+    // Shared Ed25519 signer for the HELLO signature path. Wave 6.1 made
+    // LocalIdentity.Signer + PrivateKey mandatory for BuildHello; we derive a
+    // deterministic keypair per-peer from a seed expanded out of nodeId so
+    // tests stay reproducible and each peer still gets its own keypair.
+    private static readonly IEd25519Signer TestSigner = new Ed25519Signer();
+
     private static string NewEndpoint() => $"relay-test-{Guid.NewGuid():N}";
+
+    private static (byte[] PublicKey, byte[] PrivateKey) DeriveKeyPair(byte[] nodeId)
+    {
+        // Expand the short test nodeId into a 32-byte Ed25519 seed by padding
+        // with a fixed byte pattern. Deterministic => reproducible failures.
+        var seed = new byte[32];
+        for (var i = 0; i < seed.Length; i++)
+        {
+            seed[i] = (byte)(nodeId[i % nodeId.Length] ^ (byte)(0xA5 + i));
+        }
+        return TestSigner.GenerateFromSeed(seed);
+    }
 
     private static RelayServer BuildRelay(
         InMemorySyncDaemonTransport listen,
@@ -40,15 +59,18 @@ public class RelayServerTests
 
     private static LocalIdentity PeerIdentity(
         byte[] nodeId,
-        IReadOnlyList<string>? proposedStreams = null) =>
-        new(
+        IReadOnlyList<string>? proposedStreams = null)
+    {
+        var (publicKey, privateKey) = DeriveKeyPair(nodeId);
+        return new LocalIdentity(
             NodeId: nodeId,
-            PublicKey: new byte[32],
-            Signer: null,
-            PrivateKey: null,
+            PublicKey: publicKey,
+            Signer: TestSigner,
+            PrivateKey: privateKey,
             SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
             SupportedVersions: HandshakeProtocol.DefaultSupportedVersions,
             ProposedStreams: proposedStreams ?? Array.Empty<string>());
+    }
 
     private static async Task<(ISyncDaemonConnection conn, CapabilityResult result)> ConnectPeerAsync(
         InMemorySyncDaemonTransport client,

@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T07:41:03.155Z
-> Files: 927 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T07:54:38.779Z
+> Files: 931 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -328,7 +328,7 @@
 ## accelerators/bridge/Sunfish.Bridge/Relay/
 
 - `IRelayServer.cs` — Paper §6.1 tier-3 managed-relay server contract. Accepts inbound peer connections on <c>ISyncDaemonT (~679 tok)
-- `RelayServer.cs` — Default <see cref="IRelayServer"/>. Listens on an <see cref="ISyncDaemonTransport"/>, runs the <see (~3693 tok)
+- `RelayServer.cs` — Default <see cref="IRelayServer"/>. Listens on an <see cref="ISyncDaemonTransport"/>, runs the <see  (~3845 tok)
 - `RelayWorker.cs` — <see cref="BackgroundService"/> wrapper that starts <see cref="IRelayServer"/> when Bridge is deploy (~667 tok)
 
 ## accelerators/bridge/Sunfish.Bridge/Services/
@@ -338,7 +338,7 @@
 ## accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/
 
 - `BridgeModeTests.cs` — Validates that <see cref="BridgeOptions"/> binds correctly from configuration — the linchpin of the (~637 tok)
-- `RelayServerTests.cs` — Covers the paper §6.1 tier-3 managed-relay semantics in <see cref="RelayServer"/>: start/stop lifecy (~3532 tok)
+- `RelayServerTests.cs` — Covers the paper §6.1 tier-3 managed-relay semantics in <see cref="RelayServer"/>: start/stop lifecy (~3799 tok)
 - `SeederSmokeTests.cs` — Class: SeederSmokeTests (~461 tok)
 - `Sunfish.Bridge.Tests.Unit.csproj` (~342 tok)
 - `TenantRegistryTests.cs` — Covers <see cref="TenantRegistry"/> — the control-plane façade introduced by ADR 0031 Wave 5.1. Uses (~2905 tok)
@@ -1633,11 +1633,17 @@
 - `PluginCyclicDependencyException.cs` — Thrown by <see cref="IPluginRegistry.LoadAllAsync"/> when the plugin dependency graph contains a cyc (~540 tok)
 - `PluginRegistry.cs` — Default <see cref="IPluginRegistry"/>. Performs Kahn-style topological sort on plugin dependencies, (~2540 tok)
 - `README.md` — Project documentation (~988 tok)
-- `Sunfish.Kernel.Runtime.csproj` — /*.cs" /> (~378 tok)
+- `Sunfish.Kernel.Runtime.csproj` — /*.cs" /> (~395 tok)
 
 ## packages/kernel-runtime/DependencyInjection/
 
-- `ServiceCollectionExtensions.cs` — DI extensions for registering the Sunfish kernel runtime (paper §5.1). (~619 tok)
+- `ServiceCollectionExtensions.cs` — DI extensions for registering the Sunfish kernel runtime (paper §5.1). (~997 tok)
+
+## packages/kernel-runtime/Scheduling/
+
+- `IResourceGovernor.cs` — Bounds how many gossip rounds can run concurrently per tick across every team the local user belongs (~588 tok)
+- `ResourceGovernor.cs` — Default <see cref="IResourceGovernor"/> implementation backed by a <see cref="SemaphoreSlim"/> sized (~918 tok)
+- `ResourceGovernorOptions.cs` — Tunable knobs for <see cref="ResourceGovernor"/>. Bound via <see cref="Microsoft.Extensions.Options. (~231 tok)
 
 ## packages/kernel-runtime/Teams/
 
@@ -1655,6 +1661,7 @@
 - `GlobalUsings.cs` — Class: GlobalUsings (~58 tok)
 - `NodeHostTests.cs` — Class: NodeHostTests (~680 tok)
 - `PluginRegistryTests.cs` — Class: PluginRegistryTests (~1982 tok)
+- `ResourceGovernorTests.cs` — Class: ResourceGovernorTests (~1342 tok)
 - `TeamContextFactoryTests.cs` — Class: TeamContextFactoryTests (~1573 tok)
 - `TestPlugin.cs` — Test plugin. Records OnLoad/OnUnload into a shared log. (~556 tok)
 - `tests.csproj` (~207 tok)

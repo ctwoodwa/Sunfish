@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
+using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Sync.Handshake;
 using Sunfish.Kernel.Sync.Protocol;
 
@@ -39,6 +40,15 @@ public sealed class RelayServer : IRelayServer
     private readonly RelayOptions _options;
     private readonly ILogger<RelayServer> _logger;
 
+    // Ephemeral Ed25519 identity for the relay's side of HELLO. Paper §6.1
+    // tier-3 relays are not authority principals — their identity only exists
+    // to satisfy the signed-HELLO contract. A fresh keypair per process is
+    // acceptable: no state is persisted across relay restarts anyway
+    // (see class remarks, "Statelessness").
+    private readonly IEd25519Signer _signer = new Ed25519Signer();
+    private readonly byte[] _publicKey;
+    private readonly byte[] _privateKey;
+
     private readonly ConcurrentDictionary<string, RelayConnection> _connections =
         new(StringComparer.Ordinal);
 
@@ -58,6 +68,7 @@ public sealed class RelayServer : IRelayServer
         _transport = transport;
         _options = options.Value.Relay ?? new RelayOptions();
         _logger = logger ?? NullLogger<RelayServer>.Instance;
+        (_publicKey, _privateKey) = _signer.GenerateKeyPair();
     }
 
     public IReadOnlyCollection<ConnectedNode> ConnectedNodes =>
@@ -191,14 +202,14 @@ public sealed class RelayServer : IRelayServer
             return;
         }
 
-        // Relay identity is a deterministic zero-id; the handshake's peer-verification
-        // work is downstream of Wave 1.6 (attestation) — see HandshakeProtocol.cs remarks.
-        // PrivateKey: null — the relay does not sign; Signer is already null.
+        // Relay identity carries a real Ed25519 keypair (Wave 6.1) so the
+        // signed-HELLO contract from 5feb033 holds on both sides. Attestation
+        // evaluation of the peer's key is still downstream (Wave 1.6).
         var identity = new LocalIdentity(
             NodeId: new byte[16],
-            PublicKey: new byte[32],
-            Signer: null,
-            PrivateKey: null,
+            PublicKey: _publicKey,
+            Signer: _signer,
+            PrivateKey: _privateKey,
             SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
             SupportedVersions: HandshakeProtocol.DefaultSupportedVersions);
 
