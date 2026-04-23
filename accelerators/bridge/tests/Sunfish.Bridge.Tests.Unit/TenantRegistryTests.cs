@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Entities;
+using Sunfish.Bridge.Orchestration;
 using Sunfish.Bridge.Services;
 using Sunfish.Foundation.Authorization;
 using Xunit;
@@ -32,6 +33,9 @@ public class TenantRegistryTests
         var services = new ServiceCollection();
         services.AddSingleton<ITenantContext, TestTenant>();
         services.AddDbContext<SunfishBridgeDbContext>(o => o.UseInMemoryDatabase(dbName, root));
+        // Wave 5.2.B — TenantRegistry takes ITenantRegistryEventBus as its second
+        // ctor arg; register the in-memory bus so these Wave 5.1 tests keep running.
+        services.AddSingleton<ITenantRegistryEventBus, InMemoryTenantRegistryEventBus>();
         services.AddScoped<ITenantRegistry, TenantRegistry>();
         return (services.BuildServiceProvider(), root);
     }

@@ -72,6 +72,26 @@ public sealed class TenantRegistration
 
     /// <summary>Updated by <c>TenantRegistry</c> on every mutation.</summary>
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    /// <summary>Operator-supplied free-text explanation of the most recent
+    /// <see cref="TenantStatus.Suspended"/> transition (Wave 5.2.B). Cleared
+    /// on <c>TenantRegistry.ResumeAsync</c>. <see langword="null"/> when the
+    /// tenant is not (and has never been) suspended.</summary>
+    /// <remarks>
+    /// Capped at 500 characters — the field is a human-readable audit note
+    /// (e.g. "billing non-payment Q2 2026", "operator hold during security
+    /// review"), not a structured discriminator. Consumers wanting policy
+    /// enforcement should layer their own vocabulary on top.
+    /// </remarks>
+    [MaxLength(500)]
+    public string? SuspendedReason { get; set; }
+
+    /// <summary>UTC timestamp of the most recent <see cref="TenantStatus.Cancelled"/>
+    /// transition (Wave 5.2.B). <see langword="null"/> until
+    /// <c>TenantRegistry.CancelAsync</c> has been called. Used by the Wave 5.2.C
+    /// supervisor when naming the graveyard folder under
+    /// <c>{TenantDataRoot}/graveyard/{TenantId:D}/{CancelledAt:yyyyMMdd-HHmmss}/</c>.</summary>
+    public DateTime? CancelledAt { get; set; }
 }
 
 /// <summary>Operator-owned contact for billing or support. Not a team member —

@@ -11,6 +11,7 @@ using Sunfish.Bridge;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
+using Sunfish.Bridge.Orchestration;
 using Sunfish.Bridge.Services;
 using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.Data;
@@ -129,6 +130,12 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("sunfishbridgedb")));
     builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
+
+    // ADR 0031 Wave 5.2.A — per-tenant orchestration contracts. Registers
+    // ITenantRegistryEventBus (singleton InMemoryTenantRegistryEventBus) so
+    // TenantRegistry (Wave 5.2.B) can publish lifecycle events and the
+    // Wave 5.2.C supervisor can subscribe without coupling to the registry.
+    builder.Services.AddBridgeOrchestration();
 
     // ADR 0031 Wave 5.1 — control-plane tenant registry. Scoped to match the
     // DbContext lifetime. Holds no team data; see TenantRegistry.cs.
