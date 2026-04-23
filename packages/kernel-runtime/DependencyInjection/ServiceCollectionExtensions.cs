@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Kernel.Runtime.Scheduling;
 using Sunfish.Kernel.Runtime.Teams;
 
 namespace Sunfish.Kernel.Runtime.DependencyInjection;
@@ -44,6 +45,40 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.TryAddSingleton<ITeamContextFactory>(_ => new TeamContextFactory(registrar));
         services.TryAddSingleton<IActiveTeamAccessor, ActiveTeamAccessor>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the Wave 6.4 <see cref="IResourceGovernor"/> and its
+    /// <see cref="ResourceGovernorOptions"/>. The governor caps concurrent
+    /// gossip rounds per tick (default 2 per ADR 0032) so a user in 4+ teams
+    /// does not stampede the network + CPU every 30 seconds.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately NOT called from <see cref="AddSunfishKernelRuntime"/> —
+    /// the composition root opts in so each deployment shape (Anchor desktop,
+    /// Bridge hosted-node, tests) can configure its own cap.
+    /// </remarks>
+    /// <param name="services">The service collection to add to.</param>
+    /// <param name="configure">Optional callback to tune
+    /// <see cref="ResourceGovernorOptions"/>.</param>
+    /// <returns>The same <paramref name="services"/> instance for chaining.</returns>
+    public static IServiceCollection AddSunfishResourceGovernor(
+        this IServiceCollection services,
+        Action<ResourceGovernorOptions>? configure = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.AddOptions<ResourceGovernorOptions>();
+        }
+
+        services.TryAddSingleton<IResourceGovernor, ResourceGovernor>();
         return services;
     }
 }
