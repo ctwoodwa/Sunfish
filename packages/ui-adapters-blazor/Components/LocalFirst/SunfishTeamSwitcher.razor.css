@@ -1,0 +1,218 @@
+/*
+ * SunfishTeamSwitcher — Wave 6.6 scoped styles.
+ *
+ * Aesthetic direction: "typewriter minimalism"
+ *   - Monospaced display type (ink pressed into paper, no variable widths)
+ *   - Ink-on-cream palette — paper #f4f1e8, ink #1a1814, muted-brick accent #8b3a3a
+ *   - Square-shouldered hard edges; no border-radius beyond 2px, no shadows
+ *   - Left-border stripe marks the active row (Slack-pattern, redrawn in ink)
+ *   - Dense typographic rhythm (14px base, 1.4 line-height)
+ *   - 60ms opacity fade on hover is the only motion
+ *
+ * Theming: override any --sf-ts-* custom property on the component's root
+ * element (or an ancestor) to recolor without forking the sheet.
+ */
+
+.sf-team-switcher {
+    /* Palette */
+    --sf-ts-bg: #f4f1e8;
+    --sf-ts-ink: #1a1814;
+    --sf-ts-ink-muted: #5a574e;
+    --sf-ts-ink-dim: #8a867a;
+    --sf-ts-accent: #8b3a3a;
+    --sf-ts-rule: #c9c2ac;
+    --sf-ts-badge-bg: #e8e2ce;
+
+    /* Rhythm */
+    --sf-ts-font: ui-monospace, "IBM Plex Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sf-ts-size: 14px;
+    --sf-ts-line: 1.4;
+    --sf-ts-row-pad-y: 10px;
+    --sf-ts-row-pad-x: 12px;
+
+    display: flex;
+    flex-direction: column;
+    width: 240px;
+    min-height: 100%;
+    background: var(--sf-ts-bg);
+    color: var(--sf-ts-ink);
+    font-family: var(--sf-ts-font);
+    font-size: var(--sf-ts-size);
+    line-height: var(--sf-ts-line);
+    border-right: 1px solid var(--sf-ts-rule);
+    box-sizing: border-box;
+}
+
+.sf-team-switcher *,
+.sf-team-switcher *::before,
+.sf-team-switcher *::after {
+    box-sizing: border-box;
+}
+
+/* ------------------------------ List ------------------------------ */
+
+.sf-team-switcher__list {
+    list-style: none;
+    margin: 0;
+    padding: 8px 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.sf-team-switcher__row {
+    margin: 0;
+    padding: 0;
+}
+
+.sf-team-switcher__item {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: var(--sf-ts-row-pad-y) var(--sf-ts-row-pad-x);
+    border: 0;
+    border-left: 3px solid transparent;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: opacity 60ms linear;
+}
+
+.sf-team-switcher__item:hover {
+    opacity: 0.78;
+}
+
+.sf-team-switcher__item:focus-visible {
+    outline: 2px solid var(--sf-ts-accent);
+    outline-offset: -2px;
+}
+
+/* Active row — paper's left stripe in ink-accent + bolder display type. */
+.sf-team-switcher__item--active .sf-team-switcher__item {
+    border-left-color: var(--sf-ts-accent);
+    background: rgba(139, 58, 58, 0.06);
+}
+
+.sf-team-switcher__item--active .sf-team-switcher__name {
+    font-weight: 700;
+}
+
+/* ----------------------------- Badge ------------------------------ */
+
+.sf-team-switcher__badge {
+    display: inline-grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    background: var(--sf-ts-badge-bg);
+    color: var(--sf-ts-ink);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 2px; /* the single concession to roundedness */
+}
+
+/* ------------------------------ Body ------------------------------ */
+
+.sf-team-switcher__body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.sf-team-switcher__name {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.sf-team-switcher__tag {
+    display: inline-block;
+    margin-top: 2px;
+    font-size: 11px;
+    color: var(--sf-ts-ink-dim);
+    font-weight: 400;
+    text-transform: lowercase;
+    letter-spacing: 0.04em;
+}
+
+/* ------------------------- Per-team count ------------------------- */
+
+.sf-team-switcher__count {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--sf-ts-accent);
+    border-bottom: 1px dotted currentColor;
+    padding: 0 2px 1px 2px;
+    min-width: 1.5em;
+    text-align: center;
+}
+
+/* ----------------------------- Footer ----------------------------- */
+
+.sf-team-switcher__footer {
+    border-top: 1px solid var(--sf-ts-rule);
+    padding: 8px var(--sf-ts-row-pad-x) 12px var(--sf-ts-row-pad-x);
+}
+
+.sf-team-switcher__aggregate {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0 10px 0;
+    color: var(--sf-ts-ink-muted);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.sf-team-switcher__aggregate-count {
+    color: var(--sf-ts-accent);
+    font-weight: 700;
+    border-bottom: 1px dotted currentColor;
+    padding-bottom: 1px;
+}
+
+.sf-team-switcher__add {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--sf-ts-ink-muted);
+    font: inherit;
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition: opacity 60ms linear;
+}
+
+.sf-team-switcher__add:hover {
+    opacity: 0.72;
+    color: var(--sf-ts-ink);
+}
+
+.sf-team-switcher__add:focus-visible {
+    outline: 2px solid var(--sf-ts-accent);
+    outline-offset: 2px;
+}
+
+.sf-team-switcher__add-glyph {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    font-size: 18px;
+    line-height: 1;
+    border: 1px solid currentColor;
+}
+
+.sf-team-switcher__add-label {
+    letter-spacing: 0.02em;
+}

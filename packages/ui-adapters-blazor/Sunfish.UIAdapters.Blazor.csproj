@@ -39,5 +39,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <!-- Wave 6.6: SunfishTeamSwitcher binds to IActiveTeamAccessor / ITeamContextFactory / INotificationAggregator from kernel-runtime. -->
+    <ProjectReference Include="..\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
   </ItemGroup>
 </Project>

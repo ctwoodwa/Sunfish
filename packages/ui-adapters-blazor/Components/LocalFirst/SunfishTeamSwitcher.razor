@@ -1,0 +1,71 @@
+@*
+    SunfishTeamSwitcher — Wave 6.6 Slack-style multi-team sidebar (ADR 0032, paper §13.1).
+
+    Renders a vertical column of team rows bound to ITeamContextFactory.Active +
+    IActiveTeamAccessor + INotificationAggregator. Clicking a row switches
+    IActiveTeamAccessor. An aggregate unread count sits at the bottom above a
+    "+ Add team" button that raises OnAddTeamRequested (Wave 6.8 owns the flow).
+
+    Aesthetic: "typewriter minimalism" — monospaced display font, ink-on-cream
+    palette, square edges, left-border stripe on the active row. Scoped via
+    razor.css; --sf-ts-* custom properties at the root allow host theming.
+*@
+@namespace Sunfish.UIAdapters.Blazor.Components.LocalFirst
+@inherits SunfishComponentBase
+
+<nav class="@Classes"
+     style="@CombineStyles()"
+     role="navigation"
+     aria-label="Team switcher"
+     @attributes="AdditionalAttributes">
+
+    <ol class="sf-team-switcher__list" role="list">
+        @foreach (var team in Teams)
+        {
+            var isActive = ActiveTeamId is { } active && active.Value == team.TeamId.Value;
+            var isLegacyPrimary = LegacyPrimaryTeamId is { } primary && primary.Value == team.TeamId.Value;
+            var unread = Notifications.GetUnreadCount(team.TeamId);
+
+            <li class="sf-team-switcher__row @(isActive ? "sf-team-switcher__item--active" : "")"
+                role="listitem"
+                @key="team.TeamId.Value">
+                <button type="button"
+                        class="sf-team-switcher__item"
+                        data-team-id="@team.TeamId"
+                        aria-current="@(isActive ? "true" : "false")"
+                        title="@team.DisplayName"
+                        @onclick="@(() => HandleRowClickAsync(team.TeamId))">
+                    <span class="sf-team-switcher__badge" aria-hidden="true">@InitialsFor(team)</span>
+                    <span class="sf-team-switcher__body">
+                        <span class="sf-team-switcher__name">@team.DisplayName</span>
+                        @if (isLegacyPrimary)
+                        {
+                            <span class="sf-team-switcher__tag">(primary)</span>
+                        }
+                    </span>
+                    @if (unread > 0)
+                    {
+                        <span class="sf-team-switcher__count"
+                              aria-label="@($"{unread} unread")">@FormatCount(unread)</span>
+                    }
+                </button>
+            </li>
+        }
+    </ol>
+
+    <footer class="sf-team-switcher__footer">
+        @if (AggregateUnread > 0)
+        {
+            <div class="sf-team-switcher__aggregate" aria-live="polite">
+                <span class="sf-team-switcher__aggregate-label">Total unread</span>
+                <span class="sf-team-switcher__aggregate-count">@FormatCount(AggregateUnread)</span>
+            </div>
+        }
+        <button type="button"
+                class="sf-team-switcher__add"
+                @onclick="HandleAddClickAsync">
+            <span class="sf-team-switcher__add-glyph" aria-hidden="true">+</span>
+            <span class="sf-team-switcher__add-label">Add team</span>
+        </button>
+    </footer>
+</nav>
