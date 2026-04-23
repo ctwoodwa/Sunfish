@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Sunfish.Kernel.Buckets.DependencyInjection;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.Keys;
 
@@ -51,8 +52,9 @@ public static class DefaultTeamServiceRegistrar
     /// together with <paramref name="subkeyDerivation"/> to produce the
     /// team-scoped keypair per ADR 0032 §Device identity. The closure only
     /// holds the reference — no signing happens until 6.3.C wires the body.</param>
-    /// <returns>A <see cref="TeamServiceRegistrar"/> whose body is an
-    /// explicit no-op placeholder in 6.3.A.</returns>
+    /// <returns>A <see cref="TeamServiceRegistrar"/> whose body wires the
+    /// per-team bucket registry (6.3.D). 6.3.B and 6.3.C will append their
+    /// registrations to the same callback in subsequent waves.</returns>
     /// <exception cref="ArgumentException"><paramref name="dataDirectory"/>
     /// is <c>null</c> or empty.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="subkeyDerivation"/>
@@ -68,17 +70,20 @@ public static class DefaultTeamServiceRegistrar
 
         return (services, teamId) =>
         {
-            // Intentionally empty — Wave 6.3.A is scaffold-only.
-            //
             // Wave 6.3.B: event-log + quarantine + encrypted-store
             //             registrations, keyed by TeamPaths.EventLogDirectory,
             //             TeamPaths.DatabasePath, and TeamPaths.KeystoreKeyName.
             // Wave 6.3.C: gossip + lease + per-team INodeIdentityProvider
             //             derived via subkeyDerivation + rootSigner.
-            // Wave 6.3.D: buckets registration, keyed by
-            //             TeamPaths.BucketsDirectory.
-            _ = services;
-            _ = teamId;
+
+            // Wave 6.3.D — buckets per-team. Manifest source directory is
+            // TeamPaths.BucketsDirectory(dataDirectory, teamId). IBucketRegistry,
+            // IBucketYamlLoader, IBucketFilterEvaluator, IBucketStubStore, and
+            // IStorageBudgetManager are all installed per-team (TryAddSingleton
+            // against this team's fresh ServiceCollection yields per-team
+            // singletons; each TeamContext's provider owns its own instances).
+            var bucketsDirectory = TeamPaths.BucketsDirectory(dataDirectory, teamId);
+            services.AddSunfishKernelBuckets(o => o.SourceDirectory = bucketsDirectory);
         };
     }
 }
