@@ -1348,3 +1348,1005 @@
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
+
+## Session: 2026-04-22 14:40
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 16:18 | Edited docs/adrs/0023-dialog-provider-slot-methods.md | 3→4 lines | ~230 |
+| 16:18 | Edited docs/adrs/0024-button-variant-enum-expansion.md | 3→4 lines | ~138 |
+| 16:18 | Edited docs/adrs/0025-css-class-prefix-policy.md | 3→4 lines | ~202 |
+| 16:18 | Edited icm/00_intake/output/compat-expansion-intake.md | expanded (+17 lines) | ~471 |
+| 16:22 | Session end: 4 writes across 4 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md) | 17 reads | ~18497 tok |
+| 16:23 | Created packages/compat-telerik/Internal/CompatChildComponent.cs | — | ~744 |
+| 16:24 | Created packages/compat-telerik/TelerikGridColumn.razor | — | ~1163 |
+| 16:24 | Created packages/compat-telerik/GridColumns.razor | — | ~182 |
+| 16:24 | Created packages/compat-telerik/TelerikValidationSummary.razor | — | ~323 |
+| 16:24 | Created packages/compat-telerik/TelerikValidationMessage.razor | — | ~319 |
+| 16:25 | Created packages/compat-telerik/EventArgs/GridRowClickEventArgs.cs | — | ~335 |
+| 16:25 | Created packages/compat-telerik/EventArgs/GridCommandEventArgs.cs | — | ~448 |
+| 16:25 | Created packages/compat-telerik/EventArgs/GridReadEventArgs.cs | — | ~441 |
+| 16:25 | Created packages/compat-telerik/EventArgs/DatePickerChangeEventArgs.cs | — | ~203 |
+| 16:25 | Created packages/compat-telerik/tests/TelerikGridColumnTests.cs | — | ~193 |
+| 16:25 | Created packages/compat-telerik/tests/TelerikValidationSummaryTests.cs | — | ~100 |
+| 16:25 | Created packages/compat-telerik/tests/TelerikValidationMessageTests.cs | — | ~130 |
+| 16:25 | Created tmp-rename-mar.ps1 | — | ~2531 |
+| 16:25 | Created packages/compat-telerik/tests/GridEventArgsShimTests.cs | — | ~482 |
+| 16:26 | Edited docs/compat-telerik-mapping.md | reduced (-15 lines) | ~69 |
+| 16:26 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_data-grid.scss | inline fix | ~27 |
+| 16:26 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_data-grid.scss | inline fix | ~27 |
+| 16:26 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_data-grid.scss | inline fix | ~19 |
+| 16:26 | Edited docs/compat-telerik-mapping.md | expanded (+136 lines) | ~1987 |
+| 16:30 | Created tmp-rename-tree-pivot.ps1 | — | ~1509 |
+| 16:32 | Created _shared/engineering/css-conventions.md | — | ~1532 |
+| 16:32 | Edited accelerators/bridge/Sunfish.Bridge.Client/Services/ProviderSwitcher.cs | 4→6 lines | ~109 |
+| 16:33 | Edited accelerators/bridge/Sunfish.Bridge.Client/Services/ProviderSwitcher.cs | 7→9 lines | ~182 |
+| 16:34 | Edited packages/ui-adapters-blazor/tests/Components/ButtonsTests.cs | modified foreach() | ~172 |
+| 16:34 | Session end: 28 writes across 24 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 38 reads | ~67064 tok |
+| 16:37 | Session end: 28 writes across 24 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 40 reads | ~79335 tok |
+| 16:38 | Edited packages/foundation/Enums/ButtonVariant.cs | expanded (+35 lines) | ~563 |
+| 16:38 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+25 lines) | ~936 |
+| 16:39 | Edited packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | expanded (+17 lines) | ~564 |
+| 16:39 | Edited packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | expanded (+16 lines) | ~531 |
+| 16:39 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_button.scss | modified SKIP() | ~1492 |
+| 16:40 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_button.scss | modified media() | ~1916 |
+| 16:41 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_button.scss | modified notes() | ~1871 |
+| 16:41 | Edited packages/compat-telerik/TelerikButton.razor | expanded (+14 lines) | ~475 |
+| 16:41 | Edited packages/ui-core/tests/tests.csproj | expanded (+6 lines) | ~112 |
+| 16:42 | Edited packages/ui-core/tests/CssProviderContractTests.cs | modified ISunfishCssProvider_HasExpectedMethodCount() | ~1715 |
+| 16:42 | Edited packages/ui-core/tests/tests.csproj | 9→13 lines | ~210 |
+| 16:48 | Session end: 39 writes across 32 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 52 reads | ~128849 tok |
+| 16:49 | Edited packages/ui-core/Contracts/ISunfishCssProvider.cs | expanded (+57 lines) | ~862 |
+| 16:49 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/BootstrapCssProvider.cs | expanded (+7 lines) | ~237 |
+| 16:50 | Edited packages/ui-adapters-blazor/Providers/FluentUI/FluentUICssProvider.cs | expanded (+6 lines) | ~219 |
+| 16:50 | Edited packages/ui-adapters-blazor/Providers/Material/MaterialCssProvider.cs | expanded (+6 lines) | ~220 |
+| 16:50 | Edited packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishDialog.razor | modified if() | ~1373 |
+| 16:51 | Edited packages/ui-adapters-blazor/Components/Feedback/Dialog/SunfishConfirmDialog.razor | modified if() | ~518 |
+| 16:51 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/components/_dialog.scss | CSS: sf-dialog__close | ~810 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: flex, min-width | ~743 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: sf-dialog__header | ~91 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | CSS: sf-dialog__close | ~30 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: razor | ~260 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: font | ~256 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 19→19 lines | ~171 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | 8→8 lines | ~45 |
+| 16:52 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | modified media() | ~50 |
+| 16:53 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: sf-dialog__header | ~120 |
+| 16:53 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/components/_dialog.scss | CSS: sf-dialog__close, sf-dialog__close | ~118 |
+| 16:53 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/components/_dialog.scss | ".sf-dialog-close .sf-flue" → ".sf-dialog__close .sf-flu" | ~21 |
+| 16:53 | Edited packages/ui-core/tests/CssProviderContractTests.cs | modified ButtonClass_NewVariants_Emit_Distinct_Classes() | ~836 |
+| 16:53 | Edited accelerators/bridge/Sunfish.Bridge.Client/Services/ProviderSwitcher.cs | expanded (+6 lines) | ~158 |
+| 16:53 | Edited apps/kitchen-sink/Services/ProviderSwitcher.cs | expanded (+6 lines) | ~158 |
+| 16:54 | Edited packages/ui-adapters-blazor/tests/Stubs.cs | expanded (+8 lines) | ~180 |
+| 16:57 | Session end: 61 writes across 37 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 59 reads | ~150252 tok |
+| 17:01 | Session end: 61 writes across 37 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 59 reads | ~150252 tok |
+| 17:06 | Created packages/compat-shared/Sunfish.Compat.Shared.csproj | — | ~319 |
+| 17:06 | Created packages/compat-shared/CompatChildComponent.cs | — | ~694 |
+| 17:06 | Created packages/compat-shared/UnsupportedParam.cs | — | ~289 |
+| 17:07 | Created packages/compat-shared/CompatIconAdapter.cs | — | ~308 |
+| 17:07 | Created packages/compat-shared/README.md | — | ~450 |
+| 17:07 | Created packages/compat-shared/POLICY-TEMPLATE.md | — | ~760 |
+| 17:07 | Edited packages/compat-telerik/Sunfish.Compat.Telerik.csproj | 5→6 lines | ~92 |
+| 17:07 | Edited packages/compat-telerik/_Imports.razor | 2→2 lines | ~16 |
+| 17:08 | Edited packages/compat-telerik/TelerikGrid.razor | inline fix | ~8 |
+| 17:08 | Edited packages/compat-telerik/TelerikButton.razor | inline fix | ~8 |
+| 17:08 | Edited packages/compat-telerik/TelerikIcon.razor | inline fix | ~8 |
+| 17:08 | Edited packages/compat-telerik/TelerikGridColumn.razor | inline fix | ~8 |
+| 17:08 | Edited packages/compat-telerik/TelerikWindow.razor | inline fix | ~8 |
+| 17:08 | Edited packages/compat-telerik/TelerikIcon.razor | inline fix | ~11 |
+| 17:08 | Edited packages/compat-telerik/TelerikButton.razor | inline fix | ~11 |
+| 17:08 | Edited Sunfish.slnx | 4→7 lines | ~83 |
+| 17:10 | Session end: 77 writes across 48 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 64 reads | ~157206 tok |
+| 17:16 | Created icm/00_intake/output/compat-icon-expansion-intake.md | — | ~3672 |
+| 17:18 | Session end: 78 writes across 49 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 65 reads | ~164583 tok |
+| 17:22 | Created icm/01_discovery/output/compat-icon-library-survey-2026-04-22.md | — | ~6113 |
+| 17:23 | Edited icm/00_intake/output/compat-icon-expansion-intake.md | expanded (+11 lines) | ~560 |
+| 17:24 | Session end: 80 writes across 50 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 68 reads | ~179986 tok |
+| 17:25 | Created packages/compat-font-awesome/Sunfish.Compat.FontAwesome.csproj | — | ~419 |
+| 17:25 | Created packages/compat-font-awesome/_Imports.razor | — | ~93 |
+| 17:25 | Created packages/compat-font-awesome/CODEOWNERS | — | ~56 |
+| 17:26 | Created packages/compat-font-awesome/POLICY.md | — | ~1428 |
+| 17:26 | Created packages/compat-font-awesome/FasIcons.cs | — | ~1035 |
+| 17:27 | Created packages/compat-font-awesome/FarIcons.cs | — | ~993 |
+| 17:27 | Created packages/compat-font-awesome/FabIcons.cs | — | ~993 |
+| 17:27 | Created packages/compat-font-awesome/FontAwesomeIcon.razor | — | ~2063 |
+| 17:28 | Created packages/compat-font-awesome/FaList.razor | — | ~400 |
+| 17:28 | Created packages/compat-font-awesome/FaListItem.razor | — | ~400 |
+| 17:28 | Created packages/compat-font-awesome/FaLayers.razor | — | ~387 |
+| 17:28 | Created packages/compat-font-awesome/FaLayersText.razor | — | ~261 |
+| 17:28 | Created packages/compat-font-awesome/FaLayersCounter.razor | — | ~258 |
+| 17:28 | Created packages/compat-font-awesome/tests/tests.csproj | — | ~206 |
+| 17:29 | Created packages/compat-font-awesome/tests/FontAwesomeIconTests.cs | — | ~1651 |
+| 17:29 | Session end: 95 writes across 63 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 77 reads | ~201629 tok |
+| 17:30 | Created docs/compat-font-awesome-mapping.md | — | ~2996 |
+| 17:30 | Edited Sunfish.slnx | 4→8 lines | ~98 |
+| 17:32 | Created packages/compat-font-awesome/tests/FontAwesomeIconTests.cs | — | ~2115 |
+| 17:32 | Edited packages/compat-font-awesome/tests/tests.csproj | 3→2 lines | ~20 |
+| 17:32 | Edited packages/compat-font-awesome/tests/FontAwesomeIconTests.cs | modified NewIcon() | ~209 |
+| 17:34 | Created icm/01_discovery/output/compat-infragistics-surface-inventory-2026-04-22.md | — | ~6963 |
+| 17:34 | Created icm/01_discovery/output/compat-syncfusion-surface-inventory-2026-04-22.md | — | ~10975 |
+| 17:35 | Created icm/01_discovery/output/compat-devexpress-surface-inventory-2026-04-22.md | — | ~12000 |
+| 17:35 | Created icm/01_discovery/output/infragistics-wc-architecture-spike-2026-04-22.md | — | ~3977 |
+
+## 2026-04-22 — compat-devexpress Stage 01 Discovery
+
+- Created `icm/01_discovery/output/compat-devexpress-surface-inventory-2026-04-22.md` (Task #103 DevExpress lane).
+- 9/12 components have direct DX peers; 3 compat-synthetics (`DxIcon`, `DxDropDownList`, `DxTooltip`) — DevExpress Blazor has no general-purpose tooltip component.
+- EULA Section 7(a) ("API to the products") flagged for Stage 02 legal-review spike; Section 7 non-compete not triggered (no DX NuGet ref per POLICY).
+- ~10 EventArgs shims identified.
+- DevExpress is native Blazor, not WC — Decision-2 spike N/A.
+| 17:39 | Session end: 104 writes across 68 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 88 reads | ~254150 tok |
+| 17:39 | Created packages/compat-fluent-icons/Sunfish.Compat.FluentIcons.csproj | — | ~479 |
+| 17:39 | Created packages/compat-fluent-icons/_Imports.razor | — | ~93 |
+| 17:39 | Created packages/compat-fluent-icons/CODEOWNERS | — | ~56 |
+| 17:40 | Created packages/compat-material-icons/Sunfish.Compat.MaterialIcons.csproj | — | ~497 |
+| 17:40 | Created packages/compat-material-icons/_Imports.razor | — | ~94 |
+| 17:40 | Created packages/compat-bootstrap-icons/Sunfish.Compat.BootstrapIcons.csproj | — | ~442 |
+| 17:40 | Created packages/compat-bootstrap-icons/_Imports.razor | — | ~94 |
+| 17:40 | Created packages/compat-bootstrap-icons/CODEOWNERS | — | ~56 |
+| 17:40 | Created packages/compat-fluent-icons/POLICY.md | — | ~1831 |
+| 17:41 | Created packages/compat-bootstrap-icons/POLICY.md | — | ~1478 |
+| 17:41 | Created packages/compat-material-icons/POLICY.md | — | ~1926 |
+| 17:41 | Created packages/compat-material-icons/MaterialSymbolVariant.cs | — | ~288 |
+| 17:41 | Created packages/compat-bootstrap-icons/IconName.cs | — | ~509 |
+| 17:41 | Created packages/compat-fluent-icons/FluentIcon.razor | — | ~2543 |
+| 17:41 | Created packages/compat-bootstrap-icons/IconNameExtensions.cs | — | ~895 |
+| 17:41 | Created packages/compat-material-icons/MaterialIconName.cs | — | ~941 |
+| 17:41 | Created packages/compat-material-icons/MaterialSizeClass.cs | — | ~420 |
+| 17:41 | Created packages/compat-fluent-icons/Sizes/Size20/Regular.cs | — | ~1195 |
+| 17:42 | Created packages/compat-fluent-icons/Sizes/Size20/Filled.cs | — | ~1162 |
+| 17:42 | Created packages/compat-bootstrap-icons/BootstrapIcon.razor | — | ~1203 |
+| 17:42 | Created packages/compat-material-icons/MaterialIcon.razor | — | ~596 |
+| 17:42 | Created packages/compat-fluent-icons/tests/tests.csproj | — | ~195 |
+| 17:42 | Created packages/compat-bootstrap-icons/tests/tests.csproj | — | ~197 |
+| 17:42 | Created packages/compat-material-icons/MaterialSymbol.razor | — | ~635 |
+| 17:42 | Created packages/compat-material-icons/CODEOWNERS | — | ~56 |
+| 17:42 | Created packages/compat-material-icons/tests/tests.csproj | — | ~196 |
+| 17:42 | Created packages/compat-bootstrap-icons/tests/BootstrapIconTests.cs | — | ~1667 |
+| 17:42 | Created packages/compat-fluent-icons/tests/FluentIconTests.cs | — | ~2052 |
+| 17:42 | Created packages/compat-material-icons/tests/MaterialIconTests.cs | — | ~1760 |
+| 17:43 | Created docs/compat-bootstrap-icons-mapping.md | — | ~2579 |
+| 17:43 | Created docs/compat-material-icons-mapping.md | — | ~2283 |
+| 17:43 | Created docs/compat-fluent-icons-mapping.md | — | ~2911 |
+| 17:45 | Session end: 136 writes across 88 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 88 reads | ~287716 tok |
+| 17:45 | Edited Sunfish.slnx | expanded (+12 lines) | ~279 |
+| 17:49 | Session end: 137 writes across 88 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 109 reads | ~304225 tok |
+| 17:49 | Created packages/compat-lucide/Sunfish.Compat.Lucide.csproj | — | ~435 |
+| 17:49 | Created packages/compat-lucide/_Imports.razor | — | ~92 |
+| 17:49 | Created packages/compat-lucide/CODEOWNERS | — | ~54 |
+| 17:49 | Created packages/compat-heroicons/Sunfish.Compat.Heroicons.csproj | — | ~485 |
+| 17:49 | Created packages/compat-simple-icons/Sunfish.Compat.SimpleIcons.csproj | — | ~463 |
+| 17:49 | Created packages/compat-heroicons/_Imports.razor | — | ~92 |
+| 17:49 | Created packages/compat-simple-icons/_Imports.razor | — | ~93 |
+| 17:50 | Created packages/compat-heroicons/CODEOWNERS | — | ~55 |
+| 17:50 | Created packages/compat-simple-icons/CODEOWNERS | — | ~56 |
+| 17:50 | Created packages/compat-heroicons/HeroiconVariant.cs | — | ~297 |
+| 17:50 | Created packages/compat-lucide/POLICY.md | — | ~1672 |
+| 17:50 | Created packages/compat-lucide/LucideIconName.cs | — | ~491 |
+| 17:50 | Created packages/compat-heroicons/HeroiconName.cs | — | ~523 |
+| 17:50 | Created packages/compat-simple-icons/SimpleIconSlug.cs | — | ~798 |
+| 17:50 | Created packages/compat-lucide/LucideIconNameExtensions.cs | — | ~999 |
+| 17:50 | Created packages/compat-heroicons/HeroiconNameExtensions.cs | — | ~1172 |
+| 17:50 | Created packages/compat-simple-icons/SimpleIconSlugExtensions.cs | — | ~1256 |
+| 17:51 | Created packages/compat-lucide/LucideIcon.razor | — | ~1227 |
+| 17:51 | Created packages/compat-lucide/tests/tests.csproj | — | ~191 |
+| 17:51 | Created packages/compat-heroicons/Heroicon.razor | — | ~1425 |
+| 17:51 | Created packages/compat-simple-icons/SimpleIcon.razor | — | ~1463 |
+| 17:51 | Created packages/compat-lucide/tests/LucideIconTests.cs | — | ~2139 |
+| 17:52 | Created packages/compat-heroicons/POLICY.md | — | ~1983 |
+| 17:52 | Created packages/compat-simple-icons/POLICY.md | — | ~2178 |
+| 17:52 | Created packages/compat-heroicons/tests/tests.csproj | — | ~193 |
+| 17:52 | Created packages/compat-simple-icons/tests/tests.csproj | — | ~195 |
+| 17:52 | Created packages/compat-simple-icons/tests/SimpleIconTests.cs | — | ~1898 |
+| 17:52 | Created packages/compat-heroicons/tests/HeroiconTests.cs | — | ~2145 |
+| 17:53 | Created docs/compat-lucide-mapping.md | — | ~2989 |
+| 17:54 | Session end: 166 writes across 105 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 110 reads | ~335354 tok |
+| 17:54 | Created docs/compat-simple-icons-mapping.md | — | ~3428 |
+| 17:54 | Created docs/compat-heroicons-mapping.md | — | ~3104 |
+| 17:54 | Session end: 168 writes across 107 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 110 reads | ~342352 tok |
+| 17:55 | Edited Sunfish.slnx | expanded (+8 lines) | ~170 |
+| 17:55 | Edited Sunfish.slnx | 5→9 lines | ~123 |
+| 17:57 | Session end: 170 writes across 107 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 120 reads | ~352663 tok |
+| 17:57 | Created packages/compat-octicons/Sunfish.Compat.Octicons.csproj | — | ~443 |
+| 17:57 | Created packages/compat-octicons/_Imports.razor | — | ~92 |
+| 17:57 | Created packages/compat-octicons/CODEOWNERS | — | ~55 |
+| 17:57 | Created packages/compat-octicons/OcticonName.cs | — | ~523 |
+| 17:58 | Created packages/compat-tabler-icons/Sunfish.Compat.TablerIcons.csproj | — | ~560 |
+| 17:58 | Created packages/compat-octicons/OcticonNameExtensions.cs | — | ~956 |
+| 17:58 | Created packages/compat-tabler-icons/_Imports.razor | — | ~93 |
+| 17:58 | Created packages/compat-tabler-icons/CODEOWNERS | — | ~56 |
+| 17:58 | Created packages/compat-octicons/Octicon.razor | — | ~1226 |
+| 17:59 | Created packages/compat-tabler-icons/POLICY.md | — | ~2083 |
+| 17:59 | Created packages/compat-tabler-icons/TablerIconName.cs | — | ~519 |
+| 17:59 | Created packages/compat-octicons/POLICY.md | — | ~1790 |
+| 17:59 | Created packages/compat-octicons/tests/tests.csproj | — | ~192 |
+| 17:59 | Created packages/compat-tabler-icons/TablerIconNameExtensions.cs | — | ~1027 |
+| 17:59 | Created packages/compat-octicons/tests/OcticonTests.cs | — | ~2070 |
+| 17:59 | Created packages/compat-tabler-icons/TablerIcon.razor | — | ~1458 |
+| 18:00 | Created packages/compat-tabler-icons/tests/tests.csproj | — | ~195 |
+| 18:00 | Created packages/compat-tabler-icons/tests/TablerIconTests.cs | — | ~2437 |
+| 18:01 | Created docs/compat-octicons-mapping.md | — | ~3530 |
+| 18:02 | Created docs/compat-tabler-icons-mapping.md | — | ~3473 |
+| 18:02 | Session end: 190 writes across 119 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 120 reads | ~377067 tok |
+| 18:03 | Edited Sunfish.slnx | 5→9 lines | ~120 |
+| 18:03 | Edited Sunfish.slnx | 5→9 lines | ~121 |
+| 18:04 | Session end: 192 writes across 119 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 120 reads | ~377326 tok |
+| 18:30 | Session end: 192 writes across 119 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 140 reads | ~402490 tok |
+| 18:31 | Created packages/compat-syncfusion/Sunfish.Compat.Syncfusion.csproj | — | ~370 |
+| 18:31 | Created packages/compat-syncfusion/_Imports.razor | — | ~190 |
+| 18:31 | Created packages/compat-syncfusion/CODEOWNERS | — | ~55 |
+| 18:31 | Created packages/compat-infragistics/Sunfish.Compat.Infragistics.csproj | — | ~407 |
+| 18:31 | Created packages/compat-infragistics/_Imports.razor | — | ~191 |
+| 18:31 | Created packages/compat-infragistics/CODEOWNERS | — | ~97 |
+| 18:31 | Created packages/compat-syncfusion/POLICY.md | — | ~1243 |
+| 18:32 | Created packages/compat-syncfusion/Enums/IconPosition.cs | — | ~57 |
+| 18:32 | Created packages/compat-syncfusion/Enums/IconSize.cs | — | ~55 |
+| 18:32 | Created packages/compat-syncfusion/Enums/LabelPosition.cs | — | ~57 |
+| 18:32 | Created packages/compat-syncfusion/Enums/InputType.cs | — | ~72 |
+| 18:32 | Created packages/compat-syncfusion/Enums/FloatLabelType.cs | — | ~79 |
+| 18:32 | Created packages/compat-syncfusion/Enums/FilterType.cs | — | ~64 |
+| 18:32 | Created packages/compat-syncfusion/Enums/SelectionMode.cs | — | ~60 |
+| 18:32 | Created packages/compat-syncfusion/Enums/SelectionType.cs | — | ~58 |
+| 18:32 | Created packages/compat-syncfusion/Enums/SortDirection.cs | — | ~52 |
+| 18:32 | Created packages/compat-syncfusion/Enums/CalendarView.cs | — | ~62 |
+| 18:32 | Created packages/compat-syncfusion/Enums/Position.cs | — | ~151 |
+| 18:32 | Created packages/compat-syncfusion/Enums/ProgressDirection.cs | — | ~73 |
+| 18:32 | Created packages/compat-syncfusion/Enums/FormLabelPosition.cs | — | ~96 |
+| 18:32 | Created packages/compat-infragistics/POLICY.md | — | ~1495 |
+| 18:32 | Created packages/compat-syncfusion/Enums/ValidationDisplayMode.cs | — | ~92 |
+| 18:32 | Created packages/compat-syncfusion/Enums/ButtonsAlignment.cs | — | ~98 |
+| 18:32 | Created packages/compat-syncfusion/Enums/AutoComplete.cs | — | ~54 |
+| 18:32 | Created packages/compat-infragistics/Enums/ButtonVariant.cs | — | ~102 |
+| 18:32 | Created packages/compat-infragistics/Enums/ButtonBaseType.cs | — | ~110 |
+| 18:32 | Created packages/compat-infragistics/Enums/LabelPosition.cs | — | ~90 |
+| 18:32 | Created packages/compat-infragistics/Enums/InputType.cs | — | ~111 |
+| 18:32 | Created packages/compat-infragistics/Enums/PickerMode.cs | — | ~70 |
+| 18:32 | Created packages/compat-syncfusion/EventArgs/ChangeEventArgs.cs | — | ~424 |
+| 18:32 | Created packages/compat-infragistics/Enums/ToastPosition.cs | — | ~93 |
+| 18:32 | Created packages/compat-infragistics/Enums/IgbPlacement.cs | — | ~147 |
+| 18:32 | Created packages/compat-syncfusion/EventArgs/DropDownChangeEventArgs.cs | — | ~576 |
+| 18:33 | Created packages/compat-infragistics/EventArgs/IgbInputChangeEventArgs.cs | — | ~315 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/InputEventArgs.cs | — | ~384 |
+| 18:33 | Created packages/compat-infragistics/EventArgs/IgbGridRowClickEventArgs.cs | — | ~356 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/GridRowEventArgs.cs | — | ~506 |
+| 18:33 | Created packages/compat-infragistics/EventArgs/IgbGridCellClickEventArgs.cs | — | ~266 |
+| 18:33 | Created packages/compat-infragistics/EventArgs/IgbGridSelectionEventArgs.cs | — | ~240 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/GridActionEventArgs.cs | — | ~451 |
+| 18:33 | Created packages/compat-infragistics/EventArgs/IgbGridSortingEventArgs.cs | — | ~218 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/GridFilterSortEventArgs.cs | — | ~302 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/DialogEventArgs.cs | — | ~230 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/TooltipEventArgs.cs | — | ~161 |
+| 18:33 | Created packages/compat-syncfusion/EventArgs/ToastEventArgs.cs | — | ~482 |
+| 18:34 | Created packages/compat-infragistics/IgbButton.razor | — | ~1950 |
+| 18:34 | Created packages/compat-infragistics/IgbIcon.razor | — | ~1215 |
+| 18:34 | Created packages/compat-syncfusion/SfButton.razor | — | ~1191 |
+| 18:34 | Created packages/compat-infragistics/IgbCheckbox.razor | — | ~1043 |
+| 18:34 | Created packages/compat-syncfusion/SfIcon.razor | — | ~1076 |
+| 18:34 | Created packages/compat-infragistics/IgbInput.razor | — | ~1555 |
+| 18:35 | Created packages/compat-syncfusion/SfCheckBox.razor | — | ~1177 |
+| 18:35 | Created packages/compat-infragistics/IgbTooltip.razor | — | ~1085 |
+| 18:35 | Created packages/compat-syncfusion/SfTextBox.razor | — | ~1387 |
+| 18:35 | Created packages/compat-syncfusion/SfDropDownList.razor | — | ~703 |
+| 18:35 | Created packages/compat-syncfusion/SfComboBox.razor | — | ~750 |
+| 18:35 | Created packages/compat-infragistics/IgbSelect.razor | — | ~1194 |
+| 18:35 | Created packages/compat-infragistics/IgbSelectItem.razor | — | ~554 |
+| 18:35 | Created packages/compat-infragistics/IgbSelectItemModel.cs | — | ~164 |
+| 18:35 | Created packages/compat-syncfusion/SfDatePicker.razor | — | ~965 |
+| 18:36 | Created packages/compat-infragistics/IgbCombo.razor | — | ~1154 |
+| 18:36 | Created packages/compat-syncfusion/SfDataForm.razor | — | ~1204 |
+| 18:36 | Created packages/compat-infragistics/IgbDatePicker.razor | — | ~992 |
+| 18:36 | Created packages/compat-syncfusion/SfGrid.razor | — | ~925 |
+| 18:36 | Created packages/compat-infragistics/IgbDialog.razor | — | ~892 |
+| 18:36 | Created packages/compat-syncfusion/SfDialog.razor | — | ~882 |
+| 18:36 | Created packages/compat-infragistics/IgbToast.razor | — | ~798 |
+| 18:37 | Created packages/compat-syncfusion/SfTooltip.razor | — | ~1234 |
+| 18:37 | Created packages/compat-infragistics/IgbGrid.razor | — | ~1154 |
+| 18:37 | Created packages/compat-syncfusion/SfToast.razor | — | ~1064 |
+| 18:37 | Created packages/compat-infragistics/IgbColumn.razor | — | ~1008 |
+| 18:37 | Edited packages/compat-syncfusion/SfToast.razor | modified ShowAsync() | ~109 |
+| 18:37 | Edited packages/compat-infragistics/EventArgs/IgbGridCellClickEventArgs.cs | 2→2 lines | ~40 |
+| 18:37 | Created packages/compat-syncfusion/GridColumns.razor | — | ~171 |
+| 18:37 | Edited packages/compat-infragistics/EventArgs/IgbGridRowClickEventArgs.cs | 4→4 lines | ~75 |
+| 18:37 | Edited packages/compat-infragistics/EventArgs/IgbGridSortingEventArgs.cs | 2→2 lines | ~40 |
+| 18:38 | Created packages/compat-syncfusion/GridColumn.razor | — | ~851 |
+| 18:38 | Created packages/compat-syncfusion/GridPageSettings.razor | — | ~197 |
+| 18:38 | Created packages/compat-infragistics/tests/tests.csproj | — | ~196 |
+| 18:38 | Created packages/compat-syncfusion/GridSelectionSettings.razor | — | ~373 |
+| 18:38 | Created packages/compat-syncfusion/GridFilterSettings.razor | — | ~334 |
+| 18:38 | Created packages/compat-infragistics/tests/AssemblyAndNamespaceTests.cs | — | ~736 |
+| 18:38 | Created packages/compat-syncfusion/GridSortSettings.razor | — | ~190 |
+| 18:38 | Created packages/compat-syncfusion/GridSortColumn.razor | — | ~267 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbButtonTests.cs | — | ~423 |
+| 18:38 | Created packages/compat-syncfusion/GridEditSettings.razor | — | ~403 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbCheckboxTests.cs | — | ~249 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbInputTests.cs | — | ~297 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbIconTests.cs | — | ~313 |
+| 18:38 | Created packages/compat-syncfusion/GridEvents.razor | — | ~630 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbSelectTests.cs | — | ~468 |
+| 18:38 | Created packages/compat-syncfusion/DialogTemplates.razor | — | ~300 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbComboTests.cs | — | ~108 |
+| 18:38 | Created packages/compat-syncfusion/DialogHeaderTemplate.razor | — | ~192 |
+| 18:38 | Created packages/compat-syncfusion/DialogContentTemplate.razor | — | ~140 |
+| 18:38 | Created packages/compat-infragistics/tests/IgbDatePickerTests.cs | — | ~310 |
+| 18:39 | Created packages/compat-syncfusion/DialogFooterTemplate.razor | — | ~142 |
+| 18:39 | Created packages/compat-syncfusion/DialogButtons.razor | — | ~210 |
+| 18:39 | Created packages/compat-infragistics/tests/IgbDialogTests.cs | — | ~390 |
+| 18:39 | Created packages/compat-infragistics/tests/IgbTooltipTests.cs | — | ~248 |
+| 18:39 | Created packages/compat-syncfusion/DialogButton.razor | — | ~288 |
+| 18:39 | Created packages/compat-infragistics/tests/IgbToastTests.cs | — | ~238 |
+| 18:39 | Created packages/compat-syncfusion/DropDownListFieldSettings.razor | — | ~268 |
+| 18:39 | Created packages/compat-infragistics/tests/IgbGridTests.cs | — | ~511 |
+| 18:39 | Edited packages/compat-syncfusion/SfDatePicker.razor | added 2 condition(s) | ~64 |
+| 18:39 | Created packages/compat-infragistics/tests/EventArgsShimTests.cs | — | ~611 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | 9→9 lines | ~110 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | 10→9 lines | ~83 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | added 2 condition(s) | ~129 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | 9→8 lines | ~87 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | 9→10 lines | ~101 |
+| 18:40 | Edited packages/compat-syncfusion/_Imports.razor | 2→2 lines | ~32 |
+| 18:40 | Edited packages/compat-syncfusion/SfDataForm.razor | 10→9 lines | ~78 |
+| 18:41 | Edited packages/compat-syncfusion/SfDataForm.razor | "ValidationDisplayMode.Too" → "CompatEnums.ValidationDis" | ~33 |
+| 18:41 | Created packages/compat-syncfusion/tests/tests.csproj | — | ~194 |
+| 18:41 | Created packages/compat-syncfusion/tests/NamespaceAndAssemblyTests.cs | — | ~529 |
+| 18:41 | Created docs/compat-infragistics-mapping.md | — | ~5113 |
+| 18:41 | Created packages/compat-syncfusion/tests/WrapperShapeTests.cs | — | ~1579 |
+| 18:42 | Created packages/compat-syncfusion/tests/ChildComponentParentTests.cs | — | ~678 |
+| 18:42 | Created packages/compat-syncfusion/tests/EventArgsShimTests.cs | — | ~1237 |
+| 18:42 | Created packages/compat-syncfusion/tests/EnumShimTests.cs | — | ~642 |
+| 18:42 | Created packages/compat-syncfusion/tests/SfIconLogAndFallbackTests.cs | — | ~872 |
+| 18:43 | Edited icm/00_intake/output/compat-expansion-intake.md | expanded (+14 lines) | ~833 |
+| 18:43 | Edited packages/compat-syncfusion/tests/NamespaceAndAssemblyTests.cs | inline fix | ~18 |
+| 18:44 | Edited packages/compat-syncfusion/tests/SfIconLogAndFallbackTests.cs | GetField() → GetProperty() | ~101 |
+| 18:44 | Session end: 317 writes across 215 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 147 reads | ~468329 tok |
+| 18:44 | Edited packages/compat-syncfusion/tests/SfIconLogAndFallbackTests.cs | GetField() → GetProperty() | ~63 |
+| 18:45 | Session end: 318 writes across 215 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 148 reads | ~469269 tok |
+| 18:46 | Created docs/compat-syncfusion-mapping.md | — | ~6316 |
+| 18:48 | Edited Sunfish.slnx | 5→9 lines | ~122 |
+| 18:48 | Edited Sunfish.slnx | 5→9 lines | ~120 |
+| 18:52 | Created packages/analyzers/compat-vendor-usings/Sunfish.Analyzers.CompatVendorUsings.csproj | — | ~769 |
+| 18:52 | Created packages/analyzers/compat-vendor-usings/Sunfish.Analyzers.CompatVendorUsings.csproj | — | ~865 |
+| 18:53 | Created packages/analyzers/compat-vendor-usings/Diagnostics.cs | — | ~793 |
+| 18:53 | Created packages/analyzers/compat-vendor-usings/VendorNamespaceRegistry.cs | — | ~2511 |
+| 18:54 | Created packages/analyzers/compat-vendor-usings/CompatVendorUsingsAnalyzer.cs | — | ~1083 |
+| 18:54 | Created packages/analyzers/compat-vendor-usings/CompatVendorUsingsCodeFix.cs | — | ~1389 |
+| 18:55 | Created packages/analyzers/compat-vendor-usings/README.md | — | ~1617 |
+| 18:55 | Created packages/analyzers/compat-vendor-usings/tests/tests.csproj | — | ~518 |
+| 18:55 | Created _shared/product/local-node-architecture-paper.md | — | ~11052 |
+| 18:55 | Edited CLAUDE.md | expanded (+12 lines) | ~323 |
+| 18:55 | Created packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsAnalyzerTests.cs | — | ~2223 |
+| 18:56 | Session end: 332 writes across 224 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 152 reads | ~502191 tok |
+| 18:56 | Created packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | — | ~2096 |
+| 18:56 | Edited packages/analyzers/compat-vendor-usings/Sunfish.Analyzers.CompatVendorUsings.csproj | expanded (+6 lines) | ~138 |
+| 18:56 | Edited Sunfish.slnx | 2→6 lines | ~79 |
+| 18:56 | Created packages/analyzers/compat-vendor-usings/AnalyzerReleases.Shipped.md | — | ~41 |
+| 18:56 | Created packages/analyzers/compat-vendor-usings/AnalyzerReleases.Unshipped.md | — | ~143 |
+| 18:57 | Edited packages/analyzers/compat-vendor-usings/Sunfish.Analyzers.CompatVendorUsings.csproj | expanded (+6 lines) | ~106 |
+| 18:57 | Edited packages/analyzers/compat-vendor-usings/tests/tests.csproj | expanded (+8 lines) | ~302 |
+| 18:57 | Created packages/analyzers/compat-vendor-usings/AnalyzerReleases.Unshipped.md | — | ~126 |
+| 18:57 | Created packages/analyzers/compat-vendor-usings/AnalyzerReleases.Unshipped.md | — | ~121 |
+| 18:58 | Edited packages/analyzers/compat-vendor-usings/tests/tests.csproj | 3→8 lines | ~167 |
+| 18:58 | Edited packages/analyzers/compat-vendor-usings/tests/tests.csproj | 8→9 lines | ~184 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsAnalyzerTests.cs | — | ~0 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsAnalyzerTests.cs | 3→3 lines | ~30 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | — | ~0 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | 6→6 lines | ~43 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | inline fix | ~26 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/tests.csproj | 11→9 lines | ~191 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsAnalyzerTests.cs | modified RunAsync() | ~187 |
+| 18:59 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | modified RunFixAsync() | ~168 |
+| 19:00 | Edited packages/analyzers/compat-vendor-usings/tests/CompatVendorUsingsCodeFixTests.cs | 8→9 lines | ~71 |
+| 19:02 | Session end: 352 writes across 227 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 152 reads | ~506708 tok |
+| 19:03 | Session end: 352 writes across 227 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 152 reads | ~506708 tok |
+| 19:14 | Created icm/07_review/output/paper-alignment-audit-2026-04-22.md | — | ~6579 |
+| 19:15 | Session end: 353 writes across 228 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 155 reads | ~513757 tok |
+| 19:29 | Created _shared/product/paper-alignment-plan.md | — | ~3890 |
+| 19:33 | Created docs/adrs/0027-kernel-runtime-split.md | — | ~1976 |
+| 19:33 | Created docs/adrs/0028-crdt-engine-selection.md | — | ~2350 |
+| 19:33 | Created docs/specifications/sync-daemon-protocol.md | — | ~6149 |
+| 19:33 | Created docs/adrs/0026-bridge-posture.md | — | ~3610 |
+| 19:34 | Session end: 358 writes across 233 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 164 reads | ~553193 tok |
+| 19:34 | Created docs/adrs/0029-federation-reconciliation.md | — | ~2383 |
+| 19:34 | Session end: 359 writes across 234 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 164 reads | ~555747 tok |
+| 19:35 | Created docs/adrs/0030-react-adapter-scaffolding.md | — | ~2166 |
+| 19:36 | Session end: 360 writes across 235 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 164 reads | ~558068 tok |
+| 20:07 | Created packages/kernel-runtime/Sunfish.Kernel.Runtime.csproj | — | ~378 |
+| 20:07 | Created packages/kernel-runtime/ILocalNodePlugin.cs | — | ~404 |
+| 20:08 | Created packages/kernel-runtime/IStreamDefinition.cs | — | ~230 |
+| 20:08 | Session end: 363 writes across 238 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 182 reads | ~561003 tok |
+| 20:08 | Created packages/kernel-runtime/IProjectionBuilder.cs | — | ~204 |
+| 20:08 | Created packages/kernel-runtime/ISchemaVersion.cs | — | ~332 |
+| 20:08 | Created packages/kernel-runtime/IUiBlockManifest.cs | — | ~238 |
+| 20:08 | Created packages/kernel-runtime/IPluginContext.cs | — | ~263 |
+| 20:08 | Created packages/kernel-runtime/PluginCyclicDependencyException.cs | — | ~540 |
+| 20:08 | Created packages/kernel-runtime/IPluginRegistry.cs | — | ~326 |
+| 20:08 | Created packages/kernel-event-bus/IEventLog.cs | — | ~1347 |
+| 20:09 | Created packages/kernel-runtime/PluginRegistry.cs | — | ~2540 |
+| 20:09 | Created packages/kernel-event-bus/EventLogOptions.cs | — | ~886 |
+| 20:09 | Created packages/kernel-runtime/NodeState.cs | — | ~192 |
+| 20:09 | Created packages/kernel-runtime/INodeHost.cs | — | ~336 |
+| 20:09 | Created packages/kernel-event-bus/InMemoryEventLog.cs | — | ~1205 |
+| 20:09 | Created packages/kernel-runtime/NodeHost.cs | — | ~1003 |
+| 20:09 | Created packages/kernel-runtime/DependencyInjection/ServiceCollectionExtensions.cs | — | ~293 |
+| 20:09 | Edited Directory.Packages.props | 3→7 lines | ~142 |
+| 20:09 | Edited packages/foundation-localfirst/Sunfish.Foundation.LocalFirst.csproj | 3→8 lines | ~130 |
+| 20:10 | Edited packages/foundation-localfirst/Sunfish.Foundation.LocalFirst.csproj | inline fix | ~21 |
+| 20:10 | Created packages/kernel-runtime/README.md | — | ~1054 |
+| 20:10 | Created packages/kernel-runtime/tests/tests.csproj | — | ~207 |
+| 20:10 | Created packages/kernel-runtime/tests/GlobalUsings.cs | — | ~58 |
+| 20:10 | Created packages/foundation-localfirst/Encryption/IEncryptedStore.cs | — | ~830 |
+| 20:10 | Created packages/kernel-runtime/tests/TestPlugin.cs | — | ~556 |
+| 20:10 | Created packages/foundation-localfirst/Encryption/IKeyDerivation.cs | — | ~368 |
+| 20:10 | Created packages/foundation-localfirst/Encryption/Argon2idKeyDerivation.cs | — | ~496 |
+| 20:10 | Created packages/kernel-runtime/tests/PluginRegistryTests.cs | — | ~1982 |
+| 20:10 | Created packages/foundation-localfirst/Encryption/IKeystore.cs | — | ~528 |
+| 20:10 | Created packages/kernel-runtime/tests/NodeHostTests.cs | — | ~680 |
+| 20:11 | Edited packages/kernel/README.md | expanded (+7 lines) | ~178 |
+| 20:11 | Created packages/foundation-localfirst/Encryption/WindowsDpapiKeystore.cs | — | ~988 |
+| 20:11 | Created packages/kernel-event-bus/FileBackedEventLog.cs | — | ~8212 |
+| 20:11 | Created packages/foundation-localfirst/Encryption/MacOsKeychainKeystore.cs | — | ~279 |
+| 20:11 | Created packages/foundation-localfirst/Encryption/LinuxLibsecretKeystore.cs | — | ~278 |
+| 20:11 | Created packages/foundation-localfirst/Encryption/InMemoryKeystore.cs | — | ~340 |
+| 20:11 | Edited packages/kernel-event-bus/DependencyInjection/EventBusServiceCollectionExtensions.cs | added 1 condition(s) | ~987 |
+| 20:11 | Created packages/foundation-localfirst/Encryption/EncryptionOptions.cs | — | ~340 |
+| 20:11 | Edited packages/kernel-event-bus/Sunfish.Kernel.EventBus.csproj | 4→6 lines | ~80 |
+| 20:12 | Edited Directory.Packages.props | 1→2 lines | ~40 |
+| 20:12 | Created packages/foundation-localfirst/Encryption/SqlCipherEncryptedStore.cs | — | ~2645 |
+| 20:12 | Created packages/foundation-localfirst/ServiceCollectionExtensions.cs | — | ~691 |
+| 20:12 | Edited packages/foundation-localfirst/tests/tests.csproj | 7→8 lines | ~102 |
+| 20:13 | Created packages/foundation-localfirst/tests/Argon2idKeyDerivationTests.cs | — | ~600 |
+| 20:13 | Created packages/kernel-event-bus/tests/EventLogContractTests.cs | — | ~3788 |
+| 20:13 | Session end: 405 writes across 273 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 190 reads | ~608527 tok |
+| 20:13 | Created packages/foundation-localfirst/tests/EncryptedStoreContractTests.cs | — | ~2079 |
+| 20:13 | Created packages/foundation-localfirst/tests/WindowsDpapiKeystoreTests.cs | — | ~529 |
+| 20:13 | Created packages/kernel-event-bus/tests/FileBackedEventLogCorruptionTests.cs | — | ~2114 |
+| 20:14 | Edited packages/kernel-event-bus/tests/ServiceCollectionExtensionsTests.cs | added 1 condition(s) | ~615 |
+| 20:14 | Created packages/foundation-localfirst/tests/WindowsDpapiKeystoreTests.cs | — | ~607 |
+| 20:14 | Edited packages/kernel-event-bus/tests/EventLogContractTests.cs | 5→5 lines | ~69 |
+| 20:14 | Edited packages/foundation-localfirst/tests/WindowsDpapiKeystoreTests.cs | 4→9 lines | ~103 |
+| 20:14 | Edited packages/kernel-event-bus/FileBackedEventLog.cs | modified if() | ~196 |
+| 20:14 | Created packages/foundation-localfirst/tests/WindowsDpapiKeystoreTests.cs | — | ~583 |
+| 20:16 | Session end: 414 writes across 277 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 190 reads | ~615913 tok |
+| 20:17 | Edited Sunfish.slnx | 4→8 lines | ~93 |
+| 20:20 | Session end: 415 writes across 277 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 196 reads | ~623521 tok |
+| 20:21 | Created packages/kernel-crdt/Sunfish.Kernel.Crdt.csproj | — | ~360 |
+| 20:21 | Created packages/kernel-crdt/ICrdtDocument.cs | — | ~768 |
+| 20:22 | Created packages/kernel-crdt/ICrdtText.cs | — | ~463 |
+| 20:22 | Created packages/kernel-crdt/ICrdtMap.cs | — | ~432 |
+| 20:22 | Created packages/kernel-crdt/ICrdtList.cs | — | ~430 |
+| 20:22 | Created packages/kernel-crdt/ICrdtEngine.cs | — | ~331 |
+| 20:22 | Created packages/kernel-security/Sunfish.Kernel.Security.csproj | — | ~435 |
+| 20:22 | Created packages/kernel-security/Crypto/IEd25519Signer.cs | — | ~497 |
+| 20:22 | Created packages/kernel-security/Crypto/Ed25519Signer.cs | — | ~559 |
+| 20:23 | Created packages/kernel-security/Crypto/IX25519KeyAgreement.cs | — | ~681 |
+| 20:23 | Created packages/kernel-security/Crypto/X25519KeyAgreement.cs | — | ~1684 |
+| 20:23 | Created packages/kernel-crdt/Backends/StubCrdtEngine.cs | — | ~5157 |
+| 20:24 | Edited packages/kernel-crdt/Backends/StubCrdtEngine.cs | 2→2 lines | ~19 |
+| 20:24 | Created packages/kernel-crdt/DependencyInjection/ServiceCollectionExtensions.cs | — | ~357 |
+| 20:24 | Created packages/kernel-crdt/README.md | — | ~1260 |
+| 20:25 | Edited Directory.Packages.props | 1→3 lines | ~49 |
+| 20:25 | Created packages/kernel-crdt/tests/tests.csproj | — | ~209 |
+| 20:25 | Created packages/kernel-crdt/tests/GlobalUsings.cs | — | ~68 |
+| 20:25 | Created packages/kernel-crdt/tests/CrdtTextTests.cs | — | ~1006 |
+| 20:25 | Edited packages/kernel-security/Crypto/X25519KeyAgreement.cs | modified DeriveAeadKey() | ~209 |
+| 20:25 | Created packages/kernel-crdt/tests/CrdtMapTests.cs | — | ~1193 |
+| 20:26 | Created packages/kernel-crdt/tests/CrdtListTests.cs | — | ~1132 |
+| 20:26 | Created packages/kernel-security/Attestation/RoleAttestation.cs | — | ~1255 |
+| 20:26 | Created packages/kernel-crdt/tests/ConvergencePropertyTests.cs | — | ~1719 |
+| 20:26 | Created packages/kernel-security/Attestation/IRoleAttestation.cs | — | ~489 |
+| 20:26 | Created packages/kernel-crdt/tests/CrdtEngineTests.cs | — | ~551 |
+| 20:26 | Created packages/kernel-security/Attestation/AttestationIssuer.cs | — | ~918 |
+| 20:27 | Created packages/kernel-security/Attestation/AttestationVerifier.cs | — | ~596 |
+| 20:27 | Created packages/kernel-security/Attestation/AttestationBundle.cs | — | ~826 |
+| 20:27 | Created packages/kernel-security/Keys/IRoleKeyManager.cs | — | ~782 |
+| 20:27 | Created packages/kernel-security/Keys/RoleKeyManager.cs | — | ~1055 |
+| 20:28 | Created packages/kernel-security/DependencyInjection/ServiceCollectionExtensions.cs | — | ~359 |
+| 20:28 | Edited packages/kernel-crdt/tests/ConvergencePropertyTests.cs | inline fix | ~13 |
+| 20:28 | Created packages/kernel-security/README.md | — | ~796 |
+| 20:28 | Created packages/kernel-security/tests/tests.csproj | — | ~208 |
+| 20:28 | Created packages/kernel-security/tests/GlobalUsings.cs | — | ~6 |
+| 20:28 | Created packages/kernel-security/tests/Ed25519SignerTests.cs | — | ~623 |
+| 20:29 | Created packages/kernel-security/tests/X25519KeyAgreementTests.cs | — | ~744 |
+| 20:29 | Created packages/kernel-security/tests/RoleAttestationTests.cs | — | ~1713 |
+| 20:29 | Edited packages/kernel-security/tests/RoleAttestationTests.cs | 3→2 lines | ~22 |
+| 20:29 | Created packages/kernel-security/tests/RoleKeyManagerTests.cs | — | ~1480 |
+| 20:30 | Edited packages/kernel-security/tests/RoleKeyManagerTests.cs | 5→4 lines | ~42 |
+| 20:30 | Session end: 457 writes across 305 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 201 reads | ~667154 tok |
+| 20:30 | Edited packages/kernel-security/tests/RoleKeyManagerTests.cs | removed 24 lines | ~1 |
+| 20:30 | Edited packages/kernel-security/Crypto/X25519KeyAgreement.cs | inline fix | ~22 |
+| 20:30 | Edited packages/kernel-security/Crypto/X25519KeyAgreement.cs | inline fix | ~24 |
+| 20:33 | Session end: 460 writes across 305 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 201 reads | ~667204 tok |
+| 20:33 | Session end: 460 writes across 305 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 201 reads | ~667204 tok |
+| 20:34 | Created packages/foundation-localfirst/Quarantine/IQuarantineQueue.cs | — | ~986 |
+| 20:34 | Created packages/foundation-localfirst/Quarantine/InMemoryQuarantineQueue.cs | — | ~1076 |
+| 20:34 | Created packages/foundation-localfirst/Quarantine/EventLogBackedQuarantineQueue.cs | — | ~2531 |
+| 20:35 | Edited packages/foundation-localfirst/ServiceCollectionExtensions.cs | modified AddSunfishLocalFirst() | ~450 |
+| 20:35 | Edited packages/foundation-localfirst/Sunfish.Foundation.LocalFirst.csproj | 3→4 lines | ~51 |
+| 20:35 | Created packages/foundation-localfirst/tests/QuarantineQueueTests.cs | — | ~2076 |
+| 20:35 | Edited packages/foundation-localfirst/tests/QuarantineQueueTests.cs | factory() → Create() | ~55 |
+| 20:36 | Edited Sunfish.slnx | expanded (+8 lines) | ~150 |
+| 20:36 | Created packages/foundation-localfirst/tests/QuarantineQueueTests.cs | — | ~2168 |
+| 20:39 | Session end: 469 writes across 309 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 201 reads | ~677429 tok |
+| 20:47 | Session end: 469 writes across 309 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 201 reads | ~677429 tok |
+| 20:51 | Created packages/kernel-sync/Sunfish.Kernel.Sync.csproj | — | ~544 |
+| 20:51 | Session end: 470 writes across 310 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 230 reads | ~692978 tok |
+| 20:52 | Edited packages/kernel-schema-registry/Sunfish.Kernel.SchemaRegistry.csproj | 4→5 lines | ~69 |
+| 20:52 | Created apps/local-node-host/Sunfish.LocalNodeHost.csproj | — | ~476 |
+| 20:52 | Created packages/kernel-schema-registry/Lenses/ISchemaLens.cs | — | ~830 |
+| 20:52 | Created apps/local-node-host/LocalNodeOptions.cs | — | ~796 |
+| 20:53 | Created apps/local-node-host/LocalNodeWorker.cs | — | ~1170 |
+| 20:53 | Created packages/kernel-schema-registry/Lenses/LensGraph.cs | — | ~2202 |
+| 20:53 | Created apps/local-node-host/Program.cs | — | ~545 |
+| 20:53 | Created packages/kernel-schema-registry/Upcasters/IUpcaster.cs | — | ~363 |
+| 20:53 | Created apps/local-node-host/appsettings.json | — | ~49 |
+| 20:53 | Created apps/local-node-host/appsettings.Development.json | — | ~36 |
+| 20:53 | Created packages/kernel-sync/Protocol/Messages.cs | — | ~9869 |
+| 20:53 | Created packages/kernel-schema-registry/Upcasters/UpcasterChain.cs | — | ~788 |
+| 20:53 | Created packages/kernel-sync/Protocol/ISyncDaemonTransport.cs | — | ~764 |
+| 20:53 | Created apps/local-node-host/README.md | — | ~1031 |
+| 20:53 | Created packages/kernel-schema-registry/Epochs/IEpochCoordinator.cs | — | ~1431 |
+| 20:54 | Created apps/local-node-host/Platforms/README.md | — | ~341 |
+| 20:54 | Created packages/kernel-sync/Protocol/InMemorySyncDaemonTransport.cs | — | ~1714 |
+| 20:54 | Created apps/local-node-host/tests/tests.csproj | — | ~387 |
+| 20:54 | Created packages/kernel-schema-registry/Epochs/EpochCoordinator.cs | — | ~1726 |
+| 20:54 | Created apps/local-node-host/tests/GlobalUsings.cs | — | ~67 |
+| 20:54 | Created packages/kernel-schema-registry/Migration/CopyTransformMigrator.cs | — | ~1704 |
+| 20:55 | Edited packages/kernel-schema-registry/ISchemaRegistry.cs | 3→6 lines | ~56 |
+| 20:55 | Created packages/kernel-sync/Protocol/UnixSocketSyncDaemonTransport.cs | — | ~3337 |
+| 20:55 | Edited packages/kernel-schema-registry/ISchemaRegistry.cs | expanded (+21 lines) | ~258 |
+| 20:55 | Edited packages/kernel-schema-registry/InMemorySchemaRegistry.cs | 5→8 lines | ~73 |
+| 20:55 | Created apps/local-node-host/tests/LocalNodeWorkerTests.cs | — | ~2750 |
+| 20:55 | Edited packages/kernel-schema-registry/InMemorySchemaRegistry.cs | modified InMemorySchemaRegistry() | ~450 |
+| 20:55 | Edited apps/local-node-host/tests/LocalNodeWorkerTests.cs | modified foreach() | ~195 |
+| 20:55 | Created packages/kernel-sync/Gossip/VectorClock.cs | — | ~1886 |
+| 20:55 | Edited packages/kernel-schema-registry/DependencyInjection/SchemaRegistryServiceCollectionExtensions.cs | modified AddSunfishKernelSchemaRegistry() | ~761 |
+| 20:55 | Created packages/kernel-sync/Gossip/GossipDaemonOptions.cs | — | ~436 |
+| 20:56 | Edited Directory.Packages.props | 1→2 lines | ~56 |
+| 20:56 | Edited packages/kernel-schema-registry/tests/tests.csproj | 4→5 lines | ~72 |
+| 20:56 | Created packages/kernel-sync/Gossip/IGossipDaemon.cs | — | ~542 |
+| 20:56 | Edited apps/local-node-host/Sunfish.LocalNodeHost.csproj | expanded (+7 lines) | ~148 |
+| 20:56 | Created packages/kernel-schema-registry/tests/LensGraphTests.cs | — | ~1684 |
+| 20:56 | Created packages/kernel-schema-registry/tests/UpcasterChainTests.cs | — | ~975 |
+| 20:56 | Created packages/kernel-sync/Gossip/GossipDaemon.cs | — | ~3290 |
+| 20:57 | Created packages/kernel-schema-registry/tests/EpochCoordinatorTests.cs | — | ~1259 |
+| 20:57 | Created packages/kernel-schema-registry/tests/CopyTransformMigratorTests.cs | — | ~1943 |
+| 20:57 | Created packages/kernel-sync/Handshake/HandshakeProtocol.cs | — | ~2906 |
+| 20:58 | Created packages/kernel-sync/DependencyInjection/ServiceCollectionExtensions.cs | — | ~518 |
+| 20:58 | Created packages/kernel-sync/README.md | — | ~1183 |
+| 20:58 | Created packages/kernel-sync/tests/tests.csproj | — | ~247 |
+| 20:58 | Session end: 514 writes across 341 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 237 reads | ~748048 tok |
+| 20:58 | Created packages/kernel-sync/tests/GlobalUsings.cs | — | ~82 |
+| 20:59 | Session end: 515 writes across 341 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 237 reads | ~748136 tok |
+| 20:59 | Created packages/kernel-sync/tests/MessagesTests.cs | — | ~2384 |
+| 20:59 | Created packages/kernel-sync/tests/VectorClockTests.cs | — | ~939 |
+| 21:00 | Created packages/kernel-sync/tests/InMemorySyncDaemonTransportTests.cs | — | ~1444 |
+| 21:01 | Created packages/kernel-sync/tests/GossipDaemonTests.cs | — | ~2641 |
+| 21:01 | Edited packages/kernel-sync/Protocol/UnixSocketSyncDaemonTransport.cs | modified NamedPipeListenerHandle() | ~61 |
+| 21:01 | Edited packages/kernel-sync/Protocol/UnixSocketSyncDaemonTransport.cs | modified DisposeAsync() | ~87 |
+| 21:02 | Edited packages/kernel-sync/Gossip/VectorClock.cs | 3→3 lines | ~51 |
+| 21:02 | Edited packages/kernel-sync/Protocol/ISyncDaemonTransport.cs | 3→3 lines | ~62 |
+| 21:04 | Edited packages/kernel-sync/Protocol/Messages.cs | added 5 condition(s) | ~1010 |
+| 21:04 | Edited packages/kernel-sync/Protocol/Messages.cs | modified OpenBody() | ~464 |
+| 21:08 | Edited Sunfish.slnx | expanded (+8 lines) | ~150 |
+| 21:12 | Created packages/kernel-sync/Discovery/IPeerDiscovery.cs | — | ~625 |
+| 21:12 | Created packages/kernel-sync/Discovery/PeerDiscoveryOptions.cs | — | ~474 |
+| 21:12 | Session end: 528 writes across 347 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 250 reads | ~782672 tok |
+| 21:13 | Created packages/kernel-sync/Discovery/InMemoryPeerDiscovery.cs | — | ~1799 |
+| 21:13 | Edited Directory.Packages.props | 2→3 lines | ~50 |
+| 21:13 | Created packages/kernel-lease/Sunfish.Kernel.Lease.csproj | — | ~503 |
+| 21:14 | Created packages/kernel-buckets/Sunfish.Kernel.Buckets.csproj | — | ~435 |
+| 21:14 | Created packages/kernel-buckets/BucketDefinition.cs | — | ~667 |
+| 21:14 | Created packages/kernel-lease/ILeaseCoordinator.cs | — | ~973 |
+| 21:14 | Created packages/kernel-buckets/Bucket.cs | — | ~1079 |
+| 21:14 | Created packages/kernel-lease/LeaseCoordinatorOptions.cs | — | ~543 |
+| 21:14 | Created packages/kernel-sync/Discovery/MdnsPeerDiscovery.cs | — | ~4453 |
+| 21:14 | Created packages/kernel-lease/LeaseConflictException.cs | — | ~301 |
+| 21:14 | Created packages/kernel-buckets/IBucketRegistry.cs | — | ~572 |
+| 21:14 | Created packages/kernel-lease/QuorumUnavailableException.cs | — | ~354 |
+| 21:14 | Created packages/kernel-sync/Discovery/GossipDaemonDiscoveryExtensions.cs | — | ~784 |
+| 21:14 | Created packages/kernel-buckets/BucketRegistry.cs | — | ~590 |
+| 21:14 | Created packages/kernel-buckets/IBucketYamlLoader.cs | — | ~567 |
+| 21:15 | Edited packages/kernel-sync/Discovery/GossipDaemonDiscoveryExtensions.cs | modified DiscoverySubscription() | ~474 |
+| 21:15 | Edited packages/kernel-sync/DependencyInjection/ServiceCollectionExtensions.cs | 7→8 lines | ~71 |
+| 21:15 | Created packages/kernel-buckets/BucketYamlLoader.cs | — | ~1109 |
+| 21:15 | Edited packages/kernel-sync/DependencyInjection/ServiceCollectionExtensions.cs | added 2 condition(s) | ~702 |
+| 21:15 | Created packages/kernel-buckets/IBucketFilterEvaluator.cs | — | ~485 |
+| 21:15 | Edited packages/kernel-sync/Sunfish.Kernel.Sync.csproj | 5→6 lines | ~93 |
+| 21:15 | Edited Directory.Packages.props | 2→3 lines | ~40 |
+| 21:15 | Created packages/kernel-buckets/SimpleBucketFilterEvaluator.cs | — | ~2711 |
+| 21:16 | Created packages/kernel-buckets/LazyFetch/IBucketStub.cs | — | ~558 |
+| 21:16 | Created packages/kernel-buckets/LazyFetch/BucketStub.cs | — | ~515 |
+| 21:16 | Created packages/kernel-lease/FleaseLeaseCoordinator.cs | — | ~6962 |
+| 21:16 | Created packages/kernel-buckets/Storage/StorageBudget.cs | — | ~868 |
+| 21:16 | Created packages/kernel-lease/DependencyInjection/ServiceCollectionExtensions.cs | — | ~621 |
+| 21:16 | Created packages/kernel-buckets/Storage/InMemoryStorageBudgetManager.cs | — | ~1122 |
+| 21:16 | Created packages/kernel-buckets/DependencyInjection/ServiceCollectionExtensions.cs | — | ~386 |
+| 21:16 | Created packages/kernel-sync/tests/InMemoryPeerDiscoveryTests.cs | — | ~1572 |
+| 21:17 | Created packages/kernel-lease/README.md | — | ~882 |
+| 21:17 | Created packages/kernel-lease/tests/tests.csproj | — | ~246 |
+| 21:17 | Created packages/kernel-sync/tests/MdnsPeerDiscoveryTests.cs | — | ~1045 |
+| 21:17 | Created packages/kernel-lease/tests/GlobalUsings.cs | — | ~80 |
+| 21:17 | Created packages/kernel-buckets/README.md | — | ~1191 |
+| 21:17 | Created packages/kernel-buckets/tests/tests.csproj | — | ~207 |
+| 21:17 | Created packages/kernel-buckets/tests/GlobalUsings.cs | — | ~48 |
+| 21:17 | Created packages/kernel-sync/tests/GossipDaemonDiscoveryIntegrationTests.cs | — | ~1294 |
+| 21:17 | Edited packages/kernel-sync/tests/GlobalUsings.cs | 3→4 lines | ~46 |
+| 21:17 | Created packages/kernel-buckets/tests/BucketYamlLoaderTests.cs | — | ~1258 |
+| 21:18 | Created packages/kernel-buckets/tests/BucketRegistryTests.cs | — | ~983 |
+| 21:18 | Created packages/kernel-buckets/tests/SimpleBucketFilterEvaluatorTests.cs | — | ~623 |
+| 21:18 | Created packages/kernel-buckets/tests/StorageBudgetTests.cs | — | ~774 |
+| 21:18 | Created packages/kernel-lease/tests/FleaseLeaseCoordinatorTests.cs | — | ~4250 |
+| 21:18 | Created packages/kernel-lease/tests/LeaseRecordTests.cs | — | ~537 |
+| 21:19 | Edited Directory.Packages.props | 3→4 lines | ~59 |
+| 21:19 | Edited packages/kernel-sync/tests/tests.csproj | 5→6 lines | ~76 |
+| 21:19 | Edited packages/kernel-sync/tests/MdnsPeerDiscoveryTests.cs | removed 25 lines | ~36 |
+| 21:19 | Edited packages/kernel-buckets/SimpleBucketFilterEvaluator.cs | added 1 condition(s) | ~308 |
+| 21:19 | Edited packages/kernel-sync/README.md | modified waves() | ~130 |
+| 21:19 | Edited packages/kernel-buckets/SimpleBucketFilterEvaluator.cs | inline fix | ~99 |
+| 21:19 | Edited packages/kernel-sync/README.md | 4→9 lines | ~239 |
+| 21:20 | Edited packages/kernel-buckets/README.md | 3→3 lines | ~110 |
+| 21:20 | Edited packages/kernel-sync/README.md | expanded (+62 lines) | ~563 |
+| 21:20 | Edited packages/kernel-lease/tests/FleaseLeaseCoordinatorTests.cs | modified Release_Clears_Holds_And_Unblocks_Peers() | ~538 |
+| 21:21 | Edited packages/kernel-lease/tests/FleaseLeaseCoordinatorTests.cs | added 1 condition(s) | ~352 |
+| 21:21 | Edited packages/kernel-lease/tests/FleaseLeaseCoordinatorTests.cs | added error handling | ~490 |
+| 21:21 | Session end: 586 writes across 378 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 254 reads | ~837074 tok |
+| 21:21 | Session end: 586 writes across 378 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 254 reads | ~837074 tok |
+| 21:21 | Edited packages/kernel-lease/FleaseLeaseCoordinator.cs | added 1 condition(s) | ~644 |
+| 21:23 | Edited Sunfish.slnx | expanded (+8 lines) | ~147 |
+| 21:29 | Session end: 588 writes across 378 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 266 reads | ~849099 tok |
+| 21:29 | Created packages/ui-adapters-blazor/Providers/Bootstrap/Styles/foundation/_sync-state.scss | — | ~1111 |
+| 21:30 | Created packages/ui-adapters-react/package.json | — | ~465 |
+| 21:30 | Created packages/ui-adapters-react/tsconfig.json | — | ~210 |
+| 21:30 | Created packages/ui-adapters-react/tsconfig.build.json | — | ~105 |
+| 21:30 | Created packages/ui-adapters-react/vite.config.ts | — | ~328 |
+| 21:30 | Created packages/ui-adapters-react/.gitignore | — | ~26 |
+| 21:30 | Created packages/ui-adapters-blazor/Providers/FluentUI/Styles/foundation/_sync-state.scss | — | ~1042 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/ButtonVariant.ts | — | ~368 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/ButtonSize.ts | — | ~116 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/FillMode.ts | — | ~251 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/RoundedMode.ts | — | ~141 |
+| 21:30 | Created packages/ui-adapters-blazor/Providers/Material/Styles/foundation/_sync-state.scss | — | ~1084 |
+| 21:30 | Edited packages/ui-adapters-blazor/Providers/Bootstrap/Styles/_index.scss | 2→3 lines | ~24 |
+| 21:30 | Edited packages/ui-adapters-blazor/Providers/FluentUI/Styles/_index.scss | 2→3 lines | ~25 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/ICssProvider.ts | — | ~696 |
+| 21:30 | Edited packages/ui-adapters-blazor/Providers/Material/Styles/_index.scss | 2→3 lines | ~25 |
+| 21:30 | Created packages/ui-adapters-react/src/contracts/IIconProvider.ts | — | ~163 |
+| 21:31 | Created packages/ui-adapters-react/src/providers/BootstrapCssProvider.ts | — | ~1224 |
+| 21:31 | Created packages/ui-adapters-blazor/Components/LocalFirst/SyncState.cs | — | ~409 |
+| 21:31 | Created packages/ui-adapters-react/src/providers/FluentUICssProvider.ts | — | ~1088 |
+| 21:31 | Created packages/ui-adapters-blazor/Components/LocalFirst/OptimisticButtonState.cs | — | ~226 |
+| 21:31 | Created packages/ui-adapters-react/src/providers/MaterialCssProvider.ts | — | ~939 |
+| 21:31 | Created packages/ui-adapters-blazor/Components/LocalFirst/ConflictItem.cs | — | ~250 |
+| 21:31 | Created packages/ui-adapters-react/src/CssProviderContext.tsx | — | ~414 |
+| 21:31 | Created packages/ui-adapters-blazor/Components/LocalFirst/SunfishSyncStatusIndicator.razor | — | ~543 |
+| 21:31 | Created packages/ui-adapters-react/src/components/SunfishButton/SunfishButton.tsx | — | ~505 |
+| 21:31 | Created packages/ui-adapters-react/src/components/SunfishButton/index.ts | — | ~31 |
+| 21:32 | Created packages/ui-adapters-blazor/Components/LocalFirst/SunfishFreshnessBadge.razor | — | ~811 |
+| 21:32 | Created packages/ui-adapters-react/src/components/SunfishDataGrid/SunfishDataGrid.tsx | — | ~954 |
+| 21:32 | Created packages/ui-adapters-react/src/components/SunfishDataGrid/index.ts | — | ~36 |
+| 21:32 | Created packages/ui-adapters-react/src/components/SunfishDialog/index.ts | — | ~31 |
+| 21:32 | Created packages/ui-adapters-blazor/Components/LocalFirst/SunfishOptimisticButton.razor | — | ~1283 |
+| 21:32 | Created packages/ui-adapters-blazor/Components/LocalFirst/SunfishConflictList.razor | — | ~671 |
+| 21:32 | Created packages/ui-adapters-blazor/Components/LocalFirst/SunfishNodeHealthBar.razor | — | ~484 |
+| 21:32 | Edited packages/ui-adapters-blazor/_Imports.razor | 1→2 lines | ~28 |
+| 21:32 | Created packages/ui-adapters-react/src/components/SunfishDialog/SunfishDialog.tsx | — | ~1234 |
+| 21:33 | Created packages/ui-adapters-react/src/test-setup.ts | — | ~13 |
+| 21:33 | Created packages/ui-adapters-react/src/index.ts | — | ~281 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishButton/SunfishButton.test.tsx | — | ~725 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishDataGrid/SunfishDataGrid.test.tsx | — | ~557 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishDialog/SunfishDialog.test.tsx | — | ~693 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishButton/SunfishButton.stories.tsx | — | ~380 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishDataGrid/SunfishDataGrid.stories.tsx | — | ~320 |
+| 21:33 | Created packages/ui-adapters-react/src/components/SunfishDialog/SunfishDialog.stories.tsx | — | ~423 |
+| 21:33 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SyncStateTests.cs | — | ~259 |
+| 21:33 | Created packages/ui-adapters-react/.storybook/main.ts | — | ~113 |
+| 21:33 | Created packages/ui-adapters-react/.storybook/preview.tsx | — | ~557 |
+| 21:34 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SunfishFreshnessBadgeTests.cs | — | ~1014 |
+| 21:34 | Created packages/ui-adapters-react/README.md | — | ~683 |
+| 21:34 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SunfishSyncStatusIndicatorTests.cs | — | ~690 |
+| 21:34 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SunfishOptimisticButtonTests.cs | — | ~1037 |
+| 21:35 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SunfishConflictListTests.cs | — | ~851 |
+| 21:35 | Created packages/ui-adapters-blazor/tests/Components/LocalFirst/SunfishNodeHealthBarTests.cs | — | ~593 |
+| 21:36 | Session end: 641 writes across 422 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 274 reads | ~883615 tok |
+| 21:40 | Session end: 641 writes across 422 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 274 reads | ~883615 tok |
+| 21:44 | Edited accelerators/anchor/Sunfish.Anchor.csproj | expanded (+11 lines) | ~264 |
+| 21:44 | Created accelerators/anchor/Services/AnchorSessionService.cs | — | ~1758 |
+| 21:45 | Created accelerators/anchor/Services/QrOnboardingService.cs | — | ~2842 |
+| 21:46 | Created accelerators/anchor/MauiProgram.cs | — | ~398 |
+| 21:46 | Created accelerators/anchor/Components/Pages/Home.razor | — | ~1117 |
+| 21:47 | Created accelerators/anchor/Components/Pages/Onboarding.razor | — | ~2834 |
+| 21:47 | Created accelerators/anchor/Components/QrScanner.razor | — | ~976 |
+| 21:47 | Created accelerators/anchor/Components/_Imports.razor | — | ~131 |
+| 21:47 | Created accelerators/anchor/Components/Layout/NavMenu.razor | — | ~323 |
+| 21:48 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 4→5 lines | ~70 |
+| 21:48 | Edited accelerators/anchor/MauiProgram.cs | 7→8 lines | ~90 |
+| 21:48 | Edited accelerators/anchor/MauiProgram.cs | 4→8 lines | ~133 |
+| 21:48 | Created accelerators/anchor/tests/tests.csproj | — | ~466 |
+| 21:49 | Created accelerators/anchor/tests/GlobalUsings.cs | — | ~6 |
+| 21:49 | Created accelerators/anchor/tests/AnchorSessionServiceTests.cs | — | ~1238 |
+| 21:50 | Created accelerators/anchor/tests/QrOnboardingServiceTests.cs | — | ~2233 |
+| 21:51 | Edited accelerators/anchor/Services/QrOnboardingService.cs | 4→3 lines | ~21 |
+| 21:51 | Edited accelerators/anchor/tests/AnchorSessionServiceTests.cs | modified Reset_returns_to_un_onboarded_state() | ~113 |
+| 21:53 | Edited accelerators/anchor/Components/Pages/Onboarding.razor | inline fix | ~12 |
+| 21:54 | Edited accelerators/anchor/Components/Pages/Onboarding.razor | inline fix | ~32 |
+| 21:54 | Edited accelerators/anchor/Components/Pages/Onboarding.razor | inline fix | ~27 |
+| 21:54 | Edited accelerators/anchor/Sunfish.Anchor.csproj | expanded (+9 lines) | ~123 |
+| 21:55 | Edited accelerators/anchor/README.md | 5→5 lines | ~54 |
+| 21:56 | Edited accelerators/anchor/README.md | expanded (+33 lines) | ~1013 |
+| 22:01 | Session end: 665 writes across 432 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 316 reads | ~936039 tok |
+| 22:01 | Created packages/kernel-schema-registry/Upcasters/UpcasterChain.cs | — | ~1209 |
+| 22:01 | Created packages/kernel-crdt/Sharding/IShardedDocument.cs | — | ~642 |
+| 22:01 | Created packages/kernel-ledger/Sunfish.Kernel.Ledger.csproj | — | ~392 |
+| 22:02 | Created packages/kernel-ledger/Posting.cs | — | ~651 |
+| 22:02 | Created packages/kernel-crdt/Sharding/ShardedDocument.cs | — | ~1571 |
+| 22:02 | Created packages/kernel-crdt/SnapshotScheduling/IShallowSnapshotPolicy.cs | — | ~459 |
+| 22:02 | Created packages/kernel-ledger/Transaction.cs | — | ~580 |
+| 22:02 | Created packages/kernel-schema-registry/Compaction/ICompactionScheduler.cs | — | ~1205 |
+| 22:02 | Created packages/kernel-crdt/SnapshotScheduling/ThresholdShallowSnapshotPolicy.cs | — | ~351 |
+| 22:02 | Created packages/kernel-crdt/SnapshotScheduling/NeverShallowSnapshotPolicy.cs | — | ~130 |
+| 22:02 | Created packages/kernel-ledger/LedgerEvents.cs | — | ~589 |
+| 22:02 | Created packages/kernel-crdt/SnapshotScheduling/IShallowSnapshotManager.cs | — | ~640 |
+| 22:02 | Created packages/kernel-ledger/Exceptions/UnbalancedTransactionException.cs | — | ~223 |
+| 22:02 | Created packages/kernel-ledger/Exceptions/DuplicateIdempotencyKeyException.cs | — | ~322 |
+| 22:03 | Created packages/kernel-ledger/Exceptions/ClosedPeriodException.cs | — | ~270 |
+| 22:03 | Created packages/kernel-crdt/SnapshotScheduling/ShallowSnapshotManager.cs | — | ~1840 |
+| 22:03 | Created packages/kernel-schema-registry/Compaction/CompactionScheduler.cs | — | ~3156 |
+| 22:03 | Created packages/kernel-crdt/GC/IDocumentGarbageCollector.cs | — | ~583 |
+| 22:03 | Created packages/kernel-ledger/IPostingEngine.cs | — | ~900 |
+| 22:03 | Created packages/kernel-crdt/GC/DocumentGarbageCollector.cs | — | ~639 |
+| 22:03 | Created packages/kernel-schema-registry/Compaction/IUpcasterRetirement.cs | — | ~498 |
+| 22:03 | Created packages/kernel-schema-registry/Compaction/UpcasterRetirement.cs | — | ~673 |
+| 22:03 | Edited packages/kernel-crdt/DependencyInjection/ServiceCollectionExtensions.cs | modified AddSunfishCrdtEngine() | ~795 |
+| 22:03 | Created packages/kernel-ledger/ILedgerEventStream.cs | — | ~366 |
+| 22:03 | Edited packages/kernel-crdt/tests/GlobalUsings.cs | 2→5 lines | ~60 |
+| 22:04 | Created packages/kernel-schema-registry/Compaction/StreamArchive.cs | — | ~1120 |
+| 22:04 | Created packages/kernel-crdt/tests/ShardedDocumentTests.cs | — | ~1008 |
+| 22:04 | Created packages/kernel-crdt/tests/ShallowSnapshotPolicyTests.cs | — | ~806 |
+| 22:04 | Created packages/kernel-schema-registry/DependencyInjection/SchemaRegistryServiceCollectionExtensions.cs | — | ~1543 |
+| 22:04 | Created packages/kernel-ledger/PostingEngine.cs | — | ~3241 |
+| 22:04 | Created packages/kernel-crdt/tests/ShallowSnapshotManagerTests.cs | — | ~1281 |
+| 22:04 | Created packages/kernel-ledger/Periods/IPeriodCloseState.cs | — | ~184 |
+| 22:04 | Created packages/kernel-crdt/tests/DocumentGarbageCollectorTests.cs | — | ~705 |
+| 22:05 | Created packages/kernel-ledger/CQRS/IBalanceProjection.cs | — | ~329 |
+| 22:05 | Created packages/kernel-ledger/CQRS/BalanceProjection.cs | — | ~1041 |
+| 22:05 | Created packages/kernel-ledger/CQRS/IStatementProjection.cs | — | ~374 |
+| 22:05 | Created packages/kernel-ledger/CQRS/StatementProjection.cs | — | ~571 |
+| 22:05 | Created packages/kernel-ledger/Periods/IPeriodCloser.cs | — | ~426 |
+| 22:05 | Created packages/kernel-schema-registry/tests/CompactionSchedulerTests.cs | — | ~3051 |
+| 22:06 | Edited packages/kernel-schema-registry/Migration/CopyTransformMigrator.cs | 3→3 lines | ~14 |
+| 22:06 | Created packages/kernel-ledger/Periods/PeriodCloser.cs | — | ~908 |
+| 22:06 | Edited packages/kernel-schema-registry/Migration/CopyTransformMigrator.cs | 6→6 lines | ~57 |
+| 22:06 | Edited packages/kernel-schema-registry/tests/CompactionSchedulerTests.cs | modified MigrateAsync() | ~207 |
+| 22:06 | Session end: 708 writes across 468 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 319 reads | ~976268 tok |
+| 22:06 | Edited packages/kernel-schema-registry/tests/CompactionSchedulerTests.cs | modified MigrateAsync() | ~104 |
+| 22:06 | Created packages/kernel-ledger/DependencyInjection/ServiceCollectionExtensions.cs | — | ~648 |
+| 22:06 | Created packages/kernel-schema-registry/tests/UpcasterRetirementTests.cs | — | ~933 |
+| 22:06 | Created packages/kernel-ledger/README.md | — | ~913 |
+| 22:06 | Created packages/kernel-schema-registry/tests/StreamArchiveTests.cs | — | ~696 |
+| 22:06 | Created packages/kernel-ledger/tests/tests.csproj | — | ~271 |
+| 22:06 | Created packages/kernel-ledger/tests/GlobalUsings.cs | — | ~48 |
+| 22:07 | Created packages/kernel-ledger/tests/TestDoubles.cs | — | ~1088 |
+| 22:07 | Created packages/kernel-ledger/tests/PostingEngineTests.cs | — | ~1960 |
+| 22:08 | Created packages/kernel-ledger/tests/BalanceProjectionTests.cs | — | ~1051 |
+| 22:08 | Created packages/kernel-ledger/tests/StatementProjectionTests.cs | — | ~904 |
+| 22:08 | Session end: 719 writes across 474 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 319 reads | ~985498 tok |
+| 22:08 | Created packages/kernel-ledger/tests/PeriodCloserTests.cs | — | ~978 |
+| 22:09 | Edited packages/kernel-ledger/PostingEngine.cs | 5→6 lines | ~50 |
+| 22:09 | Edited packages/kernel-ledger/PostingEngine.cs | inline fix | ~15 |
+| 22:09 | Edited packages/kernel-ledger/PostingEngine.cs | 5→5 lines | ~49 |
+| 22:09 | Edited packages/kernel-ledger/PostingEngine.cs | inline fix | ~19 |
+| 22:09 | Edited packages/kernel-ledger/PostingEngine.cs | 6→6 lines | ~80 |
+| 22:10 | Edited packages/kernel-ledger/ILedgerEventStream.cs | 3→3 lines | ~61 |
+| 22:10 | Edited packages/kernel-ledger/tests/TestDoubles.cs | 5→5 lines | ~31 |
+| 22:11 | Edited packages/kernel-ledger/tests/TestDoubles.cs | modified AcquireAsync() | ~628 |
+| 22:11 | Edited packages/kernel-ledger/tests/PeriodCloserTests.cs | modified PostAsync_DatedIntoClosedPeriod_RoutesToAdjustments() | ~385 |
+| 22:13 | Edited Sunfish.slnx | 4→8 lines | ~100 |
+| 22:17 | Session end: 730 writes across 475 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 325 reads | ~994995 tok |
+| 22:18 | Created tooling/sbom/generate-sbom.ps1 | — | ~1129 |
+| 22:18 | Created accelerators/bridge/Sunfish.Bridge/BridgeMode.cs | — | ~250 |
+| 22:18 | Created tooling/sbom/generate-sbom.sh | — | ~768 |
+| 22:19 | Created .github/workflows/sbom.yml | — | ~269 |
+| 22:19 | Created accelerators/bridge/Sunfish.Bridge/BridgeOptions.cs | — | ~652 |
+| 22:19 | Created accelerators/bridge/Sunfish.Bridge/Relay/IRelayServer.cs | — | ~679 |
+| 22:19 | Created installers/windows/README.md | — | ~1049 |
+| 22:20 | Created installers/windows/build-msi.ps1 | — | ~1334 |
+| 22:20 | Created accelerators/bridge/Sunfish.Bridge/Relay/RelayServer.cs | — | ~3664 |
+| 22:20 | Created installers/linux/README.md | — | ~824 |
+| 22:20 | Created installers/linux/debian/sunfish-local-node.service | — | ~289 |
+| 22:20 | Created accelerators/bridge/Sunfish.Bridge/Relay/RelayWorker.cs | — | ~667 |
+| 22:21 | Created installers/linux/debian/build-deb.sh | — | ~1000 |
+| 22:21 | Created installers/macos/README.md | — | ~980 |
+| 22:21 | Created accelerators/bridge/Sunfish.Bridge/Program.cs | — | ~2415 |
+| 22:21 | Edited accelerators/bridge/Sunfish.Bridge/Sunfish.Bridge.csproj | 2→7 lines | ~140 |
+| 22:21 | Created installers/macos/launchd/com.sunfish.local-node-host.plist | — | ~423 |
+| 22:21 | Created accelerators/bridge/Sunfish.Bridge/appsettings.json | — | ~218 |
+| 22:21 | Created accelerators/bridge/Sunfish.Bridge/appsettings.json | — | ~209 |
+| 22:21 | Created installers/macos/build-pkg.sh | — | ~712 |
+| 22:22 | Created accelerators/bridge/Sunfish.Bridge/appsettings.Relay.json | — | ~151 |
+| 22:22 | Created accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/RelayServerTests.cs | — | ~3524 |
+| 22:22 | Created docs/specifications/air-gap-deployment.md | — | ~2572 |
+| 22:23 | Created accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/BridgeModeTests.cs | — | ~637 |
+| 22:23 | Edited accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Sunfish.Bridge.Tests.Unit.csproj | expanded (+7 lines) | ~278 |
+| 22:23 | Created docs/specifications/mdm-config-schema.md | — | ~1704 |
+| 22:23 | Edited accelerators/bridge/README.md | expanded (+12 lines) | ~308 |
+| 22:23 | Created docs/specifications/mdm-config-schema.json | — | ~671 |
+| 22:24 | Edited accelerators/bridge/README.md | expanded (+47 lines) | ~668 |
+| 22:24 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | expanded (+9 lines) | ~283 |
+| 22:24 | Created docs/specifications/byod-path-separation.md | — | ~1668 |
+| 22:24 | Created apps/local-node-host/Platforms/README.md | — | ~658 |
+| 22:25 | Edited tooling/sbom/generate-sbom.ps1 | "Installing CycloneDX .NET" → "Installing CycloneDX .NET" | ~19 |
+| 22:25 | Edited tooling/sbom/generate-sbom.ps1 | "CycloneDX tool already in" → "CycloneDX tool already in" | ~19 |
+| 22:25 | Edited tooling/sbom/generate-sbom.ps1 | "Running dotnet-CycloneDX " → "Running dotnet-CycloneDX " | ~16 |
+| 22:25 | Edited tooling/sbom/generate-sbom.ps1 | inline fix | ~21 |
+| 22:26 | Edited accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Sunfish.Bridge.Tests.Unit.csproj | 10→8 lines | ~108 |
+| 22:26 | Session end: 767 writes across 498 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 332 reads | ~1034103 tok |
+| 22:29 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | modified ConfigureRelayPosture() | ~371 |
+| 22:34 | Session end: 768 writes across 498 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 332 reads | ~1034501 tok |
+| 22:43 | Session end: 768 writes across 498 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 332 reads | ~1034501 tok |
+| 22:48 | Created packages/kernel-sync/Identity/INodeIdentity.cs | — | ~680 |
+| 22:49 | Edited Directory.Packages.props | 2→4 lines | ~54 |
+| 22:49 | Edited packages/kernel-crdt/Sunfish.Kernel.Crdt.csproj | 4→6 lines | ~74 |
+| 22:49 | Edited packages/ui-adapters-react/package.json | 14→15 lines | ~60 |
+| 22:50 | Created packages/kernel-sync/Handshake/HandshakeProtocol.cs | — | ~4848 |
+| 22:50 | Edited packages/kernel-sync/Gossip/IGossipDaemon.cs | expanded (+7 lines) | ~199 |
+| 22:50 | Created packages/kernel-crdt/Backends/YDotNetCrdtEngine.cs | — | ~4875 |
+| 22:50 | Created packages/kernel-sync/Protocol/DeltaStreamRateLimiter.cs | — | ~1357 |
+| 22:51 | Edited packages/kernel-sync/Gossip/GossipDaemonOptions.cs | expanded (+8 lines) | ~196 |
+| 22:51 | Created integration-tests/kernel-sync-roundtrip/Sunfish.Integration.KernelSyncRoundtrip.csproj | — | ~548 |
+| 22:51 | Edited packages/kernel-crdt/DependencyInjection/ServiceCollectionExtensions.cs | modified AddSunfishCrdtEngine() | ~763 |
+| 22:51 | Created integration-tests/kernel-sync-roundtrip/GlobalUsings.cs | — | ~146 |
+| 22:51 | Session end: 780 writes across 502 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 353 reads | ~1069451 tok |
+| 22:52 | Created integration-tests/kernel-sync-roundtrip/Harness/TwoNodeHarness.cs | — | ~2819 |
+| 22:52 | Edited integration-tests/kernel-sync-roundtrip/GlobalUsings.cs | 6→7 lines | ~60 |
+| 22:52 | Created packages/kernel-sync/Gossip/GossipDaemon.cs | — | ~4490 |
+| 22:52 | Edited integration-tests/kernel-sync-roundtrip/Harness/TwoNodeHarness.cs | modified StartAsync() | ~545 |
+| 22:52 | Created packages/kernel-crdt/tests/YDotNetCrdtEngineTests.cs | — | ~3465 |
+| 22:52 | Edited integration-tests/kernel-sync-roundtrip/Harness/TwoNodeHarness.cs | modified Create() | ~537 |
+| 22:53 | Created packages/kernel-sync/DependencyInjection/ServiceCollectionExtensions.cs | — | ~1709 |
+| 22:53 | Session end: 787 writes across 504 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 354 reads | ~1091464 tok |
+| 22:53 | Edited packages/kernel-sync/tests/GlobalUsings.cs | 4→6 lines | ~70 |
+| 22:53 | Created packages/kernel-sync/tests/TestIdentityFactory.cs | — | ~405 |
+| 22:53 | Created integration-tests/kernel-sync-roundtrip/SyncHandshakeTests.cs | — | ~3104 |
+| 22:53 | Edited packages/kernel-sync/tests/GossipDaemonTests.cs | modified BuildDaemon() | ~250 |
+| 22:54 | Edited packages/kernel-sync/tests/GossipDaemonTests.cs | modified Two_Daemons_Complete_Handshake_And_Merge_VectorClocks() | ~736 |
+| 22:54 | Edited packages/kernel-sync/tests/GossipDaemonDiscoveryIntegrationTests.cs | 1→5 lines | ~78 |
+| 22:54 | Created docs/migration-guides/README.md | — | ~608 |
+| 22:54 | Created accelerators/bridge/PLATFORM_ALIGNMENT.md | — | ~4140 |
+| 22:54 | Created docs/migration-guides/from-telerik.md | — | ~832 |
+| 22:54 | Created integration-tests/kernel-sync-roundtrip/GossipRoundtripTests.cs | — | ~3065 |
+| 22:55 | Created integration-tests/kernel-sync-roundtrip/Harness/EventEncoder.cs | — | ~546 |
+| 22:55 | Session end: 798 writes across 509 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 358 reads | ~1119811 tok |
+| 22:55 | Created docs/migration-guides/from-syncfusion.md | — | ~1052 |
+| 22:55 | Created docs/migration-guides/from-infragistics.md | — | ~1078 |
+| 22:55 | Created integration-tests/kernel-sync-roundtrip/LeaseAcquireReleaseTests.cs | — | ~1472 |
+| 22:55 | Created integration-tests/kernel-sync-roundtrip/PeerDiscoveryIntegrationTests.cs | — | ~1362 |
+| 22:56 | Created docs/migration-guides/from-devexpress.md | — | ~1142 |
+| 22:58 | Created packages/kernel-sync/tests/HandshakeSignatureTests.cs | — | ~3269 |
+| 22:58 | Session end: 804 writes across 515 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 359 reads | ~1133676 tok |
+| 22:58 | Edited integration-tests/kernel-sync-roundtrip/GlobalUsings.cs | 8→9 lines | ~98 |
+| 22:58 | Created packages/kernel-sync/tests/GossipPingNonceTests.cs | — | ~2369 |
+| 22:59 | Created packages/kernel-sync/tests/DeltaStreamRateLimiterTests.cs | — | ~1040 |
+| 22:59 | Edited packages/kernel-crdt/tests/YDotNetCrdtEngineTests.cs | expanded (+8 lines) | ~240 |
+| 23:00 | Created integration-tests/kernel-sync-roundtrip/Harness/TwoNodeHarness.cs | — | ~3066 |
+| 23:01 | Created integration-tests/kernel-sync-roundtrip/SyncHandshakeTests.cs | — | ~3759 |
+| 23:01 | Created integration-tests/kernel-sync-roundtrip/Harness/HandshakeSigningHelper.cs | — | ~358 |
+| 23:02 | Edited packages/kernel-sync/tests/GossipPingNonceTests.cs | modified if() | ~395 |
+| 23:02 | Edited packages/kernel-sync/tests/GossipPingNonceTests.cs | modified lock() | ~240 |
+| 23:02 | Edited integration-tests/kernel-sync-roundtrip/GossipRoundtripTests.cs | added 1 condition(s) | ~366 |
+| 23:04 | Edited packages/kernel-sync/tests/GossipPingNonceTests.cs | modified if() | ~553 |
+| 23:04 | Session end: 815 writes across 518 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 363 reads | ~1155802 tok |
+| 23:05 | Edited packages/kernel-sync/Handshake/HandshakeProtocol.cs | stub() → InvalidOperationException() | ~434 |
+| 23:05 | Edited packages/kernel-sync/Handshake/HandshakeProtocol.cs | modified VerifyHelloSignature() | ~286 |
+| 23:09 | Session end: 817 writes across 518 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 363 reads | ~1156573 tok |
+| 23:21 | Edited packages/kernel-crdt/Backends/YDotNetCrdtEngine.cs | 10→12 lines | ~92 |
+| 23:21 | Edited packages/kernel-crdt/Backends/YDotNetCrdtEngine.cs | modified YDotNetCrdtDocument() | ~267 |
+| 23:22 | Created packages/kernel-crdt/SPIKE-OUTCOME.md | — | ~1242 |
+| 23:22 | Edited packages/kernel-crdt/README.md | 21→23 lines | ~487 |
+| 23:23 | Edited packages/kernel-crdt/README.md | expanded (+20 lines) | ~865 |
+| 23:23 | Edited packages/kernel-crdt/README.md | 9→12 lines | ~192 |
+| 23:24 | Edited apps/local-node-host/Sunfish.LocalNodeHost.csproj | 2→6 lines | ~131 |
+| 23:24 | Created apps/local-node-host/Program.cs | — | ~770 |
+| 23:24 | Edited apps/local-node-host/LocalNodeWorker.cs | 5→6 lines | ~46 |
+| 23:25 | Edited apps/local-node-host/LocalNodeWorker.cs | modified LocalNodeWorker() | ~986 |
+| 23:26 | Edited apps/local-node-host/Program.cs | added nullish coalescing | ~365 |
+| 23:26 | Edited apps/local-node-host/tests/tests.csproj | 4→5 lines | ~100 |
+| 23:27 | Edited apps/local-node-host/tests/LocalNodeWorkerTests.cs | 7→8 lines | ~82 |
+| 23:27 | Edited apps/local-node-host/tests/LocalNodeWorkerTests.cs | 1→2 lines | ~43 |
+| 23:29 | Created icm/07_review/output/paper-alignment-audit-2026-04-23-refresh.md | — | ~3278 |
+| 23:30 | Session end: 832 writes across 520 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1169285 tok |
+| 02:34 | Created _shared/product/local-node-architecture-paper.md | — | ~12825 |
+| 02:35 | Session end: 833 writes across 520 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1183026 tok |
+| 02:43 | Session end: 833 writes across 520 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1183026 tok |
+| 02:46 | Session end: 833 writes across 520 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1183026 tok |
+| 02:55 | Created docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md | — | ~4394 |
+| 02:55 | Session end: 834 writes across 521 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1187734 tok |
+| 03:09 | Created docs/adrs/0032-multi-team-anchor-workspace-switching.md | — | ~5758 |
+| 03:10 | Session end: 835 writes across 522 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1193903 tok |
+| 03:14 | Session end: 835 writes across 522 files (0023-dialog-provider-slot-methods.md, 0024-button-variant-enum-expansion.md, 0025-css-class-prefix-policy.md, compat-expansion-intake.md, CompatChildComponent.cs) | 365 reads | ~1193903 tok |
+| 03:17 | Edited docs/adrs/0026-bridge-posture.md | inline fix | ~25 |
+| 03:17 | Edited CLAUDE.md | expanded (+8 lines) | ~163 |
+| 03:17 | Edited accelerators/bridge/README.md | 21→25 lines | ~370 |
+| 03:18 | Edited accelerators/bridge/README.md | added error handling | ~935 |
+| 03:18 | Edited accelerators/bridge/README.md | 46→49 lines | ~612 |
+| 03:18 | Edited accelerators/bridge/README.md | inline fix | ~35 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | expanded (+15 lines) | ~898 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~16 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~14 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~14 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~14 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~11 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~4 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~3 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~63 |
+| 03:19 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~107 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | 3→3 lines | ~58 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | 8→9 lines | ~103 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~67 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~66 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~8 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~7 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | inline fix | ~96 |
+| 03:20 | Created packages/kernel-runtime/Teams/TeamId.cs | — | ~385 |
+| 03:20 | Created packages/kernel-runtime/Teams/TeamContext.cs | — | ~914 |
+
+## Session: 2026-04-23 03:20
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 03:20 | Created packages/kernel-runtime/Teams/TeamServiceRegistrar.cs | — | ~431 |
+| 03:20 | Created accelerators/bridge/Sunfish.Bridge.Data/Entities/TenantRegistration.cs | — | ~1594 |
+| 03:20 | Edited accelerators/bridge/PLATFORM_ALIGNMENT.md | added error handling | ~913 |
+| 03:20 | Created packages/kernel-runtime/Teams/ITeamContextFactory.cs | — | ~423 |
+| 03:21 | Edited accelerators/anchor/README.md | expanded (+9 lines) | ~251 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | expanded (+17 lines) | ~438 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~38 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~36 |
+| 03:21 | Edited accelerators/anchor/README.md | 4→4 lines | ~82 |
+| 03:21 | Created packages/kernel-runtime/Teams/TeamContextFactory.cs | — | ~1224 |
+| 03:21 | Edited accelerators/anchor/README.md | key() → model() | ~80 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~36 |
+| 03:21 | Session end: 12 writes across 7 files (TeamServiceRegistrar.cs, TenantRegistration.cs, PLATFORM_ALIGNMENT.md, ITeamContextFactory.cs, README.md) | 0 reads | ~5943 tok |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~36 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~37 |
+| 03:21 | Created packages/kernel-runtime/Teams/IActiveTeamAccessor.cs | — | ~449 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~35 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~37 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 2→3 lines | ~37 |
+| 03:21 | Edited accelerators/anchor/README.md | expanded (+42 lines) | ~672 |
+| 03:21 | Edited accelerators/bridge/Sunfish.Bridge.Data/Entities/Entities.cs | 4→5 lines | ~47 |
+| 03:21 | Created packages/kernel-runtime/Teams/ActiveTeamAccessor.cs | — | ~519 |
+| 03:22 | Edited packages/kernel-runtime/DependencyInjection/ServiceCollectionExtensions.cs | modified AddSunfishKernelRuntime() | ~619 |
+| 03:22 | Edited accelerators/bridge/Sunfish.Bridge.Data/SunfishBridgeDbContext.cs | modified OnModelCreating() | ~747 |
+| 03:22 | Edited accelerators/bridge/Sunfish.Bridge.Data/SunfishBridgeDbContext.cs | modified ConfigureTenantRegistration() | ~522 |
+| 03:22 | Edited _shared/product/paper-alignment-plan.md | expanded (+50 lines) | ~1803 |
+| 03:22 | Edited accelerators/bridge/Sunfish.Bridge.Data/Seeding/BridgeSeeder.cs | added 1 condition(s) | ~428 |
+| 03:22 | Edited accelerators/bridge/Sunfish.Bridge.Data/Seeding/BridgeSeeder.cs | 3→4 lines | ~62 |
+| 03:22 | Created packages/kernel-runtime/tests/TeamContextFactoryTests.cs | — | ~1602 |
+| 03:23 | Created packages/kernel-runtime/tests/ActiveTeamAccessorTests.cs | — | ~861 |
+| 03:23 | Created docs/specifications/multi-team-settings-scoping.md | — | ~1447 |
+| 03:23 | Created accelerators/bridge/Sunfish.Bridge/Services/TenantRegistry.cs | — | ~1684 |
+| 03:23 | Edited packages/kernel-runtime/tests/TeamContextFactoryTests.cs | modified Remove_disposes_the_context_and_removes_from_Active() | ~226 |
+| 03:23 | Created accelerators/bridge/Sunfish.Bridge/Authorization/DemoTenantContext.cs | — | ~720 |
+| 03:24 | Edited accelerators/bridge/Sunfish.Bridge/Authorization/DemoAuthWarningFilter.cs | 8→12 lines | ~192 |
+| 03:24 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | 2→3 lines | ~27 |
+| 03:24 | Edited packages/kernel-runtime/tests/TeamContextFactoryTests.cs | modified Dispose_cascades_to_all_live_contexts() | ~230 |
+| 03:24 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | 7→11 lines | ~203 |
+| 03:24 | Edited packages/kernel-security/Crypto/IEd25519Signer.cs | expanded (+10 lines) | ~259 |
+| 03:24 | Edited accelerators/bridge/dab-config.json | expanded (+34 lines) | ~320 |
+| 03:24 | Edited packages/kernel-security/Crypto/Ed25519Signer.cs | added 1 condition(s) | ~334 |
+| 03:25 | Created packages/kernel-security/Keys/ITeamSubkeyDerivation.cs | — | ~718 |
+| 03:25 | Edited accelerators/bridge/Sunfish.Bridge.Data/SunfishBridgeDbContext.cs | 6→9 lines | ~96 |
+| 03:25 | Created packages/kernel-security/Keys/TeamSubkeyDerivation.cs | — | ~742 |
+| 03:25 | Session end: 43 writes across 25 files (TeamServiceRegistrar.cs, TenantRegistration.cs, PLATFORM_ALIGNMENT.md, ITeamContextFactory.cs, README.md) | 3 reads | ~31118 tok |
+| 03:25 | Edited accelerators/bridge/Sunfish.Bridge.Data/SunfishBridgeDbContext.cs | added nullish coalescing | ~448 |
+| 03:25 | Created packages/kernel-sync/Identity/TeamScopedNodeIdentity.cs | — | ~573 |
+| 03:25 | Edited packages/kernel-security/DependencyInjection/ServiceCollectionExtensions.cs | 7→8 lines | ~122 |
+| 03:27 | Created packages/kernel-security/tests/TeamSubkeyDerivationTests.cs | — | ~1686 |
+| 03:27 | Edited packages/kernel-security/tests/tests.csproj | 3→4 lines | ~48 |
+| 03:27 | Edited accelerators/bridge/Sunfish.Bridge/Handlers/TaskStatusChangedHandler.cs | modified Handle() | ~232 |
+| 03:28 | Edited accelerators/bridge/Sunfish.Bridge/Handlers/TaskStatusChangedHandler.cs | 3→4 lines | ~34 |
+| 03:28 | Edited accelerators/bridge/Sunfish.Bridge/Services/TenantRegistry.cs | added 1 condition(s) | ~270 |
+| 03:34 | Edited accelerators/bridge/Sunfish.Bridge/Relay/RelayServer.cs | 8→10 lines | ~152 |
+| 03:35 | Session end: 52 writes across 30 files (TeamServiceRegistrar.cs, TenantRegistration.cs, PLATFORM_ALIGNMENT.md, ITeamContextFactory.cs, README.md) | 7 reads | ~39258 tok |
+| 03:37 | Edited accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/RelayServerTests.cs | 7→8 lines | ~93 |
+| 03:38 | Created accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/TenantRegistryTests.cs | — | ~2905 |
+| 03:41 | Edited accelerators/bridge/Sunfish.Bridge/Services/TenantRegistry.cs | added 1 condition(s) | ~614 |

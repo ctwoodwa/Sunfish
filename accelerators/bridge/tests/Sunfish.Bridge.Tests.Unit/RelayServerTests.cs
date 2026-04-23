@@ -45,6 +45,7 @@ public class RelayServerTests
             NodeId: nodeId,
             PublicKey: new byte[32],
             Signer: null,
+            PrivateKey: null,
             SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
             SupportedVersions: HandshakeProtocol.DefaultSupportedVersions,
             ProposedStreams: proposedStreams ?? Array.Empty<string>());

@@ -24,9 +24,31 @@ public sealed class BridgeSeeder : IHostedService
 
         // Schema migrations are owned by Sunfish.Bridge.MigrationService — the seeder
         // assumes the schema already exists. It only inserts demo data.
+
+        // Control-plane demo seed (ADR 0031 Wave 5.1): a single "demo" tenant so
+        // DemoTenantContext has a TenantRegistration row to resolve against.
+        if (!await db.TenantRegistrations.AnyAsync(t => t.Slug == "demo", cancellationToken))
+        {
+            db.TenantRegistrations.Add(new TenantRegistration
+            {
+                TenantId = Guid.Parse("00000000-0000-0000-0000-000000000001"),
+                Slug = "demo",
+                DisplayName = "Demo Tenant",
+                Plan = "Team",
+                TrustLevel = TrustLevel.RelayOnly,
+                Status = TenantStatus.Active,
+                SupportContacts =
+                {
+                    new SupportContact { Name = "Demo Admin", Email = "admin@demo.local", Role = "Admin" },
+                },
+            });
+        }
+
+#pragma warning disable CS0618 // legacy PM-domain seed; see ADR 0031 — remains until Wave 5.2
         if (await db.Projects.IgnoreQueryFilters().AnyAsync(cancellationToken))
         {
             _logger.LogInformation("Bridge data already present; skipping seed.");
+            await db.SaveChangesAsync(cancellationToken);
             return;
         }
 
@@ -146,6 +168,7 @@ public sealed class BridgeSeeder : IHostedService
 
         await db.SaveChangesAsync(cancellationToken);
         _logger.LogInformation("Bridge seed complete: 1 project, 20 tasks, 3 milestones, 8 risks, 4 budget lines, 15 audits, 10 comments.");
+#pragma warning restore CS0618
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

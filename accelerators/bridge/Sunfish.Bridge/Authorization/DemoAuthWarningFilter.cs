@@ -17,6 +17,10 @@ public sealed class DemoAuthWarningFilter : IStartupFilter
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
     {
+        _logger.LogInformation(
+            "Bridge SaaS posture is now Zone-C Hybrid control-plane (per ADR 0031). " +
+            "Team data lives in per-tenant data-plane nodes (Wave 5.2 pending). " +
+            "This deployment currently serves demo control-plane data only.");
         _logger.LogWarning(
             "DEMO AUTH SEAM ACTIVE: Bridge is running with demo authentication wiring " +
             "(DemoTenantContext + MockOktaService). This is for local development only. " +

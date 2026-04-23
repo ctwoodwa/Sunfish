@@ -41,6 +41,40 @@
     }
   },
   "entities": {
+    "TenantRegistration": {
+      "description": "Bridge control-plane tenant record (ADR 0031 Wave 5.1). Owns signup/billing/support metadata and the team's Ed25519 root public key. Holds NO team data — team data lives in the per-tenant data plane (Wave 5.2).",
+      "source": {
+        "object": "tenant_registrations",
+        "type": "table"
+      },
+      "graphql": {
+        "enabled": true,
+        "type": {
+          "singular": "TenantRegistration",
+          "plural": "tenantRegistrations"
+        }
+      },
+      "rest": {
+        "enabled": false
+      },
+      "permissions": [
+        {
+          "role": "Admin",
+          "actions": [
+            { "action": "create" },
+            { "action": "read" },
+            { "action": "update" },
+            { "action": "delete" }
+          ]
+        },
+        {
+          "role": "Owner",
+          "actions": [
+            { "action": "read" }
+          ]
+        }
+      ]
+    },
     "Project": {
       "description": "Top-level unit of work in the Bridge PM demo. Owns tasks, milestones, risks, budget lines, and a member roster.",
       "source": {

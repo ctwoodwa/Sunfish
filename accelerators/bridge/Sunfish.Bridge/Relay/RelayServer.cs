@@ -193,10 +193,12 @@ public sealed class RelayServer : IRelayServer
 
         // Relay identity is a deterministic zero-id; the handshake's peer-verification
         // work is downstream of Wave 1.6 (attestation) — see HandshakeProtocol.cs remarks.
+        // PrivateKey: null — the relay does not sign; Signer is already null.
         var identity = new LocalIdentity(
             NodeId: new byte[16],
             PublicKey: new byte[32],
             Signer: null,
+            PrivateKey: null,
             SchemaVersion: HandshakeProtocol.DefaultSchemaVersion,
             SupportedVersions: HandshakeProtocol.DefaultSupportedVersions);
 

@@ -11,6 +11,7 @@ using Sunfish.Bridge;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
+using Sunfish.Bridge.Services;
 using Sunfish.Foundation.Authorization;
 using Sunfish.Bridge.Data;
 using Sunfish.Bridge.Data.Seeding;
@@ -128,6 +129,10 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     builder.Services.AddDbContext<SunfishBridgeDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("sunfishbridgedb")));
     builder.EnrichNpgsqlDbContext<SunfishBridgeDbContext>();
+
+    // ADR 0031 Wave 5.1 — control-plane tenant registry. Scoped to match the
+    // DbContext lifetime. Holds no team data; see TenantRegistry.cs.
+    builder.Services.AddScoped<ITenantRegistry, TenantRegistry>();
 
     builder.AddRedisOutputCache("bridge-redis");
 
