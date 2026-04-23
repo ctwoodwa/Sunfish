@@ -1,5 +1,12 @@
 # Sunfish.Kernel — Kernel Contract Façade
 
+> **Looking for the paper's kernel runtime?** That lives in a sibling
+> package: [`Sunfish.Kernel.Runtime`](../kernel-runtime/README.md). `Sunfish
+> .Kernel` (this package) is the **typed-contract façade** for spec §3
+> primitives. `Sunfish.Kernel.Runtime` is the **running kernel** per paper
+> §5.1 — node lifecycle, plugin registry, extension-point contracts. The
+> two packages coexist per [ADR 0027](../../docs/adrs/0027-kernel-runtime-split.md).
+
 `Sunfish.Kernel` is a thin façade package that exposes the Sunfish platform
 spec §3 kernel primitives at the Layer 2 surface called out in §2.3 of the
 architecture spec.

@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Runtime</PackageId>
+    <RootNamespace>Sunfish.Kernel.Runtime</RootNamespace>
+    <Description>Sunfish local-node kernel runtime — the paper's §5.1 kernel (node lifecycle, plugin registry, extension-point contracts for ILocalNodePlugin, IStreamDefinition, IProjectionBuilder, ISchemaVersion, IUiBlockManifest). Sits alongside the Sunfish.Kernel type-forwarding facade per ADR 0027.</Description>
+    <PackageTags>sunfish;kernel;runtime;plugin-host</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Runtime.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+    <ProjectReference Include="..\kernel-schema-registry\Sunfish.Kernel.SchemaRegistry.csproj" />
+  </ItemGroup>
+</Project>

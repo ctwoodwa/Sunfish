@@ -4,21 +4,20 @@
     <TargetFramework>net11.0</TargetFramework>
     <IsPackable>false</IsPackable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <AssemblyName>Sunfish.Foundation.LocalFirst.Tests</AssemblyName>
-    <RootNamespace>Sunfish.Foundation.LocalFirst.Tests</RootNamespace>
+    <AssemblyName>Sunfish.Kernel.Runtime.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Kernel.Runtime.Tests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\Sunfish.Kernel.Runtime.csproj" />
   </ItemGroup>
 
 </Project>
