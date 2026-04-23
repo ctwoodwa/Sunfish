@@ -10,6 +10,7 @@ using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
 using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Providers.Bootstrap.Extensions;
+using Microsoft.Maui.Storage;
 
 namespace Sunfish.Anchor;
 
@@ -45,9 +46,24 @@ public static class MauiProgram
 		//
 		// Root seed + identity + KDFs mirror local-node-host's composition root
 		// (apps/local-node-host/Program.cs) so the two composition roots stay
-		// byte-for-byte consistent on their team-scoped key derivation.
-		var rootSeed = AnchorRootSeedReader.Read();
-		var dataDirectory = AnchorRootSeedReader.GetDefaultDataDirectory();
+		// byte-for-byte consistent on their team-scoped key derivation. Wave
+		// 6.7.A swapped the zero-seed stub for a keystore-backed
+		// IRootSeedProvider; each Anchor install now derives cryptographically
+		// independent keys while same-machine relaunches reuse the same seed.
+		var dataDirectory = FileSystem.AppDataDirectory;
+		var keysDirectory = Path.Combine(dataDirectory, "keys");
+
+		byte[] rootSeed;
+		using (var bootstrapServices = new ServiceCollection()
+			.AddSunfishRootSeedProvider(keystoreStorageDirectory: keysDirectory)
+			.BuildServiceProvider())
+		{
+			var seedProvider = bootstrapServices.GetRequiredService<IRootSeedProvider>();
+			// Synchronous block at MAUI composition time. The MAUI startup thread
+			// has no SynchronizationContext at this point; blocking here is safe
+			// and unambiguous vs. making CreateMauiApp itself async.
+			rootSeed = seedProvider.GetRootSeedAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult().ToArray();
+		}
 
 		var signer = new Ed25519Signer();
 		var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
@@ -63,9 +79,11 @@ public static class MauiProgram
 		// Paper §5.1 — node host + plugin registry.
 		// Wave 6.3.E.1 — per-team service registrar + per-team store activator.
 		// Wave 6.3.F — Anchor's single-team bootstrap hosted service.
+		// Wave 6.7.A — keystore-backed root-seed provider for the app DI container.
 		builder.Services
 			.AddSunfishKernelRuntime()
 			.AddSunfishKernelSecurity()
+			.AddSunfishRootSeedProvider(keystoreStorageDirectory: keysDirectory)
 			.AddSunfishDefaultTeamRegistrar(
 				dataDirectory: dataDirectory,
 				rootIdentity: rootIdentity,

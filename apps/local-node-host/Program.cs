@@ -21,6 +21,7 @@ using Sunfish.LocalNodeHost.Health;
 //
 //   * Plugin discovery / lifecycle   → AddSunfishKernelRuntime           (Wave 1.1)
 //   * Security primitives + KDFs     → AddSunfishKernelSecurity          (Wave 1.6)
+//   * Keystore-backed root seed      → AddSunfishRootSeedProvider        (Wave 6.7.A)
 //   * Per-tick gossip cap            → AddSunfishResourceGovernor        (Wave 6.4, ADR 0032)
 //   * Per-team service registrar     → AddSunfishDefaultTeamRegistrar    (Wave 6.3.E)
 //   * Per-team store activator       → AddSunfishTeamStoreActivator      (Wave 6.3.E.1)
@@ -39,37 +40,52 @@ builder.Services.Configure<LocalNodeOptions>(
 var localNodeOptions = new LocalNodeOptions();
 builder.Configuration.GetSection("LocalNode").Bind(localNodeOptions);
 
-// Root seed: Wave 6.3.E.2 carve-out. Real keystore-backed loading lands in
-// Wave 6.7. Development environments use a deterministic zero seed; other
-// environments throw.
-var rootSeed = LocalNodeRootSeedReader.Read(builder.Environment);
+// Root seed: keystore-backed IRootSeedProvider. On first launch the provider
+// generates a 32-byte RNG seed and persists it to the platform keystore
+// (Windows DPAPI today; mac/Linux Wave-2 stubs throw PlatformNotSupportedException
+// on first use). Subsequent launches on the same machine read the same seed
+// back, preserving continuity of Ed25519 + SQLCipher derivations.
+//
+// We build a minimal bootstrap provider here so the remaining static
+// registration (registrar closure, store activator) can observe the resolved
+// seed. Blocking on GetAwaiter().GetResult() is acceptable at process
+// startup — no ambient SynchronizationContext, single-threaded bootstrap,
+// well before any hosted service begins its StartAsync.
+using (var bootstrapServices = new ServiceCollection()
+    .AddSunfishRootSeedProvider()
+    .BuildServiceProvider())
+{
+    var seedProvider = bootstrapServices.GetRequiredService<IRootSeedProvider>();
+    var rootSeed = seedProvider.GetRootSeedAsync(CancellationToken.None).AsTask().GetAwaiter().GetResult().ToArray();
 
-// Derive the root Ed25519 identity from the seed. Kernel-security's
-// IEd25519Signer is stateless, so we instantiate it directly here rather than
-// spin up a mini-provider to resolve it.
-var signer = new Ed25519Signer();
-var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
-var rootIdentity = new NodeIdentity(
-    NodeId: Convert.ToHexString(rootPublicKey.AsSpan(0, 16)).ToLowerInvariant(),
-    PublicKey: rootPublicKey,
-    PrivateKey: rootPrivateKey);
+    // Derive the root Ed25519 identity from the seed. Kernel-security's
+    // IEd25519Signer is stateless, so we instantiate it directly here rather
+    // than spin up a mini-provider to resolve it.
+    var signer = new Ed25519Signer();
+    var (rootPublicKey, rootPrivateKey) = signer.GenerateFromSeed(rootSeed);
+    var rootIdentity = new NodeIdentity(
+        NodeId: Convert.ToHexString(rootPublicKey.AsSpan(0, 16)).ToLowerInvariant(),
+        PublicKey: rootPublicKey,
+        PrivateKey: rootPrivateKey);
 
-// Pure, side-effect-free KDF utilities. Constructed directly so the default
-// registrar closure captures the exact derivation instance the activator also
-// observes later.
-var subkeyDerivation = new TeamSubkeyDerivation(signer);
-var sqlCipherKeyDerivation = new SqlCipherKeyDerivation();
+    // Pure, side-effect-free KDF utilities. Constructed directly so the default
+    // registrar closure captures the exact derivation instance the activator also
+    // observes later.
+    var subkeyDerivation = new TeamSubkeyDerivation(signer);
+    var sqlCipherKeyDerivation = new SqlCipherKeyDerivation();
 
-builder.Services
-    .AddSunfishKernelRuntime()              // plugin registry + INodeHost          (Wave 1.1)
-    .AddSunfishKernelSecurity()             // Ed25519 + X25519 + KDFs              (Wave 1.6)
-    .AddSunfishResourceGovernor()           // per-tick gossip cap                  (Wave 6.4)
-    .AddSunfishDefaultTeamRegistrar(        // per-team service wiring              (Wave 6.3.E)
-        dataDirectory: localNodeOptions.DataDirectory,
-        rootIdentity: rootIdentity,
-        subkeyDerivation: subkeyDerivation,
-        sqlCipherKeyDerivation: sqlCipherKeyDerivation)
-    .AddSunfishTeamStoreActivator(rootSeed); // per-team encrypted-store opener    (Wave 6.3.E.1)
+    builder.Services
+        .AddSunfishKernelRuntime()              // plugin registry + INodeHost          (Wave 1.1)
+        .AddSunfishKernelSecurity()             // Ed25519 + X25519 + KDFs              (Wave 1.6)
+        .AddSunfishRootSeedProvider()           // keystore-backed install seed         (Wave 6.7.A)
+        .AddSunfishResourceGovernor()           // per-tick gossip cap                  (Wave 6.4)
+        .AddSunfishDefaultTeamRegistrar(        // per-team service wiring              (Wave 6.3.E)
+            dataDirectory: localNodeOptions.DataDirectory,
+            rootIdentity: rootIdentity,
+            subkeyDerivation: subkeyDerivation,
+            sqlCipherKeyDerivation: sqlCipherKeyDerivation)
+        .AddSunfishTeamStoreActivator(rootSeed); // per-team encrypted-store opener    (Wave 6.3.E.1)
+}
 
 // Wave 5.2.D health surface. Registered before LocalNodeWorker so the
 // endpoint is bound as soon as possible after team bootstrap — Bridge's

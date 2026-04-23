@@ -26,9 +26,12 @@
     <!-- Compile only the MAUI-free Anchor services directly. We deliberately
          do NOT ProjectReference the Anchor csproj because it targets
          net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload.
-         AnchorBootstrapHostedService + AnchorRootSeedReader are excluded
-         because they reference Microsoft.Maui.Storage (Preferences,
-         FileSystem) which is only available in the MAUI-workload targets.
+         AnchorBootstrapHostedService is excluded because it references
+         Microsoft.Maui.Storage (Preferences, FileSystem) which is only
+         available in the MAUI-workload targets. Wave 6.7.A replaced the
+         AnchorRootSeedReader stub with the keystore-backed
+         IRootSeedProvider in Sunfish.Kernel.Security; MauiProgram now
+         resolves the seed from DI at composition time.
          AnchorV1MigrationService is MAUI-free (takes dataDirectory in ctor)
          so it compiles here for Wave 6.7 migration tests. -->
     <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />

@@ -68,9 +68,10 @@ namespace Sunfish.Anchor.Services;
 /// <b>Testability.</b> The service takes a <c>dataDirectory</c> path and a
 /// <c>legacyTeamIdProvider</c> delegate in its ctor rather than resolving
 /// them from MAUI's <c>FileSystem.AppDataDirectory</c> directly. The MAUI
-/// composition root wires those values via
-/// <c>AnchorRootSeedReader.GetDefaultDataDirectory()</c>; tests pass temp
-/// directories and deterministic team ids.
+/// composition root wires those values from
+/// <c>FileSystem.AppDataDirectory</c> + the install's
+/// <see cref="Sunfish.Kernel.Security.Keys.IRootSeedProvider"/>-derived
+/// Ed25519 public key; tests pass temp directories and deterministic team ids.
 /// </para>
 /// </remarks>
 public sealed class AnchorV1MigrationService : IHostedService
