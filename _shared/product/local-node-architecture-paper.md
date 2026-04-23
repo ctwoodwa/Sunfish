@@ -1,6 +1,6 @@
 # Inverting the SaaS Paradigm: A Local-Node Architecture for Collaborative Software
 
-**Version 10.0 — April 2026**
+**Version 12.0 — April 2026**
 
 *A vendor-neutral architecture specification for building enterprise-grade collaborative software where the workstation is the server, the cloud is a peer, and the user owns their data unconditionally.*
 
@@ -534,6 +534,12 @@ The sustainable revenue model is a managed relay service: operationally hardened
 
 Infrastructure cost analysis: a single relay node on commodity infrastructure handles approximately 500 concurrent team connections at minimal hosting cost. At a modest per-team subscription fee, the service becomes cash-flow positive well before reaching meaningful scale. Surplus funds core library maintenance and community infrastructure.
 
+#### Hosted relay as a SaaS node
+
+Operating the relay as a full replicated node effectively yields a cloud-hosted, browser-accessible deployment that is indistinguishable from SaaS from the user's perspective. The architecture treats this as one valid deployment among many, not a separate product model.
+
+The key invariant is that the relay stores ciphertext only; role keys remain on end-user devices so the operator of the hosted relay cannot read team data. Because the hosted relay is just another peer in the gossip network, teams can migrate between vendor-hosted and self-hosted relays (or add workstation nodes) without data model translation or lock-in, as the same sync protocol governs all nodes.
+
 ### 17.3 Governance
 
 Long-term project governance follows the model of foundation-backed open-source projects: a small core team with a defined decision-making process, funded by organizational sponsors, with clear intellectual property assignment that prevents any single sponsor from controlling the project's direction.
@@ -623,3 +629,132 @@ This architecture is ready for implementation.
 ---
 
 *This paper is published under Creative Commons CC-BY 4.0. Feedback, critiques, and implementation reports are welcomed.*
+
+
+---
+
+## 20. Architecture Selection Framework
+
+Not every software problem is best solved with a local-node architecture. This framework provides a structured method for determining when the local-node model is the right choice, when traditional centralized SaaS is correct, and when a hybrid approach is appropriate.
+
+### 20.1 The Core Question
+
+Before evaluating any other factor, answer one question:
+
+> **Is the primary value of this software derived from the user's own data, or from aggregating data across many users?**
+
+- **User's own data** → local-first is the correct default.
+- **Aggregated data across users** → centralized infrastructure is structurally required.
+
+Everything that follows is nuance around that axis.
+
+---
+
+### 20.2 Filter 1: Consistency Requirement (Hard Stop)
+
+Work through these filters in order. The first filter that produces a hard answer terminates the evaluation.
+
+| Question | Answer → Model |
+|---|---|
+| Does a transaction need to be atomic across multiple users *simultaneously*? | **Centralized only** |
+| Is stale data dangerous (payments, inventory, reservations)? | **Centralized only** |
+| Does every user need the exact same truth at the exact same millisecond? | **Centralized only** |
+| Can users tolerate eventual consistency (minutes to hours for cross-peer sync)? | **Local-first viable** |
+
+If any row returns **Centralized only**, stop. Do not force the local-node architecture onto financial ledgers, seat reservation systems, or real-time trading platforms. The CAP theorem is not a negotiating position.
+
+---
+
+### 20.3 Filter 2: Data Ownership Profile
+
+| Profile | Model |
+|---|---|
+| User creates data; data describes the user or their work | Local-first |
+| Vendor aggregates anonymous user behavior as the product | Centralized |
+| Regulatory custodian must hold the authoritative copy | Centralized |
+| User owns data but wants *optional* sharing or sync | Local-first + relay |
+| Data has value only when pooled (market prices, rankings, recommendations) | Centralized |
+
+---
+
+### 20.4 Filter 3: Connectivity and Operational Environment
+
+| Environment | Model |
+|---|---|
+| Field workers, air-gapped facilities, rural or mobile-poor connectivity | Local-first mandatory |
+| Always-online, browser-only, no install friction tolerated | Traditional SaaS |
+| Enterprise with MDM, IT governance, or BYOC storage policy | Local-first node |
+| Anonymous public access required, no persistent identity | Traditional website |
+| Regulated data residency requirements (GDPR, HIPAA, FedRAMP, ITAR) | Local-first or on-premises |
+
+---
+
+### 20.5 Filter 4: Business Model Alignment
+
+| Situation | Implication |
+|---|---|
+| Revenue from recurring access to a hosted service | Traditional SaaS viable, but exposed to vendor-lock-in backlash |
+| Revenue from support, extensions, or managed relay | Local-first strongly viable |
+| Network effects require all users on the same platform | Centralized required |
+| Enterprise sales with security review requirements | Local-first node (easier to pass vendor risk review) |
+| Open-source sustainability model | Local-first strongly preferred |
+
+---
+
+### 20.6 Filter 5: Team Capability and Timeline
+
+This filter determines *when* and *how*, not *whether*:
+
+| Constraint | Implication |
+|---|---|
+| Need to ship in under 3 months | Start traditional SaaS; architect for future local-node migration |
+| Team has no CRDT or sync experience | Budget 3–6 additional months |
+| Existing hosted product with historical data | Hybrid: retain cloud as sync relay, add local node capability incrementally |
+| Greenfield project with time to architect correctly | Local-first node from day one |
+
+---
+
+### 20.7 The Three Outcome Zones
+
+Running all five filters produces one of three outcomes:
+
+**Zone A — Local-First Node (this architecture)**
+
+All five filters clear without a hard stop. Applies to:
+- Single-tenant or team-scoped productivity and business software
+- Offline or regulated operational environments
+- Software whose core value exists before any other user joins
+- Professional or enterprise users willing to install software
+
+*Representative examples: project management, professional CRM, ERP, design tools, field operations, legal and healthcare records management.*
+
+**Zone B — Traditional SaaS or Website**
+
+Filter 1 or Filter 2 produces a hard "Centralized only" result. Applies to:
+- Multi-tenant aggregation as the core value proposition
+- Anonymous access with no persistent identity
+- Millisecond global consistency as a hard requirement
+- Pure content delivery (marketing, news, e-commerce catalog)
+
+*Representative examples: social platforms, trading systems, global search engines, marketing and editorial websites.*
+
+**Zone C — Hybrid**
+
+Filters pass for user-scoped data but fail for specific coordination features. This is the most common real-world outcome for enterprise software. Applies to:
+- Local node handles all user-owned data and day-to-day compute
+- Cloud relay handles sync, cross-organization collaboration, payments, and compliance reporting
+- Traditional web layer handles public-facing surfaces (landing page, documentation, status page)
+
+*Representative examples: Linear, Notion, Obsidian Sync, Figma — all converging on this model.*
+
+---
+
+### 20.8 A Practical Shortcut
+
+If all three of the following are true, the local-node architecture is the right default:
+
+1. The software could function if the vendor disappeared tomorrow, provided the user retains their local data.
+2. The software's core value exists before any other user joins — it is not dependent on network effects.
+3. An enterprise IT department would prefer that the data never leave their network.
+
+If any answer is **no**, identify which filter captures that constraint and evaluate whether a hybrid or centralized model addresses it, or whether the constraint is a fundamental property of the problem versus an inherited design assumption.
