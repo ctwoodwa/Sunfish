@@ -303,6 +303,12 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Storybook + Web Test Runner build artifacts
+storybook-static/
+**/storybook-static/
+test-results/
+playwright-report/
+
 # Visual Studio 6 build log
 *.plg
 
