@@ -34,6 +34,9 @@
     <PackageVersion Include="System.Net.Http.Json" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Http" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Options" Version="11.0.0-preview.3.26207.106"/>
+    <PackageVersion Include="Microsoft.Extensions.Localization" Version="11.0.0-preview.3.26207.106"/>
+    <PackageVersion Include="Microsoft.Extensions.Localization.Abstractions" Version="11.0.0-preview.3.26207.106"/>
+    <PackageVersion Include="SmartFormat" Version="3.6.1"/>
     <PackageVersion Include="Testcontainers" Version="4.11.0"/>
     <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.7"/>
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11"/>

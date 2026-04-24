@@ -11,8 +11,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="NSec.Cryptography" />
+    <PackageReference Include="SmartFormat" />
   </ItemGroup>
   <ItemGroup>
     <!-- Exclude the sibling test project from library compilation -->
