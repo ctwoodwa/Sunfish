@@ -90,6 +90,10 @@
     <Project Path="packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj" />
     <Project Path="packages/ui-adapters-blazor/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/ui-adapters-blazor-a11y/">
+    <Project Path="packages/ui-adapters-blazor-a11y/Sunfish.UIAdapters.Blazor.A11y.csproj" />
+    <Project Path="packages/ui-adapters-blazor-a11y/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/providers/">
     <Project Path="packages/ui-adapters-blazor/Providers/FluentUI/Sunfish.Providers.FluentUI.csproj" />
     <Project Path="packages/ui-adapters-blazor/Providers/Bootstrap/Sunfish.Providers.Bootstrap.csproj" />

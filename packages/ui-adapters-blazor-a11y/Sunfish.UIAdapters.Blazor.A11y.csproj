@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.UIAdapters.Blazor.A11y</PackageId>
+    <RootNamespace>Sunfish.UIAdapters.Blazor.A11y</RootNamespace>
+    <AssemblyName>Sunfish.UIAdapters.Blazor.A11y</AssemblyName>
+    <Description>
+      bUnit-to-axe accessibility bridge for Blazor components. Renders bUnit markup into a
+      Playwright-hosted HTML page, injects axe-core, and returns structured AxeResult data
+      so the Sunfish a11y harness contract (ADR 0034) can be enforced at CI time for the
+      Blazor adapter alongside ui-core (Web Components) and ui-adapters-react.
+    </Description>
+    <PackageTags>blazor;accessibility;axe-core;bunit;playwright;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Phase-1 migration accommodation; match Sunfish.Foundation pattern. -->
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="bunit" />
+    <PackageReference Include="Microsoft.Playwright" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.UIAdapters.Blazor.A11y.Tests" />
+  </ItemGroup>
+</Project>
