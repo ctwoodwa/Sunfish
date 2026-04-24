@@ -84,7 +84,7 @@ Enforced in `.github/workflows/global-ux-gate.yml` as required status checks (Se
 ### Rollback criterion (end of Phase 1 Week 1 go/no-go)
 
 After the 3-component pilot (`sunfish-button`, `sunfish-dialog`, `sunfish-syncstate-indicator`) — per the Week 1 breakdown in Section 7 — a go/no-go decision is made at the Week 1/Week 2 boundary. Triggers rollback if any of:
-- ICU4N wrapper fails 3 smoke tests (en simple, ar plural-6, ja zero-form)
+- SmartFormat.NET wrapper fails 3 smoke tests (en simple, ar plural-6, ja single-form)
 - Storybook harness cannot traverse open shadow-DOM with `@axe-core/playwright`
 - `axe-core` runtime per component exceeds 15 seconds
 - Weblate AGPL legal review returns blocking concern
@@ -173,7 +173,7 @@ Split into three workstreams. **3C is excluded from this sprint** — it is a do
 
 ### 3A — Loc-Infra (Phase 1, 4 weeks)
 
-`IStringLocalizer<T>` wiring, ICU4N wrapper, XLIFF 2.0 build pipeline, translator-comments analyzer, error localization, dev hot-reload.
+`IStringLocalizer<T>` wiring, SmartFormat.NET wrapper (pivoted from ICU4N 2026-04-25), XLIFF 2.0 build pipeline, translator-comments analyzer, error localization, dev hot-reload.
 
 **Per-package layout:**
 
@@ -212,9 +212,11 @@ app.UseRequestLocalization();
 
 Stable dotted keys — never English-text-as-key. Editing en-US copy edits the value; translations stay attached.
 
-**ICU MessageFormat via ICU4N:**
+**CLDR plural rules via SmartFormat.NET** *(revised 2026-04-25; see [`waves/global-ux/decisions.md`](../../../waves/global-ux/decisions.md))*
 
-Custom wrapper `ISunfishLocalizer` built on [ICU4N](https://github.com/NightOwl888/ICU4N) for CLDR plural rules (Arabic six-form, Japanese/Chinese zero-form):
+Custom wrapper `ISunfishLocalizer` built on [SmartFormat.NET](https://github.com/axuno/SmartFormat) (MIT) for CLDR plural rules (Arabic six-form, Japanese/Chinese zero-form). The original design specified [ICU4N](https://github.com/NightOwl888/ICU4N); the Week-0 triage memo ([`icm/01_discovery/output/icu4n-health-check-2026-04-25.md`](../../../icm/01_discovery/output/icu4n-health-check-2026-04-25.md)) found ICU4N bundles ICU 60 / CLDR 32 (Oct 2017) versus upstream CLDR 48.2 (Mar 2026) — 16 major versions behind, with Arabic/Hindi plural-rule refinements materially stale. SmartFormat.NET tracks CLDR independently and supports ICU-style `{count:plural:...}` syntax. Number / date / currency formatting delegate to .NET 8+ `System.Globalization` in ICU mode (bundles ICU 74+).
+
+Public contract (`Get` / `Format` / `Plural`) is implementation-independent so a future swap back to a healthy ICU4N successor does not ripple into callers.
 
 ```csharp
 @SunfishLoc.Plural("inbox.unread", count, args: new { count })
@@ -236,20 +238,20 @@ Custom `IStringLocalizerFactory` in `Debug` builds uses `FileSystemWatcher` on `
 
 | Tool | Chosen | Fallback-1 | Fallback-2 |
 |---|---|---|---|
-| ICU implementation | ICU4N | `OrchardCore.Localization` ICU fork | Custom pattern-matcher (CLDR JSON + hand-rolled plural rules) |
+| Plural / message formatter | SmartFormat.NET (MIT, CLDR-current) | `OrchardCore.Localization` ICU fork | Custom pattern-matcher (CLDR JSON + hand-rolled plural rules). **Originally ICU4N; pivoted 2026-04-25 — see decisions.md.** |
 | XLIFF version | 2.0 | 1.2 (broader tool support) | PO files (OrchardCore pattern) |
 | XLIFF tool | Custom MSBuild task | [Multilingual App Toolkit](https://learn.microsoft.com/windows/apps/design/globalizing/use-mat) (1.2 with conversion step) | Hand-edited XLIFF |
 
 **Week 0 research triage (before Phase 1 Day 1):**
-- ICU4N maintenance health check (last 6 months of commits; CLDR version lag)
-- XLIFF 2.0 vs 1.2 tool ecosystem survey
+- ICU4N maintenance health check (last 6 months of commits; CLDR version lag) — **DONE 2026-04-25; verdict PIVOT to SmartFormat.NET.**
+- XLIFF 2.0 vs 1.2 tool ecosystem survey — **DONE 2026-04-26; verdict BUILD custom MSBuild task (~5.5 days).**
 
 **Binary gates for 3A:**
 - ☐ `grep -r 'AddLocalization()' | wc -l` returns ≥ 3 (Bridge, Anchor, local-node-host)
 - ☐ Every `packages/*` has `Resources/SharedResource.resx` with at least one entry
 - ☐ `dotnet build` passes with `.resx` analyzer enforcing `<comment>` field
 - ☐ XLIFF round-trip: `.resx` → XLIFF 2.0 → `.resx` is byte-identical
-- ☐ ICU4N pilot passes 3 smoke tests (en simple, ar plural-6, ja zero-form)
+- ☑ SmartFormat.NET pilot passes 3 smoke tests (en simple, ar plural-6, ja single-form) — **DONE 2026-04-24; 3/3 green in 80 ms. See [`packages/foundation/tests/Localization/SunfishLocalizerSmartFormatTests.cs`](../../../packages/foundation/tests/Localization/SunfishLocalizerSmartFormatTests.cs).**
 - ☐ `ProblemDetailsFactory` returns localized title+detail in en-US, ar-SA, ja
 - ☐ Hot-reload: `.resx` edit reflects in kitchen-sink demo within 3 seconds (Blazor Server)
 
@@ -892,7 +894,7 @@ Phase 2 cascade cannot begin until Section 8 CI workflow is live on `main` with 
 
 ### Ordering summary
 
-1. **Phase 1 Week 1:** Storybook harness pilot (Section 7) + ICU4N wrapper pilot (Section 3A) in parallel. End-of-week go/no-go gate per Section 1.
+1. **Phase 1 Week 1:** Storybook harness pilot (Section 7) + SmartFormat.NET wrapper pilot (Section 3A, pivoted from ICU4N) in parallel. End-of-week go/no-go gate per Section 1. **DONE 2026-04-24 — GO verdict.**
 2. **Phase 1 Weeks 2–4:** Section 3A Loc-Infra cascade to `foundation-*` + `ui-core`; XLIFF pipeline; error localization; Section 3B Translator-Assist Phase 1 core (MADLAD CLI, Weblate stand-up, `NoDraftInCompleteLocale` analyzer)
 3. **Phase 1 Weeks 3–6** (parallel with steps 2–4): Sections 2 (CSS logical properties sweep), 5 (SyncState multimodal), 6 (reduced motion) across `ui-core`
 4. **Phase 1 Week 6 (exit gate):** Section 8 CI workflow live on `main` with all gates passing on Phase 1 surface
@@ -920,7 +922,7 @@ Phase 2 exits when:
 ### FAILED conditions (rollback triggers)
 
 Project rolls back and pauses for redesign if any of:
-- Phase 1 Week 2 pilot: ICU4N wrapper or Storybook harness proves unworkable
+- Phase 1 Week 2 cascade: SmartFormat.NET wrapper or Storybook harness proves unworkable at scale (Week 1 pilots passed; Week 2+ cascade risk remains)
 - Phase 1 Week 4: Weblate legal review concludes commercialization incompatibility
 - Phase 2: projected total Phase 1+2 timeline exceeds 20 weeks
 - At any time: CI runtime p95 exceeds 20 minutes and parallelization cannot close the gap
