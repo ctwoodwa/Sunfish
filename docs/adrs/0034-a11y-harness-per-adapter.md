@@ -1,6 +1,6 @@
 # ADR 0034 — Accessibility Harness Per Adapter
 
-**Status:** Proposed (2026-04-27)
+**Status:** Accepted (2026-04-27)
 **Date:** 2026-04-27
 **Deciders:** Chris Wood (BDFL)
 **Related ADRs:** [0017](./0017-web-components-lit-technical-basis.md) (Web Components/Lit technical basis), [0030](./0030-react-adapter-scaffolding.md) (React adapter scaffolding)

@@ -1,6 +1,6 @@
 # ADR 0035 — Global Domain Types as a Separate Wave
 
-**Status:** Proposed (2026-04-27)
+**Status:** Accepted (2026-04-27)
 **Date:** 2026-04-27
 **Deciders:** Chris Wood (BDFL)
 **Related ADRs:** [0015](./0015-module-entity-registration.md) (module-entity registration), [0018](./0018-governance-and-license-posture.md) (governance and license posture)
