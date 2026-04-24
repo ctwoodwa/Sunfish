@@ -22,6 +22,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Tests live under tests/; never compile them into the tooling DLL. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Include the .targets file in the NuGet's build/ directory. -->
     <None Include="build/Sunfish.Tooling.LocalizationXliff.targets" Pack="true" PackagePath="build/" />
   </ItemGroup>
