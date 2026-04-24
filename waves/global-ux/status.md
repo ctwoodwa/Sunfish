@@ -1,8 +1,8 @@
 # Global-First UX — Wave Status
 
-**Updated:** 2026-04-24 end of Phase 1 Week 1
-**Current phase:** Phase 1 Week 1 (Tooling Pilot) — **COMPLETE**
-**Current focus:** Week 1 go/no-go gate — **VERDICT: GO**
+**Updated:** 2026-04-24 end of Phase 1 Week 1 + full Phase 1/2 planning landed
+**Current phase:** Phase 1 Week 1 (Tooling Pilot) — **COMPLETE (GO verdict)**
+**Current focus:** Phase 1 Week 2 execution — awaiting user sign-off on which plan to kick off first
 
 ## Completed this week
 - Task 1: Scaffold `waves/global-ux/` tracking directory (`9f14858b`)
@@ -51,9 +51,35 @@ All five gates are GREEN except Weblate legal which is YELLOW (not a rollback tr
 - Spec Section 3A needs a revision note pointing to `decisions.md`. Defer spec edit until
   Week 1 go/no-go gate decides whether the pivot holds.
 
+## Plans authored (all Phase 1 + Phase 2)
+
+| Plan | Scope | Weeks | Lines | Status |
+|---|---|---|---|---|
+| [Plan 1](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-1-plan.md) | Tooling pilot | Week 1 | 1548 | Complete (GO verdict) |
+| [Plan 2](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-loc-infra-plan.md) | Loc-Infra cascade (§3A) | 2-4 | 448 | Ready to execute |
+| [Plan 3](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-translator-assist-plan.md) | Translator-Assist (§3B) | 2-4 (parallel) | 531 | Ready to execute |
+| [Plan 4](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-a11y-foundation-plan.md) | A11y Foundation cascade (§7) | 2-4 (parallel) | 540 | Ready to execute |
+| [Plan 4B](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-3-6-ui-sensory-cascade-plan.md) | ui-core sensory cascade (§2 + §5 + §6) | 3-6 (parallel) | 554 | Ready to execute |
+| [Plan 5](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-6-ci-gates-plan.md) | CI Gates (§8) — Phase 1 exit gate | Week 6 | 459 | Ready — depends on Plans 2/3/4/4B output |
+| [Plan 6](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-2-cascade-plan.md) | Phase 2 cascade (kitchen-sink + Bridge + Anchor + docs) | 5-12 | 648 | Ready — blocked on Plan 5 exit gate |
+
+**Planning totals:** 7 plans, 4,728 lines across Phase 1 + Phase 2 (~20 weeks of scoped work, with translator-vendor budget of ~$745k envelope per Plan 6).
+
+**Corrections already applied during plan landing:**
+- Plan 2 diagnostic IDs (`SUN_LOC_*` → spec-canonical `SUNFISH_I18N_*`).
+- Plan 5 timeline (Week 4 → Week 6) and filename rename.
+- Plan 2 blocks-* count (15 → 14 confirmed per repo inventory).
+
+**Follow-ups flagged by parallel plan agents (not yet actioned):**
+- ADR 0034 addendum for the Node→.NET `a11y-contracts.json` bridge (Plan 4 surface).
+- ADR 0036 for the SyncState 5-state palette contract (proposed by Plan 4B).
+- AGPL §13 counsel review (Plan 3 dependency; needed by Week 3).
+- Translator-vendor contracting (Plan 6 precondition; 4 paid locales + 8 volunteer onboarding).
+- Docs-site translation-volume cost ($750k of 772k source words) is the Plan 6 kill-trigger candidate.
+
 ## Next agent handoff context
 
-**Phase 1 Week 1 complete.** Proceed to author Plans 2-6 per the spec Section 1 sprint map:
+**Planning phase COMPLETE.** Forward motion options (awaiting user priority):
 
 - **Plan 2 — Loc-Infra cascade (Weeks 2-4):** SmartFormat wrapper cascades to all `packages/*`
   that currently string-format user-facing copy; XLIFF 2.0 MSBuild task build (~5.5 days per
@@ -70,15 +96,15 @@ All five gates are GREEN except Weblate legal which is YELLOW (not a rollback tr
 - **Plan 6 — Phase 2 Cascade (Weeks 5-12):** Application into blocks + apps (kitchen-sink,
   bridge, anchor).
 
-**Spec Section 3A** needs a revision note pointing to decisions.md entry 2026-04-25 (ICU4N
-→ SmartFormat pivot). Not urgent — the pivot is self-documenting via decisions.md + the
-feature branch commit history — but should land before Plan 2 kicks off.
+**Spec Section 3A revision note** landed in commit 279ab364.
 
-**Week 2 follow-ups surfaced during Week 1:**
-- Jest haste-map ignores for `.claude/worktrees/` and `**/bin/` / `**/obj/` (Task 13 noise).
-- Production `@axe-core/playwright` hook in `.storybook/test-runner.ts` (currently smoke only).
-- ADR 0034's bUnit-to-axe bridge project needs scaffolding (Plan 4).
+**Week 2 follow-ups** (carried forward from Week-1 — now absorbed into Plan 4/4B/5):
+- Jest haste-map ignores (low priority; noise only).
+- Production `@axe-core/playwright` hook in `.storybook/test-runner.ts` → Plan 4 Task 1.x.
+- bUnit-to-axe bridge project → Plan 4 Workstream A (highest-risk; Thursday-Week-2 gate).
 
 **Commit strategy going forward:** Phase 1 Week 1 used 12+ commits across main + 2 feature
-branches. For Plans 2-4 which run in parallel, one feature branch per plan; merge via
-fast-forward when gates pass. Path-scoped `git add` remains mandatory.
+branches. Planning wave added ~10 commits to main. Execution waves should use one feature
+branch per plan; merge via fast-forward when gates pass. Path-scoped `git add` remains
+mandatory. Plan-4-vs-Plan-4B file-overlap on `.storybook/preview.ts` / `test-runner.ts`
+requires serial-commit reviewer-agent gating.
