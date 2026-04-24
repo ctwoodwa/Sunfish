@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Sunfish Localization XLIFF MSBuild integration.
+  Auto-imported when the NuGet is referenced; registers the two tasks and defines
+  the default SunfishExportXliff / SunfishImportXliff targets.
+-->
+<Project>
+  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll"
+             TaskName="SunfishResxToXliffTask" />
+  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll"
+             TaskName="SunfishXliffToResxTask" />
+
+  <PropertyGroup>
+    <SunfishXliffSourceLanguage Condition="'$(SunfishXliffSourceLanguage)' == ''">en-US</SunfishXliffSourceLanguage>
+    <SunfishXliffDirectory Condition="'$(SunfishXliffDirectory)' == ''">$(MSBuildProjectDirectory)\localization\xliff</SunfishXliffDirectory>
+    <SunfishResxSourceDirectory Condition="'$(SunfishResxSourceDirectory)' == ''">$(MSBuildProjectDirectory)\Resources</SunfishResxSourceDirectory>
+  </PropertyGroup>
+
+  <!-- Manually invoked: dotnet build -t:SunfishExportXliff -->
+  <Target Name="SunfishExportXliff">
+    <ItemGroup>
+      <_SunfishResxFiles Include="$(SunfishResxSourceDirectory)\**\*.resx" />
+    </ItemGroup>
+    <SunfishResxToXliffTask
+      SourceResxFiles="@(_SunfishResxFiles)"
+      OutputDirectory="$(SunfishXliffDirectory)"
+      SourceLanguage="$(SunfishXliffSourceLanguage)"
+      PreserveApprovedTargets="true" />
+  </Target>
+
+  <!-- Auto-runs before Build to regenerate .resx satellites from approved XLIFFs. -->
+  <Target Name="SunfishImportXliff"
+          BeforeTargets="BeforeBuild"
+          Condition="Exists('$(SunfishXliffDirectory)')">
+    <ItemGroup>
+      <_SunfishXliffFiles Include="$(SunfishXliffDirectory)\**\*.xlf" />
+    </ItemGroup>
+    <SunfishXliffToResxTask
+      SourceXliffFiles="@(_SunfishXliffFiles)"
+      OutputDirectory="$(IntermediateOutputPath)generated-resx"
+      Condition="@(_SunfishXliffFiles->Count()) > 0" />
+  </Target>
+</Project>

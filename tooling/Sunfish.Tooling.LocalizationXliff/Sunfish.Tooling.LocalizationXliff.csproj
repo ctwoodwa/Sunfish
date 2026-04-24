@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Tooling.LocalizationXliff</PackageId>
+    <!-- Phase-1 migration accommodation; match Sunfish.Foundation pattern. -->
+    <NoWarn>CS1591</NoWarn>
+    <Description>MSBuild tasks for round-tripping .resx &lt;-&gt; XLIFF 2.0 per Sunfish Global-First UX spec Section 3A.</Description>
+    <!-- Package the .targets + DLL into a NuGet build directory. -->
+    <BuildOutputTargetFolder>tasks</BuildOutputTargetFolder>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Microsoft.Build.* are provided by the host (MSBuild / VS / dotnet CLI); reference-only. -->
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="all" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Include the .targets file in the NuGet's build/ directory. -->
+    <None Include="build/Sunfish.Tooling.LocalizationXliff.targets" Pack="true" PackagePath="build/" />
+  </ItemGroup>
+</Project>
