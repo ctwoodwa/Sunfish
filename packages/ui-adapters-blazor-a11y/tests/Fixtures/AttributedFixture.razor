@@ -1,0 +1,25 @@
+@*
+  Fixture component for Plan 4 Task 1.3 determinism gate. Exercises multiple attribute
+  types (string, bool, int, enum) to catch non-determinism in attribute-ordering / rendering.
+*@
+
+<button class="@CssClass()"
+        data-variant="@Variant"
+        data-level="@Level"
+        disabled="@(!Enabled)"
+        role="button"
+        aria-pressed="@Pressed.ToString().ToLowerInvariant()">
+    @Label
+</button>
+
+@code {
+    public enum FixtureVariant { Primary, Secondary, Tertiary }
+
+    [Parameter] public string Label { get; set; } = "Click me";
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Pressed { get; set; }
+    [Parameter] public int Level { get; set; } = 1;
+    [Parameter] public FixtureVariant Variant { get; set; } = FixtureVariant.Primary;
+
+    private string CssClass() => $"btn btn-{Variant.ToString().ToLowerInvariant()} level-{Level}";
+}
