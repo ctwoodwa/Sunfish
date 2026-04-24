@@ -1,8 +1,8 @@
 # Global-First UX — Wave Status
 
 **Updated:** 2026-04-24 end of Phase 1 Week 1 + full Phase 1/2 planning landed
-**Current phase:** Phase 1 Week 1 (Tooling Pilot) — **COMPLETE (GO verdict)**
-**Current focus:** Phase 1 Week 2 execution — awaiting user sign-off on which plan to kick off first
+**Current phase:** Phase 1 Week 2 execution (in flight)
+**Current focus:** Plan 2 Tasks 1.1-1.3 (XLIFF tooling) landed on main; Plan 3 Task 1.1 (MADLAD CLI scaffold) landed on main
 
 ## Completed this week
 - Task 1: Scaffold `waves/global-ux/` tracking directory (`9f14858b`)
