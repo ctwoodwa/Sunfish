@@ -1,0 +1,52 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sunfish.Tooling.LocExtraction
+    Plan 3 Task 1.1 scaffold — pre-commit extractor CLI invoked by Husky.NET and CI.
+
+    Packaged as a .NET local tool (PackAsTool=true) so it can be installed via
+    `dotnet tool install` and invoked as `sunfish-loc <subcommand>` from the
+    pre-commit hook without an MSBuild context (keeps pre-commit speed fast).
+
+    Subsequent Plan 3 tasks layer implementation onto this scaffold:
+      - Task 1.2: ResxToXliffDraftExtractor.cs
+      - Task 1.3: Husky.NET wiring (consumes the `sunfish-loc extract` command)
+      - Task 1.4: PlaceholderValidator.cs / IcuPlaceholderRegex.cs
+      - Task 1.5: tests/ + FsCheck fuzz tests
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Sunfish.Tooling.LocExtraction</RootNamespace>
+    <AssemblyName>Sunfish.Tooling.LocExtraction</AssemblyName>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Pack as a dotnet local tool, invoked as `sunfish-loc`. -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sunfish-loc</ToolCommandName>
+    <PackageId>Sunfish.Tooling.LocExtraction</PackageId>
+    <Description>Sunfish localization extraction CLI (Plan 3 Task 1.1 scaffold): extracts RESX into XLIFF 2.0 drafts and validates ICU placeholder preservation. Invoked by the Husky.NET pre-commit hook as `sunfish-loc extract`.</Description>
+    <PackageTags>sunfish;localization;xliff;resx;i18n;tooling</PackageTags>
+
+    <!-- Dev dependency: never transitively pulled into product binaries. -->
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      System.CommandLine is not yet listed in Directory.Packages.props (the plan
+      asserted it was in the baseline, but it is not as of 2026-04-24). Using
+      VersionOverride keeps the scope of Task 1.1 inside tooling/ only, per the
+      parent agent's path-scoped-add instruction. A follow-up commit on a
+      shared branch should promote this pin to Directory.Packages.props when
+      other tooling adopts System.CommandLine.
+    -->
+    <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+</Project>
