@@ -81,8 +81,8 @@ tooling/
 
   Sunfish.Tooling.LocAnalyzer/
     Sunfish.Tooling.LocAnalyzer.csproj
-    MissingCommentAnalyzer.cs                  ← SUN_LOC_001 diagnostic
-    UnusedResourceAnalyzer.cs                  ← SUN_LOC_002 diagnostic
+    ResourceRequiresCommentAnalyzer.cs         ← SUNFISH_I18N_001 diagnostic (per spec §8)
+    NoHardcodedStringsAnalyzer.cs              ← SUNFISH_I18N_002 diagnostic
 
 infra/
   weblate/
@@ -263,7 +263,7 @@ waves/global-ux/
 **Files:**
 - Create: `waves/global-ux/week-3-cascade-inventory.md`
 
-- [ ] **Step 1:** Enumerate packages that produce user-facing copy. Initial set: `ui-core`, `ui-adapters-react`, `ui-adapters-blazor`, all `blocks-*` (15 packages), `accelerators/anchor`, `accelerators/bridge`, `apps/kitchen-sink`. Total estimate: ~20 packages.
+- [ ] **Step 1:** Enumerate packages that produce user-facing copy. Initial set: `ui-core`, `ui-adapters-react`, `ui-adapters-blazor`, all `blocks-*` (14 confirmed + 1 in flight per Plan 6 inventory), `accelerators/anchor`, `accelerators/bridge`, `apps/kitchen-sink`. Total estimate: ~20 packages.
 - [ ] **Step 2:** For each, identify the string-formatting seam: `@inject IStringLocalizer<T>` in Razor / JSX, or `SunfishLoc.Get(...)` call sites in code-behind / services.
 - [ ] **Step 3:** Table rows with: package, locale seam kind, estimated string count, owner agent (for subagent-driven cascade).
 
@@ -316,9 +316,9 @@ waves/global-ux/
 **Files:**
 - Create: `tooling/Sunfish.Tooling.LocAnalyzer/MissingCommentAnalyzer.cs`
 
-- [ ] **Step 1:** Roslyn analyzer reads `.resx` files (via `AdditionalFiles` MSBuild metadata). For each `<data>` missing `<comment>` or with empty comment, emits `SUN_LOC_001` warning.
+- [ ] **Step 1:** Roslyn analyzer reads `.resx` files (via `AdditionalFiles` MSBuild metadata). For each `<data>` missing `<comment>` or with empty comment, emits `SUNFISH_I18N_001` warning (matches spec §8 diagnostic table).
 - [ ] **Step 2:** Severity: Warning (not Error) — the spec allows missing comments during initial cascade but flags them for translator quality.
-- [ ] **Step 3:** Diagnostic code `SUN_LOC_001` registered in `docs/diagnostic-codes.md`.
+- [ ] **Step 3:** Diagnostic code `SUNFISH_I18N_001` registered in `docs/diagnostic-codes.md`; cross-reference spec §8 diagnostic table.
 - [ ] **Step 4:** False-positive check: run analyzer across Week-3 cascade output. If >5% of `<data>` elements flagged, re-tune the rule (possibly narrow to `packages/blocks-*/Resources/` only, exempt `compat-*` / internal-only).
 
 ### Task 4.4: End-to-end Arabic validation
@@ -354,7 +354,7 @@ waves/global-ux/
 - `dotnet test tooling/Sunfish.Tooling.LocAnalyzer.Tests/` — analyzer unit tests green
 - `dotnet test packages/foundation/tests/Localization/` — existing SmartFormat smoke tests remain green
 - Bridge integration test suite — `ProblemDetailsFactory` localization assertions green
-- Build-time: `Sunfish.Tooling.LocAnalyzer` SUN_LOC_001 diagnostic emits on any test RESX missing `<comment>`
+- Build-time: `Sunfish.Tooling.LocAnalyzer` `SUNFISH_I18N_001` diagnostic emits on any test RESX missing `<comment>`
 
 ### Manual
 
@@ -432,7 +432,7 @@ waves/global-ux/
 ### Replanning Triggers
 
 - Week-2 workstream slips > 3 days: re-sequence to land XLIFF task first (highest-risk), defer Weblate load test or MT backend to Week 3.
-- Week-3 cascade hits < 15 packages by Friday: declare Week-3 partial; cut analyzer + ProblemDetailsFactory to Plan 5; scope Week-4 to Arabic E2E validation only.
+- Week-3 cascade hits < 15 of the ~20 target packages by Friday: declare Week-3 partial; cut analyzer + ProblemDetailsFactory to Plan 5; scope Week-4 to Arabic E2E validation only.
 - Any gate-blocking failure: append to `decisions.md` with named pivot; re-author a revised Plan 2 with adjusted scope.
 
 ---
