@@ -36,6 +36,7 @@ public class BridgeScaffoldingTests
             "help": "Elements must have sufficient color contrast",
             "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/color-contrast",
             "tags": ["cat.color", "wcag2aa", "wcag143"],
+            "actIds": ["abc-123"],
             "nodes": [{
               "target": ["#btn-submit"],
               "html": "<button id=\"btn-submit\">OK</button>",
@@ -53,7 +54,7 @@ public class BridgeScaffoldingTests
         var v = result.Violations[0];
         Assert.Equal("color-contrast", v.Id);
         Assert.Equal(AxeImpact.Serious, v.Impact);
-        Assert.Contains("wcag2aa", v.Tags);
+        Assert.Contains("wcag2aa", v.GetTagStrings());
         Assert.Single(v.Nodes);
         Assert.Equal("#btn-submit", v.Nodes[0].Target[0]);
     }

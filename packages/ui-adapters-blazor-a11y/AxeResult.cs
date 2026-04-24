@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Sunfish.UIAdapters.Blazor.A11y;
@@ -45,8 +46,27 @@ public sealed class AxeResultItem
     [JsonPropertyName("helpUrl")]
     public string HelpUrl { get; init; } = string.Empty;
 
+    /// <summary>
+    /// Raw axe-core <c>tags</c> field. Kept as <see cref="JsonElement"/> rather than a
+    /// strongly-typed list because axe occasionally emits non-string entries (numbers,
+    /// nested objects) at this slot — see Sunfish-bridge axe 4.11.3 observation.
+    /// Use <see cref="GetTagStrings"/> for the filtered string-only view.
+    /// </summary>
     [JsonPropertyName("tags")]
-    public IReadOnlyList<string> Tags { get; init; } = new List<string>();
+    public JsonElement Tags { get; init; }
+
+    /// <summary>String-only projection of <see cref="Tags"/>; non-string entries are skipped.</summary>
+    public IEnumerable<string> GetTagStrings()
+    {
+        if (Tags.ValueKind != JsonValueKind.Array) yield break;
+        foreach (var tag in Tags.EnumerateArray())
+        {
+            if (tag.ValueKind == JsonValueKind.String)
+            {
+                yield return tag.GetString()!;
+            }
+        }
+    }
 
     [JsonPropertyName("nodes")]
     public IReadOnlyList<AxeNode> Nodes { get; init; } = new List<AxeNode>();
