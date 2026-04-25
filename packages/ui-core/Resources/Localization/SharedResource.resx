@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.UICore SharedResource — source locale (en-US).
+    UI-context generic phrases shared by every framework-agnostic UI contract: severity
+    labels, common action verbs, and empty-state defaults rendered in the abstract UI
+    layer before any adapter (Blazor / React / future) is chosen.
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator context
+        (enforced by SUNFISH_I18N_001).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036.
+
+    Pattern B (contracts-only library): ui-core ships .resx + marker class but does NOT
+    register ISunfishLocalizer<> in DI — there is no IServiceCollection extension surface
+    here. Consumers (apps / accelerators / adapters) wire the localizer in their own
+    composition root.
+
+    All entries below are Wave-2 scaffold pilots — replaced with real UI contract strings
+    in Plan 6 (end-user content cascade). The [scaffold-pilot — replace in Plan 6] token
+    in every <comment> makes them grep-able for the Plan 6 sweep.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Info</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for informational UI notifications surfaced through framework-agnostic ui-core contracts. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for warning-tier UI notifications surfaced through framework-agnostic ui-core contracts. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Error</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for error-tier UI notifications surfaced through framework-agnostic ui-core contracts. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for critical-tier UI notifications — system-impacting incidents surfaced through ui-core contracts. Short noun; sentence case.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Saving…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] In-flight save state shown on submit buttons exposed through ui-core action contracts. Present-progressive form; trailing U+2026 ellipsis indicates work in progress.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Common dismiss action verb on UI buttons exposed through ui-core action contracts. Imperative; sentence case.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Common retry action verb on UI buttons after a failure, exposed through ui-core action contracts. Imperative; sentence case.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Default empty-state placeholder rendered by ui-core skeletons / spinners while data is being fetched. Trailing U+2026 ellipsis preserved across translations.</comment>
+  </data>
+</root>

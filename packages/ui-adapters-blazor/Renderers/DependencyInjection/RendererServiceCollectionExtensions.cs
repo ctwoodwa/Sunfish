@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Foundation.Localization;
 using Sunfish.UIAdapters.Blazor.Async;
 using Sunfish.UICore.Contracts;
 
@@ -21,6 +23,16 @@ public static class RendererServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddSingleton<ISunfishRenderer, BlazorDomRenderer>();
+        // Wave-2 cluster D1 (Plan 2 Task 3.5) — register the framework-agnostic
+        // ISunfishLocalizer<T> -> SunfishLocalizer<T> open generic so Blazor adapter
+        // consumers resolve localized strings against any SharedResource marker
+        // (Foundation, UICore, Blazor adapter, blocks, accelerators) without each
+        // consumer having to wire it themselves. TryAdd* keeps this idempotent and
+        // lets the consumer override with a custom localizer if needed.
+        // NOTE: services.AddLocalization() is intentionally NOT called here — that
+        // lives in consumer composition roots (apps / accelerators) per the
+        // Cluster A sentinel ratification.
+        services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
         return services;
     }
 
