@@ -15,7 +15,11 @@
     "scss:watch": "run-p scss:watch:fluentui scss:watch:bootstrap scss:watch:material",
     "audit:css-logical": "node tooling/css-logical-audit/audit.mjs",
     "audit:css-logical:json": "node tooling/css-logical-audit/audit.mjs --json",
-    "audit:css-logical:ci": "node tooling/css-logical-audit/audit.mjs --fail-on-finding"
+    "audit:css-logical:ci": "node tooling/css-logical-audit/audit.mjs --fail-on-finding",
+    "check:locale-completeness": "node tooling/locale-completeness-check/check.mjs",
+    "check:locale-completeness:json": "node tooling/locale-completeness-check/check.mjs --json",
+    "check:locale-completeness:ci": "node tooling/locale-completeness-check/check.mjs --fail-on-incomplete",
+    "check:locale-completeness:test": "node tooling/locale-completeness-check/tests/fixture-test.mjs"
   },
   "devDependencies": {
     "bootstrap": "^5.3.3",
