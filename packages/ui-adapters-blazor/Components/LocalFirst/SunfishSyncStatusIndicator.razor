@@ -12,6 +12,9 @@
         style="@CombineStyles()"
         title="@Title"
         aria-label="@AriaLabel"
+        role="@AriaRole"
+        aria-live="@AriaLive"
+        aria-atomic="true"
         @onclick="HandleClick"
         @attributes="AdditionalAttributes">
     <span class="sf-sync-indicator__dot" aria-hidden="true"></span>
@@ -39,9 +42,27 @@
 
     private string Classes => CombineClasses($"sf-sync-indicator sf-sync--{StateClassSuffix(State)}");
 
-    private string AriaLabel => !string.IsNullOrEmpty(Label)
-        ? Label!
-        : $"Sync status: {State}";
+    /// <summary>
+    /// ARIA label per ADR 0036: prefer the consumer-supplied <see cref="Label"/>;
+    /// otherwise emit the canonical long-form text ("Synced with all peers", etc.).
+    /// </summary>
+    private string AriaLabel => !string.IsNullOrEmpty(Label) ? Label! : LongLabel(State);
+
+    /// <summary>
+    /// ADR 0036 role split: healthy/stale/offline are informational ("status"); conflict
+    /// and quarantine require user action ("alert").
+    /// </summary>
+    private string AriaRole => State is SyncState.ConflictPending or SyncState.Quarantine
+        ? "alert"
+        : "status";
+
+    /// <summary>
+    /// ADR 0036 aria-live politeness: matches the role split. Conflict / quarantine
+    /// announce immediately; healthy / stale / offline wait for an idle moment.
+    /// </summary>
+    private string AriaLive => State is SyncState.ConflictPending or SyncState.Quarantine
+        ? "assertive"
+        : "polite";
 
     private Task HandleClick() => OnStateChanged.InvokeAsync(State);
 
@@ -53,5 +74,16 @@
         SyncState.ConflictPending => "conflict",
         SyncState.Quarantine      => "quarantine",
         _                          => "offline",
+    };
+
+    /// <summary>ADR 0036 canonical long-form labels — read aloud by assistive tech.</summary>
+    internal static string LongLabel(SyncState state) => state switch
+    {
+        SyncState.Healthy         => "Synced with all peers",
+        SyncState.Stale           => "Last synced earlier",
+        SyncState.Offline         => "Offline — saved locally",
+        SyncState.ConflictPending => "Review required — two versions diverged",
+        SyncState.Quarantine      => "Can't sync — open diagnostics",
+        _                          => "Sync status unknown",
     };
 }
