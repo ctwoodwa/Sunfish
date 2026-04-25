@@ -4,28 +4,32 @@
 
 # Sunfish
 
-Sunfish is a framework‑agnostic suite of open‑source and commercial building blocks that lets you rapidly scaffold, prototype, and ship real-world applications with interchangeable UI and domain components.
+**Sunfish is the open-source reference implementation developed alongside
+[*The Inverted Stack: Local-First Nodes in a SaaS World*](https://github.com/ctwoodwa/the-inverted-stack).**
 
-## Why Sunfish?
+The book argues that the SaaS paradigm needs inverting — that local-first
+nodes, kernel/plugin separation, and hosted-node-as-SaaS deployments produce
+better software than the centralized cloud-tenancy model most teams default
+to. This repo puts that architecture into running code so readers can see it
+work end-to-end.
 
-- **Framework-agnostic**: Use the same primitives and patterns across Blazor, React, and other stacks via thin adapters.  
-- **Prototype to production**: Start with open-source components for fast prototyping, then swap in commercial partners (like Telerik) or Sunfish premium modules without rewriting everything.  
-- **Beyond components**: Sunfish includes domain‑level modules (forms, tasks, scheduling, asset management) so you assemble full features, not just UI widgets.  
-- **Migration-friendly**: Design your app against stable abstractions so you can change underlying vendors with minimal surface‑area impact.
+What ships here is a framework-agnostic suite of open-source (and eventually
+commercial) building blocks that lets you scaffold, prototype, and deliver
+real-world applications on top of the inverted-stack architecture, with
+interchangeable UI and domain components across Blazor, React, and beyond.
 
-## Companion book — *The Inverted Stack*
+## What's in the box
 
-The architectural choices in this repo trace back to a longer-form argument:
-[**The Inverted Stack**](https://github.com/ctwoodwa/the-inverted-stack) — a
-book on local-first SaaS, the kernel/plugin split, the trust model behind
-hosted-node-as-SaaS deployments, and why the SaaS paradigm needs inverting.
-Read it alongside the code to understand *why* Sunfish is structured the way
-it is.
+- **Framework-agnostic UI**: Same primitives across Blazor, React, and other stacks via thin adapters.
+- **Local-first kernel**: Kernel/plugin split, sync, attestation, signing — the trust model from the book, in real .NET code.
+- **Domain blocks**: Forms, tasks, scheduling, assets — full feature surfaces, not just UI widgets.
+- **Migration-friendly**: Stable abstractions so you can swap underlying vendors (e.g. compat-telerik for Telerik) with minimal surface impact.
+- **Production accelerators**: [Bridge](accelerators/bridge/README.md) (Zone-C hosted-node-as-SaaS) and Anchor (Zone-A local-first desktop) demonstrate the two canonical deployment shapes from §20.7 of the foundational paper.
 
-The repo's foundational paper
-([`_shared/product/local-node-architecture-paper.md`](_shared/product/local-node-architecture-paper.md))
-is the technical specification derived from the book; the book gives the
-conceptual grounding (motivation, history, alternatives considered).
+## Source documents
+
+- **The book** — [github.com/ctwoodwa/the-inverted-stack](https://github.com/ctwoodwa/the-inverted-stack) — motivation, history, alternatives considered, the case for inverting.
+- **The technical specification** — [`_shared/product/local-node-architecture-paper.md`](_shared/product/local-node-architecture-paper.md) — derived from the book; the precise definitions every directory in this repo traces back to.
 
 ## High-level architecture
 
