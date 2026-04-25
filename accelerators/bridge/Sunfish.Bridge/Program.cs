@@ -8,6 +8,7 @@ using Sunfish.Providers.FluentUI.Extensions;
 using Sunfish.Providers.Material;
 using Sunfish.Providers.Material.Extensions;
 using Sunfish.Bridge;
+using Sunfish.Bridge.Localization;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
@@ -92,6 +93,12 @@ if (!app.Environment.IsDevelopment())
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 app.UseHttpsRedirection();
+
+// Plan 2 Task 4.1 + 4.2 — request-culture resolution before any localized output.
+// Pipeline order: HTTPS redirect → request localization → tenant subdomain → auth.
+// CurrentUICulture set here flows into SunfishProblemDetailsFactory and any
+// IStringLocalizer<T> consumer in the request handler chain.
+app.UseRequestLocalization();
 
 // Wave 5.3.A — resolve the tenant off the request subdomain and bind
 // IBrowserTenantContext before downstream auth/authorization sees the
@@ -279,6 +286,28 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
 
     builder.Services.AddRazorComponents()
         .AddInteractiveServerComponents();
+
+    // Localization (Plan 2 Task 4.1 + 4.2). Wires:
+    //  - IStringLocalizer<T> resource resolution against `Resources/`,
+    //  - request-culture flow via Accept-Language → user profile → tenant default,
+    //  - SunfishProblemDetailsFactory replacing the framework default so server-error
+    //    Title + Detail render in the request culture.
+    // Supports the spec §4 12-locale roster (en-US, es-419, pt-BR, fr, de, ja,
+    // zh-Hans, ar-SA, hi, he-IL, fa-IR, ko); RTL locales (ar-SA / he-IL / fa-IR)
+    // are flipped to dir="rtl" by RequestLocalizationMiddleware downstream.
+    builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+    builder.Services.AddSunfishLocalizedProblemDetails();
+    builder.Services.Configure<Microsoft.AspNetCore.Builder.RequestLocalizationOptions>(options =>
+    {
+        var supported = new[]
+        {
+            "en-US", "es-419", "pt-BR", "fr", "de", "ja",
+            "zh-Hans", "ar-SA", "hi", "he-IL", "fa-IR", "ko",
+        };
+        options.SetDefaultCulture("en-US");
+        options.AddSupportedCultures(supported);
+        options.AddSupportedUICultures(supported);
+    });
 }
 
 // Relay posture: paper §6.1 tier-3 managed relay. No Postgres, no DAB, no

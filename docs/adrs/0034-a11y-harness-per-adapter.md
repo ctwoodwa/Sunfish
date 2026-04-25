@@ -89,3 +89,46 @@ None — the harness runs at CI time, not runtime. No production code path is af
 Week 1 of Phase 1 — three pilot components (`sunfish-button`, `sunfish-dialog`, `sunfish-syncstate-indicator`) exercise all three harnesses end-to-end. Go/no-go gate at end of Week 1 decides whether the harness pattern scales to the full component inventory or the bridge needs re-design.
 
 If the bridge fails the Week 1 gate: fallback is Option B with a documented accessibility-debt register published alongside each release until a bridge replacement lands.
+
+---
+
+## Amendment 1 (2026-04-25) — Node-side contract export pipeline
+
+The original ADR specified that the contract is "expressed once in the Storybook story's
+`parameters.a11y.sunfish` block." Implementation surfaced a real cross-language gap:
+.NET (the Blazor adapter's harness language) cannot read the contract directly from
+`.stories.ts` because the file is TypeScript with imports from `lit` and other Node-only
+modules — running it under .NET would require shipping the JS engine into the test
+harness.
+
+**The solution adopted in Plan 4 Task 1.6:** a build-time export step bridges the contract
+across the language boundary. `packages/ui-core/scripts/export-a11y-contracts.mts` runs
+under `tsx`, dynamic-imports each `.stories.ts` to read the live `parameters.a11y.sunfish`
+object, and emits `packages/ui-core/dist/a11y-contracts.json` keyed by component tag.
+The Blazor bridge's `ContractReader.Default.Load(tagName)` reads that JSON and
+deserialises into `SunfishA11yContract` (mirror record of the JS shape).
+
+**Why this is not a deviation from the ADR's "single source of truth":**
+- The Storybook story file remains the authoritative source for the contract.
+- The JSON file is a build artifact (gitignored under `packages/ui-core/dist/`).
+- The Blazor `ContractReader` errors with actionable guidance ("run
+  `pnpm --filter @sunfish/ui-core build:contracts`") if the JSON is missing.
+- The .NET-side `SunfishA11yContract` record's property names match the JS-side
+  contract keys via `[JsonPropertyName(...)]` attributes — a 1:1 mirror.
+
+**Why tsx instead of `@storybook/csf-tools` (which the original Plan 4 design assumed):**
+- AST-based extraction via CSF tools requires full literal-only contract objects;
+  any computed value (e.g., reading a constant from another file) breaks the parse.
+- `tsx`'s ESM-with-esbuild loader executes the actual TypeScript at runtime, so
+  contracts that reference `import`-ed values still work.
+- tsx adds ~30 MB to dev dependencies (acceptable; not shipped to consumers).
+
+**Failure modes covered by `ContractReader`:**
+- Missing JSON → `FileNotFoundException` with the build-command guidance above.
+- Unknown tag → `KeyNotFoundException` listing the tags the JSON does contain.
+- Runtime cache invalidation via `ContractReader.Reload()` for long-running test sessions.
+
+**No protocol or wire-format implications.** The contract bridge is purely a build-time
++ test-time concern; production runtime is untouched.
+
+This amendment is accepted alongside the original ADR. No status change.

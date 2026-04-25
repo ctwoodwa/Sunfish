@@ -29,6 +29,23 @@ public static class MauiProgram
 
 		builder.Services.AddMauiBlazorWebView();
 
+		// Plan 2 Task 4.2 — Sunfish localization, Anchor side. Mirrors Bridge's
+		// composition root (accelerators/bridge/Sunfish.Bridge/Program.cs) but
+		// without UseRequestLocalization (no HTTP) and without
+		// SunfishProblemDetailsFactory (no ProblemDetails). MAUI sets
+		// CultureInfo.CurrentUICulture from the device's preferred UI language at
+		// startup; IStringLocalizer<SharedResource> picks up the satellite RESX
+		// files under Resources/Localization/ via the standard satellite-assembly
+		// probe path.
+		//
+		// 12-locale roster matches Bridge per the Global-First UX spec
+		// (en-US, es-419, pt-BR, fr, de, ja, zh-Hans, ar-SA, hi, he-IL, fa-IR, ko).
+		// Locale satellites scaffold incrementally; locale-completeness-check tool
+		// (tooling/locale-completeness-check/check.mjs) reports per-bundle per-locale
+		// percentages and gates against per-tier floors once the first complete-tier
+		// locale clears 95% on at least one bundle.
+		builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+
 		// Foundation base (ISunfishThemeService, ISunfishNotificationService, ...)
 		// is required by the SunfishComponentBase infrastructure that the LocalFirst
 		// components (Wave 3.1 + 3.2) inherit from. Bootstrap provider supplies
