@@ -37,8 +37,20 @@ jobs:
       - name: Build
         run: dotnet build Sunfish.slnx --no-restore
 
-      - name: Test
-        run: dotnet test Sunfish.slnx --no-build --logger "trx" --results-directory TestResults
+      # Integration-tier tests need infrastructure the runner image doesn't ship:
+      #   • *.Postgres.Tests          → Testcontainers + Docker + postgres:16-alpine
+      #   • *.BlobReplication.Tests   → Testcontainers + Docker + Kubo IPFS image
+      #   • *.A11y.Tests              → Playwright browsers (`playwright install`)
+      # Until a separate integration-test workflow stands up Docker services and
+      # Playwright browsers (tracked as a follow-up), filter them out of the
+      # PR-blocking unit-test run. Their tests still build and the test
+      # discovery still happens — only execution is filtered.
+      - name: Test (unit-tier)
+        run: |
+          dotnet test Sunfish.slnx --no-build `
+            --filter "FullyQualifiedName!~Postgres.Tests&FullyQualifiedName!~BlobReplication.Tests&FullyQualifiedName!~A11y.Tests" `
+            --logger "trx" `
+            --results-directory TestResults
 
       - name: Upload test results
         if: always()
