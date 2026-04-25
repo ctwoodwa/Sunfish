@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.BusinessCases.Data;
 using Sunfish.Blocks.BusinessCases.FeatureManagement;
 using Sunfish.Blocks.BusinessCases.Services;
 using Sunfish.Foundation.FeatureManagement;
+using Sunfish.Foundation.Localization;
 using Sunfish.Foundation.Persistence;
 
 namespace Sunfish.Blocks.BusinessCases.DependencyInjection;
@@ -35,6 +37,11 @@ public static class BusinessCasesServiceCollectionExtensions
         services.AddSingleton<IBundleProvisioningService, InMemoryBundleProvisioningService>();
         services.AddSingleton<ISunfishEntityModule, BusinessCasesEntityModule>();
         services.AddSingleton<IEntitlementResolver, BundleEntitlementResolver>();
+
+        // Wave 2 Cluster C — Plan 2 Task 3.5: register the open-generic Sunfish localizer
+        // so consumers can resolve IStringLocalizer-equivalents against this block's
+        // SharedResource bundle. Idempotent via TryAddSingleton.
+        services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
 
         return services;
     }
