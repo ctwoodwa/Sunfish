@@ -5,4 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-SUNFISH_I18N_001 | Sunfish.I18n | Warning | RESX entry missing translator comment, ResxCommentAnalyzer
+SUNFISH_I18N_001 | Sunfish.I18n | Error | RESX entry missing translator comment, ResxCommentAnalyzer
