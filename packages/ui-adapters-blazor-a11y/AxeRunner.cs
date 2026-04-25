@@ -28,6 +28,15 @@ public sealed class AxeOptions
     /// <summary>Theme stylesheet URL or inline CSS to inject before running axe.
     /// Required for color-contrast rules. Pass <c>null</c> to skip theme injection.</summary>
     public string? ThemeCss { get; init; }
+
+    /// <summary>
+    /// CSS selector axe scopes its scan to. Defaults to <c>"main"</c> — the bridge's
+    /// HTML wrapper places the fragment inside a <c>&lt;main&gt;</c> landmark, so
+    /// page-level rules (page-has-heading-one, bypass, meta-viewport) which don't apply
+    /// to component fragments are scoped out by default. Pass <c>"document"</c> to scan
+    /// the whole document including the wrapper.
+    /// </summary>
+    public string IncludeSelector { get; init; } = "main";
 }
 
 /// <summary>
@@ -80,8 +89,11 @@ public static class AxeRunner
         await page.AddScriptTagAsync(new PageAddScriptTagOptions { Path = AxeCorePath }).ConfigureAwait(false);
 
         var optionsJson = SerializeAxeOptions(options);
+        var contextExpr = options.IncludeSelector == "document"
+            ? "document"
+            : $"document.querySelector('{options.IncludeSelector.Replace("'", "\\'")}') ?? document";
         var resultJson = await page.EvaluateAsync<JsonElement>(
-            $"async () => await axe.run(document, {optionsJson})").ConfigureAwait(false);
+            $"async () => await axe.run({contextExpr}, {optionsJson})").ConfigureAwait(false);
 
         return JsonSerializer.Deserialize<AxeResult>(resultJson.GetRawText(), JsonOptions)
             ?? new AxeResult();
