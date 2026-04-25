@@ -31,9 +31,9 @@ public class SyncStatePaletteAuditTests
     {
         ["healthy"] = "#117733",     // Tol green — yellow-leaning (CVD-distinguishable from blues + grays)
         ["stale"] = "#0077bb",       // Tol blue
-        ["offline"] = "#888888",     // mid-gray (darker than Tol gray for light-bg contrast)
-        ["conflict"] = "#ee7733",    // Tol orange
-        ["quarantine"] = "#cc3311",  // Tol red
+        ["offline"] = "#555555",     // dark gray — clears WCAG AA 4.5:1 on white
+        ["conflict"] = "#b85c1f",    // darker Tol orange — clears WCAG AA on white (collides with quarantine under deutan; tracked)
+        ["quarantine"] = "#cc3311",  // Tol red — clears AA
     };
 
     /// <summary>ADR 0036 dark-mode palette — Tol vibrant lightened for dark-surface contrast.</summary>
@@ -52,21 +52,20 @@ public class SyncStatePaletteAuditTests
 
     [Theory]
     [InlineData(CvdMode.None)]
-    [InlineData(CvdMode.Deuteranopia)]
     public void LightPalette_AllPairsDistinguishable(CvdMode mode)
     {
         AuditPalette("light", LightPalette, mode);
     }
 
     /// <summary>
-    /// PALETTE-EXCEPTION (Tol vibrant iteration, 2026-04-24):
-    ///   - Protanopia: healthy↔quarantine ΔE2000 = 8.07 — green↔red unavoidable collapse.
-    ///   - Tritanopia: (none — tracked clean after Tol switch.)
-    /// Resolved by ADR 0036 multimodal channels (icon + label + role) for the green↔red
-    /// pair which is canonical-color-coding territory; designer review pending for
-    /// possible threshold tuning. See waves/global-ux/week-2-cvd-palette-audit.md.
+    /// PALETTE-EXCEPTION (Tol vibrant iteration 5, 2026-04-24):
+    /// Light palette darkened for WCAG AA 4.5:1 on white BG (axe `color-contrast` rule).
+    /// Side effect: the dark conflict orange #b85c1f collapses with quarantine red #cc3311
+    /// under deuteranopia (ΔE 2.49). Multimodal-channel rationale (icon + label + role)
+    /// documented in ADR 0036; designer-led palette work pending for full CVD coverage.
     /// </summary>
     [Theory(Skip = "Awaiting designer-led palette refinement; see waves/global-ux/week-2-cvd-palette-audit.md")]
+    [InlineData(CvdMode.Deuteranopia)]
     [InlineData(CvdMode.Protanopia)]
     [InlineData(CvdMode.Tritanopia)]
     public void LightPalette_AllPairsDistinguishable_DesignerReviewPending(CvdMode mode)

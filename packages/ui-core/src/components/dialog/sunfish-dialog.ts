@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 
 @customElement('sunfish-dialog')
@@ -63,4 +63,41 @@ export class SunfishDialog extends LitElement {
       this.dispatchEvent(new CustomEvent('close'));
     }
   };
+
+  /**
+   * Auto-focus the first focusable child when the dialog becomes open. Honors
+   * the ADR 0034 a11y contract `focus.initial = "first-focusable-child"`. Looks
+   * up the slotted children (since dialog body content is projected via <slot>)
+   * and focuses the first focusable one. Falls back to focusing the dialog
+   * container so screen readers announce the dialog title.
+   */
+  protected updated(changedProperties: PropertyValues): void {
+    super.updated(changedProperties);
+    if (changedProperties.has('open') && this.open) {
+      this._focusFirstFocusableChild();
+    }
+  }
+
+  private _focusFirstFocusableChild(): void {
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const slot = this.shadowRoot?.querySelector('slot');
+    const slottedTargets: Element[] = (slot?.assignedElements({ flatten: true }) ?? [])
+      .flatMap((el) => [
+        ...(el.matches(focusableSelector) ? [el] : []),
+        ...Array.from(el.querySelectorAll(focusableSelector)),
+      ]);
+
+    const target = (slottedTargets[0] as HTMLElement | undefined)
+      ?? (this.shadowRoot?.querySelector('.dialog') as HTMLElement | null);
+
+    if (target) {
+      // Custom elements with shadow roots may need tabindex=-1 to be focusable.
+      if (!target.hasAttribute('tabindex') && !target.matches(focusableSelector)) {
+        target.setAttribute('tabindex', '-1');
+      }
+      // Defer to next microtask so layout settles after the open transition.
+      queueMicrotask(() => target.focus());
+    }
+  }
 }
