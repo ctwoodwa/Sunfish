@@ -17,6 +17,14 @@ jobs:
         with:
           global-json-file: global.json
 
+      # Anchor (accelerators/anchor/Sunfish.Anchor.csproj) targets net11.0-maccatalyst
+      # on non-Windows hosts; that target needs the macos and maui-tizen workloads
+      # which the runner image doesn't ship. `dotnet workload restore` reads every
+      # project under Sunfish.slnx and installs whatever they need. NETSDK1147
+      # (the previous failure mode) explicitly recommends this command.
+      - name: Restore .NET workloads
+        run: dotnet workload restore Sunfish.slnx
+
       - name: Restore
         run: dotnet restore Sunfish.slnx
 
