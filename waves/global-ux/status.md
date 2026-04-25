@@ -1,8 +1,8 @@
 # Global-First UX — Wave Status
 
-**Updated:** 2026-04-24 end of Phase 1 Week 1 + full Phase 1/2 planning landed
-**Current phase:** Phase 1 Week 2 execution (in flight)
-**Current focus:** Plan 2 Tasks 1.1-1.3 (XLIFF tooling) landed on main; Plan 3 Task 1.1 (MADLAD CLI scaffold) landed on main
+**Updated:** 2026-04-25 — Wave 1 status refresh from 4 parallel subagent reports + Wave 0 reconciliation outcome
+**Current phase:** Phase 1 Weeks 2-4 execution (in flight); Plan 2 Wk 4 polish landed; Plan 4 bridge-ready; Plans 3 / 4 / 4B Week 3 cascade NOT-STARTED
+**Current focus:** Wave 1 → Wave 2 re-prioritization gate (Plan 3 RED triggers `wave-1-reprioritize-needed` halt per loop plan v1.2 Task 1.F)
 
 ## Completed this week
 - Task 1: Scaffold `waves/global-ux/` tracking directory (`9f14858b`)
@@ -38,11 +38,37 @@
 
 All five gates are GREEN except Weblate legal which is YELLOW (not a rollback trigger per spec Section 1). One material pivot recorded: ICU4N → SmartFormat.NET + .NET 8 System.Globalization (see `decisions.md` 2026-04-25). Pivot is validated by passing smoke tests; downstream Tasks 14-15 re-scope landed cleanly in ~1 hour wall clock.
 
-## In progress
-- (none)
+## In progress (2026-04-25 — from Wave 1 sub-reports)
 
-## Blocked
-- (none)
+- **Plan 2 (Loc-Infra cascade)** — verdict YELLOW. Workstream A (XLIFF tooling, 1.1-1.5) DONE; Week 4 polish (4.1 hot-reload, 4.2 ProblemDetailsFactory, 4.3 analyzer) DONE on main via PR #66 + cascading commits; Workstream B run-time tasks (2.2 / 2.4 / 2.5) gated on a running Weblate VM (IN-PROGRESS or NOT-STARTED). 4.4 Arabic E2E IN-PROGRESS (XLIFF MSBuild wiring on PR #76 not yet on main). Detail: `waves/global-ux/week-3-plan-2-status.md`.
+- **Plan 4 (A11y Foundation)** — verdict YELLOW. Workstream A (bUnit-to-axe bridge) DONE end-to-end with BRIDGE-READY verdict (`28663d78`); 36-scenario matrix green ~7s; Workstream B production `postVisit` hook landed (`fdee0e25`) and caught real pilot bugs which were fixed (`729e9c39`). Detail: `waves/global-ux/week-3-plan-4-status.md`.
+- **Plan 4B (UI Sensory Cascade)** — verdict YELLOW. 8 DONE / 3 IN-PROGRESS / 12 NOT-STARTED across 23 tasks. §5 SyncState gate landed (CVD audit `c4d8e344`, palette rework `295f39bd`, ADR 0036 accepted `449d8bfb`); §2 cascade clean (`6cc20102`, `08e2e0cd` drove audit 173→0). §6 motion only has harness scaffolding. Detail: `waves/global-ux/week-3-plan-4b-status.md`.
+
+## Blocked / RED (2026-04-25)
+
+- **Plan 3 (Translator-Assist)** — verdict **RED**. 1 of 19 tasks DONE (Task 1.1 LocExtraction CLI scaffold `52c9941e`); 17 NOT-STARTED. No extractor body, no Husky hook, no LocQuality tool, no Weblate plugins, no MADLAD draft generator, no `madlad-smoke.yml` / `loc-quality.yml`, no `docs/i18n/` (recruitment runbook + review guide absent). Plan 3 dependencies on Plan 2 are largely landed, so the gating constraint is execution bandwidth, not infra. Detail: `waves/global-ux/week-3-plan-3-status.md`.
+
+## Plan 4 30-day kill-trigger watch
+
+Plan 4's kill trigger fires **2026-05-24** (29 days from today). Week 3 cascade unstarted means a scope-cut conversation may be needed proactively — flagged for human owner.
+
+## Wave 0 reconciliation outcome (2026-04-25)
+
+Wave 0 of the reconciliation+cascade loop ([plan](../../docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md)) verified that the local Plan 2 Task 4.x cascade work and PR #66's cascade work converged byte-identical across all 11 overlap files. Diff memo at `waves/global-ux/reconciliation-pr66-diff-memo.md`. Shipped via PR [#79](https://github.com/ctwoodwa/Sunfish/pull/79) (squash-merged as `ca621bb5`). Plan v1.1 hardening shipped via PR [#80](https://github.com/ctwoodwa/Sunfish/pull/80). Plan v1.2 council remediation in PR [#81](https://github.com/ctwoodwa/Sunfish/pull/81) (auto-merge armed).
+
+## Wave 1 re-prioritization gate (Task 1.F, v1.2)
+
+Per loop plan v1.2 decision matrix:
+- **Any RED** → halt loop with `Halt reason: wave-1-reprioritize-needed`; surface to human owner with named recommendation.
+
+**Recommendation to human owner:** Plan 3 RED — recommend pausing Wave 2 cluster cascade (600-800k token spend) and instead advancing Plan 3's most critical NOT-STARTED tasks (Husky pre-commit hook for placeholder validation, LocQuality CLI scaffold, MADLAD draft generator). Plan 3 is the only translator-facing system; without it, the cascade infra Wave 2 builds has no end-to-end validator.
+
+**Alternatives the human owner may select:**
+1. **proceed** — accept Plan 3 RED; continue Wave 2 cluster cascade as planned. Plan 3 advances in parallel (separate plan/loop).
+2. **pivot-to-plan-3** — halt this plan; author a new loop plan for Plan 3 advancement; resume this plan after Plan 3 reaches YELLOW.
+3. **scope-cut** — proceed Wave 2 with reduced scope (e.g., skip Cluster D1 = ui-core + ui-adapters-blazor; only do A/B/C/E).
+
+Human owner records decision via `user-reprioritization-decision: proceed | pivot-to-plan-3 | scope-cut` in tracker.
 
 ## Decision ripple — ICU4N pivot
 - **Task 14** (scaffold ICU4N wrapper) needs re-scoping to use SmartFormat.NET behind
@@ -56,12 +82,12 @@ All five gates are GREEN except Weblate legal which is YELLOW (not a rollback tr
 | Plan | Scope | Weeks | Lines | Status |
 |---|---|---|---|---|
 | [Plan 1](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-1-plan.md) | Tooling pilot | Week 1 | 1548 | Complete (GO verdict) |
-| [Plan 2](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-loc-infra-plan.md) | Loc-Infra cascade (§3A) | 2-4 | 448 | Ready to execute |
-| [Plan 3](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-translator-assist-plan.md) | Translator-Assist (§3B) | 2-4 (parallel) | 531 | Ready to execute |
-| [Plan 4](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-a11y-foundation-plan.md) | A11y Foundation cascade (§7) | 2-4 (parallel) | 540 | Ready to execute |
-| [Plan 4B](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-3-6-ui-sensory-cascade-plan.md) | ui-core sensory cascade (§2 + §5 + §6) | 3-6 (parallel) | 554 | Ready to execute |
-| [Plan 5](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-6-ci-gates-plan.md) | CI Gates (§8) — Phase 1 exit gate | Week 6 | 459 | Ready — depends on Plans 2/3/4/4B output |
-| [Plan 6](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-2-cascade-plan.md) | Phase 2 cascade (kitchen-sink + Bridge + Anchor + docs) | 5-12 | 648 | Ready — blocked on Plan 5 exit gate |
+| [Plan 2](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-loc-infra-plan.md) | Loc-Infra cascade (§3A) | 2-4 | 448 | **YELLOW** — Wk 4 polish DONE; Wk 3 cascade only 3 of ~20 packages (foundation/anchor/bridge); Workstream B run-time tasks gated on Weblate VM. Detail: `week-3-plan-2-status.md` |
+| [Plan 3](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-translator-assist-plan.md) | Translator-Assist (§3B) | 2-4 (parallel) | 531 | **RED** — 1 of 19 tasks DONE; bandwidth-limited not infra-limited. Detail: `week-3-plan-3-status.md` |
+| [Plan 4](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-a11y-foundation-plan.md) | A11y Foundation cascade (§7) | 2-4 (parallel) | 540 | **YELLOW** — Workstream A (bUnit-axe bridge) DONE end-to-end; Wk 3 cascade NOT-STARTED; 30-day kill trigger fires 2026-05-24. Detail: `week-3-plan-4-status.md` |
+| [Plan 4B](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-3-6-ui-sensory-cascade-plan.md) | ui-core sensory cascade (§2 + §5 + §6) | 3-6 (parallel) | 554 | **YELLOW** — 8 DONE / 3 IN-PROGRESS / 12 NOT-STARTED; §5 SyncState gate landed; §2 cascade clean; §6 motion only scaffolded. Detail: `week-3-plan-4b-status.md` |
+| [Plan 5](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-6-ci-gates-plan.md) | CI Gates (§8) — Phase 1 exit gate | Week 6 | 459 | **BLOCKED** on Plan 3 RED + Plans 2/4/4B Wk 3 cascade unstarted |
+| [Plan 6](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-2-cascade-plan.md) | Phase 2 cascade (kitchen-sink + Bridge + Anchor + docs) | 5-12 | 648 | Ready — blocked on Plan 5 exit gate (transitively blocked) |
 
 **Planning totals:** 7 plans, 4,728 lines across Phase 1 + Phase 2 (~20 weeks of scoped work, with translator-vendor budget of ~$745k envelope per Plan 6).
 
