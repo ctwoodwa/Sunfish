@@ -27,7 +27,6 @@
 
 .sf-notifbell__scrim {
     position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
     inset: 0;
     background: transparent;
     z-index: 60;
@@ -95,7 +94,7 @@
 .sf-notifbell__more-menu {
     position: absolute;
     top: calc(100% + 6px);
-    right: 0;
+    inset-inline-end: 0;
     min-width: 180px;
     background: var(--mnb-bg);
     border: 1px solid var(--mnb-border);
@@ -118,7 +117,7 @@
     border-radius: 6px;
     font-size: 13px;
     color: var(--mnb-text);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
 }
 .sf-notifbell__more-item:hover { background: var(--mnb-hover); }
@@ -158,7 +157,7 @@
     border: none;
     border-radius: 8px;
     color: var(--mnb-text);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     position: relative;
 }

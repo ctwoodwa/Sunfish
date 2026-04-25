@@ -153,7 +153,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 
 .icons-size-label {
@@ -179,12 +179,12 @@
     color: var(--ni-text-muted);
     background: var(--ni-surface-raised);
     border: none;
-    border-right: 1px solid var(--ni-border);
+    border-inline-end: 1px solid var(--ni-border);
     cursor: pointer;
     font-family: inherit;
     transition: background 180ms var(--ni-ease), color 180ms var(--ni-ease);
 }
-.icons-size-btn:last-child { border-right: none; }
+.icons-size-btn:last-child { border-inline-end: none; }
 .icons-size-btn:hover { background: var(--ni-surface-offset); }
 .icons-size-btn.active { background: var(--ni-primary); color: #fff; }
 
@@ -363,7 +363,7 @@
 .icons-detail-close {
     position: absolute;
     top: 14px;
-    right: 14px;
+    inset-inline-end: 14px;
     width: 34px;
     height: 34px;
     display: flex;
@@ -515,7 +515,7 @@
 .icons-toast {
     position: fixed;
     bottom: 32px;
-    left: 50%;
+    inset-inline-start: 50%;
     transform: translateX(-50%) translateY(16px);
     background: var(--ni-text);
     color: var(--ni-bg);
@@ -569,7 +569,7 @@
     .icons-header { padding: 10px 16px; }
     .icons-toolbar-inner { flex-wrap: wrap; padding: 10px 16px; }
     .icons-search-wrap { max-width: none; flex-basis: 100%; order: 1; }
-    .icons-size-controls { order: 2; margin-left: 0; }
+    .icons-size-controls { order: 2; margin-inline-start: 0; }
     .icons-cat-tabs { padding: 0 16px 10px; }
     .icons-grid-section { padding: 24px 16px 60px; }
     .icons-footer { padding: 24px 16px; }

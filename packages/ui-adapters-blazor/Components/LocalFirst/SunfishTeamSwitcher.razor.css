@@ -39,7 +39,7 @@
     font-family: var(--sf-ts-font);
     font-size: var(--sf-ts-size);
     line-height: var(--sf-ts-line);
-    border-right: 1px solid var(--sf-ts-rule);
+    border-inline-end: 1px solid var(--sf-ts-rule);
     box-sizing: border-box;
 }
 
@@ -72,11 +72,11 @@
     width: 100%;
     padding: var(--sf-ts-row-pad-y) var(--sf-ts-row-pad-x);
     border: 0;
-    border-left: 3px solid transparent;
+    border-inline-start: 3px solid transparent;
     background: transparent;
     color: inherit;
     font: inherit;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     transition: opacity 60ms linear;
 }
@@ -92,7 +92,7 @@
 
 /* Active row — paper's left stripe in ink-accent + bolder display type. */
 .sf-team-switcher__item--active .sf-team-switcher__item {
-    border-left-color: var(--sf-ts-accent);
+    border-inline-start-color: var(--sf-ts-accent);
     background: rgba(139, 58, 58, 0.06);
 }
 
@@ -188,7 +188,7 @@
     color: var(--sf-ts-ink-muted);
     font: inherit;
     font-size: 13px;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     transition: opacity 60ms linear;
 }

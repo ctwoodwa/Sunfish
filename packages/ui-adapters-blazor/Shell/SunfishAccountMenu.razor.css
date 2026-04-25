@@ -129,7 +129,7 @@
 .sf-account-menu__panel {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
+    inset-inline-start: 0;
     z-index: 1000;
     width: var(--mam-width);
     background: var(--mam-bg);
@@ -281,7 +281,7 @@
     border-radius: 8px;
     color: var(--mam-text);
     font-size: var(--mam-font-size);
-    text-align: left;
+    text-align: start;
     cursor: pointer;
     line-height: 1.2;
     font-family: inherit;
@@ -344,7 +344,7 @@
 
 .sf-account-menu__row-label {
     flex: 1 1 auto;
-    text-align: left;
+    text-align: start;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -354,7 +354,7 @@
     flex-shrink: 0;
     color: var(--mam-text-muted);
     font-size: 12px;
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 
 .sf-account-menu__row-chevron {
@@ -376,7 +376,7 @@
     color: var(--mam-primary);
     display: flex;
     align-items: center;
-    margin-left: auto;
+    margin-inline-start: auto;
 }
 
 .sf-account-menu__row-check .sf-account-menu__icon {
@@ -432,8 +432,8 @@
 @media (max-width: 640px) {
     .sf-account-menu__panel {
         --mam-width: calc(100vw - 32px);
-        left: auto;
-        right: 0;
+        inset-inline-start: auto;
+        inset-inline-end: 0;
         max-width: 320px;
     }
 }

@@ -122,7 +122,7 @@ a:hover {
     color: var(--color-text) !important;
     text-decoration: none !important;
     white-space: nowrap;
-    margin-right: 1rem;
+    margin-inline-end: 1rem;
     flex-shrink: 0;
 }
 
@@ -219,7 +219,6 @@ a:hover {
 
 .search-overlay {
     position: fixed;
-    top: 60px; right: 0; bottom: 0; left: 0;
     inset: 60px 0 0 0;
     z-index: 999;
     background: rgba(0,0,0,.15);
@@ -232,7 +231,7 @@ a:hover {
 .search-results-panel {
     position: absolute;
     top: 8px;
-    right: 64px;
+    inset-inline-end: 64px;
     width: 360px;
     max-height: 400px;
     overflow-y: auto;
@@ -256,7 +255,7 @@ a:hover {
     font-size: 0.9rem;
     font-family: inherit;
     cursor: pointer;
-    text-align: left;
+    text-align: start;
     transition: background 100ms ease, color 100ms ease;
 }
 
@@ -340,7 +339,7 @@ a:hover {
     font-size: 0.875rem;
     color: var(--color-text-muted) !important;
     text-decoration: none !important;
-    border-left: 2px solid transparent;
+    border-inline-start: 2px solid transparent;
     transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
@@ -351,7 +350,7 @@ a:hover {
 
 .toc-link.active {
     color: var(--color-primary) !important;
-    border-left-color: var(--color-primary);
+    border-inline-start-color: var(--color-primary);
     font-weight: 600;
 }
 
@@ -380,7 +379,7 @@ a:hover {
 }
 
 .content-full {
-    padding-left: 0.75rem;
+    padding-inline-start: 0.75rem;
 }
 
 
@@ -425,7 +424,7 @@ a:hover {
     text-transform: uppercase;
     color: var(--color-text);
     margin-bottom: 10px;
-    padding-left: 10px;
+    padding-inline-start: 10px;
 }
 
 .affix-link {
@@ -434,18 +433,18 @@ a:hover {
     font-size: 0.8125rem;
     color: var(--color-text-muted) !important;
     text-decoration: none !important;
-    border-left: 2px solid var(--color-divider);
+    border-inline-start: 2px solid var(--color-divider);
     transition: color 0.15s ease-in-out, border-color 0.15s ease-in-out;
 }
 
 .affix-link:hover {
     color: var(--color-text) !important;
-    border-left-color: var(--color-text-faint);
+    border-inline-start-color: var(--color-text-faint);
     text-decoration: none !important;
 }
 
 .affix-link--sub {
-    padding-left: 20px;
+    padding-inline-start: 20px;
     font-size: 0.75rem;
 }
 
@@ -611,7 +610,7 @@ a:hover {
 
 .component-footer ul {
     margin: 0;
-    padding-left: 20px;
+    padding-inline-start: 20px;
 }
 
 .component-footer li {
@@ -654,8 +653,8 @@ a:hover {
 }
 
 .next-prev-link.next {
-    margin-left: auto;
-    text-align: right;
+    margin-inline-start: auto;
+    text-align: end;
 }
 
 .next-prev-label {
@@ -842,7 +841,7 @@ a:hover {
 }
 
 .landing-providers th {
-    text-align: left;
+    text-align: start;
     font-weight: 600;
     color: var(--color-text);
     padding: 10px 16px;
@@ -927,7 +926,7 @@ a:hover {
 }
 
 .a11y-table th {
-    text-align: left;
+    text-align: start;
     font-weight: 600;
     color: var(--color-text);
     padding: 8px 12px;
@@ -961,7 +960,7 @@ a:hover {
 
 .accessibility-info ul {
     margin: 0;
-    padding-left: 20px;
+    padding-inline-start: 20px;
 }
 
 .accessibility-info li {
@@ -1000,21 +999,21 @@ a:hover {
 
 @media (max-width: 1100px) {
     .affix-sidebar { display: none; }
-    .content-area { padding-left: 1rem; padding-right: 1rem; }
+    .content-area { padding-inline-start: 1rem; padding-inline-end: 1rem; }
 }
 
 @media (max-width: 768px) {
     .top-navbar-inner { padding: 0 0.5rem; }
     .demo-navbar-search { width: 160px; }
     .toc-sidebar { display: none; }
-    .content-area { padding-left: 0.5rem; padding-right: 0.5rem; }
+    .content-area { padding-inline-start: 0.5rem; padding-inline-end: 0.5rem; }
     .main-container { padding: 0 0.5rem; }
     .component-tabs { overflow-x: auto; }
     .component-tab { white-space: nowrap; }
     .landing-page { padding: 24px 0; }
     .next-prev-nav { flex-direction: column; }
     .next-prev-link { max-width: 100%; }
-    .next-prev-link.next { text-align: left; }
+    .next-prev-link.next { text-align: start; }
 }
 
 /* ── Theme Picker ── */
@@ -1049,7 +1048,6 @@ a:hover {
 
 .theme-picker-overlay {
     position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
     inset: 0;
     z-index: 999;
 }
@@ -1057,7 +1055,7 @@ a:hover {
 .theme-picker-dropdown {
     position: absolute;
     top: calc(100% + 6px);
-    right: 0;
+    inset-inline-end: 0;
     z-index: 1000;
     min-width: 180px;
     background: var(--color-surface);
@@ -1095,7 +1093,7 @@ a:hover {
     font-family: inherit;
     cursor: pointer;
     transition: background 0.1s;
-    text-align: left;
+    text-align: start;
 }
 
 .theme-picker-option:hover {
@@ -1121,7 +1119,7 @@ a:hover {
 }
 
 .theme-picker-check {
-    margin-left: auto;
+    margin-inline-start: auto;
     flex-shrink: 0;
 }
 
