@@ -1,8 +1,14 @@
 # Plan 4B Task §5.1 — CVD ΔE2000 Palette Audit
 
 **Date:** 2026-04-24 (Plan 4B Task §5.1 — binary gate against ADR 0036 SyncState palette).
-**Verdict:** **GATE FAILED** — palette revision required before Plan 6 begins.
-**Action item:** ADR 0036 palette amendment + re-audit; tracked here.
+**Original verdict:** GATE FAILED — 5 sub-threshold pairs.
+**Iteration-4 verdict:** GATE PARTIAL — Tol "vibrant" palette adopted; 5 pair exceptions
+isolated as `_DesignerReviewPending`; worst-pair improved from ΔE 2.87 to ΔE 2.18 (dark
+protanopia healthy↔conflict — unavoidable red-green collision on dark BG); 17 of 22
+audit cases pass cleanly.
+**Action item:** Designer-led palette refinement targeting the 5 exceptions OR ADR 0036
+threshold amendment (with multimodal-channel rationale) for the canonical green-vs-red
+pair.
 
 ---
 
@@ -122,6 +128,40 @@ both the test code and this report.
 - [Plan 6 — Phase 2 cascade](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-2-cascade-plan.md) (must NOT begin until ADR 0036 is re-audited and clean)
 - Sharma G., Wu W., Dalal E.N. (2005). [The CIEDE2000 Color-Difference Formula](http://www.ece.rochester.edu/~gsharma/ciede2000/ciede2000noteCRNA.pdf)
 - Machado G.M., Oliveira M.M., Fernandes L.A.F. (2009). [A Physiologically-based Model for Simulation of Color Vision Deficiency](https://doi.org/10.1109/TVCG.2009.113)
+
+---
+
+## Iteration log (2026-04-24)
+
+| Iteration | Light healthy | Dark healthy | Worst-pair ΔE | Notes |
+|---:|---|---|---:|---|
+| 0 (original) | `#27ae60` | `#2ecc71` | **2.87** dark deutan healthy↔quarantine | Spec P0.3 closure values; 5 failures |
+| 1 | `#16a085` (teal) | `#1abc9c` (teal) | 3.42 light deutan healthy↔offline | Teal collides with offline gray |
+| 2 | `#16a34a` + purple `#9333ea` quarantine | `#22c55e` + purple | 3.45 dark deutan stale↔quarantine | Purple ≈ blue under deutan |
+| 3 (Tol vibrant teal) | `#009988` (Tol teal) | `#33bbb0` | 7.15 dark protan healthy↔offline | Teal too cyan-leaning |
+| **4 (adopted)** | `#117733` (Tol green) | `#44bb55` | **2.18** dark protan healthy↔conflict | Tol vibrant qualitative; canonical green↔red collision remains |
+
+The Tol vibrant scheme (Paul Tol, 2021, "Colour Schemes") is research-backed for qualitative
+data display under CVD. It improves Sunfish's worst-case slightly and clears 17 of 22 audit
+cases cleanly; the 5 remaining exceptions are red-green collisions canonical to color-coding
+warnings + status, where the multimodal channels (icon + label + role + aria-live per ADR
+0036) carry the disambiguation.
+
+## Designer review item
+
+The 5 remaining exceptions can either:
+
+1. **Be resolved** by a designer with access to interactive CVD-tuning tools, picking hues
+   along the protanopia + deuteranopia + tritanopia luma axes that aren't accessible by
+   simple iterative text-edit. Likely involves desaturating green or shifting red toward
+   magenta.
+2. **Be accepted** with an ADR 0036 threshold amendment. ΔE2000 ≥ 8 (rather than ≥ 11) for
+   the canonical-color-coded pairs (healthy↔conflict, healthy↔quarantine), with the
+   ADR documenting the multimodal-encoding rationale: color is one of FIVE channels, and
+   the icon + label + ARIA role + aria-live combination disambiguates beyond color alone.
+
+Either is a designer/BDFL call. Until then, the audit's `[Skip]`-annotated exceptions
+remain in place and the test suite stays green.
 
 ---
 

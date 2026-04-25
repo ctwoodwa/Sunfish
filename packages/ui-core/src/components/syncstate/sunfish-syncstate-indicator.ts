@@ -51,11 +51,12 @@ const LABELS_LONG: Record<SyncState, string> = {
 export class SunfishSyncstateIndicator extends LitElement {
   static styles = css`
     :host { display: inline-flex; align-items: center; gap: var(--sf-space-2, 8px); font: inherit; }
-    :host([state="healthy"])    { color: var(--sf-syncstate-healthy-bg, #27ae60); }
-    :host([state="stale"])      { color: var(--sf-syncstate-stale-bg, #3498db); }
-    :host([state="offline"])    { color: var(--sf-syncstate-offline-bg, #7f8c8d); }
-    :host([state="conflict"])   { color: var(--sf-syncstate-conflict-bg, #e67e22); }
-    :host([state="quarantine"]) { color: var(--sf-syncstate-quarantine-bg, #c0392b); }
+    /* Palette per ADR 0036 (Paul Tol vibrant) — CVD-vetted within tracked exceptions. */
+    :host([state="healthy"])    { color: var(--sf-syncstate-healthy-bg, #117733); }
+    :host([state="stale"])      { color: var(--sf-syncstate-stale-bg, #0077bb); }
+    :host([state="offline"])    { color: var(--sf-syncstate-offline-bg, #888888); }
+    :host([state="conflict"])   { color: var(--sf-syncstate-conflict-bg, #ee7733); }
+    :host([state="quarantine"]) { color: var(--sf-syncstate-quarantine-bg, #cc3311); }
     svg { inline-size: 20px; block-size: 20px; flex-shrink: 0; }
     .label {
       max-inline-size: var(--sf-syncstate-label-max, 28ch);

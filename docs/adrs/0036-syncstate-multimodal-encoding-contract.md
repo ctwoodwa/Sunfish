@@ -1,6 +1,6 @@
 # ADR 0036 — SyncState Multimodal Encoding Contract
 
-**Status:** Accepted (2026-04-24)
+**Status:** Accepted (2026-04-24); palette amended after CVD audit (2026-04-24, iteration 4)
 **Date:** 2026-04-24
 **Deciders:** Chris Wood (BDFL)
 **Related ADRs:** [0034](./0034-a11y-harness-per-adapter.md) (a11y harness per adapter), [0017](./0017-web-components-lit-technical-basis.md) (Web Components / Lit)
@@ -40,11 +40,17 @@ The five SyncStates use this five-channel encoding, **all five channels MUST agr
 
 | State | Color (light) | Color (dark) | Icon (Material name) | Short label | Long label | ARIA role | aria-live |
 |---|---|---|---|---|---|---|---|
-| `healthy` | `#27ae60` | `#2ecc71` | `check_circle` | Synced | Synced with all peers | `status` | `polite` |
-| `stale` | `#3498db` | `#5dade2` | `schedule` | Stale | Last synced earlier | `status` | `polite` |
-| `offline` | `#7f8c8d` | `#95a5a6` | `cloud_off` | Offline | Offline — saved locally | `status` | `polite` |
-| `conflict` | `#e67e22` | `#f39c12` | `call_split` | Conflict | Review required — two versions diverged | `alert` | `assertive` |
-| `quarantine` | `#c0392b` | `#ff6b6b` | `do_not_disturb_on` | Held | Can't sync — open diagnostics | `alert` | `assertive` |
+| `healthy` | `#117733` | `#44bb55` | `check_circle` | Synced | Synced with all peers | `status` | `polite` |
+| `stale` | `#0077bb` | `#3399dd` | `schedule` | Stale | Last synced earlier | `status` | `polite` |
+| `offline` | `#888888` | `#bbbbbb` | `cloud_off` | Offline | Offline — saved locally | `status` | `polite` |
+| `conflict` | `#ee7733` | `#ff9955` | `call_split` | Conflict | Review required — two versions diverged | `alert` | `assertive` |
+| `quarantine` | `#cc3311` | `#ee5533` | `do_not_disturb_on` | Held | Can't sync — open diagnostics | `alert` | `assertive` |
+
+**Palette source:** Paul Tol "vibrant" qualitative scheme adapted for Sunfish — research-vetted
+for CVD distinguishability (Tol, "Colour Schemes", 2021). Original ADR 0036 palette failed
+the §5 CVD ΔE2000 audit on first run; this is the iteration-4 result. See
+[`waves/global-ux/week-2-cvd-palette-audit.md`](../../waves/global-ux/week-2-cvd-palette-audit.md)
+for the iteration log + remaining pair exceptions awaiting designer review.
 
 ### Channel rules
 

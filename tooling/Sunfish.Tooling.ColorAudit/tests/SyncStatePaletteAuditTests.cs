@@ -21,24 +21,29 @@ public class SyncStatePaletteAuditTests
     /// <summary>Distinguishability threshold per spec §5: ΔE2000 ≥ 11 = "clearly distinguishable at a glance".</summary>
     private const double Threshold = 11.0;
 
-    /// <summary>ADR 0036 light-mode palette. Keep in sync with ADR + pilot component.</summary>
+    /// <summary>
+    /// ADR 0036 light-mode palette — Paul Tol "vibrant" qualitative scheme adapted for Sunfish,
+    /// research-vetted for CVD distinguishability where attainable. Keep in sync with ADR + pilot
+    /// component. See <c>waves/global-ux/week-2-cvd-palette-audit.md</c> for the iteration log
+    /// and pair-exception rationale.
+    /// </summary>
     private static readonly Dictionary<string, string> LightPalette = new()
     {
-        ["healthy"] = "#27ae60",
-        ["stale"] = "#3498db",
-        ["offline"] = "#7f8c8d",
-        ["conflict"] = "#e67e22",
-        ["quarantine"] = "#c0392b",
+        ["healthy"] = "#117733",     // Tol green — yellow-leaning (CVD-distinguishable from blues + grays)
+        ["stale"] = "#0077bb",       // Tol blue
+        ["offline"] = "#888888",     // mid-gray (darker than Tol gray for light-bg contrast)
+        ["conflict"] = "#ee7733",    // Tol orange
+        ["quarantine"] = "#cc3311",  // Tol red
     };
 
-    /// <summary>ADR 0036 dark-mode palette.</summary>
+    /// <summary>ADR 0036 dark-mode palette — Tol vibrant lightened for dark-surface contrast.</summary>
     private static readonly Dictionary<string, string> DarkPalette = new()
     {
-        ["healthy"] = "#2ecc71",
-        ["stale"] = "#5dade2",
-        ["offline"] = "#95a5a6",
-        ["conflict"] = "#f39c12",
-        ["quarantine"] = "#ff6b6b",
+        ["healthy"] = "#44bb55",     // Tol green lightened — yellow-leaning green
+        ["stale"] = "#3399dd",       // Tol blue lightened
+        ["offline"] = "#bbbbbb",     // Tol gray — light enough for dark-bg contrast
+        ["conflict"] = "#ff9955",    // Tol orange lightened
+        ["quarantine"] = "#ee5533",  // Tol red lightened
     };
 
     private readonly ITestOutputHelper _output;
@@ -54,16 +59,17 @@ public class SyncStatePaletteAuditTests
     }
 
     /// <summary>
-    /// PALETTE-REVISION-PENDING: light-mode palette has 2 sub-threshold pairs:
-    ///   - Protanopia: healthy↔conflict ΔE2000 = 9.62 (target ≥ 11)
-    ///   - Tritanopia: healthy↔stale     ΔE2000 = 8.97 (target ≥ 11)
-    /// Tracked in waves/global-ux/week-2-cvd-palette-audit.md. Re-enable once ADR 0036
-    /// palette is revised + re-audited.
+    /// PALETTE-EXCEPTION (Tol vibrant iteration, 2026-04-24):
+    ///   - Protanopia: healthy↔quarantine ΔE2000 = 8.07 — green↔red unavoidable collapse.
+    ///   - Tritanopia: (none — tracked clean after Tol switch.)
+    /// Resolved by ADR 0036 multimodal channels (icon + label + role) for the green↔red
+    /// pair which is canonical-color-coding territory; designer review pending for
+    /// possible threshold tuning. See waves/global-ux/week-2-cvd-palette-audit.md.
     /// </summary>
-    [Theory(Skip = "Awaiting ADR 0036 palette revision; see waves/global-ux/week-2-cvd-palette-audit.md")]
+    [Theory(Skip = "Awaiting designer-led palette refinement; see waves/global-ux/week-2-cvd-palette-audit.md")]
     [InlineData(CvdMode.Protanopia)]
     [InlineData(CvdMode.Tritanopia)]
-    public void LightPalette_AllPairsDistinguishable_PendingRevision(CvdMode mode)
+    public void LightPalette_AllPairsDistinguishable_DesignerReviewPending(CvdMode mode)
     {
         AuditPalette("light", LightPalette, mode);
     }
@@ -76,19 +82,19 @@ public class SyncStatePaletteAuditTests
     }
 
     /// <summary>
-    /// PALETTE-REVISION-PENDING: dark-mode palette has 4 sub-threshold pairs:
-    ///   - Deuteranopia: healthy↔quarantine ΔE2000 = 2.87 (target ≥ 11) — significant fail.
-    ///   - Protanopia:    healthy↔conflict   ΔE2000 = 10.18 (target ≥ 11)
-    ///   - Tritanopia:    healthy↔stale      ΔE2000 = 9.05 (target ≥ 11)
-    ///   - Tritanopia:    conflict↔quarantine ΔE2000 = 10.29 (target ≥ 11)
-    /// The dark deuteranopia healthy↔quarantine pair is the worst offender by margin.
-    /// Tracked in waves/global-ux/week-2-cvd-palette-audit.md.
+    /// PALETTE-EXCEPTION (Tol vibrant iteration, 2026-04-24):
+    ///   - Deuteranopia: healthy↔conflict 9.12; healthy↔quarantine 6.79
+    ///   - Protanopia:    healthy↔conflict 2.18 — severe red-green collapse on dark BG
+    ///   - Tritanopia:    healthy↔stale    9.99
+    /// Worst offender: dark protanopia healthy↔conflict at 2.18. Designer-led tuning
+    /// required for dark mode; alternative hue family (e.g. magenta-for-quarantine,
+    /// teal-for-healthy) under consideration. See audit report for iteration history.
     /// </summary>
-    [Theory(Skip = "Awaiting ADR 0036 palette revision; see waves/global-ux/week-2-cvd-palette-audit.md")]
+    [Theory(Skip = "Awaiting designer-led palette refinement; see waves/global-ux/week-2-cvd-palette-audit.md")]
     [InlineData(CvdMode.Deuteranopia)]
     [InlineData(CvdMode.Protanopia)]
     [InlineData(CvdMode.Tritanopia)]
-    public void DarkPalette_AllPairsDistinguishable_PendingRevision(CvdMode mode)
+    public void DarkPalette_AllPairsDistinguishable_DesignerReviewPending(CvdMode mode)
     {
         AuditPalette("dark", DarkPalette, mode);
     }
