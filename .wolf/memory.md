@@ -2524,3 +2524,245 @@
 | 08:41 | Created accelerators/bridge/deploy/k8s/40-network-policies.yaml | — | ~1017 |
 | 08:41 | Created accelerators/bridge/deploy/k8s/kustomization.yaml | — | ~509 |
 | 08:42 | Created accelerators/bridge/deploy/k8s/README.md | — | ~1456 |
+| 17:37 | Edited waves/global-ux/status.md | COMPLETE() → execution() | ~48 |
+| 17:37 | Edited waves/global-ux/decisions.md | expanded (+31 lines) | ~484 |
+| 17:37 | Session end: 87 writes across 41 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 20 reads | ~191594 tok |
+| 17:58 | Created tooling/Sunfish.Tooling.LocalizationXliff/SunfishResxToXliffTask.cs | — | ~2133 |
+| 17:59 | Created tooling/Sunfish.Tooling.LocalizationXliff/SunfishXliffToResxTask.cs | — | ~1142 |
+| 17:59 | Edited tooling/Sunfish.Tooling.LocalizationXliff/SunfishResxToXliffTask.cs | inline fix | ~22 |
+| 17:59 | Edited tooling/Sunfish.Tooling.LocalizationXliff/SunfishXliffToResxTask.cs | inline fix | ~22 |
+| 17:59 | Created tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj | — | ~208 |
+| 18:00 | Created tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | — | ~2089 |
+| 18:00 | Created tooling/Sunfish.Tooling.LocalizationXliff/tests/TwelveLocaleTests.cs | — | ~1624 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/Sunfish.Tooling.LocalizationXliff.csproj | 4→9 lines | ~94 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj | 7→11 lines | ~158 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | 6→4 lines | ~17 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | modified ResxFile_SaveLoad_PreservesEntries() | ~55 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | 5→5 lines | ~60 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | inline fix | ~31 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs | modified ResxFile_SaveLoad_RoundTripsAcrossKeyShapes() | ~226 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/TwelveLocaleTests.cs | inline fix | ~33 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/TwelveLocaleTests.cs | inline fix | ~32 |
+| 18:01 | Edited tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj | 2→1 lines | ~15 |
+| 18:03 | Created waves/global-ux/week-2-xliff-roundtrip-report.md | — | ~1692 |
+| 18:03 | Session end: 105 writes across 47 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 20 reads | ~201935 tok |
+| 18:24 | Created infra/weblate/docker-compose.yml | — | ~895 |
+| 18:25 | Created infra/weblate/README.md | — | ~1632 |
+| 18:26 | Created infra/weblate/mt-backends.md | — | ~1631 |
+| 18:27 | Created waves/global-ux/week-2-weblate-ops-runbook.md | — | ~2278 |
+| 18:27 | Created localization/glossary/sunfish-glossary.tbx | — | ~2280 |
+| 18:28 | Session end: 110 writes across 51 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 20 reads | ~211209 tok |
+| 18:49 | Created packages/ui-adapters-blazor-a11y/Sunfish.UIAdapters.Blazor.A11y.csproj | — | ~361 |
+| 18:49 | Created packages/ui-adapters-blazor-a11y/AxeResult.cs | — | ~694 |
+| 18:49 | Created packages/ui-adapters-blazor-a11y/README.md | — | ~1000 |
+| 18:49 | Created packages/ui-adapters-blazor-a11y/tests/tests.csproj | — | ~249 |
+| 18:50 | Created packages/ui-adapters-blazor-a11y/tests/BridgeScaffoldingTests.cs | — | ~687 |
+| 18:50 | Edited packages/ui-adapters-blazor-a11y/tests/BridgeScaffoldingTests.cs | modified AxeImpact_OrderingAllowsModeratePlusFilter() | ~110 |
+| 18:51 | Edited Sunfish.slnx | 4→8 lines | ~115 |
+| 18:52 | Session end: 117 writes across 56 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 23 reads | ~218603 tok |
+| 19:08 | Session end: 117 writes across 56 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 23 reads | ~218603 tok |
+| 19:13 | Created packages/ui-adapters-blazor-a11y/tests/Fixtures/SimpleTextFixture.razor | — | ~140 |
+| 19:13 | Created packages/ui-adapters-blazor-a11y/tests/Fixtures/AttributedFixture.razor | — | ~240 |
+| 19:14 | Created packages/ui-adapters-blazor-a11y/tests/Fixtures/ChildContentFixture.razor | — | ~229 |
+| 19:14 | Created packages/ui-adapters-blazor-a11y/tests/DeterminismGateTests.cs | — | ~1006 |
+| 19:14 | Edited packages/ui-adapters-blazor-a11y/tests/tests.csproj | "Microsoft.NET.Sdk" → "Microsoft.NET.Sdk.Razor" | ~11 |
+| 19:14 | Edited packages/ui-adapters-blazor-a11y/tests/DeterminismGateTests.cs | 6→6 lines | ~47 |
+| 19:14 | Edited packages/ui-adapters-blazor-a11y/tests/DeterminismGateTests.cs | inline fix | ~21 |
+| 19:16 | Created waves/global-ux/week-2-bunit-bridge-report.md | — | ~1721 |
+| 19:16 | Session end: 125 writes across 61 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 24 reads | ~222740 tok |
+| 19:38 | Created packages/ui-adapters-blazor-a11y/PlaywrightPageHost.cs | — | ~1370 |
+| 19:38 | Created packages/ui-adapters-blazor-a11y/AxeRunner.cs | — | ~1784 |
+| 19:38 | Edited packages/ui-adapters-blazor-a11y/AxeRunner.cs | 9→8 lines | ~50 |
+| 19:39 | Edited packages/ui-adapters-blazor-a11y/AxeRunner.cs | modified new() | ~419 |
+| 19:39 | Created packages/ui-adapters-blazor-a11y/tests/BridgeIntegrationTests.cs | — | ~802 |
+| 19:40 | Edited packages/ui-adapters-blazor-a11y/tests/BridgeIntegrationTests.cs | expanded (+6 lines) | ~131 |
+| 19:40 | Edited packages/ui-adapters-blazor-a11y/AxeResult.cs | 2→3 lines | ~26 |
+| 19:40 | Edited packages/ui-adapters-blazor-a11y/AxeResult.cs | added 1 condition(s) | ~214 |
+| 19:40 | Edited packages/ui-adapters-blazor-a11y/tests/BridgeScaffoldingTests.cs | inline fix | ~15 |
+| 19:41 | Edited packages/ui-adapters-blazor-a11y/AxeResult.cs | added 1 condition(s) | ~233 |
+| 19:41 | Edited packages/ui-adapters-blazor-a11y/tests/BridgeScaffoldingTests.cs | 1→2 lines | ~25 |
+| 19:42 | Edited packages/ui-adapters-blazor-a11y/AxeRunner.cs | modified WrapInHtmlDocument() | ~548 |
+| 19:42 | Session end: 137 writes across 64 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 24 reads | ~228758 tok |
+| 20:03 | Created packages/ui-adapters-blazor-a11y/SunfishA11yContract.cs | — | ~1139 |
+| 20:04 | Created packages/ui-adapters-blazor-a11y/SunfishA11yAssertions.cs | — | ~2575 |
+| 20:04 | Created packages/ui-adapters-blazor-a11y/tests/AssertionTests.cs | — | ~2358 |
+| 20:05 | Session end: 140 writes across 67 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 24 reads | ~235263 tok |
+| 20:27 | Edited packages/ui-core/package.json | 5→7 lines | ~84 |
+| 20:27 | Edited packages/ui-core/package.json | 3→4 lines | ~30 |
+| 20:28 | Created packages/ui-core/scripts/export-a11y-contracts.mts | — | ~937 |
+| 20:29 | Created packages/ui-adapters-blazor-a11y/ContractReader.cs | — | ~1296 |
+| 20:29 | Created packages/ui-adapters-blazor-a11y/tests/ContractReaderTests.cs | — | ~1669 |
+| 20:30 | Edited .gitignore | 5→8 lines | ~55 |
+| 20:30 | Session end: 146 writes across 70 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 25 reads | ~239616 tok |
+| 20:52 | Created packages/ui-adapters-blazor-a11y/tests/PilotMatrixTests.cs | — | ~1326 |
+| 20:52 | Edited packages/ui-adapters-blazor-a11y/AxeRunner.cs | expanded (+9 lines) | ~191 |
+| 20:52 | Edited packages/ui-adapters-blazor-a11y/AxeRunner.cs | added nullish coalescing | ~108 |
+| 20:54 | Created waves/global-ux/week-2-bridge-ready-report.md | — | ~2390 |
+| 20:55 | Session end: 150 writes across 72 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 25 reads | ~243919 tok |
+| 21:17 | Created i18n/locales.json | — | ~1628 |
+| 21:17 | Created i18n/coordinators.md | — | ~1522 |
+| 21:18 | Created docs/adrs/0036-syncstate-multimodal-encoding-contract.md | — | ~2394 |
+| 21:19 | Session end: 153 writes across 75 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 25 reads | ~236383 tok |
+| 21:40 | Created tooling/Sunfish.Tooling.ColorAudit/Sunfish.Tooling.ColorAudit.csproj | — | ~225 |
+| 21:40 | Created tooling/Sunfish.Tooling.ColorAudit/Color.cs | — | ~907 |
+| 21:41 | Created tooling/Sunfish.Tooling.ColorAudit/DeltaE.cs | — | ~1064 |
+| 21:41 | Created tooling/Sunfish.Tooling.ColorAudit/CvdSimulation.cs | — | ~779 |
+| 21:41 | Created tooling/Sunfish.Tooling.ColorAudit/tests/Sunfish.Tooling.ColorAudit.Tests.csproj | — | ~195 |
+| 21:41 | Created tooling/Sunfish.Tooling.ColorAudit/tests/DeltaE2000Tests.cs | — | ~600 |
+| 21:42 | Created tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | — | ~1037 |
+| 21:42 | Edited tooling/Sunfish.Tooling.ColorAudit/Color.cs | 3→3 lines | ~58 |
+| 21:43 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified LightPalette_AllPairsDistinguishable() | ~546 |
+| 21:44 | Created waves/global-ux/week-2-cvd-palette-audit.md | — | ~1635 |
+| 21:44 | Session end: 163 writes across 83 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 25 reads | ~243932 tok |
+| 22:05 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified new() | ~177 |
+| 22:05 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified LightPalette_AllPairsDistinguishable() | ~153 |
+| 22:06 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified new() | ~265 |
+| 22:07 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified new() | ~326 |
+| 22:08 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | axis() → leaning() | ~67 |
+| 22:08 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | 3→3 lines | ~61 |
+| 22:09 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified new() | ~359 |
+| 22:09 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified LightPalette_AllPairsDistinguishable() | ~582 |
+| 22:09 | Edited docs/adrs/0036-syncstate-multimodal-encoding-contract.md | 2→2 lines | ~31 |
+| 22:09 | Edited docs/adrs/0036-syncstate-multimodal-encoding-contract.md | expanded (+6 lines) | ~311 |
+| 22:09 | Edited packages/ui-core/src/components/syncstate/sunfish-syncstate-indicator.ts | modified host() | ~146 |
+| 22:09 | Edited waves/global-ux/week-2-cvd-palette-audit.md | expanded (+6 lines) | ~178 |
+| 22:10 | Edited waves/global-ux/week-2-cvd-palette-audit.md | expanded (+34 lines) | ~545 |
+| 22:10 | Session end: 176 writes across 83 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 25 reads | ~247351 tok |
+| 22:31 | Created packages/analyzers/loc-comments/Sunfish.Analyzers.LocComments.csproj | — | ~630 |
+| 22:32 | Created packages/analyzers/loc-comments/ResxCommentAnalyzer.cs | — | ~1336 |
+| 22:32 | Created packages/analyzers/loc-comments/AnalyzerReleases.Shipped.md | — | ~41 |
+| 22:32 | Created packages/analyzers/loc-comments/AnalyzerReleases.Unshipped.md | — | ~111 |
+| 22:32 | Created packages/analyzers/loc-comments/README.md | — | ~355 |
+| 22:32 | Created packages/analyzers/loc-comments/tests/Sunfish.Analyzers.LocComments.Tests.csproj | — | ~276 |
+| 22:32 | Created packages/analyzers/loc-comments/tests/ResxCommentAnalyzerTests.cs | — | ~1556 |
+| 22:32 | Edited packages/analyzers/loc-comments/ResxCommentAnalyzer.cs | 8→9 lines | ~68 |
+| 22:33 | Edited packages/analyzers/loc-comments/ResxCommentAnalyzer.cs | 12→11 lines | ~237 |
+| 22:33 | Created packages/analyzers/loc-comments/AnalyzerReleases.Unshipped.md | — | ~94 |
+| 22:33 | Edited Sunfish.slnx | 4→8 lines | ~134 |
+| 22:33 | Session end: 187 writes across 89 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 26 reads | ~253535 tok |
+| 22:55 | Created packages/ui-core/.storybook/test-runner.ts | — | ~2418 |
+| 22:55 | Edited packages/ui-core/.storybook/test-runner.ts | "playwright-core" → "playwright" | ~12 |
+| 22:57 | Edited packages/ui-core/.storybook/test-runner.ts | added 1 condition(s) | ~472 |
+| 23:00 | Session end: 190 writes across 90 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 26 reads | ~256437 tok |
+| 23:20 | Edited packages/ui-core/src/components/dialog/sunfish-dialog.ts | 2→2 lines | ~36 |
+| 23:20 | Edited packages/ui-core/src/components/dialog/sunfish-dialog.ts | added optional chaining | ~518 |
+| 23:20 | Edited packages/ui-core/src/components/syncstate/sunfish-syncstate-indicator.ts | modified host() | ~172 |
+| 23:20 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | gray() → white() | ~132 |
+| 23:21 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | 3→3 lines | ~68 |
+| 23:21 | Edited packages/ui-core/src/components/syncstate/sunfish-syncstate-indicator.ts | inline fix | ~24 |
+| 23:21 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | inline fix | ~36 |
+| 23:21 | Edited packages/ui-core/src/components/syncstate/sunfish-syncstate-indicator.ts | inline fix | ~24 |
+| 23:22 | Edited tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs | modified LightPalette_AllPairsDistinguishable() | ~271 |
+| 23:28 | Edited packages/ui-core/.storybook/test-runner.ts | added 1 condition(s) | ~528 |
+| 23:30 | Edited packages/ui-core/.storybook/test-runner.ts | not() → contains() | ~372 |
+| 23:31 | Session end: 201 writes across 90 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 27 reads | ~258653 tok |
+| 23:53 | Created accelerators/bridge/Sunfish.Bridge/Localization/SharedResource.cs | — | ~117 |
+| 23:54 | Created accelerators/bridge/Sunfish.Bridge/Localization/SunfishProblemDetailsFactory.cs | — | ~1489 |
+| 23:55 | Created accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Localization/SunfishProblemDetailsFactoryTests.cs | — | ~1801 |
+| 23:55 | Edited accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Localization/SunfishProblemDetailsFactoryTests.cs | modified CreateProblemDetails_NullTitle_LooksUpFromApiBehaviorClientErrorMapping() | ~290 |
+| 23:56 | Created accelerators/bridge/Sunfish.Bridge/Localization/ServiceCollectionExtensions.cs | — | ~388 |
+| 23:56 | Session end: 206 writes across 94 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 27 reads | ~263030 tok |
+| 00:17 | Created packages/foundation/Localization/SunfishLocalizerFactory.cs | — | ~1325 |
+| 00:18 | Created packages/foundation/tests/Localization/SunfishLocalizerFactoryTests.cs | — | ~1589 |
+| 00:18 | Edited packages/foundation/Localization/SunfishLocalizerFactory.cs | inline fix | ~22 |
+| 00:18 | Edited packages/foundation/Localization/SunfishLocalizerFactory.cs | inline fix | ~17 |
+| 00:18 | Edited packages/foundation/Localization/SunfishLocalizerFactory.cs | inline fix | ~30 |
+| 00:19 | Edited packages/foundation/tests/tests.csproj | 4→6 lines | ~98 |
+| 00:19 | Session end: 212 writes across 96 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 28 reads | ~266330 tok |
+| 00:40 | Edited packages/ui-core/.storybook/preview.ts | added optional chaining | ~584 |
+| 00:41 | Created packages/ui-core/.storybook/REDUCED-MOTION.md | — | ~585 |
+| 00:42 | Session end: 214 writes across 97 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 29 reads | ~267541 tok |
+| 01:04 | Created tooling/css-logical-audit/audit.mjs | — | ~1359 |
+| 01:04 | Edited tooling/css-logical-audit/audit.mjs | added 4 condition(s) | ~220 |
+| 01:05 | Edited tooling/css-logical-audit/audit.mjs | added 1 condition(s) | ~67 |
+| 01:06 | Created waves/global-ux/week-2-css-logical-audit.md | — | ~1209 |
+| 01:07 | Edited package.json | 2→5 lines | ~95 |
+| 01:07 | Session end: 219 writes across 99 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 31 reads | ~270695 tok |
+| 01:27 | Edited apps/kitchen-sink/wwwroot/css/app.css | inline fix | ~8 |
+| 01:27 | Edited apps/kitchen-sink/wwwroot/css/app.css | 2→1 lines | ~7 |
+| 01:28 | Edited apps/kitchen-sink/wwwroot/css/app.css | CSS: inset-inline-end | ~12 |
+| 01:28 | Created tooling/css-logical-audit/fix.mjs | — | ~911 |
+| 01:29 | Edited apps/kitchen-sink/wwwroot/css/app.css | CSS: inset-inline-end | ~52 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-start | ~38 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-start | ~30 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-end | ~26 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-start | ~30 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | 8→7 lines | ~37 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-start | ~45 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | CSS: inset-inline-end | ~34 |
+| 01:29 | Edited packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css | 7→6 lines | ~40 |
+| 01:30 | Edited packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css | CSS: inset-inline-start | ~36 |
+| 01:30 | Edited packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css | CSS: inset-inline-start, inset-inline-end | ~48 |
+| 01:30 | Edited apps/kitchen-sink/Pages/IconsPage.razor.css | CSS: inset-inline-end | ~26 |
+| 01:30 | Edited apps/kitchen-sink/Pages/IconsPage.razor.css | CSS: inset-inline-start | ~38 |
+| 01:30 | Edited packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css | 7→6 lines | ~30 |
+| 01:30 | Edited packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css | CSS: inset-inline-end | ~36 |
+| 01:31 | Session end: 238 writes across 105 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 36 reads | ~284799 tok |
+| 01:53 | Edited apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor | inline fix | ~30 |
+| 01:53 | Edited apps/kitchen-sink/Pages/Components/Buttons/Fab/Appearance/Demo.razor | "position:absolute; left:5" → "position:absolute; inset-" | ~42 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor | inline fix | ~31 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/Editors/Editor/SunfishEditor.razor | "position:absolute;top:100" → "position:absolute;top:100" | ~72 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/Editors/SunfishSpreadsheet.razor | "position:sticky;top:0;lef" → "position:sticky;top:0;ins" | ~47 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/Editors/SunfishSpreadsheet.razor | "position:sticky;left:0;z-" → "position:sticky;inset-inl" | ~55 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/Media/SunfishMap.razor | "position:absolute;right:4" → "position:absolute;inset-i" | ~44 |
+| 01:53 | Edited packages/ui-adapters-blazor/Shell/SunfishUserMenu.razor.css | CSS: inset-inline-start | ~60 |
+| 01:53 | Edited packages/ui-adapters-blazor/Components/Utility/SunfishFloatingLabel.razor.css | CSS: inset-inline-start | ~49 |
+| 01:55 | Session end: 247 writes across 112 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 44 reads | ~285254 tok |
+| 02:16 | Created .github/workflows/global-ux-gate.yml | — | ~843 |
+| 02:16 | Created .github/branch-protection-main.json | — | ~266 |
+| 02:16 | Session end: 249 writes across 114 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 44 reads | ~286363 tok |
+| 02:37 | Edited packages/ui-adapters-blazor/Components/LocalFirst/SunfishSyncStatusIndicator.razor | 13→16 lines | ~129 |
+| 02:38 | Edited packages/ui-adapters-blazor/Components/LocalFirst/SunfishSyncStatusIndicator.razor | expanded (+29 lines) | ~554 |
+| 02:38 | Created packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | — | ~886 |
+| 02:42 | Edited packages/ui-adapters-blazor-a11y/tests/tests.csproj | 5→6 lines | ~81 |
+| 02:43 | Edited packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | 3→6 lines | ~48 |
+| 02:43 | Edited packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | modified Ctx() | ~167 |
+| 02:44 | Edited packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | 1→2 lines | ~43 |
+| 02:44 | Edited packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | 1→2 lines | ~18 |
+| 02:44 | Edited packages/ui-adapters-blazor-a11y/tests/SyncStatusIndicatorContractTests.cs | 2→3 lines | ~65 |
+| 02:45 | Session end: 258 writes across 116 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 49 reads | ~294780 tok |
+| 03:06 | Created packages/ui-adapters-blazor-a11y/tests/FreshnessBadgeContractTests.cs | — | ~822 |
+| 03:06 | Created packages/ui-adapters-blazor-a11y/tests/NodeHealthBarContractTests.cs | — | ~846 |
+| 03:07 | Edited packages/ui-adapters-blazor/Components/LocalFirst/SunfishFreshnessBadge.razor | 7→11 lines | ~96 |
+| 03:07 | Edited packages/ui-adapters-blazor/Components/LocalFirst/SunfishFreshnessBadge.razor | modified LongLabel() | ~191 |
+| 03:09 | Session end: 262 writes across 119 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 51 reads | ~298195 tok |
+| 03:31 | Edited docs/adrs/0034-a11y-harness-per-adapter.md | expanded (+43 lines) | ~723 |
+| 03:31 | Session end: 263 writes across 119 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 51 reads | ~297651 tok |
+| 03:53 | Created tooling/locale-completeness-check/tests/fixture-test.mjs | — | ~1912 |
+| 03:54 | Created tooling/locale-completeness-check/check.mjs | — | ~2031 |
+| 03:54 | Edited package.json | 3→7 lines | ~181 |
+| 03:55 | Edited .github/workflows/global-ux-gate.yml | expanded (+14 lines) | ~244 |
+| 03:55 | Edited .github/workflows/global-ux-gate.yml | inline fix | ~18 |
+| 03:56 | Session end: 268 writes across 121 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 52 reads | ~303757 tok |
+| 04:16 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+22 lines) | ~334 |
+| 04:16 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | expanded (+6 lines) | ~121 |
+| 04:17 | Edited accelerators/bridge/Sunfish.Bridge/Program.cs | 1→2 lines | ~15 |
+| 04:19 | Session end: 271 writes across 121 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 53 reads | ~308284 tok |
+| 04:39 | Created accelerators/bridge/Sunfish.Bridge/Resources/Localization/SharedResource.resx | — | ~1157 |
+| 04:39 | Created accelerators/bridge/Sunfish.Bridge/Resources/Localization/SharedResource.ar-SA.resx | — | ~619 |
+| 04:41 | Edited .github/workflows/global-ux-gate.yml | 13→17 lines | ~221 |
+| 04:41 | Session end: 274 writes across 123 files (README.md, status.md, decisions.md, icu4n-health-check-2026-04-25.md, weblate-vs-crowdin-2026-04-25.md) | 53 reads | ~310408 tok |
+
+## Session: 2026-04-25 04:44
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-25 05:04
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 05:05 | Created accelerators/anchor/Localization/SharedResource.cs | — | ~350 |
+| 05:06 | Created accelerators/anchor/Resources/Localization/SharedResource.resx | — | ~1293 |
+| 05:06 | Created accelerators/anchor/Resources/Localization/SharedResource.ar-SA.resx | — | ~696 |
+| 05:06 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 4→5 lines | ~94 |
+| 05:07 | Edited accelerators/anchor/MauiProgram.cs | expanded (+17 lines) | ~422 |
+| 05:11 | Session end: 5 writes across 5 files (SharedResource.cs, SharedResource.resx, SharedResource.ar-SA.resx, Sunfish.Anchor.csproj, MauiProgram.cs) | 4 reads | ~9762 tok |
+| 05:32 | Edited accelerators/bridge/Sunfish.Bridge/Resources/Localization/SharedResource.ar-SA.resx | expanded (+16 lines) | ~291 |
+| 05:32 | Edited accelerators/anchor/Resources/Localization/SharedResource.ar-SA.resx | expanded (+16 lines) | ~346 |
+| 05:32 | Edited accelerators/anchor/Resources/Localization/SharedResource.ar-SA.resx | 4→4 lines | ~85 |
+| 05:34 | Created packages/foundation/Localization/SharedResource.cs | — | ~404 |
+| 05:34 | Created packages/foundation/Resources/Localization/SharedResource.resx | — | ~1159 |
+| 05:35 | Created packages/foundation/Resources/Localization/SharedResource.ar-SA.resx | — | ~810 |
+| 05:36 | Session end: 11 writes across 5 files (SharedResource.cs, SharedResource.resx, SharedResource.ar-SA.resx, Sunfish.Anchor.csproj, MauiProgram.cs) | 5 reads | ~13076 tok |
+| 05:58 | Edited Directory.Build.props | modified ProjectReference() | ~532 |

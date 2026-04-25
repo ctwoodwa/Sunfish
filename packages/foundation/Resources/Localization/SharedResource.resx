@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.Foundation SharedResource — source locale (en-US).
+    Generic phrases shared across every Sunfish layer: severity labels,
+    common action verbs, empty-state defaults.
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator
+        context (enforced by SUNFISH_I18N_001 once wired).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036.
+
+    This bundle is the proof-of-cascade for the layered package model:
+    Foundation is the deepest layer (no UI deps), so if localization works
+    here, every higher layer can ship localized strings the same way.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Info</value>
+    <comment>Severity label for informational messages — the lowest severity tier. Surfaced as a status badge on notifications, log entries, and audit views. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>Severity label for warnings — actionable but non-blocking. Surfaced as a status badge on notifications, log entries, and audit views. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Error</value>
+    <comment>Severity label for errors — blocking failures the user must address. Surfaced as a status badge on notifications, log entries, and audit views. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>Severity label for critical incidents — system-impacting failures (data loss risk, security). Surfaced as a status badge; pairs with high-attention visual styling.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Save</value>
+    <comment>Common action verb on submit/commit buttons. Imperative; sentence case. Used across forms, dialogs, and inline editors at every layer of the architecture.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Common action verb on dismiss/abort buttons. Imperative; sentence case. Pairs with Save in dialogs; standalone on multi-step flows.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry</value>
+    <comment>Common action verb on retry buttons after a failure. Imperative; sentence case. Often appears next to error severity badges or empty-state placeholders.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading…</value>
+    <comment>Default empty-state placeholder shown while data is being fetched. Includes a trailing horizontal ellipsis (U+2026, single character) — translators should preserve the ellipsis convention even if their language uses a different terminal punctuation.</comment>
+  </data>
+</root>
