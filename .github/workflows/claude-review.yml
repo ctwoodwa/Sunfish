@@ -34,13 +34,29 @@ jobs:
       issues: write
       id-token: write
     steps:
+      # Skip cleanly when ANTHROPIC_API_KEY isn't configured. Without this,
+      # every PR shows a noisy red Claude Code Review check until the secret
+      # is set. The expression secrets.X != '' resolves to 'true' or 'false'
+      # at the runner without ever logging the secret value.
+      - name: Check Anthropic API key configured
+        id: precheck
+        run: |
+          echo "configured=${{ secrets.ANTHROPIC_API_KEY != '' }}" >> $GITHUB_OUTPUT
+
+      - name: Skip notice (no API key)
+        if: steps.precheck.outputs.configured != 'true'
+        run: |
+          echo "::notice title=Claude Code Review skipped::ANTHROPIC_API_KEY secret is not set. Add it at Settings → Secrets and variables → Actions → New repository secret to enable automated reviews. Until then, this workflow no-ops cleanly on every PR."
+
       - uses: actions/checkout@v6
+        if: steps.precheck.outputs.configured == 'true'
         with:
           # Full history lets the reviewer trace blame, related ADRs,
           # and prior changes referenced in commit messages.
           fetch-depth: 0
 
       - uses: anthropics/claude-code-action@v1
+        if: steps.precheck.outputs.configured == 'true'
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # The prompt sets the review framing; project-specific guidance
