@@ -3656,6 +3656,518 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-23T12:00:00.000Z"
+    },
+    {
+      "id": "bug-224",
+      "timestamp": "2026-04-24T21:59:15.445Z",
+      "error_message": "Wrong reference: Task should be Microsoft",
+      "file": "tooling/Sunfish.Tooling.LocalizationXliff/SunfishResxToXliffTask.cs",
+      "root_cause": "Used \"Task\" instead of \"Microsoft\"",
+      "fix": "Changed Task → Microsoft",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T21:59:15.445Z"
+    },
+    {
+      "id": "bug-225",
+      "timestamp": "2026-04-24T21:59:17.063Z",
+      "error_message": "Wrong reference: Task should be Microsoft",
+      "file": "tooling/Sunfish.Tooling.LocalizationXliff/SunfishXliffToResxTask.cs",
+      "root_cause": "Used \"Task\" instead of \"Microsoft\"",
+      "fix": "Changed Task → Microsoft",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T21:59:17.063Z"
+    },
+    {
+      "id": "bug-226",
+      "timestamp": "2026-04-24T22:01:33.550Z",
+      "error_message": "Significant refactor of ",
+      "file": "tooling/Sunfish.Tooling.LocalizationXliff/tests/RoundTripTests.cs",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 6→4 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T22:01:33.550Z"
+    },
+    {
+      "id": "bug-227",
+      "timestamp": "2026-04-24T22:01:54.348Z",
+      "error_message": "Incorrect value in code",
+      "file": "tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj",
+      "root_cause": "Had \"FsCheck.Xunit\"",
+      "fix": "Changed to \"coverlet.collector\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "csproj"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T22:01:54.348Z"
+    },
+    {
+      "id": "bug-228",
+      "timestamp": "2026-04-24T23:14:43.683Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor-a11y/tests/tests.csproj",
+      "root_cause": "Had \"Microsoft.NET.Sdk\"",
+      "fix": "Changed to \"Microsoft.NET.Sdk.Razor\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "csproj"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T23:14:43.683Z"
+    },
+    {
+      "id": "bug-229",
+      "timestamp": "2026-04-24T23:14:59.019Z",
+      "error_message": "Wrong reference: RenderComponent should be Render",
+      "file": "packages/ui-adapters-blazor-a11y/tests/DeterminismGateTests.cs",
+      "root_cause": "Used \"RenderComponent\" instead of \"Render\"",
+      "fix": "Changed RenderComponent → Render",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T23:14:59.019Z"
+    },
+    {
+      "id": "bug-230",
+      "timestamp": "2026-04-24T23:40:36.750Z",
+      "error_message": "Wrong reference: Serialization should be using",
+      "file": "packages/ui-adapters-blazor-a11y/AxeResult.cs",
+      "root_cause": "Used \"Serialization\" instead of \"using\"",
+      "fix": "Changed Serialization → using",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T23:40:36.750Z"
+    },
+    {
+      "id": "bug-231",
+      "timestamp": "2026-04-24T23:40:43.422Z",
+      "error_message": "Wrong reference: Tags should be GetTagStrings",
+      "file": "packages/ui-adapters-blazor-a11y/tests/BridgeScaffoldingTests.cs",
+      "root_cause": "Used \"Tags\" instead of \"GetTagStrings\"",
+      "fix": "Changed Tags → GetTagStrings",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T23:40:43.422Z"
+    },
+    {
+      "id": "bug-232",
+      "timestamp": "2026-04-24T23:42:00.240Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor-a11y/AxeRunner.cs",
+      "root_cause": "4 lines replaced/restructured",
+      "fix": "Rewrote 30→43 lines (4 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-24T23:42:00.240Z"
+    },
+    {
+      "id": "bug-233",
+      "timestamp": "2026-04-25T00:52:52.269Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-adapters-blazor-a11y/AxeRunner.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T00:52:52.269Z"
+    },
+    {
+      "id": "bug-234",
+      "timestamp": "2026-04-25T02:05:42.792Z",
+      "error_message": "Significant refactor of ",
+      "file": "tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs",
+      "root_cause": "20 lines replaced/restructured",
+      "fix": "Rewrote 47→19 lines (20 removed) | Also: [\"healthy\"] = \"#16a085\",; [\"stale\"] = \"#3498db\",",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T02:06:26.763Z"
+    },
+    {
+      "id": "bug-235",
+      "timestamp": "2026-04-25T02:08:01.046Z",
+      "error_message": "Incorrect value in code",
+      "file": "tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs",
+      "root_cause": "Had \"#009988\"",
+      "fix": "Changed to \"#117733\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T02:08:03.912Z"
+    },
+    {
+      "id": "bug-236",
+      "timestamp": "2026-04-25T02:09:40.191Z",
+      "error_message": "Significant refactor of ",
+      "file": "docs/adrs/0036-syncstate-multimodal-encoding-contract.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 7→13 lines (5 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T02:09:40.191Z"
+    },
+    {
+      "id": "bug-237",
+      "timestamp": "2026-04-25T02:09:52.116Z",
+      "error_message": "Significant refactor of ",
+      "file": "waves/global-ux/week-2-cvd-palette-audit.md",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 5→11 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T02:09:52.116Z"
+    },
+    {
+      "id": "bug-238",
+      "timestamp": "2026-04-25T02:55:30.344Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-core/.storybook/test-runner.ts",
+      "root_cause": "Had 'playwright-core'",
+      "fix": "Changed to 'playwright'",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T02:55:30.344Z"
+    },
+    {
+      "id": "bug-239",
+      "timestamp": "2026-04-25T02:57:08.444Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-core/.storybook/test-runner.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T02:57:08.444Z"
+    },
+    {
+      "id": "bug-240",
+      "timestamp": "2026-04-25T03:20:33.933Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-core/src/components/dialog/sunfish-dialog.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T03:20:33.933Z"
+    },
+    {
+      "id": "bug-241",
+      "timestamp": "2026-04-25T03:21:16.715Z",
+      "error_message": "Incorrect value in code",
+      "file": "tooling/Sunfish.Tooling.ColorAudit/tests/SyncStatePaletteAuditTests.cs",
+      "root_cause": "Had \"#b85c1f\"",
+      "fix": "Changed to \"#a06800\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T03:21:48.785Z"
+    },
+    {
+      "id": "bug-242",
+      "timestamp": "2026-04-25T03:21:18.250Z",
+      "error_message": "Wrong reference: b85c1f should be a06800",
+      "file": "packages/ui-core/src/components/syncstate/sunfish-syncstate-indicator.ts",
+      "root_cause": "Used \"b85c1f\" instead of \"a06800\"",
+      "fix": "Changed b85c1f → a06800",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T03:21:50.401Z"
+    },
+    {
+      "id": "bug-243",
+      "timestamp": "2026-04-25T03:28:10.672Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-core/.storybook/test-runner.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T03:28:10.672Z"
+    },
+    {
+      "id": "bug-244",
+      "timestamp": "2026-04-25T03:30:07.729Z",
+      "error_message": "Missing guard clause",
+      "file": "packages/ui-core/.storybook/test-runner.ts",
+      "root_cause": "No early return/throw for edge case: contract.focus?.initial && contract.focus.initial !== 'self'",
+      "fix": "Added guard clause: if (contract.focus?.initial && contract.focu)",
+      "tags": [
+        "auto-detected",
+        "guard-clause",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T03:30:07.729Z"
+    },
+    {
+      "id": "bug-245",
+      "timestamp": "2026-04-25T03:55:34.986Z",
+      "error_message": "Significant refactor of ",
+      "file": "accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Localization/SunfishProblemDetailsFactoryTests.cs",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 13→22 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T03:55:34.986Z"
+    },
+    {
+      "id": "bug-246",
+      "timestamp": "2026-04-25T04:18:24.820Z",
+      "error_message": "Wrong reference: type should be Type",
+      "file": "packages/foundation/Localization/SunfishLocalizerFactory.cs",
+      "root_cause": "Used \"type\" instead of \"Type\"",
+      "fix": "Changed type → Type",
+      "tags": [
+        "auto-detected",
+        "wrong-reference",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T04:18:24.820Z"
+    },
+    {
+      "id": "bug-247",
+      "timestamp": "2026-04-25T04:40:52.298Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/ui-core/.storybook/preview.ts",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "ts"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T04:40:52.298Z"
+    },
+    {
+      "id": "bug-248",
+      "timestamp": "2026-04-25T05:53:22.269Z",
+      "error_message": "Incorrect value in code",
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor",
+      "root_cause": "Had \"position:absolute; left:-9999px;\"",
+      "fix": "Changed to \"position:absolute; inset-inline-start:-9999px;\"",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T05:53:24.098Z"
+    },
+    {
+      "id": "bug-249",
+      "timestamp": "2026-04-25T05:53:26.426Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "root_cause": "Had \"position:absolute;top:0;left:0;width:100%;height:",
+      "fix": "Changed to \"position:absolute;inset:0;width:100%;height:100%;",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T05:53:26.426Z"
+    },
+    {
+      "id": "bug-250",
+      "timestamp": "2026-04-25T05:53:29.139Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/Editors/Editor/SunfishEditor.razor",
+      "root_cause": "Had \"position:absolute;top:100%;left:0;z-index:10;back",
+      "fix": "Changed to \"position:absolute;top:100%;inset-inline-start:0;z",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T05:53:29.139Z"
+    },
+    {
+      "id": "bug-251",
+      "timestamp": "2026-04-25T05:53:31.015Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/Editors/SunfishSpreadsheet.razor",
+      "root_cause": "Had \"position:sticky;top:0;left:0;z-index:2;background",
+      "fix": "Changed to \"position:sticky;top:0;inset-inline-start:0;z-inde",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-25T05:53:33.090Z"
+    },
+    {
+      "id": "bug-252",
+      "timestamp": "2026-04-25T05:53:34.894Z",
+      "error_message": "Incorrect value in code",
+      "file": "packages/ui-adapters-blazor/Components/Media/SunfishMap.razor",
+      "root_cause": "Had \"position:absolute;right:4px;bottom:4px;background",
+      "fix": "Changed to \"position:absolute;inset-inline-end:4px;bottom:4px",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T05:53:34.894Z"
+    },
+    {
+      "id": "bug-253",
+      "timestamp": "2026-04-25T05:53:54.592Z",
+      "error_message": "CSS fix: transform-origin",
+      "file": "packages/ui-adapters-blazor/Components/Utility/SunfishFloatingLabel.razor.css",
+      "root_cause": "transform-origin: left top → inline-start top",
+      "fix": "Changed transform-origin: left top → inline-start top",
+      "tags": [
+        "auto-detected",
+        "style-fix",
+        "css"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T05:53:54.593Z"
+    },
+    {
+      "id": "bug-254",
+      "timestamp": "2026-04-25T06:38:08.285Z",
+      "error_message": "Significant refactor of ",
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishSyncStatusIndicator.razor",
+      "root_cause": "3 lines replaced/restructured",
+      "fix": "Rewrote 18→47 lines (3 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "razor"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T06:38:08.285Z"
+    },
+    {
+      "id": "bug-255",
+      "timestamp": "2026-04-25T08:41:06.976Z",
+      "error_message": "Significant refactor of ",
+      "file": ".github/workflows/global-ux-gate.yml",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 13→17 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "yml"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T08:41:06.976Z"
     }
   ]
 }

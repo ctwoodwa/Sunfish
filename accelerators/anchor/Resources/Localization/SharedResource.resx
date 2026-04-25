@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.Anchor SharedResource — source locale (en-US).
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator context
+        (enforced by SUNFISH_I18N_001 analyzer once the loc-comments package
+        reference is added; see Plan 2 Task 4.3).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036
+        and the Plan 1 Week-1 SmartFormat pivot.
+
+    Anchor surfaces these strings inside a MAUI Blazor Hybrid WebView. There
+    is no HTTP layer, no ProblemDetailsFactory; CurrentUICulture flows from
+    the device's preferred UI language to IStringLocalizer<SharedResource>
+    at composition time.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="onboarding.welcome.title" xml:space="preserve">
+    <value>Welcome to Sunfish Anchor</value>
+    <comment>Heading on the first-run onboarding page. Short noun phrase; appears as h1 in the Blazor WebView. Anchor is the desktop local-first app — keep tone friendly, not corporate.</comment>
+  </data>
+  <data name="onboarding.welcome.detail" xml:space="preserve">
+    <value>Set up your local workspace to start collaborating offline-first.</value>
+    <comment>Body text under the welcome title. Full sentence; conveys that Anchor works offline. "Local-first" is a deliberate technical choice — translators may use the closest cultural equivalent (e.g., "device-resident", "self-hosted").</comment>
+  </data>
+  <data name="onboarding.join-team.title" xml:space="preserve">
+    <value>Join a team</value>
+    <comment>Title on the QR-onboarding page where the user scans a code from another Anchor instance to join their team. Imperative phrasing; pairs with a "Scan QR code" call-to-action.</comment>
+  </data>
+  <data name="onboarding.join-team.detail" xml:space="preserve">
+    <value>Scan the QR code shown by another team member to share your workspace.</value>
+    <comment>Body text on the join-team page. Full sentence; describes the QR-pairing flow per ADR 0032 (multi-team Anchor workspace switching).</comment>
+  </data>
+  <data name="errors.network-unavailable" xml:space="preserve">
+    <value>Working offline</value>
+    <comment>Status message shown when Anchor cannot reach any sync peer. Important: NOT an error from the user's perspective — Anchor is local-first, so offline is a normal mode. Tone should be neutral/informational.</comment>
+  </data>
+  <data name="errors.network-unavailable.detail" xml:space="preserve">
+    <value>Your changes are saved locally and will sync when peers are reachable.</value>
+    <comment>Body text under the offline status. Reassures the user that work is preserved. "Peers" is used over "server" because Anchor is peer-to-peer per the local-node architecture paper.</comment>
+  </data>
+  <data name="errors.team-not-found" xml:space="preserve">
+    <value>Team not found</value>
+    <comment>Error shown when the user attempts to switch to a team that no longer exists in the local team registry. Generic enough to use across switcher / join / migration flows.</comment>
+  </data>
+  <data name="errors.team-not-found.detail" xml:space="preserve">
+    <value>This team is no longer available on this device. Re-join via QR code if needed.</value>
+    <comment>Body text on team-not-found. Suggests the recovery path (re-join via QR). Anchor v2 supports multiple teams per ADR 0032; teams can be removed via the switcher.</comment>
+  </data>
+</root>
