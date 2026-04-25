@@ -12,7 +12,10 @@
     "scss:watch:fluentui": "npm run scss:build:fluentui -- --watch",
     "scss:watch:bootstrap": "npm run scss:build:bootstrap -- --watch",
     "scss:watch:material": "npm run scss:build:material -- --watch",
-    "scss:watch": "run-p scss:watch:fluentui scss:watch:bootstrap scss:watch:material"
+    "scss:watch": "run-p scss:watch:fluentui scss:watch:bootstrap scss:watch:material",
+    "audit:css-logical": "node tooling/css-logical-audit/audit.mjs",
+    "audit:css-logical:json": "node tooling/css-logical-audit/audit.mjs --json",
+    "audit:css-logical:ci": "node tooling/css-logical-audit/audit.mjs --fail-on-finding"
   },
   "devDependencies": {
     "bootstrap": "^5.3.3",
