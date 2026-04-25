@@ -8,6 +8,8 @@
 
 **Tech stack:** .NET 11 preview, SmartFormat.NET 3.6.1, `Microsoft.Extensions.Localization`, custom MSBuild XLIFF task (already landed Plan 2 Task 1.x), Roslyn analyzer SDK (`SUNFISH_I18N_001` already cascaded), `gh` CLI for PR-with-auto-merge, `superpowers:subagent-driven-development` skill for fan-out, `superpowers:dispatching-parallel-agents` skill for batching, `superpowers:requesting-code-review` skill for gates.
 
+**Confidence:** **Medium.** Named uncertainties: (a) cluster pattern divergence across the 14 blocks-* packages (mitigated by Wave 2 Task 2.0 sample-of-2 reference packages); (b) subagent fan-out under the Claude Code harness has not been measured at 5-parallel scale on this repo — may serialize; (c) TypeScript adapter cluster (Cluster D's `ui-adapters-react`) has a fundamentally different localization pattern than .NET clusters and may need to be deferred mid-flight; (d) overlap with Plan 6 Phase-2 cascade scope is partially documented (see Better Alternatives section) but the scope boundary may shift in Wave 2 after first-cluster sentinel runs.
+
 ---
 
 ## Context & Why
@@ -15,6 +17,23 @@
 After fetch+merge of `origin/main` (2026-04-25), local `main` is 10 ahead containing Plan 2 Task 4.2 / 4.3 / 4.4 work that overlaps PR #66's "3 bundles + analyzer gate" cascade. The merge auto-resolved with no conflicts but file paths overlap — both branches scaffolded `SharedResource.{cs,resx,ar-SA.resx}` in foundation, anchor, and bridge. Plan 2 Tasks 3.4-3.6 (the ~17 remaining user-facing packages) are unstarted. The wave tracker (`waves/global-ux/status.md`) was last updated end of Week 1 and falsely says "Tasks 1.1-1.3 in flight" while commits show Wk 4 polish landed. Plans 3 / 4 / 4B status is invisible from this branch. Plan 5 (Wk 6 CI Gates exit gate) needs a known input from Plans 2/3/4/4B before it can dispatch.
 
 This plan converts the prior turn's "next steps" list into a parallel-execution loop driven by Max Pro's token budget — fan out wherever tasks are independent, gate sequentially where ordering matters, log every dispatch and review for cold-resume.
+
+---
+
+## Better Alternatives Considered
+
+Six alternatives were considered before committing to the loop-with-fan-out shape. Documented to satisfy Stage 0 framework check 0.3.
+
+| # | Alternative | Considered | Rejected because |
+|---|---|---|---|
+| A | **Edit Plan 2 in place** — add the missing Tasks 3.4-3.6 directly into the Plan 2 file with subagent-dispatch instructions | Yes | Plan 2 is referenced as a "Complete (GO verdict)" predecessor in 5 sibling plans; mid-stream edits change semantics for downstream readers. Overlay is safer. |
+| B | **Skip Wave 2 cascade entirely; defer to Plan 6** — Plan 6 already covers blocks/apps/bridge/anchor cascade in Wks 5-12 | Yes — partially | Plan 6 covers *string content* in end-user flows. The bare bundle scaffolding (`Resources/Localization/SharedResource.resx` skeleton + DI registration) is infrastructure that Plan 5's CI Gates need to assert against. Without skeletons, `find packages/blocks-* -name SharedResource.resx \| wc -l == 14` (a Plan 5 entry condition) cannot be made true. **Adopted partially:** Wave 2 scopes itself to *infra-only* cascade (skeleton + DI; one pilot string per package); Plan 6 fills end-user strings later. |
+| C | **Sequential single-session execution** — no loop, no `ScheduleWakeup`, all work in one Claude Code session | Yes | Loses Max Pro parallel-fan-out benefit; loses cold-resume safety; one bad subagent stalls the whole session. Rejected for quality and resilience reasons. |
+| D | **Direct push to main** — bypass PR-with-auto-merge for this wave only | Yes | Violates standing memory rule `feedback_pr_push_authorization`. Only justifiable as kill-trigger fallback; not as primary path. |
+| E | **Hybrid — sequential for Waves 0-1, loop for Waves 2-4** | Yes | This is effectively what Wave 0 (sequential, just executed) and Waves 1-4 (loop) are doing. **Adopted.** |
+| F | **Restructure as 7 separate tracker entries (one per wave step), no driver loop** — let user manually advance | Yes | High user friction; defeats the autonomous-loop intent. Rejected. |
+
+**Adopted shape:** B-partial (infra-only cascade) + E (Wave-0-sequential, Waves-1-4-loop). The plan as written matches this composite.
 
 ---
 
@@ -300,80 +319,156 @@ gh pr merge --auto --squash
 
 ---
 
-## Wave 2 — Cascade fan-out (5-cluster parallel)
+## Wave 2 — Cascade fan-out (sentinel + 4-cluster parallel)
 
 **Pre-condition:** Wave 1 exit gate passed; `status.md` shows Plan 2 Tasks 3.4-3.6 as the next priority.
 
-**Why:** Plan 2 Tasks 3.4-3.6 cascade across ~17 remaining user-facing packages. Foundation, anchor, and bridge already have bundles (Plan 2 Task 4.x + PR #66). The remaining surface is 14 blocks-* + ui-core + 2 adapters + kitchen-sink. Fan out in 5 clusters.
+**Why:** Plan 2 Tasks 3.4-3.6 cascade across ~17 remaining user-facing packages. Foundation, anchor, and bridge already have bundles (Plan 2 Task 4.x + PR #66). The remaining surface is 14 blocks-* + ui-core + 2 adapters + kitchen-sink. Cluster A runs as a **sentinel** first (full implement+review cycle solo) — A green → fan-out B/C/D/E in parallel. This pattern catches systemic cascade-pattern failures before they multiply across 5 clusters.
 
-### Task 2.0: Driver — pattern discovery + cluster freeze
+**Scope (per Better Alternatives section, adopted shape B-partial):** Wave 2 cascade is **infra-only** — `Resources/Localization/SharedResource.resx` skeleton (one pilot translator-commented string), `SharedResource.ar-SA.resx` (one matching ar-SA entry), `Localization/SharedResource.cs` marker class, DI registration. End-user string content is Plan 6's responsibility (Wks 5-12).
+
+### Task 2.0: Driver — pattern discovery + cluster freeze (reads Wave 0 memo)
 
 **Files:**
-- Read-only: `packages/blocks-tasks/`, `packages/blocks-accounting/`, `packages/foundation/Localization/SunfishLocalizer.cs`, `packages/ui-core/`
+- Read-only: `waves/global-ux/reconciliation-pr66-diff-memo.md` (Wave 0 output — pattern source of truth)
+- Read-only: `packages/foundation/Resources/Localization/SharedResource.resx` (canonical 8-key pattern landed by PR #66)
+- Read-only: `packages/foundation/Localization/SharedResource.cs` (canonical marker class)
+- Read-only: `packages/blocks-tasks/`, `packages/blocks-accounting/` (two reference cluster-target packages)
+- Read-only: `packages/ui-core/` (cluster D reference)
 
-- [ ] **Step 1:** Inspect two reference packages (`blocks-tasks`, `blocks-accounting`). Identify (a) entry-point file (Program.cs / ServiceCollectionExtensions.cs / Module.cs), (b) existing `.csproj` foundation reference, (c) existing string-formatting seam.
+- [ ] **Step 1:** Read `waves/global-ux/reconciliation-pr66-diff-memo.md` end-to-end. Confirm the canonical pattern: 8 keys (severity tiers + action verbs + state.loading) with `<comment>` on every entry; ar-SA full coverage. **This pattern is the cascade source-of-truth — clusters MUST match this shape, with the per-package pilot string added to the same 8-key namespace structure.**
 
-- [ ] **Step 2:** Choose a per-package template. Required outputs per package: `Resources/Localization/SharedResource.resx` (en-US neutral), `Resources/Localization/SharedResource.ar-SA.resx` (eight entries; mirror foundation count), `Localization/SharedResource.cs` (marker class), DI registration edit (one-line `services.AddLocalization()` + `services.AddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>))` if missing).
+- [ ] **Step 2:** Read foundation's actual `SharedResource.resx` and `SharedResource.cs`. Note: marker class is `internal sealed class SharedResource { }` (verify); RESX is XML 1.0 with `xml:space="preserve"`; entries follow `<data name="severity.info" xml:space="preserve"><value>...</value><comment>...</comment></data>` shape.
 
-- [ ] **Step 3:** Confirm cluster boundaries by reading two packages from each proposed cluster. If any cluster has divergent patterns (different DI surface), split it. Document final cluster set in tracker.
+- [ ] **Step 3:** Inspect two reference packages (`blocks-tasks`, `blocks-accounting`). For each, identify: (a) entry-point file (`Program.cs` / `ServiceCollectionExtensions.cs` / `<Module>Module.cs`), (b) existing `.csproj` foundation reference, (c) existing namespace prefix (`Sunfish.Blocks.Tasks` vs `Sunfish.Blocks.Accounting` etc).
 
-- [ ] **Step 4:** Author per-subagent brief template (one source of truth for all clusters; only the package list changes per cluster). Save to `waves/global-ux/wave-2-subagent-brief.md` for grep-discovery.
+- [ ] **Step 4:** Confirm cluster boundaries by reading one additional package from each proposed cluster (`blocks-leases` for C, `blocks-assets` for B, `blocks-subscriptions` for A). If any cluster has divergent patterns (different DI surface, no Program.cs, etc.), split or re-cluster. Document final cluster set in tracker.
 
-- [ ] **Step 5:** Commit the brief:
+- [ ] **Step 5:** Determine Cluster D viability for .NET cascade. `packages/ui-core/` and `packages/ui-adapters-blazor/` are .NET; `packages/ui-adapters-react/` is TypeScript. Cluster D is split: D1 = ui-core + ui-adapters-blazor (.NET); D2 = ui-adapters-react (TypeScript — **deferred to a separate JS-cascade plan**, documented in Wave 4 coverage report as deferral).
+
+- [ ] **Step 6:** Switch to fresh feature branch:
 ```bash
+git switch main && git pull --ff-only origin main
 git switch -c global-ux/wave-2-cluster-cascade
-git add waves/global-ux/wave-2-subagent-brief.md
-git commit -m "docs(global-ux): Wave 2 cluster cascade subagent brief"
+```
+- [ ] **Step 7:** Commit the cluster-freeze decision in tracker (no separate brief file — brief is inlined in Tasks 2.A-2.E below):
+```bash
+git add waves/global-ux/reconciliation-loop-tracker.md
+git commit -m "docs(global-ux): Wave 2 Task 2.0 — cluster freeze + Cluster D split"
 ```
 
-### Task 2.A-2.E: Five-cluster parallel dispatch
+### Task 2.A: Cluster A sentinel run (sequential — must succeed before fan-out)
+
+**Files:**
+- Created by subagent: `packages/blocks-accounting/Resources/Localization/SharedResource.resx` and `.ar-SA.resx`, `packages/blocks-accounting/Localization/SharedResource.cs`, modifications to `packages/blocks-accounting/<EntryPoint>.cs`
+- Same triple for `blocks-tax-reporting`, `blocks-rent-collection`, `blocks-subscriptions`
+- Created by subagent: `waves/global-ux/wave-2-cluster-A-report.md`
+
+**Why sentinel:** Anti-pattern #20 mitigation. Running one cluster fully (implement + review + commit) before fanning out catches cascade-pattern bugs (DI syntax, RESX schema, namespace pattern) before they replicate across 4 more clusters.
+
+- [ ] **Step 1:** Dispatch ONE subagent (foreground; subagent_type: general-purpose). Full inlined brief:
+
+  > **Cluster A (blocks-finance-ish) sentinel cascade — Plan 2 Task 3.5**
+  >
+  > **Context.** This is Wave 2 of `docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md`. Wave 0 already shipped foundation/anchor/bridge bundles via PR #66 + local commits. The canonical pattern is in `packages/foundation/Resources/Localization/SharedResource.resx` (8 keys, `<comment>` on every entry) and `packages/foundation/Localization/SharedResource.cs` (internal sealed marker). Read both before starting. Read `waves/global-ux/reconciliation-pr66-diff-memo.md` for the pattern rationale.
+  >
+  > **Scope.** Four packages: `packages/blocks-accounting`, `packages/blocks-tax-reporting`, `packages/blocks-rent-collection`, `packages/blocks-subscriptions`. Wave 2 is **infra-only**: skeleton `.resx` + DI; one pilot string per package; **no end-user content** (Plan 6 covers that).
+  >
+  > **Per-package deliverables (4 files per package):**
+  > 1. Create `<package>/Resources/Localization/SharedResource.resx` with the same 8-key namespace as foundation (severity.{info,warning,error,critical}, action.{save,cancel,retry}, state.loading), values are package-scoped pilot phrases (e.g., for `blocks-accounting`: "Saving accounting record…" for action.save), `<comment>` on every entry citing the package and key purpose.
+  > 2. Create `<package>/Resources/Localization/SharedResource.ar-SA.resx` with the same 8 keys, ar-SA translations matching foundation's pattern (mirror translator-comment structure).
+  > 3. Create `<package>/Localization/SharedResource.cs` — `internal sealed class SharedResource { }` in the package's primary namespace (e.g., `Sunfish.Blocks.Accounting`).
+  > 4. Edit the package's entry-point (locate via reading `<package>/Program.cs` or `<package>/<X>ServiceCollectionExtensions.cs` or `<package>/<X>Module.cs` — pick the file that already wires DI). Add `services.AddLocalization()` if missing AND `services.AddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>))` if missing. Idempotent — do not duplicate registrations.
+  >
+  > **Build gate (per package):** `dotnet build <package>/<package>.csproj` must succeed with no `SUNFISH_I18N_001` warnings.
+  >
+  > **Commit discipline:** ONE commit for the cluster, path-scoped: `git add packages/blocks-accounting/ packages/blocks-tax-reporting/ packages/blocks-rent-collection/ packages/blocks-subscriptions/`. Commit message: `feat(i18n): cluster A (blocks-finance-ish) skeleton cascade — Plan 2 Task 3.5`. **DO NOT** push or open a PR — the driver does that after Wave 3 review.
+  >
+  > **Output.** Write `waves/global-ux/wave-2-cluster-A-report.md` with: per-package file list, commit SHA, `dotnet build` output excerpts (success line per package), namespace used, any deviations from canonical pattern (with reason), any deferrals (with reason). Under 1500 words. Then commit the report itself in a separate path-scoped commit: `docs(global-ux): Cluster A cascade report`.
+  >
+  > **DO NOT:** push to remote, modify packages outside the four named, edit foundation/anchor/bridge files, fabricate ar-SA translations without comment-cite to foundation pattern, run `git add .` or any non-path-scoped staging.
+
+- [ ] **Step 2:** Wait for subagent completion (foreground). Read returned report.
+
+- [ ] **Step 3:** Verify the commit SHA referenced in report exists locally: `git cat-file -e <sha>`. If missing, mark Cluster A RED.
+
+- [ ] **Step 4:** Dispatch sentinel reviewer subagent (subagent_type: `superpowers:code-reviewer`):
+
+  > Review commit `<SHA-from-cluster-A-report>`. Verify against `docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md` Task 2.A brief and `_shared/engineering/coding-standards.md`. Specific checks: (a) all 4 packages have the four files; (b) RESX schema matches foundation; (c) ar-SA key count == en-US key count; (d) every `<data>` has non-empty `<comment>`; (e) DI registration is idempotent; (f) namespace matches package convention; (g) `dotnet build` succeeded with no `SUNFISH_I18N_001`. Verdict GREEN | YELLOW | RED with line citations. Output to `waves/global-ux/wave-3-cluster-A-review.md` (this is the Wave 3 review for cluster A — produced now during sentinel run, not later). Under 800 words.
+
+- [ ] **Step 5:** Sentinel decision:
+  - **GREEN:** Cluster A becomes the proven pattern. Fan-out to B/C/D1/E in Task 2.B-E. Mark tracker 2.A ✓ and 3.A ✓ (review already done).
+  - **YELLOW:** Auto-fix per reviewer's named issues if scope ≤5 lines/package; re-review; if still YELLOW after one cycle, escalate.
+  - **RED:** Halt loop. `Halt reason: wave-2-sentinel-red`. The cascade pattern has a real bug — fix manually before re-attempting fan-out. **Do not** dispatch B/C/D1/E.
+
+### Task 2.B-2.E: Four-cluster parallel dispatch (only after sentinel GREEN)
+
+**Pre-condition:** Cluster A sentinel GREEN; tracker rows 2.A and 3.A both ✓.
 
 **Files:**
 - Created/modified by subagents per their cluster's package list
 
-- [ ] **Step 1:** Dispatch five subagents in a single message (parallel `Agent` tool calls, all `subagent_type: general-purpose`, no `run_in_background` initially):
+- [ ] **Step 1:** Dispatch four subagents in a single message (parallel `Agent` tool calls, all `subagent_type: general-purpose`, no `run_in_background` unless first batch demonstrates >3min runtime):
 
-  - **Cluster A (blocks-finance-ish):** packages/blocks-accounting, blocks-tax-reporting, blocks-rent-collection, blocks-subscriptions
   - **Cluster B (blocks-ops):** packages/blocks-assets, blocks-inspections, blocks-maintenance, blocks-scheduling
   - **Cluster C (blocks-crm-ish):** packages/blocks-businesscases, blocks-forms, blocks-leases, blocks-tenant-admin, blocks-workflow, blocks-tasks
-  - **Cluster D (ui-and-adapters):** packages/ui-core (if .NET; otherwise N/A), packages/ui-adapters-blazor, packages/ui-adapters-react (TypeScript — different cascade pattern; if so, document and skip until separate plan)
-  - **Cluster E (accelerators-and-apps):** apps/kitchen-sink (foundation/anchor/bridge already done)
+  - **Cluster D1 (ui-and-blazor):** packages/ui-core, packages/ui-adapters-blazor (D2 = ui-adapters-react deferred per Task 2.0 Step 5)
+  - **Cluster E (accelerators-and-apps):** apps/kitchen-sink
 
-  Each brief: "Read `waves/global-ux/wave-2-subagent-brief.md` and `docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md` Task 2.0. For each package in cluster X = [list], create `Resources/Localization/SharedResource.resx`, `Resources/Localization/SharedResource.ar-SA.resx` (mirror foundation's eight entries), `Localization/SharedResource.cs` (marker class). Edit the package's entry-point file to register `ISunfishLocalizer<T>`. Use one path-scoped `git add packages/<cluster-roots>/` per cluster. Make ONE commit for the cluster: `feat(i18n): cluster-X cascade — Plan 2 Task 3.5`. Run `dotnet build` on each modified package; must succeed. Output a per-cluster report `waves/global-ux/wave-2-cluster-<X>-report.md` with: package list, file paths created, commit SHA, build evidence, any deferrals (with reason). Under 1500 words. DO NOT push to remote — driver opens the PR after Wave 3 review."
+  Each brief is the **same as Cluster A's brief above**, with the package list and report filename swapped (e.g., `wave-2-cluster-B-report.md`). Add to each brief: "Cluster A's pattern is canonical — see commit `<SHA-A>` and `waves/global-ux/wave-2-cluster-A-report.md` for the proven shape. Match it." This satisfies anti-pattern #17 (delegation context transfer).
 
-- [ ] **Step 2:** Wait for all five reports. If any subagent fails to build, mark that cluster RED in tracker; do not auto-retry.
+- [ ] **Step 2:** Wait for all four reports. If any subagent fails to build, mark that cluster RED in tracker; do not auto-retry. Other clusters proceed independently.
 
 - [ ] **Step 3:** Verify each report references its commit SHA and the SHA exists locally: `git cat-file -e <sha>` for each.
 
-**Wave 2 exit:** Five cluster reports landed; five commits exist on `global-ux/wave-2-cluster-cascade` branch; all builds green; tracker advances to Wave 3.
+**Wave 2 exit:** Five cluster reports landed (A from sentinel, B/C/D1/E from fan-out); five commits exist on `global-ux/wave-2-cluster-cascade` branch; all builds green; D2 documented as deferred. Tracker advances to Wave 3 — but note 3.A is already ✓ from sentinel; only 3.B/3.C/3.D/3.E remain.
 
 ---
 
-## Wave 3 — Quality gate (5 parallel reviewers)
+## Wave 3 — Quality gate (4 parallel reviewers + human spot-check)
 
-**Pre-condition:** Wave 2 exit gate passed.
+**Pre-condition:** Wave 2 exit gate passed; Cluster A's review is already ✓ (Task 2.A Step 4 produced it during sentinel run).
 
-**Why:** Per Plan 2 Task 3.5 Step 4: "Reviewer agent (spec-compliance + code-quality, serial) gates each cluster commit before the next cluster dispatches." We're running clusters in parallel for speed, so reviewers fan out in parallel too — but the gate is still per-cluster.
+**Why parallel reviewers — and how this reconciles with Plan 2 Task 3.5 Step 4:** Plan 2 Task 3.5 Step 4 originally specified "Reviewer agent (spec-compliance + code-quality, serial) gates each cluster commit before the next cluster dispatches." This plan deviates with a documented exception:
 
-### Task 3.A-3.E: Per-cluster reviewer subagents
+1. **Sentinel pattern replaces serial gating's primary purpose.** Cluster A's full implement+review cycle (Task 2.A Steps 1-5) catches systemic cascade-pattern bugs *before* B/C/D1/E dispatch — the same protection serial gating provided, with one cluster of latency instead of five.
+2. **Reviewer-collusion-by-similarity risk is mitigated by anti-pattern named checks** in each reviewer's brief (RESX schema, namespace convention, build success, analyzer warnings) — these are mechanical assertions, not aesthetic judgments. Two reviewers reading the same diff with the same checklist produce independent verdicts with low collusion risk.
+3. **Human spot-check gate** added below as belt-and-suspenders: user randomly samples one of B/C/D1/E before PR opens.
+
+This deviation is logged here rather than altering Plan 2's source text (the source plan stays as-shipped per Better Alternatives Alt-A rejection).
+
+### Task 3.B-3.E: Per-cluster reviewer subagents (four parallel)
 
 **Files:**
 - Read-only by reviewers
-- Output: `waves/global-ux/wave-3-cluster-<X>-review.md` × 5
+- Output: `waves/global-ux/wave-3-cluster-<X>-review.md` × 4 (B, C, D1, E)
 
-- [ ] **Step 1:** Dispatch five reviewer subagents in parallel (single message). Each:
+- [ ] **Step 1:** Dispatch four reviewer subagents in parallel (single message). Each:
   - **subagent_type:** `superpowers:code-reviewer`
-  - **Brief:** "Review the changes in commit <SHA-from-cluster-X>. Read this plan (Task 2.0 template) and `_shared/engineering/coding-standards.md` and `docs/diagnostic-codes.md` for `SUNFISH_I18N_001`. Verify: (a) every package in cluster has the three files (`.resx`, `.ar-SA.resx`, `.cs`), (b) DI registration is present and idempotent, (c) ar-SA bundle has eight entries matching foundation's bundle keys, (d) no `SUNFISH_I18N_001` warnings on build, (e) one path-scoped commit per cluster (not file-scattered). Verdict GREEN | YELLOW | RED with per-issue line citations. Output to `waves/global-ux/wave-3-cluster-<X>-review.md`. Under 800 words."
+  - **Brief:** "Review the changes in commit `<SHA-from-cluster-X-report>`. Read `docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md` Task 2.A inlined brief (cluster A is canonical pattern), `waves/global-ux/wave-2-cluster-A-report.md`, `waves/global-ux/wave-3-cluster-A-review.md` (sentinel already-approved precedent), `_shared/engineering/coding-standards.md`, and `docs/diagnostic-codes.md` for `SUNFISH_I18N_001`. Verify: (a) every package in cluster has the four files (`.resx`, `.ar-SA.resx`, `.cs` marker, entry-point edit); (b) DI registration is idempotent; (c) ar-SA bundle key count matches en-US key count; (d) every `<data>` has non-empty `<comment>`; (e) no `SUNFISH_I18N_001` warnings on build; (f) one path-scoped commit per cluster (not file-scattered); (g) deviates from Cluster A's pattern only with cited justification. Verdict GREEN | YELLOW | RED with per-issue line citations. Output to `waves/global-ux/wave-3-cluster-<X>-review.md`. Under 800 words."
 
-- [ ] **Step 2:** Wait for all five reviews. Read verdicts.
+- [ ] **Step 2:** Wait for all four reviews. Read verdicts. Combine with Cluster A's already-✓ review for the full picture.
 
-- [ ] **Step 3:** Decision matrix:
-  - All GREEN → advance to Task 3.F.
-  - Any YELLOW → driver attempts auto-fix per reviewer's named issues only if scoped to ≤5 lines per package; else escalate to user.
+- [ ] **Step 3:** Decision matrix (same shape as Wave 2 sentinel):
+  - All GREEN → advance to Task 3.F (human spot-check).
+  - Any YELLOW → driver attempts auto-fix per reviewer's named issues only if scoped to ≤5 lines per package; re-review; if still YELLOW after one cycle, escalate.
   - Any RED → halt loop with `Halt reason: wave-3-red-cluster-<X>`.
-  - ≥2 RED → halt loop with `Halt reason: wave-3-systemic-red`; cascade pattern likely broken; do not retry.
+  - ≥2 RED across the five clusters → halt loop with `Halt reason: wave-3-systemic-red` even though sentinel passed; investigate before retry.
 
-### Task 3.F: Driver — open Wave-2 PR after green gate
+### Task 3.F: Human spot-check gate (mandatory before PR opens)
+
+**Files:**
+- (none modified; user-facing pause)
+
+**Why:** Reviewer-collusion-by-similarity, even with anti-pattern checks, remains a residual risk. One human eye on a randomly-sampled cluster catches the collusion failure mode that automated reviewers cannot self-detect.
+
+- [ ] **Step 1:** Driver picks a random cluster from {B, C, D1, E} (e.g., `RANDOM % 4 → cluster index`). Posts to user: "Wave 3 reviews complete (4 GREEN + sentinel). Spot-check requested for **cluster <X>**. Diff: `git diff main..global-ux/wave-2-cluster-cascade -- packages/<cluster-X-roots>/`. Approve / request changes / approve-all-without-spot-check?"
+
+- [ ] **Step 2:** Wait for user response. The loop driver `ScheduleWakeup`s in 1800s and re-checks tracker for a `user-spot-check-decision: approved | changes | skip` line. If unset, wait again.
+
+- [ ] **Step 3:** On user `approved` or `skip` → advance to Task 3.G (PR open). On `changes` → halt loop with `Halt reason: user-requested-changes-cluster-<X>`; user provides correction guidance; loop re-enters at Wave 2 Task 2.<X> with revised brief.
+
+### Task 3.G: Driver — open Wave-2 PR after spot-check
 
 **Files:**
 - (none; PR creation only)
@@ -535,6 +630,61 @@ After Wave 4 close-out, append to `.wolf/cerebrum.md`:
 - Wave 3 systemic RED → re-plan Wave 2 entirely (cascade pattern broken)
 - Plan 3 / 4 / 4B status reveals deeper Phase-1 schedule risk → escalate; this plan doesn't fix it
 - User signals priority shift (e.g., wants compat-package expansion per memory `project_compat_expansion_workstream`) → halt loop with `Halt reason: user-priority-shift`
+- Wave 2 sentinel (Cluster A) RED → cascade pattern itself is wrong; re-plan Task 2.0 + 2.A; do not retry blind
+
+### Resume Protocol
+
+Distinct from Cold Start (which assumes a fresh agent with no in-flight work). Resume Protocol covers in-flight failure modes:
+
+| Failure | Recovery |
+|---|---|
+| Driver crashes mid-iteration before tracker update | Read tracker → see last completed step → re-run from next un-checked step. Driver writes tracker at end of each step, not end of wave, so loss is bounded to one step. |
+| Subagent crashes mid-dispatch (Wave 1 / 2 / 3) | Driver does NOT receive a return message. On next wake, driver detects: subagent's expected output file does not exist → re-dispatch the same subagent with same brief. Idempotent because subagents commit atomically (one path-scoped commit per cluster). |
+| Subagent commits then crashes before reporting | Tracker has no SHA recorded but `git log --since="<dispatch-time>"` shows the commit. Driver verifies SHA, records in tracker, advances. |
+| Tracker file corrupted | Recreate from this plan's Tracker File Specification + `git log <branch>` for completed work. Plan + git log are the durable sources of truth; tracker is convenience-cache. |
+| Wave-mid-failure (e.g., 3 of 4 cluster fan-out commits land but cluster D1 fails) | Driver does NOT advance wave. Wave 3 reviews the 3 successful commits; cluster D1 remains red until manually fixed; loop halts with `Halt reason: cluster-D1-failed`. **Do not auto-retry blindly.** |
+| Loop wakes during Max Pro daily-cap reset window | Per memory `feedback_sleep_on_claude_code_token_exhaustion`: ScheduleWakeup past reset; re-probe; do not dispatch new work. In-flight subagents finish on their own. |
+
+### Budget & Resources
+
+| Resource | Estimate | Cap | If exceeded |
+|---|---|---|---|
+| Token spend (driver + subagents combined) | 600-800k | 1.5M (2x estimate) | Halt loop, escalate; user decides whether to cap-and-defer or top up |
+| Wall-clock — pure work time | ~5h sequential / ~2h with parallel fan-out | 24h | If still running after 24h, kill-trigger fires (14-day envelope still valid; this is the wall-clock soft-cap) |
+| Wall-clock — with `ScheduleWakeup` 1200-1800s pacing | ~8-12h elapsed | 36h | Same as above |
+| Subagent dispatches | ~14 (1 sentinel + 4 fan-out + 5 reviewers + 4 status agents) | 30 (2x) | Likely indicates retry loops; halt and investigate |
+| PRs opened | 4 (one per wave 0/1/3-G/4) | 8 (2x) | Excess implies wave fragmentation; halt and consolidate |
+
+Token budget methodology: Driver iterations ~10-15 × ~3-5k tokens each = 30-75k. Subagent invocations ~14 × ~30-60k tokens (full repo context + brief + output) = ~420k-840k. Reviewer subagents reuse cached context partially. Estimates are rough; actuals will vary.
+
+If Max Pro daily envelope hits mid-loop: per memory `feedback_sleep_on_claude_code_token_exhaustion`, driver halts dispatch, lets in-flight subagents finish, ScheduleWakeup past reset window.
+
+### Tool Fallbacks
+
+| Required tool | Primary path | If unavailable | Fallback path |
+|---|---|---|---|
+| `gh pr create` / `gh pr merge --auto` | GitHub CLI authenticated | GitHub API outage / auth lapse | Driver halts wave at PR step; tracker entry `Halt reason: gh-unavailable`; user opens PR via web UI manually; on next loop wake, driver checks `gh pr view <#>` and continues |
+| `dotnet build` | .NET 11 SDK preview | SDK install corrupted | Driver halts at first build failure; tracker `Halt reason: dotnet-build-failed-cluster-<X>`; user investigates SDK; subagent does NOT synthesize success |
+| `ScheduleWakeup` (loop pacing) | Claude Code dynamic-mode loop | Tool unavailable / harness error | User invokes `/loop 30m` interval mode instead; loop driver re-enters via that interval; tracker has same shape regardless of pacing source |
+| `superpowers:dispatching-parallel-agents` skill | Parallel `Agent` calls in one message | Harness serializes despite parallel intent | Driver detects via wall-clock measurement (each Agent call >2x median) → switches to sequential dispatch; loop continues, just slower |
+| `superpowers:code-reviewer` agent type | Spec + code quality review | Agent type unavailable | Fall back to `general-purpose` with explicit reviewer brief; quality slightly lower; user spot-check gate (Task 3.F) compensates |
+| Reviewer subagent timeout | Returns within ~3min | Hangs / times out | Re-dispatch with smaller scope (single package not whole cluster); if still times out, mark cluster YELLOW with named blocker, do not retry |
+| `git push origin <branch>` | Standard branch push | Network / auth | Tracker `Halt reason: git-push-failed`; user fixes; loop re-checks on next wake |
+
+### Stage 1.5 Hardening Log
+
+Six adversarial perspectives applied to plan v1; findings driving v1.1 (this version):
+
+| Perspective | Finding | Resolution in v1.1 |
+|---|---|---|
+| **Outside Observer** | Why are you doing the cascade now? Plan 6 covers blocks/apps cascade in Wks 5-12. This may be premature work. | Better Alternatives section now documents Alt-B-partial: Wave 2 is **infra-only** cascade (skeletons + DI + one pilot string per package); Plan 6 fills end-user content. The infra has to land for Plan 5 (CI Gates Wk 6) to assert against. Boundary made explicit. |
+| **Pessimistic Risk Assessor** | Five reviewer subagents may all approve due to pattern similarity (collusion-by-uniformity). What if a syntax-level cascade bug replicates across all 5 clusters before any reviewer catches it? | Wave 2 restructured: **Cluster A = sentinel** (full implement+review cycle solo), gates fan-out of B/C/D1/E. Plus Task 3.F mandatory **human spot-check** on a random cluster before PR opens. |
+| **Pedantic Lawyer** | Plan 2 Task 3.5 Step 4 says reviewer gating is "serial". v1's parallel reviewer dispatch violates the source plan's contract. | Wave 3 now opens with an explicit deviation justification. Sentinel pattern preserves serial-gating's primary protection (catches systemic bugs before fan-out). Deviation logged in this plan, not retroactively edited into Plan 2 (per Alt-A rejection). |
+| **Skeptical Implementer** | Wave 2 brief points to `wave-2-subagent-brief.md` which Task 2.0 itself creates. Subagents dispatched in 2.A-E rely on a file that may not exist at dispatch time, or may exist with stale content. | v1.1 inlines the full subagent brief in Task 2.A (and references it from 2.B-E). No external file dependency. Anti-pattern #17 (delegation without context transfer) closed. |
+| **The Manager** | What's the wall-clock cost vs sequential single-session? You estimated tokens but not hours. The loop may be slower in elapsed time than a focused 4h session even though it consumes the same tokens. | Budget & Resources section now states explicit wall-clock estimates: ~5h pure work / ~2h with parallel fan-out / ~8-12h elapsed with `ScheduleWakeup` pacing. User can compare to sequential alternative and decide. |
+| **Devil's Advocate** | What if the cascade isn't needed at all? You're cascading 14 packages of skeleton infra that may rot before Plan 6 fills them with real strings. Argue why this isn't waste. | Argued in Better Alternatives Alt-B: skeletons are the input to Plan 5's CI gates (`find packages/blocks-* -name SharedResource.resx \| wc -l == 14`). Without them, Plan 5 cannot dispatch. The skeletons aren't decoration; they're the unit-of-assertion for the next plan's gates. |
+
+Plan v1 → v1.1 deltas summary: added Confidence Level, Better Alternatives, Resume Protocol, Budget & Resources, Tool Fallbacks, Stage 1.5 Hardening Log; restructured Wave 2 (sentinel + fan-out instead of 5-way fan-out); restructured Wave 3 (4 reviewers + human spot-check instead of 5 + automatic PR open); inlined Wave 2 subagent brief; wired Wave 0 → Wave 2 discovery flow via reading the diff memo and foundation RESX in Task 2.0 Step 1.
 
 ---
 
@@ -552,12 +702,28 @@ The driver MUST update tracker after EVERY wake (even if no progress made — lo
 
 ---
 
-## Self-Review
+## Self-Review (v1.1, post-hardening)
 
 **Spec coverage:** Five waves cover the five next-steps from the prior turn (reconcile, status truth, cascade, gate, Plan-5-entry). ✓
 
 **Placeholder scan:** Searched for "TBD", "TODO", "implement later" — none. Searched for "appropriate" / "handle edge cases" — none. ✓
 
-**Type consistency:** Tracker schema, file paths, and commit messages cross-referenced; no naming drift between waves. ✓
+**Type consistency:** Tracker schema updated for v1.1 wave shape (sentinel + 4 fan-out for Wave 2; spot-check + open-PR for Wave 3); file paths and commit messages cross-referenced; no naming drift between waves. ✓
 
-**Plan-2 traceability:** Wave 2 Task 2.0-E maps to Plan 2 Tasks 3.4-3.5; Wave 3 maps to Plan 2 Task 3.5 Step 4 reviewer gate; Wave 4 Task 4.1-4.2 maps to Plan 2 Tasks 3.6 + 4.5. ✓
+**Plan-2 traceability:** Wave 2 Task 2.0-E maps to Plan 2 Tasks 3.4-3.5 (with deviation logged in Wave 3's serial-vs-parallel justification); Wave 3 maps to Plan 2 Task 3.5 Step 4 reviewer gate (deviation explicitly documented); Wave 4 Task 4.1-4.2 maps to Plan 2 Tasks 3.6 + 4.5. ✓
+
+**Stage 0 coverage (post-hardening):** Existing Work ✓, Feasibility ✓, Better Alternatives ✓ (six alternatives enumerated), Factual Verification ✓, ROI ✓ (Budget & Resources), Constraints ✓, AHA Effect ✓ (Plan 6 overlap surfaced and scoped), People Risk n/a, Official Docs n/a (no new library). 8 of 9 applicable checks covered.
+
+**Stage 1.5 sparring:** ✓ (six perspectives applied; findings logged in Stage 1.5 Hardening Log).
+
+**Anti-pattern scan (post-hardening):**
+- #1 Unvalidated assumptions: closed (assumptions table + Wave 2 Task 2.0 reads Wave 0 memo).
+- #9 Skipping Stage 0: closed (Better Alternatives + AHA effect now documented).
+- #10 First idea unchallenged: closed (Stage 1.5 hardening log).
+- #14 Wrong detail distribution: closed (Wave 2 brief now inlined in plan with same level of specificity as Wave 0).
+- #15 Premature precision: closed (Budget table notes "estimates are rough; actuals will vary").
+- #17 Delegation context transfer: closed (brief inlined; Cluster A sentinel produces canonical artifact for B/C/D1/E to reference).
+- #19 Missing tool fallbacks: closed (Tool Fallbacks section).
+- #20 Discovery amnesia: closed (Wave 2 Task 2.0 Step 1 explicitly reads `reconciliation-pr66-diff-memo.md`).
+
+**Quality Rubric Grade (v1.1):** **A−** — all CORE + 13 CONDITIONAL + Stage 0 + Stage 1.5 sparring + Confidence + Cold Start + Resume Protocol + Reference Library + Knowledge Capture + Replanning Triggers. Distance from clean A: minor gaps in measurable Knowledge Capture metrics (specifies what to log but not "how it should change next plan").
