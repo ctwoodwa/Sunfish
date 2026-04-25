@@ -12,4 +12,27 @@
     <Version>0.1.0</Version>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <!--
+    Plan 2 Task 4.3 — auto-wire the SUNFISH_I18N_001 analyzer (Sunfish.Analyzers.LocComments)
+    into every project that follows the standard Resources/Localization/*.resx convention.
+    Projects without that folder pay no cost; projects with .resx bundles get build-time
+    enforcement that every <data> entry carries a non-empty <comment>.
+
+    Why ProjectReference (not PackageReference): keeps the analyzer in lockstep with its
+    in-repo source — no publish-then-consume round trip. OutputItemType="Analyzer" +
+    ReferenceOutputAssembly="false" means consumers take no runtime dependency; only the
+    Roslyn compiler loads the analyzer DLL.
+
+    Severity is Warning by default (per the analyzer's DiagnosticDescriptor); Plan 5 (CI
+    Gates) promotes to Error after Phase 1 cascade. Repo-wide TreatWarningsAsErrors=true
+    means it already fails the build today on any missing comment — which is the point.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\Resources\Localization')
+                        And '$(MSBuildProjectName)' != 'Sunfish.Analyzers.LocComments'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)packages\analyzers\loc-comments\Sunfish.Analyzers.LocComments.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+    <AdditionalFiles Include="$(MSBuildProjectDirectory)\Resources\Localization\*.resx" />
+  </ItemGroup>
 </Project>
