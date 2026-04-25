@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" alt="Sunfish" width="240">
+</p>
+
 # Sunfish
 
 Sunfish is a framework‑agnostic suite of open‑source and commercial building blocks that lets you rapidly scaffold, prototype, and ship real-world applications with interchangeable UI and domain components.
@@ -8,6 +12,20 @@ Sunfish is a framework‑agnostic suite of open‑source and commercial building
 - **Prototype to production**: Start with open-source components for fast prototyping, then swap in commercial partners (like Telerik) or Sunfish premium modules without rewriting everything.  
 - **Beyond components**: Sunfish includes domain‑level modules (forms, tasks, scheduling, asset management) so you assemble full features, not just UI widgets.  
 - **Migration-friendly**: Design your app against stable abstractions so you can change underlying vendors with minimal surface‑area impact.
+
+## Companion book — *The Inverted Stack*
+
+The architectural choices in this repo trace back to a longer-form argument:
+[**The Inverted Stack**](https://github.com/ctwoodwa/the-inverted-stack) — a
+book on local-first SaaS, the kernel/plugin split, the trust model behind
+hosted-node-as-SaaS deployments, and why the SaaS paradigm needs inverting.
+Read it alongside the code to understand *why* Sunfish is structured the way
+it is.
+
+The repo's foundational paper
+([`_shared/product/local-node-architecture-paper.md`](_shared/product/local-node-architecture-paper.md))
+is the technical specification derived from the book; the book gives the
+conceptual grounding (motivation, history, alternatives considered).
 
 ## High-level architecture
 
