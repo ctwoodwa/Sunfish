@@ -1,8 +1,8 @@
 # Global-First UX — Wave Status
 
-**Updated:** 2026-04-25 — Wave 1 status refresh from 4 parallel subagent reports + Wave 0 reconciliation outcome
-**Current phase:** Phase 1 Weeks 2-4 execution (in flight); Plan 2 Wk 4 polish landed; Plan 4 bridge-ready; Plans 3 / 4 / 4B Week 3 cascade NOT-STARTED
-**Current focus:** Wave 1 → Wave 2 re-prioritization gate (Plan 3 RED triggers `wave-1-reprioritize-needed` halt per loop plan v1.2 Task 1.F)
+**Updated:** 2026-04-25 — Wave 4 close-out: cascade coverage report + Plan 5 entry verdict
+**Current phase:** Phase 1 Weeks 2-4 COMPLETE for Plan 2 cascade (17 packages); Plans 3 / 4 / 4B continue independently; Plan 5 entry GREEN
+**Current focus:** Plan 5 dispatchable (Wk-6 CI Gates); blocks-workflow DI follow-up (~5-line standalone PR); Plans 3 / 4 / 4B advancement decisions await human owner
 
 ## Completed this week
 - Task 1: Scaffold `waves/global-ux/` tracking directory (`9f14858b`)
@@ -56,6 +56,34 @@ Plan 4's kill trigger fires **2026-05-24** (29 days from today). Week 3 cascade 
 
 Wave 0 of the reconciliation+cascade loop ([plan](../../docs/superpowers/plans/2026-04-25-global-ux-reconciliation-and-cascade-loop-plan.md)) verified that the local Plan 2 Task 4.x cascade work and PR #66's cascade work converged byte-identical across all 11 overlap files. Diff memo at `waves/global-ux/reconciliation-pr66-diff-memo.md`. Shipped via PR [#79](https://github.com/ctwoodwa/Sunfish/pull/79) (squash-merged as `ca621bb5`). Plan v1.1 hardening shipped via PR [#80](https://github.com/ctwoodwa/Sunfish/pull/80). Plan v1.2 council remediation in PR [#81](https://github.com/ctwoodwa/Sunfish/pull/81) (auto-merge armed).
 
+## Plan 5 entry verdict (2026-04-25 — Wave 4 close-out)
+
+✅ **READY-TO-DISPATCH** — both Plan 2 Task 3.6 binary gates met:
+- `find packages/blocks-* -name SharedResource.resx | wc -l` = **14** (target 14)
+- `grep -r 'AddLocalization()' packages/ apps/ accelerators/` ≥ 3 hits (target ≥ 3; actual ≥ 9)
+
+Wave 2 cascade landed via PR [#84](https://github.com/ctwoodwa/Sunfish/pull/84) — 5 cluster commits, 17 packages, 62 files, ~3,500 lines. Sentinel + canary + 4-cluster fan-out + 4 parallel reviewers + diff-shape automated check + human spot-check + pre-merge SHA check. Per-cluster reports and reviews preserved at `waves/global-ux/wave-2-cluster-*-report.md` and `waves/global-ux/wave-3-cluster-*-review.md`. Coverage report at `waves/global-ux/week-3-cascade-coverage-report.md`.
+
+**Plan 5 entry conditions met:**
+- Plan 2 cascade infrastructure landed (skeletons + DI for Pattern A; consumer-side wiring for Pattern B and composition root)
+- Architectural finding (Cluster A sentinel ratification): blocks/adapters use `TryAddSingleton(typeof(ISunfishLocalizer<>), ...)` only; consumers (apps, accelerators) own `services.AddLocalization()`. Bridge precedent confirmed.
+- Foundation, anchor, bridge already shipped via Wave 0 reconciliation (PR #79 squash-merge `ca621bb5`).
+
+**Plan 5 entry conditions NOT met (carried forward as inputs to Plan 5 itself, not blockers):**
+- Plan 3 RED — translator-assist tooling 1 of 19 tasks done; bandwidth-limited (acknowledged in Wave 1 re-prioritization gate; user chose `proceed`).
+- Plan 4 cascade NOT-STARTED — bUnit-axe bridge done; ui-core a11y harness cascade not begun. 30-day kill trigger fires 2026-05-24 (29 days out).
+- Plan 4B 12 of 23 tasks NOT-STARTED — §6 motion only scaffolded.
+
+Plan 5 should add CI gates that surface these gaps automatically:
+- Permanent Plan-2 gate (`.resx` count + DI grep)
+- (Per v1.3 Seat-2 P5 deferral) RESX `<comment>` HTML-metacharacter scan
+- (Per Wave 1 finding) gate that fails build if Plans 3/4/4B fall further behind YELLOW for >7 days
+
+## Wave 4 follow-up (tracked, not blocking)
+
+- **blocks-workflow DI line** — `.csproj` lacks foundation `ProjectReference`; v1.3 Seat-2 P1 forbade `.csproj` edits in cluster commits. Standalone follow-up PR (~5 lines: 1 ProjectReference + 1 using + 1 TryAddSingleton + 1 cosmetic doc-cref restore). Tracked here.
+- **GitButler workspace recovery** — `gitbutler/workspace` has direct commits requiring `but teardown` to recover before GitButler-native workflow can resume. Out-of-band; affects future sessions, not Plan 5 entry.
+
 ## Wave 1 re-prioritization gate (Task 1.F, v1.2)
 
 Per loop plan v1.2 decision matrix:
@@ -82,11 +110,11 @@ Human owner records decision via `user-reprioritization-decision: proceed | pivo
 | Plan | Scope | Weeks | Lines | Status |
 |---|---|---|---|---|
 | [Plan 1](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-1-plan.md) | Tooling pilot | Week 1 | 1548 | Complete (GO verdict) |
-| [Plan 2](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-loc-infra-plan.md) | Loc-Infra cascade (§3A) | 2-4 | 448 | **YELLOW** — Wk 4 polish DONE; Wk 3 cascade only 3 of ~20 packages (foundation/anchor/bridge); Workstream B run-time tasks gated on Weblate VM. Detail: `week-3-plan-2-status.md` |
+| [Plan 2](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-loc-infra-plan.md) | Loc-Infra cascade (§3A) | 2-4 | 448 | **GREEN — COMPLETE for Plan 5 entry purposes**; Wk 3 cascade landed via Wave 2 (PR [#84](https://github.com/ctwoodwa/Sunfish/pull/84)); 14 of 14 blocks-* + ui-core + ui-adapters-blazor + kitchen-sink. blocks-workflow DI follow-up tracked. Workstream B run-time (Weblate VM) still gated. Coverage: `week-3-cascade-coverage-report.md` |
 | [Plan 3](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-translator-assist-plan.md) | Translator-Assist (§3B) | 2-4 (parallel) | 531 | **RED** — 1 of 19 tasks DONE; bandwidth-limited not infra-limited. Detail: `week-3-plan-3-status.md` |
 | [Plan 4](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-2-4-a11y-foundation-plan.md) | A11y Foundation cascade (§7) | 2-4 (parallel) | 540 | **YELLOW** — Workstream A (bUnit-axe bridge) DONE end-to-end; Wk 3 cascade NOT-STARTED; 30-day kill trigger fires 2026-05-24. Detail: `week-3-plan-4-status.md` |
 | [Plan 4B](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-weeks-3-6-ui-sensory-cascade-plan.md) | ui-core sensory cascade (§2 + §5 + §6) | 3-6 (parallel) | 554 | **YELLOW** — 8 DONE / 3 IN-PROGRESS / 12 NOT-STARTED; §5 SyncState gate landed; §2 cascade clean; §6 motion only scaffolded. Detail: `week-3-plan-4b-status.md` |
-| [Plan 5](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-6-ci-gates-plan.md) | CI Gates (§8) — Phase 1 exit gate | Week 6 | 459 | **BLOCKED** on Plan 3 RED + Plans 2/4/4B Wk 3 cascade unstarted |
+| [Plan 5](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-1-week-6-ci-gates-plan.md) | CI Gates (§8) — Phase 1 exit gate | Week 6 | 459 | **READY-TO-DISPATCH** — Plan 2 entry conditions met (PR #84). Plan 5 should also gate Plans 3/4/4B per cross-plan health checks (see Plan 5 entry verdict above). |
 | [Plan 6](../../docs/superpowers/plans/2026-04-24-global-first-ux-phase-2-cascade-plan.md) | Phase 2 cascade (kitchen-sink + Bridge + Anchor + docs) | 5-12 | 648 | Ready — blocked on Plan 5 exit gate (transitively blocked) |
 
 **Planning totals:** 7 plans, 4,728 lines across Phase 1 + Phase 2 (~20 weeks of scoped work, with translator-vendor budget of ~$745k envelope per Plan 6).

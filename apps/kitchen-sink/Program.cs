@@ -1,5 +1,8 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Localization;
 using Sunfish.UICore.Contracts;
 using Sunfish.Foundation.Extensions;
+using Sunfish.Foundation.Localization;
 using Sunfish.Kernel.Runtime.Notifications;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.KitchenSink.Data;
@@ -40,6 +43,15 @@ builder.Services.AddRazorComponents()
 // AddSunfish() is a single entry point that replaces the legacy three-call registration.
 builder.Services.AddSunfish()
     .AddSunfishInteropServices();
+
+// Plan 2 Task 3.5 (wave-2-cluster-E) — localization composition root.
+// Kitchen-sink is the central consumer that owns AddLocalization() because
+// Pattern B packages (ui-core, blocks-tasks/forms/scheduling/assets) have no
+// DI surface of their own and cannot self-register. ISunfishLocalizer<> is
+// a TryAddSingleton so accelerator hosts (Bridge/Anchor) that already wired
+// it remain idempotent if they later compose the kitchen-sink graph.
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
 
 // FluentUI (mandatory) — provider switcher needs the concrete types,
 // so we register those explicitly instead of using AddSunfishFluentUI().

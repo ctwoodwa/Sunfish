@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.Leases.Services;
+using Sunfish.Foundation.Localization;
 
 namespace Sunfish.Blocks.Leases.DependencyInjection;
 
@@ -20,6 +22,12 @@ public static class LeasesServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddSingleton<ILeaseService, InMemoryLeaseService>();
+
+        // Wave 2 Cluster C — Plan 2 Task 3.5: register the open-generic Sunfish localizer
+        // so consumers can resolve IStringLocalizer-equivalents against this block's
+        // SharedResource bundle. Idempotent via TryAddSingleton.
+        services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
+
         return services;
     }
 }
