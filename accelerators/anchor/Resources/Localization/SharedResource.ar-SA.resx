@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- Sunfish.Anchor SharedResource — Arabic (Saudi Arabia) satellite. RTL locale.
-       Partial coverage (4/8 keys) — intentional first-pass to exercise the
-       locale-completeness-check tool. Translator vendor will fill the rest
-       per Plan 6. -->
+       Full coverage (8/8 keys) — first locale to clear the 95% complete-tier
+       floor. Translator vendor (Plan 6) will own ongoing parity as keys are
+       added; new keys land in en-US source first, then ride the cascade. -->
   <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
     <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
     <xsd:element name="root" msdata:IsDataSet="true">
@@ -44,5 +44,21 @@
   <data name="errors.network-unavailable.detail" xml:space="preserve">
     <value>يتم حفظ تغييراتك محليا وستتم مزامنتها عندما تصبح الأقران قابلة للوصول.</value>
     <comment>Translator: Body text under offline status; reassures changes are saved locally.</comment>
+  </data>
+  <data name="onboarding.join-team.title" xml:space="preserve">
+    <value>الانضمام إلى فريق</value>
+    <comment>Translator: Title on QR-onboarding page; imperative phrasing pairs with "Scan QR code" CTA.</comment>
+  </data>
+  <data name="onboarding.join-team.detail" xml:space="preserve">
+    <value>امسح رمز الاستجابة السريعة الذي يعرضه عضو آخر في الفريق لمشاركة مساحة عملك.</value>
+    <comment>Translator: Body text on join-team page; describes QR-pairing flow per ADR 0032.</comment>
+  </data>
+  <data name="errors.team-not-found" xml:space="preserve">
+    <value>لم يتم العثور على الفريق</value>
+    <comment>Translator: Error shown when switching to a team that no longer exists in local registry.</comment>
+  </data>
+  <data name="errors.team-not-found.detail" xml:space="preserve">
+    <value>لم يعد هذا الفريق متاحا على هذا الجهاز. أعد الانضمام عبر رمز الاستجابة السريعة إذا لزم الأمر.</value>
+    <comment>Translator: Body text on team-not-found; suggests recovery via re-join QR.</comment>
   </data>
 </root>

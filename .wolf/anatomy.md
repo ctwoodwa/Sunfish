@@ -1,6 +1,6 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:07:18.617Z
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:32:55.252Z
 > Files: 1060 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
@@ -278,7 +278,7 @@
 
 ## accelerators/anchor/Resources/Localization/
 
-- `SharedResource.ar-SA.resx` (~696 tok)
+- `SharedResource.ar-SA.resx` (~982 tok)
 - `SharedResource.resx` (~1293 tok)
 
 ## accelerators/anchor/Services/
@@ -352,7 +352,7 @@
 
 ## accelerators/bridge/Sunfish.Bridge/Resources/Localization/
 
-- `SharedResource.ar-SA.resx` (~619 tok)
+- `SharedResource.ar-SA.resx` (~844 tok)
 - `SharedResource.resx` (~1157 tok)
 
 ## accelerators/bridge/Sunfish.Bridge/Services/
