@@ -1,0 +1,24 @@
+{
+  "_documentation": "Plan 5 branch-protection rule for `main` — apply via `gh api -X PUT repos/:owner/:repo/branches/main/protection --input .github/branch-protection-main.json`. Required-checks list includes the Global-UX Gate aggregate plus the existing CI's Build-and-Test. Edit when new gate jobs are added; run the apply command from a maintainer account.",
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [
+      "Build & Test",
+      "Global-UX Gate (aggregate)"
+    ]
+  },
+  "enforce_admins": false,
+  "required_pull_request_reviews": {
+    "dismissal_restrictions": {},
+    "dismiss_stale_reviews": true,
+    "require_code_owner_reviews": false,
+    "required_approving_review_count": 1
+  },
+  "restrictions": null,
+  "allow_force_pushes": false,
+  "allow_deletions": false,
+  "block_creations": false,
+  "required_conversation_resolution": true,
+  "lock_branch": false,
+  "allow_fork_syncing": true
+}

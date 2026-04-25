@@ -1,0 +1,90 @@
+# Plan 5 — Global-First UX gate workflow.
+#
+# Runs the Node-side gates Sunfish's existing dotnet-only ci.yml doesn't cover:
+#   1. CSS logical-properties audit (Plan 4B §2; tooling/css-logical-audit/audit.mjs).
+#   2. Storybook a11y test-runner (Plan 4 Task 4.2; ui-core Storybook + test-storybook
+#      with @axe-core/playwright via the postVisit hook in .storybook/test-runner.ts).
+#
+# .NET-side gates (loc-comments analyzer SUNFISH_I18N_001, SmartFormat CLDR plural
+# tests, XLIFF round-trip tests, bUnit-axe bridge tests) ride on the existing
+# .github/workflows/ci.yml `dotnet test Sunfish.slnx` — every project is in the
+# slnx so its tests run there.
+
+name: Global-UX Gate
+
+on:
+  pull_request:
+    paths:
+      - "packages/**"
+      - "apps/**"
+      - "tooling/css-logical-audit/**"
+      - "tooling/Sunfish.Tooling.ColorAudit/**"
+      - "i18n/**"
+      - ".github/workflows/global-ux-gate.yml"
+  push:
+    branches: [main]
+
+jobs:
+  css-logical:
+    name: CSS logical-properties audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Run audit (fail on any finding)
+        run: node tooling/css-logical-audit/audit.mjs --fail-on-finding
+
+  a11y-storybook:
+    name: A11y Storybook test-runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: packages/ui-core
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+
+      - name: Install pnpm
+        run: npm install --global pnpm@10.33.2
+
+      - name: Install dependencies
+        run: pnpm install --filter @sunfish/ui-core
+        working-directory: ${{ github.workspace }}
+
+      - name: Install Playwright browsers (chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build a11y contracts JSON
+        run: pnpm run build:contracts
+
+      - name: Build Storybook static
+        run: pnpm run build-storybook
+
+      - name: Serve Storybook + run test-storybook
+        run: |
+          pnpm exec http-server storybook-static -p 6006 --silent &
+          pnpm exec wait-on http://127.0.0.1:6006 -t 30000
+          pnpm exec test-storybook --url http://127.0.0.1:6006 --config-dir .storybook
+
+      - name: Upload Storybook artifact on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: storybook-static
+          path: packages/ui-core/storybook-static/
+
+  # Aggregator job for branch-protection — set as a single required check that
+  # passes only when all parent jobs pass. Avoids needing N required-check entries
+  # per gate-job; one suffices.
+  global-ux-gate:
+    name: Global-UX Gate (aggregate)
+    runs-on: ubuntu-latest
+    needs: [css-logical, a11y-storybook]
+    steps:
+      - run: echo "All Global-UX gate jobs passed."
