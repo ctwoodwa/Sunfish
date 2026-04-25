@@ -81,6 +81,8 @@ public class FleaseLeaseCoordinatorTests : IAsyncLifetime
 
         public IReadOnlyCollection<PeerInfo> KnownPeers => _peers.ToList();
 
+        public bool IsRunning => false;
+
         public void AddPeer(string peerEndpoint, byte[] peerPublicKey)
             => _peers.Add(new PeerInfo(peerEndpoint, peerPublicKey, DateTimeOffset.MinValue, 0));
 
@@ -91,6 +93,7 @@ public class FleaseLeaseCoordinatorTests : IAsyncLifetime
         public Task StopAsync(CancellationToken ct) => Task.CompletedTask;
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
         public event EventHandler<GossipRoundCompletedEventArgs>? RoundCompleted { add { } remove { } }
+        public event EventHandler<GossipFrameEventArgs>? FrameReceived { add { } remove { } }
     }
 
     private List<Node> BuildCluster(int size, LeaseCoordinatorOptions? options = null)
