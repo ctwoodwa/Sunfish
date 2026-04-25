@@ -1,0 +1,2102 @@
+{
+  "findings": [
+    {
+      "file": "apps/kitchen-sink/Layout/MainLayout.razor",
+      "line": 172,
+      "column": 120,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<SunfishIcon Name=\"star-filled\" Size=\"IconSize.Small\" style=\"vertical-align: -2px; margin-right: 4px;\" />"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/AllocationScheduler/AllocationSchedulerDemo.razor",
+      "line": 45,
+      "column": 37,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"color:#666;margin-left:0.5rem\">Current: <strong>@_rollupGrain</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Accessibility/Demo.razor",
+      "line": 39,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Accessibility/Demo.razor",
+      "line": 40,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Accessibility/Demo.razor",
+      "line": 67,
+      "column": 30,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:.75rem; color:#555; font-size:.85rem;\">Last action: <strong>@_lastAction</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Button/Events/Demo.razor",
+      "line": 70,
+      "column": 61,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "style=\"padding:.35rem .5rem; margin-right:.5rem;\" />"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Accessibility/Demo.razor",
+      "line": 37,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor",
+      "line": 39,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor",
+      "line": 40,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/Demo.razor",
+      "line": 64,
+      "column": 68,
+      "rule": "CSS-LP-008",
+      "matched": "left:-9999",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "<span id=\"role-label\" style=\"position:absolute; left:-9999px;\">Pick any role that applies</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Chip/Events/Demo.razor",
+      "line": 86,
+      "column": 30,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:.5rem; color:#555; font-size:.85rem;\">Priority selected: <strong>@_priority</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/DropDownButton/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Fab/Accessibility/Demo.razor",
+      "line": 42,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Fab/Accessibility/Demo.razor",
+      "line": 43,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Fab/Accessibility/Demo.razor",
+      "line": 66,
+      "column": 30,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:.75rem; color:#555; font-size:.85rem;\">Last action: <strong>@_lastAction</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Fab/Appearance/Demo.razor",
+      "line": 81,
+      "column": 49,
+      "rule": "CSS-LP-008",
+      "matched": "left:50",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "<p style=\"position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); margin:0; color:#888; font-size:.85rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/Fab/Events/Demo.razor",
+      "line": 66,
+      "column": 34,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:.75rem; color:#555; font-size:.85rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/SegmentedControl/Accessibility/Demo.razor",
+      "line": 38,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/SegmentedControl/Accessibility/Demo.razor",
+      "line": 39,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Accessibility/Demo.razor",
+      "line": 38,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Accessibility/Demo.razor",
+      "line": 39,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Events/Demo.razor",
+      "line": 55,
+      "column": 30,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:.75rem; color:#555; font-size:.85rem;\">Notify: <strong>@_notify</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Accessibility/Demo.razor",
+      "line": 31,
+      "column": 39,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<p style=\"background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Carousel/Accessibility/Demo.razor",
+      "line": 94,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<tr style=\"text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Gantt/Accessibility/Demo.razor",
+      "line": 83,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<tr style=\"text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Accessibility/Demo.razor",
+      "line": 77,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Grid/Accessibility/Demo.razor",
+      "line": 78,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 119,
+      "column": 37,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<caption style=\"text-align:left; font-weight:600; margin-bottom:.25rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 124,
+      "column": 130,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"col\" style=\"padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;\">Day</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 127,
+      "column": 134,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"col\" style=\"padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;\">@h:00</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 136,
+      "column": 78,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"row\" style=\"padding:.35rem .5rem; text-align:left; font-weight:500;\">@_days[dayIndex]</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Accessibility/Demo.razor",
+      "line": 139,
+      "column": 70,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<td style=\"padding:.35rem .5rem; text-align:right;\">@_values[dayIndex, c]</td>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Heatmap/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Accessibility/Demo.razor",
+      "line": 29,
+      "column": 39,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<p style=\"background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/ListBox/Accessibility/Demo.razor",
+      "line": 88,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<tr style=\"text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/Demo.razor",
+      "line": 90,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Place</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/Demo.razor",
+      "line": 91,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Latitude</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/Demo.razor",
+      "line": 92,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Longitude</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Map/Accessibility/Demo.razor",
+      "line": 93,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Focus</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Popover/Accessibility/Demo.razor",
+      "line": 131,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Popover/Accessibility/Demo.razor",
+      "line": 132,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Accessibility/Demo.razor",
+      "line": 20,
+      "column": 39,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<p style=\"background:#fff4e5; border-left:3px solid #d97706; padding:.5rem .75rem; font-size:.9rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Scheduler/Accessibility/Demo.razor",
+      "line": 51,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<tr style=\"text-align:left; border-bottom:1px solid var(--sunfish-border, #e5e7eb);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 94,
+      "column": 37,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<caption style=\"text-align:left; font-weight:600; margin-bottom:.25rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 99,
+      "column": 131,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"col\" style=\"padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;\">Day</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 102,
+      "column": 135,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"col\" style=\"padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;\">D@(i + 1)</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 108,
+      "column": 75,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th scope=\"row\" style=\"padding:.35rem .75rem; text-align:left;\">Revenue</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Accessibility/Demo.razor",
+      "line": 111,
+      "column": 67,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<td style=\"padding:.35rem .75rem; text-align:right;\">@v</td>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Sparkline/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor",
+      "line": 116,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor",
+      "line": 117,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/Spreadsheet/Accessibility/Demo.razor",
+      "line": 118,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Status</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Accessibility/Demo.razor",
+      "line": 77,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Accessibility/Demo.razor",
+      "line": 78,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Accessibility/Demo.razor",
+      "line": 87,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Accessibility/Demo.razor",
+      "line": 88,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataGrid/Appearance.razor",
+      "line": 64,
+      "column": 27,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<label style=\"margin-left:16px;\"><input type=\"checkbox\" checked=\"@_showSalary\" @onchange=\"@(e => _showSalary = (bool)(e.Value ?? false))\" /> Show Salary</label>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataGrid/Appearance.razor",
+      "line": 107,
+      "column": 44,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<td style=\"padding:8px;text-align:right;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataGrid/Appearance.razor",
+      "line": 227,
+      "column": 34,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "\"            <td style=\\\"text-align:right;\\\">@context.Salary.ToString(\\\"C0\\\")</td>\\n\" +"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataSheet/BulkOperations.razor",
+      "line": 231,
+      "column": 87,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<div class=\"ds-demo-roundtrip-note\" style=\"margin-top:12px; padding:8px 12px; border-left:3px solid var(--mar-color-primary,#0078d4); background:var(--mar-color-surface-alt,#f5f5f5);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataSheet/Keyboard-and-Accessibility.razor",
+      "line": 212,
+      "column": 9,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: 6px;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/DataSheet/Virtualization.razor",
+      "line": 30,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left:12px;\">Current: @_currentCount rows</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editor/Editor/Accessibility/Demo.razor",
+      "line": 83,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Shortcut</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editor/Editor/Accessibility/Demo.razor",
+      "line": 84,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Checkbox/Accessibility/Demo.razor",
+      "line": 35,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Checkbox/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Checkbox/Events/Demo.razor",
+      "line": 38,
+      "column": 29,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<div style=\"margin-left:1.25rem; display:flex; flex-direction:column; gap:.35rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/ImageEditor/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Rating/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Rating/Accessibility/Demo.razor",
+      "line": 37,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Switch/Accessibility/Demo.razor",
+      "line": 34,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/Switch/Accessibility/Demo.razor",
+      "line": 35,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/TextArea/Accessibility/Demo.razor",
+      "line": 35,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/TextArea/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/TextArea/Appearance/Demo.razor",
+      "line": 71,
+      "column": 80,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<div style=\"margin-top:.35rem; font-size:.8rem; color:#6b7280; text-align:right;\">@(_f.Length) / 120</div>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/TextBox/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Editors/TextBox/Accessibility/Demo.razor",
+      "line": 37,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/Dialog/Accessibility/Demo.razor",
+      "line": 112,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key / attribute</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/Dialog/Accessibility/Demo.razor",
+      "line": 113,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Behaviour</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/PopupBox/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/SignalRStatus/Accessibility/Demo.razor",
+      "line": 61,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/SignalRStatus/Accessibility/Demo.razor",
+      "line": 62,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/Spinner/Overview/Demo.razor",
+      "line": 60,
+      "column": 50,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:0; padding-left:1.25rem; color:#555;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Appearance/Demo.razor",
+      "line": 63,
+      "column": 37,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<div style=\"text-align:left;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Accessibility/Demo.razor",
+      "line": 63,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/DropDownTree/Accessibility/Demo.razor",
+      "line": 64,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/FlatColorPicker/Accessibility/Demo.razor",
+      "line": 73,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/FlatColorPicker/Accessibility/Demo.razor",
+      "line": 74,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Form/Accessibility/Demo.razor",
+      "line": 59,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Form/Accessibility/Demo.razor",
+      "line": 60,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/SearchBox/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/SearchBox/Accessibility/Demo.razor",
+      "line": 37,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/SearchBox/Accessibility/Demo.razor",
+      "line": 82,
+      "column": 59,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:.25rem 0 0; padding-left:1.25rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Select/Accessibility/Demo.razor",
+      "line": 34,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Select/Accessibility/Demo.razor",
+      "line": 35,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Slider/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Slider/Accessibility/Demo.razor",
+      "line": 37,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor",
+      "line": 66,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Forms/Validation/Accessibility/Demo.razor",
+      "line": 67,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Gantt/Editing.razor",
+      "line": 8,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left: 16px; color: var(--sf-text-secondary);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Gantt/RefreshData.razor",
+      "line": 10,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left: 16px; color: var(--sf-text-secondary);\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Gantt/Templates.razor",
+      "line": 15,
+      "column": 51,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<button class=\"sf-btn\" style=\"margin-left: auto;\" @onclick=\"@(() => _message = \"Print clicked!\")\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Gantt/Templates.razor",
+      "line": 20,
+      "column": 38,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left: 8px; color: var(--sf-text-secondary);\">@_message</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Gantt/Views.razor",
+      "line": 11,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<span style=\"margin-left: 16px; color: var(--sf-text-secondary);\">Current: <strong>@_currentView</strong></span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Index.razor",
+      "line": 132,
+      "column": 9,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: .25rem; vertical-align: middle;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Accordion/Accessibility/Demo.razor",
+      "line": 35,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Accordion/Accessibility/Demo.razor",
+      "line": 36,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Drawer/Accessibility/Demo.razor",
+      "line": 49,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Drawer/Accessibility/Demo.razor",
+      "line": 50,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Grid/Accessibility/Demo.razor",
+      "line": 54,
+      "column": 46,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:0; padding-left:1.1rem; font-size:.85rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Grid/Appearance/Demo.razor",
+      "line": 88,
+      "column": 27,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": ".cell--card { text-align: left; }"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Panel/Accessibility/Demo.razor",
+      "line": 83,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/Panel/Accessibility/Demo.razor",
+      "line": 84,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/PanelBar/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Layout/StackLayout/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/LocalFirst/TeamSwitcher/Overview/Demo.razor",
+      "line": 93,
+      "column": 52,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "flex: 1 1 220px; padding: .625rem .875rem; text-align: left; cursor: pointer;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Miscellaneous/FontIcon/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Accessibility/Demo.razor",
+      "line": 76,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/Accessibility/Demo.razor",
+      "line": 77,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Menu/Accessibility/Demo.razor",
+      "line": 84,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Menu/Accessibility/Demo.razor",
+      "line": 85,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Pager/Overview/Demo.razor",
+      "line": 16,
+      "column": 26,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right:.5rem; vertical-align:middle;\">ASPIRATIONAL</span>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Pagination/Accessibility/Demo.razor",
+      "line": 77,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Pagination/Accessibility/Demo.razor",
+      "line": 78,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Pagination/Events/Demo.razor",
+      "line": 66,
+      "column": 38,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:0; padding-left:1.2rem; font-size:.9rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Pagination/Overview/Demo.razor",
+      "line": 38,
+      "column": 38,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:0; padding-left:1.2rem; font-size:.9rem; columns: 3; column-gap: 2rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Stepper/Accessibility/Demo.razor",
+      "line": 45,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Stepper/Accessibility/Demo.razor",
+      "line": 46,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Accessibility/Demo.razor",
+      "line": 38,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Key</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Accessibility/Demo.razor",
+      "line": 39,
+      "column": 32,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.4rem .6rem; border:1px solid var(--sunfish-border, #d1d5db);\">Action</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Accessibility/Demo.razor",
+      "line": 88,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Keys</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Navigation/Toolbar/Accessibility/Demo.razor",
+      "line": 89,
+      "column": 40,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db);\">Effect</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 33,
+      "column": 88,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;\">Name</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 34,
+      "column": 88,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;\">Department</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 35,
+      "column": 88,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;\">Hours</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 36,
+      "column": 88,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;\">Budget</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 45,
+      "column": 61,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<td style=\"padding: 0.5rem; text-align: right;\">@row.Hours</td>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 46,
+      "column": 61,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<td style=\"padding: 0.5rem; text-align: right;\">@row.Budget.ToString(\"C0\")</td>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 66,
+      "column": 61,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<div style=\"width: 180px; min-width: 180px; border-right: 2px solid #ccc; overflow-y: auto;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 77,
+      "column": 122,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<div style=\"min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; font-weight: 600; border-right: 1px solid #eee;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/ResizableContainer/Overview.razor",
+      "line": 87,
+      "column": 108,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<div style=\"min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; border-right: 1px solid #f5f5f5;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/RootComponent/Overview.razor",
+      "line": 31,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:8px;\">Parameter</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/RootComponent/Overview.razor",
+      "line": 32,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:8px;\">Type</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/RootComponent/Overview.razor",
+      "line": 33,
+      "column": 36,
+      "rule": "CSS-LP-006",
+      "matched": "text-align:left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "<th style=\"text-align:left; padding:8px;\">Description</th>"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Scheduling/Calendar/Overview/Demo.razor",
+      "line": 64,
+      "column": 55,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:.25rem 0 0; padding-left:1rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Utility/DropZone/Overview/Demo.razor",
+      "line": 46,
+      "column": 38,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:0; padding-left:1.25rem; font-size:.9rem;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Utility/Popup/Appearance/Demo.razor",
+      "line": 115,
+      "column": 55,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<ul style=\"margin:.25rem 0 0; padding-left:1rem; font-size:.8rem; line-height:1.4;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Wizard/Overview.razor",
+      "line": 98,
+      "column": 27,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<label style=\"margin-left:12px;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Wizard/Overview.razor",
+      "line": 102,
+      "column": 27,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<label style=\"margin-left:12px;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/Components/Wizard/Overview.razor",
+      "line": 106,
+      "column": 27,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "<label style=\"margin-left:12px;\">"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 156,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: auto;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 182,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-right: 1px solid var(--ni-border);"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 187,
+      "column": 30,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": ".icons-size-btn:last-child { border-right: none; }"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 366,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 14",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 14px;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 518,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 50",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 50%;"
+    },
+    {
+      "file": "apps/kitchen-sink/Pages/IconsPage.razor.css",
+      "line": 572,
+      "column": 38,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": ".icons-size-controls { order: 2; margin-left: 0; }"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 125,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-right: 1rem;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 222,
+      "column": 15,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 60px; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 235,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 64",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 64px;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 259,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 343,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 2px solid transparent;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 354,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left-color:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left-color: var(--color-primary);"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 383,
+      "column": 5,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "padding-left: 0.75rem;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 428,
+      "column": 5,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "padding-left: 10px;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 437,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 2px solid var(--color-divider);"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 443,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left-color:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left-color: var(--color-text-faint);"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 448,
+      "column": 5,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "padding-left: 20px;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 614,
+      "column": 5,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "padding-left: 20px;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 657,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: auto;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 658,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: right",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: right;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 845,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 930,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 964,
+      "column": 5,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "padding-left: 20px;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1003,
+      "column": 21,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": ".content-area { padding-left: 1rem; padding-right: 1rem; }"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1010,
+      "column": 21,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": ".content-area { padding-left: 0.5rem; padding-right: 0.5rem; }"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1017,
+      "column": 28,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": ".next-prev-link.next { text-align: left; }"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1052,
+      "column": 12,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 0; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1060,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 0;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1098,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "apps/kitchen-sink/wwwroot/css/app.css",
+      "line": 1124,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: auto;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 254,
+      "column": 54,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<span style=\"padding-left: @(pad)px; display: inline-flex; align-items: center;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 298,
+      "column": 54,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<span style=\"padding-left: @(pad)px; display: inline-flex; align-items: center;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 348,
+      "column": 54,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<span style=\"padding-left: @(pad)px; display: inline-flex; align-items: center;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 393,
+      "column": 54,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "<span style=\"padding-left: @(pad)px; display: inline-flex; align-items: center;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 482,
+      "column": 33,
+      "rule": "CSS-LP-002",
+      "matched": "padding-left:",
+      "suggest": "padding-inline-start / padding-inline-end",
+      "context": "style=\"padding-left: @(pad)px;\""
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 616,
+      "column": 93,
+      "rule": "CSS-LP-008",
+      "matched": ";left:0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "<svg class=\"sf-gantt__dependency-svg\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Gantt/SunfishGantt.razor",
+      "line": 722,
+      "column": 93,
+      "rule": "CSS-LP-008",
+      "matched": ";left:0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "<svg class=\"sf-gantt__dependency-svg\" style=\"position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/Scheduler/SunfishScheduler.razor",
+      "line": 321,
+      "column": 130,
+      "rule": "CSS-LP-003",
+      "matched": "border-left-color:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "<div class=\"sf-scheduler__agenda-item @GetRenderCssClass(a)\" style=\"@(!string.IsNullOrEmpty(a.Color) ? $\"border-left-color:{a.Color};\" : \"\") @GetRenderStyle(a)\" @onclick=\"() => OnAppointmentClick.InvokeAsync(a)\" @ondblclick:stopPropagation=\"true\" @ondblclick=\"() => HandleAppointmentDoubleClick(a)\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/SunfishPopover.razor",
+      "line": 150,
+      "column": 47,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "TooltipPosition.Left => $\"margin-right:{offsetPx};\","
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/DataDisplay/SunfishPopover.razor",
+      "line": 151,
+      "column": 48,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "TooltipPosition.Right => $\"margin-left:{offsetPx};\","
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Editors/Editor/SunfishEditor.razor",
+      "line": 53,
+      "column": 67,
+      "rule": "CSS-LP-008",
+      "matched": ";left:0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "style=\"position:absolute;top:100%;left:0;z-index:10;background:var(--sf-color-surface,#fff);border:1px solid var(--sf-color-border,#ccc);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:4px;display:flex;flex-wrap:wrap;gap:2px;\""
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Editors/SunfishSpreadsheet.razor",
+      "line": 19,
+      "column": 53,
+      "rule": "CSS-LP-008",
+      "matched": ";left:0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "style=\"position:sticky;top:0;left:0;z-index:2;background:#f5f5f5;border:1px solid #e0e0e0;min-width:40px;padding:4px;text-align:center;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Editors/SunfishSpreadsheet.razor",
+      "line": 36,
+      "column": 51,
+      "rule": "CSS-LP-008",
+      "matched": ";left:0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "style=\"position:sticky;left:0;z-index:1;background:#f5f5f5;border:1px solid #e0e0e0;min-width:40px;padding:4px;text-align:center;font-weight:600;font-size:12px;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Layout/SunfishDrawer.razor",
+      "line": 148,
+      "column": 21,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "? $\"margin-left:{margin};\""
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Layout/SunfishDrawer.razor",
+      "line": 150,
+      "column": 25,
+      "rule": "CSS-LP-001",
+      "matched": "margin-right:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "? $\"margin-right:{margin};\""
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor.css",
+      "line": 42,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-right: 1px solid var(--sf-ts-rule);"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor.css",
+      "line": 75,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 3px solid transparent;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor.css",
+      "line": 79,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor.css",
+      "line": 95,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left-color:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left-color: var(--sf-ts-accent);"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/LocalFirst/SunfishTeamSwitcher.razor.css",
+      "line": 191,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Media/SunfishMap.razor",
+      "line": 36,
+      "column": 38,
+      "rule": "CSS-LP-008",
+      "matched": ";right:4",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "style=\"position:absolute;right:4px;bottom:4px;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:3px;font-size:10px;color:#333;\">"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Components/Utility/SunfishFloatingLabel.razor.css",
+      "line": 37,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 0.75rem;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 132,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 284,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 347,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 357,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: auto;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 379,
+      "column": 5,
+      "rule": "CSS-LP-001",
+      "matched": "margin-left:",
+      "suggest": "margin-inline-start / margin-inline-end",
+      "context": "margin-left: auto;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 435,
+      "column": 8,
+      "rule": "CSS-LP-008",
+      "matched": "left: auto",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: auto;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAccountMenu.razor.css",
+      "line": 436,
+      "column": 8,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 51,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-right:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-right: 1px solid var(--mas-border);"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 134,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 145,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: -8",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: -8px;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 233,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 277,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 50",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 50%;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 306,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 1px solid var(--mas-border);"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 320,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 2",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 2px;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 376,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 12",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 12px;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 395,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 1px solid var(--mas-border);"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 459,
+      "column": 12,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 0; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 476,
+      "column": 8,
+      "rule": "CSS-LP-008",
+      "matched": "left: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 521,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 527,
+      "column": 5,
+      "rule": "CSS-LP-003",
+      "matched": "border-left:",
+      "suggest": "border-inline-start (with -width / -style / -color suffix)",
+      "context": "border-left: 1px solid var(--sf-color-border, rgba(0,0,0,0.08));"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishAppShell.razor.css",
+      "line": 540,
+      "column": 12,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 0; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css",
+      "line": 30,
+      "column": 12,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 0; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css",
+      "line": 98,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "right: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css",
+      "line": 121,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishNotificationBell.razor.css",
+      "line": 161,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishUserMenu.razor.css",
+      "line": 31,
+      "column": 12,
+      "rule": "CSS-LP-008",
+      "matched": "right: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "top: 0; right: 0; bottom: 0; left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishUserMenu.razor.css",
+      "line": 40,
+      "column": 4,
+      "rule": "CSS-LP-008",
+      "matched": "left: 0",
+      "suggest": "inset-inline-start / inset-inline-end",
+      "context": "left: 0;"
+    },
+    {
+      "file": "packages/ui-adapters-blazor/Shell/SunfishUserMenu.razor.css",
+      "line": 120,
+      "column": 5,
+      "rule": "CSS-LP-006",
+      "matched": "text-align: left",
+      "suggest": "text-align: start / text-align: end",
+      "context": "text-align: left;"
+    }
+  ],
+  "count": 233
+}
