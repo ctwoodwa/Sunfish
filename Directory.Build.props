@@ -35,4 +35,21 @@
                       ReferenceOutputAssembly="false" />
     <AdditionalFiles Include="$(MSBuildProjectDirectory)\Resources\Localization\*.resx" />
   </ItemGroup>
+
+  <!--
+    Plan 2 Task 4.4 — auto-wire the XLIFF MSBuild tasks (Sunfish.Tooling.LocalizationXliff)
+    onto every project that follows the standard Resources/Localization/*.resx convention.
+
+    Only the ProjectReference (build-order forcing) lives here in .props. The property
+    override (_SunfishLocXliffTaskAssembly) and the Import of the .targets need
+    $(Configuration) which isn't set until after the SDK loads — so those bits live
+    in Directory.Build.targets at the repo root.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\Resources\Localization')
+                        And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff'
+                        And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff.Tests'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)tooling\Sunfish.Tooling.LocalizationXliff\Sunfish.Tooling.LocalizationXliff.csproj"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
 </Project>

@@ -3,11 +3,19 @@
   Sunfish Localization XLIFF MSBuild integration.
   Auto-imported when the NuGet is referenced; registers the two tasks and defines
   the default SunfishExportXliff / SunfishImportXliff targets.
+
+  Source-tree consumption (Sunfish.slnx): Directory.Build.props in the repo root
+  overrides _SunfishLocXliffTaskAssembly with the bin/Debug or bin/Release path so
+  the tasks load from build output instead of the NuGet's tasks/ folder.
 -->
 <Project>
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll"
+  <PropertyGroup>
+    <_SunfishLocXliffTaskAssembly Condition="'$(_SunfishLocXliffTaskAssembly)' == ''">$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll</_SunfishLocXliffTaskAssembly>
+  </PropertyGroup>
+
+  <UsingTask AssemblyFile="$(_SunfishLocXliffTaskAssembly)"
              TaskName="SunfishResxToXliffTask" />
-  <UsingTask AssemblyFile="$(MSBuildThisFileDirectory)..\tasks\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll"
+  <UsingTask AssemblyFile="$(_SunfishLocXliffTaskAssembly)"
              TaskName="SunfishXliffToResxTask" />
 
   <PropertyGroup>
