@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:32:55.252Z
-> Files: 1060 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:35:10.253Z
+> Files: 1063 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -1543,6 +1543,7 @@
 
 ## packages/foundation/Localization/
 
+- `SharedResource.cs` — Marker type for Foundation's shared localized strings — generic phrases that any higher Sunfish laye (~404 tok)
 - `SunfishLocalizerFactory.cs` — <see cref="IStringLocalizerFactory"/> that adds Debug-only hot-reload of <c>.resx</c> files: in <c>D (~1323 tok)
 
 ## packages/foundation/Models/
@@ -1551,6 +1552,11 @@
 
 ## packages/foundation/Models/DataSheet/
 
+
+## packages/foundation/Resources/Localization/
+
+- `SharedResource.ar-SA.resx` (~810 tok)
+- `SharedResource.resx` (~1159 tok)
 
 ## packages/foundation/Services/
 
