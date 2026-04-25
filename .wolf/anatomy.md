@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:35:10.253Z
-> Files: 1063 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:58:31.945Z
+> Files: 1064 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -26,6 +26,7 @@
 - `CHANGELOG.md` — Changelog (~179 tok)
 - `CLAUDE.md` — Claude Instructions for Sunfish (~3611 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
+- `Directory.Build.props` (~532 tok)
 - `Directory.Packages.props` (~1632 tok)
 - `global.json` (~29 tok)
 - `GOVERNANCE.md` — Sunfish Governance (~2929 tok)
