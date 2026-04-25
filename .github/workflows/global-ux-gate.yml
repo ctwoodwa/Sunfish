@@ -37,6 +37,24 @@ jobs:
       - name: Run audit (fail on any finding)
         run: node tooling/css-logical-audit/audit.mjs --fail-on-finding
 
+  locale-completeness:
+    name: Locale completeness check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Run tool's own fixture tests
+        run: node tooling/locale-completeness-check/tests/fixture-test.mjs
+      # Report-only mode while the cascade lands its first real bundles. The full
+      # 12-locale roster won't clear floor until translator vendors ship per Plan 6.
+      # Promote to --fail-on-incomplete once the first complete-tier locale clears
+      # the 95% floor on at least one bundle.
+      - name: Report locale completeness (no failure gate yet)
+        run: node tooling/locale-completeness-check/check.mjs
+
   a11y-storybook:
     name: A11y Storybook test-runner
     runs-on: ubuntu-latest
@@ -85,6 +103,6 @@ jobs:
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, a11y-storybook]
+    needs: [css-logical, locale-completeness, a11y-storybook]
     steps:
       - run: echo "All Global-UX gate jobs passed."

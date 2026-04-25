@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-23T12:42:12.001Z
-> Files: 964 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:58:31.945Z
+> Files: 1064 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -22,14 +22,16 @@
 ## ./
 
 - `.gitattributes` — Sunfish line-ending policy: LF in the repo, everywhere. (~342 tok)
-- `.gitignore` — Git ignore rules (~2309 tok)
+- `.gitignore` — Git ignore rules (~2244 tok)
 - `CHANGELOG.md` — Changelog (~179 tok)
 - `CLAUDE.md` — Claude Instructions for Sunfish (~3611 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
+- `Directory.Build.props` (~532 tok)
 - `Directory.Packages.props` (~1632 tok)
 - `global.json` (~29 tok)
 - `GOVERNANCE.md` — Sunfish Governance (~2929 tok)
-- `Sunfish.slnx` (~3949 tok)
+- `package.json` — Node.js package manifest (~710 tok)
+- `Sunfish.slnx` (~4076 tok)
 - `tmp-rename-mar.ps1` — ADR 0025 — mar-* → sf-* BEM rename script. (~2531 tok)
 - `tmp-rename-tree-pivot.ps1` — ADR 0025 — extend rename to TreeList + PivotGrid + tree-item (same DataGrid folder). (~1509 tok)
 
@@ -86,6 +88,7 @@
 
 ## .github/
 
+- `branch-protection-main.json` (~266 tok)
 - `CODEOWNERS` — CODEOWNERS — auto-request reviews when these paths change in a PR. (~431 tok)
 
 ## .github/ISSUE_TEMPLATE/
@@ -104,6 +107,7 @@
 - `ci.yml` — CI: CI (~214 tok)
 - `codeql.yml` — CI: CodeQL (~243 tok)
 - `docs.yml` — CI: Docs (~384 tok)
+- `global-ux-gate.yml` — Plan 5 — Global-First UX gate workflow. (~1070 tok)
 - `sbom.yml` — CI: SBOM (~269 tok)
 
 ## .vscode/
@@ -251,9 +255,9 @@
 
 ## accelerators/anchor/
 
-- `MauiProgram.cs` — Class: MauiProgram (~479 tok)
+- `MauiProgram.cs` — Class: MauiProgram (~2171 tok)
 - `README.md` — Project documentation (~2666 tok)
-- `Sunfish.Anchor.csproj` — /*.cs" /> (~1713 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~1732 tok)
 
 ## accelerators/anchor/Components/
 
@@ -268,6 +272,15 @@
 
 - `Home.razor` (~1117 tok)
 - `Onboarding.razor` — Declares OnboardingStep (~2840 tok)
+
+## accelerators/anchor/Localization/
+
+- `SharedResource.cs` — Marker type for Anchor's shared localized strings. Resolves <see cref="Microsoft.Extensions.Localiza (~350 tok)
+
+## accelerators/anchor/Resources/Localization/
+
+- `SharedResource.ar-SA.resx` (~982 tok)
+- `SharedResource.resx` (~1293 tok)
 
 ## accelerators/anchor/Services/
 
@@ -314,7 +327,7 @@
 - `appsettings.Relay.json` (~151 tok)
 - `BridgeMode.cs` — Install-time deployment posture for the Bridge host, per <see href="../../docs/adrs/0026-bridge-post (~250 tok)
 - `BridgeOptions.cs` — Top-level Bridge configuration bound from the <c>Bridge</c> configuration section. Drives the instal (~652 tok)
-- `Program.cs` — Class: Program (~2716 tok)
+- `Program.cs` — Class: Program (~4124 tok)
 - `Sunfish.Bridge.csproj` (~659 tok)
 
 ## accelerators/bridge/Sunfish.Bridge/Authorization/
@@ -326,11 +339,22 @@
 
 - `TaskStatusChangedHandler.cs` — Class: TaskStatusChangedHandler (~356 tok)
 
+## accelerators/bridge/Sunfish.Bridge/Localization/
+
+- `ServiceCollectionExtensions.cs` — DI extensions for wiring the Sunfish-localized ProblemDetailsFactory into a Bridge composition root (~388 tok)
+- `SharedResource.cs` — Marker type for <see cref="Microsoft.Extensions.Localization.IStringLocalizer{T}"/> against the Sunf (~117 tok)
+- `SunfishProblemDetailsFactory.cs` — Localized <see cref="ProblemDetailsFactory"/> implementation per Plan 2 Task 4.2. Wraps the framewor (~1489 tok)
+
 ## accelerators/bridge/Sunfish.Bridge/Relay/
 
 - `IRelayServer.cs` — Paper §6.1 tier-3 managed-relay server contract. Accepts inbound peer connections on <c>ISyncDaemonT (~679 tok)
 - `RelayServer.cs` — Default <see cref="IRelayServer"/>. Listens on an <see cref="ISyncDaemonTransport"/>, runs the <see (~3845 tok)
 - `RelayWorker.cs` — <see cref="BackgroundService"/> wrapper that starts <see cref="IRelayServer"/> when Bridge is deploy (~667 tok)
+
+## accelerators/bridge/Sunfish.Bridge/Resources/Localization/
+
+- `SharedResource.ar-SA.resx` (~844 tok)
+- `SharedResource.resx` (~1157 tok)
 
 ## accelerators/bridge/Sunfish.Bridge/Services/
 
@@ -380,6 +404,10 @@
 - `Sunfish.Bridge.Tests.Unit.csproj` (~342 tok)
 - `TenantRegistryTests.cs` — Covers <see cref="TenantRegistry"/> — the control-plane façade introduced by ADR 0031 Wave 5.1. Uses (~2905 tok)
 
+## accelerators/bridge/tests/Sunfish.Bridge.Tests.Unit/Localization/
+
+- `SunfishProblemDetailsFactoryTests.cs` — Plan 2 Task 4.2 — verify SunfishProblemDetailsFactory localizes Title + Detail per ambient request c (~1956 tok)
+
 ## apps/docs/
 
 - `docfx.json` — .yml", "api/index.md"] (~431 tok)
@@ -392,6 +420,10 @@
 
 - `App.razor` (~756 tok)
 - `Sunfish.KitchenSink.csproj` (~609 tok)
+
+## apps/kitchen-sink/Pages/
+
+- `IconsPage.razor.css` — Styles: 69 rules, 20 vars (~4201 tok)
 
 ## apps/kitchen-sink/Pages/Components/
 
@@ -432,6 +464,14 @@
 ## apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Overview/
 
 - `Demo.razor` (~692 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/Chip/Accessibility/
+
+- `Demo.razor` (~1943 tok)
+
+## apps/kitchen-sink/Pages/Components/Buttons/Fab/Appearance/
+
+- `Demo.razor` (~1433 tok)
 
 ## apps/kitchen-sink/Pages/Components/Buttons/SplitButton/Overview/
 
@@ -865,6 +905,10 @@
 
 - `SunfishDemoSources.targets` — /Demo.razor, gathers companion files in the same (~1678 tok)
 
+## apps/kitchen-sink/wwwroot/css/
+
+- `app.css` — Styles: 55 rules, 42 vars (~7813 tok)
+
 ## apps/local-node-host/
 
 - `appsettings.Development.json` (~36 tok)
@@ -917,6 +961,8 @@
 - `0030-react-adapter-scaffolding.md` — ADR 0030 — React Adapter Scaffolding (~2031 tok)
 - `0031-bridge-hybrid-multi-tenant-saas.md` — ADR 0031 — Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual) (~4119 tok)
 - `0032-multi-team-anchor-workspace-switching.md` — ADR 0032 — Multi-Team Anchor (Slack-Style Workspace Switching) (~5398 tok)
+- `0034-a11y-harness-per-adapter.md` — ADR 0034 — Accessibility Harness Per Adapter (~1953 tok)
+- `0036-syncstate-multimodal-encoding-contract.md` — ADR 0036 — SyncState Multimodal Encoding Contract (~2368 tok)
 - `README.md` — Project documentation (~678 tok)
 
 ## docs/migration-guides/
@@ -938,6 +984,11 @@
 
 ## docs/superpowers/plans/
 
+
+## i18n/
+
+- `coordinators.md` — Sunfish Locale Coordinators (~1427 tok)
+- `locales.json` (~1628 tok)
 
 ## icm/
 
@@ -983,6 +1034,12 @@
 - `2026-04-21-component-inventory-gap-report.md` — Component Inventory Gap Report (~1107 tok)
 - `2026-04-21-wave-1-subagent-brief.md` — Wave 1 Subagent Brief — Overview demo page authoring (~1210 tok)
 
+## infra/weblate/
+
+- `docker-compose.yml` — Docker Compose services (~895 tok)
+- `mt-backends.md` — Sunfish Weblate Machine-Translation Backends (~1529 tok)
+- `README.md` — Project documentation (~1530 tok)
+
 ## installers/linux/
 
 - `README.md` — Project documentation (~772 tok)
@@ -1021,6 +1078,10 @@
 - `HandshakeSigningHelper.cs` — Test-side replica of <c>HandshakeProtocol.BuildSigningPayload</c>. The production helper is <c>inter (~358 tok)
 - `TwoNodeHarness.cs` — Two-node composition helper for the kernel-sync round-trip integration tests. Spins up two <see cref (~3066 tok)
 
+## localization/glossary/
+
+- `sunfish-glossary.tbx` (~2280 tok)
+
 ## packages/analyzers/compat-vendor-usings/
 
 - `AnalyzerReleases.Shipped.md` (~39 tok)
@@ -1037,6 +1098,19 @@
 - `CompatVendorUsingsAnalyzerTests.cs` — Tests for <see cref="CompatVendorUsingsAnalyzer"/>. Each test verifies that the analyzer emits the e (~2336 tok)
 - `CompatVendorUsingsCodeFixTests.cs` — Tests for <see cref="CompatVendorUsingsCodeFix"/>. Each test provides an input document and the expe (~2175 tok)
 - `tests.csproj` (~779 tok)
+
+## packages/analyzers/loc-comments/
+
+- `AnalyzerReleases.Shipped.md` (~39 tok)
+- `AnalyzerReleases.Unshipped.md` (~88 tok)
+- `README.md` — Project documentation (~333 tok)
+- `ResxCommentAnalyzer.cs` — Sunfish.I18n.001 — emits a warning for every .resx data entry missing a translator-context comment ( (~1346 tok)
+- `Sunfish.Analyzers.LocComments.csproj` — /*.cs" /> (~630 tok)
+
+## packages/analyzers/loc-comments/tests/
+
+- `ResxCommentAnalyzerTests.cs` — Class: ResxCommentAnalyzerTests (~1556 tok)
+- `Sunfish.Analyzers.LocComments.Tests.csproj` (~276 tok)
 
 ## packages/compat-bootstrap-icons/
 
@@ -1468,6 +1542,11 @@
 ## packages/foundation/Helpers/
 
 
+## packages/foundation/Localization/
+
+- `SharedResource.cs` — Marker type for Foundation's shared localized strings — generic phrases that any higher Sunfish laye (~404 tok)
+- `SunfishLocalizerFactory.cs` — <see cref="IStringLocalizerFactory"/> that adds Debug-only hot-reload of <c>.resx</c> files: in <c>D (~1323 tok)
+
 ## packages/foundation/Models/
 
 - `FileManagerModels.cs` — Represents a file or folder entry in the SunfishFileManager. Use as <c>TItem</c> when you don't need (~1804 tok)
@@ -1475,14 +1554,24 @@
 ## packages/foundation/Models/DataSheet/
 
 
+## packages/foundation/Resources/Localization/
+
+- `SharedResource.ar-SA.resx` (~810 tok)
+- `SharedResource.resx` (~1159 tok)
+
 ## packages/foundation/Services/
 
 
 ## packages/foundation/tests/
 
+- `tests.csproj` (~248 tok)
 
 ## packages/foundation/tests/Extensibility/
 
+
+## packages/foundation/tests/Localization/
+
+- `SunfishLocalizerFactoryTests.cs` — Plan 2 Task 4.1 — verify SunfishLocalizerFactory caches per-type localizers and invalidates them on (~1589 tok)
 
 ## packages/kernel-buckets/
 
@@ -1862,6 +1951,36 @@
 
 - `README.md` — Project documentation (~1772 tok)
 
+## packages/ui-adapters-blazor-a11y/
+
+- `AxeResult.cs` — Strongly-typed projection of the JSON object returned by <c>axe.run(document, options)</c>. Shape ma (~905 tok)
+- `AxeRunner.cs` — Optional axe.run() configuration. Maps directly to the axe-core 4.x `RunOptions` JS object: <see hre (~2175 tok)
+- `ContractReader.cs` — Reads <c>a11y-contracts.json</c> emitted by the ui-core build's <c>export-a11y-contracts.mts</c> scr (~1296 tok)
+- `PlaywrightPageHost.cs` — CVD (Color Vision Deficiency) emulation modes for axe testing per spec §7 + <see href="https://chrom (~1370 tok)
+- `README.md` — Project documentation (~937 tok)
+- `Sunfish.UIAdapters.Blazor.A11y.csproj` — /*.cs" /> (~361 tok)
+- `SunfishA11yAssertions.cs` — Sunfish-specific accessibility assertions executed against a Playwright-hosted page. Layered on top (~2575 tok)
+- `SunfishA11yContract.cs` — Strongly-typed projection of the <c>parameters.a11y.sunfish</c> contract block declared per-componen (~1139 tok)
+
+## packages/ui-adapters-blazor-a11y/tests/
+
+- `AssertionTests.cs` — Tests for <see cref="SunfishA11yAssertions"/>. Uses raw HTML loaded via <see cref="IPage.SetContentA (~2358 tok)
+- `BridgeIntegrationTests.cs` — End-to-end smoke for Plan 4 Tasks 1.2 + 1.4: render a Sunfish bUnit fragment, host its markup in a P (~832 tok)
+- `BridgeScaffoldingTests.cs` — Smoke tests confirming the Task-1.1 scaffold compiles, references resolve, and the <see cref="AxeRes (~702 tok)
+- `ContractReaderTests.cs` — Plan 4 Task 1.6 — ContractReader tests against the actual a11y-contracts.json emitted by the ui-core (~1669 tok)
+- `DeterminismGateTests.cs` — Plan 4 Task 1.3 — the bUnit determinism gate. Binary go/no-go for the bridge: if <see cref="IRendere (~1004 tok)
+- `FreshnessBadgeContractTests.cs` — Plan 4B §5 — assert SunfishFreshnessBadge honours the ADR 0036 contract for the three states it actu (~822 tok)
+- `NodeHealthBarContractTests.cs` — Plan 4B §5 — assert SunfishNodeHealthBar honours the ADR 0036 contract: the host group has role="gro (~846 tok)
+- `PilotMatrixTests.cs` — Plan 4 Task 1.7 — 36-scenario pilot matrix. Three fixture components × 2 LTR/RTL × 2 light/dark × 3 (~1326 tok)
+- `SyncStatusIndicatorContractTests.cs` — Plan 4B §5 — assert that the production SunfishSyncStatusIndicator honours the ADR 0036 multimodal-e (~1089 tok)
+- `tests.csproj` (~263 tok)
+
+## packages/ui-adapters-blazor-a11y/tests/Fixtures/
+
+- `AttributedFixture.razor` — Declares FixtureVariant (~240 tok)
+- `ChildContentFixture.razor` (~229 tok)
+- `SimpleTextFixture.razor` (~140 tok)
+
 ## packages/ui-adapters-blazor/
 
 - `_Imports.razor` (~364 tok)
@@ -1897,9 +2016,21 @@
 - `SunfishPdfServiceExtensions.cs` — Extension methods for registering Playwright-based PDF export with SunfishDataGrid. (~320 tok)
 - `SunfishPlaywrightBrowserService.cs` — Class: SunfishPlaywrightBrowserService (~283 tok)
 
+## packages/ui-adapters-blazor/Components/DataDisplay/Gantt/
+
+- `SunfishGantt.razor` (~13245 tok)
+
 ## packages/ui-adapters-blazor/Components/DataDisplay/Spreadsheet/
 
 - `SunfishSpreadsheet.razor` (~739 tok)
+
+## packages/ui-adapters-blazor/Components/Editors/
+
+- `SunfishSpreadsheet.razor` (~1621 tok)
+
+## packages/ui-adapters-blazor/Components/Editors/Editor/
+
+- `SunfishEditor.razor` (~13290 tok)
 
 ## packages/ui-adapters-blazor/Components/Feedback/Dialog/
 
@@ -1922,14 +2053,18 @@
 - `ConflictItem.cs` — A single pending conflict surfaced by <see cref="SunfishConflictList"/> (paper §5.2 conflict list). (~250 tok)
 - `OptimisticButtonState.cs` — State machine for <see cref="SunfishOptimisticButton"/> (paper §5.2 optimistic-write button). (~226 tok)
 - `SunfishConflictList.razor` (~671 tok)
-- `SunfishFreshnessBadge.razor` (~811 tok)
+- `SunfishFreshnessBadge.razor` (~982 tok)
 - `SunfishNodeHealthBar.razor` (~484 tok)
 - `SunfishOptimisticButton.razor` (~1283 tok)
-- `SunfishSyncStatusIndicator.razor` — Declares and (~543 tok)
+- `SunfishSyncStatusIndicator.razor` — Declares and (~939 tok)
 - `SunfishTeamSwitcher.razor` (~858 tok)
 - `SunfishTeamSwitcher.razor.cs` — Wave 6.6 Slack-style team switcher sidebar. Binds to the kernel-runtime multi-team services (<see cr (~1533 tok)
 - `SunfishTeamSwitcher.razor.css` — Styles: 24 rules, 12 vars (~1526 tok)
 - `SyncState.cs` — Visual-vocabulary states from the Local-Node Architecture paper (§5.2, §13.2). Bound 1:1 to the <c>s (~409 tok)
+
+## packages/ui-adapters-blazor/Components/Media/
+
+- `SunfishMap.razor` (~523 tok)
 
 ## packages/ui-adapters-blazor/Components/Scheduling/
 
@@ -1951,6 +2086,7 @@
 
 - `SunfishDiagram.razor` (~1780 tok)
 - `SunfishDropZone.razor.cs` — A generic file drop target. Renders its <see cref="ChildContent"/> inside a wrapper div wired with t (~1402 tok)
+- `SunfishFloatingLabel.razor.css` — Styles: 9 rules, 1 vars (~832 tok)
 
 ## packages/ui-adapters-blazor/Enums/
 
@@ -2031,6 +2167,13 @@
 - `_mixins.scss` — ============================================================================= (~1363 tok)
 - `_sync-state.scss` — ================================================================= (~1084 tok)
 
+## packages/ui-adapters-blazor/Shell/
+
+- `SunfishAccountMenu.razor.css` — Styles: 42 rules, 16 vars (~3047 tok)
+- `SunfishAppShell.razor.css` — Styles: 50 rules, 17 vars (~4750 tok)
+- `SunfishNotificationBell.razor.css` — Styles: 31 rules, 15 vars (~1533 tok)
+- `SunfishUserMenu.razor.css` — Styles: 21 rules, 16 vars (~1124 tok)
+
 ## packages/ui-adapters-blazor/tests/
 
 - `Stubs.cs` — Class: StubCssProvider (~4195 tok)
@@ -2110,9 +2253,31 @@
 - `BootstrapCssProvider.ts` — Maps Sunfish component state to Bootstrap 5.3 CSS classes. (~1224 tok)
 - `FluentUICssProvider.ts` — Maps Sunfish component state to Fluent UI v9 skin classes. (~1088 tok)
 
+## packages/ui-core/
+
+- `package.json` — Node.js package manifest (~296 tok)
+
+## packages/ui-core/.storybook/
+
+- `preview.ts` — Inject (or remove) a global style that effectively disables transitions and animations (~756 tok)
+- `REDUCED-MOTION.md` — Reduced-motion authoring guidance (~549 tok)
+- `test-runner.ts` — Plan 4 Task 4.2 — production a11y test-runner postVisit hook. (~2881 tok)
+
 ## packages/ui-core/Contracts/
 
 - `ISunfishCssProvider.cs` — Defines the contract for a design-system CSS provider. Each implementation (e.g., Fluent UI, Materia (~3906 tok)
+
+## packages/ui-core/scripts/
+
+- `export-a11y-contracts.mts` — Plan 4 Task 1.6 — export Sunfish a11y contracts from Storybook stories to JSON. (~937 tok)
+
+## packages/ui-core/src/components/dialog/
+
+- `sunfish-dialog.ts` — Auto-focus the first focusable child when the dialog becomes open. Honors (~1007 tok)
+
+## packages/ui-core/src/components/syncstate/
+
+- `sunfish-syncstate-indicator.ts` — Exports SyncState, SunfishSyncstateIndicator (~1119 tok)
 
 ## packages/ui-core/tests/
 
@@ -2123,7 +2288,56 @@
 
 - `group-component-family.sh` — Usage: scripts/group-component-family.sh <Category> <FamilyFolder> <file1> [file2 ...] (~369 tok)
 
+## tooling/Sunfish.Tooling.ColorAudit/
+
+- `Color.cs` — Linear RGB color in [0, 1] floats. Conversion to/from sRGB hex strings via <see cref="FromSrgbHex"/> (~908 tok)
+- `CvdSimulation.cs` — Color-vision-deficiency simulation modes Sunfish audits. Matches the chromium CDP <c>Emulation.setEm (~779 tok)
+- `DeltaE.cs` — CIEDE2000 perceptual color-difference per Sharma, Wu, Dalal (2005). Returns a unitless distance; val (~1064 tok)
+- `Sunfish.Tooling.ColorAudit.csproj` — /*.cs" /> (~225 tok)
+
+## tooling/Sunfish.Tooling.ColorAudit/tests/
+
+- `DeltaE2000Tests.cs` — Reference test vectors for CIEDE2000 from Sharma, Wu, Dalal supplementary table 1 ("The CIEDE2000 Co (~600 tok)
+- `Sunfish.Tooling.ColorAudit.Tests.csproj` (~195 tok)
+- `SyncStatePaletteAuditTests.cs` — Plan 4B Task §5.1 binary gate — the SyncState palette from ADR 0036 must be distinguishable under de (~1656 tok)
+
+## tooling/Sunfish.Tooling.LocalizationXliff/
+
+- `Sunfish.Tooling.LocalizationXliff.csproj` — /*.cs" /> (~420 tok)
+- `SunfishResxToXliffTask.cs` — MSBuild task that converts Sunfish <c>.resx</c> source files to XLIFF 2.0 bilingual exchange format (~2140 tok)
+- `SunfishXliffToResxTask.cs` — MSBuild task that converts translator-owned XLIFF 2.0 files back to <c>.resx</c> satellite form for (~1149 tok)
+
+## tooling/Sunfish.Tooling.LocalizationXliff/tests/
+
+- `RoundTripTests.cs` — Round-trip property + fixture tests for Plan 2 Task 1.4 Section 3A binary gate ("XLIFF round-trip: . (~2059 tok)
+- `Sunfish.Tooling.LocalizationXliff.Tests.csproj` (~275 tok)
+- `TwelveLocaleTests.cs` — Per-locale round-trip tests for the 12 Sunfish target locales. Exercises diacritics, RTL marks, zero (~1638 tok)
+
+## tooling/css-logical-audit/
+
+- `audit.mjs` — Sunfish CSS logical-properties audit. (~1495 tok)
+- `fix.mjs` — Sunfish CSS logical-properties auto-fixer. (~911 tok)
+
+## tooling/locale-completeness-check/
+
+- `check.mjs` — Sunfish locale completeness check (spec §4 + Plan 5 CI gate). (~2031 tok)
+
+## tooling/locale-completeness-check/tests/
+
+- `fixture-test.mjs` — Tests for the locale-completeness-check tool. Synthetic-fixture-driven so the test (~1912 tok)
+
 ## tooling/sbom/
 
 - `generate-sbom.ps1` — Declares Write (~1130 tok)
 - `generate-sbom.sh` — Generate a CycloneDX SBOM for the Sunfish solution. (~768 tok)
+
+## waves/global-ux/
+
+- `decisions.md` — Global-First UX — Decisions Log (~973 tok)
+- `status.md` — Global-First UX — Wave Status (~2070 tok)
+- `week-2-bridge-ready-report.md` — Plan 4 Workstream A — BRIDGE-READY Report (~2241 tok)
+- `week-2-bunit-bridge-report.md` — Week 2 bUnit-to-axe Bridge Determinism Report (~1614 tok)
+- `week-2-css-logical-audit.md` — CSS logical-properties audit — initial pass (2026-04-25) (~1134 tok)
+- `week-2-cvd-palette-audit.md` — Plan 4B Task §5.1 — CVD ΔE2000 Palette Audit (~2131 tok)
+- `week-2-weblate-ops-runbook.md` — Week 2 Weblate Ops Runbook (~2135 tok)
+- `week-2-xliff-roundtrip-report.md` — Week 2 XLIFF 2.0 Round-Trip Report (~1586 tok)
