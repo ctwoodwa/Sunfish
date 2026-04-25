@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" alt="Sunfish" width="240">
+</p>
+
 # Sunfish
 
 Sunfish is a framework‑agnostic suite of open‑source and commercial building blocks that lets you rapidly scaffold, prototype, and ship real-world applications with interchangeable UI and domain components.
