@@ -309,6 +309,9 @@ storybook-static/
 test-results/
 playwright-report/
 
+# ui-core build artifacts (a11y-contracts.json + Vite outputs)
+packages/ui-core/dist/
+
 # Visual Studio 6 build log
 *.plg
 

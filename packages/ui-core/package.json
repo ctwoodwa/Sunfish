@@ -7,7 +7,9 @@
   "scripts": {
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test:a11y": "test-storybook --config-dir .storybook"
+    "test:a11y": "test-storybook --config-dir .storybook",
+    "build:contracts": "tsx scripts/export-a11y-contracts.mts",
+    "build": "pnpm run build-storybook && pnpm run build:contracts"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^8.3.0",
@@ -22,6 +24,7 @@
     "lit": "^3.2.0",
     "playwright": "^1.48.0",
     "storybook": "^8.3.0",
+    "tsx": "^4.21.0",
     "typescript": "^5.6.0"
   }
 }
