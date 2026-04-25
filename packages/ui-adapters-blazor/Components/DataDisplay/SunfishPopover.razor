@@ -147,8 +147,8 @@
                 {
                     TooltipPosition.Top => $"margin-bottom:{offsetPx};",
                     TooltipPosition.Bottom => $"margin-top:{offsetPx};",
-                    TooltipPosition.Left => $"margin-right:{offsetPx};",
-                    TooltipPosition.Right => $"margin-left:{offsetPx};",
+                    TooltipPosition.Left => $"margin-inline-end:{offsetPx};",
+                    TooltipPosition.Right => $"margin-inline-start:{offsetPx};",
                     _ => null
                 };
                 if (margin != null) parts.Add(margin);

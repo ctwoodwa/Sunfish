@@ -8,7 +8,7 @@
             <button class="sf-btn @(_currentView == GanttView.Week ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Week))">Week</button>
             <button class="sf-btn @(_currentView == GanttView.Month ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Month))">Month</button>
             <button class="sf-btn @(_currentView == GanttView.Year ? "sf-btn-primary" : "")" @onclick="@(() => SetView(GanttView.Year))">Year</button>
-            <span style="margin-left: 16px; color: var(--sf-text-secondary);">Current: <strong>@_currentView</strong></span>
+            <span style="margin-inline-start: 16px; color: var(--sf-text-secondary);">Current: <strong>@_currentView</strong></span>
         </div>
         <div class="demo-row">
             <SunfishGantt TItem="GanttTask"

@@ -33,8 +33,8 @@
                 <table style="border-collapse:collapse; width:100%;">
                     <thead>
                         <tr>
-                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
-                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                            <th style="text-align: start; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align: start; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -79,7 +79,7 @@
                         else
                         {
                             <span>@Matches.Count match(es) for "<strong>@_query</strong>":</span>
-                            <ul style="margin:.25rem 0 0; padding-left:1.25rem;">
+                            <ul style="margin:.25rem 0 0; padding-inline-start:1.25rem;">
                                 @foreach (var m in Matches)
                                 {
                                     <li>@m</li>

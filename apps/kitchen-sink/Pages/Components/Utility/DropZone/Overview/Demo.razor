@@ -43,7 +43,7 @@
 
             @if (_files.Count > 0)
             {
-                <ul style="margin:0; padding-left:1.25rem; font-size:.9rem;">
+                <ul style="margin:0; padding-inline-start:1.25rem; font-size:.9rem;">
                     @foreach (var file in _files)
                     {
                         <li><code>@file.Name</code> <span style="color:#6b7280;">(@file.ContentType)</span></li>

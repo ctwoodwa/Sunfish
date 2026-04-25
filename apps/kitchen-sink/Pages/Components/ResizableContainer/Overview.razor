@@ -30,10 +30,10 @@
                 <table style="width: 100%; border-collapse: collapse;">
                     <thead>
                         <tr style="background: var(--sf-color-surface-subtle, #f5f5f5); position: sticky; top: 0;">
-                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;">Name</th>
-                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: left;">Department</th>
-                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;">Hours</th>
-                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: right;">Budget</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: start;">Name</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: start;">Department</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: end;">Hours</th>
+                            <th style="padding: 0.5rem; border-bottom: 2px solid #ccc; text-align: end;">Budget</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,8 +42,8 @@
                             <tr style="border-bottom: 1px solid #eee;">
                                 <td style="padding: 0.5rem;">@row.Name</td>
                                 <td style="padding: 0.5rem;">@row.Department</td>
-                                <td style="padding: 0.5rem; text-align: right;">@row.Hours</td>
-                                <td style="padding: 0.5rem; text-align: right;">@row.Budget.ToString("C0")</td>
+                                <td style="padding: 0.5rem; text-align: end;">@row.Hours</td>
+                                <td style="padding: 0.5rem; text-align: end;">@row.Budget.ToString("C0")</td>
                             </tr>
                         }
                     </tbody>
@@ -63,7 +63,7 @@
         <SunfishResizableContainer Width="100%" Height="300px" MinHeight="200px"
                                   OnObservedSizeChanged="@OnSchedulerSizeChanged">
             <div style="display: flex; height: 100%;">
-                <div style="width: 180px; min-width: 180px; border-right: 2px solid #ccc; overflow-y: auto;">
+                <div style="width: 180px; min-width: 180px; border-inline-end: 2px solid #ccc; overflow-y: auto;">
                     <div style="padding: 0.5rem; font-weight: 600; border-bottom: 1px solid #eee;">Resources</div>
                     @foreach (var r in _resources)
                     {
@@ -74,7 +74,7 @@
                     <div style="display: flex; border-bottom: 2px solid #ccc;">
                         @for (int w = 1; w <= 12; w++)
                         {
-                            <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; font-weight: 600; border-right: 1px solid #eee;">
+                            <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; font-weight: 600; border-inline-end: 1px solid #eee;">
                                 Wk @w
                             </div>
                         }
@@ -84,7 +84,7 @@
                         <div style="display: flex; border-bottom: 1px solid #f0f0f0;">
                             @for (int w = 1; w <= 12; w++)
                             {
-                                <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; border-right: 1px solid #f5f5f5;">
+                                <div style="min-width: 80px; flex: 1; padding: 0.5rem; text-align: center; border-inline-end: 1px solid #f5f5f5;">
                                     @(Random.Shared.Next(0, 40))
                                 </div>
                             }

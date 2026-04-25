@@ -68,7 +68,7 @@
             <section>
                 <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With MaxLength + counter</h3>
                 <SunfishTextArea Value="@_f" ValueChanged="@(v => _f = v)" Rows="3" Placeholder="Up to 120 chars" MaxLength="120" />
-                <div style="margin-top:.35rem; font-size:.8rem; color:#6b7280; text-align:right;">@(_f.Length) / 120</div>
+                <div style="margin-top:.35rem; font-size:.8rem; color:#6b7280; text-align: end;">@(_f.Length) / 120</div>
             </section>
 
             <section>

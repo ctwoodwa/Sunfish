@@ -145,9 +145,9 @@
             if (Mode != DrawerMode.Push) return null;
             var margin = Expanded ? Width : (MiniMode ? MiniWidth : "0");
             return Position == DrawerPosition.Left
-                ? $"margin-left:{margin};"
+                ? $"margin-inline-start:{margin};"
                 : Position == DrawerPosition.Right
-                    ? $"margin-right:{margin};"
+                    ? $"margin-inline-end:{margin};"
                     : null;
         }
     }

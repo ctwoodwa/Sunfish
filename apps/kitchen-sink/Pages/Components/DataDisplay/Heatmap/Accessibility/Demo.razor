@@ -13,7 +13,7 @@
         <p>
             <span style="display:inline-block; font-size:.6875rem; font-weight:600; letter-spacing:.05em;
                          color:#92400e; background:#fef3c7; padding:.125rem .5rem; border-radius:999px;
-                         margin-right:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
+                         margin-inline-end:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
             <code>SunfishHeatmap</code> is not yet implemented. This page documents the
             accessibility contract the component will ship with, using a hand-authored HTML
             heatmap as the working demo so the patterns are concrete and reviewable today.
@@ -116,15 +116,15 @@
                     access without colour.
                 </p>
                 <table style="border-collapse:collapse; font-size:.85rem;">
-                    <caption style="text-align:left; font-weight:600; margin-bottom:.25rem;">
+                    <caption style="text-align: start; font-weight:600; margin-bottom:.25rem;">
                         Visitors by day &amp; hour (accessible alternative to the heatmap above)
                     </caption>
                     <thead>
                         <tr>
-                            <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;">Day</th>
+                            <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align: start;">Day</th>
                             @foreach (var h in _hours)
                             {
-                                <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;">@h:00</th>
+                                <th scope="col" style="padding:.35rem .5rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align: end;">@h:00</th>
                             }
                         </tr>
                     </thead>
@@ -133,10 +133,10 @@
                         {
                             var dayIndex = r;
                             <tr>
-                                <th scope="row" style="padding:.35rem .5rem; text-align:left; font-weight:500;">@_days[dayIndex]</th>
+                                <th scope="row" style="padding:.35rem .5rem; text-align: start; font-weight:500;">@_days[dayIndex]</th>
                                 @for (int c = 0; c < _hours.Length; c++)
                                 {
-                                    <td style="padding:.35rem .5rem; text-align:right;">@_values[dayIndex, c]</td>
+                                    <td style="padding:.35rem .5rem; text-align: end;">@_values[dayIndex, c]</td>
                                 }
                             </tr>
                         }

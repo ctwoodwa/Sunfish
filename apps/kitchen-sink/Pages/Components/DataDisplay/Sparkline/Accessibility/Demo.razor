@@ -13,7 +13,7 @@
         <p>
             <span style="display:inline-block; font-size:.6875rem; font-weight:600; letter-spacing:.05em;
                          color:#92400e; background:#fef3c7; padding:.125rem .5rem; border-radius:999px;
-                         margin-right:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
+                         margin-inline-end:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
             <code>SunfishSparkline</code> is not yet implemented. This page documents the
             accessibility contract the component will ship with, using a hand-authored inline
             SVG as the working demo so the patterns are concrete and reviewable today.
@@ -91,24 +91,24 @@
                     the text equivalent for WCAG 1.1.1 when the summary label is not enough.
                 </p>
                 <table style="border-collapse:collapse; font-size:.85rem;">
-                    <caption style="text-align:left; font-weight:600; margin-bottom:.25rem;">
+                    <caption style="text-align: start; font-weight:600; margin-bottom:.25rem;">
                         Daily revenue (thousands USD) — data behind the sparkline
                     </caption>
                     <thead>
                         <tr>
-                            <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:left;">Day</th>
+                            <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align: start;">Day</th>
                             @for (int i = 0; i < _revenue.Length; i++)
                             {
-                                <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align:right;">D@(i + 1)</th>
+                                <th scope="col" style="padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #d1d5db); text-align: end;">D@(i + 1)</th>
                             }
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <th scope="row" style="padding:.35rem .75rem; text-align:left;">Revenue</th>
+                            <th scope="row" style="padding:.35rem .75rem; text-align: start;">Revenue</th>
                             @foreach (var v in _revenue)
                             {
-                                <td style="padding:.35rem .75rem; text-align:right;">@v</td>
+                                <td style="padding:.35rem .75rem; text-align: end;">@v</td>
                             }
                         </tr>
                     </tbody>

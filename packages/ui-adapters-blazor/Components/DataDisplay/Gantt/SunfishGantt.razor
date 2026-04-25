@@ -251,7 +251,7 @@
                                 {
                                     var pad = (int)(n.Depth * 16 + (hasChildren ? 0 : 16));
                                     <div class="sf-gantt__task-cell" role="gridcell" style="@cellStyle">
-                                        <span style="padding-left: @(pad)px; display: inline-flex; align-items: center;">
+                                        <span style="padding-inline-start: @(pad)px; display: inline-flex; align-items: center;">
                                             @if (hasChildren)
                                             {
                                                 <button type="button"
@@ -295,7 +295,7 @@
                                     <div class="sf-gantt__task-cell mar-gantt__task-cell--editable" role="gridcell" style="@cellStyle"
                                          @onclick="() => BeginCellEdit(rowIdx, incellField)"
                                          @onclick:stopPropagation="true">
-                                        <span style="padding-left: @(pad)px; display: inline-flex; align-items: center;">
+                                        <span style="padding-inline-start: @(pad)px; display: inline-flex; align-items: center;">
                                             @if (hasChildren)
                                             {
                                                 <button type="button"
@@ -345,7 +345,7 @@
                                     <div id="@cellAnchorId" class="sf-gantt__task-cell mar-gantt__task-cell--editable" role="gridcell" style="@cellStyle"
                                          @onclick="() => BeginPopupEdit(rowIdx, popupField)"
                                          @onclick:stopPropagation="true">
-                                        <span style="padding-left: @(pad)px; display: inline-flex; align-items: center;">
+                                        <span style="padding-inline-start: @(pad)px; display: inline-flex; align-items: center;">
                                             @if (hasChildren)
                                             {
                                                 <button type="button"
@@ -390,7 +390,7 @@
                                     @if (col.Expandable)
                                     {
                                         var pad = (int)(n.Depth * 16 + (hasChildren ? 0 : 16));
-                                        <span style="padding-left: @(pad)px; display: inline-flex; align-items: center;">
+                                        <span style="padding-inline-start: @(pad)px; display: inline-flex; align-items: center;">
                                             @if (hasChildren)
                                             {
                                                 <button type="button"
@@ -479,7 +479,7 @@
                          aria-posinset="@posInSiblings"
                          aria-expanded="@(hasChildren ? (expanded ? "true" : "false") : null)"
                          tabindex="@(isFocused ? 0 : -1)"
-                         style="padding-left: @(pad)px;"
+                         style="padding-inline-start: @(pad)px;"
                          @onclick="async () => { await HandleTaskSelect(n.Item); await OnTaskClick.InvokeAsync(n.Item); }">
                         @if (hasChildren)
                         {
@@ -613,7 +613,7 @@
                     }
                     @if (_dependencyLines.Count > 0)
                     {
-                        <svg class="sf-gantt__dependency-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+                        <svg class="sf-gantt__dependency-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
                             <defs>
                                 <marker id="@($"gantt-arrow-{_instanceId}")" class="sf-gantt__dependency-marker" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
                                     <path d="M0,0 L10,4 L0,8 Z" />
@@ -719,7 +719,7 @@
                     }
                     @if (_dependencyLines.Count > 0)
                     {
-                        <svg class="sf-gantt__dependency-svg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+                        <svg class="sf-gantt__dependency-svg" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;">
                             <defs>
                                 <marker id="@($"gantt-arrow-{_instanceId}")" class="sf-gantt__dependency-marker" markerWidth="10" markerHeight="8" refX="10" refY="4" orient="auto">
                                     <path d="M0,0 L10,4 L0,8 Z" />

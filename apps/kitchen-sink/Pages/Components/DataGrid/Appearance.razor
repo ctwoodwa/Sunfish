@@ -61,7 +61,7 @@
         </SunfishDataGrid>
         <div style="margin-top:8px;">
             <label><input type="checkbox" checked="@_showHireDate" @onchange="@(e => _showHireDate = (bool)(e.Value ?? false))" /> Show Hire Date</label>
-            <label style="margin-left:16px;"><input type="checkbox" checked="@_showSalary" @onchange="@(e => _showSalary = (bool)(e.Value ?? false))" /> Show Salary</label>
+            <label style="margin-inline-start:16px;"><input type="checkbox" checked="@_showSalary" @onchange="@(e => _showSalary = (bool)(e.Value ?? false))" /> Show Salary</label>
         </div>
     </DemoSection>
 </PageSection>
@@ -104,7 +104,7 @@
                         <div style="font-weight:bold;">@context.Name</div>
                         <div style="font-size:0.85em;color:#666;">@context.Department</div>
                     </td>
-                    <td style="padding:8px;text-align:right;">
+                    <td style="padding:8px;text-align: end;">
                         @context.Salary.ToString("C0")
                     </td>
                 </tr>
@@ -224,7 +224,7 @@
         "                <div style=\"font-weight:bold;\">@context.Name</div>\n" +
         "                <div style=\"font-size:0.85em;\">@context.Department</div>\n" +
         "            </td>\n" +
-        "            <td style=\"text-align:right;\">@context.Salary.ToString(\"C0\")</td>\n" +
+        "            <td style=\"text-align: end;\">@context.Salary.ToString(\"C0\")</td>\n" +
         "        </tr>\n" +
         "    </RowTemplate>\n" +
         "    <ChildContent>\n" +

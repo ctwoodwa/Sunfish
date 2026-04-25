@@ -61,7 +61,7 @@
                                      @bind-SelectedDates="_multipleDates" />
                     <div style="min-width:200px;">
                         <strong>Selected (@_multipleDates.Count):</strong>
-                        <ul style="margin:.25rem 0 0; padding-left:1rem;">
+                        <ul style="margin:.25rem 0 0; padding-inline-start:1rem;">
                             @foreach (var d in _multipleDates.OrderBy(d => d))
                             {
                                 <li>@d.ToString("ddd, MMM d")</li>

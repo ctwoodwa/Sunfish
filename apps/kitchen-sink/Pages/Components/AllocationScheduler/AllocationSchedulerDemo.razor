@@ -42,7 +42,7 @@
                 var g = grain;
                 <button style="padding:0.25rem 0.75rem" @onclick="@(() => _rollupGrain = g)">@g</button>
             }
-            <span style="color:#666;margin-left:0.5rem">Current: <strong>@_rollupGrain</strong></span>
+            <span style="color:#666;margin-inline-start:0.5rem">Current: <strong>@_rollupGrain</strong></span>
         </div>
 
         <SunfishAllocationScheduler TResource="StaffResource"

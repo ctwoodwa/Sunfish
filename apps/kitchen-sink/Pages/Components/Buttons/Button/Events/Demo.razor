@@ -67,7 +67,7 @@
                     <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault="true"
                           style="border:1px dashed var(--sf-color-border, #ddd); padding:.75rem; border-radius:4px;">
                         <input type="text" @bind="_fieldValue" placeholder="Type anything, then Submit"
-                               style="padding:.35rem .5rem; margin-right:.5rem;" />
+                               style="padding:.35rem .5rem; margin-inline-end:.5rem;" />
                         <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Submit</SunfishButton>
                         <SunfishButton Variant="ButtonVariant.Secondary" ButtonType="ButtonType.Reset"
                                        OnClick="@(_ => Append("OnClick", "Reset"))">

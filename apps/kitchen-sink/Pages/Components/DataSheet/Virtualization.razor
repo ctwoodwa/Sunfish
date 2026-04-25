@@ -27,7 +27,7 @@
             <button @onclick='() => SetRowCount(100)' class="@(ActiveCss(100))">100</button>
             <button @onclick='() => SetRowCount(1000)' class="@(ActiveCss(1000))">1,000</button>
             <button @onclick='() => SetRowCount(5000)' class="@(ActiveCss(5000))">5,000</button>
-            <span style="margin-left:12px;">Current: @_currentCount rows</span>
+            <span style="margin-inline-start:12px;">Current: @_currentCount rows</span>
         </div>
 
         <SunfishDataSheet TItem="VirtRow"

@@ -39,8 +39,8 @@
                 <table style="border-collapse:collapse; width:100%; max-width:520px;">
                     <thead>
                         <tr>
-                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
-                            <th style="text-align:left; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
+                            <th style="text-align: start; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Key</th>
+                            <th style="text-align: start; padding:.4rem .6rem; border-bottom:1px solid var(--sf-color-border, #ddd);">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -63,7 +63,7 @@
                 <SunfishFab PositionMode="static" Size="FabSize.Medium" Icon="plus"
                             aria-label="Create new message"
                             OnClick="@(_ => _lastAction = "Message composer opened")" />
-                <span style="margin-left:.75rem; color:#555; font-size:.85rem;">Last action: <strong>@_lastAction</strong></span>
+                <span style="margin-inline-start:.75rem; color:#555; font-size:.85rem;">Last action: <strong>@_lastAction</strong></span>
             </section>
 
             <section>

@@ -5,7 +5,7 @@
     <DemoSection Title="Inline Editing" Description="Double-click any task row to enter inline edit mode. The OnUpdate, OnDelete, and OnCreate handlers capture each action and display the last operation below the chart." Code="@_editingCode">
         <div class="demo-row" style="margin-bottom: 8px;">
             <button class="sf-btn" @onclick="AddTask">+ Add Task</button>
-            <span style="margin-left: 16px; color: var(--sf-text-secondary);">
+            <span style="margin-inline-start: 16px; color: var(--sf-text-secondary);">
                 Last action: <strong>@_lastAction</strong>
             </span>
         </div>

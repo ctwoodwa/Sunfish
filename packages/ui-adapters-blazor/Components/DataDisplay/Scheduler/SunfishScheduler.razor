@@ -318,7 +318,7 @@
                     @foreach (var appt in dayAppts)
                     {
                         var a = appt;
-                        <div class="sf-scheduler__agenda-item @GetRenderCssClass(a)" style="@(!string.IsNullOrEmpty(a.Color) ? $"border-left-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                        <div class="sf-scheduler__agenda-item @GetRenderCssClass(a)" style="@(!string.IsNullOrEmpty(a.Color) ? $"border-inline-start-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
                             <span class="sf-scheduler__agenda-item-time">@(a.IsAllDay ? "All Day" : $"{a.Start:HH:mm} - {a.End:HH:mm}")</span>
                             <span class="sf-scheduler__agenda-item-title">@if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }</span>
                         </div>

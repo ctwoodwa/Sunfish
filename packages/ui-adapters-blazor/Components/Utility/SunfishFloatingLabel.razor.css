@@ -34,10 +34,10 @@
 
 .sf-floating-label__label {
     position: absolute;
-    left: 0.75rem;
+    inset-inline-start: 0.75rem;
     top: 50%;
     transform: translateY(-50%);
-    transform-origin: left top;
+    transform-origin: inline-start top;
     font-size: 1rem;
     color: var(--sunfish-muted, #6b7280);
     background: transparent;

@@ -12,12 +12,12 @@
                          Width="100%"
                          @bind-View="_currentView">
                 <GanttToolBarTemplate>
-                    <button class="sf-btn" style="margin-left: auto;" @onclick="@(() => _message = "Print clicked!")">
+                    <button class="sf-btn" style="margin-inline-start: auto;" @onclick="@(() => _message = "Print clicked!")">
                         Print
                     </button>
                     @if (!string.IsNullOrEmpty(_message))
                     {
-                        <span style="margin-left: 8px; color: var(--sf-text-secondary);">@_message</span>
+                        <span style="margin-inline-start: 8px; color: var(--sf-text-secondary);">@_message</span>
                     }
                 </GanttToolBarTemplate>
                 <GanttColumns>

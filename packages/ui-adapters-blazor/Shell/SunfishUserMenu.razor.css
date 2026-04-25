@@ -28,7 +28,6 @@
 
 .sf-usermenu__scrim {
     position: fixed;
-    top: 0; right: 0; bottom: 0; left: 0;
     inset: 0;
     background: transparent;
     z-index: 60;
@@ -37,7 +36,7 @@
 .sf-usermenu__panel {
     position: absolute;
     bottom: calc(100% + 8px);
-    left: 0;
+    inset-inline-start: 0;
     width: var(--mum-width);
     background: var(--mum-bg);
     border: 1px solid var(--mum-border);
@@ -117,7 +116,7 @@
     border-radius: 8px;
     color: var(--mum-text);
     font-size: 13px;
-    text-align: left;
+    text-align: start;
     cursor: pointer;
 }
 .sf-usermenu__row:hover { background: var(--mum-hover); }
