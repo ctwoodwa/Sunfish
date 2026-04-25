@@ -21,10 +21,12 @@
     "@axe-core/playwright": "^4.10.0",
     "@web/test-runner": "^0.19.0",
     "@web/test-runner-playwright": "^0.11.0",
+    "http-server": "^14.1.1",
     "lit": "^3.2.0",
     "playwright": "^1.48.0",
     "storybook": "^8.3.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "wait-on": "^8.0.1"
   }
 }

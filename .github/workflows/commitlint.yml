@@ -15,5 +15,5 @@ jobs:
 
       - uses: wagoid/commitlint-github-action@v6
         with:
-          configFile: commitlint.config.js
+          configFile: commitlint.config.mjs
           helpURL: https://github.com/ctwoodwa/Sunfish/blob/main/_shared/engineering/commit-conventions.md

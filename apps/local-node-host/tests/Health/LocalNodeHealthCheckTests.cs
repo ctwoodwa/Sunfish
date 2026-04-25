@@ -77,6 +77,7 @@ public class LocalNodeHealthCheckTests
         public bool IsRunning { get; set; }
         public IReadOnlyCollection<PeerInfo> KnownPeers => Array.Empty<PeerInfo>();
         public event EventHandler<GossipRoundCompletedEventArgs>? RoundCompleted;
+        public event EventHandler<GossipFrameEventArgs>? FrameReceived { add { } remove { } }
 
         public Task StartAsync(CancellationToken ct)
         {

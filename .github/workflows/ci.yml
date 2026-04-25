@@ -9,7 +9,15 @@ on:
 jobs:
   build-and-test:
     name: Build & Test
-    runs-on: ubuntu-latest
+    # windows-latest is required: Anchor (accelerators/anchor) is a MAUI Blazor
+    # Hybrid project whose csproj conditionally targets net11.0-windows on Windows
+    # and net11.0-maccatalyst elsewhere. The maccatalyst workload pack
+    # (Microsoft.MacCatalyst.Sdk.net11.0) is not publishable to Linux runners — even
+    # `dotnet workload restore` errors NETSDK1178 there. On Windows, Anchor builds
+    # against its windows10.0.19041.0 target and every other project (net11.0) builds
+    # natively. Until MAUI 11 stabilizes mobile workloads cross-platform, Sunfish CI
+    # for the .NET solution must run on Windows.
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6
 
@@ -17,14 +25,32 @@ jobs:
         with:
           global-json-file: global.json
 
+      # MAUI workloads are required for Anchor; the Windows runner ships base SDK
+      # but workloads are project-driven. `dotnet workload restore` resolves them
+      # from the slnx (idempotent — no-op if already present in the runner image).
+      - name: Restore .NET workloads
+        run: dotnet workload restore Sunfish.slnx
+
       - name: Restore
         run: dotnet restore Sunfish.slnx
 
       - name: Build
         run: dotnet build Sunfish.slnx --no-restore
 
-      - name: Test
-        run: dotnet test Sunfish.slnx --no-build --logger "trx" --results-directory TestResults
+      # Integration-tier tests need infrastructure the runner image doesn't ship:
+      #   • *.Postgres.Tests          → Testcontainers + Docker + postgres:16-alpine
+      #   • *.BlobReplication.Tests   → Testcontainers + Docker + Kubo IPFS image
+      #   • *.A11y.Tests              → Playwright browsers (`playwright install`)
+      # Until a separate integration-test workflow stands up Docker services and
+      # Playwright browsers (tracked as a follow-up), filter them out of the
+      # PR-blocking unit-test run. Their tests still build and the test
+      # discovery still happens — only execution is filtered.
+      - name: Test (unit-tier)
+        run: |
+          dotnet test Sunfish.slnx --no-build `
+            --filter "FullyQualifiedName!~Postgres.Tests&FullyQualifiedName!~BlobReplication.Tests&FullyQualifiedName!~A11y.Tests" `
+            --logger "trx" `
+            --results-directory TestResults
 
       - name: Upload test results
         if: always()
