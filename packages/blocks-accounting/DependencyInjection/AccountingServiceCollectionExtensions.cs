@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.Accounting.Services;
+using Sunfish.Foundation.Localization;
 
 namespace Sunfish.Blocks.Accounting.DependencyInjection;
 
@@ -13,6 +15,11 @@ public static class AccountingServiceCollectionExtensions
     /// Registers a singleton <see cref="InMemoryAccountingService"/> as the
     /// <see cref="IAccountingService"/> implementation, and a singleton
     /// <see cref="QuickBooksIifExporter"/> as <see cref="IQuickBooksJournalEntryExporter"/>.
+    /// Also contributes the open-generic <see cref="ISunfishLocalizer{T}"/> binding
+    /// so consumers can resolve the accounting <c>SharedResource</c> bundle. Caller
+    /// is responsible for wiring <c>services.AddLocalization()</c> in the composition
+    /// root (matches the Bridge pattern; class libraries don't take a hard
+    /// PackageReference on <c>Microsoft.Extensions.Localization</c>).
     /// Suitable for testing, prototyping, and kitchen-sink demos.
     /// </summary>
     /// <param name="services">The service collection to configure.</param>
@@ -21,6 +28,7 @@ public static class AccountingServiceCollectionExtensions
     {
         services.AddSingleton<IAccountingService, InMemoryAccountingService>();
         services.AddSingleton<IQuickBooksJournalEntryExporter, QuickBooksIifExporter>();
+        services.TryAdd(ServiceDescriptor.Singleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>)));
         return services;
     }
 }
