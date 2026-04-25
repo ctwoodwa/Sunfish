@@ -29,7 +29,14 @@ namespace Sunfish.Analyzers.LocComments
             title: "Resource entry missing translator comment",
             messageFormat: "RESX entry '{0}' has no <comment> — translators need context to localize correctly",
             category: "Sunfish.I18n",
-            defaultSeverity: DiagnosticSeverity.Warning,
+            // Plan 5 promotion: Error severity. Previously Warning, which only
+            // failed the build because every Sunfish project sets
+            // TreatWarningsAsErrors=true in Directory.Build.props — making the
+            // gate implicit on a build-wide flag. Promoting here makes the
+            // diagnostic Error regardless of warnings-as-errors policy, which
+            // matches Plan 5 §"Promote to Error after Phase 1 cascade" and
+            // documented intent in packages/analyzers/loc-comments/README.md.
+            defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true,
             description:
                 "Sunfish localization quality requires every .resx <data> entry to carry a <comment> that gives translators the context they need (audience, domain, surrounding UI). Missing or empty comments are the leading cause of mistranslation. See spec §8 + ADR 0034.",
