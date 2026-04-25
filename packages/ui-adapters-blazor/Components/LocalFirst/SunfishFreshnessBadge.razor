@@ -11,6 +11,10 @@
 <span class="@Classes"
       style="@CombineStyles()"
       title="@Tooltip"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+      aria-label="@AriaLabel"
       @attributes="AdditionalAttributes">
     <span class="sf-freshness-badge__dot" aria-hidden="true"></span>
     <span class="sf-freshness-badge__label">@DisplayText</span>
@@ -54,6 +58,16 @@
     private string Tooltip => LastSyncedAt is null
         ? "No sync data available"
         : $"Last synced {LastSyncedAt.Value:u}";
+
+    /// <summary>
+    /// ARIA label per ADR 0036 — combines the indicator's canonical state phrase
+    /// with the visible freshness text so AT users get both severity ("Last synced
+    /// earlier") and the concrete age ("3 minutes ago"). Freshness Badge only
+    /// reaches Healthy / Stale / Offline; all three are role="status".
+    /// </summary>
+    private string AriaLabel => State == SyncState.Offline
+        ? SunfishSyncStatusIndicator.LongLabel(State)
+        : $"{SunfishSyncStatusIndicator.LongLabel(State)}: {DisplayText}";
 
     private SyncState DeriveState()
     {
