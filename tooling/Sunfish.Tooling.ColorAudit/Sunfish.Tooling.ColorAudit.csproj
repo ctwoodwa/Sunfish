@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Tooling.ColorAudit</PackageId>
+    <RootNamespace>Sunfish.Tooling.ColorAudit</RootNamespace>
+    <AssemblyName>Sunfish.Tooling.ColorAudit</AssemblyName>
+    <Description>
+      ΔE2000 perceptual color-difference + CVD (color vision deficiency) simulation
+      utilities. Used by Plan 4B Task §5.1 to gate Sunfish's SyncState palette against
+      the spec §5 distinguishability invariant: min-pair ΔE2000 ≥ 11 under deuteranopia,
+      protanopia, and tritanopia.
+    </Description>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+</Project>
