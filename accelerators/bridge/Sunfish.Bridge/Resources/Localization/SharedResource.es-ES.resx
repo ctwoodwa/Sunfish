@@ -59,4 +59,98 @@
     <value>La solicitud entra en conflicto con el estado actual del recurso. Revísela e inténtelo de nuevo.</value>
     <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
   </data>
+
+  <!-- Validation messages — neutral usted-form (shared with es-419 / es-MX). -->
+  <data name="validation.required" xml:space="preserve">
+    <value>Este campo es obligatorio.</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>Debe tener al menos {min} caracteres.</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>Debe tener {max} caracteres o menos.</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>Introduzca una dirección de correo electrónico válida.</value>
+    <comment>Translator: Email parse failed; full "correo electrónico" preferred over "email" loanword in es-ES.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>Introduzca una URL válida.</value>
+    <comment>Translator: URL parse failed; "URL" stays as loanword.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>Introduzca solo números.</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>Introduzca una fecha válida.</value>
+    <comment>Translator: Date parse failed; locale uses DD/MM/AAAA by convention.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>La fecha debe ser futura.</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>La fecha debe ser pasada.</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. Imperative form (usted). -->
+  <data name="actions.save" xml:space="preserve">
+    <value>Guardar</value>
+    <comment>Translator: Button label — commit draft. Imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>Cancelar</value>
+    <comment>Translator: Button label — discard draft. Imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>Reintentar</value>
+    <comment>Translator: Button label — reattempt failed sync. Imperative.</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>Translator: Button label — destructive removal. Imperative.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>Confirmar</value>
+    <comment>Translator: Button label — proceed with displayed action. Imperative.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>Editar</value>
+    <comment>Translator: Button label — switch to edit-mode. Imperative.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>Buscar</value>
+    <comment>Translator: Button label or placeholder — execute query. Imperative.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>Cargando</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>Guardando</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>Procesando</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>Completado</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>Error</value>
+    <comment>Translator: Status — terminal failure state. Noun "Error" is the standard compact-badge form in Spanish UIs.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>Inactivo</value>
+    <comment>Translator: Status — no operation in flight; quiescent state.</comment>
+  </data>
 </root>

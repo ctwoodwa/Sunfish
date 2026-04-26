@@ -59,4 +59,98 @@
     <value>Die Anfrage steht im Konflikt mit dem aktuellen Zustand der Ressource. Bitte prüfen Sie sie und versuchen Sie es erneut.</value>
     <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
   </data>
+
+  <!-- Validation messages — German nouns capitalized per orthographic reform (1996). -->
+  <data name="validation.required" xml:space="preserve">
+    <value>Dieses Feld ist erforderlich.</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>Mindestens {min} Zeichen erforderlich.</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>Höchstens {max} Zeichen zulässig.</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>Geben Sie eine gültige E-Mail-Adresse ein.</value>
+    <comment>Translator: Email parse failed; "E-Mail" with hyphen is standard German orthography.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>Geben Sie eine gültige URL ein.</value>
+    <comment>Translator: URL parse failed; "URL" stays as loanword.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>Nur Zahlen eingeben.</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>Geben Sie ein gültiges Datum ein.</value>
+    <comment>Translator: Date parse failed; locale uses TT.MM.JJJJ by convention.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>Das Datum muss in der Zukunft liegen.</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>Das Datum muss in der Vergangenheit liegen.</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. Imperative form. -->
+  <data name="actions.save" xml:space="preserve">
+    <value>Speichern</value>
+    <comment>Translator: Button label — commit draft. Imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>Abbrechen</value>
+    <comment>Translator: Button label — discard draft. Imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>Wiederholen</value>
+    <comment>Translator: Button label — reattempt failed sync. Imperative.</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>Löschen</value>
+    <comment>Translator: Button label — destructive removal. Imperative.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>Bestätigen</value>
+    <comment>Translator: Button label — proceed with displayed action. Imperative.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>Bearbeiten</value>
+    <comment>Translator: Button label — switch to edit-mode. Imperative.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>Suchen</value>
+    <comment>Translator: Button label or placeholder — execute query. Imperative.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>Wird geladen</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>Wird gespeichert</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>Wird verarbeitet</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>Abgeschlossen</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>Fehlgeschlagen</value>
+    <comment>Translator: Status — terminal failure state.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>Bereit</value>
+    <comment>Translator: Status — no operation in flight; "Bereit" (Ready) is the natural German quiescent state.</comment>
+  </data>
 </root>

@@ -59,4 +59,98 @@
     <value>अनुरोध संसाधन की वर्तमान स्थिति से विरोध करता है। कृपया समीक्षा करें और पुनः प्रयास करें।</value>
     <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
   </data>
+
+  <!-- Validation messages — Hindi (Devanagari script). Polite-formal register (आप form). -->
+  <data name="validation.required" xml:space="preserve">
+    <value>यह फ़ील्ड आवश्यक है।</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>कम से कम {min} वर्ण होने चाहिए।</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>{max} वर्ण या उससे कम होने चाहिए।</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>एक मान्य ईमेल पता दर्ज करें।</value>
+    <comment>Translator: Email parse failed; "ईमेल" loanword is standard in Hindi tech UI.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>एक मान्य URL दर्ज करें।</value>
+    <comment>Translator: URL parse failed; "URL" stays Latin per ADR 0034.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>केवल संख्याएँ दर्ज करें।</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>एक मान्य दिनांक दर्ज करें।</value>
+    <comment>Translator: Date parse failed; locale uses DD/MM/YYYY by convention.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>दिनांक भविष्य का होना चाहिए।</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>दिनांक अतीत का होना चाहिए।</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. -->
+  <data name="actions.save" xml:space="preserve">
+    <value>सहेजें</value>
+    <comment>Translator: Button label — commit draft. Polite imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>रद्द करें</value>
+    <comment>Translator: Button label — discard draft. Polite imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>पुनः प्रयास करें</value>
+    <comment>Translator: Button label — reattempt failed sync.</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>हटाएँ</value>
+    <comment>Translator: Button label — destructive removal. Polite imperative.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>पुष्टि करें</value>
+    <comment>Translator: Button label — proceed with displayed action.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>संपादित करें</value>
+    <comment>Translator: Button label — switch to edit-mode.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>खोजें</value>
+    <comment>Translator: Button label or placeholder — execute query.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>लोड हो रहा है</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>सहेजा जा रहा है</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>संसाधित हो रहा है</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>पूर्ण</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>विफल</value>
+    <comment>Translator: Status — terminal failure state.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>निष्क्रिय</value>
+    <comment>Translator: Status — no operation in flight; quiescent state.</comment>
+  </data>
 </root>

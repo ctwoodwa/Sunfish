@@ -59,4 +59,98 @@
     <value>A solicitação está em conflito com o estado atual do recurso. Revise e tente novamente.</value>
     <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
   </data>
+
+  <!-- Validation messages — Brazilian norms (você, not tu). -->
+  <data name="validation.required" xml:space="preserve">
+    <value>Este campo é obrigatório.</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>Deve ter pelo menos {min} caracteres.</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>Deve ter {max} caracteres ou menos.</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>Insira um endereço de e-mail válido.</value>
+    <comment>Translator: Email parse failed; "e-mail" with hyphen is the Brazilian convention.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>Insira uma URL válida.</value>
+    <comment>Translator: URL parse failed; "URL" stays as loanword.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>Insira apenas números.</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>Insira uma data válida.</value>
+    <comment>Translator: Date parse failed; locale uses DD/MM/AAAA by convention.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>A data deve estar no futuro.</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>A data deve estar no passado.</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. Imperative form. -->
+  <data name="actions.save" xml:space="preserve">
+    <value>Salvar</value>
+    <comment>Translator: Button label — commit draft. Imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>Cancelar</value>
+    <comment>Translator: Button label — discard draft. Imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>Tentar novamente</value>
+    <comment>Translator: Button label — reattempt failed sync. Imperative phrase (no single-word equivalent in pt-BR UI).</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>Excluir</value>
+    <comment>Translator: Button label — destructive removal. "Excluir" preferred over "Apagar" in Brazilian software UIs.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>Confirmar</value>
+    <comment>Translator: Button label — proceed with displayed action. Imperative.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>Editar</value>
+    <comment>Translator: Button label — switch to edit-mode. Imperative.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>Pesquisar</value>
+    <comment>Translator: Button label or placeholder — execute query. "Pesquisar" preferred over "Buscar" in pt-BR.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>Carregando</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>Salvando</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>Processando</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>Concluído</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>Falhou</value>
+    <comment>Translator: Status — terminal failure state.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>Inativo</value>
+    <comment>Translator: Status — no operation in flight; quiescent state.</comment>
+  </data>
 </root>
