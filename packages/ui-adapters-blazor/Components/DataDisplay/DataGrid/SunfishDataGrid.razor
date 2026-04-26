@@ -14,6 +14,16 @@
      aria-busy="@(IsLoading ? "true" : null)"
      @attributes="AdditionalAttributes">
 
+    @* WCAG 4.1.3 Status Messages — sr-only polite live region for sort/filter/page/group announcements.
+       Populated via Announce(...) in razor.cs; visually hidden but read by assistive technology. *@
+    <div class="sf-datagrid__sr-only sf-datagrid__live-region"
+         role="status"
+         aria-live="polite"
+         aria-atomic="true"
+         style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+        @_liveAnnouncement
+    </div>
+
     @* Toolbar area *@
     @if (ToolbarTemplate != null)
     {
@@ -117,14 +127,19 @@
                             ? resizePositionStyle
                             : resizePositionStyle is not null ? $"{frozenHeaderStyle}{resizePositionStyle}" : frozenHeaderStyle);
 
+                        @* WCAG 2.1.1 (Keyboard) + 4.1.2 (Name, Role, Value): when the header is sortable
+                           it is interactive and must be reachable + activatable from the keyboard.
+                           Adding tabindex="0" makes it focusable; @onkeydown on Enter/Space mirrors @onclick. *@
                         <th class="@headerCellClass"
                             role="columnheader"
                             style="@(string.IsNullOrEmpty(combinedStyle) ? null : combinedStyle)"
                             aria-sort="@GetAriaSortValue(sortDir)"
+                            tabindex="@(isSortable ? "0" : null)"
                             data-column-index="@_visibleColumns.IndexOf(column)"
                             data-column-id="@column.EffectiveId"
                             draggable="@(column.IsReorderable(AllowColumnReorder || Reorderable) ? "true" : "false")"
-                            @onclick="(e) => OnHeaderClick(column, isSortable, e)">
+                            @onclick="(e) => OnHeaderClick(column, isSortable, e)"
+                            @onkeydown="(e) => OnHeaderKeyDown(column, isSortable, e)">
                             @if (column.HeaderTemplate != null)
                             {
                                 @column.HeaderTemplate
@@ -148,9 +163,13 @@
                             {
                                 var col = column;
                                 var isFilterMenuOpen = _filterMenuField == col.Field;
+                                @* WCAG 2.5.8 Target Size (Minimum) — inline min-width/min-height
+                                   guarantees the 24x24 floor without depending on theme CSS. *@
                                 <button type="button"
                                         class="sf-datagrid-filter-menu-btn @(_state.FilterDescriptors.Any(f => f.Field == col.Field) ? "sf-datagrid__filter-menu-btn--active" : "")"
+                                        style="min-width:24px;min-height:24px;"
                                         aria-label="@($"Filter {column.DisplayTitle}")"
+                                        aria-haspopup="dialog"
                                         aria-expanded="@(isFilterMenuOpen ? "true" : "false")"
                                         @onclick:stopPropagation="true"
                                         @onclick="() => ToggleFilterMenu(col.Field)">
@@ -173,7 +192,9 @@
                                 var hasActiveCheckBoxFilter = _state.CompositeFilterDescriptors.Any(c => c.Filters.Count > 0 && c.Filters[0].Field == col.Field);
                                 <button type="button"
                                         class="sf-datagrid-filter-menu-btn @(hasActiveCheckBoxFilter ? "sf-datagrid__filter-menu-btn--active" : "")"
+                                        style="min-width:24px;min-height:24px;"
                                         aria-label="@($"Filter {column.DisplayTitle}")"
+                                        aria-haspopup="dialog"
                                         aria-expanded="@(isCheckBoxFilterOpen ? "true" : "false")"
                                         @onclick:stopPropagation="true"
                                         @onclick="() => ToggleCheckBoxFilter(col.Field)">
@@ -196,6 +217,7 @@
                                 var colMenuOpen = _openMenuColumnIndex == colMenuIndex;
                                 <button type="button"
                                         class="sf-datagrid__column-menu-trigger"
+                                        style="min-width:24px;min-height:24px;"
                                         aria-label="@($"Column menu for {column.DisplayTitle}")"
                                         aria-haspopup="menu"
                                         aria-expanded="@(colMenuOpen ? "true" : "false")"
@@ -209,11 +231,16 @@
                                                        ShowLock="@column.Lockable"
                                                        IsLocked="@column.Locked"
                                                        HasSort="@IsSortedColumn(column)"
+                                                       ShowReorder="@(column.IsReorderable(AllowColumnReorder || Reorderable))"
+                                                       CanMoveLeft="@(_columns.IndexOf(column) > 0)"
+                                                       CanMoveRight="@(_columns.IndexOf(column) < _columns.Count - 1)"
                                                        OnSortAscending="() => SortColumnAsc(column)"
                                                        OnSortDescending="() => SortColumnDesc(column)"
                                                        OnClearSort="() => ClearColumnSort(column)"
                                                        OnFilter="() => OpenFilterMenu(column)"
                                                        OnToggleLock="() => ToggleColumnLock(column)"
+                                                       OnMoveLeft="() => MoveColumnLeft(column)"
+                                                       OnMoveRight="() => MoveColumnRight(column)"
                                                        OnClose="CloseColumnMenu" />
                             }
 
@@ -369,11 +396,20 @@
         </table>
     </div>
 
-    @* Popup edit dialog *@
+    @* Popup edit dialog — WCAG 4.1.2 Name, Role, Value:
+       aria-modal="true" tells AT this is a modal (focus should be trapped semantically),
+       tabindex="-1" allows the dialog itself to receive programmatic focus on open,
+       and @onkeydown listens for Escape so keyboard users can dismiss. *@
     @if (EditMode == GridEditMode.Popup && _editingItem != null)
     {
         <div class="sf-datagrid-popup-overlay" @onclick="CancelEdit">
-            <div class="sf-datagrid-popup-dialog" role="dialog" aria-label="@(_isCreating ? "Add item" : "Edit item")" @onclick:stopPropagation="true">
+            <div class="sf-datagrid-popup-dialog"
+                 role="dialog"
+                 aria-modal="true"
+                 tabindex="-1"
+                 aria-label="@(_isCreating ? "Add item" : "Edit item")"
+                 @onclick:stopPropagation="true"
+                 @onkeydown="OnEditDialogKeyDown">
                 <div class="sf-datagrid-popup-header">
                     <h3>@(_isCreating ? "Add New Item" : "Edit Item")</h3>
                 </div>

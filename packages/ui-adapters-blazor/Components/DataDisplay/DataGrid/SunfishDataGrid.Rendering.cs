@@ -34,6 +34,15 @@ public partial class SunfishDataGrid<TItem>
         builder.AddAttribute(5, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowClick(item, e)));
         builder.AddAttribute(6, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowDoubleClick(item, e)));
         builder.AddAttribute(7, "oncontextmenu", EventCallback.Factory.Create<MouseEventArgs>(this, (e) => HandleRowContextMenu(item, e)));
+        // WCAG 2.1.1 (Keyboard): when the row is interactive (clickable for selection),
+        // make it focusable and let Enter/Space toggle selection. Without this, keyboard
+        // users have no way to invoke the same selection behaviour mouse users get.
+        if (SelectionMode != GridSelectionMode.None && SelectionUnit == GridSelectionUnit.Row)
+        {
+            builder.AddAttribute(7000, "tabindex", "0");
+            var kbItem = item;
+            builder.AddAttribute(7001, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, (e) => HandleRowKeyDown(kbItem, e)));
+        }
         // B4.3: emit draggable + data-row-index on the <tr> so the JS handler can match tr[data-row-index][draggable="true"].
         // Always emit draggable (true or false) to be explicit and avoid browser default-true edge-cases.
         builder.AddAttribute(8, "draggable", RowDraggable ? "true" : "false");
@@ -420,10 +429,14 @@ public partial class SunfishDataGrid<TItem>
 
         builder.CloseElement(); // actions div
 
-        // Checkbox list
+        // Checkbox list — WCAG 1.3.1 Info and Relationships:
+        // role="listbox"/"option" is incompatible with native checkbox semantics
+        // (an option is single-selectable; a checkbox carries its own checked role).
+        // Use role="group" with aria-label so AT announces the grouping while
+        // individual checkboxes keep their native role/state.
         builder.OpenElement(20, "div");
         builder.AddAttribute(21, "class", "sf-datagrid__filter-checkbox-list");
-        builder.AddAttribute(22, "role", "listbox");
+        builder.AddAttribute(22, "role", "group");
         builder.AddAttribute(23, "aria-label", "Filter values");
 
         foreach (var value in _checkBoxFilterDistinct)
@@ -433,8 +446,6 @@ public partial class SunfishDataGrid<TItem>
 
             builder.OpenElement(30, "label");
             builder.AddAttribute(31, "class", "sf-datagrid__filter-checkbox-item");
-            builder.AddAttribute(32, "role", "option");
-            builder.AddAttribute(33, "aria-selected", isChecked.ToString().ToLowerInvariant());
 
             builder.OpenElement(34, "input");
             builder.AddAttribute(35, "type", "checkbox");

@@ -36,6 +36,21 @@
                 @(IsLocked ? "Unlock column" : "Lock column")
             </button>
         }
+        @* WCAG 2.5.7 Dragging Movements — provide a non-drag alternative to the
+           HTML5 column-reorder drag handler. Move-left/Move-right is keyboard-
+           accessible and does not require pointer drag movements. *@
+        @if (ShowReorder)
+        {
+            <div class="sf-datagrid__column-menu-divider" role="separator"></div>
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
+                    @onclick="HandleMoveLeft"
+                    disabled="@(!CanMoveLeft)">Move left</button>
+            <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
+                    @onclick="HandleMoveRight"
+                    disabled="@(!CanMoveRight)">Move right</button>
+        }
     </div>
 }
 
@@ -73,6 +88,23 @@
     /// <summary>Raised when the user clicks Lock / Unlock column.</summary>
     [Parameter] public EventCallback OnToggleLock { get; set; }
 
+    /// <summary>Whether the Move left / Move right items are shown. Tied to grid AllowColumnReorder
+    /// AND column.Reorderable. Provides a keyboard-accessible alternative to drag-reorder
+    /// (WCAG 2.5.7 Dragging Movements).</summary>
+    [Parameter] public bool ShowReorder { get; set; }
+
+    /// <summary>Whether the column can move one position to the left (i.e. it is not the leftmost).</summary>
+    [Parameter] public bool CanMoveLeft { get; set; }
+
+    /// <summary>Whether the column can move one position to the right (i.e. it is not the rightmost).</summary>
+    [Parameter] public bool CanMoveRight { get; set; }
+
+    /// <summary>Raised when the user clicks Move left.</summary>
+    [Parameter] public EventCallback OnMoveLeft { get; set; }
+
+    /// <summary>Raised when the user clicks Move right.</summary>
+    [Parameter] public EventCallback OnMoveRight { get; set; }
+
     /// <summary>Raised by item handlers after invoking their action, to tell the grid to close the menu.</summary>
     [Parameter] public EventCallback OnClose { get; set; }
 
@@ -105,6 +137,18 @@
     private async Task HandleToggleLock()
     {
         await OnToggleLock.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleMoveLeft()
+    {
+        await OnMoveLeft.InvokeAsync();
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleMoveRight()
+    {
+        await OnMoveRight.InvokeAsync();
         await OnClose.InvokeAsync();
     }
 }
