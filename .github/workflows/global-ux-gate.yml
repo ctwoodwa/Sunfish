@@ -51,6 +51,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Public-repo hardening: every job here is pure CI (audit / build / test /
+# upload-artifact). `contents: read` is the only scope any of them needs —
+# checkout reads the tree, and upload-artifact uses the actions API (not
+# GITHUB_TOKEN scopes). No job writes back to the repo, no PR comments,
+# no releases. Defense-in-depth against a compromised pnpm or NuGet
+# transitive dep stealing the implicit token.
+permissions:
+  contents: read
+
 jobs:
   css-logical:
     name: CSS logical-properties audit
@@ -83,9 +92,11 @@ jobs:
         run: node tooling/locale-completeness-check/check.mjs
 
   # Plan 5 — SUNFISH_A11Y_001 gate (component missing sibling .stories.ts).
-  # Report-only initially; promote to --fail-on-missing once the Phase 1 surface
-  # is fully covered by Plan 4 cascade. Implementation is a Node tool (not a
-  # Roslyn analyzer) because the source is TypeScript — see
+  # Promoted to --fail-on-missing once the Phase 1 surface (button, dialog,
+  # syncstate-indicator) reached full coverage on the Plan 4 cascade. New ui-core
+  # components added under packages/ui-core/src/components/ MUST ship a sibling
+  # sunfish-<name>.stories.ts file or this job fails the PR. Implementation is a
+  # Node tool (not a Roslyn analyzer) because the source is TypeScript — see
   # tooling/Sunfish.Tooling.A11yStoriesCheck/README.md for the scope decision.
   a11y-stories-check:
     name: A11y stories check (SUNFISH_A11Y_001)
@@ -98,8 +109,8 @@ jobs:
           node-version: "24"
       - name: Run tool's own fixture tests
         run: node --test tooling/Sunfish.Tooling.A11yStoriesCheck/tests/check.test.mjs
-      - name: Report a11y stories coverage (no failure gate yet)
-        run: node tooling/Sunfish.Tooling.A11yStoriesCheck/check.mjs
+      - name: Enforce a11y stories coverage (fail on any missing)
+        run: node tooling/Sunfish.Tooling.A11yStoriesCheck/check.mjs --fail-on-missing
 
   a11y-storybook:
     name: A11y Storybook test-runner

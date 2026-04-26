@@ -8,8 +8,10 @@ silently — there's no compiler error today when a key is removed from code but
 the resx. The analyzer surfaces drift at build time so developers either remove the
 unused key or wire up the missing call site before the resource ships.
 
-**Rule severity:** Warning (initial). Plan 5 §"CI gates" promotes to Error via
-`.editorconfig` once the Phase 1 cascade has cleaned up legitimate unused entries.
+**Rule severity:** Error. (Previously Warning, which only failed builds because every
+Sunfish project sets `TreatWarningsAsErrors=true` — implicit gating. Promoted to Error
+per Plan 5 §"CI gates" so the diagnostic blocks builds independently of warnings-as-errors
+policy, mirroring the SUNFISH_I18N_001 cascade pattern.)
 
 **What counts as a reference:** the analyzer recognizes the two canonical
 `IStringLocalizer<T>` access patterns:

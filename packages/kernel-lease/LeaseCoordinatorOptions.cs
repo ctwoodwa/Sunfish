@@ -43,4 +43,21 @@ public sealed class LeaseCoordinatorOptions
     /// sweep has not yet run, so this is purely a memory-reclaim cadence.
     /// </summary>
     public TimeSpan ExpiryPruneInterval { get; set; } = TimeSpan.FromSeconds(10);
+
+    /// <summary>
+    /// Maximum time <see cref="ILeaseCoordinator.ReleaseAsync"/> will wait
+    /// for a peer to acknowledge that it has applied the
+    /// <c>LEASE_RELEASE</c> (i.e. cleared the lease from its responder-side
+    /// conflict cache). The acknowledgement is signalled by the peer
+    /// closing its half of the connection after
+    /// <see cref="FleaseLeaseCoordinator"/>'s responder loop runs
+    /// <c>HandleLeaseRelease</c>; without this barrier, ReleaseAsync would
+    /// return before peers had drained the release frame, allowing a
+    /// follow-up acquire on the same resource (from any node) to race the
+    /// drain and observe a stale "still held" response. A bounded timeout
+    /// preserves the best-effort-release contract — a partitioned peer
+    /// cannot stall release indefinitely; its lease entry will simply
+    /// expire on the natural duration timer instead.
+    /// </summary>
+    public TimeSpan ReleaseAckTimeout { get; set; } = TimeSpan.FromSeconds(2);
 }

@@ -7,6 +7,7 @@
      aria-valuenow="@(IsIndeterminate ? null : Value)"
      aria-valuemin="0"
      aria-valuemax="100"
+     aria-label="@(string.IsNullOrEmpty(Label) ? "Progress" : Label)"
      @attributes="AdditionalAttributes">
     <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
         <circle class="sf-progress-circle__track"
@@ -25,6 +26,12 @@
     [Parameter] public int Size { get; set; } = 48;
     [Parameter] public int StrokeWidth { get; set; } = 4;
     [Parameter] public bool IsIndeterminate { get; set; }
+
+    /// <summary>
+    /// Optional accessible name for the <c>role="progressbar"</c>. Defaults to "Progress" when
+    /// unset so the element always has an accessible name (axe <c>aria-progressbar-name</c>).
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
 
     private double Radius => (Size - StrokeWidth) / 2.0;
     private double Circumference => 2 * Math.PI * Radius;

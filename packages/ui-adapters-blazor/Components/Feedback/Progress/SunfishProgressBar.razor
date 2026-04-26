@@ -20,7 +20,7 @@
      aria-valuemin="@Min"
      aria-valuemax="@Max"
      aria-busy="@(Indeterminate ? "true" : null)"
-     aria-label="@Label"
+     aria-label="@(string.IsNullOrEmpty(Label) ? "Progress" : Label)"
      @attributes="AdditionalAttributes">
 
     @if (ChunkCount > 0)
@@ -106,7 +106,9 @@
 
     /// <summary>
     /// An optional textual label (used both for <c>aria-label</c> and the rendered label when
-    /// <see cref="ShowLabel"/> is <c>true</c>).
+    /// <see cref="ShowLabel"/> is <c>true</c>). When unset, the <c>aria-label</c> defaults to
+    /// "Progress" so the <c>role="progressbar"</c> always has an accessible name (axe
+    /// <c>aria-progressbar-name</c>).
     /// </summary>
     [Parameter] public string? Label { get; set; }
 
