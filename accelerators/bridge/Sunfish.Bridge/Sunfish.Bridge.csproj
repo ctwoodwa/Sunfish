@@ -6,13 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — SharedResource expanded
-         8 -> 30 keys (waves/i18n/bridge-bundle-30-keys) ahead of consumer wiring for the
-         new validation/actions/status surface. The original 8 errors.* keys remain
-         consumed by Components/Pages/Error.razor (PR #141). Remove this NoWarn entry
-         once IStringLocalizer references for validation.*, actions.*, and status.*
-         keys land in the Bridge UI components. -->
-    <NoWarn>SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
