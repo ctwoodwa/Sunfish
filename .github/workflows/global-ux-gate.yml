@@ -167,7 +167,12 @@ jobs:
       - name: Restore .NET workloads
         run: dotnet workload restore Sunfish.slnx
       - name: Restore
-        run: dotnet restore Sunfish.slnx
+        # Pass RuntimeIdentifiers=win-x64 so the Anchor MAUI project pulls
+        # down Microsoft.NETCore.App.Runtime.win-x64 + AspNetCore equivalent
+        # at restore time. Without this, NETSDK1112 fires at build time
+        # because MAUI/WindowsAppSDK forces win-x64 runtime pack but the
+        # csproj has no explicit RuntimeIdentifiers element.
+        run: dotnet restore Sunfish.slnx -p:RuntimeIdentifiers=win-x64
       - name: Build (SUNFISH_* warnings as errors only)
         # Escape semicolons as %3B so MSBuild decodes them inside the property
         # value. Without this, both PowerShell (command-separator) and Git Bash
