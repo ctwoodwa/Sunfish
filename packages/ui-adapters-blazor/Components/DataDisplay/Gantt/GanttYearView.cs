@@ -6,6 +6,9 @@ namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 /// </summary>
 public class GanttYearView : GanttViewBase
 {
+    /// <summary>Initializes the view with a default slot width of 30 pixels per month.</summary>
     public GanttYearView() { SlotWidth = 30; }
+
+    /// <inheritdoc />
     public override GanttView ViewType => GanttView.Year;
 }

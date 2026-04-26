@@ -6,6 +6,9 @@ namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 /// </summary>
 public class GanttMonthView : GanttViewBase
 {
+    /// <summary>Initializes the view with a default slot width of 100 pixels per week.</summary>
     public GanttMonthView() { SlotWidth = 100; }
+
+    /// <inheritdoc />
     public override GanttView ViewType => GanttView.Month;
 }

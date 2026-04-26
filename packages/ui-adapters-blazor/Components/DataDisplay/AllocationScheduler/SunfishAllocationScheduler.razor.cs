@@ -9,6 +9,19 @@ using Microsoft.JSInterop;
 
 namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
+/// <summary>
+/// Resource-vs-time allocation grid: rows are resources of type <typeparamref name="TResource"/>,
+/// columns are time buckets at the configured <see cref="TimeGranularity"/>, and each cell shows
+/// the allocation (hours, percentage, etc.) for that resource within that bucket.
+/// </summary>
+/// <remarks>
+/// Supports keyboard-first cell navigation, range selection, drag-to-fill, splitter-resizable
+/// resource pane, and column-derived layout. The component is built with JS interop
+/// (<c>AllocationSchedulerInterop</c>) for high-performance pointer/keyboard handling, so the
+/// component is <see cref="IAsyncDisposable"/> and consumers must dispose it via the standard
+/// Blazor lifecycle.
+/// </remarks>
+/// <typeparam name="TResource">The resource model type (people, equipment, rooms, etc.).</typeparam>
 public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBase, IAsyncDisposable
 {
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
@@ -350,6 +363,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when the user completes a drag-fill gesture from the
+    /// fill handle on a selected cell. Applies the source cell's value to all targets and
+    /// raises both <c>OnRangeEdited</c> (batched) and <c>OnCellEdited</c> (per cell).
+    /// </summary>
+    /// <param name="payloadJson">Serialized <c>DragFillPayloadDto</c> describing the source cell and target cells.</param>
     [JSInvokable]
     public async Task OnDragFillCompleted(string payloadJson)
     {
@@ -403,6 +422,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         }
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when keyboard navigation moves focus to a cell.
+    /// Updates the active cell and (if selection is enabled) replaces the current selection
+    /// with the focused cell, then raises <c>OnSelectionChanged</c>.
+    /// </summary>
+    /// <param name="cellKeyJson">Serialized <c>CellKeyDto</c> identifying the focused cell.</param>
     [JSInvokable]
     public async Task OnCellFocused(string cellKeyJson)
     {
@@ -427,6 +452,10 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when the user presses Escape. Exits edit mode and
+    /// closes any open context menu.
+    /// </summary>
     [JSInvokable]
     public Task OnEscapePressed()
     {
@@ -436,6 +465,11 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when the user presses Delete on a cell. Clears the
+    /// cell's value (subject to editable / disabled checks) and raises the standard edit events.
+    /// </summary>
+    /// <param name="cellKeyJson">Serialized <c>CellKeyDto</c> identifying the cell to clear.</param>
     [JSInvokable]
     public async Task OnDeletePressed(string cellKeyJson)
     {
@@ -582,6 +616,11 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
 
     // ── Public Methods (via @ref) ───────────────────────────────────────
 
+    /// <summary>
+    /// Rebuilds the visible buckets and header groups from the current parameters, showing
+    /// the loading spinner while the recomputation runs. Call after mutating the data
+    /// source out-of-band.
+    /// </summary>
     public async Task Rebind()
     {
         _isLoading = true;
@@ -595,11 +634,19 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Forces a re-render without recomputing visible buckets. Cheaper than <see cref="Rebind"/>.
+    /// </summary>
     public async Task Refresh()
     {
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Navigates the timeline so the given date becomes the first visible bucket. Raises
+    /// <c>VisibleStartChanged</c> and <c>OnVisibleRangeChanged</c>.
+    /// </summary>
+    /// <param name="date">The date that should become the new <see cref="VisibleStart"/>.</param>
     public async Task NavigateTo(DateTime date)
     {
         VisibleStart = date;
@@ -615,7 +662,10 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>Advances the timeline by one bucket at the current view grain.</summary>
     public Task NavigateForward() => NavigateTo(AdvanceDate(VisibleStart, _currentViewGrain, 1));
+
+    /// <summary>Steps the timeline back by one bucket at the current view grain.</summary>
     public Task NavigateBack() => NavigateTo(AdvanceDate(VisibleStart, _currentViewGrain, -1));
 
     private Task HandleJumpToDate() => NavigateTo(_jumpToDate);
@@ -631,6 +681,7 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         return NavigateTo(target);
     }
 
+    /// <summary>Returns a snapshot of the currently selected cells as <see cref="AllocationCellRef"/> values.</summary>
     public IReadOnlyList<AllocationCellRef> GetSelectedCells() =>
         _selectedCells.Select(c => new AllocationCellRef
         {
@@ -638,6 +689,7 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
             BucketStart = c.BucketStart
         }).ToList();
 
+    /// <summary>Clears the cell selection and raises <c>OnSelectionChanged</c> with an empty selection.</summary>
     public async Task ClearSelection()
     {
         _selectedCells.Clear();
@@ -739,6 +791,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
 
     // ── Splitter Public Methods ──────────────────────────────────────────
 
+    /// <summary>
+    /// Sets the splitter position by distributing the requested left-pane width across the
+    /// resizable resource columns. Honors per-column min/max constraints. Raises
+    /// <c>SplitterPositionChanged</c>.
+    /// </summary>
+    /// <param name="widthPx">Desired left-pane width in pixels (clamped to the sum of column min widths).</param>
     public async Task SetSplitterPosition(double widthPx)
     {
         var minLeft = MinLeftPaneWidth;
@@ -753,6 +811,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Collapses the splitter to one side, hiding the resource pane (Left) or the timeline pane (Right).
+    /// Remembers the prior position so <see cref="RestoreSplitter"/> can put it back.
+    /// </summary>
+    /// <param name="side">Which side to collapse.</param>
+    /// <exception cref="InvalidOperationException">Thrown when <c>AllowSplitterCollapse</c> is false.</exception>
     public async Task CollapseSplitter(SplitterSide side)
     {
         if (!AllowSplitterCollapse)
@@ -764,6 +828,10 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// Restores the splitter to its last non-collapsed position. No-op if the splitter is
+    /// not currently collapsed.
+    /// </summary>
     public async Task RestoreSplitter()
     {
         if (_collapsedSide is null) return;
@@ -781,6 +849,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
 
     // ── Splitter JS Interop Callbacks ──────────────────────────────────
 
+    /// <summary>
+    /// JS interop entry point: invoked when the splitter drag ends. If collapse is allowed
+    /// and the user dragged below half the minimum, the splitter snaps closed; otherwise
+    /// the delta is applied to the rightmost resizable column.
+    /// </summary>
+    /// <param name="newLeftWidth">Final left-pane width in pixels reported by JS.</param>
     [JSInvokable]
     public async Task OnSplitterDragEnd(double newLeftWidth)
     {
@@ -811,6 +885,11 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when the user requests collapse of the right pane
+    /// (typically via a chevron affordance). Remembers the prior position and raises
+    /// <c>OnSplitterCollapsed</c> with <see cref="SplitterSide.Right"/>.
+    /// </summary>
     [JSInvokable]
     public async Task OnSplitterCollapseRight()
     {
@@ -821,6 +900,12 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked continuously during a splitter drag. Applies the
+    /// delta to the rightmost resizable column for live preview without firing the
+    /// commit-time events.
+    /// </summary>
+    /// <param name="newLeftWidth">Current left-pane width in pixels reported by JS.</param>
     [JSInvokable]
     public Task OnSplitterDragMove(double newLeftWidth)
     {
@@ -1692,6 +1777,10 @@ public partial class SunfishAllocationScheduler<TResource> : SunfishComponentBas
 
     // ── IAsyncDisposable ────────────────────────────────────────────────
 
+    /// <summary>
+    /// Releases the JS interop module and tears down pane observers / event listeners.
+    /// Safe to call repeatedly.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         if (_jsModule is not null)

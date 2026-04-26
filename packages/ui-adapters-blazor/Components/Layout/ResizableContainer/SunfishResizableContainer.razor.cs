@@ -234,6 +234,13 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
 
     // ── JSInvokable Callbacks ──────────────────────────────────────────
 
+    /// <summary>
+    /// JS interop entry point: invoked when a resize drag begins on a handle. Marks the
+    /// container as dragging and forwards a <see cref="SunfishResizeEventArgs"/> to <c>OnResizeStart</c>.
+    /// </summary>
+    /// <param name="widthPx">Current width in pixels at drag start.</param>
+    /// <param name="heightPx">Current height in pixels at drag start.</param>
+    /// <param name="activeEdge">The active edge / corner being dragged, encoded as a <see cref="ResizeEdges"/> value.</param>
     [JSInvokable]
     public async Task OnResizeStartFromJs(double widthPx, double heightPx, int activeEdge)
     {
@@ -243,6 +250,13 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked continuously during a resize drag. Updates the
+    /// ghost outline (when enabled) or the live width/height, then raises <c>OnResizing</c>.
+    /// </summary>
+    /// <param name="widthPx">Current width in pixels.</param>
+    /// <param name="heightPx">Current height in pixels.</param>
+    /// <param name="activeEdge">The active edge / corner being dragged, encoded as a <see cref="ResizeEdges"/> value.</param>
     [JSInvokable]
     public async Task OnResizingFromJs(double widthPx, double heightPx, int activeEdge)
     {
@@ -262,6 +276,13 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when a resize drag ends. Commits the final size,
+    /// raises <c>OnResizeEnd</c>, and fires <c>WidthChanged</c> / <c>HeightChanged</c>.
+    /// </summary>
+    /// <param name="widthPx">Final width in pixels.</param>
+    /// <param name="heightPx">Final height in pixels.</param>
+    /// <param name="activeEdge">The active edge / corner that was being dragged, encoded as a <see cref="ResizeEdges"/> value.</param>
     [JSInvokable]
     public async Task OnResizeEndFromJs(double widthPx, double heightPx, int activeEdge)
     {
@@ -276,6 +297,12 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked by the JS <c>ResizeObserver</c> when the container's
+    /// rendered size changes for any reason (drag, parent layout, CSS). Raises <c>OnObservedSizeChanged</c>.
+    /// </summary>
+    /// <param name="widthPx">Observed width in pixels.</param>
+    /// <param name="heightPx">Observed height in pixels.</param>
     [JSInvokable]
     public async Task OnObservedSizeChangedFromJs(double widthPx, double heightPx)
     {
@@ -289,6 +316,12 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
         await OnObservedSizeChanged.InvokeAsync(args);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when persisted size (for example, from local storage)
+    /// is restored to the container. Updates the bound width/height and notifies bindings.
+    /// </summary>
+    /// <param name="widthPx">Restored width in pixels.</param>
+    /// <param name="heightPx">Restored height in pixels.</param>
     [JSInvokable]
     public async Task OnPersistedSizeRestoredFromJs(double widthPx, double heightPx)
     {
@@ -348,6 +381,10 @@ public partial class SunfishResizableContainer : SunfishComponentBase, IAsyncDis
 
     // ── Disposal ────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Releases the JS interop module and tears down the resize observer / drag handlers.
+    /// Tolerates a disconnected circuit. Safe to call repeatedly.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         if (_jsModule != null)
