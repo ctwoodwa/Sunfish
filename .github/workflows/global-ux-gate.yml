@@ -335,9 +335,13 @@ jobs:
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
   # per gate-job; one suffices.
+  # NOTE: cross-plan-health is intentionally absent from needs[] because it
+  # skips on PR events (push+schedule only; see PR #108). A SKIPPED parent
+  # propagates SKIPPED to the aggregator, which then doesn't satisfy
+  # required-check semantics. Same pattern PR #106 used for a11y-audit.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health, resx-xss-scan]
+    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, resx-xss-scan]
     steps:
       - run: echo "All Global-UX gate jobs passed."
