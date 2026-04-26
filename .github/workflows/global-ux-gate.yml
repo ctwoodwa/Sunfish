@@ -13,6 +13,19 @@
 name: Global-UX Gate
 
 on:
+  # GitHub Actions REJECTS workflows that combine `paths:` and `paths-ignore:` on
+  # the SAME trigger — they're mutually exclusive in the workflow schema (per
+  # https://docs.github.com/actions/using-workflows/workflow-syntax-for-github-actions).
+  # Combining them caused this workflow to silently fail-to-load on every push to
+  # main after PR #116 (run name displayed as the file path, 0 jobs created,
+  # check-suite reported "failure" with no annotations). The validation error is
+  # global to the file, so the `push:` trigger broke even though only `pull_request:`
+  # had the conflict. Resolution: keep `paths:` (the positive allow-list already
+  # excludes docs/wolf/icm/etc. by omission). Docs-only PRs touching only
+  # docs/**, _shared/**, waves/**, icm/**, .wolf/** won't match these patterns
+  # and won't trigger the gate. The mixed-PR optimisation `paths-ignore` was
+  # supposed to provide (PRs touching both packages/** and **/*.md) is lost,
+  # but those PRs are rare and the workload-restore-time outweighs the savings.
   pull_request:
     paths:
       - "packages/ui-core/**"
@@ -28,21 +41,6 @@ on:
       - "tooling/Sunfish.Tooling.A11yStoriesCheck/**"
       - "i18n/**"
       - ".github/workflows/global-ux-gate.yml"
-    # Skip the heavy gate (analyzers ~12min Windows + a11y-storybook + xliff +
-    # cldr-plural + Plan 2 + RESX scan) on docs-only PRs. paths + paths-ignore
-    # combine: a file must match paths AND not match paths-ignore. Changes to
-    # this workflow file itself remain in `paths:` above so it still re-tests
-    # itself when edited.
-    paths-ignore:
-      - "**/*.md"
-      - ".wolf/**"
-      - "docs/**"
-      - "waves/**"
-      - "icm/**"
-      - "_shared/**"
-      - ".github/CODEOWNERS"
-      - ".gitignore"
-      - "LICENSE*"
   push:
     branches: [main]
 
