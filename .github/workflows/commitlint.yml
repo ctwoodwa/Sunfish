@@ -4,6 +4,14 @@ on:
   pull_request:
     branches: [main]
 
+# Public-repo hardening: commitlint reads PR commits to lint subject/body.
+# `contents: read` for the checkout; `pull-requests: read` so the action
+# can fetch the PR commit list via the GitHub API (per wagoid/commitlint-
+# github-action README). No write surface needed.
+permissions:
+  contents: read
+  pull-requests: read
+
 jobs:
   commitlint:
     name: Lint PR commits
