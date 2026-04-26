@@ -210,11 +210,14 @@ public class FleaseLeaseCoordinatorTests : IAsyncLifetime
         // ReleaseAsync returns as soon as SendAsync completes, but each
         // peer responder has its own task that must drain the channel
         // and apply HandleLeaseRelease. Retry the follow-up Acquire for
-        // a short window — the "unblocks peers" claim is satisfied as
-        // long as node 1 eventually succeeds within a bounded wait.
+        // a bounded window — the "unblocks peers" claim is satisfied as
+        // long as node 1 eventually succeeds. Budget bumped from 3s to
+        // 10s to absorb shared-runner jitter on CI; the test fails
+        // legitimately if peers never drain (real production race),
+        // not because of a tight retry window.
         Lease? leaseB = null;
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        while (leaseB is null && sw.Elapsed < TimeSpan.FromSeconds(3))
+        while (leaseB is null && sw.Elapsed < TimeSpan.FromSeconds(10))
         {
             leaseB = await nodes[1].Coordinator.AcquireAsync(
                 "order:r", TimeSpan.FromSeconds(30), CancellationToken.None);
