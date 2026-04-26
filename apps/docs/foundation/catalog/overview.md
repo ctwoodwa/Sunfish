@@ -33,7 +33,7 @@ Bundles describe capabilities a customer can turn on without rebuilding or redep
 - Bundle authoring happens in JSON manifests, reviewed like code — no runtime mutations.
 - External tooling (documentation site, CLI, admin UIs) reads the catalog to generate accurate views.
 
-See [ADR 0007](xref:adr-0007-bundle-manifest-schema) for the historical rationale and schema versioning policy.
+See [ADR 0007](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0007-bundle-manifest-schema.md) for the historical rationale and schema versioning policy.
 
 ## Key bundle types
 
@@ -94,6 +94,6 @@ Sibling DI extensions (`ExtensionFieldCatalogExtensions.AddSunfishExtensionField
 - [Bundle Manifests](bundle-manifests.md)
 - [Feature Management — Entitlement Resolver](../feature-management/entitlement-resolver.md)
 - [Integrations — Provider Registry](../integrations/registry.md)
-- [ADR 0007 — Bundle Manifest Schema](xref:adr-0007-bundle-manifest-schema)
+- [ADR 0007 — Bundle Manifest Schema](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0007-bundle-manifest-schema.md)
 </content>
 </invoke>

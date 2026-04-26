@@ -21,7 +21,7 @@ The package source lives at `packages/foundation-multitenancy/`.
 
 ## Why it is a separate package
 
-[ADR 0008](xref:adr-0008-foundation-multitenancy) introduced this package to fix a concrete problem: the older `Sunfish.Foundation.Authorization.ITenantContext` bundled three concerns (current tenant, caller identity, permission checks) into one interface. Any module that wanted "which tenant am I operating on?" ended up importing caller identity and authorization as well. Splitting tenancy out gives modules a focused dependency that reflects the single concept they care about.
+[ADR 0008](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0008-foundation-multitenancy.md) introduced this package to fix a concrete problem: the older `Sunfish.Foundation.Authorization.ITenantContext` bundled three concerns (current tenant, caller identity, permission checks) into one interface. Any module that wanted "which tenant am I operating on?" ended up importing caller identity and authorization as well. Splitting tenancy out gives modules a focused dependency that reflects the single concept they care about.
 
 A second goal was to establish a **Finbuckle boundary**. Bridge, the SaaS-shell accelerator, is free to adopt `Finbuckle.MultiTenant` inside its ASP.NET Core host for request-pipeline tenant resolution. It does that by exposing a Sunfish `ITenantResolver` adapter on top of Finbuckle's `IMultiTenantContext`. No Sunfish module package ever references Finbuckle directly. Self-hosted deployments, lite-mode apps, and test harnesses plug in their own resolver implementations without pulling Finbuckle in.
 
@@ -93,6 +93,6 @@ A lite-mode or single-tenant desktop app collapses the three into one: a `FixedT
 
 - [Tenant Context](tenant-context.md)
 - [Tenant-Scoped Markers](tenant-scoped-markers.md)
-- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](xref:adr-0008-foundation-multitenancy)
+- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0008-foundation-multitenancy.md)
 </content>
 </invoke>

@@ -101,4 +101,4 @@ If your module truly needs tenant **and** caller identity **and** authorization 
 
 - [Overview](overview.md)
 - [Tenant-Scoped Markers](tenant-scoped-markers.md)
-- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](xref:adr-0008-foundation-multitenancy)
+- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0008-foundation-multitenancy.md)

@@ -106,6 +106,6 @@ services.AddSunfishFeatureManagement();
 - [Feature Evaluator](feature-evaluator.md)
 - [Entitlement Resolver](entitlement-resolver.md)
 - [Catalog — Bundle Manifests](../catalog/bundle-manifests.md)
-- [ADR 0009 — Foundation.FeatureManagement](xref:adr-0009-foundation-featuremanagement)
+- [ADR 0009 — Foundation.FeatureManagement](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0009-foundation-featuremanagement.md)
 </content>
 </invoke>
