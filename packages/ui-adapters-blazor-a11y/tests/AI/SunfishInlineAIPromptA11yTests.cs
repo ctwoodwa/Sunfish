@@ -31,10 +31,7 @@ public class SunfishInlineAIPromptA11yTests : IClassFixture<SunfishInlineAIPromp
         await AssertNoModerateAxeViolationsAsync(rendered.Markup, "shown-with-text");
     }
 
-    [Fact(Skip = "axe violation: target-size — SunfishInlineAIPrompt suggestion chips render " +
-        "below WCAG 2.2 24×24 minimum target size with default styling. Real component bug; " +
-        "out of scope per cluster-B brief (do not fix components). Re-enable once the chip " +
-        "stylesheet enforces a minimum hit target.")]
+    [Fact]
     public async Task ShownWithSuggestionsToolbarHasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishInlineAIPrompt>(p => p
