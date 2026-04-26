@@ -164,21 +164,36 @@ their canonical container contexts.
 
 ## Bugs discovered during work (to log if not already)
 
+> **CORRECTION (added by dedup investigation 2026-04-26):** the four "two-locations"
+> findings below were initially flagged as architectural debt. Closer inspection
+> (subagent `aa304586d15820a26`) found these are **intentional rich-vs-MVP
+> parallel implementations under different namespaces, documented as "by design"
+> per ADR 0022 Tier 3 scheduling family**. Each pair has explicit XML doc
+> comments naming the sibling and active callers under both namespaces. They
+> should NOT be deduped without an `api-change` ICM pipeline. The original
+> bullets are preserved below for traceability.
+
 - **`SunfishGantt` exists in two locations** (`DataDisplay/Gantt/` and
   `Scheduling/`). Only the Scheduling variant declares `role="grid"`; the
-  DataDisplay variant does not. The architecture-cleanup follow-up should
-  consolidate these.
+  DataDisplay variant does not. ~~The architecture-cleanup follow-up should
+  consolidate these.~~ **(Correction: documented intentional siblings — see
+  `Scheduling/SunfishGantt.razor.cs:23-27` doc comment.)**
 - **`SunfishScheduler` exists in two locations** (`DataDisplay/Scheduler/`
   and `Scheduling/`). Only the Scheduling variant was touched (the one the
-  brief described as having the violations).
+  brief described as having the violations). **(Correction: same intentional
+  rich-vs-MVP pattern as Gantt.)**
 - **`SunfishSpreadsheet` exists in two locations** (`DataDisplay/Spreadsheet/`
   and `Editors/`). Only the Editors variant has the `__scroll` element
-  matching the bug description.
+  matching the bug description. **(Correction: rich typed-cells surface vs
+  simple row/column surface — different APIs, both have callers.)**
 - **`SunfishPdfViewer` exists in two locations** (`DataDisplay/` and `Media/`).
-  Both had the same color-contrast issue and both were fixed.
+  Both had the same color-contrast issue and both were fixed. **(Correction:
+  `DataDisplay/` exposes `Url`/`Page`/`Zoom` two-way binding; `Media/` is
+  the canonical MVP surface with `Source`/`ToolbarMode` enum. Both have
+  active kitchen-sink demos.)**
 
-These component duplications are pre-existing technical debt, not regressions
-from this batch.
+~~These component duplications are pre-existing technical debt, not regressions
+from this batch.~~ **(Correction: not duplications — see header note above.)**
 
 ---
 
