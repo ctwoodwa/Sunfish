@@ -163,13 +163,13 @@ jobs:
       - name: Restore
         run: dotnet restore Sunfish.slnx
       - name: Build (SUNFISH_* warnings as errors only)
-        # Use bash shell on Windows runner so semicolons in WarningsAsErrors
-        # don't get mangled by PowerShell's command-separator parsing
-        # (the default `pwsh -command ". '{0}'"` shell-wrapping breaks
-        # nested single-quoted args containing ;). Bash treats single
-        # quotes literally and passes the whole MSBuild prop unchanged.
+        # Escape semicolons as %3B so MSBuild decodes them inside the property
+        # value. Without this, both PowerShell (command-separator) and Git Bash
+        # on Windows (MSYS2 PATH-conversion layer) split the semicolon-laden
+        # arg before MSBuild sees it, causing MSB1006 "Switch: SUNFISH_I18N_002".
+        # %3B → ; happens inside MSBuild's property parser, after argv split.
         shell: bash
-        run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
+        run: dotnet build Sunfish.slnx --configuration Release --no-restore -p:WarningsAsErrors=SUNFISH_I18N_001%3BSUNFISH_I18N_002%3BSUNFISH_A11Y_001
 
   # Plan 5 Task 1 — XLIFF round-trip gate.
   # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
@@ -290,7 +290,7 @@ jobs:
       - run: node tooling/cross-plan-health/check.mjs waves/global-ux/status.md
 
 
-  # Plan 5 Task 6 � RESX <comment> XSS scanner gate.
+  # Plan 5 Task 6 � RESX <comment> XSS scanner gate.
   resx-xss-scan:
     name: RESX XSS scanner
     runs-on: ubuntu-latest
