@@ -6,7 +6,15 @@
       "version": "2.78.5",
       "commands": [
         "docfx"
-      ]
+      ],
+      "rollForward": false
+    },
+    "husky": {
+      "version": "0.9.1",
+      "commands": [
+        "husky"
+      ],
+      "rollForward": false
     }
   }
 }
