@@ -35,11 +35,27 @@ jobs:
       - name: Restore tools
         run: dotnet tool restore
 
-      - name: Restore packages
-        run: dotnet restore Sunfish.slnx
+      # Restore/build ONLY the three packages docfx consumes (foundation, ui-core,
+      # ui-adapters-blazor — see apps/docs/docfx.json `metadata.src.files`). A
+      # solution-wide `dotnet restore Sunfish.slnx` pulls in accelerators/anchor,
+      # which conditionally targets net11.0-maccatalyst on non-Windows and triggers
+      # NETSDK1147 on Linux runners (the `macos` + `maui-tizen` workloads can't be
+      # installed off macOS). The three docfx packages are pure net11.0 and restore
+      # cleanly on ubuntu-latest. The csproj-level `<ProjectReference>`s still pull
+      # in transitive deps (foundation→none, ui-core→foundation, ui-adapters-blazor
+      # →ui-core+foundation), so docfx gets the full dependency graph it needs to
+      # resolve XML doc comment links.
+      - name: Restore packages (docfx-only)
+        run: |
+          dotnet restore packages/foundation/Sunfish.Foundation.csproj
+          dotnet restore packages/ui-core/Sunfish.UICore.csproj
+          dotnet restore packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj
 
-      - name: Build solution (to emit DLLs + XML doc comments for metadata)
-        run: dotnet build Sunfish.slnx --configuration Debug --no-restore
+      - name: Build packages (to emit DLLs + XML doc comments for metadata)
+        run: |
+          dotnet build packages/foundation/Sunfish.Foundation.csproj --configuration Debug --no-restore
+          dotnet build packages/ui-core/Sunfish.UICore.csproj --configuration Debug --no-restore
+          dotnet build packages/ui-adapters-blazor/Sunfish.UIAdapters.Blazor.csproj --configuration Debug --no-restore
 
       - name: Build docs
         run: dotnet docfx apps/docs/docfx.json --warningsAsErrors
