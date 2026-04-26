@@ -15,7 +15,7 @@ keywords:
 
 > **Status: Aspirational.** No Sunfish implementation yet. This page documents the
 > target capability and links to the Telerik parity reference. See
-> [ADR 0021](xref:adr-0021-reporting-pipeline-policy) for the reporting pipeline policy.
+> [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) for the reporting pipeline policy.
 
 ## Overview
 
@@ -73,7 +73,7 @@ many rows are written.
 
 ## Sunfish plans
 
-No Sunfish equivalent exists today. [ADR 0021](xref:adr-0021-reporting-pipeline-policy)
+No Sunfish equivalent exists today. [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md)
 has not yet defined a streaming XLSX contract; the default `IXlsxExportWriter`
 adapter is in-memory. Deployers with 50k+ row exports today are expected to
 either adopt `Sunfish.Reporting.Telerik`, which wraps Telerik's streaming writer,
