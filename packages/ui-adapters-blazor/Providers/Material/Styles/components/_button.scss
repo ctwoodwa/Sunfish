@@ -109,6 +109,33 @@
 }
 
 // ----------------------------------------------------------------------------
+// Icon slot — SunfishButton/SunfishToggleButton/SunfishSplitButton emit
+// `<span class="sf-button__icon">` when an Icon parameter is set.
+//
+// SYNTHESIS Theme 1 (Phase 3) — prior to Phase 3 the Material skin had no
+// rule targeting `.sf-button__icon`, so any icon child was laid out with
+// inline display defaults. M3 leading-icon spec is 18×18 with 8dp gap to
+// the label. The base button already sets `gap: var(--sf-space-sm)` (8dp)
+// so we only need to size the slot itself and align its contents.
+// ----------------------------------------------------------------------------
+
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  // Children — icon fonts (<i>) and inline SVG / IMG — should fill the slot.
+  > svg,
+  > img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+// ----------------------------------------------------------------------------
 // Tonal Button — secondary emphasis using secondary container colors
 // ----------------------------------------------------------------------------
 

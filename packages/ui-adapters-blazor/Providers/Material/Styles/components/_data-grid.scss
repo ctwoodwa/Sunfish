@@ -312,7 +312,10 @@
     gap: 0.5rem;
 }
 
-.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+// SYNTHESIS Theme 1 (Phase 3) — accept both BEM-double-underscore (provider-
+// emitted) and legacy single-hyphen forms inside the filter-menu actions.
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn,
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid__cmd-btn {
     border: 1px solid var(--sf-color-border);
     border-radius: 6px;
     padding: 0.35rem 0.75rem;
@@ -639,7 +642,16 @@ th.sf-datagrid__col--locked {
 // SYNTHESIS Theme 4 — state layer on the Material command button (surface 6).
 // Replaces the flat surface-container-high hover swap with an M3 currentColor
 // overlay driven by the shared opacity tokens.
-.sf-datagrid-cmd-btn {
+//
+// SYNTHESIS Theme 1 (Phase 3) — `MaterialCssProvider.DataGridCommandButtonClass()`
+// returns the canonical BEM `sf-datagrid__cmd-btn`; the legacy
+// `sf-datagrid-cmd-btn` (single-hyphen) remained as the only styled
+// selector. Until the bundle re-compile catches up to the SCSS source,
+// alias both selector forms so the provider-emitted class is no longer
+// dead-CSS while existing consumers using the single-hyphen form keep
+// working.
+.sf-datagrid-cmd-btn,
+.sf-datagrid__cmd-btn {
     position: relative;
     display: inline-flex;
     align-items: center;

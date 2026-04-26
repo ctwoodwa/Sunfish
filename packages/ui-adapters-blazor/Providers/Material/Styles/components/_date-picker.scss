@@ -319,8 +319,19 @@ span.sf-calendar__title {
   color: var(--sf-color-on-primary);
 }
 
-// Range edges (start / end) — primary fill, match selected semantics
-.sf-calendar__cell--range-edge {
+// Range edges (start / end) — primary fill, match selected semantics.
+// SYNTHESIS Theme 1 (Phase 3) — Razor also emits the explicit
+// `--range-start` and `--range-end` modifiers when the start/end of a
+// range is the currently-rendered cell. Prior to Phase 3 the Material
+// skin only styled `--range-edge`, leaving the explicit start/end
+// classes as dead-CSS hooks. Both new selectors share the same
+// primary-fill treatment so the appearance is unchanged; the explicit
+// modifiers gain rules so an external consumer that targets
+// `.sf-calendar__cell--range-start` (e.g. for an asymmetric corner
+// radius) has something to override against.
+.sf-calendar__cell--range-edge,
+.sf-calendar__cell--range-start,
+.sf-calendar__cell--range-end {
   background-color: var(--sf-color-primary);
   color: var(--sf-color-on-primary);
 }

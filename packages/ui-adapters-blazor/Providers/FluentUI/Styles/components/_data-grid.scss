@@ -225,12 +225,47 @@
     gap: 0.5rem;
 }
 
-.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+// SYNTHESIS Theme 1 (Phase 3) — `FluentUICssProvider.DataGridCommandButtonClass()`
+// returns the BEM `sf-datagrid__cmd-btn` (the comment in the provider is
+// stale). Until the bundle is re-compiled, alias both selector forms so the
+// provider-emitted class is no longer dead-CSS while existing single-hyphen
+// consumers continue to render. A rule body is also added at top level
+// (below) so command buttons used outside the filter-menu actions get a
+// minimum hover/focus affordance.
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn,
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid__cmd-btn {
     border: 1px solid var(--sf-color-border, #c8c6c4);
     border-radius: 6px;
     padding: 0.35rem 0.75rem;
     background: var(--sf-color-surface);
     cursor: pointer;
+}
+
+.sf-datagrid-cmd-btn,
+.sf-datagrid__cmd-btn {
+    // Fluent v9 `subtle` button surface — neutral chrome that lifts on hover.
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--borderRadiusMedium, 4px);
+    background: transparent;
+    color: var(--colorNeutralForeground1, var(--sf-color-text));
+    font-size: var(--fontSizeBase200, 12px);
+    cursor: pointer;
+    transition: background-color var(--sf-transition-fast, 100ms);
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, var(--sf-color-surface));
+    }
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, var(--sf-color-surface));
+    }
+    &:focus-visible {
+        outline: 2px solid var(--colorStrokeFocus2, var(--sf-color-primary));
+        outline-offset: 1px;
+    }
 }
 
 // =============================================================================
