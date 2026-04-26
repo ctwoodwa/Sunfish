@@ -7,7 +7,7 @@
      aria-valuenow="@(Indeterminate ? null : Value)"
      aria-valuemin="0"
      aria-valuemax="@Max"
-     aria-label="@Label"
+     aria-label="@(string.IsNullOrEmpty(Label) ? "Progress" : Label)"
      @attributes="AdditionalAttributes">
     @if (!string.IsNullOrEmpty(Label))
     {
@@ -41,7 +41,11 @@
     /// <summary>Whether the progress bar is enabled.</summary>
     [Parameter] public bool Enabled { get; set; } = true;
 
-    /// <summary>An optional label describing the progress.</summary>
+    /// <summary>
+    /// An optional label describing the progress. When unset, the <c>aria-label</c> defaults to
+    /// "Progress" so the <c>role="progressbar"</c> always has an accessible name (axe
+    /// <c>aria-progressbar-name</c>).
+    /// </summary>
     [Parameter] public string? Label { get; set; }
 
     private double Percentage => Max > 0 ? Math.Clamp(Value / Max * 100, 0, 100) : 0;

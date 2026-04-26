@@ -5,4 +5,4 @@
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-SUNFISH_I18N_002 | Localization | Warning | Unused localized resource (no .cs/.razor reference in same package), UnusedResourceAnalyzer
+SUNFISH_I18N_002 | Localization | Error | Unused localized resource (no .cs/.razor reference in same package), UnusedResourceAnalyzer

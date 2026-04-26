@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Anchor SharedResource — Hindi (India) satellite. LTR locale, Devanagari script.
+       Mission-aligned tier-1 per local-node architecture paper §20.7 (India primary deployment market). -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="onboarding.welcome.title" xml:space="preserve">
+    <value>Sunfish Anchor में आपका स्वागत है</value>
+    <comment>Translator: Heading on first-run onboarding page; appears as h1.</comment>
+  </data>
+  <data name="onboarding.welcome.detail" xml:space="preserve">
+    <value>ऑफ़लाइन-फ़र्स्ट सहयोग शुरू करने के लिए अपना स्थानीय कार्यक्षेत्र सेट करें।</value>
+    <comment>Translator: Body text under welcome title; full sentence about offline-first workspace.</comment>
+  </data>
+  <data name="onboarding.join-team.title" xml:space="preserve">
+    <value>टीम में शामिल हों</value>
+    <comment>Translator: Title on QR-onboarding page; imperative phrasing pairs with "Scan QR code" CTA.</comment>
+  </data>
+  <data name="onboarding.join-team.detail" xml:space="preserve">
+    <value>अपना कार्यक्षेत्र साझा करने के लिए किसी अन्य टीम सदस्य द्वारा दिखाए गए QR कोड को स्कैन करें।</value>
+    <comment>Translator: Body text on join-team page; describes QR-pairing flow per ADR 0032.</comment>
+  </data>
+  <data name="errors.network-unavailable" xml:space="preserve">
+    <value>ऑफ़लाइन कार्य कर रहे हैं</value>
+    <comment>Translator: Status — working offline. Neutral tone (offline is normal in Anchor).</comment>
+  </data>
+  <data name="errors.network-unavailable.detail" xml:space="preserve">
+    <value>आपके परिवर्तन स्थानीय रूप से सहेजे जाते हैं और जब सहकर्मी पहुँच योग्य होंगे तब समन्वयित होंगे।</value>
+    <comment>Translator: Body text under offline status; reassures changes are saved locally.</comment>
+  </data>
+  <data name="errors.team-not-found" xml:space="preserve">
+    <value>टीम नहीं मिली</value>
+    <comment>Translator: Error shown when switching to a team that no longer exists in local registry.</comment>
+  </data>
+  <data name="errors.team-not-found.detail" xml:space="preserve">
+    <value>यह टीम अब इस डिवाइस पर उपलब्ध नहीं है। यदि आवश्यक हो तो QR कोड के माध्यम से पुनः शामिल हों।</value>
+    <comment>Translator: Body text on team-not-found; suggests recovery via re-join QR.</comment>
+  </data>
+</root>

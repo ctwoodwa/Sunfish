@@ -77,6 +77,18 @@ public sealed class FleaseLeaseCoordinator : ILeaseCoordinator
     // *proposer* side to coalesce duplicate proposals from the same node.
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _acquireLocks = new(StringComparer.Ordinal);
 
+    // Per-lease set of every peer endpoint we *sent* a LEASE_REQUEST to
+    // during the acquire round. This is a strict superset of
+    // <see cref="Lease.QuorumParticipants"/>: when AcquireInternalAsync
+    // short-circuits at quorum, peers that responded after the cutoff (or
+    // had their request cancelled mid-flight) may still have cached our
+    // grant in their conflict caches, so the release broadcast must reach
+    // them too — otherwise their stale entry blocks every other node from
+    // re-acquiring the resource until the natural lease expiry. Keyed by
+    // lease id (not resource id) so concurrent re-acquires after release
+    // do not cross-contaminate.
+    private readonly ConcurrentDictionary<string, IReadOnlyList<string>> _proposalTargets = new(StringComparer.Ordinal);
+
     // Monotonic proposal counter. Used to tag our own LEASE_REQUESTs so
     // retries/out-of-order responses can be correlated. Not strictly
     // required for the happy-path Flease grant but cheap to carry and
@@ -291,6 +303,14 @@ public sealed class FleaseLeaseCoordinator : ILeaseCoordinator
                 QuorumParticipants: grantors);
             _heldLeases[resourceId] = lease;
             _conflictCache[resourceId] = new GrantRecord(leaseId, _localNodeId, lease.ExpiresAt);
+            // Remember every peer we asked, not just those whose grant
+            // contributed to quorum. ReleaseAsync uses this to clear
+            // stale conflict-cache entries on peers whose grant arrived
+            // after the quorum short-circuit (see _proposalTargets doc).
+            if (peers.Count > 0)
+            {
+                _proposalTargets[leaseId] = peers;
+            }
             _logger.LogInformation(
                 "Lease acquired: resource={Resource} leaseId={LeaseId} grantors={Grantors}",
                 resourceId, leaseId, grantors.Count);
@@ -327,16 +347,26 @@ public sealed class FleaseLeaseCoordinator : ILeaseCoordinator
 
         _conflictCache.TryRemove(lease.ResourceId, out _);
 
-        // Broadcast LEASE_RELEASE to every peer that participated in the
-        // grant. Failures here are best-effort — the lease will expire on
-        // its own, so a missed release only delays re-acquire by
-        // up-to-duration seconds.
+        // Broadcast LEASE_RELEASE to every peer we *asked* during the
+        // acquire round, not just those whose grant ended up in
+        // QuorumParticipants. AcquireInternalAsync short-circuits when
+        // quorum is reached, so a peer that granted slightly too late
+        // (or whose proposal task was cancelled mid-flight) still has
+        // our lease cached on its responder side and must see the
+        // release — otherwise no other node can re-acquire the resource
+        // until the natural expiry. See <see cref="_proposalTargets"/>.
         var releaseMessage = new LeaseReleaseMessage(
             LeaseId: DecodeLeaseIdHex(lease.LeaseId),
             ReleasedAt: (ulong)DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
 
-        var broadcastTasks = lease.QuorumParticipants
+        _proposalTargets.TryRemove(lease.LeaseId, out var fullProposalSet);
+        var broadcastTargets = (fullProposalSet ?? lease.QuorumParticipants)
+            .Concat(lease.QuorumParticipants)
             .Where(nodeId => !string.Equals(nodeId, _localNodeId, StringComparison.Ordinal))
+            .Distinct(StringComparer.Ordinal)
+            .ToList();
+
+        var broadcastTasks = broadcastTargets
             .Select(nodeId => BroadcastReleaseAsync(nodeId, releaseMessage, ct))
             .ToList();
         if (broadcastTasks.Count > 0)
@@ -418,6 +448,42 @@ public sealed class FleaseLeaseCoordinator : ILeaseCoordinator
         {
             conn = await _transport.ConnectAsync(peerEndpoint, ct).ConfigureAwait(false);
             await conn.SendAsync(message, ct).ConfigureAwait(false);
+
+            // Wait for the peer to *finish* applying HandleLeaseRelease
+            // before we return. The responder loop closes its half of the
+            // connection only after HandleLeaseRelease has cleared the
+            // entry from its conflict cache, so a follow-up ReceiveAsync
+            // here will throw (channel completed without items) exactly
+            // when the peer has drained the release. This is what makes
+            // ReleaseAsync a synchronous cluster-wide barrier rather than
+            // a fire-and-forget that races every subsequent acquire on
+            // the same resource.
+            //
+            // We bound the wait so a misbehaving or partitioned peer
+            // cannot stall the local release indefinitely; on timeout we
+            // fall through to dispose-and-log, matching the
+            // best-effort-release contract.
+            using var ackCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            ackCts.CancelAfter(_options.ReleaseAckTimeout);
+            try
+            {
+                _ = await conn.ReceiveAsync(ackCts.Token).ConfigureAwait(false);
+                // A real reply on the release channel is unexpected (the
+                // protocol has no LEASE_RELEASE_ACK frame) but harmless —
+                // log and treat as ack.
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                _logger.LogDebug(
+                    "Release ack from {Peer} timed out after {Timeout}.",
+                    peerEndpoint, _options.ReleaseAckTimeout);
+            }
+            catch
+            {
+                // Expected path: peer closed its half of the connection
+                // after applying HandleLeaseRelease. ReadAsync on a
+                // completed channel throws — that throw is the ack.
+            }
         }
         catch (Exception ex)
         {

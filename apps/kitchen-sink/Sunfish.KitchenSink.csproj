@@ -9,7 +9,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- Kitchen-sink is an app, not a library: disable XML-doc generation and its missing-comment warnings. -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — kitchen-sink's SharedResource
+         demo bundle is scaffolded ahead of consumer wiring. Remove once IStringLocalizer
+         references in the kitchen-sink pages land. -->
+    <NoWarn>$(NoWarn);CS1591;SUNFISH_I18N_002</NoWarn>
     <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj')">$(DefineConstants);BOOTSTRAP_PROVIDER</DefineConstants>
     <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj')">$(DefineConstants);MATERIAL_PROVIDER</DefineConstants>
     <DefineConstants Condition="Exists('..\..\packages\ui-adapters-blazor\Icons\Tabler\Sunfish.Icons.Tabler.csproj')">$(DefineConstants);TABLER_ICONS</DefineConstants>
