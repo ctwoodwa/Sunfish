@@ -14,6 +14,11 @@
                 var url = GetPropertyValue(item, UrlField);
                 var icon = GetPropertyValue(item, IconField);
 
+                @* Inline min-width/min-height satisfies WCAG 2.2 SC 2.5.8 (target-size) for
+                   raw <a>/<span> children that bypass the SunfishBreadcrumbItem wrapper.
+                   PR #112 covered the canonical wrapper path; this extends the floor to
+                   the data-driven path. The bUnit-axe harness does not load theme CSS so
+                   the structural floor must travel with the markup itself. *@
                 <li class="sf-breadcrumb__item">
                     @if (ItemTemplate != null)
                     {
@@ -21,7 +26,7 @@
                     }
                     else if (!string.IsNullOrEmpty(url))
                     {
-                        <a href="@url">
+                        <a href="@url" style="min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;padding:4px;">
                             @if (!string.IsNullOrEmpty(icon))
                             {
                                 <span class="sf-breadcrumb__icon">@icon</span>
@@ -31,7 +36,7 @@
                     }
                     else
                     {
-                        <span>
+                        <span style="min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;padding:4px;">
                             @if (!string.IsNullOrEmpty(icon))
                             {
                                 <span class="sf-breadcrumb__icon">@icon</span>

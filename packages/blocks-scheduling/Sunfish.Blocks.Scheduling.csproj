@@ -6,7 +6,9 @@
     <PackageTags>blazor;scheduling;calendar;blocks;domain;sunfish</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>CS1591</NoWarn>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — SharedResource scaffolded
+         ahead of consumer wiring. Remove once IStringLocalizer references land. -->
+    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

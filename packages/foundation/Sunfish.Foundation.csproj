@@ -6,7 +6,14 @@
     <!-- TODO: Remove project-level CS1591 suppression before stable release.
          Add per-file #pragma guards on files with genuinely undocumented members instead.
          Tracked as Phase 1 migration accommodation. -->
-    <NoWarn>CS1591</NoWarn>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression. Foundation's SharedResource
+         bundle defines 8 keys (severity.info/warning/error/critical, action.save/cancel/retry,
+         state.loading) across SharedResource.resx + SharedResource.ar-SA.resx that are not yet
+         consumed by any .cs / .razor in this package — they're scaffolded ahead of consumer
+         wiring (per commit 93c53ba2 "scaffold SharedResource bundle — proof of layered cascade").
+         Remove this suppression once consumers wire the keys via IStringLocalizer indexer or
+         GetString. Follow-up issue: wire foundation SharedResource consumers. -->
+    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" />

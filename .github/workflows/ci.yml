@@ -19,6 +19,13 @@ on:
   push:
     branches: [main]
 
+# Public-repo hardening: pure CI (build/test) needs only read access to checkout
+# the repo and upload-artifact (which uses the actions API, not GITHUB_TOKEN
+# scopes). No write needed anywhere — defense-in-depth against compromised
+# transitive dependencies in restored NuGet packages.
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build & Test

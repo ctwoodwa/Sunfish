@@ -37,6 +37,27 @@
   </ItemGroup>
 
   <!--
+    SUNFISH_I18N_002 — auto-wire the Sunfish.Analyzers.LocUnused analyzer onto every project
+    that follows the Resources/Localization/*.resx convention. Mirrors the LocComments wiring
+    above (same predicate, same OutputItemType="Analyzer", same ReferenceOutputAssembly="false").
+
+    Note: AdditionalFiles for *.resx is already declared by the LocComments ItemGroup above,
+    and Roslyn shares AdditionalFiles across all analyzers in the compilation, so we don't
+    re-declare it here (would cause duplicate-item warnings).
+
+    Severity is Error by default (per the analyzer's DiagnosticDescriptor — promoted in PR #124).
+    Repo-wide TreatWarningsAsErrors=true is therefore irrelevant for this rule; it fails the
+    build on any unused .resx <data> entry that has no localizer["Key"] / .GetString("Key") match
+    in the same package's compilation.
+  -->
+  <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)\Resources\Localization')
+                        And '$(MSBuildProjectName)' != 'Sunfish.Analyzers.LocUnused'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)packages\analyzers\loc-unused\Sunfish.Analyzers.LocUnused.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!--
     Plan 2 Task 4.4 — auto-wire the XLIFF MSBuild tasks (Sunfish.Tooling.LocalizationXliff)
     onto every project that follows the standard Resources/Localization/*.resx convention.
 

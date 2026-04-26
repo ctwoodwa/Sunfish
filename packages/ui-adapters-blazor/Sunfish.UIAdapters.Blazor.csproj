@@ -8,7 +8,12 @@
     <PackageTags>blazor;components;razor-class-library;ui-framework;sunfish</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <NoWarn>CS1591</NoWarn>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression. ui-adapters-blazor's
+         SharedResource bundle (default + ar-SA) defines 8 cascade keys that aren't yet
+         consumed by any .cs / .razor in this package — scaffolded ahead of consumer wiring.
+         Remove this suppression once consumers wire the keys via IStringLocalizer indexer or
+         GetString. -->
+    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

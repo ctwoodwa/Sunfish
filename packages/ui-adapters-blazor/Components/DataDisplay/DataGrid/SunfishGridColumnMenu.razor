@@ -1,16 +1,22 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay
 @typeparam TItem
 
+@* Inline min-width/min-height satisfies WCAG 2.2 SC 2.5.8 (target-size) without
+   relying on theme CSS, which the bUnit-axe harness does not load. Themes can
+   raise these values further but must not drop below 24px. *@
 @if (IsOpen)
 {
     <div class="sf-datagrid__column-menu" @ref="_menuRef" role="menu" aria-label="Column options">
         @if (ShowSort)
         {
             <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
                     @onclick="HandleSortAsc">Sort ascending</button>
             <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
                     @onclick="HandleSortDesc">Sort descending</button>
             <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
                     @onclick="HandleClearSort"
                     disabled="@(!HasSort)">Clear sort</button>
             <div class="sf-datagrid__column-menu-divider" role="separator"></div>
@@ -18,12 +24,14 @@
         @if (ShowFilter)
         {
             <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
                     @onclick="HandleFilter">Filter&#x2026;</button>
             <div class="sf-datagrid__column-menu-divider" role="separator"></div>
         }
         @if (ShowLock)
         {
             <button type="button" class="sf-datagrid__column-menu-item" role="menuitem"
+                    style="min-width:24px;min-height:24px;"
                     @onclick="HandleToggleLock">
                 @(IsLocked ? "Unlock column" : "Lock column")
             </button>

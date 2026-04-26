@@ -7,9 +7,13 @@
      role="grid"
      aria-label="@(AriaLabel ?? "Spreadsheet")"
      @attributes="AdditionalAttributes">
-    <table class="sf-spreadsheet__table">
-        <thead>
-            <tr>
+    @* Explicit role="rowgroup"/role="row" attributes are required because the inner
+       <table> element introduces an implicit role="table" inside the role="grid"
+       container — without them, axe's aria-required-children rule cannot resolve
+       <tr> descendants as the grid's row children. *@
+    <table class="sf-spreadsheet__table" role="presentation">
+        <thead role="rowgroup">
+            <tr role="row">
                 <th class="sf-spreadsheet__corner" scope="col"></th>
                 @for (var c = 0; c < EffectiveColumns; c++)
                 {
@@ -17,11 +21,11 @@
                 }
             </tr>
         </thead>
-        <tbody>
+        <tbody role="rowgroup">
             @for (var r = 0; r < EffectiveRows; r++)
             {
                 var rowIndex = r;
-                <tr>
+                <tr role="row">
                     <th class="sf-spreadsheet__row-header" scope="row">@(rowIndex + 1)</th>
                     @for (var c = 0; c < EffectiveColumns; c++)
                     {
