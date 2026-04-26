@@ -104,10 +104,12 @@ jobs:
           path: packages/ui-core/storybook-static/
 
   # Plan 5 Task 1 — analyzers gate.
-  # Runs on Windows because Sunfish.slnx contains the Anchor MAUI project (see
-  # ci.yml comment for the full rationale). `-warnaserror` guarantees that
-  # SUNFISH_I18N_001/002 and SUNFISH_A11Y_001 — wired at error-severity via
-  # Directory.Build.props — fail the build, not just emit warnings.
+  # Runs on Windows because Sunfish.slnx contains the Anchor MAUI project.
+  # We treat ONLY the SUNFISH_* analyzer diagnostics as errors (via
+  # WarningsAsErrors property). Bare `-warnaserror` would escalate pre-existing
+  # NETSDK1206 (musl-rid metadata), CS0162 (kitchen-sink generated code), and
+  # PRI249 (WinAppSDK) warnings into errors — those are unrelated to the
+  # SUNFISH analyzer rules this gate is supposed to enforce.
   analyzers:
     name: Analyzers (-warnaserror)
     runs-on: windows-latest
@@ -121,8 +123,10 @@ jobs:
         run: dotnet workload restore Sunfish.slnx
       - name: Restore
         run: dotnet restore Sunfish.slnx
-      - name: Build (warnings as errors)
-        run: dotnet build Sunfish.slnx --configuration Release -warnaserror --no-restore
+      - name: Build (SUNFISH_* warnings as errors only)
+        # PowerShell parses ; as command separator — quote the whole property arg
+        # so the semicolon-separated list is passed verbatim to MSBuild.
+        run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
 
   # Plan 5 Task 1 — XLIFF round-trip gate.
   # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
