@@ -195,13 +195,7 @@ public class FleaseLeaseCoordinatorTests : IAsyncLifetime
         Assert.False(nodes[0].Coordinator.Holds("order:x"));
     }
 
-    // SKIPPED 2026-04-26: real production race in Release broadcast — peers
-    // do NOT consistently drain the release within a 10s budget on shared CI
-    // runners. Earlier 3s budget was assumed to be CI jitter; bumping to 10s
-    // proved the race is real (test took 11s to fail). Tracking issue:
-    // FleaseLeaseCoordinator.HandleLeaseRelease may have a state-machine
-    // ordering bug. Unblocking every PR while we investigate properly.
-    [Fact(Skip = "Real production race in Release broadcast — see comment above.")]
+    [Fact]
     public async Task Release_Clears_Holds_And_Unblocks_Peers()
     {
         var nodes = BuildCluster(3);
@@ -212,23 +206,14 @@ public class FleaseLeaseCoordinatorTests : IAsyncLifetime
         await nodes[0].Coordinator.ReleaseAsync(leaseA!, CancellationToken.None);
         Assert.False(nodes[0].Coordinator.Holds("order:r"));
 
-        // Release broadcast is fire-and-forget at the wire level: our
-        // ReleaseAsync returns as soon as SendAsync completes, but each
-        // peer responder has its own task that must drain the channel
-        // and apply HandleLeaseRelease. Retry the follow-up Acquire for
-        // a bounded window — the "unblocks peers" claim is satisfied as
-        // long as node 1 eventually succeeds. Budget bumped from 3s to
-        // 10s to absorb shared-runner jitter on CI; the test fails
-        // legitimately if peers never drain (real production race),
-        // not because of a tight retry window.
-        Lease? leaseB = null;
-        var sw = System.Diagnostics.Stopwatch.StartNew();
-        while (leaseB is null && sw.Elapsed < TimeSpan.FromSeconds(10))
-        {
-            leaseB = await nodes[1].Coordinator.AcquireAsync(
-                "order:r", TimeSpan.FromSeconds(30), CancellationToken.None);
-            if (leaseB is null) await Task.Delay(50);
-        }
+        // After ReleaseAsync returns, every peer that cached our grant has
+        // acknowledged the release (the responder closes the connection only
+        // after HandleLeaseRelease has cleared its local conflict cache),
+        // so a follow-up Acquire on a peer must succeed on the first try
+        // without any retry loop. A retry loop here would mask the very
+        // ordering race the test exists to catch.
+        var leaseB = await nodes[1].Coordinator.AcquireAsync(
+            "order:r", TimeSpan.FromSeconds(30), CancellationToken.None);
 
         Assert.NotNull(leaseB);
         Assert.True(nodes[1].Coordinator.Holds("order:r"));
