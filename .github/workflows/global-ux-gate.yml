@@ -198,6 +198,16 @@ jobs:
           path: TestResults/
 
 
+  # Plan 5 Task 8 — Plan 2 Task 3.6 binary gate as permanent CI assertion.
+  plan-2-binary-gate:
+    name: Plan 2 binary gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run Plan 2 binary gate
+        run: bash tooling/plan-2-binary-gate/check.sh
+
+
   # Plan 5 Task 7 — Cross-plan health gate (Wave 1 finding carry-forward).
   cross-plan-health:
     name: Cross-plan health
@@ -217,6 +227,6 @@ jobs:
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural, cross-plan-health]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural, plan-2-binary-gate, cross-plan-health]
     steps:
       - run: echo "All Global-UX gate jobs passed."
