@@ -1,0 +1,5 @@
+# Override the repo-root **/[Bb]in/* rule (used to ignore .NET build output) so that
+# this tool's CLI entrypoint at bin/run.mjs is tracked. This Node tool's `bin/` is a
+# source directory, not a build artifact.
+!bin/
+!bin/*
