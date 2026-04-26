@@ -183,8 +183,12 @@ jobs:
       - name: Restore
         run: dotnet restore Sunfish.slnx
       - name: Build (SUNFISH_* warnings as errors only)
-        # PowerShell parses ; as command separator — quote the whole property arg
-        # so the semicolon-separated list is passed verbatim to MSBuild.
+        # Use bash shell on Windows runner so semicolons in WarningsAsErrors
+        # don't get mangled by PowerShell's command-separator parsing
+        # (the default `pwsh -command ". '{0}'"` shell-wrapping breaks
+        # nested single-quoted args containing ;). Bash treats single
+        # quotes literally and passes the whole MSBuild prop unchanged.
+        shell: bash
         run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
 
   # Plan 5 Task 1 — XLIFF round-trip gate.
@@ -305,12 +309,26 @@ jobs:
           node-version: "24"
       - run: node tooling/cross-plan-health/check.mjs waves/global-ux/status.md
 
+
+  # Plan 5 Task 6 � RESX <comment> XSS scanner gate.
+  resx-xss-scan:
+    name: RESX XSS scanner
+    runs-on: ubuntu-latest
+    needs: []
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Scan RESX comments
+        run: node tooling/resx-xss-scanner/check.mjs packages/ accelerators/ apps/
+
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
   # per gate-job; one suffices.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health]
+    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health, resx-xss-scan]
     steps:
       - run: echo "All Global-UX gate jobs passed."
