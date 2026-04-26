@@ -1,14 +1,29 @@
 @inherits SunfishComponentBase
 
+@* role="banner" is only valid at the top level of the document — when an AppBar
+   is nested inside another landmark (e.g. inside a layout shell that already
+   declares <header role="banner">), the nested banner trips axe's
+   landmark-banner-is-top-level rule. Set <c>Nested="true"</c> to suppress the
+   banner role in that scenario. PR #112 already gates banner on
+   <c>Position == Top</c>; this layers the structural-position guard on top. *@
 <header class="@CombineClasses(AppBarRootClass)"
         style="@CombineStyles(SizeStyle)"
-        role="@(Position == AppBarPosition.Top ? "banner" : null)"
+        role="@(Position == AppBarPosition.Top && !Nested ? "banner" : null)"
         @attributes="AdditionalAttributes">
     @ChildContent
 </header>
 
 @code {
     [Parameter] public AppBarPosition Position { get; set; } = AppBarPosition.Top;
+
+    /// <summary>
+    /// When <c>true</c>, suppresses the <c>role="banner"</c> landmark even when
+    /// <see cref="Position"/> is <see cref="AppBarPosition.Top"/>. Set this when the
+    /// AppBar is rendered inside another landmark (e.g. inside a layout shell that
+    /// already declares <c>&lt;header role="banner"&gt;</c>) to avoid axe's
+    /// <c>landmark-banner-is-top-level</c> violation. Defaults to <c>false</c>.
+    /// </summary>
+    [Parameter] public bool Nested { get; set; }
 
     /// <summary>CSS position mode (static, fixed, sticky). Defaults to static.</summary>
     [Parameter] public string PositionMode { get; set; } = "static";

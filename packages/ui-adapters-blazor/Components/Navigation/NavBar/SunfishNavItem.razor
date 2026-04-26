@@ -3,7 +3,11 @@
 
 @if (InList)
 {
-    <li class="@CombineClasses(CssProvider.NavItemClass(IsActive))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @* Explicit role="listitem" matches the explicit role="list" on the parent
+       <ul>/<nav>; bUnit-axe's `listitem` rule treats implicit roles as missing
+       when the parent uses an explicit list role. PR #112 added InList; this
+       wires the matching listitem role for the in-list branch. *@
+    <li role="listitem" class="@CombineClasses(CssProvider.NavItemClass(IsActive))" style="@CombineStyles()" @attributes="AdditionalAttributes">
         @InnerContent
     </li>
 }

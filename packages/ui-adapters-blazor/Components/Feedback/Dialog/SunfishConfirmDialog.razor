@@ -7,11 +7,14 @@
        modal-dialog → modal-content; Fluent/Material both collapse to a
        single `.sf-dialog` surface with BEM descendants. *@
     <div class="@CombineClasses(CssProvider.DialogOverlayClass())" @onclick="HandleOverlayClick">
-        <div class="@CssProvider.DialogClass()" style="@BuildStyles()" role="alertdialog" aria-modal="true" @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
+        <div class="@CssProvider.DialogClass()" style="@BuildStyles()" role="alertdialog" aria-modal="true"
+             aria-labelledby="@(!string.IsNullOrEmpty(Title) ? _titleId : null)"
+             aria-label="@(string.IsNullOrEmpty(Title) ? "Confirm" : null)"
+             @onclick:stopPropagation="true" @attributes="AdditionalAttributes">
             <div class="@CssProvider.DialogDialogClass()">
                 <div class="@CssProvider.DialogContentClass()">
                     <div class="@CssProvider.DialogHeaderClass()">
-                        <span class="@CssProvider.DialogTitleClass()">@Title</span>
+                        <span id="@_titleId" class="@CssProvider.DialogTitleClass()">@Title</span>
                         @if (ShowCloseButton)
                         {
                             <button type="button" class="sf-dialog__close" aria-label="Close" @onclick="CancelAsync">&times;</button>
@@ -112,6 +115,8 @@
             await CancelAsync();
         }
     }
+
+    private readonly string _titleId = $"sf-confirm-dialog-title-{Guid.NewGuid():N}";
 
     private string BuildStyles()
     {
