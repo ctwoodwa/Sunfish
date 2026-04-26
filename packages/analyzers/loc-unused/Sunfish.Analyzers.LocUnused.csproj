@@ -1,0 +1,61 @@
+<!--
+    Roslyn analyzer for Sunfish localization quality.
+    Targets netstandard2.0 (Roslyn analyzer contract); ships into NuGet analyzers/dotnet/cs.
+
+    Mirrors the loc-comments analyzer csproj structure (Plan 2 Task 4.3) — same
+    MS.CodeAnalysis pin, same packaging shape, same test-isolation strategy.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Opt out of Central Package Management; analyzer needs Microsoft.CodeAnalysis.* not in repo-wide pins. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Analyzers.LocUnused</PackageId>
+    <Description>Roslyn analyzer that emits SUNFISH_I18N_002 on .resx entries with no consuming reference in same-package .cs / .razor source.</Description>
+    <PackageTags>roslyn;analyzer;sunfish;localization;i18n;resx;unused</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Sunfish.Analyzers.LocUnused</RootNamespace>
+    <AssemblyName>Sunfish.Analyzers.LocUnused</AssemblyName>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Analyzers.LocUnused.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Roslyn analyzer release-tracking files satisfy the RS2008 check. -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+</Project>
