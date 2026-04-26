@@ -4200,6 +4200,27 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-25T12:57:03.670Z"
+    },
+    {
+      "id": "bug-258",
+      "timestamp": "2026-04-26T17:55:00.000Z",
+      "error_message": "Material provider CSS bundle missing rules for Razor-emitted classes (Theme 1 dead-CSS regression in Phase-1 fix)",
+      "file": "packages/ui-adapters-blazor/Providers/Material/wwwroot/css/sunfish-material.css",
+      "root_cause": "MaterialCssProvider.DataGridCommandButtonClass()/DialogCloseButtonClass()-equivalent return BEM `__cmd-btn` / `__icon` etc., but the compiled Material CSS bundle still only had the legacy single-hyphen selectors (`.sf-datagrid-cmd-btn`) plus zero rules for `.sf-button__icon`, `.sf-calendar__cell--range-start`, `.sf-calendar__cell--range-end`. New RazorCssClassParityTests caught the gap.",
+      "fix": "Aliased BEM and legacy selectors in Material _date-picker.scss / _button.scss / _data-grid.scss and mirrored into sunfish-material.css. Same alias applied to Fluent v9 _data-grid.scss / sunfish-fluentui.css.",
+      "tags": [
+        "css",
+        "razor",
+        "bem",
+        "naming-convention",
+        "parity",
+        "material",
+        "fluent",
+        "theme-1"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-26T17:55:00.000Z"
     }
   ]
 }

@@ -3176,12 +3176,45 @@
   gap: 0.5rem;
 }
 
-.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+/* SYNTHESIS Theme 1 (Phase 3) — alias the BEM `__cmd-btn` form so the
+   provider-emitted class matches a CSS rule. */
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn,
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid__cmd-btn {
   border: 1px solid var(--sf-color-border, #c8c6c4);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
   background: var(--sf-color-surface);
   cursor: pointer;
+}
+
+/* SYNTHESIS Theme 1 (Phase 3) — top-level Fluent v9 `subtle` button surface
+   for command buttons used outside the filter-menu actions. */
+.sf-datagrid-cmd-btn,
+.sf-datagrid__cmd-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid transparent;
+  border-radius: var(--borderRadiusMedium, 4px);
+  background: transparent;
+  color: var(--colorNeutralForeground1, var(--sf-color-text));
+  font-size: var(--fontSizeBase200, 12px);
+  cursor: pointer;
+  transition: background-color var(--sf-transition-fast, 100ms);
+}
+.sf-datagrid-cmd-btn:hover,
+.sf-datagrid__cmd-btn:hover {
+  background: var(--colorSubtleBackgroundHover, var(--sf-color-surface));
+}
+.sf-datagrid-cmd-btn:active,
+.sf-datagrid__cmd-btn:active {
+  background: var(--colorSubtleBackgroundPressed, var(--sf-color-surface));
+}
+.sf-datagrid-cmd-btn:focus-visible,
+.sf-datagrid__cmd-btn:focus-visible {
+  outline: 2px solid var(--colorStrokeFocus2, var(--sf-color-primary));
+  outline-offset: 1px;
 }
 
 .sf-datagrid-pager-btn {

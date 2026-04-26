@@ -531,6 +531,23 @@
   }
 }
 
+/* SYNTHESIS Theme 1 (Phase 3) — icon slot emitted by SunfishButton when an
+   Icon parameter is set. M3 leading-icon spec: 18×18 with 8dp gap to label. */
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+}
+.sf-button__icon > svg,
+.sf-button__icon > img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
 .sf-button--tonal {
   background-color: var(--sf-color-secondary-container);
   color: var(--sf-color-on-secondary-container);
@@ -1099,7 +1116,8 @@
   gap: 0.5rem;
 }
 
-.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn,
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid__cmd-btn {
   border: 1px solid var(--sf-color-border);
   border-radius: 6px;
   padding: 0.35rem 0.75rem;
@@ -1384,7 +1402,8 @@ th.sf-datagrid__col--locked {
   font-size: var(--sf-font-size-sm);
 }
 
-.sf-datagrid-cmd-btn {
+.sf-datagrid-cmd-btn,
+.sf-datagrid__cmd-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -1398,7 +1417,8 @@ th.sf-datagrid__col--locked {
   cursor: pointer;
   overflow: hidden;
 }
-.sf-datagrid-cmd-btn::before {
+.sf-datagrid-cmd-btn::before,
+.sf-datagrid__cmd-btn::before {
   content: "";
   position: absolute;
   inset: 0;
@@ -1408,13 +1428,16 @@ th.sf-datagrid__col--locked {
   transition: opacity var(--sf-transition-fast);
   pointer-events: none;
 }
-.sf-datagrid-cmd-btn:hover::before {
+.sf-datagrid-cmd-btn:hover::before,
+.sf-datagrid__cmd-btn:hover::before {
   opacity: var(--sf-state-hover-opacity);
 }
-.sf-datagrid-cmd-btn:active::before {
+.sf-datagrid-cmd-btn:active::before,
+.sf-datagrid__cmd-btn:active::before {
   opacity: var(--sf-state-pressed-opacity);
 }
-.sf-datagrid-cmd-btn:focus-visible::before {
+.sf-datagrid-cmd-btn:focus-visible::before,
+.sf-datagrid__cmd-btn:focus-visible::before {
   opacity: var(--sf-state-focus-opacity);
 }
 
@@ -2317,7 +2340,9 @@ span.sf-calendar__title::before {
   color: var(--sf-color-on-primary);
 }
 
-.sf-calendar__cell--range-edge {
+.sf-calendar__cell--range-edge,
+.sf-calendar__cell--range-start,
+.sf-calendar__cell--range-end {
   background-color: var(--sf-color-primary);
   color: var(--sf-color-on-primary);
 }
