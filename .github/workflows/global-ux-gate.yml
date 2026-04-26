@@ -124,7 +124,9 @@ jobs:
       - name: Restore
         run: dotnet restore Sunfish.slnx
       - name: Build (SUNFISH_* warnings as errors only)
-        run: dotnet build Sunfish.slnx --configuration Release --no-restore -p:WarningsAsErrors="SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001"
+        # PowerShell parses ; as command separator — quote the whole property arg
+        # so the semicolon-separated list is passed verbatim to MSBuild.
+        run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
 
   # Plan 5 Task 1 — XLIFF round-trip gate.
   # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
