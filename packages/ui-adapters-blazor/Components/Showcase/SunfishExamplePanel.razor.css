@@ -75,6 +75,8 @@
     background: transparent;
     border: 0;
     padding: 0.5rem 0.875rem;
+    min-width: 24px;
+    min-height: 24px;
     font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.04em;

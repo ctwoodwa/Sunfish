@@ -14,15 +14,15 @@
 
 <div class="@CombineClasses("sf-scheduler", $"sf-scheduler--{View.ToString().ToLowerInvariant()}")"
      style="@CombineStyles(containerStyle.ToString())"
-     role="group"
+     role="grid"
      aria-label="Scheduler"
      @attributes="AdditionalAttributes">
 
     <div class="sf-scheduler__toolbar">
         <div class="sf-scheduler__nav">
-            <button type="button" class="sf-scheduler__nav-btn" @onclick="NavigatePrevious" aria-label="Previous">‹</button>
+            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigatePrevious" aria-label="Previous">‹</button>
             <div class="sf-scheduler__title" aria-live="polite">@GetHeaderTitle()</div>
-            <button type="button" class="sf-scheduler__nav-btn" @onclick="NavigateNext" aria-label="Next">›</button>
+            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigateNext" aria-label="Next">›</button>
         </div>
         <div class="sf-scheduler__views" role="tablist">
             @foreach (var v in Enum.GetValues<SchedulerView>())
@@ -32,6 +32,7 @@
                         role="tab"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"
                         class="@CombineClasses("sf-scheduler__view-btn", isActive ? "sf-scheduler__view-btn--active" : null)"
+                        style="min-width:24px;min-height:24px;"
                         @onclick="() => SwitchView(v)">
                     @v
                 </button>
@@ -43,7 +44,7 @@
     {
         case SchedulerView.Month:
             <div class="sf-scheduler__month">
-                <div class="sf-scheduler__month-grid">
+                <div class="sf-scheduler__month-grid" role="rowgroup">
                     @for (int w = 0; w < 6; w++)
                     {
                         <div class="sf-scheduler__month-row" role="row">
@@ -120,7 +121,7 @@
                         </div>
                     }
                 </div>
-                <div class="sf-scheduler__time-body">
+                <div class="sf-scheduler__time-body" role="row">
                     <div class="sf-scheduler__time-gutter-col" style="width:@(TimeGutterWidth)px">
                         @for (int h = StartHour; h < EndHour; h++)
                         {

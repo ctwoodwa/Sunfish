@@ -145,7 +145,7 @@
                 if (isSelected) cls += " sf-calendar__month-cell--selected";
                 if (isCurrent) cls += " sf-calendar__month-cell--current";
 
-                <button type="button" class="@cls" @onclick="@(() => SelectMonth(month))">
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectMonth(month))">
                     @if (CellTemplate != null)
                     {
                         @CellTemplate(monthDate)
@@ -188,7 +188,7 @@
                 if (isSelected) cls += " sf-calendar__year-cell--selected";
                 if (isCurrent) cls += " sf-calendar__year-cell--current";
 
-                <button type="button" class="@cls" @onclick="@(() => SelectYear(year))">
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectYear(year))">
                     @if (CellTemplate != null)
                     {
                         @CellTemplate(yearDate)
@@ -227,7 +227,7 @@
                 var cls = "sf-calendar__decade-cell";
                 if (isCurrent) cls += " sf-calendar__decade-cell--current";
 
-                <button type="button" class="@cls" @onclick="@(() => SelectDecade(decadeStart))">
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectDecade(decadeStart))">
                     @if (CellTemplate != null)
                     {
                         @CellTemplate(decadeDate)

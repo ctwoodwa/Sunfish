@@ -3,9 +3,9 @@
 
 <li class="@CombineClasses(ItemClass)"
     style="@CombineStyles()"
-    role="treeitem"
-    aria-expanded="@(HasChildren ? IsExpanded.ToString().ToLower() : null)"
-    aria-selected="@IsSelected.ToString().ToLower()"
+    role="@(InTree ? "treeitem" : null)"
+    aria-expanded="@(InTree && HasChildren ? IsExpanded.ToString().ToLower() : null)"
+    aria-selected="@(InTree ? IsSelected.ToString().ToLower() : null)"
     @attributes="AdditionalAttributes">
     <div class="sf-tree-item__header">
         @if (HasChildren)

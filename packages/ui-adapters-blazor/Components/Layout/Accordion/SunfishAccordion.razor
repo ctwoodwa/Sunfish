@@ -158,6 +158,7 @@
             builder.OpenElement(seq++, "button");
             builder.AddAttribute(seq++, "type", "button");
             builder.AddAttribute(seq++, "class", "sf-accordion-item__header");
+            builder.AddAttribute(seq++, "style", "min-width:24px;min-height:24px;");
             builder.AddAttribute(seq++, "aria-expanded", isExpanded.ToString().ToLowerInvariant());
             builder.AddAttribute(seq++, "aria-controls", contentId);
             builder.AddAttribute(seq++, "disabled", disabled);
@@ -191,7 +192,6 @@
             {
                 builder.OpenElement(seq++, "div");
                 builder.AddAttribute(seq++, "id", contentId);
-                builder.AddAttribute(seq++, "role", "region");
                 builder.AddAttribute(seq++, "class", "sf-accordion-item__content");
 
                 if (hasChildren)

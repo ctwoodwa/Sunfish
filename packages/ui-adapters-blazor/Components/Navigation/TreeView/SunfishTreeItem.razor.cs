@@ -35,6 +35,15 @@ public partial class SunfishTreeItem : SunfishComponentBase
     /// <summary>Child tree items.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>
+    /// Whether this item is rendered inside a parent <c>role="tree"</c> container.
+    /// When unset, derives from the cascaded <see cref="SunfishTreeView"/> presence to
+    /// avoid emitting an orphan <c>role="treeitem"</c> (axe <c>aria-required-parent</c>).
+    /// </summary>
+    [Parameter] public bool? InTreeOverride { get; set; }
+
+    private bool InTree => InTreeOverride ?? (TreeView is not null);
+
     private bool HasChildren => ChildContent != null;
 
     private string ItemClass =>

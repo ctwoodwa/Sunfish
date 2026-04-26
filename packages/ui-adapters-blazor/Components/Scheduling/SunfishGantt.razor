@@ -22,11 +22,11 @@
      @attributes="AdditionalAttributes">
 
     @* Left pane: task list *@
-    <div class="sf-gantt__tasklist" style="width:@(titleWidth)px;min-width:@(titleWidth)px;">
-        <div class="sf-gantt__tasklist-header" style="height:@(rowHeight)px;line-height:@(rowHeight)px;">
+    <div class="sf-gantt__tasklist" role="rowgroup" style="width:@(titleWidth)px;min-width:@(titleWidth)px;">
+        <div class="sf-gantt__tasklist-header" role="row" style="height:@(rowHeight)px;line-height:@(rowHeight)px;">
             Task
         </div>
-        <div class="sf-gantt__tasklist-body">
+        <div class="sf-gantt__tasklist-body" role="rowgroup">
             @foreach (var item in visible)
             {
                 var captured = item;
@@ -59,7 +59,7 @@
                 </div>
 
                 @* Body rows + bars *@
-                <div class="sf-gantt__timeline-body">
+                <div class="sf-gantt__timeline-body" role="rowgroup">
                     @foreach (var item in visible)
                     {
                         var captured = item;

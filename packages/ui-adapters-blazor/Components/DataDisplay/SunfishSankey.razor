@@ -11,13 +11,15 @@
 
     @if (Data == null || Data.Nodes.Count == 0)
     {
-        <div class="sf-sankey__empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:#999;">
+        <div class="sf-sankey__empty" style="display:flex;align-items:center;justify-content:center;height:100%;color:#595959;">
             <p>No data to display. Provide SankeyData with Nodes and Links.</p>
         </div>
     }
     else
     {
-        <svg class="sf-sankey__canvas" width="100%" height="@SvgHeight" viewBox="0 0 @_viewWidth @_viewHeight" preserveAspectRatio="xMidYMid meet">
+        <svg class="sf-sankey__canvas" width="100%" height="@SvgHeight" viewBox="0 0 @_viewWidth @_viewHeight" preserveAspectRatio="xMidYMid meet"
+             role="img" aria-label="@(Title ?? "Sankey diagram")">
+            <title>@(Title ?? "Sankey diagram")</title>
             @* Render links first (behind nodes) *@
             @foreach (var linkInfo in _linkPositions)
             {
