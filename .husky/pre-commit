@@ -1,5 +1,10 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# Husky.NET-managed hook (see .config/dotnet-tools.json — no Node `husky` dep).
+# Intentionally NO `. "$(dirname "$0")/_/husky.sh"` — that bootstrap is a
+# Node husky@v8 pattern. Husky.NET doesn't generate or require it, and the
+# `_/` directory is gitignored so any fresh worktree (e.g. agent worktrees)
+# would fail at the source line and force `--no-verify`.
+[ "${HUSKY:-1}" = "0" ] && exit 0
 
 # ----------------------------------------------------------------------------
 # Sunfish pre-commit: SUNFISH_I18N_001 RESX <comment> validation
