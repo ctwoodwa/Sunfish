@@ -780,7 +780,7 @@
             builder.OpenElement(310, "span");
             builder.AddAttribute(311, "class", $"mar-chart-legend-item{(isVisible ? "" : " mar-chart-legend-item--hidden")}");
             builder.AddAttribute(312, "role", "listitem");
-            builder.AddAttribute(313, "style", $"display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;{(isVisible ? "" : "opacity:0.4;")}");
+            builder.AddAttribute(313, "style", $"display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;{(isVisible ? "" : "opacity:0.6;")}");
             builder.AddAttribute(314, "onclick",
                 EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this,
                     () => HandleLegendClick(capturedIndex)));

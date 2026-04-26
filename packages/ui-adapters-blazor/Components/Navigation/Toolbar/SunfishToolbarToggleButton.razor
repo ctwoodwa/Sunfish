@@ -2,7 +2,7 @@
 @inherits SunfishComponentBase
 
 <button class="@CombineClasses(CssProvider.ToolbarToggleButtonClass(IsActive, Disabled))"
-        style="@CombineStyles()"
+        style="@CombineStyles("min-width:24px;min-height:24px;")"
         disabled="@Disabled"
         title="@Title"
         aria-pressed="@IsActive.ToString().ToLowerInvariant()"

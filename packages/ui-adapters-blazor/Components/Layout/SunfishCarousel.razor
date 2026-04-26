@@ -54,10 +54,10 @@
 
     @if (ShowButtons)
     {
-        <button type="button" class="sf-carousel__prev" @onclick="PreviousAsync" aria-label="Previous slide" disabled="@(!CanGoPrevious)">
+        <button type="button" class="sf-carousel__prev" style="min-width:24px;min-height:24px;" @onclick="PreviousAsync" aria-label="Previous slide" disabled="@(!CanGoPrevious)">
             @IconProvider.GetIconMarkup("chevron-left", IconSize.Medium)
         </button>
-        <button type="button" class="sf-carousel__next" @onclick="NextAsync" aria-label="Next slide" disabled="@(!CanGoNext)">
+        <button type="button" class="sf-carousel__next" style="min-width:24px;min-height:24px;" @onclick="NextAsync" aria-label="Next slide" disabled="@(!CanGoNext)">
             @IconProvider.GetIconMarkup("chevron-right", IconSize.Medium)
         </button>
     }
@@ -73,6 +73,7 @@
                 {
                     <button type="button"
                             class="sf-carousel__dot @(isActive ? "mar-carousel__dot--active" : "")"
+                            style="min-width:24px;min-height:24px;"
                             role="tab"
                             aria-selected="@isActive.ToString().ToLowerInvariant()"
                             aria-label="Go to slide @(idx + 1)"
@@ -84,6 +85,7 @@
                 {
                     <button type="button"
                             class="sf-carousel__dot @(isActive ? "mar-carousel__dot--active" : "")"
+                            style="min-width:24px;min-height:24px;"
                             role="tab"
                             aria-selected="@isActive.ToString().ToLowerInvariant()"
                             aria-label="Go to slide @(idx + 1)"

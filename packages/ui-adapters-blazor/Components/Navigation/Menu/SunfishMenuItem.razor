@@ -6,7 +6,7 @@
     <a class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
        style="@CombineStyles()"
        href="@Url"
-       role="menuitem"
+       role="@(InMenu ? "menuitem" : null)"
        aria-disabled="@(IsDisabled ? "true" : null)"
        @onclick="HandleClick"
        @attributes="AdditionalAttributes">
@@ -26,7 +26,7 @@ else
     <button type="button"
             class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
             style="@CombineStyles()"
-            role="menuitem"
+            role="@(InMenu ? "menuitem" : null)"
             disabled="@IsDisabled"
             @onclick="HandleClick"
             @attributes="AdditionalAttributes">
@@ -60,6 +60,14 @@ else
 
     /// <summary>Item content.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether this item is rendered inside a parent <c>role="menu"</c>/<c>menubar</c> container.
+    /// Set <c>true</c> when nested in <see cref="SunfishMenu"/>; defaults <c>false</c> to avoid
+    /// emitting an orphan <c>role="menuitem"</c> (axe <c>aria-required-parent</c>). Mirrors the
+    /// <c>SunfishChip</c> Listbox pattern.
+    /// </summary>
+    [Parameter] public bool InMenu { get; set; }
 
     private async Task HandleClick()
     {

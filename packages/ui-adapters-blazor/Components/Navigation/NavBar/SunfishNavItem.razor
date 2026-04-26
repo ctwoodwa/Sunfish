@@ -1,24 +1,45 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Navigation
 @inherits SunfishComponentBase
 
-<li class="@CombineClasses(CssProvider.NavItemClass(IsActive))" style="@CombineStyles()" @attributes="AdditionalAttributes">
-    @if (!string.IsNullOrEmpty(Href))
-    {
-        <a href="@Href" aria-current="@(IsActive ? "page" : null)">
-            @ChildContent
-        </a>
-    }
-    else
-    {
-        <button type="button" @onclick="OnClick" aria-current="@(IsActive ? "page" : null)">
-            @ChildContent
-        </button>
-    }
-</li>
+@if (InList)
+{
+    <li class="@CombineClasses(CssProvider.NavItemClass(IsActive))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+        @InnerContent
+    </li>
+}
+else
+{
+    <span class="@CombineClasses(CssProvider.NavItemClass(IsActive))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+        @InnerContent
+    </span>
+}
 
 @code {
     [Parameter] public string? Href { get; set; }
     [Parameter] public bool IsActive { get; set; }
     [Parameter] public EventCallback OnClick { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether this item is rendered inside a parent <c>&lt;ol&gt;</c>/<c>&lt;ul&gt;</c>.
+    /// Defaults to <c>true</c>; set <c>false</c> for standalone usage to avoid an orphan
+    /// <c>&lt;li&gt;</c>.
+    /// </summary>
+    [Parameter] public bool InList { get; set; } = true;
+
+    private RenderFragment InnerContent => __builder =>
+    {
+        if (!string.IsNullOrEmpty(Href))
+        {
+            <a href="@Href" aria-current="@(IsActive ? "page" : null)" style="min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;padding:4px;">
+                @ChildContent
+            </a>
+        }
+        else
+        {
+            <button type="button" @onclick="OnClick" aria-current="@(IsActive ? "page" : null)" style="min-width:24px;min-height:24px;">
+                @ChildContent
+            </button>
+        }
+    };
 }
