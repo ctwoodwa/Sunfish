@@ -13,13 +13,17 @@
 name: Global-UX Gate
 
 on:
+  schedule:
+    - cron: '0 12 * * 1'  # Monday noon UTC — weekly cross-plan health drift check (Plan 5 Task 7).
   pull_request:
     paths:
       - "packages/**"
       - "apps/**"
       - "tooling/css-logical-audit/**"
       - "tooling/Sunfish.Tooling.ColorAudit/**"
+      - "tooling/cross-plan-health/**"
       - "i18n/**"
+      - "waves/global-ux/status.md"
       - ".github/workflows/global-ux-gate.yml"
   push:
     branches: [main]
@@ -96,6 +100,18 @@ jobs:
         with:
           name: storybook-static
           path: packages/ui-core/storybook-static/
+
+  cross-plan-health:
+    name: Cross-plan health
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    continue-on-error: true  # informational for first 2 weeks; promote to required after baseline
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - run: node tooling/cross-plan-health/check.mjs waves/global-ux/status.md
 
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
