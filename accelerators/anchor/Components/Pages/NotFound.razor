@@ -1,5 +1,43 @@
-﻿@page "/not-found"
+@page "/not-found"
 @layout MainLayout
+@using Microsoft.Extensions.Localization
+@using Sunfish.Anchor.Localization
+@inject IStringLocalizer<SharedResource> Localizer
 
-<h3>Not Found</h3>
-<p>Sorry, the content you are looking for does not exist.</p>
+<PageTitle>@LocalizedTitle</PageTitle>
+
+<h3>@LocalizedTitle</h3>
+<p>@LocalizedDetail</p>
+
+@code {
+    /// <summary>
+    /// Optional reason override. Driven from the navigation query string
+    /// (<c>?reason=team-not-found</c> | <c>?reason=network-unavailable</c>) so
+    /// the local-first switcher (Wave 6.6) and sync hosted service can route
+    /// "missing team" / "no peers reachable" navigations through the same
+    /// status surface. When unset, falls back to <c>team-not-found</c> as the
+    /// most-common case (the v1 → v2 migration leaves stale team ids that the
+    /// switcher dereferences here per ADR 0032).
+    /// </summary>
+    /// <remarks>
+    /// Localized title + detail map to the Anchor SharedResource bundle's
+    /// <c>errors.team-not-found</c> and <c>errors.network-unavailable</c> key
+    /// pairs (each with a <c>.detail</c> sibling). The bundle is the same one
+    /// the QR onboarding flow surfaces through <c>Onboarding.razor</c>; one
+    /// localizer per page resolves under <c>CurrentUICulture</c> set in
+    /// <c>MauiProgram.CreateMauiApp</c> from the device's preferred UI language.
+    /// </remarks>
+    [SupplyParameterFromQuery] public string? Reason { get; set; }
+
+    private string LocalizedTitle => Reason switch
+    {
+        "network-unavailable" => Localizer["errors.network-unavailable"],
+        _ => Localizer["errors.team-not-found"],
+    };
+
+    private string LocalizedDetail => Reason switch
+    {
+        "network-unavailable" => Localizer["errors.network-unavailable.detail"],
+        _ => Localizer["errors.team-not-found.detail"],
+    };
+}
