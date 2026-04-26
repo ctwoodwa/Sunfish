@@ -3,6 +3,19 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    # Skip the heavy Windows MAUI Build & Test on docs-only PRs. Changes to this
+    # workflow file itself are NOT in the ignore list, so the workflow still
+    # re-tests itself when edited.
+    paths-ignore:
+      - "**/*.md"
+      - ".wolf/**"
+      - "docs/**"
+      - "waves/**"
+      - "icm/**"
+      - "_shared/**"
+      - ".github/CODEOWNERS"
+      - ".gitignore"
+      - "LICENSE*"
   push:
     branches: [main]
 
