@@ -203,6 +203,9 @@ jobs:
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural]
+    # NOTE: a11y-audit deliberately excluded — it is continue-on-error: true
+    # because the audit-runner + Storybook plumbing are not fully wired yet.
+    # Re-add to needs once Plan 5 Task 9's 10-run p95 measurement clears.
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, cldr-plural]
     steps:
       - run: echo "All Global-UX gate jobs passed."
