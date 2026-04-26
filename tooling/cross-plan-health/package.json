@@ -1,0 +1,15 @@
+{
+  "name": "@sunfish/cross-plan-health",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Cross-plan health gate: parses waves/global-ux/status.md and exits 1 if any plan is RED. Plan 5 Task 7 (Wave 1 finding carry-forward).",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/parser.test.mjs",
+    "check": "node check.mjs ../../waves/global-ux/status.md"
+  },
+  "license": "MIT"
+}
