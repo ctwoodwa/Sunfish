@@ -5,6 +5,7 @@
   "license": "MIT",
   "description": "Sunfish — framework-agnostic UI building blocks",
   "scripts": {
+    "prepare": "dotnet tool restore && dotnet husky install",
     "scss:build:fluentui": "sass packages/ui-adapters-blazor/Providers/FluentUI/Styles/sunfish-fluentui.scss:packages/ui-adapters-blazor/Providers/FluentUI/wwwroot/css/sunfish-fluentui.css --style=expanded --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=legacy-js-api",
     "scss:build:bootstrap": "sass packages/ui-adapters-blazor/Providers/Bootstrap/Styles/sunfish-bootstrap.scss:packages/ui-adapters-blazor/Providers/Bootstrap/wwwroot/css/sunfish-bootstrap.css --style=expanded --no-source-map --load-path=node_modules --silence-deprecation=color-functions --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=if-function --silence-deprecation=legacy-js-api",
     "scss:build:material": "sass packages/ui-adapters-blazor/Providers/Material/Styles/sunfish-material.scss:packages/ui-adapters-blazor/Providers/Material/wwwroot/css/sunfish-material.css --style=expanded --no-source-map --silence-deprecation=import --silence-deprecation=global-builtin --silence-deprecation=color-functions --silence-deprecation=legacy-js-api",
