@@ -31,7 +31,9 @@ below.
 - You want a richer bypass model (`bypass_actors` with `actor_type` +
   `bypass_mode` of `always`/`pull_request`/`exempt`).
 - You want the option to dry-run the rule against real PRs without blocking
-  merges (`enforcement: "evaluate"`).
+  merges (`enforcement: "evaluate"`). **Note:** evaluate mode is
+  Enterprise-plan-only; on Pro/Team, use the canary branch test described
+  below.
 - You want `do_not_enforce_on_create: true` so creating a brand-new branch
   doesn't get blocked by required-check evaluation at branch-create time.
 
@@ -47,7 +49,7 @@ below.
 | File | Purpose |
 |---|---|
 | `main-ruleset.json` | **Ruleset definition for `main` (recommended).** Edit this to change the rule. |
-| `apply-main-ruleset.sh` | Idempotent apply script for the ruleset. Supports `--dry-run` and `--evaluate`. |
+| `apply-main-ruleset.sh` | Idempotent apply script for the ruleset. Supports `--dry-run`, `--evaluate`, and `--delete`. |
 | `branch-protection-main.json` | Legacy protection rule. Kept for rollback / historical reference. |
 | `branch-protection-main-before.json` | Rollback reference snapshot captured **before** the Plan 5 rule was first proposed. |
 | `apply-branch-protection.sh` | Idempotent apply script for the legacy rule. |
@@ -67,15 +69,51 @@ rights on `ctwoodwa/Sunfish`:
 # 1. Dry-run first — verify the resolved payload + create-vs-update decision:
 bash infra/github/apply-main-ruleset.sh --dry-run
 
-# 2. First-time apply — start in evaluate mode to observe behavior on PRs
-#    without blocking merges. Watch a few PRs go through, confirm the
-#    expected check contexts appear in "Rule Insights" on github.com,
-#    and confirm no false positives.
+# 2. (Enterprise plans only) First-time apply in evaluate mode to observe
+#    behavior on PRs without blocking merges. NOT available on Pro/Team —
+#    see "Substitute for --evaluate on non-Enterprise plans" below.
 bash infra/github/apply-main-ruleset.sh --evaluate
 
-# 3. Promote to active enforcement once evaluate-mode behavior is verified:
+# 3. Apply with active enforcement (Pro/Team plans skip step 2 and use the
+#    canary-branch test described below before this step):
 bash infra/github/apply-main-ruleset.sh
+
+# 4. One-command rollback — looks up the ruleset by name and DELETEs it.
+#    No-op (exit 0) if the ruleset doesn't exist, so safe to re-run.
+bash infra/github/apply-main-ruleset.sh --delete
 ```
+
+### Substitute for `--evaluate` on non-Enterprise plans
+
+GitHub gates the Rulesets `enforcement: "evaluate"` mode behind the Enterprise
+plan tier. On Free / Pro / Team, the API rejects the apply with:
+
+> "Enforcement evaluate option is not supported on this plan. Please upgrade
+> to Enterprise to enable it."
+
+See [GitHub docs — Creating rulesets for a repository](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository)
+for the canonical plan matrix.
+
+The substitute on lower plans is the **canary branch test** pattern:
+
+1. Edit `main-ruleset.json` and temporarily change
+   `conditions.ref_name.include` from `["refs/heads/main"]` to
+   `["refs/heads/test/ruleset-canary"]` (any throwaway branch name works).
+2. Run `bash infra/github/apply-main-ruleset.sh` to apply the ruleset
+   scoped to that single canary branch.
+3. Push test commits to `test/ruleset-canary` and open trial PRs against it.
+   Observe whether expected checks fire and whether the merge gate behaves
+   as intended.
+4. When done, run `bash infra/github/apply-main-ruleset.sh --delete` to
+   remove the canary ruleset. Restore the `include` field in
+   `main-ruleset.json` to `["refs/heads/main"]` and commit the revert.
+5. Now run `bash infra/github/apply-main-ruleset.sh` for the real `main`
+   apply.
+
+This is best-effort — the canary branch may not exhibit every PR shape that
+`main` will see — but it isolates blast radius without paying for
+Enterprise. The `--delete` flag exists specifically to make step 4 a single
+command.
 
 Optional environment overrides:
 
@@ -110,17 +148,28 @@ the ruleset.
 
 ### Roll back the ruleset
 
-Delete the ruleset by id (look up the id from the apply script's verification
-echo or from `gh api repos/ctwoodwa/Sunfish/rulesets`):
+**Preferred — one-command delete via the apply script:**
+
+```bash
+bash infra/github/apply-main-ruleset.sh --delete
+```
+
+The script looks up the ruleset by name (`main-protection`) and DELETEs it
+via the GitHub API. Exits 0 with a "nothing to delete" message if no
+matching ruleset exists, so the flag is safe to re-run. Cannot be combined
+with `--dry-run` or `--evaluate` (the script will exit 2 with an error).
+
+**Alternative — delete by id directly** (look up the id from the apply
+script's verification echo or from `gh api repos/ctwoodwa/Sunfish/rulesets`):
 
 ```bash
 gh api -X DELETE "repos/ctwoodwa/Sunfish/rulesets/<RULESET_ID>"
 ```
 
-Or "soft-disable" without deleting by editing `main-ruleset.json` to set
-`"enforcement": "disabled"` and re-running `apply-main-ruleset.sh`. This is
-preferred — the ruleset stays in the UI for inspection and can be re-enabled
-in one PR.
+**Alternative — soft-disable without deleting** by editing
+`main-ruleset.json` to set `"enforcement": "disabled"` and re-running
+`apply-main-ruleset.sh`. The ruleset stays in the UI for inspection and can
+be re-enabled in one PR.
 
 ### Roll back the legacy rule
 
@@ -179,29 +228,40 @@ job-level conditionals + a singular always-running aggregator job.
 
 ### Concrete impact in this repo
 
-Of the 7 contexts in `main-ruleset.json`:
+`main-ruleset.json` was originally drafted with 7 required contexts. After
+Phase-1 verification on the last 10 merged PRs, it was **trimmed to 4
+always-on contexts** (see the inline `_comment_required_checks_choice`
+field in `main-ruleset.json` for the rationale). The current required list
+is:
 
-| Context | Workflow | Always runs on PR? |
+| Context | Workflow | Always runs on PR? | Appearances/10 |
+|---|---|---|---|
+| `Lint PR commits` | `commitlint.yml` | Yes. Safe. | 10/10 |
+| `Analyze (csharp)` | `codeql.yml` | Yes. Safe. | 10/10 |
+| `CodeQL` | `codeql.yml` (separate from `Analyze (csharp)`) | Yes. Safe. | 10/10 |
+| `semgrep-cloud-platform/scan` | Semgrep Cloud Platform | Yes. Safe. | 10/10 |
+
+**Removed from required (still run when applicable, just not gate-blocking):**
+
+| Context | Workflow | Why removed |
 |---|---|---|
-| `Build & Test` | `ci.yml` | Yes (no path filter). Safe. |
-| `Lint PR commits` | `commitlint.yml` | Yes. Safe. |
-| `Analyze (csharp)` | `codeql.yml` | Yes. Safe. |
-| `CSS logical-properties audit` | `global-ux-gate.yml` | **No** — workflow is `paths`-filtered to `packages/**`, `apps/**`, `tooling/css-logical-audit/**`, `tooling/Sunfish.Tooling.*`/**, `i18n/**`. |
-| `Locale completeness check` | `global-ux-gate.yml` | **No** — same filter. |
-| `A11y Storybook test-runner` | `global-ux-gate.yml` | **No** — same filter. |
-| `Global-UX Gate (aggregate)` | `global-ux-gate.yml` | **No** — the aggregator inherits the workflow's `paths` filter. |
+| `Build & Test` | `ci.yml` | Skipped on docs-only PRs via `paths-ignore`. 6/10 appearances. |
+| `CSS logical-properties audit` | `global-ux-gate.yml` | Skipped on most PRs — `paths` filter to `packages/**`, `apps/**`, `tooling/css-logical-audit/**`, `tooling/Sunfish.Tooling.*`/**, `i18n/**`. 1/10. |
+| `Locale completeness check` | `global-ux-gate.yml` | Same filter. 1/10. |
+| `A11y Storybook test-runner` | `global-ux-gate.yml` | Same filter. 1/10. |
+| `Global-UX Gate (aggregate)` | `global-ux-gate.yml` | Aggregator inherits the workflow `paths` filter. 1/10. |
 
-A docs-only PR (e.g., touching only `docs/**` or `_shared/**`) will not
-trigger any of the four `global-ux-gate.yml` jobs, so the four corresponding
-required checks will stay "Pending" forever and the PR will be unmergeable.
+If the original 7-check list had been applied as-is, 9 of the last 10 PRs
+would have been permanently blocked because their required checks never
+report. **Strict mode + a missing required check = block forever.**
 
 ### Recommended fix sequence (post-merge of this PR)
 
-1. **First apply with `--evaluate`** to confirm the hazard is observable but
-   non-blocking on a docs-only PR. The "Rule Insights" tab on github.com
-   shows what would have been blocked.
-2. **Pick one** of the structural fixes (out-of-scope for this artifact PR;
-   open a separate PR):
+1. **Apply the trimmed ruleset** (canary-branch test first per the
+   "Substitute for `--evaluate`" section above; this repo is on a
+   non-Enterprise plan and `--evaluate` is unavailable).
+2. **Pick one** of the structural fixes to re-include the global-ux-gate
+   checks (out-of-scope for this artifact PR; open a separate PR):
     - **Option A (preferred):** Remove the `paths:` filter from
       `.github/workflows/global-ux-gate.yml` so all four jobs always run on
       every PR. Tradeoff: ~12 min of extra CI on docs-only PRs (per Plan 5
@@ -211,12 +271,11 @@ required checks will stay "Pending" forever and the PR will be unmergeable.
       `dorny/paths-filter` or equivalent), with a fan-in `global-ux-gate`
       aggregator job that **always runs** and only requires the leaf jobs
       that actually executed.
-    - **Option C (least invasive):** Reduce `main-ruleset.json` to require
-      only the three always-running checks (`Build & Test`, `Lint PR commits`,
-      `Analyze (csharp)`). Removes the merge block but loses Global-UX gate
-      enforcement on PRs whose paths trigger the workflow.
-3. **Once the structural fix is merged**, re-apply the ruleset with default
-   `active` enforcement.
+    - **Option C:** Move the relevant gates into `ci.yml` so they share the
+      always-on lifecycle.
+3. **Once the structural fix is merged**, re-add the four `global-ux-gate`
+   contexts and `Build & Test` to the `required_status_checks` array in
+   `main-ruleset.json` and re-apply.
 
 ## Diff between the legacy and ruleset definitions
 

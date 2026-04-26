@@ -1,6 +1,6 @@
 {
   "_comment_doc": "Sunfish main-branch ruleset, modeled with GitHub's Rulesets API (POST /repos/{owner}/{repo}/rulesets). This is the recommended modern replacement for the legacy branch-protection rule in branch-protection-main.json. See infra/github/README.md for when to use which. The leading _comment_* keys are stripped by apply-main-ruleset.sh before POST/PATCH (the GitHub API rejects unknown top-level fields).",
-  "_comment_paths_ignore_hazard": "GitHub Rulesets, like legacy branch protection, will leave a required check in 'Pending' if the workflow is skipped (paths/paths-ignore filter, branches filter, commit-message skip, etc.). Of the 7 required contexts below, the 4 prefixed [global-ux] live in .github/workflows/global-ux-gate.yml which is path-filtered to packages/, apps/, tooling/, i18n/. A docs-only PR will skip them and be permanently blocked. Mitigations documented in README.md §'Paths-ignore hazard'.",
+  "_comment_paths_ignore_hazard": "GitHub Rulesets, like legacy branch protection, will leave a required check in 'Pending' if the workflow is skipped (paths/paths-ignore filter, branches filter, commit-message skip, etc.). The required-check list below was trimmed from the original 7 to 4 always-on checks specifically to avoid this hazard — see _comment_required_checks_choice on the parameters object below for the full rationale and re-inclusion path. Background documented in README.md §'Paths-ignore hazard'.",
   "name": "main-protection",
   "target": "branch",
   "enforcement": "active",
@@ -25,14 +25,12 @@
       "parameters": {
         "do_not_enforce_on_create": true,
         "strict_required_status_checks_policy": true,
+        "_comment_required_checks_choice": "Trimmed from the original 7-check list to only the always-on checks (10/10 appearances on recent PRs). The 4 global-ux-gate checks (CSS logical-properties audit, Locale completeness check, A11y Storybook test-runner, Global-UX Gate aggregate) are gated by paths: filters in global-ux-gate.yml and skip on docs/security/wolf/etc. PRs — requiring them under strict mode would permanently block those PRs. Build & Test similarly skips via paths-ignore in ci.yml. Re-add to required-checks list once those workflows are restructured to fire on every PR (or move the relevant gates into ci.yml).",
         "required_status_checks": [
-          { "context": "Build & Test",                 "integration_id": 15368 },
           { "context": "Lint PR commits",              "integration_id": 15368 },
           { "context": "Analyze (csharp)",             "integration_id": 15368 },
-          { "context": "CSS logical-properties audit", "integration_id": 15368 },
-          { "context": "Locale completeness check",    "integration_id": 15368 },
-          { "context": "A11y Storybook test-runner",   "integration_id": 15368 },
-          { "context": "Global-UX Gate (aggregate)",   "integration_id": 15368 }
+          { "context": "CodeQL",                       "integration_id": 15368 },
+          { "context": "semgrep-cloud-platform/scan",  "integration_id": 15368 }
         ]
       }
     },
