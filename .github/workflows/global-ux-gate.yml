@@ -152,6 +152,11 @@ jobs:
     name: A11y axe audit (shard ${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # continue-on-error until plan-5/task-2 (a11y-audit-runner) has landed
+    # AND a Storybook build is plumbed for this job; until then the job
+    # fails fast on missing tooling/a11y-audit-runner/bin/run.mjs. Promote
+    # to required after Plan 5 Task 9's 10-run p95 measurement clears.
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
