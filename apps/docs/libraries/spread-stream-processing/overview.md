@@ -15,7 +15,7 @@ keywords:
 
 > **Status: Aspirational.** No Sunfish implementation yet. This page documents the
 > target capability and links to the Telerik parity reference. See
-> [ADR 0021](xref:adr-0021-reporting-pipeline-policy) for the reporting pipeline policy.
+> [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) for the reporting pipeline policy.
 
 ## Overview
 
@@ -56,7 +56,7 @@ full document model.
 
 ## Sunfish plans
 
-No Sunfish equivalent exists today. [ADR 0021](xref:adr-0021-reporting-pipeline-policy)
+No Sunfish equivalent exists today. [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md)
 defines `IXlsxExportWriter` as the format contract; the current default
 **ClosedXML** adapter uses an in-memory `XLWorkbook` and is not streaming. A
 streaming-capable sibling contract — `IXlsxStreamExportWriter` or a

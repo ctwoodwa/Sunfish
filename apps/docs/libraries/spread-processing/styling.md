@@ -15,7 +15,7 @@ keywords:
 
 > **Status: Aspirational.** No Sunfish implementation yet. This page documents the
 > target capability and links to the Telerik parity reference. See
-> [ADR 0021](xref:adr-0021-reporting-pipeline-policy) for the reporting pipeline policy.
+> [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) for the reporting pipeline policy.
 
 ## Overview
 
@@ -46,7 +46,7 @@ cells, ranges, rows, and columns. The target surface includes:
 
 ## Sunfish plans
 
-No Sunfish equivalent exists today. [ADR 0021](xref:adr-0021-reporting-pipeline-policy)
+No Sunfish equivalent exists today. [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md)
 routes XLSX output through `IXlsxExportWriter`; concrete styling is whatever the
 chosen adapter exposes. **ClosedXML** (the default pure-OSS adapter) supports the
 full styling surface described above through its fluent `IXLStyle` API;

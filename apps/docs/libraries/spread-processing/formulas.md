@@ -15,7 +15,7 @@ keywords:
 
 > **Status: Aspirational.** No Sunfish implementation yet. This page documents the
 > target capability and links to the Telerik parity reference. See
-> [ADR 0021](xref:adr-0021-reporting-pipeline-policy) for the reporting pipeline policy.
+> [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) for the reporting pipeline policy.
 
 ## Overview
 
@@ -52,7 +52,7 @@ references, and array formulas are all in the target scope.
 ## Sunfish plans
 
 No Sunfish equivalent exists today. The default XLSX adapter chosen by
-[ADR 0021](xref:adr-0021-reporting-pipeline-policy) — **ClosedXML** — persists
+[ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) — **ClosedXML** — persists
 formulas into the file and relies on the opening host to evaluate them. A first-party
 in-process formula evaluator is **not** planned for the default adapter; deployers
 that need in-process evaluation are expected to adopt `Sunfish.Reporting.Telerik`

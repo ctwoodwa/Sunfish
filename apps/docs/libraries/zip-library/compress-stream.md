@@ -15,7 +15,7 @@ keywords:
 
 > **Status: Aspirational.** No Sunfish implementation yet. This page documents the
 > target capability and links to the Telerik parity reference. See
-> [ADR 0021](xref:adr-0021-reporting-pipeline-policy) for the reporting pipeline policy.
+> [ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md) for the reporting pipeline policy.
 
 ## Overview
 
@@ -63,7 +63,7 @@ compose on top of ZIP.
 ## Sunfish plans
 
 No Sunfish equivalent exists today and none is planned in
-[ADR 0021](xref:adr-0021-reporting-pipeline-policy); see
+[ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md); see
 [Overview](overview.md) for the full rationale.
 
 For streaming compression in pure-OSS today:
@@ -78,7 +78,7 @@ For streaming compression in pure-OSS today:
 
 A `Sunfish.Foundation.Zip` streaming contract is not in scope; the streaming
 XLSX, streaming DOCX, and streaming PPTX contracts in
-[ADR 0021](xref:adr-0021-reporting-pipeline-policy)'s deferred second-phase
+[ADR 0021](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0021-reporting-pipeline-policy.md)'s deferred second-phase
 scope would each use their adapter's native ZIP stream layer directly rather
 than routing through a Sunfish-owned zip abstraction.
 
