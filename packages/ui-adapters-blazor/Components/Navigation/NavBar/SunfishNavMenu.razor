@@ -1,8 +1,13 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Navigation
 @inherits SunfishComponentBase
 
+@* The native <ul> already has implicit role="list"; declaring role="list" explicitly
+   triggers axe's aria-required-children when ChildContent is empty (e.g. during
+   bUnit-axe scans). The implicit role still satisfies semantic UA requirements
+   without the explicit ARIA contract. Mirrors the SunfishConflictList fix from
+   PR #112 (drop role when no children). *@
 <nav class="@CombineClasses(CssProvider.NavMenuClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
-    <ul role="list">
+    <ul>
         @ChildContent
     </ul>
 </nav>

@@ -2,6 +2,10 @@
 @using Sunfish.UIAdapters.Blazor.Enums
 @inherits SunfishComponentBase
 
+@* Inline min-width/min-height on every pagination button satisfies WCAG 2.2 SC 2.5.8
+   (target-size) without relying on theme CSS, which the bUnit-axe harness does not
+   load. Themes can raise these values further but must not drop below 24px. Mirrors
+   the SunfishGridColumnMenu fix from PR #123. *@
 <nav class="@CombineClasses(CssProvider.PaginationClass())"
      style="@CombineStyles()"
      role="navigation"
@@ -19,6 +23,7 @@
     {
         <button type="button"
                 class="sf-pagination__first"
+                style="min-width:24px;min-height:24px;"
                 disabled="@(Page <= 1)"
                 aria-label="First page"
                 title="First page"
@@ -31,6 +36,7 @@
     {
         <button type="button"
                 class="sf-pagination__prev"
+                style="min-width:24px;min-height:24px;"
                 disabled="@(Page <= 1)"
                 aria-label="Previous page"
                 title="Previous page"
@@ -74,6 +80,7 @@
             {
                 <button type="button"
                         class="sf-pagination__ellipsis"
+                        style="min-width:24px;min-height:24px;"
                         disabled
                         aria-hidden="true"
                         tabindex="-1">
@@ -86,6 +93,7 @@
                 var isCurrent = p == Page;
                 <button type="button"
                         class="@CssProvider.PaginationItemClass(isCurrent)"
+                        style="min-width:24px;min-height:24px;"
                         aria-current="@(isCurrent ? "page" : null)"
                         aria-label="@($"Page {p}")"
                         @onclick="() => GoToPage(p)">
@@ -99,6 +107,7 @@
     {
         <button type="button"
                 class="sf-pagination__next"
+                style="min-width:24px;min-height:24px;"
                 disabled="@(Page >= ComputedTotalPages)"
                 aria-label="Next page"
                 title="Next page"
@@ -111,6 +120,7 @@
     {
         <button type="button"
                 class="sf-pagination__last"
+                style="min-width:24px;min-height:24px;"
                 disabled="@(Page >= ComputedTotalPages)"
                 aria-label="Last page"
                 title="Last page"
@@ -136,6 +146,7 @@
     {
         <button type="button"
                 class="sf-pagination__refresh"
+                style="min-width:24px;min-height:24px;"
                 aria-label="Refresh"
                 title="Refresh"
                 @onclick="HandleRefresh">

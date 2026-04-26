@@ -65,9 +65,14 @@
     {
         @* Toolbar: tab controls (left), theme controls (right) *@
         <div class="sf-example-panel-toolbar">
+            @* Inline min-width/min-height satisfies WCAG 2.2 SC 2.5.8 (target-size)
+               without relying on theme CSS, which the bUnit-axe harness does not
+               load. The .razor.css already declares the same floor; the inline
+               style is the structural minimum that travels with the markup. *@
             <div class="sf-example-panel-tabs">
                 <button type="button"
                         class="sf-example-panel-tab @(_activeTab == Tab.Example ? "sf-example-panel-tab--active" : "")"
+                        style="min-width:24px;min-height:24px;"
                         @onclick="() => SetTab(Tab.Example)">
                     EXAMPLE
                 </button>
@@ -75,20 +80,21 @@
                 {
                     <button type="button"
                             class="sf-example-panel-tab @(_activeTab == Tab.Source ? "sf-example-panel-tab--active" : "")"
+                            style="min-width:24px;min-height:24px;"
                             @onclick="() => SetTab(Tab.Source)">
                         VIEW SOURCE
                     </button>
                 }
                 @if (!string.IsNullOrEmpty(GitHubUrl))
                 {
-                    <a class="sf-example-panel-action" href="@GitHubUrl" target="_blank" rel="noopener">
+                    <a class="sf-example-panel-action" style="min-width:24px;min-height:24px;" href="@GitHubUrl" target="_blank" rel="noopener">
                         EDIT ON GITHUB
                         <SunfishIcon Name="external-link" Size="IconSize.Small" />
                     </a>
                 }
                 @if (_activeTab == Tab.Source && Sources is { Count: > 0 })
                 {
-                    <button type="button" class="sf-example-panel-action" @onclick="CopyActiveSource">
+                    <button type="button" class="sf-example-panel-action" style="min-width:24px;min-height:24px;" @onclick="CopyActiveSource">
                         @if (_copied)
                         {
                             <SunfishIcon Name="check" Size="IconSize.Small" />
@@ -133,6 +139,7 @@
                         var file = Sources[idx];
                         <button type="button"
                                 class="sf-example-panel-source-tab @(_activeSourceIndex == idx ? "sf-example-panel-source-tab--active" : "")"
+                                style="min-width:24px;min-height:24px;"
                                 @onclick="() => SetActiveSource(idx)">
                             @file.Name
                         </button>
