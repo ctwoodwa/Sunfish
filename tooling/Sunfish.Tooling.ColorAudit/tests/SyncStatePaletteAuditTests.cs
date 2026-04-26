@@ -63,8 +63,13 @@ public class SyncStatePaletteAuditTests
     /// Side effect: the dark conflict orange #b85c1f collapses with quarantine red #cc3311
     /// under deuteranopia (ΔE 2.49). Multimodal-channel rationale (icon + label + role)
     /// documented in ADR 0036; designer-led palette work pending for full CVD coverage.
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (designer-blocked, intentional).
+    /// Unblocker: human designer decision required — alternative hue family (e.g.
+    /// teal-for-healthy, magenta-for-quarantine) being scoped. ETA: Plan-6 design wave.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1e + §9.
     /// </summary>
-    [Theory(Skip = "Awaiting designer-led palette refinement; see waves/global-ux/week-2-cvd-palette-audit.md")]
+    [Theory(Skip = "KEEP-SKIPPED (designer-blocked): light-palette CVD distinguishability awaiting " +
+        "human designer decision. See waves/global-ux/week-2-cvd-palette-audit.md + audit §1e.")]
     [InlineData(CvdMode.Deuteranopia)]
     [InlineData(CvdMode.Protanopia)]
     [InlineData(CvdMode.Tritanopia)]
@@ -88,8 +93,13 @@ public class SyncStatePaletteAuditTests
     /// Worst offender: dark protanopia healthy↔conflict at 2.18. Designer-led tuning
     /// required for dark mode; alternative hue family (e.g. magenta-for-quarantine,
     /// teal-for-healthy) under consideration. See audit report for iteration history.
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (designer-blocked, intentional).
+    /// Unblocker: human designer decision on dark-mode hue family. ETA: Plan-6 design wave.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1e + §9.
     /// </summary>
-    [Theory(Skip = "Awaiting designer-led palette refinement; see waves/global-ux/week-2-cvd-palette-audit.md")]
+    [Theory(Skip = "KEEP-SKIPPED (designer-blocked): dark-palette CVD distinguishability awaiting " +
+        "human designer decision (worst pair: protanopia healthy↔conflict ΔE=2.18). " +
+        "See waves/global-ux/week-2-cvd-palette-audit.md + audit §1e.")]
     [InlineData(CvdMode.Deuteranopia)]
     [InlineData(CvdMode.Protanopia)]
     [InlineData(CvdMode.Tritanopia)]

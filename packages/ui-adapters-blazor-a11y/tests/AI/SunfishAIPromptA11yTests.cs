@@ -58,10 +58,18 @@ public class SunfishAIPromptA11yTests : IClassFixture<SunfishAIPromptA11yTests.C
         await AssertNoModerateAxeViolationsAsync(rendered.Markup, "streaming");
     }
 
-    [Fact(Skip = "axe violation: target-size — SunfishAIPrompt history-aside buttons render " +
-        "below WCAG 2.2 24×24 minimum target size with default styling. Real component bug; " +
-        "out of scope per cluster-B brief (do not fix components). Re-enable once the " +
-        "history-button stylesheet enforces a minimum hit target.")]
+    // TRIAGE 2026-04-26 (skipped-test inventory): FIX-LATER.
+    // Tracking: real production bug surfaced by Wave-1 cluster-B cascade (PR #112).
+    // WCAG 2.2 SC 2.5.8 (target-size minimum) — `.sf-aiprompt__history-button` renders
+    // below the 24×24 CSS-pixel minimum hit target with default styling.
+    // Unblocker (small, scoped): set min-inline-size + min-block-size of >=24px on
+    // `.sf-aiprompt__history-button` in the AIPrompt theme SCSS (Material/Bootstrap/FluentUI).
+    // Owner: AI-block component team. ETA: next a11y remediation wave.
+    // Why deferred here: per task brief — test files only; production fix lives in a
+    // dedicated PR per audit §8.4 (ai-fixes subagent dispatch).
+    [Fact(Skip = "FIX-LATER (axe-real-bug): target-size on history-aside buttons (WCAG 2.2 SC 2.5.8). " +
+        "Unblocker: enforce min-inline-size/min-block-size >=24px on .sf-aiprompt__history-button. " +
+        "See waves/cleanup/2026-04-26-followup-debt-audit.md §1b + §8.4.")]
     public async Task WithHistoryAsideHasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishAIPrompt>(p => p

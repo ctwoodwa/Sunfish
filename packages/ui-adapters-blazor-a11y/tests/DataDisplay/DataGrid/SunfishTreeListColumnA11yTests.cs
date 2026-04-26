@@ -20,11 +20,14 @@ public class SunfishTreeListColumnA11yTests : IClassFixture<SunfishTreeListColum
     public SunfishTreeListColumnA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// Definition-only column registers via cascading IColumnHost and renders no DOM
-    /// in isolation. Coverage flows through SunfishTreeList harness once a hierarchical
-    /// tree fixture lands.
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (definition-only). Column registers via cascading
+    /// IColumnHost; renders no isolated DOM. Coverage flows through SunfishTreeList harness
+    /// once a hierarchical tree fixture lands.
+    /// Unblocker: N/A — definition-only by design.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: definition-only, no isolated DOM")]
+    [Fact(Skip = "KEEP-SKIPPED (definition-only): no isolated DOM by design. " +
+        "Coverage flows through parent SunfishTreeList harness once hierarchical tree fixture lands.")]
     public Task SunfishTreeListColumn_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

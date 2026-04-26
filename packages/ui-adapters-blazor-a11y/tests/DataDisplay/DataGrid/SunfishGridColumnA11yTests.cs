@@ -20,10 +20,16 @@ public class SunfishGridColumnA11yTests : IClassFixture<SunfishGridColumnA11yTes
     public SunfishGridColumnA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// Definition-only column registers via cascading IColumnHost; renders no isolated
-    /// DOM. Coverage flows through SunfishDataGrid harness once fixture lands.
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (definition-only). Component registers itself with
+    /// the parent SunfishDataGrid via cascading IColumnHost — it cannot render DOM in
+    /// isolation. Real coverage will flow through SunfishDataGridA11yTests once that
+    /// fixture lands; this placeholder exists for symmetric component inventory.
+    /// Unblocker: N/A — definition-only by design. The placeholder may be removed entirely
+    /// once parent harness covers the cascaded markup.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: definition-only, no isolated DOM")]
+    [Fact(Skip = "KEEP-SKIPPED (definition-only): no isolated DOM by design. " +
+        "Coverage flows through SunfishDataGridA11yTests once parent fixture lands.")]
     public Task SunfishGridColumn_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

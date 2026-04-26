@@ -26,12 +26,16 @@ public class SunfishDataGridA11yTests : IClassFixture<SunfishDataGridA11yTests.C
     public SunfishDataGridA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// SunfishDataGrid has an [Inject] dependency on the internal IDownloadService
-    /// (export-to-CSV/XLSX plumbing). bUnit can't resolve that service from the
-    /// public ui-core/foundation surface; coverage will land once a dedicated
-    /// DataGrid fixture (with the required interop services) is extracted.
+    /// TRIAGE 2026-04-26: FIX-LATER (tracked-fixture). SunfishDataGrid has an [Inject]
+    /// dependency on the internal IDownloadService (export-to-CSV/XLSX plumbing) which
+    /// bUnit can't resolve from the public ui-core/foundation surface.
+    /// Unblocker: extract MockDownloadService + typed-row fixture builder under
+    /// tests/Fixtures/DataGridFixture.cs (one PR; unblocks all 10 DataDisplay skips).
+    /// Owner: DataGrid block team. ETA: post-Wave-2 cascade landing.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: DataGrid needs IDownloadService injection")]
+    [Fact(Skip = "FIX-LATER (tracked-fixture): needs MockDownloadService + typed-row fixture. " +
+        "See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.")]
     public Task SunfishDataGrid_EmptyData_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

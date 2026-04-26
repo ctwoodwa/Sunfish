@@ -21,11 +21,15 @@ public class SunfishDataSheetA11yTests : IClassFixture<SunfishDataSheetA11yTests
     public SunfishDataSheetA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// SunfishDataSheet requires column definitions plus a typed row binding to render
-    /// any meaningful markup. The cascade-extension brief allows this skip; coverage
-    /// will land once a DataSheet sample fixture is extracted to tests/Fixtures.
+    /// TRIAGE 2026-04-26: FIX-LATER (tracked-fixture). SunfishDataSheet requires column
+    /// definitions plus a typed row binding to render meaningful markup.
+    /// Unblocker: tests/Fixtures/DataSheetFixture.cs with sample columns + typed rows
+    /// (sibling to DataGridFixture; same workstream).
+    /// Owner: DataGrid block team. ETA: post-Wave-2 cascade landing.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: column definitions + typed rows")]
+    [Fact(Skip = "FIX-LATER (tracked-fixture): needs DataSheetFixture (columns + typed rows). " +
+        "See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.")]
     public Task SunfishDataSheet_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

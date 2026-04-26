@@ -20,11 +20,14 @@ public class SunfishDataSheetColumnA11yTests : IClassFixture<SunfishDataSheetCol
     public SunfishDataSheetColumnA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// Definition-only component — registers itself with the parent SunfishDataSheet via
-    /// cascading IColumnHost. Renders no DOM in isolation; coverage flows through the
-    /// parent SunfishDataSheet harness once that fixture lands.
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (definition-only). Registers with parent
+    /// SunfishDataSheet via cascading IColumnHost. Renders no DOM in isolation.
+    /// Unblocker: N/A — definition-only by design. Coverage flows through
+    /// SunfishDataSheetA11yTests once parent fixture lands.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: definition-only, no isolated DOM")]
+    [Fact(Skip = "KEEP-SKIPPED (definition-only): no isolated DOM by design. " +
+        "Coverage flows through SunfishDataSheetA11yTests once parent fixture lands.")]
     public Task SunfishDataSheetColumn_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

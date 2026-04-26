@@ -20,11 +20,15 @@ public class SunfishGanttDependenciesA11yTests : IClassFixture<SunfishGanttDepen
     public SunfishGanttDependenciesA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// SunfishGanttDependencies is a definition component that registers via cascading
-    /// IGanttViewHost — it cannot be rendered in isolation. Will be exercised once a
-    /// SunfishGantt fixture exists (parent component test will cover dep markup too).
+    /// TRIAGE 2026-04-26: KEEP-SKIPPED (definition-only). SunfishGanttDependencies is a
+    /// definition component that registers via cascading IGanttViewHost; cannot be rendered
+    /// in isolation.
+    /// Unblocker: N/A — definition-only by design. Coverage will flow through SunfishGantt
+    /// harness once GanttFixture lands (parent test will cover dep markup too).
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: definition-only, needs parent SunfishGantt host")]
+    [Fact(Skip = "KEEP-SKIPPED (definition-only): no isolated DOM by design (needs parent SunfishGantt host). " +
+        "Coverage flows through SunfishGanttA11yTests once GanttFixture lands.")]
     public Task SunfishGanttDependencies_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable
