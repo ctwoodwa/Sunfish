@@ -1,31 +1,86 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Buttons
 @inherits SunfishComponentBase
 
-<span class="@CombineClasses(ChipClass)"
-      style="@CombineStyles()"
-      role="option"
-      aria-selected="@(IsSelected ? "true" : null)"
-      aria-disabled="@(Disabled ? "true" : null)"
-      tabindex="@(Disabled ? -1 : 0)"
-      @onclick="HandleClick"
-      @attributes="AdditionalAttributes">
-    @if (Icon != null)
-    {
-        <span class="sf-chip__icon">@Icon</span>
-    }
-    <span class="sf-chip__text">@(Text ?? Label)</span>
-    @ChildContent
-    @if (Removable && !Disabled)
-    {
+@*
+    SunfishChip — accessibility-correct chip with three render modes:
+
+    1. Listbox mode (Listbox=true): root is <span role="option"> non-interactive container.
+       Selection is signalled via aria-selected; click/keyboard handling belongs to the
+       parent role="listbox" element, not the option. Avoids nested-interactive.
+
+    2. Removable standalone: root is a non-interactive <div> wrapper that contains a
+       <button> chip-action and a sibling <button> remove control. Two siblings, no
+       nesting — avoids nested-interactive while still keeping both areas keyboard
+       reachable. Remove button enforces 24x24 minimum target (WCAG 2.2 target-size).
+
+    3. Plain interactive standalone: root is a single <button type="button">. Clean
+       semantic button, no role="option" leaking outside a listbox container
+       (avoids aria-required-parent).
+
+    4. Plain non-interactive standalone (no Selectable, no OnClick handler, no Removable):
+       root is a <span> with no role — purely decorative label.
+*@
+
+@if (Listbox)
+{
+    @* Mode 1: listbox option — non-interactive container *@
+    <span class="@CombineClasses(ChipClass)"
+          style="@CombineStyles()"
+          role="option"
+          aria-selected="@(IsSelected ? "true" : "false")"
+          aria-disabled="@(Disabled ? "true" : null)"
+          @attributes="AdditionalAttributes">
+        @ChipBody
+    </span>
+}
+else if (Removable && !Disabled)
+{
+    @* Mode 2: removable standalone — non-interactive root + sibling buttons *@
+    <div class="@CombineClasses(ChipClass)"
+         style="@CombineStyles()"
+         @attributes="AdditionalAttributes">
+        <button type="button"
+                class="sf-chip__action"
+                aria-label="@(Text ?? Label)"
+                aria-pressed="@(Selectable ? (IsSelected ? "true" : "false") : null)"
+                disabled="@Disabled"
+                @onclick="HandleClick">
+            @ChipBody
+        </button>
         <button type="button"
                 class="sf-chip__remove"
-                aria-label="Remove"
+                style="min-width:24px;min-height:24px;padding:0 4px;"
+                aria-label="@($"Remove {(Text ?? Label)}")"
                 @onclick="HandleRemove"
                 @onclick:stopPropagation="true">
             &times;
         </button>
-    }
-</span>
+    </div>
+}
+else if (IsInteractive)
+{
+    @* Mode 3: interactive standalone — single button *@
+    <button type="button"
+            class="@CombineClasses(ChipClass)"
+            style="@CombineStyles()"
+            aria-pressed="@(Selectable ? (IsSelected ? "true" : "false") : null)"
+            aria-disabled="@(Disabled ? "true" : null)"
+            disabled="@Disabled"
+            @onclick="HandleClick"
+            @attributes="AdditionalAttributes">
+        @ChipBody
+    </button>
+}
+else
+{
+    @* Mode 4: decorative non-interactive label *@
+    <span class="@CombineClasses(ChipClass)"
+          style="@CombineStyles()"
+          aria-disabled="@(Disabled ? "true" : null)"
+          @attributes="AdditionalAttributes">
+        @ChipBody
+    </span>
+}
 
 @code {
     [Parameter] public ChipVariant Variant { get; set; } = ChipVariant.Default;
@@ -40,6 +95,37 @@
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
     [Parameter] public EventCallback OnRemove { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// When true, render this chip as a <c>role="option"</c> entry intended for use inside
+    /// a parent <c>role="listbox"</c> container (e.g. <see cref="SunfishChipSet{TItem}"/>).
+    /// In this mode the chip is a non-interactive container — selection and keyboard handling
+    /// are the listbox parent's responsibility. Default <c>false</c>: standalone chip uses a
+    /// semantic <c>&lt;button&gt;</c> and never emits an orphan <c>role="option"</c>.
+    /// </summary>
+    [Parameter] public bool Listbox { get; set; }
+
+    private bool IsInteractive => Selectable || OnClick.HasDelegate;
+
+    private RenderFragment ChipBody => builder =>
+    {
+        var seq = 0;
+        if (Icon != null)
+        {
+            builder.OpenElement(seq++, "span");
+            builder.AddAttribute(seq++, "class", "sf-chip__icon");
+            builder.AddContent(seq++, Icon);
+            builder.CloseElement();
+        }
+        builder.OpenElement(seq++, "span");
+        builder.AddAttribute(seq++, "class", "sf-chip__text");
+        builder.AddContent(seq++, Text ?? Label);
+        builder.CloseElement();
+        if (ChildContent != null)
+        {
+            builder.AddContent(seq++, ChildContent);
+        }
+    };
 
     private string ChipClass
     {
