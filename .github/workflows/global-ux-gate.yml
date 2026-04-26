@@ -271,12 +271,26 @@ jobs:
       - name: Run Plan 2 binary gate
         run: bash tooling/plan-2-binary-gate/check.sh
 
+
+  # Plan 5 Task 7 — Cross-plan health gate.
+  cross-plan-health:
+    name: Cross-plan health
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - run: node tooling/cross-plan-health/check.mjs waves/global-ux/status.md
+
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
   # per gate-job; one suffices.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health]
     steps:
       - run: echo "All Global-UX gate jobs passed."
