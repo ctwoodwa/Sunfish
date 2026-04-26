@@ -59,4 +59,98 @@
     <value>הבקשה מתנגשת עם המצב הנוכחי של המשאב. אנא בדוק ונסה שוב.</value>
     <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
   </data>
+
+  <!-- Validation messages — Hebrew, RTL. Modern Hebrew, masculine singular default. -->
+  <data name="validation.required" xml:space="preserve">
+    <value>שדה זה הוא חובה.</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>חייב להכיל לפחות {min} תווים.</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>חייב להכיל {max} תווים או פחות.</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>הזן כתובת דוא״ל תקינה.</value>
+    <comment>Translator: Email parse failed; "דוא״ל" (gershayim) is the standard Hebrew abbreviation for email.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>הזן כתובת URL תקינה.</value>
+    <comment>Translator: URL parse failed; "URL" stays Latin per ADR 0034.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>הזן מספרים בלבד.</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>הזן תאריך תקין.</value>
+    <comment>Translator: Date parse failed.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>התאריך חייב להיות בעתיד.</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>התאריך חייב להיות בעבר.</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. Imperative form. -->
+  <data name="actions.save" xml:space="preserve">
+    <value>שמור</value>
+    <comment>Translator: Button label — commit draft. Imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>בטל</value>
+    <comment>Translator: Button label — discard draft. Imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>נסה שוב</value>
+    <comment>Translator: Button label — reattempt failed sync.</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>מחק</value>
+    <comment>Translator: Button label — destructive removal. Imperative.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>אשר</value>
+    <comment>Translator: Button label — proceed with displayed action. Imperative.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>ערוך</value>
+    <comment>Translator: Button label — switch to edit-mode. Imperative.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>חפש</value>
+    <comment>Translator: Button label or placeholder — execute query. Imperative.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>טוען</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>שומר</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>מעבד</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>הושלם</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>נכשל</value>
+    <comment>Translator: Status — terminal failure state.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>לא פעיל</value>
+    <comment>Translator: Status — no operation in flight; quiescent state.</comment>
+  </data>
 </root>
