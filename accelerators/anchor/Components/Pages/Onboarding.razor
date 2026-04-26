@@ -1,14 +1,20 @@
 @page "/onboarding"
+@using Microsoft.Extensions.Localization
+@using Sunfish.Anchor.Localization
 @using Sunfish.Anchor.Services
 @using Sunfish.Kernel.Security.Attestation
 @inject AnchorSessionService Session
 @inject QrOnboardingService OnboardingService
 @inject NavigationManager Nav
+@inject IStringLocalizer<SharedResource> Localizer
 
-<PageTitle>Sunfish Anchor — Onboarding</PageTitle>
+<PageTitle>Sunfish Anchor — @Localizer["onboarding.welcome.title"]</PageTitle>
 
 <div class="anchor-onboard">
-    <h1>Welcome to Sunfish Anchor</h1>
+    <h1>@Localizer["onboarding.welcome.title"]</h1>
+    <p class="anchor-onboard-sub">
+        @Localizer["onboarding.welcome.detail"]
+    </p>
     <p class="anchor-onboard-sub">
         Per paper §13.4 your new node joins a team in three steps:
         <strong>install</strong>, <strong>authenticate</strong>, <strong>sync</strong>.
@@ -54,8 +60,9 @@
 
             <div class="anchor-choice-group">
                 <div class="anchor-choice">
-                    <h3>Join an existing team</h3>
+                    <h3>@Localizer["onboarding.join-team.title"]</h3>
                     <p class="anchor-muted">
+                        @Localizer["onboarding.join-team.detail"]
                         Scan a QR code from an existing team member's device, or paste a
                         base64-encoded bundle below. The camera path requires MAUI
                         camera permissions (TODO on .NET 11 preview).

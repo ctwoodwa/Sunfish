@@ -25,10 +25,7 @@
         <AssemblyName>Sunfish.Anchor</AssemblyName>
         <IsPackable>false</IsPackable>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — anchor's onboarding /
-             error / network-unavailable / team-not-found resource keys are scaffolded ahead
-             of MAUI page wiring. Remove once the corresponding pages call into IStringLocalizer. -->
-        <NoWarn>$(NoWarn);CS1591;NU1603;NU1608;SUNFISH_I18N_002</NoWarn>
+        <NoWarn>$(NoWarn);CS1591;NU1603;NU1608</NoWarn>
         <!-- NU1603/NU1608: MAUI preview packages pin to an older preview build of transitive
              Microsoft.AspNetCore.* packages than what the rest of the repo resolves; the
              higher-numbered build is forward-compatible. Revisit once MAUI 11 GA ships. -->
