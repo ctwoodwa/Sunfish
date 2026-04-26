@@ -34,7 +34,7 @@ The package source lives at `packages/foundation-persistence/`.
 
 ## Why it exists
 
-[ADR 0015](xref:adr-0015-module-entity-registration) settled a prerequisite architectural question: **how do `blocks-*` modules integrate with the persistence layer?** Two options were on the table — one `DbContext` per block, or a shared Bridge `DbContext` with blocks contributing their entity configurations into it. The ADR chose the shared-context approach based on four concrete constraints:
+[ADR 0015](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0015-module-entity-registration.md) settled a prerequisite architectural question: **how do `blocks-*` modules integrate with the persistence layer?** Two options were on the table — one `DbContext` per block, or a shared Bridge `DbContext` with blocks contributing their entity configurations into it. The ADR chose the shared-context approach based on four concrete constraints:
 
 1. **Lite-mode runs on one database.** Multiple `DbContext`s pointing at their own databases is infeasible.
 2. **Data API Builder (DAB)** — the public GraphQL surface — reads directly against Bridge's tables. One config, one database.
@@ -71,6 +71,6 @@ A block that does not persist through EF Core simply skips this package.
 
 - [Entity-Module Pattern](entity-module-pattern.md)
 - [Multitenancy — Tenant-Scoped Markers](../multitenancy/tenant-scoped-markers.md)
-- [ADR 0015 — Module-Entity Registration Pattern](xref:adr-0015-module-entity-registration)
+- [ADR 0015 — Module-Entity Registration Pattern](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0015-module-entity-registration.md)
 </content>
 </invoke>

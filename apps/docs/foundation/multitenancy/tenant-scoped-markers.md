@@ -68,7 +68,7 @@ Platform-authored catalog entries leave `TenantId` null and show up in every ten
 
 ## How persistence enforces the contract
 
-Bridge's shared `SunfishBridgeDbContext` (see [ADR 0015](xref:adr-0015-module-entity-registration)) combines the markers with EF Core query filters.
+Bridge's shared `SunfishBridgeDbContext` (see [ADR 0015](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0015-module-entity-registration.md)) combines the markers with EF Core query filters.
 
 At model-build time, Bridge's `OnModelCreating` walks every registered entity type. For any type that implements `IMustHaveTenant` it registers a global query filter of the form `e => e.TenantId == _currentTenantId`, where `_currentTenantId` is injected per-`DbContext` from `ITenantContext`. Each scoped DbContext sees only its own tenant's rows — no hand-rolled `.Where()` calls, no leakage risk from a module that forgets to filter.
 
@@ -113,7 +113,7 @@ Nothing in the markers is EF-specific. Non-EF storage adapters (blob-backed stor
 - [Overview](overview.md)
 - [Tenant Context](tenant-context.md)
 - [Persistence — Entity-Module Pattern](../persistence/entity-module-pattern.md)
-- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](xref:adr-0008-foundation-multitenancy)
-- [ADR 0015 — Module-Entity Registration Pattern](xref:adr-0015-module-entity-registration)
+- [ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0008-foundation-multitenancy.md)
+- [ADR 0015 — Module-Entity Registration Pattern](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0015-module-entity-registration.md)
 </content>
 </invoke>

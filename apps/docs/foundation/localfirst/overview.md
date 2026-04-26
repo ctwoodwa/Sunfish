@@ -105,6 +105,6 @@ services.AddSunfishLocalFirst();
 
 - [Offline Store](offline-store.md)
 - [Sync Engine](sync-engine.md)
-- [ADR 0012 — Foundation.LocalFirst](xref:adr-0012-foundation-localfirst)
+- [ADR 0012 — Foundation.LocalFirst](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0012-foundation-localfirst.md)
 </content>
 </invoke>

@@ -150,4 +150,4 @@ Bridge's composition root calls `services.AddSubscriptions()` per the bundle man
 - [Overview](overview.md)
 - [Multitenancy — Tenant-Scoped Markers](../multitenancy/tenant-scoped-markers.md)
 - [Catalog — Bundle Manifests](../catalog/bundle-manifests.md)
-- [ADR 0015 — Module-Entity Registration Pattern](xref:adr-0015-module-entity-registration)
+- [ADR 0015 — Module-Entity Registration Pattern](https://github.com/ctwoodwa/Sunfish/blob/main/docs/adrs/0015-module-entity-registration.md)
