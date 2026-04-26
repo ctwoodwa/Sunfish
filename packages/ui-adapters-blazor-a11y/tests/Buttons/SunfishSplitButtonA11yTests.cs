@@ -24,11 +24,10 @@ public class SunfishSplitButtonA11yTests : IClassFixture<SunfishSplitButtonA11yT
 
     public SunfishSplitButtonA11yTests(Ctx ctx) => _ctx = ctx;
 
-    // axe violation: button-name (Critical) — the dropdown-trigger <button> renders only a
-    // chevron icon, no accessible name. SunfishSplitButton must surface aria-label="Open menu"
-    // (or similar) on the secondary button so screen readers can announce its purpose.
+    // axe violation: button-name (Critical) — fixed by DropdownAriaLabel parameter
+    // (default "More options"); applied as aria-label on the chevron-only secondary button.
     // See wave-1-plan4-cluster-A-report.md §"A11y bugs found".
-    [Fact(Skip = "axe violation: button-name on dropdown trigger — see report")]
+    [Fact]
     public async Task SunfishSplitButton_Default_HasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishSplitButton>(p => p
@@ -47,9 +46,9 @@ public class SunfishSplitButtonA11yTests : IClassFixture<SunfishSplitButtonA11yT
         finally { await page.CloseAsync(); }
     }
 
-    // axe violation: button-name (Critical) — same dropdown-trigger issue as above; the
-    // disabled state still renders the chevron-only secondary button without an accessible name.
-    [Fact(Skip = "axe violation: button-name on dropdown trigger — see report")]
+    // axe violation: button-name (Critical) — same dropdown-trigger issue as above; fixed
+    // by the DropdownAriaLabel parameter applied on the disabled-state secondary button too.
+    [Fact]
     public async Task SunfishSplitButton_Disabled_HasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishSplitButton>(p => p

@@ -32,7 +32,8 @@
                                 Size="Size"
                                 ShowLabel="ShowValue"
                                 Format="@Format"
-                                Ranges="Ranges" />
+                                Ranges="Ranges"
+                                AriaLabel="@AriaLabel" />
             break;
 
         case GaugeType.Circular:
@@ -43,7 +44,8 @@
                                   ShowLabel="ShowValue"
                                   Format="@Format"
                                   Color="@ThemeColor"
-                                  Ranges="Ranges" />
+                                  Ranges="Ranges"
+                                  AriaLabel="@AriaLabel" />
             break;
 
         case GaugeType.Linear:
@@ -52,7 +54,8 @@
                                 Max="Max"
                                 ShowLabel="ShowValue"
                                 Format="@Format"
-                                Ranges="Ranges" />
+                                Ranges="Ranges"
+                                AriaLabel="@AriaLabel" />
             break;
 
         case GaugeType.Arc:
@@ -64,7 +67,8 @@
                              ShowLabel="ShowValue"
                              Format="@Format"
                              Color="@ThemeColor"
-                             Ranges="Ranges" />
+                             Ranges="Ranges"
+                             AriaLabel="@AriaLabel" />
             break;
     }
 </div>
@@ -102,4 +106,7 @@
 
     /// <summary>Optional colored ranges that override the default fill color.</summary>
     [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    /// <summary>Accessible label for the gauge meter (defaults to "Gauge value").</summary>
+    [Parameter] public string? AriaLabel { get; set; }
 }

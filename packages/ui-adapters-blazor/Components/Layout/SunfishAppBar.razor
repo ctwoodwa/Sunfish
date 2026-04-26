@@ -2,7 +2,7 @@
 
 <header class="@CombineClasses(AppBarRootClass)"
         style="@CombineStyles(SizeStyle)"
-        role="banner"
+        role="@(Position == AppBarPosition.Top ? "banner" : null)"
         @attributes="AdditionalAttributes">
     @ChildContent
 </header>

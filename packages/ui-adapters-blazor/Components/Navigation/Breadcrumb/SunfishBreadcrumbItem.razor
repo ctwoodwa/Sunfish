@@ -1,50 +1,18 @@
 @namespace Sunfish.UIAdapters.Blazor.Components.Navigation
 @inherits SunfishComponentBase
 
-<li class="@CombineClasses(CssProvider.BreadcrumbItemClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
-    @if (IsActive)
-    {
-        <span aria-current="page">
-            @if (!string.IsNullOrEmpty(Icon))
-            {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
-            }
-            @if (!string.IsNullOrEmpty(Title))
-            {
-                @Title
-            }
-            @ChildContent
-        </span>
-    }
-    else if (!string.IsNullOrEmpty(Href))
-    {
-        <a href="@Href">
-            @if (!string.IsNullOrEmpty(Icon))
-            {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
-            }
-            @if (!string.IsNullOrEmpty(Title))
-            {
-                @Title
-            }
-            @ChildContent
-        </a>
-    }
-    else
-    {
-        <span>
-            @if (!string.IsNullOrEmpty(Icon))
-            {
-                <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
-            }
-            @if (!string.IsNullOrEmpty(Title))
-            {
-                @Title
-            }
-            @ChildContent
-        </span>
-    }
-</li>
+@if (InList)
+{
+    <li class="@CombineClasses(CssProvider.BreadcrumbItemClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+        @InnerContent
+    </li>
+}
+else
+{
+    <span class="@CombineClasses(CssProvider.BreadcrumbItemClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+        @InnerContent
+    </span>
+}
 
 @code {
     [Parameter] public string? Href { get; set; }
@@ -52,4 +20,57 @@
     [Parameter] public string? Title { get; set; }
     [Parameter] public string? Icon { get; set; }
     [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether this item is rendered inside a parent <c>&lt;ol&gt;</c>/<c>&lt;ul&gt;</c>
+    /// (e.g. <see cref="SunfishBreadcrumb"/>). Defaults to <c>true</c>; set <c>false</c> for
+    /// standalone usage to avoid an orphan <c>&lt;li&gt;</c>.
+    /// </summary>
+    [Parameter] public bool InList { get; set; } = true;
+
+    private RenderFragment InnerContent => __builder =>
+    {
+        if (IsActive)
+        {
+            <span aria-current="page">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                }
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    @Title
+                }
+                @ChildContent
+            </span>
+        }
+        else if (!string.IsNullOrEmpty(Href))
+        {
+            <a href="@Href">
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                }
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    @Title
+                }
+                @ChildContent
+            </a>
+        }
+        else
+        {
+            <span>
+                @if (!string.IsNullOrEmpty(Icon))
+                {
+                    <span class="sf-breadcrumb__icon">@IconProvider.GetIconMarkup(Icon, Sunfish.Foundation.Enums.IconSize.Small)</span>
+                }
+                @if (!string.IsNullOrEmpty(Title))
+                {
+                    @Title
+                }
+                @ChildContent
+            </span>
+        }
+    };
 }

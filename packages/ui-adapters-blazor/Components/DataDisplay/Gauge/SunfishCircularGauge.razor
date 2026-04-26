@@ -17,6 +17,7 @@
      aria-valuenow="@Value"
      aria-valuemin="@Min"
      aria-valuemax="@Max"
+     aria-label="@(AriaLabel ?? "Gauge value")"
      @attributes="AdditionalAttributes">
     <svg width="@Size" height="@Size" viewBox="0 0 @Size @Size">
         <circle cx="@cx" cy="@cy" r="@radius"
@@ -46,6 +47,9 @@
     [Parameter] public string? Format { get; set; }
     [Parameter] public string? Color { get; set; }
     [Parameter] public IEnumerable<GaugeRange>? Ranges { get; set; }
+
+    /// <summary>Accessible label for the gauge meter (defaults to "Gauge value").</summary>
+    [Parameter] public string? AriaLabel { get; set; }
 
     private string GetColor()
     {

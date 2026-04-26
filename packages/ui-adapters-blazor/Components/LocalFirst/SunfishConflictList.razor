@@ -8,7 +8,7 @@
 
 <div class="@Classes"
      style="@CombineStyles()"
-     role="list"
+     role="@(Conflicts is null || Conflicts.Count == 0 ? null : "list")"
      @attributes="AdditionalAttributes">
     @if (Conflicts is null || Conflicts.Count == 0)
     {

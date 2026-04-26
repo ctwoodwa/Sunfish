@@ -21,14 +21,21 @@
 
     @if (IsOpen)
     {
+        var isDialog = HasFocusableContent;
+        var resolvedRole = isDialog ? "dialog" : "tooltip";
+        var resolvedLabelledBy = isDialog && HeaderContent != null ? _headerId : null;
+        var resolvedAriaLabel = isDialog && HeaderContent == null
+            ? (Title ?? "Popover")
+            : null;
         <div id="@_popoverId"
              class="@PopoverContentClasses"
              style="@PopoverContentStyle"
-             role="@(HasFocusableContent ? "dialog" : "tooltip")"
-             aria-modal="false"
-             aria-labelledby="@(HeaderContent != null ? _headerId : null)"
+             role="@resolvedRole"
+             aria-modal="@(isDialog ? "false" : null)"
+             aria-labelledby="@resolvedLabelledBy"
+             aria-label="@resolvedAriaLabel"
              aria-describedby="@_bodyId"
-             tabindex="-1">
+             tabindex="@(isDialog ? "-1" : null)">
             @if (ShowCallout)
             {
                 <div class="sf-popover__callout"></div>
@@ -110,6 +117,14 @@
 
     /// <summary>Optional actions region content (buttons, links).</summary>
     [Parameter] public RenderFragment? ActionsContent { get; set; }
+
+    /// <summary>
+    /// Optional accessible name for the popover. When the popover renders as a
+    /// <c>role="dialog"</c> (i.e. has focusable actions) and no <see cref="HeaderContent"/>
+    /// is provided, this populates <c>aria-label</c> so the dialog has a name (axe
+    /// <c>aria-dialog-name</c>). Mirrors the SunfishPopup pattern. Defaults to "Popover".
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
 
     // ── Computed values ────────────────────────────────────────────────
 

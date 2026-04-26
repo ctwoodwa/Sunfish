@@ -3,8 +3,8 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
-using Bunit.TestDoubles;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using NSubstitute;
 using Sunfish.Foundation.Services;
 using Sunfish.UICore.Contracts;
@@ -14,48 +14,71 @@ using Xunit;
 namespace Sunfish.UIAdapters.Blazor.A11y.Tests.Overlays;
 
 /// <summary>
-/// Wave-1 Plan 4 Cluster C — bUnit-axe a11y harness for <c>SunfishPopup</c>.
-/// Renders the popup in its <c>Visible=true + FocusTrap=true</c> shape (so it emits
-/// <c>role="dialog"</c> + <c>aria-modal="true"</c> per the existing markup), hosts
-/// the markup in the Playwright bridge, and asserts axe-core surfaces zero moderate+
-/// violations.
+/// bUnit-axe a11y harness for <see cref="SunfishPopup"/>.
+/// <para>
+/// Covers the fix for axe rule <c>aria-dialog-name</c> (WCAG 4.1.2, Serious): when
+/// <see cref="SunfishPopup.FocusTrap"/> is <c>true</c>, the popup root emits
+/// <c>role="dialog"</c> + <c>aria-modal="true"</c> and so must also expose an accessible
+/// name via <c>aria-label</c>. The new <c>Title</c> parameter wires that name through.
+/// </para>
 /// </summary>
-/// <remarks>
-/// Per the brief, Overlays are tested in their <i>opened</i> state — for popups that
-/// is <c>Visible=true</c>. <see cref="JSRuntimeMode.Loose"/> is required because the
-/// component fires JS interop in <c>OnAfterRenderAsync</c> for anchor positioning;
-/// loose mode lets bUnit auto-satisfy the calls so the markup pass completes.
-/// </remarks>
 public class SunfishPopupA11yTests : IClassFixture<SunfishPopupA11yTests.Ctx>
 {
     private readonly Ctx _ctx;
 
     public SunfishPopupA11yTests(Ctx ctx) => _ctx = ctx;
 
-    // axe violation: aria-dialog-name — SunfishPopup emits role="dialog" + aria-modal="true"
-    // when FocusTrap=true but does not set aria-label or aria-labelledby on the popup root,
-    // so axe (WCAG 4.1.2 Name, Role, Value) reports the dialog has no accessible name.
-    // This is a real component bug; per Cluster C brief we mark it Skip and DO NOT fix here.
-    [Fact(Skip = "axe violation: aria-dialog-name — popup root needs aria-label or aria-labelledby")]
-    public async Task SunfishPopup_VisibleWithFocusTrap_ZeroAxeViolations()
+    [Fact]
+    public async Task FocusTrap_WithTitle_HasNoAriaDialogNameViolation()
     {
         var rendered = _ctx.Bunit.Render<SunfishPopup>(p => p
             .Add(c => c.Visible, true)
             .Add(c => c.FocusTrap, true)
-            .AddChildContent(
-                "<button type=\"button\">First action</button>" +
-                "<button type=\"button\">Second action</button>"));
+            .Add(c => c.Title, "Filter rows")
+            .AddChildContent("<button>OK</button>"));
 
+        await AssertNoModerateAxeViolationsAsync(rendered.Markup, "focus-trap+title");
+    }
+
+    [Fact]
+    public async Task NoFocusTrap_HasNoAxeViolations()
+    {
+        // Without FocusTrap, no role="dialog" is emitted, so aria-dialog-name does not apply
+        // and Title is not required.
+        var rendered = _ctx.Bunit.Render<SunfishPopup>(p => p
+            .Add(c => c.Visible, true)
+            .AddChildContent("<button>OK</button>"));
+
+        await AssertNoModerateAxeViolationsAsync(rendered.Markup, "no-focus-trap");
+    }
+
+    [Fact]
+    public void FocusTrap_WithoutTitle_FallsBackToDialogLabel_DoesNotThrow()
+    {
+        // Per fix brief: the gentler default is to fall back to aria-label="Dialog" and
+        // emit a console warning rather than throw. This keeps existing consumers rendering
+        // while the violation is paid down. The fallback also satisfies aria-dialog-name.
+        var rendered = _ctx.Bunit.Render<SunfishPopup>(p => p
+            .Add(c => c.Visible, true)
+            .Add(c => c.FocusTrap, true)
+            .AddChildContent("<button>OK</button>"));
+
+        Assert.Contains("aria-label=\"Dialog\"", rendered.Markup);
+        Assert.Contains("role=\"dialog\"", rendered.Markup);
+        Assert.Contains("aria-modal=\"true\"", rendered.Markup);
+    }
+
+    private async Task AssertNoModerateAxeViolationsAsync(string markup, string scenario)
+    {
         var page = await _ctx.Host.NewPageAsync(new CultureInfo("en-US"));
         try
         {
-            var result = await AxeRunner.RunAxeAsync(rendered.Markup, page);
+            var result = await AxeRunner.RunAxeAsync(markup, page);
             var moderatePlus = result.Violations
                 .Where(v => v.Impact >= AxeImpact.Moderate)
                 .ToList();
-
             Assert.True(moderatePlus.Count == 0,
-                $"SunfishPopup surfaced {moderatePlus.Count} moderate+ axe violation(s): " +
+                $"Popup[{scenario}] surfaced {moderatePlus.Count} moderate+ axe violation(s): " +
                 string.Join(", ", moderatePlus.Select(v => v.Id)));
         }
         finally
@@ -64,25 +87,29 @@ public class SunfishPopupA11yTests : IClassFixture<SunfishPopupA11yTests.Ctx>
         }
     }
 
-    public sealed class Ctx : IAsyncLifetime, IDisposable
+    public sealed class Ctx : IAsyncLifetime
     {
-        public BunitContext Bunit { get; } = new();
+        public BunitContext Bunit { get; }
         public PlaywrightPageHost Host { get; private set; } = null!;
 
         public Ctx()
         {
+            Bunit = new BunitContext();
             Bunit.Services.AddSingleton(Substitute.For<ISunfishCssProvider>());
             Bunit.Services.AddSingleton(Substitute.For<ISunfishIconProvider>());
             Bunit.Services.AddSingleton(Substitute.For<ISunfishThemeService>());
-            // SunfishPopup invokes JS in OnAfterRenderAsync for anchor positioning;
-            // loose mode auto-satisfies the calls so render completes without throwing.
             Bunit.JSInterop.Mode = JSRuntimeMode.Loose;
         }
 
-        public async Task InitializeAsync() => Host = await PlaywrightPageHost.GetAsync();
+        public async Task InitializeAsync()
+        {
+            Host = await PlaywrightPageHost.GetAsync();
+        }
 
-        public Task DisposeAsync() => Task.CompletedTask;
-
-        public void Dispose() => Bunit.Dispose();
+        public Task DisposeAsync()
+        {
+            Bunit.Dispose();
+            return Task.CompletedTask;
+        }
     }
 }
