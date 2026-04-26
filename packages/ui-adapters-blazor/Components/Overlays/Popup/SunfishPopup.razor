@@ -10,6 +10,7 @@
          style="@GetPopupStyle()"
          role="@(FocusTrap ? "dialog" : null)"
          aria-modal="@(FocusTrap ? "true" : null)"
+         aria-label="@(FocusTrap ? EffectiveAriaLabel : null)"
          tabindex="-1"
          data-anchor-h="@AnchorHorizontalAlign.ToString().ToLowerInvariant()"
          data-anchor-v="@AnchorVerticalAlign.ToString().ToLowerInvariant()"
