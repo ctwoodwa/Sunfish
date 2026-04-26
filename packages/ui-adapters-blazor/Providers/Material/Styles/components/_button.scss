@@ -69,10 +69,18 @@
 
   // Phase 2B — SYNTHESIS Theme 5: M3 3px secondary outline + 2px offset.
   // See Providers/Material/Styles/foundation/_focus.scss for the mixin body.
+  //
+  // SYNTHESIS Theme 4 (P0 item 12) — focus state previously stacked the focus
+  // ring AND the state-layer overlay, doubling the visual weight at the
+  // moment a keyboard user lands on the button. M3 spec is one OR the other;
+  // we keep the focus ring (which is the tokenised, framework-spec affordance)
+  // and explicitly hold `::before` at zero opacity in the focus-visible
+  // branch so a hover that follows focus still gets the hover overlay (because
+  // the &:hover rule above wins via cascade order).
   &:focus-visible {
     @include sf-focus-ring;
 
-    &::before { opacity: var(--sf-state-focus-opacity); }
+    &::before { opacity: 0; }
   }
 
   &:active::before { opacity: var(--sf-state-pressed-opacity); }

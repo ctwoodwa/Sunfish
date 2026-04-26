@@ -4330,7 +4330,7 @@ tr.is-row-dragging-source {
   transform: translate(-50%, -50%);
   background: var(--sf-color-background);
   border-radius: var(--sf-radius-lg);
-  box-shadow: var(--sf-shadow-xl);
+  box-shadow: var(--elevation-shadow-dialog, var(--sf-shadow-xl));
   padding: var(--sf-space-xl);
   min-width: 320px;
   max-width: min(90vw, 640px);
