@@ -24,11 +24,9 @@ public class SunfishChipA11yTests : IClassFixture<SunfishChipA11yTests.Ctx>
 
     public SunfishChipA11yTests(Ctx ctx) => _ctx = ctx;
 
-    // axe violation: aria-required-parent (Critical) — SunfishChip renders role="option" but
-    // the standalone fragment has no role="listbox" ancestor. Either chip must drop role="option"
-    // when used outside SunfishChipSet, or it must enforce that it can only be used inside one.
-    // See wave-1-plan4-cluster-A-report.md §"A11y bugs found".
-    [Fact(Skip = "axe violation: aria-required-parent (role=option without role=listbox) — see report")]
+    // Resolved by fix/a11y-sunfishchip-triple: standalone chip no longer emits role="option";
+    // root is a plain <span> (or <button> when interactive) so aria-required-parent is satisfied.
+    [Fact]
     public async Task SunfishChip_Default_HasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishChip>(p => p
@@ -38,8 +36,9 @@ public class SunfishChipA11yTests : IClassFixture<SunfishChipA11yTests.Ctx>
         await AssertNoViolations(rendered.Markup);
     }
 
-    // axe violation: aria-required-parent (Critical) — same standalone-chip issue as above.
-    [Fact(Skip = "axe violation: aria-required-parent (role=option without role=listbox) — see report")]
+    // Resolved by fix/a11y-sunfishchip-triple: interactive Selectable chip renders as a
+    // <button type="button" aria-pressed=...> instead of <span role="option">.
+    [Fact]
     public async Task SunfishChip_Selected_HasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishChip>(p => p
@@ -50,13 +49,12 @@ public class SunfishChipA11yTests : IClassFixture<SunfishChipA11yTests.Ctx>
         await AssertNoViolations(rendered.Markup);
     }
 
-    // axe violations:
-    //   • aria-required-parent (Critical) — same as above.
-    //   • nested-interactive (Serious) — the chip <span role="option"> has @onclick AND
-    //     contains a <button> for remove; ARIA forbids interactive controls inside another
-    //     interactive control.
-    //   • target-size (Serious) — the &times; remove button is too small (24px minimum WCAG 2.2).
-    [Fact(Skip = "axe violations: aria-required-parent + nested-interactive + target-size — see report")]
+    // Resolved by fix/a11y-sunfishchip-triple:
+    //   • Removable chip root is now a non-interactive <div> wrapper (no role="option")
+    //     containing two sibling <button>s — chip-action and remove. No nesting,
+    //     no orphan listbox option.
+    //   • Remove button enforces inline min-width/min-height of 24px (WCAG 2.2 target-size).
+    [Fact]
     public async Task SunfishChip_Removable_HasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishChip>(p => p
