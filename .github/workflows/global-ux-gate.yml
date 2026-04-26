@@ -51,6 +51,15 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Public-repo hardening: every job here is pure CI (audit / build / test /
+# upload-artifact). `contents: read` is the only scope any of them needs —
+# checkout reads the tree, and upload-artifact uses the actions API (not
+# GITHUB_TOKEN scopes). No job writes back to the repo, no PR comments,
+# no releases. Defense-in-depth against a compromised pnpm or NuGet
+# transitive dep stealing the implicit token.
+permissions:
+  contents: read
+
 jobs:
   css-logical:
     name: CSS logical-properties audit
