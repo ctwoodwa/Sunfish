@@ -6,10 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — Bridge's onboarding /
-         errors.* / state.* resource keys (default + ar-SA) are scaffolded ahead of consumer
-         wiring. Remove once Bridge pages call into IStringLocalizer. -->
-    <NoWarn>$(NoWarn);SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
