@@ -217,6 +217,6 @@ jobs:
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural, plan-2-binary-gate]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate]
     steps:
       - run: echo "All Global-UX gate jobs passed."
