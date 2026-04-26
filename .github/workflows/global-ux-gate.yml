@@ -83,9 +83,11 @@ jobs:
         run: node tooling/locale-completeness-check/check.mjs
 
   # Plan 5 — SUNFISH_A11Y_001 gate (component missing sibling .stories.ts).
-  # Report-only initially; promote to --fail-on-missing once the Phase 1 surface
-  # is fully covered by Plan 4 cascade. Implementation is a Node tool (not a
-  # Roslyn analyzer) because the source is TypeScript — see
+  # Promoted to --fail-on-missing once the Phase 1 surface (button, dialog,
+  # syncstate-indicator) reached full coverage on the Plan 4 cascade. New ui-core
+  # components added under packages/ui-core/src/components/ MUST ship a sibling
+  # sunfish-<name>.stories.ts file or this job fails the PR. Implementation is a
+  # Node tool (not a Roslyn analyzer) because the source is TypeScript — see
   # tooling/Sunfish.Tooling.A11yStoriesCheck/README.md for the scope decision.
   a11y-stories-check:
     name: A11y stories check (SUNFISH_A11Y_001)
@@ -98,8 +100,8 @@ jobs:
           node-version: "24"
       - name: Run tool's own fixture tests
         run: node --test tooling/Sunfish.Tooling.A11yStoriesCheck/tests/check.test.mjs
-      - name: Report a11y stories coverage (no failure gate yet)
-        run: node tooling/Sunfish.Tooling.A11yStoriesCheck/check.mjs
+      - name: Enforce a11y stories coverage (fail on any missing)
+        run: node tooling/Sunfish.Tooling.A11yStoriesCheck/check.mjs --fail-on-missing
 
   a11y-storybook:
     name: A11y Storybook test-runner
