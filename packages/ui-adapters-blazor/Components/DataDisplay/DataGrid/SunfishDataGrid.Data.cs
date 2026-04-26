@@ -167,8 +167,16 @@ public partial class SunfishDataGrid<TItem>
     /// <summary>Toggles a group's collapsed state.</summary>
     internal async Task ToggleGroup(string groupKey)
     {
-        if (!_collapsedGroups.Remove(groupKey))
+        bool nowCollapsed;
+        if (_collapsedGroups.Remove(groupKey))
+        {
+            nowCollapsed = false;
+        }
+        else
+        {
             _collapsedGroups.Add(groupKey);
+            nowCollapsed = true;
+        }
 
         // Rebuild the flat display list
         if (_state.GroupDescriptors.Count > 0)
@@ -177,6 +185,9 @@ public partial class SunfishDataGrid<TItem>
         }
 
         await NotifyStateChanged("Group");
+        // WCAG 4.1.3 Status Messages — announce expand/collapse so AT users get
+        // parity with the sighted expand/collapse chevron.
+        Announce(nowCollapsed ? "Group collapsed." : "Group expanded.");
         StateHasChanged();
     }
 
@@ -599,6 +610,9 @@ public partial class SunfishDataGrid<TItem>
         await ProcessDataAsync();
         await NotifyPageChanged();
         await NotifyStateChanged("Sort");
+        // WCAG 4.1.3 Status Messages — announce the new sort state so screen-reader
+        // users get the same feedback sighted users get from the sort indicator.
+        await AnnounceSortStateAsync(column);
     }
 
     // ── Event Handlers: Filtering ───────────────────────────────────────
@@ -634,6 +648,9 @@ public partial class SunfishDataGrid<TItem>
         await ProcessDataAsync();
         await NotifyPageChanged();
         await NotifyStateChanged("Filter");
+        // WCAG 4.1.3 Status Messages — surface the post-filter row count so users
+        // who can't see the table understand the impact of their filter change.
+        Announce($"Filter applied. Showing {_displayedItems.Count} {(_displayedItems.Count == 1 ? "row" : "rows")}.");
     }
 
     // ── FilterMenu support ──────────────────────────────────────────────
