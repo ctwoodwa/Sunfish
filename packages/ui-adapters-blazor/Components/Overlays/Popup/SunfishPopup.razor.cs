@@ -144,8 +144,49 @@ public partial class SunfishPopup : SunfishComponentBase, IAsyncDisposable
     /// <summary>When <c>true</c>, traps focus inside the popup and sets <c>role="dialog"</c>.</summary>
     [Parameter] public bool FocusTrap { get; set; }
 
+    /// <summary>
+    /// Accessible name for the dialog. Required when <see cref="FocusTrap"/> is <c>true</c>
+    /// to satisfy WCAG 4.1.2 (axe rule <c>aria-dialog-name</c>): a popup that emits
+    /// <c>role="dialog"</c> + <c>aria-modal="true"</c> must expose an <c>aria-label</c> or
+    /// <c>aria-labelledby</c>. When <see cref="FocusTrap"/> is <c>false</c>, this parameter
+    /// is ignored. When <see cref="FocusTrap"/> is <c>true</c> and <see cref="Title"/> is
+    /// null/empty, the component falls back to <c>"Dialog"</c> and writes a console warning
+    /// to <see cref="Console.Error"/> instead of throwing — chosen so existing call sites
+    /// keep rendering while a real title is added.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
     /// <summary>When <c>true</c> (default), pressing Escape closes the popup.</summary>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
+
+    // ── Accessibility ──────────────────────────────────────────────────
+
+    private const string FallbackDialogTitle = "Dialog";
+    private bool _missingTitleWarned;
+
+    /// <summary>
+    /// Resolves the <c>aria-label</c> emitted on the dialog root when <see cref="FocusTrap"/>
+    /// is <c>true</c>. Returns <see cref="Title"/> when supplied; otherwise returns
+    /// <see cref="FallbackDialogTitle"/> (<c>"Dialog"</c>).
+    /// </summary>
+    private string EffectiveAriaLabel => string.IsNullOrWhiteSpace(Title) ? FallbackDialogTitle : Title!;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        // Gentle fallback per a11y brief: when FocusTrap=true demands an accessible name
+        // but the consumer hasn't supplied Title, warn once per instance and use "Dialog".
+        // We deliberately do NOT throw — that would break existing consumers mid-render.
+        if (FocusTrap && string.IsNullOrWhiteSpace(Title) && !_missingTitleWarned)
+        {
+            _missingTitleWarned = true;
+            Console.Error.WriteLine(
+                "[SunfishPopup] FocusTrap=true requires a non-empty Title to satisfy WCAG 4.1.2 " +
+                "(axe rule aria-dialog-name). Falling back to aria-label=\"" +
+                FallbackDialogTitle + "\". Set Title=\"…\" to provide a meaningful accessible name.");
+        }
+    }
 
     // ── Computed ────────────────────────────────────────────────────────
 
