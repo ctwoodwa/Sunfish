@@ -168,6 +168,10 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props', '**/Directory.Build.targets') }}
           restore-keys: nuget-${{ runner.os }}-
 
+      # Cache key v3: revert v2's `packs/` inclusion — multi-GB upload
+      # exceeded the 20-min job timeout on cache save. Runtime packs come
+      # from `dotnet restore -p:RuntimeIdentifiers=win-x64` (next step) and
+      # the NuGet packages cache above keeps that fast on warm runs.
       - name: Cache .NET workloads
         uses: actions/cache@v4
         with:
@@ -175,21 +179,26 @@ jobs:
             ~/.dotnet/workloads
             C:/Program Files/dotnet/sdk-manifests
             C:/Program Files/dotnet/metadata
-          key: dotnet-workloads-${{ runner.os }}-${{ hashFiles('global.json', 'Sunfish.slnx') }}
-          restore-keys: dotnet-workloads-${{ runner.os }}-
+          key: dotnet-workloads-v3-${{ runner.os }}-${{ hashFiles('global.json', 'Sunfish.slnx') }}
+          restore-keys: dotnet-workloads-v3-${{ runner.os }}-
 
       - name: Restore .NET workloads
         run: dotnet workload restore Sunfish.slnx
       - name: Restore
-        run: dotnet restore Sunfish.slnx
+        # Pass RuntimeIdentifiers=win-x64 so the Anchor MAUI project pulls
+        # down Microsoft.NETCore.App.Runtime.win-x64 + AspNetCore equivalent
+        # at restore time. Without this, NETSDK1112 fires at build time
+        # because MAUI/WindowsAppSDK forces win-x64 runtime pack but the
+        # csproj has no explicit RuntimeIdentifiers element.
+        run: dotnet restore Sunfish.slnx -p:RuntimeIdentifiers=win-x64
       - name: Build (SUNFISH_* warnings as errors only)
-        # Use bash shell on Windows runner so semicolons in WarningsAsErrors
-        # don't get mangled by PowerShell's command-separator parsing
-        # (the default `pwsh -command ". '{0}'"` shell-wrapping breaks
-        # nested single-quoted args containing ;). Bash treats single
-        # quotes literally and passes the whole MSBuild prop unchanged.
+        # Escape semicolons as %3B so MSBuild decodes them inside the property
+        # value. Without this, both PowerShell (command-separator) and Git Bash
+        # on Windows (MSYS2 PATH-conversion layer) split the semicolon-laden
+        # arg before MSBuild sees it, causing MSB1006 "Switch: SUNFISH_I18N_002".
+        # %3B → ; happens inside MSBuild's property parser, after argv split.
         shell: bash
-        run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
+        run: dotnet build Sunfish.slnx --configuration Release --no-restore -p:WarningsAsErrors=SUNFISH_I18N_001%3BSUNFISH_I18N_002%3BSUNFISH_A11Y_001
 
   # Plan 5 Task 1 — XLIFF round-trip gate.
   # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
@@ -326,9 +335,13 @@ jobs:
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
   # per gate-job; one suffices.
+  # NOTE: cross-plan-health is intentionally absent from needs[] because it
+  # skips on PR events (push+schedule only; see PR #108). A SKIPPED parent
+  # propagates SKIPPED to the aggregator, which then doesn't satisfy
+  # required-check semantics. Same pattern PR #106 used for a11y-audit.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health, resx-xss-scan]
+    needs: [css-logical, locale-completeness, a11y-stories-check, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, resx-xss-scan]
     steps:
       - run: echo "All Global-UX gate jobs passed."
