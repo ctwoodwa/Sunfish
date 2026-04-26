@@ -1,0 +1,51 @@
+{
+  "_comment_doc": "Sunfish main-branch ruleset, modeled with GitHub's Rulesets API (POST /repos/{owner}/{repo}/rulesets). This is the recommended modern replacement for the legacy branch-protection rule in branch-protection-main.json. See infra/github/README.md for when to use which. The leading _comment_* keys are stripped by apply-main-ruleset.sh before POST/PATCH (the GitHub API rejects unknown top-level fields).",
+  "_comment_paths_ignore_hazard": "GitHub Rulesets, like legacy branch protection, will leave a required check in 'Pending' if the workflow is skipped (paths/paths-ignore filter, branches filter, commit-message skip, etc.). Of the 7 required contexts below, the 4 prefixed [global-ux] live in .github/workflows/global-ux-gate.yml which is path-filtered to packages/, apps/, tooling/, i18n/. A docs-only PR will skip them and be permanently blocked. Mitigations documented in README.md §'Paths-ignore hazard'.",
+  "name": "main-protection",
+  "target": "branch",
+  "enforcement": "active",
+  "bypass_actors": [
+    {
+      "actor_id": 5,
+      "actor_type": "RepositoryRole",
+      "bypass_mode": "always"
+    }
+  ],
+  "conditions": {
+    "ref_name": {
+      "include": ["refs/heads/main"],
+      "exclude": []
+    }
+  },
+  "rules": [
+    { "type": "deletion" },
+    { "type": "non_fast_forward" },
+    {
+      "type": "required_status_checks",
+      "parameters": {
+        "do_not_enforce_on_create": true,
+        "strict_required_status_checks_policy": true,
+        "required_status_checks": [
+          { "context": "Build & Test",                 "integration_id": 15368 },
+          { "context": "Lint PR commits",              "integration_id": 15368 },
+          { "context": "Analyze (csharp)",             "integration_id": 15368 },
+          { "context": "CSS logical-properties audit", "integration_id": 15368 },
+          { "context": "Locale completeness check",    "integration_id": 15368 },
+          { "context": "A11y Storybook test-runner",   "integration_id": 15368 },
+          { "context": "Global-UX Gate (aggregate)",   "integration_id": 15368 }
+        ]
+      }
+    },
+    {
+      "type": "pull_request",
+      "parameters": {
+        "allowed_merge_methods": ["squash"],
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": false
+      }
+    }
+  ]
+}
