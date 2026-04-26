@@ -1,0 +1,105 @@
+@page "/components/datadisplay/treeview/standalone-item"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TreeItem / Standalone vs in-tree · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeItem / Standalone vs in-tree"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/StandaloneItem/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeItem</code> auto-detects whether it is inside a
+            <code>SunfishTreeView</code> via a cascading parameter and switches its ARIA contract
+            accordingly: when in-tree it emits <code>role="treeitem"</code>,
+            <code>aria-expanded</code>, and <code>aria-selected</code>; when standalone it omits
+            those so an orphan <code>treeitem</code> never trips axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/aria-required-parent"
+               target="_blank" rel="noopener">
+                <code>aria-required-parent</code>
+            </a>
+            rule.
+        </p>
+        <p>
+            The <code>InTreeOverride</code> parameter lets you bypass the cascade detection. It
+            takes <code>bool?</code>: leave it as <code>null</code> (default) to use
+            cascade-detected behaviour, set <code>true</code> to force tree semantics in a custom
+            container, or set <code>false</code> to suppress them even when nested.
+        </p>
+        <ul>
+            <li><strong><code>InTreeOverride="null"</code> (default)</strong> &mdash; auto-detects via cascading <code>SunfishTreeView</code>.</li>
+            <li><strong><code>InTreeOverride="true"</code></strong> &mdash; force <code>role="treeitem"</code>; only safe when an ancestor is <code>role="tree"</code>.</li>
+            <li><strong><code>InTreeOverride="false"</code></strong> &mdash; suppress <code>role="treeitem"</code> for standalone embeds (e.g. inside a card or sidebar list).</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 4.1.2 <em>Name, Role, Value</em>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Inside a <code>SunfishTreeView</code> (cascade default)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    The cascading <code>TreeView</code> is detected, items render as
+                    <code>treeitem</code> and the wrapper as <code>role="tree"</code>.
+                </p>
+                <SunfishTreeView>
+                    <SunfishTreeItem Title="Documents" IsExpanded="true">
+                        <SunfishTreeItem Title="Reports" />
+                        <SunfishTreeItem Title="Invoices" />
+                    </SunfishTreeItem>
+                    <SunfishTreeItem Title="Pictures" />
+                </SunfishTreeView>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standalone (<code>InTreeOverride="false"</code>)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Mounted outside any tree container. Suppressing the role keeps the markup
+                    valid while still getting the visual chrome.
+                </p>
+                <ul style="list-style:none; padding-left:0; margin:0; max-width:240px;">
+                    <SunfishTreeItem Title="Featured item" InTreeOverride="false" />
+                    <SunfishTreeItem Title="Featured item · 2" InTreeOverride="false" />
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Forced in-tree (<code>InTreeOverride="true"</code>)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Use only when you build the surrounding <code>role="tree"</code> container
+                    yourself (rare). The override forces <code>role="treeitem"</code> regardless of
+                    the cascading parameter.
+                </p>
+                <ul role="tree" style="list-style:none; padding-left:0; margin:0; max-width:240px;">
+                    <SunfishTreeItem Title="Custom branch" InTreeOverride="true" IsExpanded="true">
+                        <SunfishTreeItem Title="Custom leaf" InTreeOverride="true" />
+                    </SunfishTreeItem>
+                </ul>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="treeitem"</code></dt>
+                    <dd>Emitted when in-tree (cascade-detected or <code>InTreeOverride="true"</code>).</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Emitted only when in-tree and the item has children.</dd>
+
+                    <dt><code>aria-selected</code></dt>
+                    <dd>Emitted only when in-tree.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "DataDisplay", "TreeView", "StandaloneItem"];
+}

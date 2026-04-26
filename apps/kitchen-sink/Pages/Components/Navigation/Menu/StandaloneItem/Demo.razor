@@ -1,0 +1,93 @@
+@page "/components/navigation/menu/standalone-item"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MenuItem / Standalone vs in-menu · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MenuItem / Standalone vs in-menu"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Menu/StandaloneItem/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMenuItem</code> is most often used as a child of <code>SunfishMenu</code>
+            (or a menubar). In that scenario the item must advertise <code>role="menuitem"</code>
+            so AT users can navigate the menu pattern correctly. But the same primitive can also
+            be reused outside a menu &mdash; for example as a row in a custom command palette or
+            a button rendered inside a popover &mdash; and in those cases an orphan
+            <code>role="menuitem"</code> would trip axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/aria-required-parent"
+               target="_blank" rel="noopener">
+                <code>aria-required-parent</code>
+            </a>
+            rule.
+        </p>
+        <p>
+            The <code>InMenu</code> parameter gates the role: it defaults to <code>false</code>
+            (no role), and <code>SunfishMenu</code> sets <code>InMenu="true"</code> on its
+            children when it composes them. When you mount a <code>SunfishMenuItem</code> as a
+            child of <code>SunfishMenu</code> in markup directly, set <code>InMenu="true"</code>
+            yourself so it inherits the menu pattern.
+        </p>
+        <ul>
+            <li><strong><code>InMenu="false"</code> (default)</strong> &mdash; no <code>role</code> attribute, behaves as a plain button or anchor.</li>
+            <li><strong><code>InMenu="true"</code></strong> &mdash; emits <code>role="menuitem"</code>; only safe when an ancestor is <code>role="menu"</code> / <code>menubar</code>.</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 4.1.2 <em>Name, Role, Value</em>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Inside a <code>SunfishMenu</code> (set <code>InMenu="true"</code>)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Each item exposes <code>role="menuitem"</code> and the surrounding container
+                    is <code>role="menu"</code>, satisfying the required-parent contract.
+                </p>
+                <div class="demo-row">
+                    <SunfishButton OnClick="() => _open = !_open">File</SunfishButton>
+                    <SunfishMenu IsOpen="@_open" IsOpenChanged="@((bool v) => _open = v)">
+                        <SunfishMenuItem InMenu="true" Icon="plus" Text="New" />
+                        <SunfishMenuItem InMenu="true" Icon="folder" Text="Open" />
+                        <SunfishMenuItem InMenu="true" Icon="save" Text="Save" />
+                    </SunfishMenu>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standalone (<code>InMenu="false"</code> &mdash; default)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Mounted outside a menu container. No <code>role="menuitem"</code> is emitted,
+                    so AT users hear the items as ordinary buttons rather than as orphan menu items.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:.25rem; max-width:240px;">
+                    <SunfishMenuItem Icon="download" Text="Download report" />
+                    <SunfishMenuItem Icon="share" Text="Share link" />
+                    <SunfishMenuItem Icon="trash" Text="Delete" IsDisabled="true" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="menuitem"</code></dt>
+                    <dd>Emitted only when <code>InMenu="true"</code>; <code>SunfishMenu</code> sets this for its rendered children.</dd>
+
+                    <dt><code>aria-disabled</code></dt>
+                    <dd>Set on disabled anchors. Buttons also use the native <code>disabled</code> attribute.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Menu", "StandaloneItem"];
+
+    private bool _open;
+}
