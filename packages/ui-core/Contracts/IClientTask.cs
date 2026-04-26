@@ -45,6 +45,8 @@ public sealed record ClientTask<TMessage>(Func<CancellationToken, ValueTask<TMes
     /// Creates a task that completes immediately with the given
     /// <paramref name="message"/>.
     /// </summary>
+    /// <param name="message">The message the returned task should produce when executed.</param>
+    /// <returns>A <see cref="ClientTask{TMessage}"/> that yields <paramref name="message"/>.</returns>
     public static ClientTask<TMessage> FromResult(TMessage message) =>
         new(_ => ValueTask.FromResult(message));
 
@@ -53,6 +55,7 @@ public sealed record ClientTask<TMessage>(Func<CancellationToken, ValueTask<TMes
     /// value. Useful for state transitions that do not need to produce follow-up
     /// messages.
     /// </summary>
+    /// <returns>A <see cref="ClientTask{TMessage}"/> that yields <c>default(TMessage)</c>.</returns>
     public static ClientTask<TMessage> None() =>
         new(_ => ValueTask.FromResult(default(TMessage)!));
 }
