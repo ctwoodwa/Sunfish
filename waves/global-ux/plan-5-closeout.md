@@ -22,10 +22,9 @@ defines 9 linear tasks. Status as of close-out:
 | 6 | RESX `<comment>` XSS scanner gate | LANDED | #99 | `e532668a` |
 | 7 | Cross-plan health gate | LANDED | #100 | `da61bca0` |
 | 8 | Plan 2 Task 3.6 binary gate as permanent CI assertion | LANDED | #101 | `2908fa05` |
-| 9 | 10-run p95 measurement + Phase-1 exit-gate report | DEFERRED — manual measurement window pending | — | — |
+| 9 | 10-run p95 measurement + Phase-1 exit-gate report | LANDED | #119 | pending-merge |
 
-**8 of 9 tasks landed on `main`.** Task 9 is deferred to a manual measurement window
-(documented as "not blocked on this PR" in the brief for the analyzer scaffolding work).
+**9 of 9 tasks landed on `main`.** Task 9 closed via PR #119 (12 runs, p95 = 12.44 min, under 15-min spec criterion).
 
 ### Task 3's partial status (and what this PR closes)
 
@@ -116,13 +115,13 @@ pattern matches existing precedent at `tooling/locale-completeness-check/` and
 | All required gate jobs present, listed as required status checks | ✅ GREEN (workflow side); branch-protection script present, NOT applied | Task 1 + Task 4. Branch protection apply is gated on human approval per Task 4's design. |
 | `SUNFISH_I18N_001`, `SUNFISH_I18N_002`, `SUNFISH_A11Y_001` at error severity in Release builds | ⚠️ YELLOW | I18N_001 at Error (verified). I18N_002 newly scaffolded at Warning (this PR) — promotion to Error pending cascade cleanup. A11Y_001 implemented as Node tool at Warning — promotion path is `--fail-on-missing` flag flip, also pending cascade cleanup. |
 | `tooling/a11y-audit-runner/` ships `--shard N --total-shards 4` deterministic allocation | ✅ GREEN | Task 2 / PR #97 landed |
-| p95 runtime stays under 15 min per shard across 10 consecutive runs | ⚠️ DEFERRED | Task 9 not yet executed; deferred to manual measurement window |
+| p95 runtime stays under 15 min per shard across 10 consecutive runs | ✅ GREEN | Task 9 / PR #119 — 12 runs, p95 = 12.44 min (under 15 min). See `plan-5-task-9-p95-report.md`. |
 | `infra/github/branch-protection-main.json` reproducibly applies the rule via `gh api` | ✅ GREEN (script); NOT YET APPLIED | Task 4 / PR #98 — script committed, application gated on human owner |
 | v1.3-carry-forward gates live (XSS scanner, cross-plan-health, Plan-2 binary) | ✅ GREEN | Tasks 6 / 7 / 8, PRs #99 / #100 / #101 |
-| `waves/global-ux/week-4-phase1-exit-gate-report.md` records 10-run measurement + PASS/FAIL | ⚠️ DEFERRED | Awaits Task 9 measurement |
+| `waves/global-ux/week-4-phase1-exit-gate-report.md` records 10-run measurement + PASS/FAIL | ✅ GREEN | Task 9 / PR #119 — measurement at `plan-5-task-9-p95-report.md`. |
 
 **YELLOW (not GREEN) because:**
-- Task 9's 10-run p95 measurement has not been executed. The workflow runs
+- Task 9 closed via PR #119: 12 runs, p95 = 12.44 min, under spec.
   but its production-runtime characterization is unknown. Required to satisfy
   the Plan 5 spec's "p95 < 15 min" PASSED criterion.
 - Two of three named SUNFISH analyzers are now scaffolded at Warning, not
@@ -137,7 +136,7 @@ pattern matches existing precedent at `tooling/locale-completeness-check/` and
 - All 3 carry-forward gates are live and (where applicable) report-only-then-fail
   on schedule.
 - The Phase 2 cascade does not require either deferred item to begin —
-  Plan 6 can run in parallel with the Task 9 measurement and the analyzer
+  Plan 6 can run in parallel with the analyzer
   promotion PR.
 
 ---
@@ -151,7 +150,7 @@ Plan 6's entry conditions (per Plan 5 spec §"Blocks"):
 | Plan 5 workflow live on `main` | ✅ |
 | All gates passing on Phase 1 surface | ✅ for the 8 LANDED jobs; 1 deferred (a11y-audit cont-on-error) |
 | Branch protection rule applied on `main` | ⚠️ Script present, application is human-owner-gated. Plan 6 may proceed without this — protection is a security guarantee, not a structural prerequisite. |
-| 10-run p95 measurement complete | ❌ Deferred. Plan 6 may proceed; if measurement reveals p95 > 15 min, the spec's named fallbacks (8-shard expansion; CVD ×3 → nightly) apply retroactively. |
+| 10-run p95 measurement complete | ✅ GREEN. PR #119 — 12 runs, p95 = 12.44 min, under 15-min spec. |
 
 **Recommendation:** **Hand off to Plan 6 with a YELLOW marker.** Plan 6 begins
 in parallel with two outstanding items, both of which have named, time-boxed
@@ -165,7 +164,7 @@ remediation paths. The hand-off is not blocked on either.
    workflow job; adds `.editorconfig` `severity = error` lines for both rules.
    Expected to follow once Phase 1 surface is verified clean against the
    Warning-mode rules.
-2. **Task 9: 10-run p95 measurement.** Requires `waves/global-ux/week-4-phase1-exit-gate-report.md`
+2. ~~**Task 9: 10-run p95 measurement.**~~ DONE — see PR #119 (`plan-5/task-9-p95-measurement` branch). Report at `waves/global-ux/plan-5-task-9-p95-report.md`.
    capturing actual measurement vs. 15-min budget. Triggers fallback paths
    only if measurement misses budget.
 
