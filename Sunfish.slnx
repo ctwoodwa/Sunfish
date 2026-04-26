@@ -7,6 +7,10 @@
     <Project Path="packages/analyzers/loc-comments/Sunfish.Analyzers.LocComments.csproj" />
     <Project Path="packages/analyzers/loc-comments/tests/Sunfish.Analyzers.LocComments.Tests.csproj" />
   </Folder>
+  <Folder Name="/analyzers/loc-unused/">
+    <Project Path="packages/analyzers/loc-unused/Sunfish.Analyzers.LocUnused.csproj" />
+    <Project Path="packages/analyzers/loc-unused/tests/Sunfish.Analyzers.LocUnused.Tests.csproj" />
+  </Folder>
   <Folder Name="/foundation/">
     <Project Path="packages/foundation/Sunfish.Foundation.csproj" />
     <Project Path="packages/foundation/tests/tests.csproj" />
