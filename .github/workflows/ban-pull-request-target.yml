@@ -58,14 +58,16 @@ jobs:
 
       - name: Fail if any workflow uses pull_request_target or workflow_run
         run: |
-          set -euo pipefail
+          set -eu
           self=".github/workflows/ban-pull-request-target.yml"
           banned_pattern='^[[:space:]]*(pull_request_target|workflow_run)[[:space:]]*:'
-          offenders=$(
-            grep -rEln "$banned_pattern" .github/workflows \
-              --include='*.yml' --include='*.yaml' \
-            | { grep -v "^${self}$" || true; }
-          )
+          # grep returns 1 when there are no matches; that is the success case
+          # for this gate, so `|| true` keeps the script alive. We deliberately
+          # avoid `set -o pipefail` because the first grep returning 1 (no
+          # matches) would otherwise abort the whole script.
+          all_hits=$(grep -rEln "$banned_pattern" .github/workflows \
+              --include='*.yml' --include='*.yaml' || true)
+          offenders=$(printf '%s\n' "$all_hits" | grep -v "^${self}$" | grep -v '^$' || true)
           if [ -n "$offenders" ]; then
             echo "::error::Banned workflow trigger detected."
             echo ""
