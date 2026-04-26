@@ -1,0 +1,11 @@
+{
+  "_note": "no branch protection rule set on main as of plan-5-task-4 capture",
+  "_captured_at": "2026-04-25",
+  "_captured_via": "gh api repos/ctwoodwa/Sunfish/branches/main/protection",
+  "_response": {
+    "message": "Branch not protected",
+    "documentation_url": "https://docs.github.com/rest/branches/branch-protection#get-branch-protection",
+    "status": "404"
+  },
+  "_rollback_meaning": "Re-applying this snapshot is a no-op. To roll back the Plan 5 rule, instead DELETE the protection: gh api -X DELETE repos/ctwoodwa/Sunfish/branches/main/protection"
+}
