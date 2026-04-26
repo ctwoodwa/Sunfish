@@ -13,17 +13,19 @@
 name: Global-UX Gate
 
 on:
-  schedule:
-    - cron: '0 12 * * 1'  # Monday noon UTC — weekly cross-plan health drift check (Plan 5 Task 7).
   pull_request:
     paths:
+      - "packages/ui-core/**"
+      - "packages/ui-adapters-*/**"
+      - "packages/*/Resources/**"
       - "packages/**"
       - "apps/**"
       - "tooling/css-logical-audit/**"
       - "tooling/Sunfish.Tooling.ColorAudit/**"
-      - "tooling/cross-plan-health/**"
+      - "tooling/Sunfish.Tooling.LocalizationXliff/**"
+      - "tooling/a11y-audit-runner/**"
+      - "tooling/locale-completeness-check/**"
       - "i18n/**"
-      - "waves/global-ux/status.md"
       - ".github/workflows/global-ux-gate.yml"
   push:
     branches: [main]
@@ -101,11 +103,107 @@ jobs:
           name: storybook-static
           path: packages/ui-core/storybook-static/
 
+  # Plan 5 Task 1 — analyzers gate.
+  # Runs on Windows because Sunfish.slnx contains the Anchor MAUI project (see
+  # ci.yml comment for the full rationale). `-warnaserror` guarantees that
+  # SUNFISH_I18N_001/002 and SUNFISH_A11Y_001 — wired at error-severity via
+  # Directory.Build.props — fail the build, not just emit warnings.
+  analyzers:
+    name: Analyzers (-warnaserror)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore .NET workloads
+        run: dotnet workload restore Sunfish.slnx
+      - name: Restore
+        run: dotnet restore Sunfish.slnx
+      - name: Build (warnings as errors)
+        run: dotnet build Sunfish.slnx --configuration Release -warnaserror --no-restore
+
+  # Plan 5 Task 1 — XLIFF round-trip gate.
+  # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
+  # in resx<->xliff20 conversion fails fast without waiting on the full slnx build.
+  xliff-round-trip:
+    name: XLIFF round-trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test LocalizationXliff round-trip
+        run: dotnet test tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xliff-round-trip-results
+          path: TestResults/
+
+  # Plan 5 Task 1 — a11y axe audit, sharded 4-way for runtime budget.
+  # The runner script lives at tooling/a11y-audit-runner/bin/run.mjs and is
+  # delivered by Plan 5 Task 2; until that lands this job will fail (expected).
+  a11y-audit:
+    name: A11y axe audit (shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # continue-on-error until plan-5/task-2 (a11y-audit-runner) has landed
+    # AND a Storybook build is plumbed for this job; until then the job
+    # fails fast on missing tooling/a11y-audit-runner/bin/run.mjs. Promote
+    # to required after Plan 5 Task 9's 10-run p95 measurement clears.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install pnpm
+        run: npm install --global pnpm@10.33.2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Storybook (ui-core)
+        run: pnpm --filter @sunfish/ui-core build-storybook
+      - name: Run a11y audit shard
+        run: node tooling/a11y-audit-runner/bin/run.mjs --shard ${{ matrix.shard }} --total-shards 4
+
+  # Plan 5 Task 1 — CLDR plural-rule gate.
+  # Filter matches FullyQualifiedName~CldrPlural; if no such tests exist yet the
+  # filter selects nothing and dotnet test exits 0. The job becomes load-bearing
+  # once Plan 5 Task 4 lands the CldrPlural test class in foundation/tests.
+  cldr-plural:
+    name: CLDR plural rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test CLDR plural rules
+        run: dotnet test packages/foundation/tests/ --filter "FullyQualifiedName~CldrPlural" --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cldr-plural-results
+          path: TestResults/
+
+
+  # Plan 5 Task 7 — Cross-plan health gate (Wave 1 finding carry-forward).
   cross-plan-health:
     name: Cross-plan health
     runs-on: ubuntu-latest
     if: github.event_name == 'push' || github.event_name == 'schedule'
-    continue-on-error: true  # informational for first 2 weeks; promote to required after baseline
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v5
@@ -119,6 +217,6 @@ jobs:
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural, cross-plan-health]
     steps:
       - run: echo "All Global-UX gate jobs passed."
