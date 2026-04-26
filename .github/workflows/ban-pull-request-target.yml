@@ -1,0 +1,89 @@
+# ---------------------------------------------------------------------------
+# Ban `pull_request_target:` (and `workflow_run:`) workflow triggers.
+#
+# Why this gate exists
+# --------------------
+# `github.com/ctwoodwa/Sunfish` is a PUBLIC repo. The `pull_request_target:`
+# trigger runs with the BASE branch's workflow code AND with the BASE branch's
+# secrets / write-scoped GITHUB_TOKEN, but is typically combined with a
+# `actions/checkout` of the PR HEAD (`github.event.pull_request.head.sha`).
+# That combination is the canonical "pwn request" workflow-injection pattern
+# on public repos: a fork PR can ship malicious code that, if the workflow
+# builds / installs / runs anything from the checked-out tree, executes inside
+# a context that holds repo write secrets and can exfiltrate them. Combined
+# with auto-merge, the blast radius gets larger, not smaller.
+#
+# `workflow_run:` is also banned by this gate. It is less dangerous than
+# `pull_request_target` but it inherits write permissions from the parent
+# workflow run and has been used in similar privilege-escalation chains. If
+# we ever genuinely need it, we want that decision to land in code review,
+# not slip in unnoticed.
+#
+# Threat model in one sentence
+# ----------------------------
+# A drive-by fork PR should not be able to read or use Sunfish's
+# `secrets.*` / write-scoped `GITHUB_TOKEN` — and the only durable way to
+# guarantee that is to forbid the trigger that grants those permissions to
+# untrusted PR code in the first place.
+#
+# Escape hatch
+# ------------
+# If a maintainer ever has a real, well-understood need for
+# `pull_request_target` (e.g., labeling fork PRs from a tightly-scoped
+# workflow that does NOT check out PR HEAD), the escape hatch is explicit:
+# delete this workflow file in the same PR that introduces the new trigger,
+# document why in the PR description, and accept the risk in review.
+# Bypassing this gate silently is not an option.
+#
+# Note: this workflow itself uses `pull_request:` (NOT `pull_request_target:`)
+# so it runs against PR HEAD with read-only permissions and cannot itself be
+# the vehicle for the very attack it is meant to prevent.
+# ---------------------------------------------------------------------------
+
+name: Ban pull_request_target
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Scan workflows for banned triggers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Fail if any workflow uses pull_request_target or workflow_run
+        run: |
+          set -euo pipefail
+          self=".github/workflows/ban-pull-request-target.yml"
+          banned_pattern='^[[:space:]]*(pull_request_target|workflow_run)[[:space:]]*:'
+          offenders=$(
+            grep -rEln "$banned_pattern" .github/workflows \
+              --include='*.yml' --include='*.yaml' \
+            | { grep -v "^${self}$" || true; }
+          )
+          if [ -n "$offenders" ]; then
+            echo "::error::Banned workflow trigger detected."
+            echo ""
+            echo "The following workflow file(s) use pull_request_target or workflow_run:"
+            for f in $offenders; do
+              echo "  - $f"
+              grep -nE "$banned_pattern" "$f" | sed 's/^/      /'
+            done
+            echo ""
+            echo "These triggers are banned in this repo. Sunfish is a PUBLIC repo and"
+            echo "pull_request_target runs with base-branch secrets while typically"
+            echo "checking out PR HEAD — the canonical workflow-injection RCE pattern."
+            echo "workflow_run is also banned because it inherits elevated permissions."
+            echo ""
+            echo "If you genuinely need one of these triggers, delete"
+            echo "  .github/workflows/ban-pull-request-target.yml"
+            echo "in the same PR and explain why in the PR description so it lands in"
+            echo "code review rather than silently."
+            exit 1
+          fi
+          echo "OK: no banned workflow triggers found."
