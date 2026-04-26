@@ -45,10 +45,18 @@ public class SunfishChatA11yTests : IClassFixture<SunfishChatA11yTests.Ctx>
         await AssertNoModerateAxeViolationsAsync(rendered.Markup, "messages");
     }
 
-    [Fact(Skip = "axe violation: aria-prohibited-attr — SunfishChat typing-indicator bubble " +
-        "applies aria-label to a non-interactive <div> which axe disallows. Real component " +
-        "bug; out of scope per cluster-B brief (do not fix components). Re-enable once the " +
-        "typing bubble is restructured (e.g. role=\"status\" wrapper or aria-live region).")]
+    // TRIAGE 2026-04-26 (skipped-test inventory): FIX-LATER.
+    // Tracking: real production bug surfaced by Wave-1 cluster-B cascade (PR #112).
+    // Component bug — `<div aria-label="…">` violates axe `aria-prohibited-attr`
+    // because <div> has no implicit role that permits aria-label.
+    // Unblocker (small, scoped): edit `Components/AI/SunfishChat.razor` line 53 to
+    // add `role="status"` to the bubble (or wrap in `<div role="status" aria-live="polite">`).
+    // Owner: AI-block component team. ETA: next a11y remediation wave.
+    // Why deferred here: per task brief — test files only; production fix lives in a
+    // dedicated PR per audit §8.4 (ai-fixes subagent dispatch).
+    [Fact(Skip = "FIX-LATER (axe-real-bug): aria-prohibited-attr on typing-indicator div. " +
+        "Unblocker: add role=\"status\" to .sf-chat__bubble--typing in SunfishChat.razor:53. " +
+        "See waves/cleanup/2026-04-26-followup-debt-audit.md §1b + §8.4.")]
     public async Task TypingIndicatorHasNoAxeViolations()
     {
         var rendered = _ctx.Bunit.Render<SunfishChat>(p => p.Add(c => c.TypingIndicator, true));

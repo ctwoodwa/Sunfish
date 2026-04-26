@@ -23,14 +23,17 @@ public class SunfishGanttA11yTests : IClassFixture<SunfishGanttA11yTests.Ctx>
     public SunfishGanttA11yTests(Ctx ctx) => _ctx = ctx;
 
     /// <remarks>
-    /// SunfishGantt has a non-trivial generic + accessor + view contract surface
-    /// (GanttView, GanttFieldAccessor, IGanttViewHost, dependency cascading). Building
-    /// a minimal-but-realistic fixture for axe coverage requires a sample task graph,
-    /// view configuration, and field-binding plumbing that lives in the Sunfish kitchen
-    /// sink. The cascade-extension brief explicitly allows this skip; coverage will be
-    /// completed once a Gantt fixture is extracted into tests/Fixtures.
+    /// TRIAGE 2026-04-26: FIX-LATER (tracked-fixture). SunfishGantt has a non-trivial
+    /// generic + accessor + view contract surface (GanttView, GanttFieldAccessor,
+    /// IGanttViewHost, dependency cascading). A minimal-but-realistic axe fixture requires
+    /// a sample task graph, view configuration, and field-binding plumbing.
+    /// Unblocker: extract tests/Fixtures/GanttFixture.cs from kitchen-sink demo (one PR;
+    /// also unblocks SunfishGanttDependenciesA11yTests).
+    /// Owner: Scheduling block team. ETA: post-Wave-2 cascade landing.
+    /// See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.
     /// </remarks>
-    [Fact(Skip = "Requires complex fixture - tracked: Gantt needs typed task graph + view")]
+    [Fact(Skip = "FIX-LATER (tracked-fixture): needs GanttFixture (typed task graph + view). " +
+        "See waves/cleanup/2026-04-26-followup-debt-audit.md §1c + §8.5.")]
     public Task SunfishGantt_HasNoAxeViolations() => Task.CompletedTask;
 
     public sealed class Ctx : IDisposable

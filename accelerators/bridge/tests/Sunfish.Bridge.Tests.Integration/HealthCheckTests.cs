@@ -6,9 +6,13 @@ namespace Sunfish.Bridge.Tests.Integration;
 
 public class HealthCheckTests
 {
-    // Skipped by default — requires a container runtime (Podman/Docker) on the host.
-    // Remove the Skip property when running locally with Podman available.
-    [Fact(Skip = "Requires Podman/Docker runtime; enable locally to run.")]
+    // TRIAGE 2026-04-26 (skipped-test inventory): KEEP-SKIPPED (environmental, intentional).
+    // Aspire DistributedApplicationTestingBuilder spins up a real container runtime and
+    // is incompatible with the headless CI agent (no Docker-in-Docker). Local runs only.
+    // Unblocker: N/A — intentional environmental gate. Re-enable on dev box with Podman/Docker.
+    // See waves/cleanup/2026-04-26-followup-debt-audit.md §1d + §9 ("DO NOT TOUCH" list).
+    [Fact(Skip = "KEEP-SKIPPED (environmental): requires Podman/Docker runtime on host. " +
+        "Enable locally to run; intentional CI exclusion. See audit §1d + §9.")]
     public async Task Bridge_web_responds_to_health_endpoint()
     {
         var appHost = await DistributedApplicationTestingBuilder
