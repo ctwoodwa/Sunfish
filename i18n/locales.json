@@ -153,6 +153,36 @@
       "rationale": "bake-in tier — second RTL script + Hebrew calendar"
     },
     {
+      "tag": "ja-JP",
+      "name": "Japanese (Japan)",
+      "nativeName": "日本語 (日本)",
+      "direction": "ltr",
+      "coordinator": "community:open-recruiting",
+      "status": "bake-in",
+      "completenessFloor": 40,
+      "calendar": "japanese",
+      "numberingSystem": "latn",
+      "firstDayOfWeek": "sunday",
+      "tenantOverrideAllowed": true,
+      "userOverrideAllowed": true,
+      "rationale": "bake-in tier — regional tag for Japan; satellite assemblies shipped on Bridge + Anchor"
+    },
+    {
+      "tag": "hi-IN",
+      "name": "Hindi (India)",
+      "nativeName": "हिन्दी (भारत)",
+      "direction": "ltr",
+      "coordinator": "community:open-recruiting",
+      "status": "bake-in",
+      "completenessFloor": 40,
+      "calendar": "gregory",
+      "numberingSystem": "latn",
+      "firstDayOfWeek": "sunday",
+      "tenantOverrideAllowed": true,
+      "userOverrideAllowed": true,
+      "rationale": "bake-in tier — regional tag for India; satellite assemblies shipped on Bridge + Anchor"
+    },
+    {
       "tag": "fa-IR",
       "name": "Persian (Iran)",
       "nativeName": "فارسی (ایران)",
