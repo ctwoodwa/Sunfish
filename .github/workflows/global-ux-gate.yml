@@ -148,11 +148,10 @@ jobs:
           key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props', '**/Directory.Build.targets') }}
           restore-keys: nuget-${{ runner.os }}-
 
-      # Cache key v2: include `packs/` (runtime packs + targeting packs).
-      # v1 cached only manifests, so cache hits made `dotnet workload restore`
-      # think work was done while the actual binary runtime packs were absent —
-      # surfacing as NETSDK1112 ("runtime pack ... was not downloaded") on
-      # the first build that needs the win-x64 runtime pack (Anchor MAUI).
+      # Cache key v3: revert v2's `packs/` inclusion — multi-GB upload
+      # exceeded the 20-min job timeout on cache save. Runtime packs come
+      # from `dotnet restore -p:RuntimeIdentifiers=win-x64` (next step) and
+      # the NuGet packages cache above keeps that fast on warm runs.
       - name: Cache .NET workloads
         uses: actions/cache@v4
         with:
@@ -160,9 +159,8 @@ jobs:
             ~/.dotnet/workloads
             C:/Program Files/dotnet/sdk-manifests
             C:/Program Files/dotnet/metadata
-            C:/Program Files/dotnet/packs
-          key: dotnet-workloads-v2-${{ runner.os }}-${{ hashFiles('global.json', 'Sunfish.slnx') }}
-          restore-keys: dotnet-workloads-v2-${{ runner.os }}-
+          key: dotnet-workloads-v3-${{ runner.os }}-${{ hashFiles('global.json', 'Sunfish.slnx') }}
+          restore-keys: dotnet-workloads-v3-${{ runner.os }}-
 
       - name: Restore .NET workloads
         run: dotnet workload restore Sunfish.slnx
