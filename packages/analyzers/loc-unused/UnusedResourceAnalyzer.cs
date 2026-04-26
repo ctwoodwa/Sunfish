@@ -29,8 +29,11 @@ namespace Sunfish.Analyzers.LocUnused
     /// tree without a separate file scan.
     /// </para>
     /// <para>
-    /// Severity is Warning by default; Plan 5 §"CI gates" promotes to Error via .editorconfig
-    /// once the cascade has cleaned up legitimate unused entries.
+    /// Severity is Error. Previously Warning, which only failed the build because every
+    /// Sunfish project sets TreatWarningsAsErrors=true in Directory.Build.props — making
+    /// the gate implicit on a build-wide flag. Promoted here to match Plan 5 §"CI gates"
+    /// and mirror the SUNFISH_I18N_001 cascade pattern (PR #75): the diagnostic now blocks
+    /// builds independently of warnings-as-errors policy.
     /// </para>
     /// </remarks>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -43,7 +46,13 @@ namespace Sunfish.Analyzers.LocUnused
             title: "Unused localized resource",
             messageFormat: "Resource '{0}' in {1} is not referenced from any .cs or .razor file in this package — consider removing or wiring up",
             category: "Localization",
-            defaultSeverity: DiagnosticSeverity.Warning,
+            // Plan 5 promotion: Error severity. Previously Warning, which only
+            // failed the build because every Sunfish project sets
+            // TreatWarningsAsErrors=true in Directory.Build.props — making the
+            // gate implicit on a build-wide flag. Promoting here mirrors the
+            // SUNFISH_I18N_001 cascade (PR #75) so the diagnostic is Error
+            // regardless of warnings-as-errors policy.
+            defaultSeverity: DiagnosticSeverity.Error,
             isEnabledByDefault: true,
             description:
                 "Sunfish localization quality requires every .resx <data> entry to have at least one consuming reference. Orphaned entries waste translator effort and inflate locale bundles. The analyzer detects keys with zero matches against IStringLocalizer indexer / GetString call patterns in the compilation's C# source. See Plan 5 §analyzer-package and ADR 0034.",
