@@ -3,7 +3,12 @@
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.UICore</PackageId>
     <Description>Framework-agnostic CSS, icon, and JS interop contracts for Sunfish.</Description>
-    <NoWarn>CS1591</NoWarn>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression. ui-core's SharedResource bundle
+         (default + ar-SA) defines 8 cascade keys that aren't yet consumed by any .cs / .razor
+         in this package — scaffolded ahead of consumer wiring. Remove this suppression once
+         consumers wire the keys via IStringLocalizer indexer or GetString. Follow-up: wire
+         ui-core SharedResource consumers. -->
+    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
