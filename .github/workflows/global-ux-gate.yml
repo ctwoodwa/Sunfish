@@ -15,10 +15,16 @@ name: Global-UX Gate
 on:
   pull_request:
     paths:
+      - "packages/ui-core/**"
+      - "packages/ui-adapters-*/**"
+      - "packages/*/Resources/**"
       - "packages/**"
       - "apps/**"
       - "tooling/css-logical-audit/**"
       - "tooling/Sunfish.Tooling.ColorAudit/**"
+      - "tooling/Sunfish.Tooling.LocalizationXliff/**"
+      - "tooling/a11y-audit-runner/**"
+      - "tooling/locale-completeness-check/**"
       - "i18n/**"
       - ".github/workflows/global-ux-gate.yml"
   push:
@@ -97,6 +103,86 @@ jobs:
           name: storybook-static
           path: packages/ui-core/storybook-static/
 
+  # Plan 5 Task 1 — analyzers gate.
+  analyzers:
+    name: Analyzers (-warnaserror)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Restore .NET workloads
+        run: dotnet workload restore Sunfish.slnx
+      - name: Restore
+        run: dotnet restore Sunfish.slnx
+      - name: Build (warnings as errors)
+        run: dotnet build Sunfish.slnx --configuration Release -warnaserror --no-restore
+
+  # Plan 5 Task 1 — XLIFF round-trip gate.
+  xliff-round-trip:
+    name: XLIFF round-trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test LocalizationXliff round-trip
+        run: dotnet test tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xliff-round-trip-results
+          path: TestResults/
+
+  # Plan 5 Task 1 — a11y axe audit, sharded 4-way for runtime budget.
+  a11y-audit:
+    name: A11y axe audit (shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install pnpm
+        run: npm install --global pnpm@10.33.2
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Storybook (ui-core)
+        run: pnpm --filter @sunfish/ui-core build-storybook
+      - name: Run a11y audit shard
+        run: node tooling/a11y-audit-runner/bin/run.mjs --shard ${{ matrix.shard }} --total-shards 4
+
+  # Plan 5 Task 1 — CLDR plural-rule gate.
+  cldr-plural:
+    name: CLDR plural rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Test CLDR plural rules
+        run: dotnet test packages/foundation/tests/ --filter "FullyQualifiedName~CldrPlural" --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cldr-plural-results
+          path: TestResults/
+
+  # Plan 5 Task 6 — RESX <comment> XSS scanner gate (v1.3 Seat-2 P5 carry-forward).
   resx-xss-scan:
     name: RESX XSS scanner
     runs-on: ubuntu-latest
@@ -109,12 +195,10 @@ jobs:
       - name: Scan RESX comments
         run: node tooling/resx-xss-scanner/check.mjs packages/ accelerators/ apps/
 
-  # Aggregator job for branch-protection — set as a single required check that
-  # passes only when all parent jobs pass. Avoids needing N required-check entries
-  # per gate-job; one suffices.
+  # Aggregator job for branch-protection.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook, resx-xss-scan]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, a11y-audit, cldr-plural, resx-xss-scan]
     steps:
       - run: echo "All Global-UX gate jobs passed."
