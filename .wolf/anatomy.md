@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T09:58:31.945Z
-> Files: 1064 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T12:58:21.520Z
+> Files: 1066 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -26,7 +26,8 @@
 - `CHANGELOG.md` — Changelog (~179 tok)
 - `CLAUDE.md` — Claude Instructions for Sunfish (~3611 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
-- `Directory.Build.props` (~532 tok)
+- `Directory.Build.props` (~807 tok)
+- `Directory.Build.targets` — Declares folder (~567 tok)
 - `Directory.Packages.props` (~1632 tok)
 - `global.json` (~29 tok)
 - `GOVERNANCE.md` — Sunfish Governance (~2929 tok)
@@ -2306,6 +2307,10 @@
 - `Sunfish.Tooling.LocalizationXliff.csproj` — /*.cs" /> (~420 tok)
 - `SunfishResxToXliffTask.cs` — MSBuild task that converts Sunfish <c>.resx</c> source files to XLIFF 2.0 bilingual exchange format (~2140 tok)
 - `SunfishXliffToResxTask.cs` — MSBuild task that converts translator-owned XLIFF 2.0 files back to <c>.resx</c> satellite form for (~1149 tok)
+
+## tooling/Sunfish.Tooling.LocalizationXliff/build/
+
+- `Sunfish.Tooling.LocalizationXliff.targets` (~636 tok)
 
 ## tooling/Sunfish.Tooling.LocalizationXliff/tests/
 

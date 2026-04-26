@@ -288,4 +288,7 @@
   <Folder Name="/apps/">
     <Project Path="apps/kitchen-sink/Sunfish.KitchenSink.csproj" />
   </Folder>
+  <Folder Name="/tooling/">
+    <Project Path="tooling/Sunfish.Tooling.LocQuality/Sunfish.Tooling.LocQuality.csproj" />
+  </Folder>
 </Solution>

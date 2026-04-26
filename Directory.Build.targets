@@ -1,0 +1,33 @@
+<Project>
+  <!--
+    Plan 2 Task 4.4 — late-binding portion of the XLIFF cascade.
+
+    Directory.Build.targets evaluates AFTER the project's SDK loads, which means
+    $(Configuration) is now set (Debug or Release). The .props side handled
+    ProjectReference (build-order forcing); this side handles:
+
+      1. Pointing the UsingTask AssemblyFile at the source-tree DLL path
+         instead of the NuGet's tasks/ folder.
+      2. Importing the .targets that registers the tasks and defines
+         SunfishExportXliff / SunfishImportXliff targets.
+
+    Both gated on the same convention as the analyzer cascade: the project has a
+    Resources/Localization/ folder and is not the tooling project itself.
+  -->
+  <PropertyGroup Condition="Exists('$(MSBuildProjectDirectory)\Resources\Localization')
+                            And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff'
+                            And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff.Tests'">
+    <_SunfishLocXliffTaskAssembly>$(MSBuildThisFileDirectory)tooling\Sunfish.Tooling.LocalizationXliff\bin\$(Configuration)\netstandard2.0\Sunfish.Tooling.LocalizationXliff.dll</_SunfishLocXliffTaskAssembly>
+    <!-- Pin the XLIFF artifact directory next to the .resx source. The .targets
+         file's default (localization/xliff/) collides on Windows with case-only
+         differences when a project has a marker-class folder named Localization/.
+         Resources/Localization/xliff/ keeps every localization asset under one
+         tree and avoids the case-collision. -->
+    <SunfishXliffDirectory>$(MSBuildProjectDirectory)\Resources\Localization\xliff</SunfishXliffDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)tooling\Sunfish.Tooling.LocalizationXliff\build\Sunfish.Tooling.LocalizationXliff.targets"
+          Condition="Exists('$(MSBuildProjectDirectory)\Resources\Localization')
+                     And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff'
+                     And '$(MSBuildProjectName)' != 'Sunfish.Tooling.LocalizationXliff.Tests'" />
+</Project>

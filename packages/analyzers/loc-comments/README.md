@@ -8,8 +8,10 @@ who says it, when, with what intent. Empty `<comment>` blocks are the leading ca
 mistranslation across global locale rollouts. The analyzer surfaces missing context at
 build time so developers add it before the resource ships.
 
-**Rule severity:** Warning by default; Plan 5 (CI Gates) promotes it to Error after Phase 1
-cascade.
+**Rule severity:** Error. (Previously Warning, which only failed builds because every
+Sunfish project sets `TreatWarningsAsErrors=true` — implicit gating. Promoted to Error
+per Plan 5 §"CI gates" so the diagnostic blocks builds independently of warnings-as-errors
+policy.)
 
 **How to enable:**
 

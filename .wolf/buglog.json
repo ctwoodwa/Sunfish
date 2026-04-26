@@ -4168,6 +4168,38 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-25T08:41:06.976Z"
+    },
+    {
+      "id": "bug-256",
+      "timestamp": "2026-04-25T12:55:17.291Z",
+      "error_message": "Significant refactor of ",
+      "file": "tooling/Sunfish.Tooling.LocalizationXliff/build/Sunfish.Tooling.LocalizationXliff.targets",
+      "root_cause": "2 lines replaced/restructured",
+      "fix": "Rewrote 11→19 lines (2 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "targets"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T12:55:17.291Z"
+    },
+    {
+      "id": "bug-257",
+      "timestamp": "2026-04-25T12:57:03.670Z",
+      "error_message": "Significant refactor of ",
+      "file": "Directory.Build.props",
+      "root_cause": "23 lines replaced/restructured",
+      "fix": "Rewrote 42→17 lines (23 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "props"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-25T12:57:03.670Z"
     }
   ]
 }

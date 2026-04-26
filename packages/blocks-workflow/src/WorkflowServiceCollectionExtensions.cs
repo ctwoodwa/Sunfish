@@ -1,4 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Foundation.Localization;
 
 namespace Sunfish.Blocks.Workflow;
 
@@ -18,6 +20,7 @@ public static class WorkflowServiceCollectionExtensions
     public static IServiceCollection AddInMemoryWorkflow(this IServiceCollection services)
     {
         services.AddSingleton<IWorkflowRuntime, InMemoryWorkflowRuntime>();
+        services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
         return services;
     }
 }

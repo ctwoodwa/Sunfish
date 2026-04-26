@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sunfish.Blocks.TenantAdmin.Data;
 using Sunfish.Blocks.TenantAdmin.Services;
+using Sunfish.Foundation.Localization;
 using Sunfish.Foundation.Persistence;
 
 namespace Sunfish.Blocks.TenantAdmin.DependencyInjection;
@@ -25,6 +27,12 @@ public static class TenantAdminServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
         services.AddSingleton<ITenantAdminService, InMemoryTenantAdminService>();
         services.AddSingleton<ISunfishEntityModule, TenantAdminEntityModule>();
+
+        // Wave 2 Cluster C — Plan 2 Task 3.5: register the open-generic Sunfish localizer
+        // so consumers can resolve IStringLocalizer-equivalents against this block's
+        // SharedResource bundle. Idempotent via TryAddSingleton.
+        services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
+
         return services;
     }
 }

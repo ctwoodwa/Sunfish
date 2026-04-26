@@ -15,14 +15,25 @@ name: Global-UX Gate
 on:
   pull_request:
     paths:
+      - "packages/ui-core/**"
+      - "packages/ui-adapters-*/**"
+      - "packages/*/Resources/**"
       - "packages/**"
       - "apps/**"
       - "tooling/css-logical-audit/**"
       - "tooling/Sunfish.Tooling.ColorAudit/**"
+      - "tooling/Sunfish.Tooling.LocalizationXliff/**"
+      - "tooling/a11y-audit-runner/**"
+      - "tooling/locale-completeness-check/**"
       - "i18n/**"
       - ".github/workflows/global-ux-gate.yml"
   push:
     branches: [main]
+
+# Quick win #2 — cancel superseded PR runs when contributors push amendments.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   css-logical:
@@ -71,6 +82,21 @@ jobs:
       - name: Install pnpm
         run: npm install --global pnpm@10.33.2
 
+      # Quick win #1 — cache pnpm store + Playwright browsers
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: playwright-${{ runner.os }}-
+
       - name: Install dependencies
         run: pnpm install --filter @sunfish/ui-core
         working-directory: ${{ github.workspace }}
@@ -97,12 +123,192 @@ jobs:
           name: storybook-static
           path: packages/ui-core/storybook-static/
 
+  # Plan 5 Task 1 — analyzers gate.
+  # Runs on Windows because Sunfish.slnx contains the Anchor MAUI project.
+  # We treat ONLY the SUNFISH_* analyzer diagnostics as errors (via
+  # WarningsAsErrors property). Bare `-warnaserror` would escalate pre-existing
+  # NETSDK1206 (musl-rid metadata), CS0162 (kitchen-sink generated code), and
+  # PRI249 (WinAppSDK) warnings into errors — those are unrelated to the
+  # SUNFISH analyzer rules this gate is supposed to enforce.
+  analyzers:
+    name: Analyzers (-warnaserror)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      # Quick win #1 — cache NuGet packages + .NET workloads
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props', '**/Directory.Build.targets') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Cache .NET workloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.dotnet/workloads
+            C:/Program Files/dotnet/sdk-manifests
+            C:/Program Files/dotnet/metadata
+          key: dotnet-workloads-${{ runner.os }}-${{ hashFiles('global.json', 'Sunfish.slnx') }}
+          restore-keys: dotnet-workloads-${{ runner.os }}-
+
+      - name: Restore .NET workloads
+        run: dotnet workload restore Sunfish.slnx
+      - name: Restore
+        run: dotnet restore Sunfish.slnx
+      - name: Build (SUNFISH_* warnings as errors only)
+        # Use bash shell on Windows runner so semicolons in WarningsAsErrors
+        # don't get mangled by PowerShell's command-separator parsing
+        # (the default `pwsh -command ". '{0}'"` shell-wrapping breaks
+        # nested single-quoted args containing ;). Bash treats single
+        # quotes literally and passes the whole MSBuild prop unchanged.
+        shell: bash
+        run: dotnet build Sunfish.slnx --configuration Release --no-restore '-p:WarningsAsErrors=SUNFISH_I18N_001;SUNFISH_I18N_002;SUNFISH_A11Y_001'
+
+  # Plan 5 Task 1 — XLIFF round-trip gate.
+  # Targets the LocalizationXliff MSBuild-task test suite directly so a regression
+  # in resx<->xliff20 conversion fails fast without waiting on the full slnx build.
+  xliff-round-trip:
+    name: XLIFF round-trip
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props', '**/Directory.Build.targets') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Test LocalizationXliff round-trip
+        run: dotnet test tooling/Sunfish.Tooling.LocalizationXliff/tests/Sunfish.Tooling.LocalizationXliff.Tests.csproj --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: xliff-round-trip-results
+          path: TestResults/
+
+  # Plan 5 Task 1 — a11y axe audit, sharded 4-way for runtime budget.
+  # The runner script lives at tooling/a11y-audit-runner/bin/run.mjs and is
+  # delivered by Plan 5 Task 2; until that lands this job will fail (expected).
+  a11y-audit:
+    name: A11y axe audit (shard ${{ matrix.shard }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Quick win #3 — move informational gate off PR critical path; only run on
+    # push-to-main + scheduled runs. Saves ~5-10 min PR wall-clock on the slowest
+    # shard. Promote back to per-PR after Plan 5 Task 9's p95 measurement clears.
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    # continue-on-error until plan-5/task-2 (a11y-audit-runner) has landed
+    # AND a Storybook build is plumbed; until then this job fails fast on
+    # missing tooling/a11y-audit-runner/bin/run.mjs.
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+      - name: Install pnpm
+        run: npm install --global pnpm@10.33.2
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/share/pnpm/store
+          key: pnpm-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build Storybook (ui-core)
+        run: pnpm --filter @sunfish/ui-core build-storybook
+      - name: Run a11y audit shard
+        run: node tooling/a11y-audit-runner/bin/run.mjs --shard ${{ matrix.shard }} --total-shards 4
+
+  # Plan 5 Task 1 — CLDR plural-rule gate.
+  # Filter matches FullyQualifiedName~CldrPlural; if no such tests exist yet the
+  # filter selects nothing and dotnet test exits 0. The job becomes load-bearing
+  # once Plan 5 Task 4 lands the CldrPlural test class in foundation/tests.
+  cldr-plural:
+    name: CLDR plural rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props', '**/Directory.Build.props', '**/Directory.Build.targets') }}
+          restore-keys: nuget-${{ runner.os }}-
+      - name: Test CLDR plural rules
+        run: dotnet test packages/foundation/tests/ --filter "FullyQualifiedName~CldrPlural" --logger trx --results-directory TestResults
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cldr-plural-results
+          path: TestResults/
+
+
+  # Plan 5 Task 8 — Plan 2 Task 3.6 binary gate as permanent CI assertion.
+  plan-2-binary-gate:
+    name: Plan 2 binary gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Run Plan 2 binary gate
+        run: bash tooling/plan-2-binary-gate/check.sh
+
+
+  # Plan 5 Task 7 — Cross-plan health gate.
+  cross-plan-health:
+    name: Cross-plan health
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - run: node tooling/cross-plan-health/check.mjs waves/global-ux/status.md
+
+
+  # Plan 5 Task 6 � RESX <comment> XSS scanner gate.
+  resx-xss-scan:
+    name: RESX XSS scanner
+    runs-on: ubuntu-latest
+    needs: []
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+      - name: Scan RESX comments
+        run: node tooling/resx-xss-scanner/check.mjs packages/ accelerators/ apps/
+
   # Aggregator job for branch-protection — set as a single required check that
   # passes only when all parent jobs pass. Avoids needing N required-check entries
   # per gate-job; one suffices.
   global-ux-gate:
     name: Global-UX Gate (aggregate)
     runs-on: ubuntu-latest
-    needs: [css-logical, locale-completeness, a11y-storybook]
+    needs: [css-logical, locale-completeness, a11y-storybook, analyzers, xliff-round-trip, cldr-plural, plan-2-binary-gate, cross-plan-health, resx-xss-scan]
     steps:
       - run: echo "All Global-UX gate jobs passed."

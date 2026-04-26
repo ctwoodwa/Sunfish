@@ -1,0 +1,76 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# ----------------------------------------------------------------------------
+# Sunfish pre-commit: SUNFISH_I18N_001 RESX <comment> validation
+# ----------------------------------------------------------------------------
+# Wave 2 / Plan 3 — runs the loc-comments analyzer against any .csproj that
+# owns a staged .resx file. If the analyzer warns SUNFISH_I18N_001 (missing
+# translator-context <comment> on a <data> entry), the commit is blocked.
+#
+# Token: wave-2-plan3-husky-sentinel
+# ----------------------------------------------------------------------------
+
+set -e
+
+STAGED_RESX=$(git diff --cached --name-only --diff-filter=ACMR | grep '\.resx$' || true)
+
+if [ -z "$STAGED_RESX" ]; then
+    exit 0
+fi
+
+echo "[husky] SUNFISH_I18N_001 — validating staged .resx files..."
+
+# Walk up from a file to find the nearest enclosing .csproj
+find_csproj() {
+    dir=$(dirname "$1")
+    while [ "$dir" != "." ] && [ "$dir" != "/" ]; do
+        csproj=$(ls "$dir"/*.csproj 2>/dev/null | head -n 1 || true)
+        if [ -n "$csproj" ]; then
+            echo "$csproj"
+            return 0
+        fi
+        dir=$(dirname "$dir")
+    done
+    return 1
+}
+
+# Collect unique csproj paths
+CSPROJS=""
+for resx in $STAGED_RESX; do
+    csproj=$(find_csproj "$resx") || {
+        echo "[husky] WARN: no .csproj found above $resx — skipping"
+        continue
+    }
+    case " $CSPROJS " in
+        *" $csproj "*) ;;
+        *) CSPROJS="$CSPROJS $csproj" ;;
+    esac
+done
+
+if [ -z "$CSPROJS" ]; then
+    exit 0
+fi
+
+FAIL=0
+for csproj in $CSPROJS; do
+    echo "[husky]   building $csproj"
+    BUILD_OUTPUT=$(dotnet build "$csproj" --nologo --verbosity quiet 2>&1 || true)
+    HITS=$(echo "$BUILD_OUTPUT" | grep -E 'SUNFISH_I18N_001' || true)
+    if [ -n "$HITS" ]; then
+        echo ""
+        echo "[husky] BLOCKED — SUNFISH_I18N_001 violations in $csproj:"
+        echo "$HITS" | sed 's/^/    /'
+        echo ""
+        echo "[husky] Add a <comment> child to each <data> element in the affected"
+        echo "[husky] .resx file. The comment is the translator hint; it is mandatory."
+        FAIL=1
+    fi
+done
+
+if [ "$FAIL" -ne 0 ]; then
+    exit 1
+fi
+
+echo "[husky] SUNFISH_I18N_001 OK"
+exit 0

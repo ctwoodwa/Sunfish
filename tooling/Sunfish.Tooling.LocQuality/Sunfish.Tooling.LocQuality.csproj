@@ -1,0 +1,62 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sunfish.Tooling.LocQuality
+    Plan 3 Task 2.1 scaffold — translator-quality CLI.
+
+    This is the CLI surface that subsequent Plan 3 tasks will plug
+    implementations into:
+      - Task 2.4: MadladDraftGenerator.cs   (the `generate-drafts` subcommand;
+                  exposed today as the `quality-check` stub per Wave 2 Cluster B
+                  brief; final command names land alongside the implementation).
+      - Task 3.x: PostEditFlagger.cs       (post-edit heuristic flagger driving
+                  the `validate` subcommand).
+
+    MADLAD MT runtime wiring is explicitly deferred to a user-driven task —
+    it requires GPU / Apple-Silicon validation that subagents cannot perform.
+
+    Packaged as a .NET local tool (PackAsTool=true) so it can be installed via
+    `dotnet tool install` and invoked as `sunfish-locquality <subcommand>` from
+    CI without an MSBuild context — mirrors the Sunfish.Tooling.LocExtraction
+    pattern (Plan 3 Task 1.1).
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>Sunfish.Tooling.LocQuality</RootNamespace>
+    <AssemblyName>Sunfish.Tooling.LocQuality</AssemblyName>
+
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+
+    <!-- Pack as a dotnet local tool, invoked as `sunfish-locquality`. -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>sunfish-locquality</ToolCommandName>
+    <PackageId>Sunfish.Tooling.LocQuality</PackageId>
+    <Description>Sunfish translator-quality CLI (Plan 3 Task 2.1 scaffold): validates translator-context completeness on XLIFF inputs and (deferred) drives MADLAD-400-MT pre-publish draft generation. Stub subcommands today; implementations land in Plan 3 Tasks 2.4 and 3.x.</Description>
+    <PackageTags>sunfish;localization;xliff;i18n;tooling;quality;madlad</PackageTags>
+
+    <!-- Dev dependency: never transitively pulled into product binaries. -->
+    <DevelopmentDependency>true</DevelopmentDependency>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      System.CommandLine is not yet listed in Directory.Packages.props (same
+      situation as Sunfish.Tooling.LocExtraction). Using VersionOverride keeps
+      the scope of this Wave 2 Cluster B scaffold inside tooling/ only, per the
+      parent agent's path-scoped-add instruction. A follow-up commit on a
+      shared branch should promote this pin to Directory.Packages.props when
+      System.CommandLine adoption broadens beyond the two LocExtraction /
+      LocQuality tools.
+
+      Pin matches Sunfish.Tooling.LocExtraction byte-for-byte to avoid
+      restore-graph drift between the two sister tools.
+    -->
+    <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1" />
+  </ItemGroup>
+
+</Project>
