@@ -10,7 +10,13 @@
     transform: translate(-50%, -50%);
     background: var(--sf-color-background);
     border-radius: var(--sf-radius-lg);
-    box-shadow: var(--sf-shadow-xl);
+    // SYNTHESIS Theme 3 — Dialog now consumes `--elevation-shadow-dialog`
+    // (defined in foundation/_elevation.scss but previously unused). The Fluent
+    // v9 spec calls for the dialog-specific shadow ramp (subtle ambient + deep
+    // 64px depth blur) so dialogs read as the highest elevation tier in the
+    // app. `--sf-shadow-xl` is retained as the secondary fallback so consumers
+    // who only override the generic Sunfish shadow scale still see motion.
+    box-shadow: var(--elevation-shadow-dialog, var(--sf-shadow-xl));
     padding: var(--sf-space-xl);
     // Batch 3 — explicit min/max width constraints per Fluent v9 Dialog:
     // 320px floor and 640px/90vw cap so small viewports get a responsive

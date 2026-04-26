@@ -124,6 +124,7 @@
   --sf-font-size-4xl: 2.25rem;
   --sf-font-weight-normal: 400;
   --sf-font-weight-medium: 500;
+  --sf-font-weight-semibold: 600;
   --sf-font-weight-bold: 700;
   --sf-line-height-base: 1.5;
   --sf-line-height-tight: 1rem;
@@ -510,7 +511,7 @@
   box-shadow: none;
 }
 .sf-button:focus-visible::before {
-  opacity: var(--sf-state-focus-opacity);
+  opacity: 0;
 }
 .sf-button:active::before {
   opacity: var(--sf-state-pressed-opacity);

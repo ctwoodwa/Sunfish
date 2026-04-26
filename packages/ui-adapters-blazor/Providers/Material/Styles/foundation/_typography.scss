@@ -46,9 +46,18 @@ $material-type-scale: (
   --sf-font-size-4xl:   2.25rem;     // display-small
 
   // Weight
-  --sf-font-weight-normal:  400;
-  --sf-font-weight-medium:  500;
-  --sf-font-weight-bold:    700;
+  // SYNTHESIS Theme 3 — `--sf-font-weight-semibold` is referenced by Material
+  // data-grid (and other shared components) 5+ times. Without a definition the
+  // var() silently falls back to `normal` (400), so headers/footers in the
+  // Material skin rendered at the wrong weight. M3 doesn't have a "semibold"
+  // role per se, but consumers reach for 600 when they want a stronger header
+  // emphasis than the M3 title-small (500) without going all the way to bold
+  // (700). Defining at 600 keeps cross-skin parity with Bootstrap and Fluent
+  // (both define `--sf-font-weight-semibold: 600`).
+  --sf-font-weight-normal:    400;
+  --sf-font-weight-medium:    500;
+  --sf-font-weight-semibold:  600;
+  --sf-font-weight-bold:      700;
 
   // Line heights
   --sf-line-height-base:    1.5;
