@@ -28,6 +28,21 @@ on:
       - "tooling/Sunfish.Tooling.A11yStoriesCheck/**"
       - "i18n/**"
       - ".github/workflows/global-ux-gate.yml"
+    # Skip the heavy gate (analyzers ~12min Windows + a11y-storybook + xliff +
+    # cldr-plural + Plan 2 + RESX scan) on docs-only PRs. paths + paths-ignore
+    # combine: a file must match paths AND not match paths-ignore. Changes to
+    # this workflow file itself remain in `paths:` above so it still re-tests
+    # itself when edited.
+    paths-ignore:
+      - "**/*.md"
+      - ".wolf/**"
+      - "docs/**"
+      - "waves/**"
+      - "icm/**"
+      - "_shared/**"
+      - ".github/CODEOWNERS"
+      - ".gitignore"
+      - "LICENSE*"
   push:
     branches: [main]
 
