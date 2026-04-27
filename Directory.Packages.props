@@ -17,8 +17,8 @@
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="NSubstitute" Version="6.0.0-rc.1"/>
-    <PackageVersion Include="FsCheck" Version="3.3.2"/>
-    <PackageVersion Include="FsCheck.Xunit" Version="3.3.2"/>
+    <PackageVersion Include="FsCheck" Version="3.3.3"/>
+    <PackageVersion Include="FsCheck.Xunit" Version="3.3.3"/>
     <PackageVersion Include="NSec.Cryptography" Version="26.1.0-preview.1"/>
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0"/>
     <PackageVersion Include="MessagePack" Version="3.1.4"/>
@@ -40,32 +40,32 @@
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.4.0"/>
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="18.4.0"/>
     <PackageVersion Include="Testcontainers" Version="4.11.0"/>
-    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="10.0.7"/>
+    <PackageVersion Include="Microsoft.Data.Sqlite.Core" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="SQLitePCLRaw.bundle_e_sqlcipher" Version="2.1.11"/>
     <PackageVersion Include="Konscious.Security.Cryptography.Argon2" Version="1.3.1"/>
     <PackageVersion Include="System.Security.Cryptography.ProtectedData" Version="11.0.0-preview.3.26207.106"/>
-    <PackageVersion Include="YamlDotNet" Version="16.3.0"/>
+    <PackageVersion Include="YamlDotNet" Version="17.0.1"/>
     <PackageVersion Include="Makaretu.Dns.Multicast.New" Version="0.38.0"/>
     <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61"/>
     <PackageVersion Include="YDotNet" Version="0.6.0"/>
     <PackageVersion Include="YDotNet.Native" Version="0.6.0"/>
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.3"/>
-    <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.2.3"/>
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.Hosting.PostgreSQL" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.Hosting.RabbitMQ" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.Hosting.Redis" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.Hosting.Testing" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="13.2.4"/>
+    <PackageVersion Include="Aspire.StackExchange.Redis.OutputCaching" Version="13.2.4"/>
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0-preview.2.26159.112"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="11.0.0-preview.2.26159.112"/>
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0"/>
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.5.0"/>
-    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.4.0"/>
-    <PackageVersion Include="NBomber" Version="6.4.0-beta.0"/>
+    <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.5.0"/>
+    <PackageVersion Include="NBomber" Version="6.4.0-beta.2"/>
     <PackageVersion Include="NBomber.Http" Version="6.2.0"/>
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.3"/>
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3"/>
@@ -77,9 +77,9 @@
     <PackageVersion Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322"/>
     <PackageVersion Include="Serilog.Sinks.OpenTelemetry" Version="4.2.1-nblumhardt-02317"/>
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0"/>
-    <PackageVersion Include="WolverineFx" Version="5.32.0"/>
-    <PackageVersion Include="WolverineFx.Postgresql" Version="5.32.0"/>
-    <PackageVersion Include="WolverineFx.RabbitMQ" Version="5.32.0"/>
+    <PackageVersion Include="WolverineFx" Version="5.32.1"/>
+    <PackageVersion Include="WolverineFx.Postgresql" Version="5.32.1"/>
+    <PackageVersion Include="WolverineFx.RabbitMQ" Version="5.32.1"/>
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-preview.3.26203.7"/>
