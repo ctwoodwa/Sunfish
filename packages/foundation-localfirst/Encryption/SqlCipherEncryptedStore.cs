@@ -206,6 +206,35 @@ public sealed class SqlCipherEncryptedStore : IEncryptedStore, IAsyncDisposable
     }
 
     /// <inheritdoc />
+    public async Task RotateKeyAsync(ReadOnlyMemory<byte> newKey, CancellationToken ct)
+    {
+        if (newKey.Length == 0)
+        {
+            throw new ArgumentException("New key must not be empty.", nameof(newKey));
+        }
+
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var connection = RequireOpen();
+
+            // SQLCipher rekey via PRAGMA rekey. Hex form ensures the raw key
+            // bytes are not re-hashed by SQLCipher — same convention as
+            // OpenAsync's PRAGMA key. The pragma re-encrypts the whole database
+            // file in place under the new key in a single atomic operation
+            // (https://www.zetetic.net/sqlcipher/sqlcipher-api/#rekey).
+            var hex = Convert.ToHexString(newKey.Span);
+            using var rekeyCmd = connection.CreateCommand();
+            rekeyCmd.CommandText = $"PRAGMA rekey = \"x'{hex}'\";";
+            await rekeyCmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _gate.Release();
+        }
+    }
+
+    /// <inheritdoc />
     public async Task CloseAsync()
     {
         await _gate.WaitAsync().ConfigureAwait(false);
