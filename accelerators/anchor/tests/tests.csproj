@@ -33,11 +33,15 @@
          IRootSeedProvider in Sunfish.Kernel.Security; MauiProgram now
          resolves the seed from DI at composition time.
          AnchorV1MigrationService is MAUI-free (takes dataDirectory in ctor)
-         so it compiles here for Wave 6.7 migration tests. -->
+         so it compiles here for Wave 6.7 migration tests.
+         Phase 1 G1 — AnchorSyncHostedService is MAUI-free (takes IGossipDaemon
+         + IPeerDiscovery + ILogger via constructor) so it compiles here for
+         the gossip-daemon hosted-service tests. -->
     <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
     <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
     <Compile Include="..\Services\MauiHostedServiceLifetime.cs" Link="Anchor\MauiHostedServiceLifetime.cs" />
     <Compile Include="..\Services\AnchorV1MigrationService.cs" Link="Anchor\AnchorV1MigrationService.cs" />
+    <Compile Include="..\Services\AnchorSyncHostedService.cs" Link="Anchor\AnchorSyncHostedService.cs" />
     <Compile Include="..\Services\AnchorCrdtDeltaBridge.cs" Link="Anchor\AnchorCrdtDeltaBridge.cs" />
   </ItemGroup>
 
