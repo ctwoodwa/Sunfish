@@ -102,7 +102,8 @@
         <!-- Wave 3.3+3.4 paper-alignment wiring:
              LocalFirst encrypted store, kernel-security attestation + Ed25519,
              kernel-runtime node host, and the Blazor LocalFirst components.
-             Phase 1 G1 added kernel-sync for the gossip-daemon hosted service.
+             Phase 1 G1 added kernel-sync for the gossip-daemon hosted service
+             (paper §6.1 + sync-daemon-protocol spec).
              Phase 1 G2 adds kernel-crdt for the AnchorCrdtDeltaBridge that
              closes the Wave 2.5 DELTA_STREAM application loop. -->
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
