@@ -30,6 +30,33 @@ multi-team shape.
 
 ---
 
+## Effort + Model Policy
+
+The project sets **`effortLevel: xhigh`** as the default in `.claude/settings.json`
+(overrides the Claude API default of `high`). Per the canonical Anthropic
+guidance, `xhigh` is "the recommended starting point for coding and
+agentic work" on Opus 4.7 and matches Sunfish's typical session shape:
+multi-package refactors, ICM stage transitions, paper-alignment waves,
+30+ minute build sessions.
+
+Three things to know:
+
+1. **`xhigh` is Opus 4.7-only.** If you `/model sonnet`, also set
+   `/effort medium` explicitly — that's the canonical Sonnet 4.6 default
+   and avoids unexpected latency.
+2. **Subagents default to `low`.** When dispatching an `Agent`, expect
+   `low` effort unless the role is design/review (then `xhigh`).
+3. **Don't bake `max` into anything.** `max` causes overthinking on
+   structured-output tasks per the canonical guidance — reserve it for
+   the rare stuck case where evals show measurable headroom over `xhigh`.
+
+Full rubric (per work type, per ICM stage, per subagent role, per
+hypothetical project-local agent) lives in
+[`.claude/rules/effort-policy.md`](.claude/rules/effort-policy.md).
+Canonical reference: <https://platform.claude.com/docs/en/build-with-claude/effort>
+
+---
+
 ## Tool Boundaries
 
 Sunfish uses three complementary tools for AI-assisted development. Each has a distinct responsibility.
