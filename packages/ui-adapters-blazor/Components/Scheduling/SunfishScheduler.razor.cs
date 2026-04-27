@@ -280,6 +280,7 @@ public partial class SunfishScheduler<TEvent> : SunfishComponentBase
         };
         CurrentDate = next;
         await CurrentDateChanged.InvokeAsync(next);
+        Announce($"Showing {GetHeaderTitle()}.");
     }
 
     private async Task SwitchView(SchedulerView next)
@@ -293,6 +294,7 @@ public partial class SunfishScheduler<TEvent> : SunfishComponentBase
         }
         View = next;
         await ViewChanged.InvokeAsync(next);
+        Announce($"View changed to {next}.");
     }
 
     private string GetHeaderTitle()

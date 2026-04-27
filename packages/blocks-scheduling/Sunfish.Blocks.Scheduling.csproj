@@ -23,5 +23,10 @@
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+    <!-- D6 (paper §2.2 + §6.3): wire Flease lease coordinator at the
+         consumer site. Slot reservations are CP — double-booking is worse
+         than unavailability. ScheduleReservationCoordinator routes every
+         reservation write through ILeaseCoordinator. -->
+    <ProjectReference Include="..\kernel-lease\Sunfish.Kernel.Lease.csproj" />
   </ItemGroup>
 </Project>

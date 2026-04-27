@@ -6,19 +6,31 @@
     @ChildContent
 </CascadingValue>
 
-<div class="@CombineClasses("mar-scheduler")" style="@CombineStyles(SizeStyle)" @attributes="AdditionalAttributes">
+<div class="@CombineClasses("mar-scheduler")" style="@CombineStyles(SizeStyle)" role="application" aria-roledescription="Scheduler" aria-label="Scheduler" @attributes="AdditionalAttributes">
+
+    @* WCAG 4.1.3 Status Messages — polite live region for view, navigation, and CRUD announcements. *@
+    <div class="sf-scheduler__sr-only" role="status" aria-live="polite" aria-atomic="true"
+         style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">@_liveAnnouncement</div>
 
     <div class="sf-scheduler__header">
-        <button type="button" class="sf-btn mar-btn--flat" @onclick="NavigatePrevious">&#9664;</button>
+        <button type="button" class="sf-btn mar-btn--flat" style="min-width:24px;min-height:24px;" aria-label="@GetPreviousNavLabel()" @onclick="NavigatePrevious">&#9664;</button>
         <span class="sf-scheduler__title">@GetHeaderTitle()</span>
-        <button type="button" class="sf-btn mar-btn--flat" @onclick="NavigateNext">&#9654;</button>
+        <button type="button" class="sf-btn mar-btn--flat" style="min-width:24px;min-height:24px;" aria-label="@GetNextNavLabel()" @onclick="NavigateNext">&#9654;</button>
         <span class="sf-scheduler__spacer"></span>
-        @foreach (var viewType in AvailableViews)
-        {
-            var vt = viewType;
-            var label = GetViewLabel(vt);
-            <button type="button" class="sf-btn mar-btn--flat @(View == vt ? "mar-btn--primary" : "")" @onclick="() => SetView(vt)">@label</button>
-        }
+        <div class="sf-scheduler__view-switcher" role="tablist" aria-label="Scheduler view">
+            @foreach (var viewType in AvailableViews)
+            {
+                var vt = viewType;
+                var label = GetViewLabel(vt);
+                var isActive = View == vt;
+                <button type="button"
+                        class="sf-btn mar-btn--flat @(isActive ? "mar-btn--primary" : "")"
+                        style="min-width:24px;min-height:24px;"
+                        role="tab"
+                        aria-selected="@(isActive ? "true" : "false")"
+                        @onclick="() => SetView(vt)">@label</button>
+            }
+        </div>
     </div>
 
     @if (View == SchedulerView.Month)
@@ -41,12 +53,12 @@
                                     var d = day;
                                     var isToday = d == DateOnly.FromDateTime(DateTime.Today);
                                     var isCurrentMonth = d.Month == CurrentDate.Month;
-                                    <div class="sf-scheduler__day-cell @(isToday ? "mar-scheduler__day-cell--today" : "") @(!isCurrentMonth ? "mar-scheduler__day-cell--outside" : "")" @onclick="() => OnDateClick.InvokeAsync(d.ToDateTime(TimeOnly.MinValue))">
+                                    <div class="sf-scheduler__day-cell @(isToday ? "mar-scheduler__day-cell--today" : "") @(!isCurrentMonth ? "mar-scheduler__day-cell--outside" : "")" tabindex="0" role="gridcell" aria-label="@GetDayCellAriaLabel(d)" @onclick="() => OnDateClick.InvokeAsync(d.ToDateTime(TimeOnly.MinValue))" @onkeydown="(e) => HandleDayCellKeyDown(d, e)">
                                         <span class="sf-scheduler__day-number">@d.Day</span>
                                         @foreach (var appt in GetAppointmentsForDateAndResource(d, res.Id).Where(aa => !aa.IsAllDay))
                                         {
                                             var a = appt;
-                                            <div class="sf-scheduler__appointment @GetRenderCssClass(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                            <div class="sf-scheduler__appointment @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                                 @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                             </div>
                                         }
@@ -70,7 +82,7 @@
                         @foreach (var appt in GetAllDayAppointments())
                         {
                             var a = appt;
-                            <div class="sf-scheduler__appointment mar-scheduler__appointment--allday @GetRenderCssClass(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                            <div class="sf-scheduler__appointment mar-scheduler__appointment--allday @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                 @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                             </div>
                         }
@@ -82,12 +94,12 @@
                         var d = day;
                         var isToday = d == DateOnly.FromDateTime(DateTime.Today);
                         var isCurrentMonth = d.Month == CurrentDate.Month;
-                        <div class="sf-scheduler__day-cell @(isToday ? "mar-scheduler__day-cell--today" : "") @(!isCurrentMonth ? "mar-scheduler__day-cell--outside" : "")" @onclick="() => OnDateClick.InvokeAsync(d.ToDateTime(TimeOnly.MinValue))">
+                        <div class="sf-scheduler__day-cell @(isToday ? "mar-scheduler__day-cell--today" : "") @(!isCurrentMonth ? "mar-scheduler__day-cell--outside" : "")" tabindex="0" role="gridcell" aria-label="@GetDayCellAriaLabel(d)" @onclick="() => OnDateClick.InvokeAsync(d.ToDateTime(TimeOnly.MinValue))" @onkeydown="(e) => HandleDayCellKeyDown(d, e)">
                             <span class="sf-scheduler__day-number">@d.Day</span>
                             @foreach (var appt in GetTimedAppointmentsForDate(d))
                             {
                                 var a = appt;
-                                <div class="sf-scheduler__appointment @GetRenderCssClass(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                <div class="sf-scheduler__appointment @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                     @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                 </div>
                             }
@@ -124,9 +136,13 @@
                             var isDropTarget = _isDragRescheduling && _dropTargetSlot.HasValue
                                 && _dropTargetSlot.Value.Date == slotDate && _dropTargetSlot.Value.Hour == slotHour;
                             <div class="sf-scheduler__time-slot @(isDragSelecting ? "mar-scheduler__slot--drag-selecting" : "") @(isDropTarget ? "mar-scheduler__slot--drop-target" : "")"
+                                 tabindex="@(Editable ? "0" : "-1")"
+                                 role="gridcell"
+                                 aria-label="@GetSlotAriaLabel(slotDate, slotHour)"
                                  @onmousedown="() => HandleSlotMouseDown(slotDate, slotHour)"
                                  @onmousemove="() => HandleSlotMouseMove(slotDate, slotHour)"
                                  @onmouseup="() => HandleSlotMouseUp(slotDate, slotHour)"
+                                 @onkeydown="(e) => HandleSlotKeyDown(slotDate, slotHour, e)"
                                  @ondragover="() => HandleSlotDragOver(slotDate, slotHour)"
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => HandleSlotDrop(slotDate, slotHour)">
@@ -136,7 +152,7 @@
                                     var a = appt;
                                     var top = (a.Start.Hour - effectiveStartHour + a.Start.Minute / 60.0) * 48;
                                     var height = (a.End - a.Start).TotalHours * 48;
-                                    <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                    <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" aria-grabbed="@((_draggingAppointment?.Id == a.Id) ? "true" : "false")" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                         @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                         @if (Editable) { <div class="sf-scheduler__appointment-resize-handle" @onmousedown="() => HandleResizeMouseDown(a)" @onmousedown:stopPropagation="true"></div> }
                                     </div>
@@ -172,9 +188,13 @@
                             var isDropTarget = _isDragRescheduling && _dropTargetSlot.HasValue
                                 && _dropTargetSlot.Value.Date == slotDate && _dropTargetSlot.Value.Hour == slotHour;
                             <div class="sf-scheduler__time-slot @(isDragSelecting ? "mar-scheduler__slot--drag-selecting" : "") @(isDropTarget ? "mar-scheduler__slot--drop-target" : "")"
+                                 tabindex="@(Editable ? "0" : "-1")"
+                                 role="gridcell"
+                                 aria-label="@GetSlotAriaLabel(slotDate, slotHour)"
                                  @onmousedown="() => HandleSlotMouseDown(slotDate, slotHour)"
                                  @onmousemove="() => HandleSlotMouseMove(slotDate, slotHour)"
                                  @onmouseup="() => HandleSlotMouseUp(slotDate, slotHour)"
+                                 @onkeydown="(e) => HandleSlotKeyDown(slotDate, slotHour, e)"
                                  @ondragover="() => HandleSlotDragOver(slotDate, slotHour)"
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => HandleSlotDrop(slotDate, slotHour)">
@@ -185,7 +205,7 @@
                                                 var a = appt;
                                                 var top = (a.Start.Hour - effectiveStartHour + a.Start.Minute / 60.0) * 48;
                                                 var height = (a.End - a.Start).TotalHours * 48;
-                                                <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                                <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" aria-grabbed="@((_draggingAppointment?.Id == a.Id) ? "true" : "false")" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                                     @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                                     @if (Editable) { <div class="sf-scheduler__appointment-resize-handle" @onmousedown="() => HandleResizeMouseDown(a)" @onmousedown:stopPropagation="true"></div> }
                                                 </div>
@@ -214,10 +234,10 @@
                             @foreach (var appt in GetAllDayAppointmentsForDate(d))
                             {
                                 var a = appt;
-                                <div class="sf-scheduler__appointment mar-scheduler__appointment--allday @GetRenderCssClass(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" draggable="@(Editable ? "true" : "false")"
+                                <div class="sf-scheduler__appointment mar-scheduler__appointment--allday @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="@(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" draggable="@(Editable ? "true" : "false")"
                                  @ondragstart="() => HandleAppointmentDragStart(a)"
                                  @ondragend="HandleAppointmentDragEnd"
-                                 @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                 @onclick:stopPropagation="true" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                     @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                 </div>
                             }
@@ -243,9 +263,13 @@
                             var isDropTarget = _isDragRescheduling && _dropTargetSlot.HasValue
                                 && _dropTargetSlot.Value.Date == slotDate && _dropTargetSlot.Value.Hour == slotHour;
                             <div class="sf-scheduler__time-slot @(isDragSelecting ? "mar-scheduler__slot--drag-selecting" : "") @(isDropTarget ? "mar-scheduler__slot--drop-target" : "")"
+                                 tabindex="@(Editable ? "0" : "-1")"
+                                 role="gridcell"
+                                 aria-label="@GetSlotAriaLabel(slotDate, slotHour)"
                                  @onmousedown="() => HandleSlotMouseDown(slotDate, slotHour)"
                                  @onmousemove="() => HandleSlotMouseMove(slotDate, slotHour)"
                                  @onmouseup="() => HandleSlotMouseUp(slotDate, slotHour)"
+                                 @onkeydown="(e) => HandleSlotKeyDown(slotDate, slotHour, e)"
                                  @ondragover="() => HandleSlotDragOver(slotDate, slotHour)"
                                  @ondragover:preventDefault="true"
                                  @ondrop="() => HandleSlotDrop(slotDate, slotHour)">
@@ -256,7 +280,7 @@
                                 var a = appt;
                                 var top = (a.Start.Hour - effectiveStartHour + a.Start.Minute / 60.0) * 48;
                                 var height = (a.End - a.Start).TotalHours * 48;
-                                <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                                <div class="sf-scheduler__appointment mar-scheduler__appointment--timed @(_draggingAppointment?.Id == a.Id ? "mar-scheduler__appointment--dragging" : "") @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" aria-grabbed="@((_draggingAppointment?.Id == a.Id) ? "true" : "false")" draggable="@(Editable ? "true" : "false")" @ondragstart="() => HandleAppointmentDragStart(a)" @ondragend="HandleAppointmentDragEnd" style="top: @(top)px; height: @(height)px; @(GetAppointmentColor(a) is string clr && clr.Length > 0 ? $"background-color:{clr};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                     @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                                     @if (Editable) { <div class="sf-scheduler__appointment-resize-handle" @onmousedown="() => HandleResizeMouseDown(a)" @onmousedown:stopPropagation="true"></div> }
                                 </div>
@@ -295,7 +319,7 @@
                             var em = (a.End.Hour * 60 + a.End.Minute) - tlStartHour * 60;
                             var lp = (sm / (double)tlSlotMin) * sw;
                             var wp = ((em - sm) / (double)tlSlotMin) * sw;
-                            <div class="sf-scheduler__timeline-appointment @GetRenderCssClass(a)" style="left: @(lp)%; width: @(wp)%; @(!string.IsNullOrEmpty(a.Color) ? $"background-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                            <div class="sf-scheduler__timeline-appointment @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="left: @(lp)%; width: @(wp)%; @(!string.IsNullOrEmpty(a.Color) ? $"background-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                                 @if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }
                             </div>
                         }
@@ -318,7 +342,7 @@
                     @foreach (var appt in dayAppts)
                     {
                         var a = appt;
-                        <div class="sf-scheduler__agenda-item @GetRenderCssClass(a)" style="@(!string.IsNullOrEmpty(a.Color) ? $"border-inline-start-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)">
+                        <div class="sf-scheduler__agenda-item @GetRenderCssClass(a)" tabindex="0" role="button" aria-label="@GetAppointmentAriaLabel(a)" style="@(!string.IsNullOrEmpty(a.Color) ? $"border-inline-start-color:{a.Color};" : "") @GetRenderStyle(a)" @onclick="() => OnAppointmentClick.InvokeAsync(a)" @ondblclick:stopPropagation="true" @ondblclick="() => HandleAppointmentDoubleClick(a)" @onkeydown="(e) => HandleAppointmentKeyDown(a, e)">
                             <span class="sf-scheduler__agenda-item-time">@(a.IsAllDay ? "All Day" : $"{a.Start:HH:mm} - {a.End:HH:mm}")</span>
                             <span class="sf-scheduler__agenda-item-title">@if (AppointmentTemplate != null) { @AppointmentTemplate(a) } else { @a.Title }</span>
                         </div>
@@ -330,10 +354,10 @@
 
     @if (Editable && _editingAppointment != null && EditMode == SchedulerEditMode.Inline)
     {
-        <div class="sf-scheduler__edit-form">
+        <div class="sf-scheduler__edit-form" role="dialog" aria-modal="false" aria-label="Edit appointment" tabindex="-1" @onkeydown="HandleEditDialogKeyDown">
             <div class="sf-scheduler__edit-form-header">
                 <span>Edit Appointment</span>
-                <button type="button" class="sf-btn mar-btn--flat mar-scheduler__edit-form-close" @onclick="CancelEdit">&times;</button>
+                <button type="button" class="sf-btn mar-btn--flat mar-scheduler__edit-form-close" style="min-width:24px;min-height:24px;" aria-label="Close" @onclick="CancelEdit">&times;</button>
             </div>
             <div class="sf-scheduler__edit-form-body">
                 <label class="sf-scheduler__edit-form-label">Title <input type="text" class="sf-scheduler__edit-form-input" value="@_editTitle" @oninput="OnEditTitleChanged" /></label>
@@ -351,10 +375,10 @@
     @if (Editable && _editingAppointment != null && EditMode == SchedulerEditMode.Popup)
     {
         <div class="sf-scheduler__edit-backdrop" @onclick="CancelEdit"></div>
-        <div class="sf-scheduler__edit-popup">
+        <div class="sf-scheduler__edit-popup" role="dialog" aria-modal="true" aria-label="Edit appointment" tabindex="-1" @onkeydown="HandleEditDialogKeyDown">
             <div class="sf-scheduler__edit-popup-header">
                 <span>Edit Appointment</span>
-                <button type="button" class="sf-btn mar-btn--flat mar-scheduler__edit-popup-close" @onclick="CancelEdit">&times;</button>
+                <button type="button" class="sf-btn mar-btn--flat mar-scheduler__edit-popup-close" style="min-width:24px;min-height:24px;" aria-label="Close" @onclick="CancelEdit">&times;</button>
             </div>
             <div class="sf-scheduler__edit-popup-body">
                 <label class="sf-scheduler__edit-popup-label">Title <input type="text" class="sf-scheduler__edit-popup-input" value="@_editTitle" @oninput="OnEditTitleChanged" /></label>
@@ -453,9 +477,9 @@
     private static readonly string[] _defaultDayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     private string[] GetDayNames() { var firstDay = GetEffectiveFirstDayOfWeek(); if (firstDay == DayOfWeek.Sunday) return _defaultDayNames; var offset = (int)firstDay; var names = new string[7]; for (var i = 0; i < 7; i++) names[i] = _defaultDayNames[(i + offset) % 7]; return names; }
     private string GetHeaderTitle() => View switch { SchedulerView.Month => CurrentDate.ToString("MMMM yyyy"), SchedulerView.Week => $"Week of {GetWeekStart():MMM d, yyyy}", SchedulerView.Day => CurrentDate.ToString("dddd, MMM d, yyyy"), SchedulerView.MultiDay => $"{CurrentDate:MMM d} - {CurrentDate.AddDays(GetEffectiveNumberOfDays() - 1):MMM d, yyyy}", SchedulerView.Timeline => $"Timeline: {CurrentDate:MMM d, yyyy}", SchedulerView.Agenda => $"Agenda: {CurrentDate:MMM d} - {CurrentDate.AddDays(GetEffectiveAgendaDays() - 1):MMM d, yyyy}", _ => CurrentDate.ToString("MMMM yyyy") };
-    private async Task SetView(SchedulerView view) { View = view; await ViewChanged.InvokeAsync(view); }
-    private async Task NavigatePrevious() { CurrentDate = View switch { SchedulerView.Month => CurrentDate.AddMonths(-1), SchedulerView.Week => CurrentDate.AddDays(-7), SchedulerView.Day => CurrentDate.AddDays(-1), SchedulerView.MultiDay => CurrentDate.AddDays(-GetEffectiveNumberOfDays()), SchedulerView.Timeline => CurrentDate.AddDays(-1), SchedulerView.Agenda => CurrentDate.AddDays(-GetEffectiveAgendaDays()), _ => CurrentDate.AddMonths(-1) }; await CurrentDateChanged.InvokeAsync(CurrentDate); }
-    private async Task NavigateNext() { CurrentDate = View switch { SchedulerView.Month => CurrentDate.AddMonths(1), SchedulerView.Week => CurrentDate.AddDays(7), SchedulerView.Day => CurrentDate.AddDays(1), SchedulerView.MultiDay => CurrentDate.AddDays(GetEffectiveNumberOfDays()), SchedulerView.Timeline => CurrentDate.AddDays(1), SchedulerView.Agenda => CurrentDate.AddDays(GetEffectiveAgendaDays()), _ => CurrentDate.AddMonths(1) }; await CurrentDateChanged.InvokeAsync(CurrentDate); }
+    private async Task SetView(SchedulerView view) { View = view; await ViewChanged.InvokeAsync(view); AnnounceViewChange(view); }
+    private async Task NavigatePrevious() { CurrentDate = View switch { SchedulerView.Month => CurrentDate.AddMonths(-1), SchedulerView.Week => CurrentDate.AddDays(-7), SchedulerView.Day => CurrentDate.AddDays(-1), SchedulerView.MultiDay => CurrentDate.AddDays(-GetEffectiveNumberOfDays()), SchedulerView.Timeline => CurrentDate.AddDays(-1), SchedulerView.Agenda => CurrentDate.AddDays(-GetEffectiveAgendaDays()), _ => CurrentDate.AddMonths(-1) }; await CurrentDateChanged.InvokeAsync(CurrentDate); AnnounceNavigation(); }
+    private async Task NavigateNext() { CurrentDate = View switch { SchedulerView.Month => CurrentDate.AddMonths(1), SchedulerView.Week => CurrentDate.AddDays(7), SchedulerView.Day => CurrentDate.AddDays(1), SchedulerView.MultiDay => CurrentDate.AddDays(GetEffectiveNumberOfDays()), SchedulerView.Timeline => CurrentDate.AddDays(1), SchedulerView.Agenda => CurrentDate.AddDays(GetEffectiveAgendaDays()), _ => CurrentDate.AddMonths(1) }; await CurrentDateChanged.InvokeAsync(CurrentDate); AnnounceNavigation(); }
     private DateTime GetWeekStart() { var firstDay = GetEffectiveFirstDayOfWeek(); var diff = ((int)CurrentDate.DayOfWeek - (int)firstDay + 7) % 7; return CurrentDate.AddDays(-diff); }
     private List<DateOnly> GetMonthDays() { var firstDay = GetEffectiveFirstDayOfWeek(); var days = new List<DateOnly>(); var first = new DateOnly(CurrentDate.Year, CurrentDate.Month, 1); var startOffset = ((int)first.DayOfWeek - (int)firstDay + 7) % 7; for (var i = startOffset - 1; i >= 0; i--) days.Add(first.AddDays(-(i + 1))); var daysInMonth = DateTime.DaysInMonth(CurrentDate.Year, CurrentDate.Month); for (var d = 1; d <= daysInMonth; d++) days.Add(new DateOnly(CurrentDate.Year, CurrentDate.Month, d)); while (days.Count % 7 != 0) days.Add(days[^1].AddDays(1)); return days; }
     private List<DateOnly> GetWeekDays() { var start = DateOnly.FromDateTime(GetWeekStart()); return Enumerable.Range(0, 7).Select(i => start.AddDays(i)).ToList(); }
@@ -480,9 +504,9 @@
     private void OnEditIsAllDayChanged(ChangeEventArgs e) => _editIsAllDay = e.Value is true or "true" or "True";
     private void OnEditDescriptionChanged(ChangeEventArgs e) => _editDescription = e.Value?.ToString() ?? string.Empty;
     private void OnEditResourceChanged(ChangeEventArgs e) => _editResourceId = e.Value?.ToString() ?? string.Empty;
-    private async Task SaveEdit() { if (_editingAppointment == null) return; var updated = new SchedulerAppointment { Id = _editingAppointment.Id, Title = _editTitle, Start = _editStart, End = _editEnd, Description = _editDescription, IsAllDay = _editIsAllDay, Color = _editingAppointment.Color, RecurrenceRule = _editingAppointment.RecurrenceRule }; _editingAppointment = null; await OnUpdate.InvokeAsync(updated); }
-    private async Task DeleteAppointment() { if (_editingAppointment == null) return; var toDelete = _editingAppointment; _editingAppointment = null; await OnDelete.InvokeAsync(toDelete); }
-    private async Task CancelEdit() { _editingAppointment = null; await OnCancel.InvokeAsync(); }
+    private async Task SaveEdit() { if (_editingAppointment == null) return; var updated = new SchedulerAppointment { Id = _editingAppointment.Id, Title = _editTitle, Start = _editStart, End = _editEnd, Description = _editDescription, IsAllDay = _editIsAllDay, Color = _editingAppointment.Color, RecurrenceRule = _editingAppointment.RecurrenceRule }; _editingAppointment = null; Announce($"Appointment {updated.Title} saved."); await OnUpdate.InvokeAsync(updated); }
+    private async Task DeleteAppointment() { if (_editingAppointment == null) return; var toDelete = _editingAppointment; _editingAppointment = null; Announce($"Appointment {toDelete.Title} deleted."); await OnDelete.InvokeAsync(toDelete); }
+    private async Task CancelEdit() { _editingAppointment = null; Announce("Edit cancelled."); await OnCancel.InvokeAsync(); }
     private int GetEffectiveNumberOfDays() { var v = GetRegisteredView<SchedulerMultiDayView>(); return v?.NumberOfDays ?? 3; }
     private List<DateOnly> GetMultiDayDays() { var n = GetEffectiveNumberOfDays(); var s = DateOnly.FromDateTime(CurrentDate); return Enumerable.Range(0, n).Select(i => s.AddDays(i)).ToList(); }
     private int GetEffectiveTimelineSlotMinutes() { var v = GetRegisteredView<SchedulerTimelineView>(); return v != null ? (int)v.SlotDuration.TotalMinutes : 30; }

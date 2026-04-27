@@ -1,0 +1,98 @@
+@page "/components/navigation/breadcrumb/standalone-item"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>BreadcrumbItem / Standalone vs in-list · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="BreadcrumbItem / Standalone vs in-list"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Breadcrumb/StandaloneItem/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBreadcrumbItem</code> defaults to rendering as <code>&lt;li&gt;</code>
+            because the canonical use is inside <code>SunfishBreadcrumb</code>'s
+            <code>&lt;ol&gt;</code>. But the same primitive is also handy as a single trail crumb
+            embedded in surrounding text or a custom layout, and an orphan <code>&lt;li&gt;</code>
+            outside a list trips axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/listitem"
+               target="_blank" rel="noopener">
+                <code>listitem</code>
+            </a>
+            rule (HTML5 spec: <code>&lt;li&gt;</code> must be a child of <code>&lt;ol&gt;</code>,
+            <code>&lt;ul&gt;</code>, or <code>&lt;menu&gt;</code>).
+        </p>
+        <p>
+            Set <code>InList="false"</code> to switch the wrapper element to a
+            <code>&lt;span&gt;</code>. The inner content (link, current-page span, icon) is
+            unchanged.
+        </p>
+        <ul>
+            <li><strong><code>InList="true"</code> (default)</strong> &mdash; renders <code>&lt;li&gt;</code>; safe inside <code>SunfishBreadcrumb</code>.</li>
+            <li><strong><code>InList="false"</code></strong> &mdash; renders <code>&lt;span&gt;</code>; safe outside any list container.</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 1.3.1 <em>Info and Relationships</em> (correct list semantics).</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Inside a <code>SunfishBreadcrumb</code> (default)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Each item renders as <code>&lt;li&gt;</code> inside the breadcrumb's
+                    <code>&lt;ol&gt;</code>.
+                </p>
+                <SunfishBreadcrumb>
+                    <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+                    <SunfishBreadcrumbItem IsActive="true">Breadcrumb</SunfishBreadcrumbItem>
+                </SunfishBreadcrumb>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standalone (<code>InList="false"</code>)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Single crumb embedded inline in body copy &mdash; no surrounding
+                    <code>&lt;ol&gt;</code>, so the wrapper falls back to a <code>&lt;span&gt;</code>.
+                </p>
+                <p style="margin:0;">
+                    You are viewing the
+                    <SunfishBreadcrumbItem InList="false" IsActive="true">Accessibility</SunfishBreadcrumbItem>
+                    section of the documentation.
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standalone link crumb</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Use <code>InList="false"</code> + <code>Href</code> to render a single navigable
+                    crumb in custom chrome.
+                </p>
+                <SunfishBreadcrumbItem InList="false" Href="/components">Back to components</SunfishBreadcrumbItem>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">DOM reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>&lt;li&gt;</code></dt>
+                    <dd>Wrapper when <code>InList="true"</code> (default). Use only inside <code>&lt;ol&gt;</code>/<code>&lt;ul&gt;</code>.</dd>
+
+                    <dt><code>&lt;span&gt;</code></dt>
+                    <dd>Wrapper when <code>InList="false"</code>. Safe in any inline context.</dd>
+
+                    <dt><code>aria-current="page"</code></dt>
+                    <dd>Set on the inner element when <code>IsActive="true"</code>.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Breadcrumb", "StandaloneItem"];
+}
