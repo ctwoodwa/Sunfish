@@ -239,6 +239,17 @@ For Phase 1 acceptance ("Anchor opens, syncs with another Anchor over LAN, syncs
 
 Topology 4 (multi-tenant) is out of Phase 1 acceptance scope per plan §10 phase boundaries — re-verified in Phase 6 demos.
 
+### How to launch the smoke topology
+
+The Bridge AppHost ships a `Phase1Smoke` launch profile (`accelerators/bridge/Sunfish.Bridge.AppHost/Properties/launchSettings.json`) that activates `appsettings.Phase1Smoke.json`. That config sets `Bridge:Phase1Smoke:EnableRelayInstance=true`, which AppHost's `Program.cs` reads to add a second Sunfish.Bridge project resource named `bridge-relay` with `Bridge__Mode=Relay` + `ASPNETCORE_ENVIRONMENT=Relay`. Both `bridge-web` (SaaS posture) and `bridge-relay` (Relay posture) come up against shared Postgres/Redis/RabbitMQ infrastructure.
+
+```sh
+cd accelerators/bridge/Sunfish.Bridge.AppHost
+dotnet run --launch-profile Phase1Smoke
+```
+
+Acceptance check: in the Aspire dashboard, both `bridge-web` and `bridge-relay` reach `Running`. Issue `GET /health` against each Kestrel endpoint surfaced by the dashboard — both return 200. The Topology 3 smoke then layers two Anchors against this dual-Bridge orchestration to exercise the WAN sync path end-to-end.
+
 ---
 
 ## 8. Open questions for future versions
