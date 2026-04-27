@@ -30,6 +30,27 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0017](0017-web-components-lit-technical-basis.md) | Web Components (via Lit) as UI Technical Basis; JS and WASM Consumption Tracks | Accepted | — |
 | [0018](0018-governance-and-license-posture.md) | Governance Model and License Posture (BDFL + MIT + ODF/UPF/ICM stack) | Accepted | — |
 | [0021](0021-reporting-pipeline-policy.md) | Document and Report Generation Pipeline (Contracts + Pure-OSS Defaults + Commercial Adapters) | Accepted | — |
+| [0022](0022-example-catalog-and-docs-taxonomy.md) | Canonical Example Catalog, Documentation Taxonomy, and the Demo-Page Panel | Accepted | — |
+| [0023](0023-dialog-provider-slot-methods.md) | Dialog Provider Slot Methods | Accepted | — |
+| [0024](0024-button-variant-enum-expansion.md) | Button Variant Enum Expansion | Accepted | — |
+| [0025](0025-css-class-prefix-policy.md) | CSS Class Prefix Policy | Accepted | — |
+| [0026](0026-bridge-posture.md) | Bridge Posture (SaaS Shell + Managed Relay) | Superseded by 0031 | — |
+| [0027](0027-kernel-runtime-split.md) | Kernel Runtime Split | Accepted | — |
+| [0028](0028-crdt-engine-selection.md) | CRDT Engine Selection | Accepted | — |
+| [0029](0029-federation-reconciliation.md) | Federation and Reconciliation | Accepted | — |
+| [0030](0030-react-adapter-scaffolding.md) | React Adapter Scaffolding | Accepted | — |
+| [0031](0031-bridge-hybrid-multi-tenant-saas.md) | Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual) | Accepted | — |
+| [0032](0032-multi-team-anchor-workspace-switching.md) | Multi-Team Anchor (Slack-Style Workspace Switching) | Accepted | — |
+| [0033](0033-browser-shell-render-model-and-trust-posture.md) | Browser Shell v1 Render Model and Trust Posture | Accepted | — |
+| [0034](0034-a11y-harness-per-adapter.md) | Accessibility Harness per Adapter | Accepted | — |
+| [0035](0035-global-domain-types-as-separate-wave.md) | Global Domain Types as Separate Wave | Accepted | — |
+| [0036](0036-syncstate-multimodal-encoding-contract.md) | SyncState Multimodal Encoding Contract | Accepted | — |
+| [0037](0037-ci-platform-decision.md) | CI Platform Decision (Stay on GitHub Actions, Adopt `act` for Local) | Accepted | — |
+| [0038](0038-branch-protection-via-rulesets.md) | Branch Protection via GitHub Rulesets (not legacy branch-protection) | Accepted | — |
+| [0039](0039-required-check-minimalism-public-oss.md) | Required-Check Minimalism on Public OSS Repos | Accepted | — |
+| [0040](0040-translation-workflow-ai-first-3-stage-validation.md) | Translation Workflow: AI-First with 3-Stage Validation Gate | Accepted | — |
+| [0041](0041-dual-namespace-components-rich-vs-mvp.md) | Dual-Namespace Components by Design (Rich vs. MVP) | Accepted | — |
+| [0042](0042-subagent-driven-development-for-high-velocity.md) | Subagent-Driven Development for High-Velocity Sessions | Accepted | — |
 | [0043](0043-unified-threat-model-public-oss-chain-of-permissiveness.md) | Unified Threat Model — Chain of Permissiveness in Public-OSS Posture (layered over 0038/0039/0042) | Accepted | — |
 
 ## Appendix C Resolution
