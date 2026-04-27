@@ -4,13 +4,17 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
 using Sunfish.Foundation.Extensions;
+using Sunfish.Kernel.Crdt;
+using Sunfish.Kernel.Crdt.DependencyInjection;
 using Sunfish.Kernel.Runtime.DependencyInjection;
 using Sunfish.Kernel.Runtime.Teams;
 using Sunfish.Kernel.Security.Attestation;
 using Sunfish.Kernel.Security.Crypto;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Sunfish.Kernel.Security.Keys;
+using Sunfish.Kernel.Sync.Application;
 using Sunfish.Kernel.Sync.DependencyInjection;
+using Sunfish.Kernel.Sync.Discovery;
 using Sunfish.Kernel.Sync.Identity;
 using Sunfish.Kernel.Sync.Protocol;
 using Sunfish.Providers.Bootstrap.Extensions;
@@ -146,32 +150,72 @@ public static class MauiProgram
 		// apps/local-node-host (which does get an IHost and thus auto-pump).
 		builder.Services.AddHostedService<AnchorBootstrapHostedService>();
 
-		// Phase 1 G1 — Anchor sync (paper §6.1, ADR 0029, sync-daemon-protocol spec).
+		// Phase 1 G1 + G2 + G4 — Anchor sync (paper §6.1, §17.2; ADR 0029, ADR 0031;
+		// sync-daemon-protocol spec).
 		//
-		// Composition order:
-		//   1. ISyncDaemonTransport BEFORE AddSunfishKernelSync — AddSunfishKernelSync
-		//      uses TryAddSingleton, so a pre-registered transport with the
-		//      app's listen endpoint wins over the outbound-only default.
-		//      Anchor uses a Windows named pipe per ADR 0044 (Phase 1 Win64-only).
-		//      Convention: pipe name "sunfish-anchor-{nodeId-prefix}" so multi-install
-		//      coexistence on one machine doesn't collide.
-		//   2. INodeIdentityProvider BEFORE AddSunfishKernelSync — same TryAddSingleton
-		//      discipline. Anchor's rootIdentity (line 88) is the wire identity for
-		//      HELLO + GOSSIP_PING signatures; the in-memory provider wraps it.
-		//   3. AddSunfishKernelSync — registers IGossipDaemon + VectorClock + the
+		// Composition order matters because most kernel-sync registrations use
+		// TryAddSingleton, which keeps the FIRST registration. Anchor-specific
+		// implementations have to be registered BEFORE AddSunfishKernelSync to
+		// override the kernel's safe-default no-ops.
+		//
+		//   1. ISyncDaemonTransport — UnixSocketSyncDaemonTransport with a Windows
+		//      named-pipe listen endpoint per ADR 0044 (Phase 1 Win64-only). Pipe
+		//      name "sunfish-anchor-{nodeId-prefix}" so multi-install coexistence
+		//      on one machine doesn't collide.
+		//   2. INodeIdentityProvider wrapping rootIdentity (the Ed25519 keypair
+		//      derived from the install's keystore-backed root seed at line 89).
+		//   3. ICrdtEngine + the active CRDT document (Phase 1 single-document
+		//      convention, id "default") — backs the AnchorCrdtDeltaBridge that
+		//      kernel-sync's gossip daemon uses for DELTA_STREAM exchange.
+		//   4. AnchorCrdtDeltaBridge — implements both IDeltaProducer + IDeltaSink
+		//      from kernel-sync. Registered as singleton + as both interface keys
+		//      so AddSunfishKernelSync's TryAddSingleton-noop defaults lose.
+		//   5. AddSunfishKernelSync — registers IGossipDaemon + VectorClock + the
 		//      fallback signer. Idempotent on its own services.
-		//   4. AddMdnsPeerDiscovery — registers IPeerDiscovery for tier-1 LAN
-		//      (paper §6.1). WAN ManagedRelayPeerDiscovery is Phase 1 G4.
-		//   5. AddHostedService<AnchorSyncHostedService> AFTER the bootstrap hosted
-		//      service so the default-team identity + active-team accessor are
-		//      materialized before the daemon starts advertising on the LAN.
+		//   6. AddMdnsPeerDiscovery — tier-1 LAN discovery (paper §6.1).
+		//   7. AddManagedRelayPeerDiscovery — tier-3 WAN discovery (paper §17.2,
+		//      ADR 0031 Zone-C). Empty RelayUrl is a no-op so LAN-only deployments
+		//      register the source uniformly without producing peers. The Bridge
+		//      relay URL + node id + public key come from Anchor settings UI in a
+		//      future Stage 06 deliverable; for now read from the
+		//      Sync:Discovery:Bridge configuration section.
+		//   8. AddHostedService<AnchorSyncHostedService> AFTER the bootstrap
+		//      hosted service so the default-team identity + active-team accessor
+		//      are materialized before the daemon advertises and starts.
 		var syncPipeName = $"sunfish-anchor-{rootIdentity.NodeId[..8]}";
 		builder.Services.TryAddSingleton<ISyncDaemonTransport>(_ =>
 			new UnixSocketSyncDaemonTransport(syncPipeName));
 		builder.Services.TryAddSingleton<INodeIdentityProvider>(_ =>
 			new InMemoryNodeIdentityProvider(rootIdentity));
+
+		// CRDT engine (paper §2.2, ADR 0028) — YDotNet (Yjs/yrs) is the production
+		// default; native binaries ship via the YDotNet.Native package and work on
+		// Windows (Phase 1's only target per ADR 0044).
+		builder.Services.AddSunfishCrdtEngine();
+		builder.Services.TryAddSingleton<ICrdtDocument>(sp =>
+			sp.GetRequiredService<ICrdtEngine>().CreateDocument("default"));
+		builder.Services.TryAddSingleton<AnchorCrdtDeltaBridge>();
+		builder.Services.TryAddSingleton<IDeltaProducer>(sp =>
+			sp.GetRequiredService<AnchorCrdtDeltaBridge>());
+		builder.Services.TryAddSingleton<IDeltaSink>(sp =>
+			sp.GetRequiredService<AnchorCrdtDeltaBridge>());
+
 		builder.Services.AddSunfishKernelSync();
 		builder.Services.AddMdnsPeerDiscovery();
+		builder.Services.AddManagedRelayPeerDiscovery(opts =>
+		{
+			// Sync:Discovery:Bridge:Url + RelayNodeId + RelayPublicKey populated by
+			// the Stage 06 settings-UI deliverable. When absent or empty, the
+			// discovery source is a no-op per ManagedRelayPeerDiscovery.StartAsync.
+			opts.RelayUrl = builder.Configuration["Sync:Discovery:Bridge:Url"] ?? string.Empty;
+			opts.RelayNodeId = builder.Configuration["Sync:Discovery:Bridge:NodeId"] ?? string.Empty;
+			var hexKey = builder.Configuration["Sync:Discovery:Bridge:PublicKey"];
+			if (!string.IsNullOrWhiteSpace(hexKey))
+			{
+				try { opts.RelayPublicKey = Convert.FromHexString(hexKey); }
+				catch (FormatException) { /* invalid hex — leave empty, surfaces at HELLO verify */ }
+			}
+		});
 		builder.Services.AddHostedService<AnchorSyncHostedService>();
 
 		// Anchor-specific session state + onboarding service.
