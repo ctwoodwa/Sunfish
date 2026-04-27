@@ -6,6 +6,9 @@ namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 /// </summary>
 public class GanttDayView : GanttViewBase
 {
+    /// <summary>Initializes the view with a default slot width of 40 pixels per hour.</summary>
     public GanttDayView() { SlotWidth = 40; }
+
+    /// <inheritdoc />
     public override GanttView ViewType => GanttView.Day;
 }

@@ -102,7 +102,10 @@ public class GanttState<TItem> where TItem : class
 /// <summary>Describes a single-column sort.</summary>
 public class GanttSortDescriptor
 {
+    /// <summary>The field name to sort by.</summary>
     public string Field { get; set; } = "";
+
+    /// <summary>True for ascending order, false for descending.</summary>
     public bool Ascending { get; set; } = true;
 }
 

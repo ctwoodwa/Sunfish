@@ -7,6 +7,18 @@ using Microsoft.JSInterop;
 
 namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay;
 
+/// <summary>
+/// Hierarchical Gantt chart that renders <typeparamref name="TItem"/> tasks as horizontal bars
+/// against a configurable timeline (Day / Week / Month / Year). Supports drag-to-move,
+/// edge-resize, progress drag, dependency arrows, inline editing, and JS-interop-driven
+/// pointer interactions.
+/// </summary>
+/// <remarks>
+/// The component implements <see cref="IGanttViewHost"/> for view-mode strategies and
+/// <see cref="IAsyncDisposable"/> for the JS interop module — consumers must dispose it
+/// via the standard Blazor lifecycle.
+/// </remarks>
+/// <typeparam name="TItem">The task model type.</typeparam>
 public partial class SunfishGantt<TItem> : SunfishComponentBase, IGanttViewHost, IAsyncDisposable
     where TItem : class
 {
@@ -1358,6 +1370,12 @@ public partial class SunfishGantt<TItem> : SunfishComponentBase, IGanttViewHost,
         return DayWidth > 0 ? TimeSpan.FromDays(deltaPixels / DayWidth) : TimeSpan.Zero;
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when a Gantt bar is dragged horizontally. Shifts both
+    /// the start and end of the underlying task by the converted delta and raises <c>OnUpdate</c>.
+    /// </summary>
+    /// <param name="barIndex">Zero-based index into the currently-visible flat row list.</param>
+    /// <param name="deltaPixels">Horizontal pixel delta from the drag start; converted to a <see cref="TimeSpan"/> by view granularity.</param>
     [JSInvokable]
     public async Task OnBarMoved(int barIndex, double deltaPixels)
     {
@@ -1376,6 +1394,13 @@ public partial class SunfishGantt<TItem> : SunfishComponentBase, IGanttViewHost,
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when a Gantt bar is resized via its left or right edge.
+    /// Applies independent deltas to the start and end of the underlying task and raises <c>OnUpdate</c>.
+    /// </summary>
+    /// <param name="barIndex">Zero-based index into the currently-visible flat row list.</param>
+    /// <param name="leftDelta">Pixel delta applied to the start edge (negative grows the bar to the left).</param>
+    /// <param name="rightDelta">Pixel delta applied to the end edge (positive grows the bar to the right).</param>
     [JSInvokable]
     public async Task OnBarResized(int barIndex, double leftDelta, double rightDelta)
     {
@@ -1400,6 +1425,12 @@ public partial class SunfishGantt<TItem> : SunfishComponentBase, IGanttViewHost,
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>
+    /// JS interop entry point: invoked when the user drags a bar's progress handle. Clamps
+    /// the value to <c>[0, 100]</c>, rounds to one decimal, and raises <c>OnUpdate</c>.
+    /// </summary>
+    /// <param name="barIndex">Zero-based index into the currently-visible flat row list.</param>
+    /// <param name="newPercent">Requested percent-complete value; clamped to <c>[0, 100]</c>.</param>
     [JSInvokable]
     public async Task OnBarProgressChanged(int barIndex, double newPercent)
     {
@@ -1832,6 +1863,10 @@ public partial class SunfishGantt<TItem> : SunfishComponentBase, IGanttViewHost,
         _announcement = message;
     }
 
+    /// <summary>
+    /// Releases the JS interop module and instance, tolerating disconnected circuits.
+    /// Safe to call repeatedly.
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         if (_jsInstance is not null)
