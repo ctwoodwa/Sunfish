@@ -157,4 +157,53 @@ public static class ServiceCollectionExtensions
                 sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<PeerDiscoveryOptions>>().Value));
         return services;
     }
+
+    /// <summary>
+    /// Register <see cref="ManagedRelayPeerDiscovery"/> as the paper §17.2
+    /// tier-3 WAN-relay discovery source. Coexists with
+    /// <see cref="AddMdnsPeerDiscovery"/>: this method registers the
+    /// concrete <see cref="ManagedRelayPeerDiscovery"/> type, leaving the
+    /// <see cref="IPeerDiscovery"/> binding (mDNS / in-memory) untouched.
+    /// Composition roots resolve both and call
+    /// <see cref="GossipDaemonDiscoveryExtensions.AttachDiscovery"/> twice
+    /// — once per source — so the gossip daemon's combined peer set
+    /// contains LAN peers from mDNS plus the configured Bridge relay.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The concrete-type registration (rather than as <see cref="IPeerDiscovery"/>)
+    /// is intentional. <c>TryAddSingleton&lt;IPeerDiscovery&gt;</c> would
+    /// silently lose to a sibling registration, hiding a misconfiguration.
+    /// Resolving the concrete type makes the multi-source intent explicit
+    /// at the call site.
+    /// </para>
+    /// <para>
+    /// <see cref="ManagedRelayPeerDiscoveryOptions.RelayUrl"/> empty is a
+    /// supported configuration: <see cref="ManagedRelayPeerDiscovery.StartAsync"/>
+    /// becomes a no-op and the discovery surface produces no peers. This
+    /// is the LAN-only deployment shape — register the source so the
+    /// composition is uniform across deployments, then drive behavior with
+    /// the options.
+    /// </para>
+    /// </remarks>
+    public static IServiceCollection AddManagedRelayPeerDiscovery(
+        this IServiceCollection services,
+        Action<ManagedRelayPeerDiscoveryOptions>? configureOptions = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        if (configureOptions is not null)
+        {
+            services.Configure(configureOptions);
+        }
+        else
+        {
+            services.AddOptions<ManagedRelayPeerDiscoveryOptions>();
+        }
+
+        services.TryAddSingleton<ManagedRelayPeerDiscovery>(sp =>
+            new ManagedRelayPeerDiscovery(
+                sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<ManagedRelayPeerDiscoveryOptions>>().Value));
+        return services;
+    }
 }
