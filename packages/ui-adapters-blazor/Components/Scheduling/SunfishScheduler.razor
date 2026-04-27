@@ -18,13 +18,17 @@
      aria-label="Scheduler"
      @attributes="AdditionalAttributes">
 
+    @* WCAG 4.1.3 Status Messages — polite live region for view-change, navigation, and event-activation announcements. *@
+    <div class="sf-scheduler__sr-only" role="status" aria-live="polite" aria-atomic="true"
+         style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">@_liveAnnouncement</div>
+
     <div class="sf-scheduler__toolbar">
         <div class="sf-scheduler__nav">
-            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigatePrevious" aria-label="Previous">‹</button>
+            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigatePrevious" aria-label="@GetPreviousNavLabel()">‹</button>
             <div class="sf-scheduler__title" aria-live="polite">@GetHeaderTitle()</div>
-            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigateNext" aria-label="Next">›</button>
+            <button type="button" class="sf-scheduler__nav-btn" style="min-width:24px;min-height:24px;" @onclick="NavigateNext" aria-label="@GetNextNavLabel()">›</button>
         </div>
-        <div class="sf-scheduler__views" role="tablist">
+        <div class="sf-scheduler__views" role="tablist" aria-label="Scheduler view">
             @foreach (var v in Enum.GetValues<SchedulerView>())
             {
                 var isActive = v == View;
@@ -60,16 +64,18 @@
                                     {
                                         var captured = evt;
                                         var color = GetColor(captured) ?? "#1976d2";
+                                        var evtLabel = $"{GetTitle(captured)}, {(GetAllDay(captured) ? "all day" : GetStart(captured).ToString("h:mm tt"))}";
                                         <button type="button"
                                                 class="sf-scheduler__month-event"
-                                                style="background:@color"
+                                                style="background:@color;min-height:24px;"
+                                                aria-label="@evtLabel"
                                                 @onclick="() => InvokeEventClick(captured)">
                                             @GetTitle(captured)
                                         </button>
                                     }
                                     @if (dayEvents.Count > 3)
                                     {
-                                        <div class="sf-scheduler__month-more">+@(dayEvents.Count - 3) more</div>
+                                        <div class="sf-scheduler__month-more" aria-label="@((dayEvents.Count - 3) + " more events on this day")">+@(dayEvents.Count - 3) more</div>
                                     }
                                 </div>
                             }
@@ -95,13 +101,19 @@
                         {
                             var captured = evt;
                             var color = GetColor(captured) ?? "#1976d2";
-                            <li class="sf-scheduler__agenda-item"
-                                @onclick="() => InvokeEventClick(captured)">
-                                <span class="sf-scheduler__agenda-color" style="background:@color"></span>
-                                <div class="sf-scheduler__agenda-when">
-                                    @GetStart(captured).ToString("ddd MMM d, h:mm tt")
-                                </div>
-                                <div class="sf-scheduler__agenda-title">@GetTitle(captured)</div>
+                            var ariaLabel = $"{GetTitle(captured)}, {GetStart(captured):ddd MMM d, h:mm tt}";
+                            <li class="sf-scheduler__agenda-item">
+                                <button type="button"
+                                        class="sf-scheduler__agenda-item-btn"
+                                        style="display:flex;align-items:center;gap:0.5rem;background:none;border:0;padding:0;width:100%;text-align:start;cursor:pointer;min-height:24px;"
+                                        aria-label="@ariaLabel"
+                                        @onclick="() => InvokeEventClick(captured)">
+                                    <span class="sf-scheduler__agenda-color" style="background:@color" aria-hidden="true"></span>
+                                    <div class="sf-scheduler__agenda-when">
+                                        @GetStart(captured).ToString("ddd MMM d, h:mm tt")
+                                    </div>
+                                    <div class="sf-scheduler__agenda-title">@GetTitle(captured)</div>
+                                </button>
                             </li>
                         }
                     </ul>
@@ -143,9 +155,11 @@
                                 if (GetAllDay(captured)) continue;
                                 var (top, height) = ComputeTimedGeometry(captured);
                                 var color = GetColor(captured) ?? "#1976d2";
+                                var evtLabel = $"{GetTitle(captured)}, {GetStart(captured):ddd MMM d HH:mm} to {GetEnd(captured):HH:mm}";
                                 <button type="button"
                                         class="sf-scheduler__time-event"
-                                        style="top:@(top)px;height:@(height)px;background:@color"
+                                        style="top:@(top)px;height:@(height)px;background:@color;min-height:24px;"
+                                        aria-label="@evtLabel"
                                         @onclick="() => InvokeEventClick(captured)">
                                     <span class="sf-scheduler__time-event-title">@GetTitle(captured)</span>
                                 </button>
