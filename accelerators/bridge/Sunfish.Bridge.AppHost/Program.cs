@@ -74,6 +74,58 @@ var bridgeWeb = builder.AddProject<Projects.Sunfish_Bridge>("bridge-web")
     .WaitFor(rabbit)
     .WaitFor(dab);
 
+// Phase 1 G3 part 2 — optional second Bridge instance in Relay posture.
+//
+// When `Bridge:Phase1Smoke:EnableRelayInstance` is set in AppHost
+// configuration (typically via `appsettings.Phase1Smoke.json` activated by
+// the Phase1Smoke launch profile), AppHost adds a second
+// Sunfish.Bridge project resource as `bridge-relay` with
+// `Bridge__Mode=Relay` and `ASPNETCORE_ENVIRONMENT=Relay`. The latter
+// activates Bridge's existing `appsettings.Relay.json` (which sets
+// Mode=Relay and the relay-specific Logging level) so the second
+// instance comes up in the Relay posture per ADR 0031 / paper §17.2.
+//
+// Smoke-test acceptance criterion (Stage 05 plan G3):
+//   1. Launch with --launch-profile Phase1Smoke
+//   2. Both `bridge-web` (SaaS) and `bridge-relay` (Relay) reach Running
+//   3. `GET /health` on each Kestrel endpoint returns 200
+//
+// The single-Bridge default behaviour is unchanged — the smoke instance
+// is opt-in and produces no additional resources unless the flag is set.
+var enableRelayInstance = builder.Configuration.GetValue<bool>(
+    "Bridge:Phase1Smoke:EnableRelayInstance");
+if (enableRelayInstance)
+{
+    var relayResourceName = builder.Configuration["Bridge:Phase1Smoke:RelayResourceName"]
+        ?? "bridge-relay";
+
+    var bridgeRelay = builder.AddProject<Projects.Sunfish_Bridge>(relayResourceName)
+        .WithReference(postgres)
+        .WithReference(redis)
+        .WithReference(rabbit)
+        .WithReference(okta)
+        .WithEnvironment("Bridge__Mode", "Relay")
+        .WithEnvironment("ASPNETCORE_ENVIRONMENT", "Relay")
+        .WithEnvironment("DOTNET_ENVIRONMENT", "Relay")
+        .WithEnvironment("Bridge__Orchestration__TenantDataRoot", tenantDataRoot)
+        .WithEnvironment("Bridge__Orchestration__LocalNodeExecutablePath", localNodeExePath)
+        .WaitForCompletion(migrations)
+        .WaitFor(redis)
+        .WaitFor(rabbit);
+
+    Console.WriteLine();
+    Console.WriteLine("==============================================================================");
+    Console.WriteLine("  PHASE 1 G3 SMOKE PROFILE ACTIVE");
+    Console.WriteLine();
+    Console.WriteLine($"  Second Bridge instance '{relayResourceName}' launched with Bridge__Mode=Relay.");
+    Console.WriteLine("  Both bridge-web (SaaS) and the relay instance share the same Postgres /");
+    Console.WriteLine("  Redis / RabbitMQ infrastructure and migration run.");
+    Console.WriteLine();
+    Console.WriteLine("  Smoke acceptance: GET /health on each Kestrel endpoint should return 200.");
+    Console.WriteLine("==============================================================================");
+    Console.WriteLine();
+}
+
 // DEMO AUTH SEAM WARNING — surfaces in Aspire dashboard console on boot.
 Console.WriteLine();
 Console.WriteLine("==============================================================================");

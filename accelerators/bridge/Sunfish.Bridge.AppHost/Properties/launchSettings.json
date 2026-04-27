@@ -26,6 +26,19 @@
         "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "http://localhost:21101",
         "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "http://localhost:22101"
       }
+    },
+    "Phase1Smoke": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:17101;http://localhost:15101",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Phase1Smoke",
+        "DOTNET_ENVIRONMENT": "Phase1Smoke",
+        "DOTNET_ASPIRE_CONTAINER_RUNTIME": "docker",
+        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21101",
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22101"
+      }
     }
   }
 }
