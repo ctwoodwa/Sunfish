@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-25T12:58:21.520Z
-> Files: 1066 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-27T05:34:32.312Z
+> Files: 1080 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../Users/Chris/.claude/
 
@@ -18,6 +18,11 @@
 - `project_style_audit_synthesis_2026_04.md` — The 10 systemic themes (ordered by severity) (~889 tok)
 - `project_sunfish_private_until_llc.md` (~562 tok)
 - `reference_efcore_npgsql_preview_lock.md` (~316 tok)
+
+## ../../Users/Chris/.claude/projects/C--Projects-sunfish/memory/
+
+- `MEMORY.md` — Memory Index (~982 tok)
+- `project_business_mvp_phase_1_progress.md` (~365 tok)
 
 ## ./
 
@@ -42,6 +47,10 @@
 
 ## .claude/skill/
 
+
+## .claude/worktrees/agent-a7b14f1a37fed8644/docs/adrs/
+
+- `README.md` — Project documentation (~1313 tok)
 
 ## .claude/worktrees/agent-a88364aa/apps/kitchen-sink/Pages/Components/Icons/Icon/Overview/
 
@@ -256,9 +265,9 @@
 
 ## accelerators/anchor/
 
-- `MauiProgram.cs` — Class: MauiProgram (~2171 tok)
+- `MauiProgram.cs` — Class: MauiProgram (~2671 tok)
 - `README.md` — Project documentation (~2666 tok)
-- `Sunfish.Anchor.csproj` — /*.cs" /> (~1732 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~1793 tok)
 
 ## accelerators/anchor/Components/
 
@@ -286,14 +295,16 @@
 ## accelerators/anchor/Services/
 
 - `AnchorSessionService.cs` — In-memory session state for the Anchor accelerator. Tracks the three paper §13.2 status-bar indicato (~1758 tok)
+- `AnchorSyncHostedService.cs` — Phase 1 G1 — Anchor sync daemon hosted service. Drives the <see cref="IGossipDaemon"/> lifecycle on (~1040 tok)
 - `QrOnboardingService.cs` — QR-code onboarding payload encoder / decoder per paper §13.4. (~2827 tok)
 
 ## accelerators/anchor/tests/
 
 - `AnchorSessionServiceTests.cs` — Class: AnchorSessionServiceTests (~1235 tok)
+- `AnchorSyncHostedServiceTests.cs` — Phase 1 G1 — Anchor sync hosted service wiring. Verifies that <see cref="AnchorSyncHostedService"/> (~1912 tok)
 - `GlobalUsings.cs` — Class: GlobalUsings (~6 tok)
 - `QrOnboardingServiceTests.cs` — No-op <see cref="IEncryptedStore"/> — QrOnboardingService keeps a field reference for future wiring (~2233 tok)
-- `tests.csproj` (~466 tok)
+- `tests.csproj` (~802 tok)
 
 ## accelerators/bridge/
 
@@ -964,6 +975,8 @@
 - `0032-multi-team-anchor-workspace-switching.md` — ADR 0032 — Multi-Team Anchor (Slack-Style Workspace Switching) (~5398 tok)
 - `0034-a11y-harness-per-adapter.md` — ADR 0034 — Accessibility Harness Per Adapter (~1953 tok)
 - `0036-syncstate-multimodal-encoding-contract.md` — ADR 0036 — SyncState Multimodal Encoding Contract (~2368 tok)
+- `0044-anchor-windows-only-phase-1.md` — ADR 0044 — Anchor ships Windows-only for Business MVP Phase 1 (~1370 tok)
+- `0046-key-loss-recovery-scheme-phase-1.md` — ADR 0046 — Key-loss recovery scheme for Business MVP Phase 1 (~2314 tok)
 - `README.md` — Project documentation (~678 tok)
 
 ## docs/migration-guides/
@@ -977,6 +990,7 @@
 ## docs/specifications/
 
 - `air-gap-deployment.md` — Air-Gap Deployment Specification (~2411 tok)
+- `anchor-bridge-connection-topology.md` — Anchor↔Bridge Connection Topology Specification (~3723 tok)
 - `byod-path-separation.md` — BYOD Path Separation Specification (~1563 tok)
 - `mdm-config-schema.json` (~671 tok)
 - `mdm-config-schema.md` — MDM Pre-Seeded Node Config — Schema Specification (~1598 tok)
@@ -996,17 +1010,23 @@
 
 ## icm/00_intake/output/
 
+- `business-mvp-phase-1-foundation-intake-2026-04-26.md` — Intake Note — Sunfish Business MVP Phase 1 (Foundation) (~3449 tok)
 - `compat-expansion-intake.md` — Intake Note — Compat Package Expansion (Syncfusion / DevExpress / Infragistics) (~6756 tok)
 - `compat-icon-expansion-intake.md` — Intake Note — Compat Icon Library Expansion (Font Awesome + OSS peers) (~3856 tok)
 - `web-components-migration-intake-2026-04-20.md` — Intake Note — UI Architecture Migration (ADR 0017, revised) (~3606 tok)
 
 ## icm/01_discovery/output/
 
+- `business-mvp-phase-1-discovery-final-2026-04-26.md` — Stage 01 Discovery — Phase 1 Final Report (~2085 tok)
 - `compat-devexpress-surface-inventory-2026-04-22.md` — compat-devexpress Surface Inventory — Stage 01 Discovery (~11250 tok)
 - `compat-icon-library-survey-2026-04-22.md` — Compat Icon Library Survey — 2026-04-22 (~5731 tok)
 - `compat-infragistics-surface-inventory-2026-04-22.md` — compat-infragistics — Surface Inventory & Mapping Skeleton (~6527 tok)
 - `compat-syncfusion-surface-inventory-2026-04-22.md` — compat-syncfusion Surface Inventory — Stage 01 Discovery (~10289 tok)
 - `infragistics-wc-architecture-spike-2026-04-22.md` — Ignite UI Web Components Architecture Spike — Decision 2 (~3729 tok)
+
+## icm/05_implementation-plan/output/
+
+- `business-mvp-phase-1-plan-2026-04-26.md` — Stage 05 Implementation Plan — MVP Phase 1 (~5352 tok)
 
 ## icm/07_review/output/
 
@@ -1029,6 +1049,12 @@
 - `SunfishDialog-FluentUI-v9.md` — Style Audit: SunfishDialog vs Fluent UI v9 Dialog (~4350 tok)
 - `SunfishDialog-MaterialDesign3.md` — Style Audit: SunfishDialog vs Material Design 3 (~4147 tok)
 - `SYNTHESIS.md` — Style Parity Audit — Cross-Framework Synthesis (~10551 tok)
+
+## icm/pipelines/sunfish-inverted-stack-conformance/
+
+- `deliverables.md` — sunfish-inverted-stack-conformance Deliverables (~1188 tok)
+- `README.md` — Project documentation (~1742 tok)
+- `routing.md` — sunfish-inverted-stack-conformance Routing (~1147 tok)
 
 ## icm/working-notes/
 
