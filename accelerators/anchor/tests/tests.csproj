@@ -43,6 +43,8 @@
     <Compile Include="..\Services\AnchorV1MigrationService.cs" Link="Anchor\AnchorV1MigrationService.cs" />
     <Compile Include="..\Services\AnchorSyncHostedService.cs" Link="Anchor\AnchorSyncHostedService.cs" />
     <Compile Include="..\Services\AnchorCrdtDeltaBridge.cs" Link="Anchor\AnchorCrdtDeltaBridge.cs" />
+    <Compile Include="..\Services\AnchorBackupService.cs" Link="Anchor\AnchorBackupService.cs" />
+    <Compile Include="..\Services\BackupManifest.cs" Link="Anchor\BackupManifest.cs" />
   </ItemGroup>
 
   <ItemGroup>
