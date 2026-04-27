@@ -194,4 +194,26 @@ public class PostingEngineTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
             () => engine.PostAsync(tx, cts.Token));
     }
+
+    /// <summary>
+    /// D6 contract pin (paper §2.2 + §6.3): PostingEngine MUST acquire a
+    /// lease on every account it touches before committing. This test exists
+    /// so the consumer-site wiring shows up in greps for "D6" and so a
+    /// future refactor that drops the lease call breaks here loudly.
+    /// </summary>
+    [Fact]
+    public async Task PostAsync_D6_AcquiresOneLeasePerAccount()
+    {
+        var engine = NewEngine(out var leases, out _, out _);
+        var tx = TxBuilder.Simple("d6-key", "cash", "revenue", 25m);
+
+        var result = await engine.PostAsync(tx, default);
+
+        Assert.True(result.Success);
+        // Two distinct accounts touched → exactly two acquires. The
+        // ScheduleReservationCoordinator in blocks-scheduling honours the
+        // same contract (one lease per resource, released in finally) so
+        // both CP-class writers in the kernel speak the same vocabulary.
+        Assert.Equal(2, leases.AcquireCount);
+    }
 }
