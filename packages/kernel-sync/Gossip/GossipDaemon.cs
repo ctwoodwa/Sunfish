@@ -63,6 +63,9 @@ public sealed class GossipDaemon : IGossipDaemon
     private readonly INodeIdentityProvider _nodeIdentity;
     private readonly IEd25519Signer _signer;
     private readonly DeltaStreamRateLimiter _rateLimiter;
+    private readonly Application.IDeltaProducer _deltaProducer;
+    private readonly Application.IDeltaSink _deltaSink;
+    private ulong _outboundDeltaSeq;
 
     // Monotonic nonce counter. ulong.MaxValue wrap-around is not a
     // real-world concern (see class remarks); we do not guard against it.
@@ -86,6 +89,8 @@ public sealed class GossipDaemon : IGossipDaemon
         IOptions<GossipDaemonOptions> options,
         INodeIdentityProvider nodeIdentity,
         IEd25519Signer signer,
+        Application.IDeltaProducer? deltaProducer = null,
+        Application.IDeltaSink? deltaSink = null,
         ILogger<GossipDaemon>? logger = null)
     {
         _transport = transport ?? throw new ArgumentNullException(nameof(transport));
@@ -93,6 +98,11 @@ public sealed class GossipDaemon : IGossipDaemon
         _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _nodeIdentity = nodeIdentity ?? throw new ArgumentNullException(nameof(nodeIdentity));
         _signer = signer ?? throw new ArgumentNullException(nameof(signer));
+        // Wave 2.5 — null defaults preserve PING-only behavior for callers
+        // that haven't migrated to the Application namespace yet (the older
+        // 5-arg constructor signature).
+        _deltaProducer = deltaProducer ?? new Application.NoopDeltaProducer();
+        _deltaSink = deltaSink ?? new Application.NoopDeltaSink();
         _logger = logger ?? Microsoft.Extensions.Logging.Abstractions.NullLogger<GossipDaemon>.Instance;
         _rng = new Random();
         _rateLimiter = new DeltaStreamRateLimiter(_options.MaxDeltaStreamPerSecondPerPeer);
@@ -367,6 +377,30 @@ public sealed class GossipDaemon : IGossipDaemon
                 MonotonicNonce: nonce);
             await conn.SendAsync(ping, timeoutCts.Token).ConfigureAwait(false);
 
+            // Wave 2.5 — outbound DELTA_STREAM. Always send a frame so the
+            // wire protocol stays predictable: every round is PING then
+            // DELTA_STREAM, regardless of whether the producer has anything
+            // to ship. An empty CrdtOps payload is a no-op on the receiver
+            // (the sink interprets empty as "nothing to apply"). This mirrors
+            // the always-PING convention and keeps responder code simple.
+            //
+            // Phase 1 single-document callers pass an empty peer-vector-clock
+            // (the gossip-level VC isn't the CRDT-level VC; richer-VC plumbing
+            // is a follow-up wave). The producer interprets empty as "encode
+            // full history."
+            const string phase1DocumentId = "default";
+            var outboundDelta = await _deltaProducer.EncodeOutboundDeltaAsync(
+                phase1DocumentId,
+                ReadOnlyMemory<byte>.Empty,
+                timeoutCts.Token).ConfigureAwait(false);
+            var outboundSeq = Interlocked.Increment(ref _outboundDeltaSeq);
+            var deltaOut = new DeltaStreamMessage(
+                StreamId: phase1DocumentId,
+                OpSequence: outboundSeq,
+                CrdtOps: outboundDelta?.ToArray() ?? Array.Empty<byte>());
+            await conn.SendAsync(deltaOut, timeoutCts.Token).ConfigureAwait(false);
+            var opsReceivedThisRound = 0;
+
             // Receive-with-timeout — if the peer does not reply within the
             // round's timeout, we count the round as "half-exchanged" and
             // move on without marking the peer dead (they accepted our data).
@@ -397,6 +431,13 @@ public sealed class GossipDaemon : IGossipDaemon
                             FrameType: GossipFrameType.GossipPing,
                             OccurredAt: DateTimeOffset.UtcNow,
                             Summary: $"{peerNodeId} sent gossip ping"));
+
+                        // Wave 2.5 — after the PING comes an optional DELTA_STREAM
+                        // from the peer. We attempt a second receive with the
+                        // remaining round timeout; if the peer didn't send a
+                        // delta this round the receive cancels and we move on.
+                        opsReceivedThisRound = await TryReceiveDeltaStreamAsync(
+                            conn, peer, peerNodeId, recvCts.Token).ConfigureAwait(false);
                     }
                 }
             }
@@ -407,7 +448,7 @@ public sealed class GossipDaemon : IGossipDaemon
 
             // Success → reset strike count.
             peer.OnRoundSucceeded();
-            return (DeltasExchanged: 1, OpsReceived: 0);
+            return (DeltasExchanged: 1, OpsReceived: opsReceivedThisRound);
         }
         catch (OperationCanceledException) when (!roundCt.IsCancellationRequested)
         {
@@ -447,6 +488,76 @@ public sealed class GossipDaemon : IGossipDaemon
                 try { await conn.DisposeAsync().ConfigureAwait(false); }
                 catch { /* best-effort close */ }
             }
+        }
+    }
+
+    /// <summary>
+    /// Wave 2.5 — attempt to receive an inbound <c>DELTA_STREAM</c> after the
+    /// PING exchange. Best-effort: returns 0 on timeout, malformed frame, or
+    /// rate-limit rejection so the round continues to count as successful.
+    /// </summary>
+    private async Task<int> TryReceiveDeltaStreamAsync(
+        ISyncDaemonConnection conn,
+        PeerState peer,
+        string peerNodeId,
+        CancellationToken ct)
+    {
+        try
+        {
+            var inbound = await conn.ReceiveAsync(ct).ConfigureAwait(false);
+            if (inbound is not DeltaStreamMessage delta)
+            {
+                return 0; // peer sent something else (or nothing) — ignore
+            }
+
+            // Empty payload = peer had nothing to ship this round. The frame
+            // is sent unconditionally (see outbound section above) to keep
+            // the wire protocol predictable, but there's nothing for the sink
+            // to apply.
+            if (delta.CrdtOps is null || delta.CrdtOps.Length == 0)
+            {
+                return 0;
+            }
+
+            // Spec §8 rate-limit check before dispatching to the sink.
+            if (!AllowInboundDelta(peer.Info.Endpoint))
+            {
+                return 0;
+            }
+
+            await _deltaSink.ApplyInboundDeltaAsync(
+                delta.StreamId,
+                delta.OpSequence,
+                delta.CrdtOps,
+                ct).ConfigureAwait(false);
+
+            FrameReceived?.Invoke(this, new GossipFrameEventArgs(
+                PeerEndpoint: peer.Info.Endpoint,
+                PeerNodeId: peerNodeId,
+                FrameType: GossipFrameType.DeltaStream,
+                OccurredAt: DateTimeOffset.UtcNow,
+                Summary: $"{peerNodeId} sent delta-stream {delta.StreamId} op {delta.OpSequence}"));
+
+            // Reporting "1 op received" is a coarse stand-in for the actual
+            // CRDT op count — the wire payload is opaque bytes whose internal
+            // op-count semantics belong to the engine. Adequate for the
+            // existing GossipRoundCompletedEventArgs.OpsReceived signal until
+            // the engine surfaces a real op-count from ApplyDelta.
+            return 1;
+        }
+        catch (OperationCanceledException)
+        {
+            return 0; // peer didn't send a delta this round — fine
+        }
+        catch (Exception ex)
+        {
+            // Per IDeltaSink contract: malformed payloads are recoverable.
+            // Log and drop the frame rather than aborting the round (which
+            // would mark the peer dead and over-penalize a single bad frame).
+            _logger.LogWarning(ex,
+                "Inbound DELTA_STREAM from {Peer} rejected: {Reason}",
+                peer.Info.Endpoint, ex.Message);
+            return 0;
         }
     }
 

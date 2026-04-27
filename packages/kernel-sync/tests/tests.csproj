@@ -27,6 +27,7 @@
     <ProjectReference Include="..\Sunfish.Kernel.Sync.csproj" />
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\..\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
     <ProjectReference Include="..\..\kernel-security\Sunfish.Kernel.Security.csproj" />
   </ItemGroup>
 

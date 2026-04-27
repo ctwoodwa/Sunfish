@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using Sunfish.Kernel.Security.Crypto;
+using Sunfish.Kernel.Sync.Application;
 using Sunfish.Kernel.Sync.Discovery;
 using Sunfish.Kernel.Sync.Gossip;
 using Sunfish.Kernel.Sync.Identity;
@@ -81,6 +82,15 @@ public static class ServiceCollectionExtensions
             return new InMemoryNodeIdentityProvider(
                 new NodeIdentity(nodeIdHex, publicKey, privateKey));
         });
+
+        // Wave 2.5 — DELTA_STREAM application defaults. The gossip daemon's
+        // round loop dispatches outbound delta encoding to IDeltaProducer and
+        // inbound delta application to IDeltaSink. Defaults are no-ops so
+        // PING-only deployments behave unchanged; Anchor / local-node-host
+        // register concrete implementations (backed by ICrdtDocument) before
+        // calling AddSunfishKernelSync.
+        services.TryAddSingleton<IDeltaProducer, NoopDeltaProducer>();
+        services.TryAddSingleton<IDeltaSink, NoopDeltaSink>();
 
         services.TryAddSingleton<IGossipDaemon, GossipDaemon>();
 
