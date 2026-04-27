@@ -31,6 +31,9 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0018](0018-governance-and-license-posture.md) | Governance Model and License Posture (BDFL + MIT + ODF/UPF/ICM stack) | Accepted | — |
 | [0021](0021-reporting-pipeline-policy.md) | Document and Report Generation Pipeline (Contracts + Pure-OSS Defaults + Commercial Adapters) | Accepted | — |
 | [0043](0043-unified-threat-model-public-oss-chain-of-permissiveness.md) | Unified Threat Model — Chain of Permissiveness in Public-OSS Posture (layered over 0038/0039/0042) | Accepted | — |
+| [0044](0044-anchor-windows-only-phase-1.md) | Anchor Ships Windows-only for Business MVP Phase 1 | Accepted | — |
+| [0046](0046-key-loss-recovery-scheme-phase-1.md) | Anchor Key-Loss Recovery Scheme for Phase 1 (Primitive #48 sub-pattern selection) | Accepted | — |
+| [0048](0048-anchor-multi-backend-maui.md) | Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly (extends 0044) | Accepted | — |
 
 ## Appendix C Resolution
 
