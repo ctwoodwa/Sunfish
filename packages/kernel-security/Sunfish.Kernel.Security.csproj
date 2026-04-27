@@ -26,6 +26,15 @@
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
+    <!-- Phase 1 G6 — BIP-39 English wordlist embedded as a resource so
+         Recovery/PaperKeyDerivation can load it via reflection at runtime
+         without external file dependencies. The 2048-word list is the
+         canonical Bitcoin Improvement Proposal 39 English wordlist; treated
+         as immutable reference data. -->
+    <EmbeddedResource Include="Recovery/bip39-english.txt"
+                      LogicalName="Sunfish.Kernel.Security.Recovery.bip39-english.txt" />
+  </ItemGroup>
+  <ItemGroup>
     <InternalsVisibleTo Include="Sunfish.Kernel.Security.Tests" />
   </ItemGroup>
 </Project>
