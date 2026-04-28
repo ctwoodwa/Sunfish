@@ -1,6 +1,6 @@
 # ADR 0044 — Anchor ships Windows-only for Business MVP Phase 1
 
-**Status:** Accepted (2026-04-26)
+**Status:** Accepted (2026-04-26), **Amended 2026-04-28** — MacCatalyst build is now functional; "Windows-only" narrows to "Windows is the default Phase 1 deployment target," not a hard build block. See [Amendment 2026-04-28](#amendment-2026-04-28--maccatalyst-build-now-functional) below.
 **Date:** 2026-04-26
 **Resolves:** Open Question Q2 + Decision D1 from `icm/01_discovery/output/business-mvp-phase-1-discovery-final-2026-04-26.md`
 
@@ -81,3 +81,45 @@ A parallel Tauri-fallback evaluation runs during Phase 1 as a separate workstrea
 - Phase 1 intake: `icm/00_intake/output/business-mvp-phase-1-foundation-intake-2026-04-26.md`
 - Phase 1 final discovery: `icm/01_discovery/output/business-mvp-phase-1-discovery-final-2026-04-26.md`
 - Sunfish Phase 1 risk register entry: plan §12 "MAUI cross-platform stability issues"
+
+---
+
+## Amendment 2026-04-28 — MacCatalyst build now functional
+
+**Status:** Amendment Accepted (2026-04-28)
+
+### What changed
+
+The MAUI 11 preview workload (`maui-maccatalyst` manifest `26.2.11588-net11-p3`) released between this ADR's acceptance and 2026-04-28 published the missing Mono runtime packs for MacCatalyst. Combined with three csproj enhancements and three per-developer host-environment prereqs, Anchor now produces a runnable `.app` bundle on macOS in addition to its Windows build.
+
+The csproj enhancements (in `accelerators/anchor/Sunfish.Anchor.csproj`):
+
+1. `<RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>` conditional on `IsOSPlatform('osx')` — Mac App Store requires both architectures or x64-only, never arm64-only.
+2. `<ValidateXcodeVersion>false</ValidateXcodeVersion>` on osx — workload pins Xcode 26.3 exactly; bypass needed for ABI-compatible 26.4.x.
+3. `<UseRidGraph>true</UseRidGraph>` on osx + a `_SunfishStripAspNetCoreFromMacCatalystPacks` MSBuild target — `Microsoft.AspNetCore.App` ships no maccatalyst-specific runtime pack (the reference assemblies Blazor Hybrid needs are inlined in MAUI's MacCatalyst runtime pack); the target removes the AspNetCore entry from `UnavailableRuntimePack` and `ResolvedFrameworkReference` so neither `ResolveRuntimePackAssets` (NETSDK1082) nor MAUI's runtime-component manifest reader (MSB4096) fires.
+
+The host-environment prereqs are documented in `docs/dev/anchor-maccatalyst-build-prereqs.md` (Xcode license acceptance, `xcode-select` symlink target, Xamarin `Settings.plist` case canonicalization).
+
+### Why this doesn't fully supersede ADR 0044
+
+This is an amendment, not a supersedure. The original "Windows-only Phase 1" decision was about which fleet the Phase 1 conformance baseline scan, the ICM Stage 06 build environment, and the multi-trustee recovery flow demos run against — and those decisions are still load-bearing:
+
+- **Phase 1 conformance baseline scan (G7):** still runs on Win64 first. Mac conformance follows once Phase 1 is signed off and we have a Mac CI runner provisioned.
+- **Stage 06 build for any Anchor-touching ICM pipeline:** still expected to run on a Windows session unless the change is Mac-specific. The MacCatalyst build path is an unblocker for local Mac development, not a swap of the canonical CI target.
+- **Phase 6 demo deployments (restaurant POS, construction, consultancy):** still the right phase for cross-platform parity work — the demos are where Mac/Linux first ship to real customers.
+
+### What this DOES change
+
+- **G6 host integration is no longer Windows-gated.** The Phase 1 G6 host integration task — wiring `RecoveryCompleted → ISqlCipherKeyDerivation → RotateKeyAsync` in Anchor and persisting `RecoveryEvents` to the per-tenant audit log — can now be developed and tested locally on a Mac. Stage 06 final review still runs on Windows for the conformance scan, but day-to-day iteration unblocks immediately.
+- **Macs become legitimate workstations for Sunfish core engineering.** The previous ADR 0044 implicit posture — "develop on Windows, period, until MAUI 10 stabilizes" — narrows to "Windows is still the default CI/conformance target; macOS is now a fully supported developer workstation."
+- **Tauri-fallback evaluation deprioritized.** The risk-register entry that motivated keeping a Tauri pivot warm is materially smaller now. The evaluation memo deliverable from end-of-Phase-1 stands, but its expected output shifts from "should we switch?" to "what's left for Linux."
+
+### Revisit triggers (additions)
+
+- Mac CI runner provisioned → re-evaluate G7 conformance baseline scan plan to include MacCatalyst RID
+- Linux build still blocked (no `linux-*` MAUI runtime packs published yet) → Tauri-evaluation memo focuses there
+
+### References (additions)
+
+- Build prereqs: `docs/dev/anchor-maccatalyst-build-prereqs.md`
+- csproj changes: `accelerators/anchor/Sunfish.Anchor.csproj` (RuntimeIdentifiers, ValidateXcodeVersion, UseRidGraph, _SunfishStripAspNetCoreFromMacCatalystPacks target)
