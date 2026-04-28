@@ -38,6 +38,42 @@ public interface IEncryptedStore
     /// <summary>Returns a snapshot of keys starting with the given prefix, in ordinal order.</summary>
     Task<IReadOnlyList<string>> ListKeysAsync(string prefix, CancellationToken ct);
 
+    /// <summary>
+    /// Atomically re-encrypt the underlying store with <paramref name="newKey"/>.
+    /// On success the connection remains open under the new key; subsequent
+    /// <see cref="OpenAsync"/> calls (or new processes) must use the new key
+    /// or fail with <see cref="InvalidKeyException"/>.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Phase 1 G6 task 5 (per ADR 0046) wires this against the
+    /// <c>RecoveryCompleted</c> event from
+    /// <c>Sunfish.Kernel.Security.Recovery.IRecoveryCoordinator</c>. After a
+    /// successful trustee-attested recovery the host derives a new SQLCipher
+    /// key from the recovering device's identity and calls this method to
+    /// re-key the per-team database in place — this is the "key reissue"
+    /// the plan §G6 step 5 calls out.
+    /// </para>
+    /// <para>
+    /// Default implementation throws <see cref="NotSupportedException"/>;
+    /// stores that cannot rotate keys (e.g., a future read-only or
+    /// CDN-backed store) inherit that behavior. The SQLCipher-backed
+    /// implementation overrides via <c>PRAGMA rekey</c>.
+    /// </para>
+    /// <para>
+    /// The store must be open before this is called. Concurrent reads /
+    /// writes against the rotating connection are serialized by the
+    /// implementation's internal lock; callers do not need to drain
+    /// pending operations first.
+    /// </para>
+    /// </remarks>
+    /// <exception cref="ArgumentException">If <paramref name="newKey"/> is empty.</exception>
+    /// <exception cref="InvalidOperationException">If the store is not open.</exception>
+    /// <exception cref="NotSupportedException">If the implementation does not support rotation.</exception>
+    Task RotateKeyAsync(ReadOnlyMemory<byte> newKey, CancellationToken ct)
+        => throw new NotSupportedException(
+            "This encrypted store implementation does not support key rotation.");
+
     /// <summary>Closes the underlying connection and flushes any pending writes.</summary>
     Task CloseAsync();
 }
