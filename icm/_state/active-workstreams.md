@@ -32,6 +32,10 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 | 6 | Foundation-audit / kernel-audit relationship | `held` (Stage 00 stub) | research | `icm/00_intake/output/foundation-audit-vs-kernel-audit-relationship-intake-2026-04-28.md` | Held until a revisit trigger fires (see intake's "Revisit triggers" section). |
 | 7 | Phase 1 G7 conformance scan | `blocked` | research (when G6 closes) | `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md` | Blocked on G6 trustee orchestration completion. |
 | 8 | Phase 1 G6 trustee orchestration | `building` (sunfish-PM) | sunfish-PM | PRs #178, #185 (merged); follow-up unspecified | Per Phase 1 progress memory; verify state via `gh pr list`. |
+| 9 | ADR template self-audit checklist (Phase 1 of audit work) | `built` (PR #193, auto-merging) | research session (exception turn) | PR #193 — branch `chore/adr-template-self-audit` | Adds `docs/adrs/_template.md` with 5-min pre-acceptance self-audit. Forward-looking; lands when CI greens. |
+| 10 | ADR Tier 2 anti-pattern sweep (15 ADRs) | `built` | research session (5 sonnet subagents) | `icm/07_review/output/adr-audits/anti-pattern-sweep-batch-{1..5}.md` | All 5 batches complete. 3 needs-amendment (0009, 0017, 0029); 12 annotation-only. Consolidated findings in `CONSOLIDATED-HUMAN-REVIEW.md`. |
+| 11 | ADR Tier 1 full UPF audit (8 ADRs) | `built` | research session (8 opus subagents) | `icm/07_review/output/adr-audits/<NNNN>-upf-audit.md` (8 files) | All 8 audits complete. 1 A- (0043), 6 B/B-, 0 critical-fail. **4 critical-severity findings** identified (0008, 0013, 0028, 0046) — see `CONSOLIDATED-HUMAN-REVIEW.md` §1. |
+| 12 | ADR audit consolidation + commit | `building` (research session — exception turn) | research session | one PR with all 15 audit files + ledger update | When done, this row flips to `built` and the user has a single morning-review document. |
 
 ---
 
