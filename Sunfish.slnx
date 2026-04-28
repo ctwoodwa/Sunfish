@@ -54,6 +54,10 @@
     <Project Path="packages/kernel-ledger/Sunfish.Kernel.Ledger.csproj" />
     <Project Path="packages/kernel-ledger/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/kernel/audit/">
+    <Project Path="packages/kernel-audit/Sunfish.Kernel.Audit.csproj" />
+    <Project Path="packages/kernel-audit/tests/tests.csproj" />
+  </Folder>
   <Folder Name="/apps/local-node-host/">
     <Project Path="apps/local-node-host/Sunfish.LocalNodeHost.csproj" />
     <Project Path="apps/local-node-host/tests/tests.csproj" />
