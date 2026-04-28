@@ -1,9 +1,10 @@
-# Hand-off — Receipts domain block (first-slice, kernel-only)
+# Hand-off — Property-Receipts domain block (first-slice, kernel-only)
 
 **From:** research session
 **To:** sunfish-PM session
-**Created:** 2026-04-28
-**Status:** `ready-to-build` (gated on Properties + Assets first-slices merging — Receipt FKs to both)
+**Created:** 2026-04-28 (revised 2026-04-28 for cluster naming consistency)
+**Status:** `ready-to-build` (gated on Property-Assets first-slice merging — Receipt FK to Asset)
+**Revision note:** Renamed from `packages/blocks-receipts/` → `packages/blocks-property-receipts/` for cluster-level naming consistency. No existing collision; rename adopts the convention after Assets discovered the `blocks-assets` collision.
 **Spec source:** Cluster intake [`property-receipts-intake-2026-04-28.md`](../../00_intake/output/property-receipts-intake-2026-04-28.md) (Stage 00) + cluster INDEX [`property-ops-INDEX-intake-2026-04-28.md`](../../00_intake/output/property-ops-INDEX-intake-2026-04-28.md)
 **Approval:** Cluster intake names Receipts as a domain module after Properties + Assets land. This hand-off compresses Stages 01–05 for the kernel-only first-slice scope. iOS Vision OCR capture, email-attachment ingestion, and typed FKs to Vendor/WorkOrder are deferred to follow-up hand-offs (those modules don't exist yet).
 **Estimated cost:** ~3–5 hours sunfish-PM (similar shape to Properties first-slice; no lifecycle event log; opaque-string FK reservations)
@@ -20,11 +21,11 @@ Receipts are evidence of past payment events with multiple roles: cost-basis evi
 
 ## Phases (binary gates)
 
-### Phase 1 — Scaffold `packages/blocks-receipts/`
+### Phase 1 — Scaffold `packages/blocks-property-receipts/`
 
 **Files:**
 
-- **NEW** `packages/blocks-receipts/Sunfish.Blocks.Receipts.csproj` — references `Sunfish.Foundation`, `Sunfish.Foundation.MultiTenancy`, `Sunfish.Foundation.Persistence`, `Sunfish.Blocks.Properties` (FK target), `Sunfish.Blocks.Assets` (optional FK target), `Sunfish.Kernel.Audit` (event emission per ADR 0049 if Receipt-create emits)
+- **NEW** `packages/blocks-property-receipts/Sunfish.Blocks.PropertyReceipts.csproj` — references `Sunfish.Foundation`, `Sunfish.Foundation.MultiTenancy`, `Sunfish.Foundation.Persistence`, `Sunfish.Blocks.Properties` (FK target), `Sunfish.Blocks.Assets` (optional FK target), `Sunfish.Kernel.Audit` (event emission per ADR 0049 if Receipt-create emits)
 - **NEW** Add to `Sunfish.slnx` under `/blocks/receipts/`
 
 **PASS gate:** `dotnet build` green; provider-neutrality analyzer passes.
@@ -33,8 +34,8 @@ Receipts are evidence of past payment events with multiple roles: cost-basis evi
 
 **Files:**
 
-- **NEW** `packages/blocks-receipts/Models/ReceiptId.cs` — mirror `PropertyId` / `AssetId` shape (record struct + JSON converter + `NewId()`)
-- **NEW** `packages/blocks-receipts/Models/ReceiptCategory.cs`
+- **NEW** `packages/blocks-property-receipts/Models/ReceiptId.cs` — mirror `PropertyId` / `AssetId` shape (record struct + JSON converter + `NewId()`)
+- **NEW** `packages/blocks-property-receipts/Models/ReceiptCategory.cs`
 
 ```csharp
 public enum ReceiptCategory
@@ -53,7 +54,7 @@ public enum ReceiptCategory
 
 (More structured taxonomy is Phase 2.3+ once tax-advisor reporting requirements are firm.)
 
-- **NEW** `packages/blocks-receipts/Models/Receipt.cs`
+- **NEW** `packages/blocks-property-receipts/Models/Receipt.cs`
 
 ```csharp
 public sealed record Receipt
@@ -109,7 +110,7 @@ public enum ReconciliationStatus
 
 **Files:**
 
-- **NEW** `packages/blocks-receipts/Models/ReceiptLineItem.cs`
+- **NEW** `packages/blocks-property-receipts/Models/ReceiptLineItem.cs`
 
 ```csharp
 public sealed record ReceiptLineItem
@@ -133,7 +134,7 @@ public sealed record ReceiptLineItem
 
 **Files:**
 
-- **NEW** `packages/blocks-receipts/IReceiptRepository.cs`
+- **NEW** `packages/blocks-property-receipts/IReceiptRepository.cs`
 
 ```csharp
 public interface IReceiptRepository
@@ -156,10 +157,10 @@ public interface IReceiptLineItemRepository
 }
 ```
 
-- **NEW** `packages/blocks-receipts/InMemoryReceiptRepository.cs` — thread-safe; all queries; tenant isolation
-- **NEW** `packages/blocks-receipts/InMemoryReceiptLineItemRepository.cs`
-- **NEW** `packages/blocks-receipts/ReceiptEntityModule.cs` — ISunfishEntityModule registration per ADR 0015 (registers Receipt + ReceiptLineItem entities)
-- **NEW** `packages/blocks-receipts/ServiceCollectionExtensions.cs` — `AddReceiptBlock(this IServiceCollection services)`
+- **NEW** `packages/blocks-property-receipts/InMemoryReceiptRepository.cs` — thread-safe; all queries; tenant isolation
+- **NEW** `packages/blocks-property-receipts/InMemoryReceiptLineItemRepository.cs`
+- **NEW** `packages/blocks-property-receipts/ReceiptEntityModule.cs` — ISunfishEntityModule registration per ADR 0015 (registers Receipt + ReceiptLineItem entities)
+- **NEW** `packages/blocks-property-receipts/ServiceCollectionExtensions.cs` — `AddReceiptBlock(this IServiceCollection services)`
 
 **PASS gate:** All files compile; runtime DI resolves both repositories + entity module.
 
@@ -169,7 +170,7 @@ Receipts are not append-only events themselves (a typo in amount or category nee
 
 **Files:**
 
-- **EDIT** `packages/blocks-receipts/InMemoryReceiptRepository.cs` — `UpsertAsync` and `DeleteAsync` emit to `IAuditTrail` (existing kernel-audit substrate). Audit record types:
+- **EDIT** `packages/blocks-property-receipts/InMemoryReceiptRepository.cs` — `UpsertAsync` and `DeleteAsync` emit to `IAuditTrail` (existing kernel-audit substrate). Audit record types:
   - `ReceiptCreated`
   - `ReceiptUpdated`
   - `ReceiptDeleted`
@@ -183,17 +184,17 @@ Receipts are not append-only events themselves (a typo in amount or category nee
 
 **Files:**
 
-- **NEW** `packages/blocks-receipts/tests/Sunfish.Blocks.Receipts.Tests.csproj`
-- **NEW** `packages/blocks-receipts/tests/ReceiptTests.cs` — record equality + JSON round-trip + enum coverage
-- **NEW** `packages/blocks-receipts/tests/InMemoryReceiptRepositoryTests.cs` — Get/List/Upsert/Delete; tenant isolation; per-property + per-asset + per-vendor-ref + per-category + per-reconciliation-status filters; date-range filter on category list
-- **NEW** `packages/blocks-receipts/tests/ReceiptAuditEmissionTests.cs` — verify Create/Update/Delete/Reconciled audit emission
-- **NEW** `packages/blocks-receipts/tests/ReceiptLineItemTests.cs` + repository tests
+- **NEW** `packages/blocks-property-receipts/tests/Sunfish.Blocks.PropertyReceipts.Tests.csproj`
+- **NEW** `packages/blocks-property-receipts/tests/ReceiptTests.cs` — record equality + JSON round-trip + enum coverage
+- **NEW** `packages/blocks-property-receipts/tests/InMemoryReceiptRepositoryTests.cs` — Get/List/Upsert/Delete; tenant isolation; per-property + per-asset + per-vendor-ref + per-category + per-reconciliation-status filters; date-range filter on category list
+- **NEW** `packages/blocks-property-receipts/tests/ReceiptAuditEmissionTests.cs` — verify Create/Update/Delete/Reconciled audit emission
+- **NEW** `packages/blocks-property-receipts/tests/ReceiptLineItemTests.cs` + repository tests
 - **NEW** seed data in `apps/kitchen-sink/`:
   - For Property "123 Main St" + the seed water heater asset: receipt for water heater purchase ($1,200; category Depreciable; asset FK set); receipt for plumber labor ($450; category RepairAndMaintenance; vendorRef opaque string "plumber-acme")
   - For Property "456 Oak Ave": receipt for HVAC service ($380; category RepairAndMaintenance); receipt for property tax ($4,200; category Tax)
   - One receipt with line-items demonstrating the split-receipt case (Home Depot trip with roof patch supplies + fridge replacement)
 
-**PASS gate:** `dotnet test packages/blocks-receipts/tests/` returns 0 failures; kitchen-sink boots and seed receipts render/log alongside seed properties + assets.
+**PASS gate:** `dotnet test packages/blocks-property-receipts/tests/` returns 0 failures; kitchen-sink boots and seed receipts render/log alongside seed properties + assets.
 
 ### Phase 7 — Documentation
 
@@ -253,12 +254,12 @@ Receipts are not append-only events themselves (a typo in amount or category nee
 
 - [ ] All 8 phases complete with PASS gates
 - [ ] `dotnet build` + `dotnet test` repo-wide green
-- [ ] Provider-neutrality analyzer passes on `blocks-receipts`
+- [ ] Provider-neutrality analyzer passes on `blocks-property-receipts`
 - [ ] kitchen-sink demo seed renders/logs receipts per property + asset
 - [ ] `apps/docs/blocks/receipts.md` exists with deferred-list
 - [ ] Workstream #26 ledger row flipped to `built` (merged) with PR link
 - [ ] PR description names Phase 1 (this hand-off) as the slice scope; flags iOS OCR + email-attachment + Money migration + typed FK conversions as deferred to follow-up hand-offs
-- [ ] No code outside `packages/blocks-receipts/`, `Sunfish.slnx`, `apps/kitchen-sink/<seed>`, `apps/docs/blocks/receipts.md`, `icm/_state/active-workstreams.md` is touched
+- [ ] No code outside `packages/blocks-property-receipts/`, `Sunfish.slnx`, `apps/kitchen-sink/<seed>`, `apps/docs/blocks/receipts.md`, `icm/_state/active-workstreams.md` is touched
 
 ---
 
