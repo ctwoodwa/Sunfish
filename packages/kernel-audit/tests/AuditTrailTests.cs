@@ -49,7 +49,7 @@ public sealed class AuditTrailTests
             EventType: eventType,
             OccurredAt: occurredAt,
             Payload: signed,
-            AttestingSignatures: Array.Empty<Signature>());
+            AttestingSignatures: Array.Empty<AttestingSignature>());
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class AuditTrailTests
                 EventType: AuditEventType.KeyRecoveryInitiated,
                 OccurredAt: occurredAt,
                 Payload: signed,
-                AttestingSignatures: Array.Empty<Signature>());
+                AttestingSignatures: Array.Empty<AttestingSignature>());
 
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await trail.AppendAsync(record));
@@ -234,6 +234,66 @@ public sealed class AuditTrailTests
         }
         finally
         {
+            keys.Dispose();
+            sp.Dispose();
+        }
+    }
+
+    [Fact]
+    public async Task AppendAsync_roundtrips_AttestingSignatures_through_QueryAsync()
+    {
+        var (trail, _, signer, keys, sp) = BuildHarness();
+        var trustee1 = KeyPair.Generate();
+        var trustee2 = KeyPair.Generate();
+        try
+        {
+            var tenantId = new TenantId("tenant-a");
+            var occurredAt = DateTimeOffset.UtcNow;
+            var basePayload = new AuditPayload(new Dictionary<string, object?>
+            {
+                ["recoveryId"] = Guid.NewGuid().ToString("D"),
+            });
+            var signed = await signer.SignAsync(basePayload, occurredAt, Guid.NewGuid());
+
+            // Two trustee attestations. v0 does not verify these algorithmically
+            // — the substrate stores the (PrincipalId, Signature) pairs verbatim
+            // so downstream compliance reviewers can look up keys later.
+            var sig1 = await new Ed25519Signer(trustee1).SignAsync(basePayload, occurredAt, Guid.NewGuid());
+            var sig2 = await new Ed25519Signer(trustee2).SignAsync(basePayload, occurredAt, Guid.NewGuid());
+            var attestations = new[]
+            {
+                new AttestingSignature(trustee1.PrincipalId, sig1.Signature),
+                new AttestingSignature(trustee2.PrincipalId, sig2.Signature),
+            };
+
+            var record = new AuditRecord(
+                AuditId: Guid.NewGuid(),
+                TenantId: tenantId,
+                EventType: AuditEventType.KeyRecoveryCompleted,
+                OccurredAt: occurredAt,
+                Payload: signed,
+                AttestingSignatures: attestations);
+
+            await trail.AppendAsync(record);
+
+            var results = new List<AuditRecord>();
+            await foreach (var r in trail.QueryAsync(new AuditQuery(tenantId)))
+            {
+                results.Add(r);
+            }
+
+            Assert.Single(results);
+            var roundtripped = results[0].AttestingSignatures;
+            Assert.Equal(2, roundtripped.Count);
+            Assert.Equal(trustee1.PrincipalId, roundtripped[0].PrincipalId);
+            Assert.Equal(sig1.Signature, roundtripped[0].Signature);
+            Assert.Equal(trustee2.PrincipalId, roundtripped[1].PrincipalId);
+            Assert.Equal(sig2.Signature, roundtripped[1].Signature);
+        }
+        finally
+        {
+            trustee2.Dispose();
+            trustee1.Dispose();
             keys.Dispose();
             sp.Dispose();
         }

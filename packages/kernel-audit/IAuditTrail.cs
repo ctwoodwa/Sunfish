@@ -23,24 +23,32 @@ namespace Sunfish.Kernel.Audit;
 /// decides what's visible to which caller.
 /// </para>
 /// <para>
-/// <b>Signature verification.</b> <see cref="AppendAsync"/> verifies the
-/// payload signature and every entry in
-/// <see cref="AuditRecord.AttestingSignatures"/> before persistence. A record
-/// with an invalid signature is rejected with
-/// <see cref="AuditSignatureException"/> — there is no quiet-skip path. Once
-/// persisted, downstream consumers may treat signatures as pre-validated.
+/// <b>Signature verification is hybrid in v0.</b>
+/// <see cref="AppendAsync"/> verifies the payload's
+/// <see cref="Sunfish.Foundation.Crypto.SignedOperation{T}"/> envelope
+/// (single-issuer Ed25519) and rejects records with invalid envelope
+/// signatures via <see cref="AuditSignatureException"/>. The multi-party
+/// <see cref="AuditRecord.AttestingSignatures"/> are NOT algorithmically
+/// verified at the kernel boundary in v0 — verification of attestations
+/// is the producer's responsibility (e.g., RecoveryCoordinator already
+/// verifies trustee attestations via TrusteeAttestation.Verify before
+/// constructing the AuditRecord). ADR 0049 §"Open questions" tracks
+/// promotion of attestation verification to a kernel-tier check.
 /// </para>
 /// </remarks>
 public interface IAuditTrail
 {
     /// <summary>
-    /// Append a new audit record. Verifies all signatures, persists the record
-    /// to the kernel <c>IEventLog</c>, and publishes it on the in-process
-    /// <see cref="IAuditEventStream"/>.
+    /// Append a new audit record. Verifies the payload's
+    /// <see cref="Sunfish.Foundation.Crypto.SignedOperation{T}"/> envelope,
+    /// persists the record to the kernel <c>IEventLog</c>, and publishes it
+    /// on the in-process <see cref="IAuditEventStream"/>. Multi-party
+    /// <see cref="AuditRecord.AttestingSignatures"/> are stored as-supplied
+    /// without kernel-tier verification in v0 — see interface remarks.
     /// </summary>
     /// <param name="record">The record to append. Must have a non-default <see cref="AuditRecord.TenantId"/> per <see cref="Sunfish.Foundation.MultiTenancy.IMustHaveTenant"/>.</param>
     /// <param name="ct">Cancellation token.</param>
-    /// <exception cref="AuditSignatureException">Thrown if the payload signature or any attesting signature fails verification.</exception>
+    /// <exception cref="AuditSignatureException">Thrown if the payload's <c>SignedOperation</c> envelope fails verification.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="record"/> has a default <see cref="AuditRecord.TenantId"/>.</exception>
     ValueTask AppendAsync(AuditRecord record, CancellationToken ct = default);
 
