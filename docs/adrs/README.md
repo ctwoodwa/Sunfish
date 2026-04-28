@@ -8,6 +8,8 @@ Each ADR uses a minimal five-section template: **Status, Context, Decision, Cons
 
 Files are named `NNNN-short-slug.md` starting at `0001`.
 
+A reference template lives at [`_template.md`](_template.md). Copy and rename when starting a new ADR. The template includes a five-minute **pre-acceptance self-audit** that catches the most common Universal Planning anti-patterns (no rollback, no kill triggers, missing revisit conditions, etc.) before an ADR is flipped to `Accepted`. Skipping the audit silently is itself an anti-pattern (skipping Stage 0). See [`.claude/rules/universal-planning.md`](../../.claude/rules/universal-planning.md) for the full Universal Planning framework that the self-audit lightweight-distills.
+
 ## Index
 
 | # | Title | Status | Gap |
