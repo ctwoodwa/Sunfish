@@ -1,9 +1,10 @@
-# Hand-off — Assets domain block (first-slice)
+# Hand-off — Property-Assets domain block (first-slice)
 
 **From:** research session
 **To:** sunfish-PM session
-**Created:** 2026-04-28
-**Status:** `ready-to-build` (gated on Properties first-slice landing — Properties FK target needed)
+**Created:** 2026-04-28 (revised 2026-04-28 to resolve `blocks-property-assets` package-name decision)
+**Status:** `ready-to-build`
+**Revision note:** Initial draft proposed `packages/blocks-assets/` — collides with existing UI-catalog block `Sunfish.Blocks.Assets` (`AssetCatalogBlock.razor`). **Renamed to `packages/blocks-property-assets/` and namespace `Sunfish.Blocks.PropertyAssets`** to clarify the property-management-vertical scope and avoid collision. Convention going forward: property-ops cluster blocks use `blocks-property-*` prefix where bare names collide with existing blocks (Properties already shipped as `blocks-properties` with no prefix — that's the cluster root and stays as-is).
 **Spec source:** Cluster intake [`property-assets-intake-2026-04-28.md`](../../00_intake/output/property-assets-intake-2026-04-28.md) (Stage 00) + cluster INDEX [`property-ops-INDEX-intake-2026-04-28.md`](../../00_intake/output/property-ops-INDEX-intake-2026-04-28.md)
 **Approval:** Cluster intake names this as the natural second cluster module after Properties (Asset FKs to Property; no other dependencies). This hand-off compresses Stages 01–05 into the hand-off itself for the first-slice scope. Vehicle subtype + mileage + ownership log + condition assessments deferred to follow-up hand-offs.
 **Estimated cost:** ~4–6 hours sunfish-PM (slightly larger than Properties first-slice; introduces lifecycle event log pattern)
@@ -20,11 +21,11 @@ Assets are the second cluster module to ship — they FK to Property and provide
 
 ## Phases (binary gates)
 
-### Phase 1 — Scaffold `packages/blocks-assets/`
+### Phase 1 — Scaffold `packages/blocks-property-assets/`
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/Sunfish.Blocks.Assets.csproj` — mirror `blocks-properties` patterns; references `Sunfish.Foundation`, `Sunfish.Foundation.MultiTenancy`, `Sunfish.Foundation.Persistence`, `Sunfish.Blocks.Properties` (FK target), `Sunfish.Kernel.Audit` (event emission per ADR 0049)
+- **NEW** `packages/blocks-property-assets/Sunfish.Blocks.PropertyAssets.csproj` — mirror `blocks-properties` patterns; references `Sunfish.Foundation`, `Sunfish.Foundation.MultiTenancy`, `Sunfish.Foundation.Persistence`, `Sunfish.Blocks.Properties` (FK target), `Sunfish.Kernel.Audit` (event emission per ADR 0049)
 - **NEW** Add to `Sunfish.slnx` under `/blocks/assets/`
 
 **PASS gate:** `dotnet build` green; provider-neutrality analyzer passes.
@@ -33,8 +34,8 @@ Assets are the second cluster module to ship — they FK to Property and provide
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/Models/AssetId.cs` — mirror `PropertyId` shape (record struct + JSON converter + `NewId()` factory)
-- **NEW** `packages/blocks-assets/Models/AssetClass.cs`
+- **NEW** `packages/blocks-property-assets/Models/AssetId.cs` — mirror `PropertyId` shape (record struct + JSON converter + `NewId()` factory)
+- **NEW** `packages/blocks-property-assets/Models/AssetClass.cs`
 
 ```csharp
 public enum AssetClass
@@ -52,7 +53,7 @@ public enum AssetClass
 
 (Schema-registry-backed AssetClass per cluster intake OQ-A2 is a Phase 2.3+ amendment; enum suffices for first-slice.)
 
-- **NEW** `packages/blocks-assets/Models/Asset.cs`
+- **NEW** `packages/blocks-property-assets/Models/Asset.cs`
 
 ```csharp
 public sealed record Asset
@@ -86,7 +87,7 @@ public sealed record Asset
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/Models/WarrantyMetadata.cs`
+- **NEW** `packages/blocks-property-assets/Models/WarrantyMetadata.cs`
 
 ```csharp
 public sealed record WarrantyMetadata
@@ -105,7 +106,7 @@ public sealed record WarrantyMetadata
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/Models/AssetLifecycleEventType.cs`
+- **NEW** `packages/blocks-property-assets/Models/AssetLifecycleEventType.cs`
 
 ```csharp
 public enum AssetLifecycleEventType
@@ -121,7 +122,7 @@ public enum AssetLifecycleEventType
 }
 ```
 
-- **NEW** `packages/blocks-assets/Models/AssetLifecycleEvent.cs`
+- **NEW** `packages/blocks-property-assets/Models/AssetLifecycleEvent.cs`
 
 ```csharp
 public sealed record AssetLifecycleEvent
@@ -137,7 +138,7 @@ public sealed record AssetLifecycleEvent
 }
 ```
 
-- **NEW** `packages/blocks-assets/IAssetLifecycleEventStore.cs` — append-only contract:
+- **NEW** `packages/blocks-property-assets/IAssetLifecycleEventStore.cs` — append-only contract:
 
 ```csharp
 public interface IAssetLifecycleEventStore
@@ -148,7 +149,7 @@ public interface IAssetLifecycleEventStore
 }
 ```
 
-- **NEW** `packages/blocks-assets/InMemoryAssetLifecycleEventStore.cs` — thread-safe in-memory implementation
+- **NEW** `packages/blocks-property-assets/InMemoryAssetLifecycleEventStore.cs` — thread-safe in-memory implementation
 - **AUDIT-EMISSION** Each `AppendAsync` ALSO emits to ADR 0049 audit substrate via `IAuditTrail` (existing primitive). Audit record type: `AssetLifecycleEventEmitted` (subtype of existing audit record envelope; review existing kernel-audit subtypes for the right pattern).
 
 **PASS gate:** Compiles; round-trip tests for store; tenant isolation tests; ADR 0049 audit emission verified by existing kernel-audit test harness.
@@ -157,7 +158,7 @@ public interface IAssetLifecycleEventStore
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/IAssetRepository.cs`
+- **NEW** `packages/blocks-property-assets/IAssetRepository.cs`
 
 ```csharp
 public interface IAssetRepository
@@ -171,9 +172,9 @@ public interface IAssetRepository
 }
 ```
 
-- **NEW** `packages/blocks-assets/InMemoryAssetRepository.cs` — thread-safe; Get/List/Upsert/SoftDelete; SoftDeleteAsync ALSO appends an `AssetLifecycleEvent` of type `Disposed` with the reason
-- **NEW** `packages/blocks-assets/AssetEntityModule.cs` — `ISunfishEntityModule` registration per ADR 0015
-- **NEW** `packages/blocks-assets/ServiceCollectionExtensions.cs` — `AddAssetBlock(this IServiceCollection services)` registers repository + event store + entity module
+- **NEW** `packages/blocks-property-assets/InMemoryAssetRepository.cs` — thread-safe; Get/List/Upsert/SoftDelete; SoftDeleteAsync ALSO appends an `AssetLifecycleEvent` of type `Disposed` with the reason
+- **NEW** `packages/blocks-property-assets/AssetEntityModule.cs` — `ISunfishEntityModule` registration per ADR 0015
+- **NEW** `packages/blocks-property-assets/ServiceCollectionExtensions.cs` — `AddAssetBlock(this IServiceCollection services)` registers repository + event store + entity module
 
 **PASS gate:** All files compile; runtime DI resolves repository + event store; SoftDelete emits Disposed lifecycle event.
 
@@ -181,17 +182,17 @@ public interface IAssetRepository
 
 **Files:**
 
-- **NEW** `packages/blocks-assets/tests/Sunfish.Blocks.Assets.Tests.csproj`
-- **NEW** `packages/blocks-assets/tests/AssetTests.cs` — record equality + JSON round-trip
-- **NEW** `packages/blocks-assets/tests/InMemoryAssetRepositoryTests.cs` — Get/List/Upsert/SoftDelete; tenant isolation; class-filter; property-filter; soft-delete preserves record but excludes from default List
-- **NEW** `packages/blocks-assets/tests/AssetLifecycleEventStoreTests.cs` — append + retrieve; tenant isolation; chronological ordering
-- **NEW** `packages/blocks-assets/tests/AssetLifecycleEventStoreAuditEmissionTests.cs` — verify each AppendAsync emits to ADR 0049 substrate
+- **NEW** `packages/blocks-property-assets/tests/Sunfish.Blocks.PropertyAssets.Tests.csproj`
+- **NEW** `packages/blocks-property-assets/tests/AssetTests.cs` — record equality + JSON round-trip
+- **NEW** `packages/blocks-property-assets/tests/InMemoryAssetRepositoryTests.cs` — Get/List/Upsert/SoftDelete; tenant isolation; class-filter; property-filter; soft-delete preserves record but excludes from default List
+- **NEW** `packages/blocks-property-assets/tests/AssetLifecycleEventStoreTests.cs` — append + retrieve; tenant isolation; chronological ordering
+- **NEW** `packages/blocks-property-assets/tests/AssetLifecycleEventStoreAuditEmissionTests.cs` — verify each AppendAsync emits to ADR 0049 substrate
 - **NEW** seed data in `apps/kitchen-sink/`:
   - For Property "123 Main St" (single-family): water heater, HVAC, dishwasher, washer, dryer
   - For Property "456 Oak Ave" (multi-unit): water heater per unit, shared HVAC, shared roof
   - Each asset gets one or two `AssetLifecycleEvent`s (Installed, plus optional Serviced)
 
-**PASS gate:** `dotnet test packages/blocks-assets/tests/` returns 0 failures; kitchen-sink boots and seed assets render alongside seed properties.
+**PASS gate:** `dotnet test packages/blocks-property-assets/tests/` returns 0 failures; kitchen-sink boots and seed assets render alongside seed properties.
 
 ### Phase 7 — Documentation
 
@@ -246,12 +247,12 @@ public interface IAssetRepository
 
 - [ ] All 8 phases complete with PASS gates
 - [ ] `dotnet build` + `dotnet test` repo-wide green
-- [ ] Provider-neutrality analyzer passes on `blocks-assets`
+- [ ] Provider-neutrality analyzer passes on `blocks-property-assets`
 - [ ] kitchen-sink demo seed renders/logs assets per property
 - [ ] `apps/docs/blocks/assets.md` exists with deferred-list
 - [ ] Workstream #24 ledger row flipped to `built` (merged) with PR link
 - [ ] PR description names Phase 1 (this hand-off) as the slice scope; flags Vehicle/Trip + Condition + OCR + depreciation as deferred to follow-up hand-offs
-- [ ] No code outside `packages/blocks-assets/`, `Sunfish.slnx`, `apps/kitchen-sink/<seed>`, `apps/docs/blocks/assets.md`, `icm/_state/active-workstreams.md` is touched
+- [ ] No code outside `packages/blocks-property-assets/`, `Sunfish.slnx`, `apps/kitchen-sink/<seed>`, `apps/docs/blocks/assets.md`, `icm/_state/active-workstreams.md` is touched
 
 ---
 
