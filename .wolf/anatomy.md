@@ -1,7 +1,13 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-27T05:34:32.312Z
-> Files: 1080 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T06:34:03.781Z
+> Files: 1102 tracked | Anatomy hits: 0 | Misses: 0
+
+## ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/
+
+- `MEMORY.md` — Memory Index (~1161 tok)
+- `project_business_mvp_phase_1_progress.md` (~1001 tok)
+- `project_phase_2_commercial_scope.md` (~1503 tok)
 
 ## ../../Users/Chris/.claude/
 
@@ -27,7 +33,7 @@
 ## ./
 
 - `.gitattributes` — Sunfish line-ending policy: LF in the repo, everywhere. (~342 tok)
-- `.gitignore` — Git ignore rules (~2244 tok)
+- `.gitignore` — Git ignore rules (~2253 tok)
 - `CHANGELOG.md` — Changelog (~179 tok)
 - `CLAUDE.md` — Claude Instructions for Sunfish (~3611 tok)
 - `CONTRIBUTING.md` — Contributing to Sunfish (~887 tok)
@@ -267,7 +273,7 @@
 
 - `MauiProgram.cs` — Class: MauiProgram (~2671 tok)
 - `README.md` — Project documentation (~2666 tok)
-- `Sunfish.Anchor.csproj` — /*.cs" /> (~1793 tok)
+- `Sunfish.Anchor.csproj` — /*.cs" /> (~1855 tok)
 
 ## accelerators/anchor/Components/
 
@@ -311,6 +317,10 @@
 - `dab-config.json` (~5273 tok)
 - `PLATFORM_ALIGNMENT.md` — Bridge Platform Alignment (~4959 tok)
 - `README.md` — Project documentation (~2531 tok)
+
+## accelerators/bridge/Sunfish.Bridge.AppHost/
+
+- `Program.cs` — Class: Program (~2496 tok)
 
 ## accelerators/bridge/Sunfish.Bridge.Client/Services/
 
@@ -977,7 +987,8 @@
 - `0036-syncstate-multimodal-encoding-contract.md` — ADR 0036 — SyncState Multimodal Encoding Contract (~2368 tok)
 - `0044-anchor-windows-only-phase-1.md` — ADR 0044 — Anchor ships Windows-only for Business MVP Phase 1 (~1370 tok)
 - `0046-key-loss-recovery-scheme-phase-1.md` — ADR 0046 — Key-loss recovery scheme for Business MVP Phase 1 (~2314 tok)
-- `README.md` — Project documentation (~678 tok)
+- `0049-audit-trail-substrate.md` — ADR 0049 — Audit-Trail Substrate: Distinct Package over Kernel `IEventLog` (~5572 tok)
+- `README.md` — Project documentation (~1471 tok)
 
 ## docs/migration-guides/
 
@@ -992,6 +1003,7 @@
 - `air-gap-deployment.md` — Air-Gap Deployment Specification (~2411 tok)
 - `anchor-bridge-connection-topology.md` — Anchor↔Bridge Connection Topology Specification (~3723 tok)
 - `byod-path-separation.md` — BYOD Path Separation Specification (~1563 tok)
+- `inverted-stack-package-roadmap.md` — Inverted Stack Package Roadmap — Forward-Looking Namespaces from Book Volume 1 (~2791 tok)
 - `mdm-config-schema.json` (~671 tok)
 - `mdm-config-schema.md` — MDM Pre-Seeded Node Config — Schema Specification (~1598 tok)
 - `multi-team-settings-scoping.md` — Multi-Team Settings Scoping (~1357 tok)
@@ -1013,6 +1025,7 @@
 - `business-mvp-phase-1-foundation-intake-2026-04-26.md` — Intake Note — Sunfish Business MVP Phase 1 (Foundation) (~3449 tok)
 - `compat-expansion-intake.md` — Intake Note — Compat Package Expansion (Syncfusion / DevExpress / Infragistics) (~6756 tok)
 - `compat-icon-expansion-intake.md` — Intake Note — Compat Icon Library Expansion (Font Awesome + OSS peers) (~3856 tok)
+- `phase-2-commercial-mvp-intake-2026-04-27.md` — Intake Note — Sunfish Business MVP Phase 2 (Commercial Operations Cycle) (~5420 tok)
 - `web-components-migration-intake-2026-04-20.md` — Intake Note — UI Architecture Migration (ADR 0017, revised) (~3606 tok)
 
 ## icm/01_discovery/output/
@@ -1512,13 +1525,13 @@
 
 - `Argon2idKeyDerivation.cs` — Argon2id key derivation using the <c>Konscious.Security.Cryptography.Argon2</c> NuGet library. This (~496 tok)
 - `EncryptionOptions.cs` — Configuration for the Sunfish encrypted local store. (~340 tok)
-- `IEncryptedStore.cs` — Encrypted-at-rest local store. Paper §11.2 Layer 1: SQLCipher-style full-database encryption. Keys d (~830 tok)
+- `IEncryptedStore.cs` — Encrypted-at-rest local store. Paper §11.2 Layer 1: SQLCipher-style full-database encryption. Keys d (~1344 tok)
 - `IKeyDerivation.cs` — Derives a fixed-length symmetric key from a password and salt. Paper §11.2: "Keys are derived from u (~368 tok)
 - `IKeystore.cs` — OS-native secret storage (Windows DPAPI, macOS Keychain, Linux libsecret). Used by paper §11.2 Layer (~528 tok)
 - `InMemoryKeystore.cs` — In-memory, dictionary-backed <see cref="IKeystore"/> for tests. Not suitable for production use — ke (~340 tok)
 - `LinuxLibsecretKeystore.cs` — Linux libsecret-backed keystore. Stub — the actual libsecret / DBus integration is scheduled for Wav (~278 tok)
 - `MacOsKeychainKeystore.cs` — macOS Keychain-backed keystore. Stub — the actual Security.framework P/Invoke integration is schedul (~279 tok)
-- `SqlCipherEncryptedStore.cs` — SQLCipher-backed <see cref="IEncryptedStore"/> using Microsoft.Data.Sqlite with the <c>SQLitePCLRaw. (~2645 tok)
+- `SqlCipherEncryptedStore.cs` — SQLCipher-backed <see cref="IEncryptedStore"/> using Microsoft.Data.Sqlite with the <c>SQLitePCLRaw. (~2939 tok)
 - `WindowsDpapiKeystore.cs` — Windows DPAPI-backed keystore. Each named key is persisted as a file under the configured storage di (~988 tok)
 
 ## packages/foundation-localfirst/Quarantine/
@@ -1532,6 +1545,7 @@
 - `Argon2idKeyDerivationTests.cs` — Class: Argon2idKeyDerivationTests (~600 tok)
 - `EncryptedStoreContractTests.cs` — Contract tests for the paper §11.2 Layer 1 encrypted store. The store is backed by SQLCipher with an (~2079 tok)
 - `QuarantineQueueTests.cs` — Class: QuarantineQueueTests (~2168 tok)
+- `SqlCipherKeyRotationTests.cs` — Coverage for Phase 1 G6 task 5 — the SQLCipher key-rotation primitive the recovery coordinator's <c> (~1474 tok)
 - `tests.csproj` (~230 tok)
 - `WindowsDpapiKeystoreTests.cs` — DPAPI keystore tests. These only run on Windows — on other platforms DPAPI is unavailable and the te (~583 tok)
 
@@ -1898,7 +1912,7 @@
 
 ## packages/kernel-security/DependencyInjection/
 
-- `ServiceCollectionExtensions.cs` — Registers the kernel-security surface (Ed25519/X25519 primitives, attestation issuer+verifier, role- (~380 tok)
+- `ServiceCollectionExtensions.cs` — Registers the kernel-security surface (Ed25519/X25519 primitives, attestation issuer+verifier, role- (~1324 tok)
 
 ## packages/kernel-security/Keys/
 
@@ -1906,6 +1920,21 @@
 - `ITeamSubkeyDerivation.cs` — Per-team subkey derivation from the install's root Ed25519 device identity. Implements ADR 0032 §Dev (~718 tok)
 - `RoleKeyManager.cs` — Default <see cref="IRoleKeyManager"/>. Role keys are 32 bytes (matches the key size of ChaCha20-Poly (~1055 tok)
 - `TeamSubkeyDerivation.cs` — Default <see cref="ITeamSubkeyDerivation"/>. Implements ADR 0032 §Device identity via <see cref="HKD (~742 tok)
+
+## packages/kernel-security/Recovery/
+
+- `FixedDisputerValidator.cs` — <see cref="IDisputerValidator"/> backed by a fixed set of public keys supplied at construction. Used (~398 tok)
+- `InMemoryRecoveryStateStore.cs` — In-memory <see cref="IRecoveryStateStore"/> for tests and Phase 1 host wiring before a SQLCipher-bac (~355 tok)
+- `IRecoveryClock.cs` — Abstraction over the wall-clock used by the <see cref="IRecoveryCoordinator"/> to evaluate the sub-p (~128 tok)
+- `IRecoveryCoordinator.cs` — Orchestrates the multi-sig social recovery flow per ADR 0046 sub-patterns <b>#48a (multi-sig)</b>, < (~2297 tok)
+- `IRecoveryStateStore.cs` — Persistence abstraction for <see cref="RecoveryCoordinatorState"/>. (~357 tok)
+- `RecoveryCoordinator.cs` — Production implementation of <see cref="IRecoveryCoordinator"/> per ADR 0046. Pure orchestration — a (~6367 tok)
+- `RecoveryCoordinatorOptions.cs` — Configuration for <see cref="IRecoveryCoordinator"/> per ADR 0046. Phase 1 defaults match the ADR's (~409 tok)
+- `RecoveryCoordinatorState.cs` — Persisted snapshot of the <see cref="RecoveryCoordinator"/>'s state — the trustee set, the in-flight (~798 tok)
+- `RecoveryDispute.cs` — A signed message from a holder of the owner's original keys objecting to an in-flight <see cref="Rec (~1592 tok)
+- `RecoveryStatus.cs` — State of an in-flight (or absent) recovery request — the coordinator's public read model. Hosts quer (~745 tok)
+- `SystemRecoveryClock.cs` — Default <see cref="IRecoveryClock"/> backed by <see cref="DateTimeOffset.UtcNow"/>. (~83 tok)
+- `TrusteeDesignation.cs` — A trustee designated by the owner per sub-pattern <b>#48a</b> of ADR 0046. The designation captures (~195 tok)
 
 ## packages/kernel-security/tests/
 
@@ -1916,6 +1945,11 @@
 - `TeamSubkeyDerivationTests.cs` — Class: TeamSubkeyDerivationTests (~1686 tok)
 - `tests.csproj` (~229 tok)
 - `X25519KeyAgreementTests.cs` — Class: X25519KeyAgreementTests (~744 tok)
+
+## packages/kernel-security/tests/Recovery/
+
+- `RecoveryCoordinatorTests.cs` — Coverage for <see cref="RecoveryCoordinator"/> — the Phase 1 G6 orchestrator wiring trustee designat (~6369 tok)
+- `RecoveryDisputeTests.cs` — Coverage for the <see cref="RecoveryDispute"/> signed-message envelope. Mirrors <see cref="TrusteeRe (~1039 tok)
 
 ## packages/kernel-sync/
 

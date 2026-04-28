@@ -11,6 +11,9 @@
 *.sln.docstates
 *.env
 
+# macOS Finder metadata
+.DS_Store
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
