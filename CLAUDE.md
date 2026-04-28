@@ -172,6 +172,28 @@ Don't duplicate hand-off content into memory; point at the repo file.
 
 Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially after `/compact`), batch-run `git log --all`, `git status`, `gh pr list`, `but status`, and tail `.wolf/memory.md` before acting on anything that says "pending." Compacted summaries are point-in-time snapshots; the repo + ledger are the ground truth.
 
+### Fallback work order (sunfish-PM, when priority queue is dry)
+
+The priority queue is `icm/_state/active-workstreams.md` rows marked `ready-to-build` with a hand-off file in `icm/_state/handoffs/`. When that queue is empty, sunfish-PM does **not idle** — idle Claude Code sessions waste tokens. Instead, sunfish-PM falls through this ladder and picks the highest rung that has actionable work:
+
+| Rung | Work | Why safe to do autonomously |
+|---|---|---|
+| 1 | **Dependabot PR cleanup.** `gh pr list --author "app/dependabot" --state open` — auto-merge each per pre-release latest-first policy. Skip any PR that fails CI or touches a pinned-by-policy package. | Governed by `project_pre_release_latest_first_policy` memory; mechanical |
+| 2 | **Build hygiene.** `dotnet build` repo-wide; fix new warnings, deprecation notices, analyzer findings. Skip findings that require design judgment (rename a public API, change a contract) — flag those to research instead. | Mechanical; fixes have a clear right answer |
+| 3 | **Style-audit P0 follow-up.** Per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`, Phase 1 is at 86.5% (45/52 P0 resolved). Remaining 7 are documented; pick one and remediate. | Audit itself is the spec; remediation is mechanical |
+| 4 | **Test coverage gap-fill.** Run `dotnet test --collect:"XPlat Code Coverage"` repo-wide; identify a module under the project's coverage target; write tests against existing public surface (no behavior changes). | Quality work; bounded scope; doesn't change behavior |
+| 5 | **Doc improvements.** Missing XML docs on public APIs, README gaps, `apps/docs/blocks/<block>.md` stubs for blocks that don't have a doc page. | Always net-positive; no design risk |
+| 6 | **Sleep with `ScheduleWakeup` 1800s** if all five rungs above have no actionable work. Then re-poll the priority queue at wake. | Token-efficient idle pattern; mirrors `feedback_sleep_on_claude_code_token_exhaustion` |
+
+**Rules:**
+
+- Each fallback PR carries `chore(fallback):` or appropriate type (`fix(build):`, `test(coverage):`, `docs:`) commit prefix so the audit trail distinguishes priority work from fallback work.
+- Fallback work that surfaces a design question STOPS and writes a memory note flagging it to research, rather than guessing.
+- After every fallback PR merges, **re-check the priority queue first** before picking the next fallback. Priority work always wins when available.
+- Concurrent fallback PRs from sunfish-PM are capped at 3 in flight to avoid review-burden cliff for the user.
+
+**Research session commitment:** maintain priority queue depth at 2–3 ready-to-build rows so fallback work stays as fallback, not as primary diet. After every sunfish-PM PR merges, research session pre-writes the next 1–2 hand-offs.
+
 ---
 
 ## Sunfish ICM Pipeline System

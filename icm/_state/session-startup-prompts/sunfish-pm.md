@@ -48,6 +48,26 @@ One iteration = one workstream → one PR → auto-merge:
 - On merge, update ledger row to `built`
 - Loop until: no more `ready-to-build`, OR a hand-off requires research-session decision, OR token usage warns of limits, OR 4 hours wall-clock elapsed.
 
+## Fallback work order (when priority queue is dry)
+
+If `active-workstreams.md` has NO `ready-to-build` rows with hand-offs, do NOT halt. Idle Claude sessions waste tokens. Fall through this ladder and pick the highest rung that has actionable work:
+
+1. **Dependabot PR cleanup.** `gh pr list --author "app/dependabot" --state open` — auto-merge each per `project_pre_release_latest_first_policy` memory. Skip any PR that fails CI.
+2. **Build hygiene.** `dotnet build` repo-wide; fix new warnings, deprecation notices, analyzer findings. Skip findings that require design judgment (public API rename, contract change) — flag to research instead.
+3. **Style-audit P0 follow-up.** Per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`, 7 P0 items remain. Pick one and remediate.
+4. **Test coverage gap-fill.** Run coverage; identify a module under target; write tests against existing public surface (no behavior changes).
+5. **Doc improvements.** Missing XML docs on public APIs, README gaps, `apps/docs/blocks/<block>.md` stubs.
+6. **Sleep with `ScheduleWakeup` 1800s** if rungs 1–5 are empty. Re-poll the priority queue at wake.
+
+**Rules:**
+
+- Use `chore(fallback):` / `fix(build):` / `test(coverage):` / `docs:` commit prefix so the audit distinguishes priority from fallback work.
+- Fallback work that surfaces a design question → STOP, write memory note, flag to research.
+- After each fallback PR merges, re-check the priority queue first. Priority always wins.
+- Cap concurrent fallback PRs at 3 to keep review burden manageable.
+
+This is canonical per CLAUDE.md § "Multi-Session Coordination → Fallback work order (sunfish-PM)."
+
 ## Halt + report when
 
 - Hand-off ambiguity (research must clarify)
@@ -55,6 +75,7 @@ One iteration = one workstream → one PR → auto-merge:
 - Parallel-session work conflicts with hand-off
 - Token-usage warning approaching limits (per memory: feedback_sleep_on_claude_code_token_exhaustion — sleep + ScheduleWakeup)
 - 4 hours wall-clock elapsed in /loop mode
+- A fallback rung surfaces a design question (write memory note; do NOT halt — try the next rung first)
 - Anything not covered above that needs a human decision
 
 When halting, write a project memory note (`project_<workstream>_blocked.md`) describing what's stuck. Then end the session cleanly.
