@@ -103,15 +103,40 @@ This repository is worked on by **three Claude sessions** that share the file sy
 
 | Session | Role | Default behavior |
 |---|---|---|
-| **research session** | ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses | Analyze & recommend. Doesn't write production code by default. |
+| **research session** | ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses, **+ cross-project PM** | Analyze & recommend. Doesn't write production code by default. **Synthesizes cross-project status on demand** when the user asks "what's the status?" — pulls from this repo's `icm/_state/active-workstreams.md` + `gh pr list` AND from `/Users/christopherwood/Projects/the-inverted-stack/` (chapter ICM stages, book-update-loop iterations, audiobook pipeline). |
 | **sunfish-PM session** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from research. Doesn't make architectural decisions. |
-| **book-writing session** | The Inverted Stack manuscript | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. |
+| **book-writing session** | The Inverted Stack manuscript | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. Runs the book-update-loop (chapter ICM stages tracked as GitHub labels per book CLAUDE.md). |
 
-Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them.
+Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The research session's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
 
-### Canonical state file: `icm/_state/active-workstreams.md`
+### Canonical state files
 
-This is the **single source of truth** for what's in flight, who owns it, and what state it's in. Read at session start. Update on state change.
+- **`icm/_state/MASTER-PLAN.md`** — stable; the three goals (Business MVP, Component Library, Book), done conditions per goal, velocity baseline, estimated MVP date. Updated when goal definition or velocity baseline materially shifts; not per-PR.
+- **`icm/_state/active-workstreams.md`** — dynamic; what's in flight, who owns it, what state it's in. Read at session start. Update on state change.
+- **`icm/_state/handoffs/`** — per-workstream hand-off specs (research → sunfish-PM).
+
+### Status format (executive summary on demand)
+
+When the user asks "where are we?" / "status?" / "what's next?", produce a brief executive summary in this format (target ~250-400 words):
+
+```
+**Where we are:** 2-3 sentences naming the most-advanced workstream + the most-blocked workstream.
+
+**Blockers needing your attention:** bulleted list, max 5, each <2 lines.
+- Severity: [crit / high / med / low]
+- One-line decision needed
+- Where the detail lives (file path)
+
+**What's next (priority order):**
+1. Most-urgent unblock-or-decide item
+2. Next sunfish-PM hand-off
+3. Next book milestone
+4. Next research deliverable
+
+**Velocity vs MVP:** 1-2 sentences. PRs/day recent, percent-done estimate, on-track-or-not vs the MASTER-PLAN.md estimate.
+```
+
+Don't pad. Don't include dependabot/bot PRs in the in-flight count. Don't repeat MASTER-PLAN.md content; reference it.
 
 Status vocabulary: `design-in-flight` (research working; do not build), `ready-to-build` (hand-off file exists; sunfish-PM may implement), `building`, `built`, `held`, `blocked`, `superseded`.
 
