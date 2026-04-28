@@ -4221,6 +4221,102 @@
       "related_bugs": [],
       "occurrences": 1,
       "last_seen": "2026-04-26T17:55:00.000Z"
+    },
+    {
+      "id": "bug-259",
+      "timestamp": "2026-04-27T17:22:05.912Z",
+      "error_message": "Incorrect value in code",
+      "file": "../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md",
+      "root_cause": "Had `feat/kernel-security-recovery-trustee-records-g6`",
+      "fix": "Changed to `0821024`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-27T17:22:05.912Z"
+    },
+    {
+      "id": "bug-260",
+      "timestamp": "2026-04-27T17:35:29.156Z",
+      "error_message": "Null/undefined access in ",
+      "file": "packages/kernel-security/DependencyInjection/ServiceCollectionExtensions.cs",
+      "root_cause": "Property access on potentially null/undefined value",
+      "fix": "Added null safety (optional chaining or null check)",
+      "tags": [
+        "auto-detected",
+        "null-safety",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-27T17:35:29.156Z"
+    },
+    {
+      "id": "bug-261",
+      "timestamp": "2026-04-27T20:57:36.729Z",
+      "error_message": "Missing await",
+      "file": "packages/foundation-localfirst/Encryption/SqlCipherEncryptedStore.cs",
+      "root_cause": "Async call without await — returned Promise instead of value",
+      "fix": "Added await to async call",
+      "tags": [
+        "auto-detected",
+        "async-fix",
+        "cs"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-27T20:57:36.729Z"
+    },
+    {
+      "id": "bug-262",
+      "timestamp": "2026-04-27T21:41:51.630Z",
+      "error_message": "Significant refactor of ",
+      "file": "accelerators/anchor/Sunfish.Anchor.csproj",
+      "root_cause": "6 lines replaced/restructured",
+      "fix": "Rewrote 13→7 lines (6 removed)",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "csproj"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-27T21:41:51.630Z"
+    },
+    {
+      "id": "bug-263",
+      "timestamp": "2026-04-27T22:57:51.015Z",
+      "error_message": "Significant refactor of ",
+      "file": "../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md",
+      "root_cause": "5 lines replaced/restructured",
+      "fix": "Rewrote 6→6 lines (5 removed) | Also: **Phase 2 ADR slate identified:**; - **ADR 0049** (audit-trail substrate) — DRAFTED a",
+      "tags": [
+        "auto-detected",
+        "refactor",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 2,
+      "last_seen": "2026-04-27T22:58:01.125Z"
+    },
+    {
+      "id": "bug-264",
+      "timestamp": "2026-04-28T01:21:13.606Z",
+      "error_message": "Incorrect value in code",
+      "file": "icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md",
+      "root_cause": "Had `packages/blocks-tax-reporting`",
+      "fix": "Changed to `packages/foundation-reporting/`",
+      "tags": [
+        "auto-detected",
+        "wrong-value",
+        "md"
+      ],
+      "related_bugs": [],
+      "occurrences": 1,
+      "last_seen": "2026-04-28T01:21:13.606Z"
     }
   ]
 }

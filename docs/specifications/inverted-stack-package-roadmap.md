@@ -59,16 +59,14 @@ For the architectural commitment itself — what the package must own, the minim
 | Field | Value |
 |---|---|
 | Source extension | #48 key-loss recovery |
-| Status | `book-committed` — not yet scaffolded; potential overlap with existing packages |
-| Sunfish dir (planned) | `packages/kernel-audit/` (or inline into `kernel-ledger`) |
-| Sunfish ADR | None yet. Recommend opening one before scaffolding `foundation-recovery`. |
+| Status | `adr-accepted` — not yet scaffolded |
+| Sunfish dir (planned) | `packages/kernel-audit/` |
+| Sunfish ADR | [`0049-audit-trail-substrate.md`](../adrs/0049-audit-trail-substrate.md) (Accepted 2026-04-27) |
 | Book chapters | Ch15 §Key-Loss Recovery (§Recovery-event audit trail); Ch15 §Implementation Surfaces |
 
-**Implementation question that needs an ADR:** is this a distinct package, or a subsystem of `Sunfish.Kernel.Ledger` / `Sunfish.Kernel.EventBus`? The book treats it as a separate namespace because the retention semantics differ from the standard ledger: recovery records carry third-party metadata (trustee identifiers, custodian identifiers) with different Article 17 erasure semantics than ordinary application data.
+**Resolution per ADR 0049:** distinct `Sunfish.Kernel.Audit` package, parallel to `Kernel.Ledger`, layered over the kernel `IEventLog` substrate from `Kernel.EventBus`. Same architectural pattern `Kernel.Ledger` uses (own contracts, own typed event stream, kernel `IEventLog` as durability hook). The retention semantics, Article 17 erasure logic, and third-party trustee metadata that distinguish audit records from application data are isolated in this package's contracts (`IAuditTrail`, `IComplianceQuery`).
 
-The implementation may inline this into `kernel-ledger` with an "audit" record type rather than spinning up a new package. Either path is architecturally sound. The choice belongs to whoever picks up `foundation-recovery` scaffolding.
-
-**Next implementation step:** open an ADR titled "Audit-trail substrate for compliance-tier records — distinct package vs. extension of kernel-ledger." Decide before scaffolding `foundation-recovery`.
+**Next implementation step:** scaffold `packages/kernel-audit/` with `Sunfish.Kernel.Audit.csproj`, define `IAuditTrail` + `IAuditEventStream` + `AuditRecord` (marked `IMustHaveTenant`), implement `EventLogBackedAuditTrail`, mark persisted format as `v0` per ADR 0049 trust-impact (algorithm-agility dependency on ADR 0004). Wire into G6 host integration ("persist RecoveryEvents to per-tenant audit log") to unblock the Phase 1 carryover task.
 
 ### `Sunfish.Kernel.Performance`
 

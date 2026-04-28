@@ -55,6 +55,7 @@ Files are named `NNNN-short-slug.md` starting at `0001`.
 | [0044](0044-anchor-windows-only-phase-1.md) | Anchor Ships Windows-only for Business MVP Phase 1 | Accepted | — |
 | [0046](0046-key-loss-recovery-scheme-phase-1.md) | Anchor Key-Loss Recovery Scheme for Phase 1 (Primitive #48 sub-pattern selection) | Accepted | — |
 | [0048](0048-anchor-multi-backend-maui.md) | Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly (extends 0044) | Accepted | — |
+| [0049](0049-audit-trail-substrate.md) | Audit-Trail Substrate — distinct `Sunfish.Kernel.Audit` package, parallel to `Kernel.Ledger`, layered over kernel `IEventLog` | Accepted | — |
 
 ## Appendix C Resolution
 
