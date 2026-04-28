@@ -2772,24 +2772,34 @@
 | 08:57 | Edited Directory.Build.props | reduced (-25 lines) | ~277 |
 | 08:57 | Created Directory.Build.targets | — | ~438 |
 | 08:58 | Edited Directory.Build.targets | expanded (+6 lines) | ~265 |
+
+## Session: 2026-04-26 07:37
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-26 20:48 (Windows)
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
 | 20:48 | Edited .claude/worktrees/agent-a7b14f1a37fed8644/docs/adrs/README.md | 25→22 lines | ~688 |
-| 20:51 | Session end: 308 writes across 165 files (main-ruleset.json, apply-main-ruleset.sh, README.md, Error.razor, templates.md) | 302 reads | ~643189 tok |
+| 20:51 | Session end: 308 writes across 165 files | 302 reads | ~643189 tok |
 | 20:55 | Created docs/adrs/0046-key-loss-recovery-scheme-phase-1.md | — | ~2469 |
 | 20:56 | Created icm/pipelines/sunfish-inverted-stack-conformance/README.md | — | ~1858 |
 | 20:57 | Created icm/pipelines/sunfish-inverted-stack-conformance/routing.md | — | ~1224 |
 | 20:57 | Created icm/pipelines/sunfish-inverted-stack-conformance/deliverables.md | — | ~1267 |
 | 20:59 | Created icm/01_discovery/output/business-mvp-phase-1-discovery-final-2026-04-26.md | — | ~2224 |
-| 20:59 | Session end: 313 writes across 169 files (main-ruleset.json, apply-main-ruleset.sh, README.md, Error.razor, templates.md) | 302 reads | ~652877 tok |
-| 00:28 | Session end: 313 writes across 169 files (main-ruleset.json, apply-main-ruleset.sh, README.md, Error.razor, templates.md) | 302 reads | ~652877 tok |
+| 20:59 | Session end: 313 writes across 169 files | 302 reads | ~652877 tok |
+| 00:28 | Session end: 313 writes across 169 files | 302 reads | ~652877 tok |
 | 00:32 | Created icm/00_intake/output/business-mvp-phase-1-foundation-intake-2026-04-26.md | — | ~3679 |
 | 00:33 | Created docs/adrs/0044-anchor-windows-only-phase-1.md | — | ~1461 |
-| 00:36 | Session end: 315 writes across 169 files (main-ruleset.json, apply-main-ruleset.sh, README.md, Error.razor, templates.md) | 303 reads | ~660555 tok |
+| 00:36 | Session end: 315 writes across 169 files | 303 reads | ~660555 tok |
 | 00:45 | Created icm/05_implementation-plan/output/business-mvp-phase-1-plan-2026-04-26.md | — | ~5709 |
 | 00:49 | Created docs/specifications/anchor-bridge-connection-topology.md | — | ~3971 |
-| 00:52 | Session end: 317 writes across 171 files (main-ruleset.json, apply-main-ruleset.sh, README.md, Error.razor, templates.md) | 303 reads | ~670927 tok |
+| 00:52 | Session end: 317 writes across 171 files | 303 reads | ~670927 tok |
 | 01:20 | Created accelerators/anchor/Services/AnchorSyncHostedService.cs | — | ~1040 |
 
-## Session: 2026-04-27 01:22
+## Session: 2026-04-27 01:22 (Windows)
 
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
@@ -2798,6 +2808,94 @@
 | 01:26 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 10→13 lines | ~271 |
 | 01:28 | Created accelerators/anchor/tests/AnchorSyncHostedServiceTests.cs | — | ~1912 |
 | 01:29 | Edited accelerators/anchor/tests/tests.csproj | 24→29 lines | ~551 |
-| 01:34 | Created ../../Users/Chris/.claude/projects/C--Projects-sunfish/memory/project_business_mvp_phase_1_progress.md | — | ~375 |
-| 01:34 | Edited ../../Users/Chris/.claude/projects/C--Projects-sunfish/memory/MEMORY.md | 1→2 lines | ~118 |
-| 01:35 | Session end: 7 writes across 6 files (MauiProgram.cs, Sunfish.Anchor.csproj, AnchorSyncHostedServiceTests.cs, tests.csproj, project_business_mvp_phase_1_progress.md) | 15 reads | ~23368 tok |
+| 01:34 | Created ~/.claude/projects/C--Projects-sunfish/memory/project_business_mvp_phase_1_progress.md | — | ~375 |
+| 01:34 | Edited ~/.claude/projects/C--Projects-sunfish/memory/MEMORY.md | 1→2 lines | ~118 |
+| 01:35 | Session end: 7 writes across 6 files | 15 reads | ~23368 tok |
+
+## Session: 2026-04-27 10:46
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-27 13:01
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-27 13:03
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-27 13:04
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 13:15 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md | modified UTC() | ~350 |
+| 13:22 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md | "feat/kernel-security-reco" → "0821024" | ~40 |
+| 13:29 | Created packages/kernel-security/Recovery/IRecoveryClock.cs | — | ~128 |
+| 13:29 | Created packages/kernel-security/Recovery/SystemRecoveryClock.cs | — | ~83 |
+| 13:30 | Created packages/kernel-security/Recovery/RecoveryCoordinatorOptions.cs | — | ~409 |
+| 13:30 | Created packages/kernel-security/Recovery/TrusteeDesignation.cs | — | ~195 |
+| 13:30 | Created packages/kernel-security/Recovery/RecoveryStatus.cs | — | ~745 |
+| 13:30 | Created packages/kernel-security/Recovery/RecoveryDispute.cs | — | ~1592 |
+| 13:31 | Created packages/kernel-security/Recovery/RecoveryCoordinatorState.cs | — | ~798 |
+| 13:31 | Created packages/kernel-security/Recovery/IRecoveryStateStore.cs | — | ~357 |
+| 13:31 | Created packages/kernel-security/Recovery/InMemoryRecoveryStateStore.cs | — | ~355 |
+| 13:32 | Created packages/kernel-security/Recovery/IRecoveryCoordinator.cs | — | ~2004 |
+| 13:33 | Edited packages/kernel-security/Recovery/IRecoveryCoordinator.cs | expanded (+26 lines) | ~542 |
+| 13:33 | Created packages/kernel-security/Recovery/FixedDisputerValidator.cs | — | ~398 |
+| 13:35 | Created packages/kernel-security/Recovery/RecoveryCoordinator.cs | — | ~6367 |
+| 13:35 | Edited packages/kernel-security/DependencyInjection/ServiceCollectionExtensions.cs | 8→9 lines | ~98 |
+| 13:35 | Edited packages/kernel-security/DependencyInjection/ServiceCollectionExtensions.cs | added optional chaining | ~578 |
+| 13:36 | Created packages/kernel-security/tests/Recovery/RecoveryDisputeTests.cs | — | ~1039 |
+| 13:37 | Created packages/kernel-security/tests/Recovery/RecoveryCoordinatorTests.cs | — | ~6369 |
+| 13:41 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md | inline fix | ~58 |
+| 13:44 | Created docs/adrs/0049-audit-trail-substrate.md | — | ~3986 |
+| 13:59 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md | inline fix | ~41 |
+| 14:02 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 7→7 lines | ~162 |
+| 14:03 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 7→7 lines | ~155 |
+| 16:57 | Edited packages/foundation-localfirst/Encryption/IEncryptedStore.cs | expanded (+36 lines) | ~595 |
+| 16:57 | Edited packages/foundation-localfirst/Encryption/SqlCipherEncryptedStore.cs | added 1 condition(s) | ~310 |
+| 16:58 | Created packages/foundation-localfirst/tests/SqlCipherKeyRotationTests.cs | — | ~1474 |
+| 16:59 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md | 2→5 lines | ~247 |
+| 17:38 | Edited accelerators/anchor/Sunfish.Anchor.csproj | expanded (+6 lines) | ~276 |
+| 17:39 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 15.0 → 17.0 | ~44 |
+| 17:41 | Edited accelerators/anchor/Sunfish.Anchor.csproj | reduced (-6 lines) | ~155 |
+| 17:41 | Edited accelerators/anchor/Sunfish.Anchor.csproj | 17.0 → 15.0 | ~44 |
+| 18:36 | Created ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md | — | ~1398 |
+| 18:36 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/MEMORY.md | 1→2 lines | ~191 |
+| 18:57 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md | modified delegation() | ~157 |
+| 18:58 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md | modified slate() | ~276 |
+| 18:58 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md | portal() → email() | ~132 |
+| 19:06 | Created docs/adrs/0049-audit-trail-substrate.md | — | ~5953 |
+| 19:08 | Created icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md | — | ~5217 |
+| 20:42 | Edited docs/adrs/0049-audit-trail-substrate.md | Proposed() → Accepted() | ~15 |
+| 20:42 | Edited docs/adrs/README.md | 1→2 lines | ~97 |
+| 20:43 | Edited docs/specifications/inverted-stack-package-roadmap.md | 15→13 lines | ~368 |
+| 20:43 | Edited ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md | inline fix | ~122 |
+| 21:21 | Edited icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md | inline fix | ~189 |
+| 21:21 | Edited icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md | 1→2 lines | ~129 |
+| 21:21 | Edited icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md | expanded (+9 lines) | ~393 |
+
+## Session: 2026-04-28 02:10
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-28 02:11
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-28 02:13
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+
+## Session: 2026-04-28 02:14
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| 02:32 | Edited accelerators/bridge/Sunfish.Bridge.AppHost/Program.cs | 2→3 lines | ~37 |
+| 02:34 | Edited .gitignore | 7→10 lines | ~31 |
