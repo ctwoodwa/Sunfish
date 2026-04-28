@@ -92,8 +92,9 @@ var bridgeWeb = builder.AddProject<Projects.Sunfish_Bridge>("bridge-web")
 //
 // The single-Bridge default behaviour is unchanged — the smoke instance
 // is opt-in and produces no additional resources unless the flag is set.
-var enableRelayInstance = builder.Configuration.GetValue<bool>(
-    "Bridge:Phase1Smoke:EnableRelayInstance");
+var enableRelayInstance =
+    bool.TryParse(builder.Configuration["Bridge:Phase1Smoke:EnableRelayInstance"], out var smoke)
+    && smoke;
 if (enableRelayInstance)
 {
     var relayResourceName = builder.Configuration["Bridge:Phase1Smoke:RelayResourceName"]
