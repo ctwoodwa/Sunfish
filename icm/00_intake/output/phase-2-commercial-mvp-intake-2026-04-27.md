@@ -1,5 +1,7 @@
 # Intake Note — Sunfish Business MVP Phase 2 (Commercial Operations Cycle)
 
+**Status:** `design-in-flight` — Stage 00 intake. ADR 0049 (workstream component) accepted + scaffolded (PR #190 held; see `icm/_state/active-workstreams.md`). ADRs 0051 (Payments) and 0052 (Outbound messaging) not yet drafted. **sunfish-PM: do not build against this intake's broader scope; individual workstreams advance via their own hand-offs.**
+**Status owner:** research session
 **Date:** 2026-04-27
 **Requestor:** Christopher Wood (BDFL) — first commercial-grade customer (own property-management business)
 **Spec source:** Multi-turn architectural conversation, captured at `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_phase_2_commercial_scope.md`

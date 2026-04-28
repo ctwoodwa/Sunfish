@@ -1,0 +1,70 @@
+# Active Workstreams Ledger
+
+Canonical "what's in flight, who owns it, what state it's in" for cross-session coordination between the **research session** (ADRs, intakes, design decisions), **sunfish-PM session** (production code, PRs), and **book-writing session** (the-inverted-stack manuscript).
+
+**All sessions read this at session start. Update on state change. Do not implement anything not listed as `ready-to-build`.**
+
+---
+
+## Status vocabulary
+
+| Status | Meaning |
+|---|---|
+| `design-in-flight` | Research session is still working on the spec. **sunfish-PM: do not implement.** |
+| `ready-to-build` | Spec is final; sunfish-PM may implement. A hand-off file in `handoffs/` describes the work. |
+| `building` | sunfish-PM is implementing. Other sessions: do not open parallel PRs on the same scope. |
+| `built` | Implementation complete (committed/merged). Watch for follow-up retrofits. |
+| `held` | Paused pending external decision (user, third-party, or another workstream). |
+| `blocked` | Depends on a workstream not yet resolved (link the dependency). |
+| `superseded` | Replaced by another workstream (link the replacement). |
+
+---
+
+## Current state (last updated 2026-04-28)
+
+| # | Workstream | Status | Owner (current phase) | Reference | Notes |
+|---|---|---|---|---|---|
+| 1 | Multi-tenancy type surface convention | `design-in-flight` | research | `icm/00_intake/output/tenant-id-sentinel-pattern-intake-2026-04-28.md` | Stage 00 widened intake; Stage 01 Discovery next. **Blocks Tier 2 retrofit (AuditQuery → TenantSelection) on the now-merged kernel-audit package.** |
+| 2 | Kernel-audit Tier 1 retrofit | `ready-to-build` | sunfish-PM (next) | `icm/_state/handoffs/kernel-audit-tier1-retrofit.md` | Spec final. Two changes: AttestingSignature pair shape + IAuditTrail XML doc fix. **PR #190 merged 08:43Z with drift unaddressed — Tier 1 now lands as a follow-up PR from `main`, not a force-push.** Sooner-the-better: every new caller of `AuditRecord.AttestingSignatures` will adopt the drifted shape and need updating later. |
+| 3 | Kernel-audit scaffold (PR #190) | `built` (merged) | sunfish-PM | https://github.com/ctwoodwa/Sunfish/pull/190 (merged 2026-04-28 08:43Z) | Drift unaddressed at merge — see workstream #2 for the follow-up retrofit. |
+| 4 | Kernel-event-bus test-flake fix (PR #191) | `built` (merged) | research session (exception turn) | https://github.com/ctwoodwa/Sunfish/pull/191 (merged 2026-04-28 08:26Z) | InMemoryEventBus + InMemoryEventBusTests deterministic readiness wait. Closes bug-268 in `.wolf/buglog.json`. |
+| 5 | Phase 2 commercial MVP | `design-in-flight` | research | `icm/00_intake/output/phase-2-commercial-mvp-intake-2026-04-27.md` | Stage 00 intake. ADR 0049 accepted (built); ADR 0051 (Payments), 0052 (Outbound msg) not yet drafted. |
+| 6 | Foundation-audit / kernel-audit relationship | `held` (Stage 00 stub) | research | `icm/00_intake/output/foundation-audit-vs-kernel-audit-relationship-intake-2026-04-28.md` | Held until a revisit trigger fires (see intake's "Revisit triggers" section). |
+| 7 | Phase 1 G7 conformance scan | `blocked` | research (when G6 closes) | `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_business_mvp_phase_1_progress.md` | Blocked on G6 trustee orchestration completion. |
+| 8 | Phase 1 G6 trustee orchestration | `building` (sunfish-PM) | sunfish-PM | PRs #178, #185 (merged); follow-up unspecified | Per Phase 1 progress memory; verify state via `gh pr list`. |
+
+---
+
+## How to use this ledger
+
+### research session (this session)
+
+- Updates rows when designs progress, freeze, or unfreeze.
+- Authoritative author of `design-in-flight` ↔ `ready-to-build` transitions.
+- Writes the hand-off file in `handoffs/` when transitioning a row to `ready-to-build`.
+- Updates the "Last updated" timestamp + signs off ("research session — YYYY-MM-DD").
+
+### sunfish-PM session
+
+- **Before any code change beyond a one-line fix:** verify the relevant row says `ready-to-build` AND a hand-off file exists in `handoffs/`.
+- During implementation: update row to `building` (with PR link if available).
+- After completion: update row to `built` with the merged PR / commit reference.
+- If unsure whether work is wanted: write a memory note asking the research session, do not proceed.
+
+### book-writing session
+
+- When a book chapter cross-references a Sunfish ADR or intake, check this ledger for that workstream's status.
+- If `design-in-flight`: mark the cross-reference as draft / pending in the manuscript.
+- If `built`: cross-reference is stable.
+
+### Maintenance
+
+- Stale `built` rows can be pruned in a periodic housekeeping pass (>7 days old, no follow-ups).
+- Rows superseded by a different workstream link the replacement; keep the row at `superseded` for one cycle so anyone mid-work sees the redirect.
+
+---
+
+## Last updated
+
+**2026-04-28** — research session: ledger created (coordination protocol bootstrap)
+**2026-04-28 (later)** — research session: workstreams #3 (PR #190) and #4 (PR #191) flipped to `built` (merged); workstream #2 hand-off branch strategy updated to "follow-up PR from main" since PR #190 merged without the retrofit.
