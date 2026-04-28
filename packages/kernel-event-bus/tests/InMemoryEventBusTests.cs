@@ -35,7 +35,7 @@ public class InMemoryEventBusTests
 
         // Let the subscriber register before publishing — the bus only
         // fans out to subscribers present at the moment of publish.
-        await Task.Delay(50, cts.Token);
+        await WaitForSubscribersAsync(bus, expected: 1, cts.Token);
 
         // Act
         await bus.PublishAsync(signed, cts.Token);
@@ -91,14 +91,16 @@ public class InMemoryEventBusTests
                 received.Add(e);
             }
         }, cts.Token);
-        await Task.Delay(50, cts.Token);
+        await WaitForSubscribersAsync(bus, expected: 1, cts.Token);
 
         // Act
         await bus.PublishAsync(signed1, cts.Token);
         await bus.PublishAsync(signed2, cts.Token);
 
-        // Wait a beat to let fan-out settle, then cancel subscribe.
-        await Task.Delay(100, CancellationToken.None);
+        // Wait a beat to let fan-out settle, then cancel subscribe. 500ms
+        // (rather than 100ms) gives slow Windows CI runners enough headroom
+        // for two PublishAsync writes + one channel-reader round-trip.
+        await Task.Delay(500, CancellationToken.None);
         cts.Cancel();
         try { await subscribeTask; } catch (OperationCanceledException) { }
 
@@ -120,7 +122,7 @@ public class InMemoryEventBusTests
         var (bus, signer, _, keyPair) = CreateBus();
         var entity = EntityId.Parse("property:acme/1");
 
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var received = new List<KernelEvent>();
         var subscribeTask = Task.Run(async () =>
         {
@@ -130,7 +132,7 @@ public class InMemoryEventBusTests
                 if (received.Count == n) break;
             }
         }, cts.Token);
-        await Task.Delay(50, cts.Token);
+        await WaitForSubscribersAsync(bus, expected: 1, cts.Token);
 
         // Act
         var published = new List<KernelEvent>();
@@ -147,7 +149,7 @@ public class InMemoryEventBusTests
         }
 
         // Assert
-        await subscribeTask.WaitAsync(TimeSpan.FromSeconds(3));
+        await subscribeTask.WaitAsync(TimeSpan.FromSeconds(10));
         Assert.Equal(n, received.Count);
         for (var i = 0; i < n; i++)
         {
@@ -178,7 +180,7 @@ public class InMemoryEventBusTests
                 if (received.Count == 2) break;
             }
         }, cts.Token);
-        await Task.Delay(50, cts.Token);
+        await WaitForSubscribersAsync(bus, expected: 1, cts.Token);
 
         // Act — one matching, one not, another matching.
         await bus.PublishAsync(await SignAsync(signer, new KernelEvent(
@@ -222,7 +224,7 @@ public class InMemoryEventBusTests
                 if (received.Count == 2) break;
             }
         }, cts.Token);
-        await Task.Delay(50, cts.Token);
+        await WaitForSubscribersAsync(bus, expected: 1, cts.Token);
 
         // Act
         await bus.PublishAsync(await SignAsync(signer, new KernelEvent(
@@ -272,4 +274,21 @@ public class InMemoryEventBusTests
 
     private static ValueTask<SignedOperation<KernelEvent>> SignAsync(Ed25519Signer signer, KernelEvent evt)
         => signer.SignAsync(evt, DateTimeOffset.UtcNow, Guid.NewGuid());
+
+    /// <summary>
+    /// Polls <see cref="InMemoryEventBus.SubscriberCount"/> until at least
+    /// <paramref name="expected"/> subscribers are registered. Replaces the
+    /// flake-prone <c>await Task.Delay(50, cts.Token)</c> "give the iterator
+    /// time to register" pattern with a deterministic wait — registration is
+    /// synchronous inside the subscribe iterator body, so polling the count is
+    /// race-free.
+    /// </summary>
+    private static async Task WaitForSubscribersAsync(InMemoryEventBus bus, int expected, CancellationToken ct)
+    {
+        while (bus.SubscriberCount < expected)
+        {
+            ct.ThrowIfCancellationRequested();
+            await Task.Delay(5, ct);
+        }
+    }
 }

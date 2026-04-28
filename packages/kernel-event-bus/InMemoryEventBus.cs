@@ -80,6 +80,17 @@ public sealed class InMemoryEventBus : IEventBus
     private readonly object _subscribersGate = new();
     private readonly List<Subscriber> _subscribers = new();
 
+    /// <summary>
+    /// Internal test hook: count of currently-registered subscribers. Used by
+    /// tests to deterministically wait until a subscribe-task's iterator body
+    /// has reached the <c>_subscribers.Add</c> line, replacing brittle
+    /// <c>Task.Delay</c>-based races. Not part of the public contract.
+    /// </summary>
+    internal int SubscriberCount
+    {
+        get { lock (_subscribersGate) { return _subscribers.Count; } }
+    }
+
     /// <summary>Creates a new <see cref="InMemoryEventBus"/>.</summary>
     /// <param name="verifier">Ed25519 verifier used on every <see cref="PublishAsync"/>. Resolved from DI via <c>AddSunfishDecentralization</c> or manually-registered <see cref="Ed25519Verifier"/>.</param>
     /// <param name="logger">Optional logger; a no-op logger is used when null.</param>
