@@ -49,6 +49,7 @@
     <PackageVersion Include="Xunit.SkippableFact" Version="1.5.61"/>
     <PackageVersion Include="YDotNet" Version="0.6.0"/>
     <PackageVersion Include="YDotNet.Native" Version="0.6.0"/>
+    <PackageVersion Include="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="4.14.0"/>
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.2.4"/>
