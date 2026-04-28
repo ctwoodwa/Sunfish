@@ -1,24 +1,42 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
-        <!--
-            MAUI 10 preview: Mono runtime packages for Android/iOS/MacCatalyst are not
-            yet published at the version the workload expects, causing restore failures
-            on this SDK. Multi-targeting is scaffolded but commented; Anchor ships
-            Windows-only until MAUI 10 stabilizes, then re-enables mobile targets.
-        -->
+        <!-- Anchor builds on Windows (`net11.0-windows*`) and macOS
+             (`net11.0-maccatalyst`). iOS / Android target frameworks remain
+             carved out until MAUI 11 GA — Mono runtime packs for those RIDs
+             aren't published at the workload's expected version yet.
+             macOS prerequisites for first build, see
+             docs/dev/anchor-maccatalyst-build-prereqs.md:
+               sudo xcode-select -switch /Applications/Xcode.app/Contents/Developer
+               sudo xcodebuild -license accept
+               plutil -replace AppleSdkRoot -string "/Applications/Xcode.app/" \
+                  ~/Library/Preferences/Xamarin/Settings.plist  (if pre-existing) -->
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net11.0-windows10.0.19041.0</TargetFrameworks>
         <TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('windows'))">net11.0-maccatalyst</TargetFrameworks>
         <TargetFramework></TargetFramework>
         <!-- Re-enable when MAUI 11 stabilizes:
-             <TargetFrameworks>$(TargetFrameworks);net11.0-android;net11.0-ios;net11.0-maccatalyst</TargetFrameworks> -->
+             <TargetFrameworks>$(TargetFrameworks);net11.0-android;net11.0-ios</TargetFrameworks> -->
 
-        <!-- Note for MacCatalyst:
-            The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
-            When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
-            The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
-            either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-        <!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+        <!-- MacCatalyst RID config (per Microsoft Mac App Store rules):
+             default runtime is maccatalyst-x64; for Release the default is
+             maccatalyst-x64;maccatalyst-arm64. The Mac App Store will not
+             accept apps with ONLY maccatalyst-arm64 — both must be indicated
+             or only x64. -->
+        <RuntimeIdentifiers Condition="$([MSBuild]::IsOSPlatform('osx'))">maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers>
+
+        <!-- MAUI 11 preview (26.2.11588-net11-p3) pins to Xcode 26.3 exactly.
+             Xcode 26.4.x trips the strict version check even though it's
+             ABI-compatible. Bypass on macOS until the workload bumps. -->
+        <ValidateXcodeVersion Condition="$([MSBuild]::IsOSPlatform('osx'))">false</ValidateXcodeVersion>
+
+        <!-- Microsoft.AspNetCore.App ships no maccatalyst-specific runtime pack
+             (Blazor Hybrid's needed reference assemblies are inlined in MAUI's
+             MacCatalyst runtime pack). Enable legacy RID-graph resolution on
+             macOS so the resolver finds the closest match. Required alongside
+             the _SunfishStripAspNetCoreFromUnavailableMacCatalystPacks target
+             below — the property covers the resolver, the target covers the
+             post-resolve manifest reader. -->
+        <UseRidGraph Condition="$([MSBuild]::IsOSPlatform('osx'))">true</UseRidGraph>
 
         <OutputType>Exe</OutputType>
         <RootNamespace>Sunfish.Anchor</RootNamespace>
@@ -57,11 +75,30 @@
         <WindowsPackageType>None</WindowsPackageType>
 
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
-        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+        <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">17.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">24.0</SupportedOSPlatformVersion>
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
     </PropertyGroup>
+
+    <!-- AspNetCore.App's runtime pack does not ship for maccatalyst-* RIDs.
+         The transitive FrameworkReference (from ui-adapters-blazor) flows
+         through to maccatalyst targets and trips NETSDK1082 in
+         ResolveRuntimePackAssets, then MSB4096 in MAUI's runtime-component
+         manifest reader. The reference assemblies Blazor Hybrid actually
+         needs are inlined into MAUI's MacCatalyst runtime pack. Strip the
+         AspNetCore.App entry from the unavailable-pack list and the
+         resolved-framework-reference list so neither downstream task fires.
+         Mirrors what Android does internally via RuntimePackExcludedRuntimeIdentifiers. -->
+    <Target Name="_SunfishStripAspNetCoreFromMacCatalystPacks"
+            BeforeTargets="ResolveRuntimePackAssets;_MonoReadAvailableComponentsManifest"
+            AfterTargets="ResolveFrameworkReferences"
+            Condition="'$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'maccatalyst'">
+        <ItemGroup>
+            <UnavailableRuntimePack Remove="Microsoft.AspNetCore.App" />
+            <ResolvedFrameworkReference Remove="Microsoft.AspNetCore.App" />
+        </ItemGroup>
+    </Target>
 
     <ItemGroup>
         <!-- App Icon -->
