@@ -97,6 +97,58 @@ Do not duplicate one system's role inside another.
 
 ---
 
+## Multi-Session Coordination
+
+This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly:
+
+| Session | Role | Default behavior |
+|---|---|---|
+| **research session** | ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses | Analyze & recommend. Doesn't write production code by default. |
+| **sunfish-PM session** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from research. Doesn't make architectural decisions. |
+| **book-writing session** | The Inverted Stack manuscript | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. |
+
+Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them.
+
+### Canonical state file: `icm/_state/active-workstreams.md`
+
+This is the **single source of truth** for what's in flight, who owns it, and what state it's in. Read at session start. Update on state change.
+
+Status vocabulary: `design-in-flight` (research working; do not build), `ready-to-build` (hand-off file exists; sunfish-PM may implement), `building`, `built`, `held`, `blocked`, `superseded`.
+
+### Pre-build checklist (sunfish-PM session)
+
+**Before any code change beyond a one-line fix, check:**
+
+1. **`icm/_state/active-workstreams.md`** — find the row for the workstream you're about to touch. It must say `ready-to-build`. If `design-in-flight` or `held`, STOP and write a memory note asking research to clarify before proceeding.
+2. **The relevant intake / ADR / architecture artifact's `Status:` line** — must match `ready-to-build` (or be silent on status, which means workstream-level status from the ledger applies).
+3. **`icm/_state/handoffs/<workstream>.md`** — for `ready-to-build` workstreams, a hand-off file describes exactly what to build, file-by-file, with acceptance criteria.
+4. **`gh pr list --state open`** — look for in-flight PRs touching the same package, especially ones with auto-merge enabled.
+5. **`but status` (or `git log --oneline -10 --all`)** — verify no parallel-session work has landed since the hand-off was authored.
+
+If ANY of those signal "design-in-flight" / "blocked" / unexpected state, stop. Write a memory entry naming the workstream, what you observed, and what you need clarified. Do not proceed.
+
+### State transitions (research session)
+
+When widening or revising an intake mid-flight: immediately set its `Status:` to `design-in-flight`, update the matching row in `icm/_state/active-workstreams.md`, and (if a hand-off existed) revoke or update it.
+
+When a design is final and ready for implementation: write a hand-off in `icm/_state/handoffs/<workstream>.md`, flip the ledger row to `ready-to-build`, and (optionally) write a project memory pointing at the hand-off so sunfish-PM finds it via auto-memory at session start.
+
+### Memory-side coordination
+
+Project memories under `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/` are auto-loaded at every session's start. Use them for:
+
+- Cross-session announcements ("research has revised X; see hand-off Y")
+- State summaries that future sessions need ("Phase 1 progress per gap")
+- Hand-off pointers when the repo artifact alone isn't discoverable enough
+
+Don't duplicate hand-off content into memory; point at the repo file.
+
+### When parallel-session work surprises you
+
+Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially after `/compact`), batch-run `git log --all`, `git status`, `gh pr list`, `but status`, and tail `.wolf/memory.md` before acting on anything that says "pending." Compacted summaries are point-in-time snapshots; the repo + ledger are the ground truth.
+
+---
+
 ## Sunfish ICM Pipeline System
 
 Sunfish uses a filesystem-based orchestration system called ICM (Integrated Change Management) to
