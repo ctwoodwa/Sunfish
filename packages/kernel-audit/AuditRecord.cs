@@ -27,12 +27,16 @@ namespace Sunfish.Kernel.Audit;
 /// <para>
 /// <b>Signing scope.</b> The <see cref="Payload"/> field is itself a
 /// <see cref="SignedOperation{T}"/> — the payload's signature authenticates the
-/// event content. The <see cref="AttestingSignatures"/> list is the additional
-/// multi-party attestation per ADR 0046 sub-pattern #48f (e.g., the trustee
-/// quorum that attested a recovery completion).
-/// <see cref="IAuditTrail.AppendAsync"/> verifies all signatures before
-/// persistence; consumers of <see cref="IAuditTrail.QueryAsync"/> may treat
-/// signatures as pre-validated.
+/// event content. <see cref="IAuditTrail.AppendAsync"/> verifies that envelope
+/// at the kernel boundary. The <see cref="AttestingSignatures"/> list is the
+/// additional multi-party attestation per ADR 0046 sub-pattern #48f (e.g., the
+/// trustee quorum that attested a recovery completion); each entry pairs a
+/// <see cref="Sunfish.Foundation.Crypto.PrincipalId"/> with its
+/// <see cref="Sunfish.Foundation.Crypto.Signature"/> so downstream consumers
+/// can look up the attesting key when verifying historical records.
+/// Multi-party attestations are caller-verified — the audit substrate stores
+/// them but does not algorithmically verify them in v0. See
+/// <see cref="IAuditTrail"/> remarks.
 /// </para>
 /// </remarks>
 /// <param name="AuditId">Stable identifier for this record. Distinct from the payload's nonce — the nonce prevents replay at the signing layer; the AuditId is the stable identifier the audit log indexes against.</param>
@@ -40,7 +44,7 @@ namespace Sunfish.Kernel.Audit;
 /// <param name="EventType">Discriminator for the kind of event being recorded. See <see cref="AuditEventType"/>.</param>
 /// <param name="OccurredAt">Wall-clock time at which the audited event occurred (not the time at which the record was written).</param>
 /// <param name="Payload">The signed payload describing what happened. The payload's own signature authenticates its contents.</param>
-/// <param name="AttestingSignatures">Multi-party signatures attesting to the event (e.g., trustee quorum signatures for a recovery completion). Empty for events that don't require multi-party attestation.</param>
+/// <param name="AttestingSignatures">Multi-party attestations of the event (e.g., trustee quorum signatures for a recovery completion). Each entry pairs a <see cref="Sunfish.Foundation.Crypto.PrincipalId"/> with its <see cref="Sunfish.Foundation.Crypto.Signature"/>. Empty for events that don't require multi-party attestation. Multi-party attestations are caller-verified; the audit substrate stores them but does not verify them in v0. See <see cref="IAuditTrail"/> remarks.</param>
 /// <param name="FormatVersion">Persisted format version. Currently fixed at <c>0</c>; see remarks on the algorithm-agility dependency.</param>
 public sealed record AuditRecord(
     Guid AuditId,
@@ -48,7 +52,7 @@ public sealed record AuditRecord(
     AuditEventType EventType,
     DateTimeOffset OccurredAt,
     SignedOperation<AuditPayload> Payload,
-    IReadOnlyList<Signature> AttestingSignatures,
+    IReadOnlyList<AttestingSignature> AttestingSignatures,
     int FormatVersion = AuditRecord.CurrentFormatVersion) : IMustHaveTenant
 {
     /// <summary>
