@@ -58,6 +58,71 @@
   </ItemGroup>
 
   <!--
+    ADR 0013 enforcement gate — auto-wire the Sunfish.Analyzers.ProviderNeutrality
+    analyzer onto every project under packages/blocks-* and packages/foundation-*
+    so that vendor SDK references (Stripe.*, Plaid.*, SendGrid.*, Twilio.*) fail
+    the build there. Mirrors the LocComments / LocUnused auto-wiring pattern
+    above (same OutputItemType="Analyzer", same ReferenceOutputAssembly="false").
+
+    Predicate is computed up front into _SunfishProvNeutTarget so the ItemGroup
+    condition stays readable. Targets:
+      - packages/blocks-*/   (matched via project name "Sunfish.Blocks.*")
+      - packages/foundation-*/ + packages/foundation/   (project name starting with "Sunfish.Foundation")
+    Excluded:
+      - Sunfish.Foundation.Integrations — this IS the contract seam where vendor-
+        neutral integration interfaces live (ADR 0013); it must not reference vendor
+        SDKs but it would otherwise match the foundation-* path predicate.
+      - The analyzer project itself (no self-attach).
+      - Any test project (project name ends in ".Tests" — test fixtures may use
+        vendor SDK mocks if needed).
+  -->
+  <PropertyGroup>
+    <_SunfishProvNeutTarget Condition="'$(_SunfishProvNeutTarget)' == ''">false</_SunfishProvNeutTarget>
+    <_SunfishProvNeutTarget Condition="$(MSBuildProjectName.StartsWith('Sunfish.Blocks.'))">true</_SunfishProvNeutTarget>
+    <_SunfishProvNeutTarget Condition="$(MSBuildProjectName.StartsWith('Sunfish.Foundation'))">true</_SunfishProvNeutTarget>
+    <_SunfishProvNeutTarget Condition="'$(MSBuildProjectName)' == 'Sunfish.Foundation.Integrations'">false</_SunfishProvNeutTarget>
+    <_SunfishProvNeutTarget Condition="'$(MSBuildProjectName)' == 'Sunfish.Analyzers.ProviderNeutrality'">false</_SunfishProvNeutTarget>
+    <_SunfishProvNeutTarget Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</_SunfishProvNeutTarget>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_SunfishProvNeutTarget)' == 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)packages\analyzers\provider-neutrality\Sunfish.Analyzers.ProviderNeutrality.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <!--
+    ADR 0013 enforcement gate (Phase 3 / BannedSymbols layer) — auto-wire the
+    Microsoft.CodeAnalysis.BannedApiAnalyzers package + the solution-root
+    BannedSymbols.txt onto every packageable, non-test, non-analyzer project.
+    Diagnostic RS0030 fires (and fails the build, given repo-wide
+    TreatWarningsAsErrors=true) when source references any banned symbol.
+
+    BannedSymbols.txt is intentionally empty in v0 — the wiring is what ships.
+    Specific bans are added in follow-up commits as landmines surface (e.g.
+    "ban System.Web.HttpUtility everywhere — even in providers-*").
+
+    Predicate: any project under packages/ or apps/ or tooling/ EXCEPT
+      - tests projects (MSBuildProjectName ends in .Tests, or named "tests"),
+      - analyzer projects (these target netstandard2.0 with their own version pins
+        and opt-out of central package management),
+      - the BannedSymbols.txt itself.
+  -->
+  <PropertyGroup>
+    <_SunfishBannedApiTarget Condition="'$(_SunfishBannedApiTarget)' == ''">true</_SunfishBannedApiTarget>
+    <_SunfishBannedApiTarget Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</_SunfishBannedApiTarget>
+    <_SunfishBannedApiTarget Condition="'$(MSBuildProjectName)' == 'tests'">false</_SunfishBannedApiTarget>
+    <_SunfishBannedApiTarget Condition="$(MSBuildProjectName.StartsWith('Sunfish.Analyzers.'))">false</_SunfishBannedApiTarget>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_SunfishBannedApiTarget)' == 'true'">
+    <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <AdditionalFiles Include="$(MSBuildThisFileDirectory)BannedSymbols.txt"
+                     Visible="false" />
+  </ItemGroup>
+
+  <!--
     Plan 2 Task 4.4 — auto-wire the XLIFF MSBuild tasks (Sunfish.Tooling.LocalizationXliff)
     onto every project that follows the standard Resources/Localization/*.resx convention.
 

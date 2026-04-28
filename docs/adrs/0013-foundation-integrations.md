@@ -60,7 +60,7 @@ Two rules domain modules must follow:
 
 2. **Domain concepts are Sunfish-modeled, not vendor-mirrored.** A `Payment` domain entity in `blocks-billing` is not a Stripe `Charge`. A `Reservation` is not an Airbnb `Booking`. Adapters translate; domain stays clean.
 
-Reviewers enforce these in PRs. Violations are rejected.
+Both rules are enforced mechanically at build time — see [Enforcement](#enforcement-added-2026-04-28). Reviewer judgment remains the fallback for cases the mechanical layers don't cover.
 
 ### Module-adapter-provider layering
 
@@ -120,6 +120,33 @@ Pull integrations (bank feeds, channel manager pulls, provider data refreshes) p
 - Namespace: `Sunfish.Foundation.Integrations`.
 - References `Sunfish.Foundation` and `Sunfish.Foundation.Catalog` (for the shared `ProviderCategory` enum).
 - Added to `Sunfish.slnx` under `/foundation/integrations/`.
+
+---
+
+## Enforcement (added 2026-04-28)
+
+Provider-neutrality is enforced at build time via two layered mechanisms:
+
+1. **Roslyn analyzer** — `Sunfish.Analyzers.ProviderNeutrality` rejects vendor SDK
+   namespace references (`Stripe.*`, `Plaid.*`, `SendGrid.*`, `Twilio.*`) in any
+   project under `packages/blocks-*/` or `packages/foundation-*/`, with the
+   `Sunfish.Foundation.Integrations` package explicitly excluded as the contract
+   seam. Diagnostic ID: `SUNFISH_PROVNEUT_001`. Auto-attached via
+   `Directory.Build.props` (mirrors the `loc-comments` / `loc-unused` analyzer
+   auto-wire pattern).
+
+2. **`BannedSymbols.txt`** at solution root — the
+   `Microsoft.CodeAnalysis.BannedApiAnalyzers` rule (`RS0030`) rejects specific
+   symbols that should be banned globally (e.g. legacy APIs deprecated by ADR
+   amendments). Cheap to extend; one line per banned symbol. Auto-attached to
+   every packageable, non-test, non-analyzer project via `Directory.Build.props`.
+
+Both layers fail the build (repo-wide `TreatWarningsAsErrors=true` makes analyzer
+warnings into errors). The banned-namespace list under the analyzer is extensible
+— adding a new vendor (e.g. `Adyen.*`, `Finicity.*`) is a one-line edit to
+`BannedVendorNamespaces.cs`. The exclusion set (`Sunfish.Foundation.Integrations`
++ test projects) is encoded both in the auto-attach predicate and in the analyzer
+itself as defense in depth.
 
 ---
 
