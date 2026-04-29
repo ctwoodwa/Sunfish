@@ -45,8 +45,8 @@
       "api_key_env": null
     },
     "memory": {
-      "consolidation_after_days": 7,
-      "max_entries_before_consolidation": 200
+      "consolidation_after_days": 3,
+      "max_entries_before_consolidation": 100
     },
     "cerebrum": {
       "max_tokens": 2000,
