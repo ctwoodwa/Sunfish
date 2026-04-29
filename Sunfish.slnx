@@ -155,6 +155,10 @@
     <Project Path="packages/blocks-maintenance/Sunfish.Blocks.Maintenance.csproj" />
     <Project Path="packages/blocks-maintenance/tests/tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/messaging/">
+    <Project Path="packages/blocks-messaging/Sunfish.Blocks.Messaging.csproj" />
+    <Project Path="packages/blocks-messaging/tests/Sunfish.Blocks.Messaging.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/scheduling/">
     <Project Path="packages/blocks-scheduling/Sunfish.Blocks.Scheduling.csproj" />
     <Project Path="packages/blocks-scheduling/tests/tests.csproj" />
