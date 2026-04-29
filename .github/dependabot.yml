@@ -17,6 +17,15 @@ updates:
         patterns:
           - "Microsoft.AspNetCore.*"
           - "Microsoft.AspNetCore.SignalR.*"
+      # EFCore + Npgsql adapter must bump together: Npgsql.EntityFrameworkCore.PostgreSQL
+      # transitively requires Microsoft.EntityFrameworkCore.Relational at the matching
+      # preview, so partial bumps trigger NU1605 (package downgrade detected). See
+      # memory reference_efcore_npgsql_preview_lock.
+      efcore:
+        patterns:
+          - "Microsoft.EntityFrameworkCore"
+          - "Microsoft.EntityFrameworkCore.*"
+          - "Npgsql.EntityFrameworkCore.PostgreSQL"
       testing:
         patterns:
           - "xunit*"
