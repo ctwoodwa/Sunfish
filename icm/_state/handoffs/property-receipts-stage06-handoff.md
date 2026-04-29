@@ -3,13 +3,14 @@
 **From:** research session
 **To:** sunfish-PM session
 **Created:** 2026-04-28 (revised 2026-04-28 for cluster naming consistency)
-**Status:** `ready-to-build` (gated on Property-Assets first-slice merging — Receipt FK to Asset)
-**Revision note:** Renamed from `packages/blocks-receipts/` → `packages/blocks-property-receipts/` for cluster-level naming consistency. No existing collision; rename adopts the convention after Assets discovered the `blocks-assets` collision.
+**Status:** `ready-to-build` — workstream #24 Equipment rename shipped (PR #216); FK target `Sunfish.Blocks.PropertyEquipment.EquipmentId` typed and available. No remaining gate.
+**Revision note 2026-04-28:** Renamed from `packages/blocks-receipts/` → `packages/blocks-property-receipts/` for cluster-level naming consistency. No existing collision; rename adopts the convention after Assets discovered the `blocks-assets` collision.
+**Revision note 2026-04-29:** Workstream #24 Equipment rename shipped (PR #216 merged); cluster's physical-equipment entity is now `Sunfish.Blocks.PropertyEquipment.Equipment` (not `Sunfish.Blocks.PropertyAssets.Asset`). `Receipt.Equipment` and `ReceiptLineItem.EquipmentRef` fields are now typed `EquipmentId?` instead of opaque-string placeholders. References to `Sunfish.Blocks.Assets` corrected to `Sunfish.Blocks.PropertyEquipment`. No other scope changes; first-slice content unchanged.
 **Spec source:** Cluster intake [`property-receipts-intake-2026-04-28.md`](../../00_intake/output/property-receipts-intake-2026-04-28.md) (Stage 00) + cluster INDEX [`property-ops-INDEX-intake-2026-04-28.md`](../../00_intake/output/property-ops-INDEX-intake-2026-04-28.md)
 **Approval:** Cluster intake names Receipts as a domain module after Properties + Assets land. This hand-off compresses Stages 01–05 for the kernel-only first-slice scope. iOS Vision OCR capture, email-attachment ingestion, and typed FKs to Vendor/WorkOrder are deferred to follow-up hand-offs (those modules don't exist yet).
 **Estimated cost:** ~3–5 hours sunfish-PM (similar shape to Properties first-slice; no lifecycle event log; opaque-string FK reservations)
 **Pipeline:** `sunfish-feature-change`
-**Blocked by:** Properties first-slice (workstream #17) + Assets first-slice (workstream #24) merging — Receipt.Property + Receipt.Asset FK targets
+**Blocked by:** None as of 2026-04-29. Workstream #17 (Properties) ✓ built (PR #210); workstream #24 (Property-Equipment + rename) ✓ built (PR #213 + PR #216). All FK targets typed.
 
 ---
 
@@ -34,7 +35,7 @@ Receipts are evidence of past payment events with multiple roles: cost-basis evi
 
 **Files:**
 
-- **NEW** `packages/blocks-property-receipts/Models/ReceiptId.cs` — mirror `PropertyId` / `AssetId` shape (record struct + JSON converter + `NewId()`)
+- **NEW** `packages/blocks-property-receipts/Models/ReceiptId.cs` — mirror `PropertyId` / `EquipmentId` shape (record struct + JSON converter + `NewId()`)
 - **NEW** `packages/blocks-property-receipts/Models/ReceiptCategory.cs`
 
 ```csharp
@@ -64,7 +65,7 @@ public sealed record Receipt
 
     // FK reservations (typed where target exists; opaque string where target hasn't shipped)
     public required PropertyId Property { get; init; }                  // FK; receipts are property-scoped
-    public AssetId? Asset { get; init; }                                // optional; set when receipt evidences asset acquisition
+    public EquipmentId? Asset { get; init; }                                // optional; set when receipt evidences asset acquisition
     public string? VendorRef { get; init; }                             // opaque string; converts to VendorId? when Vendors module ships
     public string? WorkOrderRef { get; init; }                          // opaque string; converts to WorkOrderId? when Work Orders module ships
     public string? PaymentRef { get; init; }                            // opaque string; converts to PaymentId? / ChargeId? when blocks-rent-collection.Payment is migrated to ADR 0051
@@ -122,7 +123,7 @@ public sealed record ReceiptLineItem
     public required string CurrencyCode { get; init; }                  // matches parent receipt
     public int? Quantity { get; init; }
     public ReceiptCategory? Category { get; init; }                     // optional override per line; null = inherit from parent
-    public AssetId? AssetRef { get; init; }                             // optional per-line asset assignment for split receipts
+    public EquipmentId? EquipmentRef { get; init; }                             // optional per-line asset assignment for split receipts
 }
 ```
 
@@ -141,7 +142,7 @@ public interface IReceiptRepository
 {
     Task<Receipt?> GetByIdAsync(TenantId tenant, ReceiptId id, CancellationToken ct);
     Task<IReadOnlyList<Receipt>> ListByPropertyAsync(TenantId tenant, PropertyId property, CancellationToken ct);
-    Task<IReadOnlyList<Receipt>> ListByAssetAsync(TenantId tenant, AssetId asset, CancellationToken ct);
+    Task<IReadOnlyList<Receipt>> ListByEquipmentAsync(TenantId tenant, EquipmentId asset, CancellationToken ct);
     Task<IReadOnlyList<Receipt>> ListByVendorRefAsync(TenantId tenant, string vendorRef, CancellationToken ct);
     Task<IReadOnlyList<Receipt>> ListByCategoryAsync(TenantId tenant, ReceiptCategory category, DateTimeOffset? fromDate, DateTimeOffset? toDate, CancellationToken ct);
     Task<IReadOnlyList<Receipt>> ListByReconciliationStatusAsync(TenantId tenant, ReconciliationStatus status, CancellationToken ct);
