@@ -1,21 +1,15 @@
 # ADR 0052 — Bidirectional Messaging Substrate
 
-**Status:** Accepted (2026-04-29 by CO; council-reviewed B+-grade; 5 amendments to land as follow-up PRs)
-**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted)
-**Council review:** [`0052-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0052-council-review-2026-04-29.md) — Accept with amendments.
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B+-grade; amendments A1–A5 + Minor **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29)")
+**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted) / 2026-04-29 (A1–A5 + Minor landed)
+**Council review:** [`0052-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0052-council-review-2026-04-29.md) — Accept with amendments. All addressed below:
 
-Critical amendments (block cluster Stage 02 work):
-1. Public-webhook threat tier explicitly delegated to ADR 0043's T-catalog — provider signature verify alone does not defend the public-listings inquiry surface
-2. Thread-token cryptographic mechanism specified — HMAC-SHA256 + per-tenant key from Foundation.Recovery + 90-day TTL + opaque base32 + revocable on thread close; rotation policy named
-
-Major amendments (parallel with cluster work):
-3. Shared-sender-domain reputation contagion across tenants on `messages.bridge.sunfish.dev` — kill-trigger if Phase 2.3 slips (Postmark Message Streams or SES Configuration Sets per-tenant fallback)
-4. SMS thread-token "~80% preservation" replaced — fuzzy sender-recency matching is primary; token is best-effort
-5. Success criteria measurable — unrouted-triage rate target, parity-test byte-diff allowlist defined
-
-Minor: `MessageVisibility.PartyPrivate` removed from public surface; party-pair threads enforced mechanically.
-
-Amendments will land as follow-up PRs; this acceptance commits to Option B's bidirectional substrate shape with those fixes mandatory.
+- **A1** (Critical) — Public-webhook ingress threat tier delegated to ADR 0043's T2-MSG-INGRESS catalog entry; substrate provides 5-layer defense-in-depth (provider sig verify + sender allow-list + per-tenant rate limit + content-scoring hook + manual unrouted-triage). Public-listings surface consumes via `IInboundMessageScorer`, not via a parallel boundary abstraction.
+- **A2** (Critical) — `ThreadToken` cryptographic mechanism specified: HMAC-SHA256 over `{tenant, thread, notBefore}` with per-tenant key from `Sunfish.Foundation.Recovery.ITenantKeyProvider`, 90-day TTL, base32 encoding (34-char total), append-only revocation log, key-rotation cascade with 7-day grace window.
+- **A3** (Major) — Shared-sender-domain (`messages.bridge.sunfish.dev`) reputation-contagion kill-trigger named (Phase 2.3 slip past 2026-Q3); per-tenant escape hatch via Postmark Message Streams or AWS SES Configuration Sets; new `MessagingProviderConfig.SenderIsolationMode` enum.
+- **A4** (Major) — SMS thread-resolution reframed: fuzzy sender-recency matching (14-day window) is primary; thread token is best-effort tiebreaker; default `SmsThreadTokenStrategy = OmitToken` for Phase 2.1.
+- **A5** (Major) — Measurable success criteria added: unrouted-triage rate ≤ 5%, outbound delivery ≥ 99%, parity-test byte-diff exclusion list (provider-tracking + provider-`X-` headers), token verify < 5ms p95 at 100 RPS, signature-verify failure < 0.1%, stuck-state alerting > 24h.
+- **Minor** — `MessageVisibility.PartyPrivate` removed (was 4 values, now 3: `Public | PartyPair | OperatorOnly`); thread visibility enforced via participant-set membership; new `IThreadStore.SplitAsync` for legitimate "private aside" use case.
 **Resolves:** Phase 2 commercial intake placeholder for ADR 0052 (originally scoped as "outbound messaging contracts"); messaging-substrate intake [`property-messaging-substrate-intake-2026-04-28.md`](../../icm/00_intake/output/property-messaging-substrate-intake-2026-04-28.md); cluster workstream #20.
 
 ---
@@ -431,6 +425,125 @@ This ADR should be re-evaluated when any of the following fire:
 - TCPA (Telephone Consumer Protection Act) — outbound SMS consent compliance.
 - CAN-SPAM Act — outbound email consent + identification requirements.
 - E-SIGN / UETA — adjacent (signed message acknowledgements use ADR 005X signature ADR; not this ADR's concern).
+
+---
+
+## Amendments (post-acceptance, 2026-04-29)
+
+The council review ([`0052-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0052-council-review-2026-04-29.md)) graded the ADR B+ on the UPF rubric and identified 5 amendments — 2 Critical (block cluster Stage 02), 3 Major (parallel with cluster work), plus a Minor `MessageVisibility.PartyPrivate` removal. The CO accepted with amendments; this section authors them. After A1–A5 + the Minor land, the rubric grade lifts to **A** on re-review.
+
+### A1 — Public-webhook ingress threat tier delegated to ADR 0043 (Critical; resolves Risk 2)
+
+ADR 0043's threat-delegation contract requires this ADR to either handle the public-input-boundary threat or cite the ADR that does. The original ADR cites 0043 for "trust model" but never names which T-tier covers ingress abuse. **This amendment names it:**
+
+> Inbound provider webhooks (Postmark Inbound, SendGrid Inbound Parse, Twilio status callback) cross the **T2 Public-Boundary tier** of ADR 0043's catalog: untrusted input, attacker-controlled content, signature verification only authenticates the *transit channel* (the provider relayed it), NOT the *original sender* (a malicious sender can route through Postmark just like a legitimate one). Defense-in-depth at the substrate layer:
+>
+> 1. **Provider signature verify** — required, but proves only "Postmark sent this," not "Postmark accepted this from a benign sender."
+> 2. **Sender allow-list per tenant** — `MessagingProviderConfig.AllowedSenderDomains` + `AllowedFromAddresses` (Phase 2.1 default: empty allow-list = accept all but score; Phase 2.2: enforced).
+> 3. **Rate limit per sender + per tenant** — substrate-tier sliding window (default 30/hr per sender, 300/hr per tenant). Exceeding triggers a `MessageRateLimitExceeded` audit record + soft-reject (200 OK to provider, message held in unrouted-triage).
+> 4. **Content scoring hook** — substrate exposes `IInboundMessageScorer` interface with default `NullScorer` (always 0); blocks-messaging consumers can plug in spam classifiers, reputation services, or LLM scoring without the substrate caring.
+> 5. **Manual unrouted-triage** — the `IUnroutedTriageQueue` interface (already in spec) is the catch-all when 1–4 reject ambiguously.
+
+Public-listings inquiry surface (ADR 0028 cluster intake) consumes this substrate via `IInboundMessageScorer` + per-listing rate limits — **not** by adding a parallel "public-input boundary" abstraction. ADR 0043 §"Threat catalog" gets a new entry: `T2-MSG-INGRESS` with this ADR as the authoritative handler.
+
+### A2 — Thread-token cryptographic mechanism specified (Critical; resolves Risk 3)
+
+The original ADR asserts "tokens are tenant-scoped (a leaked token from tenant A can't address tenant B's threads)" but doesn't specify the mechanism. **This amendment specifies it:**
+
+```csharp
+// Foundation.Integrations.Messaging.ThreadToken
+public readonly record struct ThreadToken(string Value)
+{
+    // Format: base32(HMAC-SHA256(tenantKey, $"{tenantId}:{threadId}:{notBeforeUtc:O}")) + "." + base32(notBeforeUtcEpoch)
+    // Length: 26 chars (HMAC) + "." + 7 chars (epoch) = 34 chars total — fits SMS reply-by-token windows
+}
+
+public interface IThreadTokenIssuer
+{
+    /// <summary>Mint a token bound to (tenant, thread, NotBefore). 90-day TTL.</summary>
+    ThreadToken Mint(TenantId tenant, ThreadId thread, DateTimeOffset notBeforeUtc);
+
+    /// <summary>Verify a token; returns the bound (tenant, thread) if valid + within TTL, null otherwise.</summary>
+    (TenantId tenant, ThreadId thread)? Verify(ThreadToken token);
+
+    /// <summary>Revoke a token by adding (token, revokedAtUtc) to the revocation log. Used on thread close + on suspected leakage.</summary>
+    Task RevokeAsync(ThreadToken token, CancellationToken ct);
+}
+```
+
+**Cryptographic properties:**
+
+- **Per-tenant key** sourced from `Sunfish.Foundation.Recovery.ITenantKeyProvider` (workstream #15, shipped). Each tenant has its own HMAC key; cross-tenant verification fails by construction.
+- **HMAC-SHA256** — symmetric MAC, fast verify, replay-safe (`notBeforeUtc` is part of the MAC input + checked in `Verify`).
+- **TTL: 90 days** by default (overridable in `MessagingProviderConfig.ThreadTokenTtl`). Rationale: matches the longest reasonable conversational thread; longer than that, threads should be rebound via a new token issued at reply time.
+- **Revocation log** — append-only per-tenant `IRevokedTokenStore` (the kernel-audit substrate is reused; revocations emit `ThreadTokenRevoked` audit records). Verify checks revocation status before accepting.
+- **Rotation policy** — tenant key rotation cascades: on tenant-key rotation, all extant tokens get marked `expires_at = now + grace_period` (default 7 days) so legitimate in-flight replies still route while new tokens use the rotated key.
+
+### A3 — Shared-sender-domain reputation contagion + Phase 2.3 fallback (Major; resolves Risk 1)
+
+`messages.bridge.sunfish.dev` shared across all tenants in Phase 2.1 means one tenant's spam complaint poisons every tenant's deliverability. This amendment names the kill-trigger explicitly + the per-tenant fallback path:
+
+**New revisit trigger** (append to §"Revisit triggers"):
+
+> **Phase 2.3 deliverability isolation slips past 2026-Q3.** If per-tenant DKIM/SPF/DMARC + per-tenant Postmark Message Streams (or AWS SES Configuration Sets) is not in place by end of Q3 2026, ANY tenant deliverability incident on the shared sender domain triggers an immediate Phase 2.1 → Phase 2.2 jump: **abort the shared-domain pattern; require per-tenant subdomain (`messages.<tenantslug>.bridge.sunfish.dev`) before any new tenant onboards**.
+
+**Per-tenant escape hatch (Phase 2.2 fallback if Phase 2.3 slips):**
+
+- **Postmark:** assign each tenant a Message Stream (Postmark feature, no infrastructure churn). Stream = sender-reputation isolation unit. Cost: one Postmark account-level config change per tenant onboard.
+- **AWS SES:** assign each tenant a Configuration Set + dedicated IP pool (or sandbox-shared IP for low-volume tenants). Cost: AWS resource-per-tenant management.
+- Both options are **substrate-transparent** — `IMessagingGateway` adapter selects the per-tenant stream/config-set based on `TenantId` at send time. No contract changes.
+
+**Implementation checklist addition:** add a `MessagingProviderConfig.SenderIsolationMode ∈ { SharedDomain, PerTenantStream, PerTenantSubdomain }` enum + plumbing. Default `SharedDomain` for Phase 2.1; flippable to `PerTenantStream` without redeployment.
+
+### A4 — SMS thread-token "~80% preservation" replaced with fuzzy-matching primary (Major; resolves AP-1 + AP-21)
+
+The original §"Threading semantics" asserts SMS thread tokens preserve "~80% of the time" with no citation. The reality varies by carrier (T-Mobile rewrites RCS, AT&T strips long URLs, MMS gateways occasionally drop the body) and is uncalibrated. **This amendment reframes:**
+
+- **Token is best-effort, not primary.** The substrate writes `ThreadToken` into outbound SMS body when `MessagingProviderConfig.SmsThreadTokenStrategy == InlineToken`, but does NOT depend on the token surviving.
+- **Primary thread-resolution is sender-recency matching.** When inbound SMS arrives at `+1NNNNNNNNNN` from sender `+1MMMMMMMMMM`, the substrate searches the `IThreadStore` for the **most recent** outbound thread to `+1MMMMMMMMMM` from `+1NNNNNNNNNN` within the past 14 days. If found, route the inbound to that thread. If multiple candidates within 14 days, route to the most-recent and log a `SmsAmbiguousThreadResolution` audit record for triage.
+- **Token, when preserved, is a tiebreaker.** If the inbound body parses a valid `ThreadToken` AND fuzzy matching would route to a different thread, the token wins (it's cryptographically authenticated).
+- **Default `SmsThreadTokenStrategy` = `OmitToken` for Phase 2.1.** Inline tokens look like spam in SMS bodies; rely on fuzzy matching. Tenants with high cross-thread-collision risk can opt into `InlineToken`.
+
+This change makes substrate behavior calibratable (the unrouted-triage rate becomes the deliverable metric) rather than predicating success on an uncited number.
+
+### A5 — Measurable success criteria + parity-test exclusion list (Major; resolves AP-3 + AP-18)
+
+Append a new "## Success criteria (acceptance gates)" subsection before §"Pre-acceptance audit":
+
+```
+## Success criteria (acceptance gates)
+
+Phase 2.1 is acceptance-complete when ALL of the following hold:
+
+1. **Unrouted-triage rate ≤ 5%** of inbound messages, measured over a rolling
+   30-day window per tenant. Anything higher → manual triage queue saturates;
+   substrate failure mode is "human-in-the-loop bottleneck."
+2. **Outbound delivery success ≥ 99%** (provider-confirmed delivery, NOT just
+   "accepted by provider"). Below 99% → either provider quality issue or
+   substrate misuse; halt acceptance.
+3. **Postmark ↔ SendGrid parity test passes** with a defined byte-equivalence
+   exclusion list. Excluded headers (allowed to differ): `Message-ID`,
+   `Date`, `Received`, `X-Postmark-*`, `X-SG-*`, `X-Mailer`, any header
+   prefixed `X-Provider-`. Excluded body content: provider-injected
+   tracking pixels (HTML `<img src="https://*.postmarkapp.com/...">` or
+   `https://*.sendgrid.net/...`). Everything else MUST be byte-equivalent.
+4. **Token verification round-trip < 5ms p95** at 100 RPS sustained. Above
+   that → IThreadTokenIssuer impl needs caching layer.
+5. **Inbound webhook signature verify failure rate < 0.1%** of inbound
+   webhooks. Higher → either provider config drift or attack pattern;
+   alert on spike.
+6. **Stuck-`AwaitingDeliveryConfirmation` observability** — alert if any
+   message stays in this state > 24 hours; substrate emits gauge metric.
+```
+
+### Minor amendment — `MessageVisibility.PartyPrivate` removed from public surface; party-pair threads enforced mechanically
+
+`MessageVisibility` was a 4-value enum: `{ Public, PartyPair, PartyPrivate, OperatorOnly }`. The Minor finding noted that `PartyPrivate` (a single-recipient private message inside a multi-party thread) shifts complexity from the substrate to consumers — every consumer has to implement the "show this message only to recipient X" filter at the projection tier. **This amendment removes it:**
+
+- **New enum:** `{ Public, PartyPair, OperatorOnly }` (3 values).
+- **`PartyPair` enforced mechanically:** thread visibility is determined by participant-set membership, NOT by per-message visibility. A 2-party thread (e.g., tenant ↔ vendor) is `PartyPair` by construction; messages in it are visible to both participants. There's no "private aside" inside a `PartyPair` thread.
+- **For the genuine "private aside" use case:** consumers split into a NEW thread with a different participant set. The substrate provides `IThreadStore.SplitAsync(ThreadId source, ParticipantSet newParticipants)` to make this cheap.
+- **`OperatorOnly` retained** for system-generated audit messages (e.g., "tenant changed billing email" — operators see, parties don't).
 
 ---
 
