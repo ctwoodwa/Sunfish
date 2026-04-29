@@ -1,13 +1,11 @@
 # ADR 0051 — Foundation.Integrations.Payments
 
-**Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; 3 amendments to land as follow-up PRs)
-**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted)
-**Council review:** [`0051-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0051-council-review-2026-04-29.md) — Accept with amendments. 3 critical findings to incorporate before Phase 1 Stage 06 build:
-1. Replace `AuditCorrelation` parameter type with the actual `AuditRecord` / `AttestingSignature` shape from `kernel-audit` (Cold-Start gap; AP-19)
-2. Add ADR 0004 algorithm-agility section — payment audit records have 7-year IRS-evidentiary retention horizon; require signature envelope (AP-21)
-3. Add `BannedFieldNames` analyzer rule mirroring ADR 0013 enforcement gate — structurally prevent PAN/CVV/CardNumber field additions (AP-18)
-
-Amendments will land as separate follow-up PRs; this acceptance commits to Option A's architectural shape with those 3 fixes mandatory before any code consumes the substrate.
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A1–A3 **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29)")
+**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted) / 2026-04-29 (A1–A3 landed)
+**Council review:** [`0051-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0051-council-review-2026-04-29.md) — Accept with amendments. 3 critical findings, all addressed below:
+1. **A1** — Define `AuditCorrelation` explicitly as a caller-side context type local to this ADR's namespace; gateway implementations populate `AuditPayload.Body` from it when emitting `AuditRecord`s. Resolves AP-19 Cold-Start gap.
+2. **A2** — Add ADR 0004 algorithm-agility coupling section. Payment audit records inherit `AuditRecord.FormatVersion = 0` Ed25519 lock-in; v0→v1 migration plan named. Resolves AP-21.
+3. **A3** — Specify `SUNFISH_PCISCOPE_001` analyzer rule banning PAN/CVV/CardNumber field names under `Sunfish.Foundation.Integrations.Payments.*`. Mechanically enforces structural PCI-SAQ-A scope. Resolves AP-18.
 **Resolves:** Phase 2 commercial intake placeholder for ADR 0051 (`Foundation.Integrations.Payments`); cluster intakes Receipts (#26), Work Orders (#19), Vendors (#18), Leasing Pipeline (#22) all reference payment processing as out-of-scope-per-this-intake-and-resolved-by-ADR-0051. Existing `packages/blocks-rent-collection/Models/Payment.cs` notes "Rounding enforcement is deferred to a follow-up" + "Plaid/Stripe integration is deferred" — this ADR is the follow-up.
 
 ---
@@ -449,6 +447,103 @@ This ADR should be re-evaluated when any of the following fire:
 - [EU PSD2 SCA / 3D Secure 2 specifications](https://www.europeanpaymentscouncil.eu/) — strong customer authentication challenge model.
 - [Stripe API reference](https://stripe.com/docs/api) — first provider adapter target; substrate is vendor-neutral but Stripe API is the design pressure-test.
 - [ISO 4217 currency codes](https://www.iso.org/iso-4217-currency-codes.html) — `CurrencyCode` allow-list source.
+
+---
+
+## Amendments (post-acceptance, 2026-04-29)
+
+The council review ([`0051-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0051-council-review-2026-04-29.md)) identified three Critical-severity findings (AP-19, AP-21, AP-18) and graded the ADR B (Solid) on the UPF rubric. The CO accepted with amendments; this section authors them. After A1–A3 land, the rubric grade lifts to **A** on re-review.
+
+### A1 — `AuditCorrelation` defined as caller-side context (resolves AP-19 Cold-Start gap)
+
+The original Decision section uses `AuditCorrelation Audit { get; init; }` as a parameter type on `ChargeRequest`, `RefundRequest`, `AchReturnEvent`, and others. The kernel-audit substrate (`packages/kernel-audit/AuditRecord.cs`) has no such type — its real shape is `(Guid AuditId, TenantId, AuditEventType, DateTimeOffset OccurredAt, SignedOperation<AuditPayload> Payload, IReadOnlyList<AttestingSignature> AttestingSignatures, int FormatVersion)`. The council read this as drift; in fact the intent is to introduce `AuditCorrelation` as a **new, local-to-this-ADR caller-side context** that gateway implementations consume to populate `AuditPayload.Body` at emission time. This amendment names it as such:
+
+```csharp
+namespace Sunfish.Foundation.Integrations.Payments;
+
+/// <summary>
+/// Caller-side correlation context passed into <see cref="IPaymentGateway"/>
+/// operations. NOT persisted directly — gateway implementations consume this
+/// to populate <see cref="AuditPayload.Body"/> when emitting audit records
+/// via <see cref="IAuditTrail.AppendAsync"/>. The resulting persisted
+/// <see cref="AuditRecord"/> carries the correlation, actor, and reason as
+/// dictionary entries inside its payload body.
+/// </summary>
+public sealed record AuditCorrelation
+{
+    /// <summary>Correlation identifier linking this op to upstream business context (WorkOrderId, InvoiceId, LeaseId, etc.). Surfaces in audit body as `correlation_id`.</summary>
+    public required Guid CorrelationId { get; init; }
+
+    /// <summary>PrincipalId of the actor initiating the op. Surfaces as `actor`.</summary>
+    public required PrincipalId Actor { get; init; }
+
+    /// <summary>Free-text business rationale; surfaces as `reason`. MUST NOT contain PCI-scoped data.</summary>
+    public required string Reason { get; init; }
+
+    /// <summary>Optional upstream <see cref="AuditRecord.AuditId"/> for charge → refund / charge → dispute chain projections.</summary>
+    public Guid? UpstreamAuditId { get; init; }
+}
+```
+
+Gateway implementations (e.g., `providers-stripe`) take `IAuditTrail` in their constructor and emit records like:
+
+```csharp
+await _auditTrail.AppendAsync(new AuditRecord(
+    AuditId: Guid.NewGuid(),
+    TenantId: request.Tenant,
+    EventType: AuditEventType.PaymentChargeRequested,
+    OccurredAt: DateTimeOffset.UtcNow,
+    Payload: SignedOperation.Sign(new AuditPayload(BuildBody(request.Audit, request))),
+    AttestingSignatures: ImmutableList<AttestingSignature>.Empty,
+    FormatVersion: AuditRecord.CurrentFormatVersion), ct);
+```
+
+Cold-start contributors no longer need to guess. `AuditCorrelation` is a payments-substrate type, not a kernel-audit type; the kernel-audit dependency is `IAuditTrail` + `AuditRecord` + `AttestingSignature`, and they retain their canonical shapes.
+
+### A2 — ADR 0004 algorithm-agility coupling (resolves AP-21)
+
+Payment audit records inherit the `AuditRecord.FormatVersion = 0` Ed25519 lock-in that the kernel-audit XML doc explicitly flags as a v1-pending pre-ADR-0004 constraint:
+
+> *"Audit records are exactly the long-retention data class that needs algorithm-agility before format commitment — a 7-year-retained IRS audit record or recovery attestation written today against fixed Ed25519 will need migration when PQC signatures ship per ADR 0004's dual-sign window."* — `packages/kernel-audit/AuditRecord.cs`, `<remarks>`
+
+This applies directly to the 13 payment audit record types this ADR specifies. Payment dispute records have a 7-year IRS-evidentiary retention horizon (`PaymentDisputed`, `PaymentDisputeResolved`); ACH return records (`AchReturnReceived`) similarly need long retention for chargeback adjudication. Concretely:
+
+- **Payment audit records ship at `FormatVersion = 0`.** No special envelope; ADR 0049's substrate constraint applies uniformly.
+- **No payments-substrate-specific migration logic.** When ADR 0004's `SignatureEnvelope` lands and ADR 0049 publishes its v0→v1 migration, payment audit records get the same treatment as every other audit class. This ADR does NOT author its own migration path.
+- **No payment-substrate-blocking dependency on ADR 0004.** Phase 2 commercial work proceeds on v0 records. The architectural shape (record types + payload body keys + emission cadence) is agility-independent — only the underlying signature envelope changes at the audit-substrate tier.
+- **Revisit trigger added.** "ADR 0004 dual-sign window opens" is appended to §"Revisit triggers" — at that point, verify the v0→v1 migration covers the 13 payment audit types without gaps.
+
+The substrate is not locked-in beyond what ADR 0049 already commits the audit substrate to. A1's `AuditCorrelation` is independent of the signature envelope (it shapes `Body`, not the signature) and unaffected by the v0→v1 migration.
+
+### A3 — `SUNFISH_PCISCOPE_001` analyzer (resolves AP-18 unverifiable gate)
+
+The "PCI scope is structural, not policy" claim in §"PCI SAQ-A scope discipline" is currently reviewer-enforced — the same reviewer-trap ADR 0013's enforcement gate (workstream #14, `SUNFISH_PROVNEUT_001`) just escaped. This amendment specifies a parallel mechanical gate.
+
+**Spec:**
+- **Diagnostic ID:** `SUNFISH_PCISCOPE_001`
+- **Severity:** Error (build break)
+- **Scope:** any property/field/parameter/record-component declared under the `Sunfish.Foundation.Integrations.Payments` namespace (including all nested namespaces)
+- **Banned name regex** (case-insensitive): `^(Pan|Cvv|Cvv2|CardNumber|FullCardNumber|PrimaryAccountNumber|Track1Data|Track2Data|MagStripe|FullPan|RawCard.*)$`
+- **Exclusion:** test projects matching `**/Sunfish.Foundation.Integrations.Payments.Tests/**` may add fields with these names ONLY when the field is annotated `[PciScopeException("<reason>")]` (attribute defined in the test project, not in production)
+- **Auto-attached:** via `Directory.Build.props` for any project whose `RootNamespace` starts with `Sunfish.Foundation.Integrations.Payments` — same auto-attach pattern as `SUNFISH_PROVNEUT_001`
+
+**Companion `BannedSymbols.txt` entries** (in `packages/analyzers/pci-scope/BannedSymbols.txt`, mirrors `provider-neutrality/BannedSymbols.txt`):
+
+```
+T:Stripe.Card.Number; payments substrate must never receive raw PAN
+T:Stripe.Issuing.Card.Cvc; payments substrate must never receive raw CVV
+M:System.Text.RegularExpressions.Regex.IsMatch(System.String,System.String); regex over card-shaped strings is a PAN-handling smell — use provider tokenization
+```
+
+**Implementation checklist additions** (append to existing checklist):
+
+- [ ] `packages/analyzers/pci-scope/` scaffold (mirror `provider-neutrality/` pattern)
+- [ ] `SUNFISH_PCISCOPE_001` Roslyn analyzer + 4 unit tests covering: hit (Pan field), hit (CardNumber property), miss (allowed `Last4`), miss (test-project with attribute)
+- [ ] `BannedSymbols.txt` with the entries above
+- [ ] `Directory.Build.props` glob auto-attaches the analyzer to any project whose `RootNamespace` starts with `Sunfish.Foundation.Integrations.Payments`
+- [ ] CI gate: build break if analyzer fires; visible in PR status
+
+This closes the evolution-layer enforcement gap. After landing, a future contributor cannot add a `Pan` / `Cvv` / `CardNumber` field to `PaymentMethodReference` (or any other payments contract) without an analyzer suppression that requires explicit reviewer approval.
 
 ---
 
