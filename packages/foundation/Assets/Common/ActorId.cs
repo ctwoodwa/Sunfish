@@ -3,7 +3,16 @@ using System.Text.Json.Serialization;
 
 namespace Sunfish.Foundation.Assets.Common;
 
-/// <summary>Opaque identifier for an acting principal (user / service / system).</summary>
+/// <summary>
+/// Opaque identifier for an acting principal (user / service / system).
+/// </summary>
+/// <remarks>
+/// Two well-known sentinels:
+/// <list type="bullet">
+/// <item><description><see cref="System"/> — the system-internal actor used when no ambient context is available (e.g., scheduled jobs, background workers).</description></item>
+/// <item><description><see cref="Sunfish"/> — the Sunfish-shipped Authoritative actor, used as the owner of compliance-source taxonomy definitions and other Authoritative-regime artifacts (per ADR 0056).</description></item>
+/// </list>
+/// </remarks>
 [JsonConverter(typeof(ActorIdJsonConverter))]
 public readonly record struct ActorId(string Value)
 {
@@ -18,6 +27,9 @@ public readonly record struct ActorId(string Value)
 
     /// <summary>The system-internal actor used when no ambient context is available.</summary>
     public static ActorId System { get; } = new("system");
+
+    /// <summary>The Sunfish-shipped Authoritative actor — owner of compliance-source taxonomy definitions and other Authoritative-regime artifacts (per ADR 0056).</summary>
+    public static ActorId Sunfish { get; } = new("sunfish");
 }
 
 internal sealed class ActorIdJsonConverter : JsonConverter<ActorId>
