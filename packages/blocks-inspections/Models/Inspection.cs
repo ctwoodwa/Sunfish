@@ -15,6 +15,7 @@ namespace Sunfish.Blocks.Inspections.Models;
 /// <param name="StartedAtUtc">The instant the inspection transitioned to <see cref="InspectionPhase.InProgress"/>, or <see langword="null"/> if not yet started.</param>
 /// <param name="CompletedAtUtc">The instant the inspection transitioned to <see cref="InspectionPhase.Completed"/>, or <see langword="null"/> if not yet completed.</param>
 /// <param name="Responses">Responses collected so far, in the order they were recorded.</param>
+/// <param name="Trigger">Why this inspection was scheduled (annual / move-in / move-out / post-repair / on-demand). Optional for backward compat with pre-revision records — defaults to <see langword="null"/>.</param>
 public sealed record Inspection(
     InspectionId Id,
     InspectionTemplateId TemplateId,
@@ -24,4 +25,5 @@ public sealed record Inspection(
     InspectionPhase Phase,
     Instant? StartedAtUtc,
     Instant? CompletedAtUtc,
-    IReadOnlyList<InspectionResponse> Responses);
+    IReadOnlyList<InspectionResponse> Responses,
+    InspectionTrigger? Trigger = null);

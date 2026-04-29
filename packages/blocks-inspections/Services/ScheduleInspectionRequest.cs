@@ -20,4 +20,12 @@ public sealed record ScheduleInspectionRequest
 
     /// <summary>The calendar date on which the inspection is scheduled.</summary>
     public required DateOnly ScheduledDate { get; init; }
+
+    /// <summary>
+    /// Optional trigger categorizing why this inspection is being scheduled.
+    /// Set for move-in / move-out / post-repair contexts so the delta
+    /// projection can pair them. Defaults to <see langword="null"/> for
+    /// callers that don't care or are pre-revision.
+    /// </summary>
+    public InspectionTrigger? Trigger { get; init; }
 }

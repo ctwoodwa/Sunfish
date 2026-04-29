@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Sunfish.Blocks.Inspections.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.Inspections.Services;
@@ -23,6 +24,7 @@ public sealed class InMemoryInspectionsService : IInspectionsService
     private readonly ConcurrentDictionary<InspectionTemplateId, InspectionTemplate> _templates = new();
     private readonly ConcurrentDictionary<InspectionId, Inspection> _inspections = new();
     private readonly ConcurrentDictionary<DeficiencyId, Deficiency> _deficiencies = new();
+    private readonly ConcurrentDictionary<EquipmentConditionAssessmentId, EquipmentConditionAssessment> _conditionAssessments = new();
 
     // Per-inspection locks for state-mutating operations.
     private readonly ConcurrentDictionary<InspectionId, SemaphoreSlim> _inspectionLocks = new();
@@ -83,7 +85,8 @@ public sealed class InMemoryInspectionsService : IInspectionsService
             Phase: InspectionPhase.Scheduled,
             StartedAtUtc: null,
             CompletedAtUtc: null,
-            Responses: []);
+            Responses: [],
+            Trigger: request.Trigger);
 
         _inspections[inspection.Id] = inspection;
         return ValueTask.FromResult(inspection);
@@ -255,6 +258,170 @@ public sealed class InMemoryInspectionsService : IInspectionsService
             yield return deficiency;
             await Task.Yield();
         }
+    }
+
+    // ── Equipment condition assessments (workstream #25 EXTEND) ─────────────
+
+    /// <inheritdoc />
+    public async ValueTask<EquipmentConditionAssessment> RecordEquipmentConditionAsync(
+        RecordEquipmentConditionRequest request,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+
+        var sem = _inspectionLocks.GetOrAdd(request.InspectionId, _ => new SemaphoreSlim(1, 1));
+        await sem.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            if (!_inspections.TryGetValue(request.InspectionId, out var inspection))
+                throw new InvalidOperationException($"Inspection '{request.InspectionId}' not found.");
+
+            if (inspection.Phase != InspectionPhase.InProgress)
+                throw new InvalidOperationException(
+                    $"Cannot record an equipment condition for inspection '{request.InspectionId}': current phase is {inspection.Phase}, expected {InspectionPhase.InProgress}.");
+
+            var assessment = new EquipmentConditionAssessment
+            {
+                Id = EquipmentConditionAssessmentId.NewId(),
+                InspectionId = request.InspectionId,
+                EquipmentId = request.EquipmentId,
+                Condition = request.Condition,
+                ExpectedRemainingLifeYears = request.ExpectedRemainingLifeYears,
+                Observations = request.Observations,
+                Recommendations = request.Recommendations,
+                ObservedAtUtc = Instant.Now,
+            };
+
+            _conditionAssessments[assessment.Id] = assessment;
+            return assessment;
+        }
+        finally
+        {
+            sem.Release();
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<EquipmentConditionAssessment> ListEquipmentConditionsAsync(
+        InspectionId inspectionId,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        foreach (var assessment in _conditionAssessments.Values)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (assessment.InspectionId != inspectionId)
+                continue;
+            yield return assessment;
+            await Task.Yield();
+        }
+    }
+
+    /// <inheritdoc />
+    public async IAsyncEnumerable<EquipmentConditionAssessment> ListConditionHistoryForEquipmentAsync(
+        EquipmentId equipmentId,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        // Return chronological (oldest first) so consumers can walk the trend.
+        var ordered = _conditionAssessments.Values
+            .Where(a => a.EquipmentId.Equals(equipmentId))
+            .OrderBy(a => a.ObservedAtUtc.Value)
+            .ToList();
+
+        foreach (var assessment in ordered)
+        {
+            ct.ThrowIfCancellationRequested();
+            yield return assessment;
+            await Task.Yield();
+        }
+    }
+
+    // ── Move-in / move-out delta projection (workstream #25 EXTEND) ──────────
+
+    /// <inheritdoc />
+    public ValueTask<MoveInOutDelta?> GetMoveInOutDeltaAsync(EntityId unitId, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+
+        Inspection? mostRecentMoveIn = null;
+        Inspection? mostRecentMoveOut = null;
+
+        foreach (var inspection in _inspections.Values)
+        {
+            if (inspection.UnitId != unitId)
+                continue;
+
+            if (inspection.Trigger == InspectionTrigger.MoveIn &&
+                (mostRecentMoveIn is null || inspection.ScheduledDate > mostRecentMoveIn.ScheduledDate))
+            {
+                mostRecentMoveIn = inspection;
+            }
+            else if (inspection.Trigger == InspectionTrigger.MoveOut &&
+                     (mostRecentMoveOut is null || inspection.ScheduledDate > mostRecentMoveOut.ScheduledDate))
+            {
+                mostRecentMoveOut = inspection;
+            }
+        }
+
+        if (mostRecentMoveIn is null || mostRecentMoveOut is null)
+            return ValueTask.FromResult<MoveInOutDelta?>(null);
+
+        var responseDeltas = ComputeResponseDeltas(mostRecentMoveIn, mostRecentMoveOut);
+        var conditionDeltas = ComputeConditionDeltas(mostRecentMoveIn.Id, mostRecentMoveOut.Id);
+
+        return ValueTask.FromResult<MoveInOutDelta?>(new MoveInOutDelta(
+            UnitId: unitId,
+            MoveIn: mostRecentMoveIn,
+            MoveOut: mostRecentMoveOut,
+            ResponseDeltas: responseDeltas,
+            EquipmentConditionDeltas: conditionDeltas));
+    }
+
+    private static IReadOnlyList<ResponseDelta> ComputeResponseDeltas(Inspection moveIn, Inspection moveOut)
+    {
+        var moveInByItem = moveIn.Responses
+            .GroupBy(r => r.ItemId)
+            .ToDictionary(g => g.Key, g => g.Last().ResponseValue);
+        var moveOutByItem = moveOut.Responses
+            .GroupBy(r => r.ItemId)
+            .ToDictionary(g => g.Key, g => g.Last().ResponseValue);
+
+        var allItemIds = new HashSet<InspectionChecklistItemId>(moveInByItem.Keys);
+        allItemIds.UnionWith(moveOutByItem.Keys);
+
+        var deltas = new List<ResponseDelta>();
+        foreach (var itemId in allItemIds)
+        {
+            var inValue = moveInByItem.TryGetValue(itemId, out var iv) ? iv : string.Empty;
+            var outValue = moveOutByItem.TryGetValue(itemId, out var ov) ? ov : string.Empty;
+            deltas.Add(new ResponseDelta(itemId, inValue, outValue, !string.Equals(inValue, outValue, StringComparison.Ordinal)));
+        }
+        return deltas;
+    }
+
+    private IReadOnlyList<EquipmentConditionDelta> ComputeConditionDeltas(InspectionId moveInId, InspectionId moveOutId)
+    {
+        var moveInByEquipment = _conditionAssessments.Values
+            .Where(a => a.InspectionId == moveInId)
+            .GroupBy(a => a.EquipmentId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.ObservedAtUtc.Value).First().Condition);
+        var moveOutByEquipment = _conditionAssessments.Values
+            .Where(a => a.InspectionId == moveOutId)
+            .GroupBy(a => a.EquipmentId)
+            .ToDictionary(g => g.Key, g => g.OrderByDescending(a => a.ObservedAtUtc.Value).First().Condition);
+
+        // Only emit deltas for equipment present in BOTH inspections; partials aren't meaningful.
+        var deltas = new List<EquipmentConditionDelta>();
+        foreach (var (equipmentId, inCondition) in moveInByEquipment)
+        {
+            if (!moveOutByEquipment.TryGetValue(equipmentId, out var outCondition))
+                continue;
+            deltas.Add(new EquipmentConditionDelta(
+                EquipmentId: equipmentId,
+                MoveInCondition: inCondition,
+                MoveOutCondition: outCondition,
+                Degraded: outCondition > inCondition));  // enum order Good < Fair < Poor < Failed
+        }
+        return deltas;
     }
 
     // ── Reports ───────────────────────────────────────────────────────────────
