@@ -23,5 +23,7 @@
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+    <!-- Property-Equipment FK target for EquipmentConditionAssessment (workstream #25 EXTEND). -->
+    <ProjectReference Include="..\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
   </ItemGroup>
 </Project>

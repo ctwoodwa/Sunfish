@@ -1,4 +1,6 @@
 using Sunfish.Blocks.Inspections.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
+using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.Inspections.Services;
 
@@ -110,6 +112,53 @@ public interface IInspectionsService
     /// <param name="inspectionId">The inspection whose deficiencies to stream.</param>
     /// <param name="ct">Cancellation token.</param>
     IAsyncEnumerable<Deficiency> ListDeficienciesAsync(InspectionId inspectionId, CancellationToken ct = default);
+
+    // ── Equipment condition assessments (workstream #25 EXTEND) ─────────────
+
+    /// <summary>
+    /// Records a new <see cref="EquipmentConditionAssessment"/> linked to an
+    /// inspection and returns the persisted record.
+    /// </summary>
+    /// <param name="request">Assessment payload.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="InvalidOperationException">Thrown if the inspection does not exist or is not in <see cref="InspectionPhase.InProgress"/>.</exception>
+    ValueTask<EquipmentConditionAssessment> RecordEquipmentConditionAsync(
+        RecordEquipmentConditionRequest request,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Streams all equipment condition assessments associated with the given inspection.
+    /// </summary>
+    /// <param name="inspectionId">The inspection whose assessments to stream.</param>
+    /// <param name="ct">Cancellation token.</param>
+    IAsyncEnumerable<EquipmentConditionAssessment> ListEquipmentConditionsAsync(
+        InspectionId inspectionId,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Streams equipment condition assessments for a specific equipment item across
+    /// all inspections, oldest first. Useful for "show me this water heater's condition
+    /// history."
+    /// </summary>
+    /// <param name="equipmentId">The equipment whose history to stream.</param>
+    /// <param name="ct">Cancellation token.</param>
+    IAsyncEnumerable<EquipmentConditionAssessment> ListConditionHistoryForEquipmentAsync(
+        EquipmentId equipmentId,
+        CancellationToken ct = default);
+
+    // ── Move-in / move-out delta projection (workstream #25 EXTEND) ──────────
+
+    /// <summary>
+    /// Returns paired move-in vs move-out inspection responses + condition
+    /// assessments for a given unit. Used by security-deposit reconciliation.
+    /// Returns <see langword="null"/> if either the most-recent move-in or
+    /// most-recent move-out inspection is missing for the unit.
+    /// </summary>
+    /// <param name="unitId">The unit to compute the delta for.</param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<MoveInOutDelta?> GetMoveInOutDeltaAsync(
+        EntityId unitId,
+        CancellationToken ct = default);
 
     // ── Reports ───────────────────────────────────────────────────────────────
 

@@ -6,3 +6,5 @@
   href: service-contract.md
 - name: State Transitions
   href: state-transitions.md
+- name: Property-Operations Extension
+  href: property-extension.md
