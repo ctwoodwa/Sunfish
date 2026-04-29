@@ -107,11 +107,11 @@ Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off f
 
 Rules: commits use `chore(fallback):` / `fix(build):` / `test(coverage):` / `docs:`. Design-question halts → `cob-question-*.md` (see below). Re-check priority queue after every merge; priority always wins. Cap concurrent fallback PRs at 3. **Research commitment:** maintain queue depth 2–3 `ready-to-build` rows; pre-write next 1–2 hand-offs after every PR merges. **XO scans `research-inbox/` every loop iteration.**
 
-### COB ↔ XO live signaling — `research-inbox/`
+### Live signaling to XO — `research-inbox/`
 
-Filesystem inbox at `icm/_state/research-inbox/` for sunfish-PM (COB) → research (XO) signals. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `cob-{idle|question|resumed}-YYYY-MM-DDTHH-MMZ-{slug}.md`. Body: 3-line YAML frontmatter (`type`, `workstream`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
+Filesystem inbox at `icm/_state/research-inbox/` for sunfish-PM (COB) and book-writing (Yeoman) → research (XO) signals. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `{sender}-{type}-YYYY-MM-DDTHH-MMZ-{slug}.md` where `sender ∈ {cob, yeoman}` and `type ∈ {idle, question, resumed}`. Body: 3-line YAML frontmatter (`type`, `workstream-or-chapter`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
 
-**COB writes:** rung 6 idle → `cob-idle-*.md` then `ScheduleWakeup 1800s`. Design-ambiguity halt mid-build → `cob-question-*.md` then halt the workstream + ledger row note pointing at the file. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null` at loop top; non-empty → priority above ADR cadence. Resolve via hand-off/answer/ledger update, then `git mv` beacon to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
+**COB writes** (`cob-*`): rung-6 idle → `cob-idle-*.md` + `ScheduleWakeup 1800s`. Design-ambiguity halt → `cob-question-*.md` + halt the workstream + ledger row note. **Yeoman writes** (`yeoman-*`, cross-repo `cd /Users/christopherwood/Projects/Sunfish && git ...`): factual question that gates a chapter (ADR cross-ref status, workstream timing, architectural detail) → `yeoman-question-*.md` + pause that chapter section. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null`; non-empty → priority above ADR cadence; resolve via hand-off/answer/ledger update, then `git mv` to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
 
 ---
 
