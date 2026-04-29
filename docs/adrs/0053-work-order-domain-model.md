@@ -1,7 +1,19 @@
 # ADR 0053 — Work Order Domain Model
 
-**Status:** Proposed
-**Date:** 2026-04-28
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A4-A7 mandatory, A8-A9 encouraged)
+**Date:** 2026-04-28 (Proposed; A1-A3 amendments same day) / 2026-04-29 (Accepted)
+**Council review:** [`0053-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0053-council-review-2026-04-29.md) — Accept with amendments.
+
+Council found the load-bearing risk: A2's "compose existing TransitionTable" understates the actual state-set delta. Mandatory amendments before Stage 06 build:
+
+A4. **State-set reconciliation table** — existing `WorkOrderStatus` has 8 values; ADR proposes 13 + 3 side branches; only 3-4 names overlap; UK→US `Cancelled`→`Canceled` clash. Author the explicit name-mapping table.
+A5. **TransitionTable visibility** — `TransitionTable<T>` is `internal sealed` and cannot be "composed" across assemblies. Promote to `public sealed` or relocate.
+A6. **Schema migration is api-change-shape, not chore-class** — `WorkOrder` positional record drops `RequestId` FK + replaces `decimal EstimatedCost` with `Money? TotalCost` + adds ~10 init-only fields. A3's "extension PRs" framing is incorrect.
+A7. **Effort recalibration** — A3's "~3-4 hours of extension PRs" is optimistic. Real cost is closer to ~12-18 hours.
+
+Encouraged: A8 (audit-emission cardinality clarification), A9 (CP/AP CRDT classification narrative).
+
+Amendments will land as follow-up PRs; this acceptance commits to Option A's materialized-state-+-audit-emission shape with state-set reconciliation, visibility fix, and effort honesty.
 **Resolves:** Property-ops cluster intake [`property-work-orders-intake-2026-04-28.md`](../../icm/00_intake/output/property-work-orders-intake-2026-04-28.md); cluster workstream #19. Specifies the coordination unit that ties property + asset + maintenance source + vendor + appointment + multi-party communication + completion attestation + payment into one atomic identity.
 
 ---
