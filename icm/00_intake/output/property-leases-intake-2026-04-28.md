@@ -1,12 +1,14 @@
-# Intake Note — Leases Domain Module
+# Intake Note — Leases Domain Module (revised: extension to `blocks-leases`)
 
 **Status:** `design-in-flight` — Stage 00 intake. **sunfish-PM: do not build against this intake until status flips to `ready-to-build`.**
 **Status owner:** research session
-**Date:** 2026-04-28
+**Date:** 2026-04-28 (revised 2026-04-28 per cluster-vs-existing reconciliation)
 **Requestor:** Christopher Wood (BDFL)
 **Spec source:** Multi-turn architectural conversation 2026-04-28 (turns 4, 6 — lease execution, leasing-pipeline handoff).
-**Pipeline variant:** `sunfish-feature-change`
+**Pipeline variant:** `sunfish-feature-change` (extension; not new package)
 **Parent:** [`property-ops-INDEX-intake-2026-04-28.md`](./property-ops-INDEX-intake-2026-04-28.md)
+
+> **Revision note 2026-04-28:** Disposition reframed from "new block" to **"extension to existing `packages/blocks-leases/`"**. Audit revealed `blocks-leases` already ships `Lease` + `LeaseId` + `LeasePhase` + `Document` + `DocumentId` + `Party` + `PartyId` + `PartyKind` (tenant/landlord/manager/guarantor) + `Unit` (with `EntityId`). Existing block self-describes as "thin first pass; full workflow surface (signature, execution, renewal, termination) deferred" — **which is exactly the cluster's contribution.** Cluster's deltas (`LeaseDocumentVersion` for content-hash-bound versioning + `Lease.SignatureEventRef` per ADR 0054 + renewal/termination state-machine transitions + LeaseHolderRole multi-tenant lease support) become **extensions** to that block, picking up where the original author left off. See [`../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md) workstream #27 row + Stage 02 implementation must read existing `LeasePhase` enum values before drafting state-machine extensions. Existing `Party` + `PartyKind.Tenant` is the canonical lease-holder representation per UPF Rule 5; cluster artifacts must NOT introduce a top-level `Tenant` entity for property-management lease-holders.
 
 ---
 

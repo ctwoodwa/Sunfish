@@ -1,13 +1,15 @@
-# Intake Note — Vendors Domain Module
+# Intake Note — Vendors Domain Module (revised: extension to `blocks-maintenance`)
 
 **Status:** `design-in-flight` — Stage 00 intake. **sunfish-PM: do not build against this intake until status flips to `ready-to-build` and a hand-off file appears in `icm/_state/handoffs/`.**
 **Status owner:** research session
-**Date:** 2026-04-28
+**Date:** 2026-04-28 (revised 2026-04-28 per cluster-vs-existing reconciliation)
 **Requestor:** Christopher Wood (BDFL)
 **Spec source:** Multi-turn architectural conversation 2026-04-28 (turn 7 — vendor coordination requirements).
-**Pipeline variant:** `sunfish-feature-change`
+**Pipeline variant:** `sunfish-feature-change` (extension; not new package)
 **Parent:** [`property-ops-INDEX-intake-2026-04-28.md`](./property-ops-INDEX-intake-2026-04-28.md)
 **Position in cluster:** Spine #2 — vendor as new actor class; identity backbone for work-order coordination.
+
+> **Revision note 2026-04-28:** Disposition reframed from "new block (`blocks-property-vendors`)" to **"extension to existing `packages/blocks-maintenance/`"**. Audit revealed `blocks-maintenance` already ships `Vendor` + `VendorSpecialty` + `VendorStatus` + `IMaintenanceService.CreateVendorRequest` + `ListVendorsQuery`. Cluster contribution (W-9 + magic-link onboarding + VendorPerformanceRecord lifecycle log + VendorContact child entity + new "Vendor onboarding posture" ADR) becomes an **extension** to that block rather than a parallel module. See [`../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md) workstream #18 row + [`../../07_review/output/property-ops-cluster-naming-upf-review-2026-04-28.md`](../../07_review/output/property-ops-cluster-naming-upf-review-2026-04-28.md) Rule 3 for full rationale. The body below describes cluster *delta* over existing — read accordingly.
 
 ---
 

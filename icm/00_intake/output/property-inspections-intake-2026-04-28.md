@@ -1,12 +1,14 @@
-# Intake Note — Inspections Domain Module
+# Intake Note — Inspections Domain Module (revised: extension to `blocks-inspections`)
 
 **Status:** `design-in-flight` — Stage 00 intake. **sunfish-PM: do not build against this intake until status flips to `ready-to-build`.**
 **Status owner:** research session
-**Date:** 2026-04-28
+**Date:** 2026-04-28 (revised 2026-04-28 per cluster-vs-existing reconciliation)
 **Requestor:** Christopher Wood (BDFL)
 **Spec source:** Multi-turn architectural conversation 2026-04-28 (turns 3, 5, 6 — inspection photos, asset condition assessments, move-in/move-out checklists).
-**Pipeline variant:** `sunfish-feature-change`
+**Pipeline variant:** `sunfish-feature-change` (extension; not new package)
 **Parent:** [`property-ops-INDEX-intake-2026-04-28.md`](./property-ops-INDEX-intake-2026-04-28.md)
+
+> **Revision note 2026-04-28:** Disposition reframed from "new block" to **"extension to existing `packages/blocks-inspections/`"**. Audit revealed `blocks-inspections` already ships `Inspection` + `InspectionTemplate` + `InspectionChecklistItem` + `InspectionResponse` + `InspectionReport` + `Deficiency` (severity + status) + `InspectionPhase` + `InspectionItemKind` + `IInspectionsService` + `InMemoryInspectionsService` + `ScheduleInspectionRequest`/`CreateTemplateRequest`/`RecordDeficiencyRequest`. Cluster contribution (move-in/move-out triggers + EquipmentConditionAssessment children + iOS walkthrough wizard) becomes an **extension** to that block: add `InspectionItemKind` values for move-in/move-out; model EquipmentConditionAssessment as a `Deficiency` variant or new child entity. **Note: cluster's "AssetConditionAssessment" renames to `EquipmentConditionAssessment` per UPF Rule 4** (the cluster physical-equipment entity is `Equipment`, not `Asset`). See [`../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md) workstream #25 row for full rationale.
 
 ---
 
