@@ -123,4 +123,132 @@ public class InMemoryLeaseServiceTests
             list.Add(item);
         return list;
     }
+
+    // ─────────── W#27 Phase 1: state-machine guards ───────────
+
+    private static readonly ActorId Operator = new("operator");
+
+    private async Task<(InMemoryLeaseService svc, Lease lease)> NewDraftAsync()
+    {
+        var svc = new InMemoryLeaseService();
+        var lease = await svc.CreateAsync(MakeRequest());
+        return (svc, lease);
+    }
+
+    private async Task<(InMemoryLeaseService svc, Lease lease)> AdvanceToAsync(LeasePhase phase)
+    {
+        var (svc, lease) = await NewDraftAsync();
+        var path = phase switch
+        {
+            LeasePhase.Draft => Array.Empty<LeasePhase>(),
+            LeasePhase.AwaitingSignature => new[] { LeasePhase.AwaitingSignature },
+            LeasePhase.Executed => new[] { LeasePhase.AwaitingSignature, LeasePhase.Executed },
+            LeasePhase.Active => new[] { LeasePhase.AwaitingSignature, LeasePhase.Executed, LeasePhase.Active },
+            LeasePhase.Renewed => new[] { LeasePhase.AwaitingSignature, LeasePhase.Executed, LeasePhase.Active, LeasePhase.Renewed },
+            _ => throw new ArgumentOutOfRangeException(nameof(phase)),
+        };
+        foreach (var step in path)
+        {
+            lease = await svc.TransitionPhaseAsync(lease.Id, step, Operator);
+        }
+        return (svc, lease);
+    }
+
+    [Fact]
+    public async Task Transition_Draft_To_AwaitingSignature_OK()
+    {
+        var (svc, lease) = await NewDraftAsync();
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.AwaitingSignature, Operator);
+        Assert.Equal(LeasePhase.AwaitingSignature, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Draft_To_Cancelled_OK()
+    {
+        var (svc, lease) = await NewDraftAsync();
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Cancelled, Operator);
+        Assert.Equal(LeasePhase.Cancelled, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_AwaitingSignature_To_Executed_OK()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.AwaitingSignature);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Executed, Operator);
+        Assert.Equal(LeasePhase.Executed, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_AwaitingSignature_To_Draft_RevisionsAllowed()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.AwaitingSignature);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Draft, Operator);
+        Assert.Equal(LeasePhase.Draft, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Executed_To_Active_OK()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.Executed);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Active, Operator);
+        Assert.Equal(LeasePhase.Active, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Active_To_Renewed_OK()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.Active);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Renewed, Operator);
+        Assert.Equal(LeasePhase.Renewed, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Active_To_Terminated_OK()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.Active);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Terminated, Operator);
+        Assert.Equal(LeasePhase.Terminated, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Renewed_To_Active_OK()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.Renewed);
+        var updated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Active, Operator);
+        Assert.Equal(LeasePhase.Active, updated.Phase);
+    }
+
+    [Fact]
+    public async Task Transition_Draft_To_Active_Rejected()
+    {
+        var (svc, lease) = await NewDraftAsync();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.TransitionPhaseAsync(lease.Id, LeasePhase.Active, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task Transition_FromTerminated_Rejected()
+    {
+        var (svc, lease) = await AdvanceToAsync(LeasePhase.Active);
+        var terminated = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Terminated, Operator);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.TransitionPhaseAsync(terminated.Id, LeasePhase.Renewed, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task Transition_FromCancelled_Rejected()
+    {
+        var (svc, lease) = await NewDraftAsync();
+        var cancelled = await svc.TransitionPhaseAsync(lease.Id, LeasePhase.Cancelled, Operator);
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.TransitionPhaseAsync(cancelled.Id, LeasePhase.Active, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task Transition_UnknownLease_Rejected()
+    {
+        var svc = new InMemoryLeaseService();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.TransitionPhaseAsync(LeaseId.NewId(), LeasePhase.AwaitingSignature, Operator).AsTask());
+    }
 }

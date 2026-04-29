@@ -1,4 +1,5 @@
 using Sunfish.Blocks.Leases.Models;
+using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.Leases.Services;
 
@@ -33,4 +34,16 @@ public interface ILeaseService
     /// <param name="query">Optional filter criteria.</param>
     /// <param name="ct">Cancellation token.</param>
     IAsyncEnumerable<Lease> ListAsync(ListLeasesQuery query, CancellationToken ct = default);
+
+    /// <summary>
+    /// Transitions a lease to <paramref name="newPhase"/>. Allowed transitions per W#27
+    /// Phase 1 (consumes the public <c>TransitionTable&lt;LeasePhase&gt;</c> primitive
+    /// from <c>blocks-maintenance</c>; ADR 0053 amendment A5).
+    /// </summary>
+    /// <param name="id">The lease to transition.</param>
+    /// <param name="newPhase">Target phase.</param>
+    /// <param name="actor">Actor performing the transition.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <exception cref="InvalidOperationException">Thrown when the transition is not allowed from the current phase.</exception>
+    ValueTask<Lease> TransitionPhaseAsync(LeaseId id, LeasePhase newPhase, ActorId actor, CancellationToken ct = default);
 }
