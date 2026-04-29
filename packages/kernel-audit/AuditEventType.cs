@@ -61,6 +61,35 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An IRS-format export was generated for a tax period.</summary>
     public static readonly AuditEventType IrsExportGenerated = new("IrsExportGenerated");
 
+    // ===== ADR 0056 — Foundation.Taxonomy substrate =====
+
+    /// <summary>A new taxonomy definition was created (Authoritative or Civilian regime).</summary>
+    public static readonly AuditEventType TaxonomyDefinitionCreated = new("TaxonomyDefinitionCreated");
+
+    /// <summary>A taxonomy version was published.</summary>
+    public static readonly AuditEventType TaxonomyVersionPublished = new("TaxonomyVersionPublished");
+
+    /// <summary>A taxonomy version was retired.</summary>
+    public static readonly AuditEventType TaxonomyVersionRetired = new("TaxonomyVersionRetired");
+
+    /// <summary>A node was added to a taxonomy version.</summary>
+    public static readonly AuditEventType TaxonomyNodeAdded = new("TaxonomyNodeAdded");
+
+    /// <summary>A node's display label / description was revised.</summary>
+    public static readonly AuditEventType TaxonomyNodeDisplayRevised = new("TaxonomyNodeDisplayRevised");
+
+    /// <summary>A node was tombstoned (soft-deleted).</summary>
+    public static readonly AuditEventType TaxonomyNodeTombstoned = new("TaxonomyNodeTombstoned");
+
+    /// <summary>A taxonomy definition was cloned (Civilian-regime derivation).</summary>
+    public static readonly AuditEventType TaxonomyDefinitionCloned = new("TaxonomyDefinitionCloned");
+
+    /// <summary>A taxonomy definition was extended (parent-relationship preserving derivation).</summary>
+    public static readonly AuditEventType TaxonomyDefinitionExtended = new("TaxonomyDefinitionExtended");
+
+    /// <summary>A taxonomy definition was altered (semantic-divergence derivation; requires explicit reason).</summary>
+    public static readonly AuditEventType TaxonomyDefinitionAltered = new("TaxonomyDefinitionAltered");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

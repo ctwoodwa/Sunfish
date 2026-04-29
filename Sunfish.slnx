@@ -98,6 +98,10 @@
     <Project Path="packages/foundation-recovery/Sunfish.Foundation.Recovery.csproj" />
     <Project Path="packages/foundation-recovery/tests/Sunfish.Foundation.Recovery.Tests.csproj" />
   </Folder>
+  <Folder Name="/foundation/taxonomy/">
+    <Project Path="packages/foundation-taxonomy/Sunfish.Foundation.Taxonomy.csproj" />
+    <Project Path="packages/foundation-taxonomy/tests/Sunfish.Foundation.Taxonomy.Tests.csproj" />
+  </Folder>
   <Folder Name="/foundation/integrations/">
     <Project Path="packages/foundation-integrations/Sunfish.Foundation.Integrations.csproj" />
     <Project Path="packages/foundation-integrations/tests/tests.csproj" />

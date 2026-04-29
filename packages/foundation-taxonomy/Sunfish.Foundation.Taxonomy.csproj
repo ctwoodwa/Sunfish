@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Taxonomy</PackageId>
+    <RootNamespace>Sunfish.Foundation.Taxonomy</RootNamespace>
+    <Description>Foundation-tier substrate for versioned reference-data taxonomies (ADR 0056). Hosts TaxonomyDefinition / TaxonomyNode / TaxonomyClassification primitives, the ITaxonomyRegistry CRUD + governance contract, and the ITaxonomyResolver resolution contract. In-memory reference implementations enforce the five governance rules (Authoritative-regime guard, node-code immutability, monotonic tombstoning, lineage immutability, Alter-requires-reason). Audit emission integrates with kernel-audit per ADR 0049 via 9 new AuditEventType discriminators + payload-body factories.</Description>
+    <PackageTags>sunfish;foundation;taxonomy;reference-data;governance;adr-0056</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Taxonomy.Tests" />
+  </ItemGroup>
+</Project>
