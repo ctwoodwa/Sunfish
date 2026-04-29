@@ -1,9 +1,31 @@
 # Hand-off — Property-Receipts domain block (first-slice, kernel-only)
 
+> **🛑 REVOKED 2026-04-29 (CTO) — DO NOT IMPLEMENT**
+>
+> This hand-off was authored 2026-04-28 specifying hardcoded C# types
+> (`Receipt`, `ReceiptCategory`, `ReceiptLineItem`, `ReceiptSource`,
+> `ReconciliationStatus`). Post-ADR 0055 (dynamic-forms substrate; PR #236)
+> + ADR 0056 (Foundation.Taxonomy; PR #240), the architectural shape
+> changed: receipts are **admin-defined dynamic-form types** backed by
+> JSONB storage with schema-registry-driven shape, not hardcoded entities.
+> Categories / sources / reconciliation-status become
+> `TaxonomyClassification` references, not enums.
+>
+> A fresh hand-off will be authored once: (a) ADR 0055 + ADR 0056 are
+> Accepted, and (b) dynamic-forms substrate Phase 1 has landed (registry
+> contract + JSONB persistence + Coding/CodeableConcept primitives). Only
+> then can Receipts ship in the right shape.
+>
+> File retained for archival traceability + as a reference for the
+> CRUD + audit + kitchen-sink-seed + docs scope shape, which remains valid.
+> Ledger row #26 swept to `design-in-flight` 2026-04-29.
+
+---
+
 **From:** research session
 **To:** sunfish-PM session
-**Created:** 2026-04-28 (revised 2026-04-28 for cluster naming consistency)
-**Status:** `ready-to-build` (gated on Property-Assets first-slice merging — Receipt FK to Asset)
+**Created:** 2026-04-28 (revised 2026-04-28 for cluster naming consistency; revoked 2026-04-29)
+**Status:** `revoked` (was `ready-to-build`; superseded by ADR 0055/0056 architectural reframe)
 **Revision note:** Renamed from `packages/blocks-receipts/` → `packages/blocks-property-receipts/` for cluster-level naming consistency. No existing collision; rename adopts the convention after Assets discovered the `blocks-assets` collision.
 **Spec source:** Cluster intake [`property-receipts-intake-2026-04-28.md`](../../00_intake/output/property-receipts-intake-2026-04-28.md) (Stage 00) + cluster INDEX [`property-ops-INDEX-intake-2026-04-28.md`](../../00_intake/output/property-ops-INDEX-intake-2026-04-28.md)
 **Approval:** Cluster intake names Receipts as a domain module after Properties + Assets land. This hand-off compresses Stages 01–05 for the kernel-only first-slice scope. iOS Vision OCR capture, email-attachment ingestion, and typed FKs to Vendor/WorkOrder are deferred to follow-up hand-offs (those modules don't exist yet).
