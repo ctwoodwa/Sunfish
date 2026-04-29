@@ -7,6 +7,11 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    # Match repo's commitlint type-enum: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+    # Per memory project_commitlint_type_enum + commitlint.config.mjs.
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
     groups:
       aspnetcore:
         patterns:
@@ -25,3 +30,6 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
