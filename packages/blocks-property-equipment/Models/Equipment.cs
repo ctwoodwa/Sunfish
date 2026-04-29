@@ -2,36 +2,36 @@ using Sunfish.Blocks.Properties.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.MultiTenancy;
 
-namespace Sunfish.Blocks.PropertyAssets.Models;
+namespace Sunfish.Blocks.PropertyEquipment.Models;
 
 /// <summary>
-/// A physical asset attached to a <see cref="Property"/> — water heater,
+/// A physical piece of equipment attached to a <see cref="Property"/> — water heater,
 /// HVAC unit, appliance, roof, vehicle, etc. Provides the inventory
 /// backbone for inspections, work orders, receipts (acquisition cost
 /// basis), and depreciation reporting.
 /// </summary>
 /// <remarks>
 /// Implements <see cref="IMustHaveTenant"/>; persistence adapters reject
-/// records with the default <see cref="TenantId"/>. Every asset has a
-/// required <see cref="Property"/> FK — there are no orphan assets.
+/// records with the default <see cref="TenantId"/>. Every equipment record has a
+/// required <see cref="Property"/> FK — there are no orphan equipment.
 /// PropertyUnit-level scoping (multi-unit modelling) is deferred until
 /// the PropertyUnit child entity ships in a follow-up hand-off; until
-/// then, multi-unit properties carry asset records at the property level
+/// then, multi-unit properties carry equipment records at the property level
 /// only.
 /// </remarks>
-public sealed record Asset : IMustHaveTenant
+public sealed record Equipment : IMustHaveTenant
 {
-    /// <summary>Stable identifier for this asset.</summary>
-    public required AssetId Id { get; init; }
+    /// <summary>Stable identifier for this equipment.</summary>
+    public required EquipmentId Id { get; init; }
 
     /// <summary>Owning tenant. Required (default-rejected by persistence adapters).</summary>
     public required TenantId TenantId { get; init; }
 
-    /// <summary>FK to the parent <see cref="Property"/>. Required (no orphan assets).</summary>
+    /// <summary>FK to the parent <see cref="Property"/>. Required (no orphan equipment).</summary>
     public required PropertyId Property { get; init; }
 
     /// <summary>Coarse classification driving downstream behaviour.</summary>
-    public required AssetClass Class { get; init; }
+    public required EquipmentClass Class { get; init; }
 
     /// <summary>Human-friendly name (e.g. <c>"Master bath water heater"</c>).</summary>
     public required string DisplayName { get; init; }

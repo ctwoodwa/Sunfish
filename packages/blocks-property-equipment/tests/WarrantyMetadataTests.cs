@@ -1,8 +1,8 @@
 using System.Text.Json;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Xunit;
 
-namespace Sunfish.Blocks.PropertyAssets.Tests;
+namespace Sunfish.Blocks.PropertyEquipment.Tests;
 
 public class WarrantyMetadataTests
 {

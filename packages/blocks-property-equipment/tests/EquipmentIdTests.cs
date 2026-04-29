@@ -1,29 +1,29 @@
 using System.Text.Json;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Xunit;
 
-namespace Sunfish.Blocks.PropertyAssets.Tests;
+namespace Sunfish.Blocks.PropertyEquipment.Tests;
 
-public class AssetIdTests
+public class EquipmentIdTests
 {
     [Fact]
     public void NewId_returns_non_empty_value()
     {
-        var id = AssetId.NewId();
+        var id = EquipmentId.NewId();
         Assert.False(string.IsNullOrWhiteSpace(id.Value));
     }
 
     [Fact]
     public void NewId_returns_unique_values()
     {
-        Assert.NotEqual(AssetId.NewId(), AssetId.NewId());
+        Assert.NotEqual(EquipmentId.NewId(), EquipmentId.NewId());
     }
 
     [Fact]
     public void Implicit_string_round_trip_preserves_value()
     {
-        var raw = "asset-123";
-        AssetId id = raw;
+        var raw = "equipment-123";
+        EquipmentId id = raw;
         string back = id;
         Assert.Equal(raw, back);
     }
@@ -31,15 +31,15 @@ public class AssetIdTests
     [Fact]
     public void JsonConverter_round_trips_as_string()
     {
-        var id = new AssetId("asset-abc");
+        var id = new EquipmentId("equipment-abc");
         var json = JsonSerializer.Serialize(id);
-        Assert.Equal("\"asset-abc\"", json);
-        Assert.Equal(id, JsonSerializer.Deserialize<AssetId>(json));
+        Assert.Equal("\"equipment-abc\"", json);
+        Assert.Equal(id, JsonSerializer.Deserialize<EquipmentId>(json));
     }
 
     [Fact]
     public void JsonConverter_throws_on_null()
     {
-        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<AssetId>("null"));
+        Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<EquipmentId>("null"));
     }
 }

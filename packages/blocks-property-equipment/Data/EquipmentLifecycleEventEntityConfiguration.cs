@@ -1,22 +1,22 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sunfish.Blocks.Properties.Models;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.PropertyAssets.Data;
+namespace Sunfish.Blocks.PropertyEquipment.Data;
 
 /// <summary>
-/// EF Core configuration for <see cref="AssetLifecycleEvent"/>. Append-only
+/// EF Core configuration for <see cref="EquipmentLifecycleEvent"/>. Append-only
 /// log table; ids and tenant scoping via value converters.
 /// </summary>
-public sealed class AssetLifecycleEventEntityConfiguration : IEntityTypeConfiguration<AssetLifecycleEvent>
+public sealed class EquipmentLifecycleEventEntityConfiguration : IEntityTypeConfiguration<EquipmentLifecycleEvent>
 {
     /// <summary>Table name — stable, reverse-DNS-adjacent snake_case.</summary>
-    public const string TableName = "property_assets_lifecycle_event";
+    public const string TableName = "property_equipment_lifecycle_event";
 
     /// <inheritdoc />
-    public void Configure(EntityTypeBuilder<AssetLifecycleEvent> builder)
+    public void Configure(EntityTypeBuilder<EquipmentLifecycleEvent> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -26,8 +26,8 @@ public sealed class AssetLifecycleEventEntityConfiguration : IEntityTypeConfigur
 
         builder.Property(x => x.EventId).IsRequired();
 
-        builder.Property(x => x.Asset)
-            .HasConversion(id => id.Value, value => new AssetId(value))
+        builder.Property(x => x.Equipment)
+            .HasConversion(id => id.Value, value => new EquipmentId(value))
             .HasMaxLength(64)
             .IsRequired();
 
@@ -57,10 +57,10 @@ public sealed class AssetLifecycleEventEntityConfiguration : IEntityTypeConfigur
         // Metadata dictionary — defer EF mapping; persistence-backed hosts handle JSON serialization.
         builder.Ignore(x => x.Metadata);
 
-        builder.HasIndex(x => new { x.TenantId, x.Asset, x.OccurredAt })
-            .HasDatabaseName("ix_property_assets_lifecycle_tenant_asset_time");
+        builder.HasIndex(x => new { x.TenantId, x.Equipment, x.OccurredAt })
+            .HasDatabaseName("ix_property_equipment_lifecycle_tenant_asset_time");
 
         builder.HasIndex(x => new { x.TenantId, x.Property, x.OccurredAt })
-            .HasDatabaseName("ix_property_assets_lifecycle_tenant_property_time");
+            .HasDatabaseName("ix_property_equipment_lifecycle_tenant_property_time");
     }
 }

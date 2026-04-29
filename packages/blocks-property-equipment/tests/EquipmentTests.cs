@@ -1,20 +1,20 @@
 using System.Text.Json;
 using Sunfish.Blocks.Properties.Models;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.MultiTenancy;
 using Xunit;
 
-namespace Sunfish.Blocks.PropertyAssets.Tests;
+namespace Sunfish.Blocks.PropertyEquipment.Tests;
 
-public class AssetTests
+public class EquipmentTests
 {
-    private static Asset NewSample() => new()
+    private static Equipment NewSample() => new()
     {
-        Id = AssetId.NewId(),
+        Id = EquipmentId.NewId(),
         TenantId = new TenantId("tenant-a"),
         Property = PropertyId.NewId(),
-        Class = AssetClass.WaterHeater,
+        Class = EquipmentClass.WaterHeater,
         DisplayName = "Master bath water heater",
         Make = "Rheem",
         Model = "XR50T06EC36U1",
@@ -51,7 +51,7 @@ public class AssetTests
         };
 
         var json = JsonSerializer.Serialize(original);
-        Assert.Equal(original, JsonSerializer.Deserialize<Asset>(json));
+        Assert.Equal(original, JsonSerializer.Deserialize<Equipment>(json));
     }
 
     [Fact]

@@ -1,24 +1,24 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Sunfish.Blocks.Properties.Models;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.PropertyAssets.Data;
+namespace Sunfish.Blocks.PropertyEquipment.Data;
 
 /// <summary>
-/// EF Core configuration for <see cref="Asset"/>. Maps strong-typed ids
+/// EF Core configuration for <see cref="Equipment"/>. Maps strong-typed ids
 /// and tenant id to <c>string</c> columns via value converters, owns
 /// <see cref="WarrantyMetadata"/> as a complex type, and locks the entity
-/// to the <c>property_assets_asset</c> table.
+/// to the <c>property_equipment_asset</c> table.
 /// </summary>
-public sealed class AssetEntityConfiguration : IEntityTypeConfiguration<Asset>
+public sealed class EquipmentEntityConfiguration : IEntityTypeConfiguration<Equipment>
 {
     /// <summary>Table name — stable, reverse-DNS-adjacent snake_case.</summary>
-    public const string TableName = "property_assets_asset";
+    public const string TableName = "property_equipment_asset";
 
     /// <inheritdoc />
-    public void Configure(EntityTypeBuilder<Asset> builder)
+    public void Configure(EntityTypeBuilder<Equipment> builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
@@ -27,7 +27,7 @@ public sealed class AssetEntityConfiguration : IEntityTypeConfiguration<Asset>
         builder.HasKey(x => x.Id);
 
         builder.Property(x => x.Id)
-            .HasConversion(id => id.Value, value => new AssetId(value))
+            .HasConversion(id => id.Value, value => new EquipmentId(value))
             .HasMaxLength(64)
             .IsRequired();
 
@@ -77,9 +77,9 @@ public sealed class AssetEntityConfiguration : IEntityTypeConfiguration<Asset>
         });
 
         builder.HasIndex(x => new { x.TenantId, x.Property, x.DisposedAt })
-            .HasDatabaseName("ix_property_assets_asset_tenant_property_disposed");
+            .HasDatabaseName("ix_property_equipment_asset_tenant_property_disposed");
 
         builder.HasIndex(x => new { x.TenantId, x.Class })
-            .HasDatabaseName("ix_property_assets_asset_tenant_class");
+            .HasDatabaseName("ix_property_equipment_asset_tenant_class");
     }
 }

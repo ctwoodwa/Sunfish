@@ -2,10 +2,10 @@ using Sunfish.Blocks.Properties.Models;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.MultiTenancy;
 
-namespace Sunfish.Blocks.PropertyAssets.Models;
+namespace Sunfish.Blocks.PropertyEquipment.Models;
 
 /// <summary>
-/// Append-only lifecycle event for an <see cref="Asset"/>. Provides the
+/// Append-only lifecycle event for an <see cref="Equipment"/>. Provides the
 /// audit-grade history needed by inspections, work orders, depreciation
 /// schedules, and tax reporting. Events are immutable once appended.
 /// </summary>
@@ -18,22 +18,22 @@ namespace Sunfish.Blocks.PropertyAssets.Models;
 /// envelope construction that would not be exercised by the in-memory
 /// first-slice tests. The kernel-audit substrate (see <c>Sunfish.Kernel.Audit</c>)
 /// is the eventual emission target; first-slice carries the domain event in
-/// the in-memory event store only (see <c>Sunfish.Blocks.PropertyAssets.Services.IAssetLifecycleEventStore</c>).
+/// the in-memory event store only (see <c>Sunfish.Blocks.PropertyEquipment.Services.IEquipmentLifecycleEventStore</c>).
 /// See PR description for the research-session OQ (#2) flag and the
 /// follow-up hand-off scope.
 /// </para>
 /// </remarks>
-public sealed record AssetLifecycleEvent : IMustHaveTenant
+public sealed record EquipmentLifecycleEvent : IMustHaveTenant
 {
     /// <summary>Stable identifier for this event.</summary>
     public required Guid EventId { get; init; }
 
-    /// <summary>FK to the asset this event describes.</summary>
-    public required AssetId Asset { get; init; }
+    /// <summary>FK to the equipment this event describes.</summary>
+    public required EquipmentId Equipment { get; init; }
 
     /// <summary>
-    /// FK snapshot of the property the asset belonged to at event-emission
-    /// time. Lets <c>IAssetLifecycleEventStore.GetForPropertyAsync</c> resolve
+    /// FK snapshot of the property the equipment belonged to at event-emission
+    /// time. Lets <c>IEquipmentLifecycleEventStore.GetForPropertyAsync</c> resolve
     /// without a repository dependency. Slight deviation from the hand-off
     /// shape (added by sunfish-PM) — see PR description for rationale.
     /// </summary>
@@ -43,7 +43,7 @@ public sealed record AssetLifecycleEvent : IMustHaveTenant
     public required TenantId TenantId { get; init; }
 
     /// <summary>Discriminator for the event kind.</summary>
-    public required AssetLifecycleEventType EventType { get; init; }
+    public required EquipmentLifecycleEventType EventType { get; init; }
 
     /// <summary>Wall-clock time at which the event occurred.</summary>
     public required DateTimeOffset OccurredAt { get; init; }

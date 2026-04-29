@@ -1,27 +1,27 @@
 using Sunfish.Blocks.Properties.Models;
-using Sunfish.Blocks.PropertyAssets.Models;
-using Sunfish.Blocks.PropertyAssets.Services;
+using Sunfish.Blocks.PropertyEquipment.Models;
+using Sunfish.Blocks.PropertyEquipment.Services;
 using Sunfish.Foundation.Assets.Common;
 using Xunit;
 
-namespace Sunfish.Blocks.PropertyAssets.Tests;
+namespace Sunfish.Blocks.PropertyEquipment.Tests;
 
-public class InMemoryAssetRepositoryTests
+public class InMemoryEquipmentRepositoryTests
 {
     private static readonly TenantId TenantA = new("tenant-a");
     private static readonly TenantId TenantB = new("tenant-b");
 
-    private static (InMemoryAssetRepository repo, InMemoryAssetLifecycleEventStore events) NewSubject()
+    private static (InMemoryEquipmentRepository repo, InMemoryEquipmentLifecycleEventStore events) NewSubject()
     {
-        var events = new InMemoryAssetLifecycleEventStore();
-        var repo = new InMemoryAssetRepository(events);
+        var events = new InMemoryEquipmentLifecycleEventStore();
+        var repo = new InMemoryEquipmentRepository(events);
         return (repo, events);
     }
 
-    private static Asset NewAsset(TenantId tenant, PropertyId property, AssetClass cls, string name)
+    private static Equipment NewEquipment(TenantId tenant, PropertyId property, EquipmentClass cls, string name)
         => new()
         {
-            Id = AssetId.NewId(),
+            Id = EquipmentId.NewId(),
             TenantId = tenant,
             Property = property,
             Class = cls,
@@ -34,16 +34,16 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         var property = PropertyId.NewId();
-        var asset = NewAsset(TenantA, property, AssetClass.WaterHeater, "Heater");
-        await repo.UpsertAsync(asset);
-        Assert.Equal(asset, await repo.GetByIdAsync(TenantA, asset.Id));
+        var equipment = NewEquipment(TenantA, property, EquipmentClass.WaterHeater, "Heater");
+        await repo.UpsertAsync(equipment);
+        Assert.Equal(equipment, await repo.GetByIdAsync(TenantA, equipment.Id));
     }
 
     [Fact]
     public async Task GetByIdAsync_returns_null_for_unknown_id()
     {
         var (repo, _) = NewSubject();
-        Assert.Null(await repo.GetByIdAsync(TenantA, AssetId.NewId()));
+        Assert.Null(await repo.GetByIdAsync(TenantA, EquipmentId.NewId()));
     }
 
     [Fact]
@@ -51,20 +51,20 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         var property = PropertyId.NewId();
-        var asset = NewAsset(TenantA, property, AssetClass.HVAC, "HVAC");
-        await repo.UpsertAsync(asset);
-        Assert.Null(await repo.GetByIdAsync(TenantB, asset.Id));
+        var equipment = NewEquipment(TenantA, property, EquipmentClass.HVAC, "HVAC");
+        await repo.UpsertAsync(equipment);
+        Assert.Null(await repo.GetByIdAsync(TenantB, equipment.Id));
     }
 
     [Fact]
-    public async Task ListByPropertyAsync_returns_only_assets_attached_to_that_property()
+    public async Task ListByPropertyAsync_returns_only_equipment_attached_to_that_property()
     {
         var (repo, _) = NewSubject();
         var p1 = PropertyId.NewId();
         var p2 = PropertyId.NewId();
-        await repo.UpsertAsync(NewAsset(TenantA, p1, AssetClass.WaterHeater, "p1-wh"));
-        await repo.UpsertAsync(NewAsset(TenantA, p1, AssetClass.HVAC, "p1-hvac"));
-        await repo.UpsertAsync(NewAsset(TenantA, p2, AssetClass.WaterHeater, "p2-wh"));
+        await repo.UpsertAsync(NewEquipment(TenantA, p1, EquipmentClass.WaterHeater, "p1-wh"));
+        await repo.UpsertAsync(NewEquipment(TenantA, p1, EquipmentClass.HVAC, "p1-hvac"));
+        await repo.UpsertAsync(NewEquipment(TenantA, p2, EquipmentClass.WaterHeater, "p2-wh"));
 
         var p1Assets = await repo.ListByPropertyAsync(TenantA, p1);
         Assert.Equal(2, p1Assets.Count);
@@ -76,19 +76,19 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         var property = PropertyId.NewId();
-        await repo.UpsertAsync(NewAsset(TenantA, property, AssetClass.HVAC, "A-HVAC"));
+        await repo.UpsertAsync(NewEquipment(TenantA, property, EquipmentClass.HVAC, "A-HVAC"));
 
         var fromB = await repo.ListByPropertyAsync(TenantB, property);
         Assert.Empty(fromB);
     }
 
     [Fact]
-    public async Task ListByTenantAsync_returns_only_owning_tenants_assets()
+    public async Task ListByTenantAsync_returns_only_owning_tenants_equipment()
     {
         var (repo, _) = NewSubject();
-        await repo.UpsertAsync(NewAsset(TenantA, PropertyId.NewId(), AssetClass.WaterHeater, "A-1"));
-        await repo.UpsertAsync(NewAsset(TenantA, PropertyId.NewId(), AssetClass.HVAC, "A-2"));
-        await repo.UpsertAsync(NewAsset(TenantB, PropertyId.NewId(), AssetClass.WaterHeater, "B-1"));
+        await repo.UpsertAsync(NewEquipment(TenantA, PropertyId.NewId(), EquipmentClass.WaterHeater, "A-1"));
+        await repo.UpsertAsync(NewEquipment(TenantA, PropertyId.NewId(), EquipmentClass.HVAC, "A-2"));
+        await repo.UpsertAsync(NewEquipment(TenantB, PropertyId.NewId(), EquipmentClass.WaterHeater, "B-1"));
 
         Assert.Equal(2, (await repo.ListByTenantAsync(TenantA)).Count);
         Assert.Single(await repo.ListByTenantAsync(TenantB));
@@ -99,12 +99,12 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         var property = PropertyId.NewId();
-        await repo.UpsertAsync(NewAsset(TenantA, property, AssetClass.WaterHeater, "WH"));
-        await repo.UpsertAsync(NewAsset(TenantA, property, AssetClass.HVAC, "HVAC"));
-        await repo.UpsertAsync(NewAsset(TenantA, property, AssetClass.HVAC, "HVAC2"));
+        await repo.UpsertAsync(NewEquipment(TenantA, property, EquipmentClass.WaterHeater, "WH"));
+        await repo.UpsertAsync(NewEquipment(TenantA, property, EquipmentClass.HVAC, "HVAC"));
+        await repo.UpsertAsync(NewEquipment(TenantA, property, EquipmentClass.HVAC, "HVAC2"));
 
-        Assert.Single(await repo.ListByClassAsync(TenantA, AssetClass.WaterHeater));
-        Assert.Equal(2, (await repo.ListByClassAsync(TenantA, AssetClass.HVAC)).Count);
+        Assert.Single(await repo.ListByClassAsync(TenantA, EquipmentClass.WaterHeater));
+        Assert.Equal(2, (await repo.ListByClassAsync(TenantA, EquipmentClass.HVAC)).Count);
     }
 
     [Fact]
@@ -112,20 +112,20 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, events) = NewSubject();
         var property = PropertyId.NewId();
-        var asset = NewAsset(TenantA, property, AssetClass.WaterHeater, "WH");
-        await repo.UpsertAsync(asset);
+        var equipment = NewEquipment(TenantA, property, EquipmentClass.WaterHeater, "WH");
+        await repo.UpsertAsync(equipment);
         var disposedAt = new DateTimeOffset(2026, 4, 28, 12, 0, 0, TimeSpan.Zero);
 
-        await repo.SoftDeleteAsync(TenantA, asset.Id, "replaced with tankless", disposedAt, "operator-1");
+        await repo.SoftDeleteAsync(TenantA, equipment.Id, "replaced with tankless", disposedAt, "operator-1");
 
-        var fetched = await repo.GetByIdAsync(TenantA, asset.Id);
+        var fetched = await repo.GetByIdAsync(TenantA, equipment.Id);
         Assert.NotNull(fetched);
         Assert.Equal(disposedAt, fetched!.DisposedAt);
         Assert.Equal("replaced with tankless", fetched.DisposalReason);
 
-        var emitted = await events.GetForAssetAsync(TenantA, asset.Id);
+        var emitted = await events.GetForEquipmentAsync(TenantA, equipment.Id);
         Assert.Single(emitted);
-        Assert.Equal(AssetLifecycleEventType.Disposed, emitted[0].EventType);
+        Assert.Equal(EquipmentLifecycleEventType.Disposed, emitted[0].EventType);
         Assert.Equal(property, emitted[0].Property);
         Assert.Equal("operator-1", emitted[0].RecordedBy);
         Assert.Equal("replaced with tankless", emitted[0].Notes);
@@ -136,8 +136,8 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         var property = PropertyId.NewId();
-        var live = NewAsset(TenantA, property, AssetClass.WaterHeater, "Live");
-        var disposed = NewAsset(TenantA, property, AssetClass.WaterHeater, "Disposed");
+        var live = NewEquipment(TenantA, property, EquipmentClass.WaterHeater, "Live");
+        var disposed = NewEquipment(TenantA, property, EquipmentClass.WaterHeater, "Disposed");
         await repo.UpsertAsync(live);
         await repo.UpsertAsync(disposed);
         await repo.SoftDeleteAsync(TenantA, disposed.Id, "replaced", DateTimeOffset.UtcNow, "operator-1");
@@ -151,14 +151,14 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, events) = NewSubject();
         var property = PropertyId.NewId();
-        var asset = NewAsset(TenantA, property, AssetClass.HVAC, "HVAC");
-        await repo.UpsertAsync(asset);
+        var equipment = NewEquipment(TenantA, property, EquipmentClass.HVAC, "HVAC");
+        await repo.UpsertAsync(equipment);
 
-        await repo.SoftDeleteAsync(TenantB, asset.Id, "wrong tenant", DateTimeOffset.UtcNow, "operator-2");
+        await repo.SoftDeleteAsync(TenantB, equipment.Id, "wrong tenant", DateTimeOffset.UtcNow, "operator-2");
 
-        var fetched = await repo.GetByIdAsync(TenantA, asset.Id);
+        var fetched = await repo.GetByIdAsync(TenantA, equipment.Id);
         Assert.Null(fetched!.DisposedAt);
-        Assert.Empty(await events.GetForAssetAsync(TenantA, asset.Id));
+        Assert.Empty(await events.GetForEquipmentAsync(TenantA, equipment.Id));
     }
 
     [Fact]
@@ -166,24 +166,24 @@ public class InMemoryAssetRepositoryTests
     {
         var (repo, _) = NewSubject();
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            repo.SoftDeleteAsync(TenantA, AssetId.NewId(), "  ", DateTimeOffset.UtcNow, "op"));
+            repo.SoftDeleteAsync(TenantA, EquipmentId.NewId(), "  ", DateTimeOffset.UtcNow, "op"));
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            repo.SoftDeleteAsync(TenantA, AssetId.NewId(), "reason", DateTimeOffset.UtcNow, "  "));
+            repo.SoftDeleteAsync(TenantA, EquipmentId.NewId(), "reason", DateTimeOffset.UtcNow, "  "));
     }
 
     [Fact]
     public async Task SoftDeleteAsync_no_op_for_unknown_id()
     {
         var (repo, events) = NewSubject();
-        await repo.SoftDeleteAsync(TenantA, AssetId.NewId(), "reason", DateTimeOffset.UtcNow, "op");
-        Assert.Empty(await events.GetForAssetAsync(TenantA, AssetId.NewId()));
+        await repo.SoftDeleteAsync(TenantA, EquipmentId.NewId(), "reason", DateTimeOffset.UtcNow, "op");
+        Assert.Empty(await events.GetForEquipmentAsync(TenantA, EquipmentId.NewId()));
     }
 
     [Fact]
     public async Task UpsertAsync_overwrites_prior_record_with_same_key()
     {
         var (repo, _) = NewSubject();
-        var v1 = NewAsset(TenantA, PropertyId.NewId(), AssetClass.WaterHeater, "Original");
+        var v1 = NewEquipment(TenantA, PropertyId.NewId(), EquipmentClass.WaterHeater, "Original");
         await repo.UpsertAsync(v1);
 
         var v2 = v1 with { DisplayName = "Updated" };

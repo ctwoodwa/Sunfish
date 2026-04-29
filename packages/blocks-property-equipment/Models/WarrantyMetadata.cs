@@ -1,7 +1,7 @@
-namespace Sunfish.Blocks.PropertyAssets.Models;
+namespace Sunfish.Blocks.PropertyEquipment.Models;
 
 /// <summary>
-/// Optional warranty metadata embedded in <see cref="Asset"/>. Coverage and
+/// Optional warranty metadata embedded in <see cref="Equipment"/>. Coverage and
 /// claim handling are out of scope for the first-slice — this value object
 /// just records the dates + provider so downstream blocks (work orders,
 /// inspections) can surface "still under warranty" cues.
