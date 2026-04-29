@@ -123,12 +123,34 @@ Before flipping `Status:` to `Accepted`, run this checklist as the author. The c
 - [ ] **FAILED conditions / kill triggers.** Named at least one condition under which this decision should be reversed or aborted. *(Anti-pattern #11: zombie projects with no kill criteria.)*
 - [ ] **Rollback strategy.** What undoes this if it turns out wrong? At least one sentence. *(Anti-pattern #4: no rollback.)*
 - [ ] **Confidence level.** HIGH / MEDIUM / LOW with one-line reason. Flags overconfidence early. *(Anti-pattern #13: confidence without evidence.)*
-- [ ] **Anti-pattern scan.** Glanced at the 21-AP list in `.claude/rules/universal-planning.md`. None of the critical AP-1, AP-3, AP-9, AP-12, AP-21 apply.
+- [ ] **Cited-symbol verification.** Every `Sunfish.*` symbol cited in the Decision section + Implementation checklist + Compatibility plan + cross-package wiring sections has been verified to exist at the cited name + namespace. Symbols that don't exist are either (a) renamed to match reality, OR (b) explicitly marked "introduced by this ADR" + added to Implementation checklist, OR (c) flagged with halt-condition pointing at the ADR-amendment that will ship them. *(Pattern observed across 5-of-5 substrate ADRs in the 2026-04-29 cohort: pre-acceptance audit asserted AP-21 doesn't apply while council review consistently found cited-symbol drift as the dominant failure mode. See `feedback_verify_cited_symbols_before_adr_acceptance` user memory + helper script below.)*
+- [ ] **Anti-pattern scan.** Glanced at the 21-AP list in `.claude/rules/universal-planning.md`. None of the critical AP-1, AP-3, AP-9, AP-12, AP-21 apply. *(AP-21 is only honestly checkable AFTER cited-symbol verification above.)*
 - [ ] **Revisit triggers.** Named ≥1 condition under which this ADR should be re-evaluated. *(Anti-pattern #11 again — kill triggers without revisit triggers is a half-measure.)*
 - [ ] **Cold Start Test.** Could a fresh contributor execute the implementation checklist from this ADR alone, without asking the author for clarification? If not, tighten the checklist. *(Stage 2 Check 5.)*
-- [ ] **Sources cited.** Every load-bearing factual claim has a reference. *(Anti-pattern #21: assumed facts without sources.)*
+- [ ] **Sources cited.** Every load-bearing factual claim has a reference. *(Anti-pattern #21 part 2: assumed facts without sources. Distinct from cited-symbol verification — that catches code-shape drift; this catches policy / regulatory / external-claim drift.)*
 
 If any of these are skipped, write a short justification in the ADR body or open a follow-up intake. Skipping the audit silently is itself an anti-pattern (#9: skipping Stage 0).
+
+### Cited-symbol verification helper (run before checking off the box above)
+
+```bash
+ADR=docs/adrs/00NN-<your-slug>.md
+
+# 1. Print all Sunfish.* symbols cited in the ADR
+grep -oE "Sunfish\.[A-Z][A-Za-z0-9.]+" "$ADR" | sort -u
+
+# 2. For each one, check whether the short name exists as a defined type or namespace
+for sym in $(grep -oE "Sunfish\.[A-Z][A-Za-z0-9.]+" "$ADR" | sort -u); do
+  short=$(echo "$sym" | grep -oE "[^.]+$")
+  if ! git grep -q -E "(class|record|interface|enum|namespace) +$short" packages/; then
+    echo "MISSING: $sym (short: $short) — fix before acceptance"
+  fi
+done
+```
+
+Anything in `MISSING` list is either (a) genuinely missing (treat as AP-21 hit), (b) introduced by this ADR (mark explicitly + add to Implementation checklist), or (c) cited under a wrong name (rename to match reality).
+
+Also grep for **cross-ADR claims** like `"per ADR 0XYZ T2 boundary"` — open the cited ADR + verify the claim matches the cited section. Cross-ADR claims have failed verification 5-of-5 in the 2026-04-29 cohort; treat them as guilty-until-proven-innocent.
 
 ---
 
