@@ -48,7 +48,7 @@ public interface IEncryptedStore
     /// <para>
     /// Phase 1 G6 task 5 (per ADR 0046) wires this against the
     /// <c>RecoveryCompleted</c> event from
-    /// <c>Sunfish.Kernel.Security.Recovery.IRecoveryCoordinator</c>. After a
+    /// <c>Sunfish.Foundation.Recovery.IRecoveryCoordinator</c>. After a
     /// successful trustee-attested recovery the host derives a new SQLCipher
     /// key from the recovering device's identity and calls this method to
     /// re-key the per-team database in place — this is the "key reissue"

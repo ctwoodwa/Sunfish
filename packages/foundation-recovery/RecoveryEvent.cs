@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Phase 1 G6 sub-pattern <b>#48f (signed audit)</b> per ADR 0046 — an

@@ -194,7 +194,7 @@ This ADR recommends path 2 (shim with explicit `v0` marking) and adds a revisit 
 - [ ] Implement `EventLogBackedAuditTrail` as the default `IAuditTrail` impl, appending to `IEventLog` and an in-process `IAuditEventStream` — direct parallel to `Kernel.Ledger`'s implementation.
 - [ ] **Mark the audit-record persisted format as `v0`** and document the ADR 0004 algorithm-agility dependency in the package README.
 - [ ] Update `inverted-stack-package-roadmap.md` `Sunfish.Kernel.Audit` entry to `adr-accepted`.
-- [ ] Update `Sunfish.Foundation.Recovery` scaffolding (per ADR 0046) to depend on `Kernel.Audit`.
+- [ ] Update `Sunfish.Foundation.Recovery` (orchestration; depends on `Kernel.Security` crypto primitives — see ADR 0046 § "Package placement") to depend on `Kernel.Audit`.
 - [ ] Wire `IAuditTrail` into G6 host integration (the not-started Phase 1 task: "persist RecoveryEvents to per-tenant audit log").
 - [ ] Property tests: append-then-query roundtrip, retention-decision determinism, multi-party signature verification on attestation, replay-from-IEventLog reconstructs in-process state.
 - [ ] README documenting the substrate-impl layering with reference to ADR 0028 and `Kernel.Ledger`'s README as precedents.

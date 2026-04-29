@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Sunfish.Kernel.Security.Crypto;
 
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// A signed message from a holder of the owner's original keys objecting

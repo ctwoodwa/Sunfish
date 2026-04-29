@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Sunfish.Kernel.Security.Crypto;
 
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Production implementation of <see cref="IRecoveryCoordinator"/> per

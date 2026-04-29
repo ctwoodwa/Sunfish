@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// A trustee designated by the owner per sub-pattern <b>#48a</b> of ADR 0046.
