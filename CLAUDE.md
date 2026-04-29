@@ -36,15 +36,16 @@ Don't duplicate one system's role inside another. ICM tracks lifecycle of change
 
 ## Multi-Session Coordination
 
-Three Claude sessions share the file system but cannot talk directly:
+Naval-org chart: **CO** (Chris, BDFL) → **XO** (this repo, research) → {**COB** (this repo, sunfish-PM), **PAO** (book repo, editor) → **Yeoman** (book repo, technical writer)}. Four Claude sessions share filesystem; cannot talk directly.
 
-| Session | Role | Default behavior |
-|---|---|---|
-| **research** | ADRs, intakes, design, retrofits, conventions, gap analyses, **+ cross-project PM** | Analyze + recommend. No production code by default. **Synthesizes cross-project status on demand** from this repo + `/Users/christopherwood/Projects/the-inverted-stack/`. |
-| **sunfish-PM** | Production code, scaffolds, PRs, CI fixes, deps | Implements specs from research. Doesn't make architectural decisions. |
-| **book-writing** | The Inverted Stack manuscript | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code/ADRs. |
+| Role | Owns |
+|---|---|
+| **XO** (research) | ADRs, intakes, design, retrofits, conventions, gap analyses, **cross-project PM**. Analyze + recommend; no production code by default. |
+| **COB** (sunfish-PM) | Production code, scaffolds, PRs, CI fixes, deps. Implements specs from XO; no architecture decisions. |
+| **PAO** (book editor/publisher) | Editorial direction of *The Inverted Stack*: clarity, structure, voice, market positioning. Manages Yeoman; reviews chapters; rewrites weak sections; recommends reorganizations. Doesn't draft prose; doesn't make Sunfish-architecture calls. |
+| **Yeoman** (book technical writer) | Drafts and revises chapters in the book repo; runs audiobook pipeline. Reports to PAO; doesn't touch Sunfish code/ADRs. |
 
-Sessions coordinate via repo artifacts + auto-memory. No chat between them. Research's PM coverage is **on-demand synthesis, not a maintained dashboard**.
+Sessions coordinate via repo artifacts + auto-memory. No chat. XO's PM coverage is **on-demand synthesis, not a maintained dashboard**.
 
 ### Canonical state files
 
@@ -109,9 +110,9 @@ Rules: commits use `chore(fallback):` / `fix(build):` / `test(coverage):` / `doc
 
 ### Live signaling to XO — `research-inbox/`
 
-Filesystem inbox at `icm/_state/research-inbox/` for sunfish-PM (COB) and book-writing (Yeoman) → research (XO) signals. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `{sender}-{type}-YYYY-MM-DDTHH-MMZ-{slug}.md` where `sender ∈ {cob, yeoman}` and `type ∈ {idle, question, resumed}`. Body: 3-line YAML frontmatter (`type`, `workstream-or-chapter`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
+Filesystem inbox at `icm/_state/research-inbox/` for sub-XO sessions → XO. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `{sender}-{type}-YYYY-MM-DDTHH-MMZ-{slug}.md` where `sender ∈ {cob, pao, yeoman}` and `type ∈ {idle, question, resumed}`. Body: 3-line YAML frontmatter (`type`, `workstream-or-chapter`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
 
-**COB writes** (`cob-*`): rung-6 idle → `cob-idle-*.md` + `ScheduleWakeup 1800s`. Design-ambiguity halt → `cob-question-*.md` + halt the workstream + ledger row note. **Yeoman writes** (`yeoman-*`, cross-repo `cd /Users/christopherwood/Projects/Sunfish && git ...`): factual question that gates a chapter (ADR cross-ref status, workstream timing, architectural detail) → `yeoman-question-*.md` + pause that chapter section. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null`; non-empty → priority above ADR cadence; resolve via hand-off/answer/ledger update, then `git mv` to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
+**COB writes** (`cob-*`): rung-6 idle → `cob-idle-*.md` + `ScheduleWakeup 1800s`. Design-ambiguity halt → `cob-question-*.md` + halt the workstream + ledger row note. **PAO writes** (`pao-*`, cross-repo from book repo via `cd /Users/christopherwood/Projects/Sunfish && git worktree ...`): book-side question that needs Sunfish architecture/ADR/workstream input the PAO cannot resolve from book + Sunfish docs alone → `pao-question-*.md`. PAO is the cross-repo funnel for the book side. **Yeoman writes** (`yeoman-*`) only as PAO-bypass fallback when PAO is offline AND a critical Sunfish question can't wait — flag in body "PAO-bypass." Yeoman's normal questions go to the book-local `.pao-inbox/` (Tier 1), not here. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null`; non-empty → priority above ADR cadence; resolve via hand-off/answer/ledger update, then `git mv` to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
 
 ---
 
