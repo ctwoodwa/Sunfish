@@ -1,501 +1,198 @@
 # Claude Instructions for Sunfish
 
-## Overview
+Sunfish is a framework-agnostic suite of building blocks (open-source + commercial) for scaffolding, prototyping, and shipping real applications with interchangeable UI and domain components. It is the reference implementation for *The Inverted Stack*.
 
-Sunfish is a framework-agnostic suite of open-source and commercial building blocks that helps
-scaffold, prototype, and ship real-world applications with interchangeable UI and domain components.
+## Foundational paper (read first)
 
-This document explains how to work with Claude on Sunfish, including how to use the Integrated
-Change Management (ICM) pipeline system.
+Architecture is specified in [`_shared/product/local-node-architecture-paper.md`](./_shared/product/local-node-architecture-paper.md) — *Inverting the SaaS Paradigm*, v10.0 April 2026. Every structural choice (kernel/plugin split, four-tier UI layering, CP/AP per-record-class, event-sourced ledger, schema epochs, managed-relay sustainability, compat-vendor-adapter pattern) traces back to it.
 
-### Foundational paper (read first)
-
-The repo implements the architecture specified in
-[`_shared/product/local-node-architecture-paper.md`](./_shared/product/local-node-architecture-paper.md)
-— *Inverting the SaaS Paradigm: A Local-Node Architecture for Collaborative Software* (Version 10.0,
-April 2026). Every structural choice in the codebase traces back to the decisions described there:
-the kernel/plugin split, the UI-kernel four-tier layering (Foundation / Framework-Agnostic / Blocks
-/ Compat-and-Adapter), the CP/AP per-record-class position, event-sourced ledger, schema epoch
-coordination, the managed-relay sustainability model, and the compat-vendor-adapter pattern. When
-in doubt about whether a change belongs in the repo, consult the paper — it defines the "why" that
-makes the directory structure legible.
-
-**Accelerator zone mapping per paper §20.7:** Anchor (`accelerators/anchor/`) is the Zone A
-local-first desktop implementation. Bridge (`accelerators/bridge/`) is the Zone C Hybrid
-implementation — hosted-node-as-SaaS with per-tenant data-plane isolation. These are the two
-canonical deployment shapes; any future accelerator inherits from one. See
-[ADR 0031](./docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md) for Bridge's Zone-C model and
-[ADR 0032](./docs/adrs/0032-multi-team-anchor-workspace-switching.md) for Anchor's v2
-multi-team shape.
+**Accelerator zones (paper §20.7):** `accelerators/anchor/` is Zone A local-first desktop ([ADR 0032](./docs/adrs/0032-multi-team-anchor-workspace-switching.md)); `accelerators/bridge/` is Zone C hybrid hosted-node-as-SaaS ([ADR 0031](./docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md)). Future accelerators inherit from one.
 
 ---
 
 ## Effort + Model Policy
 
-The project sets **`effortLevel: xhigh`** as the default in `.claude/settings.json`
-(overrides the Claude API default of `high`). Per the canonical Anthropic
-guidance, `xhigh` is "the recommended starting point for coding and
-agentic work" on Opus 4.7 and matches Sunfish's typical session shape:
-multi-package refactors, ICM stage transitions, paper-alignment waves,
-30+ minute build sessions.
+`.claude/settings.json` sets `effortLevel: xhigh` (overrides API default `high`). Canonical for Opus 4.7 multi-package agentic work.
 
-Three things to know:
+1. **`xhigh` is Opus 4.7-only.** On `/model sonnet`, set `/effort medium` explicitly (canonical Sonnet 4.6 default).
+2. **Subagents default to `low`** unless role is design/review (`xhigh`).
+3. **Don't bake `max` into anything.** Reserve for stuck cases with measured headroom over `xhigh`.
 
-1. **`xhigh` is Opus 4.7-only.** If you `/model sonnet`, also set
-   `/effort medium` explicitly — that's the canonical Sonnet 4.6 default
-   and avoids unexpected latency.
-2. **Subagents default to `low`.** When dispatching an `Agent`, expect
-   `low` effort unless the role is design/review (then `xhigh`).
-3. **Don't bake `max` into anything.** `max` causes overthinking on
-   structured-output tasks per the canonical guidance — reserve it for
-   the rare stuck case where evals show measurable headroom over `xhigh`.
-
-Full rubric (per work type, per ICM stage, per subagent role, per
-hypothetical project-local agent) lives in
-[`.claude/rules/effort-policy.md`](.claude/rules/effort-policy.md).
-Canonical reference: <https://platform.claude.com/docs/en/build-with-claude/effort>
+Full per-work-type / per-stage / per-subagent rubric: [`.claude/rules/effort-policy.md`](.claude/rules/effort-policy.md). Canonical: <https://platform.claude.com/docs/en/build-with-claude/effort>.
 
 ---
 
 ## Tool Boundaries
 
-Sunfish uses three complementary tools for AI-assisted development. Each has a distinct responsibility.
-Do not duplicate one system's role inside another.
-
 | Tool | Responsibility | Owns |
 |---|---|---|
-| **ICM** | Pipeline/process orchestration | Stage artifacts, routing, deliverables, workflow handoffs |
-| **OpenWolf** | Repo memory and context middleware | `.wolf/anatomy.md`, `.wolf/cerebrum.md`, `.wolf/buglog.json`, token-aware context enrichment |
-| **Serena** | Semantic code tooling | Symbol discovery, semantic navigation, precise code edits via LSP |
+| **ICM** | Pipeline/process orchestration | Stage artifacts, routing, deliverables, hand-offs |
+| **OpenWolf** | Repo memory + context middleware | `.wolf/anatomy.md`, `.wolf/cerebrum.md`, `.wolf/buglog.json` |
+| **Serena** | Semantic code tooling | Symbol discovery, semantic navigation, LSP-precise edits |
 
-### When to Use Each Tool
-
-**Use ICM when:**
-- Managing the lifecycle of a change (intake → release)
-- Deciding which stages to run or skip
-- Creating or reviewing workflow artifacts (design docs, ADRs, implementation plans)
-- Tracking review gates and approvals
-
-**Use OpenWolf when:**
-- Checking what files exist and their token cost (`.wolf/anatomy.md`)
-- Looking up known bugs and fixes (`.wolf/buglog.json`)
-- Reading or updating learned preferences and conventions (`.wolf/cerebrum.md`)
-- Building or refreshing project context at the start of a session
-
-**Use Serena when:**
-- Navigating symbols, classes, functions, or types by name
-- Finding all callers or references to a symbol
-- Making precise, symbol-targeted code edits
-- Exploring package structure semantically without reading whole files
-
-### What Not to Do
-
-- Do not store code navigation results in ICM artifacts — that is Serena's job
-- Do not duplicate OpenWolf memory concepts (anatomy, buglog, cerebrum) in ICM stage notes
-- Do not use ICM for ad-hoc context enrichment — use OpenWolf hooks for that
-- ICM may reference Serena and OpenWolf operationally, but does not replace either
+Don't duplicate one system's role inside another. ICM tracks lifecycle of changes; OpenWolf is repo memory; Serena is for code navigation/edits. Consult `.wolf/anatomy.md` before reading project files; `.wolf/buglog.json` before fixing bugs (see [`.claude/rules/openwolf.md`](.claude/rules/openwolf.md)).
 
 ---
 
 ## Multi-Session Coordination
 
-This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly. Sessions are named per their role in the project's informal civilian org structure:
+Three Claude sessions share the file system but cannot talk directly:
 
-| Session | Org name | Role | Default behavior |
-|---|---|---|---|
-| **research session** | **CTO** (promoted 2026-04-29; see `project_research_session_is_cto_role` memory) | Architecture authority — ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses, sequencing, cluster scope, sunfish-PM coordination, **+ cross-project PM** | Decide and execute on technical track. Surface decisions with business impact as recommendation+default for user/CEO sign-off. **Synthesizes cross-project status on demand** when the user asks "what's the status?" — pulls from this repo's `icm/_state/active-workstreams.md` + `gh pr list` AND from `/Users/christopherwood/Projects/the-inverted-stack/` (chapter ICM stages, book-update-loop iterations, audiobook pipeline). |
-| **sunfish-PM session** | **PM** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from CTO. Doesn't make architectural decisions. |
-| **book-writing session** | **Yeoman** (renamed 2026-04-29; previously "book session") | The Inverted Stack manuscript craftsperson | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. Runs the book-update-loop (chapter ICM stages tracked as GitHub labels per book CLAUDE.md). |
+| Session | Role | Default behavior |
+|---|---|---|
+| **research** | ADRs, intakes, design, retrofits, conventions, gap analyses, **+ cross-project PM** | Analyze + recommend. No production code by default. **Synthesizes cross-project status on demand** from this repo + `/Users/christopherwood/Projects/the-inverted-stack/`. |
+| **sunfish-PM** | Production code, scaffolds, PRs, CI fixes, deps | Implements specs from research. Doesn't make architectural decisions. |
+| **book-writing** | The Inverted Stack manuscript | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code/ADRs. |
 
-The user/BDFL holds **CEO** authority: business strategy, spending, external messaging, anything affecting the property business operationally, strategic pivots.
-
-> **Naming history (2026-04-29):** The research session was briefly renamed to XO (Executive Officer) in a naval-themed pivot, then reverted to CTO same-day. User preference: civilian naming for a civilian project. Yeoman is retained because it works in civilian usage (yeoman's work = solid productive work).
-
-Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The CTO's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
+Sessions coordinate via repo artifacts + auto-memory. No chat between them. Research's PM coverage is **on-demand synthesis, not a maintained dashboard**.
 
 ### Canonical state files
 
-- **`icm/_state/MASTER-PLAN.md`** — stable; the three goals (Business MVP, Component Library, Book), done conditions per goal, velocity baseline, estimated MVP date. Updated when goal definition or velocity baseline materially shifts; not per-PR.
-- **`icm/_state/active-workstreams.md`** — dynamic; what's in flight, who owns it, what state it's in. Read at session start. Update on state change.
+- **`icm/_state/MASTER-PLAN.md`** — stable; goals + done-conditions + velocity baseline. Updated only when goals/baseline shift.
+- **`icm/_state/active-workstreams.md`** — dynamic; in-flight workstreams + owner + state. Read at session start; update on state change.
 - **`icm/_state/handoffs/`** — per-workstream hand-off specs (research → sunfish-PM).
 
 ### Status format (executive summary on demand)
 
-When the user asks "where are we?" / "status?" / "what's next?", produce a brief executive summary in this format (target ~250-400 words):
+When user asks "where are we?" / "status?" / "what's next?", produce ~250-400 words:
 
 ```
-**Where we are:** 2-3 sentences naming the most-advanced workstream + the most-blocked workstream.
-
-**Blockers needing your attention:** bulleted list, max 5, each <2 lines.
-- Severity: [crit / high / med / low]
-- One-line decision needed
-- Where the detail lives (file path)
-
-**What's next (priority order):**
-1. Most-urgent unblock-or-decide item
-2. Next sunfish-PM hand-off
-3. Next book milestone
-4. Next research deliverable
-
-**Velocity vs MVP:** 1-2 sentences. PRs/day recent, percent-done estimate, on-track-or-not vs the MASTER-PLAN.md estimate.
+**Where we are:** 2-3 sentences naming most-advanced + most-blocked workstreams.
+**Blockers needing your attention:** ≤5 bullets, each <2 lines: [crit/high/med/low] + decision needed + file path.
+**What's next (priority order):** 1) urgent unblock; 2) next sunfish-PM hand-off; 3) next book milestone; 4) next research deliverable.
+**Velocity vs MVP:** 1-2 sentences. PRs/day, % done, on-track vs MASTER-PLAN.md estimate.
 ```
 
-Don't pad. Don't include dependabot/bot PRs in the in-flight count. Don't repeat MASTER-PLAN.md content; reference it.
+Don't pad. Don't include dependabot/bot PRs. Don't repeat MASTER-PLAN.md content.
 
-Status vocabulary: `design-in-flight` (research working; do not build), `ready-to-build` (hand-off file exists; sunfish-PM may implement), `building`, `built`, `held`, `blocked`, `superseded`.
+Status vocabulary: `design-in-flight` / `ready-to-build` / `building` / `built` / `held` / `blocked` / `superseded`.
 
-### Pre-build checklist (sunfish-PM session)
+### Pre-build checklist (sunfish-PM)
 
-**Before any code change beyond a one-line fix, check:**
+Before any code change beyond a one-line fix:
 
-1. **`icm/_state/active-workstreams.md`** — find the row for the workstream you're about to touch. It must say `ready-to-build`. If `design-in-flight` or `held`, STOP and write a memory note asking research to clarify before proceeding.
-2. **The relevant intake / ADR / architecture artifact's `Status:` line** — must match `ready-to-build` (or be silent on status, which means workstream-level status from the ledger applies).
-3. **`icm/_state/handoffs/<workstream>.md`** — for `ready-to-build` workstreams, a hand-off file describes exactly what to build, file-by-file, with acceptance criteria.
-4. **`gh pr list --state open`** — look for in-flight PRs touching the same package, especially ones with auto-merge enabled.
-5. **`but status` (or `git log --oneline -10 --all`)** — verify no parallel-session work has landed since the hand-off was authored.
+1. **`active-workstreams.md`** — find the row. Must say `ready-to-build`. If `design-in-flight`/`held`, STOP + memory note to research.
+2. **Intake / ADR `Status:` line** — must match `ready-to-build` (or be silent — ledger applies).
+3. **`icm/_state/handoffs/<workstream>.md`** — describes what to build, file-by-file, with acceptance criteria.
+4. **`gh pr list --state open`** — look for in-flight PRs touching the same package; especially auto-merge-enabled.
+5. **`but status` (or `git log --all --oneline -10`)** — verify no parallel-session work landed since hand-off was authored.
 
-If ANY of those signal "design-in-flight" / "blocked" / unexpected state, stop. Write a memory entry naming the workstream, what you observed, and what you need clarified. Do not proceed.
+Any unexpected state → STOP, memory note naming workstream + observation + needed clarification. Do not proceed.
 
-### State transitions (research session)
+### State transitions (research)
 
-When widening or revising an intake mid-flight: immediately set its `Status:` to `design-in-flight`, update the matching row in `icm/_state/active-workstreams.md`, and (if a hand-off existed) revoke or update it.
-
-When a design is final and ready for implementation: write a hand-off in `icm/_state/handoffs/<workstream>.md`, flip the ledger row to `ready-to-build`, and (optionally) write a project memory pointing at the hand-off so sunfish-PM finds it via auto-memory at session start.
+- **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update ledger row, revoke/update existing hand-off.
+- **Design final:** write hand-off in `handoffs/<workstream>.md`, flip ledger row to `ready-to-build`, optionally write a project memory pointing at the hand-off.
 
 ### Memory-side coordination
 
-Project memories under `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/` are auto-loaded at every session's start. Use them for:
-
-- Cross-session announcements ("research has revised X; see hand-off Y")
-- State summaries that future sessions need ("Phase 1 progress per gap")
-- Hand-off pointers when the repo artifact alone isn't discoverable enough
-
-Don't duplicate hand-off content into memory; point at the repo file.
+Project memories under `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/` auto-load at session start. Use for: cross-session announcements, state summaries future sessions need, hand-off pointers. Don't duplicate hand-off content; point at the repo file.
 
 ### When parallel-session work surprises you
 
-Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially after `/compact`), batch-run `git log --all`, `git status`, `gh pr list`, `but status`, and tail `.wolf/memory.md` before acting on anything that says "pending." Compacted summaries are point-in-time snapshots; the repo + ledger are the ground truth.
+Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially after `/compact`), batch-run `git log --all`, `git status`, `gh pr list`, `but status`, and tail `.wolf/memory.md` before acting on anything marked "pending." Compacted summaries are point-in-time; the repo + ledger are ground truth.
 
 ### Fallback work order (sunfish-PM, when priority queue is dry)
 
-The priority queue is `icm/_state/active-workstreams.md` rows marked `ready-to-build` with a hand-off file in `icm/_state/handoffs/`. When that queue is empty, sunfish-PM does **not idle** — idle Claude Code sessions waste tokens. Instead, sunfish-PM falls through this ladder and picks the highest rung that has actionable work:
+Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off file. When dry, sunfish-PM does **not idle** — falls through this ladder:
 
-| Rung | Work | Why safe to do autonomously |
+| Rung | Work | Why safe |
 |---|---|---|
-| 1 | **Dependabot PR cleanup.** `gh pr list --author "app/dependabot" --state open` — auto-merge each per pre-release latest-first policy. Skip any PR that fails CI or touches a pinned-by-policy package. | Governed by `project_pre_release_latest_first_policy` memory; mechanical |
-| 2 | **Build hygiene.** `dotnet build` repo-wide; fix new warnings, deprecation notices, analyzer findings. Skip findings that require design judgment (rename a public API, change a contract) — flag those to research instead. | Mechanical; fixes have a clear right answer |
-| 3 | **Style-audit P0 follow-up.** Per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`, Phase 1 is at 86.5% (45/52 P0 resolved). Remaining 7 are documented; pick one and remediate. | Audit itself is the spec; remediation is mechanical |
-| 4 | **Test coverage gap-fill.** Run `dotnet test --collect:"XPlat Code Coverage"` repo-wide; identify a module under the project's coverage target; write tests against existing public surface (no behavior changes). | Quality work; bounded scope; doesn't change behavior |
-| 5 | **Doc improvements.** Missing XML docs on public APIs, README gaps, `apps/docs/blocks/<block>.md` stubs for blocks that don't have a doc page. | Always net-positive; no design risk |
-| 6 | **Sleep with `ScheduleWakeup` 1800s** if all five rungs above have no actionable work. Then re-poll the priority queue at wake. | Token-efficient idle pattern; mirrors `feedback_sleep_on_claude_code_token_exhaustion` |
+| 1 | **Dependabot PR cleanup** — `gh pr list --author "app/dependabot" --state open`; auto-merge per `project_pre_release_latest_first_policy`. Skip CI failures + pinned packages. | Mechanical |
+| 2 | **Build hygiene** — `dotnet build` repo-wide; fix new warnings/deprecations/analyzer findings. Skip design-judgment items (flag to research). | Mechanical |
+| 3 | **Style-audit P0 follow-up** per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`. | Audit is the spec |
+| 4 | **Test coverage gap-fill** — `dotnet test --collect:"XPlat Code Coverage"`; write tests for existing public surface. No behavior changes. | Bounded scope |
+| 5 | **Doc improvements** — XML docs on public APIs, README gaps, `apps/docs/blocks/<block>.md` stubs. | Net-positive |
+| 6 | **Sleep `ScheduleWakeup` 1800s** if no actionable work. Re-poll priority queue at wake. | Token-efficient |
 
-**Rules:**
+Rules:
+- Each fallback PR uses appropriate prefix (`chore(fallback):`, `fix(build):`, `test(coverage):`, `docs:`).
+- Fallback work that surfaces a design question STOPS + memory note to research.
+- After every fallback PR merges, **re-check the priority queue first**. Priority work always wins.
+- Concurrent fallback PRs capped at 3 in flight to avoid review-burden cliff.
 
-- Each fallback PR carries `chore(fallback):` or appropriate type (`fix(build):`, `test(coverage):`, `docs:`) commit prefix so the audit trail distinguishes priority work from fallback work.
-- Fallback work that surfaces a design question STOPS and writes a memory note flagging it to research, rather than guessing.
-- After every fallback PR merges, **re-check the priority queue first** before picking the next fallback. Priority work always wins when available.
-- Concurrent fallback PRs from sunfish-PM are capped at 3 in flight to avoid review-burden cliff for the user.
-
-**Research session commitment:** maintain priority queue depth at 2–3 ready-to-build rows so fallback work stays as fallback, not as primary diet. After every sunfish-PM PR merges, research session pre-writes the next 1–2 hand-offs.
-
----
-
-## Sunfish ICM Pipeline System
-
-Sunfish uses a filesystem-based orchestration system called ICM (Integrated Change Management) to
-manage work through deliberate stages, ensuring quality, clarity, and traceability.
-
-### What is /icm?
-
-`/icm` is the Sunfish ICM pipeline — a staging system for work that flows through 9 numbered stages:
-
-- **00_intake** — Classify and scope the request
-- **01_discovery** — Research dependencies and impact
-- **02_architecture** — Design the solution
-- **03_package-design** — Define per-package APIs
-- **04_scaffolding** — Build generators/templates (if needed)
-- **05_implementation-plan** — Create task list
-- **06_build** — Implement code
-- **07_review** — Quality gates and approval
-- **08_release** — Publish and announce
-
-Each stage has a `CONTEXT.md` file explaining its purpose, inputs, outputs, and exit criteria.
-See [`/icm/CONTEXT.md`](icm/CONTEXT.md) for complete overview.
-
-### What are Pipeline Variants?
-
-Under `/icm/pipelines/`, Sunfish maintains **7 reusable pipeline variant overlays** for recurring
-work types:
-
-1. **sunfish-feature-change** — New features, blocks, enhancements
-2. **sunfish-api-change** — Breaking changes, public contracts
-3. **sunfish-scaffolding** — Generator/CLI/template changes
-4. **sunfish-docs-change** — Docs site, examples, API docs
-5. **sunfish-quality-control** — Audits, review gates, consistency checks
-6. **sunfish-test-expansion** — Test coverage, regression, parity
-7. **sunfish-gap-analysis** — Missing capabilities, parity gaps
-
-Pipeline variants are **NOT separate stage trees**. They are **routing overlays** that guide how
-work moves through the default 9 stages.
-
-Each variant includes:
-- `README.md` — When to use this variant, key responsibilities
-- `routing.md` — How to navigate the default stages
-- `deliverables.md` — Standard outputs expected at each stage
-
-### Terminology
-
-**Important:** In this repository, terminology is strict:
-
-- **pipeline** = The numbered ICM flow (00_intake through 08_release, or a variant routing)
-- **pipeline variant** = A reusable overlay for recurring work types (lives in /icm/pipelines/)
-- **workspace** = VS Code only — NEVER used for ICM concepts in this repo
-
-If documentation mentions "workspace" in an ICM context, replace it with "pipeline".
+**Research commitment:** maintain priority queue depth at 2–3 `ready-to-build` rows so fallback stays fallback. After every sunfish-PM PR merges, research pre-writes the next 1–2 hand-offs.
 
 ---
 
-## How to Use Sunfish's ICM
+## Sunfish ICM Pipeline
 
-### When Starting a Request
+ICM (Integrated Change Management) is filesystem-based stage orchestration. 9 stages: **00_intake** → **01_discovery** → **02_architecture** → **03_package-design** → **04_scaffolding** → **05_implementation-plan** → **06_build** → **07_review** → **08_release**. Each stage has `CONTEXT.md` (purpose / inputs / outputs / exit criteria). See [`/icm/CONTEXT.md`](icm/CONTEXT.md).
 
-1. **Start in stage 00_intake** (unless reusing a prior output)
-   - Describe the request
-   - Identify affected Sunfish packages
-   - Choose a pipeline variant using [`/icm/_config/routing.md`](icm/_config/routing.md)
-   - Create `00_intake/output/intake-note.md`
+### Pipeline variants (routing overlays — NOT separate stage trees)
 
-2. **Use the variant's routing guide** (e.g., `pipelines/sunfish-feature-change/routing.md`)
-   - Each variant explains how to navigate the 9 stages
-   - Which stages to emphasize
-   - Which stages to skip
+7 reusable overlays under `/icm/pipelines/` for recurring work types: **sunfish-feature-change** (new features/blocks), **sunfish-api-change** (breaking changes), **sunfish-scaffolding** (generators/CLI/templates), **sunfish-docs-change** (docs/examples), **sunfish-quality-control** (audits/review-gates), **sunfish-test-expansion** (coverage/parity), **sunfish-gap-analysis** (missing capabilities).
 
-3. **Follow the stage guidance** (e.g., `01_discovery/CONTEXT.md`)
-   - Each stage has a CONTEXT.md explaining purpose, process, outputs, and exit criteria
-   - Each stage also has expected deliverables (see variant's `deliverables.md`)
+Each variant has `README.md` + `routing.md` + `deliverables.md`. Variants guide HOW work moves through the 9 default stages; they don't replace them.
 
-4. **Review before advancing**
-   - Each stage's `output/` folder is a review gate
-   - Don't advance until the output is reviewed and approved
+### Terminology (strict)
 
-### Key Files
+- **pipeline** = the numbered ICM flow (or a variant routing through it)
+- **pipeline variant** = reusable overlay in `/icm/pipelines/`
+- **workspace** = VS Code only — NEVER an ICM concept here
 
-| File | Purpose |
-|---|---|
-| `/icm/CONTEXT.md` | Overview of the ICM pipeline system |
-| `/icm/_config/routing.md` | How to classify requests and choose pipeline variants |
-| `/icm/_config/stage-map.md` | Quick reference table of all stages |
-| `/icm/_config/deliverable-templates.md` | Standard artifact templates |
-| `/icm/[00-08]_*/CONTEXT.md` | Purpose, inputs, process, outputs, exit criteria for each stage |
-| `/icm/pipelines/[variant]/README.md` | When to use this variant, key responsibilities |
-| `/icm/pipelines/[variant]/routing.md` | How to navigate default stages for this variant |
-| `/icm/pipelines/[variant]/deliverables.md` | Standard outputs for this variant |
+### Variant decision tree
+
+New feature/block/demo → **feature-change** · Breaking API change → **api-change** · Generator/CLI/template → **scaffolding** · Docs/examples/kitchen-sink → **docs-change** · Audit/review-gate/consistency → **quality-control** · Coverage/regression/parity → **test-expansion** · Find/scope missing capability → **gap-analysis**. See [`/icm/_config/routing.md`](icm/_config/routing.md) for examples.
+
+### Skip / fast-track
+
+- **docs-change** skips architecture + package-design (intake → impl-plan).
+- **quality-control** skips scaffolding.
+- **test-expansion** skips architecture + package-design.
+- **Trivial bug fix** can go intake → 06_build (with intake approval).
+- **Reusing prior discovery** can go intake → architecture (reference the doc).
+
+Document acceleration decisions in the current stage's notes.
 
 ---
 
-## Real Code vs. Workflow Artifacts
-
-### ICM is Workflow Only
-
-The `/icm` directory contains workflow orchestration artifacts only:
-- Stage context files
-- Design decisions and ADRs
-- Implementation plans
-- Audit reports
-- Release checklists
-
-Do NOT put implementation code in `/icm`. ICM is not a code folder.
-
-### Real Code Lives Here
-
-- `/packages/` — Framework-agnostic and adapter implementations
-- `/apps/` — Demo and documentation applications
-- `/tooling/` — Developer tools (CLI, generators, build tools)
-- `/_shared/` — Project documentation and standards
-
-When working through ICM stages, reference these locations but don't move code into `/icm`.
-
----
-
-## Sunfish-Specific Considerations
-
-### Package Architecture
-
-Sunfish has a layered package structure:
+## Sunfish architecture
 
 ```
 foundation (no dependencies)
-  ↓ (depends on)
-ui-core (framework-agnostic contracts)
-  ↓ (depend on)
-ui-adapters-blazor (Blazor implementation)
-ui-adapters-react (React implementation)
-  ↓ (depend on)
-blocks-* (composition layer)
-  ↓ (depend on)
-apps/kitchen-sink (playground/demo)
-apps/docs (documentation)
   ↓
-tooling/scaffolding-cli (generator tool)
+ui-core (framework-agnostic contracts)
+  ↓
+ui-adapters-blazor / ui-adapters-react
+  ↓
+blocks-* (composition layer)
+  ↓
+apps/kitchen-sink (demo) / apps/docs (documentation)
+  ↓
+tooling/scaffolding-cli (generator)
 
-compat-telerik (compatibility shim, depends on foundation + ui-core + ui-adapters-blazor)
+compat-telerik (depends on foundation + ui-core + ui-adapters-blazor)
 ```
 
-### Framework-Agnostic Design Principle
+**Framework-agnostic principle:** define the contract in foundation/ui-core first; then implement in adapters; then compose in blocks. Adapters don't drive contracts.
 
-When designing features:
-1. **Define the contract in foundation/ui-core** (framework-agnostic types, interfaces)
-2. **Then implement in adapters** (Blazor and React, framework-specific)
-3. **Compose in blocks** (using adapters)
-4. **Don't let adapters drive the design** — contracts should be framework-agnostic
+**Adapter parity:** all features in all adapters (Blazor + React) unless explicitly approved. Parity tests verify; document intentional differences.
 
-### Adapter Parity
+**compat-telerik:** Telerik-compatible surface over Sunfish; NOT the source of truth. Changes are policy-gated. If a Sunfish feature can't map to Telerik, that's OK — document it.
 
-- All features available in all adapters (Blazor + React) unless explicitly approved otherwise
-- Write parity tests to verify equivalence
-- Document any intentional differences and get sign-off
-
-### compat-telerik Policy
-
-- compat-telerik provides a Telerik-compatible surface over Sunfish
-- It is NOT the source of truth; ui-core and adapters are
-- compat-telerik changes are policy-gated (expect to justify them in review)
-- If a Sunfish feature can't map to Telerik, that's OK (but document it)
-
-### User-Facing Changes
-
-If your change is user-facing:
-- **kitchen-sink demo is mandatory** (stage 06 deliverable)
-- **apps/docs updates are mandatory** (stage 06 deliverable)
-- **JSDoc/XML comments on all public APIs** (stage 06 deliverable)
-- **Changelog entry with user-focused description** (stage 08 deliverable)
+**User-facing changes (Stage 06 deliverables):** kitchen-sink demo + apps/docs update + JSDoc/XML on public APIs. Stage 08: changelog entry with user-focused description.
 
 ---
 
-## Pipeline Variant Decision Tree
+## Real code vs. workflow artifacts
 
-Choose a pipeline variant using this heuristic:
+`/icm/` is workflow only — context files, ADRs, plans, audits, release checklists. No implementation code.
 
-**Is it a new feature, block, or demo?**
-→ **sunfish-feature-change**
-
-**Is it a breaking API change?**
-→ **sunfish-api-change**
-
-**Is it a generator, CLI, or template change?**
-→ **sunfish-scaffolding**
-
-**Is it docs, examples, or kitchen-sink?**
-→ **sunfish-docs-change**
-
-**Is it an audit, review gate, or consistency check?**
-→ **sunfish-quality-control**
-
-**Is it test coverage, regression, or parity testing?**
-→ **sunfish-test-expansion**
-
-**Is it finding or scoping a missing capability?**
-→ **sunfish-gap-analysis**
-
-See `/icm/_config/routing.md` for detailed heuristics and examples.
+Code lives in `/packages/` (framework-agnostic + adapters), `/apps/` (demo + docs), `/tooling/` (CLI/generators), `/_shared/` (project docs + standards).
 
 ---
 
-## Common Workflows
+## Key files
 
-### Add a New Feature (Feature Block, Component, etc.)
-
-1. Intake: Describe the feature, identify affected packages
-2. Choose: **sunfish-feature-change** variant
-3. Follow: `/icm/pipelines/sunfish-feature-change/routing.md`
-4. Output: New code in packages/, new demo in kitchen-sink, new docs in apps/docs
-5. Release: MINOR version bump
-
-### Make a Breaking API Change
-
-1. Intake: Clearly state what is breaking and why
-2. Choose: **sunfish-api-change** variant
-3. Follow: `/icm/pipelines/sunfish-api-change/routing.md`
-4. Output: Updated APIs, migration guide, updated all consumers
-5. Release: MAJOR version bump, migration guide in release notes
-
-### Update Docs/Examples
-
-1. Intake: Describe what docs need updating
-2. Choose: **sunfish-docs-change** variant
-3. Follow: `/icm/pipelines/sunfish-docs-change/routing.md`
-4. Output: Updated markdown files, verified examples
-5. Release: Publish docs site updates (may be independent of code release)
-
-### Improve Test Coverage
-
-1. Intake: Identify coverage gaps and target coverage %
-2. Choose: **sunfish-test-expansion** variant
-3. Follow: `/icm/pipelines/sunfish-test-expansion/routing.md`
-4. Output: New test files, improved coverage metrics
-5. Release: Merge to main (no version bump needed if no code changes)
-
----
-
-## Accelerating or Skipping Stages
-
-### When You Can Skip Stages
-
-- **docs-change:** Skip architecture and package-design (go straight from intake to implementation-plan)
-- **quality-control:** Skip scaffolding (go straight from implementation-plan to build)
-- **test-expansion:** Skip architecture and package-design (scope is clear)
-
-### When You Can Fast-Track
-
-- **Trivial bug fixes:** Go from intake straight to 06_build (get 00_intake approval first)
-- **Reusing prior discovery:** If you have a discovery document from related work, reference it in
-  intake and go straight to architecture
-
-Always document acceleration decisions in the current stage's notes.
-
----
-
-## Review Gates and Approvals
-
-Each stage is a review gate. Before advancing:
-
-- ✓ Current stage's output is complete
-- ✓ Output artifact(s) have been reviewed and approved
-- ✓ Any blockers from prior stages are resolved
-
-If a stage is blocked or has issues:
-- Document the issue clearly
-- Return to relevant earlier stage
-- Fix the issue
-- Re-review
-
-This is normal and expected. Catching issues early is better than discovering them late.
-
----
-
-## Questions?
-
-For questions about the ICM pipeline:
-- See `/icm/CONTEXT.md` for pipeline overview
-- See the specific stage CONTEXT.md (e.g., `/icm/06_build/CONTEXT.md`)
-- See the variant README and routing guide
-- See `/icm/_config/routing.md` for request classification
-
-For questions about Sunfish architecture or package structure:
-- See `/_shared/product/architecture-principles.md`
-- See individual package README files (e.g., `/packages/foundation/README.md`)
-- See `/packages/ui-core/README.md` for component contracts
-- See `/_shared/engineering/coding-standards.md` for style guidelines
-
----
-
-## Summary
-
-The Sunfish ICM pipeline is a structured, stage-gated approach to managing work. It emphasizes:
-- **Clarity** — every stage has clear inputs, outputs, and exit criteria
-- **Quality** — review gates before advancing
-- **Traceability** — all decisions and plans are documented
-- **Sunfish-specific guidance** — package architecture, adapter parity, user-facing requirements
-
-Use the pipeline variant routing guides to navigate the default 9 stages based on the type of work.
-Always document assumptions and decisions at each stage.
+| File | Purpose |
+|---|---|
+| [`/icm/CONTEXT.md`](icm/CONTEXT.md) | ICM pipeline overview |
+| [`/icm/_config/routing.md`](icm/_config/routing.md) | Request classification + variant choice |
+| [`/icm/_config/stage-map.md`](icm/_config/stage-map.md) | Quick stage reference |
+| [`/icm/_config/deliverable-templates.md`](icm/_config/deliverable-templates.md) | Standard artifact templates |
+| `/icm/[NN]_*/CONTEXT.md` | Per-stage purpose/inputs/outputs/exit-criteria |
+| `/icm/pipelines/[variant]/{README,routing,deliverables}.md` | Per-variant guidance |
+| [`/_shared/product/architecture-principles.md`](./_shared/product/architecture-principles.md) | Architecture principles |
+| [`/_shared/engineering/coding-standards.md`](./_shared/engineering/coding-standards.md) | Style guidelines |
+| [`/packages/foundation/README.md`](./packages/foundation/README.md), [`/packages/ui-core/README.md`](./packages/ui-core/README.md) | Per-package contracts |
