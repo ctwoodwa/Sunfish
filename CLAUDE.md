@@ -94,24 +94,24 @@ Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially
 
 ### Fallback work order (sunfish-PM, when priority queue is dry)
 
-Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off file. When dry, sunfish-PM does **not idle** — falls through this ladder:
+Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off file. When dry, sunfish-PM does **not idle** — falls through:
 
-| Rung | Work | Why safe |
-|---|---|---|
-| 1 | **Dependabot PR cleanup** — `gh pr list --author "app/dependabot" --state open`; auto-merge per `project_pre_release_latest_first_policy`. Skip CI failures + pinned packages. | Mechanical |
-| 2 | **Build hygiene** — `dotnet build` repo-wide; fix new warnings/deprecations/analyzer findings. Skip design-judgment items (flag to research). | Mechanical |
-| 3 | **Style-audit P0 follow-up** per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`. | Audit is the spec |
-| 4 | **Test coverage gap-fill** — `dotnet test --collect:"XPlat Code Coverage"`; write tests for existing public surface. No behavior changes. | Bounded scope |
-| 5 | **Doc improvements** — XML docs on public APIs, README gaps, `apps/docs/blocks/<block>.md` stubs. | Net-positive |
-| 6 | **Sleep `ScheduleWakeup` 1800s** if no actionable work. Re-poll priority queue at wake. | Token-efficient |
+| Rung | Work |
+|---|---|
+| 1 | **Dependabot PR cleanup** — auto-merge per `project_pre_release_latest_first_policy`; skip CI failures + pinned packages. |
+| 2 | **Build hygiene** — fix new warnings/deprecations/analyzer findings; flag design-judgment items to research. |
+| 3 | **Style-audit P0** per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`. |
+| 4 | **Test coverage gap-fill** — tests for existing public surface; no behavior changes. |
+| 5 | **Doc improvements** — XML docs, README gaps, `apps/docs/blocks/<block>.md` stubs. |
+| 6 | **Idle:** write `cob-idle-*.md` to research-inbox (see below) THEN `ScheduleWakeup 1800s`. Re-poll priority queue at wake. |
 
-Rules:
-- Each fallback PR uses appropriate prefix (`chore(fallback):`, `fix(build):`, `test(coverage):`, `docs:`).
-- Fallback work that surfaces a design question STOPS + memory note to research.
-- After every fallback PR merges, **re-check the priority queue first**. Priority work always wins.
-- Concurrent fallback PRs capped at 3 in flight to avoid review-burden cliff.
+Rules: commits use `chore(fallback):` / `fix(build):` / `test(coverage):` / `docs:`. Design-question halts → `cob-question-*.md` (see below). Re-check priority queue after every merge; priority always wins. Cap concurrent fallback PRs at 3. **Research commitment:** maintain queue depth 2–3 `ready-to-build` rows; pre-write next 1–2 hand-offs after every PR merges. **XO scans `research-inbox/` every loop iteration.**
 
-**Research commitment:** maintain priority queue depth at 2–3 `ready-to-build` rows so fallback stays fallback. After every sunfish-PM PR merges, research pre-writes the next 1–2 hand-offs.
+### COB ↔ XO live signaling — `research-inbox/`
+
+Filesystem inbox at `icm/_state/research-inbox/` for sunfish-PM (COB) → research (XO) signals. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `cob-{idle|question|resumed}-YYYY-MM-DDTHH-MMZ-{slug}.md`. Body: 3-line YAML frontmatter (`type`, `workstream`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
+
+**COB writes:** rung 6 idle → `cob-idle-*.md` then `ScheduleWakeup 1800s`. Design-ambiguity halt mid-build → `cob-question-*.md` then halt the workstream + ledger row note pointing at the file. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null` at loop top; non-empty → priority above ADR cadence. Resolve via hand-off/answer/ledger update, then `git mv` beacon to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
 
 ---
 
