@@ -1,8 +1,10 @@
 # ADR 0054 — Electronic Signature Capture & Document Binding
 
-**Status:** Proposed
-**Date:** 2026-04-28
+**Status:** Accepted (with 7 amendments — A1 / A2 / A3 / A4 / A5 / A6 / A7)
+**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted by CTO with amendments per [council review](../../icm/07_review/output/adr-audits/0054-council-review-2026-04-29.md) + CO-approved [SignatureScope UPF Pattern E](../../icm/00_intake/output/signature-scope-taxonomy-upf-2026-04-29.md))
 **Resolves:** Property-ops cluster intake [`property-signatures-intake-2026-04-28.md`](../../icm/00_intake/output/property-signatures-intake-2026-04-28.md); cluster workstream #21. Specifies the cryptographic substrate for legally-binding electronic signatures on leases, work-order completion, inspection move-in/out sign-off, and prospect criteria-acknowledgement.
+
+> **⚠ Read amendments first.** This ADR was Accepted with 7 amendments documented in §"Amendments" at the end. Inline contract sketches in this ADR show the **post-amendment** types where amendments replaced earlier shapes (e.g., `SignatureScope` enum is now `IReadOnlyList<TaxonomyClassification>`; `DeviceAttestation.Algorithm: string` is now `SignatureEnvelope`). The amendment log preserves original-text for audit. Implementation must follow the amended types, not the original sketch.
 
 ---
 
@@ -97,20 +99,26 @@ public sealed record SignatureEvent
     public required ConsentRecordId ConsentReference { get; init; }      // proves UETA/E-SIGN consent was granted prior
     public Geolocation? OptionalGeolocation { get; init; }               // GPS at capture (with permission)
     public required string DocumentScopeRef { get; init; }                // opaque ref to lease/work-order/inspection/criteria-doc
-    public required SignatureScope Scope { get; init; }                   // type discriminator
+    public required IReadOnlyList<TaxonomyClassification> Scopes { get; init; }   // [Amendment A7] FHIR-mirrored Pattern E; references Sunfish.Signature.Scopes@1.0.0 nodes per ADR 0056
 }
 
 public readonly record struct SignatureEventId(Guid Value);
 
-public enum SignatureScope
-{
-    Lease,                    // blocks-leases
-    WorkOrderCompletion,      // blocks-work-orders (ADR 0053)
-    InspectionMoveIn,         // blocks-inspections
-    InspectionMoveOut,        // blocks-inspections
-    CriteriaAcknowledgement,  // blocks-leasing-pipeline
-    Other                     // future scopes; tag in DocumentScopeRef
-}
+// [Amendment A7] SignatureScope is now a TaxonomyClassification list (Pattern E).
+// Originally an enum; replaced with TaxonomyClassification list per CO-approved
+// SignatureScope UPF + ADR 0056 (Foundation.Taxonomy substrate).
+//
+// Each SignatureEvent carries one or more TaxonomyClassification entries pointing
+// at nodes in Sunfish.Signature.Scopes@1.0.0 (e.g., "lease-execution",
+// "lease-renewal", "notary-jurat", "consent-background-check").
+//
+// Multi-scope signatures are first-class (e.g., a single lease-execution that
+// also requires consent-disclosure acknowledgment in the same act). Consumer
+// blocks decide which scopes are required for their workflow.
+//
+// See ADR 0056 for TaxonomyClassification definition; charter for
+// Sunfish.Signature.Scopes@1.0.0 starter nodes is in
+// `icm/00_intake/output/starter-taxonomies-v1-charters-2026-04-29.md`.
 
 // Content-addressed binding
 public readonly record struct ContentHash(string HexValue)
@@ -144,12 +152,16 @@ public enum CaptureQuality
 }
 
 // Operator-as-witness attestation
+// [Amendment A2] DeviceAttestation now uses Sunfish.Foundation.Crypto.SignatureEnvelope
+// per ADR 0004 instead of string-typed Algorithm + raw bytes. This delivers algorithm-
+// agility without per-substrate string fields and matches the ADR 0049 audit substrate's
+// approach to long-retention crypto data (signatures retain 10 years; longest-retention
+// data class in the system).
 public sealed record DeviceAttestation
 {
     public required string OperatorDeviceKeyId { get; init; }            // resolves to operator identity via Foundation.Recovery
-    public required string SignatureBytes { get; init; }                  // operator's Ed25519 signature over canonical event payload
-    public required string CanonicalPayloadHash { get; init; }            // SHA-256 of canonical bytes; what was signed
-    public required string Algorithm { get; init; }                       // "Ed25519" for Phase 2; algorithm-agility per ADR 0004
+    public required SignatureEnvelope Envelope { get; init; }             // [Amendment A2] per ADR 0004; carries Algorithm + Payload (replaces SignatureBytes + Algorithm string)
+    public required ContentHash CanonicalPayloadHash { get; init; }       // [Amendment A1] SHA-256 of canonical bytes per A1 canonicalization rule; what was signed
 }
 
 // Consent record (UETA/E-SIGN compliance)
@@ -249,6 +261,70 @@ public enum SignatureValidityReason
 
 (Schema sketch only; XML doc + nullability + `required` enforced at Stage 06.)
 
+### Canonicalization (Amendment A1 — Critical)
+
+Content-hash binding is only legally defensible if both parties can recompute the same bytes from the same source. The original ADR draft was silent on canonicalization and would have produced undefined behavior in `ContentHash.Compute`. This amendment pins the canonicalization rules that make hashes deterministic and recoverable:
+
+#### Rule 1 — Structured payload canonicalization (RFC 8785 / JCS)
+
+All structured payloads hashed by this substrate (DeviceAttestation canonical payload, ConsentRecord disclosure version, future structured documents) MUST be serialized using **JSON Canonical Form (RFC 8785, JCS)** before hashing. JCS guarantees:
+
+- Object keys sorted lexicographically by Unicode code point
+- No whitespace
+- Strings escaped per RFC 8259 § 7
+- Numbers normalized (integers as bare digits; floats per IEEE 754 round-trip)
+- UTF-8 byte serialization
+
+Implementation: `Sunfish.Foundation.Canonicalization.JsonCanonical` (foundation-tier; new namespace introduced by this amendment); references the `JcsCanonicalizer` reference implementation cited by RFC 8785 §3.
+
+#### Rule 2 — Text document canonicalization (UTF-8 NFC + LF)
+
+Text-only documents (lease templates rendered as plain text or HTML) MUST be canonicalized as:
+
+- **Encoding:** UTF-8
+- **Unicode normalization:** NFC (Canonical Decomposition followed by Canonical Composition; Unicode Standard Annex #15)
+- **Line endings:** LF (`\n` only; CRLF and CR are normalized to LF before hashing)
+- **Trailing whitespace:** preserved as-is (signers might sign whitespace-significant content; do not normalize)
+- **BOM:** stripped if present (RFC 8259 §8.1)
+
+#### Rule 3 — PDF documents are NOT hashed directly
+
+**PDFs MUST NOT be hashed as their raw bytes for legal binding.** PDF generation is non-deterministic in practice: xref tables, embedded font metadata, creation timestamps, and renderer-specific compression vary across environments. iOS PDFKit and Bridge QuestPDF will produce byte-different PDFs from the same content source.
+
+PDFs are convenience artifacts only. The canonical record is the SignatureEvent + the source content (Rule 1 or Rule 2 canonicalization). If a PDF must be hash-validated for an out-of-band recipient (e.g., emailed PDF for a leaseholder's records), generate a separate `PdfRenderingHash` field that documents the rendered PDF byte hash and explicitly marks it as **non-evidentiary**.
+
+#### Rule 4 — PencilKit raster blob storage is NOT canonicalized
+
+Pen-stroke raster (PNG) blobs are stored verbatim in the tenant blob store and referenced by `RasterBlobRef`. They are biometric evidence, not canonicalized data. The vector blob (`VectorBlobRef`) is also verbatim PencilKit JSON — its purpose is forensic replay, not content hashing.
+
+#### Rule 5 — `ContentHash.Compute` API surface
+
+Updated API per Amendment A1:
+
+```csharp
+public readonly record struct ContentHash(string HexValue)
+{
+    // Hash structured payload (DeviceAttestation, ConsentRecord, etc.)
+    public static ContentHash Compute(JsonCanonicalPayload payload);
+
+    // Hash a text document under Rule 2 canonicalization
+    public static ContentHash ComputeTextDocument(string content);
+
+    // Hash an arbitrary byte span — for callers who have already canonicalized
+    public static ContentHash ComputeRaw(ReadOnlySpan<byte> canonical);
+
+    // The single-arg overload (string utf8Content) from the original sketch is REMOVED;
+    // it would have been ambiguous between Rule 1 and Rule 2.
+}
+
+// New supporting type per Rule 1
+public readonly record struct JsonCanonicalPayload(string Jcs);  // pre-canonicalized JCS string
+```
+
+Implementation guard rails: `kernel-signatures` rejects any caller that bypasses `JsonCanonicalPayload` for structured data; analyzer SUNFISH_SIGCANON_001 (new) enforces.
+
+---
+
 ### Substrate / layering notes
 
 ```
@@ -282,6 +358,18 @@ Audit records carry: SignatureEventId + SignerIdentity (redacted) + WitnessIdent
 ### Revocation flow (append-only)
 
 A signature is revoked (signed under duress, fraudulent, post-hoc agreement to nullify) via an append-only `SignatureRevokedEvent` written to the audit substrate. The original SignatureEvent record is **immutable** — never deleted, never modified. Projections compute current validity by reading the audit stream. This preserves the legal trail of what was signed when, plus the legal trail of what was later revoked and why.
+
+#### Concurrent revocation semantics (Amendment A4 — Major)
+
+Under ADR 0028 (CRDT engine; AP append-only), two operators on different offline devices may revoke the same signature concurrently. The merge rule is:
+
+1. **Revocations are total** — any revoke event causes the signature to be revoked. Two operators cannot "race to un-revoke"; revocation is a one-way state.
+2. **Effective-revocation timestamp = earliest concurrent revoke** by Lamport timestamp. The audit log retains all revoke events; the projection's "current validity" answer treats the signature as revoked from the earliest event's perspective.
+3. **Revoking-actor list = union of all concurrent revokers.** If operator A and operator B both revoke the same signature offline and their revokes converge on sync, the resolved audit state shows both revoking-actors with their respective Lamport timestamps + reasons.
+4. **Revocation-reason resolution.** The `Reason` field accumulates as a list — `IReadOnlyList<RevocationReason>`. Forensic review can read all submitted reasons; UI rendering displays the earliest reason as primary with "and N other revocations" indicator.
+5. **No un-revoke event class exists.** If a revocation was made in error, the remediation is to capture a **new SignatureEvent** with the same signer + scope referencing the original DocumentVersionHash. The audit trail then shows: original signature → revoked at T1 → re-signed at T2. The original revocation is preserved.
+
+This rule is enforced by `kernel-signatures`'s revocation-projection logic; analyzer SUNFISH_SIGREV_001 (new) prohibits any code path from constructing an "un-revoke" event.
 
 ### Compliance posture: UETA / E-SIGN baseline
 
@@ -364,26 +452,43 @@ No production code references signatures today. ADR 0053 (work-order, Proposed) 
 
 ### ADR amendments triggered by this ADR
 
-1. **ADR 0046 (key-loss recovery) amendment.** Outstanding signature commitments survive operator device-key rotation. Recovery affects only the ability to issue *new* signatures going forward; historical signatures remain valid against the original (now-rotated) device key. Amendment adds a `historical_keys[]` projection to recovery state for verification of old signatures.
+1. **ADR 0046 amendment — promoted to standalone ADR-0046-A1 (Amendment A3 — Major).** Original draft embedded operator device-key rotation handling in Compatibility plan as a paragraph. Council review flagged this as too load-bearing for inline treatment. Amendment A3 promotes it to a standalone companion ADR (ADR-0046-A1) authored separately. ADR-0046-A1 must specify: (a) `historical_keys[]` projection schema, (b) verification flow for a SignatureEvent against a rotated operator key, (c) how recovery state machine emits the rotation event into kernel-audit so the verifier can reconstruct historical key validity. **Sequencing note:** ADR-0046-A1 must be Accepted before `kernel-signatures` Stage 06 build begins.
 2. **ADR 0049 (audit-trail substrate) confirmation.** 5 new audit record subtypes added per the table above. No structural change to audit substrate; new vocabulary only.
 3. **ADR 0053 (work-order) implicit confirmation.** This ADR provides the `SignatureEventId` ADR 0053 reserves; no edit needed to ADR 0053 once both are Accepted.
+4. **ADR 0056 (Foundation.Taxonomy) consumer (Amendment A7).** SignatureScope is replaced by `IReadOnlyList<TaxonomyClassification>` per Pattern E. References `Sunfish.Signature.Scopes@1.0.0` starter taxonomy charter (`icm/00_intake/output/starter-taxonomies-v1-charters-2026-04-29.md`).
+5. **ADR 0004 (Post-Quantum Signature Migration) consumer (Amendment A2).** `DeviceAttestation.Algorithm: string` is replaced by `Sunfish.Foundation.Crypto.SignatureEnvelope { Algorithm; Payload }` per ADR 0004's algorithm-agility shape.
 
 ---
 
 ## Implementation checklist
 
-- [ ] `packages/kernel-signatures/` scaffolded; references `kernel-security` + `kernel-audit`
-- [ ] `SignatureEvent`, `SignatureEventId`, `ConsentRecord`, `ConsentRecordId`, `ContentHash`, `PenStrokeBlobRef`, `DeviceAttestation`, `Geolocation`, `SignatureScope`, `PenStrokeFidelity`, `CaptureQuality`, `ClockSource` types defined; full XML doc; nullability + `required` enforced
+- [ ] `packages/kernel-signatures/` scaffolded; references `kernel-security` + `kernel-audit` + `foundation-taxonomy` (per Amendment A7) + `foundation-crypto` (per Amendment A2)
+- [ ] `Sunfish.Foundation.Canonicalization.JsonCanonical` (new namespace per Amendment A1) implements RFC 8785 / JCS canonicalizer in `packages/foundation-canonicalization/` (new package or part of `foundation-crypto` — sequencing decision in Stage 02)
+- [ ] `SignatureEvent`, `SignatureEventId`, `ConsentRecord`, `ConsentRecordId`, `ContentHash`, `PenStrokeBlobRef`, `DeviceAttestation`, `Geolocation`, `PenStrokeFidelity`, `CaptureQuality`, `ClockSource` types defined; full XML doc; nullability + `required` enforced. **Per Amendment A7:** `SignatureScope` enum REMOVED; `SignatureEvent.Scopes` is `IReadOnlyList<TaxonomyClassification>` referencing `Sunfish.Signature.Scopes@1.0.0`. **Per Amendment A2:** `DeviceAttestation.Envelope` is `Sunfish.Foundation.Crypto.SignatureEnvelope` (no string-typed Algorithm + raw bytes).
 - [ ] `IDocumentSigningService` + `SignatureCaptureRequest` + `SignatureCaptureResult` + `SignatureCaptureOutcome` + `SignatureVerificationResult` + `SignatureValidityReason` types
 - [ ] `InMemoryDocumentSigningService` reference implementation in `kernel-signatures` for tests/demos (uses in-memory storage; mock device-key)
 - [ ] 5 audit record types added to `Sunfish.Kernel.Audit` per ADR 0049
-- [ ] ADR 0046 amendment authored + accepted (signature survival under key rotation)
+- [ ] **ADR-0046-A1 authored + Accepted (Amendment A3) — gating Stage 06 build of kernel-signatures.** Specifies `historical_keys[]` projection on Foundation.Recovery state for signature survival under operator device-key rotation.
 - [ ] ADR 0049 audit subtype additions accepted
+- [ ] **`Sunfish.Signature.Scopes@1.0.0` starter taxonomy seeded** (per Amendment A7 + ADR 0056) via `ITaxonomyRegistry.RegisterCorePackage` at fresh-tenant initialization.
+- [ ] **Analyzer SUNFISH_SIGCANON_001 (new per Amendment A1)** enforces no caller bypasses `JsonCanonicalPayload` for structured-data hashing.
+- [ ] **Analyzer SUNFISH_SIGREV_001 (new per Amendment A4)** enforces no code path constructs an "un-revoke" event.
+- [ ] **Concurrent-revocation merge test (per Amendment A4):** simulate two offline revokes of same SignatureEvent; assert revocation-projection treats as revoked from earliest Lamport-stamp; assert revoking-actor list is union; assert no un-revoke is producible.
 - [ ] iOS PencilKit-backed implementation in `accelerators/anchor-mobile-ios/` (gated on workstream #23 hand-off)
 - [ ] Bridge server-side QuestPDF-backed implementation (for non-iOS-originated flows; e.g., criteria acknowledgement on a web page)
 - [ ] kitchen-sink demo: lease signing flow simulated (Mac Catalyst or WebView shim showing the iOS flow); criteria acknowledgement on a Bridge web page
 - [ ] PDF generation: signed PDF generated on-device with embedded signature image; visual rendering parity with Bridge-side
-- [ ] Document-binding integrity test: SignatureEvent verified valid against original document content; verified invalid against modified content
+- [ ] Document-binding integrity test: SignatureEvent verified valid against original document content; verified invalid against modified content. **Fixture matrix (Amendment A5):**
+  - [ ] **F1 — whitespace-only edit:** insert/remove space in lease text; hash MUST change
+  - [ ] **F2 — Unicode NFC vs NFD reordering:** same visible text serialized in both forms; canonicalized hashes MUST match (NFC normalization rule)
+  - [ ] **F3 — trailing-newline difference:** add or remove final `\n`; hash MUST change (whitespace preserved per Rule 2)
+  - [ ] **F4 — line-ending difference:** CRLF vs LF in source; canonicalized hashes MUST match (LF normalization rule)
+  - [ ] **F5 — lease numbering reflow:** rename "clause 3" to "clause 3a" in body text; hash MUST change
+  - [ ] **F6 — embedded-image swap:** replace logo image with different bytes in HTML lease template; hash MUST change
+  - [ ] **F7 — PDF re-generation from same source:** generate PDF twice from identical canonical source; raw PDF byte hashes MAY differ (Rule 3 — non-evidentiary), but `ContentHash.ComputeTextDocument` of the source MUST match
+  - [ ] **F8 — BOM stripping:** UTF-8 BOM-prefixed and non-BOM versions of same text; canonicalized hashes MUST match (Rule 2)
+  - [ ] **F9 — JCS key reordering:** structured payload with object keys in different orders; canonicalized hashes MUST match (Rule 1)
+  - [ ] **F10 — JCS whitespace differences:** structured payload with vs without indent; canonicalized hashes MUST match (Rule 1)
 - [ ] Audit trail: every SignatureEvent appears in kernel-audit log
 - [ ] apps/docs entry covering signature lifecycle, document binding, PDF generation, UETA/E-SIGN compliance posture, and consumer integration patterns
 
@@ -407,16 +512,18 @@ No production code references signatures today. ADR 0053 (work-order, Proposed) 
 
 ## Revisit triggers
 
-This ADR should be re-evaluated when any of the following fire:
+This ADR should be re-evaluated when any of the following fire (Amendment A6 tightens these with measurable thresholds where possible):
 
-- **Multi-signer sequential / async flows** become a real requirement (Phase 2.3+).
-- **Notarization workflow** required (raised seal, notary-witnessed).
-- **Algorithm-agility crisis** — Ed25519 deprecated or compromised; substrate must support algorithm rotation per ADR 0004.
-- **Jurisdiction-specific signature requirements** (e.g., wet-signature mandatory for real-estate transfers) become in-scope.
-- **External e-sign integration** required (DocuSign / Adobe Sign / HelloSign) — `providers-esign-*` adapter ADR.
-- **Forensic dispute** in production reveals a signature evidence gap not captured by current substrate.
-- **Revocation flow** abused as un-do (governance failure) — tighten governance per OQ-S8 resolution.
-- **PDF rendering drift** between iOS PDFKit and Bridge QuestPDF degrades evidence portability.
+- **Multi-signer sequential / async flows** — when a real lease requires 2+ signers on different schedules, or when first multi-signer ticket lands in queue.
+- **Notarization workflow** — when first jurisdiction requires notarization for a Sunfish workflow (raised seal, notary-witnessed); track via Sunfish.Signature.Scopes.notary-* node consumption.
+- **Algorithm-agility crisis** — Ed25519 deprecated by NIST or first practical attack published; OR ADR 0004 acceptance lands and substrate must rotate algorithm per the ADR 0004 SignatureEnvelope.
+- **Jurisdiction-specific signature requirements** — first state where Sunfish ships requires wet-signature mandate for real-estate transfers (currently 0 known); flag at consumer-block design.
+- **External e-sign integration** — first customer ticket requesting DocuSign / Adobe Sign / HelloSign integration; spawn `providers-esign-*` adapter ADR.
+- **Forensic dispute** (Amendment A6 tightened) — any forensic dispute where the substrate cannot produce the original canonical bytes within 1 business day of subpoena, OR where document-binding hash cannot be recomputed by an opposing party using only the substrate's published canonicalization rules.
+- **Revocation flow abused as un-do** — more than 1 revocation per signature event in the same tenant in a 30-day window indicates governance failure; tighten per OQ-S8 resolution.
+- **PDF rendering drift** (Amendment A6 tightened) — iOS PDFKit and Bridge QuestPDF visual byte-diff exceeds 0.5% on the parity-test corpus, OR any single corpus document produces a visual difference visible to the unaided eye at 100% zoom.
+- **Canonicalization rule failure** (new per Amendment A1) — any test fixture in the F1–F10 matrix fails on first run after substrate refactor; substrate is non-shippable until fixed.
+- **Operator device-key rotation verification gap** (new per Amendment A3) — first time a verifier cannot produce a valid signature verification for a 6+ month-old SignatureEvent because the operator's device key has rotated; ADR 0046-A1 implementation gap.
 
 ---
 
@@ -468,4 +575,115 @@ This ADR should be re-evaluated when any of the following fire:
 - [x] **Anti-pattern scan.** None of AP-1, AP-3, AP-9, AP-12, AP-21 from `.claude/rules/universal-planning.md` apply. Substrate composition explicit; phases observable; sources cited (E-SIGN, UETA, RFC 3161).
 - [x] **Revisit triggers.** 8 conditions with externally-observable signals.
 - [x] **Cold Start Test.** Implementation checklist is 13 specific tasks. Fresh contributor reading this ADR + signatures cluster intake + ADR 0049 + ADR 0046 + ADR 0028 should be able to scaffold `kernel-signatures` without asking for clarification.
-- [x] **Sources cited.** ADR 0004, 0008, 0013, 0028, 0043, 0046, 0049, 0051, 0052, 0053 referenced. E-SIGN + UETA cited. PencilKit + CryptoKit + PDFKit + QuestPDF cited as concrete impl targets. RFC 3161 for trusted-timestamp (deferred).
+- [x] **Sources cited.** ADR 0004, 0008, 0013, 0028, 0043, 0046, 0049, 0051, 0052, 0053, 0056 referenced. E-SIGN + UETA cited. PencilKit + CryptoKit + PDFKit + QuestPDF cited as concrete impl targets. RFC 3161 for trusted-timestamp (deferred). RFC 8785 (JCS) cited for canonicalization (Amendment A1). Unicode Standard Annex #15 cited for NFC normalization (Amendment A1).
+
+---
+
+## Amendments
+
+This section documents the 7 amendments accepted with this ADR on 2026-04-29. Each amendment is canonical and must be observed by implementation. Original-text-with-strikethrough is preserved for audit; the inline ADR body shows the **post-amendment** types where amendments fully replaced earlier shapes.
+
+### Amendment A1 — Canonicalization rules pinned (Critical)
+
+**Source:** Council review §5 A1 — "Canonicalization is undefined → content-hash binding is theatre."
+
+**Change:** Added §"Canonicalization (Amendment A1 — Critical)" with 5 explicit rules: RFC 8785 / JCS for structured payloads; UTF-8 NFC + LF normalization for text documents; PDFs MUST NOT be hashed for legal binding; PencilKit raster blobs are not canonicalized; updated `ContentHash.Compute` API surface that rejects ambiguous overloads.
+
+**Original text changed:**
+- `ContentHash.Compute(string utf8Content) => /* UTF-8 then SHA-256 */;` — REMOVED (ambiguous between Rule 1 / Rule 2)
+- `DeviceAttestation.CanonicalPayloadHash: string` — changed to `ContentHash` typed (compositional with Rule 5 API surface)
+
+**Implementation impact:** new `Sunfish.Foundation.Canonicalization.JsonCanonical` namespace; analyzer SUNFISH_SIGCANON_001 enforces structured-data canonicalization at compile-time.
+
+### Amendment A2 — SignatureEnvelope replaces string-typed Algorithm (Critical)
+
+**Source:** Council review §5 A2 — "Replace `DeviceAttestation.Algorithm: string` with the ADR 0004 `SignatureEnvelope { SignatureAlgorithm Algorithm; byte[] Payload }` shape."
+
+**Change:** `DeviceAttestation` now carries `Envelope: SignatureEnvelope` instead of `Algorithm: string` + `SignatureBytes: string`.
+
+**Sequencing:** kernel-signatures Stage 06 build is gated on the `Sunfish.Foundation.Crypto.SignatureEnvelope` type existing per ADR 0004. If ADR 0004 is not yet implemented at Stage 06 time, kernel-signatures must scaffold the SignatureEnvelope type as part of its own ship and ADR 0004 absorbs it later — not the reverse.
+
+**Original text changed:**
+```csharp
+// REMOVED:
+public required string SignatureBytes { get; init; }
+public required string Algorithm { get; init; }
+// REPLACED WITH:
+public required SignatureEnvelope Envelope { get; init; }
+```
+
+**Implementation impact:** signatures captured today are forward-compatible with future algorithm rotation (Ed25519 → PQ algorithms when standardized).
+
+### Amendment A3 — ADR 0046-A1 promoted to standalone ADR (Major)
+
+**Source:** Council review §5 A3 — "Author the ADR 0046 amendment as a separate ADR (0046-A1) before kernel-signatures Stage 06 build — not as embedded amendment text in 0054."
+
+**Change:** §"ADR amendments triggered by this ADR" item 1 was a single paragraph specifying inline historical-keys handling; amendment promotes it to a standalone companion ADR (ADR-0046-A1) that must be authored + Accepted before kernel-signatures Stage 06 build.
+
+**ADR-0046-A1 scope (load-bearing for ADR 0054):**
+- `historical_keys[]` projection schema on Foundation.Recovery state
+- Verification flow: SignatureEvent + rotated operator key → still-verifiable result
+- Recovery state machine emits rotation event into kernel-audit so verifier can reconstruct historical key validity
+- Test: 3-rotation chain across simulated time period; signature captured under key version 1 still verifies after key rotates to versions 2 + 3
+
+**Sequencing:** kernel-signatures Stage 06 build does not start until ADR-0046-A1 Accepted.
+
+### Amendment A4 — Concurrent revocation merge rule (Major)
+
+**Source:** Council review §5 A4 — "Add `### Concurrent revocation semantics` paragraph specifying merge rule under ADR 0028 AP semantics."
+
+**Change:** Added §"Concurrent revocation semantics (Amendment A4 — Major)" subsection inside Revocation flow. Specifies 5 rules: revocations are total; effective timestamp = earliest concurrent revoke; revoking-actor list is union; revocation-reason accumulates as list; no un-revoke event class exists (remediation is a new SignatureEvent).
+
+**Implementation impact:** analyzer SUNFISH_SIGREV_001 prohibits un-revoke event construction; revocation-projection logic in kernel-signatures must implement the 5 merge rules; concurrent-revocation merge test added to Stage 06 acceptance criteria.
+
+### Amendment A5 — F1–F10 fixture matrix for document-binding integrity test (Major)
+
+**Source:** Council review §5 A5 — "Add a fixture matrix to the document-binding integrity test deliverable."
+
+**Change:** Implementation checklist's "Document-binding integrity test" line expanded with 10 specific test fixtures (F1 whitespace edit / F2 NFC vs NFD / F3 trailing newline / F4 line ending / F5 lease numbering / F6 image swap / F7 PDF re-generation / F8 BOM / F9 JCS key reorder / F10 JCS whitespace). Each maps to a canonicalization rule from Amendment A1.
+
+**Implementation impact:** Stage 06 build is not complete until all F1–F10 fixtures ship green.
+
+### Amendment A6 — Tightened Revisit Triggers with measurable thresholds (Minor)
+
+**Source:** Council review §5 A6 — "Tighten Revisit Triggers with measurable thresholds where possible."
+
+**Change:** §"Revisit triggers" rewritten with measurable thresholds: forensic dispute → "cannot produce canonical bytes within 1 business day of subpoena"; PDF rendering drift → "visual byte-diff exceeds 0.5% on parity-test corpus OR any single document differs to unaided eye at 100% zoom"; revocation abuse → "more than 1 revocation per signature event in same tenant in 30-day window". Added 2 new triggers: canonicalization rule failure (per A1) and operator device-key rotation verification gap (per A3).
+
+**Implementation impact:** triggers are now enforceable signals an operator can monitor for; not observation-only.
+
+### Amendment A7 — SignatureScope = TaxonomyClassification list (Pattern E; CO-approved)
+
+**Source:** [SignatureScope UPF Pattern E](../../icm/00_intake/output/signature-scope-taxonomy-upf-2026-04-29.md), CO-approved 2026-04-29 ("I agree with the five decisions in the queue for ADR zero zero five four").
+
+**Change:** `enum SignatureScope` with 6 values (Lease, WorkOrderCompletion, InspectionMoveIn, InspectionMoveOut, CriteriaAcknowledgement, Other) is REPLACED with `IReadOnlyList<TaxonomyClassification>` referencing nodes in `Sunfish.Signature.Scopes@1.0.0` (per ADR 0056 Foundation.Taxonomy substrate). The starter taxonomy charters 17 root nodes + 7 children; charter is at `icm/00_intake/output/starter-taxonomies-v1-charters-2026-04-29.md`.
+
+**Original text changed:**
+```csharp
+// REMOVED:
+public required SignatureScope Scope { get; init; }
+
+public enum SignatureScope { Lease, WorkOrderCompletion, InspectionMoveIn, InspectionMoveOut, CriteriaAcknowledgement, Other }
+
+// REPLACED WITH (per Amendment A7):
+public required IReadOnlyList<TaxonomyClassification> Scopes { get; init; }
+```
+
+**Why Pattern E (FHIR-mirror multiple Codings) over single Coding:**
+- A single signature event may legally bind multiple scopes (lease-execution + consent-disclosure simultaneously)
+- FHIR `Signature.type` is multi-Coding; aligning with FHIR maximizes interop with regulated-industry ecosystems
+- Future verticals (healthcare HIPAA authorizations; legal court-document filings) need multi-scope semantics natively — single-scope would force a cluster-fork
+
+**Implementation impact:** consumer blocks (Leases, Work Orders, Inspections, Leasing Pipeline) must declare which Sunfish.Signature.Scopes nodes their workflow requires; runtime enforcement reads Scopes list and verifies all required nodes present.
+
+### Amendment compliance checklist
+
+For Stage 06 implementation to ship:
+
+- [ ] Amendment A1 — Canonicalization namespace + analyzer SUNFISH_SIGCANON_001
+- [ ] Amendment A2 — SignatureEnvelope adopted; no string-Algorithm field anywhere in kernel-signatures
+- [ ] Amendment A3 — ADR-0046-A1 Accepted (separate ADR file)
+- [ ] Amendment A4 — Concurrent-revocation merge rules; analyzer SUNFISH_SIGREV_001
+- [ ] Amendment A5 — F1–F10 fixture matrix all-green
+- [ ] Amendment A6 — Revisit triggers wired into operator-observable signals (where possible)
+- [ ] Amendment A7 — SignatureScope enum REMOVED; IReadOnlyList<TaxonomyClassification> with `Sunfish.Signature.Scopes@1.0.0` references; Sunfish.Signature.Scopes seeded by ITaxonomyRegistry on fresh-tenant init
