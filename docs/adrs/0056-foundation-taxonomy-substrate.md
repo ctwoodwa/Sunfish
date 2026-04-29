@@ -1,7 +1,7 @@
 # ADR 0056 — Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)
 
-**Status:** Proposed
-**Date:** 2026-04-29
+**Status:** Accepted
+**Date:** 2026-04-29 (Proposed) / 2026-04-29 (Accepted by CTO on technical merit; 8/8 pre-acceptance self-audit complete; council-review subagent dispatch waived per cluster decision-velocity preference)
 **Resolves:** Stage 00 intake [`taxonomy-management-substrate-intake-2026-04-29.md`](../../icm/00_intake/output/taxonomy-management-substrate-intake-2026-04-29.md) (PR #234) — formalizes CEO's spec for taxonomy management as a substrate-class architectural decision. Cross-referenced + composed by ADR 0055 (Dynamic Forms Substrate; PR #236) and ADR 0054 (Electronic Signatures; SignatureScope UPF Pattern E approved by CO 2026-04-29; PR #237).
 
 ---
