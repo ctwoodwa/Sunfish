@@ -31,4 +31,7 @@ public sealed record Lease
 
     /// <summary>Current lifecycle phase of the lease.</summary>
     public required LeasePhase Phase { get; init; }
+
+    /// <summary>RBAC role bindings (W#27 Phase 4); references <see cref="LeasePartyRole"/> entries owned by this lease. Defaults to empty when role distinctions are not yet captured.</summary>
+    public IReadOnlyList<LeasePartyRoleId> PartyRoles { get; init; } = Array.Empty<LeasePartyRoleId>();
 }
