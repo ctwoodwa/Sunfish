@@ -1,0 +1,66 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Sunfish.Blocks.Properties.Models;
+using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Foundation.Assets.Common;
+
+namespace Sunfish.Blocks.PropertyAssets.Data;
+
+/// <summary>
+/// EF Core configuration for <see cref="AssetLifecycleEvent"/>. Append-only
+/// log table; ids and tenant scoping via value converters.
+/// </summary>
+public sealed class AssetLifecycleEventEntityConfiguration : IEntityTypeConfiguration<AssetLifecycleEvent>
+{
+    /// <summary>Table name — stable, reverse-DNS-adjacent snake_case.</summary>
+    public const string TableName = "property_assets_lifecycle_event";
+
+    /// <inheritdoc />
+    public void Configure(EntityTypeBuilder<AssetLifecycleEvent> builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.ToTable(TableName);
+
+        builder.HasKey(x => x.EventId);
+
+        builder.Property(x => x.EventId).IsRequired();
+
+        builder.Property(x => x.Asset)
+            .HasConversion(id => id.Value, value => new AssetId(value))
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.Property)
+            .HasConversion(id => id.Value, value => new PropertyId(value))
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.TenantId)
+            .HasConversion(tid => tid.Value, value => new TenantId(value))
+            .HasMaxLength(64)
+            .IsRequired();
+
+        builder.Property(x => x.EventType)
+            .HasConversion<string>()
+            .HasMaxLength(32)
+            .IsRequired();
+
+        builder.Property(x => x.OccurredAt).IsRequired();
+
+        builder.Property(x => x.RecordedBy)
+            .HasMaxLength(256)
+            .IsRequired();
+
+        builder.Property(x => x.Notes);
+
+        // Metadata dictionary — defer EF mapping; persistence-backed hosts handle JSON serialization.
+        builder.Ignore(x => x.Metadata);
+
+        builder.HasIndex(x => new { x.TenantId, x.Asset, x.OccurredAt })
+            .HasDatabaseName("ix_property_assets_lifecycle_tenant_asset_time");
+
+        builder.HasIndex(x => new { x.TenantId, x.Property, x.OccurredAt })
+            .HasDatabaseName("ix_property_assets_lifecycle_tenant_property_time");
+    }
+}

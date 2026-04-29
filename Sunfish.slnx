@@ -159,6 +159,10 @@
     <Project Path="packages/blocks-properties/Sunfish.Blocks.Properties.csproj" />
     <Project Path="packages/blocks-properties/tests/Sunfish.Blocks.Properties.Tests.csproj" />
   </Folder>
+  <Folder Name="/blocks/property-assets/">
+    <Project Path="packages/blocks-property-assets/Sunfish.Blocks.PropertyAssets.csproj" />
+    <Project Path="packages/blocks-property-assets/tests/Sunfish.Blocks.PropertyAssets.Tests.csproj" />
+  </Folder>
   <Folder Name="/blocks/rent-collection/">
     <Project Path="packages/blocks-rent-collection/Sunfish.Blocks.RentCollection.csproj" />
     <Project Path="packages/blocks-rent-collection/tests/tests.csproj" />

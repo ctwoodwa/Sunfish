@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.PropertyAssets</PackageId>
+    <Description>Property-Assets domain block — Asset entity (FK to Property), AssetClass discriminator, AssetLifecycleEvent append-only log, in-memory repository + event store, and ISunfishEntityModule contribution. First-slice scope per property-assets-stage06-handoff.md (Vehicle subtype + Trip events + AssetConditionAssessment + OCR ingest deferred). Sibling of blocks-properties under the property-operations cluster (`blocks-property-*` naming convention).</Description>
+    <PackageTags>property-assets;assets;real-estate;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.PropertyAssets.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\foundation-persistence\Sunfish.Foundation.Persistence.csproj" />
+    <ProjectReference Include="..\blocks-properties\Sunfish.Blocks.Properties.csproj" />
+  </ItemGroup>
+</Project>
