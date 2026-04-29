@@ -353,17 +353,25 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             }
 
             // Spawn a WorkOrder from this accepted quote.
-            var workOrder = new WorkOrder(
-                Id: WorkOrderId.NewId(),
-                RequestId: target.RequestId,
-                AssignedVendorId: target.VendorId,
-                Status: WorkOrderStatus.Draft,
-                ScheduledDate: DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)), // placeholder; caller can update
-                CompletedDate: null,
-                EstimatedCost: target.Amount,
-                ActualCost: null,
-                Notes: $"Created from accepted quote {id}.",
-                CreatedAtUtc: Instant.Now);
+            // Source-tracking (originating request) lives in the first
+            // WorkOrderCreated audit record's payload; not on the entity.
+            // Tenant attribution falls through from the audit-emission tenant
+            // when audit is wired; otherwise the default(TenantId) is rejected
+            // by IMustHaveTenant downstream consumers.
+            var workOrder = new WorkOrder
+            {
+                Id = WorkOrderId.NewId(),
+                Tenant = _auditTenant == default ? new TenantId("default") : _auditTenant,
+                AssignedVendorId = target.VendorId,
+                Status = WorkOrderStatus.Draft,
+                ScheduledDate = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)), // placeholder; caller can update
+                CompletedDate = null,
+                EstimatedCost = new Sunfish.Foundation.Integrations.Payments.Money(target.Amount, Sunfish.Foundation.Integrations.Payments.CurrencyCode.USD),
+                TotalCost = null,
+                Notes = $"Created from accepted quote {id} (source MaintenanceRequest: {target.RequestId}).",
+                CreatedAtUtc = Instant.Now,
+                UpdatedAt = DateTimeOffset.UtcNow,
+            };
 
             _workOrders[workOrder.Id] = workOrder;
 
@@ -400,22 +408,28 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
-        var workOrder = new WorkOrder(
-            Id: WorkOrderId.NewId(),
-            RequestId: request.RequestId,
-            AssignedVendorId: request.AssignedVendorId,
-            Status: WorkOrderStatus.Draft,
-            ScheduledDate: request.ScheduledDate,
-            CompletedDate: null,
-            EstimatedCost: request.EstimatedCost,
-            ActualCost: null,
-            Notes: request.Notes,
-            CreatedAtUtc: Instant.Now);
+        var workOrder = new WorkOrder
+        {
+            Id = WorkOrderId.NewId(),
+            Tenant = request.Tenant,
+            AssignedVendorId = request.AssignedVendorId,
+            Status = WorkOrderStatus.Draft,
+            ScheduledDate = request.ScheduledDate,
+            CompletedDate = null,
+            EstimatedCost = request.EstimatedCost,
+            TotalCost = null,
+            Notes = request.Notes,
+            CreatedAtUtc = Instant.Now,
+            UpdatedAt = DateTimeOffset.UtcNow,
+        };
 
         _workOrders[workOrder.Id] = workOrder;
+        // WorkOrderCreated payload carries source_kind + source_id so W#19
+        // Phase 5.1 can resolve the originating MaintenanceRequest from
+        // the audit trail without storing the FK on the entity.
         await EmitAsync(
             AuditEventType.WorkOrderCreated,
-            WorkOrderAuditPayloadFactory.Created(workOrder.Id, WorkOrderStatus.Draft, ActorId.System),
+            WorkOrderAuditPayloadFactory.Created(workOrder.Id, WorkOrderStatus.Draft, ActorId.System, sourceKind: "MaintenanceRequest", sourceId: request.RequestId.Value),
             ct).ConfigureAwait(false);
         return workOrder;
     }
@@ -443,6 +457,7 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             {
                 Status = newStatus,
                 CompletedDate = completedDate,
+                UpdatedAt = DateTimeOffset.UtcNow,
             };
 
             _workOrders[id] = updated;
@@ -477,8 +492,8 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         {
             ct.ThrowIfCancellationRequested();
 
-            if (query.RequestId.HasValue && wo.RequestId != query.RequestId.Value)
-                continue;
+            // RequestId filter dropped per W#19 Phase 5; W#19 Phase 5.1 will
+            // re-introduce source-based filtering via an audit-query API.
 
             if (query.VendorId.HasValue && wo.AssignedVendorId != query.VendorId.Value)
                 continue;

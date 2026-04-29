@@ -63,7 +63,7 @@ public sealed class WorkOrderAuditEmissionTests
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         { PropertyId = TestPropertyId, RequestedByDisplayName = "T", Description = "x", Priority = MaintenancePriority.Normal, RequestedDate = new DateOnly(2026, 5, 1) });
         var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
-        { RequestId = r.Id, AssignedVendorId = v.Id, ScheduledDate = new DateOnly(2026, 5, 10), EstimatedCost = 100m });
+        { Tenant = TestTenant, RequestId = r.Id, AssignedVendorId = v.Id, ScheduledDate = new DateOnly(2026, 5, 10), EstimatedCost = Sunfish.Foundation.Integrations.Payments.Money.Usd(100m) });
         var status = WorkOrderStatus.Draft;
         var path = new[]
         {

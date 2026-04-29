@@ -1,6 +1,7 @@
 using Sunfish.Blocks.Maintenance.Models;
 using Sunfish.Blocks.Maintenance.Services;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Integrations.Payments;
 using Xunit;
 
 namespace Sunfish.Blocks.Maintenance.Tests;
@@ -11,6 +12,7 @@ public class InMemoryMaintenanceServiceTests
 
     private static readonly EntityId TestPropertyId = new("property", "test", "prop-1");
     private static readonly EntityId TestPropertyId2 = new("property", "test", "prop-2");
+    private static readonly TenantId TestTenant = new("tenant-test");
 
     private static InMemoryMaintenanceService MakeService() => new();
 
@@ -286,11 +288,11 @@ public class InMemoryMaintenanceServiceTests
         Assert.Equal(QuoteStatus.Declined, declinedQuote.Status);
 
         // A WorkOrder should have been created.
-        var workOrders = await CollectAsync(svc.ListWorkOrdersAsync(new ListWorkOrdersQuery { RequestId = request.Id }));
+        var workOrders = await CollectAsync(svc.ListWorkOrdersAsync(ListWorkOrdersQuery.Empty));
         Assert.Single(workOrders);
         Assert.Equal(WorkOrderStatus.Draft, workOrders[0].Status);
         Assert.Equal(v1.Id, workOrders[0].AssignedVendorId);
-        Assert.Equal(200m, workOrders[0].EstimatedCost);
+        Assert.Equal(Sunfish.Foundation.Integrations.Payments.Money.Usd(200m), workOrders[0].EstimatedCost);
     }
 
     [Fact]
@@ -324,7 +326,7 @@ public class InMemoryMaintenanceServiceTests
         Assert.True(declinedCount >= 1, $"Expected at least one Declined quote, got {declinedCount}.");
 
         // Exactly one WorkOrder spawned.
-        var workOrders = await CollectAsync(svc.ListWorkOrdersAsync(new ListWorkOrdersQuery { RequestId = request.Id }));
+        var workOrders = await CollectAsync(svc.ListWorkOrdersAsync(ListWorkOrdersQuery.Empty));
         Assert.Single(workOrders);
     }
 
@@ -352,13 +354,14 @@ public class InMemoryMaintenanceServiceTests
             RequestId = r.Id,
             AssignedVendorId = v.Id,
             ScheduledDate = new DateOnly(2026, 5, 10),
-            EstimatedCost = 150m,
+            Tenant = TestTenant,
+            EstimatedCost = Money.Usd(150m),
         });
 
         Assert.False(string.IsNullOrWhiteSpace(wo.Id.Value));
         Assert.Equal(WorkOrderStatus.Draft, wo.Status);
-        Assert.Equal(150m, wo.EstimatedCost);
-        Assert.Null(wo.ActualCost);
+        Assert.Equal(Money.Usd(150m), wo.EstimatedCost);
+        Assert.Null(wo.TotalCost);
         Assert.Null(wo.CompletedDate);
     }
 
@@ -380,7 +383,8 @@ public class InMemoryMaintenanceServiceTests
             RequestId = r.Id,
             AssignedVendorId = v.Id,
             ScheduledDate = new DateOnly(2026, 5, 10),
-            EstimatedCost = 75m,
+            Tenant = TestTenant,
+            EstimatedCost = Money.Usd(75m),
         });
 
         await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Sent);
@@ -411,7 +415,8 @@ public class InMemoryMaintenanceServiceTests
             RequestId = r.Id,
             AssignedVendorId = v.Id,
             ScheduledDate = new DateOnly(2026, 5, 10),
-            EstimatedCost = 300m,
+            Tenant = TestTenant,
+            EstimatedCost = Money.Usd(300m),
         });
 
         await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Sent);
@@ -443,7 +448,8 @@ public class InMemoryMaintenanceServiceTests
             RequestId = r.Id,
             AssignedVendorId = v.Id,
             ScheduledDate = new DateOnly(2026, 5, 10),
-            EstimatedCost = 1500m,
+            Tenant = TestTenant,
+            EstimatedCost = Money.Usd(1500m),
         });
 
         // Cannot jump from Draft directly to Completed.
@@ -480,7 +486,8 @@ public class InMemoryMaintenanceServiceTests
             RequestId = r.Id,
             AssignedVendorId = v.Id,
             ScheduledDate = new DateOnly(2026, 5, 10),
-            EstimatedCost = 200m,
+            Tenant = TestTenant,
+            EstimatedCost = Money.Usd(200m),
         });
         await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Sent);
         await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Accepted);

@@ -23,13 +23,20 @@ internal static class WorkOrderAuditPayloadFactory
             ["actor"] = actor.Value,
         });
 
-    /// <summary>Body for <see cref="AuditEventType.WorkOrderCreated"/>.</summary>
-    public static AuditPayload Created(WorkOrderId id, WorkOrderStatus initial, ActorId actor) =>
+    /// <summary>
+    /// Body for <see cref="AuditEventType.WorkOrderCreated"/>. Captures
+    /// <paramref name="sourceKind"/> + <paramref name="sourceId"/> so W#19
+    /// Phase 5.1 can resolve the originating record from the audit trail
+    /// (the entity dropped <c>RequestId</c> in Phase 5).
+    /// </summary>
+    public static AuditPayload Created(WorkOrderId id, WorkOrderStatus initial, ActorId actor, string? sourceKind = null, string? sourceId = null) =>
         new(new Dictionary<string, object?>
         {
             ["work_order_id"] = id.Value,
             ["initial_status"] = initial.ToString(),
             ["actor"] = actor.Value,
+            ["source_kind"] = sourceKind,
+            ["source_id"] = sourceId,
         });
 
     /// <summary>Body for any work-order status-transition audit event.</summary>
