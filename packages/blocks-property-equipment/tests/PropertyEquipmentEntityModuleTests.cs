@@ -29,7 +29,7 @@ public class PropertyEquipmentEntityModuleTests
     }
 
     [Fact]
-    public void Configure_registers_Asset_entity_under_expected_table()
+    public void Configure_registers_Equipment_entity_under_expected_table()
     {
         var module = new PropertyEquipmentEntityModule();
         var options = new DbContextOptionsBuilder<PropertyEquipmentTestDbContext>()

@@ -66,9 +66,9 @@ public class InMemoryEquipmentRepositoryTests
         await repo.UpsertAsync(NewEquipment(TenantA, p1, EquipmentClass.HVAC, "p1-hvac"));
         await repo.UpsertAsync(NewEquipment(TenantA, p2, EquipmentClass.WaterHeater, "p2-wh"));
 
-        var p1Assets = await repo.ListByPropertyAsync(TenantA, p1);
-        Assert.Equal(2, p1Assets.Count);
-        Assert.All(p1Assets, a => Assert.Equal(p1, a.Property));
+        var p1Equipment = await repo.ListByPropertyAsync(TenantA, p1);
+        Assert.Equal(2, p1Equipment.Count);
+        Assert.All(p1Equipment, e => Assert.Equal(p1, e.Property));
     }
 
     [Fact]
