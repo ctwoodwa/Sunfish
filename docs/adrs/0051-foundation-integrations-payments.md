@@ -1,7 +1,13 @@
 # ADR 0051 — Foundation.Integrations.Payments
 
-**Status:** Proposed
-**Date:** 2026-04-28
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; 3 amendments to land as follow-up PRs)
+**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted)
+**Council review:** [`0051-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0051-council-review-2026-04-29.md) — Accept with amendments. 3 critical findings to incorporate before Phase 1 Stage 06 build:
+1. Replace `AuditCorrelation` parameter type with the actual `AuditRecord` / `AttestingSignature` shape from `kernel-audit` (Cold-Start gap; AP-19)
+2. Add ADR 0004 algorithm-agility section — payment audit records have 7-year IRS-evidentiary retention horizon; require signature envelope (AP-21)
+3. Add `BannedFieldNames` analyzer rule mirroring ADR 0013 enforcement gate — structurally prevent PAN/CVV/CardNumber field additions (AP-18)
+
+Amendments will land as separate follow-up PRs; this acceptance commits to Option A's architectural shape with those 3 fixes mandatory before any code consumes the substrate.
 **Resolves:** Phase 2 commercial intake placeholder for ADR 0051 (`Foundation.Integrations.Payments`); cluster intakes Receipts (#26), Work Orders (#19), Vendors (#18), Leasing Pipeline (#22) all reference payment processing as out-of-scope-per-this-intake-and-resolved-by-ADR-0051. Existing `packages/blocks-rent-collection/Models/Payment.cs` notes "Rounding enforcement is deferred to a follow-up" + "Plaid/Stripe integration is deferred" — this ADR is the follow-up.
 
 ---

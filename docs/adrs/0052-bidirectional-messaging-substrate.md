@@ -1,7 +1,21 @@
 # ADR 0052 — Bidirectional Messaging Substrate
 
-**Status:** Proposed
-**Date:** 2026-04-28
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B+-grade; 5 amendments to land as follow-up PRs)
+**Date:** 2026-04-28 (Proposed) / 2026-04-29 (Accepted)
+**Council review:** [`0052-council-review-2026-04-29.md`](../../icm/07_review/output/adr-audits/0052-council-review-2026-04-29.md) — Accept with amendments.
+
+Critical amendments (block cluster Stage 02 work):
+1. Public-webhook threat tier explicitly delegated to ADR 0043's T-catalog — provider signature verify alone does not defend the public-listings inquiry surface
+2. Thread-token cryptographic mechanism specified — HMAC-SHA256 + per-tenant key from Foundation.Recovery + 90-day TTL + opaque base32 + revocable on thread close; rotation policy named
+
+Major amendments (parallel with cluster work):
+3. Shared-sender-domain reputation contagion across tenants on `messages.bridge.sunfish.dev` — kill-trigger if Phase 2.3 slips (Postmark Message Streams or SES Configuration Sets per-tenant fallback)
+4. SMS thread-token "~80% preservation" replaced — fuzzy sender-recency matching is primary; token is best-effort
+5. Success criteria measurable — unrouted-triage rate target, parity-test byte-diff allowlist defined
+
+Minor: `MessageVisibility.PartyPrivate` removed from public surface; party-pair threads enforced mechanically.
+
+Amendments will land as follow-up PRs; this acceptance commits to Option B's bidirectional substrate shape with those fixes mandatory.
 **Resolves:** Phase 2 commercial intake placeholder for ADR 0052 (originally scoped as "outbound messaging contracts"); messaging-substrate intake [`property-messaging-substrate-intake-2026-04-28.md`](../../icm/00_intake/output/property-messaging-substrate-intake-2026-04-28.md); cluster workstream #20.
 
 ---
