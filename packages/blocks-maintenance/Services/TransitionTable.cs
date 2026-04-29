@@ -4,8 +4,14 @@ namespace Sunfish.Blocks.Maintenance.Services;
 /// Lightweight helper that encodes a set of allowed state transitions and throws a descriptive
 /// <see cref="InvalidOperationException"/> when a transition is forbidden.
 /// </summary>
+/// <remarks>
+/// Part of the public API surface of <c>blocks-maintenance</c> per ADR 0053
+/// amendment A5 — exposed so cluster modules (Work Orders, Inspections,
+/// Leases, Property-Equipment, etc.) can compose their own state machines on
+/// the same primitive instead of duplicating the table-with-Guard pattern.
+/// </remarks>
 /// <typeparam name="TState">An enum type representing lifecycle states.</typeparam>
-internal sealed class TransitionTable<TState> where TState : struct, Enum
+public sealed class TransitionTable<TState> where TState : struct, Enum
 {
     private readonly Dictionary<TState, HashSet<TState>> _allowed;
 
