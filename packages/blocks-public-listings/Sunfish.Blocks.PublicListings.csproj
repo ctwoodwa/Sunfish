@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.PublicListings</PackageId>
+    <RootNamespace>Sunfish.Blocks.PublicListings</RootNamespace>
+    <Description>Public-listing surface for property blocks (ADR 0059). Phase 1 Stage 06: PublicListing entity + ListingPhotoRef + RedactionPolicy + ShowingAvailability + InMemoryListingRepository + PublicListingsEntityModule per ADR 0015. ICapabilityPromoter + macaroon-backed ProspectCapability defer to Phase 3 (gated on ADR 0032 macaroon substrate).</Description>
+    <PackageTags>sunfish;blocks;public-listings;property;adr-0059</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.PublicListings.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\foundation-persistence\Sunfish.Foundation.Persistence.csproj" />
+    <ProjectReference Include="..\blocks-properties\Sunfish.Blocks.Properties.csproj" />
+  </ItemGroup>
+</Project>
