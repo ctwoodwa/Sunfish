@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-catalog\Sunfish.Foundation.Catalog.csproj" />
+    <ProjectReference Include="..\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
