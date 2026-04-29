@@ -99,17 +99,19 @@ Do not duplicate one system's role inside another.
 
 ## Multi-Session Coordination
 
-This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly. Sessions are named per their role in the project's informal org structure:
+This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly. Sessions are named per their role in the project's informal civilian org structure:
 
 | Session | Org name | Role | Default behavior |
 |---|---|---|---|
-| **research session** | **XO** (Executive Officer; promoted 2026-04-29; see `project_research_session_is_cto_role` memory) | Architecture authority — ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses, sequencing, cluster scope, sunfish-PM coordination, **+ cross-project PM** | Decide and execute on technical track. Surface decisions with business impact as recommendation+default for user/CEO sign-off. **Synthesizes cross-project status on demand** when the user asks "what's the status?" — pulls from this repo's `icm/_state/active-workstreams.md` + `gh pr list` AND from `/Users/christopherwood/Projects/the-inverted-stack/` (chapter ICM stages, book-update-loop iterations, audiobook pipeline). |
-| **sunfish-PM session** | **PM** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from XO. Doesn't make architectural decisions. |
+| **research session** | **CTO** (promoted 2026-04-29; see `project_research_session_is_cto_role` memory) | Architecture authority — ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses, sequencing, cluster scope, sunfish-PM coordination, **+ cross-project PM** | Decide and execute on technical track. Surface decisions with business impact as recommendation+default for user/CEO sign-off. **Synthesizes cross-project status on demand** when the user asks "what's the status?" — pulls from this repo's `icm/_state/active-workstreams.md` + `gh pr list` AND from `/Users/christopherwood/Projects/the-inverted-stack/` (chapter ICM stages, book-update-loop iterations, audiobook pipeline). |
+| **sunfish-PM session** | **PM** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from CTO. Doesn't make architectural decisions. |
 | **book-writing session** | **Yeoman** (renamed 2026-04-29; previously "book session") | The Inverted Stack manuscript craftsperson | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. Runs the book-update-loop (chapter ICM stages tracked as GitHub labels per book CLAUDE.md). |
 
 The user/BDFL holds **CEO** authority: business strategy, spending, external messaging, anything affecting the property business operationally, strategic pivots.
 
-Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The XO's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
+> **Naming history (2026-04-29):** The research session was briefly renamed to XO (Executive Officer) in a naval-themed pivot, then reverted to CTO same-day. User preference: civilian naming for a civilian project. Yeoman is retained because it works in civilian usage (yeoman's work = solid productive work).
+
+Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The CTO's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
 
 ### Canonical state files
 
