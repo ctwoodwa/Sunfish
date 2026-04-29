@@ -1,13 +1,15 @@
-# Intake Note — Work Orders Coordination-Spine Domain Module
+# Intake Note — Work Orders Coordination-Spine Domain Module (revised: extension to `blocks-maintenance`)
 
 **Status:** `design-in-flight` — Stage 00 intake. **sunfish-PM: do not build against this intake until status flips to `ready-to-build` and a hand-off file appears in `icm/_state/handoffs/`.**
 **Status owner:** research session
-**Date:** 2026-04-28
+**Date:** 2026-04-28 (revised 2026-04-28 per cluster-vs-existing reconciliation)
 **Requestor:** Christopher Wood (BDFL)
 **Spec source:** Multi-turn architectural conversation 2026-04-28 (turn 7 — vendor coordination crystallized work-order as the missing coordination unit).
-**Pipeline variant:** `sunfish-feature-change` (escalates to `sunfish-api-change` because work-order touches and reshapes prior maintenance-item scope from Phase 2 commercial intake)
+**Pipeline variant:** `sunfish-feature-change` (extension; ADR 0053 amendment in same wave)
 **Parent:** [`property-ops-INDEX-intake-2026-04-28.md`](./property-ops-INDEX-intake-2026-04-28.md)
 **Position in cluster:** Spine #3 — coordination unit that ties the rest together. **The architectural keystone of the cluster.**
+
+> **Revision note 2026-04-28:** Disposition reframed from "new block (`blocks-work-orders`)" to **"extension to existing `packages/blocks-maintenance/`"**. Audit revealed `blocks-maintenance` already ships `WorkOrder` + `WorkOrderId` + `WorkOrderStatus` + `TransitionTable.cs` (state machine) + `IMaintenanceService.CreateWorkOrderRequest` + `WorkOrderListBlock.razor` UI. Cluster contribution (multi-party threads + entry-notice + completion-attestation + appointment-with-CP-lease + 11 audit record types) becomes an **extension** to that block. ADR 0053 amended in this same revision wave (see `docs/adrs/0053-work-order-domain-model.md` § Amendments). See [`../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md) workstream #19 row for full reconciliation rationale + state-machine composition guidance. Body below describes cluster *delta* over existing — Stage 02 implementation work must read `blocks-maintenance/Services/TransitionTable.cs` first to map this intake's 13 states onto existing transitions.
 
 ---
 

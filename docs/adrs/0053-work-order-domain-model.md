@@ -461,3 +461,43 @@ This ADR should be re-evaluated when any of the following fire:
 - [x] **Revisit triggers.** Seven explicit conditions named.
 - [x] **Cold Start Test.** Implementation checklist is 14 specific tasks, each verifiable. Fresh contributor reading this ADR + the Work Orders intake + ADR 0028 + ADR 0049 + ADR 0032 should be able to scaffold `blocks-work-orders` without asking for clarification on shape.
 - [x] **Sources cited.** ADR 0008, 0013, 0015, 0028, 0032, 0043, 0049, 0051, 0052 referenced. Paper §6.3 cited. Cluster INDEX cited. ITIL informal precedent flagged as non-normative.
+
+---
+
+## Amendments
+
+### Amendment 2026-04-28 — Equipment rename + state-machine composition
+
+Two adjustments triggered by the cluster naming UPF review ([`property-ops-cluster-naming-upf-review-2026-04-28.md`](../../icm/07_review/output/property-ops-cluster-naming-upf-review-2026-04-28.md)) and reconciliation ([`property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../icm/07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md)):
+
+#### A1 — Entity-name `Asset` → `Equipment` (UPF Rule 4)
+
+The `WorkOrder` entity's optional FK field changes from `Asset` to `Equipment`:
+
+- **Before:** `public AssetId? Asset { get; init; }`
+- **After:** `public EquipmentId? Equipment { get; init; }`
+
+Rationale: `Asset` overloads `Sunfish.Foundation.Assets.Common.EntityId` (foundation-tier generic-entity term). Cluster's physical-equipment entity renames to `Equipment`. Companion package rename: `blocks-property-assets` → `blocks-property-equipment` (per [`property-equipment-rename-handoff.md`](../../icm/_state/handoffs/property-equipment-rename-handoff.md)).
+
+#### A2 — State-machine composition over introduction
+
+Original ADR text described a 13-state machine for `WorkOrder` as if introducing one. Reconciliation reveals `packages/blocks-maintenance/` already has `WorkOrder` + `WorkOrderId` + `WorkOrderStatus` enum + `TransitionTable.cs` (existing state machine) + `IMaintenanceService` orchestration + `WorkOrderListBlock.razor` UI.
+
+Cluster's contribution is **not a new entity** but an **extension** to `blocks-maintenance.WorkOrder`:
+- `PrimaryThread: ThreadId` per ADR 0052
+- `WorkOrderEntryNotice` child entity (right-of-entry)
+- `WorkOrderCompletionAttestation` child entity (signature-bound per ADR 0054)
+- `WorkOrderAppointment` child entity with CP-class slot booking
+- 11 typed audit records per ADR 0049
+
+Stage 02 implementation must (1) read `packages/blocks-maintenance/Services/TransitionTable.cs`; (2) map the 13 states above onto existing enum + transitions; (3) reuse where covered, add only what's net-new (e.g., `AppointmentConfirmed`); (4) attach child entities + audit-emission as extensions.
+
+#### A3 — Affected packages revision
+
+In `Compatibility plan` → "Affected packages": replace `packages/blocks-work-orders (new) — Created` with `packages/blocks-maintenance (existing) — Modified — extends WorkOrder + composes TransitionTable.cs`.
+
+Cluster cost reduction: ~6–8 hours new-block scaffold avoided; replaced by ~3–4 hours of extension PRs.
+
+#### Status
+
+Adjustments documented. Parent ADR remains Status: Proposed. User council review + acceptance flips the ADR (amendments incorporated) to Accepted. Amendments refine where the implementation lands, not what it does — non-breaking against Option A.

@@ -1,12 +1,45 @@
 # Intake Index — Property-Operations Vertical (Phase 2 Cluster)
 
-**Status:** `design-in-flight` — Stage 00 cluster index; no per-domain intake is `ready-to-build`. **sunfish-PM: do not implement against any cluster intake until its individual `Status:` flips to `ready-to-build` and a hand-off file appears in `icm/_state/handoffs/`.**
+**Status:** `design-in-flight` — Stage 00 cluster index. **sunfish-PM: do not implement against any cluster intake until its individual `Status:` flips to `ready-to-build` and a hand-off file appears in `icm/_state/handoffs/`.**
 **Status owner:** research session
-**Date:** 2026-04-28
+**Date:** 2026-04-28 (revised 2026-04-28 — naming convention codified + disposition reconciled)
 **Requestor:** Christopher Wood (BDFL)
 **Spec source:** Multi-turn architectural conversation 2026-04-28 (cross-network transport → iOS access → field capture → signatures → assets → mileage → leasing pipeline → vendor coordination)
 **Pipeline variant:** N/A (index file; per-domain intakes select their own variants)
 **Parent:** [`phase-2-commercial-mvp-intake-2026-04-27.md`](./phase-2-commercial-mvp-intake-2026-04-27.md) — this cluster is a deepening of Phase 2 commercial scope.
+
+> **Revision note 2026-04-28:** UPF review of cluster naming conventions ([`../../07_review/output/property-ops-cluster-naming-upf-review-2026-04-28.md`](../../07_review/output/property-ops-cluster-naming-upf-review-2026-04-28.md)) + cluster-vs-existing reconciliation report ([`../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md`](../../07_review/output/property-ops-cluster-vs-existing-reconciliation-2026-04-28.md)) materially reshape this index. Read both review documents before drafting any new hand-off. Key shifts: (1) cluster's "Asset" entity renames to "Equipment" per Rule 4 (avoids overload of `Sunfish.Foundation.Assets.Common.EntityId`); (2) workstreams #18 Vendors, #19 Work Orders, #25 Inspections, #27 Leases reframe from "new block" to "extension to existing block"; (3) ADR 0053 (work-order) amended with state-machine composition note; (4) `blocks-property-assets` rename to `blocks-property-equipment` queued (sunfish-PM hand-off at [`../../_state/handoffs/property-equipment-rename-handoff.md`](../../_state/handoffs/property-equipment-rename-handoff.md)).
+
+---
+
+## Naming convention (canonical 5 rules per UPF review)
+
+1. **Audit before naming** — `ls packages/ | grep -E "^blocks-|^foundation-"` collision check
+2. **Property-ops siblings use `blocks-property-*` prefix** when collision exists (root `blocks-properties` unprefixed; already shipped)
+3. **Extend over parallel** when existing block covers ≥50% of scope
+4. **Cluster physical-equipment entity must not overload foundation-tier "Asset"** — use **`Equipment`** (default) or namespace-qualify (alternative)
+5. **"Tenant" disambiguation** — multi-tenancy `Tenant` ≠ property-management lease-holder; use `Party` + `PartyKind.Tenant`
+
+Full rationale in the UPF review document.
+
+## Disposition table (per-workstream; revised 2026-04-28)
+
+| WS# | Module | Original | Revised | Existing block |
+|---|---|---|---|---|
+| 17 | Properties | NEW | **NEW ✅ shipped** | none |
+| 18 | Vendors | NEW | **EXTEND** | `blocks-maintenance.Vendor` |
+| 19 | Work Orders | NEW | **EXTEND** | `blocks-maintenance.WorkOrder` |
+| 20 | Messaging Substrate | NEW SUBSTRATE | NEW SUBSTRATE | none |
+| 21 | Signatures | NEW SUBSTRATE | NEW SUBSTRATE | none |
+| 22 | Leasing Pipeline | NEW | NEW + COMPOSE | composes `blocks-leases` + `blocks-scheduling` |
+| 23 | iOS App | NEW | NEW | none |
+| 24 | Property-Equipment (was Property-Assets) | NEW | **NEW (rename per Rule 4)** | naming-only collision (different domain) |
+| 25 | Inspections | NEW | **EXTEND** | `blocks-inspections` |
+| 26 | Property-Receipts | NEW | NEW | none |
+| 27 | Leases | NEW | **EXTEND** | `blocks-leases.Lease` |
+| 28 | Public Listings | NEW | NEW | none |
+| 29 | Owner Cockpit | NEW | COMPOSE | distributes across all blocks |
+| 30 | Mesh-VPN | NEW SUBSTRATE | NEW SUBSTRATE | none |
 
 ---
 
