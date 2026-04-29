@@ -35,14 +35,14 @@ For the architectural commitment itself — what the package must own, the minim
 | Field | Value |
 |---|---|
 | Source extension | #48 key-loss recovery (book `design-decisions.md` §5 entry 48) |
-| Status | `adr-accepted` — not yet scaffolded |
-| Sunfish dir (planned) | `packages/foundation-recovery/` |
-| Sunfish ADR | [`0046-key-loss-recovery-scheme-phase-1.md`](../adrs/0046-key-loss-recovery-scheme-phase-1.md) (accepted 2026-04-26) |
+| Status | `scaffolded` — Phase 1 orchestration shipped 2026-04-29 |
+| Sunfish dir | `packages/foundation-recovery/` |
+| Sunfish ADR | [`0046-key-loss-recovery-scheme-phase-1.md`](../adrs/0046-key-loss-recovery-scheme-phase-1.md) (accepted 2026-04-26; package-placement amendment 2026-04-29) |
 | Book chapters | Ch15 §Key-Loss Recovery; Ch20 §Key-Loss Recovery UX |
 
 **Phase 1 scope (per ADR 0046):** sub-patterns 48a (multi-sig social) + 48c (paper-key) + 48e (timed grace period) + 48f (recovery-event audit trail). 48b (institutional custodian) and 48d (biometric-derived) are deferred to post-MVP. The Phase 1 architecture must not preclude adding them later.
 
-**Next implementation step:** scaffold `packages/foundation-recovery/` with `Sunfish.Foundation.Recovery.csproj`, define minimal `IRecoveryArrangement` and `IShamirDealer` interfaces, wire to `Sunfish.Kernel.Security` for the existing Ed25519/X25519/SqlCipher substrate.
+**Package placement:** orchestration types (`IRecoveryCoordinator`, `RecoveryRequest`, `TrusteeAttestation`, `RecoveryDispute`, `RecoveryEvent`, `PaperKeyDerivation`, `IRecoveryStateStore`, `IRecoveryClock`, `IDisputerValidator`, `AddSunfishRecoveryCoordinator` DI extension, BIP-39 wordlist resource) live in `packages/foundation-recovery/`. Kernel-tier crypto primitives (Ed25519, X25519, SqlCipher key derivation, root-seed provider) stay in `packages/kernel-security/`. See ADR 0046 § "Package placement (added 2026-04-29)" for the split rationale.
 
 **Existing kernel substrate to lean on (per ADR 0046 references):**
 - `packages/kernel-security/Crypto/Ed25519Signer.cs`

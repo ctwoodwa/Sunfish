@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Abstraction over the wall-clock used by the

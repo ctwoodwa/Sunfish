@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Persisted snapshot of the <see cref="RecoveryCoordinator"/>'s state

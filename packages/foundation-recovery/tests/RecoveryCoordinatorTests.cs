@@ -1,7 +1,7 @@
 using Sunfish.Kernel.Security.Crypto;
-using Sunfish.Kernel.Security.Recovery;
+using Sunfish.Foundation.Recovery;
 
-namespace Sunfish.Kernel.Security.Tests.Recovery;
+namespace Sunfish.Foundation.Recovery.Tests;
 
 /// <summary>
 /// Coverage for <see cref="RecoveryCoordinator"/> — the Phase 1 G6

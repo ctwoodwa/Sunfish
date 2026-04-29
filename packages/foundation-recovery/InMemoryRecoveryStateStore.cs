@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// In-memory <see cref="IRecoveryStateStore"/> for tests and Phase 1

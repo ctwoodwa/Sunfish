@@ -1,6 +1,6 @@
-using Sunfish.Kernel.Security.Recovery;
+using Sunfish.Foundation.Recovery;
 
-namespace Sunfish.Kernel.Security.Tests.Recovery;
+namespace Sunfish.Foundation.Recovery.Tests;
 
 /// <summary>
 /// Phase 1 G6 sub-pattern #48c (paper-key fallback) — coverage for

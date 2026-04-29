@@ -60,6 +60,36 @@ P7 (ownership) is the most user-visible Kleppmann property and the most common r
 
 48b (institutional custodian) and 48d (biometric-derived) are explicitly **deferred to post-MVP**. The Phase 1 architecture must not preclude adding them later (the recovery surface is an extensible enum, not hard-coded to the 4 ship-now flows).
 
+## Package placement (added 2026-04-29)
+
+The Phase-1 implementation is split across two packages per the paper's §5 tier model:
+
+- **`packages/kernel-security/`** — kernel-tier crypto primitives that recovery depends on:
+  - `Crypto/Ed25519Signer.cs`, `Crypto/X25519KeyAgreement.cs` (signature primitives)
+  - `Keys/SqlCipherKeyDerivation.cs`, `Keys/KeystoreRootSeedProvider.cs` (key derivation primitives)
+  - `Keys/RotateKeyAsync` SQLCipher rekey primitive
+  - `AddSunfishKernelSecurity` + `AddSunfishRootSeedProvider` DI extensions
+
+- **`packages/foundation-recovery/`** — foundation-tier orchestration over those primitives:
+  - `IRecoveryCoordinator` + `RecoveryCoordinator` (pure orchestration; sub-patterns #48a / #48e / #48f)
+  - `RecoveryRequest`, `TrusteeAttestation`, `RecoveryDispute`, `RecoveryEvent` (signed message envelopes)
+  - `TrusteeDesignation`, `RecoveryCoordinatorOptions`, `RecoveryCoordinatorState`, `RecoveryStatus`
+  - `IRecoveryStateStore` + `InMemoryRecoveryStateStore`
+  - `IRecoveryClock` + `SystemRecoveryClock`
+  - `IDisputerValidator` + `FixedDisputerValidator`
+  - `PaperKeyDerivation` (#48c — BIP-39 wrapper over kernel-security PRFs)
+  - BIP-39 English wordlist (`bip39-english.txt` embedded; LogicalName `Sunfish.Foundation.Recovery.bip39-english.txt`)
+  - `IAuditTrail` integration per ADR 0049 (event emission target)
+  - `AddSunfishRecoveryCoordinator` DI extension (registers all the above)
+
+This split was identified during the 2026-04-28 ADR audit (audit finding C-2 in
+`icm/07_review/output/adr-audits/CONSOLIDATED-HUMAN-REVIEW.md`). The original ADR
+0046 text referenced `Sunfish.Foundation.Recovery` for the entire scheme — that
+was a planning-time guess made before the kernel-security substrate was complete.
+The shipped reality (split-by-concern) is the de-facto correct decision; this
+section ratifies it. Phase 1 inventory + research-session sign-off lives at
+`icm/_state/handoffs/adr-0046-recovery-package-split-INVENTORY.md`.
+
 ## Consequences
 
 ### Positive

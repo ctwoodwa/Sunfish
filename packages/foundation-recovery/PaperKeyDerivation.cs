@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Phase 1 G6 sub-pattern <b>#48c (paper-key fallback)</b> per ADR 0046 —
@@ -204,7 +204,7 @@ public static class PaperKeyDerivation
     private static string[] LoadEnglishWordlist()
     {
         var assembly = typeof(PaperKeyDerivation).Assembly;
-        // Embedded as Sunfish.Kernel.Security.Recovery.bip39-english.txt
+        // Embedded as Sunfish.Foundation.Recovery.bip39-english.txt
         var resourceName = $"{typeof(PaperKeyDerivation).Namespace}.bip39-english.txt";
         using var stream = assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException(

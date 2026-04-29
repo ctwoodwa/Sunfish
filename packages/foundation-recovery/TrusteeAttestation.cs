@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Sunfish.Kernel.Security.Crypto;
 
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Phase 1 G6 sub-pattern <b>#48a (multi-sig social)</b> per ADR 0046 — a

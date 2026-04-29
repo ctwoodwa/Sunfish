@@ -1,4 +1,4 @@
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// Orchestrates the multi-sig social recovery flow per ADR 0046 sub-patterns

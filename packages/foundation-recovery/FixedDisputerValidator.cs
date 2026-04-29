@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Sunfish.Kernel.Security.Recovery;
+namespace Sunfish.Foundation.Recovery;
 
 /// <summary>
 /// <see cref="IDisputerValidator"/> backed by a fixed set of public keys
