@@ -90,6 +90,62 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A taxonomy definition was altered (semantic-divergence derivation; requires explicit reason).</summary>
     public static readonly AuditEventType TaxonomyDefinitionAltered = new("TaxonomyDefinitionAltered");
 
+    // ===== ADR 0053 — Work Orders =====
+
+    /// <summary>A work order was created in the Draft state.</summary>
+    public static readonly AuditEventType WorkOrderCreated = new("WorkOrderCreated");
+
+    /// <summary>A work order transitioned Draft → Sent.</summary>
+    public static readonly AuditEventType WorkOrderSent = new("WorkOrderSent");
+
+    /// <summary>A work order transitioned Sent → Accepted.</summary>
+    public static readonly AuditEventType WorkOrderAccepted = new("WorkOrderAccepted");
+
+    /// <summary>A work order transitioned Accepted → Scheduled.</summary>
+    public static readonly AuditEventType WorkOrderScheduled = new("WorkOrderScheduled");
+
+    /// <summary>A work order transitioned Scheduled → InProgress.</summary>
+    public static readonly AuditEventType WorkOrderStarted = new("WorkOrderStarted");
+
+    /// <summary>A work order transitioned InProgress → OnHold.</summary>
+    public static readonly AuditEventType WorkOrderHeld = new("WorkOrderHeld");
+
+    /// <summary>A work order transitioned OnHold → InProgress.</summary>
+    public static readonly AuditEventType WorkOrderResumed = new("WorkOrderResumed");
+
+    /// <summary>A work order transitioned InProgress → Completed.</summary>
+    public static readonly AuditEventType WorkOrderCompleted = new("WorkOrderCompleted");
+
+    /// <summary>A work order transitioned Completed → AwaitingSignOff (or skipped to Invoiced).</summary>
+    public static readonly AuditEventType WorkOrderSignedOff = new("WorkOrderSignedOff");
+
+    /// <summary>A work order transitioned to the Invoiced state.</summary>
+    public static readonly AuditEventType WorkOrderInvoiced = new("WorkOrderInvoiced");
+
+    /// <summary>A work order transitioned Invoiced → Paid.</summary>
+    public static readonly AuditEventType WorkOrderPaid = new("WorkOrderPaid");
+
+    /// <summary>A work order transitioned to the Disputed state.</summary>
+    public static readonly AuditEventType WorkOrderDisputed = new("WorkOrderDisputed");
+
+    /// <summary>A work order transitioned to the Closed (final terminal) state.</summary>
+    public static readonly AuditEventType WorkOrderClosed = new("WorkOrderClosed");
+
+    /// <summary>A work order was cancelled (terminal-from-anywhere-pre-Closed).</summary>
+    public static readonly AuditEventType WorkOrderCancelled = new("WorkOrderCancelled");
+
+    /// <summary>A right-of-entry notice was recorded against a work order.</summary>
+    public static readonly AuditEventType WorkOrderEntryNoticeRecorded = new("WorkOrderEntryNoticeRecorded");
+
+    /// <summary>An appointment slot was proposed against a work order.</summary>
+    public static readonly AuditEventType WorkOrderAppointmentScheduled = new("WorkOrderAppointmentScheduled");
+
+    /// <summary>A previously-proposed appointment was confirmed.</summary>
+    public static readonly AuditEventType WorkOrderAppointmentConfirmed = new("WorkOrderAppointmentConfirmed");
+
+    /// <summary>A signature-bound completion attestation was captured.</summary>
+    public static readonly AuditEventType WorkOrderCompletionAttestationCaptured = new("WorkOrderCompletionAttestationCaptured");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

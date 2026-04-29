@@ -1,7 +1,11 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
+using Sunfish.Blocks.Maintenance.Audit;
 using Sunfish.Blocks.Maintenance.Models;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Blocks.Maintenance.Services;
 
@@ -27,6 +31,56 @@ namespace Sunfish.Blocks.Maintenance.Services;
 /// </remarks>
 public sealed class InMemoryMaintenanceService : IMaintenanceService
 {
+    // ── Audit emission (W#19 Phase 4 / ADR 0053 A8) ──
+    //
+    // When _auditTrail and _signer are both supplied, each work-order
+    // status transition + child-entity write emits an AuditRecord per the
+    // 17 AuditEventType constants in kernel-audit. Both must be supplied
+    // together; the parameterless constructor disables emission for tests
+    // and host-bootstrap scenarios where audit signing isn't yet wired.
+
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _auditTenant;
+
+    /// <summary>Creates the service with audit emission disabled.</summary>
+    public InMemoryMaintenanceService()
+    {
+    }
+
+    /// <summary>Creates the service with audit emission wired through <paramref name="auditTrail"/> + <paramref name="signer"/>; <paramref name="tenantId"/> is the tenant attribution applied to every emitted record.</summary>
+    public InMemoryMaintenanceService(IAuditTrail auditTrail, IOperationSigner signer, TenantId tenantId)
+    {
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+        if (tenantId == default)
+        {
+            throw new ArgumentException("TenantId is required for audit emission.", nameof(tenantId));
+        }
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _auditTenant = tenantId;
+    }
+
+    private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null)
+        {
+            return;
+        }
+
+        var occurredAt = DateTimeOffset.UtcNow;
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _auditTenant,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
+    }
+
     // ── Stores ────────────────────────────────────────────────────────────────
 
     private readonly ConcurrentDictionary<VendorId, Vendor> _vendors = new();
@@ -341,7 +395,7 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
     // ── Work orders ───────────────────────────────────────────────────────────
 
     /// <inheritdoc />
-    public ValueTask<WorkOrder> CreateWorkOrderAsync(CreateWorkOrderRequest request, CancellationToken ct = default)
+    public async ValueTask<WorkOrder> CreateWorkOrderAsync(CreateWorkOrderRequest request, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
@@ -359,7 +413,11 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             CreatedAtUtc: Instant.Now);
 
         _workOrders[workOrder.Id] = workOrder;
-        return ValueTask.FromResult(workOrder);
+        await EmitAsync(
+            AuditEventType.WorkOrderCreated,
+            WorkOrderAuditPayloadFactory.Created(workOrder.Id, WorkOrderStatus.Draft, ActorId.System),
+            ct).ConfigureAwait(false);
+        return workOrder;
     }
 
     /// <inheritdoc />
@@ -388,6 +446,10 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             };
 
             _workOrders[id] = updated;
+            await EmitAsync(
+                WorkOrderAuditPayloadFactory.EventForTransition(workOrder.Status, newStatus),
+                WorkOrderAuditPayloadFactory.StatusTransition(id, workOrder.Status, newStatus, ActorId.System),
+                ct).ConfigureAwait(false);
             return updated;
         }
         finally
@@ -439,7 +501,7 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
     private readonly object _appointmentSlotLock = new();
 
     /// <inheritdoc />
-    public ValueTask<WorkOrderEntryNotice> RecordEntryNoticeAsync(WorkOrderEntryNotice notice, ActorId actor, CancellationToken ct = default)
+    public async ValueTask<WorkOrderEntryNotice> RecordEntryNoticeAsync(WorkOrderEntryNotice notice, ActorId actor, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(notice);
         if (!_workOrders.ContainsKey(notice.WorkOrder))
@@ -450,12 +512,15 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         {
             throw new InvalidOperationException($"Entry notice '{notice.Id}' already exists.");
         }
-        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderEntryNoticeRecorded with payload-body factory.
-        return ValueTask.FromResult(notice);
+        await EmitAsync(
+            AuditEventType.WorkOrderEntryNoticeRecorded,
+            WorkOrderAuditPayloadFactory.EntryNoticeRecorded(notice, actor),
+            ct).ConfigureAwait(false);
+        return notice;
     }
 
     /// <inheritdoc />
-    public ValueTask<WorkOrderCompletionAttestation> CaptureCompletionAttestationAsync(WorkOrderCompletionAttestation attestation, ActorId actor, CancellationToken ct = default)
+    public async ValueTask<WorkOrderCompletionAttestation> CaptureCompletionAttestationAsync(WorkOrderCompletionAttestation attestation, ActorId actor, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(attestation);
         if (!_workOrders.ContainsKey(attestation.WorkOrder))
@@ -466,12 +531,15 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         {
             throw new InvalidOperationException($"Completion attestation '{attestation.Id}' already exists.");
         }
-        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderCompletionAttested with payload-body factory.
-        return ValueTask.FromResult(attestation);
+        await EmitAsync(
+            AuditEventType.WorkOrderCompletionAttestationCaptured,
+            WorkOrderAuditPayloadFactory.CompletionAttestationCaptured(attestation, actor),
+            ct).ConfigureAwait(false);
+        return attestation;
     }
 
     /// <inheritdoc />
-    public ValueTask<WorkOrderAppointment> ProposeAppointmentAsync(WorkOrderAppointment proposed, ActorId actor, CancellationToken ct = default)
+    public async ValueTask<WorkOrderAppointment> ProposeAppointmentAsync(WorkOrderAppointment proposed, ActorId actor, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(proposed);
         if (!_workOrders.ContainsKey(proposed.WorkOrder))
@@ -500,12 +568,15 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
                 throw new InvalidOperationException($"Appointment '{proposed.Id}' already exists.");
             }
         }
-        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderAppointmentProposed with payload-body factory.
-        return ValueTask.FromResult(proposed);
+        await EmitAsync(
+            AuditEventType.WorkOrderAppointmentScheduled,
+            WorkOrderAuditPayloadFactory.AppointmentScheduled(proposed, actor),
+            ct).ConfigureAwait(false);
+        return proposed;
     }
 
     /// <inheritdoc />
-    public ValueTask<WorkOrderAppointment> ConfirmAppointmentAsync(WorkOrderAppointmentId id, ActorId actor, CancellationToken ct = default)
+    public async ValueTask<WorkOrderAppointment> ConfirmAppointmentAsync(WorkOrderAppointmentId id, ActorId actor, CancellationToken ct = default)
     {
         if (!_appointments.TryGetValue(id, out var current))
         {
@@ -522,7 +593,10 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             ConfirmedAt = DateTimeOffset.UtcNow,
         };
         _appointments[id] = confirmed;
-        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderAppointmentConfirmed with payload-body factory.
-        return ValueTask.FromResult(confirmed);
+        await EmitAsync(
+            AuditEventType.WorkOrderAppointmentConfirmed,
+            WorkOrderAuditPayloadFactory.AppointmentConfirmed(confirmed, actor),
+            ct).ConfigureAwait(false);
+        return confirmed;
     }
 }

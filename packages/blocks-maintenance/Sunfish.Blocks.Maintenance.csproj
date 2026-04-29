@@ -22,6 +22,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
   </ItemGroup>
