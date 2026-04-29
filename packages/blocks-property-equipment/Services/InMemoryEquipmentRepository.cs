@@ -1,35 +1,35 @@
 using System.Collections.Concurrent;
 using Sunfish.Blocks.Properties.Models;
-using Sunfish.Blocks.PropertyAssets.Models;
+using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
 
-namespace Sunfish.Blocks.PropertyAssets.Services;
+namespace Sunfish.Blocks.PropertyEquipment.Services;
 
 /// <summary>
-/// Thread-safe in-memory <see cref="IAssetRepository"/> for tests, demos,
+/// Thread-safe in-memory <see cref="IEquipmentRepository"/> for tests, demos,
 /// and kitchen-sink scenarios. Persistence-backed implementations live
 /// behind the same interface in their respective accelerator hosts.
 /// </summary>
-public sealed class InMemoryAssetRepository : IAssetRepository
+public sealed class InMemoryEquipmentRepository : IEquipmentRepository
 {
-    private readonly ConcurrentDictionary<(TenantId Tenant, AssetId Id), Asset> _store = new();
-    private readonly IAssetLifecycleEventStore _events;
+    private readonly ConcurrentDictionary<(TenantId Tenant, EquipmentId Id), Equipment> _store = new();
+    private readonly IEquipmentLifecycleEventStore _events;
 
     /// <summary>Create a repository wired to the given event store for soft-delete emission.</summary>
-    public InMemoryAssetRepository(IAssetLifecycleEventStore events)
+    public InMemoryEquipmentRepository(IEquipmentLifecycleEventStore events)
     {
         _events = events ?? throw new ArgumentNullException(nameof(events));
     }
 
     /// <inheritdoc />
-    public Task<Asset?> GetByIdAsync(TenantId tenant, AssetId id, CancellationToken cancellationToken = default)
+    public Task<Equipment?> GetByIdAsync(TenantId tenant, EquipmentId id, CancellationToken cancellationToken = default)
     {
-        _store.TryGetValue((tenant, id), out var asset);
-        return Task.FromResult(asset);
+        _store.TryGetValue((tenant, id), out var equipment);
+        return Task.FromResult(equipment);
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Asset>> ListByPropertyAsync(TenantId tenant, PropertyId property, bool includeDisposed = false, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Equipment>> ListByPropertyAsync(TenantId tenant, PropertyId property, bool includeDisposed = false, CancellationToken cancellationToken = default)
     {
         var query = _store
             .Where(kvp => kvp.Key.Tenant.Equals(tenant) && kvp.Value.Property.Equals(property))
@@ -40,12 +40,12 @@ public sealed class InMemoryAssetRepository : IAssetRepository
             query = query.Where(a => a.DisposedAt is null);
         }
 
-        IReadOnlyList<Asset> result = query.ToList();
+        IReadOnlyList<Equipment> result = query.ToList();
         return Task.FromResult(result);
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Asset>> ListByTenantAsync(TenantId tenant, bool includeDisposed = false, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Equipment>> ListByTenantAsync(TenantId tenant, bool includeDisposed = false, CancellationToken cancellationToken = default)
     {
         var query = _store
             .Where(kvp => kvp.Key.Tenant.Equals(tenant))
@@ -56,15 +56,15 @@ public sealed class InMemoryAssetRepository : IAssetRepository
             query = query.Where(a => a.DisposedAt is null);
         }
 
-        IReadOnlyList<Asset> result = query.ToList();
+        IReadOnlyList<Equipment> result = query.ToList();
         return Task.FromResult(result);
     }
 
     /// <inheritdoc />
-    public Task<IReadOnlyList<Asset>> ListByClassAsync(TenantId tenant, AssetClass assetClass, bool includeDisposed = false, CancellationToken cancellationToken = default)
+    public Task<IReadOnlyList<Equipment>> ListByClassAsync(TenantId tenant, EquipmentClass equipmentClass, bool includeDisposed = false, CancellationToken cancellationToken = default)
     {
         var query = _store
-            .Where(kvp => kvp.Key.Tenant.Equals(tenant) && kvp.Value.Class == assetClass)
+            .Where(kvp => kvp.Key.Tenant.Equals(tenant) && kvp.Value.Class == equipmentClass)
             .Select(kvp => kvp.Value);
 
         if (!includeDisposed)
@@ -72,20 +72,20 @@ public sealed class InMemoryAssetRepository : IAssetRepository
             query = query.Where(a => a.DisposedAt is null);
         }
 
-        IReadOnlyList<Asset> result = query.ToList();
+        IReadOnlyList<Equipment> result = query.ToList();
         return Task.FromResult(result);
     }
 
     /// <inheritdoc />
-    public Task UpsertAsync(Asset asset, CancellationToken cancellationToken = default)
+    public Task UpsertAsync(Equipment equipment, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNull(asset);
-        _store[(asset.TenantId, asset.Id)] = asset;
+        ArgumentNullException.ThrowIfNull(equipment);
+        _store[(equipment.TenantId, equipment.Id)] = equipment;
         return Task.CompletedTask;
     }
 
     /// <inheritdoc />
-    public async Task SoftDeleteAsync(TenantId tenant, AssetId id, string reason, DateTimeOffset disposedAt, string recordedBy, CancellationToken cancellationToken = default)
+    public async Task SoftDeleteAsync(TenantId tenant, EquipmentId id, string reason, DateTimeOffset disposedAt, string recordedBy, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(reason);
         ArgumentException.ThrowIfNullOrWhiteSpace(recordedBy);
@@ -95,13 +95,13 @@ public sealed class InMemoryAssetRepository : IAssetRepository
             var disposed = existing with { DisposedAt = disposedAt, DisposalReason = reason };
             _store[(tenant, id)] = disposed;
 
-            await _events.AppendAsync(new AssetLifecycleEvent
+            await _events.AppendAsync(new EquipmentLifecycleEvent
             {
                 EventId = Guid.NewGuid(),
-                Asset = id,
+                Equipment = id,
                 Property = existing.Property,
                 TenantId = tenant,
-                EventType = AssetLifecycleEventType.Disposed,
+                EventType = EquipmentLifecycleEventType.Disposed,
                 OccurredAt = disposedAt,
                 RecordedBy = recordedBy,
                 Notes = reason,

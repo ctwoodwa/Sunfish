@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>true</IsPackable>
-    <PackageId>Sunfish.Blocks.PropertyAssets</PackageId>
-    <Description>Property-Assets domain block — Asset entity (FK to Property), AssetClass discriminator, AssetLifecycleEvent append-only log, in-memory repository + event store, and ISunfishEntityModule contribution. First-slice scope per property-assets-stage06-handoff.md (Vehicle subtype + Trip events + AssetConditionAssessment + OCR ingest deferred). Sibling of blocks-properties under the property-operations cluster (`blocks-property-*` naming convention).</Description>
-    <PackageTags>property-assets;assets;real-estate;blocks;domain;sunfish</PackageTags>
+    <PackageId>Sunfish.Blocks.PropertyEquipment</PackageId>
+    <Description>Property-Equipment domain block — Equipment entity (FK to Property), EquipmentClass discriminator, EquipmentLifecycleEvent append-only log, in-memory repository + event store, and ISunfishEntityModule contribution. Cluster sibling under the property-operations cluster (`blocks-property-*` naming convention). Renamed from blocks-property-assets per UPF Rule 4 to disambiguate from foundation-tier `Sunfish.Foundation.Assets.Common`. Vehicle subtype + Trip events + EquipmentConditionAssessment integration + OCR ingest deferred to follow-up hand-offs.</Description>
+    <PackageTags>property-equipment;equipment;real-estate;blocks;domain;sunfish</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>CS1591</NoWarn>
@@ -12,7 +12,7 @@
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
-    <InternalsVisibleTo Include="Sunfish.Blocks.PropertyAssets.Tests" />
+    <InternalsVisibleTo Include="Sunfish.Blocks.PropertyEquipment.Tests" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
