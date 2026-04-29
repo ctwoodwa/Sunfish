@@ -1,4 +1,5 @@
 using Sunfish.Blocks.Maintenance.Models;
+using Sunfish.Foundation.Assets.Common;
 
 namespace Sunfish.Blocks.Maintenance.Services;
 
@@ -173,4 +174,46 @@ public interface IMaintenanceService
     /// <param name="query">Optional filter criteria.</param>
     /// <param name="ct">Cancellation token.</param>
     IAsyncEnumerable<WorkOrder> ListWorkOrdersAsync(ListWorkOrdersQuery query, CancellationToken ct = default);
+
+    // ─────────────────── Child entities (W#19 Phase 3 / ADR 0053) ──────────────
+
+    /// <summary>
+    /// Records a right-of-entry notice attached to a work order. Multiple
+    /// notices may exist per work order. Audit emission lands in W#19 Phase 4.
+    /// </summary>
+    /// <param name="notice">The notice to record.</param>
+    /// <param name="actor">The actor performing the operation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<WorkOrderEntryNotice> RecordEntryNoticeAsync(WorkOrderEntryNotice notice, ActorId actor, CancellationToken ct = default);
+
+    /// <summary>
+    /// Captures a signature-bound completion attestation on a work order
+    /// (per ADR 0053). The bound signature event lives in kernel-signatures
+    /// (ADR 0054) and is referenced via <see cref="Sunfish.Foundation.Integrations.Signatures.SignatureEventRef"/>.
+    /// Audit emission lands in W#19 Phase 4.
+    /// </summary>
+    /// <param name="attestation">The attestation to capture.</param>
+    /// <param name="actor">The actor performing the operation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<WorkOrderCompletionAttestation> CaptureCompletionAttestationAsync(WorkOrderCompletionAttestation attestation, ActorId actor, CancellationToken ct = default);
+
+    /// <summary>
+    /// Proposes an appointment slot on a work order. The in-process lock
+    /// guards against concurrent proposals on overlapping slots; W#19
+    /// Phase 2 will replace with the Flease primitive per ADR 0028. Audit
+    /// emission lands in W#19 Phase 4.
+    /// </summary>
+    /// <param name="proposed">The proposed appointment.</param>
+    /// <param name="actor">The actor performing the operation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<WorkOrderAppointment> ProposeAppointmentAsync(WorkOrderAppointment proposed, ActorId actor, CancellationToken ct = default);
+
+    /// <summary>
+    /// Confirms a previously proposed appointment. Audit emission lands in
+    /// W#19 Phase 4.
+    /// </summary>
+    /// <param name="id">The appointment to confirm.</param>
+    /// <param name="actor">The actor performing the operation.</param>
+    /// <param name="ct">Cancellation token.</param>
+    ValueTask<WorkOrderAppointment> ConfirmAppointmentAsync(WorkOrderAppointmentId id, ActorId actor, CancellationToken ct = default);
 }

@@ -428,4 +428,101 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             await Task.Yield();
         }
     }
+
+    // ─────────────────── Child entities (W#19 Phase 3 / ADR 0053) ──────────────
+
+    private readonly ConcurrentDictionary<WorkOrderEntryNoticeId, WorkOrderEntryNotice> _entryNotices = new();
+    private readonly ConcurrentDictionary<WorkOrderCompletionAttestationId, WorkOrderCompletionAttestation> _attestations = new();
+    private readonly ConcurrentDictionary<WorkOrderAppointmentId, WorkOrderAppointment> _appointments = new();
+
+    // Phase 2 will replace with the Flease primitive per ADR 0028.
+    private readonly object _appointmentSlotLock = new();
+
+    /// <inheritdoc />
+    public ValueTask<WorkOrderEntryNotice> RecordEntryNoticeAsync(WorkOrderEntryNotice notice, ActorId actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(notice);
+        if (!_workOrders.ContainsKey(notice.WorkOrder))
+        {
+            throw new InvalidOperationException($"Work order '{notice.WorkOrder}' not found.");
+        }
+        if (!_entryNotices.TryAdd(notice.Id, notice))
+        {
+            throw new InvalidOperationException($"Entry notice '{notice.Id}' already exists.");
+        }
+        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderEntryNoticeRecorded with payload-body factory.
+        return ValueTask.FromResult(notice);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<WorkOrderCompletionAttestation> CaptureCompletionAttestationAsync(WorkOrderCompletionAttestation attestation, ActorId actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(attestation);
+        if (!_workOrders.ContainsKey(attestation.WorkOrder))
+        {
+            throw new InvalidOperationException($"Work order '{attestation.WorkOrder}' not found.");
+        }
+        if (!_attestations.TryAdd(attestation.Id, attestation))
+        {
+            throw new InvalidOperationException($"Completion attestation '{attestation.Id}' already exists.");
+        }
+        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderCompletionAttested with payload-body factory.
+        return ValueTask.FromResult(attestation);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<WorkOrderAppointment> ProposeAppointmentAsync(WorkOrderAppointment proposed, ActorId actor, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(proposed);
+        if (!_workOrders.ContainsKey(proposed.WorkOrder))
+        {
+            throw new InvalidOperationException($"Work order '{proposed.WorkOrder}' not found.");
+        }
+        if (proposed.Status != AppointmentStatus.Proposed)
+        {
+            throw new InvalidOperationException($"New appointment must be in {nameof(AppointmentStatus.Proposed)} status; got {proposed.Status}.");
+        }
+
+        // Phase 2 will replace with the Flease primitive per ADR 0028.
+        // For Phase 1 in-memory, an in-process lock prevents double-booking
+        // overlapping slots on the same work order.
+        lock (_appointmentSlotLock)
+        {
+            foreach (var existing in _appointments.Values.Where(a => a.WorkOrder == proposed.WorkOrder && a.Status != AppointmentStatus.Cancelled))
+            {
+                if (proposed.SlotStartUtc < existing.SlotEndUtc && existing.SlotStartUtc < proposed.SlotEndUtc)
+                {
+                    throw new InvalidOperationException($"Proposed slot for work order '{proposed.WorkOrder}' overlaps with existing appointment '{existing.Id}'.");
+                }
+            }
+            if (!_appointments.TryAdd(proposed.Id, proposed))
+            {
+                throw new InvalidOperationException($"Appointment '{proposed.Id}' already exists.");
+            }
+        }
+        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderAppointmentProposed with payload-body factory.
+        return ValueTask.FromResult(proposed);
+    }
+
+    /// <inheritdoc />
+    public ValueTask<WorkOrderAppointment> ConfirmAppointmentAsync(WorkOrderAppointmentId id, ActorId actor, CancellationToken ct = default)
+    {
+        if (!_appointments.TryGetValue(id, out var current))
+        {
+            throw new InvalidOperationException($"Appointment '{id}' not found.");
+        }
+        if (current.Status != AppointmentStatus.Proposed)
+        {
+            throw new InvalidOperationException($"Appointment '{id}' is in {current.Status} status; only {nameof(AppointmentStatus.Proposed)} can be confirmed.");
+        }
+        var confirmed = current with
+        {
+            Status = AppointmentStatus.Confirmed,
+            ConfirmedBy = actor,
+            ConfirmedAt = DateTimeOffset.UtcNow,
+        };
+        _appointments[id] = confirmed;
+        // TODO(W#19 Phase 4): emit AuditEventType.WorkOrderAppointmentConfirmed with payload-body factory.
+        return ValueTask.FromResult(confirmed);
+    }
 }

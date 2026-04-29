@@ -568,4 +568,223 @@ public class InMemoryMaintenanceServiceTests
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Disputed).AsTask());
     }
+
+    // ─────────── Child entities (W#19 Phase 3 / ADR 0053) ───────────
+
+    private static readonly ActorId Operator = new("operator");
+
+    [Fact]
+    public async Task RecordEntryNotice_PersistsNotice()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var notice = new WorkOrderEntryNotice
+        {
+            Id = WorkOrderEntryNoticeId.NewId(),
+            WorkOrder = wo.Id,
+            PlannedEntryUtc = DateTimeOffset.UtcNow.AddDays(2),
+            EntryReason = "Plumbing repair",
+            NotifiedBy = Operator,
+            NotifiedAt = DateTimeOffset.UtcNow,
+            NotifiedParties = new[] { new ActorId("tenant-1") },
+        };
+        var saved = await svc.RecordEntryNoticeAsync(notice, Operator);
+        Assert.Equal(notice.Id, saved.Id);
+        Assert.Equal("Plumbing repair", saved.EntryReason);
+    }
+
+    [Fact]
+    public async Task RecordEntryNotice_RejectsUnknownWorkOrder()
+    {
+        var svc = MakeService();
+        var notice = new WorkOrderEntryNotice
+        {
+            Id = WorkOrderEntryNoticeId.NewId(),
+            WorkOrder = new WorkOrderId("no-such-wo"),
+            PlannedEntryUtc = DateTimeOffset.UtcNow,
+            EntryReason = "x",
+            NotifiedBy = Operator,
+            NotifiedAt = DateTimeOffset.UtcNow,
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.RecordEntryNoticeAsync(notice, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task RecordEntryNotice_RejectsDuplicate()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var notice = new WorkOrderEntryNotice
+        {
+            Id = WorkOrderEntryNoticeId.NewId(),
+            WorkOrder = wo.Id,
+            PlannedEntryUtc = DateTimeOffset.UtcNow,
+            EntryReason = "x",
+            NotifiedBy = Operator,
+            NotifiedAt = DateTimeOffset.UtcNow,
+        };
+        await svc.RecordEntryNoticeAsync(notice, Operator);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.RecordEntryNoticeAsync(notice, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task RecordEntryNotice_NotifiedParties_DefaultsToEmpty()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var notice = new WorkOrderEntryNotice
+        {
+            Id = WorkOrderEntryNoticeId.NewId(),
+            WorkOrder = wo.Id,
+            PlannedEntryUtc = DateTimeOffset.UtcNow,
+            EntryReason = "x",
+            NotifiedBy = Operator,
+            NotifiedAt = DateTimeOffset.UtcNow,
+        };
+        var saved = await svc.RecordEntryNoticeAsync(notice, Operator);
+        Assert.Empty(saved.NotifiedParties);
+    }
+
+    [Fact]
+    public async Task CaptureCompletionAttestation_PersistsAttestation()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var a = new WorkOrderCompletionAttestation
+        {
+            Id = WorkOrderCompletionAttestationId.NewId(),
+            WorkOrder = wo.Id,
+            Signature = new Sunfish.Foundation.Integrations.Signatures.SignatureEventRef(Guid.NewGuid()),
+            AttestedAt = DateTimeOffset.UtcNow,
+            Attestor = Operator,
+            AttestationNotes = "All good",
+        };
+        var saved = await svc.CaptureCompletionAttestationAsync(a, Operator);
+        Assert.Equal(a.Id, saved.Id);
+        Assert.Equal("All good", saved.AttestationNotes);
+    }
+
+    [Fact]
+    public async Task CaptureCompletionAttestation_RejectsUnknownWorkOrder()
+    {
+        var svc = MakeService();
+        var a = new WorkOrderCompletionAttestation
+        {
+            Id = WorkOrderCompletionAttestationId.NewId(),
+            WorkOrder = new WorkOrderId("no-such-wo"),
+            Signature = new Sunfish.Foundation.Integrations.Signatures.SignatureEventRef(Guid.NewGuid()),
+            AttestedAt = DateTimeOffset.UtcNow,
+            Attestor = Operator,
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CaptureCompletionAttestationAsync(a, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task CaptureCompletionAttestation_RejectsDuplicate()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var a = new WorkOrderCompletionAttestation
+        {
+            Id = WorkOrderCompletionAttestationId.NewId(),
+            WorkOrder = wo.Id,
+            Signature = new Sunfish.Foundation.Integrations.Signatures.SignatureEventRef(Guid.NewGuid()),
+            AttestedAt = DateTimeOffset.UtcNow,
+            Attestor = Operator,
+        };
+        await svc.CaptureCompletionAttestationAsync(a, Operator);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CaptureCompletionAttestationAsync(a, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task ProposeAppointment_PersistsProposed()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var slotStart = new DateTimeOffset(2026, 6, 1, 9, 0, 0, TimeSpan.Zero);
+        var appt = new WorkOrderAppointment
+        {
+            Id = WorkOrderAppointmentId.NewId(),
+            WorkOrder = wo.Id,
+            SlotStartUtc = slotStart,
+            SlotEndUtc = slotStart.AddHours(2),
+            Status = AppointmentStatus.Proposed,
+            ProposedBy = Operator,
+        };
+        var saved = await svc.ProposeAppointmentAsync(appt, Operator);
+        Assert.Equal(AppointmentStatus.Proposed, saved.Status);
+    }
+
+    [Fact]
+    public async Task ProposeAppointment_RejectsOverlappingSlot()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var slotStart = new DateTimeOffset(2026, 6, 1, 9, 0, 0, TimeSpan.Zero);
+
+        await svc.ProposeAppointmentAsync(new WorkOrderAppointment
+        {
+            Id = WorkOrderAppointmentId.NewId(),
+            WorkOrder = wo.Id,
+            SlotStartUtc = slotStart,
+            SlotEndUtc = slotStart.AddHours(2),
+            Status = AppointmentStatus.Proposed,
+            ProposedBy = Operator,
+        }, Operator);
+
+        var overlapping = new WorkOrderAppointment
+        {
+            Id = WorkOrderAppointmentId.NewId(),
+            WorkOrder = wo.Id,
+            SlotStartUtc = slotStart.AddHours(1), // overlaps
+            SlotEndUtc = slotStart.AddHours(3),
+            Status = AppointmentStatus.Proposed,
+            ProposedBy = Operator,
+        };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => svc.ProposeAppointmentAsync(overlapping, Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task ConfirmAppointment_FlipsStatus()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var slotStart = new DateTimeOffset(2026, 6, 1, 9, 0, 0, TimeSpan.Zero);
+        var proposed = await svc.ProposeAppointmentAsync(new WorkOrderAppointment
+        {
+            Id = WorkOrderAppointmentId.NewId(),
+            WorkOrder = wo.Id,
+            SlotStartUtc = slotStart,
+            SlotEndUtc = slotStart.AddHours(2),
+            Status = AppointmentStatus.Proposed,
+            ProposedBy = Operator,
+        }, Operator);
+
+        var confirmer = new ActorId("vendor-1");
+        var confirmed = await svc.ConfirmAppointmentAsync(proposed.Id, confirmer);
+
+        Assert.Equal(AppointmentStatus.Confirmed, confirmed.Status);
+        Assert.Equal(confirmer, confirmed.ConfirmedBy);
+        Assert.NotNull(confirmed.ConfirmedAt);
+    }
+
+    [Fact]
+    public async Task ConfirmAppointment_RejectsUnknownAppointment()
+    {
+        var svc = MakeService();
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.ConfirmAppointmentAsync(WorkOrderAppointmentId.NewId(), Operator).AsTask());
+    }
+
+    [Fact]
+    public async Task ConfirmAppointment_RejectsDoubleConfirmation()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        var slotStart = new DateTimeOffset(2026, 6, 1, 9, 0, 0, TimeSpan.Zero);
+        var proposed = await svc.ProposeAppointmentAsync(new WorkOrderAppointment
+        {
+            Id = WorkOrderAppointmentId.NewId(),
+            WorkOrder = wo.Id,
+            SlotStartUtc = slotStart,
+            SlotEndUtc = slotStart.AddHours(2),
+            Status = AppointmentStatus.Proposed,
+            ProposedBy = Operator,
+        }, Operator);
+        await svc.ConfirmAppointmentAsync(proposed.Id, Operator);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            svc.ConfirmAppointmentAsync(proposed.Id, Operator).AsTask());
+    }
 }
