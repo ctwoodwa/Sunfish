@@ -460,4 +460,112 @@ public class InMemoryMaintenanceServiceTests
 
         Assert.Null(result);
     }
+
+    // ─────────────────── Post-completion segment (ADR 0053 A4) ──────────────────
+
+    private async Task<(InMemoryMaintenanceService Svc, WorkOrder Wo)> NewCompletedWorkOrderAsync()
+    {
+        var svc = MakeService();
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Plumbing });
+        var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
+        {
+            PropertyId = TestPropertyId,
+            RequestedByDisplayName = "T",
+            Description = "Leaky faucet",
+            Priority = MaintenancePriority.Normal,
+            RequestedDate = new DateOnly(2026, 5, 1),
+        });
+        var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
+        {
+            RequestId = r.Id,
+            AssignedVendorId = v.Id,
+            ScheduledDate = new DateOnly(2026, 5, 10),
+            EstimatedCost = 200m,
+        });
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Sent);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Accepted);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Scheduled);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.InProgress);
+        var completed = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Completed);
+        return (svc, completed);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_Completed_To_AwaitingSignOff_ToInvoiced_ToPaid_ToClosed()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+
+        var awaiting = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.AwaitingSignOff);
+        Assert.Equal(WorkOrderStatus.AwaitingSignOff, awaiting.Status);
+
+        var invoiced = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+        Assert.Equal(WorkOrderStatus.Invoiced, invoiced.Status);
+
+        var paid = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Paid);
+        Assert.Equal(WorkOrderStatus.Paid, paid.Status);
+
+        var closed = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Closed);
+        Assert.Equal(WorkOrderStatus.Closed, closed.Status);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_Completed_DirectlyToInvoiced_BypassesSignOff()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+
+        var invoiced = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+        Assert.Equal(WorkOrderStatus.Invoiced, invoiced.Status);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_AwaitingSignOff_To_OnHold()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.AwaitingSignOff);
+
+        var onHold = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.OnHold);
+        Assert.Equal(WorkOrderStatus.OnHold, onHold.Status);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_Invoiced_To_Disputed_ToPaid_ToClosed()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+
+        var disputed = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Disputed);
+        Assert.Equal(WorkOrderStatus.Disputed, disputed.Status);
+
+        var paid = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Paid);
+        Assert.Equal(WorkOrderStatus.Paid, paid.Status);
+
+        var closed = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Closed);
+        Assert.Equal(WorkOrderStatus.Closed, closed.Status);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_Paid_To_Disputed_ResolvesViaInvoiced_ThenClosed()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Paid);
+
+        var disputed = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Disputed);
+        Assert.Equal(WorkOrderStatus.Disputed, disputed.Status);
+
+        var reInvoiced = await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+        Assert.Equal(WorkOrderStatus.Invoiced, reInvoiced.Status);
+    }
+
+    [Fact]
+    public async Task TransitionWorkOrder_Closed_IsTerminal()
+    {
+        var (svc, wo) = await NewCompletedWorkOrderAsync();
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Invoiced);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Paid);
+        await svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Closed);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => svc.TransitionWorkOrderAsync(wo.Id, WorkOrderStatus.Disputed).AsTask());
+    }
 }

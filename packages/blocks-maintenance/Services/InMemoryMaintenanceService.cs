@@ -55,13 +55,19 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
     private static readonly TransitionTable<WorkOrderStatus> WorkOrderTransitions =
         new(
         [
-            (WorkOrderStatus.Draft,      [WorkOrderStatus.Sent]),
-            (WorkOrderStatus.Sent,       [WorkOrderStatus.Accepted, WorkOrderStatus.Cancelled]),
-            (WorkOrderStatus.Accepted,   [WorkOrderStatus.Scheduled]),
-            (WorkOrderStatus.Scheduled,  [WorkOrderStatus.InProgress]),
-            (WorkOrderStatus.InProgress, [WorkOrderStatus.Completed, WorkOrderStatus.OnHold]),
-            (WorkOrderStatus.OnHold,     [WorkOrderStatus.InProgress]),
-            // Terminal states (Completed, Cancelled) have no outgoing edges.
+            (WorkOrderStatus.Draft,           [WorkOrderStatus.Sent]),
+            (WorkOrderStatus.Sent,            [WorkOrderStatus.Accepted, WorkOrderStatus.Cancelled]),
+            (WorkOrderStatus.Accepted,        [WorkOrderStatus.Scheduled]),
+            (WorkOrderStatus.Scheduled,       [WorkOrderStatus.InProgress]),
+            (WorkOrderStatus.InProgress,      [WorkOrderStatus.Completed, WorkOrderStatus.OnHold]),
+            (WorkOrderStatus.OnHold,          [WorkOrderStatus.InProgress]),
+            // Post-completion segment (ADR 0053 A4):
+            (WorkOrderStatus.Completed,       [WorkOrderStatus.AwaitingSignOff, WorkOrderStatus.Invoiced]),
+            (WorkOrderStatus.AwaitingSignOff, [WorkOrderStatus.Invoiced, WorkOrderStatus.OnHold]),
+            (WorkOrderStatus.Invoiced,        [WorkOrderStatus.Paid, WorkOrderStatus.Disputed, WorkOrderStatus.OnHold]),
+            (WorkOrderStatus.Paid,            [WorkOrderStatus.Closed, WorkOrderStatus.Disputed]),
+            (WorkOrderStatus.Disputed,        [WorkOrderStatus.Invoiced, WorkOrderStatus.Paid, WorkOrderStatus.Closed]),
+            // Terminal states (Closed, Cancelled) have no outgoing edges.
         ]);
 
     private static readonly TransitionTable<QuoteStatus> QuoteTransitions =

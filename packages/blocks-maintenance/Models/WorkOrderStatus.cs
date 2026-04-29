@@ -4,7 +4,7 @@ namespace Sunfish.Blocks.Maintenance.Models;
 /// Lifecycle status of a <see cref="WorkOrder"/>.
 /// </summary>
 /// <remarks>
-/// Allowed transitions:
+/// Allowed transitions (post-completion segment per ADR 0053 amendment A4):
 /// <code>
 /// Draft → Sent
 /// Sent → Accepted | Cancelled
@@ -12,8 +12,14 @@ namespace Sunfish.Blocks.Maintenance.Models;
 /// Scheduled → InProgress
 /// InProgress → Completed | OnHold
 /// OnHold → InProgress
+/// Completed → AwaitingSignOff | Invoiced
+/// AwaitingSignOff → Invoiced | OnHold
+/// Invoiced → Paid | Disputed | OnHold
+/// Paid → Closed | Disputed
+/// Disputed → Invoiced | Paid | Closed
 /// </code>
-/// Terminal states: <see cref="Completed"/>, <see cref="Cancelled"/>.
+/// <see cref="Cancelled"/> remains terminal-from-anywhere-pre-<see cref="Closed"/>.
+/// Final terminal: <see cref="Closed"/>, <see cref="Cancelled"/>.
 /// </remarks>
 public enum WorkOrderStatus
 {
@@ -35,8 +41,23 @@ public enum WorkOrderStatus
     /// <summary>Work has been temporarily put on hold.</summary>
     OnHold,
 
-    /// <summary>Work has been completed.</summary>
+    /// <summary>Work has been completed by the vendor.</summary>
     Completed,
+
+    /// <summary>Vendor-completed; awaiting BDFL/operator signature attestation (ADR 0053 A4).</summary>
+    AwaitingSignOff,
+
+    /// <summary>Receipt arrived; payment not yet authorized (ADR 0053 A4).</summary>
+    Invoiced,
+
+    /// <summary>Payment authorized + captured per ADR 0051 (ADR 0053 A4).</summary>
+    Paid,
+
+    /// <summary>Side-branch from <see cref="Invoiced"/> or <see cref="Paid"/>; awaiting resolution (ADR 0053 A4).</summary>
+    Disputed,
+
+    /// <summary>Final terminal; all parties settled (ADR 0053 A4).</summary>
+    Closed,
 
     /// <summary>Work order has been cancelled.</summary>
     Cancelled,
