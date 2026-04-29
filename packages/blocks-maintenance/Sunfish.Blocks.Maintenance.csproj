@@ -2,8 +2,12 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.Maintenance</PackageId>
-    <Description>Maintenance-management block for Sunfish — vendor management, maintenance requests, RFQ/quote workflow, and work-order tracking.</Description>
-    <PackageTags>blazor;maintenance;work-orders;vendors;property;blocks;domain;sunfish</PackageTags>
+    <!-- MAJOR version bump per ADR 0053 amendment A6 + W#19 Phase 5
+         (api-change-shape: WorkOrder positional → init-only + RequestId
+         dropped + Money migration + Phase 3 child entities). See MIGRATION.md. -->
+    <Version>1.0.0</Version>
+    <Description>Maintenance-management block for Sunfish — vendor management, maintenance requests, RFQ/quote workflow, and work-order tracking. v1.0 ships the ADR 0053 work-order domain model: 13-state lifecycle, signature-bound completion attestation, audit-emitted lifecycle, Phase 3 child entities (entry notice, appointment, completion attestation). See MIGRATION.md for the v0.x → v1.0 breaking changes.</Description>
+    <PackageTags>blazor;maintenance;work-orders;vendors;property;blocks;domain;sunfish;adr-0053</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression — SharedResource scaffolded
@@ -23,6 +27,7 @@
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <ProjectReference Include="..\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
     <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
   </ItemGroup>

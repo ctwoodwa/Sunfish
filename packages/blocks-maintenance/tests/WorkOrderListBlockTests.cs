@@ -35,10 +35,11 @@ public class WorkOrderListBlockTests : BunitContext
 
         var workOrder = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
         {
+            Tenant = new TenantId("tenant-test"),
             RequestId = request.Id,
             AssignedVendorId = vendor.Id,
             ScheduledDate = new DateOnly(2026, 5, 15),
-            EstimatedCost = 250m,
+            EstimatedCost = Sunfish.Foundation.Integrations.Payments.Money.Usd(250m),
         });
 
         return (svc, vendor, request, workOrder);
@@ -72,7 +73,7 @@ public class WorkOrderListBlockTests : BunitContext
     }
 
     [Fact]
-    public async Task StatusVendorPriorityColumns_AreCorrectlyComputed()
+    public async Task StatusVendorSourceColumns_AreCorrectlyComputed()
     {
         var (svc, _, _, _) = await MakePopulatedService();
         Services.AddSingleton<IMaintenanceService>(svc);
@@ -89,7 +90,9 @@ public class WorkOrderListBlockTests : BunitContext
         var vendorCell = cut.Find("td.sf-work-order-list__col-vendor");
         Assert.Equal("Speedy Plumbing", vendorCell.TextContent.Trim());
 
-        var priorityCell = cut.Find("td.sf-work-order-list__col-priority");
-        Assert.Equal("High", priorityCell.TextContent.Trim());
+        // W#19 Phase 5 dropped the request-fetching feature; Phase 5.1 will
+        // restore via audit-query. The block now renders a placeholder.
+        var sourceCell = cut.Find("td.sf-work-order-list__col-source");
+        Assert.Contains("see audit trail", sourceCell.TextContent.Trim());
     }
 }

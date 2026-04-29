@@ -19,9 +19,9 @@ else
                 <th class="sf-work-order-list__col-date">Scheduled date</th>
                 <th class="sf-work-order-list__col-status">Status</th>
                 <th class="sf-work-order-list__col-vendor">Vendor</th>
-                <th class="sf-work-order-list__col-priority">Priority</th>
+                <th class="sf-work-order-list__col-source">Source</th>
                 <th class="sf-work-order-list__col-estimated-cost">Estimated cost</th>
-                <th class="sf-work-order-list__col-actual-cost">Actual cost</th>
+                <th class="sf-work-order-list__col-actual-cost">Total cost</th>
             </tr>
         </thead>
         <tbody>
@@ -31,9 +31,9 @@ else
                     <td class="sf-work-order-list__col-date">@row.WorkOrder.ScheduledDate.ToString("yyyy-MM-dd")</td>
                     <td class="sf-work-order-list__col-status">@row.WorkOrder.Status</td>
                     <td class="sf-work-order-list__col-vendor">@row.VendorDisplayName</td>
-                    <td class="sf-work-order-list__col-priority">@row.RequestPriority</td>
-                    <td class="sf-work-order-list__col-estimated-cost">@row.WorkOrder.EstimatedCost.ToString("C")</td>
-                    <td class="sf-work-order-list__col-actual-cost">@(row.WorkOrder.ActualCost?.ToString("C") ?? "—")</td>
+                    <td class="sf-work-order-list__col-source"><small class="text-muted">see audit trail</small></td>
+                    <td class="sf-work-order-list__col-estimated-cost">@(row.WorkOrder.EstimatedCost?.Amount.ToString("C") ?? "—")</td>
+                    <td class="sf-work-order-list__col-actual-cost">@(row.WorkOrder.TotalCost?.Amount.ToString("C") ?? "—")</td>
                 </tr>
             }
         </tbody>
@@ -45,8 +45,7 @@ else
 
     private sealed record WorkOrderRow(
         WorkOrder WorkOrder,
-        string VendorDisplayName,
-        string RequestPriority);
+        string VendorDisplayName);
 
     /// <summary>
     /// Optional filter to pass when loading work orders. Defaults to <see cref="ListWorkOrdersQuery.Empty"/>
@@ -66,10 +65,11 @@ else
                 var vendor = await MaintenanceService.GetVendorAsync(wo.AssignedVendorId);
                 var vendorName = vendor?.DisplayName ?? wo.AssignedVendorId.Value;
 
-                var request = await MaintenanceService.GetRequestAsync(wo.RequestId);
-                var priority = request is not null ? request.Priority.ToString() : "—";
+                // TODO Phase 5.1: synthesize source from IAuditTrail.QueryAsync first WorkOrderCreated record's
+                // payload body (source_kind + source_id) and render the originating MaintenanceRequest's priority.
+                // RequestId was dropped from WorkOrder in Phase 5; placeholder above renders "see audit trail".
 
-                rows.Add(new WorkOrderRow(wo, vendorName, priority));
+                rows.Add(new WorkOrderRow(wo, vendorName));
             }
 
             _rows = rows;
