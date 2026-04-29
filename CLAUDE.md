@@ -99,17 +99,36 @@ Do not duplicate one system's role inside another.
 
 ## Multi-Session Coordination
 
-This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly. Sessions are named per their role in the project's informal org structure:
+This repository is worked on by **three Claude sessions** that share the file system but cannot talk to each other directly. Sessions are named per a naval command structure (re-established 2026-04-29):
 
-| Session | Org name | Role | Default behavior |
-|---|---|---|---|
-| **research session** | **CTO** (promoted 2026-04-29; see `project_research_session_is_cto_role` memory) | Architecture authority — ADRs, intakes, design decisions, retrofit plans, conventions, gap analyses, sequencing, cluster scope, sunfish-PM coordination, **+ cross-project PM** | Decide and execute on technical track. Surface decisions with business impact as recommendation+default for user/CEO sign-off. **Synthesizes cross-project status on demand** when the user asks "what's the status?" — pulls from this repo's `icm/_state/active-workstreams.md` + `gh pr list` AND from `/Users/christopherwood/Projects/the-inverted-stack/` (chapter ICM stages, book-update-loop iterations, audiobook pipeline). |
-| **sunfish-PM session** | **PM** | Production code, scaffolds, PRs, CI fixes, dependency updates | Implements specs from CTO. Doesn't make architectural decisions. |
-| **book-writing session** | **Yeoman** (renamed 2026-04-29; previously "book session") | The Inverted Stack manuscript craftsperson | Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Doesn't touch Sunfish code or ADRs. Runs the book-update-loop (chapter ICM stages tracked as GitHub labels per book CLAUDE.md). |
+| Role | Session | Authority |
+|---|---|---|
+| **CO** (Commanding Officer / Captain) | User / BDFL | Sets direction. Owns major decisions. Architectural ADRs with legal / payment / security / business implications. Spending. External messaging. Property business operations. Strategic pivots. |
+| **XO** (Executive Officer) | Research session | Second-in-command. Executes CO's intent. Day-to-day technical authority delegated: sequencing, hand-offs, ledger transitions, code-quality bar, PR auto-merge of chore-class work, cross-project PM synthesis on demand. **Major decisions go up to CO** as recommendation + default for sign-off. |
+| **COB** (Chief of the Boat) | Sunfish-PM session | Senior implementer who knows the boat. Owns implementation: production code, scaffolds, PRs, CI fixes, dependency hygiene, fallback ladder. Reports operational state up; doesn't make architectural decisions. |
+| **Yeoman** | Book-writing session | Records + manuscript craftsperson. Writes/edits chapters at `/Users/christopherwood/Projects/the-inverted-stack/`. Runs the book-update-loop (chapter ICM stages tracked as GitHub labels per book CLAUDE.md). Doesn't touch Sunfish code or ADRs. |
 
-The user/BDFL holds **CEO** authority: business strategy, spending, external messaging, anything affecting the property business operationally, strategic pivots.
+**XO scope of delegated authority (acts without escalation):**
+- Architectural ADR drafting + amendment (preparation; final acceptance escalates to CO if business/legal impact)
+- Cluster scope decisions, naming conventions, hand-off authoring
+- Sequencing + queue management (which workstream advances next; what blocks/unblocks)
+- COB coordination (hand-offs, ledger flips, halt-point review)
+- Memory + repo state changes (intakes, reviews, handoffs, ledger updates)
+- PR + auto-merge for chore/docs/icm-class work
+- Status synthesis across Sunfish + the-inverted-stack repos
 
-Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The CTO's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
+**XO escalates to CO (recommendation + default; CO confirms):**
+- ADR Status flip from Proposed → Accepted (especially when ADR has legal-defensibility, PCI/payment, signature, or external-public-surface implications)
+- Cluster scope expansion or contraction beyond what's already in flight
+- Phase sequencing changes that affect MVP date estimate
+- Spending decisions (paid vendors, hosted services, infrastructure)
+- External messaging or public communications
+- Any decision affecting BDFL's property business operationally
+- Strategic pivots that change project identity
+
+Sessions coordinate via repo artifacts + auto-memory only. There is no chat channel between them. The XO's PM coverage is **on-demand synthesis, not a maintained dashboard** — status decays fast; on-the-fly is more honest.
+
+**Memory pointer:** `project_research_session_is_cto_role` (kept under that filename for slug stability; content reflects current XO posture).
 
 ### Canonical state files
 
