@@ -4,15 +4,15 @@ namespace Sunfish.Blocks.Leases.Models;
 /// Lifecycle phases for a <see cref="Lease"/>.
 /// </summary>
 /// <remarks>
-/// Transitions are intentionally deferred to a follow-up pass.
-/// Current follow-up items (not implemented here):
-/// <list type="bullet">
-///   <item><description>Draft → AwaitingSignature (DocuSign envelope dispatch)</description></item>
-///   <item><description>AwaitingSignature → Executed (all parties signed)</description></item>
-///   <item><description>Executed → Active (commencement date reached)</description></item>
-///   <item><description>Active → Renewed (renewal executed)</description></item>
-///   <item><description>Active / Renewed → Terminated (early termination)</description></item>
-/// </list>
+/// Allowed transitions (per W#27 hand-off Phase 1):
+/// <code>
+/// Draft → AwaitingSignature | Cancelled
+/// AwaitingSignature → Executed | Cancelled | Draft (revisions)
+/// Executed → Active
+/// Active → Renewed | Terminated
+/// Renewed → Active
+/// </code>
+/// Terminal: <see cref="Terminated"/>, <see cref="Cancelled"/>.
 /// </remarks>
 public enum LeasePhase
 {
@@ -32,5 +32,8 @@ public enum LeasePhase
     Renewed,
 
     /// <summary>Lease has been terminated before or at expiry.</summary>
-    Terminated
+    Terminated,
+
+    /// <summary>Lease was cancelled before execution (terminal).</summary>
+    Cancelled
 }
