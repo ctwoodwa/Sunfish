@@ -105,6 +105,64 @@ The four Critical-tier amendments (A1, A2, A3 + A4) are tractable: A1 is a 5-min
 
 ---
 
+## Stage 1.5 — Six adversarial perspectives
+
+### 1. Outside Observer — "What does this look like to a contributor with zero context?"
+
+A contributor opening this ADR for the first time sees a cleanly-structured architecture decision with three triangulated options, named license rationale, and a concrete C# contract surface. They will assume `NodeId` is a Sunfish-defined value type because every other type in the contract surface (`PeerEndpoint`, `MeshNodeStatus`, `MeshPeer`, `MeshDeviceRegistration`) is. They will then `grep -r "NodeId" packages/` and find only `string ActorNodeId` in `foundation-recovery` plus the `PeerId` definition in `federation-common`, and they will not know whether (a) to introduce `NodeId` as a new value type, (b) to alias `PeerId`, or (c) to ask. The ADR does not pre-empt this confusion. The Cold Start Test self-assessment ("Stage 02 contributor reading this ADR + ADR 0013 + ADR 0031 + paper §6.1 should be able to scaffold without asking") fails on this single point.
+
+### 2. Pessimistic Risk Assessor — "What's the worst plausible outcome?"
+
+Worst plausible 18-month outcome: (a) Headscale's single maintainer reduces commit frequency or steps away (probability: non-trivial — single-maintainer OSS projects have an empirically high abandonment rate over multi-year horizons); (b) Tailscale Inc. is acquired or pivots and the iOS app is deprecated; (c) BDFL's iOS field-capture workflow regresses to Bridge-relay-only; (d) Phase 2 commercial deployment hits the latency cost the ADR explicitly named as a reason to reject Option B (50–200ms vs 5–20ms) and the property business productivity story degrades. The ADR's revisit-trigger machinery names each event individually but does not specify the architectural mitigation, so the realized outcome is "we'll figure it out then." The transition cost (re-registering N devices in a different mesh, reauthoring ACLs, retraining users on new client) is not budgeted anywhere.
+
+### 3. Pedantic Lawyer — "What does this commit Sunfish to?"
+
+License posture is correctly identified for the named adapters, but two contract-language risks: (i) "Tailscale OSS portions" is named as BSD-3 in the Decision-drivers block, but the ADR also says "Tailscale's open-source client portions" and OQ-T2 admits the boundary is unclear. The ADR commits to building a `providers-mesh-tailscale` adapter that "uses ONLY the open-source `tailscale.com` repo" — a concrete legal commitment that downstream maintainers must police. Add a one-line acceptance criterion: "every import in `providers-mesh-tailscale` traceable to a file in `github.com/tailscale/tailscale@<commit>` with no closed-source-portion references." (ii) The "RULES OUT NetMaker (SSPL)" line names a license that is technically a source-available-not-OSI-approved license; if Sunfish ever wants to integrate with NetMaker via SSPL-clean isolation patterns (e.g., out-of-process sidecar with documented JSON API), the current ADR text closes that door entirely. Recommend softening from "RULES OUT" to "EXCLUDES from in-process embedding" so a future "use NetMaker via REST API in a sidecar" workstream isn't precluded.
+
+### 4. Skeptical Implementer — "Where will this be hardest to ship?"
+
+Three hardest-to-ship surfaces, in order: (1) **`ITransportSelector` partial-failure semantics** (A2 above). Without explicit timeout + tie-break + adapter-iteration contract, the integration test surface is undefined and Stage 06 will under-test the failure modes. (2) **Anchor installer's mesh-VPN client install flow.** "Detect existing Tailscale/Headscale-client; offer install if absent" is one bullet in the implementation checklist. The actual install flow on Windows requires Wintun TUN driver + admin elevation; on macOS requires either Tailscale's NetworkExtension app (App Store + signed) or wireguard-go + admin elevation; on Linux requires kernel-version detection + package-manager dispatch (apt vs dnf vs pacman vs Nix). Each platform's UX is a 1–3 day implementation by itself. (3) **Bridge-hosted Headscale lifecycle management.** Bridge already runs an Aspire app graph; adding a Headscale process means lifecycle (start/stop/restart on Bridge restart), per-tenant SQLite path management, port allocation (Headscale defaults to 8080 — collides with Bridge's existing services), and TLS termination (Headscale needs HTTPS — does Bridge front it or does Headscale terminate?). The ADR mentions none of this.
+
+### 5. The Manager — "Is this on the critical path? Who blocks?"
+
+Tier 2 is **NOT on the critical path for Phase 1 closure** (single-LAN Tier 1 + Bridge Tier 3 are sufficient) and the ADR correctly identifies this. It IS on the critical path for W#23 iOS Field-Capture App, which is itself a Phase 2 commercial-property workstream. Manager-perspective question: does the current sequencing (this ADR → `providers-mesh-headscale` Phase 2.1 → W#23 Phase 2.3) leave enough slack for the OQ-T3 Bridge-hosted-Headscale measurement spike to inform the architecture? Answer per the ADR: not really — Phase 2.1 ships `providers-mesh-headscale` as a self-hosted-Headscale adapter; Phase 2.3 is when the Bridge-hosted-Headscale module would need to be designed AND when W#23 needs Tier 2 working end-to-end. The compression risks shipping the Bridge-hosted-Headscale path under deadline pressure rather than after measurement, which is exactly the AP-13 trap A4 calls out.
+
+### 6. Devil's Advocate — "Is the recommended option the right one?"
+
+The ADR rejects Option B (defer Tier 2) on substantive grounds: Bridge metadata leak, Bridge availability gating sync, latency cost. All three are real, but Option B has a stronger version not considered: **defer Tier 2 to Phase 3, ship a clean Bridge-relay-only Phase 2 for the BDFL property business, and let the iOS UX be "syncs when phone reconnects to home Wi-Fi via Tier 1" rather than "syncs over Tier 2 when phone is in the field."** This narrower deferral preserves Phase 1 + Phase 2 commercial viability while avoiding the two-vendor-dependency-stack risk and the Bridge-hosted-Headscale architecture-then-measure trap. The ADR's rejection of Option B treats it as "ship nothing for cross-network sync" rather than "ship managed-relay-only and let mesh emerge in Phase 3+." Worth a paragraph naming the narrower defer-to-Phase-3 path and rejecting it explicitly (or accepting it as a contingency if Headscale-or-Tailscale failure modes materialize before Phase 2.3).
+
+---
+
+## 21-AP scan summary
+
+| AP | Name | Status | Severity |
+|---|---|---|---|
+| AP-1 | Unvalidated assumption | **FIRED** | Major (selector failover semantics) |
+| AP-2 | Vague phases | Clean | — |
+| AP-3 | Vague success criteria | **FIRED** | Minor |
+| AP-4 | No rollback | Clean (rollback = revert ADR + adapter packages) | — |
+| AP-5 | Plan ending at deploy | Clean (Revisit Triggers cover post-acceptance) | — |
+| AP-6 | Missing Resume Protocol | N/A (ADR not a multi-session plan) | — |
+| AP-7 | Delegation without contracts | Clean (W#23 hand-off path named) | — |
+| AP-8 | Blind delegation trust | Clean | — |
+| AP-9 | Skipping Stage 0 | **FIRED** | Minor (Option C dispensed thinly) |
+| AP-10 | First idea unchallenged | Clean (3 triangulated options) | — |
+| AP-11 | Zombie projects (no kill criteria) | **FIRED** | Minor (revisit triggers under-quantified) |
+| AP-12 | Timeline fantasy | Clean (no time estimates) | — |
+| AP-13 | Confidence without evidence | **FIRED** | **Critical** (Bridge-hosted Headscale unmeasured) |
+| AP-14 | Wrong detail distribution | Clean | — |
+| AP-15 | Premature precision | Clean | — |
+| AP-16 | Hallucinated effort estimates | Clean (no effort numbers) | — |
+| AP-17 | Delegation without context transfer | Clean | — |
+| AP-18 | Unverifiable gates | **FIRED** | Major (provider-neutrality enforcement is forward reference) |
+| AP-19 | Discovery amnesia | **FIRED** | **Critical** (`NodeId` vs `PeerId` substrate drift) |
+| AP-20 | Missing tool fallbacks | Clean (Tier 3 Bridge relay is ultimate fallback) | — |
+| AP-21 | Assumed facts without sources | **FIRED** | Major (latency figures + fallback-rate metric undefined) |
+
+**Score:** 8 of 21 fired; 2 Critical, 3 Major, 3 Minor. No fatal violations. The Critical pair (AP-19 + AP-13) are the load-bearing findings; both fixable in-ADR with no code changes.
+
+---
+
 ## Reviewer's bottom line for the CTO
 
 ADR 0061 is doing the right architectural thing **and** it is doing it at the right time (W#23 iOS Field-Capture App is a real forcing function for Tier 2). The license posture is principled, the Stage-0 sparring is honest, and the adapter-family shape is faithful to ADR 0013. **However**, the same substrate-vocabulary discipline that fired on ADR 0051 (`AuditCorrelation`) has not been internalized: this ADR introduces `NodeId` across 10+ contract types when `PeerId` already exists, and Stage 06 implementer will hit that wall.
