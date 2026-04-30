@@ -1,2 +1,6 @@
 - name: Overview
   href: overview.md
+- name: Inquiry Defense
+  href: inquiry-defense.md
+- name: Audit Emission
+  href: audit-emission.md
