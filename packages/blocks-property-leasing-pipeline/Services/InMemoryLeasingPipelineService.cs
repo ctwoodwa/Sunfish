@@ -1,9 +1,13 @@
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using Sunfish.Blocks.Maintenance.Services;
+using Sunfish.Blocks.PropertyLeasingPipeline.Audit;
 using Sunfish.Blocks.PropertyLeasingPipeline.Capabilities;
 using Sunfish.Blocks.PropertyLeasingPipeline.Models;
 using Sunfish.Blocks.PublicListings.Capabilities;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Blocks.PropertyLeasingPipeline.Services;
 
@@ -23,6 +27,9 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
 
     private readonly ICapabilityPromoter? _prospectPromoter;
     private readonly IInquiryValidator? _inquiryValidator;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _auditTenant;
     private readonly TimeProvider _time;
 
     private static readonly TransitionTable<InquiryStatus> InquiryTransitions = new(
@@ -51,10 +58,51 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         ICapabilityPromoter? prospectPromoter,
         IInquiryValidator? inquiryValidator,
         TimeProvider? time)
+        : this(prospectPromoter, inquiryValidator, auditTrail: null, signer: null, tenantId: default, time)
     {
+    }
+
+    /// <summary>Creates the service with optional capability-promotion + validation + audit-emission wiring (W#22 Phase 6). When <paramref name="auditTrail"/> + <paramref name="signer"/> + <paramref name="tenantId"/> are all supplied, every lifecycle event emits an <see cref="AuditRecord"/> per the 12 leasing-pipeline AuditEventType constants in kernel-audit.</summary>
+    public InMemoryLeasingPipelineService(
+        ICapabilityPromoter? prospectPromoter,
+        IInquiryValidator? inquiryValidator,
+        IAuditTrail? auditTrail,
+        IOperationSigner? signer,
+        TenantId tenantId,
+        TimeProvider? time)
+    {
+        if ((auditTrail is null) ^ (signer is null))
+        {
+            throw new ArgumentException("auditTrail and signer must both be supplied together (or both null).");
+        }
+        if (auditTrail is not null && tenantId == default)
+        {
+            throw new ArgumentException("tenantId is required when audit emission is wired.", nameof(tenantId));
+        }
         _prospectPromoter = prospectPromoter;
         _inquiryValidator = inquiryValidator;
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _auditTenant = tenantId;
         _time = time ?? TimeProvider.System;
+    }
+
+    private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null)
+        {
+            return;
+        }
+        var occurredAt = _time.GetUtcNow();
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _auditTenant,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 
     // ── IPublicInquiryService ─────────────────────────────────────────────
@@ -74,6 +122,10 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
             var verdict = await _inquiryValidator.ValidateAsync(request, ct).ConfigureAwait(false);
             if (!verdict.Passed)
             {
+                await EmitAsync(
+                    AuditEventType.InquiryRejected,
+                    LeasingPipelineAuditPayloadFactory.InquiryRejected(request, verdict.FailedAt!.Value, verdict.Reason ?? "Inquiry rejected."),
+                    ct).ConfigureAwait(false);
                 throw new InquiryValidationException(verdict.FailedAt!.Value, verdict.Reason ?? "Inquiry rejected.");
             }
         }
@@ -94,6 +146,10 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         };
 
         _inquiries[inquiry.Id] = inquiry;
+        await EmitAsync(
+            AuditEventType.InquiryAccepted,
+            LeasingPipelineAuditPayloadFactory.InquiryAccepted(inquiry),
+            ct).ConfigureAwait(false);
         return inquiry;
     }
 
@@ -135,11 +191,15 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
 
         _inquiries[inquiryId] = inquiry with { Status = InquiryStatus.PromotedToProspect };
 
+        await EmitAsync(
+            AuditEventType.ProspectPromoted,
+            LeasingPipelineAuditPayloadFactory.ProspectPromoted(prospect),
+            ct).ConfigureAwait(false);
         return prospect;
     }
 
     /// <inheritdoc />
-    public Task<Application> SubmitApplicationAsync(
+    public async Task<Application> SubmitApplicationAsync(
         SubmitApplicationRequest request,
         CancellationToken ct)
     {
@@ -166,11 +226,15 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         };
 
         _applications[application.Id] = application;
-        return Task.FromResult(application);
+        await EmitAsync(
+            AuditEventType.ApplicationSubmitted,
+            LeasingPipelineAuditPayloadFactory.ApplicationSubmitted(application),
+            ct).ConfigureAwait(false);
+        return application;
     }
 
     /// <inheritdoc />
-    public Task<ApplicantCapability> ConfirmApplicationAndPromoteAsync(
+    public async Task<ApplicantCapability> ConfirmApplicationAndPromoteAsync(
         ApplicationId applicationId,
         ActorId confirmedBy,
         CancellationToken ct)
@@ -190,11 +254,15 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
             ExpiresAt = issuedAt.AddDays(30),
         };
 
-        return Task.FromResult(capability);
+        await EmitAsync(
+            AuditEventType.ApplicantPromoted,
+            LeasingPipelineAuditPayloadFactory.ApplicantPromoted(application, confirmedBy),
+            ct).ConfigureAwait(false);
+        return capability;
     }
 
     /// <inheritdoc />
-    public Task<Application> RecordBackgroundCheckAsync(
+    public async Task<Application> RecordBackgroundCheckAsync(
         ApplicationId applicationId,
         BackgroundCheckResult result,
         CancellationToken ct)
@@ -202,11 +270,15 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         ArgumentNullException.ThrowIfNull(result);
         ct.ThrowIfCancellationRequested();
         var application = TransitionApplication(applicationId, ApplicationStatus.AwaitingDecision);
-        return Task.FromResult(application);
+        await EmitAsync(
+            AuditEventType.BackgroundCheckCompleted,
+            LeasingPipelineAuditPayloadFactory.BackgroundCheckCompleted(applicationId, result),
+            ct).ConfigureAwait(false);
+        return application;
     }
 
     /// <inheritdoc />
-    public Task<Application> RecordDecisionAsync(
+    public async Task<Application> RecordDecisionAsync(
         ApplicationId applicationId,
         ApplicationDecision decision,
         CancellationToken ct)
@@ -216,18 +288,27 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
 
         var newStatus = decision.Accepted ? ApplicationStatus.Accepted : ApplicationStatus.Declined;
         var application = TransitionApplication(applicationId, newStatus, decided: true, decidedBy: decision.DecidedBy);
-        return Task.FromResult(application);
+        var eventType = decision.Accepted ? AuditEventType.ApplicationAccepted : AuditEventType.ApplicationDeclined;
+        await EmitAsync(
+            eventType,
+            LeasingPipelineAuditPayloadFactory.ApplicationDecision(application, newStatus, decision.DecidedBy, decision.Reason),
+            ct).ConfigureAwait(false);
+        return application;
     }
 
     /// <inheritdoc />
-    public Task<Application> WithdrawApplicationAsync(
+    public async Task<Application> WithdrawApplicationAsync(
         ApplicationId applicationId,
         ActorId withdrawnBy,
         CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var application = TransitionApplication(applicationId, ApplicationStatus.Withdrawn, decided: true, decidedBy: withdrawnBy);
-        return Task.FromResult(application);
+        await EmitAsync(
+            AuditEventType.ApplicationWithdrawn,
+            LeasingPipelineAuditPayloadFactory.ApplicationDecision(application, ApplicationStatus.Withdrawn, withdrawnBy, reason: null),
+            ct).ConfigureAwait(false);
+        return application;
     }
 
     /// <inheritdoc />
