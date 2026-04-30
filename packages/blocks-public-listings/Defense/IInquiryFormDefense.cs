@@ -55,6 +55,15 @@ public sealed record InquiryFormSubmission
 
     /// <summary>UTC timestamp captured at submission for audit + rate-limit windowing.</summary>
     public required DateTimeOffset ReceivedAt { get; init; }
+
+    /// <summary>The inquirer's display name as captured on the form (Phase 5b synthetic envelope subject).</summary>
+    public string? InquirerName { get; init; }
+
+    /// <summary>Listing slug the inquiry targets (Phase 5b synthetic envelope subject).</summary>
+    public string? ListingSlug { get; init; }
+
+    /// <summary>Browser user-agent (Phase 5b synthetic envelope provider-header for downstream forensics).</summary>
+    public string? UserAgent { get; init; }
 }
 
 /// <summary>Result of running an <see cref="InquiryFormSubmission"/> through the defense pipeline.</summary>
