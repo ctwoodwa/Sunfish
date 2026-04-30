@@ -83,6 +83,19 @@ public interface ILeasingPipelineService
 
     /// <summary>Returns the inquiry with the given id, or <see langword="null"/> if no such record exists.</summary>
     Task<Inquiry?> GetInquiryAsync(InquiryId id, CancellationToken ct);
+
+    /// <summary>
+    /// Looks up the <see cref="Prospect"/> entity for a tenant by email.
+    /// Returns <see langword="null"/> if no Prospect exists for the
+    /// (tenant, email) pair. W#28 Phase 5c-4 Slice C resolves
+    /// <see cref="ProspectId"/> from the verified-capability's email
+    /// field at the <c>start-application</c> POST boundary; the
+    /// email-verification flow stamps the Prospect row keyed by
+    /// (tenant, email) before macaroon issuance. Comparison is
+    /// case-insensitive (matches user expectation + the
+    /// email-verification flow's case-folding).
+    /// </summary>
+    Task<Prospect?> GetProspectByEmailAsync(TenantId tenant, string email, CancellationToken ct);
 }
 
 /// <summary>Submission shape for <see cref="ILeasingPipelineService.SubmitApplicationAsync"/>.</summary>
