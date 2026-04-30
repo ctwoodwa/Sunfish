@@ -1,0 +1,64 @@
+#!/bin/sh
+# Husky.NET-managed commit-msg hook (matches the .husky/pre-commit pattern).
+# Intentionally NO `. "$(dirname "$0")/_/husky.sh"` — Husky.NET doesn't
+# generate or require it; the `_/` directory is gitignored so any fresh
+# worktree (e.g. agent worktrees) would fail at the source line.
+[ "${HUSKY:-1}" = "0" ] && exit 0
+
+# ----------------------------------------------------------------------------
+# Sunfish commit-msg: commitlint local validation
+# ----------------------------------------------------------------------------
+#
+# Why this exists:
+#
+# CI runs `wagoid/commitlint-github-action@v6` against every PR. When a
+# violation slips through, the rebase + force-push fix cycle costs more
+# than the local validation. PRs #277, #286, #298 (closed and superseded
+# by #311) failed `footer-max-line-length` because the body had paragraphs
+# wrapped naturally to >100 chars; the local hook catches this at commit
+# time so the issue never reaches CI.
+#
+# Sunfish commitlint config: see commitlint.config.mjs at repo root.
+# Inherited rules of note (from @commitlint/config-conventional):
+#   - body-max-line-length: 100
+#   - footer-max-line-length: 100
+#   - header-max-length: 100
+#   - type-enum: feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert
+#
+# To bypass in genuine emergencies: `git commit --no-verify`. CI still
+# catches violations, so use sparingly.
+
+# Allow opt-out for CI / test runs that don't have the npm dep tree.
+[ "${SKIP_COMMITLINT:-0}" = "1" ] && exit 0
+
+# Find the commitlint binary. We don't require global install; prefer
+# the repo-local copy if available.
+COMMITLINT_BIN=""
+if [ -x "node_modules/.bin/commitlint" ]; then
+  COMMITLINT_BIN="node_modules/.bin/commitlint"
+elif command -v commitlint >/dev/null 2>&1; then
+  COMMITLINT_BIN="commitlint"
+elif command -v npx >/dev/null 2>&1; then
+  COMMITLINT_BIN="npx --no commitlint"
+else
+  echo "[commit-msg hook] commitlint not found; skipping local validation."
+  echo "[commit-msg hook] CI will still validate. Install via 'npm i -D @commitlint/cli @commitlint/config-conventional' to enable local checks."
+  exit 0
+fi
+
+# Run commitlint against the in-progress commit message file ($1).
+$COMMITLINT_BIN --edit "$1"
+RESULT=$?
+
+if [ $RESULT -ne 0 ]; then
+  echo ""
+  echo "[commit-msg hook] commitlint rejected the commit message."
+  echo "[commit-msg hook] Common causes:"
+  echo "[commit-msg hook]   - body line >100 chars (hard-wrap at ~85 for safety)"
+  echo "[commit-msg hook]   - missing blank line before Co-Authored-By trailer"
+  echo "[commit-msg hook]   - subject >100 chars or wrong type prefix"
+  echo "[commit-msg hook] See feedback_commit_message_format.md (auto-memory) for full discipline rules."
+  echo "[commit-msg hook] Bypass: 'git commit --no-verify' (CI will still validate)."
+fi
+
+exit $RESULT
