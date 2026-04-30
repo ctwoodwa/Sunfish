@@ -1,7 +1,7 @@
 # ADR 0028 — CRDT Engine Selection
 
-**Status:** Accepted (2026-04-22; **A1 + A2 mobile amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
-**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments)
+**Status:** Accepted (2026-04-22; **A1 + A2 + A3 mobile amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
+**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments / A3 retraction of A2.4's false-vapourware claim)
 **Resolves:** Paper §9 mandates a CRDT engine with production-grade compaction, GC behavior, and compact binary encoding. Paper §19 names three candidates — Yjs, Loro, and an Automerge-inspired native-.NET implementation. This ADR picks one.
 
 ---
@@ -363,3 +363,42 @@ No introduced-by-A2 new `Sunfish.*` symbols (A2 is mechanical fix-ups + scope ti
 **8-of-8 substrate ADR amendments** have now needed post-acceptance amendments after council review (A1 here being the 8th). Pattern is locked-in: every substrate amendment that surfaces non-trivial design content needs a council pass before merge. Cost of A1's pre-merge council: zero held-state, zero W#23 build pause; mechanical amendments applied in same PR via this A2 commit. Cost of skipping council pre-merge (A2-of-0046 case study): ~24h held-state + extra round-trip.
 
 Pre-merge council remains canonical; XO MUST disable auto-merge on substrate ADR amendments + dispatch council before flipping any downstream ledger row.
+
+### A3 (REQUIRED, mechanical retraction) — A2.4 false-vapourware claim retraction
+
+**Driver:** A2.4 claimed "ADR 0061 does not exist on `origin/main` — it's still an intake" and replaced ADR 0061 citations with intake references "gated on intake being promoted to an Accepted ADR." This claim was **false** at the time A2 shipped. ADR 0061 (Three-Tier Peer Transport — mDNS / Mesh VPN / Managed Relay) is in fact Accepted on `origin/main` (PR #278 + amendments A1–A4 in PR #299, dated 2026-04-29). The A1 council subagent reported it as missing; A2 propagated the error without independent verification. Retroactively corrected here.
+
+**Lesson codified:** council subagents are not infallible at cited-symbol verification. The cohort batting average ("9-of-9 substrate amendments needed council fixes") describes the *forward* failure mode (XO drafts → council finds gaps); A3 introduces a new failure mode entry: **council can also miss / falsely report missing**. XO must spot-check council citation claims before applying mechanical fixes derived from them, especially negative-existence claims ("X does not exist") which are easy to mis-verify if the council ran a stale workspace snapshot.
+
+#### A3.1 — Retraction of A2.4
+
+**Replace A2.4's substantive content with:**
+
+> **A2.4 (RETRACTED by A3):** A2.4 claimed ADR 0061 was vapourware. This was incorrect; ADR 0061 (`docs/adrs/0061-three-tier-peer-transport.md`) is Accepted on `origin/main` (PR #278 + amendments A1–A4 in PR #299, 2026-04-29). The A1 council subagent's negative-existence claim was a false negative. A2.4's "Replace ADR 0061 citations with intake references" applied to A1's references — those are now retracted; ADR 0061 is the canonical citation for three-tier peer transport going forward.
+
+**Restore the original ADR 0061 references** removed by A2.4:
+
+- A1.4's "Affected packages" now reads: *"Phase 2.2 cross-network-direct sync (e.g., iOS app talks to Anchor over mesh VPN) consumes [ADR 0061](0061-three-tier-peer-transport.md)'s three-tier transport (Tier 1 mDNS / Tier 2 Mesh VPN / Tier 3 Managed Relay). Phase 2.1 ships managed-relay-only (Bridge as primary transport per paper §17.2 tier 3, equivalent to ADR 0061's Tier 3 — `BridgeRelayPeerTransport` per ADR 0061 A4); upgrade-to-mesh is Phase 2.2 per ADR 0061's three-tier model."*
+- The §"References" footnote that A2.4 struck (ADR 0061 link) is **restored** — see this ADR's Reference list.
+
+#### A3.2 — Re-verification
+
+Per Decision Discipline Rule 6 + the new "council can also miss" lesson, A3 explicitly re-verifies:
+
+```bash
+$ git ls-tree origin/main docs/adrs/ | grep 0061
+100644 blob 902de1f3da0c9e1621cfbd6d5a0f98a233934c14	docs/adrs/0061-three-tier-peer-transport.md
+$ git show origin/main:docs/adrs/0061-three-tier-peer-transport.md | head -3
+# ADR 0061 — Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)
+**Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A1–A4 (Critical/Major) **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29 council)")
+```
+
+ADR 0061 is fully specified at 605 lines with `Initial contract surface`, `Tier selection algorithm`, audit emission, and amendments A1–A4. It is the canonical citation for three-tier peer transport.
+
+#### A3.3 — Memory note (council-can-miss data point)
+
+A new operating-discipline data point lands in `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/` documenting this incident. Going forward: when a council subagent's mechanical-fix recommendation depends on a negative-existence claim about an ADR or symbol, XO MUST spot-check the actual `origin/main` state before applying. Single bash command (`git ls-tree origin/main docs/adrs/ | grep <number>`) is sufficient.
+
+#### A3.4 — Cohort batting average note
+
+A3 doesn't increment the substrate-amendment council batting average (still 9-of-9, since A3 isn't a council finding — it's an XO-initiated retraction of a previously-applied council recommendation). New separate metric: **council false-negative rate** = 1-of-9 across the cohort so far. Track for pattern; if it grows beyond ~2-of-N, may warrant XO running a separate "verify council's cited-symbol claims" pass on each council output.
