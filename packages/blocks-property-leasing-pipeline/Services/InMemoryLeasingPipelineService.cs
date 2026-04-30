@@ -22,6 +22,7 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
     private readonly ConcurrentDictionary<ApplicationId, Application> _applications = new();
 
     private readonly ICapabilityPromoter? _prospectPromoter;
+    private readonly IInquiryValidator? _inquiryValidator;
     private readonly TimeProvider _time;
 
     private static readonly TransitionTable<InquiryStatus> InquiryTransitions = new(
@@ -38,20 +39,28 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         // Terminal: Accepted, Declined, Withdrawn.
     ]);
 
-    /// <summary>Creates the service with capability-promotion + audit hooks disabled.</summary>
-    public InMemoryLeasingPipelineService() : this(prospectPromoter: null, time: null) { }
+    /// <summary>Creates the service with capability-promotion + validation + audit hooks disabled.</summary>
+    public InMemoryLeasingPipelineService() : this(prospectPromoter: null, inquiryValidator: null, time: null) { }
 
-    /// <summary>Creates the service with optional capability-promotion wiring.</summary>
+    /// <summary>Creates the service with optional capability-promotion wiring (validator disabled).</summary>
     public InMemoryLeasingPipelineService(ICapabilityPromoter? prospectPromoter, TimeProvider? time)
+        : this(prospectPromoter, inquiryValidator: null, time) { }
+
+    /// <summary>Creates the service with optional capability-promotion + inquiry-validation wiring (W#22 Phase 5).</summary>
+    public InMemoryLeasingPipelineService(
+        ICapabilityPromoter? prospectPromoter,
+        IInquiryValidator? inquiryValidator,
+        TimeProvider? time)
     {
         _prospectPromoter = prospectPromoter;
+        _inquiryValidator = inquiryValidator;
         _time = time ?? TimeProvider.System;
     }
 
     // ── IPublicInquiryService ─────────────────────────────────────────────
 
     /// <inheritdoc />
-    public Task<Inquiry> SubmitInquiryAsync(
+    public async Task<Inquiry> SubmitInquiryAsync(
         PublicInquiryRequest request,
         AnonymousCapability capability,
         CancellationToken ct)
@@ -59,6 +68,15 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(capability);
         ct.ThrowIfCancellationRequested();
+
+        if (_inquiryValidator is not null)
+        {
+            var verdict = await _inquiryValidator.ValidateAsync(request, ct).ConfigureAwait(false);
+            if (!verdict.Passed)
+            {
+                throw new InquiryValidationException(verdict.FailedAt!.Value, verdict.Reason ?? "Inquiry rejected.");
+            }
+        }
 
         var inquiry = new Inquiry
         {
@@ -76,7 +94,7 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         };
 
         _inquiries[inquiry.Id] = inquiry;
-        return Task.FromResult(inquiry);
+        return inquiry;
     }
 
     // ── ILeasingPipelineService ───────────────────────────────────────────
