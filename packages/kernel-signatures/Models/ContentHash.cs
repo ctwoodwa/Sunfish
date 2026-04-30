@@ -1,5 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json.Nodes;
+using Sunfish.Kernel.Signatures.Canonicalization;
 
 namespace Sunfish.Kernel.Signatures.Models;
 
@@ -31,6 +33,32 @@ public readonly record struct ContentHash(byte[] Bytes)
         var nfc = text.Normalize(NormalizationForm.FormC);
         var bytes = Encoding.UTF8.GetBytes(nfc);
         return ComputeFromCanonicalBytes(bytes);
+    }
+
+    private static readonly JsonCanonicalCanonicalizer JsonCanonicalizer = new();
+
+    /// <summary>
+    /// Computes a SHA-256 hash over the JSON-canonical bytes of
+    /// <paramref name="json"/>. Uses the same canonicalization scheme
+    /// as <c>Foundation.Crypto.CanonicalJson</c> (alphabetically-sorted
+    /// keys + no whitespace + UTF-8); ADR 0054 amendment A1 pins this
+    /// rule for structured JSON documents.
+    /// </summary>
+    public static ContentHash ComputeFromJson(JsonNode json)
+    {
+        ArgumentNullException.ThrowIfNull(json);
+        return ComputeFromCanonicalBytes(JsonCanonicalizer.Canonicalize(json));
+    }
+
+    /// <summary>
+    /// Computes a SHA-256 hash over the JSON-canonical bytes of an
+    /// arbitrary CLR object (typically an <see cref="IReadOnlyDictionary{TKey, TValue}"/>
+    /// or a record). Same canonicalization rule as <see cref="ComputeFromJson"/>.
+    /// </summary>
+    public static ContentHash ComputeFromJsonObject<T>(T value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return ComputeFromCanonicalBytes(JsonCanonicalizer.Canonicalize(value));
     }
 
     /// <summary>Hexadecimal lower-case rendering of the digest.</summary>
