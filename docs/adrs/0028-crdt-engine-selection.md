@@ -1,7 +1,7 @@
 # ADR 0028 — CRDT Engine Selection
 
-**Status:** Accepted (2026-04-22; **A1 + A2 + A3 mobile amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
-**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments / A3 retraction of A2.4's false-vapourware claim)
+**Status:** Accepted (2026-04-22; **A1 + A2 + A3 + A4 mobile amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
+**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments / A3 retraction of A2.4 false-vapourware / A4 retraction of A2.10 false-positive `JsonCanonical` claim)
 **Resolves:** Paper §9 mandates a CRDT engine with production-grade compaction, GC behavior, and compact binary encoding. Paper §19 names three candidates — Yjs, Loro, and an Automerge-inspired native-.NET implementation. This ADR picks one.
 
 ---
@@ -402,3 +402,53 @@ A new operating-discipline data point lands in `~/.claude/projects/-Users-christ
 #### A3.4 — Cohort batting average note
 
 A3 doesn't increment the substrate-amendment council batting average (still 9-of-9, since A3 isn't a council finding — it's an XO-initiated retraction of a previously-applied council recommendation). New separate metric: **council false-negative rate** = 1-of-9 across the cohort so far. Track for pattern; if it grows beyond ~2-of-N, may warrant XO running a separate "verify council's cited-symbol claims" pass on each council output.
+
+### A4 (REQUIRED, mechanical retraction) — A2.10 false-positive claim retraction (`Sunfish.Foundation.Canonicalization.JsonCanonical`)
+
+**Driver:** W#23 hand-off council review (`icm/07_review/output/adr-audits/W23-handoff-council-review-2026-04-30.md`, PR #356) found that A2.10's verified-symbols table line — *"`Sunfish.Foundation.Canonicalization.JsonCanonical` ✓ verified existing per ADR 0054 A1 (named explicitly post-A2.3)"* — is **incorrect**. The cited symbol does not exist on `origin/main` and is not delivered by ADR 0054 A1's implementation checklist (which is unchecked). This is a **second false-claim** in the cohort, the positive-existence sibling to A3's negative-existence retraction of A2.4 (false-negative on ADR 0061).
+
+**Lesson reinforced:** the council-can-miss spot-check discipline (`feedback_council_can_miss_spot_check_negative_existence`) extends to **positive-existence claims** as well. XO must spot-check both directions: when council claims "X does not exist" AND when council recommends a citation by saying "X is verified existing." Both are easy to mis-verify if the council ran a stale workspace snapshot OR confused a documented-but-unshipped symbol (ADR-promised, implementation-unchecked) with a shipped symbol.
+
+**Filed under cohort discipline:** the false-claim count (combining both directions) is now **2-of-9** as of 2026-04-30. This meets the ">~2-of-N" threshold A3.4 named for warranting a separate "verify council's cited-symbol claims" pass on each council output. Going forward, XO adds a standing rung-6 fallback task: spot-check the cited-symbol table in any substrate ADR amendment that ships under auto-merge — both negative-existence AND positive-existence claims.
+
+#### A4.1 — Retraction of A2.10's `JsonCanonical` row
+
+**A2.10's verified-symbols table is amended:** the row `"Sunfish.Foundation.Canonicalization.JsonCanonical | ✓ verified existing per ADR 0054 A1 (named explicitly post-A2.3)"` is **retracted**. Replacement classification: **VAPOURWARE per A4 (2026-04-30)**. ADR 0054 A1 promised the symbol + a new `packages/foundation-canonicalization/` package; implementation checklist is unchecked on `origin/main`. The existing canonicalizers (`Sunfish.Foundation.Crypto.CanonicalJson`, `Sunfish.Foundation.Assets.Common.JsonCanonicalizer`, `Sunfish.Kernel.Signatures.Canonicalization.JsonCanonicalCanonicalizer`) are explicitly NOT RFC 8785 conformant — `JsonCanonicalCanonicalizer.cs` self-documents this in XML remarks.
+
+**A2.3's substantive content is retroactively softened:** A2.3 said *"Name canonicalizer: 'Canonical-encoded payload per `Sunfish.Foundation.Canonicalization.JsonCanonical` (per ADR 0054 Amendment A1; RFC 8785 / JCS).'"* Retract: the cited symbol is not yet shipped. **Replacement text:** *"Canonical-encoded payload per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (existing pragmatic canonicalizer; RFC 8785 strict conformance deferred to follow-up amendment when ADR 0054 A1 ships its promised `packages/foundation-canonicalization/` package)."*
+
+**Consumer-side resolution** lives in the W#23 hand-off addendum §A1 (sibling PR #357): Phase 3's cross-language canonicalization test pins `CanonicalJson.Serialize` for Phase 2.1; strict RFC 8785 deferred.
+
+#### A4.2 — Re-verification (with `git ls-tree`)
+
+Per the strengthened spot-check discipline, A4 explicitly re-verifies via independent commands (reproducible by anyone reading this ADR):
+
+```
+$ git ls-tree -r origin/main | grep -iE "Canonicalization\." | head -10
+# (zero matches in the Sunfish.Foundation.Canonicalization.* namespace; closest
+#  is Sunfish.Kernel.Signatures.Canonicalization.JsonCanonicalCanonicalizer
+#  which self-documents that it is NOT RFC 8785 conformant)
+
+$ git show origin/main:packages/foundation/Crypto/CanonicalJson.cs | head -10
+# (file exists; this is the existing pragmatic canonicalizer that A4.1's
+#  replacement text pins)
+
+$ git ls-tree origin/main packages/foundation-canonicalization 2>&1
+# fatal: Not a valid object name: ...
+# (the package does not exist on origin/main; ADR 0054 A1 promised but
+#  implementation checklist unchecked)
+```
+
+#### A4.3 — Cohort metrics update
+
+| Metric | Before A4 | After A4 |
+|---|---|---|
+| Substrate-amendment council batting average | 9-of-9 needing post-acceptance fixes | 10-of-10 (W#23 hand-off council added 1) |
+| Council false-claim rate (both directions) | 1-of-9 (false-negative only; A2.4 retracted by A3) | **2-of-9** (false-negative + false-positive) |
+| Threshold for warranting "verify council's claims" rung-6 task | ">~2-of-N" per A3.4 | **threshold met** |
+
+**XO commitment:** standing rung-6 task — every substrate ADR amendment that ships under auto-merge gets a XO-side spot-check of the cited-symbol table within 24h of merge (cheap; single `git ls-tree` / `git grep` command per cited symbol). If a false-positive or false-negative surfaces, file an A_(N+1) retraction matching this A4 / A3 pattern.
+
+#### A4.4 — Lesson extended in memory
+
+The `feedback_council_can_miss_spot_check_negative_existence.md` memory is extended (separate PR / memory edit) to cover positive-existence claims. New title: *"Council subagents can miss in BOTH directions; spot-check both negative-existence claims AND positive-existence verification claims before applying their mechanical fixes."*
