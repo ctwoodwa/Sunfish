@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -7,6 +8,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Sunfish.Blocks.PropertyLeasingPipeline.Services;
+using Sunfish.Blocks.PublicListings.Defense;
 using Sunfish.Blocks.PublicListings.Models;
 using Sunfish.Blocks.PublicListings.Services;
 using Sunfish.Foundation.Assets.Common;
@@ -30,6 +33,7 @@ public static class ListingsEndpoints
         app.MapGet("/sitemap.xml", HandleSitemapAsync);
         app.MapGet("/listings", HandleIndexAsync);
         app.MapGet("/listings/{slug}", HandleDetailAsync);
+        app.MapPost("/listings/{slug}/inquiry", HandleInquiryPostAsync);
         return app;
     }
 
@@ -146,6 +150,98 @@ public static class ListingsEndpoints
         var pageUrl = $"{baseUrl}/listings/{slug}";
         var html = RenderDetailHtml(projection, listing.Slug, pageUrl);
         return Results.Content(html, "text/html; charset=utf-8");
+    }
+
+    internal static async Task<IResult> HandleInquiryPostAsync(
+        HttpRequest request,
+        string slug,
+        InquiryFormPost body,
+        IListingRepository repository,
+        IInquiryFormDefense defense,
+        IPublicInquiryService inquiryService,
+        CancellationToken ct)
+    {
+        if (body is null)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["body"] = new[] { "Request body is required." },
+            });
+        }
+
+        var tenant = ResolveTenantFromHost(request.Host.Host);
+        var listing = await repository.GetBySlugAsync(tenant, slug, ct).ConfigureAwait(false);
+        if (listing is null || listing.Status != PublicListingStatus.Published)
+        {
+            return Results.NotFound();
+        }
+
+        var clientIp = ResolveClientIp(request);
+        var userAgent = request.Headers.UserAgent.ToString();
+        var receivedAt = DateTimeOffset.UtcNow;
+
+        var submission = new InquiryFormSubmission
+        {
+            Tenant = tenant,
+            CaptchaToken = body.CaptchaToken ?? string.Empty,
+            ClientIp = clientIp,
+            ProspectEmail = body.Email ?? string.Empty,
+            MessageBody = body.MessageBody ?? string.Empty,
+            ReceivedAt = receivedAt,
+            InquirerName = body.Name,
+            ListingSlug = slug,
+            UserAgent = userAgent,
+        };
+
+        var verdict = await defense.EvaluateAsync(submission, ct).ConfigureAwait(false);
+        if (!verdict.Passed)
+        {
+            return Results.UnprocessableEntity(new
+            {
+                rejectedAt = verdict.RejectedAt?.ToString(),
+                reason = verdict.Reason,
+            });
+        }
+
+        var capability = new AnonymousCapability
+        {
+            Token = Guid.NewGuid().ToString("N"),
+            IssuedAt = receivedAt,
+            ExpiresAt = receivedAt.AddMinutes(30),
+        };
+
+        var inquiryRequest = new PublicInquiryRequest
+        {
+            Tenant = tenant,
+            Listing = listing.Id,
+            ProspectName = body.Name ?? string.Empty,
+            ProspectEmail = body.Email ?? string.Empty,
+            ProspectPhone = body.Phone,
+            MessageBody = body.MessageBody ?? string.Empty,
+            ClientIp = clientIp,
+            UserAgent = userAgent,
+        };
+
+        var inquiry = await inquiryService.SubmitInquiryAsync(inquiryRequest, capability, ct).ConfigureAwait(false);
+
+        return Results.Accepted(value: new
+        {
+            inquiryId = inquiry.Id.Value,
+            status = inquiry.Status.ToString(),
+        });
+    }
+
+    private static IPAddress ResolveClientIp(HttpRequest request)
+    {
+        if (request.Headers.TryGetValue("X-Forwarded-For", out var forwarded) && forwarded.Count > 0)
+        {
+            var first = forwarded[0]!.Split(',', 2)[0].Trim();
+            if (IPAddress.TryParse(first, out var parsed))
+            {
+                return parsed;
+            }
+        }
+        return request.HttpContext.Connection.RemoteIpAddress ?? IPAddress.Loopback;
     }
 
     private static string RenderIndexHtml(IReadOnlyList<RenderedListing> listings, IReadOnlyDictionary<PublicListingId, string> slugs, string tenantValue, string baseUrl)

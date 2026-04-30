@@ -234,6 +234,16 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     builder.Services.AddInMemoryBusinessCases();
     builder.Services.AddInMemoryPublicListings();
 
+    // W#28 boundary: the public-listings inquiry POST forwards verified-defense
+    // submissions to the leasing pipeline's IPublicInquiryService.
+    // InMemoryLeasingPipelineService implements both ILeasingPipelineService
+    // and IPublicInquiryService, so one singleton covers both seams.
+    builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>();
+    builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.IPublicInquiryService>(
+        sp => sp.GetRequiredService<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>());
+    builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.ILeasingPipelineService>(
+        sp => sp.GetRequiredService<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>());
+
     // Wolverine messaging — RabbitMQ transport, Postgres outbox.
     builder.Host.UseWolverine(opts =>
     {
