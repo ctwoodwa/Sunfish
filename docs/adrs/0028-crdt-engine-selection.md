@@ -1,7 +1,7 @@
 # ADR 0028 — CRDT Engine Selection
 
-**Status:** Accepted (2026-04-22)
-**Date:** 2026-04-22
+**Status:** Accepted (2026-04-22; **A1 mobile amendment landed 2026-04-30** — see §"Amendments (post-acceptance)")
+**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment)
 **Resolves:** Paper §9 mandates a CRDT engine with production-grade compaction, GC behavior, and compact binary encoding. Paper §19 names three candidates — Yjs, Loro, and an Automerge-inspired native-.NET implementation. This ADR picks one.
 
 ---
@@ -121,3 +121,95 @@ Fallback: if Loro's .NET binding maturity or .NET 11 compatibility proves intrac
 - [Loro GitHub](https://github.com/loro-dev/loro)
 - [Yjs](https://github.com/yjs/yjs) and [yrs (y-crdt)](https://github.com/y-crdt/y-crdt)
 - [ADR 0023](0023-dialog-provider-slot-methods.md), [ADR 0024](0024-button-variant-enum-expansion.md), [ADR 0025](0025-css-class-prefix-policy.md) — ADR format references
+- [ADR 0048](0048-anchor-multi-backend-maui.md) — Anchor multi-backend (Win/Mac/iOS/Android via MAUI; Linux/Wasm via Avalonia)
+- [ADR 0061](0061-three-tier-peer-transport.md) — Three-tier peer transport (mDNS / Mesh VPN / Managed Relay)
+
+---
+
+## Amendments (post-acceptance)
+
+### A1 (REQUIRED) — Mobile reality check; iOS Phase 2.1 ships append-only events (no CRDT engine), full CRDT-on-mobile deferred
+
+**Date:** 2026-04-30
+**Driver:** Workstream #23 iOS Field-Capture App intake (`icm/00_intake/output/property-ios-field-app-intake-2026-04-28.md` §"In scope" item 10) explicitly calls for an ADR 0028 mobile amendment. The original ADR scoped CRDT-engine selection for desktop deployments (Win/Mac/Linux per ADR 0048). It did not address mobile platforms (iOS / Android), and iOS is now a Phase 2.1 deliverable per W#23.
+
+#### A1.1 — Why mobile is different from desktop
+
+ADR 0028 selected **Loro** (Rust core; .NET binding for desktop). The selection rationale (paper §9 compaction, MIT license, growth-management) holds for desktop. For iOS Phase 2.1 (W#23), three constraints invert the calculus:
+
+- **No mature Swift binding for Loro at ADR-acceptance time (2026-04-30).** Loro is Rust-native; Swift consumes Rust via either (a) Swift's `@_cdecl` C-ABI bridge, (b) `swift-bridge`, or (c) UniFFI. As of ADR-acceptance, none of these has shipped a production-grade Loro Swift package. (W#23 Stage 02 must spike + verify; if a viable binding has emerged, that triggers an A2 amendment relaxing this position.)
+- **Field-capture workflow is single-actor per device.** The iOS app captures inspections / receipts / mileage / signatures from the field; conflicts with the desktop multi-actor surface arise only when the device syncs back to Anchor. This is a fundamentally different concurrency profile than the multi-actor real-time editing scenario CRDT engines are designed for.
+- **Background URLSession + append-only event queue is a simpler model.** iOS's `URLSessionConfiguration.background` provides durability + retry semantics out-of-band — the OS finishes uploads after app suspension, retries on network change. An append-only event log (capture-only, last-write-wins resolution at the Anchor merge boundary) maps cleanly onto that.
+
+#### A1.2 — Phase 2.1 iOS contract: append-only event queue (no CRDT)
+
+**Decision:** iOS Phase 2.1 ships a **capture-only append-only event queue**. NO CRDT engine on the device. Conflicts are resolved at the Anchor merge boundary using existing Anchor CRDT primitives (Loro on Anchor; per ADR 0028 main decision).
+
+**Event-queue contract** (W#23 Stage 06 will spec the full surface; this amendment names the shape):
+
+- **Per-event envelope:** monotonically-increasing `device_local_seq` (uint64) + `captured_at` (ISO 8601 UTC) + `device_id` (Keychain-stored pairing token's actor identifier per ADR 0032) + `event_type` (capture domain enum: `Inspection`, `Receipt`, `Asset`, `Signature`, `Mileage`, `WorkOrderResponse`) + `payload` (domain-specific JSON; canonical-encoded per RFC 8785 for ContentHash binding compatibility per ADR 0054 + ADR 0046-A2)
+- **Local store:** GRDB.swift over SQLite (optionally SQLCipher); single-writer-per-device serialization via `device_local_seq`
+- **Outbound transport:** `URLSessionConfiguration.background` to Bridge's blob-ingest API (per W#23 OQ3); resumable uploads for blob payloads (photos / PDFs / signatures); event-envelope uploads are JSON POSTs
+- **Retry semantics:** exponential backoff per `URLSessionConfiguration` defaults; `device_local_seq` is the dedup key on Anchor side (re-deliveries don't double-count)
+- **No on-device merge:** the iOS app never reads back state from Anchor and merges — it only captures and sends. Read-side queries against shared state go through the Bridge HTTPS surface (Phase 2.1 read-only views).
+
+**Conflict resolution at Anchor merge boundary:**
+
+- Each `(device_id, device_local_seq)` is a unique event identity. Anchor's existing Loro store consumes events in `(captured_at, device_id, device_local_seq)` order.
+- **Last-write-wins semantics** for fields that two devices captured concurrently — the latest `captured_at` wins; ties broken by `device_id` lexicographic order (deterministic).
+- For append-only domains (e.g., signatures, audit records), there are no conflicts — both events land in the trail.
+- For mutating domains (e.g., asset condition updates), LWW is the documented Phase 2.1 policy. **Future Phase 3 amendment** introduces a richer conflict-resolution policy if real conflicts surface (e.g., spouse + contractor both editing the same asset's condition within the same minute).
+
+#### A1.3 — When CRDT-on-mobile is reconsidered
+
+A future ADR 0028-A2 amendment (or new ADR) revisits this when ANY of these triggers fire:
+
+- **Loro publishes a production-grade Swift binding** with sustained maintainer activity (proxy: 6+ months of weekly commits + integration test suite).
+- **Field-capture workflow gains a multi-actor real-time scenario** (currently none — single-actor per device with intentional sync-back-to-Anchor merge). Examples that would trigger: contractor + owner editing the same inspection finding live; iPad-to-iPad direct sync without Anchor mediation.
+- **Append-only LWW produces material data loss** in a real workflow (a forcing function; we don't speculate about hypothetical losses).
+- **Anchor side ships rich-CRDT contract** that the iOS app cannot satisfy with append-only events (e.g., field-level concurrency primitives that LWW cannot represent).
+
+The default expectation is that Phase 2.1 + Phase 2.2 do NOT need CRDT on iOS. Phase 3 reassessment is a planned milestone, not an inevitable rework.
+
+#### A1.4 — Compatibility with the main ADR 0028 decision
+
+This amendment does NOT change the desktop decision. Loro remains the selection for Anchor (Win/Mac/Linux per ADR 0048 multi-backend MAUI). The amendment scopes a **mobile carve-out**: iOS Phase 2.1 does not adopt Loro on the device.
+
+The Anchor-side Loro store consumes the iOS event queue at the merge boundary; this is no different from how Anchor would consume any other event source (a third-party integration, a webhook, etc.).
+
+#### A1.5 — Affected packages + downstream impact
+
+- **`accelerators/anchor-mobile-ios/`** (new family per W#23 intake item 9; Stage 02 decides between this path and `apps/field/`): does NOT depend on `Sunfish.Crdt.*` or any Loro binding. Pure SwiftUI + GRDB.swift + URLSession.
+- **Bridge blob-ingest API** (cross-cutting OQ3 in property-ops INDEX): the receiving end of the iOS event queue. Phase 2.1 ships this; W#28 Public Listings owns the Bridge route family.
+- **Anchor Loro store**: consumes iOS events at merge. No changes to the Loro binding layer required for this amendment; iOS events are JSON-encoded payloads that the consumer service deserializes + applies via Anchor's existing CRDT mutation API.
+
+#### A1.6 — Cited-symbol verification (Decision Discipline Rule 6)
+
+This amendment is at the architectural / paper layer; it does not introduce new `Sunfish.*` source symbols. It references:
+
+- `Sunfish.Foundation.Crypto.Signature` / `SignedOperation<T>` (existing per ADR 0004 + ADR 0049) — for ContentHash binding compatibility
+- ADR 0032 (capability delegation) — for Keychain-stored pairing token reference
+- ADR 0054 (electronic signatures) — for signature canonicalization compatibility
+- ADR 0046-A2 (`EncryptedField`) — for at-rest encryption compatibility on iOS local store
+
+All cited ADRs are Accepted on `origin/main` as of 2026-04-30. No introduced-by-this-amendment symbols.
+
+#### A1.7 — Compatibility plan
+
+- **Existing callers:** none (iOS family doesn't exist yet).
+- **Migration:** N/A; this amendment scopes the iOS approach BEFORE any iOS code ships.
+- **Forward path:** Phase 2.1 event queue → Phase 3 CRDT-on-mobile (if triggered per A1.3). The event-queue contract (A1.2) is forward-compatible: Phase 3 CRDT-on-mobile can replace the queue OR coexist (queue as the durable transport; CRDT as the in-memory representation).
+
+#### A1.8 — Open questions
+
+- **OQ-A1.1:** Should the iOS event queue support cross-device read consistency (e.g., owner's iPhone sees the iPad's just-captured inspection)? **A1 default:** no — read-side goes through Bridge in Phase 2.1. Phase 2.2 may add iOS-direct-to-Anchor read via Tailscale per ADR 0061.
+- **OQ-A1.2:** Should `device_local_seq` be reset on app reinstall, or persisted in Keychain? **A1 default:** persisted in Keychain alongside the pairing token; reinstall preserves the sequence (avoids dedup collisions).
+- **OQ-A1.3:** What happens if a device is decommissioned (sold / lost) and a new device is paired with a previously-used `device_id`? **A1 default:** new pairing issues a new `device_id`; old `device_id` is revoked at Anchor (capability revocation per ADR 0032). Sequence-space partitioning is preserved.
+
+#### A1.9 — Pre-acceptance audit
+
+- **AP-1 (unvalidated assumption):** Loro Swift binding maturity claim (A1.1) is verifiable but time-sensitive — W#23 Stage 02 spike must verify. AP applies to the `2026-04-30` snapshot only; future amendments revisit per A1.3 triggers.
+- **AP-3 (vague success criteria):** A1.3 trigger conditions are reasonably specific (6+ months of binding maintainer activity; multi-actor field workflow; material data loss). Pass.
+- **AP-21 (cited facts):** all cited ADRs verified Accepted on `origin/main`. Pass.
+
+This amendment is `Accepted` upon merge of the PR introducing it. Per the cohort lesson (7-of-7 substrate ADR amendments needed council fixes), this PR's auto-merge is intentionally disabled until a Stage 1.5 council subagent reviews.
