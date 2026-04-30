@@ -19,7 +19,7 @@ namespace Sunfish.Foundation.Macaroons;
 /// base64url-encoded. The <c>0x1F</c> (UNIT SEPARATOR) is a single sentinel that separates
 /// the text portion from the binary signature; there is exactly one per macaroon.</para>
 /// </remarks>
-internal static class MacaroonCodec
+public static class MacaroonCodec
 {
     /// <summary>ASCII RECORD SEPARATOR, separates location / identifier / caveat elements.</summary>
     public const byte RecordSeparator = 0x1E;
