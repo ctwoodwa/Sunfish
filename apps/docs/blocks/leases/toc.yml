@@ -4,5 +4,9 @@
   href: entity-model.md
 - name: Service Contract
   href: service-contract.md
+- name: Document Versioning
+  href: document-versioning.md
+- name: Signature Flow
+  href: signature-flow.md
 - name: Demo — Lease List
   href: demo-lease-list.md
