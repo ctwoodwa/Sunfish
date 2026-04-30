@@ -29,8 +29,12 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
     private readonly IInquiryValidator? _inquiryValidator;
     private readonly IAuditTrail? _auditTrail;
     private readonly IOperationSigner? _signer;
+    private readonly Sunfish.Foundation.Integrations.Payments.IPaymentGateway? _paymentGateway;
     private readonly TenantId _auditTenant;
     private readonly TimeProvider _time;
+
+    /// <summary>Per-application payment authorization handles returned by <c>IPaymentGateway.AuthorizeAsync</c>; used by Phase 8 to capture the fee on Accept.</summary>
+    private readonly ConcurrentDictionary<ApplicationId, string> _paymentAuthHandles = new();
 
     private static readonly TransitionTable<InquiryStatus> InquiryTransitions = new(
     [
@@ -70,6 +74,25 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         IOperationSigner? signer,
         TenantId tenantId,
         TimeProvider? time)
+        : this(prospectPromoter, inquiryValidator, auditTrail, signer, tenantId, paymentGateway: null, time)
+    {
+    }
+
+    /// <summary>
+    /// Creates the service with full cross-package wiring (W#22 Phase 7).
+    /// When <paramref name="paymentGateway"/> is supplied,
+    /// <see cref="SubmitApplicationAsync"/> authorizes the application
+    /// fee at submission time + stores the auth handle for downstream
+    /// capture on Accept. Mirrors the W#19 Phase 6 cross-package pattern.
+    /// </summary>
+    public InMemoryLeasingPipelineService(
+        ICapabilityPromoter? prospectPromoter,
+        IInquiryValidator? inquiryValidator,
+        IAuditTrail? auditTrail,
+        IOperationSigner? signer,
+        TenantId tenantId,
+        Sunfish.Foundation.Integrations.Payments.IPaymentGateway? paymentGateway,
+        TimeProvider? time)
     {
         if ((auditTrail is null) ^ (signer is null))
         {
@@ -83,9 +106,13 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         _inquiryValidator = inquiryValidator;
         _auditTrail = auditTrail;
         _signer = signer;
+        _paymentGateway = paymentGateway;
         _auditTenant = tenantId;
         _time = time ?? TimeProvider.System;
     }
+
+    /// <summary>Snapshot of payment authorization handles per application (set when <see cref="SubmitApplicationAsync"/> runs with an <c>IPaymentGateway</c> wired).</summary>
+    public IReadOnlyDictionary<ApplicationId, string> PaymentAuthorizationHandles => _paymentAuthHandles;
 
     private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
     {
@@ -226,6 +253,22 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         };
 
         _applications[application.Id] = application;
+
+        if (_paymentGateway is not null)
+        {
+            // ADR 0051 + W#19 Phase 0 stub: authorize the application fee
+            // at submission. Phase 8 (or a Phase 3.1 follow-up) captures
+            // on operator Accept; refunds on Withdraw / Decline are also
+            // possible but require separate operator action.
+            var authResult = await _paymentGateway.AuthorizeAsync(
+                new Sunfish.Foundation.Integrations.Payments.PaymentAuthorizationRequest(
+                    Tenant: request.Tenant,
+                    Amount: request.ApplicationFee,
+                    CorrelationId: application.Id.Value.ToString("D")),
+                ct).ConfigureAwait(false);
+            _paymentAuthHandles[application.Id] = authResult.AuthorizationHandle;
+        }
+
         await EmitAsync(
             AuditEventType.ApplicationSubmitted,
             LeasingPipelineAuditPayloadFactory.ApplicationSubmitted(application),
