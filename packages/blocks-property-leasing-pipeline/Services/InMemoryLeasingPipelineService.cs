@@ -30,6 +30,7 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
     private readonly IAuditTrail? _auditTrail;
     private readonly IOperationSigner? _signer;
     private readonly Sunfish.Foundation.Integrations.Payments.IPaymentGateway? _paymentGateway;
+    private readonly Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor? _fieldEncryptor;
     private readonly TenantId _auditTenant;
     private readonly TimeProvider _time;
 
@@ -93,6 +94,25 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         TenantId tenantId,
         Sunfish.Foundation.Integrations.Payments.IPaymentGateway? paymentGateway,
         TimeProvider? time)
+        : this(prospectPromoter, inquiryValidator, auditTrail, signer, tenantId, paymentGateway, fieldEncryptor: null, time) { }
+
+    /// <summary>
+    /// W#22 Phase 9 (post-W#32): adds <paramref name="fieldEncryptor"/> for
+    /// per-field encryption of <see cref="DemographicProfileSubmission"/>
+    /// at the <see cref="SubmitApplicationAsync"/> boundary. When null,
+    /// the demographic submission is mapped to an all-null
+    /// <see cref="DemographicProfile"/> (test/bootstrap fall-back); plaintext
+    /// is never persisted in either case.
+    /// </summary>
+    public InMemoryLeasingPipelineService(
+        ICapabilityPromoter? prospectPromoter,
+        IInquiryValidator? inquiryValidator,
+        IAuditTrail? auditTrail,
+        IOperationSigner? signer,
+        TenantId tenantId,
+        Sunfish.Foundation.Integrations.Payments.IPaymentGateway? paymentGateway,
+        Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor? fieldEncryptor,
+        TimeProvider? time)
     {
         if ((auditTrail is null) ^ (signer is null))
         {
@@ -107,6 +127,7 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         _auditTrail = auditTrail;
         _signer = signer;
         _paymentGateway = paymentGateway;
+        _fieldEncryptor = fieldEncryptor;
         _auditTenant = tenantId;
         _time = time ?? TimeProvider.System;
     }
@@ -238,6 +259,10 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
             throw new InvalidOperationException($"Prospect '{request.Prospect.Value}' not found.");
         }
 
+        // W#22 Phase 9: encrypt demographic submission at the boundary.
+        // Plaintext does not flow past this point.
+        var encryptedDemographics = await EncryptDemographicProfileAsync(request.Demographics, request.Tenant, ct).ConfigureAwait(false);
+
         var application = new Application
         {
             Id = new ApplicationId(Guid.NewGuid()),
@@ -245,7 +270,7 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
             Prospect = request.Prospect,
             Listing = request.Listing,
             Facts = request.Facts,
-            Demographics = request.Demographics,
+            Demographics = encryptedDemographics,
             Status = ApplicationStatus.Submitted,
             ApplicationSignature = request.Signature,
             ApplicationFee = request.ApplicationFee,
@@ -376,6 +401,45 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         ct.ThrowIfCancellationRequested();
         _inquiries.TryGetValue(id, out var i);
         return Task.FromResult<Inquiry?>(i);
+    }
+
+    /// <summary>
+    /// Encrypts every non-null field of <paramref name="submission"/> via
+    /// <see cref="Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor"/>
+    /// (purpose label <c>encrypted-field-aes</c>; per-tenant DEK). When
+    /// the field encryptor is not wired, returns an all-null
+    /// <see cref="DemographicProfile"/> — plaintext is dropped, NOT
+    /// persisted. W#22 Phase 9 / W#32.
+    /// </summary>
+    private async Task<DemographicProfile> EncryptDemographicProfileAsync(
+        DemographicProfileSubmission submission, TenantId tenant, CancellationToken ct)
+    {
+        if (_fieldEncryptor is null)
+        {
+            return new DemographicProfile();
+        }
+
+        async Task<Sunfish.Foundation.Recovery.EncryptedField?> EncryptField(string? plaintext)
+        {
+            if (string.IsNullOrEmpty(plaintext))
+            {
+                return null;
+            }
+            var bytes = System.Text.Encoding.UTF8.GetBytes(plaintext);
+            return await _fieldEncryptor.EncryptAsync(bytes, tenant, ct).ConfigureAwait(false);
+        }
+
+        return new DemographicProfile
+        {
+            RaceOrEthnicity = await EncryptField(submission.RaceOrEthnicity),
+            NationalOrigin = await EncryptField(submission.NationalOrigin),
+            Religion = await EncryptField(submission.Religion),
+            Sex = await EncryptField(submission.Sex),
+            DisabilityStatus = await EncryptField(submission.DisabilityStatus),
+            FamilialStatus = await EncryptField(submission.FamilialStatus),
+            MaritalStatus = await EncryptField(submission.MaritalStatus),
+            IncomeSourceType = await EncryptField(submission.IncomeSourceType),
+        };
     }
 
     /// <inheritdoc />

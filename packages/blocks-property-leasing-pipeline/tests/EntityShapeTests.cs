@@ -63,10 +63,7 @@ public sealed class EntityShapeTests
                 PriorLandlordNames = new[] { "Bob Smith", "Carol Jones" },
                 DependentCount = 1,
             },
-            Demographics = new DemographicProfile
-            {
-                RaceOrEthnicity = "Decline-to-state",
-            },
+            Demographics = new DemographicProfile(),
             Status = ApplicationStatus.Submitted,
             ApplicationSignature = new SignatureEventRef(Guid.NewGuid()),
             ApplicationFee = Money.Usd(50m),

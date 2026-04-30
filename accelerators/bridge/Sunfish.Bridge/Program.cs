@@ -238,7 +238,20 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     // submissions to the leasing pipeline's IPublicInquiryService.
     // InMemoryLeasingPipelineService implements both ILeasingPipelineService
     // and IPublicInquiryService, so one singleton covers both seams.
-    builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>();
+    // W#22 Phase 9: passes IFieldEncryptor through the factory when registered
+    // (typically via W#32's AddSunfishRecoveryCoordinator); when not wired,
+    // the service falls back to the all-null DemographicProfile path so
+    // plaintext is dropped rather than silently retained.
+    builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>(sp =>
+        new Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService(
+            prospectPromoter: sp.GetService<Sunfish.Blocks.PublicListings.Capabilities.ICapabilityPromoter>(),
+            inquiryValidator: sp.GetService<Sunfish.Blocks.PropertyLeasingPipeline.Services.IInquiryValidator>(),
+            auditTrail: null,
+            signer: null,
+            tenantId: default,
+            paymentGateway: sp.GetService<Sunfish.Foundation.Integrations.Payments.IPaymentGateway>(),
+            fieldEncryptor: sp.GetService<Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor>(),
+            time: null));
     builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.IPublicInquiryService>(
         sp => sp.GetRequiredService<Sunfish.Blocks.PropertyLeasingPipeline.Services.InMemoryLeasingPipelineService>());
     builder.Services.AddSingleton<Sunfish.Blocks.PropertyLeasingPipeline.Services.ILeasingPipelineService>(

@@ -68,7 +68,7 @@ public sealed class StateMachineTests
             PriorLandlordNames = new[] { "Bob", "Carol" },
             DependentCount = 1,
         },
-        Demographics = new DemographicProfile { RaceOrEthnicity = "Decline-to-state" },
+        Demographics = new DemographicProfileSubmission { RaceOrEthnicity = "Decline-to-state" },
         ApplicationFee = Money.Usd(50m),
         Signature = new SignatureEventRef(Guid.NewGuid()),
     };
