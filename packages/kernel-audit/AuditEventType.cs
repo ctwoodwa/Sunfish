@@ -230,6 +230,29 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A previously-recorded consent was revoked (subsequent SignatureCaptured calls for that principal will be refused until a new consent is recorded).</summary>
     public static readonly AuditEventType ConsentRevoked = new("ConsentRevoked");
 
+    // ===== ADR 0058 — Vendor onboarding =====
+
+    /// <summary>A new <c>Vendor</c> record was created in the Pending onboarding state.</summary>
+    public static readonly AuditEventType VendorCreated = new("VendorCreated");
+
+    /// <summary>A magic-link token was issued for vendor onboarding (W#18 Phase 5).</summary>
+    public static readonly AuditEventType VendorMagicLinkIssued = new("VendorMagicLinkIssued");
+
+    /// <summary>A previously-issued vendor magic-link was consumed by the vendor (W#18 Phase 5).</summary>
+    public static readonly AuditEventType VendorMagicLinkConsumed = new("VendorMagicLinkConsumed");
+
+    /// <summary>A vendor's onboarding state transitioned (e.g., Pending → W9Requested).</summary>
+    public static readonly AuditEventType VendorOnboardingStateChanged = new("VendorOnboardingStateChanged");
+
+    /// <summary>A W-9 document was received from the vendor (W#18 Phase 4).</summary>
+    public static readonly AuditEventType W9DocumentReceived = new("W9DocumentReceived");
+
+    /// <summary>An operator verified a previously-received W-9 document.</summary>
+    public static readonly AuditEventType W9DocumentVerified = new("W9DocumentVerified");
+
+    /// <summary>A vendor was activated (operationally usable for work-order assignment).</summary>
+    public static readonly AuditEventType VendorActivated = new("VendorActivated");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
