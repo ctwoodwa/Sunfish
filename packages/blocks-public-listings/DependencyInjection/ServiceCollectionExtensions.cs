@@ -1,9 +1,11 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Blocks.PublicListings.Capabilities;
 using Sunfish.Blocks.PublicListings.Data;
 using Sunfish.Blocks.PublicListings.Defense;
 using Sunfish.Blocks.PublicListings.Services;
 using Sunfish.Foundation.Integrations.Captcha;
+using Sunfish.Foundation.Macaroons;
 using Sunfish.Foundation.Persistence;
 
 namespace Sunfish.Blocks.PublicListings.DependencyInjection;
@@ -36,6 +38,14 @@ public static class ServiceCollectionExtensions
             var audit = sp.GetService<Sunfish.Blocks.PublicListings.Audit.PublicListingAuditEmitter>();
             return new InquiryFormDefense(captcha, rateLimiter, mxResolver, scorer, triageQueue, options, audit);
         });
+
+        // W#28 Phase 5c-4 — Prospect-capability verifier (sibling to
+        // MacaroonCapabilityPromoter from Phase 4). Requires an IRootKeyStore
+        // registered upstream (typically through the macaroon substrate
+        // bootstrap; the verifier reads the same root key the issuer wrote
+        // tokens with).
+        services.TryAddSingleton<IProspectCapabilityVerifier, MacaroonProspectCapabilityVerifier>();
+
         return services;
     }
 }

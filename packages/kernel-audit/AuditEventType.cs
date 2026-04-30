@@ -282,6 +282,14 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An <c>EncryptedField</c> decrypt was rejected (capability invalid, ciphertext truncated, AES-GCM tag failure, or unsupported key version).</summary>
     public static readonly AuditEventType FieldDecryptionDenied = new("FieldDecryptionDenied");
 
+    // ===== ADR 0059 — Prospect-capability verifier (W#28 Phase 5c-4) =====
+
+    /// <summary>A Prospect-tier macaroon capability was verified successfully.</summary>
+    public static readonly AuditEventType ProspectCapabilityVerified = new("ProspectCapabilityVerified");
+
+    /// <summary>A Prospect-tier macaroon capability verification was rejected (decode failed / signature mismatch / wrong tenant / listing not allowed / email not verified / expired).</summary>
+    public static readonly AuditEventType ProspectCapabilityDenied = new("ProspectCapabilityDenied");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
