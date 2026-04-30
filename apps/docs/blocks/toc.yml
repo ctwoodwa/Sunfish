@@ -12,10 +12,14 @@
   href: leases/
 - name: Maintenance
   href: maintenance/
+- name: Messaging
+  href: messaging/
 - name: Properties
   href: properties/
 - name: Property-Equipment
   href: property-equipment/
+- name: Public Listings
+  href: public-listings/
 - name: Rent Collection
   href: rent-collection/
 - name: Scheduling
