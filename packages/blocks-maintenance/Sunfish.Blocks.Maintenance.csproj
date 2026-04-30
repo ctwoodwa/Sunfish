@@ -31,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
     <ProjectReference Include="..\foundation-taxonomy\Sunfish.Foundation.Taxonomy.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
     <ProjectReference Include="..\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
