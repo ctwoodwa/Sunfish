@@ -175,6 +175,44 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A lease was cancelled before execution (terminal).</summary>
     public static readonly AuditEventType LeaseCancelled = new("LeaseCancelled");
 
+    // ===== ADR 0057 — Leasing pipeline =====
+
+    /// <summary>An inquiry passed validation and was persisted at the public-input boundary.</summary>
+    public static readonly AuditEventType InquiryAccepted = new("InquiryAccepted");
+
+    /// <summary>An inquiry was rejected at the public-input boundary (validation failure).</summary>
+    public static readonly AuditEventType InquiryRejected = new("InquiryRejected");
+
+    /// <summary>An inquiry was promoted to a Prospect via the email-verification flow.</summary>
+    public static readonly AuditEventType ProspectPromoted = new("ProspectPromoted");
+
+    /// <summary>A Prospect was promoted to an Applicant after fee + signature confirmation.</summary>
+    public static readonly AuditEventType ApplicantPromoted = new("ApplicantPromoted");
+
+    /// <summary>A rental application was submitted by a Prospect.</summary>
+    public static readonly AuditEventType ApplicationSubmitted = new("ApplicationSubmitted");
+
+    /// <summary>A rental application was accepted by the operator.</summary>
+    public static readonly AuditEventType ApplicationAccepted = new("ApplicationAccepted");
+
+    /// <summary>A rental application was declined by the operator.</summary>
+    public static readonly AuditEventType ApplicationDeclined = new("ApplicationDeclined");
+
+    /// <summary>A rental application was withdrawn before decision.</summary>
+    public static readonly AuditEventType ApplicationWithdrawn = new("ApplicationWithdrawn");
+
+    /// <summary>A background-check provider was asked to begin a report (kickoff).</summary>
+    public static readonly AuditEventType BackgroundCheckRequested = new("BackgroundCheckRequested");
+
+    /// <summary>A background-check provider returned a final report.</summary>
+    public static readonly AuditEventType BackgroundCheckCompleted = new("BackgroundCheckCompleted");
+
+    /// <summary>An FCRA §615-compliant adverse-action notice was issued.</summary>
+    public static readonly AuditEventType AdverseActionNoticeIssued = new("AdverseActionNoticeIssued");
+
+    /// <summary>A leasing-pipeline-tier capability (Anonymous / Prospect / Applicant) was revoked.</summary>
+    public static readonly AuditEventType LeasingPipelineCapabilityRevoked = new("LeasingPipelineCapabilityRevoked");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
