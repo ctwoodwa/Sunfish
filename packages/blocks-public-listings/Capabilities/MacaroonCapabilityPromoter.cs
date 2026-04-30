@@ -83,17 +83,17 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
 
         var caveats = new List<Caveat>
         {
-            new($"capability-id = {capabilityId.Value:D}"),
-            new($"tenant = {_tenant.Value}"),
-            new($"email = {verifiedEmail}"),
-            new("email-verified = true"),
-            new($"issued-from-ip = {ipAddress}"),
-            new($"expires = {expiresAt:O}"),
+            new($"{ProspectCaveatNames.CapabilityId} = {capabilityId.Value:D}"),
+            new($"{ProspectCaveatNames.Tenant} = {_tenant.Value}"),
+            new($"{ProspectCaveatNames.Email} = {verifiedEmail}"),
+            new($"{ProspectCaveatNames.EmailVerified} = true"),
+            new($"{ProspectCaveatNames.IssuedFromIp} = {ipAddress}"),
+            new($"{ProspectCaveatNames.Expires} = {expiresAt:O}"),
         };
 
         foreach (var listingId in _accessibleListings)
         {
-            caveats.Add(new($"listing-allowed = {listingId.Value:D}"));
+            caveats.Add(new($"{ProspectCaveatNames.ListingAllowed} = {listingId.Value:D}"));
         }
 
         var macaroon = await _issuer.MintAsync(_location, capabilityId.Value.ToString("D"), caveats, ct).ConfigureAwait(false);
