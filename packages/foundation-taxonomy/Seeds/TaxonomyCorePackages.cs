@@ -95,4 +95,108 @@ public static class TaxonomyCorePackages
             };
         }
     }
+
+    /// <summary>
+    /// <c>Sunfish.Leasing.JurisdictionRules@1.0.0</c> — fair-housing +
+    /// FCRA + tenant-protection rule families consumed by the leasing
+    /// pipeline (W#22) + the right-of-entry compliance check (ADR 0060).
+    /// 7 root jurisdictions + 21 children covering FHA seven protected
+    /// classes, FCRA workflow rules, CA Unruh + FEHC, NY Tenant Protection
+    /// Act, and source-of-income rules. Charter authored in W#22 Phase 4
+    /// (<c>icm/00_intake/output/starter-taxonomies-v1-leasing-2026-04-30.md</c>).
+    /// </summary>
+    public static TaxonomyCorePackage SunfishLeasingJurisdictionRules
+    {
+        get
+        {
+            var id = new TaxonomyDefinitionId("Sunfish", "Leasing", "JurisdictionRules");
+            var version = TaxonomyVersion.V1_0_0;
+            var publishedAt = new DateTimeOffset(2026, 4, 30, 0, 0, 0, TimeSpan.Zero);
+
+            var def = new TaxonomyDefinition
+            {
+                Id = id,
+                Version = version,
+                Governance = TaxonomyGovernanceRegime.Authoritative,
+                Description = "Fair-housing + FCRA + tenant-protection rule families consumed by the leasing pipeline (W#22) + IJurisdictionPolicyResolver (ADR 0060).",
+                Owner = ActorId.Sunfish,
+                PublishedAt = publishedAt,
+            };
+
+            var nodes = new List<TaxonomyNode>(28);
+            void AddRoot(string code, string display, string description) =>
+                nodes.Add(new TaxonomyNode
+                {
+                    Id = new TaxonomyNodeId(id, code),
+                    DefinitionVersion = version,
+                    Display = display,
+                    Description = description,
+                    ParentCode = null,
+                    Status = TaxonomyNodeStatus.Active,
+                    PublishedAt = publishedAt,
+                });
+
+            void AddChild(string code, string parentCode, string display, string description) =>
+                nodes.Add(new TaxonomyNode
+                {
+                    Id = new TaxonomyNodeId(id, code),
+                    DefinitionVersion = version,
+                    Display = display,
+                    Description = description,
+                    ParentCode = parentCode,
+                    Status = TaxonomyNodeStatus.Active,
+                    PublishedAt = publishedAt,
+                });
+
+            // 7 root jurisdictions (charter §"Root nodes")
+            AddRoot("us-fed.fha", "US Fair Housing Act", "Title VIII of the Civil Rights Act; bans discrimination in housing on the basis of seven protected classes.");
+            AddRoot("us-fed.fcra", "US Fair Credit Reporting Act", "Federal regulation governing consumer-report use in housing decisions. Drives the adverse-action notice + dispute-window workflow.");
+            AddRoot("us-fed.fha-source-of-income", "US Source-of-Income Rules", "HUD interpretive guidance + state-level extensions covering Section 8 voucher / housing-assistance discrimination prohibitions.");
+            AddRoot("us-state.ca.unruh", "California Unruh Civil Rights Act", "California's broad civil-rights law extending FHA-style protections to additional protected classes.");
+            AddRoot("us-state.ca.fehc", "California Fair Employment & Housing Council Regs", "California regulations operationalizing FHA + Unruh; specifies prohibited questions + tenant-screening criteria.");
+            AddRoot("us-state.ny.tpa", "New York Tenant Protection Act", "NY 2019 rent-regulation + tenant-screening reforms (e.g., 30-day notice rules, application-fee caps).");
+            AddRoot("us-state.ny.adverse-action-extended-window", "NY Extended Adverse-Action Window", "NY-state extension of the FCRA dispute window (90 days for source-of-income decisions).");
+
+            // FHA protected-class enumeration (7 children)
+            AddChild("us-fed.fha.race", "us-fed.fha", "Race", "Protected under FHA §3604(a–f).");
+            AddChild("us-fed.fha.color", "us-fed.fha", "Color", "Protected under FHA §3604(a–f).");
+            AddChild("us-fed.fha.religion", "us-fed.fha", "Religion", "Protected under FHA §3604(a–f).");
+            AddChild("us-fed.fha.sex", "us-fed.fha", "Sex", "Protected under FHA §3604(a–f); HUD interprets to include gender identity + sexual orientation since 2021.");
+            AddChild("us-fed.fha.familial-status", "us-fed.fha", "Familial Status", "Children-in-household protection per FHA §3602(k).");
+            AddChild("us-fed.fha.national-origin", "us-fed.fha", "National Origin", "Protected under FHA §3604(a–f).");
+            AddChild("us-fed.fha.disability", "us-fed.fha", "Disability", "Protected under FHA §3604(f); reasonable-accommodation duty applies.");
+
+            // FCRA workflow rules (4 children)
+            AddChild("us-fed.fcra.adverse-action-notice", "us-fed.fcra", "Adverse-Action Notice Requirement", "§615(a) mandatory notice when decision is based on a consumer report. Sunfish ships the MandatoryFcraStatement (W#22 Phase 3).");
+            AddChild("us-fed.fcra.dispute-window-60d", "us-fed.fcra", "60-Day Dispute Window", "§612(a) right to free report + dispute within 60 days. Default FcraAdverseActionNoticeGenerator.DefaultDisputeWindow.");
+            AddChild("us-fed.fcra.consent-required", "us-fed.fcra", "Background-Check Consent Requirement", "§604(b) requires written consent for consumer-report procurement; satisfied by consent-background-check signature scope.");
+            AddChild("us-fed.fcra.permissible-purpose", "us-fed.fcra", "Permissible-Purpose Requirement", "§604(a) limits consumer-report use to enumerated purposes (tenant-screening qualifies).");
+
+            // CA Unruh additional protected classes (5 children)
+            AddChild("us-state.ca.unruh.sexual-orientation", "us-state.ca.unruh", "Sexual Orientation", "CA Civil Code §51(b).");
+            AddChild("us-state.ca.unruh.gender-identity", "us-state.ca.unruh", "Gender Identity", "CA Civil Code §51(e).");
+            AddChild("us-state.ca.unruh.marital-status", "us-state.ca.unruh", "Marital Status", "CA Civil Code §51(b).");
+            AddChild("us-state.ca.unruh.ancestry", "us-state.ca.unruh", "Ancestry", "CA Civil Code §51(b).");
+            AddChild("us-state.ca.unruh.medical-condition", "us-state.ca.unruh", "Medical Condition", "CA Civil Code §51(b); incl. genetic information.");
+
+            // CA FEHC operational rules (2 children)
+            AddChild("us-state.ca.fehc.prohibited-question-list", "us-state.ca.fehc", "Prohibited-Question List", "Cal. Code Regs. §12181 — questions an operator may not ask during application/screening.");
+            AddChild("us-state.ca.fehc.application-fee-cap", "us-state.ca.fehc", "Application Fee Cap", "CA Civil Code §1950.6 — fee cap; refund duty.");
+
+            // NY TPA operational rules (3 children)
+            AddChild("us-state.ny.tpa.application-fee-cap-20usd", "us-state.ny.tpa", "$20 Application Fee Cap", "RPL §238-a — application fees capped at $20.");
+            AddChild("us-state.ny.tpa.security-deposit-cap-1mo", "us-state.ny.tpa", "1-Month Security Deposit Cap", "RPL §7-108 — security deposit + last month's rent capped at one month's rent.");
+            AddChild("us-state.ny.tpa.tenant-blacklist-prohibition", "us-state.ny.tpa", "Tenant Blacklist Prohibition", "RPL §227-f — prohibits use of tenant-blacklist databases (Housing Court records).");
+
+            // Source-of-income rules (2 children)
+            AddChild("us-fed.fha-source-of-income.section-8-voucher", "us-fed.fha-source-of-income", "Section 8 Voucher Acceptance", "HUD interpretive guidance + state-level mandates that Section 8 vouchers must be accepted on equal terms.");
+            AddChild("us-fed.fha-source-of-income.housing-assistance", "us-fed.fha-source-of-income", "Other Housing Assistance", "Disability/veterans' housing programs covered by similar state-level rules.");
+
+            return new TaxonomyCorePackage
+            {
+                Definition = def,
+                Nodes = nodes.AsReadOnly(),
+            };
+        }
+    }
 }
