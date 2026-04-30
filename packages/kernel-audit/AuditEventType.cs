@@ -146,6 +146,35 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A signature-bound completion attestation was captured.</summary>
     public static readonly AuditEventType WorkOrderCompletionAttestationCaptured = new("WorkOrderCompletionAttestationCaptured");
 
+    // ===== ADR 0028 / ADR 0054 — Leases =====
+
+    /// <summary>A lease was created in the Draft phase.</summary>
+    public static readonly AuditEventType LeaseDrafted = new("LeaseDrafted");
+
+    /// <summary>A new revision of the lease document was appended to the version log.</summary>
+    public static readonly AuditEventType LeaseDocumentVersionAppended = new("LeaseDocumentVersionAppended");
+
+    /// <summary>A party (tenant or co-leaseholder) recorded a signature on the lease.</summary>
+    public static readonly AuditEventType LeasePartySignatureRecorded = new("LeasePartySignatureRecorded");
+
+    /// <summary>The landlord attestation was bound to the lease.</summary>
+    public static readonly AuditEventType LeaseLandlordAttestationSet = new("LeaseLandlordAttestationSet");
+
+    /// <summary>A lease transitioned AwaitingSignature → Executed (all required signatures captured).</summary>
+    public static readonly AuditEventType LeaseExecuted = new("LeaseExecuted");
+
+    /// <summary>A lease transitioned Executed → Active (commencement date reached).</summary>
+    public static readonly AuditEventType LeaseActivated = new("LeaseActivated");
+
+    /// <summary>A lease was renewed (Active → Renewed).</summary>
+    public static readonly AuditEventType LeaseRenewed = new("LeaseRenewed");
+
+    /// <summary>A lease was terminated (terminal).</summary>
+    public static readonly AuditEventType LeaseTerminated = new("LeaseTerminated");
+
+    /// <summary>A lease was cancelled before execution (terminal).</summary>
+    public static readonly AuditEventType LeaseCancelled = new("LeaseCancelled");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
