@@ -213,6 +213,23 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A leasing-pipeline-tier capability (Anonymous / Prospect / Applicant) was revoked.</summary>
     public static readonly AuditEventType LeasingPipelineCapabilityRevoked = new("LeasingPipelineCapabilityRevoked");
 
+    // ===== ADR 0054 — Signatures =====
+
+    /// <summary>A new SignatureEvent was captured (after consent + scope validation passed).</summary>
+    public static readonly AuditEventType SignatureCaptured = new("SignatureCaptured");
+
+    /// <summary>An append-only revocation entry was added for a SignatureEvent (per ADR 0054 A4+A5).</summary>
+    public static readonly AuditEventType SignatureRevoked = new("SignatureRevoked");
+
+    /// <summary>A signature-validity projection was re-computed; emitted on each consult of <c>GetCurrentValidityAsync</c>.</summary>
+    public static readonly AuditEventType SignatureValidityProjected = new("SignatureValidityProjected");
+
+    /// <summary>A UETA / E-SIGN consent record was recorded for a principal.</summary>
+    public static readonly AuditEventType ConsentRecorded = new("ConsentRecorded");
+
+    /// <summary>A previously-recorded consent was revoked (subsequent SignatureCaptured calls for that principal will be refused until a new consent is recorded).</summary>
+    public static readonly AuditEventType ConsentRevoked = new("ConsentRevoked");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

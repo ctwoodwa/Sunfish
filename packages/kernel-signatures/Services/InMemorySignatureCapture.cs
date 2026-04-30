@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using Sunfish.Kernel.Audit;
+using Sunfish.Kernel.Signatures.Audit;
 using Sunfish.Kernel.Signatures.Models;
 
 namespace Sunfish.Kernel.Signatures.Services;
@@ -13,24 +15,34 @@ public sealed class InMemorySignatureCapture : ISignatureCapture
 {
     private readonly IConsentRegistry _consents;
     private readonly ISignatureScopeValidator? _scopeValidator;
+    private readonly SignatureAuditEmitter? _audit;
     private readonly TimeProvider _time;
     private readonly ConcurrentDictionary<SignatureEventId, SignatureEvent> _events = new();
 
-    /// <summary>Creates the capturer with consent + clock; scope-validation disabled.</summary>
+    /// <summary>Creates the capturer with consent + clock; scope-validation + audit disabled.</summary>
     public InMemorySignatureCapture(IConsentRegistry consents, TimeProvider? time = null)
-        : this(consents, scopeValidator: null, time) { }
+        : this(consents, scopeValidator: null, audit: null, time) { }
+
+    /// <summary>Creates the capturer with optional <see cref="ISignatureScopeValidator"/> (W#21 Phase 4); audit disabled.</summary>
+    public InMemorySignatureCapture(IConsentRegistry consents, ISignatureScopeValidator? scopeValidator, TimeProvider? time)
+        : this(consents, scopeValidator, audit: null, time) { }
 
     /// <summary>
-    /// Creates the capturer with consent + optional <see cref="ISignatureScopeValidator"/>
-    /// (W#21 Phase 4). When wired, every captured signature has its
-    /// <see cref="SignatureCaptureRequest.Scope"/> validated against
-    /// <c>Sunfish.Signature.Scopes</c> per ADR 0054 amendment A7.
+    /// Creates the capturer with consent + scope-validator + optional
+    /// audit emission (W#21 Phase 5). When <paramref name="audit"/> is
+    /// supplied, every successful capture emits
+    /// <see cref="AuditEventType.SignatureCaptured"/>.
     /// </summary>
-    public InMemorySignatureCapture(IConsentRegistry consents, ISignatureScopeValidator? scopeValidator, TimeProvider? time)
+    public InMemorySignatureCapture(
+        IConsentRegistry consents,
+        ISignatureScopeValidator? scopeValidator,
+        SignatureAuditEmitter? audit,
+        TimeProvider? time)
     {
         ArgumentNullException.ThrowIfNull(consents);
         _consents = consents;
         _scopeValidator = scopeValidator;
+        _audit = audit;
         _time = time ?? TimeProvider.System;
     }
 
@@ -82,6 +94,14 @@ public sealed class InMemorySignatureCapture : ISignatureCapture
             Attestation = request.Attestation,
         };
         _events[captured.Id] = captured;
+        if (_audit is not null)
+        {
+            await _audit.EmitAsync(
+                AuditEventType.SignatureCaptured,
+                SignatureAuditPayloadFactory.SignatureCaptured(captured),
+                captured.SignedAt,
+                ct).ConfigureAwait(false);
+        }
         return captured;
     }
 
