@@ -27,6 +27,7 @@ public static class MaintenanceServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
         services.AddSingleton<IMaintenanceService, InMemoryMaintenanceService>();
+        services.AddSingleton<IVendorContactService, InMemoryVendorContactService>();
         services.TryAddSingleton(typeof(ISunfishLocalizer<>), typeof(SunfishLocalizer<>));
         return services;
     }
