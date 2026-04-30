@@ -6,9 +6,9 @@ namespace Sunfish.Kernel.Signatures.Services;
 
 /// <summary>
 /// In-memory <see cref="ISignatureRevocationLog"/> for tests + non-production
-/// hosts. Phase 1 ships an append-only log + a simple "any revocation
-/// invalidates" projection; the full last-revocation-wins merge rule
-/// per ADR 0054 amendments A4 + A5 lands in W#21 Phase 3.
+/// hosts. Append-only log delegating the validity projection to
+/// <see cref="RevocationProjection.Project"/> per ADR 0054 amendments
+/// A4 + A5 (last-revocation-wins; ties broken by total-order on Guid).
 /// </summary>
 public sealed class InMemorySignatureRevocationLog : ISignatureRevocationLog
 {
@@ -44,23 +44,10 @@ public sealed class InMemorySignatureRevocationLog : ISignatureRevocationLog
             return Task.FromResult(new SignatureValidityStatus { IsValid = true });
         }
 
-        SignatureRevocation? winning;
-        lock (bucket)
-        {
-            // Phase 1 simplification: any revocation invalidates. Phase 3 will
-            // implement the full last-revocation-wins merge with total-order
-            // tie-break per ADR 0054 amendments A4 + A5.
-            winning = bucket
-                .OrderByDescending(r => r.RevokedAt)
-                .ThenByDescending(r => r.Id.Value)
-                .FirstOrDefault();
-        }
+        SignatureRevocation[] snapshot;
+        lock (bucket) { snapshot = bucket.ToArray(); }
 
-        return Task.FromResult(new SignatureValidityStatus
-        {
-            IsValid = winning is null,
-            RevokedBy = winning,
-        });
+        return Task.FromResult(RevocationProjection.Project(snapshot));
     }
 
     /// <inheritdoc />
