@@ -57,7 +57,7 @@ public class WorkOrderListBlockTests : BunitContext
         var vendor = await svc.CreateVendorAsync(new CreateVendorRequest
         {
             DisplayName = "Speedy Plumbing",
-            Specialty = VendorSpecialty.Plumbing,
+            Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing),
         });
 
         var request = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest

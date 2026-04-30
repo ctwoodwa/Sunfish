@@ -95,3 +95,62 @@ ADR 0053 amendment A6 reframes the work-order domain so:
 - [ ] Drop any code reading `wo.RequestId` — resolve via audit query instead (Phase 5.1 pattern).
 - [ ] Drop any code passing `RequestId` to `ListWorkOrdersQuery` — the filter no longer exists.
 - [ ] If you render Work-Order priority from the originating request, port to the audit-query approach when Phase 5.1 ships.
+
+
+## v1.0 → v1.1 (W#18 Phase 1; ADR 0058)
+
+**Type:** api-change-shape (MINOR-shaped MAJOR per existing repo convention since the `Vendor` constructor breaks; bumped to v1.1 to track ADR 0058 explicitly).
+
+`Vendor` migrated from a positional record to an init-only record per ADR 0058 amendment A2. The schema gained vendor-onboarding scaffolding (`OnboardingState`, `W9`, `PaymentPreference`, `Contacts`) + replaced the singular `Specialty` enum with `Specialties` (list of `TaxonomyClassification` references into `Sunfish.Vendor.Specialties@1.0.0` from W#18 Phase 6 / PR #346).
+
+### Breaking changes
+
+#### 1. `Vendor` constructor: positional → init-only
+
+Before:
+
+```csharp
+new Vendor(
+    Id: VendorId.NewId(),
+    DisplayName: "Ace Plumbing",
+    ContactName: "Bob",
+    ContactEmail: "bob@ace.example",
+    ContactPhone: null,
+    Specialty: VendorSpecialty.Plumbing,
+    Status: VendorStatus.Active);
+```
+
+After:
+
+```csharp
+new Vendor
+{
+    Id = VendorId.NewId(),
+    DisplayName = "Ace Plumbing",
+    ContactName = "Bob",
+    ContactEmail = "bob@ace.example",
+    Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing),
+    Status = VendorStatus.Active,
+    OnboardingState = VendorOnboardingState.Pending,
+};
+```
+
+#### 2. `Vendor.Specialty` (singular enum) → `Vendor.Specialties` (list of `TaxonomyClassification`)
+
+The legacy `VendorSpecialty` enum is preserved for the migration window. Use `VendorSpecialtyClassifications.FromLegacyEnum(VendorSpecialty)` or `.ToList(VendorSpecialty)` for mechanical migration of existing call-sites. Each enum value maps 1:1 to a root taxonomy node in `Sunfish.Vendor.Specialties@1.0.0` (e.g., `VendorSpecialty.Plumbing` → `plumbing`).
+
+#### 3. `CreateVendorRequest.Specialty` → `CreateVendorRequest.Specialties`
+
+Field renamed; type changed from `VendorSpecialty` to `IReadOnlyList<TaxonomyClassification>`. Callers using the enum should wrap via `VendorSpecialtyClassifications.ToList(specialty)`.
+
+#### 4. `ListVendorsQuery.Specialty` → `ListVendorsQuery.SpecialtyCode`
+
+Field renamed; type changed from `VendorSpecialty?` to `string?`. The new field matches against the `Code` of any classification in `Vendor.Specialties` — e.g., `new ListVendorsQuery { SpecialtyCode = "plumbing" }`.
+
+### Migration checklist for downstream consumers
+
+- [ ] Update every `new Vendor(...)` to init-only syntax.
+- [ ] Replace `Specialty = VendorSpecialty.X` with `Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.X)` at every `CreateVendorRequest` build site.
+- [ ] Replace `vendor.Specialty` reads with `vendor.Specialties[0].Code` (or whatever code matches the legacy enum value).
+- [ ] Replace `ListVendorsQuery { Specialty = ... }` with `ListVendorsQuery { SpecialtyCode = ... }`.
+- [ ] Set `OnboardingState` on every `CreateVendorRequest` (defaults to `Pending`).

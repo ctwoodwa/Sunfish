@@ -187,14 +187,17 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
-        var vendor = new Vendor(
-            Id: VendorId.NewId(),
-            DisplayName: request.DisplayName,
-            ContactName: request.ContactName,
-            ContactEmail: request.ContactEmail,
-            ContactPhone: request.ContactPhone,
-            Specialty: request.Specialty,
-            Status: request.Status);
+        var vendor = new Vendor
+        {
+            Id = VendorId.NewId(),
+            DisplayName = request.DisplayName,
+            ContactName = request.ContactName,
+            ContactEmail = request.ContactEmail,
+            ContactPhone = request.ContactPhone,
+            Status = request.Status,
+            OnboardingState = request.OnboardingState,
+            Specialties = request.Specialties,
+        };
 
         _vendors[vendor.Id] = vendor;
         return ValueTask.FromResult(vendor);
@@ -219,10 +222,13 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         {
             ct.ThrowIfCancellationRequested();
 
-            if (query.Specialty.HasValue && vendor.Specialty != query.Specialty.Value)
+            if (query.SpecialtyCode is not null && !vendor.Specialties.Any(c => c.Code == query.SpecialtyCode))
                 continue;
 
             if (query.Status.HasValue && vendor.Status != query.Status.Value)
+                continue;
+
+            if (query.OnboardingState.HasValue && vendor.OnboardingState != query.OnboardingState.Value)
                 continue;
 
             yield return vendor;

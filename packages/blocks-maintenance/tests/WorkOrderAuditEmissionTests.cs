@@ -59,7 +59,7 @@ public sealed class WorkOrderAuditEmissionTests
     private static async Task<(InMemoryMaintenanceService svc, WorkOrder wo, CapturingAuditTrail trail)> NewWorkOrderAsync(WorkOrderStatus advanceTo = WorkOrderStatus.Draft)
     {
         var svc = NewServiceCapturing(out var trail);
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         { PropertyId = TestPropertyId, RequestedByDisplayName = "T", Description = "x", Priority = MaintenancePriority.Normal, RequestedDate = new DateOnly(2026, 5, 1) });
         var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
