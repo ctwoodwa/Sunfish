@@ -1,7 +1,7 @@
 # ADR 0057 — Leasing Pipeline + Fair Housing Compliance Posture
 
-**Status:** Proposed
-**Date:** 2026-04-29
+**Status:** Accepted (2026-04-29 — ratified post-build per ledger row #22; **A1 amendment landed 2026-04-30** — see §"Amendments (post-acceptance)"). Note: the original Proposed → Accepted transition for this ADR was implicit (W#22 was authored + shipped under the assumption ADR 0057 was Accepted; the Status line not flipping at acceptance time was a process-bug). A1 ratifies + adds the structural-encryption amendment.
+**Date:** 2026-04-29 (Accepted) / 2026-04-30 (A1 structural-encryption amendment)
 **Resolves:** Property-ops cluster intake [`property-leasing-pipeline-intake-2026-04-28.md`](../../icm/00_intake/output/property-leasing-pipeline-intake-2026-04-28.md); cluster workstream #22. Specifies the leasing-pipeline domain block (Inquiry → Application → Approval) and the Fair Housing / FCRA compliance posture under which it ships. Composes ADR 0054 (Signatures), ADR 0055 (Dynamic Forms), ADR 0056 (Foundation.Taxonomy), ADR 0052 (Messaging), ADR 0049 (Audit), ADR 0043 (Threat Model — addended).
 
 ---
@@ -615,3 +615,74 @@ This ADR should be re-evaluated when any of the following fire:
 - [x] **Revisit triggers.** 9 conditions with externally-observable signals.
 - [x] **Cold Start Test.** Implementation checklist is 18 specific tasks. Fresh contributor reading this ADR + cluster intake + ADR 0049/0052/0054/0055/0056/0028 should be able to scaffold blocks-property-leasing-pipeline without ambiguity.
 - [x] **Sources cited.** 9 ADRs referenced. FHA + FCRA + HUD guidance + iCalendar (RFC 5545) cited. Cluster intake + INDEX + Phase 2 commercial intake referenced.
+
+---
+
+## Amendments (post-acceptance)
+
+### A1 (2026-04-30) — `DemographicProfile` structural encryption (post-W#32 substrate)
+
+**Driver:** W#22 Phase 9 (PR #390) replaced `DemographicProfile`'s per-field plaintext storage (`string?`, `int?`) with `Sunfish.Foundation.Recovery.EncryptedField?` per the W#32 substrate (ADR 0046-A2/A3/A4/A5). The 11 protected-class + protected-adjacent fields (Race / Color / NationalOrigin / Religion / Sex / FamilialStatus / Disability / Age / MaritalStatus / SourceOfIncome / VeteranStatus) now require an `IFieldDecryptor` capability to access plaintext.
+
+This amendment **ratifies the structural-enforcement claim** that the original ADR's §"FHA-defense layout" made: protected-class fields are now structurally inaccessible to decisioning, not merely test-enforced.
+
+#### A1.1 — What changed (consumer side)
+
+- `DemographicProfileSubmission` plaintext record introduced at the `SubmitApplicationRequest` boundary; `LeasingPipelineService.SubmitApplicationAsync` encrypts at the service boundary; plaintext never persists.
+- `DemographicProfile.Race` (and 10 sibling fields) typed as `EncryptedField?`; reading the `Value` requires `IFieldDecryptor.DecryptAsync(field, capability, tenant, ct)` which is itself audit-emitting (`FieldDecrypted` per W#32 audit pattern).
+- Decisioning code paths (`DecisioningFactsBuilder`, future `BackgroundCheckOrchestrator`, future `AdverseActionNoticeGenerator`) do NOT receive `DemographicProfile` references and do NOT hold an `IFieldDecryptor` capability; the type system enforces this.
+
+#### A1.2 — Permitted decryption sites
+
+Only two consumer classes are permitted to decrypt demographic fields:
+
+1. **Compliance reporting (HUD aggregated statistics, FHA filings, etc.)** — holds a `ComplianceReportingDecryptCapability` scoped to compliance-reporting work. Per-field decrypts emit `FieldDecrypted` audit per W#32; aggregate statistics emit no per-row identification.
+2. **Subject Access Request (SAR) handler** (per FCRA §609 + GDPR Article 15 + CCPA §1798.110) — holds a `SubjectAccessRequestDecryptCapability` scoped to a specific Prospect's own data; per-field decrypts emit `FieldDecrypted` audit identifying the Prospect-as-requestor.
+
+No other readers. Decisioning, AdverseActionNotice generation, BackgroundCheck orchestration, application-status views, etc. all consume only the non-protected `DecisioningFacts` per the ADR's original §"FHA-defense layout."
+
+#### A1.3 — Audit-payload field-name absence test (downgraded role)
+
+The original Phase 6 audit-emission-invariant test in `LeasingPipelineServiceTests` used reflection to assert that no `AuditPayload.Body` contains a key matching a demographic field name (`race`, `color`, etc.). This was the **primary structural defense** in the pre-A1 layout.
+
+Post-A1, the structural defense is the type system (decisioning code can't access demographic fields without a capability they don't hold). The audit-payload test is **downgraded to "belt-and-braces tripwire"** — useful as a regression detector if future code accidentally introduces decisioning-side demographic-field reflection. Severity drops from "primary structural enforcement" to "useful sanity check."
+
+#### A1.4 — Cited-symbol verification (Decision Discipline Rule 6)
+
+All cited symbols verified existing on `origin/main` post-PR #390 merge:
+
+- `Sunfish.Foundation.Recovery.EncryptedField` — verified existing per W#32 PR #370
+- `Sunfish.Foundation.Recovery.IFieldDecryptor` — verified existing per W#32 PRs #371 + #372
+- `Sunfish.Kernel.Audit.AuditEventType.FieldDecrypted` — verified existing per W#32 audit emission shipping
+- `Sunfish.Blocks.PropertyLeasingPipeline.Models.DemographicProfile` — verified existing post-#390 in revised `EncryptedField`-bearing shape
+- `Sunfish.Blocks.PropertyLeasingPipeline.Models.DemographicProfileSubmission` — verified existing post-#390 (introduced as plaintext-boundary type)
+
+`ComplianceReportingDecryptCapability` + `SubjectAccessRequestDecryptCapability` are not yet implemented (Phase 9 ships the consumer-side surface; the actual capability-issuing tools are out of W#22 scope and TBD per Phase 2.2+ compliance-tooling work).
+
+#### A1.5 — Migration semantics
+
+- Production callers: zero (W#22 v1.0 just shipped 2026-04-30). No data migration needed.
+- In-flight test data: existing tests updated to use `DemographicProfileSubmission` at the input boundary; no persistent-store schema migration (in-memory provider).
+- Future production callers (Phase 2.2+ when LLC ships): flow through `EncryptedField`-bearing shape; no backfill since v1.0 ships post-encryption-design.
+
+#### A1.6 — Compliance posture
+
+This amendment **strengthens** the original ADR's FHA-defense claim from "test-enforced" to "structurally enforced":
+
+> **Original ADR §"FHA-defense layout":** "DemographicProfile is structurally inaccessible to decisioning."
+> **Pre-A1 reality:** test-enforced via reflection-based audit-payload absence check.
+> **Post-A1 reality:** type-system-enforced via `EncryptedField` + capability gate; reflection check retained as belt-and-braces.
+
+HUD/FHA/FCRA compliance posture is unchanged (the data still exists, with stricter access controls). SAR/GDPR access rights are unchanged (Prospects can still read their own demographics via the SAR handler).
+
+#### A1.7 — Decision-class
+
+Session-class per `feedback_decision_discipline` Rule 1. Compliance hardening (HUD/FHA/FCRA-aligned good practice); zero production callers; closes the W#32 substrate→W#22 consumer chain. Authority: XO; ratifies the structural claim that W#22 Phase 9 (PR #390) implemented.
+
+#### A1.8 — References
+
+- W#22 Phase 9 build PR: #390
+- W#22 Phase 9 hand-off addendum: `icm/_state/handoffs/property-leasing-pipeline-stage06-demographic-encryption-addendum.md` (PR #389)
+- W#32 substrate: ADR 0046-A2/A3/A4/A5 + `EncryptedField` + `IFieldDecryptor`
+- ADR 0049 (Audit Trail Substrate) — `FieldDecrypted` AuditEventType consumer
+- HUD §100.20-100.24 (FHA protected classes); FCRA §609 (Subject Access Right); GDPR Article 15; CCPA §1798.110
