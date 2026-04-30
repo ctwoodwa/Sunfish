@@ -1,7 +1,7 @@
 # ADR 0046 — Key-loss recovery scheme for Business MVP Phase 1
 
-**Status:** Accepted (2026-04-26; package-placement section added 2026-04-29; **A2 + A3 + A4 amendments landed 2026-04-30** — see §"Amendments (post-acceptance, 2026-04-30)")
-**Date:** 2026-04-26 (Accepted) / 2026-04-29 (package-placement section) / 2026-04-30 (A2 amendment / A3 mechanical fixes / A4 substantive resolution of council F2/F4/F5)
+**Status:** Accepted (2026-04-26; package-placement section added 2026-04-29; **A2 + A3 + A4 + A5 amendments landed 2026-04-30** — see §"Amendments (post-acceptance, 2026-04-30)")
+**Date:** 2026-04-26 (Accepted) / 2026-04-29 (package-placement section) / 2026-04-30 (A2 amendment / A3 mechanical fixes / A4 substantive resolution of council F2/F4/F5 / A5 mechanical fixes from A4 council review)
 **Resolves:** Open Question Q5 from `icm/01_discovery/output/business-mvp-phase-1-discovery-interim-2026-04-26.md` (key-loss recovery implementation reference for primitive #48). **A2 also resolves** ADR 0058 amendment A1 halt-condition (Stage 06 build for W#18 Vendors gated on `EncryptedField` + `IFieldDecryptor` substrate types existing).
 
 ## Context
@@ -778,3 +778,175 @@ XO authors a hand-off addendum after A4 council review + merge, then flips W#32 
 - **OQ-A4.1:** when Phase 2 rotation amendment ships, what's the durable-storage substrate for per-tenant key versions? Likely SQLCipher-backed (matches existing `IRecoveryStateStore` pattern). Out of scope for A4.
 - **OQ-A4.2:** should the substrate-issuer `IOperationSigner` for audit signing be tenant-scoped or substrate-scoped? A4 specifies substrate-scoped (single key signs all tenants' field-decrypt audits). Tenant-scoped could be a Phase 2 option if compliance requires per-tenant audit attestation.
 - **OQ-A4.3:** should `TenantKeyProviderFieldDecryptor` accept a custom `IAuditPayloadEnricher` for callers that want to add domain-specific keys (e.g., `vendor_id` for W#18 audits)? A4 says no — domain-specific audits emit a SEPARATE `VendorTinAccessed` (etc.) record per the W#18 contract. Field-encryption audits are crypto-only.
+
+### A5 (REQUIRED, mechanical) — A4 council-review fixes
+
+**Driver:** Stage 1.5 council review of A4 (`icm/07_review/output/adr-audits/0046-A4-council-review-2026-04-30.md`, dated 2026-04-30; PR #335) ran pre-merge per the cohort lesson — auto-merge on PR #333 was intentionally disabled to allow council to review A4 before it lands. Council found 3 Major + 1 Minor + 3 Encouraged. All 4 required + 3 encouraged are mechanical (per Decision Discipline Rule 3); A5 applies them and the cohort batting average updates to 7-of-7 substrate-amendment council reviews finding mechanical fixes.
+
+#### A5.1 — F1 fix: explicit two-overload constructor (drop primary-constructor syntax)
+
+A4.1's `TenantKeyProviderFieldDecryptor` mixed primary-constructor parameters with underscored-field references (`_auditTrail`, `_signer`), which doesn't compile (CS0103). Replaced with the canonical two-overload pattern proven in `InMemoryTaxonomyRegistry`:
+
+```csharp
+public sealed class TenantKeyProviderFieldDecryptor : IFieldDecryptor
+{
+    private readonly ITenantKeyProvider _tenantKeys;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly IRecoveryClock _clock;
+
+    /// <summary>Audit-disabled overload (test/bootstrap).</summary>
+    public TenantKeyProviderFieldDecryptor(ITenantKeyProvider tenantKeys, IRecoveryClock? clock = null)
+    {
+        ArgumentNullException.ThrowIfNull(tenantKeys);
+        _tenantKeys = tenantKeys;
+        _clock = clock ?? new SystemRecoveryClock();
+    }
+
+    /// <summary>Audit-enabled overload — both deps required (mid-state forbidden per A5.3).</summary>
+    public TenantKeyProviderFieldDecryptor(
+        ITenantKeyProvider tenantKeys,
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        IRecoveryClock? clock = null)
+    {
+        ArgumentNullException.ThrowIfNull(tenantKeys);
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+        _tenantKeys = tenantKeys;
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _clock = clock ?? new SystemRecoveryClock();
+    }
+    // ... DecryptAsync + EmitAuditAsync as A4.1, but using _tenantKeys / _auditTrail / _signer / _clock fields
+}
+```
+
+`TenantKeyProviderFieldEncryptor` follows the same pattern (single constructor; no audit deps; just `ITenantKeyProvider` injection):
+
+```csharp
+public sealed class TenantKeyProviderFieldEncryptor : IFieldEncryptor
+{
+    private readonly ITenantKeyProvider _tenantKeys;
+
+    public TenantKeyProviderFieldEncryptor(ITenantKeyProvider tenantKeys)
+    {
+        ArgumentNullException.ThrowIfNull(tenantKeys);
+        _tenantKeys = tenantKeys;
+    }
+    // ... EncryptAsync as A4.1
+}
+```
+
+The both-or-neither invariant is now structural at the type boundary — there's no overload for "audit-trail without signer" or vice versa. F3's DI-validation block (A4.6) is no longer needed; deleted in A5.3.
+
+#### A5.2 — F2 fix: `IRecoveryClock.UtcNow` is a method
+
+A4.1 called `clock?.UtcNow` (twice; property syntax). The actual interface (`packages/foundation-recovery/IRecoveryClock.cs`) declares `DateTimeOffset UtcNow()` — method. Fixed:
+
+```csharp
+// before:
+var now = (clock ?? new SystemRecoveryClock()).UtcNow;
+var occurredAt = clock?.UtcNow ?? DateTimeOffset.UtcNow;
+
+// after (combined with A5.1 field promotion to _clock):
+var now = _clock.UtcNow();
+var occurredAt = _clock.UtcNow();
+```
+
+`_clock` is non-null after A5.1 (defaulted to `SystemRecoveryClock`), so the null-coalescing is no longer needed.
+
+#### A5.3 — F3 fix: drop A4.6's DI Validate; rely on constructor-guard
+
+A4.6's `services.AddOptions<RecoveryCoordinatorOptions>().Validate(...)` block runs at the wrong time (closure captures mutable `services`) and is semantically misplaced (registration-shape check rather than instantiation-time check). Per A5.1, the constructor itself enforces both-or-neither via overload selection + `ArgumentNullException.ThrowIfNull`. The `Validate` block is removed entirely.
+
+Updated DI extension (replaces A4.6):
+
+```csharp
+public static IServiceCollection AddSunfishRecoveryCoordinator(this IServiceCollection services)
+{
+    // ... existing recovery-coordinator registrations ...
+
+    // Field-encryption substrate (A2 + A3 + A4 + A5)
+    services.TryAddSingleton<IFieldEncryptor, TenantKeyProviderFieldEncryptor>();
+    services.TryAddSingleton<IFieldDecryptor>(sp =>
+    {
+        var tenantKeys = sp.GetRequiredService<ITenantKeyProvider>();
+        var clock = sp.GetService<IRecoveryClock>();
+        var auditTrail = sp.GetService<IAuditTrail>();
+        var signer = sp.GetService<IOperationSigner>();
+
+        // Both-or-neither invariant: structural via overload selection.
+        // Mid-state (exactly one of audit/signer registered) is detected here
+        // at first resolution — throws a clear configuration error rather than
+        // letting an audit-disabled decryptor silently swallow audits.
+        return (auditTrail, signer) switch
+        {
+            (null, null) => new TenantKeyProviderFieldDecryptor(tenantKeys, clock),
+            (not null, not null) => new TenantKeyProviderFieldDecryptor(tenantKeys, auditTrail, signer, clock),
+            _ => throw new InvalidOperationException(
+                "Field-encryption decryptor requires both IAuditTrail and IOperationSigner registered, or neither. " +
+                "Mid-state misconfiguration: " +
+                $"IAuditTrail={(auditTrail is null ? "null" : "registered")}, " +
+                $"IOperationSigner={(signer is null ? "null" : "registered")}.")
+        };
+    });
+
+    return services;
+}
+```
+
+The factory delegate runs at first `IFieldDecryptor` resolution against the built `IServiceProvider`, so it sees the actual registration shape and not a registration-time snapshot. Mid-state throws a clear `InvalidOperationException` at that point — per the canonical .NET DI pattern for "validate cross-service consistency at resolution."
+
+#### A5.4 — F4 fix (Minor): drop `-v{n}` suffix in Phase 1 purpose label
+
+A4.1 used `$"encrypted-field-aes-v{keyVersion}"`. Phase 1 always passes `keyVersion = 1`, so the actual purpose label is always `encrypted-field-aes-v1` — diverges from the `ITenantKeyProvider.DeriveKeyAsync` xmldoc example (`encrypted-field-aes`).
+
+Phase 1 simplifies to the bare label:
+
+```csharp
+// In TenantKeyProviderFieldEncryptor.EncryptAsync:
+const string purpose = "encrypted-field-aes";   // matches existing ITenantKeyProvider xmldoc
+var dek = await _tenantKeys.DeriveKeyAsync(tenant, purpose, ct).ConfigureAwait(false);
+
+// In TenantKeyProviderFieldDecryptor.DecryptAsync:
+// field.KeyVersion is always 1 in Phase 1 ciphertext; A5.5 requires KeyVersion == 1 for decrypt.
+const string purpose = "encrypted-field-aes";
+var dek = await _tenantKeys.DeriveKeyAsync(tenant, purpose, ct).ConfigureAwait(false);
+```
+
+Phase 2 rotation amendment will introduce `$"encrypted-field-aes-v{keyVersion}"` only when there's a real `keyVersion >= 2`. Phase 1 ciphertexts (`KeyVersion = 1`) decrypt under the no-suffix label; Phase 2 ciphertexts (`KeyVersion >= 2`) decrypt under the `-v{n}` label. Forward-compatible without churn.
+
+#### A5.5 — F5 fix (Encouraged): make Phase 1 encrypt/decrypt invariants explicit
+
+Add to A4.3 (after "always 1 in Phase 1 ciphertext"):
+
+> **Phase 1 invariants (explicit):**
+> - **Encrypt:** `TenantKeyProviderFieldEncryptor.EncryptAsync` MUST write `KeyVersion = 1`. Phase 1 has no other supported version. The Phase 2 rotation amendment relaxes this to allow `KeyVersion = current_tenant_version`.
+> - **Decrypt:** `TenantKeyProviderFieldDecryptor.DecryptAsync` accepts `KeyVersion >= 1` and selects purpose label per A5.4 (`KeyVersion = 1` → `encrypted-field-aes`; `KeyVersion >= 2` → `encrypted-field-aes-v{n}` post-Phase-2). Decrypting `KeyVersion = 0` or negative values throws `FieldDecryptionDeniedException` with reason `"unsupported key version"`.
+> - **Rationale:** the asymmetry preserves forward compatibility — Phase 1 ciphertexts remain decryptable after Phase 2 rotation lands; Phase 2 ciphertexts cannot accidentally appear in a Phase 1 deployment because Phase 1 encrypt refuses to write them.
+
+#### A5.6 — F6 fix (Encouraged): substrate-issuer key compromise blast radius in threat model
+
+Add to A4.5 "Out of scope" (after "Macaroon-derived capabilities"):
+
+> - **Substrate-issuer signing-key compromise** — Phase 1 signs all field-decryption audit records with a single substrate-issuer Ed25519 key. Compromise of that key permits forgery of audit records (`FieldDecrypted` / `FieldDecryptionDenied`) across all tenants this substrate serves; an attacker can forge legitimate-looking decrypts to mask actual access OR forge denials to suggest legitimate access was prevented. The blast radius is "all tenants this substrate serves" — same class as any foundation-tier signing-key compromise. Mitigation derives from the platform keystore protection of the underlying Ed25519 key + ADR 0049's planned algorithm-agility refactor (audit format `v0` → `v1`); per-tenant audit signing is rejected as a design option (key-management complexity exceeds the marginal isolation benefit). If forensic-grade per-tenant attestation is required for a future compliance regime, that triggers a follow-up ADR amendment, not a Phase 1 redesign.
+
+#### A5.7 — F7 fix (Encouraged): A4.4 acceptance-criteria wording aligned with A5.3
+
+A4.4's misconfiguration-test bullet read "Audit emission misconfiguration: passing exactly one of (auditTrail, signer) → DI extension throws at startup." Post-A5.3 the throw point is `IServiceProvider.GetRequiredService<IFieldDecryptor>()` (first resolution), not registration. Updated wording:
+
+```text
+- [ ] Audit emission misconfiguration: registering exactly one of (IAuditTrail, IOperationSigner) without the other → first resolution of IFieldDecryptor throws InvalidOperationException with a "mid-state misconfiguration" message naming which dep is missing
+- [ ] Constructor guard: directly constructing TenantKeyProviderFieldDecryptor with a non-null IAuditTrail + null IOperationSigner (or vice versa) is impossible (overload selection prevents it; the parameter list doesn't admit the mid-state)
+```
+
+Both tests verify the same invariant from different angles (DI-resolution vs direct-construction). Both pass once A5.1 + A5.3 land.
+
+#### A5.8 — Cited-symbol re-verification (mechanical)
+
+A4.7's audit table is reaffirmed; the only drift the council flagged was `IRecoveryClock.UtcNow` (property vs method, F2 — fixed in A5.2). All other cited symbols verified-existing or properly classified introduced/removed. A5 introduces no new `Sunfish.*` symbol citations beyond what A4 already covered; the explicit-constructor pattern reuses the existing `ArgumentNullException.ThrowIfNull` convention from `InMemoryTaxonomyRegistry`.
+
+#### A5.9 — Cohort batting average
+
+Substrate-amendment cohort: **7-of-7 needing post-acceptance amendments after council review.** A4 ran council pre-merge per the lesson learned from A2; the pre-merge discipline caught all 4 required amendments before they shipped. **Cost of A4's pre-merge council:** zero `held` ledger states; zero W#32 build pauses for council. **Cost of A2's post-merge council (the case study):** PR #331 `held` ledger state for ~24h. Pre-merge council is now canonical for substrate amendments going forward — XO MUST disable auto-merge on substrate ADR amendments + dispatch council before flipping any downstream ledger row.
