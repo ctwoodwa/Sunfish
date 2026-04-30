@@ -16,12 +16,12 @@ namespace Sunfish.Bridge.Listings;
 /// </summary>
 /// <param name="ListingId">Target listing id (must be in the verified capability's <c>AllowedListings</c> set).</param>
 /// <param name="Facts">Non-protected decisioning facts.</param>
-/// <param name="Demographics">Protected-class fields quarantined for HUD reporting (FHA-defense layout).</param>
+/// <param name="Demographics">Protected-class fields collected from the form (plaintext); the leasing-pipeline service encrypts every non-null field at the boundary per W#22 Phase 9.</param>
 /// <param name="ApplicationFee">Application fee per ADR 0051.</param>
 /// <param name="SignatureEventId">Reference to the operator-witnessed application signature (ADR 0054).</param>
 public sealed record StartApplicationFormPost(
     Guid ListingId,
     DecisioningFacts Facts,
-    DemographicProfile Demographics,
+    DemographicProfileSubmission Demographics,
     Money ApplicationFee,
     Guid SignatureEventId);

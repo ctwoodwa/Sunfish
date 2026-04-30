@@ -63,7 +63,7 @@ public sealed class StartApplicationRouteTests
                 PriorLandlordNames = new[] { "Bob", "Carol" },
                 DependentCount = 1,
             },
-            Demographics: new DemographicProfile { RaceOrEthnicity = "Decline-to-state" },
+            Demographics: new DemographicProfileSubmission { RaceOrEthnicity = "Decline-to-state" },
             ApplicationFee: Money.Usd(50m),
             SignatureEventId: signatureEventId);
 

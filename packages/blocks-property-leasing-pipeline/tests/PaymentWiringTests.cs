@@ -74,7 +74,7 @@ public sealed class PaymentWiringTests
             PriorLandlordNames = new[] { "Bob" },
             DependentCount = 0,
         },
-        Demographics = new DemographicProfile(),
+        Demographics = new DemographicProfileSubmission(),
         ApplicationFee = Money.Usd(feeUsd),
         Signature = new SignatureEventRef(Guid.NewGuid()),
     };

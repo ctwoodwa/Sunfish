@@ -100,7 +100,7 @@ public sealed class AuditEmissionTests
             PriorLandlordNames = new[] { "Bob", "Carol" },
             DependentCount = 1,
         },
-        Demographics = new DemographicProfile
+        Demographics = new DemographicProfileSubmission
         {
             RaceOrEthnicity = "Decline-to-state",
             FamilialStatus = "single-parent",

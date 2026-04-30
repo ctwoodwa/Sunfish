@@ -113,8 +113,15 @@ public sealed record SubmitApplicationRequest
     /// <summary>Non-protected-class fields visible to decisioning.</summary>
     public required DecisioningFacts Facts { get; init; }
 
-    /// <summary>Protected-class fields quarantined for HUD reporting.</summary>
-    public required DemographicProfile Demographics { get; init; }
+    /// <summary>
+    /// Protected-class fields collected from the form (plaintext). The
+    /// service encrypts every field at the boundary via
+    /// <see cref="Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor"/>
+    /// before persisting; plaintext does not flow past
+    /// <see cref="ILeasingPipelineService.SubmitApplicationAsync"/>.
+    /// W#22 Phase 9 per the post-W#32 demographic-encryption addendum.
+    /// </summary>
+    public required DemographicProfileSubmission Demographics { get; init; }
 
     /// <summary>Application fee per ADR 0051.</summary>
     public required Sunfish.Foundation.Integrations.Payments.Money ApplicationFee { get; init; }
