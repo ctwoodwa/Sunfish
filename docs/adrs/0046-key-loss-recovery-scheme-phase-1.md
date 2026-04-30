@@ -1,8 +1,8 @@
 # ADR 0046 — Key-loss recovery scheme for Business MVP Phase 1
 
-**Status:** Accepted (2026-04-26)
-**Date:** 2026-04-26
-**Resolves:** Open Question Q5 from `icm/01_discovery/output/business-mvp-phase-1-discovery-interim-2026-04-26.md` (key-loss recovery implementation reference for primitive #48).
+**Status:** Accepted (2026-04-26; package-placement section added 2026-04-29; **A2 amendment landed 2026-04-30** — see §"Amendments (post-acceptance, 2026-04-30)")
+**Date:** 2026-04-26 (Accepted) / 2026-04-29 (package-placement section) / 2026-04-30 (A2 amendment)
+**Resolves:** Open Question Q5 from `icm/01_discovery/output/business-mvp-phase-1-discovery-interim-2026-04-26.md` (key-loss recovery implementation reference for primitive #48). **A2 also resolves** ADR 0058 amendment A1 halt-condition (Stage 06 build for W#18 Vendors gated on `EncryptedField` + `IFieldDecryptor` substrate types existing).
 
 ## Context
 
@@ -124,3 +124,279 @@ section ratifies it. Phase 1 inventory + research-session sign-off lives at
 - Phase 1 intake: `icm/00_intake/output/business-mvp-phase-1-foundation-intake-2026-04-26.md`
 - Sister ADR 0044: Anchor ships Windows-only for Phase 1 (D1 outcome)
 - External pattern references (per primitive #48): Argent wallet social recovery; Vitalik Buterin "Why we need wide adoption of social recovery wallets" (2021); Apple iCloud Keychain recovery; BIP-39 wordlist for paper-key
+
+## Amendments (post-acceptance, 2026-04-30)
+
+### A2 (REQUIRED) — `EncryptedField` + `IFieldDecryptor` field-level encryption substrate
+
+**Driver:** ADR 0058 (Vendor Onboarding Posture) amendment A1 halt-condition. ADR 0058 takes a hard dependency on `Sunfish.Foundation.Recovery.EncryptedField` (value type wrapping ciphertext + nonce + key-version) and `Sunfish.Foundation.Recovery.IFieldDecryptor` (capability-checked, audit-emitting decrypt-on-read interface) for sensitive vendor PII (W-9 TIN/SSN/EIN). Verified 2026-04-30 via `git grep`: zero matches in `packages/`. ADR 0058 A1 explicitly halts W#18 Stage 06 build until these types ship as Accepted.
+
+This amendment introduces the substrate as net-new types in `Sunfish.Foundation.Recovery`. Compounding consumer set beyond W#18: W#22 Leasing Pipeline (FCRA tenant SSN, banking detail records); W#23 iOS Field-Capture App (offline-stored sensitive PII before Bridge sync); ADR 0051 Payments (potentially — payment-method / card-on-file shape). Building it as substrate (not embedded in W#18 hand-off Phase 0) compounds value across these consumers and keeps separation-of-concerns clean.
+
+**Rationale for placing in `foundation-recovery` (not a new package):** the per-tenant DEK is derived from the same root seed that drives `KeystoreRootSeedProvider` + `PaperKeyDerivation`. Placing the field-encryption substrate in `foundation-recovery` puts all root-seed-derived primitives in one package boundary and reuses the existing `kernel-security` reference. Alternative considered (new `foundation-field-encryption` package): rejected — the package would be three types deep and would duplicate `foundation-recovery`'s kernel-security reference.
+
+#### A2.1 — `EncryptedField` value type
+
+```csharp
+namespace Sunfish.Foundation.Recovery;
+
+/// <summary>
+/// Opaque value type wrapping ciphertext encrypted with a per-tenant DEK
+/// (derived from the keystore root seed). Compile-time impossible to access
+/// the plaintext without going through <see cref="IFieldDecryptor"/>.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <b>Why this is a record struct (not a class):</b> the type is a pure
+/// value envelope — equality is structural; no identity beyond the bytes
+/// it carries. Compatible with EFCore <c>OwnsOne</c> + JSON serialization.
+/// </para>
+/// <para>
+/// <b>Why no <c>Plaintext</c> property:</b> the only path from
+/// <c>EncryptedField</c> to plaintext is <see cref="IFieldDecryptor.DecryptAsync"/>,
+/// which requires a valid <see cref="IDecryptCapability"/> and emits an
+/// <c>AuditEventType.FieldDecrypted</c> record on every successful decrypt.
+/// Direct property access would bypass the audit emission AND the capability
+/// check; both are load-bearing for ADR 0058's "structurally inaccessible"
+/// claim about TINs.
+/// </para>
+/// <para>
+/// <b>Crypto:</b> AES-256-GCM (per industry-best-practice defaults table —
+/// AEAD; ciphertext + 16-byte authentication tag are concatenated in
+/// <see cref="Ciphertext"/>; nonce is the 12-byte GCM IV). Key-version
+/// is the version of the per-tenant DEK that produced the ciphertext;
+/// rotation bumps the version + re-encrypts on access (lazy rotation).
+/// </para>
+/// </remarks>
+public readonly record struct EncryptedField(
+    ReadOnlyMemory<byte> Ciphertext,    // AES-GCM ciphertext + 16-byte tag (concatenated)
+    ReadOnlyMemory<byte> Nonce,         // 12-byte GCM IV
+    int KeyVersion);                    // per-tenant DEK version that encrypted this field
+
+internal sealed class EncryptedFieldJsonConverter : JsonConverter<EncryptedField>
+{
+    // Serializes as: { "ct": "<base64url>", "nonce": "<base64url>", "kv": <int> }
+    // Compact form chosen to keep JSON-payload audit logs readable;
+    // base64url avoids `+` / `/` URL-encoding hazards.
+}
+```
+
+**Storage shape:** consumers MAY store as a single binary blob (`Ciphertext + Nonce + KeyVersion` packed) OR as three separate columns. EFCore `OwnsOne<EncryptedField>` mapping is supported; XO recommends three columns (`*_ciphertext`, `*_nonce`, `*_key_version`) for queryability of key-version (for rotation sweeps) without DEK access.
+
+#### A2.2 — `IFieldDecryptor` capability-checked decrypt-on-read interface
+
+```csharp
+namespace Sunfish.Foundation.Recovery;
+
+using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.MultiTenancy;
+
+/// <summary>
+/// Capability-checked, audit-emitting decryption gateway for
+/// <see cref="EncryptedField"/>. Every decrypt attempt — successful or
+/// denied — emits an audit record to <see cref="IAuditTrail"/>.
+/// </summary>
+public interface IFieldDecryptor
+{
+    /// <summary>
+    /// Decrypts <paramref name="field"/> if <paramref name="capability"/>
+    /// authorizes the actor + scope. Emits
+    /// <c>AuditEventType.FieldDecrypted</c> on success and
+    /// <c>AuditEventType.FieldDecryptionDenied</c> on rejection.
+    /// </summary>
+    /// <exception cref="FieldDecryptionDeniedException">
+    /// Capability invalid, expired, out-of-scope, or revoked.
+    /// </exception>
+    Task<ReadOnlyMemory<byte>> DecryptAsync(
+        EncryptedField field,
+        IDecryptCapability capability,
+        TenantId tenant,
+        CancellationToken ct);
+}
+
+/// <summary>
+/// Issuer-side companion to <see cref="IFieldDecryptor"/>. Encrypts plaintext
+/// for a tenant; no capability required to encrypt (only to decrypt).
+/// </summary>
+public interface IFieldEncryptor
+{
+    Task<EncryptedField> EncryptAsync(
+        ReadOnlyMemory<byte> plaintext,
+        TenantId tenant,
+        CancellationToken ct);
+}
+
+/// <summary>
+/// Capability envelope for decrypt operations. Per ADR 0032 capability
+/// delegation pattern (macaroon-bound). Phase 1 ships a
+/// <c>FixedDecryptCapability</c> reference implementation; production
+/// will swap in macaroon-derived capabilities.
+/// </summary>
+public interface IDecryptCapability
+{
+    /// <summary>Identifier for audit emission (capability_id key).</summary>
+    string CapabilityId { get; }
+
+    /// <summary>Actor whose capability this is (audit emission decrypted_by key).</summary>
+    ActorId Actor { get; }
+
+    /// <summary>Tenant the capability is scoped to.</summary>
+    TenantId Tenant { get; }
+
+    /// <summary>Validity check at decrypt time. Returns null if valid; rejection reason if not.</summary>
+    string? ValidateForDecrypt(DateTimeOffset now);
+}
+
+public sealed class FieldDecryptionDeniedException : Exception
+{
+    public FieldDecryptionDeniedException(string capabilityId, string reason)
+        : base($"Decrypt denied for capability {capabilityId}: {reason}") { }
+}
+```
+
+**Reference implementations** (ship in this amendment):
+
+- `RecoveryRootSeedFieldEncryptor : IFieldEncryptor` — derives per-tenant DEK from the keystore root seed via HKDF-SHA256 (info string `"sunfish-encrypted-field-v1"` + tenant ID); encrypts via AES-GCM (`System.Security.Cryptography.AesGcm`); embeds the current key-version
+- `RecoveryRootSeedFieldDecryptor : IFieldDecryptor` — derives per-tenant DEK via HKDF (matching the encryptor); validates capability; emits audit; decrypts; returns plaintext
+- `FixedDecryptCapability : IDecryptCapability` — Phase 1 reference impl; constructed from `(actor, tenant, validUntil)`; intended for tests + bootstrap scenarios; production callers issue macaroon-bound capabilities
+
+#### A2.3 — Per-tenant DEK derivation
+
+```
+master_root_seed = KeystoreRootSeedProvider.GetSeed()    // 32-byte; existing primitive
+per_tenant_dek_kV = HKDF-SHA256(
+    ikm = master_root_seed,
+    salt = TenantId.ToByteArray(),
+    info = "sunfish-encrypted-field-v1|version=" + keyVersion,
+    output_length = 32)
+```
+
+`keyVersion` is the current per-tenant DEK version, stored in `KeystoreRootSeedProvider` (existing `Foundation.Recovery` persistence) — not in `EncryptedField` records (those carry the version they were encrypted under). Rotation increments the per-tenant version; existing fields decrypt with their stored version; new encrypts use the latest version. Lazy re-encrypt on access.
+
+**Rotation primitive:** `IFieldEncryptionKeyRotator.RotateAsync(TenantId tenant)` — bumps the per-tenant key version; emits `AuditEventType.FieldEncryptionKeyRotated`. Re-encrypt sweep is consumer-driven (not eager); a periodic job can scan rows where `key_version < current_version` and re-encrypt via `IFieldDecryptor.DecryptAsync` + `IFieldEncryptor.EncryptAsync`.
+
+#### A2.4 — Audit emission shape
+
+3 new `AuditEventType` constants in `packages/kernel-audit/AuditEventType.cs`:
+
+```csharp
+// Field-level encryption (Foundation.Recovery A2 per ADR 0046)
+public static readonly AuditEventType FieldDecrypted = new("FieldDecrypted");
+public static readonly AuditEventType FieldDecryptionDenied = new("FieldDecryptionDenied");
+public static readonly AuditEventType FieldEncryptionKeyRotated = new("FieldEncryptionKeyRotated");
+```
+
+Payload-body schemas (per ADR 0049 + matching W#31 / W#19 / W#27 conventions):
+
+```csharp
+// FieldDecrypted (success)
+new Dictionary<string, object?>
+{
+    ["capability_id"] = capability.CapabilityId,
+    ["decrypted_by"] = capability.Actor.Value,
+    ["tenant_id"] = tenant.Value,
+    ["key_version"] = field.KeyVersion,
+    // NO field_id key — caller emits a domain-specific audit if it wants
+    // record-level attribution (e.g., the W#18 vendor row's TIN-decrypt
+    // emits a separate VendorTinAccessed audit with the vendor_id);
+    // this audit is ONLY about the cryptographic decrypt operation.
+}
+
+// FieldDecryptionDenied (rejection)
+new Dictionary<string, object?>
+{
+    ["capability_id"] = capability?.CapabilityId ?? "<null-capability>",
+    ["denied_by"] = capability?.Actor.Value ?? "<unknown-actor>",
+    ["tenant_id"] = tenant.Value,
+    ["denial_reason"] = reason,    // from IDecryptCapability.ValidateForDecrypt or "capability null"
+}
+
+// FieldEncryptionKeyRotated
+new Dictionary<string, object?>
+{
+    ["tenant_id"] = tenant.Value,
+    ["from_version"] = oldVersion,
+    ["to_version"] = newVersion,
+    ["rotated_by"] = actor.Value,
+}
+```
+
+Factory methods land in `packages/foundation-recovery/Audit/FieldEncryptionAuditPayloads.cs` matching the established `TaxonomyAuditPayloads` pattern from W#31 (PR #263).
+
+#### A2.5 — DI registration
+
+Extends existing `AddSunfishRecoveryCoordinator()` (no new top-level DI extension):
+
+```csharp
+public static IServiceCollection AddSunfishRecoveryCoordinator(this IServiceCollection services)
+{
+    // ... existing recovery-coordinator registrations ...
+
+    // Field-encryption substrate (A2)
+    services.AddSingleton<IFieldEncryptor, RecoveryRootSeedFieldEncryptor>();
+    services.AddSingleton<IFieldDecryptor, RecoveryRootSeedFieldDecryptor>();
+    services.AddSingleton<IFieldEncryptionKeyRotator, RecoveryRootSeedFieldEncryptionKeyRotator>();
+
+    return services;
+}
+```
+
+#### A2.6 — Acceptance criteria for A2 implementation PR
+
+- [ ] `EncryptedField` record struct + JSON converter in `packages/foundation-recovery/EncryptedField.cs`
+- [ ] `IFieldEncryptor` + `IFieldDecryptor` + `IDecryptCapability` interfaces in `packages/foundation-recovery/Crypto/`
+- [ ] `RecoveryRootSeedFieldEncryptor` + `RecoveryRootSeedFieldDecryptor` implementations
+- [ ] `FixedDecryptCapability` reference impl
+- [ ] `IFieldEncryptionKeyRotator` + `RecoveryRootSeedFieldEncryptionKeyRotator`
+- [ ] `FieldDecryptionDeniedException`
+- [ ] 3 `AuditEventType` constants added to `kernel-audit/AuditEventType.cs`
+- [ ] `FieldEncryptionAuditPayloads` factory class with 3 methods
+- [ ] DI registration extended on `AddSunfishRecoveryCoordinator()`
+- [ ] Tests (target ~20-25):
+  - [ ] Round-trip: encrypt + decrypt yields original plaintext
+  - [ ] Capability invalid/expired/wrong-tenant: throws + emits denied-audit
+  - [ ] Different tenants get different ciphertext for same plaintext (DEK is tenant-scoped)
+  - [ ] Different key-versions decrypt correctly (rotation backward-compat)
+  - [ ] Audit emission shape: keys + values match A2.4 schema
+  - [ ] JSON serialization round-trip
+  - [ ] EFCore OwnsOne mapping smoke test (in-memory provider)
+
+#### A2.7 — Cited-symbol verification (Decision Discipline Rule 6)
+
+Per the verify-symbols-before-asserting-AP21-clean rule, every `Sunfish.*` symbol referenced in this amendment is one of:
+
+- **Existing** (verified 2026-04-30 via `git grep`): `Sunfish.Foundation.Assets.Common.ActorId` (packages/foundation/Assets/Common/ActorId.cs); `Sunfish.Foundation.MultiTenancy.TenantId` (packages/foundation-multitenancy/); `Sunfish.Kernel.Audit.AuditEventType` + `AuditPayload` + `AuditRecord` + `IAuditTrail` (packages/kernel-audit/); `KeystoreRootSeedProvider` (packages/kernel-security/Keys/); `PaperKeyDerivation` (packages/foundation-recovery/)
+- **Introduced by this amendment**: `EncryptedField`, `IFieldEncryptor`, `IFieldDecryptor`, `IDecryptCapability`, `FieldDecryptionDeniedException`, `FixedDecryptCapability`, `RecoveryRootSeedFieldEncryptor`, `RecoveryRootSeedFieldDecryptor`, `IFieldEncryptionKeyRotator`, `RecoveryRootSeedFieldEncryptionKeyRotator`, `FieldEncryptionAuditPayloads`, `AuditEventType.FieldDecrypted`, `AuditEventType.FieldDecryptionDenied`, `AuditEventType.FieldEncryptionKeyRotated`
+
+#### A2.8 — Threat model (security & privacy)
+
+**In scope:**
+- Decrypt without capability → throws + audited
+- Plaintext leakage via direct property access on `EncryptedField` → impossible (no Plaintext property; no public byte-array exposure of the DEK)
+- Cross-tenant decrypt → impossible (DEK is tenant-scoped via HKDF salt)
+- Stolen ciphertext at rest without root seed → undecryptable (AES-256-GCM authenticated encryption)
+- DEK rotation while ciphertexts still reference old key-version → handled (lazy re-encrypt; old version derivable from same root seed + version field)
+
+**Out of scope (deferred to post-MVP per ADR 0046's general post-MVP frame):**
+- Hardware-backed DEK storage (Secure Enclave / TPM) — Phase 1 root seed lives in `KeystoreRootSeedProvider`'s existing storage; A2 inherits its security profile
+- Per-record DEK (vs per-tenant) — would require keying material persisted per row; Phase 1 chooses per-tenant for storage simplicity
+- Forward secrecy across rotations — Phase 1 keeps old DEK derivable from root seed + version; a future rotation primitive could destroy old DEKs after re-encrypt sweep completes (out of A2 scope)
+- Macaroon-derived capabilities — `FixedDecryptCapability` is Phase 1; full macaroon integration is ADR 0032 work
+
+#### A2.9 — W#18 unblock
+
+Once this A2 implementation lands, ADR 0058 amendment A1's halt-condition is satisfied:
+
+> Stage 06 build does not start until the substrate types ship as Accepted (in either ADR 0046-A2 or Stage 06 Phase 0).
+
+XO can then author the W#18 Vendor Onboarding Posture Stage 06 hand-off referencing the now-shipped `EncryptedField` + `IFieldDecryptor` types. W#18 row in `active-workstreams.md` flips from `design-in-flight (ADR Accepted; hand-off pending)` to `ready-to-build` on hand-off authoring.
+
+#### A2.10 — Open questions
+
+- **OQ-A2.1:** should `EncryptedField` carry a `Sunfish.Foundation.Taxonomy.TaxonomyClassification` for "what kind of PII this is" (TIN / SSN / EIN / DL / etc.)? Rationale: enables jurisdiction-policy enforcement on decrypt (e.g., "only decrypt SSN if capability has `decrypt:ssn` scope"). **XO recommendation: defer.** Phase 1 ships scope-agnostic decrypt; capability scope is the only gate. ADR 0057 leasing-pipeline can add a typed wrapper if FCRA enforcement requires it.
+- **OQ-A2.2:** does `IFieldDecryptor` need an async-streaming variant for large fields (e.g., file attachments)? **XO recommendation: defer.** Phase 1 targets short-string fields (TIN, SSN, account numbers). Large encrypted blobs are a separate substrate; not in A2 scope.
+- **OQ-A2.3:** per-record DEKs (rotate one record's DEK without rotating tenant DEK)? **XO recommendation: defer to post-MVP.** Phase 1 per-tenant DEK is sufficient for the named consumer set.
+
+#### A2.11 — Compatibility & migration
+
+Net-new types; zero existing callers. No migration needed. Existing recovery-coordinator + paper-key + trustee surface is untouched. The amendment adds DI registrations + new audit constants but does not modify any existing API.
