@@ -199,4 +199,108 @@ public static class TaxonomyCorePackages
             };
         }
     }
+
+    /// <summary>
+    /// <c>Sunfish.Vendor.Specialties@1.0.0</c> — vendor trade + service
+    /// categories per W#18 Phase 6 + ADR 0058. Replaces the
+    /// <c>VendorSpecialty</c> enum in blocks-maintenance; each enum value
+    /// is preserved as a v1.0 root node so consumers migrating see no
+    /// semantic regression. 11 root anchors + 19 sub-specialty children
+    /// = 30 nodes. Charter authored in W#18 Phase 6
+    /// (<c>icm/00_intake/output/sunfish-vendor-specialties-v1-charter-2026-04-30.md</c>).
+    /// </summary>
+    public static TaxonomyCorePackage SunfishVendorSpecialties
+    {
+        get
+        {
+            var id = new TaxonomyDefinitionId("Sunfish", "Vendor", "Specialties");
+            var version = TaxonomyVersion.V1_0_0;
+            var publishedAt = new DateTimeOffset(2026, 4, 30, 0, 0, 0, TimeSpan.Zero);
+
+            var def = new TaxonomyDefinition
+            {
+                Id = id,
+                Version = version,
+                Governance = TaxonomyGovernanceRegime.Authoritative,
+                Description = "Vendor trade + service categories. Replaces blocks-maintenance VendorSpecialty enum per ADR 0058 cross-package wiring.",
+                Owner = ActorId.Sunfish,
+                PublishedAt = publishedAt,
+            };
+
+            var nodes = new List<TaxonomyNode>(30);
+            void AddRoot(string code, string display, string description) =>
+                nodes.Add(new TaxonomyNode
+                {
+                    Id = new TaxonomyNodeId(id, code),
+                    DefinitionVersion = version,
+                    Display = display,
+                    Description = description,
+                    ParentCode = null,
+                    Status = TaxonomyNodeStatus.Active,
+                    PublishedAt = publishedAt,
+                });
+
+            void AddChild(string code, string parentCode, string display, string description) =>
+                nodes.Add(new TaxonomyNode
+                {
+                    Id = new TaxonomyNodeId(id, code),
+                    DefinitionVersion = version,
+                    Display = display,
+                    Description = description,
+                    ParentCode = parentCode,
+                    Status = TaxonomyNodeStatus.Active,
+                    PublishedAt = publishedAt,
+                });
+
+            // 11 root anchors (preserve every existing VendorSpecialty enum value)
+            AddRoot("general-contractor", "General Contractor", "Broad-capability contractor handling multi-trade jobs (renovation, multi-system repair).");
+            AddRoot("plumbing", "Plumbing", "Plumbing installation, repair, and maintenance.");
+            AddRoot("electrical", "Electrical", "Electrical wiring, fixture installation, panel work.");
+            AddRoot("hvac", "HVAC", "Heating, ventilation, air conditioning installation + repair.");
+            AddRoot("landscaping", "Landscaping", "Grounds maintenance, lawn care, tree work.");
+            AddRoot("painting", "Painting", "Interior + exterior painting.");
+            AddRoot("roofing", "Roofing", "Roof installation, repair, gutter work.");
+            AddRoot("pest-control", "Pest Control", "Extermination + ongoing pest management.");
+            AddRoot("appliances", "Appliances", "Appliance installation + repair.");
+            AddRoot("cleaning", "Cleaning", "Janitorial + cleaning services.");
+            AddRoot("other", "Other", "Catch-all when no more specific specialty fits.");
+
+            // Plumbing children (3)
+            AddChild("plumbing.water-heater", "plumbing", "Plumbing — Water Heater", "Tank + tankless water heater install/repair/replace.");
+            AddChild("plumbing.drain-cleaning", "plumbing", "Plumbing — Drain Cleaning", "Hydrojetting, snake, drain unclogging.");
+            AddChild("plumbing.pipe-repair", "plumbing", "Plumbing — Pipe Repair", "Leak repair, repipe, copper/PEX replacement.");
+
+            // Electrical children (3)
+            AddChild("electrical.panel", "electrical", "Electrical — Panel", "Service-panel install, upgrade, replace.");
+            AddChild("electrical.lighting", "electrical", "Electrical — Lighting", "Fixture install, recessed lighting, low-voltage.");
+            AddChild("electrical.ev-charger", "electrical", "Electrical — EV Charger", "Level-2 EV-charger installation.");
+
+            // HVAC children (3)
+            AddChild("hvac.central", "hvac", "HVAC — Central System", "Central AC + furnace + heat pump install/service.");
+            AddChild("hvac.minisplit", "hvac", "HVAC — Mini-Split", "Ductless mini-split install + service.");
+            AddChild("hvac.duct", "hvac", "HVAC — Duct Work", "Ductwork install, sealing, cleaning.");
+
+            // Landscaping children (3)
+            AddChild("landscaping.tree-service", "landscaping", "Landscaping — Tree Service", "Tree pruning, removal, stump grinding.");
+            AddChild("landscaping.irrigation", "landscaping", "Landscaping — Irrigation", "Sprinkler/drip system install, repair, winterize.");
+            AddChild("landscaping.snow-removal", "landscaping", "Landscaping — Snow Removal", "Plowing + de-icing (cold-climate jurisdictions).");
+
+            // Roofing children (3)
+            AddChild("roofing.shingle", "roofing", "Roofing — Shingle", "Asphalt + composite shingle install/repair.");
+            AddChild("roofing.flat-roof", "roofing", "Roofing — Flat Roof", "EPDM, TPO, modified-bitumen flat-roof systems.");
+            AddChild("roofing.gutter", "roofing", "Roofing — Gutter", "Gutter install, repair, leaf-guard.");
+
+            // Cleaning children (4)
+            AddChild("cleaning.move-out", "cleaning", "Cleaning — Move-Out", "Deep clean for vacating tenants.");
+            AddChild("cleaning.recurring", "cleaning", "Cleaning — Recurring", "Weekly/biweekly common-area + unit cleaning.");
+            AddChild("cleaning.carpet", "cleaning", "Cleaning — Carpet", "Carpet shampoo, steam, stain treatment.");
+            AddChild("cleaning.window", "cleaning", "Cleaning — Window", "Interior + exterior window cleaning.");
+
+            return new TaxonomyCorePackage
+            {
+                Definition = def,
+                Nodes = nodes.AsReadOnly(),
+            };
+        }
+    }
 }
