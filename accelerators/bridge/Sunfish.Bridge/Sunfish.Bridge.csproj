@@ -16,6 +16,7 @@
     <ProjectReference Include="..\..\..\packages\blocks-subscriptions\Sunfish.Blocks.Subscriptions.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-tenant-admin\Sunfish.Blocks.TenantAdmin.csproj" />
     <ProjectReference Include="..\..\..\packages\blocks-businesscases\Sunfish.Blocks.BusinessCases.csproj" />
+    <ProjectReference Include="..\..\..\packages\blocks-public-listings\Sunfish.Blocks.PublicListings.csproj" />
     <!-- Relay-posture dependencies (ADR 0026 Posture B). Referenced by
          Sunfish.Bridge.Relay.* and only composed when
          BridgeOptions.Mode == Relay. SaaS posture does not activate them. -->

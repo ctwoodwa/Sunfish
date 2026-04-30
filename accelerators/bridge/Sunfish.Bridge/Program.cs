@@ -26,6 +26,8 @@ using Sunfish.Foundation.FeatureManagement;
 using Sunfish.Blocks.Subscriptions.DependencyInjection;
 using Sunfish.Blocks.TenantAdmin.DependencyInjection;
 using Sunfish.Blocks.BusinessCases.DependencyInjection;
+using Sunfish.Blocks.PublicListings.DependencyInjection;
+using Sunfish.Bridge.Listings;
 using Sunfish.Kernel.Sync.DependencyInjection;
 using Sunfish.Kernel.Security.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
@@ -121,6 +123,11 @@ app.MapHealthChecks("/health");
 // middleware above.
 app.MapTenantWebSocketProxy();
 app.MapHub<BridgeHub>("/hubs/bridge");
+
+// W#28 Phase 5c-1 — public-listings discovery surface (robots.txt + sitemap.xml).
+// Human-facing /listings + /listings/{slug} pages and the inquiry POST path
+// follow in subsequent phases.
+app.MapListingsEndpoints();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
@@ -225,6 +232,7 @@ static void ConfigureSaasPosture(WebApplicationBuilder builder)
     builder.Services.AddInMemorySubscriptions();
     builder.Services.AddInMemoryTenantAdmin();
     builder.Services.AddInMemoryBusinessCases();
+    builder.Services.AddInMemoryPublicListings();
 
     // Wolverine messaging — RabbitMQ transport, Postgres outbox.
     builder.Host.UseWolverine(opts =>
