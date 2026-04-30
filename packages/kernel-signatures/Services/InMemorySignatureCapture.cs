@@ -12,14 +12,25 @@ namespace Sunfish.Kernel.Signatures.Services;
 public sealed class InMemorySignatureCapture : ISignatureCapture
 {
     private readonly IConsentRegistry _consents;
+    private readonly ISignatureScopeValidator? _scopeValidator;
     private readonly TimeProvider _time;
     private readonly ConcurrentDictionary<SignatureEventId, SignatureEvent> _events = new();
 
-    /// <summary>Creates the in-memory capturer with the supplied consent registry + clock.</summary>
+    /// <summary>Creates the capturer with consent + clock; scope-validation disabled.</summary>
     public InMemorySignatureCapture(IConsentRegistry consents, TimeProvider? time = null)
+        : this(consents, scopeValidator: null, time) { }
+
+    /// <summary>
+    /// Creates the capturer with consent + optional <see cref="ISignatureScopeValidator"/>
+    /// (W#21 Phase 4). When wired, every captured signature has its
+    /// <see cref="SignatureCaptureRequest.Scope"/> validated against
+    /// <c>Sunfish.Signature.Scopes</c> per ADR 0054 amendment A7.
+    /// </summary>
+    public InMemorySignatureCapture(IConsentRegistry consents, ISignatureScopeValidator? scopeValidator, TimeProvider? time)
     {
         ArgumentNullException.ThrowIfNull(consents);
         _consents = consents;
+        _scopeValidator = scopeValidator;
         _time = time ?? TimeProvider.System;
     }
 
@@ -30,6 +41,16 @@ public sealed class InMemorySignatureCapture : ISignatureCapture
         if (request.Scope is null || request.Scope.Count == 0)
         {
             throw new ArgumentException("SignatureCaptureRequest.Scope must contain at least one taxonomy classification.", nameof(request));
+        }
+
+        if (_scopeValidator is not null)
+        {
+            var verdict = await _scopeValidator.ValidateAsync(request.Tenant, request.Scope, ct).ConfigureAwait(false);
+            if (!verdict.Passed)
+            {
+                throw new InvalidOperationException(
+                    $"Scope validation failed ({verdict.FailedBecause}): {verdict.Reason}");
+            }
         }
 
         var now = _time.GetUtcNow();
