@@ -378,6 +378,21 @@ public sealed class InMemoryLeasingPipelineService : ILeasingPipelineService, IP
         return Task.FromResult<Inquiry?>(i);
     }
 
+    /// <inheritdoc />
+    public Task<Prospect?> GetProspectByEmailAsync(TenantId tenant, string email, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Task.FromResult<Prospect?>(null);
+        }
+        var normalized = email.Trim();
+        var match = _prospects.Values.FirstOrDefault(p =>
+            p.Tenant.Equals(tenant)
+            && string.Equals(p.VerifiedEmail, normalized, StringComparison.OrdinalIgnoreCase));
+        return Task.FromResult<Prospect?>(match);
+    }
+
     private Application TransitionApplication(
         ApplicationId id,
         ApplicationStatus newStatus,

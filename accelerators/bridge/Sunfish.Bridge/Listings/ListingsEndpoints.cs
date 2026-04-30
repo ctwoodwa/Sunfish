@@ -14,6 +14,7 @@ using Sunfish.Blocks.PublicListings.Defense;
 using Sunfish.Blocks.PublicListings.Models;
 using Sunfish.Blocks.PublicListings.Services;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Integrations.Signatures;
 
 namespace Sunfish.Bridge.Listings;
 
@@ -36,6 +37,7 @@ public static class ListingsEndpoints
         app.MapGet("/listings/{slug}", HandleDetailAsync);
         app.MapPost("/listings/{slug}/inquiry", HandleInquiryPostAsync);
         app.MapGet("/listings/criteria/{token}", HandleCriteriaAsync);
+        app.MapPost("/listings/criteria/{token}/start-application", HandleStartApplicationAsync);
         return app;
     }
 
@@ -231,6 +233,95 @@ public static class ListingsEndpoints
             inquiryId = inquiry.Id.Value,
             status = inquiry.Status.ToString(),
         });
+    }
+
+    internal static async Task<IResult> HandleStartApplicationAsync(
+        HttpRequest request,
+        string token,
+        StartApplicationFormPost body,
+        IListingRepository repository,
+        IProspectCapabilityVerifier verifier,
+        ILeasingPipelineService leasingPipeline,
+        CancellationToken ct)
+    {
+        if (body is null)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["body"] = new[] { "Request body is required." },
+            });
+        }
+
+        var tenant = ResolveTenantFromHost(request.Host.Host);
+        var now = DateTimeOffset.UtcNow;
+        var targetListing = new PublicListingId(body.ListingId);
+
+        // Verify the form-targeted listing is Published in this tenant.
+        var listing = await repository.GetAsync(tenant, targetListing, ct).ConfigureAwait(false);
+        if (listing is null || listing.Status != PublicListingStatus.Published)
+        {
+            return Results.NotFound();
+        }
+
+        // Capability verification — the form's listing id IS the verifier
+        // probe target (Slice A's contract takes a single listing id and
+        // checks it against the caveat's allowed-listings set).
+        VerifiedProspectCapability capability;
+        try
+        {
+            capability = await verifier.VerifyAsync(token, tenant, targetListing, now, ct).ConfigureAwait(false);
+        }
+        catch (ProspectCapabilityDeniedException ex)
+        {
+            return Results.Problem(
+                detail: ex.Reason,
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: "Prospect capability denied");
+        }
+
+        // Resolve ProspectId from the verified email (Slice C unblock addendum).
+        var prospect = await leasingPipeline.GetProspectByEmailAsync(capability.Tenant, capability.Email, ct).ConfigureAwait(false);
+        if (prospect is null)
+        {
+            // Verified capability + missing Prospect = data inconsistency.
+            // 410 Gone signals "the resource backing this capability no
+            // longer exists"; the audit trail is captured by the leasing
+            // pipeline / capability verifier on its own.
+            return Results.Problem(
+                detail: "No Prospect record found for the verified email; capability is orphaned.",
+                statusCode: StatusCodes.Status410Gone,
+                title: "Prospect orphaned");
+        }
+
+        // Construct the W#22 submission shape.
+        var submission = new SubmitApplicationRequest
+        {
+            Tenant = capability.Tenant,
+            Prospect = prospect.Id,
+            Listing = targetListing,
+            Facts = body.Facts,
+            Demographics = body.Demographics,
+            ApplicationFee = body.ApplicationFee,
+            Signature = new SignatureEventRef(body.SignatureEventId),
+        };
+
+        try
+        {
+            var application = await leasingPipeline.SubmitApplicationAsync(submission, ct).ConfigureAwait(false);
+            return Results.Accepted(value: new
+            {
+                applicationId = application.Id.Value,
+                status = application.Status.ToString(),
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            // Validator rejection (e.g., fact range violation) — surface as 400.
+            return Results.Problem(
+                detail: ex.Message,
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Application validation failed");
+        }
     }
 
     internal static async Task<IResult> HandleCriteriaAsync(

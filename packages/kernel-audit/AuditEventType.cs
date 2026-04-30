@@ -290,6 +290,12 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A Prospect-tier macaroon capability verification was rejected (decode failed / signature mismatch / wrong tenant / listing not allowed / email not verified / expired).</summary>
     public static readonly AuditEventType ProspectCapabilityDenied = new("ProspectCapabilityDenied");
 
+    /// <summary>A Prospect (with verified capability) submitted a rental application via the public-listing capability-tier route (W#28 P5c-4 Slice C).</summary>
+    public static readonly AuditEventType ProspectStartedApplication = new("ProspectStartedApplication");
+
+    /// <summary>A verified Prospect capability resolved an email that has no matching Prospect entity — capability/data inconsistency (W#28 P5c-4 Slice C).</summary>
+    public static readonly AuditEventType ProspectLookupOrphan = new("ProspectLookupOrphan");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
