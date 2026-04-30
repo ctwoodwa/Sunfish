@@ -1,4 +1,7 @@
+using System.Globalization;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Xml;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -11,11 +14,11 @@ using Sunfish.Foundation.Assets.Common;
 namespace Sunfish.Bridge.Listings;
 
 /// <summary>
-/// Bridge route family for the W#28 public-listings surface
-/// (ADR 0059). Phase 5c-1 ships <c>/robots.txt</c> +
-/// <c>/sitemap.xml</c>; the human-facing
-/// <c>/listings</c> + <c>/listings/{slug}</c> pages and the
-/// inquiry POST path follow in subsequent phases.
+/// Bridge route family for the W#28 public-listings surface (ADR 0059).
+/// Phase 5c-1 shipped <c>/robots.txt</c> + <c>/sitemap.xml</c>;
+/// Phase 5c-2 adds the human-facing <c>/listings</c> + <c>/listings/{slug}</c>
+/// SSR pages with schema.org JSON-LD + OpenGraph; the inquiry POST path
+/// + capability-tier routes follow in subsequent slices.
 /// </summary>
 public static class ListingsEndpoints
 {
@@ -25,6 +28,8 @@ public static class ListingsEndpoints
         ArgumentNullException.ThrowIfNull(app);
         app.MapGet("/robots.txt", HandleRobotsAsync);
         app.MapGet("/sitemap.xml", HandleSitemapAsync);
+        app.MapGet("/listings", HandleIndexAsync);
+        app.MapGet("/listings/{slug}", HandleDetailAsync);
         return app;
     }
 
@@ -88,6 +93,191 @@ public static class ListingsEndpoints
         }
         await writer.WriteEndElementAsync().ConfigureAwait(false);
     }
+
+    internal static async Task<IResult> HandleIndexAsync(HttpRequest request, IListingRepository repository, IListingRenderer renderer, CancellationToken ct)
+    {
+        var tenant = ResolveTenantFromHost(request.Host.Host);
+        var baseUrl = $"{request.Scheme}://{request.Host}";
+
+        var rendered = new List<RenderedListing>();
+        await foreach (var listing in repository.ListAsync(tenant, ct))
+        {
+            if (listing.Status != PublicListingStatus.Published)
+            {
+                continue;
+            }
+            var projection = await renderer.RenderForTierAsync(tenant, listing.Id, RedactionTier.Anonymous, ct).ConfigureAwait(false);
+            if (projection is not null)
+            {
+                rendered.Add(projection);
+            }
+        }
+
+        // Match the rendered list back to the underlying slug (the projection
+        // doesn't carry the slug because slug is a routing concern, not a
+        // viewer-facing data field).
+        var slugs = new Dictionary<PublicListingId, string>();
+        await foreach (var listing in repository.ListAsync(tenant, ct))
+        {
+            slugs[listing.Id] = listing.Slug;
+        }
+
+        var html = RenderIndexHtml(rendered, slugs, tenant.Value, baseUrl);
+        return Results.Content(html, "text/html; charset=utf-8");
+    }
+
+    internal static async Task<IResult> HandleDetailAsync(HttpRequest request, string slug, IListingRepository repository, IListingRenderer renderer, CancellationToken ct)
+    {
+        var tenant = ResolveTenantFromHost(request.Host.Host);
+        var baseUrl = $"{request.Scheme}://{request.Host}";
+
+        var listing = await repository.GetBySlugAsync(tenant, slug, ct).ConfigureAwait(false);
+        if (listing is null || listing.Status != PublicListingStatus.Published)
+        {
+            return Results.NotFound();
+        }
+
+        var projection = await renderer.RenderForTierAsync(tenant, listing.Id, RedactionTier.Anonymous, ct).ConfigureAwait(false);
+        if (projection is null)
+        {
+            return Results.NotFound();
+        }
+
+        var pageUrl = $"{baseUrl}/listings/{slug}";
+        var html = RenderDetailHtml(projection, listing.Slug, pageUrl);
+        return Results.Content(html, "text/html; charset=utf-8");
+    }
+
+    private static string RenderIndexHtml(IReadOnlyList<RenderedListing> listings, IReadOnlyDictionary<PublicListingId, string> slugs, string tenantValue, string baseUrl)
+    {
+        var html = new StringBuilder();
+        html.Append("<!DOCTYPE html>\n<html lang=\"en\"><head>");
+        html.Append("<meta charset=\"utf-8\">");
+        html.Append($"<title>Listings · {HtmlEncode(tenantValue)}</title>");
+        html.Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
+        html.Append($"<link rel=\"canonical\" href=\"{HtmlEncode(baseUrl)}/listings\">");
+        html.Append($"<meta property=\"og:title\" content=\"Listings · {HtmlEncode(tenantValue)}\">");
+        html.Append("<meta property=\"og:type\" content=\"website\">");
+        html.Append($"<meta property=\"og:url\" content=\"{HtmlEncode(baseUrl)}/listings\">");
+        html.Append("</head><body>");
+        html.Append("<main>");
+        html.Append("<h1>Listings</h1>");
+        if (listings.Count == 0)
+        {
+            html.Append("<p>No listings are currently published.</p>");
+        }
+        else
+        {
+            html.Append("<ul class=\"listings\">");
+            foreach (var l in listings)
+            {
+                if (!slugs.TryGetValue(l.Id, out var slug))
+                {
+                    continue;
+                }
+                html.Append("<li class=\"listing\">");
+                html.Append($"<h2><a href=\"/listings/{HtmlEncode(slug)}\">{HtmlEncode(l.Headline)}</a></h2>");
+                html.Append($"<p class=\"address\">{HtmlEncode(l.DisplayAddress)}</p>");
+                if (l.AskingRent is { } rent)
+                {
+                    html.Append($"<p class=\"rent\">{HtmlEncode(FormatMoney(rent))}</p>");
+                }
+                html.Append("</li>");
+            }
+            html.Append("</ul>");
+        }
+        html.Append("</main></body></html>");
+        return html.ToString();
+    }
+
+    private static string RenderDetailHtml(RenderedListing listing, string slug, string pageUrl)
+    {
+        var jsonLd = BuildAccommodationJsonLd(listing, pageUrl);
+
+        var html = new StringBuilder();
+        html.Append("<!DOCTYPE html>\n<html lang=\"en\"><head>");
+        html.Append("<meta charset=\"utf-8\">");
+        html.Append($"<title>{HtmlEncode(listing.Headline)}</title>");
+        html.Append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">");
+        html.Append($"<link rel=\"canonical\" href=\"{HtmlEncode(pageUrl)}\">");
+        html.Append($"<meta property=\"og:title\" content=\"{HtmlEncode(listing.Headline)}\">");
+        html.Append("<meta property=\"og:type\" content=\"website\">");
+        html.Append($"<meta property=\"og:url\" content=\"{HtmlEncode(pageUrl)}\">");
+        html.Append($"<meta property=\"og:description\" content=\"{HtmlEncode(TruncateForOg(listing.DescriptionMarkdown))}\">");
+        html.Append("<script type=\"application/ld+json\">");
+        html.Append(jsonLd);
+        html.Append("</script>");
+        html.Append("</head><body>");
+        html.Append("<main>");
+        html.Append($"<h1>{HtmlEncode(listing.Headline)}</h1>");
+        html.Append($"<p class=\"address\">{HtmlEncode(listing.DisplayAddress)}</p>");
+        if (listing.AskingRent is { } detailRent)
+        {
+            html.Append($"<p class=\"rent\">{HtmlEncode(FormatMoney(detailRent))}</p>");
+        }
+        html.Append($"<section class=\"description\">{HtmlEncode(listing.DescriptionMarkdown)}</section>");
+        html.Append("</main></body></html>");
+        return html.ToString();
+    }
+
+    private static string BuildAccommodationJsonLd(RenderedListing listing, string pageUrl)
+    {
+        // schema.org Accommodation type — generic enough for apartment / house /
+        // room / etc. The W#28 hand-off references "Apartment" specifically,
+        // but blocks-public-listings doesn't yet differentiate dwelling types,
+        // so Accommodation is the safe parent type.
+        var doc = new Dictionary<string, object?>
+        {
+            ["@context"] = "https://schema.org",
+            ["@type"] = "Accommodation",
+            ["name"] = listing.Headline,
+            ["description"] = listing.DescriptionMarkdown,
+            ["url"] = pageUrl,
+        };
+        if (!string.IsNullOrWhiteSpace(listing.DisplayAddress))
+        {
+            doc["address"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "PostalAddress",
+                ["streetAddress"] = listing.DisplayAddress,
+            };
+        }
+        if (listing.AskingRent is { } rent)
+        {
+            doc["offers"] = new Dictionary<string, object?>
+            {
+                ["@type"] = "Offer",
+                ["priceCurrency"] = rent.Currency,
+                ["price"] = rent.Amount.ToString(CultureInfo.InvariantCulture),
+            };
+        }
+        var json = JsonSerializer.Serialize(doc, new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        });
+        // Escape `</` inside the JSON-LD payload so a script-closer in user-
+        // controlled fields can't break out of the surrounding <script> tag
+        // (XSS defense; standard practice for inline JSON-LD).
+        return json.Replace("</", "<\\/", StringComparison.Ordinal);
+    }
+
+    private static string FormatMoney(Sunfish.Foundation.Integrations.Payments.Money money)
+        => $"{money.Amount.ToString("0.##", CultureInfo.InvariantCulture)} {money.Currency}";
+
+    private static string TruncateForOg(string text, int maxLength = 200)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return string.Empty;
+        }
+        if (text.Length <= maxLength)
+        {
+            return text;
+        }
+        return text[..maxLength].TrimEnd() + "…";
+    }
+
+    private static string HtmlEncode(string text) => HtmlEncoder.Default.Encode(text ?? string.Empty);
 
     /// <summary>
     /// Resolves the tenant for a public-listings request from the host
