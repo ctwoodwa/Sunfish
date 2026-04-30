@@ -20,5 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-taxonomy\Sunfish.Foundation.Taxonomy.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
 </Project>
