@@ -19,6 +19,9 @@ public enum MessageChannel
     /// <summary>Mobile SMS / MMS via a provider adapter (Twilio, etc.).</summary>
     Sms,
 
+    /// <summary>Web form / HTTP POST surface (e.g., public-listings inquiry form per W#28). Carries client-IP + user-agent + captcha-score in <see cref="InboundMessageEnvelope.ProviderHeaders"/>.</summary>
+    Web,
+
     /// <summary>Provider-internal channel (e.g., test fixtures, in-memory simulator); never reaches an external network.</summary>
     ProviderInternal
 }
