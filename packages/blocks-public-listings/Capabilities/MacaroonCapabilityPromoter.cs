@@ -25,6 +25,7 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
     private readonly string _location;
     private readonly TimeSpan _ttl;
     private readonly TimeProvider _time;
+    private readonly Sunfish.Blocks.PublicListings.Audit.PublicListingAuditEmitter? _audit;
 
     /// <summary>
     /// Creates a promoter that mints macaroons at <paramref name="location"/> via
@@ -39,6 +40,21 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
         string? location = null,
         TimeSpan? ttl = null,
         TimeProvider? time = null)
+        : this(issuer, tenant, accessibleListings, audit: null, location, ttl, time) { }
+
+    /// <summary>
+    /// Creates a promoter with optional audit emission (W#28 Phase 7).
+    /// When <paramref name="audit"/> is supplied, every successful
+    /// promotion emits <see cref="Sunfish.Kernel.Audit.AuditEventType.CapabilityPromotedToProspect"/>.
+    /// </summary>
+    public MacaroonCapabilityPromoter(
+        IMacaroonIssuer issuer,
+        TenantId tenant,
+        IReadOnlyList<PublicListingId> accessibleListings,
+        Sunfish.Blocks.PublicListings.Audit.PublicListingAuditEmitter? audit,
+        string? location = null,
+        TimeSpan? ttl = null,
+        TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(issuer);
         ArgumentNullException.ThrowIfNull(accessibleListings);
@@ -49,6 +65,7 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
         _issuer = issuer;
         _tenant = tenant;
         _accessibleListings = accessibleListings;
+        _audit = audit;
         _location = location ?? DefaultLocation;
         _ttl = ttl ?? DefaultTtl;
         _time = time ?? TimeProvider.System;
@@ -82,7 +99,7 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
         var macaroon = await _issuer.MintAsync(_location, capabilityId.Value.ToString("D"), caveats, ct).ConfigureAwait(false);
         var token = MacaroonCodec.EncodeBase64Url(macaroon);
 
-        return new ProspectCapability
+        var capability = new ProspectCapability
         {
             Id = capabilityId,
             MacaroonToken = token,
@@ -90,5 +107,16 @@ public sealed class MacaroonCapabilityPromoter : ICapabilityPromoter
             ExpiresAt = expiresAt,
             AccessibleListings = _accessibleListings,
         };
+
+        if (_audit is not null)
+        {
+            await _audit.EmitAsync(
+                Sunfish.Kernel.Audit.AuditEventType.CapabilityPromotedToProspect,
+                Sunfish.Blocks.PublicListings.Audit.PublicListingAuditPayloadFactory.CapabilityPromotedToProspect(_tenant, capability, verifiedEmail),
+                issuedAt,
+                ct).ConfigureAwait(false);
+        }
+
+        return capability;
     }
 }
