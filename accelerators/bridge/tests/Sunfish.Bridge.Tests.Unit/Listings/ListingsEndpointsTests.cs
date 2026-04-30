@@ -109,6 +109,174 @@ public sealed class ListingsEndpointsTests
         Assert.Equal(expectedTenantValue, tenant.Value);
     }
 
+    // ===== W#28 Phase 5c-2 — index + detail HTML pages =====
+
+    [Fact]
+    public async Task Index_Lists_PublishedListingsForTheTenant()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "downtown-loft", PublicListingStatus.Published, PublishedAt),
+            BuildListing(DemoTenant, "river-view-2br", PublicListingStatus.Published, PublishedAt.AddDays(-1)),
+            BuildListing(DemoTenant, "draft-listing", PublicListingStatus.Draft, null),
+            BuildListing(new TenantId("other-tenant"), "neighbor-loft", PublicListingStatus.Published, PublishedAt));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleIndexAsync(request, repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.Contains("Headline for downtown-loft", html);
+        Assert.Contains("Headline for river-view-2br", html);
+        Assert.DoesNotContain("draft-listing", html);
+        Assert.DoesNotContain("neighbor-loft", html);
+        Assert.Contains("href=\"/listings/downtown-loft\"", html);
+    }
+
+    [Fact]
+    public async Task Index_EmitsCanonicalAndOpenGraphMetadata()
+    {
+        var repo = new FakeListingRepository();
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleIndexAsync(request, repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.Contains("<link rel=\"canonical\" href=\"https://demo-tenant.bridge.sunfish.dev/listings\">", html);
+        Assert.Contains("<meta property=\"og:type\" content=\"website\">", html);
+        Assert.Contains("<meta property=\"og:url\" content=\"https://demo-tenant.bridge.sunfish.dev/listings\">", html);
+    }
+
+    [Fact]
+    public async Task Index_RendersEmptyStateWhenNoPublishedListings()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "draft-listing", PublicListingStatus.Draft, null));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleIndexAsync(request, repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.Contains("No listings are currently published.", html);
+    }
+
+    [Fact]
+    public async Task Detail_Returns404ForUnknownSlug()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "downtown-loft", PublicListingStatus.Published, PublishedAt));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "nonexistent-slug", repo, renderer, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.NotFound>(result);
+    }
+
+    [Fact]
+    public async Task Detail_Returns404ForDraftListings()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "draft-listing", PublicListingStatus.Draft, null));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "draft-listing", repo, renderer, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.NotFound>(result);
+    }
+
+    [Fact]
+    public async Task Detail_Returns404ForUnlistedListings()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "unlisted-listing", PublicListingStatus.Unlisted, null));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "unlisted-listing", repo, renderer, CancellationToken.None);
+
+        Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.NotFound>(result);
+    }
+
+    [Fact]
+    public async Task Detail_RendersListingHeadlineAndCanonicalUrl()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "downtown-loft", PublicListingStatus.Published, PublishedAt));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "downtown-loft", repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.Contains("<title>Headline for downtown-loft</title>", html);
+        Assert.Contains("<link rel=\"canonical\" href=\"https://demo-tenant.bridge.sunfish.dev/listings/downtown-loft\">", html);
+        Assert.Contains("<h1>Headline for downtown-loft</h1>", html);
+    }
+
+    [Fact]
+    public async Task Detail_EmitsSchemaOrgAccommodationJsonLd()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "downtown-loft", PublicListingStatus.Published, PublishedAt));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "downtown-loft", repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        var ldStart = html.IndexOf("<script type=\"application/ld+json\">", StringComparison.Ordinal);
+        Assert.True(ldStart >= 0, "expected JSON-LD script tag in detail HTML");
+        var ldEnd = html.IndexOf("</script>", ldStart, StringComparison.Ordinal);
+        Assert.True(ldEnd > ldStart);
+        var jsonStart = ldStart + "<script type=\"application/ld+json\">".Length;
+        var jsonText = html[jsonStart..ldEnd];
+        var doc = System.Text.Json.JsonDocument.Parse(jsonText);
+        Assert.Equal("https://schema.org", doc.RootElement.GetProperty("@context").GetString());
+        Assert.Equal("Accommodation", doc.RootElement.GetProperty("@type").GetString());
+        Assert.Equal("Headline for downtown-loft", doc.RootElement.GetProperty("name").GetString());
+        Assert.Equal("https://demo-tenant.bridge.sunfish.dev/listings/downtown-loft", doc.RootElement.GetProperty("url").GetString());
+    }
+
+    [Fact]
+    public async Task Detail_EmitsOpenGraphMetadata()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "downtown-loft", PublicListingStatus.Published, PublishedAt));
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "downtown-loft", repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.Contains("<meta property=\"og:title\" content=\"Headline for downtown-loft\">", html);
+        Assert.Contains("<meta property=\"og:type\" content=\"website\">", html);
+        Assert.Contains("<meta property=\"og:url\" content=\"https://demo-tenant.bridge.sunfish.dev/listings/downtown-loft\">", html);
+        Assert.Contains("<meta property=\"og:description\"", html);
+    }
+
+    [Fact]
+    public async Task Detail_HtmlEncodesHeadlineAndDescription()
+    {
+        var repo = new FakeListingRepository(
+            BuildListing(DemoTenant, "xss-test", PublicListingStatus.Published, PublishedAt) with
+            {
+                Headline = "<script>alert('xss')</script>",
+                Description = "Body with <em>html</em>",
+            });
+        var renderer = new Sunfish.Blocks.PublicListings.Services.DefaultListingRenderer(repo);
+        var request = BuildRequest("demo-tenant.bridge.sunfish.dev", scheme: "https");
+
+        var result = await ListingsEndpoints.HandleDetailAsync(request, "xss-test", repo, renderer, CancellationToken.None);
+        var html = ExecuteAndCaptureBodyAsString(result);
+
+        Assert.DoesNotContain("<script>alert('xss')</script>", html);
+        Assert.Contains("&lt;script", html);
+        Assert.Contains("&lt;em&gt;html&lt;/em&gt;", html);
+    }
+
     private static HttpRequest BuildRequest(string host, string scheme)
     {
         var ctx = new DefaultHttpContext();
@@ -169,10 +337,10 @@ public sealed class ListingsEndpointsTests
             => throw new NotImplementedException();
 
         public Task<PublicListing?> GetAsync(TenantId tenant, PublicListingId id, CancellationToken ct)
-            => throw new NotImplementedException();
+            => Task.FromResult(_items.FirstOrDefault(l => l.Tenant.Equals(tenant) && l.Id.Equals(id)));
 
         public Task<PublicListing?> GetBySlugAsync(TenantId tenant, string slug, CancellationToken ct)
-            => throw new NotImplementedException();
+            => Task.FromResult(_items.FirstOrDefault(l => l.Tenant.Equals(tenant) && l.Slug == slug));
 
         public async IAsyncEnumerable<PublicListing> ListAsync(TenantId tenant, [EnumeratorCancellation] CancellationToken ct)
         {
