@@ -1,5 +1,9 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Foundation.Recovery.Crypto;
+using Sunfish.Foundation.Recovery.TenantKey;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.Recovery.DependencyInjection;
 
@@ -49,6 +53,28 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IRecoveryClock, SystemRecoveryClock>();
         services.TryAddSingleton<IRecoveryStateStore, InMemoryRecoveryStateStore>();
         services.TryAddSingleton<IRecoveryCoordinator, RecoveryCoordinator>();
+
+        // ADR 0046-A4/A5 — field-encryption substrate (W#32). The decryptor
+        // requires BOTH IAuditTrail + IOperationSigner together (audit-enabled
+        // overload) OR neither (audit-disabled overload). The factory throws
+        // on first resolution if exactly one is registered (A5.7).
+        services.TryAddSingleton<IFieldEncryptor, TenantKeyProviderFieldEncryptor>();
+        services.TryAddSingleton<IFieldDecryptor>(sp =>
+        {
+            var tenantKeys = sp.GetRequiredService<ITenantKeyProvider>();
+            var clock = sp.GetService<IRecoveryClock>();
+            var auditTrail = sp.GetService<IAuditTrail>();
+            var signer = sp.GetService<IOperationSigner>();
+            return (auditTrail, signer) switch
+            {
+                (null, null) => new TenantKeyProviderFieldDecryptor(tenantKeys, clock),
+                (not null, not null) => new TenantKeyProviderFieldDecryptor(tenantKeys, auditTrail, signer, clock),
+                _ => throw new InvalidOperationException(
+                    "Field-encryption decryptor requires both IAuditTrail and IOperationSigner registered, or neither. "
+                    + $"Mid-state misconfiguration: IAuditTrail={(auditTrail is null ? "null" : "registered")}, "
+                    + $"IOperationSigner={(signer is null ? "null" : "registered")}.")
+            };
+        });
 
         return services;
     }
