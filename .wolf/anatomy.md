@@ -1,7 +1,7 @@
 # anatomy.md
 
-> Auto-maintained by OpenWolf. Last scanned: 2026-04-28T06:34:03.781Z
-> Files: 1102 tracked | Anatomy hits: 0 | Misses: 0
+> Auto-maintained by OpenWolf. Last scanned: 2026-04-30T01:52:50.579Z
+> Files: 1103 tracked | Anatomy hits: 0 | Misses: 0
 
 ## ../../.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/
 
@@ -1062,6 +1062,10 @@
 - `SunfishDialog-FluentUI-v9.md` — Style Audit: SunfishDialog vs Fluent UI v9 Dialog (~4350 tok)
 - `SunfishDialog-MaterialDesign3.md` — Style Audit: SunfishDialog vs Material Design 3 (~4147 tok)
 - `SYNTHESIS.md` — Style Parity Audit — Cross-Framework Synthesis (~10551 tok)
+
+## icm/_state/maintenance-runs/
+
+- `run-2026-04-30T01-52Z.md` — Autonomous Maintenance Run — 2026-04-30T01-52Z (~930 tok)
 
 ## icm/pipelines/sunfish-inverted-stack-conformance/
 
