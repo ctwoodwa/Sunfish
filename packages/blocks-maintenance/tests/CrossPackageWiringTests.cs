@@ -69,7 +69,7 @@ public sealed class CrossPackageWiringTests
     private static async Task<(InMemoryMaintenanceService svc, StubThreadStore threads, InMemoryPaymentGateway pay, InMemorySignatureCapture sigs, WorkOrder wo)> NewWorkOrderAsync(WorkOrderStatus advanceTo = WorkOrderStatus.Draft)
     {
         var (svc, threads, pay, sigs) = NewWiredService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Acme Plumbing", ContactEmail = "ops@acme.example", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Acme Plumbing", ContactEmail = "ops@acme.example", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         { PropertyId = TestPropertyId, RequestedByDisplayName = "T", Description = "x", Priority = MaintenancePriority.Normal, RequestedDate = new DateOnly(2026, 5, 1) });
         var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest
@@ -105,7 +105,7 @@ public sealed class CrossPackageWiringTests
     public async Task CreateWorkOrder_SkipsThread_WhenCreateThreadFalse()
     {
         var (svc, threads, _, _) = NewWiredService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         { PropertyId = TestPropertyId, RequestedByDisplayName = "T", Description = "x", Priority = MaintenancePriority.Normal, RequestedDate = new DateOnly(2026, 5, 1) });
 
@@ -142,7 +142,7 @@ public sealed class CrossPackageWiringTests
     {
         var trail = new CapturingAuditTrail();
         var svc = new InMemoryMaintenanceService(trail, new StubSigner(), TestTenant, threadStore: null, paymentGateway: null, signatureCapture: null);
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         { PropertyId = TestPropertyId, RequestedByDisplayName = "T", Description = "x", Priority = MaintenancePriority.Normal, RequestedDate = new DateOnly(2026, 5, 1) });
         var wo = await svc.CreateWorkOrderAsync(new CreateWorkOrderRequest

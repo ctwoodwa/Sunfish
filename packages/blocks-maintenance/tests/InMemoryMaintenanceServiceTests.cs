@@ -24,7 +24,7 @@ public class InMemoryMaintenanceServiceTests
         var vendor = await svc.CreateVendorAsync(new CreateVendorRequest
         {
             DisplayName = "Test Plumber LLC",
-            Specialty = specialty,
+            Specialties = VendorSpecialtyClassifications.ToList(specialty),
             Status = status,
         });
         return (svc, vendor);
@@ -65,14 +65,15 @@ public class InMemoryMaintenanceServiceTests
             DisplayName = "Ace Plumbing",
             ContactName = "Bob Builder",
             ContactEmail = "bob@aceplumbing.com",
-            Specialty = VendorSpecialty.Plumbing,
+            Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing),
         });
 
         Assert.False(string.IsNullOrWhiteSpace(vendor.Id.Value));
         Assert.Equal("Ace Plumbing", vendor.DisplayName);
         Assert.Equal("Bob Builder", vendor.ContactName);
-        Assert.Equal(VendorSpecialty.Plumbing, vendor.Specialty);
+        Assert.Equal("plumbing", vendor.Specialties[0].Code);
         Assert.Equal(VendorStatus.Active, vendor.Status);
+        Assert.Equal(VendorOnboardingState.Pending, vendor.OnboardingState);
 
         var retrieved = await svc.GetVendorAsync(vendor.Id);
         Assert.NotNull(retrieved);
@@ -93,8 +94,8 @@ public class InMemoryMaintenanceServiceTests
     public async Task ListVendorsAsync_NoFilter_ReturnsAllVendors()
     {
         var svc = MakeService();
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialty = VendorSpecialty.Plumbing });
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialty = VendorSpecialty.Electrical });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Electrical) });
 
         var all = await CollectAsync(svc.ListVendorsAsync(ListVendorsQuery.Empty));
 
@@ -105,10 +106,10 @@ public class InMemoryMaintenanceServiceTests
     public async Task ListVendorsAsync_FilterBySpecialty_ReturnsMatchingOnly()
     {
         var svc = MakeService();
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Plumber", Specialty = VendorSpecialty.Plumbing });
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Electrician", Specialty = VendorSpecialty.Electrical });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Plumber", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Electrician", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Electrical) });
 
-        var plumbers = await CollectAsync(svc.ListVendorsAsync(new ListVendorsQuery { Specialty = VendorSpecialty.Plumbing }));
+        var plumbers = await CollectAsync(svc.ListVendorsAsync(new ListVendorsQuery { SpecialtyCode = "plumbing" }));
 
         Assert.Single(plumbers);
         Assert.Equal("Plumber", plumbers[0].DisplayName);
@@ -118,8 +119,8 @@ public class InMemoryMaintenanceServiceTests
     public async Task ListVendorsAsync_FilterByActiveStatus_ExcludesSuspended()
     {
         var svc = MakeService();
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Active", Specialty = VendorSpecialty.HVAC, Status = VendorStatus.Active });
-        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Suspended", Specialty = VendorSpecialty.HVAC, Status = VendorStatus.Suspended });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Active", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.HVAC), Status = VendorStatus.Active });
+        await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Suspended", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.HVAC), Status = VendorStatus.Suspended });
 
         var active = await CollectAsync(svc.ListVendorsAsync(new ListVendorsQuery { Status = VendorStatus.Active }));
 
@@ -233,8 +234,8 @@ public class InMemoryMaintenanceServiceTests
     public async Task SendRfqAsync_InvitesAllListedVendors()
     {
         var (svc, request) = await MakeServiceWithRequest();
-        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialty = VendorSpecialty.Plumbing });
-        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialty = VendorSpecialty.Plumbing });
+        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
 
         var rfq = await svc.SendRfqAsync(new SendRfqRequest
         {
@@ -254,8 +255,8 @@ public class InMemoryMaintenanceServiceTests
     public async Task SubmitQuoteAsync_IsIndependentPerVendor()
     {
         var (svc, request) = await MakeServiceWithRequest();
-        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialty = VendorSpecialty.Plumbing });
-        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialty = VendorSpecialty.Plumbing });
+        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
 
         var q1 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v1.Id, RequestId = request.Id, Amount = 200m, ValidUntil = new DateOnly(2026, 6, 1) });
         var q2 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v2.Id, RequestId = request.Id, Amount = 180m, ValidUntil = new DateOnly(2026, 6, 1) });
@@ -272,8 +273,8 @@ public class InMemoryMaintenanceServiceTests
     public async Task AcceptQuoteAsync_AcceptsTarget_DeclinesOthers_SpawnsWorkOrder()
     {
         var (svc, request) = await MakeServiceWithRequest();
-        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialty = VendorSpecialty.Plumbing });
-        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialty = VendorSpecialty.Plumbing });
+        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
 
         var q1 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v1.Id, RequestId = request.Id, Amount = 200m, ValidUntil = new DateOnly(2026, 6, 1) });
         var q2 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v2.Id, RequestId = request.Id, Amount = 180m, ValidUntil = new DateOnly(2026, 6, 1) });
@@ -300,8 +301,8 @@ public class InMemoryMaintenanceServiceTests
     {
         // Arrange: one request, two quotes from different vendors.
         var (svc, request) = await MakeServiceWithRequest();
-        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialty = VendorSpecialty.Plumbing });
-        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialty = VendorSpecialty.Plumbing });
+        var v1 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V1", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
+        var v2 = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V2", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
 
         var q1 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v1.Id, RequestId = request.Id, Amount = 200m, ValidUntil = new DateOnly(2026, 6, 1) });
         var q2 = await svc.SubmitQuoteAsync(new SubmitQuoteRequest { VendorId = v2.Id, RequestId = request.Id, Amount = 180m, ValidUntil = new DateOnly(2026, 6, 1) });
@@ -339,7 +340,7 @@ public class InMemoryMaintenanceServiceTests
         var (_, request) = await MakeServiceWithRequest();
         // Use a fresh svc that has both vendor and request... build manually.
         var svc2 = MakeService();
-        var v = await svc2.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Plumber", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc2.CreateVendorAsync(new CreateVendorRequest { DisplayName = "Plumber", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc2.SubmitRequestAsync(new SubmitMaintenanceRequest
         {
             PropertyId = TestPropertyId,
@@ -369,7 +370,7 @@ public class InMemoryMaintenanceServiceTests
     public async Task TransitionWorkOrder_ValidPath_DraftToCompleted()
     {
         var svc = MakeService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Electrical });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Electrical) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         {
             PropertyId = TestPropertyId,
@@ -401,7 +402,7 @@ public class InMemoryMaintenanceServiceTests
     public async Task TransitionWorkOrder_OnHoldCycle()
     {
         var svc = MakeService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Painting });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Painting) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         {
             PropertyId = TestPropertyId,
@@ -434,7 +435,7 @@ public class InMemoryMaintenanceServiceTests
     public async Task TransitionWorkOrder_InvalidTransition_ThrowsInvalidOperationException()
     {
         var svc = MakeService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Roofing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Roofing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         {
             PropertyId = TestPropertyId,
@@ -472,7 +473,7 @@ public class InMemoryMaintenanceServiceTests
     private async Task<(InMemoryMaintenanceService Svc, WorkOrder Wo)> NewCompletedWorkOrderAsync()
     {
         var svc = MakeService();
-        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialty = VendorSpecialty.Plumbing });
+        var v = await svc.CreateVendorAsync(new CreateVendorRequest { DisplayName = "V", Specialties = VendorSpecialtyClassifications.ToList(VendorSpecialty.Plumbing) });
         var r = await svc.SubmitRequestAsync(new SubmitMaintenanceRequest
         {
             PropertyId = TestPropertyId,

@@ -2,11 +2,16 @@
   <PropertyGroup>
     <IsPackable>true</IsPackable>
     <PackageId>Sunfish.Blocks.Maintenance</PackageId>
-    <!-- MAJOR version bump per ADR 0053 amendment A6 + W#19 Phase 5
-         (api-change-shape: WorkOrder positional → init-only + RequestId
-         dropped + Money migration + Phase 3 child entities). See MIGRATION.md. -->
-    <Version>1.0.0</Version>
-    <Description>Maintenance-management block for Sunfish — vendor management, maintenance requests, RFQ/quote workflow, and work-order tracking. v1.0 ships the ADR 0053 work-order domain model: 13-state lifecycle, signature-bound completion attestation, audit-emitted lifecycle, Phase 3 child entities (entry notice, appointment, completion attestation). See MIGRATION.md for the v0.x → v1.0 breaking changes.</Description>
+    <!-- MAJOR version bumps:
+         v1.0 (ADR 0053 + W#19): WorkOrder positional → init-only, RequestId
+              dropped, Money migration, Phase 3 child entities.
+         v1.1 (ADR 0058 + W#18 Phase 1): Vendor positional → init-only,
+              Specialty enum → Specialties IReadOnlyList<TaxonomyClassification>,
+              new init-only fields (OnboardingState, W9, PaymentPreference,
+              Contacts), new auxiliary id types, VendorOnboardingState enum.
+         See MIGRATION.md for the breaking changes. -->
+    <Version>1.1.0</Version>
+    <Description>Maintenance-management block for Sunfish — vendor management, maintenance requests, RFQ/quote workflow, and work-order tracking. v1.1 ships the ADR 0058 vendor onboarding posture (init-only Vendor record + onboarding state + taxonomy-backed specialties); v1.0 shipped the ADR 0053 work-order domain model. See MIGRATION.md for the v0.x → v1.x breaking changes.</Description>
     <PackageTags>blazor;maintenance;work-orders;vendors;property;blocks;domain;sunfish;adr-0053</PackageTags>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -26,6 +31,7 @@
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\foundation-taxonomy\Sunfish.Foundation.Taxonomy.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
     <ProjectReference Include="..\blocks-property-equipment\Sunfish.Blocks.PropertyEquipment.csproj" />
     <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
