@@ -34,4 +34,12 @@ public sealed record CreateWorkOrderRequest
 
     /// <summary>Optional notes for the vendor or property manager.</summary>
     public string? Notes { get; init; }
+
+    /// <summary>
+    /// W#19 Phase 6 cross-package wiring: when <see langword="true"/> + the
+    /// service has an <c>IThreadStore</c> wired, <see cref="IMaintenanceService.CreateWorkOrderAsync"/>
+    /// opens a 2-party (operator + vendor) coordination thread and sets it
+    /// on <see cref="WorkOrder.PrimaryThread"/>. Defaults to <see langword="true"/>.
+    /// </summary>
+    public bool CreateThread { get; init; } = true;
 }

@@ -43,7 +43,17 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
     private readonly IOperationSigner? _signer;
     private readonly TenantId _auditTenant;
 
-    /// <summary>Creates the service with audit emission disabled.</summary>
+    // ── Cross-package wiring (W#19 Phase 6 / ADR 0053 §"Decision") ──
+    //
+    // Optional dependencies; null disables the corresponding wiring path.
+    // Tests can construct the service with only the dependencies they
+    // need.
+
+    private readonly Sunfish.Foundation.Integrations.Messaging.IThreadStore? _threadStore;
+    private readonly Sunfish.Foundation.Integrations.Payments.IPaymentGateway? _paymentGateway;
+    private readonly Sunfish.Foundation.Integrations.Signatures.ISignatureCapture? _signatureCapture;
+
+    /// <summary>Creates the service with audit emission + cross-package wiring disabled.</summary>
     public InMemoryMaintenanceService()
     {
     }
@@ -61,6 +71,37 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         _signer = signer;
         _auditTenant = tenantId;
     }
+
+    /// <summary>
+    /// Creates the service with audit emission + cross-package wiring (W#19
+    /// Phase 6). Pass <see langword="null"/> for any wiring component to
+    /// disable that path; a fully-wired service consumes all three of
+    /// <see cref="Sunfish.Foundation.Integrations.Messaging.IThreadStore"/>
+    /// (creates a coordination thread on
+    /// <see cref="CreateWorkOrderAsync"/>),
+    /// <see cref="Sunfish.Foundation.Integrations.Payments.IPaymentGateway"/>
+    /// (authorize on <see cref="WorkOrderStatus.Invoiced"/>; capture on
+    /// <see cref="WorkOrderStatus.Paid"/>), and
+    /// <see cref="Sunfish.Foundation.Integrations.Signatures.ISignatureCapture"/>
+    /// (used by future hand-offs that need to mint signature events).
+    /// </summary>
+    public InMemoryMaintenanceService(
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        Sunfish.Foundation.Integrations.Messaging.IThreadStore? threadStore,
+        Sunfish.Foundation.Integrations.Payments.IPaymentGateway? paymentGateway,
+        Sunfish.Foundation.Integrations.Signatures.ISignatureCapture? signatureCapture)
+        : this(auditTrail, signer, tenantId)
+    {
+        _threadStore = threadStore;
+        _paymentGateway = paymentGateway;
+        _signatureCapture = signatureCapture;
+    }
+
+    // Tracks the auth handle returned by IPaymentGateway.AuthorizeAsync so
+    // the Paid transition can capture the same authorization.
+    private readonly ConcurrentDictionary<WorkOrderId, string> _paymentAuthHandles = new();
 
     private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
     {
@@ -408,6 +449,34 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
         ArgumentNullException.ThrowIfNull(request);
         ct.ThrowIfCancellationRequested();
 
+        // W#19 Phase 6 cross-package wiring: optionally open a 2-party
+        // coordination thread (operator + vendor) when IThreadStore is wired
+        // + the request opts in (default true).
+        Sunfish.Foundation.Integrations.Messaging.ThreadId? primaryThread = null;
+        if (request.CreateThread && _threadStore is not null)
+        {
+            _vendors.TryGetValue(request.AssignedVendorId, out var vendor);
+            var operatorParticipant = new Sunfish.Foundation.Integrations.Messaging.Participant
+            {
+                Id = new Sunfish.Foundation.Integrations.Messaging.ParticipantId(Guid.NewGuid()),
+                Identity = ActorId.System,
+                DisplayName = "Operator",
+            };
+            var vendorParticipant = new Sunfish.Foundation.Integrations.Messaging.Participant
+            {
+                Id = new Sunfish.Foundation.Integrations.Messaging.ParticipantId(Guid.NewGuid()),
+                Identity = new ActorId(request.AssignedVendorId.Value),
+                DisplayName = vendor?.DisplayName ?? request.AssignedVendorId.Value,
+                EmailAddress = vendor?.ContactEmail,
+                PhoneNumber = vendor?.ContactPhone,
+            };
+            primaryThread = await _threadStore.CreateAsync(
+                request.Tenant,
+                new[] { operatorParticipant, vendorParticipant },
+                Sunfish.Foundation.Integrations.Messaging.MessageVisibility.Public,
+                ct).ConfigureAwait(false);
+        }
+
         var workOrder = new WorkOrder
         {
             Id = WorkOrderId.NewId(),
@@ -418,6 +487,7 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
             CompletedDate = null,
             EstimatedCost = request.EstimatedCost,
             TotalCost = null,
+            PrimaryThread = primaryThread,
             Notes = request.Notes,
             CreatedAtUtc = Instant.Now,
             UpdatedAt = DateTimeOffset.UtcNow,
@@ -465,6 +535,28 @@ public sealed class InMemoryMaintenanceService : IMaintenanceService
                 WorkOrderAuditPayloadFactory.EventForTransition(workOrder.Status, newStatus),
                 WorkOrderAuditPayloadFactory.StatusTransition(id, workOrder.Status, newStatus, ActorId.System),
                 ct).ConfigureAwait(false);
+
+            // W#19 Phase 6 cross-package wiring (payments). On Invoiced:
+            // authorize. On Paid: capture the prior authorization. The
+            // gateway is optional; null disables this path.
+            if (_paymentGateway is not null && updated.EstimatedCost is not null)
+            {
+                if (newStatus == WorkOrderStatus.Invoiced)
+                {
+                    var auth = await _paymentGateway.AuthorizeAsync(
+                        new Sunfish.Foundation.Integrations.Payments.PaymentAuthorizationRequest(
+                            updated.Tenant,
+                            updated.EstimatedCost.Value,
+                            updated.Id.Value),
+                        ct).ConfigureAwait(false);
+                    _paymentAuthHandles[updated.Id] = auth.AuthorizationHandle;
+                }
+                else if (newStatus == WorkOrderStatus.Paid && _paymentAuthHandles.TryGetValue(updated.Id, out var handle))
+                {
+                    await _paymentGateway.CaptureAsync(handle, ct).ConfigureAwait(false);
+                }
+            }
+
             return updated;
         }
         finally
