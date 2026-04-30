@@ -274,6 +274,14 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A capability was promoted Prospect → Applicant (per ADR 0043 addendum + ADR 0059; downstream of W#22 Phase 2 ConfirmApplicationAndPromote).</summary>
     public static readonly AuditEventType CapabilityPromotedToApplicant = new("CapabilityPromotedToApplicant");
 
+    // ===== ADR 0046-A4/A5 — Field-encryption substrate (W#32) =====
+
+    /// <summary>An <c>EncryptedField</c> value was decrypted via <c>IFieldDecryptor</c>.</summary>
+    public static readonly AuditEventType FieldDecrypted = new("FieldDecrypted");
+
+    /// <summary>An <c>EncryptedField</c> decrypt was rejected (capability invalid, ciphertext truncated, AES-GCM tag failure, or unsupported key version).</summary>
+    public static readonly AuditEventType FieldDecryptionDenied = new("FieldDecryptionDenied");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
