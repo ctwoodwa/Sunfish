@@ -253,6 +253,27 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A vendor was activated (operationally usable for work-order assignment).</summary>
     public static readonly AuditEventType VendorActivated = new("VendorActivated");
 
+    // ===== ADR 0059 — Public Listings =====
+
+    /// <summary>A <c>PublicListing</c> transitioned to the Published status (visible to anonymous browsers).</summary>
+    public static readonly AuditEventType PublicListingPublished = new("PublicListingPublished");
+
+    /// <summary>A <c>PublicListing</c> transitioned to the Unlisted status (no longer publicly visible).</summary>
+    public static readonly AuditEventType PublicListingUnlisted = new("PublicListingUnlisted");
+
+    // Note: InquiryAccepted + InquiryRejected are reused from the W#22 ADR 0057 set above —
+    // both workstreams deal with the same lifecycle event at the same boundary
+    // (public-listings inquiry-form post → leasing-pipeline IPublicInquiryService.SubmitInquiryAsync).
+
+    /// <summary>An inquiry was submitted via the public-listing surface (after 5-layer defense passes; pre-leasing-pipeline persistence).</summary>
+    public static readonly AuditEventType InquirySubmitted = new("InquirySubmitted");
+
+    /// <summary>A capability was promoted Anonymous → Prospect (per ADR 0043 addendum + ADR 0059).</summary>
+    public static readonly AuditEventType CapabilityPromotedToProspect = new("CapabilityPromotedToProspect");
+
+    /// <summary>A capability was promoted Prospect → Applicant (per ADR 0043 addendum + ADR 0059; downstream of W#22 Phase 2 ConfirmApplicationAndPromote).</summary>
+    public static readonly AuditEventType CapabilityPromotedToApplicant = new("CapabilityPromotedToApplicant");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

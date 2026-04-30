@@ -21,6 +21,7 @@
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
     <ProjectReference Include="..\foundation-persistence\Sunfish.Foundation.Persistence.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
     <ProjectReference Include="..\blocks-properties\Sunfish.Blocks.Properties.csproj" />
   </ItemGroup>
 </Project>
