@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Signatures</PackageId>
+    <RootNamespace>Sunfish.Kernel.Signatures</RootNamespace>
+    <Description>Sunfish kernel signature-capture substrate (ADR 0054). Captures legally-binding signature events with content-hash binding, append-only revocation log, UETA/E-SIGN consent gate, and pluggable device-attestation surface. Sibling to kernel-audit + kernel-security. W#21 Phase 1 ships the contract surface + InMemory implementations; native iOS PencilKit + CryptoKit integration deferred to W#23 (iOS Field-Capture App).</Description>
+    <PackageTags>sunfish;kernel;signatures;ueta;e-sign;adr-0054</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Signatures.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-taxonomy\Sunfish.Foundation.Taxonomy.csproj" />
+  </ItemGroup>
+</Project>
