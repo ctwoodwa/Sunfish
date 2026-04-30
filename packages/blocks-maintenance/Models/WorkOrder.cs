@@ -1,5 +1,6 @@
 using Sunfish.Blocks.PropertyEquipment.Models;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Integrations.Messaging;
 using Sunfish.Foundation.Integrations.Payments;
 
 namespace Sunfish.Blocks.Maintenance.Models;
@@ -56,10 +57,8 @@ public sealed record WorkOrder
     /// <summary>FK to the physical equipment this work targets, when applicable (per ADR 0053 A1; renamed from "Asset" per UPF Rule 4).</summary>
     public EquipmentId? Equipment { get; init; }
 
-    // PrimaryThread (ThreadId? per ADR 0052) is added in W#19 Phase 6
-    // (cross-package wiring). The W#20 Phase 1 contracts containing
-    // ThreadId aren't on this branch's stack base; introducing the field
-    // here would force a stack-wide rebase. Phase 6 wires it.
+    /// <summary>FK to the primary coordination thread (per ADR 0052) when one has been opened. Wired in W#19 Phase 6 cross-package wiring.</summary>
+    public ThreadId? PrimaryThread { get; init; }
 
     /// <summary>Appointment slot bound to this work order (per W#19 Phase 3 child entity).</summary>
     public WorkOrderAppointment? Appointment { get; init; }
