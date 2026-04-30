@@ -400,3 +400,85 @@ XO can then author the W#18 Vendor Onboarding Posture Stage 06 hand-off referenc
 #### A2.11 — Compatibility & migration
 
 Net-new types; zero existing callers. No migration needed. Existing recovery-coordinator + paper-key + trustee surface is untouched. The amendment adds DI registrations + new audit constants but does not modify any existing API.
+
+### A3 (REQUIRED, mechanical) — A2 council-review fixes (cited-symbol drift; capability scope)
+
+**Driver:** Stage 1.5 council review of A2 (`icm/07_review/output/adr-audits/0046-A2-council-review-2026-04-30.md`, dated 2026-04-30) found 2 Critical + 3 Major + 2 Minor + 1 Encouraged. This A3 amendment applies only the mechanical fixes (rename / fix-citation / scope-tightening per Decision Discipline Rule 3). Two business-judgment items (relationship to existing `ITenantKeyProvider`; rotation-store persistence shape) are flagged for CO escalation and remain open.
+
+#### A3.1 — `TenantId` namespace correction (council F1)
+
+A2.2 imported `using Sunfish.Foundation.MultiTenancy;` for `TenantId`; A2.7 cited it at the same namespace. Corrected: `TenantId` lives at `packages/foundation/Assets/Common/TenantId.cs` in namespace `Sunfish.Foundation.Assets.Common` (same namespace as `ActorId`). The `foundation-multitenancy` package consumes it via `using Sunfish.Foundation.Assets.Common;` (see `ITenantScoped.cs`); it does not redefine it.
+
+A2.2 `using` block (canonical):
+
+```csharp
+namespace Sunfish.Foundation.Recovery;
+
+using Sunfish.Foundation.Assets.Common;       // TenantId, ActorId
+using Sunfish.Foundation.MultiTenancy;        // (only if ITenantScoped is referenced; not needed for A2 surface)
+```
+
+A2.7 "Existing (verified)" entry corrected: `Sunfish.Foundation.Assets.Common.TenantId (packages/foundation/Assets/Common/TenantId.cs)`.
+
+#### A3.2 — `IRootSeedProvider` API signature correction (council F3)
+
+A2.3 pseudo-code line `master_root_seed = KeystoreRootSeedProvider.GetSeed()` corrected:
+
+```text
+master_root_seed = await rootSeedProvider.GetRootSeedAsync(ct)    // 32-byte; existing primitive
+                                                                  // IRootSeedProvider — kernel-security
+```
+
+Consumers inject `Sunfish.Kernel.Security.Keys.IRootSeedProvider` (interface) — `KeystoreRootSeedProvider` is the production implementation but the substrate codes against the interface for testability. Hosts must register `AddSunfishKernelSecurity()` before `AddSunfishRecoveryCoordinator()` (already implied by the existing `AddSunfishRecoveryCoordinator` XML doc remarks).
+
+#### A3.3 — `IDecryptCapability.ValidateForDecrypt` scope-check (council F7)
+
+A2.2's `IDecryptCapability.ValidateForDecrypt(DateTimeOffset now)` did not take the target tenant; cross-tenant prevention fell to a belt-and-suspenders check inside the decryptor. To make the cross-tenant guarantee structural (mechanically enforced by the capability, not by decryptor discipline), the validate signature takes the target tenant:
+
+```csharp
+public interface IDecryptCapability
+{
+    string CapabilityId { get; }
+    ActorId Actor { get; }
+    TenantId Tenant { get; }
+
+    /// <summary>
+    /// Validity check at decrypt time. Returns null if the capability authorizes
+    /// the decrypt; rejection reason ("expired", "wrong-tenant", "revoked", ...)
+    /// otherwise. <paramref name="targetTenant"/> is the tenant the caller is
+    /// attempting to decrypt for; the capability rejects if it doesn't match
+    /// <see cref="Tenant"/>.
+    /// </summary>
+    string? ValidateForDecrypt(TenantId targetTenant, DateTimeOffset now);
+}
+```
+
+`FixedDecryptCapability.ValidateForDecrypt(targetTenant, now)` returns `"wrong-tenant"` if `targetTenant != Tenant`, `"expired"` if `now > validUntil`, else null.
+
+A2.6 acceptance criteria gains: `[ ] Cross-tenant decrypt rejected by capability validate (NOT by decryptor field check)`.
+
+#### A3.4 — Storage-shape recommendation: drop `OwnsOne` framing (council F6)
+
+A2.1 asserted EFCore `OwnsOne<EncryptedField>` mapping is supported. EFCore's owned-type tracking does not trivially compose with `readonly record struct` containing `ReadOnlyMemory<byte>` properties (no settable members; ReadOnlyMemory<byte> requires a value converter). Corrected guidance:
+
+> **Storage shape:** consumers store as three columns (`*_ciphertext`, `*_nonce`, `*_key_version`) for queryability of `key_version` (rotation sweeps) without DEK access. EFCore mapping uses three property mappings on the owning entity, NOT `OwnsOne` (the `readonly record struct` + `ReadOnlyMemory<byte>` shape doesn't trivially compose with EFCore's owned-type tracking). If a single-blob storage shape is needed (e.g., for a JSONB column), use the `EncryptedFieldJsonConverter` directly.
+
+A2.6 acceptance criteria — replace `[ ] EFCore OwnsOne mapping smoke test (in-memory provider)` with `[ ] EFCore three-column property mapping round-trips a record carrying EncryptedField fields (in-memory provider)`.
+
+#### A3.5 — Test count band + timing-attack threat-model note (council F8 + F9)
+
+A2.6 test target raised from `~20-25` to `~30-40` to match the 11-net-new-types surface area. The 7 named test categories should each yield 3-5 cases (round-trip; capability rejection paths × 4; cross-tenant; multi-version × 3; audit-emission shape × 3; JSON round-trip × 3; EFCore three-column round-trip; key-version-store concurrency × 2; HMAC-tag-tampering rejection; nonce-uniqueness sanity).
+
+A2.8 threat model "Out of scope" gains:
+
+> - Constant-time validation of `IDecryptCapability.ValidateForDecrypt` denial paths — Phase 1 accepts that `denial_reason` distinguishes failure modes in audit logs and that timing differences between tenant-mismatch and AES-GCM tag-failure are observable to an attacker with sub-millisecond timing access. Audit-log access is itself privileged; mitigation is layered authorization, not constant-time crypto.
+
+#### A3.6 — Items deferred for CO escalation (NOT applied in this A3)
+
+The following council findings are business-judgment, not mechanical, and remain open pending CO ruling:
+
+- **F2 — `ITenantKeyProvider` relationship.** The seam already exists at `packages/foundation-recovery/TenantKey/ITenantKeyProvider.cs` with the exact `DeriveKeyAsync(TenantId, string purpose, CancellationToken) → Task<ReadOnlyMemory<byte>>` signature; its XML docs cite `encrypted-field-aes` as a sample purpose label. A2 silently duplicates the per-tenant key derivation logic. CO must rule: consume the existing seam (purpose-label-encoded versioning), deprecate it, or document a rejection rationale.
+- **F4 — Audit emission `SignedOperation<AuditPayload>` envelope.** `IAuditTrail.AppendAsync` algorithmically verifies the payload's Ed25519 envelope at the kernel boundary; A2.4's raw `Dictionary<string, object?>` body listing is incomplete. The decryptor needs an issuer-side signing key injected via DI; the issuer-vs-actor signing semantics need design. CO ruling: ship a substrate-issuer signer (new injection) or co-opt an existing signer (e.g., the recovery-coordinator's signer).
+- **F5 — Rotation-store persistence.** A2.3 says the per-tenant key version is stored in `KeystoreRootSeedProvider` — incorrect (different package, different storage primitive). The Stage 06 hand-off introduces an `InMemoryFieldEncryptionKeyVersionStore` that loses state on restart, breaking previously-encrypted ciphertexts. CO ruling: durable store backed by SQLCipher, monotonic-from-ciphertext-only design, or explicit Phase 1.x deferral with halt-condition.
+
+W#32 Stage 06 build remains paused until F2 + F4 + F5 are resolved.
