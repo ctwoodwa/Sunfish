@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Federation.Common;
+using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Foundation.Transport.Audit;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.Transport;
 
@@ -59,6 +64,9 @@ public sealed class DefaultTransportSelector : ITransportSelector
     private readonly TimeSpan _t2Budget;
     private readonly TimeSpan _t3Budget;
     private readonly TimeSpan _cacheTtl;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _tenantId;
 
     private readonly Dictionary<PeerId, (IPeerTransport Transport, DateTimeOffset CachedAt)> _cache = new();
     private readonly object _cacheLock = new();
@@ -78,8 +86,57 @@ public sealed class DefaultTransportSelector : ITransportSelector
         TimeSpan? tier2Budget = null,
         TimeSpan? tier3Budget = null,
         TimeSpan? cacheTtl = null)
+        : this(transports, auditTrail: null, signer: null, tenantId: default,
+               time, tier1Budget, tier2Budget, tier3Budget, cacheTtl, validateAudit: false)
+    {
+    }
+
+    /// <summary>
+    /// Audit-enabled overload — emits <see cref="AuditEventType.TransportTierSelected"/> on
+    /// every Tier-1 / Tier-2 selection, <see cref="AuditEventType.MeshTransportFailed"/>
+    /// when a Tier-2 adapter fails to resolve a peer, and
+    /// <see cref="AuditEventType.TransportFallbackToRelay"/> on Tier-3 fallback (per ADR 0061
+    /// §"Audit emission"). <see cref="IAuditTrail"/> + <see cref="IOperationSigner"/> +
+    /// <see cref="TenantId"/> follow the W#32 both-or-neither pattern: all three required
+    /// together, validated at construction.
+    /// </summary>
+    public DefaultTransportSelector(
+        IEnumerable<IPeerTransport> transports,
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        TimeProvider? time = null,
+        TimeSpan? tier1Budget = null,
+        TimeSpan? tier2Budget = null,
+        TimeSpan? tier3Budget = null,
+        TimeSpan? cacheTtl = null)
+        : this(transports, auditTrail, signer, tenantId,
+               time, tier1Budget, tier2Budget, tier3Budget, cacheTtl, validateAudit: true)
+    {
+    }
+
+    private DefaultTransportSelector(
+        IEnumerable<IPeerTransport> transports,
+        IAuditTrail? auditTrail,
+        IOperationSigner? signer,
+        TenantId tenantId,
+        TimeProvider? time,
+        TimeSpan? tier1Budget,
+        TimeSpan? tier2Budget,
+        TimeSpan? tier3Budget,
+        TimeSpan? cacheTtl,
+        bool validateAudit)
     {
         ArgumentNullException.ThrowIfNull(transports);
+        if (validateAudit)
+        {
+            ArgumentNullException.ThrowIfNull(auditTrail);
+            ArgumentNullException.ThrowIfNull(signer);
+            if (tenantId == default)
+            {
+                throw new ArgumentException("tenantId is required when audit emission is wired.", nameof(tenantId));
+            }
+        }
         var ordered = transports.ToList();
 
         _tier1 = ordered.FirstOrDefault(t => t.Tier == TransportTier.LocalNetwork);
@@ -100,6 +157,10 @@ public sealed class DefaultTransportSelector : ITransportSelector
         _t2Budget = tier2Budget ?? DefaultTier2Budget;
         _t3Budget = tier3Budget ?? DefaultTier3Budget;
         _cacheTtl = cacheTtl ?? DefaultCacheTtl;
+
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _tenantId = tenantId;
     }
 
     /// <inheritdoc />
@@ -116,6 +177,8 @@ public sealed class DefaultTransportSelector : ITransportSelector
             if (resolved is not null)
             {
                 CacheTransport(peer, _tier1);
+                await EmitAsync(AuditEventType.TransportTierSelected,
+                    TransportAuditPayloads.TierSelected(peer, TransportTier.LocalNetwork, adapterName: null), ct).ConfigureAwait(false);
                 return _tier1;
             }
         }
@@ -127,11 +190,16 @@ public sealed class DefaultTransportSelector : ITransportSelector
                 continue;
             }
             var resolved = await TryResolveAsync(t2, peer, _t2Budget, ct).ConfigureAwait(false);
+            var adapterName = (t2 as IMeshVpnAdapter)?.AdapterName;
             if (resolved is not null)
             {
                 CacheTransport(peer, t2);
+                await EmitAsync(AuditEventType.TransportTierSelected,
+                    TransportAuditPayloads.TierSelected(peer, TransportTier.MeshVpn, adapterName), ct).ConfigureAwait(false);
                 return t2;
             }
+            await EmitAsync(AuditEventType.MeshTransportFailed,
+                TransportAuditPayloads.MeshTransportFailed(peer, adapterName ?? string.Empty, "resolve-miss"), ct).ConfigureAwait(false);
         }
 
         // Tier 3 is always tried as last resort. Resolve attempt within budget;
@@ -140,8 +208,10 @@ public sealed class DefaultTransportSelector : ITransportSelector
         // caller's ConnectAsync is the authoritative liveness check per the
         // ADR 0061 §"Decision" Tier-3 contract (always-tried, ciphertext-only
         // last-resort).
-        await TryResolveAsync(_tier3, peer, _t3Budget, ct).ConfigureAwait(false);
+        var t3Resolved = await TryResolveAsync(_tier3, peer, _t3Budget, ct).ConfigureAwait(false);
         CacheTransport(peer, _tier3);
+        await EmitAsync(AuditEventType.TransportFallbackToRelay,
+            TransportAuditPayloads.TransportFallbackToRelay(peer, t3Resolved is null ? "Failed" : "Selected"), ct).ConfigureAwait(false);
         return _tier3;
     }
 
@@ -206,5 +276,23 @@ public sealed class DefaultTransportSelector : ITransportSelector
         {
             _cache[peer] = (transport, _time.GetUtcNow());
         }
+    }
+
+    private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null)
+        {
+            return;
+        }
+        var occurredAt = _time.GetUtcNow();
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _tenantId,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 }

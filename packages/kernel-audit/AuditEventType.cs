@@ -397,6 +397,23 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>Per A1.12 — a feature verdict was surfaced to a UX consumer (telemetry for cohort tracking).</summary>
     public static readonly AuditEventType FeatureVerdictSurfaced = new("FeatureVerdictSurfaced");
 
+    // ===== ADR 0061 — Three-tier peer transport (W#30) =====
+
+    /// <summary>The transport selector picked a tier for a peer (T1 mDNS, T2 mesh-VPN, or T3 managed relay) per ADR 0061 §"Tier selection algorithm".</summary>
+    public static readonly AuditEventType TransportTierSelected = new("TransportTierSelected");
+
+    /// <summary>A Sunfish peer was registered with a Tier-2 mesh-VPN control plane (Headscale, Tailscale, NetBird) via <c>IMeshVpnAdapter.RegisterDeviceAsync</c>.</summary>
+    public static readonly AuditEventType MeshDeviceRegistered = new("MeshDeviceRegistered");
+
+    /// <summary>A WireGuard handshake with a peer through a Tier-2 mesh-VPN adapter completed successfully.</summary>
+    public static readonly AuditEventType MeshHandshakeCompleted = new("MeshHandshakeCompleted");
+
+    /// <summary>A Tier-2 mesh-VPN attempt failed (handshake timeout, control-plane miss, etc.); the selector fell through to the next tier.</summary>
+    public static readonly AuditEventType MeshTransportFailed = new("MeshTransportFailed");
+
+    /// <summary>The transport selector exhausted Tier 1 + Tier 2 and fell back to Tier 3 (Bridge managed relay) per ADR 0061 §"Decision".</summary>
+    public static readonly AuditEventType TransportFallbackToRelay = new("TransportFallbackToRelay");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
