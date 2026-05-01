@@ -144,6 +144,7 @@
              Phase 1 G2 adds kernel-crdt for the AnchorCrdtDeltaBridge that
              closes the Wave 2.5 DELTA_STREAM application loop. -->
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+        <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
         <ProjectReference Include="..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
         <ProjectReference Include="..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
         <ProjectReference Include="..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
