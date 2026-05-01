@@ -12,6 +12,7 @@
     <ProjectReference Include="..\foundation-versioning\Sunfish.Foundation.Versioning.csproj" />
     <ProjectReference Include="..\foundation-migration\Sunfish.Foundation.Migration.csproj" />
     <ProjectReference Include="..\foundation-ui-syncstate\Sunfish.Foundation.UI.SyncState.csproj" />
+    <ProjectReference Include="..\foundation-transport\Sunfish.Foundation.Transport.csproj" />
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
   <ItemGroup>
