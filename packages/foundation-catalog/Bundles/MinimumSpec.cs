@@ -3,26 +3,36 @@ using System.Text.Json.Serialization;
 namespace Sunfish.Foundation.Catalog.Bundles;
 
 /// <summary>
-/// TEMPORARY local stub for ADR 0063's <c>MinimumSpec</c> type. Lives
-/// in foundation-catalog only until ADR 0063 Phase 1 substrate (W#41
-/// or sibling) ships the canonical type in
-/// <c>Sunfish.Foundation.MissionSpace</c>. At that point, replace this
-/// stub with a using-alias or namespace import; the
-/// <see cref="BusinessCaseBundleManifest.Requirements"/> field
-/// signature remains unchanged for callers (the canonical shape's
-/// <see cref="Policy"/> field is positionally compatible with this
-/// stub).
+/// DEPRECATED — superseded by <c>Sunfish.Foundation.MissionSpace.MinimumSpec</c>.
+/// Scheduled for removal 2026-08-01.
 /// </summary>
 /// <remarks>
-/// Per the W#38 stub-unblock addendum (2026-05-01), the stub is
-/// intentionally minimal: it carries the JSON shape ADR 0063 specifies
-/// but no behavior. The canonical <c>MinimumSpec</c> will add: per-
-/// dimension spec records (10 dimensions); <see cref="SpecPolicy"/>
-/// extension; <c>PerPlatformSpec</c> overrides;
-/// <c>IMinimumSpecResolver</c> consumer.
+/// <para>
+/// W#41 (PR #473) shipped the canonical <c>MinimumSpec</c> at
+/// <c>Sunfish.Foundation.MissionSpace</c> with the full 10-dimension
+/// per-dimension spec records, <c>PerPlatformSpec</c> COMPOSE rule, and
+/// <c>IMinimumSpecResolver</c> consumer. This stub remains for the
+/// transition window (90 days from 2026-05-01) so existing callers in
+/// <c>foundation-catalog</c> tests don't break.
+/// </para>
+/// <para>
+/// New code MUST use <c>Sunfish.Foundation.MissionSpace.MinimumSpec</c>
+/// directly. Callers of <see cref="BusinessCaseBundleManifest.Requirements"/>
+/// will migrate when the field's type is renamed in the follow-up
+/// removal PR (scheduled for 2026-08-01); the JSON shape is wire-format
+/// compatible (<see cref="Policy"/> field maps to canonical
+/// <c>SpecPolicy</c>).
+/// </para>
+/// <para>
+/// SCHEDULED_REMOVAL: 2026-08-01 — drop this stub + retype
+/// <see cref="BusinessCaseBundleManifest.Requirements"/> to
+/// <c>Sunfish.Foundation.MissionSpace.MinimumSpec?</c>. Hard
+/// <c>[Obsolete]</c> escalation to compiler error not applied here
+/// because repo-wide TreatWarningsAsErrors=true would break the W#38
+/// test surface today; the deprecation lands as documentation +
+/// scheduled removal date per the W#41 hand-off allowance.
+/// </para>
 /// </remarks>
-// TODO(adr-0063 phase-1): replace with using-alias to
-// Sunfish.Foundation.MissionSpace.MinimumSpec when canonical substrate ships.
 public sealed record MinimumSpec
 {
     /// <summary>The bundle author's intent for install-time gating per ADR 0063.</summary>
@@ -32,9 +42,11 @@ public sealed record MinimumSpec
 }
 
 /// <summary>
-/// Per ADR 0063 — bundle-author intent for the
-/// <see cref="MinimumSpec"/> at install-time UX. Stub for the
-/// W#38 timeline; canonical 3-value taxonomy preserved.
+/// DEPRECATED — superseded by <c>Sunfish.Foundation.MissionSpace.SpecPolicy</c>.
+/// Scheduled for removal 2026-08-01 alongside the deprecated
+/// <see cref="MinimumSpec"/> stub. Canonical 3-value taxonomy
+/// (<c>Required</c> / <c>Recommended</c> / <c>Informational</c>) is
+/// wire-format identical to the canonical enum.
 /// </summary>
 public enum SpecPolicy
 {

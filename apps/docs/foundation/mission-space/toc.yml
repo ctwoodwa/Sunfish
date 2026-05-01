@@ -1,2 +1,4 @@
 - name: Overview
   href: overview.md
+- name: Install-time UX (MinimumSpec)
+  href: requirements.md
