@@ -336,6 +336,38 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An event referencing a schema epoch from before the host's compatibility window per A7.5.3.</summary>
     public static readonly AuditEventType LegacyEpochEvent = new("LegacyEpochEvent");
 
+    // ===== ADR 0031-A1+A1.12 — Bridge → Anchor subscription-event-emitter (W#36) =====
+
+    /// <summary>Bridge emitted a subscription event (one per attempt; pre-delivery).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventEmitted = new("BridgeSubscriptionEventEmitted");
+
+    /// <summary>Bridge-side delivery succeeded (HTTP 200 from Anchor).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDelivered = new("BridgeSubscriptionEventDelivered");
+
+    /// <summary>Bridge-side retryable failure (HTTP non-200 / timeout / network error). Dedup'd 1-per-(tenant_id, event_id) per 1-hour window.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDeliveryFailed = new("BridgeSubscriptionEventDeliveryFailed");
+
+    /// <summary>Bridge exhausted all 7 retry attempts; event moved to dead-letter queue. Security-relevant; no dedup.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDeliveryFailedTerminal = new("BridgeSubscriptionEventDeliveryFailedTerminal");
+
+    /// <summary>An Anchor registered a webhook URL with Bridge per A1.4.</summary>
+    public static readonly AuditEventType BridgeSubscriptionWebhookRegistered = new("BridgeSubscriptionWebhookRegistered");
+
+    /// <summary>Per A1.12.1 — Bridge staged a 90-day shared-secret rotation (24-hour grace window during which both old + new secrets are accepted).</summary>
+    public static readonly AuditEventType BridgeSubscriptionWebhookRotationStaged = new("BridgeSubscriptionWebhookRotationStaged");
+
+    /// <summary>Per A1.12.3 — Bridge admin enabled per-Anchor self-signed cert allowance for webhook delivery (default is publicly-rooted CA verification).</summary>
+    public static readonly AuditEventType BridgeWebhookSelfSignedCertsConfigured = new("BridgeWebhookSelfSignedCertsConfigured");
+
+    /// <summary>Anchor successfully verified + processed a Bridge subscription event. Dedup'd 1-per-(tenant_id, event_id) per 24-hour window (idempotency boundary).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventReceived = new("BridgeSubscriptionEventReceived");
+
+    /// <summary>Anchor rejected an event because the HMAC signature didn't verify. Dedup'd 1-per-(tenant_id, source_ip) per 1-hour window (security-relevant; flood guard).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventSignatureFailed = new("BridgeSubscriptionEventSignatureFailed");
+
+    /// <summary>Anchor rejected an event whose <c>effectiveAt</c> fell outside the ±5-minute clock-skew window per A1.2. Dedup'd 1-per-(tenant_id, event_type) per 1-hour window.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventStale = new("BridgeSubscriptionEventStale");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

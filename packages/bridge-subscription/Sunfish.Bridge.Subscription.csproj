@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Bridge.Subscription</PackageId>
+    <RootNamespace>Sunfish.Bridge.Subscription</RootNamespace>
+    <Description>Bridge → Anchor subscription-event-emitter substrate (ADR 0031-A1+A1.12). Hosts BridgeSubscriptionEvent + BridgeSubscriptionEventType + DeliveryMode + SignatureAlgorithm + WebhookRegistration + SubscribedEventFilter primitives, IBridgeSubscriptionEventEmitter (Bridge-side) + IBridgeSubscriptionEventHandler (Anchor-side) contracts, HMAC-SHA256 signing, webhook-primary + SSE-fallback delivery, per-tenant LRU dedup, ±5min replay-attack window, and 10 new AuditEventType discriminators. Closes ADR 0062-A1.6 halt-condition (sub-second EditionCapabilities responsiveness).</Description>
+    <PackageTags>sunfish;bridge;subscription;webhook;sse;adr-0031</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Bridge.Subscription.Tests" />
+  </ItemGroup>
+</Project>
