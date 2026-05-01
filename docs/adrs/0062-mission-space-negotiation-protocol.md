@@ -589,3 +589,231 @@ Per `feedback_decision_discipline.md` cohort batting average (12-of-12 substrate
   - The migration cost — is the 5-phase migration plan realistic, or does it underestimate per-feature gate-authoring effort?
 - **Cited-symbol verification** per the implementation checklist (every cited Sunfish.* symbol verified; every cited ADR Accepted on origin/main; every field-on-type claim structurally verified per the A7 lesson)
 - **Standing rung-6 spot-check** within 24h of ADR 0062 merging (per ADR 0028-A4.3 + A7.12 + A8.12 commitment)
+
+---
+
+## Amendments (post-acceptance, 2026-04-30 council)
+
+### A1 (REQUIRED, mechanical) — 0062 council-review fixes
+
+**Driver:** Stage 1.5 adversarial council review of ADR 0062 at `icm/07_review/output/adr-audits/0062-council-review-2026-04-30.md` (PR #408, merged 2026-04-30) returned verdict **B (low-B) with 10 required + 4 encouraged amendments**. Severity profile: **2 Critical (F1 + F2; F1 is structural-citation A7-third-direction class) + 8 Major + 4 Minor/Encouraged + 7 verification-passes**. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A1 absorbs all 14 recommendations into ADR 0062's surface before Phase 1 substrate work begins.
+
+**Cohort milestone:** ADR 0062 council brings cohort batting average to **13-of-13 substrate amendments needing post-acceptance fixes**. Structural-citation failure rate (XO-authored): **6-of-13 (~46%)** — F1 (ADR 0041 mis-cited) + F8 (ADR 0031 + ADR 0009 mis-cited) are the 6th and 7th instances; both caught pre-merge.
+
+**Reading note:** A1 is a corrections layer above the original ADR 0062 surface. The original §"Decision / Initial contract surface" is preserved as authored; the renames + additions below are authoritative for downstream consumers (Phase 1 substrate scaffold uses the post-A1 surface).
+
+#### A1.1 — Drop ADR 0041 citation; restate antecedents (council A1 / F1 Critical structural-citation)
+
+ADR 0041 is the **component-pair-coexistence policy** (governing rich-vs-MVP coexistence under foundation-localfirst's `IComponentPairing`), NOT a "rich-vs-MVP UI degradation primitive." The mis-citation in §"Context", §"Decision drivers" (bullet 5), §"Compatibility plan / Migration order / Phase 4", and §"References" is corrected:
+
+- Strike *"ADR 0041 specifies the rich-vs-MVP UI degradation primitive."*
+- Replace with: *"the runtime graceful-degradation taxonomy is what ADR 0062 itself introduces; the closest in-repo predecessors are paper §13.2 (visibility tables) + ADR 0036 (sync-state encoding contract) — both surface-treatment ADRs, not degradation primitives."*
+- Migration order Phase 4 is **dropped**; remaining phases renumber Phase 5+ → Phase 4+.
+- §"References" — ADR 0041 removed.
+
+#### A1.2 — Rename `ICapability`/`ICapabilityGate` → `IFeature`/`IFeatureGate` (council A2 / F2 Critical naming-collision)
+
+The `Foundation.Capabilities.ICapabilityGraph` namespace already exists; introducing `Foundation.MissionSpace.ICapability` would produce import-resolution ambiguity at build time. Rename:
+
+```csharp
+// Renames (post-A1):
+public interface IFeature {}                                           // was: ICapability
+public interface IFeatureGate<TFeature> where TFeature : IFeature      // was: ICapabilityGate<TCapability>
+public sealed record FeatureVerdict(...);                              // was: CapabilityVerdict
+public enum FeatureAvailabilityState { Available, DegradedAvailable, Unavailable };  // was: CapabilityState
+public interface IFeatureForceEnableSurface                            // was: ICapabilityForceEnableSurface
+public sealed record FeatureForceEnableRequest(...)                    // was: CapabilityForceEnableRequest
+```
+
+The `MissionEnvelope` + `IMissionEnvelopeProvider` + `EnvelopeChange` + `DimensionChangeKind` + `DegradationKind` + `EnvelopeChangeSeverity` types stay (they're not "capability"-named).
+
+The 6 new `AuditEventType` constants rename:
+
+| Original (per original ADR 0062) | Renamed (post-A1) |
+|---|---|
+| `CapabilityProbed` | `FeatureProbed` |
+| `CapabilityChanged` | `FeatureAvailabilityChanged` |
+| `CapabilityProbeFailure` | `FeatureProbeFailed` |
+| `CapabilityForceEnabled` | `FeatureForceEnabled` |
+| `CapabilityForceRevoked` | `FeatureForceRevoked` |
+| `EnvelopeChangeBroadcast` | `MissionEnvelopeChangeBroadcast` |
+
+Side-benefit: matches ADR 0009's existing `FeatureKey` / `FeatureSpec` / `IFeatureEvaluator` vocabulary. ADR 0009 added to §"References" as the runtime-feature-availability antecedent (replacing the dropped ADR 0041 citation).
+
+#### A1.3 — Replace `Instant` with `DateTimeOffset` everywhere (council A3 / F3 Major)
+
+NodaTime's `Instant` is not used anywhere in `packages/`; substrate convention is `DateTimeOffset`. Replace in `MissionEnvelope.CapturedAt`, `IBespokeSignal.CapturedAt`, `FeatureForceEnableRequest.ExpiresAt`. JSON shape stays identical (ISO-8601 string round-trippable via either type).
+
+#### A1.4 — Coordinator concurrency semantics (council A4 / F4 Major)
+
+New sub-section appended after §"Cache vs live-probe":
+
+> **Single-flight on cache-miss.** When N concurrent callers request `GetCurrentAsync` and the relevant dimension's cache is stale, the coordinator launches **1** probe; all N callers await the same probe completion. Implementation: per-dimension `Lazy<Task<TDimension>>` reset on cache-invalidation event.
+>
+> **Per-cost-class wall-clock timeout.** Each probe has a maximum wall-clock budget: Low: 1s; Medium: 2s; High: 5s; DeepHigh: 10s; Live: N/A. On timeout, the coordinator returns the last-known-cached value (or `Unreachable` sentinel if no prior value), emits `FeatureProbeFailed` audit, and treats the dimension as `ProbeStatus.Failed` (per A1.10) until a successful re-probe.
+>
+> **Observer fanout policy.** `IDisposable Subscribe(IMissionEnvelopeObserver)` registers an observer; the coordinator fans out `OnEnvelopeChangedAsync` calls concurrently (fire-and-forget; no back-pressure to the change source). Each observer's queue is bounded at 100 pending change events; observers exceeding the bound drop oldest-first with a `MissionEnvelopeObserverOverflow` audit event. Dimension changes within a 100ms coalescing window are merged into a single `EnvelopeChange` (ChangedDimensions list is the union; Previous is the envelope at the start of the window; Current is the envelope at coalescing-flush time).
+
+#### A1.5 — Tighten DirectX-FL prior-art rationale; engage Vulkan + RFC 5939 (council A5 / F5 Major)
+
+§"Decision drivers" bullets 2 + 3 rewritten:
+
+> **Industry prior art is multi-source.** DirectX Feature Levels (FL_9_1 / FL_10_0 / FL_11_0 / FL_12_0) inspire the *enumerated-not-arithmetic* + *runtime-queryable* + *developer-owns-graceful-degradation* properties — but Mission Space explicitly does NOT inherit DirectX's *single-axis* or *OS-guarantees-joint-stability* properties (Mission Space is multi-axis; dimensions flip independently; no joint-stability guarantee). Vulkan's `VkPhysicalDeviceFeatures` (~50 boolean flags per device, each independently queryable, gates `vkCmd*` calls) is the closer multi-axis analog; Mission Space's 10 dimensions trade off finer-granularity (Vulkan) vs coarser-aggregation (DirectX) at a deliberate intermediate point. SDP RFC 5939's offer/answer pattern is engaged with in Option C — Mission Space's coordinator-owns-state model is preferred over SDP's pure-publish/subscribe because diagnostics + telemetry-shape + operator-debugging all benefit from a state record (not just a change-event stream).
+
+§"Considered options / Option C" gains:
+
+> **Comparison to RFC 5939 (offer/answer):** RFC 5939 provides offer/answer semantics with both a state record (the offer/answer pair) AND change events (re-INVITE re-negotiations) — a hybrid that solves Option C's state-record gap on its face. **However** — RFC 5939's state record is per-session (an SDP body inside a SIP transaction); Mission Space's needs are per-process (one envelope governing N feature-gates). Per-session state forces every gate to negotiate its own envelope-fetch; Mission Space's coordinator-owns-state model centralizes the negotiation. The cost of RFC 5939's per-session-state is exactly what Option C inherits + Mission Space rejects.
+
+#### A1.6 — `EditionCapabilities` cache TTL realism + Bridge subscription-event-emitter halt-condition (council A6 / F6 Major)
+
+§"Probe mechanics / Probe-cost classes" — split `High` into two cost classes:
+
+```
+- High: network round-trip; 1s–5s wall-clock; cache TTL 30 seconds with stale-while-revalidate (default for billing-cycle-sensitive dimensions where users expect sub-minute reflection of changes — e.g., subscription state)
+- DeepHigh: network round-trip; 1s–5s wall-clock; cache TTL 1 hour with stale-while-revalidate (for genuinely-rare-changing remote signals — e.g., feature-flag rollout where eventual consistency is acceptable)
+```
+
+`EditionCapabilities` (renamed from `CommercialTier` per A1.8) is `High` (30-second TTL).
+
+§"Re-evaluation triggers" — bullet 5 replaced:
+
+> **Edition / commercial-tier changes.** ADR 0031 has not yet specified a Bridge → Anchor subscription-event-emitter contract. ADR 0062 Stage 06 build cannot ship an `EditionCapabilities` probe with sub-minute responsiveness UNTIL ADR 0031 is amended to add such a contract OR the 30-second cache TTL is accepted as the operational ceiling. **Halt-condition:** Phase 1 of the migration may NOT begin until either (a) the 30-second TTL is operationally acceptable per the Phase 1 acceptance review, or (b) ADR 0031 has been amended to specify the subscription-event-emitter contract.
+
+#### A1.7 — Probe dependencies (council A7 / F7 Major)
+
+New sub-section after §"Probe mechanics / Probe-cost classes":
+
+> **Probe dependencies.** Some probes depend on other probes' results:
+>
+> | Dimension | Depends on | Behavior on dependency-unavailable |
+> |---|---|---|
+> | `Regulatory` (jurisdiction-from-IP-geo subset) | `Network` (online state) | Coordinator falls back to user-set jurisdiction; emits `FeatureProbeFailed` for the IP-geo subset; `Regulatory` returns with `ProbeStatus.PartiallyDegraded` |
+> | `EditionCapabilities` (commercial tier) | `Network` (online state) | Coordinator returns last-known-good value with `ProbeStatus.Stale` if cache age < 24h; otherwise `ProbeStatus.Unreachable` and `EditionCapabilities` defaults to `anchor-self-host` |
+> | `VersionVector` | `Network` + `Trust` | Coordinator returns last-known-good value with `ProbeStatus.Stale`; gates consulting `VersionVector` produce `DegradationKind.HardFail` if `ProbeStatus.Unreachable` |
+> | `User` (biometric-auth-method subset) | `Hardware` (biometric sensor surface) | Coordinator returns user-without-biometric-method; emits `FeatureProbeFailed` for the biometric subset |
+> | All other dimensions | None | N/A |
+>
+> The coordinator runs probes in topologically-sorted dependency order at startup + on full re-probe (`ProbeAsync`); probes within a dependency-level run in parallel; failures cascade per the table above. The `ProbeStatus` enum is `Healthy / Stale / Failed / PartiallyDegraded / Unreachable` (see A1.10); each `<TDimension>` record carries its own `ProbeStatus`.
+
+#### A1.8 — Rename `CommercialTier` → `EditionCapabilities`; rename `Trust` → `TrustAnchorCapabilities`; drop ADR 0031 citation (council A8 / F8 Critical structural-citation)
+
+ADR 0031 has no subscription-event-emitter contract; ADR 0009 uses `Edition` not "trust tier" / "commercial tier". Renames:
+
+```csharp
+// Post-A1 MissionEnvelope members:
+EditionCapabilities     Edition,        // per ADR 0009 (Edition / IEditionResolver)
+TrustAnchorCapabilities Trust,          // local-trust-anchor inspection (no in-repo predecessor; new in 0062)
+```
+
+`DimensionChangeKind` enum: `CommercialTier` → `Edition`. `IDimensionProbe<CommercialCapabilities>` → `IDimensionProbe<EditionCapabilities>`. JSON example field rename: `"commercialTier"` → `"edition"`. ADR 0031 removed from §"References" (paper §17.2 Bridge-relay-substrate is the closer paper antecedent if needed). `TrustAnchorCapabilities` is explicitly new in ADR 0062 (no in-repo predecessor).
+
+#### A1.9 — `ForceEnablePolicy` taxonomy per dimension (council A9 / F9 Major)
+
+§"Per-feature force-enable surface" gains:
+
+> **Force-enable policy per dimension.** The force-enable surface is gated by a `ForceEnablePolicy` per dimension:
+>
+> | Dimension | ForceEnablePolicy | Force-enable verdict |
+> |---|---|---|
+> | `Hardware` | `NotOverridable` | `ForceEnableAsync` rejected; throws `ForceEnableNotPermittedException("Hardware-driven Unavailable cannot be force-enabled; the substrate cannot conjure capabilities the device lacks.")` |
+> | `Runtime` | `NotOverridable` | Same shape as Hardware. |
+> | `Regulatory` | `OverridableWithCaveat` | Force-enable produces `DegradedAvailable` + UX surface naming legal/regulatory consequence ("Force-enable acknowledges the operator assumes responsibility for jurisdictional non-compliance.") |
+> | `EditionCapabilities` | `OverridableWithCaveat` | Force-enable produces `DegradedAvailable` + UX surface naming the contractual consequence ("Force-enable bypasses subscription gating; usage may incur Bridge-tier costs not covered by current subscription.") |
+> | `User`, `Network`, `Trust`, `SyncState`, `VersionVector`, `FormFactor` | `Overridable` | Force-enable produces `DegradedAvailable` per the existing rule. |
+>
+> `IFeatureForceEnableSurface.ForceEnableAsync<TFeature>` checks the relevant dimension's `ForceEnablePolicy` before applying; rejection emits `FeatureForceEnableRejected` audit event (8th new constant).
+
+#### A1.10 — `ProbeStatus` + `EnvelopeChangeSeverity.ProbeUnreliable` (council A10 / F10 Major)
+
+```csharp
+public enum ProbeStatus
+{
+    Healthy,            // probe succeeded; result is fresh
+    Stale,              // probe succeeded earlier; result is stale per cache TTL but the dimension's value is still trusted
+    Failed,             // probe attempted; threw / timed out; last-known-good value returned per A1.4 amendment
+    PartiallyDegraded,  // probe succeeded but a sub-component failed (e.g., Regulatory IP-geo subset failed; user-set subset fine)
+    Unreachable         // probe not attempted (e.g., dependency unavailable per A1.7); last-known-good or sentinel returned
+}
+```
+
+Each `<TDimension>` record carries `ProbeStatus Status { get; }` as an additional field (Stage 06 contract change to the 10 dimension records).
+
+```csharp
+public enum EnvelopeChangeSeverity
+{
+    Informational,
+    Warning,
+    Critical,
+    ProbeUnreliable     // (NEW) coordinator could not produce a fresh probe; UI surfaces a "diagnostics check required" indicator per ADR 0036's quarantine state
+}
+```
+
+UX: same as Critical (persistent banner, operator-targeted) but the recovery action is "Open diagnostics" rather than "Acknowledge."
+
+#### A1.11 — `LocalizedString` for `UserMessage` + `OperatorRecoveryAction` (council A11 / F11 Encouraged)
+
+```csharp
+public sealed record LocalizedString(
+    string Key,             // localization key; rendering layer resolves against active framework
+    string DefaultValue     // fallback English string if key is missing
+);
+```
+
+`FeatureVerdict.UserMessage` and `FeatureVerdict.OperatorRecoveryAction` become `LocalizedString?`. Anchor MAUI uses .resx; Bridge React uses i18next; iOS uses .strings; rendering layer consumes `LocalizedString` and resolves per its framework convention.
+
+#### A1.12 — `FeatureVerdictSurfaced` audit event (council A12 / F12 Encouraged)
+
+9th new `AuditEventType` constant: `FeatureVerdictSurfaced` — emitted at UI-render time (NOT at gate-evaluate time) when a verdict is surfaced to a user-visible UI element; payload `(feature_key, verdict_state, degradation_kind, surface_id)`. Used for product-roadmap analytics ("did the user actually see this verdict, or was it gated behind a route-change before render?"). Audit dedup: `FeatureVerdictSurfaced` capped at 1-per-(feature_key, surface_id)-per-30-second-window.
+
+#### A1.13 — Reword "no surprise modals" attribution (council A13 / F13 Encouraged)
+
+In §"User-communication policy", replace:
+
+> NO toast / modal — paper §13.2 explicitly forbids surprise modals.
+
+with:
+
+> NO toast / modal for unexpected substrate-detected changes. Consistent with paper §13.1 "Complexity Hiding Standard" + §13.2's framing of UX as "non-intrusive under normal conditions, informative under degraded ones." Banners — not modals — are the protocol's surface for user-actionable changes; the visual distinction: banners occupy a fixed top-of-screen region; do not block click-through to the application; can be acknowledged inline.
+
+#### A1.14 — §"Cited-symbol audit" added at the head of the ADR (council A14 / F14 Encouraged)
+
+Mirroring ADR 0028-A8.11 / A5.9 / A7.13, a §"A0 cited-symbol audit" is added immediately after §"Context", listing every Sunfish.* symbol cited + every cited ADR + every cited paper section, classified `Existing` / `Introduced by ADR 0062 (post-A1)` / `Removed by ADR 0062 (post-A1)`. The seed for this section is the council review's §2 verification-passes (F15-F21) + the renames in A1.2 / A1.8.
+
+**Existing (verified on origin/main, post-spot-check):**
+
+- ADR 0009 (Edition / IEditionResolver / FeatureKey / FeatureSpec / IFeatureEvaluator) — adopted in A1.2 + A1.8
+- ADR 0028 (post-A8 FormFactorProfile + post-A7 VersionVector) — verified per F17 + F18
+- ADR 0036 (5 sync states; ARIA roles) — verified per F16
+- ADR 0049 (audit substrate; emission-boundary dedup) — verified per F19
+- ADR 0061 (three-tier transport; Network dimension) — existing
+- Paper §13.1 (Complexity Hiding Standard) + §13.2 (visibility tables) — verified per F15
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — verified existing per F20-context
+- `Sunfish.Kernel.Audit.AuditEventType` — verified existing per F20
+
+**Introduced by ADR 0062 (post-A1):**
+
+- New package: `Sunfish.Foundation.MissionSpace`
+- New types: `MissionEnvelope`, `IMissionEnvelopeProvider`, `IMissionEnvelopeObserver`, `EnvelopeChange`, `DimensionChangeKind`, `IFeature`, `IFeatureGate<TFeature>`, `FeatureVerdict`, `FeatureAvailabilityState`, `DegradationKind`, `EnvelopeChangeSeverity` (with `ProbeUnreliable`), `IDimensionProbe<TDimension>`, `ProbeCostClass` (Low / Medium / High / DeepHigh / Live), `IFeatureBespokeProbe<TBespokeSignal>`, `IBespokeSignal`, `IFeatureForceEnableSurface`, `FeatureForceEnableRequest`, `ForceEnableRecord`, `ForceEnablePolicy`, `ProbeStatus`, `LocalizedString`, `TrustAnchorCapabilities`, `EditionCapabilities` (consumed from ADR 0009), `ForceEnableNotPermittedException`
+- 9 new `AuditEventType` constants (per A1.2 renames + A1.9 + A1.12): `FeatureProbed`, `FeatureAvailabilityChanged`, `FeatureProbeFailed`, `FeatureForceEnabled`, `FeatureForceRevoked`, `FeatureForceEnableRejected`, `MissionEnvelopeChangeBroadcast`, `MissionEnvelopeObserverOverflow`, `FeatureVerdictSurfaced`
+
+**Removed by ADR 0062 (post-A1):**
+
+- The original ADR 0041 citation as a "rich-vs-MVP UI degradation primitive" — removed per A1.1.
+- The original ADR 0031 citation as a subscription-event-emitter — removed per A1.8 (until ADR 0031 is amended to add such a contract).
+- The original `ICapability` / `ICapabilityGate` / `CapabilityVerdict` / `CapabilityState` / `ICapabilityForceEnableSurface` / `CapabilityForceEnableRequest` types — renamed per A1.2.
+- The original 6-of-the-original-AuditEventType-naming — renamed per A1.2 (now 9 total constants post-A1).
+
+#### A1.15 — Cohort discipline log
+
+Per `feedback_decision_discipline.md` cohort batting average:
+
+- **Substrate-amendment council batting average:** **13-of-13** (forward pattern; council catches XO drift). Council surfaced 2 Critical + 8 Major + 4 Encouraged pre-merge — all mechanical to absorb pre-merge per the auto-merge-disabled posture. Cohort lesson holds: pre-merge council remains dramatically cheaper than post-merge.
+- **Council false-claim rate (all three directions):** unchanged at 2-of-11 across the cohort. The 0062 council made 0 false-existence + 0 false-non-existence + 0 false-structural claims (verification-pass findings F15-F21 are explicit positive-existence + structural-citation verifications with verification commands).
+- **Structural-citation failure rate (XO-authored):** **6-of-13 (~46%)** — F1 (ADR 0041) + F8 (ADR 0031 + ADR 0009) of the 0062 council are the 6th and 7th instances; both caught pre-merge. The cohort discipline IS catching them; the failure-mode IS recurring; the rate is nontrivial; XO continues to apply structural reads at draft-time but the council remains the safety net.
+- **Standing rung-6 task reaffirmed:** XO spot-checks A1's added/modified citations within 24h of merge. If any A1-added claim turns out to be incorrect, file an A2 retraction matching the prior cohort retraction patterns.
+
+#### A1.16 — Sibling amendment dependencies named
+
+A1.6's halt-condition declares: Phase 1 of the migration may NOT begin until either (a) the 30-second TTL is operationally acceptable per the Phase 1 acceptance review, or (b) ADR 0031 has been amended to specify a Bridge → Anchor subscription-event-emitter contract. The latter is queued as a separate intake (XO follow-up: file `2026-04-30_bridge-subscription-event-emitter-intake.md` for ADR 0031-A1).
+
+ADR 0063 (Mission Space Requirements; install-UX) is queued next per W#33 §7.2; it consumes the post-A1 surface (the renames, in particular, propagate downstream).
