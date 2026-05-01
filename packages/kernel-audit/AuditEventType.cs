@@ -304,6 +304,38 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A legacy device reconnected with kernel-minor-lag exceeding the compatibility window; the up-to-date peer entered one-sided receive-only mode per A6.5. Emission is dedup'd 1-per-(remote_node_id, kernel_minor_lag) per 24-hour rolling window per A7.4.</summary>
     public static readonly AuditEventType LegacyDeviceReconnected = new("LegacyDeviceReconnected");
 
+    // ===== ADR 0028-A5/A8 — Foundation.Migration cross-form-factor (W#35) =====
+
+    /// <summary>A host's hardware-tier profile changed (storage / network / sensor / power / adapter / manual reprofile) per A5.3.</summary>
+    public static readonly AuditEventType HardwareTierChanged = new("HardwareTierChanged");
+
+    /// <summary>A plaintext-readable record was UI-hidden because the form factor lacks the feature surface to display it (A8.3 rule 5).</summary>
+    public static readonly AuditEventType PlaintextSequestered = new("PlaintextSequestered");
+
+    /// <summary>An encrypted record was held in ciphertext-only state because the form factor lacks the cryptographic capability to decrypt it (A8.3 rule 5).</summary>
+    public static readonly AuditEventType CiphertextSequestered = new("CiphertextSequestered");
+
+    /// <summary>A previously-sequestered record returned to active visibility on derived-surface expansion (A5.4 rule 2).</summary>
+    public static readonly AuditEventType DataReleased = new("DataReleased");
+
+    /// <summary>A CP-class record was sequestered on a host whose form factor cannot read it; the host's vote is ineligible for that record's quorum (A8.3 rule 6).</summary>
+    public static readonly AuditEventType FormFactorQuorumIneligible = new("FormFactorQuorumIneligible");
+
+    /// <summary>A field-level write was rejected at the local CRDT-write boundary because the form factor lacks the per-tenant key for that field (A8.5 rule 6).</summary>
+    public static readonly AuditEventType FieldWriteSequestered = new("FieldWriteSequestered");
+
+    /// <summary>Adapter version was downgraded; A5.6 sequestration applied. Emission is dedup'd 1-per-(node_id, adapter_id, version_pair) per 6-hour rolling window per A8.7.</summary>
+    public static readonly AuditEventType AdapterRollbackDetected = new("AdapterRollbackDetected");
+
+    /// <summary>A new <c>FormFactorProfile</c> (foundation-migration) was provisioned on a host — initial profile detection or A5.7 enrollment.</summary>
+    public static readonly AuditEventType FormFactorProvisioned = new("FormFactorProvisioned");
+
+    /// <summary>A host completed the A5.7 QR-onboarding form-factor enrollment handshake.</summary>
+    public static readonly AuditEventType FormFactorEnrollmentCompleted = new("FormFactorEnrollmentCompleted");
+
+    /// <summary>An event referencing a schema epoch from before the host's compatibility window per A7.5.3.</summary>
+    public static readonly AuditEventType LegacyEpochEvent = new("LegacyEpochEvent");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

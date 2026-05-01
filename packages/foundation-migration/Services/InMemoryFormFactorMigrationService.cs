@@ -1,8 +1,14 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Foundation.Migration.Audit;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.Migration;
 
@@ -15,19 +21,73 @@ namespace Sunfish.Foundation.Migration;
 /// </summary>
 public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationService
 {
+    /// <summary>Default A8.7 dedup window for <see cref="AuditEventType.AdapterRollbackDetected"/>.</summary>
+    public static readonly TimeSpan DefaultAdapterRollbackDedupWindow = TimeSpan.FromHours(6);
+
     private readonly ISequestrationStore? _store;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _tenantId;
+    private readonly TimeProvider _time;
+    private readonly TimeSpan _rollbackDedupWindow;
+
+    private readonly ConcurrentDictionary<RollbackDedupKey, DateTimeOffset> _rollbackLastSeen = new();
 
     /// <summary>Phase-2 overload — sequestration store not wired; <see cref="ApplyMigrationAsync"/> throws.</summary>
     public InMemoryFormFactorMigrationService()
     {
         _store = null;
+        _auditTrail = null;
+        _signer = null;
+        _tenantId = default;
+        _time = TimeProvider.System;
+        _rollbackDedupWindow = DefaultAdapterRollbackDedupWindow;
     }
 
-    /// <summary>Phase-3 overload — wires the sequestration store for <see cref="ApplyMigrationAsync"/>.</summary>
-    public InMemoryFormFactorMigrationService(ISequestrationStore sequestrationStore)
+    /// <summary>Phase-3 overload — wires the sequestration store; audit emission is disabled.</summary>
+    public InMemoryFormFactorMigrationService(ISequestrationStore sequestrationStore, TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(sequestrationStore);
         _store = sequestrationStore;
+        _auditTrail = null;
+        _signer = null;
+        _tenantId = default;
+        _time = time ?? TimeProvider.System;
+        _rollbackDedupWindow = DefaultAdapterRollbackDedupWindow;
+    }
+
+    /// <summary>
+    /// Phase-4 overload — wires the sequestration store + audit emission.
+    /// W#32 both-or-neither contract: audit trail + signer + tenant id
+    /// required together. Emits the 5 sequestration-related events
+    /// (PlaintextSequestered / CiphertextSequestered / DataReleased /
+    /// FormFactorQuorumIneligible) on every <see cref="ApplyMigrationAsync"/>
+    /// transition + <see cref="AuditEventType.HardwareTierChanged"/> at
+    /// the start of every call. <see cref="AuditEventType.AdapterRollbackDetected"/>
+    /// is dedup'd 1-per-(node_id, adapter_id, version_pair) per a 6-hour
+    /// rolling window per A8.7.
+    /// </summary>
+    public InMemoryFormFactorMigrationService(
+        ISequestrationStore sequestrationStore,
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        TimeProvider? time = null,
+        TimeSpan? adapterRollbackDedupWindow = null)
+    {
+        ArgumentNullException.ThrowIfNull(sequestrationStore);
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+        if (tenantId == default)
+        {
+            throw new ArgumentException("tenantId is required when audit emission is wired.", nameof(tenantId));
+        }
+        _store = sequestrationStore;
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _tenantId = tenantId;
+        _time = time ?? TimeProvider.System;
+        _rollbackDedupWindow = adapterRollbackDedupWindow ?? DefaultAdapterRollbackDedupWindow;
     }
 
     /// <inheritdoc />
@@ -66,6 +126,15 @@ public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationSer
                 "ApplyMigrationAsync requires a sequestration store. Use the constructor that takes ISequestrationStore.");
         }
 
+        await EmitAsync(
+            AuditEventType.HardwareTierChanged,
+            MigrationAuditPayloads.HardwareTierChanged(
+                change.NodeId,
+                change.PreviousProfile.FormFactor,
+                change.CurrentProfile.FormFactor,
+                change.TriggeringEvent),
+            ct).ConfigureAwait(false);
+
         var hostCapabilities = DeriveHostCapabilities(change.CurrentProfile);
         var entries = await _store.GetByNodeAsync(change.NodeId, ct).ConfigureAwait(false);
         foreach (var entry in entries)
@@ -78,6 +147,10 @@ public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationSer
                 if (entry.Flag is not null)
                 {
                     await _store.ReleaseAsync(entry.NodeId, entry.RecordId, ct).ConfigureAwait(false);
+                    await EmitAsync(
+                        AuditEventType.DataReleased,
+                        MigrationAuditPayloads.DataReleased(entry.NodeId, entry.RecordId, entry.RequiredCapability),
+                        ct).ConfigureAwait(false);
                 }
                 continue;
             }
@@ -89,6 +162,23 @@ public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationSer
             // are themselves encrypted.
             var flag = ClassifySequestrationFlag(entry, change.TriggeringEvent);
             await _store.SequesterAsync(entry.NodeId, entry.RecordId, flag, ct).ConfigureAwait(false);
+
+            var auditEvent = flag switch
+            {
+                SequestrationFlagKind.PlaintextSequestered => AuditEventType.PlaintextSequestered,
+                SequestrationFlagKind.CiphertextSequestered => AuditEventType.CiphertextSequestered,
+                SequestrationFlagKind.FormFactorQuorumIneligible => AuditEventType.FormFactorQuorumIneligible,
+                _ => AuditEventType.PlaintextSequestered, // StorageBudgetExceeded + FormFactorFilteredOut both use PlaintextSequestered as the audit event type per A8.3 rule 5
+            };
+            await EmitAsync(
+                auditEvent,
+                MigrationAuditPayloads.Sequestered(entry.NodeId, entry.RecordId, entry.RequiredCapability, flag),
+                ct).ConfigureAwait(false);
+        }
+
+        if (change.TriggeringEvent == TriggeringEventKind.AdapterDowngrade)
+        {
+            await TryEmitAdapterRollbackAsync(change, ct).ConfigureAwait(false);
         }
     }
 
@@ -120,7 +210,8 @@ public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationSer
     /// lacks the per-tenant key for that field's encryption surface).
     /// Write attempts to a write-sequestered field should be rejected
     /// at the consumer's CRDT-write boundary; this method exposes the
-    /// gate.
+    /// gate. When audit emission is wired, every write-sequestered call
+    /// emits <see cref="AuditEventType.FieldWriteSequestered"/>.
     /// </summary>
     public async ValueTask<bool> CanWriteFieldAsync(string nodeId, string fieldEntryId, CancellationToken ct = default)
     {
@@ -132,11 +223,67 @@ public sealed class InMemoryFormFactorMigrationService : IFormFactorMigrationSer
         {
             if (entry.RecordId == fieldEntryId)
             {
-                return entry.Flag is null;
+                if (entry.Flag is not null)
+                {
+                    await EmitAsync(
+                        AuditEventType.FieldWriteSequestered,
+                        MigrationAuditPayloads.FieldWriteSequestered(nodeId, fieldEntryId, entry.RequiredCapability),
+                        ct).ConfigureAwait(false);
+                    return false;
+                }
+                return true;
             }
         }
         return true;
     }
+
+    private async ValueTask TryEmitAdapterRollbackAsync(HardwareTierChangeEvent change, CancellationToken ct)
+    {
+        // Per A8.7: dedup 1-per-(node_id, adapter_id, version_pair) per
+        // 6-hour rolling window. The substrate doesn't yet model
+        // adapter id / version pair as event fields — treat the
+        // (node_id, current_form_factor, previous_form_factor) tuple as
+        // the dedup key for v0; future amendments augment.
+        var key = new RollbackDedupKey(
+            change.NodeId,
+            change.PreviousProfile.FormFactor.ToString(),
+            change.CurrentProfile.FormFactor.ToString());
+        var now = _time.GetUtcNow();
+        if (_rollbackLastSeen.TryGetValue(key, out var lastSeen) && now - lastSeen < _rollbackDedupWindow)
+        {
+            return;
+        }
+        _rollbackLastSeen[key] = now;
+
+        await EmitAsync(
+            AuditEventType.AdapterRollbackDetected,
+            MigrationAuditPayloads.AdapterRollbackDetected(
+                change.NodeId,
+                adapterId: $"formFactor.{change.CurrentProfile.FormFactor}",
+                previousVersion: change.PreviousProfile.FormFactor.ToString(),
+                currentVersion: change.CurrentProfile.FormFactor.ToString()),
+            ct).ConfigureAwait(false);
+    }
+
+    private async ValueTask EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null)
+        {
+            return;
+        }
+        var occurredAt = _time.GetUtcNow();
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _tenantId,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
+    }
+
+    private readonly record struct RollbackDedupKey(string NodeId, string PreviousFormFactor, string CurrentFormFactor);
 
     private static SequestrationFlagKind ClassifySequestrationFlag(SequesteredRecord entry, TriggeringEventKind triggeringEvent)
     {
