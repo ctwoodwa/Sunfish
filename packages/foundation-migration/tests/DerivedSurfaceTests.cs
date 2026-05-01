@@ -218,8 +218,11 @@ public sealed class DerivedSurfaceTests
     }
 
     [Fact]
-    public async Task ApplyMigrationAsync_NotImplemented_ThrowsUntilPhase3()
+    public async Task ApplyMigrationAsync_StoreNotWired_Throws()
     {
+        // Parameterless ctor doesn't wire a sequestration store;
+        // ApplyMigrationAsync surfaces a clean InvalidOperationException
+        // explaining how to wire it (the Phase-3 overload).
         var profile = NewProfile();
         var change = new HardwareTierChangeEvent
         {
@@ -229,7 +232,7 @@ public sealed class DerivedSurfaceTests
             TriggeringEvent = TriggeringEventKind.ManualReprofile,
             DetectedAt = DateTimeOffset.UtcNow,
         };
-        await Assert.ThrowsAsync<NotImplementedException>(async () =>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await Service.ApplyMigrationAsync(change));
     }
 }
