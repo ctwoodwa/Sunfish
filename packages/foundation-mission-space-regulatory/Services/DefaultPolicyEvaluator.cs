@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sunfish.Foundation.MissionSpace.Regulatory.Audit;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.MissionSpace.Regulatory;
 
@@ -30,8 +32,10 @@ public sealed class DefaultPolicyEvaluator : IPolicyEvaluator
 {
     private readonly IPolicyRuleSource _ruleSource;
     private readonly TimeProvider _time;
+    private readonly RegulatoryAuditEmitter? _emitter;
     private readonly ConcurrentDictionary<string, IReadOnlyList<JurisdictionalPolicyRule>> _filterCache = new();
 
+    /// <summary>Audit-disabled overload (test / bootstrap).</summary>
     public DefaultPolicyEvaluator(IPolicyRuleSource ruleSource, TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(ruleSource);
@@ -39,8 +43,19 @@ public sealed class DefaultPolicyEvaluator : IPolicyEvaluator
         _time = time ?? TimeProvider.System;
     }
 
+    /// <summary>Audit-enabled overload — W#32 both-or-neither contract.</summary>
+    public DefaultPolicyEvaluator(
+        IPolicyRuleSource ruleSource,
+        RegulatoryAuditEmitter emitter,
+        TimeProvider? time = null)
+        : this(ruleSource, time)
+    {
+        ArgumentNullException.ThrowIfNull(emitter);
+        _emitter = emitter;
+    }
+
     /// <inheritdoc />
-    public ValueTask<PolicyVerdict> EvaluateAsync(string featureKey, JurisdictionProbe probe, CancellationToken ct = default)
+    public async ValueTask<PolicyVerdict> EvaluateAsync(string featureKey, JurisdictionProbe probe, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrEmpty(featureKey);
         ArgumentNullException.ThrowIfNull(probe);
@@ -61,44 +76,79 @@ public sealed class DefaultPolicyEvaluator : IPolicyEvaluator
             return matched;
         }, this);
 
+        PolicyVerdict verdict;
         if (rules.Count == 0)
         {
             // Per A1.8 — empty rule set ⇒ silent Pass; the disclaimer carries
             // the user-facing message that this is NOT compliance.
-            return ValueTask.FromResult(new PolicyVerdict
+            verdict = new PolicyVerdict
             {
                 State = PolicyVerdictState.Pass,
                 Evaluations = Array.Empty<PolicyRuleEvaluation>(),
                 EvaluatedAt = _time.GetUtcNow(),
-            });
+            };
         }
-
-        // Phase 1 substrate evaluates each rule as Pass; Phase 3 ships the
-        // counsel-reviewed evaluation strategy. The substrate is wired so a
-        // non-empty rule set still produces evaluation entries (so consumers
-        // can verify their wiring).
-        var evals = new List<PolicyRuleEvaluation>(rules.Count);
-        foreach (var rule in rules)
+        else
         {
-            evals.Add(new PolicyRuleEvaluation
+            // Phase 1 substrate evaluates each rule as Pass; Phase 3 ships the
+            // counsel-reviewed evaluation strategy.
+            var evals = new List<PolicyRuleEvaluation>(rules.Count);
+            foreach (var rule in rules)
             {
-                RuleId = rule.RuleId,
+                evals.Add(new PolicyRuleEvaluation
+                {
+                    RuleId = rule.RuleId,
+                    State = PolicyVerdictState.Pass,
+                    EnforcementAction = null,
+                    Detail = "Phase 1 substrate evaluation — counsel-reviewed strategy lands in Phase 3.",
+                });
+            }
+            verdict = new PolicyVerdict
+            {
                 State = PolicyVerdictState.Pass,
-                EnforcementAction = null,
-                Detail = "Phase 1 substrate evaluation — counsel-reviewed strategy lands in Phase 3.",
-            });
+                Evaluations = evals,
+                EvaluatedAt = _time.GetUtcNow(),
+            };
         }
 
-        return ValueTask.FromResult(new PolicyVerdict
+        if (_emitter is not null)
         {
-            State = PolicyVerdictState.Pass,
-            Evaluations = evals,
-            EvaluatedAt = _time.GetUtcNow(),
-        });
+            // PolicyEvaluated — always-on telemetry per A1.7; no dedup.
+            await _emitter.EmitAsync(
+                AuditEventType.PolicyEvaluated,
+                RegulatoryAuditPayloads.PolicyEvaluated(
+                    featureKey,
+                    probe.JurisdictionCode,
+                    verdict.Evaluations.Count,
+                    verdict.State.ToString()),
+                ct).ConfigureAwait(false);
+
+            // JurisdictionProbedWithLowConfidence — surface low-confidence probes
+            // (1-hour dedup keyed on jurisdiction).
+            if (probe.Confidence == Confidence.Low)
+            {
+                await _emitter.EmitWithRuleDedupAsync(
+                    $"low-confidence:{probe.JurisdictionCode}",
+                    AuditEventType.JurisdictionProbedWithLowConfidence,
+                    RegulatoryAuditPayloads.JurisdictionProbedWithLowConfidence(
+                        probe.JurisdictionCode,
+                        probe.SignalSources.Count),
+                    ct).ConfigureAwait(false);
+            }
+        }
+
+        return verdict;
     }
 
     /// <inheritdoc />
-    public void InvalidateCache() => _filterCache.Clear();
+    public void InvalidateCache()
+    {
+        _filterCache.Clear();
+        _ = _emitter?.EmitAsync(
+            AuditEventType.RegulatoryPolicyCacheInvalidated,
+            RegulatoryAuditPayloads.RegulatoryPolicyCacheInvalidated("InvalidateCache"),
+            CancellationToken.None);
+    }
 }
 
 /// <summary>Per A1.8 — Phase 1 substrate's empty-rule-set source. Silent-pass behavior is intentional.</summary>

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Sunfish.Foundation.MissionSpace.Regulatory.Audit;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.MissionSpace.Regulatory;
 
@@ -12,14 +14,24 @@ namespace Sunfish.Foundation.MissionSpace.Regulatory;
 public sealed class DefaultCompositeJurisdictionProbe : ICompositeJurisdictionProbe
 {
     private readonly TimeProvider _time;
+    private readonly RegulatoryAuditEmitter? _emitter;
 
+    /// <summary>Audit-disabled overload (test / bootstrap).</summary>
     public DefaultCompositeJurisdictionProbe(TimeProvider? time = null)
     {
         _time = time ?? TimeProvider.System;
     }
 
+    /// <summary>Audit-enabled overload — W#32 both-or-neither contract.</summary>
+    public DefaultCompositeJurisdictionProbe(RegulatoryAuditEmitter emitter, TimeProvider? time = null)
+        : this(time)
+    {
+        ArgumentNullException.ThrowIfNull(emitter);
+        _emitter = emitter;
+    }
+
     /// <inheritdoc />
-    public ValueTask<JurisdictionProbe?> ProbeAsync(CompositeJurisdictionSignals signals, CancellationToken ct = default)
+    public async ValueTask<JurisdictionProbe?> ProbeAsync(CompositeJurisdictionSignals signals, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(signals);
         ct.ThrowIfCancellationRequested();
@@ -31,7 +43,7 @@ public sealed class DefaultCompositeJurisdictionProbe : ICompositeJurisdictionPr
 
         if (present == 0)
         {
-            return ValueTask.FromResult<JurisdictionProbe?>(null);
+            return null;
         }
 
         // Resolve the jurisdiction code via the A1.15 tie-breaker priority:
@@ -69,12 +81,24 @@ public sealed class DefaultCompositeJurisdictionProbe : ICompositeJurisdictionPr
             (agree == present && present == 2) ? Confidence.Medium :
             Confidence.Low;
 
-        return ValueTask.FromResult<JurisdictionProbe?>(new JurisdictionProbe
+        var probe = new JurisdictionProbe
         {
             JurisdictionCode = resolved,
             Confidence = confidence,
             SignalSources = sources,
             ProbedAt = _time.GetUtcNow(),
-        });
+        };
+
+        if (_emitter is not null && confidence == Confidence.Low)
+        {
+            // JurisdictionProbedWithLowConfidence — 1-hour dedup keyed on jurisdiction per A1.7.
+            await _emitter.EmitWithRuleDedupAsync(
+                $"low-confidence-probe:{resolved}",
+                AuditEventType.JurisdictionProbedWithLowConfidence,
+                RegulatoryAuditPayloads.JurisdictionProbedWithLowConfidence(resolved, sources.Count),
+                ct).ConfigureAwait(false);
+        }
+
+        return probe;
     }
 }
