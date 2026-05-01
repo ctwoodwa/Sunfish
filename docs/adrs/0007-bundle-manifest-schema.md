@@ -139,3 +139,114 @@ This is the same contract that bundle-store UX (P3) will communicate to tenant a
 - ABP Framework module/bundle patterns — inspiration for module manifest granularity.
 - Salesforce managed packages, Microsoft Dataverse Solutions — prior-art for versioned bundle artifacts with edition-like enforcement.
 - `Sunfish.Foundation.Catalog` package — home of the new types and embedded seed.
+
+---
+
+## Amendments (post-acceptance, 2026-05-01)
+
+### A1 (REQUIRED) — `BusinessCaseBundleManifest.Requirements: MinimumSpec?` field
+
+**Driver:** ADR 0063 §"Sibling amendment dependencies named" — ADR 0063 (Mission Space Requirements; install-UX layer; landed post-A1 via PR #411) introduced `MinimumSpec` schema that bundles need a place to declare. The substrate ships in `Sunfish.Foundation.MissionSpace`; the bundle-manifest tier needs a field on `BusinessCaseBundleManifest` to carry per-bundle declarations. Without this field, ADR 0063 Phase 2 wiring cannot proceed.
+
+**Pipeline variant:** `sunfish-api-change` (introduces new field on a public schema; non-breaking due to nullability).
+
+**Companion intake:** [`icm/00_intake/output/2026-04-30_bundle-manifest-requirements-field-intake.md`](../../icm/00_intake/output/2026-04-30_bundle-manifest-requirements-field-intake.md) (PR #412; merged).
+
+#### A1.1 — Schema field addition
+
+`BusinessCaseBundleManifest` gains one new field:
+
+| Field | Type | Purpose |
+|---|---|---|
+| `requirements` | `MinimumSpec?` | Optional per-bundle minimum-spec declaration (per ADR 0063). When `null`, the bundle declares no requirements (effectively "runs anywhere ADR 0044/0048 supports"). When non-null, install-time UX renders the spec against the user's `MissionEnvelope` per ADR 0063's Steam-style System Requirements page. |
+
+The field is **optional (nullable)**; existing bundles default to `null` (no install-time gating). Backward-compat preserved.
+
+`MinimumSpec` is the type defined by ADR 0063 in `Sunfish.Foundation.MissionSpace` (10 per-dimension spec records + `SpecPolicy` enum + `PerPlatformSpec` overrides; per ADR 0063 §"Initial contract surface" + post-A1 corrections per ADR 0063-A1.1–A1.14).
+
+#### A1.2 — Canonical-JSON encoding
+
+Field encodes via `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` per ADR 0007's existing camelCase/System.Text.Json conventions. JSON field name: `"requirements"`. When `null`, the field is omitted from JSON output (System.Text.Json `JsonIgnoreCondition.WhenWritingNull` semantics).
+
+Sample post-A1 manifest fragment:
+
+```json
+{
+  "key": "sunfish.bundles.property-management",
+  "name": "Property Management",
+  "version": "1.2.0",
+  "requiredModules": ["blocks.leases", "blocks.maintenance"],
+  "requirements": {
+    "hardware": { "minMemoryBytes": 17179869184, "minCpuCores": 8 },
+    "user": { "requiredAuthMethods": ["biometric"] },
+    "policy": "required"
+  }
+}
+```
+
+(Bundle declaring 16 GB RAM + 8-core CPU + biometric-auth as Required — install blocks if user's device doesn't meet spec; force-install requires operator override per ADR 0062-A1.9 + ADR 0063-A1.11.)
+
+#### A1.3 — Validation
+
+ADR 0007's existing schema-validation surface gains structural validation of the `requirements` field:
+
+- Field is optional — absence is valid (treated as `null`).
+- When present, MUST be a valid `MinimumSpec` instance. The `MinimumSpec` resolver (per ADR 0063) is responsible for value-validation; the manifest validator only checks presence + type-shape.
+- `requirements.policy` (a `SpecPolicy` enum) MUST be one of `Required` / `Recommended` / `Informational` per ADR 0063.
+
+No new exceptions. Existing manifest-validation failures continue to surface via the existing error path (per ADR 0007's `IBundleCatalog` contract).
+
+#### A1.4 — Backward + forward compatibility
+
+Existing manifests default to `null` for the new field. No behavior change for bundles that don't opt in.
+
+Phase 1 substrate of ADR 0063 (post-A1) ships the resolver + renderer; Phase 2 wires bundle manifests' `requirements` into install-time evaluation. ADR 0007-A1 ships the field; the wiring is a separate work product per ADR 0063's Phase 2 plan.
+
+Per ADR 0028-A6 council F12 verification: `CanonicalJson.Serialize` unknown-key tolerance holds — older deserializers ignore the new field silently. Forward-compat preserved.
+
+#### A1.5 — Acceptance criteria
+
+For an A1-conformant `BusinessCaseBundleManifest` implementation:
+
+- [ ] `Requirements: MinimumSpec?` field added to the record/class
+- [ ] `null` is the default value
+- [ ] Round-trips via `CanonicalJson.Serialize` (camelCase per ADR 0007 convention; field name `"requirements"`)
+- [ ] Validation: presence-optional + type-shape check; per-value validation delegated to ADR 0063's `IMinimumSpecResolver`
+- [ ] Backward-compat test: pre-A1 manifest (no `requirements` field) deserializes correctly with `requirements == null`
+- [ ] Forward-compat test: post-A1 manifest (with `requirements`) serializes; older deserializer ignores the field; round-trip preserves the field via CanonicalJson unknown-key tolerance
+- [ ] apps/docs entry for ADR 0007 walkthrough page gains a §"Requirements field" section linking to ADR 0063
+
+#### A1.6 — Cited-symbol verification (per cohort discipline)
+
+**Existing on `origin/main`** (verified 2026-05-01):
+
+- ADR 0063 (Mission Space Requirements; post-A1) — landed via PR #411; provides `MinimumSpec` schema
+- ADR 0062 (Mission Space Negotiation Protocol; post-A1) — landed via PR #406; provides `MissionEnvelope`
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — encoding contract (per ADR 0028-A4 retraction; verified existing)
+- ADR 0044 + ADR 0048 — Phase 1 + Phase 2 platform-scope precedents
+- `Sunfish.Foundation.Catalog.Bundles` namespace — verified existing per ADR 0007 §"Decision"
+
+**Introduced by A1** (not on `origin/main`; ship in implementation hand-off):
+
+- `BusinessCaseBundleManifest.Requirements` field
+- Updated apps/docs §"Requirements field" subsection
+
+**Cohort lesson reminder (per ADR 0028-A10 + ADR 0063-A1.15):** §A0 self-audit pattern is necessary but NOT sufficient. Implementation should structurally verify each cited Sunfish.* symbol exists (read actual cited file's schema; don't grep alone) before declaring AP-21 clean.
+
+#### A1.7 — Implementation hand-off
+
+Stage 06 hand-off lands as a small workstream (~3–5h per parent intake at PR #412). Recommend writing the hand-off file at `icm/_state/handoffs/foundation-catalog-requirements-field-stage06-handoff.md` when COB capacity opens (currently shipping W#30 P7; W#35 Foundation.Migration queued; W#23 iOS Field-Capture queued — this amendment's hand-off slots after those).
+
+#### A1.8 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (16-of-16 substrate ADR amendments needing council fixes; structural-citation failure rate 11-of-16 ~69% XO-authored — A9's parent-propagation retracted via A10; §A0 catch rate 0-of-5):
+
+- This is a small mechanical schema-extension amendment matching ADR 0036-A1's type-exposure precedent. **Pre-merge council MAY be waived** per Decision Discipline Rule 3 (mechanical addition; matches ADR 0036-A1 + ADR 0028-A3 + A4 + A10 council-waiver precedents).
+- Cited-symbol verification at draft time:
+  - `MinimumSpec` per ADR 0063 — verified Accepted + structural read confirms shape
+  - `MissionEnvelope` per ADR 0062 — verified Accepted
+  - `CanonicalJson.Serialize` — verified existing per ADR 0028-A4 retraction
+  - ADR 0044 / 0048 — verified Accepted
+- Post-merge **standing rung-6 spot-check** within 24h per the cohort discipline.
+
+The pre-merge council waiver on this amendment is intentional: **field-addition** (one optional nullable field; no new contract; backward-compat preserved). Substrate-tier introductions (W#33 §7.2 cohort) pass through pre-merge council; mechanical schema-extensions with established precedent auto-accept per Decision Discipline Rule 3.
