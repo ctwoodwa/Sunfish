@@ -368,6 +368,35 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>Anchor rejected an event whose <c>effectiveAt</c> fell outside the ±5-minute clock-skew window per A1.2. Dedup'd 1-per-(tenant_id, event_type) per 1-hour window.</summary>
     public static readonly AuditEventType BridgeSubscriptionEventStale = new("BridgeSubscriptionEventStale");
 
+    // ===== ADR 0062 + A1 — Foundation.MissionSpace runtime negotiation (W#40) =====
+
+    /// <summary>A dimension probe ran and produced a result (per A1.2 rename — was CapabilityProbed).</summary>
+    public static readonly AuditEventType FeatureProbed = new("FeatureProbed");
+
+    /// <summary>A feature's availability state changed between two consecutive verdicts (per A1.2 rename).</summary>
+    public static readonly AuditEventType FeatureAvailabilityChanged = new("FeatureAvailabilityChanged");
+
+    /// <summary>A dimension probe failed (per A1.2 rename). Drives <c>EnvelopeChangeSeverity.ProbeUnreliable</c> classification per A1.10.</summary>
+    public static readonly AuditEventType FeatureProbeFailed = new("FeatureProbeFailed");
+
+    /// <summary>An operator force-enabled a feature for a specific dimension per A1.2 + A1.9.</summary>
+    public static readonly AuditEventType FeatureForceEnabled = new("FeatureForceEnabled");
+
+    /// <summary>An operator revoked a previously-recorded force-enable per A1.2.</summary>
+    public static readonly AuditEventType FeatureForceRevoked = new("FeatureForceRevoked");
+
+    /// <summary>Per A1.9 — a force-enable request was rejected because the dimension is <c>NotOverridable</c> (Hardware / Runtime).</summary>
+    public static readonly AuditEventType FeatureForceEnableRejected = new("FeatureForceEnableRejected");
+
+    /// <summary>The mission envelope changed and the change was broadcast to all observers per A1.2 + A1.4.</summary>
+    public static readonly AuditEventType MissionEnvelopeChangeBroadcast = new("MissionEnvelopeChangeBroadcast");
+
+    /// <summary>Per A1.4 — the observer fanout queue overflowed (oldest-first eviction; 100-pending bound).</summary>
+    public static readonly AuditEventType MissionEnvelopeObserverOverflow = new("MissionEnvelopeObserverOverflow");
+
+    /// <summary>Per A1.12 — a feature verdict was surfaced to a UX consumer (telemetry for cohort tracking).</summary>
+    public static readonly AuditEventType FeatureVerdictSurfaced = new("FeatureVerdictSurfaced");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
