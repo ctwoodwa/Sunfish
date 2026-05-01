@@ -453,6 +453,470 @@ $ git ls-tree origin/main packages/foundation-canonicalization 2>&1
 
 The `feedback_council_can_miss_spot_check_negative_existence.md` memory is extended (separate PR / memory edit) to cover positive-existence claims. New title: *"Council subagents can miss in BOTH directions; spot-check both negative-existence claims AND positive-existence verification claims before applying their mechanical fixes."*
 
+### A5 (PROPOSED) — Cross-device + cross-form-factor migration semantics
+
+**Driver:** W#33 Mission Space Matrix discovery (`icm/01_discovery/output/2026-04-30_mission-space-matrix.md` §5.7) identifies cross-form-factor migration as a **Gap** with one peripheral hint (ADR 0028-A1's iOS Phase 2.1 capture-only events) and no general specification. Paper §13.4 covers QR-onboarding multi-device flow but does not formalize cross-form-factor data filtering; paper §15.2 covers schema-version mixed-cluster testing but not feature-surface migration; ADR 0046 covers encrypted-field rotation but not cross-device transfer as a Mission-Space-aware migration. A5 generalizes A1's iOS-specific carve-out into a form-factor-agnostic migration semantic that operates on top of A6's compatibility relation.
+
+**Pipeline:** `sunfish-api-change` (introduces migration-semantics contract; affects cross-form-factor data flow; downstream consumers across foundation + accelerators).
+
+**Authoring sequence:** A6 first, A5 second. A5 cites A6's compatibility relation as input. A5's amendment number is lower than A6's (5 < 6) for substrate-numbering hygiene — when A5 was reserved during A6 authoring, the reservation was for this specific companion semantic. Authoring order does not match numeric order.
+
+**Companion amendment:** A6 ships first (now on `origin/main` post-A7 council fixes); A5 builds on A6.5 (one-sided receive-only mode) as the canonical "long-offline reconnect" pattern that A5's migration semantics inherit and generalize.
+
+#### A5.1 — Form-factor type signature + migration table
+
+The form-factor tuple is:
+
+```text
+FormFactorProfile ::= {
+    formFactor:           enum { Laptop, Desktop, Tablet, Phone, Watch, Headless, Iot, Vehicle },
+    inputModalities:      set<enum { Pointer, Keyboard, Touch, Voice, Pen, GestureSensor, None }>,
+    displayClass:         enum { Large, Medium, Small, MicroDisplay, NoDisplay },
+    networkPosture:       enum { AlwaysConnected, IntermittentConnected, OfflineFirst, AirGapped },
+    storageBudgetMb:      uint32,
+    powerProfile:         enum { Wallpower, Battery, LowPower, IntermittentBattery },
+    sensorSurface:        set<enum { Camera, Mic, Gps, Accelerometer, BiometricAuth, NfcReader, BarcodeScanner }>,
+    instanceClass:        enum { SelfHost, ManagedBridge }   // matches A6.1's reduced enum per A7.6
+}
+```
+
+**Encoded form (per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`, casing per A7.8):**
+
+```json
+{
+  "formFactor": "tablet",
+  "inputModalities": ["touch", "pen", "voice"],
+  "displayClass": "medium",
+  "networkPosture": "intermittentConnected",
+  "storageBudgetMb": 8192,
+  "powerProfile": "battery",
+  "sensorSurface": ["camera", "mic", "gps", "biometricAuth"],
+  "instanceClass": "selfHost"
+}
+```
+
+**Cross-form-factor migration table (canonical):**
+
+| Source → Target | Same data set? | Filter applied | Capability re-evaluation | Notes |
+|---|---|---|---|---|
+| **Laptop → Laptop** (cluster-add) | Full sync | None | None (same surface) | Default home-office add-second-machine flow |
+| **Laptop → Desktop** | Full sync | None | None (same surface) | Form-factor-equivalent |
+| **Laptop ↔ Tablet** (added to team) | Tablet receives feature-gated subset | `tabletProfile.capabilities ∩ workspace.declaredCapabilities` | Re-evaluate at sync time per A6.5 (one-sided receive-only if A6 incompat) | Tablet lacks keyboard-heavy admin UIs by default; data flows in both directions |
+| **Laptop ↔ Phone** (added to team) | Phone receives mobile-first subset | `phoneProfile.capabilities ∩ workspace.declaredCapabilities ∩ mobileSafeSet` | Re-evaluate; per ADR 0028-A1, phone is append-only event-queue path until Phase 3+ CRDT-on-mobile lands | iOS append-only path per A6.11 (capture-context tagging) |
+| **Laptop ↔ Watch** (added to team) | Watch receives glanceable-summary subset | `watchProfile.capabilities ∩ glanceableSet` (read-only by default) | Re-evaluate; watch is read-only consumer until proven otherwise | No write-back path in v0; deferred to a future amendment |
+| **Tablet → Phone** (form-factor down) | Phone receives intersection of tablet + phone surfaces | `phoneProfile.capabilities ∩ tablet.allowedSurface` | Re-evaluate; A6 compatibility check first | Same-tier downgrade |
+| **Laptop ↔ Headless** (e.g., bridge node addition) | Headless receives substrate-only data; no UI surface | `headlessProfile.capabilities ∩ substrateOnlySet` | Re-evaluate; UI features filtered out | Backend-only deployment |
+| **Laptop ↔ IoT** (e.g., sensor node) | IoT receives sensor-config + ingest-target only | `iotProfile.capabilities ∩ sensorIngestSet` | Re-evaluate; everything else filtered | High-asymmetry: IoT writes data, reads almost nothing |
+| **Laptop ↔ Vehicle** (e.g., in-car field-capture) | Vehicle receives gps-tagged-write + voice-input subset | `vehicleProfile.capabilities ∩ vehicleSafeSet` | Re-evaluate; driver-distraction filter applied | Reserved profile; v0 doesn't ship a Vehicle adapter |
+
+The "filter applied" column is the **derived-surface filter**: each form-factor's expected capability surface is computed as the intersection of (a) the form-factor's `FormFactorProfile.capabilities` (declared by the device adapter at install time) and (b) the workspace's `declaredCapabilities` (the union of capabilities any installed plugin offers). The filter never adds; it only removes.
+
+**Non-table generalization:** the table above is canonical for the form factors named in `FormFactorProfile.formFactor`. New form factors (e.g., when a Vehicle adapter actually ships) extend the table by declaring their `FormFactorProfile` and a corresponding row.
+
+#### A5.2 — Migration semantics rules
+
+When form factor F is added to or removed from a workspace, A5 specifies:
+
+> **Rule 1 — Additive sync respects derived surface.** When F is added (becomes a peer in the workspace's federation), F's incoming sync receives only data classified by features in `F.derivedSurface` (per A5.1's filter). Data outside F's derived surface is sequestered in F's local queue with a `FormFactorFilteredOut` flag; the data is NOT dropped.
+>
+> **Rule 2 — Outgoing writes are unfiltered.** Whatever F creates flows back to the workspace per the normal CRDT path; the derived-surface filter is INBOUND-ONLY. F can author any data it can construct UI / API surface for; the workspace's other peers receive and merge that data normally.
+>
+> **Rule 3 — Capability re-evaluation cadence.** Each time F initiates a federation handshake (per A6.3), F's `FormFactorProfile` is re-evaluated against the workspace's current `declaredCapabilities`. If the capability set has changed since the last handshake, F's derived surface is recomputed and the local sequestration set is reconsidered (sequestered events that now match the surface are released; previously-released events that no longer match are re-sequestered).
+>
+> **Rule 4 — Hardware-tier change triggers immediate re-evaluation.** When F's hardware capabilities change (e.g., the device's `storageBudgetMb` shrinks because the user installed other apps; the user disables the camera permission; the device is in a low-battery profile), the next sync triggers a fresh `FormFactorProfile` calculation. Re-evaluation is at sync-time, not real-time — A5 does not specify a continuously-monitoring background process.
+>
+> **Rule 5 — Cross-tier downgrades preserve data.** Per the data-loss-vs-feature-loss invariant (A5.4 below), downgrading a form factor's tier (e.g., user replaces flagship phone with budget phone with less storage) does NOT delete data. Data exceeding the new storage budget is sequestered with a `StorageBudgetExceeded` flag; the workspace's other peers retain it; F can continue to access it via federation re-fetch when the storage budget is restored.
+
+#### A5.3 — Hardware-tier re-evaluation mechanics
+
+A5 specifies how hardware-tier changes propagate:
+
+```text
+HardwareTierChangeEvent ::= {
+    nodeId:            NodeId,
+    previousProfile:   FormFactorProfile,    // the FormFactorProfile at the time of the previous successful handshake
+    currentProfile:    FormFactorProfile,    // the FormFactorProfile at the time this event fires
+    triggeringEvent:   enum { StorageBudgetChanged, NetworkPostureChanged, SensorPermissionChanged, PowerProfileChanged, AdapterUpgrade, AdapterDowngrade, ManualReprofile },
+    detectedAt:        ISO 8601 UTC
+}
+```
+
+**Mechanics:**
+
+1. The form-factor adapter (e.g., the iOS adapter; the Headless adapter) is responsible for detecting hardware-tier changes and producing `HardwareTierChangeEvent` records.
+2. On detection, the local node:
+   - Recomputes `FormFactorProfile`
+   - If the new `FormFactorProfile.capabilities` ≠ the previous, recomputes `derivedSurface`
+   - Sequesters/releases data per the new derived surface (per Rule 1)
+   - Emits a `Sunfish.Kernel.Audit.AuditEventType.HardwareTierChanged` audit event with the `(previousProfile, currentProfile, triggeringEvent)` tuple
+3. Next federation handshake (per A6.3) carries the new `FormFactorProfile` in the version vector exchange. Other peers update their cached view of this peer's surface.
+
+**Detection cadence (form-factor-adapter responsibility, not A5's):**
+
+| Form factor | Detection cadence | Why |
+|---|---|---|
+| iOS / iPadOS | On app foreground, on permission-change OS callback, on `lowPowerModeEnabled` flip | OS surfaces these events directly |
+| Android | On app foreground, `ConnectivityManager.NetworkCallback`, `BatteryManager` broadcast | Same as iOS pattern |
+| MAUI desktop | On app start; periodic 5-min poll for storage-budget changes | Desktop adapters have less OS event surface |
+| Headless / Bridge | On adapter startup; on systemd `LowResources` signal (Linux) | Less likely to need re-evaluation |
+| Watch | On app foreground; pairing-handshake to phone re-fires | Watch profile is mostly static |
+
+A5 does NOT specify the per-adapter detection logic — that's the adapter's contract. A5 specifies only the format of the event and the mechanics of consuming it.
+
+#### A5.4 — Data-loss-vs-feature-loss invariant
+
+A5 makes one explicit substrate-tier guarantee:
+
+> **Invariant DLF — feature deactivation never causes data loss.** Data created under capability C, when C becomes unavailable on form factor F (because F was downgraded; because C was removed from the workspace by an admin; because F now lacks the sensor/permission C requires), is preserved as **read-only-but-not-lost**. The data remains in F's local replica (or, if F's storage budget is exceeded, in another peer's replica accessible via federation re-fetch). The data is never silently dropped.
+
+**Concrete behaviors required by Invariant DLF:**
+
+1. **Sequestration over deletion.** When F's derived surface contracts and previously-visible data falls outside it, the data is moved to an in-replica "sequestered" partition with a `FormFactorFilteredOut` or `StorageBudgetExceeded` flag — NOT deleted.
+2. **Re-emergence on surface expansion.** If F's derived surface later expands (capability restored; storage budget increased; permission re-granted), sequestered data matching the expanded surface is automatically released back to active visibility.
+3. **Cross-peer rescue.** If F's storage budget shrinks below what's needed even for sequestration, F may evict the sequestered partition entirely — but the workspace's other peers retain it (the CRDT log is global). F can re-fetch on demand via federation, paying the network cost only.
+4. **Audit-trail preservation.** Every sequestration/release transition emits a `Sunfish.Kernel.Audit.AuditEventType` event (`DataSequestered` / `DataReleased`) with the `(form_factor, capability_change, data_set_summary)` tuple. The audit trail itself is append-only per ADR 0049 — sequestration of *audit data* is forbidden.
+
+**What Invariant DLF does NOT promise:**
+
+- It does not promise the data remains *visible* on F after a feature loss — visibility is the feature; only persistence is the invariant.
+- It does not promise F has the *capability* to render the sequestered data — F may lack the UI surface to show it. The workspace as a whole has it via the other peers.
+- It does not promise *write-back* to sequestered records — sequestered records are read-only on F until released.
+
+#### A5.5 — Forward-compat policy
+
+When an older deployment receives data from a newer one (newer schema epoch, or newer Mission Envelope features), A5 specifies:
+
+> **Forward-compat rule (canonical).** Older nodes treat unknown fields, capabilities, and feature-tier annotations as *informational* — they store them losslessly via `CanonicalJson` unknown-key tolerance (verified per F12 of A6 council review) but do not act on them. Older nodes do NOT generate the unknown surface (because they can't), but they preserve it on read+write round trips so newer peers see no loss.
+
+**Concrete behaviors:**
+
+1. **Unknown capability tags are preserved.** If a newer peer writes a record with `capability_tag = "future-only-feature"` and the older peer has no plugin that recognizes this tag, the older peer:
+   - Stores the tag verbatim in its CRDT replica
+   - Surfaces no UI for it (the plugin is absent on the older peer)
+   - Re-emits the tag verbatim when it pushes the record back to other peers
+2. **Unknown feature-tier annotations propagate.** If a newer peer marks a record as `tier: "beta-only"`, the older peer treats this as an opaque tag — preserves it, doesn't filter on it.
+3. **Schema-epoch crossings are NOT auto-forward-compat.** Per A6.2 rule 1, schema-epoch differences hard-reject federation. An older node receiving newer-epoch data does not silently accept it — A6's compatibility relation triggers first. A5's forward-compat policy applies only WITHIN a compatible epoch (A6 already gated).
+4. **Reverse direction (newer reads older).** Newer peers receiving older data treat missing fields as *absent* (the field genuinely wasn't set), not as *defaulted*. If a feature requires the field to be present, that record is not surfaced under that feature; it remains accessible under the older feature surface.
+
+#### A5.6 — Rollback semantics
+
+When a user explicitly downgrades a form factor (e.g., reverts to an older app version; re-images device with prior workspace version), A5 specifies:
+
+> **Rollback rule (canonical).** Rollback is a special case of cross-tier hardware-change (per A5.3) where the change is operator-initiated. The same Invariant DLF guarantees apply: data created under post-rollback-unavailable features is sequestered, not deleted. Rollback does NOT require an explicit confirmation step at A5's substrate tier — but rollbacks SHOULD trigger a UX warning at the application tier.
+
+**Substrate-tier mechanics:**
+
+1. The form-factor adapter detects the rollback (e.g., older binary loads with older `FormFactorProfile.capabilities`).
+2. `HardwareTierChangeEvent` fires with `triggeringEvent = AdapterDowngrade` per A5.3.
+3. Re-evaluation runs per A5.2 rule 4. Data in the no-longer-available surface is sequestered.
+4. `Sunfish.Kernel.Audit.AuditEventType.AdapterRollbackDetected` is emitted with the `(previous_adapter_version, new_adapter_version, sequestered_data_set_summary)` tuple. (Audit dedup per A6.5.1: at most one event per `(node_id, adapter_id, version_pair)` tuple per **6-hour window** to absorb rapid rollback-and-re-roll-forward sequences.)
+
+**What rollback does NOT cause:**
+
+- Federation rejection. The rollback is the operator's choice; A5's compatibility relation (still gated by A6) determines if federation continues.
+- Loss of audit trail. Audit data is append-only per ADR 0049; rollback preserves the historical audit log.
+- Loss of cryptographic state. Per A5.7 below, encrypted-state keys are re-derivable from the workspace's recovery substrate; a rollback that loses local key material is recoverable via the standard recovery flow (ADR 0046).
+
+#### A5.7 — Encrypted-state key transfer formalization
+
+A5 formalizes the cross-form-factor key transfer that paper §13.4 (QR-onboarding) hints at, building on ADR 0046 (encrypted-field substrate):
+
+> **Cross-form-factor key transfer (canonical).** When form factor F is added to a workspace via QR-onboarding (paper §13.4), the onboarding flow transfers per-tenant encryption keys from the inviting peer to F. A5 specifies the protocol shape; the cryptographic primitives are reused from ADR 0046 + ADR 0032 (Ed25519 root keypair).
+
+**Protocol shape:**
+
+1. **QR scan establishes the trust anchor.** F scans a QR code displayed by the inviting peer; the QR code carries the inviting peer's Ed25519 public key + a one-time secret derived per ADR 0032. F derives its session key from the QR-code secret (zero-knowledge of the long-term keys).
+2. **Form-factor registration handshake.** F sends its newly-generated Ed25519 public key + its `FormFactorProfile` over the QR-derived session. The inviting peer signs F's `FormFactorProfile` (binding the form factor to the workspace's identity surface) and returns the signed profile + the workspace's per-tenant encryption keys (per ADR 0046's `IFieldDecryptor` substrate; A5 does NOT define new key types).
+3. **Per-tenant key set is filtered by form-factor capabilities.** If F's `FormFactorProfile` does not include `BiometricAuth` capability, the per-tenant keys for biometric-protected fields are NOT transferred to F. F can still see those records but cannot decrypt them; sequestration applies.
+4. **Audit emission.** The inviting peer emits `Sunfish.Kernel.Audit.AuditEventType.FormFactorProvisioned` with `(form_factor, transferred_key_set_summary)`. F emits `Sunfish.Kernel.Audit.AuditEventType.FormFactorEnrollmentCompleted` with `(workspace_id, accepted_capabilities)`.
+
+**Key-rotation mechanics (per ADR 0046):**
+
+When per-tenant keys rotate (per ADR 0046's rotation primitive — currently deferred per A4.3), all form factors with the prior keyVersion receive the new keyVersion via the standard rotation broadcast (ADR 0046 territory). A5 does NOT special-case form-factor-specific rotation; the rotation broadcast is form-factor-agnostic.
+
+**What A5.7 does NOT cover:**
+
+- The actual cryptographic primitives — those are ADR 0032 (Ed25519) + ADR 0046 (per-tenant encryption keys + EncryptedField) territory.
+- The QR code's serialization format — that's a ~ADR-0032-A1 follow-up (paper §13.4 names QR-onboarding but no ADR has formalized the QR payload schema yet).
+- Form-factor revocation (e.g., user loses the tablet; workspace admin revokes the tablet's keys) — that's a separate mechanism in ADR 0046's substrate territory; A5 cites the gap but defers to ADR 0046 for the mechanism.
+
+#### A5.8 — Acceptance criteria
+
+For a `Sunfish.Foundation.Migration.IFormFactorMigrationService` implementation to be considered A5-conformant, it MUST:
+
+- [ ] Encode/decode `FormFactorProfile` via `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` round-trip
+- [ ] Emit `HardwareTierChangeEvent` on each detected hardware-tier change per A5.3
+- [ ] Recompute `derivedSurface` on each `HardwareTierChangeEvent` and apply the sequestration/release transitions per A5.2 + A5.4
+- [ ] Emit the 4 new `Sunfish.Kernel.Audit.AuditEventType` constants per A5.3 / A5.4 / A5.6 / A5.7:
+  - `HardwareTierChanged` (A5.3)
+  - `DataSequestered` + `DataReleased` (A5.4)
+  - `AdapterRollbackDetected` (A5.6)
+  - `FormFactorProvisioned` + `FormFactorEnrollmentCompleted` (A5.7)
+- [ ] Honor Invariant DLF: under any sequence of `HardwareTierChangeEvent`s, every record present at any point is either visible OR sequestered (with a flag); no record is silently deleted
+- [ ] Forward-compat: round-trip canonical JSON preserves unknown fields/capability tags/feature-tier annotations losslessly (verified per F12 of A6 council review)
+- [ ] Test coverage:
+  - 8 cross-form-factor migration tests (one per `FormFactorProfile.formFactor` value)
+  - 4 cross-hardware-tier downgrade tests (storage / network / power / sensor-permission)
+  - Sequestration round-trip test (capability removed + restored; data re-emerges)
+  - Rollback test (adapter version downgrade triggers `AdapterRollbackDetected` exactly once per 6-hour window)
+  - Forward-compat test (older deployment receives newer record with unknown capability tag; round-trips cleanly)
+  - QR-onboarding key-transfer integration test (per A5.7; depends on ADR 0032 + ADR 0046 substrate)
+- [ ] Audit-emission rate-limiting (per A6.5.1 pattern):
+  - `AdapterRollbackDetected`: at most once per `(node_id, adapter_id, version_pair)` tuple per **6-hour window**
+  - Other A5 events: standard audit-substrate behavior (no special dedup beyond existing patterns)
+
+#### A5.9 — Cited-symbol verification (Decision Discipline Rule 6 + structural-citation correctness per A7's lesson)
+
+Per the standing rung-6 task + the A7 council lesson on structural citation correctness:
+
+**Existing on `origin/main`** (verified 2026-04-30 via `git ls-tree` / `git grep` / structural read):
+
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (pinned per A4 / A6.1; positive-existence verified)
+- `Sunfish.Kernel.Audit.AuditEventType` (verified existing per F11 of A6 council)
+- `Sunfish.Kernel.Audit.AuditPayload` + `IAuditTrail` (verified per A2/A4)
+- `Sunfish.Foundation.Crypto.IOperationSigner` (verified per A2/A4)
+- ADR 0028-A1 — verified Accepted; specifies iOS Phase 2.1 envelope (the predecessor A5 generalizes)
+- ADR 0028-A6 — verified Accepted post-A7 (the immediate predecessor A5 builds on)
+- ADR 0032 — verified Accepted; provides Ed25519 root keypair (used in A5.7)
+- ADR 0046 — verified Accepted; provides `EncryptedField` + `IFieldDecryptor` (used in A5.4 / A5.7)
+- ADR 0049 — verified Accepted; provides audit-trail substrate (consumed by A5)
+
+**Structural-citation spot-check (per A7 lesson):**
+
+A5 cites three external concepts that need structural verification:
+
+- **Paper §13.4 (QR-onboarding multi-device flow):** verified existing; covers QR-onboarding at the conceptual level. Paper does NOT formalize the QR payload schema — A5.7 explicitly notes this gap and does NOT cite a formalization that doesn't exist.
+- **Paper §15.2 (schema-version mixed-cluster testing):** verified existing; covers the testing scenarios (line range matches per W#33 §5.7 spot-check).
+- **ADR 0046 rotation primitive:** verified existing-but-deferred — ADR 0046 has the substrate but A4.3 explicitly defers the rotation primitive to a future amendment. A5.7 cites this state honestly ("currently deferred per A4.3").
+
+**Introduced by A5** (not on `origin/main`; ship in implementation hand-off):
+
+- `Sunfish.Foundation.Migration.FormFactorProfile` (A5.1 type signature)
+- `Sunfish.Foundation.Migration.IFormFactorMigrationService` (A5.8 acceptance contract)
+- `Sunfish.Foundation.Migration.HardwareTierChangeEvent` (A5.3)
+- `AuditEventType.HardwareTierChanged` (new constant)
+- `AuditEventType.DataSequestered` (new constant)
+- `AuditEventType.DataReleased` (new constant)
+- `AuditEventType.AdapterRollbackDetected` (new constant)
+- `AuditEventType.FormFactorProvisioned` (new constant)
+- `AuditEventType.FormFactorEnrollmentCompleted` (new constant)
+- `Sunfish.Foundation.Migration.MigrationAuditPayloads` (factory for the new audit constants; mirrors `VersionVectorAuditPayloads` per A6.6)
+
+#### A5.10 — Open questions (deferred)
+
+- **OQ-A5.1:** is `FormFactorProfile.formFactor = Vehicle` a real Phase 2+ concept or premature? Reserved per the table in A5.1; the corresponding row is informational. If no Vehicle adapter ships within ~12 months, defer-but-don't-remove.
+- **OQ-A5.2:** does the `derivedSurface` recomputation cadence need a configurable upper bound (e.g., "no more than once per minute")? Recommend deferring; sync-time-only re-evaluation per A5.2 rule 3 already bounds the rate.
+- **OQ-A5.3:** is `FormFactorFilteredOut` vs `StorageBudgetExceeded` the right granularity for sequestration flags? Or should there be a single `Sequestered` flag with a `reason: enum`? Recommend the latter as a v0.1 amendment if test coverage finds the two-flag model awkward; ship the two-flag model now for clarity.
+- **OQ-A5.4:** when both peers in a federation have rolled-back form-factor adapters but the workspace's other peers haven't, does A5 specify a "minority rollback" vs "majority rollback" behavior? Currently A5 treats each peer independently — each peer's rollback fires independently; the workspace as a whole is unchanged. If a "majority rollback" semantic is needed (e.g., the workspace itself rolls back), that's a separate mechanism in a future ADR.
+- **OQ-A5.5:** the QR-onboarding payload schema (per A5.7's gap acknowledgment) — should A5 declare a forcing function for ADR 0032-A1 to formalize the schema, or is implicit forcing-via-W#23-build-out enough? Recommend the latter; W#23 iOS Field-Capture App's Phase 5 (pairing flow) will need the formal schema and naturally produces the forcing function.
+
+#### A5.11 — Companion amendment dependencies
+
+A5 has hard dependencies on:
+
+- **ADR 0028-A6** (post-A7) for the compatibility relation that gates federation in the first place. A5 is downstream of A6 — A5 only fires once A6 has determined the peers are compatible.
+- **ADR 0028-A1** (post-A2/A3/A4) for the iOS Phase 2.1 envelope that A5 generalizes (paper §13.4 cross-form-factor case). The companion A1.x intake (PR #397) augments A1's envelope with capture-context tagging per A6.11; A5 inherits that augmentation transparently.
+- **ADR 0032** for Ed25519 keypair semantics (used in A5.7 QR-onboarding handshake).
+- **ADR 0046** for encrypted-field substrate (used in A5.7 cross-form-factor key transfer).
+
+A5 has soft dependencies on:
+
+- **~ADR 0063 Mission Space Negotiation Protocol** (queued per W#33 §7.2). The negotiation-protocol mechanism is what surfaces capability-availability changes that A5's `derivedSurface` filter consumes. Without ~ADR 0063, A5's `workspace.declaredCapabilities` is computed naively (union of all installed plugins). With ~ADR 0063, the computation incorporates negotiated capability gates. A5 ships the naive form; ~ADR 0063 substitutes the negotiated form when it lands.
+
+#### A5.12 — Open questions affecting future amendments
+
+A5 names two areas that may produce follow-up amendments:
+
+- **A5-followup-1:** Form-factor revocation mechanics. When a workspace admin revokes a form factor's access (e.g., user loses tablet; admin marks tablet as compromised), what does A5 do beyond the standard ADR 0046 key revocation? Currently A5 does nothing special — ADR 0046's revocation flow handles the cryptographic side; the form factor's `FormFactorProfile` is moot once it can't decrypt. But explicit revocation audit + UI surface may need an A5.x amendment.
+- **A5-followup-2:** Multi-form-factor concurrent-edit semantics under different `derivedSurface` filters. If laptop creates a record under capability C, and tablet (which lacks C in its derived surface) attempts a concurrent edit on the same record's metadata — does the merge see the record? Currently per Rule 2, tablet's outgoing writes are unfiltered; tablet COULD edit the metadata if it has the metadata-only capability. The CRDT merge logic resolves the result. A5 doesn't explicitly spec this case; likely needs an A5.x amendment if test coverage finds the case underspecified.
+
+#### A5.13 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (now 11+ substrate amendments needing post-acceptance fixes; council false-claim rate 2-of-10):
+
+- **Pre-merge council canonical** for A5. Auto-merge on this PR is intentionally DISABLED until a Stage 1.5 council subagent reviews. Council should specifically pressure-test:
+  - The Invariant DLF (data-loss-vs-feature-loss) under all 8 form-factor migration combinations — is "sequestration" a complete answer or are there edge cases where data is genuinely unrecoverable?
+  - The forward-compat policy under schema-epoch crossings — does A5.5's "gated by A6" claim actually hold across all 4 A6 compatibility-failure modes?
+  - The QR-onboarding key-transfer (A5.7) — is the per-tenant-key-filtering-by-capability mechanism cryptographically sound, or does it leak information about which capabilities the form factor lacks?
+  - The migration table (A5.1) — are the 8 form-factor rows + cross-pairs sufficient for v0, or are there obvious gaps the council would surface (e.g., specific cross-OS migration cases)?
+  - The 6-hour `AdapterRollbackDetected` audit-dedup window — same scaling-protection pattern as A6.5.1, but is 6h the right value for this event class?
+- **Cited-symbol verification** per A5.9 (every introduced symbol explicitly marked; every existing reference verified on `origin/main`; structural-citation spot-check on all field-on-type claims per the A7 lesson)
+- **Standing rung-6 spot-check** within 24h of A5 merging (per ADR 0028-A4.3 + A7.12 commitment)
+
+#### A5.14 — What A5 doesn't cover (per A8.10 / council A10 / Encouraged scoping)
+
+A5 covers cross-form-factor migration semantics at the substrate tier. A5 does NOT cover:
+
+- **Per-form-factor UI design.** A5 specifies *what* data F sees; the UI surface for displaying it is per-adapter (Blazor / React / SwiftUI) territory.
+- **The ~ADR-0032-A1 QR-onboarding protocol formalization.** A5.7 names the expected shape; ~ADR-0032-A1 ratifies it. A5 Stage 06 build halt-conditions on ~ADR-0032-A1 acceptance per A8.2.
+- **Form-factor revocation mechanics.** When an admin revokes F's access, the cryptographic side is ADR 0046's revocation territory; A5 does not special-case form-factor revocation beyond standard ADR 0046 flows. Listed as A5-followup-1; deferred.
+- **Field-level redaction UI surface.** A5.4 rule 7 (added via A8.3) specifies the substrate behavior (placeholders for un-decryptable fields); the UX choice of how to present the placeholder is per-adapter.
+- **Cross-OS native integration.** CarPlay / Android Auto are scoped per A5.1 + A8.4 (projection model, not federation peer); built-in IVI is scoped as a future federation peer with its own adapter; the actual native-API integration is per-adapter Stage 06 work.
+- **Mission Space Negotiation Protocol (~ADR 0063).** A5 ships the naive `workspace.declaredCapabilities` (union of installed plugins); ~ADR 0063 substitutes a negotiated form when it lands.
+
+---
+
+### A8 (REQUIRED, mechanical) — A5 council-review fixes
+
+**Driver:** Stage 1.5 adversarial council review of A5 at `icm/07_review/output/adr-audits/0028-A5-council-review-2026-04-30.md` (PR #403, merged 2026-04-30) returned verdict **B (Solid) with 6 required + 4 encouraged amendments**. Severity profile: **2 Critical (both structural-citation; the A7-third-direction class) + 4 Major + 2 Minor + 7 verification-passes**. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A8 absorbs all 10 recommendations into A5's surface before W#33 Stage 06 build emits its first `FormFactorProfile` over the wire.
+
+**Cohort milestone:** A5 council brings cohort batting average to **12-of-12 substrate amendments needing post-acceptance fixes** (forward pattern; council catches XO drift). The cohort false-claim rate by the council itself this review is **0** across all three directions; the structural-citation failures (F1 + F2) were XO-authored claims that the council CAUGHT pre-merge — exactly the failure mode the A7 lesson predicted, exactly the discipline that catches it.
+
+#### A8.1 — Reword A5.7's per-tenant-key-transfer surface citation (council A1 / F1 Critical structural-citation)
+
+A5.7 step 2 is reworded to cite the actual ADR 0046-A4.1 surface. The cross-device transfer mechanism is `ITenantKeyProvider` (the per-tenant-DEK-derivation seam); `IFieldDecryptor` and `IFieldEncryptor` are downstream consumers, not the transfer mechanism:
+
+> **2. Form-factor registration handshake (revised).** F sends its newly-generated Ed25519 public key + its `FormFactorProfile` over the QR-derived session. The inviting peer signs F's `FormFactorProfile` (binding the form factor to the workspace's identity surface) and returns the signed profile + sufficient material to derive the workspace's per-tenant encryption keys (per ADR 0046-A4.1's `ITenantKeyProvider` substrate; concretely: the keystore root seed material, gated by the form-factor capability filter in step 3). A5 does NOT define new key types — the per-tenant DEK derivation continues to flow through `Sunfish.Foundation.Recovery.TenantKey.ITenantKeyProvider` (which uses HKDF-SHA256 + per-tenant info string from the keystore root seed; per ADR 0046-A2.3 + A4.1). `IFieldDecryptor` and `IFieldEncryptor` are downstream consumers, not the cross-device transfer mechanism.
+
+A5.9 verified-existing list correction:
+
+- Change `Sunfish.Foundation.Recovery.IFieldDecryptor` → `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` (namespace correction per F10)
+- Add `Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor` (encrypt-side companion, per F11)
+- Add `Sunfish.Foundation.Recovery.TenantKey.ITenantKeyProvider` (the actual per-tenant-key-transfer surface, per ADR 0046-A4.1)
+
+#### A8.2 — Acknowledge QR-onboarding handshake protocol gap explicitly + add halt-condition (council A2 / F2 Critical structural-citation)
+
+A5.7 step 1 is reworded to honestly acknowledge the gap that paper §13.4 + ADR 0032 do NOT close:
+
+> **1. QR scan establishes the trust anchor (revised).** F scans a QR code displayed by the inviting peer (UX flow per paper §13.4 + ADR 0032's Ed25519-keypair-as-device-identity). The QR payload schema and the cryptographic handshake (one-time-secret derivation, session-key derivation, zero-knowledge property over long-term keys) are NOT formalized in any current ADR — A5.7 names the shape A5 *expects* the future ~ADR-0032-A1 amendment to ratify, but A5 does NOT itself define the cryptographic primitive. **Default expectation:** a Noise_NK or Noise_IK pattern over the QR-transmitted ephemeral key, with the inviting peer's Ed25519 root key as the static long-term key — but the actual choice is downstream of A5 and ratified by ~ADR-0032-A1.
+
+A5.13 cohort discipline gains a halt-condition:
+
+> **A5 Stage 06 build halt-condition (added per A8.2):** A5 Stage 06 build (any code that emits a `FormFactorProfile` over a QR-derived session) CANNOT begin until ~ADR-0032-A1 (QR-onboarding protocol formalization) is Accepted on `origin/main`. A5.7's protocol shape is expected; ~ADR-0032-A1 ratifies it. Without ratification, A5.7's cryptographic claims (zero-knowledge over long-term keys; one-time-secret derivation; session-key derivation) are unverified.
+
+#### A8.3 — Specify Invariant DLF edge cases (council A3 / F3 Major)
+
+A5.4 gains three concrete behaviors after the existing four:
+
+> **5. Plaintext-vs-ciphertext sequestration distinction.** Sequestration applies at two layers:
+>    - **Plaintext sequestration:** the data is plaintext-readable on F but UI-hidden because F lacks the *feature* surface to display it. F's UI hides the data; F's storage retains plaintext; release on surface expansion is immediate.
+>    - **Ciphertext sequestration:** the data is ciphertext-stored but plaintext-unrecoverable on F because F lacks the *cryptographic* capability — typically because A5.7 step 3 filtered out the per-tenant key for F's `FormFactorProfile`. F's UI hides the data; F's storage retains ciphertext; release on surface expansion requires re-running A5.7's key transfer.
+>
+> The two sequestration types emit different audit events (`PlaintextSequestered` / `CiphertextSequestered`) and have different UX surfaces ("hidden on this device; available on others" vs "encrypted; not available on this form factor"). User-facing UX MUST distinguish.
+>
+> **6. CP-record quorum participation.** When a CP-class record is sequestered on F (per rule 5), F's vote does NOT count toward the CP record's quorum. F's vote-eligibility is conditional on F having the capability to read the record. A workspace where F is a deciding voter on a CP record F can't read MUST detect the case at A5.7-key-transfer-time and emit a `FormFactorQuorumIneligible` audit + UX surface (operator chooses: re-grant capability, or remove F from the quorum set for this record).
+>
+> **7. Field-level redaction is the default; record-level sequestration is the fallback.** When a record's encrypted fields cannot be decrypted on F but the record's primary-key + display-name fields can, F sees the record with `[encrypted; not available on this form factor]` placeholders for the un-decryptable fields. Record-level sequestration (entire record hidden) applies only when F cannot decrypt the record's primary-key or required-for-display fields. The choice is per-record-type and documented at Stage 06 hand-off.
+
+A5.8 acceptance criteria gain three new audit-event constants:
+
+- [ ] `AuditEventType.PlaintextSequestered` (replaces the more-general `DataSequestered` for the plaintext case)
+- [ ] `AuditEventType.CiphertextSequestered` (the ciphertext case)
+- [ ] `AuditEventType.FormFactorQuorumIneligible` (new constant per rule 6)
+
+A5.4's previously-named `DataSequestered` constant is split into the two more-precise constants per the UX-distinction requirement; `DataReleased` continues as the unified release counterpart.
+
+#### A8.4 — Add Phone↔Watch + CarPlay/Android-Auto rows; split Vehicle row (council A4 / F4 Major)
+
+A5.1 migration table gains two new rows + the existing Vehicle row is clarified:
+
+| Source → Target | Same data set? | Filter applied | Capability re-evaluation | Notes |
+|---|---|---|---|---|
+| **Phone ↔ Watch (parent-device-mediated pairing)** | Watch sees a Phone-projected subset | `(phoneProfile.capabilities ∩ watchProfile.capabilities) ∩ glanceableSet` | Re-evaluate via paired Phone's adapter; Watch's `FormFactorProfile` is composed from both | Watch is NOT a direct federation peer; the paired Phone mediates. Watch storage budget assumes A5.4 rule 3 cross-peer-rescue is the common case, not the fallback. |
+| **Phone → Phone-projected Vehicle (CarPlay / Android Auto)** | Vehicle sees a Phone projection (no separate peer) | `phoneProfile.capabilities ∩ vehicleSafeSet` (driver-distraction filter applied at projection time) | Re-evaluate when Phone is paired to Vehicle (BTLE / USB / wired CarPlay) | NOT a federation peer; the Vehicle is a projection of the Phone. The "Vehicle form factor" in this case is the Phone's `FormFactorProfile` with `displayClass = Large` and constrained `inputModalities`. |
+| **Vehicle (built-in IVI; real federation peer)** | IVI receives in-vehicle subset | `vehicleProfile.capabilities ∩ vehicleSafeSet ∩ ivIDeploymentSet` | Re-evaluate at vehicle-startup handshake; OTA-driven adapter upgrades trigger A5.3 hardware-tier re-evaluation | Reserved for built-in vehicle IVI deployments (vs CarPlay/Android Auto projection). v0 does not ship a Vehicle adapter; row is informational + replaces the original A5.1 Vehicle row. |
+
+The original A5.1 Vehicle row is replaced by the third row above (built-in IVI clarification); the CarPlay/Android Auto case is now explicitly the second new row above; the Phone↔Watch case is the first new row.
+
+#### A8.5 — Spec field-level write authorization as Rule 6 (council A5 / F5 Major)
+
+A5.2 gains a new Rule 6 that pre-resolves what was deferred as A5-followup-2:
+
+> **Rule 6 — Field-level write authorization mirrors field-level read authorization.** A form factor F can author a field `f` on record `r` only if F has the capability to read `f` on `r` (per A5.7's per-tenant key filtering). A field that is read-sequestered on F (because F lacks the per-tenant key for that field's encryption surface) is also write-sequestered on F. Concurrent-edit attempts to write-sequestered fields are rejected at F's local CRDT-write boundary (BEFORE the merge boundary) with a `FieldWriteSequestered` audit event + a clear UX surface ("This field is encrypted with a key your form factor cannot access; ask an admin to grant the capability"). The CRDT merge logic NEVER sees a phantom write from F on a field F can't decrypt.
+
+A5.8 acceptance criteria gain:
+
+- [ ] `AuditEventType.FieldWriteSequestered` (new constant)
+- [ ] Test: tablet with `FormFactorProfile.formFactor = Tablet` + no `BiometricAuth` capability attempts to write `lease.tenant_demographics` (encrypted under biometric-protected key) → write rejected at local CRDT boundary; audit emitted; merge boundary never sees the attempt
+
+A5.12 follow-up A5-followup-2 is removed (resolved by Rule 6).
+
+#### A8.6 — Bidirectional round-trip verification gate for A5.5 forward-compat (council A6 / F6 Major)
+
+A5.5 gains an explicit verification gate that pins down what "forward-compat" actually requires from the deserialization model:
+
+> **A5.5 verification gate (forward-compat bidirectional round-trip).** Bidirectional round-trip MUST be verified per-record-type at A5 Stage 06 hand-off. The verification consists of:
+>
+> 1. Older node deserializes a newer-format record (containing fields X, Y, Z + unknown field W).
+> 2. Older node mutates a known field (Y).
+> 3. Older node re-serializes via `CanonicalJson.Serialize` and ships back to newer.
+> 4. Newer node verifies field W is still present at byte-identical location to the original.
+>
+> The verification SHALL fail unless the older node's deserialization model is one of: **(i)** `JsonNode`-typed intermediate (preserves all keys; loses type safety), OR **(ii)** typed class with `Dictionary<string, JsonNode> _unknownFields` catch-all (preserves keys; preserves type safety; requires explicit support). The default System.Text.Json behavior (typed deserialization with unknown keys silently dropped on serialize) does NOT satisfy A5.5.
+>
+> **Stage 06 hand-off MUST select option (i) or (ii) per record type and document the choice in A5.8 acceptance criteria.** Default expectation: option (ii) for performance-critical records; option (i) for low-traffic records where type safety is not load-bearing.
+
+A5.8 acceptance criteria gain:
+
+- [ ] Bidirectional round-trip test for at least 3 representative record types (lease, inspection, asset) using option (ii) catch-all dictionary
+
+#### A8.7 — 6-hour `AdapterRollbackDetected` dedup rationale (council A7 / F7 Minor)
+
+A5.6 gains a one-line rationale next to the 6-hour window:
+
+> **6-hour rationale:** chosen to absorb a typical "roll back, observe behavior, roll forward" cycle within a single workday while still alerting on repeated rollback patterns across days. Tunable per-deployment per OQ-A5.6 (added below).
+
+A new open question is appended:
+
+> **OQ-A5.6:** Should `AdapterRollbackDetected`'s dedup window be tunable per-deployment? Recommend: yes — same `MaxKernelMinorLag`-style configurable approach as A6.2 rule 2's window. Default 6 hours; configurable to 1–24 hours per deployment.
+
+#### A8.8 — Browser/PWA row in A5.3 detection-cadence table (council A8 / F8 Minor)
+
+A5.3 detection-cadence table gains:
+
+| Form factor | Detection cadence | Why |
+|---|---|---|
+| Browser / PWA (React adapter; Phase 2+) | `navigator.connection.change` event; `StorageManager.estimate()` polled at sync time; `visibilitychange` for foreground transitions | Browser exposes a different API surface than native OSes; storage-budget changes are app-driven, not OS-driven |
+
+#### A8.9 — `ITenantKeyProvider` explicit in A5.9 verified-existing list (council A9 / F9 Encouraged)
+
+Already absorbed into A8.1's A5.9 verified-existing list correction. Listed here for traceability:
+
+- A5.9 already had `Sunfish.Foundation.Recovery.IFieldDecryptor` (corrected to `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` in A8.1)
+- A5.9 now also lists `Sunfish.Foundation.Recovery.TenantKey.ITenantKeyProvider` per ADR 0046-A4.1 (the per-tenant-DEK-derivation seam consumed by `IFieldDecryptor` / `IFieldEncryptor`)
+- A5.9 now also lists `Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor` per ADR 0046-A2.2 (encrypt-side companion)
+
+#### A8.10 — A5.14 "what A5 doesn't cover" sub-section added (council A10 / Encouraged)
+
+Added as `A5.14` immediately above this A8 amendment (interleaved with the original A5 surface for chronological readability). A5.14 mirrors A6.12's pattern. See A5.14 above for full text.
+
+#### A8.11 — Cited-symbol verification (re-applied per A4.3 + A7.12 standing rung-6 task)
+
+Per the post-A4 + post-A7 standing commitment, A8's added/modified citations are spot-checked in all three directions per the `feedback_council_can_miss_spot_check_negative_existence` memory:
+
+**Verified existing on `origin/main`** (positive-existence + structural-citation correctness):
+
+- `Sunfish.Foundation.Recovery.TenantKey.ITenantKeyProvider` — verified existing per ADR 0046-A4.1; the canonical per-tenant-DEK-derivation seam (per F1 council finding which prompted A8.1)
+- `Sunfish.Foundation.Recovery.Crypto.IFieldEncryptor` + `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` — verified existing per ADR 0046-A2.2 (per F10 + F11 council verification-pass)
+- `ITenantKeyProvider` cites HKDF-SHA256 + per-tenant info string per ADR 0046-A2.3 + A4.1 — verified structurally correct
+- All other A5.9 citations remain valid as-listed (A6, A1, ADR 0028 generally; ADR 0032; ADR 0046; ADR 0049)
+
+**Introduced by A8** (not on `origin/main`; ship in implementation hand-off):
+
+- New audit-event constants:
+  - `AuditEventType.PlaintextSequestered` (per A8.3 rule 5, replaces the more-general `DataSequestered` for the plaintext case)
+  - `AuditEventType.CiphertextSequestered` (per A8.3 rule 5)
+  - `AuditEventType.FormFactorQuorumIneligible` (per A8.3 rule 6)
+  - `AuditEventType.FieldWriteSequestered` (per A8.5 rule 6)
+- New tunable: `AdapterRollbackDedupWindow: TimeSpan` (per A8.7 / OQ-A5.6; default 6 hours)
+- Migration table additions: 2 new rows (Phone↔Watch parent-device-mediated; CarPlay/Android-Auto Phone-projection); 1 row clarification (built-in IVI Vehicle)
+- Verification gate: option (i) `JsonNode`-typed intermediate OR option (ii) typed class with `Dictionary<string, JsonNode> _unknownFields` catch-all (per A8.6) — the choice is per-record-type at Stage 06 hand-off
+
+**Companion amendment dependency declared (A8.2 halt-condition):**
+
+- ~ADR-0032-A1 (QR-onboarding protocol formalization). A5 Stage 06 build halts on its acceptance. Forcing function: W#23 iOS Field-Capture App's Phase 5 (pairing flow) per OQ-A5.5.
+
+#### A8.12 — Cohort discipline log
+
+Per `feedback_decision_discipline.md` cohort batting average:
+
+- **Substrate-amendment council batting average:** **12-of-12** (forward pattern; council catches XO drift). A5 council surfaced 2 Critical + 4 Major + 2 Minor pre-merge — all mechanical to absorb pre-merge per the auto-merge-disabled posture. Cohort lesson holds: pre-merge council remains dramatically cheaper than post-merge.
+- **Council false-claim rate (all three directions):** unchanged at 2-of-10 across the cohort. The A5 council made 0 false-existence + 0 false-non-existence + 0 false-structural claims (all verification-pass findings F9–F15 are explicit positive-existence + structural-citation verifications with verification commands).
+- **Structural-citation failure rate (XO-authored, A7-third-direction):** **5-of-12** XO-authored substrate amendments have had a structural-citation failure caught somewhere — F1 + F2 of the A5 council are the 4th and 5th instances. All 5 caught pre-merge under the auto-merge-disabled-then-re-enabled posture. The cohort discipline IS catching them; the failure-mode IS recurring; XO continues to apply the structural read at draft-time but the council remains the safety net.
+- **Standing rung-6 task reaffirmed:** XO spot-checks A8's added/modified citations (per A8.11) within 24h of merge. If any A8-added claim turns out to be incorrect, file an A9 retraction matching the A3 / A4 retraction pattern.
+
+---
+
 ### A6 (PROPOSED) — Version-vector compatibility contract for mixed-version Sunfish clusters
 
 **Driver:** W#33 Mission Space Matrix discovery (`icm/01_discovery/output/2026-04-30_mission-space-matrix.md` §5.8) confirmed via A4 spot-check that Sunfish has **no version-vector compatibility contract** for mixed-version clusters. Paper §6.1 (line 180) mentions vector clocks operationally — for *gossip mechanics* (anti-entropy reconciliation between peers that have already agreed they are compatible peers) — but is silent on the upstream question of *whether* two nodes carrying different (kernel × plugin × adapter × schema-epoch × channel × instance-class) tuples can federate at all. Paper §15.2's *"'Couch device' (offline for 3+ major versions) → capability negotiation rejects with clear error"* references the gap without specifying the rejection logic.
