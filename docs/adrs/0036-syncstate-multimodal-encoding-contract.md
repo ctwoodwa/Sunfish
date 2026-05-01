@@ -180,3 +180,92 @@ of cases.
 - **Phase 1 Week 6 (Plan 5):** CI gate enforces the contract on every PR.
 - **Phase 2 (Plan 6):** application surfaces consume the contract from `ui-core` directly;
   no per-application syncstate authoring permitted.
+
+---
+
+## Amendments (post-acceptance, 2026-05-01)
+
+### A1 (REQUIRED) — Public `Sunfish.Foundation.UI.SyncState` enum exposure
+
+**Driver:** ADR 0063-A1.2 halt-condition + A1.17 sibling-amendment dependencies. ADR 0063 (Mission Space Requirements; landed post-A1 via PR #411) introduced `SyncStateSpec.AcceptableStates: IReadOnlySet<SyncState>?` as part of the install-time spec schema. The `SyncState` type ADR 0063 cites does not exist as a public foundation-tier enum on `origin/main` — ADR 0036 (this ADR) declares the encoding contract (the canonical identifiers `healthy / stale / offline / conflict / quarantine`) but stops short of exposing a public C# enum that downstream substrate ADRs can consume in type signatures.
+
+A1 closes the gap. Ships a public foundation-tier `Sunfish.Foundation.UI.SyncState` enum + canonical-identifier round-trip helpers. Backward-compat preserved (additive surface; existing string-form consumers continue to work).
+
+**Pipeline variant:** `sunfish-api-change` (introduces new public type; non-breaking).
+
+**Companion intake:** [`icm/00_intake/output/2026-04-30_sync-state-public-enum-intake.md`](../../icm/00_intake/output/2026-04-30_sync-state-public-enum-intake.md) (PR #414).
+
+#### A1.1 — `Sunfish.Foundation.UI.SyncState` enum
+
+```csharp
+namespace Sunfish.Foundation.UI;
+
+public enum SyncState
+{
+    Healthy,    // canonical identifier "healthy"
+    Stale,      // canonical identifier "stale"
+    Offline,    // canonical identifier "offline"
+    Conflict,   // canonical identifier "conflict"
+    Quarantine  // canonical identifier "quarantine"
+}
+```
+
+Enum value names are the PascalCase form of the canonical lowercase identifiers documented in §"Decision" + §"Channel rules" of this ADR. The 5-value set matches exactly — no additions, no removals.
+
+#### A1.2 — Canonical-identifier round-trip
+
+The PascalCase enum and the lowercase-string canonical identifier MUST round-trip cleanly via `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` per the project's existing convention (per ADR 0028-A7.8 + ADR 0028-A8.4 precedent).
+
+The canonical encoding rule: serialize as the **lowercase** identifier (`"healthy"`, `"stale"`, etc.) — matching ADR 0036's existing encoding-contract identifiers — NOT the PascalCase enum-name form.
+
+Implementation note: a `JsonStringEnumConverter` configured with `JsonNamingPolicy.CamelCase` produces `"healthy"` for `SyncState.Healthy` (single-word identifiers are flat-cased identically under camelCase). The round-trip property is what matters; the implementation MUST verify round-trip for all 5 enum values.
+
+#### A1.3 — Backward compatibility
+
+Existing consumers consuming sync state via:
+- ADR 0036's encoding contract (string-form canonical identifiers in JSON / CSS class names / ARIA roles) — **unchanged**.
+- ADR 0036's per-tier UI surface conventions (color, glyph, status-noun text, ARIA `role` + `aria-live`) — **unchanged**.
+
+The enum is **additive** — it provides a typed surface for downstream C# consumers who need it (specifically: ADR 0063's `SyncStateSpec.AcceptableStates`). No string-form consumer is broken.
+
+#### A1.4 — Acceptance criteria
+
+For a `Sunfish.Foundation.UI.SyncState` implementation to be considered A1-conformant, it MUST:
+
+- [ ] Define the 5-value enum exactly (`Healthy`, `Stale`, `Offline`, `Conflict`, `Quarantine`)
+- [ ] Round-trip via `CanonicalJson.Serialize` to lowercase canonical identifier strings (5 tests; one per value)
+- [ ] Round-trip in dictionary-key contexts via `JsonStringEnumConverter` `ReadAsPropertyName` / `WriteAsPropertyName` (matches W#34 P1 PluginId/AdapterId pattern; needed for downstream substrate consumer use cases)
+- [ ] Live in `packages/foundation-localfirst/` (or a new sub-namespace if foundation-localfirst is not the right home — Stage 06 picks)
+- [ ] Surface via apps/docs as part of the existing ADR 0036 walkthrough page (if any) OR as a new `apps/docs/foundation/syncstate/overview.md` page
+- [ ] No namespace collision with existing `Sunfish.Foundation.UI.*` types (verify before Phase 1 commit)
+
+#### A1.5 — Cited-symbol verification (per cohort discipline)
+
+**Existing on `origin/main`** (verified 2026-05-01):
+
+- ADR 0036 (this ADR) — Accepted; the 5-state encoding contract is canonical
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — encoding contract
+- `JsonStringEnumConverter` (System.Text.Json) — Microsoft framework type
+- ADR 0028-A7.8 + A8.4 — camelCase canonical encoding precedents (cited; verified Accepted)
+
+**Introduced by A1** (not on `origin/main`; ship in implementation hand-off):
+
+- `Sunfish.Foundation.UI.SyncState` (5-value enum)
+- A canonical-identifier-string round-trip test suite
+
+#### A1.6 — Implementation hand-off
+
+Stage 06 hand-off lands as a small workstream (~2–4h; realistically 1 PR). Recommend writing the hand-off file at `icm/_state/handoffs/foundation-ui-syncstate-stage06-handoff.md` when COB capacity opens (currently shipping W#30 Mesh VPN; W#35 Foundation.Migration is queued; W#23 iOS Field-Capture is queued — this amendment's hand-off slots after those).
+
+#### A1.7 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (15-of-15 substrate ADR amendments needing council fixes; structural-citation failure rate 10-of-15 (~67%) XO-authored; §A0 self-audit catch rate 0-of-4 on ADR 0063):
+
+- This is a small mechanical type-exposure amendment. **Pre-merge council MAY be waived** per Decision Discipline Rule 3 (mechanical fixes auto-accept) **if and only if** XO's draft passes a 3-direction spot-check at draft time AND no halt-conditions surface during authoring.
+- The amendment cites:
+  - 5 enum values matching the canonical identifiers documented elsewhere in this ADR — verified by reading this ADR's §"Decision" + §"Channel rules" (positive-existence + structural-citation)
+  - `JsonStringEnumConverter` from System.Text.Json — verified existing as a Microsoft framework type
+  - `CanonicalJson.Serialize` — verified existing per multiple prior amendments (ADR 0028-A4 retraction explicitly pinned this surface)
+- Post-merge **standing rung-6 spot-check** within 24h per the cohort discipline; if any A1 claim turns out to be incorrect, file an A2 retraction matching the prior cohort retraction pattern.
+
+The decision to waive pre-merge council on this amendment specifically (vs the substrate ADRs in W#33 §7.2) is intentional: this is a **type-exposure amendment** (PascalCase enum exposing existing canonical identifiers), not a substrate ADR (new type + new contract + downstream-consumer-surface). Future amendments to ADR 0036 that introduce new state values OR new encoding rules SHOULD pass through pre-merge council per cohort discipline.
