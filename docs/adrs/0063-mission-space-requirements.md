@@ -529,3 +529,203 @@ Per `feedback_decision_discipline.md` cohort batting average (13-of-13 substrate
   - The 4 new audit-event constants — collision-check against existing `AuditEventType` constants in `packages/kernel-audit/`.
 - **Cited-symbol verification** per the §A0 cited-symbol audit (existing on origin/main verified; introduced types listed; structural-citation spot-check on all field-on-type claims per the A7 lesson)
 - **Standing rung-6 spot-check** within 24h of ADR 0063 merging (per ADR 0028-A4.3 + A7.12 + A8.12 + ADR 0062-A1.15 commitment)
+
+---
+
+## Amendments (post-acceptance, 2026-04-30 council)
+
+### A1 (REQUIRED, mechanical) — 0063 council-review fixes
+
+**Driver:** Stage 1.5 adversarial council review of ADR 0063 at `icm/07_review/output/adr-audits/0063-council-review-2026-04-30.md` (PR #413, merged 2026-04-30) returned verdict **B (low-B) with 11 required + 4 encouraged amendments**. Severity profile: **4 Critical (F1 + F2 + F3 + F6; three of four are structural-citation failures — A7-third-direction class) + 7 Major + 2 Minor + 2 Encouraged + 9 verification-passes**. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A1 absorbs all 15 recommendations into ADR 0063's surface before Phase 1 substrate scaffold begins.
+
+**Cohort milestone (load-bearing lesson):** ADR 0063 is the **first amendment in the W#33 lineage where the §A0 self-audit pattern (introduced post-ADR-0062 council per A1.14) caught zero of the structural-citation failures the council later surfaced**. Three of four Critical findings (F1, F2, F3) were structural-citation failures that passed XO's pre-merge §A0 audit but failed council verification:
+
+- **F1:** §A0 cited `MinimumSpecDimension` (an invented type) as an ADR 0062 export. ADR 0062 has `DimensionChangeKind` (10-value enum at line 145). XO's §A0 audit listed `MinimumSpecDimension` without verifying it against ADR 0062's actual surface.
+- **F2:** `SyncStateSpec.AcceptableStates` example used `{ Synced, Local, Stale, Quarantined }`. ADR 0036's actual canonical state names are `healthy / stale / offline / conflict / quarantine`. `Local` is non-existent; the others conflate UI labels with canonical state-identifiers.
+- **F3:** `NetworkSpec.RequiredTransports` example used `Tier1Mdns`. ADR 0061's `TransportTier` enum has `LocalNetwork / MeshVpn / ManagedRelay`; `Tier1Mdns` does not exist.
+- **F5 (Major):** `packages/foundation-bundles/` cited; actual package is `packages/foundation-catalog/` (namespace `Sunfish.Foundation.Catalog.Bundles`).
+
+The §A0 audit pattern was introduced specifically to catch this failure mode. It did not. The pattern is **necessary but not sufficient**. Council remains canonical for substrate-tier ADRs in the W#33 lineage; this lesson is captured explicitly in A1.15 below + propagated to memory.
+
+**Cohort batting average:** 14-of-14 substrate amendments needing council fixes. Structural-citation failure rate (XO-authored): now **6+4 = 10 of 14 amendments** (~71%); ADR 0063 alone contributes 4 instances — high-water mark.
+
+#### A1.1 — Replace `MinimumSpecDimension` with `DimensionChangeKind` in §A0 (council A1 / F1 Critical structural-citation)
+
+§A0 "Existing on origin/main" entry for ADR 0062 is corrected:
+
+> ADR 0062 (Mission Space Negotiation Protocol; post-A1) — landed via PR #406; provides `MissionEnvelope`, `IMissionEnvelopeProvider`, `IFeatureGate<TFeature>`, `FeatureVerdict`, `DegradationKind`, `EnvelopeChange`, `DimensionChangeKind` (10-value dimension-key enum), `LocalizedString`, and `FeatureVerdictSurfaced` audit constant — ADR 0063 consumes these post-A1.2 / A1.8 / A1.11 / A1.12 surfaces.
+
+The invented `MinimumSpecDimension` type is removed from §A0 entirely.
+
+#### A1.2 — Replace `SyncStateSpec.AcceptableStates` example with ADR-0036-canonical state names + halt-condition (council A2 / F2 Critical structural-citation)
+
+§"Initial contract surface" `SyncStateSpec` example comment changes to:
+
+```csharp
+public sealed record SyncStateSpec(
+    IReadOnlySet<SyncState>? AcceptableStates    // e.g., { Healthy, Stale } — exclude Offline, Conflict, Quarantine.
+                                                  // State names are the PascalCase form of ADR 0036's encoding-contract identifiers
+                                                  // (healthy / stale / offline / conflict / quarantine)
+);
+```
+
+**Halt-condition added (post-A1):** ADR 0063 Stage 06 build CANNOT ship `SyncStateSpec` until either (a) `Sunfish.Foundation.UI.SyncState` (or equivalent foundation-tier `SyncState` enum) is publicly exposed by a sibling amendment to ADR 0036, OR (b) the `SyncStateSpec.AcceptableStates` field type is changed to `IReadOnlySet<string>?` with the doc-comment naming the canonical state strings as the contract. Phase 1 substrate scaffold MAY ship `SyncStateSpec` as `Sunfish.Foundation.UI.SyncState` and Stage 06 work picks up the halt-resolution.
+
+#### A1.3 — Replace `NetworkSpec.RequiredTransports` example with the actual `TransportTier` enum value (council A3 / F3 Critical structural-citation)
+
+§"Initial contract surface" `NetworkSpec` example comment changes to:
+
+```csharp
+public sealed record NetworkSpec(
+    IReadOnlySet<TransportTier>?    RequiredTransports  // e.g., { LocalNetwork } for same-LAN-required scenarios per ADR 0061.
+                                                         // (For offline-first declarations, prefer
+                                                         // FormFactorSpec.MinNetworkPosture: NetworkPosture.OfflineFirst per ADR 0028-A5.1;
+                                                         // this dimension is for declaring REQUIRED transports, not capability profile.)
+);
+```
+
+#### A1.4 — Rename `OperatorRecoveryHint` → `OperatorRecoveryAction` throughout `DimensionEvaluation` (council A4 / F4 Major vocabulary-fork)
+
+ADR 0062 post-A1.11 canonical vocabulary uses `OperatorRecoveryAction`. ADR 0063's `DimensionEvaluation` introduced a divergent `OperatorRecoveryHint` field; this is corrected:
+
+```csharp
+public sealed record DimensionEvaluation(
+    DimensionChangeKind     Dimension,
+    DimensionPolicyKind     PolicyKind,
+    DimensionPassFail       Result,
+    LocalizedString?        UserMessage,
+    LocalizedString?        OperatorRecoveryAction  // (renamed from OperatorRecoveryHint per ADR 0062 post-A1.11 vocabulary)
+);
+```
+
+Same rename applies to all references to `OperatorRecoveryHint` elsewhere in §"Initial contract surface" + §"Pre-install UX flow" + §"Post-install UX flow".
+
+#### A1.5 — Replace `packages/foundation-bundles/` with `packages/foundation-catalog/` (council A5 / F5 Major structural-citation)
+
+§"Affected packages" + §"Implementation checklist" references corrected:
+
+> Modified: `packages/foundation-catalog/` (per ADR 0007; namespace `Sunfish.Foundation.Catalog.Bundles`) — `BusinessCaseBundleManifest.Requirements` field added (coordinated A1 amendment to ADR 0007 per sibling amendment dependencies).
+
+#### A1.6 — Memory-spec unit alignment (council A6 / F6 Critical unit-mismatch)
+
+Per Option α (recommended in council A6): `HardwareSpec.MinMemoryBytesGb: int?` is renamed to `MinMemoryBytes: long?` to match `MinDiskBytes: long?` and the envelope's `memoryBytes: long`:
+
+```csharp
+public sealed record HardwareSpec(
+    long?                   MinMemoryBytes,      // e.g., 17_179_869_184L (= 16 GB; matches paper §4 baseline)
+    int?                    MinCpuCores,         // e.g., 8 (paper §4 baseline)
+    long?                   MinDiskBytes,        // e.g., 536_870_912_000L (= 500 GB; paper §4 baseline)
+    DisplayClass?           MinDisplayClass,
+    IReadOnlySet<SensorRequirement>? RequiredSensors
+);
+```
+
+The resolver compares envelope's `MemoryBytes: long` against spec's `MinMemoryBytes: long` directly — no unit conversion; no foot-gun.
+
+#### A1.7 — Per-platform override resolution: COMPOSE not REPLACE (council A7 / F7 Major internal-contradiction)
+
+The original §"Per-platform per-bundle spec resolution" rule said "active platform override OR baseline" but the canonical example (iOS adds `BiometricAuth` on top of baseline) implies COMPOSE. The rule is corrected to match the example:
+
+> When `BusinessCaseBundleManifest.Requirements.PerPlatformOverrides` is set, the active platform's override is **merged** with the baseline per the following per-dimension rule:
+>
+> 1. **For each dimension**, if the override declares a value for that dimension, the override's value REPLACES the baseline's value for that dimension. If only the baseline declares, the baseline's value applies. If neither declares, the dimension is unspec'd ("any").
+> 2. The merged spec is the spec used for evaluation against the user's MissionEnvelope.
+> 3. **No override AND no baseline** (`Requirements == null`): bundle is "any" (effectively `OverallVerdict.Pass` always).
+
+The example prose is updated: the iOS override "adds `BiometricAuth` on top of the baseline's 16GB / 8-core / etc." and the merged effective spec on iOS is `{ Hardware: { MinMemoryBytes: 17_179_869_184L, ..., RequiredSensors: { BiometricAuth } }, Policy: Required }`.
+
+#### A1.8 — `OverallVerdict` rule for `Informational` dimensions (council A8 / F8 Major)
+
+`OverallVerdict` doc-comments updated to make the Informational rule explicit:
+
+```csharp
+public enum OverallVerdict
+{
+    Pass,       // every Required dimension passes; every Recommended dimension passes; Informational dimensions IGNORED for verdict (surfaced in System Requirements page only)
+    WarnOnly,   // every Required dimension passes; one or more Recommended dimensions fail; Informational dimensions IGNORED for verdict
+    Block       // one or more Required dimensions fail; Recommended/Informational do not move the needle from Block
+}
+```
+
+A clarifying paragraph added above the enum: *"`Informational` dimensions are evaluated and surfaced in the System Requirements page table but do NOT affect `Overall`. Failure of an Informational dimension is purely diagnostic — the user sees it in the page; it does not block install or warn."*
+
+#### A1.9 — Post-install regression evaluation cost class + optimization (council A9 / F9 Major scaling)
+
+A new sub-section added under §"Post-install UX flow":
+
+> **Re-evaluation cost class.** On `EnvelopeChange` events with `Severity ∈ { Warning, Critical }`, the resolver re-evaluates **only the installed bundles whose `Requirements` declare at least one of the dimensions in `EnvelopeChange.ChangedDimensions`** (filtering optimization). For each such bundle, the resolver runs `EvaluateAsync` against the new envelope. Cost class: `Low` (in-memory comparison after envelope is fetched). Per-event budget: P95 < 100ms for ≤50 installed bundles × full re-evaluation (typical home/SMB tenant). Above 50 bundles, the resolver SHOULD batch evaluations on a background-priority worker; this is a SHOULD not a MUST for v0.
+
+#### A1.10 — Warning-persistence policy after `WarnOnly` dismissal (council A10 / F10 Major UX-spec)
+
+A new sub-section added under §"Pre-install UX flow":
+
+> **Warning persistence policy.** `WarnOnly` warnings are dismissed per-version-per-install. Specifically:
+>
+> - Bundle install with version V1: warning shown; user dismisses; warning hidden for the install lifetime of V1.
+> - Bundle update from V1 to V2 (any version bump): warning re-shown if WarnOnly still applies under V2's spec. The dismissal does NOT carry over.
+> - Bundle uninstall + reinstall: treated as a new install; warning re-shown.
+> - User envelope change that resolves the warning silently no-ops; the warning surface disappears (no notification).
+> - User envelope change that introduces a NEW Recommended-dimension failure produces a fresh warning surface (not a dismissed one).
+
+#### A1.11 — `InstallForceEnabled` audit event for operator force-install (council A11 / F11 Major audit-gap)
+
+A 5th `AuditEventType` constant is added per the original ADR 0063 telemetry shape:
+
+| Event | Trigger | Payload | Dedup window |
+|---|---|---|---|
+| `InstallForceEnabled` | Operator force-installs a bundle whose Overall is Block | `(bundle_key, failed_required_dimensions, operator_id, justification)` | None (per-attempt) |
+
+Force-install path now emits both `InstallBlocked` (the user's blocked attempt) AND `InstallForceEnabled` (the operator's override) — symmetric with ADR 0062's force-enable audit shape (`FeatureForceEnabled` + `FeatureForceEnableRejected`).
+
+OQ-0063.3's question ("operator UX for Force Install given the audit trail") is now resolved: justification text required; attached to `InstallForceEnabled` payload.
+
+#### A1.12 — §"Prior art" subsection (council A12 / F12 Encouraged)
+
+A new §"Prior art" subsection added (between §"Considered options" and §"Decision"):
+
+> **Declarative-spec prior art.** While Steam's System Requirements page is the user-facing UX anchor (per §"Decision drivers"), the *declarative-schema* anchors are:
+>
+> - **Apple `UIRequiredDeviceCapabilities`** in `Info.plist` — direct prior-art for `HardwareSpec.RequiredSensors`. iOS App Store filters by these declarations.
+> - **Android `<uses-feature android:required="true|false">`** in `AndroidManifest.xml` — direct prior-art for the Required vs Recommended split + per-feature granularity.
+> - **Microsoft Store `<DeviceCapability>`** in `appxmanifest.xml` — capability-declaration enforcement at install.
+> - **.NET msbuild `<TargetFramework>`** in `*.csproj` — direct prior-art for `RuntimeSpec.MinDotnetVersion`.
+> - **VS Code Extension Manifest `engines` field** — JSON declarative-spec analog matched to ADR 0007's manifest-as-JSON shape.
+>
+> ADR 0063's `MinimumSpec` schema is best understood as a cross-platform substrate generalization of these per-platform manifest declarations, hoisted to the bundle-manifest tier so that a single bundle ships per-platform overrides that the local renderer translates into the active platform's idiom (or simply consumes the substrate spec directly when no platform-specific manifest exists).
+
+#### A1.13 — §"Localization" subsection (council A13 / F13 Encouraged)
+
+A new §"Localization" subsection added (under §"Decision"):
+
+> **Localization.** Spec authoring is purely structural data (enums, numeric thresholds, sets). Spec rendering produces `LocalizedString?` outputs from per-dimension default localization keys (e.g., `mission-space.requirements.hardware.min-memory.fail`). Renderers may override per-key. Keys live alongside the spec records in `Sunfish.Foundation.MissionSpace.Localization.MinimumSpecKeys` (a static class of constants); the renderer fetches them via the platform's localization framework — `.resx` for Anchor MAUI; `i18next` for Bridge React; `.strings` for iOS Field-Capture. Default English values ship in `MinimumSpecKeys.DefaultEnglish` for the `LocalizedString.DefaultValue` fallback.
+
+#### A1.14 — Force-Install link visibility (council A14 / F14 Encouraged)
+
+§"Pre-install UX flow" step 4 corrected:
+
+> 4. If Overall is Block: Install button is disabled; tooltip naming the failed Required dimensions; **operator-only "Force Install" link rendered server-side only when the requesting user has the operator role** (so the link is never visible to non-operators; non-operators see the tooltip without the link). Server-side rendering is canonical; client-side hiding via CSS is forbidden (the link's existence in the DOM would leak the operator-override surface).
+
+#### A1.15 — §A0 cited-symbol audit lesson (council A15 / Encouraged)
+
+§"Cohort discipline" gains a closing paragraph documenting the load-bearing lesson:
+
+> **§A0 cited-symbol audit lesson (post-ADR-0063 council).** ADR 0063's §A0 audit was structurally correct in shape (mirroring ADR 0062-A1.14 + ADR 0028-A8.11) but failed to catch 4 structural-citation issues — `MinimumSpecDimension` (invented; F1), `SyncStateSpec.AcceptableStates` example values (non-existent in ADR 0036; F2), `NetworkSpec.RequiredTransports` example values (non-existent in ADR 0061; F3), and `packages/foundation-bundles/` (non-existent; F5). The §A0 self-audit pattern is **necessary but not sufficient**. Council-side spot-checks (the original A7 lesson) remain canonical for substrate ADRs in the W#33 lineage. Future ADRs in this lineage MUST include both: (a) §A0 self-audit at draft time, AND (b) pre-merge council with three-direction structural verification per the `feedback_council_can_miss_spot_check_negative_existence` memory's third direction.
+>
+> **Memory commitment:** The memory note `feedback_council_can_miss_spot_check_negative_existence` is updated separately (next memory edit) to record this outcome — the §A0 self-audit pattern was tested on ADR 0063 and produced 0% catch-rate against the structural-citation failures the council later surfaced. The pattern is retained but downgraded from "primary defense" to "necessary supplement"; pre-merge council is the canonical defense.
+
+#### A1.16 — Cohort discipline log
+
+Per `feedback_decision_discipline.md` cohort batting average:
+
+- **Substrate-amendment council batting average:** **14-of-14** (forward pattern). Council surfaced 4 Critical + 7 Major + 2 Minor + 2 Encouraged pre-merge — all mechanical to absorb. Cohort lesson holds: pre-merge council remains dramatically cheaper than post-merge.
+- **Council false-claim rate (all three directions):** unchanged at 2-of-12 across the cohort. The 0063 council made 0 false-existence + 0 false-non-existence + 0 false-structural claims (verification-pass findings are explicit positive-existence + structural-citation verifications with verification commands).
+- **Structural-citation failure rate (XO-authored):** **10-of-14 amendments** (~71%); ADR 0063 alone contributes 4 instances — high-water mark in the cohort. The §A0 self-audit pattern caught 0 of 4. Pre-merge council remains the canonical defense.
+- **Standing rung-6 task reaffirmed:** XO spot-checks A1's added/modified citations within 24h of merge. If any A1-added claim turns out to be incorrect, file an A2 retraction.
+
+#### A1.17 — Sibling amendment dependencies named
+
+A1.2's halt-condition declares: ADR 0063 Stage 06 build cannot ship `SyncStateSpec` as `IReadOnlySet<SyncState>?` until either (a) ADR 0036-A1 exposes a public `Sunfish.Foundation.UI.SyncState` enum, OR (b) `SyncStateSpec.AcceptableStates` is changed to `IReadOnlySet<string>?` with the doc-comment naming the canonical state strings. Recommend (a) — sibling intake to ADR 0036-A1 is queued as XO follow-up: file `2026-04-30_sync-state-public-enum-intake.md` for ADR 0036-A1.
+
+ADR 0007-A1 (`BusinessCaseBundleManifest.Requirements: MinimumSpec?` field) — already filed via PR #412; remains the canonical sibling for ADR 0063 Phase 2 wiring.
+
+ADR 0064 (Runtime Regulatory Policy Evaluation) — independent of ADR 0063; queued next per W#33 §7.2; can run in parallel.
