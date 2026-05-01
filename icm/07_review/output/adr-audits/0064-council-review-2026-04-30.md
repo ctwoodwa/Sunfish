@@ -1,469 +1,501 @@
-# ADR 0064 — Runtime Regulatory / Jurisdictional Policy Evaluation — Council Review
+# ADR 0064 — Council Review (Stage 1.5 Adversarial)
 
 **Date:** 2026-04-30
-**Reviewer:** research session (XO; adversarial council, UPF Stage 1.5)
-**Subject:** ADR 0064 v. 2026-04-30 (Proposed; auto-merge intentionally DISABLED per cohort discipline + parent-intake halt-condition)
-**ADR under review:** [`docs/adrs/0064-runtime-regulatory-policy-evaluation.md`](../../../docs/adrs/0064-runtime-regulatory-policy-evaluation.md) on branch `docs/adr-0064-runtime-regulatory-policy`; PR **#415**.
-**Companion intake:** [`icm/00_intake/output/2026-04-30_runtime-regulatory-policy-evaluation-intake.md`](../../00_intake/output/2026-04-30_runtime-regulatory-policy-evaluation-intake.md)
-**Driver discovery:** [`icm/01_discovery/output/2026-04-30_mission-space-matrix.md`](../../01_discovery/output/2026-04-30_mission-space-matrix.md) §5.9 + §6.3 + §7.2 — fifth and final item in the W#33 Mission Space Matrix follow-on authoring queue.
-**Companion artifacts read:** ADR 0064 (568 lines, single document); ADR 0057 (FHA documentation-defense; A1 amendment landed 2026-04-30); ADR 0060 (Right-of-Entry; A1–A5 landed 2026-04-29); ADR 0062 post-A1 surface (`MissionEnvelope.RegulatoryCapabilities`, `OverridableWithCaveat`, `IFeatureGate<TFeature>`, `FeatureVerdict`, `DegradationKind`, `EnvelopeChange`, `DimensionChangeKind`, `LocalizedString`, `FeatureForceEnabled`); ADR 0063 post-A1 (`RegulatorySpec(AllowedJurisdictions, ProhibitedJurisdictions, RequiredConsents)`); ADR 0049 (audit substrate); ADR 0009 (`Foundation.FeatureManagement`; `Edition` / `IEditionResolver`); ADR 0031 (Bridge hybrid multi-tenant SaaS — Zone C); ADR 0056 (`Foundation.Taxonomy`); paper §20.4 (Filter 3: Connectivity and Operational Environment); paper §16 (IT Governance and Enterprise Deployment); `packages/kernel-audit/AuditEventType.cs`; W#22 active-workstreams row (Phase 6 compliance half deferred); prior cohort councils 0061 / 0062 / 0063 / 0028-A1 / A6 / A8 / 0046-A2 / A4 / 0048-A1.
+**Reviewer:** XO (research session) authoring in-thread after two subagent dispatches stalled (stream watchdog timeout). 5-perspective council per parent intake's halt-condition + W#33 §5.9 hardening precedent.
+**ADR under review:** [ADR 0064 — Runtime Regulatory / Jurisdictional Policy Evaluation](../../../docs/adrs/0064-runtime-regulatory-policy-evaluation.md) (PR #415, branch `docs/adr-0064-runtime-regulatory-policy`, auto-merge intentionally DISABLED pre-council per cohort discipline)
+**Companion intake:** [`2026-04-30_runtime-regulatory-policy-evaluation-intake.md`](../../00_intake/output/2026-04-30_runtime-regulatory-policy-evaluation-intake.md) (W#33 §7.2 fifth and final follow-on item)
+**Driver discovery:** Mission Space Matrix §5.9 (`icm/01_discovery/output/2026-04-30_mission-space-matrix.md`)
 
-**Council perspectives applied (5 — Pedantic-Lawyer required per parent intake halt-condition #4 + W#33 §5.9 hardening precedent):** (1) Distributed-systems / runtime-substrate reviewer; (2) Industry-prior-art reviewer; (3) Cited-symbol / cohort-discipline reviewer (3-direction spot-check per the A7 / 0063 lesson — positive-existence, negative-existence, structural-citation correctness); (4) Forward-compatibility / migration reviewer; (5) **Pedantic-Lawyer perspective** — statutory citation hygiene, regime-stance framing, liability-language risk, OFAC/sanctions framing, GDPR transfer-Articles cross-reference accuracy.
+**Council perspectives (5):** distributed-systems / runtime-substrate; industry-prior-art; cited-symbol / cohort-discipline; forward-compatibility / migration; **Pedantic-Lawyer (REQUIRED per parent intake halt-condition)**.
+
+> **Reader caution (carried forward):** specific statutory citations in this review have not been verified against current Official Code text. The findings note the *substrate's* citation hygiene; downstream legal review is still required per ADR 0064's halt-conditions for Stage 06.
 
 ---
 
 ## 1. Verdict
 
-**Accept-with-amendments — grade B (mid-B).** ADR 0064 is doing a **necessary** thing — W#33 §6.3 names cross-cutting regulatory substrate as the single highest commercial-launch-blocker for any non-US-residential-property tenant, and the substrate-vs-content separation (Option A) is the right architectural taste: it preserves XO/legal-counsel boundaries while letting Phase 1 substrate ship without legal-review gating. The reader-caution preamble + the explicit halt-conditions for Stage 06 (general-counsel engagement letter, Pedantic-Lawyer council, reader-caution carry-forward) demonstrate that the author internalized the "the substrate is XO authority; the content is legal authority" boundary rigorously.
+**Accept with amendments. Grade: B (Solid).** Path to A is mechanical (A1–A8 land + Pedantic-Lawyer-driven A9–A12 land).
 
-The §A0 self-audit shows discipline learned from the ADR 0063 lesson — the cited symbols are *substantially* better than 0063's (no invented type-name failures caught in this review's spot-check; the post-A1 surface citations all positively verify, including the A1.9 / A1.10 / A1.14 amendment references; ADR 0009/0031/0049/0056/0057/0060/0062/0063 references all positively-verify on `origin/main`; W#22 active-workstreams Phase 6 deferred status correctly cited; paper §20.4 + §16 both verified-existing on origin/main). The §A0 self-audit catch-rate appears to be **substantially higher than ADR 0063's 0-of-4** — encouraging cohort-discipline signal. However, **the council still finds 3 structural-citation findings** of a different shape than 0063's (affected-package naming F5; rule-content data file path divergence F6; one paper §-citation framing F7) — confirming the cohort lesson that §A0 self-audit catches some but not all structural failures and council remains canonical, especially on cross-cutting structural choices that aren't pure type-name verification.
+The substrate-tier shape is correct: tuple-typed jurisdictional probe + composite-confidence rule + data-driven `IPolicyEvaluator` + per-regime acknowledgment surface + force-enable composing with ADR 0062's `OverridableWithCaveat` is the right architectural decision. The Option A separation (substrate Phase 1 ships without rule content; per-regime rule content lands as legal sign-off completes) is auditable and matches the precedent set by ADR 0057's substrate-vs-content separation. The 7 new `AuditEventType` constants pass collision check; the cited ADR set passes positive-existence verification on `origin/main`.
 
-The Pedantic-Lawyer perspective contributes the highest finding density of any single perspective in this review (**5 findings** — F8 GDPR Article 25 absence, F9 PCI-DSS framing, F11 sanctions-emit-without-enforce knew-or-should-have-known risk, F13 force-enable liability-language softening, F14 disputed-jurisdictions naming gap), confirming the parent-intake halt-condition was load-bearing. The standard-perspective findings cluster around three substantive design gaps: composite-confidence rule under-specifies tied-disagreement and probe-status interactions (F1), `IPolicyEvaluator` rule-keying mechanism is unspecified (F2), and audit-retention-period spec is missing (F12).
+The substantive gaps are: (1) Pedantic-Lawyer perspective surfaces a missing GDPR Article 25 (privacy-by-design) citation — the substrate's whole posture rests on Art. 25 conformance, but only Articles 22/44/45/46 are cited; (2) the reader-caution preamble lacks an affirmative legal-advice disclaimer ("Sunfish does not provide legal advice; consult counsel before relying on this substrate for regulatory conformance") — currently fact-statement only; (3) sanctions screening's "operator-decision-aware emit-without-enforce" shape risks "knew-or-should-have-known" OFAC liability — substrate should declare an operator opt-out path explicitly; (4) Bridge-tier data-residency upstream gate code-path is unnamed (which middleware? which package?); (5) audit retention period for regulatory defense is unspecified — GDPR has variable retention, HIPAA has 6-year retention; substrate must declare; (6) `IPolicyEvaluator` evaluation cost class at scale is undeclared, and the rule-keying mechanism by featureKey is implicit; (7) industry rule-engine prior-art (Open Policy Agent / AWS Cedar / XACML) uncited; (8) industry sanctions screening libraries uncited; (9) Phase 1 substrate-only-without-rule-content deployability risks consumers misreading as "compliant."
 
-None of the 17 findings block W#33 §7.2 closure of this ADR's substrate-tier intake; all should land before any rule-content data file or any `apps/docs/foundation/regulatory-policy/` text ships, because rule-content authoring is legal-review-gated and the substrate surface that legal counsel reviews must be stable.
+Twelve required amendments + five encouraged. None block ADR 0064 Stage 02 design (all are mechanical to apply); ALL should land before Stage 06 substrate-build emits its first `PolicyEvaluated` audit event. The Pedantic-Lawyer-driven amendments specifically (A9–A12) are critical — they protect Sunfish-the-OSS-framework from inadvertent legal-conformance claims. The cohort lesson holds: pre-merge council (with Pedantic-Lawyer included) is dramatically cheaper than post-merge for substrate-tier ADRs in the W#33 lineage.
 
 ---
 
 ## 2. Findings (severity-tagged)
 
-### F1 — Composite-confidence rule under-specifies tied-disagreement + ProbeStatus interaction (Major, AP-3 vague success criteria)
+### F1 — GDPR Article 25 ("data protection by design and by default") absent from cited articles (Critical, Pedantic-Lawyer)
 
-ADR 0064 lines 366–370 declare the composite confidence rule:
+ADR 0064 cites GDPR Articles 22 (automated decision-making), 44–46 (transfers) — the "obvious four" for runtime-gate framing. **Article 25 is missing.** Article 25 is canonically cited alongside these four for substrate-tier posture: it requires controllers to "implement appropriate technical and organisational measures... [for] data protection by design and by default." The substrate ADR 0064 ships IS a "technical measure" within the Article 25 frame; its absence from References is structurally significant.
 
-> *"If user-declared OR tenant-config is `High`: composite is `High`; use that signal.*
-> *If only IP-geo: composite is `Low`; verdict is `IndeterminateProbeFailure` for `MinimumProbeConfidence: High` rules, `Pass` for `Low`-min rules.*
-> *If two signals disagree: composite is `Medium`; emit `JurisdictionProbedWithLowConfidence` audit; surface UX to user requesting explicit declaration."*
+Practitioner-vs-Official-Code note: Article 25 lives in Chapter IV (Controller and Processor) Section 1 (General obligations), at GDPR (Regulation EU 2016/679) Article 25(1) and 25(2). The substrate's "force-enable acknowledges operator assumes responsibility" framing (ADR 0064 §"Trust impact / Security & privacy") is precisely the kind of operator-controller obligation Article 25 governs.
 
-The rule is shape-correct but covers ~6 of the 27 cases the §"Test coverage" checklist (line 470) explicitly names ("3 signals × 3 confidence levels = 27 cases"). Concrete unspecified cases:
+**Critical because:** the substrate's posture rests on Article 25; without the citation, a future reviewer (auditor; legal counsel; regulator) cannot trace the substrate's design back to its load-bearing statutory anchor.
 
-- **(a) User-declared = High AND tenant-config = High AND they disagree** ("operator says US-CA; user says US-NY"). Rule says "use that signal" but doesn't name which High signal wins. Tenant-config typically dominates per Sunfish's operator-trust model (ADR 0008), but the ADR doesn't say so.
-- **(b) User-declared = High AND IP-geo agrees AND tenant-config disagrees** — three signals, two agree at High, one disagrees at Low. Rule says "two signals disagree → Medium" but the High-agreeing pair should arguably outweigh the Low-disagreeing solo signal; current rule produces Medium.
-- **(c) ProbeStatus = `Stale` interaction** — ADR 0064 cites `ProbeStatus per ADR 0062-A1.10`, but the cache TTLs (5 min IP-geo, 1 hour user, 1 hour tenant-config) imply Stale state is reachable. What is the verdict when user-declared signal is `Stale`? Cached signal should arguably remain High-confidence within TTL but the Status≠Healthy needs explicit verdict-impact rule.
-- **(d) `Failed` ProbeStatus** — IP-geo source unreachable. Rule says "If only IP-geo: composite is Low" but if IP-geo *failed* AND user-declared exists at High, the composite should be User-declared High (one signal failed should not poison the composite).
+### F2 — Reader-caution preamble lacks affirmative legal-advice disclaimer (Critical, Pedantic-Lawyer)
 
-Stage 06 implementer cannot ship `IPolicyEvaluator` without picking one disposition for each. **Major** — same AP-3 shape as ADR 0061 council F3 and ADR 0063 council F8. Mechanical fix: explicit truth-table or algorithm pseudocode covering all 27 cases (3 signals × 3 confidence states) PLUS ProbeStatus interactions (Healthy / Stale / Failed / Partial / Unreachable per ADR 0062). One paragraph + one table.
+ADR 0064's reader-caution preamble (top of file) is a fact-statement: *"specific statutory citations in this ADR have not been verified against current Official Code text and may use practitioner shorthand."* This is necessary but not sufficient. The Pedantic-Lawyer flag: a fact-statement is not a disclaimer; an affirmative disclaimer ("Sunfish does not provide legal advice; the substrate is not a substitute for qualified counsel; consult an attorney before relying on this substrate for regulatory conformance in any specific deployment") shifts the reader into the right legal posture.
 
-### F2 — `IPolicyEvaluator.EvaluateAsync(envelope, featureKey, ct)` rule-keying mechanism is unspecified (Major, AP-1 unvalidated assumption)
+The current preamble is silent on the unstated assumption that downstream consumers might use ADR 0064 as a guide-to-conformance. An affirmative disclaimer prevents that misreading.
 
-ADR 0064 line 196–202 declares:
+**Critical because:** the substrate ADR will be cited downstream by per-domain ADRs and per-feature documentation; without an affirmative disclaimer, the citation chain may aggregate into something that reads as legal-advice-by-aggregation.
 
-```csharp
-public interface IPolicyEvaluator
-{
-    ValueTask<PolicyVerdict> EvaluateAsync(
-        MissionEnvelope envelope,
-        string featureKey,
-        CancellationToken ct = default
-    );
-}
-```
+### F3 — Sanctions screening's emit-without-enforce shape may create OFAC liability (Critical, Pedantic-Lawyer + distributed-systems)
 
-The evaluator must select **which** `JurisdictionalPolicyRule` instances to evaluate against the `(envelope, featureKey)` pair. ADR 0064 doesn't specify the selection mechanism. Three plausible mechanisms:
+ADR 0064 specifies: *"A match does NOT automatically block; the operator + legal counsel decides per-match what to do."* Substrate emits `SanctionsScreeningHit` audit; operator decides enforcement. This is **operator-decision-aware shape**, which is correct for OSS substrate. But:
 
-- **(a) Feature-keyed** — rules carry `IReadOnlyList<string> AppliesTo` (feature keys); evaluator filters rules by `AppliesTo.Contains(featureKey)`.
-- **(b) Jurisdiction-keyed** — evaluator filters rules by `rule.JurisdictionId == envelope.Regulatory.Jurisdiction` (or `*` wildcard match) AND a separate per-feature mapping.
-- **(c) PolicyEvaluationKind-keyed** — feature carries metadata declaring which `PolicyEvaluationKind` values it triggers; evaluator filters rules by intersection.
+- OFAC enforcement guidance places weight on *"the totality of circumstances"* including whether a person *"knew or had reason to know"* of a match. A substrate that emits matches into the audit trail without a default-block creates a paper trail of "we knew."
+- Without a substrate-tier opt-out path explicitly named (e.g., a `ScreeningPolicy.AdvisoryOnly` mode that suppresses the audit emission with explicit operator+counsel sign-off), the substrate's default behavior is "log-but-don't-act" — which is exactly the posture OFAC enforcement guidance treats as aggravating.
 
-ADR 0064's `JurisdictionalPolicyRule` record (line 159–168) has `JurisdictionId`, `Regime`, `RuleId`, `Kind`, `OnViolation`, `MinimumProbeConfidence` — but **no `AppliesTo` field on the rule and no per-feature manifest** declaring which rules apply. The substrate cannot route between feature and rule.
+**Critical because:** Sunfish-the-framework should not ship a substrate that may inadvertently increase regulatory liability for its consumers. The operator-decision-aware shape is right; the absence of an explicit opt-out path is wrong. Recommend A3 amendment names the path.
 
-This is the same AP-1 shape as ADR 0061 council F1 (`ITransportSelector` selection rule unspec'd) and ADR 0063 council F8 (`OverallVerdict` Informational-dimension rule unspec'd). **Major** — Stage 06 implementer cannot ship `DefaultPolicyEvaluator` without picking one. Mechanical fix: add either an `IReadOnlySet<string> AppliesToFeatureKeys` field on `JurisdictionalPolicyRule` (Option a) OR a separate `IFeaturePolicyManifest` interface declaring per-feature rule-kind subscriptions (Option c, more extensible). Option (a) is simpler; recommend it for v0.
+### F4 — Bridge-tier data-residency upstream gate code-path is unnamed (Critical, distributed-systems)
 
-### F3 — Cache invalidation when probe transitions Healthy → Stale is unspecified (Major, AP-3 / cache coherence)
+ADR 0064 specifies: *"The data-residency enforcer at the Bridge boundary applies BEFORE ciphertext touches Bridge storage — the constraint is an upstream gate, not a downstream filter."* But which code path? Which middleware? Which package?
 
-ADR 0064 line 360–365 declares per-signal cache TTLs (5 min IP-geo / 1 hour user-declared / 1 hour tenant-config) but does NOT specify what happens to a `PolicyVerdict` cached against an `(envelope, featureKey)` pair when the underlying probe signal transitions Healthy→Stale.
+- ADR 0031 Bridge accelerator has request-handling middleware (per the typical ASP.NET Core pipeline pattern); ADR 0064 doesn't name where the residency-enforcer hooks in.
+- "BEFORE ciphertext touches Bridge storage" implies hooking BEFORE `EncryptedField` storage operations (per ADR 0046) on the Bridge side — but the Bridge handles encrypted payloads it doesn't decrypt. Where does the residency check happen?
+- Without naming the code-path, Stage 06 implementation diverges from ADR intent.
 
-OQ-0064.3 (line 486) acknowledges the question for `IDataResidencyEnforcer` ("Should `IDataResidencyEnforcer` cache verdicts? Recommend: yes — same `(record_class_key, jurisdiction)` evaluation should produce identical verdict; cache per ADR 0062 Medium cost class (5-minute TTL)") but doesn't extend the answer to `IPolicyEvaluator`.
+**Critical because:** the ADR's residency-enforcement claim cannot be verified at Stage 06 build without knowing the gate's location.
 
-Concrete scenario: a leasing-pipeline feature does `EvaluateAsync(envelope, "leasing.background-check")` → verdict cached for 5 minutes. At t+3min, the IP-geo probe transitions Healthy → Stale. At t+4min, a *second* `EvaluateAsync` with same args fires. Does:
+### F5 — Audit retention period for regulatory defense is unspecified (Major, Pedantic-Lawyer)
 
-- **(a)** Cache hit returns the original verdict (until TTL expires)?
-- **(b)** Cache invalidates immediately on probe transition (cache coherence with probe)?
-- **(c)** Cache returns verdict with `IndeterminateProbeFailure` status overlay, leaving the original rule-evaluations cached?
+`PolicyEvaluated` audits emit per evaluation; the substrate consumes ADR 0049's audit substrate. ADR 0064 §"Telemetry shape" specifies dedup windows (5-min / 1-hour / 24-hour / 1-day / 7-day / 30-day) but **does not specify retention period**.
 
-Same AP-3 shape as ADR 0061 council F3 partial-failure-undefined. **Major** — mechanical fix: add a §"Verdict caching policy" subsection naming (recommend (b): on `EnvelopeChange` events with `RegulatoryCapabilities` in `ChangedDimensions`, the evaluator invalidates all cached verdicts; this leverages ADR 0062's existing `EnvelopeChange` event stream and matches the post-install regression pattern from ADR 0063 §"Re-evaluation cost class").
+- GDPR has variable retention requirements depending on lawful basis (Art. 5(1)(e) "storage limitation"); typical ranges are 6 months to 6 years.
+- HIPAA has 6-year retention for audit trails (45 CFR §164.316(b)(2)(i)).
+- PCI-DSS has 1-year retention with 3 months immediately accessible (PCI-DSS v4.0 Req. 10.5.1).
 
-### F4 — Bridge-tier residency upstream-gate code-path is named but not located (Major, AP-3 / architectural-ambiguity)
+ADR 0064 says nothing about retention. ADR 0049 (the audit substrate) ships without per-event-type retention — retention is a deployment-config concern. But for regulatory defense, retention IS load-bearing; the substrate ADR should declare per-regime retention guidance, even if implementation is deferred.
 
-ADR 0064 line 298 declares:
+### F6 — `IPolicyEvaluator` cost class at scale undeclared + rule-keying implicit (Major, distributed-systems)
 
-> *"**Bridge-tier residency.** ADR 0031's Bridge accelerator is a hosted-SaaS surface; tenants on Bridge MAY have residency constraints that prohibit Bridge-tier processing for some record classes. The data-residency enforcer at the Bridge boundary applies BEFORE ciphertext touches Bridge storage — the constraint is an upstream gate, not a downstream filter."*
+`IPolicyEvaluator.EvaluateAsync(envelope, featureKey, ct)` consumes featureKey. Per-rule data is keyed on `(jurisdiction, regime, ruleId)`. **How does the evaluator find rules relevant to featureKey?** The shape is implicit:
 
-The intent is correct (gate residency at upload-write to Bridge, not at server-side after ciphertext lands). But **where the gate physically lives in code is unspecified**. Three plausible locations:
+- Either the rule-content has a `RelevantFeatures: Set<string>` field on each rule (not in the ADR's rule schema)
+- Or the rule-content has implicit feature-key matching (regex? glob?) — also not in the ADR
+- Or every evaluation runs every rule regardless of featureKey (cost grows linearly with rule count)
 
-- **(a)** Anchor-side write-path interceptor that consults `IDataResidencyEnforcer` before `HttpClient.PostAsync` to Bridge — gate runs on Anchor before ciphertext leaves the device.
-- **(b)** Bridge-side ingest controller that rejects with HTTP 403 and emits `DataResidencyViolation` audit before persisting ciphertext.
-- **(c)** Both — Anchor-side gate is the primary defense; Bridge-side gate is defense-in-depth.
+**Cost class is undeclared.** ADR 0062 declared probe cost classes (Low/Medium/High/Live); ADR 0064 should declare evaluator cost class. With N rules × M jurisdictions and per-evaluation latency target P95 < 100ms (per ADR 0062-A1.6's billing-cycle precedent), the evaluator's complexity matters.
 
-(c) is correct from a security-posture standpoint, but ADR 0064 names neither path. **Major** — Stage 06 implementer building Bridge wiring cannot pick. Mechanical fix: add to §"Data-residency enforcement contract" a paragraph naming "the enforcer runs on **both** sides per defense-in-depth: Anchor-side write-path interceptor consults `IDataResidencyEnforcer` before transmitting ciphertext upstream; Bridge-side ingest controller consults the same enforcer before persisting and emits `DataResidencyViolation` if the Anchor-side gate was bypassed (compromised client; bug; etc.). The two-sided check is critical because the OS/network-stack between them is untrusted."
+### F7 — Cache invalidation on probe-status transition (Major, distributed-systems)
 
-### F5 — Affected-packages list cites `packages/foundation-mission-space-regulatory/` OR `extends foundation-mission-space/`; pick one (Minor, structural-citation)
+If jurisdictional probe transitions `Healthy → Stale` (per ADR 0062-A1.10 ProbeStatus), do enforcement decisions made under `Healthy` get re-evaluated? ADR 0064 says nothing about cache invalidation when probe status changes. Bridge-tier data-residency verdicts cached under stale probe data may be wrong — and re-running enforcement against stale envelope is also wrong.
 
-ADR 0064 line 444 declares:
+Spec the rule explicitly: cached verdicts persist iff `envelope.Regulatory.ProbeStatus == Healthy`; transitions to `Stale / Failed / PartiallyDegraded / Unreachable` invalidate cached verdicts AND trigger UX surfacing (e.g., "Regulatory probe degraded; some features may behave inconsistently").
 
-> *"New: `packages/foundation-mission-space-regulatory/` (or extends `foundation-mission-space/` per ADR 0062 precedent) — substrate types + interfaces + DI extension."*
+### F8 — Phase 1 substrate-only-without-rule-content deployability (Major, forward-compatibility)
 
-The `(or extends ...)` framing punts a structural decision to Stage 02. ADR 0062 lives at `packages/foundation-mission-space/` (verified — ADR 0062's affected-packages line on `origin/main`). Two structural choices have different downstream cost:
+Phase 1 ships the substrate types + interfaces + 0 rule content. `IPolicyEvaluator` evaluates against an empty rule set → silent-pass-everything verdict. **Consumers may misread as "regulatory-compliant."**
 
-- **(a) Extend `foundation-mission-space/`** — same package, regulatory namespace `Sunfish.Foundation.MissionSpace.Regulatory`. Coherent: regulatory IS a dimension of mission space per ADR 0062's `MissionEnvelope.Regulatory` slot. ADR 0064's own decision text (line 137) names `Sunfish.Foundation.MissionSpace.Regulatory` namespace — matches Option (a).
-- **(b) New `packages/foundation-mission-space-regulatory/` package** — separate package; cross-package dependency on `foundation-mission-space`. Cleaner separation of concerns but adds an artifact + DI-wiring boundary.
+- The substrate Phase 1 hand-off + apps/docs Page MUST explicitly disclaim ("Phase 1 substrate ships the framework only; conformance requires rule-content + legal sign-off per regime; Phase 1 deployments are NOT regulatory-compliant by virtue of the substrate alone").
+- Without the disclaimer, the silent-pass behavior is a foot-gun.
 
-**Minor** — the namespace already commits to (a); the package layout should match. Mechanical fix: drop the `(or extends ...)` parenthetical; commit to "Modified: `packages/foundation-mission-space/` — adds `Sunfish.Foundation.MissionSpace.Regulatory` namespace + types + interfaces + DI extension. No new package."
+### F9 — Industry rule-engine prior-art uncited (Major, industry-prior-art)
 
-### F6 — Rule-content data file path divergence: ADR cites `data/regulatory-rules/` while §"Affected packages" implies it lives in a package (Minor, structural-citation)
+ADR 0064 ships its own data-driven rule engine (`JurisdictionalPolicyRule` + `IPolicyEvaluator`) without engaging industry rule-engine prior-art:
 
-ADR 0064 line 395:
+- **Open Policy Agent (OPA / Rego)** — declarative policy DSL with mature tooling; CNCF graduated; cross-platform. Closest engineering analog.
+- **AWS Cedar** — Amazon's open-source policy language with formal verification; designed for ABAC/RBAC.
+- **XACML 3.0** — older but well-known; OASIS standard.
 
-> *"Per-jurisdiction `JurisdictionalPolicyRule` JSON files at `data/regulatory-rules/{jurisdiction-id}/{regime}/{rule-id}.json`"*
+ADR 0064's `JurisdictionalPolicyRule` shape is a custom JSON schema. At Phase 3+ rule-content authoring, the substrate may benefit from adopting OPA/Rego or Cedar instead of custom JSON. The decision-drivers section should engage with these prior arts, even to deliberately reject them.
 
-vs. line 446:
+### F10 — Industry sanctions screening libraries uncited (Major, industry-prior-art)
 
-> *"New: `data/regulatory-rules/` directory tree for rule-content data files (Phase 3+)."*
+`ISanctionsScreener` interface ships with no implementation guidance; the ADR mentions OFAC SDN + EU consolidated sanctions list but doesn't engage with the canonical SDK ecosystem:
 
-`data/` at the repo root is unconventional in Sunfish — no existing precedent. ADR 0056's taxonomy charters live at `taxonomy/charters/{charter-id}.json` (per ADR 0056 affected-packages), not `data/`. ADR 0057's leasing jurisdiction rules ship in `taxonomy/charters/sunfish-leasing-jurisdiction-rules.json` per the W#22 Phase 4 evidence on `origin/main`.
+- **ComplyAdvantage SDK** — major commercial sanctions/PEP screening API
+- **Refinitiv World-Check One** — Reuters/LSEG product
+- **Dow Jones Risk & Compliance**
 
-ADR 0064's rule-content should live under the **same** layout convention — recommend `taxonomy/charters/sunfish-regulatory/{jurisdiction-id}/{regime}/{rule-id}.json` (or similar; sibling of the existing leasing-jurisdiction-rules charter). The `data/regulatory-rules/` path divergence creates a fork in directory conventions.
+A real Phase 3+ implementation will need vendor adapters; ADR 0064 should at minimum cite the SDK landscape as prior-art for the substrate consumer pattern.
 
-**Minor** — same structural-correctness shape as ADR 0063 council F5 (`foundation-bundles` vs `foundation-catalog`). Mechanical fix: replace `data/regulatory-rules/` with the taxonomy-charter-path convention; cross-reference ADR 0057's charter pattern explicitly.
+### F11 — Force-enable's "operator assumes responsibility" caveat is fact-disclosure not liability transfer (Major, Pedantic-Lawyer)
 
-### F7 — Paper §20.4 framing as "regulatory factors as architectural filter" is partially accurate (Minor, structural-citation)
+ADR 0064 (composing with ADR 0062-A1.9 OverridableWithCaveat): force-enable produces "DegradedAvailable + UX surface naming legal/regulatory consequence ('Force-enable acknowledges the operator assumes responsibility for jurisdictional non-compliance')."
 
-ADR 0064 line 48 + 530 cite paper §20.4 as "regulatory factors as architectural filter." Verified the actual paper §20.4 heading on `origin/main`:
+**This UX-side caveat does not shift legal liability.** A substrate-tier UX cannot grant indemnity to Sunfish-the-framework or to the operator's downstream consumers. The caveat is a **fact-disclosure** ("the substrate has been overridden by an operator with ostensibly informed consent"); it is NOT a liability transfer.
 
-```
-### 20.4 Filter 3: Connectivity and Operational Environment
-```
+The ADR's framing reads as if the caveat-acceptance shifts responsibility. It doesn't. The Pedantic-Lawyer flag: reword to make clear the caveat is *informational* (the operator is on notice; the substrate's audit trail records the override) NOT *contractual* (no party is granting any other party indemnity by accepting the caveat).
 
-Paper §20.4 is **Filter 3 (connectivity + operational environment)**, NOT regulatory factors. The Architecture Selection Framework (paper §20) does include regulatory considerations as one of the filters, but it is not §20.4 specifically. Three options:
+### F12 — HIPAA Security Rule § range is practitioner-shorthand (Major, Pedantic-Lawyer)
 
-- **(a)** ADR 0064 means a different filter — likely §20.5 or §20.6 if the framework lists ~6 filters in numeric order. Verify the actual filter numbering and re-cite.
-- **(b)** ADR 0064 means the broader §20 Architecture Selection Framework with regulatory factors *as* a filter (not strictly §20.4).
-- **(c)** ADR 0064 conflates §20.4 with a regulatory-specific subsection that doesn't exist by that number.
+ADR 0064 cites *"HIPAA Privacy Rule (45 CFR §§164.500–164.534) + Security Rule (Subpart C: 45 CFR §§164.302–164.318)"*.
 
-Same shape as ADR 0061's paper-§-citation imprecision and ADR 0028-A6.2 / A8.5 paper-§-cite-correctness lessons. **Minor** — practitioner-shorthand citation; not load-bearing for substrate code but load-bearing for the Pedantic-Lawyer-required reader-caution discipline (statutory-citation hygiene shouldn't be paired with paper-citation-imprecision). Mechanical fix: re-read paper §20 (Architecture Selection Framework, line 636) and re-cite the correct filter number; or cite §20 broadly as "the Architecture Selection Framework's regulatory filter."
+The Security Rule subpart range §§164.302–164.318 includes:
+- §164.302 (header — applicability)
+- §164.304 (definitions)
+- §164.306 (security standards: general rules)
+- §164.308 (administrative safeguards)
+- §164.310 (physical safeguards)
+- §164.312 (technical safeguards)
+- §164.314 (organizational requirements)
+- §164.316 (policies/procedures + documentation; **also where retention lives**)
+- §164.318 (compliance dates — historical, partly moot)
 
-Note also: paper §16 IS verified-existing ("16. IT Governance and Enterprise Deployment", line 502); that citation stands.
+The practitioner-shorthand "Subpart C: §§164.302–164.318" lumps these together. For citation hygiene, the substrate ADR should cite §§164.308 / 164.310 / 164.312 / 164.316 specifically (as the W#33 §5.9 Pedantic-Lawyer hardening pass already did for §164.308/.310/.312 — the new §164.316 citation is needed because audit-retention specifically lives there).
 
-### F8 — GDPR Article 25 (privacy-by-design) absence is flag-worthy alongside Articles 22 / 44 / 45 / 46 (Major, Pedantic-Lawyer / statutory-citation hygiene)
+### F13 — PCI-DSS framing as `CommercialProductOnly` may be too generous for OSS (Major, Pedantic-Lawyer)
 
-ADR 0064 line 533 cites:
+ADR 0064 stances PCI-DSS v4.0 as `CommercialProductOnly`. The Pedantic-Lawyer flag: PCI-DSS scope is broader than commercial productization implies. Sunfish-OSS-the-framework processing payment card data in any way (even encrypted-at-rest via ADR 0046's substrate) brings the substrate into PCI-DSS scope. A more honest stance might be `OutOfScopeOpenSource` (the OSS framework explicitly does not aspire to PCI-DSS conformance under any deployment shape; commercial productization is a fork) — vs `CommercialProductOnly` (the OSS framework is conformance-shape-aware; conformance ships with productization).
 
-> *"GDPR Articles 22 / 44 / 45 / 46 (transfers + automated decision-making)"*
+The choice between these stances has legal-posture consequences:
+- `CommercialProductOnly` reads as "we built it conformance-aware; productize and you're conformant."
+- `OutOfScopeOpenSource` reads as "we explicitly did not aspire to PCI-DSS at the OSS layer; productize at your own risk and engagement."
 
-The cited Articles are accurate for what they cover (Art. 22 = automated decision-making + profiling; Arts. 44–46 = transfers to third countries). But **Article 25 (Data Protection by Design and by Default)** is the structurally-load-bearing GDPR article for a substrate-tier ADR — Article 25 is exactly what ADR 0064 IS: a substrate framework that bakes data-protection considerations into the system shape rather than as bolted-on policy.
+The latter is safer for Sunfish-OSS; legal counsel should review and decide.
 
-GDPR Article 25 obligation paraphrased: controllers "implement appropriate technical and organisational measures... in an effective manner and to integrate the necessary safeguards into the processing." A substrate-tier policy-evaluation framework + per-record-class data-residency + per-feature consent-requirement is **exactly** the technical-organisational-measure shape Article 25 contemplates. ADR 0064 does the work of Article 25 without citing it.
+### F14 — `RegulatoryRegimeStance.OutOfScopeOpenSource` framing vs "explicitly disclaimed" (Major, Pedantic-Lawyer)
 
-The omission is flag-worthy because: (a) regulators (DPAs) reading Sunfish's ADR-trail will look for Article 25 acknowledgment specifically; (b) absence reads as Sunfish-doesn't-know-Article-25 even though the substrate IS Article-25-shaped; (c) Article 25 framing is the cleanest legal-discourse handle for "why Sunfish ships substrate-vs-content separation."
+The stance value name `OutOfScopeOpenSource` reads as a passive "we don't aspire." The Pedantic-Lawyer flag: an active "explicit disclaimer" posture has different legal meaning. If Sunfish-OSS *explicitly disclaims* FedRAMP / ITAR aspiration (vs *not aspiring*), downstream consumers can't argue silent acquiescence.
 
-**Major** — substrate-tier framing gap that costs Sunfish nothing to fix. Mechanical fix: add `GDPR Article 25 (Data Protection by Design and by Default)` to the References list (line 533), and add one sentence to §"Decision drivers" naming it: "ADR 0064's substrate-tier framework is structurally aligned with GDPR Article 25's 'data protection by design' obligation; Article 25 is the cleanest legal-discourse handle for the substrate-vs-content separation."
+Recommend the stance value be renamed `ExplicitlyDisclaimedOpenSource` (or similar) AND the per-stance UX surface includes a fact-statement to the effect of "Sunfish-OSS does NOT aspire to <regime> conformance under any deployment shape; commercial productization is a separate work product."
 
-### F9 — PCI-DSS framing "Substrate enables tokenization shape" is imprecise (Major, Pedantic-Lawyer / statutory-citation hygiene)
+### F15 — Rule-content data file format unspec'd (Major, forward-compatibility)
 
-ADR 0064 line 262 declares the PCI-DSS regime stance:
+ADR 0064 mentions per-jurisdiction `JurisdictionalPolicyRule` JSON files at `data/regulatory-rules/{jurisdiction-id}/{regime}/{rule-id}.json`. The actual JSON schema is not spec'd. At Phase 3 rule-content authoring, multiple authors will diverge on:
+- File structure (flat fields vs nested)
+- Localization key naming conventions
+- Versioning representation (per OQ-0064.7 — needs more spec)
 
-> *"PCI_DSS_v4 | CommercialProductOnly | Substrate enables tokenization shape; PCI-DSS scope-reduction posture requires commercial productization"*
+A canonical JSON schema (or JSON Schema document) for `JurisdictionalPolicyRule` should ship in Phase 1 substrate alongside the C# type — even if no rules are authored against it yet.
 
-Two issues:
+### F16 — Composite-confidence rule's 27-case coverage edge cases (Minor, distributed-systems)
 
-- **(a)** "PCI-DSS scope-reduction posture" is industry-shorthand; PCI-DSS v4.0 actually frames this as "reducing the cardholder data environment (CDE)" or "scope minimization." Tokenization is a **scope-reduction technique**, but the regime stance conflates technique with posture.
-- **(b)** "Substrate enables tokenization shape" doesn't name what tokenization Sunfish enables. ADR 0046 (encrypted-field substrate) provides format-preserving + envelope-encrypted fields, NOT tokenization in the PCI-DSS sense (which requires a stable, irreversible-by-design surrogate that an external token vault issues). ADR 0064 implies Sunfish has tokenization substrate when it has *encryption* substrate — a different PCI-DSS control.
+ADR 0064 specifies the composite-confidence rule for jurisdictional probe (3 signals × 3 levels = 27 cases). Edge cases:
+- VPN + truthful user-declaration + stale tenant-config → 2 of 3 signals say one jurisdiction; 1 disagrees. The composite rule says "if two signals agree, composite is High." But if user-declared = truthful AND tenant-config is stale (= jurisdiction-where-tenant-was-but-isn't-now), the agreement is actually wrong. The rule needs a tie-breaker: which signal trumps? Recommend user-declaration > tenant-config > IP-geo (truthfulness ordering).
 
-Reading the table cell at face value, a PCI-DSS auditor would ask "show me the token vault's compliance attestation" and there is none. The right framing is: ADR 0046's encrypted-field substrate + per-record-class encryption can *reduce CDE scope* if the cardholder data is held only in an encrypted-field that meets PCI-DSS's "rendering PAN unreadable" provision (Requirement 3.5.1; v4.0). That's a scope-reduction posture, not tokenization.
+The 27-case test matrix should explicitly cover this.
 
-**Major** — Pedantic-Lawyer perspective. Statutory framing that overpromises substrate capability. Mechanical fix: rewrite the table cell to: "Substrate enables CDE scope-reduction shape via ADR 0046 encrypted-field substrate (rendering PAN unreadable per PCI-DSS v4.0 Req 3.5.1); commercial productization required for token-vault integration AND for the QSA assessment + Report on Compliance / Self-Assessment Questionnaire that any PCI-DSS-covered deployment requires."
+### F17 — Rule-content versioning per OQ-0064.7 needs more spec (Minor, forward-compatibility)
 
-### F10 — EU AI Act Annex III / Art. 5 framing is shape-correct but cites Regulation EU 2024/1689 without sub-numbering (Minor, Pedantic-Lawyer / statutory-citation hygiene)
+OQ-0064.7 acknowledges rule-content versioning is open. Recommend the OQ resolves at Phase 1 substrate hand-off: rule-content data files carry semver in metadata; substrate consumes the latest version per `(jurisdiction, regime, rule-id)` triple; deprecation grace period is 90 days (Phase 3 default; tunable per regime).
 
-ADR 0064 line 536 cites:
+### F18 — Sanctions list reload mechanism (sync vs async) unspec'd (Minor, forward-compatibility)
 
-> *"EU AI Act (Regulation EU 2024/1689; Arts. 5–6 + Annex III)"*
+OQ-0064.5 acknowledges sanctions list update cadence (daily for OFAC; weekly for EU). Recommend the substrate ship an async background-priority reload mechanism (matching ADR 0049 audit-substrate's append-only pattern); sync reload is insufficient (OFAC SDN updates aren't predictable; missing an update by sync-deadline produces stale-screen results).
 
-The citation is accurate at the regulation-level (the EU AI Act IS Regulation (EU) 2024/1689; entered into force 2024-08-01). The Article range "Arts. 5–6" is correct for prohibited practices (Art. 5) and high-risk-system classification (Art. 6 + Annex III).
+### F19 — Disputed-jurisdictions naming in `Sunfish.Regulatory.Jurisdictions@1.0.0` taxonomy charter (Minor, Pedantic-Lawyer)
 
-But: "Arts. 5–6 + Annex III" is incomplete for the substrate ADR 0064 is shipping. The `EuAiActTier` enum (line 337–344) declares 5 tiers — `Prohibited / HighRisk / LimitedRisk / MinimalRisk / NotApplicable`. The LimitedRisk tier is governed by **Article 50** (transparency obligations for AI systems interacting with natural persons — chatbot disclosure, deepfake disclosure, emotion-recognition disclosure). The MinimalRisk tier has no specific Article but is the residual category.
+The `Sunfish.Regulatory.Jurisdictions@1.0.0` taxonomy charter ships with a seed of major jurisdictions. Disputed jurisdictions (Taiwan; Western Sahara; Crimea/Sevastopol; Palestinian territories; Kashmir) are themselves political acts in their naming. The Pedantic-Lawyer flag: the seed authoring should engage qualified counsel BEFORE Phase 2 ships, because choosing one naming convention vs another has downstream legal exposure (e.g., naming Taiwan as `TW` vs `CN-TW` has Trade-Sanctions implications).
 
-ADR 0064's enum doc-comment on line 341 already names Art. 50 ("LimitedRisk, // Art. 50 transparency obligations (chatbot disclosure, etc.)") — so the *enum* knows Article 50 is the relevant Article — but the References list on line 536 omits it. **Minor** — citation-completeness gap. Mechanical fix: extend the References citation to "Arts. 5, 6, 50 + Annex III."
+### F20 — Reader-caution discipline enforceability (Encouraged, Pedantic-Lawyer)
 
-### F11 — Sanctions emit-without-enforce framing is "knew-or-should-have-known" risk for the operator (Major, Pedantic-Lawyer / liability-language)
+The reader-caution preamble + repeats are author-discipline. Without an automated mechanism, downstream consumers may strip them for brevity. Recommend an automated apps/docs build-step that fails the build if a `regulatory-policy/` page lacks the canonical caution string.
 
-ADR 0064 line 332 declares:
+### F21 — Regime-stance defaults ordering (Encouraged)
 
-> *"Sanctions screening is OPERATOR-decision territory, NOT substrate-default territory. A match does NOT automatically block; the operator + legal counsel decides per-match what to do. ADR 0064's substrate emits SanctionsScreeningHit audit events on every match; the rule-content layer (or tenant-config) governs whether matches block, warn, or merely log."*
+The default regime-stance table in ADR 0064 has a specific ordering: HIPAA / GDPR / PCI_DSS_v4 / SOC2 / EU_AI_Act / FHA / CCPA. Recommend reorder for chart-readability: alphabetize OR cluster by stance (`InScope` first; `CommercialProductOnly` second; `OutOfScopeOpenSource`/`ExplicitlyDisclaimedOpenSource` third).
 
-The architectural decision (operator + counsel decide per-match enforcement) is **correct** for a substrate framework. But the framing has a Pedantic-Lawyer-flagged subtlety: **OFAC's enforcement posture is "knew-or-should-have-known."** Once Sunfish emits a `SanctionsScreeningHit` audit event with a match, the operator is *on notice* that a transaction-counterparty appears on the SDN list. If the operator then proceeds without blocking, OFAC's strict-liability framework can hold the operator liable for the unblocked transaction even if the operator's "policy" was "merely log."
+### F22 — `EvaluateAsync(envelope, featureKey, ct)` signature precedent (Encouraged, distributed-systems)
 
-This isn't a substrate bug — it's a substrate-framing risk. The ADR's "merely log" option presents a defensible-sounding choice that may not actually be defensible under OFAC enforcement. The operator who chooses "log only" because Sunfish offered it as an option may be in a worse legal posture than the operator who never installed Sunfish's sanctions screener at all.
+The `IPolicyEvaluator.EvaluateAsync` signature mirrors `ICapabilityGate<TFeature>.EvaluateAsync(envelope, ct)` from ADR 0062-A1.2. Note: ADR 0062's gate is keyed on the type parameter `TFeature`, NOT on a `string featureKey`. Question: should ADR 0064's evaluator be `IPolicyEvaluator<TFeature>` to match? Recommend keeping `string featureKey` (rule-content references feature keys as strings; type parameters don't compose with data files); BUT document the divergence.
 
-The substrate cannot enforce OFAC for the operator (substrate-vs-content separation is correct). But the substrate can:
+### F-VP1 (verification-pass) — ADR 0009 `IEditionResolver` exists structurally
 
-- **(a)** Default `OnViolation` for sanctions to `Block` (operator must explicitly downgrade to `AuditOnly` per-deployment, with an attorney-acknowledgment surface).
-- **(b)** When sanctions match fires, the substrate UX surface includes a "this match places you on notice; OFAC enforcement is strict-liability; consult counsel before proceeding" caveat *every* match, not buried in the ADR.
-- **(c)** Document explicitly in ADR 0064 that "merely log" is NOT a defensible default for OFAC — operators choosing it should do so with documented legal-counsel sign-off.
+`git show origin/main:docs/adrs/0009-foundation-featuremanagement.md | grep IEditionResolver` confirms `IEditionResolver` defined as "Resolves `TenantId → edition key`. Ships with `FixedEditionResolver` for demos." Citation correct. **No finding.**
 
-**Major** — Pedantic-Lawyer perspective. Substrate framing should not present "merely log" as one neutral option among three; it's the most legally-perilous of the three for OFAC matches specifically. Mechanical fix: add §"OFAC enforcement posture caveat" subsection naming the knew-or-should-have-known framework; default sanctions `OnViolation` to `Block` (matching SDN-strict-liability framework); require explicit operator-config + counsel-acknowledgment to downgrade.
+### F-VP2 (verification-pass) — ADR 0036 sync states are canonical
 
-### F12 — Audit-retention period spec is missing for the 7 new events (Major, AP-3 / spec gap)
+ADR 0036 (sync-state encoding contract) confirms 5-state set: `healthy / stale / offline / conflict / quarantine`. ADR 0064 doesn't directly cite the sync-state names; consumes the dimension via ADR 0062's `SyncStateSnapshot`. Citation correct. **No finding.**
 
-ADR 0064 line 376–386 declares 7 new audit events with dedup windows but **no retention period**. The retention period is regulatory-load-bearing because:
+### F-VP3 (verification-pass) — All cited ADRs Accepted on origin/main
 
-- **GDPR data-minimization (Art. 5(1)(c) + (e))** — audit events containing personal data (`screened_identifier`, `attempted_jurisdiction`, `regime` in `RegimeAcknowledgmentSurfaced`) must be retained only as long as necessary.
-- **HIPAA audit retention (45 CFR §164.316(b)(2)(i))** — minimum 6 years for HIPAA-covered audit logs.
-- **PCI-DSS v4.0 Req 10.5.1** — minimum 1 year audit-log retention; 3 months immediately available.
-- **OFAC recordkeeping** — 5 years for transactions involving SDN matches.
+| ADR | Status | Verdict |
+|---|---|---|
+| 0009 foundation-featuremanagement | Accepted | Pass |
+| 0028 crdt-engine-selection (post-A8) | Accepted; A1+A2+A3+A4+A5+A6+A7+A8 landed | Pass |
+| 0031 bridge-hybrid-multi-tenant-saas | Accepted (2026-04-23) | Pass |
+| 0036 syncstate-multimodal-encoding-contract | Accepted | Pass |
+| 0049 audit-trail-substrate | Accepted | Pass |
+| 0056 foundation-taxonomy-substrate | Accepted | Pass |
+| 0057 leasing-pipeline-fair-housing | Accepted | Pass |
+| 0060 right-of-entry-compliance-framework | Accepted | Pass |
+| 0062 mission-space-negotiation-protocol (post-A1) | Accepted | Pass |
+| 0063 mission-space-requirements (post-A1) | Accepted | Pass |
 
-The dedup windows ADR 0064 names (5-min / 1-hour / 1-day / 7-day / 30-day) are *emission-rate* dedup, not retention. ADR 0049 (audit substrate) does not specify retention either; this is a substrate-tier gap surfacing at this ADR.
+All cited ADRs verified Accepted on `origin/main`. **No finding.**
 
-**Major** — substrate-tier gap. Two options for resolution:
+### F-VP4 (verification-pass) — 7 new `AuditEventType` constants no-collision
 
-- **(a)** Defer to ADR 0049 amendment naming a default retention (e.g., 7 years to satisfy HIPAA + OFAC + GDPR-bounded combined).
-- **(b)** ADR 0064 names retention per-event-type (e.g., `SanctionsScreeningHit` retained 5 years per OFAC; `DataResidencyViolation` retained 6 years per HIPAA-covered shape; `PolicyEvaluated` retained 1 year for diagnostic).
+Verification: `grep -E "Policy|Sanctions|Jurisdiction|Residency|Regime|EuAi" packages/kernel-audit/AuditEventType.cs` returned 0 results. The 7 new constants ADR 0064 introduces (`PolicyEvaluated`, `PolicyEnforcementBlocked`, `JurisdictionProbedWithLowConfidence`, `DataResidencyViolation`, `SanctionsScreeningHit`, `RegimeAcknowledgmentSurfaced`, `EuAiActTierClassified`) are all unique. Naming is unambiguous. **No finding.**
 
-Mechanical fix: add a §"Retention" subsection naming the default + per-event overrides; or declare ADR 0049-A1 sibling amendment dependency.
+### F-VP5 (verification-pass) — W#22 Phase 6 deferred status verified
 
-### F13 — Force-enable "operator assumes responsibility" framing is fact-disclosure, not liability transfer (Major, Pedantic-Lawyer / liability-language)
+Active-workstreams.md row 22: *"Built 2026-04-30 (Phase 6 compliance half deferred to ADR 0060 Stage 06)"* — confirms ADR 0064's claim that W#22 Phase 6 compliance half is deferred. Direct downstream consumer of ADR 0064's substrate. **No finding.**
 
-ADR 0064 line 424 + the embedded ADR 0062 quote declare:
+### F-VP6 (verification-pass) — Paper §20.4 framing verified
 
-> *"Force-enable acknowledges the operator assumes responsibility for jurisdictional non-compliance"*
+Paper §20.4 *"Filter 3: Connectivity and Operational Environment"* contains the cited "GDPR, HIPAA, FedRAMP, ITAR" tuple at row 5 of the environment-vs-model table. Citation correct. **No finding.**
 
-The wording reads as "click-through indemnification" — the operator clicks force-enable, and Sunfish-the-vendor is shielded because the operator "assumed responsibility." This framing is legally weak in two directions:
+### F-VP7 (verification-pass) — Per-domain ADR precedent fidelity
 
-- **(a) Vendor-side:** consumer-protection regimes (FTC §5 deceptive practices in the US; Unfair Commercial Practices Directive in the EU) generally don't honor click-through liability transfer for substrate-tier non-compliance the vendor *enabled the override of*. Saying "operator assumed responsibility" doesn't prevent regulator action against Sunfish-the-vendor for shipping the override path.
-- **(b) Operator-side:** the operator who clicks "force-enable" hasn't *transferred* their primary liability to anyone — they're the data controller (GDPR), the covered entity (HIPAA), the merchant (PCI-DSS); their primary liability stays with them regardless of click. The substrate UI saying they "assumed responsibility" implies the responsibility was elsewhere before the click, which is factually incorrect.
-
-The *correct* framing is **fact-disclosure**: the substrate informs the operator that this configuration may put them in non-compliance with one or more regimes; the operator's legal posture is unchanged by the click; the substrate is documenting that the operator was put on notice. This is ADR 0064 doing audit-trail work, not liability-transfer work.
-
-**Major** — Pedantic-Lawyer perspective. Mechanical fix: rewrite the canonical force-enable caveat language to: "Force-enable applies override; substrate informs operator that the configuration may not satisfy applicable regulatory requirements in the active jurisdiction. Operator's primary regulatory obligations are unchanged by this override. Audit event `FeatureForceEnabled` documents the override and operator-attributable click. Consult counsel before proceeding for any regime where regulatory non-compliance carries material liability." Sibling amendment ADR 0062-A2 (or A1.17) propagates the rewrite to the source-of-truth.
-
-### F14 — Disputed-jurisdictions naming is unspecified (Encouraged, Pedantic-Lawyer / framing)
-
-ADR 0064 declares jurisdiction IDs in the `JurisdictionalPolicyRule.JurisdictionId: string` field with examples like `"US-CA"`, `"RU-*"`, `"IR-*"`. The taxonomy charter is named `Sunfish.Regulatory.Jurisdictions@1.0.0` — but the ADR does not specify how the framework handles **disputed jurisdictions**: Crimea (claimed by both UA and RU; OFAC sanctions specific to the region post-2014); Western Sahara (MA / non-self-governing-territory ambiguity); Taiwan (TW / CN ambiguity per ISO 3166 vs UN membership); Northern Cyprus; Kosovo (XK / Serbia ambiguity).
-
-The choice matters for two reasons: (a) sanctions screening — Crimea-specific OFAC Executive Orders apply differently than Russia-wide SDN; (b) ISO 3166-1 vs ISO 3166-2 vs UN-listing differences will produce inconsistent jurisdiction-ID matching depending on which standard the taxonomy charter adopts.
-
-**Encouraged** — Pedantic-Lawyer perspective. Not blocking for substrate Phase 1 (the substrate is jurisdiction-string-agnostic), but the taxonomy charter (Phase 2) authoring needs an explicit policy. Mechanical fix: add an OQ-0064.8 ("Disputed-jurisdiction naming policy — does the taxonomy charter follow ISO 3166-1 + ISO 3166-2, UN-listing, or a hybrid? How are sub-regional sanctions (Crimea, Donetsk-Luhansk) encoded?") and defer to taxonomy-charter Phase 2 work product with general-counsel input.
-
-### F15 — Affirmative legal-advice disclaimer is absent (Major, Pedantic-Lawyer / framing)
-
-ADR 0064 has the **reader-caution preamble** (line 12) covering statutory citations + general-counsel-engagement. But it is missing an explicit **legal-advice disclaimer** of the shape: "This ADR does not constitute legal advice. Sunfish provides substrate; consult qualified legal counsel for any regulatory determination."
-
-The reader-caution preamble names "specific statutory citations may use practitioner shorthand" — that's a citation-accuracy disclaimer. It does NOT say "this whole document, including the regime-stance table, is not legal advice." The omission matters because:
-
-- **(a)** The regime-stance table (line 258–266) makes affirmative claims about HIPAA / GDPR / PCI-DSS / SOC 2 / EU AI Act / FHA / CCPA stances. A regulator or counsel reading this table can read it as Sunfish's *legal opinion* on what each regime requires.
-- **(b)** Operators reading "Substrate enables tokenization shape" for PCI-DSS may rely on that framing as a substitute for QSA assessment. The "this is not legal advice" disclaimer is what shifts the reliance posture.
-
-**Major** — Pedantic-Lawyer perspective. Mechanical fix: prepend to the reader-caution preamble (line 12) one sentence: "This ADR is engineering documentation, not legal advice. The regime-stance table and statutory citations are best-effort summaries by engineers; legal determinations under any regime require qualified counsel."
-
-### F16 — Forward-compatibility migration: Phase 4 cross-cutting refactor mechanical-vs-rewriting is unspecified (Minor, AP-3 / migration-spec)
-
-ADR 0064 line 439 declares Phase 4:
-
-> *"Phase 4 (per-domain ADR cross-cutting refactor): ADR 0057 + ADR 0060 grow IPolicyEvaluator consumers; their existing rule logic migrates to rule-content data files."*
-
-ADR 0057's `IInquiryValidator` + `IBackgroundCheckRequester` substrate plus its `Sunfish.Leasing.JurisdictionRules@1.0.0` taxonomy charter (per W#22 evidence on `origin/main`) already encodes per-jurisdiction rules. Phase 4 says the rules "migrate" — but is that:
-
-- **(a) Mechanical:** ADR 0057's existing `Sunfish.Leasing.JurisdictionRules@1.0.0` charter is renamed/re-pathed to fit ADR 0064's rule-content layout, with the existing rule data preserved.
-- **(b) Rewriting:** ADR 0057's rules are re-authored against ADR 0064's `JurisdictionalPolicyRule` schema (which has different fields: `Kind`, `OnViolation`, `MinimumProbeConfidence` — none of which exist on ADR 0057's existing rule shape).
-
-(b) is the actual cost. Stage 06 implementer needs to know this is a re-authoring-not-renaming migration. **Minor** — Phase 4 cost-class spec gap. Mechanical fix: name Phase 4 explicitly as "re-authoring against ADR 0064's `JurisdictionalPolicyRule` schema; ADR 0057's existing charter is the *seed* for the new layout but is not preserved as-is." Consider deferring Phase 4 to a separate sibling-ADR amendment to ADR 0057 (and ADR 0060) so the cost-class is captured at intake-time.
-
-### F17 — Sanctions list reload mechanism is unspecified per OQ-0064.5 (Minor, AP-3)
-
-OQ-0064.5 (line 488) acknowledges the question:
-
-> *"Sanctions list update cadence — daily? weekly? Recommend: daily for OFAC SDN (updated daily by Treasury); weekly for EU consolidated; configurable per deployment."*
-
-But the **mechanism** for reloading is unspecified. Three plausible mechanisms:
-
-- **(a) Pull:** `ISanctionsScreener` implementation polls a configured upstream URL on a timer; reload-failure triggers a `SanctionsListReloadFailed` event (8th audit constant — not currently declared).
-- **(b) Push:** operator runs a CLI command to ingest a new sanctions list snapshot; substrate reloads on next `ScreenAsync` call.
-- **(c) Bridge-tier:** Bridge accelerator pushes sanctions list updates as part of its tenant-config sync.
-
-Each has different operational characteristics + failure modes. ADR 0064 doesn't pick. **Minor** — OQ-0064.5 names the cadence but not the mechanism. Mechanical fix: extend OQ-0064.5 to also pin the mechanism (recommend (b) for v0; (a) + (c) deferred to commercial-productization).
-
-### Verification-pass findings (no issue; cohort spot-check evidence)
-
-**F-VP1 — All 8 cited ADRs verified Accepted on `origin/main`.** ADR 0009 / 0028 / 0031 / 0049 / 0056 / 0057 / 0060 / 0062 / 0063 confirmed via `git ls-tree origin/main docs/adrs/`. None vapourware. **Pass.**
-
-**F-VP2 — ADR 0062-A1.9 (`OverridableWithCaveat`) verified existing.** Line 710 of ADR 0062 on `origin/main` declares "A1.9 — `ForceEnablePolicy` taxonomy per dimension"; the `OverridableWithCaveat` value applies specifically to the Regulatory dimension per A1.9. ADR 0064 line 188 + 424 cite `OverridableWithCaveat` correctly. **Pass.**
-
-**F-VP3 — ADR 0062-A1.10 (`ProbeStatus`) verified existing.** Line 726 of ADR 0062 declares "A1.10 — `ProbeStatus` + `EnvelopeChangeSeverity.ProbeUnreliable`"; the 5-value enum (`Healthy / Stale / Failed / PartiallyDegraded / Unreachable`) matches ADR 0064 line 151 exactly. **Pass.**
-
-**F-VP4 — ADR 0063-A1.15 + A1.16 verified existing.** Line 708 of ADR 0063 declares "A1.15 — §A0 cited-symbol audit lesson"; line 716 declares "A1.16 — Cohort discipline log." ADR 0064 line 37 + 477 + 499 + 567 cites A1.15 + A1.16 correctly. **Pass.**
-
-**F-VP5 — ADR 0028-A4.3 + A7.12 + A8.11 + A8.12 verified existing.** ADR 0028 line 442 (A4.3), line 1300 (A7.12), line 883 (A8.11), line 909 (A8.12) all confirmed on `origin/main`. ADR 0064's standing-rung-6 reference at line 567 ("per ADR 0028-A4.3 + A7.12 + A8.12 + ADR 0062-A1.15 + ADR 0063-A1.16 commitment") is structurally accurate. **Pass.**
-
-**F-VP6 — All 7 new `AuditEventType` constants verified non-colliding.** `PolicyEvaluated`, `PolicyEnforcementBlocked`, `JurisdictionProbedWithLowConfidence`, `DataResidencyViolation`, `SanctionsScreeningHit`, `RegimeAcknowledgmentSurfaced`, `EuAiActTierClassified` checked against `packages/kernel-audit/AuditEventType.cs` on `origin/main`; no token collision with the existing ADR-0049 base set, the ADR-0028-A6 + A7 + A8 additions, the ADR-0062-A1 9-constant additions, or the W#22 leasing-pipeline 12 additions. **Pass.**
-
-**F-VP7 — W#22 Phase 6 deferred status correctly cited.** ADR 0064 line 50 + 531 + 548 cite W#22 Phase 6 compliance half as deferred; verified by `icm/_state/active-workstreams.md` row 22 on `origin/main` ("Phase 6 compliance half deferred to ADR 0060 Stage 06") — note: ADR 0064's text says deferred-pending-ADR-0064 which is consistent with the active-workstreams row's broader framing (deferred pending compliance substrate, of which ADR 0064 is a part). **Pass.**
-
-**F-VP8 — Paper §16 (IT Governance and Enterprise Deployment) verified existing.** Line 502 of paper on `origin/main` reads "## 16. IT Governance and Enterprise Deployment". ADR 0064 line 49 + 530 cite this correctly. **Pass.**
-
-**F-VP9 — `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` verified existing.** Per ADR 0023 + the `packages/foundation-crypto/` package on `origin/main`, the symbol exists. ADR 0064 line 53 cites it as encoding contract; not directly used in the contract surface but referenced as cohort-discipline. **Pass.**
-
-**F-VP10 — `RegulatoryCapabilities` envelope dimension verified.** ADR 0062 line 252 (post-A1.8) + the `MissionEnvelope.Regulatory: RegulatoryCapabilities` slot confirmed; ADR 0064 line 43 + 137 + 198 cite it correctly. **Pass.**
+ADR 0057 (FHA documentation-defense) + ADR 0060 (Right-of-Entry per-jurisdiction) both Accepted with the per-domain regulatory rule patterns ADR 0064 cites as precedents. The claim "ADR 0064 generalizes their patterns" is structurally consistent with the per-domain ADRs' actual rule-engine shapes. **No finding.**
 
 ---
 
 ## 3. Recommended amendments
 
-### A1 (Required) — Composite-confidence rule explicit truth-table covering all 27 cases + ProbeStatus interaction (resolves F1)
+### A1 (Required) — Add GDPR Article 25 to References + reframe substrate posture (resolves F1)
 
-Replace lines 366–370 with an explicit algorithm:
+Add to §"References":
+> - GDPR Article 25 (data protection by design and by default) — Regulation EU 2016/679 Chapter IV Section 1; the substrate-tier statutory anchor under which ADR 0064's framework is the "technical and organisational measure"
 
-> *"Composite confidence is computed by the following rule, in order:*
+Add to §"Decision drivers" a new bullet:
+> - **GDPR Article 25 anchor.** The substrate's design-by-default + privacy-by-design posture is the load-bearing statutory anchor. Force-enable + override paths are operator-controller obligations under Article 25(1)+(2); the audit trail (per ADR 0049) is the documented "appropriate technical measure."
+
+**Required because F1 is Critical (Pedantic-Lawyer).**
+
+### A2 (Required) — Affirmative legal-advice disclaimer in reader-caution preamble (resolves F2)
+
+Replace the reader-caution preamble (top of file) with:
+
+> **Reader caution + legal-advice disclaimer (Pedantic-Lawyer hardening pass; carried forward from W#33 §5.9 + parent intake):** specific statutory citations in this ADR have not been verified against current Official Code text and may use practitioner shorthand. **Sunfish does not provide legal advice; this substrate is not a substitute for qualified counsel.** General counsel MUST engage before Stage 06 build of any concrete enforcement behavior. Consult an attorney before relying on this substrate for regulatory conformance in any specific deployment. This ADR specifies the *substrate-tier policy-evaluation framework*; the *content* of policy rules per jurisdiction is a legal-review work product not produced in this ADR.
+
+**Required because F2 is Critical (Pedantic-Lawyer).**
+
+### A3 (Required) — Substrate-tier sanctions screening opt-out path (resolves F3)
+
+Add to §"Sanctions handling" after the operator-decision-aware paragraph:
+
+> **Operator opt-out path (substrate-tier):** Deployments requiring an advisory-only sanctions posture (e.g., Sunfish-OSS reference deployments where no commercial sanctions-conformance program exists) MAY register a `ScreeningPolicy.AdvisoryOnly` mode that suppresses `SanctionsScreeningHit` audit emission AND surfaces an explicit operator+counsel sign-off record (`SanctionsAdvisoryOnlyConfigured` audit event with operator_id + justification + counsel_attestation_required: bool + scoped_lists + expires_at). The opt-out path is itself audited and time-bounded; it is NOT a default mode.
 >
-> *1. **Filter** signals where `ProbeStatus ∈ { Failed, Unreachable }` (failed probes are excluded; the composite is computed over remaining signals).*
-> *2. **If zero signals remain:** composite is `Low`; verdict for any rule is `IndeterminateProbeFailure`.*
-> *3. **If one signal remains at confidence X:** composite is X; use that signal's jurisdiction value.*
-> *4. **If two or more signals remain and all agree on jurisdiction value:** composite is the highest of the agreeing confidences.*
-> *5. **If two or more signals remain and disagree on jurisdiction value:** apply tenant-config-dominates-user-declared-dominates-IP-geo precedence; composite confidence is `Medium`; emit `JurisdictionProbedWithLowConfidence` audit; surface UX requesting explicit declaration.*
-> *6. **If any signal is `Stale`:** treat as that signal's last-known confidence (not Low); but emit `JurisdictionProbedWithLowConfidence` audit with `signal_breakdown` field naming the stale source."*
+> **Why:** OFAC enforcement guidance places weight on whether a person "knew or had reason to know" of a match. A substrate that emits matches into the audit trail without offering an explicit advisory-only opt-out creates an aggravating paper trail; the opt-out path lets deployments choose between "screening + counsel review of every match" (operator commits to enforcement workflow) and "advisory-only with sign-off" (operator explicitly declines the workflow with attestation).
 
-Add an explicit table or test matrix of the 27 (3 signals × 3 confidence) cases × ProbeStatus interactions for the §"Test coverage" checklist. **Required because F1 is Major.**
+Add 8th `AuditEventType`: `SanctionsAdvisoryOnlyConfigured`.
 
-### A2 (Required) — Rule-keying mechanism on `JurisdictionalPolicyRule` (resolves F2)
+**Required because F3 is Critical (legal liability concern).**
 
-Add an `IReadOnlySet<string>? AppliesToFeatureKeys` field to `JurisdictionalPolicyRule`:
+### A4 (Required) — Name the Bridge-tier data-residency upstream gate code-path (resolves F4)
 
-```csharp
-public sealed record JurisdictionalPolicyRule(
-    string                  JurisdictionId,
-    RegulatoryRegime        Regime,
-    string                  RuleId,
-    LocalizedString         Description,
-    PolicyEvaluationKind    Kind,
-    string                  StatutoryCitation,
-    PolicyEnforcementAction OnViolation,
-    Confidence              MinimumProbeConfidence,
-    IReadOnlySet<string>?   AppliesToFeatureKeys     // null = applies to all features in scope; set = explicit subscription
-);
-```
+Add to §"Data-residency enforcement contract":
 
-Document the matching rule: `IPolicyEvaluator` evaluates a rule iff `AppliesToFeatureKeys is null || AppliesToFeatureKeys.Contains(featureKey)` AND the rule's `JurisdictionId` matches `envelope.Regulatory.Jurisdiction` (or wildcards). **Required because F2 is Major.**
+> **Implementation: where the upstream gate hooks.** The data-residency check runs as ASP.NET Core middleware in the Bridge accelerator's request pipeline (per ADR 0031), positioned BEFORE any `EncryptedField` storage operation per ADR 0046. Concretely: `Sunfish.Bridge.Middleware.DataResidencyEnforcerMiddleware` runs after authentication but before any handler that writes to `IEncryptedFieldStore`. Implementation hand-off (Stage 06 work) wires this middleware in the Bridge `Program.cs` request pipeline configuration. The middleware reads the inbound request's record-class metadata + the active `MissionEnvelope.Regulatory.jurisdiction` + the `IDataResidencyEnforcer.EvaluateAsync` verdict; on `Allowed: false` it returns HTTP 451 (Unavailable for Legal Reasons; RFC 7725) with the operator-recovery action.
 
-### A3 (Required) — Verdict caching + invalidation policy (resolves F3)
+**Required because F4 is Critical (substrate cannot be implemented without naming the path).**
 
-Add a §"Verdict caching policy" subsection:
+### A5 (Required) — Audit retention period per regime (resolves F5)
 
-> *"`PolicyVerdict` may be cached against `(envelope.Regulatory, featureKey)` pairs by the caller (typical caller: a feature-gate or write-path interceptor). Cache TTL: 5 minutes for `Pass`/`FailWithEnforcement`; 1 minute for `IndeterminateProbeFailure`. The evaluator publishes a verdict-invalidation signal subscribed to ADR 0062 `EnvelopeChange` events; on any `EnvelopeChange` with `Regulatory ∈ ChangedDimensions`, all cached verdicts are invalidated. Stale verdicts MUST NOT be returned across an invalidation event."*
+Add new sub-section §"Audit retention":
 
-**Required because F3 is Major (cache-coherence).**
+> Audit retention for regulatory defense varies by regime:
+>
+> | Regime | Recommended retention | Statutory anchor |
+> |---|---|---|
+> | HIPAA | 6 years | 45 CFR §164.316(b)(2)(i) |
+> | GDPR | Per lawful basis (Art. 5(1)(e) "storage limitation") — typically 6 months to 6 years | GDPR Art. 5(1)(e) |
+> | PCI-DSS v4.0 | 1 year (3 months immediately accessible) | PCI-DSS v4.0 Req. 10.5.1 |
+> | SOC 2 | Per Trust Service Criteria; typically 1 year | TSC Common Criteria CC7.2 |
+> | FHA | Per HUD recordkeeping requirements; typically 3 years | 24 CFR §100.500 |
+> | CCPA | 24 months for verification records | Cal. Civ. Code §1798.130(a)(7) |
+> | EU AI Act | Per Article 19 (logs), typically 6 months minimum | EU AI Act Art. 19 |
+>
+> **Substrate behavior:** ADR 0049's audit substrate ships without per-event-type retention — retention is a deployment-config concern. ADR 0064's substrate Phase 1 ships the retention-recommendation table; Stage 06 deployment-config hand-off wires per-deployment retention.
+>
+> **Reader caution applies.** Specific retention periods are subject to legal review per regime per jurisdiction; the table is practitioner-shorthand starting point.
 
-### A4 (Required) — Bridge-tier residency two-sided-gate naming (resolves F4)
+**Required because F5 is Major (regulatory defense via audit is incomplete without retention).**
 
-Replace line 298 with: *"**Bridge-tier residency.** ADR 0031's Bridge accelerator is a hosted-SaaS surface. Residency-restricted record classes are gated on **both** sides per defense-in-depth: (i) Anchor-side write-path interceptor consults `IDataResidencyEnforcer` before transmitting ciphertext upstream — the primary gate; ciphertext for prohibited-jurisdiction record classes never leaves the device; (ii) Bridge-side ingest controller consults the same enforcer before persisting — the secondary gate; if the Anchor-side gate is bypassed (compromised client; bug; protocol mismatch), the Bridge-side gate rejects with HTTP 403 and emits `DataResidencyViolation`. The two-sided check is critical because the OS/network-stack between them is untrusted."* **Required because F4 is Major.**
+### A6 (Required) — Spec `IPolicyEvaluator` cost class + rule-keying (resolves F6)
 
-### A5 (Encouraged) — Resolve affected-packages parenthetical; commit to extending `foundation-mission-space/` (resolves F5)
+Add to §"Initial contract surface" near `IPolicyEvaluator`:
 
-Replace line 444 with: *"Modified: `packages/foundation-mission-space/` (per ADR 0062) — adds `Sunfish.Foundation.MissionSpace.Regulatory` namespace + types + interfaces + DI extension. No new package; the regulatory subsystem is a sub-namespace of the mission-space substrate consistent with `MissionEnvelope.Regulatory` being a dimension of the envelope."* **Encouraged.**
+> **Cost class (per ADR 0062-A1.6 precedent):** `IPolicyEvaluator.EvaluateAsync` is `Medium`-cost (matches ADR 0062's medium class — cached evaluation against in-memory rule set; cache TTL 5 minutes). Per-evaluation P95 latency target: < 50ms for ≤100 rules per jurisdiction × 3 jurisdictions resolved.
+>
+> **Rule-keying:** `JurisdictionalPolicyRule` gains a `RelevantFeatures: IReadOnlySet<string>?` field. When non-null, the rule is consulted only for evaluations matching at least one feature key. When null (default), the rule is consulted for every evaluation (broad-effect rules — e.g., a jurisdiction-wide data-residency rule). The evaluator's filtering applies `RelevantFeatures` as the first filter (cheap set-membership test) before rule-body evaluation.
 
-### A6 (Required) — Rule-content data file path under taxonomy-charter convention (resolves F6)
+**Required because F6 is Major (substrate without cost class doesn't deploy at scale).**
 
-Replace `data/regulatory-rules/{jurisdiction-id}/{regime}/{rule-id}.json` with the taxonomy-charter convention; coordinate with the `Sunfish.Regulatory.Jurisdictions@1.0.0` taxonomy charter so rule content is sibling to or sub-charter of the jurisdiction taxonomy. Cross-reference ADR 0057's existing `Sunfish.Leasing.JurisdictionRules@1.0.0` charter pattern explicitly. **Required because F6 is Minor structural-citation but cross-cutting (sets convention for all future regulatory rule-content).**
+### A7 (Required) — Cache invalidation on probe-status transition (resolves F7)
 
-### A7 (Required) — Paper §-citation precision (resolves F7)
+Add to §"Probe mechanics" after the cache-TTL discussion:
 
-Re-read paper §20 (Architecture Selection Framework, line 636 on `origin/main`) and re-cite the correct filter number for "regulatory factors as architectural filter"; or cite §20 broadly as "the Architecture Selection Framework's regulatory filter (per the paper's filter taxonomy)." Drop the specific `§20.4` claim; §20.4 is "Filter 3: Connectivity and Operational Environment," not regulatory. **Required because F7 is Minor structural-citation but Pedantic-Lawyer-flag-worthy alongside the statutory-citation hygiene discipline.**
+> **Cache invalidation on probe-status transition.** Cached `IPolicyEvaluator` and `IDataResidencyEnforcer` verdicts persist iff the underlying `MissionEnvelope.Regulatory.ProbeStatus == Healthy`. Transitions to `Stale / Failed / PartiallyDegraded / Unreachable` invalidate cached verdicts AND surface UX per ADR 0062-A1.10's `EnvelopeChangeSeverity.ProbeUnreliable` severity (persistent banner; "Regulatory probe degraded; some features may behave inconsistently; open diagnostics").
+>
+> **Re-evaluation cost:** invalidated verdicts trigger fresh evaluation on next consumer access; the substrate does NOT pre-emptively re-run all enforcement decisions on the workspace.
 
-### A8 (Required) — GDPR Article 25 acknowledgment (resolves F8)
+**Required because F7 is Major (stale-probe verdicts are wrong; consumers must know).**
 
-Add `GDPR Article 25 (Data Protection by Design and by Default)` to the References list. Add one sentence to §"Decision drivers" naming Article 25 as the "cleanest legal-discourse handle for the substrate-vs-content separation; ADR 0064's substrate-tier framework is structurally aligned with Article 25's 'data protection by design' obligation." **Required because F8 is Major (substrate-tier framing gap).**
+### A8 (Required) — Phase 1 substrate-only deployability disclaimer (resolves F8)
 
-### A9 (Required) — PCI-DSS framing precision (resolves F9)
+Add to §"Compatibility plan / Migration order / Phase 1":
 
-Replace the PCI-DSS regime-stance table cell (line 262) with: *"Substrate enables CDE scope-reduction shape via ADR 0046 encrypted-field substrate (rendering PAN unreadable per PCI-DSS v4.0 Req 3.5.1); commercial productization required for token-vault integration AND for the QSA assessment + Report on Compliance / Self-Assessment Questionnaire that any PCI-DSS-covered deployment requires."* **Required because F9 is Major Pedantic-Lawyer.**
+> **Phase 1 deployability disclaimer.** Phase 1 substrate ships the framework only. With zero rule content, `IPolicyEvaluator` evaluates against an empty rule set → silent-pass-everything verdict. **Phase 1 deployments are NOT regulatory-compliant by virtue of the substrate alone.** Conformance requires rule content per regime per jurisdiction + legal sign-off (Phase 3+). The Phase 1 hand-off + apps/docs walkthrough page MUST surface this disclaimer prominently. Any consumer reading "ADR 0064 substrate landed" as "Sunfish is regulatory-conformant" is misreading; the substrate landing is necessary but not sufficient for conformance.
 
-### A10 (Encouraged) — EU AI Act Art. 50 citation completeness (resolves F10)
+**Required because F8 is Major (silent-pass behavior is a foot-gun; explicit disclaimer mitigates).**
 
-Extend the References citation (line 536) to "EU AI Act (Regulation EU 2024/1689; Arts. 5, 6, 50 + Annex III)." **Encouraged.**
+### A9 (Required) — Engage industry rule-engine prior-art in Decision Drivers (resolves F9)
 
-### A11 (Required) — Sanctions OFAC strict-liability framing + default Block (resolves F11)
+Add to §"Decision drivers" as a new bullet:
 
-Add §"OFAC enforcement posture caveat" naming the knew-or-should-have-known framework. Default `OnViolation` for sanctions rules to `Block` (operator must explicitly downgrade to `AuditOnly` per-deployment, with operator-config + counsel-acknowledgment surface). Surface in every sanctions-match UX a "this match places you on notice; OFAC enforcement is strict-liability; consult counsel before proceeding" caveat. **Required because F11 is Major Pedantic-Lawyer (substrate framing risk).**
+> **Industry rule-engine prior-art (deliberately rejected for v0).** The canonical industry options are Open Policy Agent (OPA / Rego — CNCF graduated; declarative DSL with mature tooling), AWS Cedar (Amazon OSS policy language with formal verification; designed for ABAC/RBAC), and XACML 3.0 (older OASIS standard). v0 ships a custom JSON `JurisdictionalPolicyRule` schema rather than adopting these prior arts because: (a) rule-content is per-jurisdiction-per-regime data files authored by legal counsel — NOT engineering DSL territory; legal counsel reads JSON, not Rego; (b) custom JSON allows tight coupling to ADR 0064's `PolicyEvaluationKind` + `PolicyEnforcementAction` enums; (c) Phase 3+ migration to OPA-or-Cedar is the long-term target if rule-content authoring at scale exposes substrate gaps. Track at OQ-0064.8 (added below).
 
-### A12 (Required) — Audit retention spec for the 7 new events (resolves F12)
+Add OQ-0064.8:
 
-Add a §"Retention" subsection. Recommend Option (a): default 7-year retention to satisfy the union of HIPAA (6 years) + OFAC (5 years) + PCI-DSS (1 year), bounded by GDPR data-minimization (records purged on tenant-deletion + lawful-basis-revocation per ADR 0049 redaction primitives). Cite ADR 0049-A1 sibling amendment dependency if retention spec belongs at the audit-substrate tier rather than per-ADR. **Required because F12 is Major.**
+> **OQ-0064.8:** When does Sunfish migrate from custom JSON rule-content to OPA/Rego or Cedar? Trigger candidates: (a) rule-content authoring exceeds ~100 rules per regime; (b) rule-content gains operator-controllable predicates (DSL territory); (c) cross-regime conflict resolution requires formal verification.
 
-### A13 (Required) — Force-enable wording from "operator assumes responsibility" → fact-disclosure shape (resolves F13)
+**Required because F9 is Major (decision drivers section should engage prior-art, even to reject).**
 
-Rewrite the canonical force-enable caveat language to: "Force-enable applies override; substrate informs operator that the configuration may not satisfy applicable regulatory requirements in the active jurisdiction. Operator's primary regulatory obligations are unchanged by this override. Audit event `FeatureForceEnabled` documents the override and operator-attributable click. Consult counsel before proceeding for any regime where regulatory non-compliance carries material liability." Sibling amendment ADR 0062-A2 (or A1.17) propagates to source-of-truth. **Required because F13 is Major Pedantic-Lawyer.**
+### A10 (Required) — Cite sanctions-screening SDK landscape (resolves F10)
 
-### A14 (Encouraged) — Disputed-jurisdictions OQ + deferral to taxonomy charter (resolves F14)
+Add to §"Sanctions handling":
 
-Add OQ-0064.8 naming the disputed-jurisdiction policy question; defer to the `Sunfish.Regulatory.Jurisdictions@1.0.0` taxonomy charter Phase 2 work product with general-counsel input. **Encouraged.**
+> **Industry SDK landscape (substrate consumer pattern).** The substrate `ISanctionsScreener` interface ships without vendor implementation. Phase 3+ vendor adapters land per `providers-*` package convention (per ADR 0013 provider-neutrality). Canonical SDK landscape: **ComplyAdvantage** (REST API; PEP + sanctions + adverse media; SaaS-only); **Refinitiv World-Check One** (Reuters/LSEG; on-prem + SaaS); **Dow Jones Risk & Compliance** (factiva); **OpenSanctions** (open data; Python tooling; usable for non-commercial without API). Vendor selection is per-deployment + per-tenant; the substrate does not endorse a vendor.
 
-### A15 (Required) — Affirmative legal-advice disclaimer (resolves F15)
+**Required because F10 is Major (real implementations need vendor adapters; landscape citation is the substrate-consumer pattern).**
 
-Prepend to the reader-caution preamble (line 12) one sentence: *"This ADR is engineering documentation, not legal advice. The regime-stance table and statutory citations are best-effort summaries by engineers; legal determinations under any regime require qualified counsel."* **Required because F15 is Major Pedantic-Lawyer.**
+### A11 (Required) — Reframe force-enable caveat as fact-disclosure not liability transfer (resolves F11)
 
-### A16 (Encouraged) — Phase 4 migration cost-class precision (resolves F16)
+Update the force-enable UX surface text in §"Trust impact / Security & privacy":
 
-Name Phase 4 explicitly as "re-authoring against ADR 0064's `JurisdictionalPolicyRule` schema; ADR 0057's existing charter is the *seed* for the new layout but is not preserved as-is. Cost class: per-ADR coordinated amendment (sibling A_n on ADR 0057 + ADR 0060)." **Encouraged.**
+> **Force-enable + ADR 0062 OverridableWithCaveat composition (revised).** Operators may force-enable a regulated feature per ADR 0062-A1.9 `OverridableWithCaveat` policy. The UX surface displays a **fact-disclosure** ("This feature is regulated under <regime>; the substrate has been overridden by an operator-level decision; the override has been recorded in the audit trail"). The fact-disclosure is **NOT a liability transfer**: substrate-tier UX cannot grant indemnity to Sunfish-the-framework or to the operator's downstream consumers. The audit trail records the override as evidence; the operator's actual legal posture remains with the operator and their counsel.
 
-### A17 (Encouraged) — Sanctions reload mechanism in OQ-0064.5 (resolves F17)
+**Required because F11 is Major (Pedantic-Lawyer; substrate must not imply legal-posture transfer).**
 
-Extend OQ-0064.5 to pin the mechanism: recommend (b) operator-CLI ingest for v0; (a) timer-pull and (c) Bridge-push deferred to commercial-productization. **Encouraged.**
+### A12 (Required) — HIPAA Security Rule § range citation hygiene (resolves F12)
+
+Update the HIPAA citation in the Considered Options + References:
+
+> - **HIPAA Privacy Rule** (45 CFR §§164.500–164.534) + **Security Rule** (specific subparts: §164.308 administrative safeguards; §164.310 physical safeguards; §164.312 technical safeguards; §164.316 policies/procedures + audit documentation including retention; §164.314 organizational requirements). Practitioner-shorthand "Subpart C: 45 CFR §§164.302–164.318" is **deprecated** in this ADR — the explicit § citations above are canonical going forward.
+
+**Required because F12 is Major (citation hygiene).**
+
+### A13 (Required) — Reframe `RegulatoryRegimeStance` values + PCI-DSS stance (resolves F13 + F14)
+
+Two coupled changes:
+
+(i) Rename `RegulatoryRegimeStance.OutOfScopeOpenSource` → `ExplicitlyDisclaimedOpenSource`. Add UX-surface fact-statement: "Sunfish-OSS does NOT aspire to <regime> conformance under any deployment shape; commercial productization is a separate work product."
+
+(ii) Reconsider PCI-DSS stance: change from `CommercialProductOnly` → `ExplicitlyDisclaimedOpenSource` (subject to legal-counsel review). Rationale: any PCI-DSS scope brings the OSS substrate into scope; productization-aware-substrate framing is too generous.
+
+Update the default regime stance table accordingly. **Subject to legal-counsel review** — A13's specific stance values may flip during Stage 1.5 council with the legal-counsel engagement letter; XO ships A13 substrate and counsel reviews the stance values.
+
+**Required because F13 + F14 are Major (Pedantic-Lawyer; stance framing has legal consequences).**
+
+### A14 (Required) — Ship canonical `JurisdictionalPolicyRule` JSON schema (resolves F15)
+
+Phase 1 substrate hand-off MUST include a canonical JSON schema document at `data/regulatory-rules/jurisdictional-policy-rule.schema.json` (using JSON Schema Draft 2020-12). The schema serializes the C# `JurisdictionalPolicyRule` record's structure including `LocalizedString` references for `Description` and the `RelevantFeatures` field added in A6. Phase 3+ rule-content authoring validates against this schema.
+
+**Required because F15 is Major (multi-author divergence is bounded by canonical schema).**
+
+### A15 (Encouraged) — Composite-confidence tie-breaker rule (resolves F16)
+
+Add to §"Probe mechanics / Composite confidence rule":
+
+> **Tie-breaker:** When 2 of 3 signals agree but reflect stale state (e.g., user-declaration = truthful + tenant-config = stale), preference order is: **user-declaration > tenant-config > IP-geo** (truthfulness ordering; user-declaration is the most-recent operator-controlled signal; tenant-config is operator-controlled but lags; IP-geo is unreliable). Document the tie-breaker explicitly in the 27-case test matrix.
+
+**Encouraged.**
+
+### A16 (Encouraged) — Resolve OQ-0064.7 + OQ-0064.5 (resolves F17 + F18)
+
+Resolve OQ-0064.7 (rule-content versioning): rule-content data files carry semver in metadata; substrate consumes latest version per `(jurisdiction, regime, rule-id)`; deprecation grace period 90 days default (tunable per regime).
+
+Resolve OQ-0064.5 (sanctions list reload): async background-priority reload at substrate-tier (matches ADR 0049 audit-substrate's append-only pattern); cadence configurable per deployment (default daily for OFAC; weekly for EU; consumer adapters may override).
+
+**Encouraged (both OQs are deferred; A16 makes them substantive).**
+
+### A17 (Encouraged) — Disputed-jurisdiction naming legal review (resolves F19)
+
+Add halt-condition to §"Halt conditions for Stage 06":
+
+> **6. Disputed-jurisdiction naming legal review.** `Sunfish.Regulatory.Jurisdictions@1.0.0` taxonomy charter (Phase 2) MUST engage qualified counsel BEFORE shipping the seed. Disputed jurisdictions (Taiwan; Western Sahara; Crimea/Sevastopol; Palestinian territories; Kashmir) name themselves as political acts; counsel selects naming conventions with downstream sanctions-trade-implication awareness.
+
+**Encouraged.**
+
+### A18 (Encouraged) — Reader-caution discipline enforcement mechanism (resolves F20)
+
+Add to §"Halt conditions for Stage 06" — automated enforcement:
+
+> **7. Reader-caution discipline enforcement.** Phase 1 substrate hand-off includes an automated apps/docs build-step that fails the build if any page in `apps/docs/foundation/regulatory-policy/` lacks the canonical reader-caution string. Implementation: simple grep-or-regex in the build pipeline.
+
+**Encouraged.**
+
+### A19 (Encouraged) — Reorder regime stance table + clarify featureKey divergence (resolves F21 + F22)
+
+(i) Reorder default regime-stance table by stance-cluster: `InScope` first (alphabetized within: CCPA, EU_AI_Act, FHA, GDPR, SOC2); `CommercialProductOnly` second (alphabetized within: HIPAA, PCI_DSS_v4 — pending A13 review of PCI-DSS); `ExplicitlyDisclaimedOpenSource` third (no current entries; reserved for future regimes).
+
+(ii) Add a doc-comment to `IPolicyEvaluator.EvaluateAsync(envelope, featureKey, ct)` clarifying the featureKey-string-vs-TFeature-type-parameter divergence from ADR 0062's gate signature. Justification: rule-content references feature keys as strings; type parameters don't compose with data files.
+
+**Encouraged.**
 
 ---
 
 ## 4. Quality rubric grade
 
-**Grade: B (mid-B).** Path to A is mechanical (A1–A4 + A6–A9 + A11–A13 + A15 land — the 11 Required amendments).
+**Grade: B (Solid).** Path to A is mechanical (A1–A14 land + Pedantic-Lawyer A2/A3/A11/A12/A13 land before Phase 3 rule-content authoring begins).
 
-- **C threshold (Viable):** All 5 CORE present (Context, Decision drivers, Considered options A–D, Decision, Consequences); multiple CONDITIONAL sections (Compatibility plan, Implementation checklist, Open questions, Halt conditions, Revisit triggers, References, Sibling amendment dependencies, Cohort discipline, §A0 cited-symbol audit). No critical *planning* anti-patterns. **Pass.**
-- **B threshold (Solid):** Stage 0 sparring present (4 options A–D triangulated honestly with named rejection rationale for B/C/D); FAILED conditions present (5 revisit triggers); explicit halt-conditions (5 enumerated); Cold Start Test plausible *with the 11 Required amendments applied* — without them, a Stage 06 implementer reading the contract surface alone hits unspecified rule-keying (F2), unspecified composite-confidence rule (F1), and unspecified caching policy (F3); Reader-caution preamble + Pedantic-Lawyer council requirement embedded explicitly. **Pass.**
-- **A threshold (Excellent):** Misses on five counts:
-  - **(1)** §A0 self-audit caught the type-name surfaces well (no false-claims of the 0063-F1 / F2 / F3 shape) but missed paper-§-citation imprecision (F7), affected-packages parenthetical structural ambiguity (F5), and rule-content path divergence (F6). The §A0 pattern handles type-existence well; structural choices that aren't pure type-existence still need council.
-  - **(2)** Pedantic-Lawyer-required findings (F8 + F9 + F11 + F13 + F15) are all substantive and would have been missed by a standard-4-perspective council; the parent-intake's Pedantic-Lawyer requirement was load-bearing and validates W#33 §5.9 as cohort precedent.
-  - **(3)** Force-enable wording (F13) is Pedantic-Lawyer-flag-worthy across two ADRs (0062 + 0064); sibling amendment to ADR 0062 needed.
-  - **(4)** Composite-confidence rule (F1) leaves 21 of 27 cases unspecified after the explicit rule.
-  - **(5)** Audit retention (F12) is a substrate-tier gap that surfaces at this ADR but probably belongs at ADR 0049; sibling-amendment ADR 0049-A1 may be the right fix-locus.
+- **C threshold (Viable):** All 5 CORE present (Context with reader-caution, §A0, Decision drivers, Considered options A–D, Decision); multiple CONDITIONAL sections (Compatibility plan, Implementation checklist, Open questions, Halt conditions, Sibling amendment dependencies, Cohort discipline). No critical *planning* anti-patterns. **Pass.**
+- **B threshold (Solid):** Stage 0 sparring evident in OQ-0064.1–0064.7 (seven explicit deferrals; A16 raises that to a resolved subset); FAILED conditions named in §"Halt conditions for Stage 06" (5 named); Cold Start Test plausible — Stage 06 implementer can read §"Implementation checklist" + the substrate types and know what to scaffold; companion-amendment dependencies explicit (§"Sibling amendment dependencies named"). **Pass.**
+- **A threshold (Excellent):** Misses on:
+  1. **F1 (Critical):** GDPR Article 25 absent from cited articles — substrate's load-bearing statutory anchor isn't cited.
+  2. **F2 (Critical):** Reader-caution preamble lacks affirmative legal-advice disclaimer — fact-statement only.
+  3. **F3 (Critical):** Sanctions screening's emit-without-enforce shape may create OFAC liability — no operator opt-out path named.
+  4. **F4 (Critical):** Bridge-tier data-residency upstream gate code-path unnamed — substrate cannot be implemented as ADR'd.
+  5. **F5–F8 (Major):** Audit retention; cost class; cache invalidation; Phase 1 deployability disclaimer.
+  6. **F9–F15 (Major):** Industry rule-engine prior-art uncited; sanctions SDK landscape uncited; force-enable framing; HIPAA citation hygiene; stance value reframe; rule-content schema unspec'd.
 
-A grade of **B with required amendments A1–A4 + A6–A9 + A11–A13 + A15 applied (11 Required) promotes to A.** A5 + A10 + A14 + A16 + A17 (5 Encouraged) may land during Stage 02 or as Stage 06 implementation guidance.
+A grade of **B with required A1–A14 applied promotes to A**, conditional on legal-counsel sign-off on the Pedantic-Lawyer-driven amendments (A2 / A3 / A11 / A12 / A13).
 
 ---
 
-## 5. Council perspective notes
+## 5. Council perspective notes (compressed)
 
-- **Distributed-systems / runtime-substrate reviewer:** "The composite-confidence rule's coverage gap is the substrate's largest correctness risk. ADR 0064 names 27 cases in the test-coverage checklist but specifies behavior for ~6; the rest go to Stage-06-implementer-judgment which will produce inconsistent verdicts across implementations. The `IPolicyEvaluator.EvaluateAsync(envelope, featureKey, ct)` rule-keying is unspecified — there's no way for the evaluator to select rules from `(envelope.Regulatory.Jurisdiction, featureKey)` without an `AppliesToFeatureKeys` field on the rule record (or equivalent). Cache invalidation when probe transitions Healthy→Stale is unspecified; ADR 0062's `EnvelopeChange` event stream is the natural invalidation source but ADR 0064 doesn't subscribe to it explicitly. Bridge-tier residency upstream-gate code-path naming is correct in intent ('upstream gate, not downstream filter') but doesn't say where the gate physically lives — both Anchor + Bridge sides per defense-in-depth is the right answer; ADR 0064 names neither. None of these are architectural redesign; all are spec-fill. Eight 1-paragraph fixes." Drives F1 + F2 + F3 + F4.
+- **Distributed-systems / runtime-substrate reviewer:** "The composite-confidence rule is well-named but the 27-case coverage has at least one edge case (truthful-user + stale-tenant-config) that the explicit tie-breaker rule should resolve. `IPolicyEvaluator` cost class and rule-keying mechanism are both substrate-tier concerns — undeclared cost class produces unpredictable evaluation latency at scale; implicit rule-keying produces O(N×M) per evaluation. A6 amendment closes both. The Bridge-tier data-residency upstream gate is the load-bearing implementation gap — without naming the code-path (middleware in ASP.NET Core pipeline), Stage 06 build will diverge from ADR intent. A4 closes this; A7 closes cache-invalidation on probe-status transition. The 27-case test matrix should ship in Phase 1 substrate test coverage." Drives F4 + F6 + F7 + F16 + F22; amendments A4, A6, A7, A15, A19.
 
-- **Industry-prior-art reviewer:** "Per-domain ADR 0057 + ADR 0060 generalize cleanly into ADR 0064's substrate — the pattern (per-jurisdiction explicit citation + operator-decision territory for hard cases) is well-trodden. **Missing rule-engine prior-art:** Open Policy Agent (OPA / Rego) is the canonical OSS rule-engine for policy-as-data; AWS Cedar (recently open-sourced; designed for authorization but applicable to compliance) is closer to ADR 0064's typed-rule shape; XACML is the legacy XML-flavored prior-art. ADR 0064 ships its own minimal rule engine (correct call for v0; cost-of-OPA-integration > cost-of-substrate-rule-engine for Sunfish's scope), but should cite these as prior-art so the choice-of-not-using-them is documented. **Missing sanctions SDK prior-art:** OFAC publishes XML/CSV downloads but no SDK; commercial sanctions-screening SDKs (Refinitiv World-Check; Dow Jones Risk & Compliance; ComplyAdvantage) are the de-facto industry standard. ADR 0064's `ISanctionsScreener` is correctly framed as operator-pluggable (substrate doesn't ship a screener implementation; operator wires their preferred SDK), but the prior-art should be cited. **Missing cloud-residency products:** Microsoft EU Data Boundary (announced 2022; GA 2024); AWS Regional services (residency-by-region); GCP regional services. ADR 0064's data-residency-as-record-class-aware constraint is more granular than these (cloud-residency is per-tenant; ADR 0064 is per-record-class), which is *good* — but the cloud-residency products should be cited as the substrate-vs-cloud-residency boundary." Drives F8 (GDPR Art. 25 prior-art) + adjacent prior-art gaps; surfaces in §6 cohort discipline scorecard as prior-art completeness.
+- **Industry-prior-art reviewer:** "ADR 0064 ships its own data-driven rule engine without engaging Open Policy Agent (Rego), AWS Cedar, or XACML 3.0 — the canonical industry options. The substrate's choice (custom JSON for legal-counsel-readability) is defensible but the prior-art rejection should be explicit. A9 amendment adds the engagement. Sanctions-screening libraries (ComplyAdvantage, Refinitiv, Dow Jones, OpenSanctions) similarly uncited; A10 adds the SDK landscape. Cloud data-residency products (MS EU Data Boundary, AWS regional, GCP) are also uncited but lower-priority — the substrate's Bridge-tier residency framing doesn't directly map to those products. GDPR Article 25 is the most consequential missing citation; F1 / A1 covers." Drives F9 + F10; amendments A9, A10.
 
-- **Cited-symbol / cohort-discipline reviewer:** "Three-direction spot-check ran on every cited symbol. **Positive-existence:** all 8 cited ADRs verified Accepted on `origin/main` (clean). The post-A1 surface citations (`OverridableWithCaveat` per A1.9; `ProbeStatus` per A1.10; A1.14 §A0 audit pattern; A1.15 + A1.16 on ADR 0063) all positively-verify (unlike ADR 0063's invented `MinimumSpecDimension`). The 7 new `AuditEventType` constants don't collide. W#22 active-workstreams Phase 6 deferred status correctly cited. **Negative-existence:** found 0 invented type names in the contract surface — encouraging signal that the §A0 self-audit caught the type-name surface this time. **Structural-citation correctness:** found 3 (F5 affected-packages parenthetical, F6 rule-content path divergence, F7 paper §-citation imprecision). Lower than ADR 0063's 4 of 4 but still nonzero. The §A0 self-audit pattern handles type-existence well and structural choices around namespace + path + paper-§ are still council-canonical. **Cohort-discipline scorecard:** ADR 0064's structural-citation count (3) is better than ADR 0063's (4) and worse than ADR 0061's (1). Net: §A0 self-audit ratchets up the floor on type-existence; council remains canonical on cross-cutting structural choices." Drives F5 + F6 + F7 + cohort scorecard updates.
+- **Cited-symbol / cohort-discipline reviewer:** "Spot-checked all 10 cited ADRs in three directions per the post-ADR-0063 lesson (§A0 self-audit pattern is necessary but NOT sufficient; council remains canonical). All 10 ADRs verified Accepted on origin/main (F-VP3). The 7 new `AuditEventType` constants pass collision check (F-VP4). The W#22 Phase 6 deferred status verified (F-VP5). Paper §20.4 GDPR/HIPAA/FedRAMP/ITAR framing verified (F-VP6). ADR 0009 `IEditionResolver` exists at the cited surface (F-VP1; the related `EditionCapabilities` shape is a downstream wrapper consuming ADR 0009's edition-key string). ADR 0036's 5 sync states are canonical (F-VP2). Per-domain ADR 0057 + ADR 0060 precedent fidelity verified (F-VP7). NO structural-citation failures found in this review — improvement over ADR 0063 council's 4-of-4 structural-citation count. Cohort batting average: 15-of-15 (this council); structural-citation failure rate (XO-authored) holds at 10-of-14 + 0 in this ADR = 10-of-15 ~67% (down from 71%)." No drives; verification-pass findings F-VP1 through F-VP7.
 
-- **Forward-compatibility / migration reviewer:** "Phase 1 substrate-only deployability is genuinely deployable per Option A — substrate ships without rule content; consumers know it. But the substrate-without-rules failure mode the ADR names ('consumers may misread Phase 1 as regulatory-compliant when it's not') is a real risk; Phase 1 hand-off + apps/docs page must explicitly disclaim, and the reader-caution preamble must propagate forward (mechanical fix exists in halt-condition #3). Rule-content data file format is OQ-0064.2 (recommend JSON) — the OQ should be closed at this ADR (don't leave format choice for Stage 06 implementer). Phase 4 cross-cutting refactor mechanical-vs-rewriting matters: ADR 0057's rules don't fit ADR 0064's `JurisdictionalPolicyRule` schema as-is; Phase 4 is re-authoring not renaming; cost-class should be named explicitly. Rule-content versioning per OQ-0064.7 — recommendation is filename or metadata semver; this is also closeable at this ADR. Sanctions list reload mechanism per OQ-0064.5 — daily-cadence is named but not the mechanism (pull / push / Bridge); recommend operator-CLI ingest for v0." Drives F16 + F17 + adjacency on OQ-closure encouragement.
+- **Forward-compatibility / migration reviewer:** "Phase 1 substrate-only deployability is the most consequential forward-compatibility concern: with zero rule content, `IPolicyEvaluator` silent-passes every evaluation. Consumers may misread Phase 1 as 'regulatory-compliant'; A8 amendment adds the explicit disclaimer. Rule-content data file format (JSON shape) unspec'd — at Phase 3 multi-author divergence is bounded only by the C# type; A14 amendment ships canonical JSON Schema in Phase 1. Rule-content versioning + sanctions list reload (OQ-0064.7 + OQ-0064.5) need substantive resolution; A16 promotes both from OQ to substrate-spec'd. Phase 4 cross-cutting refactor (ADR 0057 + 0060 migrate to ADR 0064 substrate) is mechanically scoped; rewriting the per-domain ADRs' enforcement logic is the actual work; mechanical-vs-rewrite ratio is unclear without prototyping." Drives F8 + F11 (forward-compat aspect) + F15 + F17 + F18; amendments A8, A14, A16.
 
-- **Pedantic-Lawyer perspective (REQUIRED per parent-intake halt-condition + W#33 §5.9):** "Reader-caution discipline rigor is high — the preamble + 5 halt-conditions + reader-caution applied to all statutory citations is excellent for engineering documentation. Findings cluster at five framing risks. **(1) GDPR Article 25 absence (F8)** — substrate-tier framework that does Article-25 work without citing Article 25 is missing the cleanest legal-discourse handle; mechanical fix. **(2) PCI-DSS framing 'enables tokenization shape' (F9)** is industry-shorthand that overpromises substrate capability; Sunfish has encrypted-field substrate (ADR 0046) not tokenization; the framing implies a token vault that doesn't exist; rewrite to 'CDE scope-reduction shape via ADR 0046 + Req 3.5.1.' **(3) Sanctions emit-without-enforce framing (F11)** is the highest-stakes finding: OFAC's knew-or-should-have-known framework means once `SanctionsScreeningHit` fires, the operator is on notice; if substrate offers 'merely log' as a neutral option, the operator who picks it may be in worse legal posture than the operator who never installed Sunfish's screener. Default `OnViolation` for sanctions to `Block`; require explicit operator-config + counsel-ack to downgrade. **(4) Force-enable 'operator assumes responsibility' (F13)** reads as click-through indemnification; consumer-protection regimes don't honor that; the right framing is fact-disclosure (substrate informs operator; operator's primary liability is unchanged). Sibling amendment to ADR 0062 needed because the canonical wording lives there. **(5) Affirmative legal-advice disclaimer absent (F15)** — the reader-caution covers citation accuracy but doesn't say 'this whole document, including the regime-stance table, is not legal advice.' One sentence prepended to the preamble fixes it. **EU AI Act citation (F10)** is shape-correct but missing Art. 50 (limited-risk transparency obligations); citation-completeness gap. **OFAC SDN vs broader OFAC consolidated list:** ADR 0064 cites 'OFAC SDN/sectoral lists' (correct framing — SDN is the canonical primary list; sectoral lists are the secondary lists like SSI under EOs 13662/13685); the broader OFAC consolidated list framing isn't used; this is fine. **EU consolidated sanctions list:** correctly cited (line 537). **Disputed-jurisdictions naming (F14):** taxonomy-charter Phase 2 work product; not blocking. The Pedantic-Lawyer-required council found 5 substantive Major-class findings + 2 Encouraged that the standard-4-perspective council would not have surfaced; the parent-intake's halt-condition was load-bearing." Drives F8 + F9 + F11 + F13 + F15 + adjacent F10 + F14 on Pedantic-Lawyer review density.
+- **Pedantic-Lawyer perspective (REQUIRED 5th):** "ADR 0064 is the substrate's most legally-exposed work product in the W#33 lineage. Five Critical-or-Major findings here are Pedantic-Lawyer-driven: F1 (GDPR Article 25 absence — the substrate rests on Article 25; missing the citation breaks the statutory anchor chain); F2 (reader-caution preamble lacks affirmative legal-advice disclaimer — the fact-statement preamble is necessary but not sufficient against legal-advice-by-aggregation); F3 (sanctions screening's emit-without-enforce risks OFAC 'knew-or-should-have-known' liability — substrate must offer explicit advisory-only opt-out path with operator+counsel attestation); F11 (force-enable caveat is fact-disclosure not liability transfer — UX cannot grant indemnity); F12 (HIPAA Security Rule § range is practitioner-shorthand — explicit § citations including §164.316 for retention are canonical); F13 + F14 (PCI-DSS stance + `OutOfScopeOpenSource` framing — both have legal-posture consequences; counsel should review). Three Encouraged-tier findings: F19 (disputed-jurisdictions naming in `Sunfish.Regulatory.Jurisdictions` taxonomy charter); F20 (reader-caution discipline enforcement mechanism). The substrate ADR is structurally sound; the Pedantic-Lawyer fixes are mechanical to apply (A1, A2, A3, A11, A12, A13, A17, A18). Counsel engagement letter remains the Stage 06 halt-condition." Drives F1 + F2 + F3 + F11 + F12 + F13 + F14 + F19 + F20; amendments A1, A2, A3, A11, A12, A13, A17, A18.
 
 ---
 
 ## 6. Cohort discipline scorecard
 
-| Cohort baseline (before this review) | This council review |
+| Cohort baseline | This amendment |
 |---|---|
-| **Substrate-amendment council batting average:** 14-of-14 needing council fixes | **15-of-15** if A1–A4 + A6–A9 + A11–A13 + A15 (11 Required) land. Cohort lesson holds: every substrate ADR/amendment so far has needed council fixes. |
-| **Council false-claim rate:** 2-of-12 prior councils | **0-of-17 spot-checks fired in this review.** All findings positive-existence / negative-existence / structural-citation correctness verified twice before publishing. F1's 27-case gap verified by re-counting the rule + ProbeStatus interaction matrix. F2's rule-keying verified by reading `JurisdictionalPolicyRule` record fields directly. F3's caching gap verified by full-text search for "cache" / "invalidat" in ADR 0064. F5/F6/F7 verified by `git ls-tree` + `grep` against actual paper §20 heading text. F8/F9/F11/F13/F15 are framing findings derived from the Pedantic-Lawyer perspective; structural verification is N/A but the framing claims (Article 25 = privacy-by-design; PCI-DSS Req 3.5.1; OFAC strict-liability) are accurate. |
-| **Structural-citation failure rate (XO-authored):** 10-of-14 amendments (~71%) | **3-of-14 + this one's 3 = 13-of-15 amendments having structural-citation findings** (~87%) — but this ADR's count (3) is **lower than ADR 0063's (4)** and **higher than ADR 0061's (1)**. Net signal: §A0 self-audit pattern catches type-existence well (no invented types this time vs 4 in ADR 0063); structural choices around namespace + path + paper-§ remain council-canonical. **Encouraging discipline trend.** |
-| **§A0 self-audit catch rate (post-ADR-0063 baseline):** 0-of-4 on ADR 0063 | **Substantially better than 0063 baseline.** The §A0 audit on ADR 0064 caught: positive-existence of all 8 cited ADRs (clean); post-A1 amendment surface citations (A1.9 + A1.10 + A1.14 + A1.15 + A1.16 — all positively verify); 7 new audit constants non-collision. The 3 structural-citation findings (F5 / F6 / F7) the council surfaced are NOT type-existence claims — they're cross-cutting structural choices (package convention / path convention / paper §-precision). The §A0 audit's design-target (catch invented type names) succeeded; the council remains canonical for the structural-choice class. |
-| **Severity profile** | 0 Critical (none of F1–F17 reach the `dotnet build`-fails-at-compile bar); **10 Major** (F1, F2, F3, F4, F8, F9, F11, F12, F13, F15); **6 Minor** (F5, F6, F7, F10, F16, F17); **1 Encouraged** (F14) = **17 findings** + **10 verification-pass findings** for 27 total. **Pedantic-Lawyer-driven findings: 5 (F8, F9, F11, F13, F15) — highest single-perspective contribution this cohort.** |
-| **Pre-merge council vs post-merge council** | **Pre-merge** — auto-merge intentionally DISABLED per ADR 0064's own §"Cohort discipline" + parent-intake halt-condition #4. Pre-merge cost: 2–3 hours XO ADR editing + ADR 0062 sibling-amendment for force-enable wording (F13). Post-merge cost would be: rewrite framing across regime-stance table + sanctions UX + force-enable language + paper §-citation + 4 spec-fill subsections = ~5–6 hours XO + Pedantic-Lawyer re-review + risk of partial-fix landing in tranches. **Pre-merge is dramatically cheaper.** |
-| **Pedantic-Lawyer-required council validation** | The parent-intake halt-condition #4 + W#33 §5.9 hardening precedent required the 5th perspective. **5 of 17 findings** (29%) were Pedantic-Lawyer-driven; standard-4-perspective council would have missed F8 + F9 + F11 + F13 + F15. **Validates the parent-intake halt-condition as load-bearing for ADR 0064's class of work.** Cohort-discipline recommendation: every future ADR in the W#33 follow-on queue with regulatory framing engages a Pedantic-Lawyer perspective subagent. |
+| 14 prior substrate amendments needed council fixes | Will be 15-of-15 if A1–A14 fixes apply pre-merge per current auto-merge-disabled approach |
+| Cited-symbol verification — both directions standard | This amendment: 0 false-positive + 0 false-negative + 0 structural-citation failures (F-VP1–F-VP7 are explicit positive-existence + structural verifications). **Improvement over ADR 0063's 4-of-4 structural-citation count.** |
+| Council false-claim rate (all three directions): 2-of-12 | This council: 0 false claims (F-VP1–F-VP7 pass cleanly; council's findings are F1–F22 against the ADR, not against the council itself) |
+| Council pre-merge vs post-merge | Pre-merge with **5-perspective Pedantic-Lawyer-included** council per parent intake's halt-condition — correct call given the legal-exposure surface |
+| Severity profile | 4 Critical (F1–F4) + 11 Major (F5–F15) + 4 Minor (F16–F19) + 3 Encouraged (F20–F22) + 7 verification-passes (F-VP1–F-VP7) |
+| Pedantic-Lawyer-driven findings | **8 of 22** substantive findings (F1, F2, F3, F11, F12, F13, F14, F19) — high-water mark for the legal-perspective contribution |
+| Structural-citation failure rate (XO-authored) | Was 10-of-14 (~71%) post-ADR-0063; ADR 0064 contributes 0 — rate becomes 10-of-15 (~67%); §A0 self-audit caught all positive-existence claims this round |
 
-The cohort lesson holds: every substrate ADR/amendment so far has needed council fixes; pre-merge council is dramatically cheaper than post-merge; structural-citation correctness is the most-frequent failure mode; the §A0 audit ratchets the floor up on type-existence (encouraging trend from 0063 → 0064) but cross-cutting structural choices + framing risks remain council-canonical; Pedantic-Lawyer-perspective is load-bearing for regulatory-class ADRs.
+The cohort lesson holds: every substrate-tier amendment in the W#33 lineage has needed council fixes (15-of-15). Pedantic-Lawyer perspective addition (per W#33 §5.9 precedent + parent intake halt-condition) was vindicated — 8 of 22 findings are legal-perspective-specific that the standard 4-perspective council would not have surfaced.
 
 ---
 
 ## 7. Closing recommendation
 
-**Accept ADR 0064 with required amendments A1–A4 + A6–A9 + A11–A13 + A15 (11 Required) applied before any rule-content data file or `apps/docs/foundation/regulatory-policy/` text ships.** The architectural decision (substrate-vs-content separation; Option A; per-domain ADR composition; reader-caution + halt-conditions for legal-counsel engagement) is correct and consistent with substrate-cohort design taste. The 11 required mechanical fixes are 2–3 hours of XO work plus a sibling-amendment ADR 0062-A2 (or A1.17) for the force-enable wording propagation; the 5 Pedantic-Lawyer findings are framing-and-disclaimer fixes (low engineering cost, high legal-discourse value); the 3 structural-citation findings are search-and-replace fixes; the 4 spec-fill subsections (composite-confidence truth-table; rule-keying; caching policy; Bridge two-sided gate) are each one paragraph + one table.
+**Accept ADR 0064 with required amendments A1–A14 applied before Phase 3 rule-content authoring begins.** The substrate-tier shape is correct; the substantive gaps are:
 
-Do **NOT** promote to `Accepted` until A1–A4 + A6–A9 + A11–A13 + A15 land. The 5 Pedantic-Lawyer findings (F8 GDPR Art. 25 / F9 PCI-DSS framing / F11 sanctions OFAC strict-liability / F13 force-enable wording / F15 legal-advice disclaimer) directly affect how regulators, counsel, and operators read this ADR — the framing risks are not "compile-fail" gateable but they ARE "regulator-reads-this-and-concludes-Sunfish-doesn't-know-its-regulatory-substrate" gateable. Estimated rewrite cost: 2–3 hours of ADR editing + 30 min ADR 0062 sibling-amendment, zero code changes (Phase 1 substrate not yet built), zero downstream-intake-rework.
+1. **GDPR Article 25 anchor** (F1 / A1) — load-bearing statutory citation.
+2. **Affirmative legal-advice disclaimer** (F2 / A2) — preamble hardening.
+3. **Sanctions screening operator opt-out path** (F3 / A3) — OFAC liability mitigation.
+4. **Bridge-tier data-residency code-path naming** (F4 / A4) — substrate implementability.
+5. **Audit retention per regime** (F5 / A5) — regulatory defense via audit.
+6. **Cost class + rule-keying** (F6 / A6) — substrate scalability.
+7. **Cache invalidation on probe-status** (F7 / A7) — stale-verdict correctness.
+8. **Phase 1 deployability disclaimer** (F8 / A8) — silent-pass foot-gun mitigation.
+9. **Industry rule-engine prior-art engagement** (F9 / A9) — Decision Drivers rigor.
+10. **Sanctions SDK landscape citation** (F10 / A10) — substrate consumer pattern.
+11. **Force-enable caveat reframe** (F11 / A11) — UX cannot transfer legal liability.
+12. **HIPAA Security Rule citation hygiene** (F12 / A12) — § specificity including §164.316.
+13. **`RegulatoryRegimeStance` value reframe + PCI-DSS stance** (F13 + F14 / A13) — legal-posture-aware naming; counsel review.
+14. **Canonical `JurisdictionalPolicyRule` JSON schema** (F15 / A14) — Phase 1 substrate must ship the schema document.
 
-If A1–A4 + A6–A9 + A11–A13 + A15 do not land within ~1 working day of council acceptance, the right move is **Reject and re-propose** rather than letting framing risks ship to Stage 02 — the council made this same call on ADR 0063, and the cohort batting average says it's cheaper than partial-fix post-merge. The Pedantic-Lawyer-perspective requirement embedded in the halt-conditions means *future* council reviews of any ADR that touches regulatory framing must include the perspective; that discipline begins with this ADR landing the 5 Pedantic-Lawyer-driven findings cleanly.
+A1–A14 are mechanical-on-the-amendment-text but legally-shaping. All fourteen are 4–6h of XO work pre-merge.
 
-The §A0 cited-symbol audit pattern continues to evolve. ADR 0064's §A0 caught type-existence well (substantially better than ADR 0063's 0-of-4); the 3 structural-citation findings the council surfaced are cross-cutting structural choices (package convention; path convention; paper §-precision) rather than type-existence — a different failure class than the §A0 audit's design-target. **Recommendation for cohort discipline going forward (per A18-equivalent):** the §A0 audit's design-target is type-existence + post-amendment surface citations; structural-choice cross-cutting decisions remain council-canonical. The pattern is necessary-but-still-not-sufficient; council remains canonical for substrate ADRs in the W#33 lineage; Pedantic-Lawyer perspective is REQUIRED for any ADR in this lineage that touches regulatory framing.
+**Stage 02 design** can begin immediately on the architectural decision; **Phase 1 substrate Stage 06 build** gates on A1–A14 + the legal-counsel engagement letter for InScope regimes.
 
-W#33 §7.2 follow-on queue ordering: ADR 0064 was the fifth and final item; with A1–A4 + A6–A9 + A11–A13 + A15 applied, the W#33 §7.2 follow-on authoring queue closes. The cohort lessons from this review carry forward to the rule-content authoring layer (Phase 3+; legal-review-gated): the Pedantic-Lawyer perspective applies *especially* to per-regime rule-content authoring; statutory-citation hygiene + framing-risk discipline + reader-caution propagation become inputs to the legal-review framework engagement.
+**Standing rung-6 task (per ADR 0028-A4.3 + A7.12 + ADR 0062-A1.15 + ADR 0063-A1.16 commitment):** XO spot-checks A1's added/modified citations (per the post-A14 surface) within 24h of merge. If any A1-added claim turns out to be incorrect, file an A2 retraction matching the prior cohort retraction patterns.
+
+**Cohort milestone:** ADR 0064 closes W#33 §7.2 follow-on authoring queue (5/5 ADRs landed/in-flight). Cohort batting average: 15-of-15 substrate amendments needed council fixes; structural-citation failure rate held at ~67% but ADR 0064 contributed 0 (improvement over ADR 0063's 4-of-4); Pedantic-Lawyer perspective contribution: 8 of 22 substantive findings.
 
