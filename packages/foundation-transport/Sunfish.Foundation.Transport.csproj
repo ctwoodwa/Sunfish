@@ -8,6 +8,9 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Makaretu.Dns.Multicast.New" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
   </ItemGroup>
