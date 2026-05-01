@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.Migration;
+using Sunfish.Foundation.MissionSpace.Audit;
 using Sunfish.Foundation.Transport;
 using Sunfish.Foundation.UI;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Foundation.MissionSpace;
 
@@ -21,18 +26,51 @@ public sealed class DefaultMinimumSpecResolver : IMinimumSpecResolver
     /// <summary>Default cache TTL per A1.6.</summary>
     public static readonly TimeSpan DefaultCacheTtl = TimeSpan.FromSeconds(30);
 
+    /// <summary>Per A1.7 dedup pattern — 5-minute window for <c>MinimumSpecEvaluated</c>.</summary>
+    public static readonly TimeSpan EvaluatedDedupWindow = TimeSpan.FromMinutes(5);
+
+    /// <summary>Per A1.7 dedup pattern — 24-hour window for <c>PostInstallSpecRegression</c>.</summary>
+    public static readonly TimeSpan RegressionDedupWindow = TimeSpan.FromHours(24);
+
     private readonly TimeProvider _time;
     private readonly TimeSpan _cacheTtl;
     private readonly ConcurrentDictionary<CacheKey, CacheEntry> _cache = new();
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _tenantId;
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _evaluatedDedup = new();
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _regressionDedup = new();
+    private readonly ConcurrentDictionary<(MinimumSpec Spec, string? Platform, DimensionChangeKind Dimension), DimensionPassFail> _previousOutcomes = new();
 
+    /// <summary>Audit-disabled overload (test / bootstrap).</summary>
     public DefaultMinimumSpecResolver(TimeProvider? time = null, TimeSpan? cacheTtl = null)
     {
         _time = time ?? TimeProvider.System;
         _cacheTtl = cacheTtl ?? DefaultCacheTtl;
     }
 
+    /// <summary>Audit-enabled overload — W#32 both-or-neither contract.</summary>
+    public DefaultMinimumSpecResolver(
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        TimeProvider? time = null,
+        TimeSpan? cacheTtl = null)
+        : this(time, cacheTtl)
+    {
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+        if (tenantId == default)
+        {
+            throw new ArgumentException("tenantId is required when audit emission is wired.", nameof(tenantId));
+        }
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _tenantId = tenantId;
+    }
+
     /// <inheritdoc />
-    public ValueTask<SystemRequirementsResult> EvaluateAsync(
+    public async ValueTask<SystemRequirementsResult> EvaluateAsync(
         MinimumSpec spec,
         MissionEnvelope envelope,
         string? platform = null,
@@ -46,7 +84,7 @@ public sealed class DefaultMinimumSpecResolver : IMinimumSpecResolver
         var now = _time.GetUtcNow();
         if (_cache.TryGetValue(key, out var cached) && now - cached.At < _cacheTtl)
         {
-            return ValueTask.FromResult(cached.Result);
+            return cached.Result;
         }
 
         var merged = ComposeWithPlatform(spec, platform);
@@ -89,7 +127,117 @@ public sealed class DefaultMinimumSpecResolver : IMinimumSpecResolver
         };
 
         _cache[key] = new CacheEntry(result, now);
-        return ValueTask.FromResult(result);
+
+        if (_auditTrail is not null && _signer is not null)
+        {
+            await EmitEvaluationAuditsAsync(spec, envelope, platform, result, now, ct).ConfigureAwait(false);
+        }
+
+        return result;
+    }
+
+    private async Task EmitEvaluationAuditsAsync(
+        MinimumSpec spec,
+        MissionEnvelope envelope,
+        string? platform,
+        SystemRequirementsResult result,
+        DateTimeOffset now,
+        CancellationToken ct)
+    {
+        // MinimumSpecEvaluated — 5-minute dedup keyed on (spec, envelopeHash, platform).
+        var evaluatedKey = $"evaluated:{System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(spec)}:{envelope.EnvelopeHash}:{platform ?? ""}";
+        if (ShouldEmit(_evaluatedDedup, evaluatedKey, EvaluatedDedupWindow, now))
+        {
+            await EmitAsync(
+                AuditEventType.MinimumSpecEvaluated,
+                MissionSpaceAuditPayloads.MinimumSpecEvaluated(
+                    envelope.EnvelopeHash,
+                    result.Overall.ToString(),
+                    result.Dimensions.Count,
+                    platform),
+                ct).ConfigureAwait(false);
+        }
+
+        // InstallBlocked / InstallWarned — per-attempt (no dedup; install attempts are rare).
+        if (result.Overall == OverallVerdict.Block)
+        {
+            var failingDim = result.Dimensions
+                .First(d => d.Policy == DimensionPolicyKind.Required && d.Outcome == DimensionPassFail.Fail)
+                .Dimension;
+            await EmitAsync(
+                AuditEventType.InstallBlocked,
+                MissionSpaceAuditPayloads.InstallBlocked(envelope.EnvelopeHash, failingDim.ToString(), platform),
+                ct).ConfigureAwait(false);
+        }
+        else if (result.Overall == OverallVerdict.WarnOnly)
+        {
+            var warningDim = result.Dimensions
+                .First(d => d.Policy == DimensionPolicyKind.Recommended && d.Outcome == DimensionPassFail.Fail)
+                .Dimension;
+            await EmitAsync(
+                AuditEventType.InstallWarned,
+                MissionSpaceAuditPayloads.InstallWarned(envelope.EnvelopeHash, warningDim.ToString(), platform),
+                ct).ConfigureAwait(false);
+        }
+
+        // PostInstallSpecRegression — 24-hour dedup keyed on dimension; fires when a dimension
+        // transitions Pass → Fail across consecutive evaluations of the same (spec, platform)
+        // (envelope drift is the typical cause; the key intentionally omits envelopeHash so the
+        // outcome history persists across snapshot changes).
+        foreach (var dim in result.Dimensions)
+        {
+            var prevKey = (spec, platform, dim.Dimension);
+            var hadPrevious = _previousOutcomes.TryGetValue(prevKey, out var prev);
+            _previousOutcomes[prevKey] = dim.Outcome;
+            if (hadPrevious && prev == DimensionPassFail.Pass && dim.Outcome == DimensionPassFail.Fail)
+            {
+                var regressionKey = $"regression:{dim.Dimension}:{platform ?? ""}";
+                if (ShouldEmit(_regressionDedup, regressionKey, RegressionDedupWindow, now))
+                {
+                    await EmitAsync(
+                        AuditEventType.PostInstallSpecRegression,
+                        MissionSpaceAuditPayloads.PostInstallSpecRegression(
+                            dim.Dimension.ToString(),
+                            prev.ToString(),
+                            dim.Outcome.ToString(),
+                            envelope.EnvelopeHash),
+                        ct).ConfigureAwait(false);
+                }
+            }
+        }
+    }
+
+    private static bool ShouldEmit(
+        ConcurrentDictionary<string, DateTimeOffset> dedup,
+        string key,
+        TimeSpan window,
+        DateTimeOffset now)
+    {
+        var fire = false;
+        dedup.AddOrUpdate(
+            key,
+            _ => { fire = true; return now; },
+            (_, last) =>
+            {
+                if (now - last >= window) { fire = true; return now; }
+                return last;
+            });
+        return fire;
+    }
+
+    private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null) return;
+        var occurredAt = _time.GetUtcNow();
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _tenantId,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
