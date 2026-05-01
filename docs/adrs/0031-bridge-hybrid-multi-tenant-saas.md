@@ -425,3 +425,91 @@ Per `feedback_decision_discipline.md` cohort batting average (16-of-16 substrate
 - **Standing rung-6 spot-check** within 24h of A1 merging
 
 **A1 closes ADR 0062-A1.6's halt-condition** (Phase 1 substrate scaffold of ADR 0062 may proceed once A1 lands + Anchor-side handler is wired).
+
+#### A1.12 — Council-fix amendment block (post-council corrections)
+
+**Driver:** Stage 1.5 council review at `icm/07_review/output/adr-audits/0031-A1-council-review-2026-05-01.md` (PR #441) returned verdict **B (Solid)** with 3 Major + 2 Minor + 1 Encouraged + 5 verification-passes. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A1.12 absorbs the 4 Required council recommendations (A1–A4).
+
+**Cohort milestone:** ADR 0031-A1 closes the 4-sibling-amendment chain (ADR 0028-A9 ✓ + ADR 0036-A1 ✓ + ADR 0007-A1 ✓ + ADR 0031-A1 = 4 of 4 from W#33-derived sibling intakes). All 4 council reviewed; cohort batting average 17-of-17 pre-merge.
+
+##### A1.12.1 — Per-Anchor shared-secret rotation policy (council A1 / F1 Major security)
+
+A1.4 gains an explicit rotation paragraph:
+
+> **Shared-secret rotation.** Bridge generates a fresh shared secret on every webhook re-registration (operator-initiated). Per-deployment configuration MAY enforce mandatory rotation cadence (default: 90 days from issuance; tunable via Bridge admin config). On rotation:
+>
+> 1. Bridge generates a new secret + retains the old secret as "previous-acceptable" for a 24-hour grace period.
+> 2. Bridge sends a `BridgeSubscriptionWebhookRotationStaged` audit event (9th new constant) with the rotation timestamp.
+> 3. Anchor receives the new secret out-of-band (re-registration response payload) AND rotates its keystore entry per ADR 0046's existing rotation surface.
+> 4. During the 24-hour grace window, Bridge HMAC-signs events with the new secret BUT Anchor accepts events signed with either the old OR new secret (HMAC verifies against both).
+> 5. After 24 hours, Bridge stops accepting the old secret in any context; expired-secret events fail per `BridgeSubscriptionEventSignatureFailed` audit.
+>
+> **Out-of-scope for A1:** automatic rotation triggers (e.g., "rotate on detected compromise"). Phase 1 ships operator-initiated rotation only.
+
+**9th `AuditEventType` constant added:** `BridgeSubscriptionWebhookRotationStaged`.
+
+##### A1.12.2 — HMAC-SHA256 vs Ed25519 tradeoff explicitly engaged (council A2 / F2 Major security)
+
+A1.2 gains a signature-scheme rationale paragraph:
+
+> **Signature scheme rationale.** A1 ships HMAC-SHA256 as the signature scheme for industry-standard webhook compatibility (Stripe, GitHub, Square, Slack all use HMAC-SHA256). The alternative is Ed25519-signed events using ADR 0032's keypair semantic (Bridge holds an Ed25519 keypair; publishes the public key; Anchor verifies with the public key). Ed25519 trades per-event verification cost (~50µs vs HMAC's ~5µs) for simpler key-management (Bridge publishes one public key; no per-Anchor shared-secret distribution).
+>
+> **Phase 2+ migration trigger:** if shared-secret distribution becomes operationally painful at scale (e.g., > 1000 Anchors per Bridge deployment; rotation overhead becomes the dominant Bridge admin cost), Phase 2+ amendment migrates to Ed25519 per ADR 0032 keypair semantic. The migration is non-breaking — events would carry an `algorithm` field (`HmacSha256` | `Ed25519`); Anchor verifies based on the field; Bridge dual-signs during transition.
+
+##### A1.12.3 — Operator-controllable trust configuration (council A3 / F3 Major deployment)
+
+A1.4's HTTPS-only paragraph is replaced with operator-tier flexibility:
+
+> **Webhook URL trust configuration.** Webhook URLs MUST be HTTPS (Bridge refuses HTTP at registration; operator-deployment self-signed certs are a configurable allowance, not a default). The `callbackUrl` MUST resolve to a non-loopback address.
+>
+> Operator-controllable trust configuration (Bridge admin-tier):
+>
+> - **Default:** Bridge HTTP client trusts only publicly-rooted CAs (Let's Encrypt, public-trusted commercial CAs). Suitable for Phase 1.5+ operator deployments with public DNS.
+> - **Per-Anchor cert pinning:** Anchor uploads its cert chain at registration time (PEM-encoded; included in the registration payload's `trustChain` field). Bridge pins-and-verifies against the registered chain. Suitable for Phase 1 self-hosted Windows-only deployments per ADR 0044 (no public Let's Encrypt; self-signed or internal-CA cert).
+> - **Per-deployment trust override:** Bridge config supports `WebhookHttpClient.AllowSelfSignedCerts: bool` for development / lab deployments. Default `false`; admin sets `true` per-Bridge-deployment with operator-tier audit (`BridgeWebhookSelfSignedCertsConfigured` — 10th new audit constant).
+>
+> Operator decision matrix per deployment shape:
+>
+> | Deployment | Trust mode | Rationale |
+> |---|---|---|
+> | Phase 1 self-hosted Anchor (per ADR 0044) | Per-Anchor cert pinning | Anchor's self-signed cert is uploaded at registration |
+> | Phase 1.5+ public-DNS Anchor (Let's Encrypt) | Default (publicly-rooted CA) | Industry-standard |
+> | Internal enterprise CA (mTLS) | Per-Anchor cert pinning + Bridge-side mTLS client cert | Bridge presents its own cert; Anchor's cert is pinned |
+> | Development / lab | Per-deployment `AllowSelfSignedCerts: true` | Testing-only; audit emits |
+
+**10th `AuditEventType` constant added:** `BridgeWebhookSelfSignedCertsConfigured`.
+
+##### A1.12.4 — SSE reconnect vs webhook retry disambiguation (council A4 / F5 Minor → upgraded to Required for spec clarity)
+
+A1.3's SSE paragraph + A1.5's retry paragraph gain explicit backoff semantics:
+
+A1.3 SSE reconnect clarification:
+
+> **SSE reconnect:** SSE connections drop normally (network blips; Bridge restarts; load balancer recycling). Bridge reconnects with exponential backoff: 1s → 5s → 30s → 60s (capped at 60s). Reconnect is **unbounded** — Bridge keeps trying as long as the Anchor's subscription is active. Events emitted during disconnect are queued in Bridge's per-Anchor event queue (max 1-hour depth; if the queue exceeds 1 hour or 10,000 events, Bridge falls back to webhook-mode delivery for the queued events; the Anchor's `deliveryMode` registration is *not* changed but the specific queued events are delivered via webhook). On reconnect, all queued events ship in order via the SSE stream.
+
+A1.5 retry policy gains a clarifying note:
+
+> **Note: webhook retry is different from SSE reconnect.** This A1.5 retry policy applies to **webhook delivery** (HTTPS POST attempt failed; bounded retries with dead-letter after exhaustion). SSE reconnect (A1.3) is a separate concern with its own backoff (exponential 1s → 5s → 30s → 60s capped; unbounded retries; per-tenant event queue during disconnect). Don't conflate them.
+
+##### A1.12.5 — Audit constant updates
+
+The total audit constant count rises from 8 to 10:
+
+- 8 original (per A1.7)
+- 9th: `BridgeSubscriptionWebhookRotationStaged` (per A1.12.1)
+- 10th: `BridgeWebhookSelfSignedCertsConfigured` (per A1.12.3)
+
+Both new constants are operator-initiated security-relevant events with no dedup (per-attempt; matches `BridgeSubscriptionWebhookRegistered` pattern). Collision check: verified zero matches in `packages/kernel-audit/AuditEventType.cs` for `Rotation` + `SelfSignedCerts` substrings.
+
+##### A1.12.6 — Cohort discipline
+
+Per `feedback_decision_discipline.md`:
+
+- **Substrate-amendment council batting average:** **17-of-17** (forward pattern; ADR 0031-A1 council surfaced 3 Major + 2 Minor + 1 Encouraged + 5 verification-passes pre-merge — all mechanical to absorb).
+- **Council false-claim rate (all three directions):** 0 in this council (cohort 2-of-12 prior).
+- **Structural-citation failure rate (XO-authored):** **11-of-17 (~65%)** — down from 67% post-A10; ADR 0031-A1 contributed 0 instances. The §A0 self-audit + 3-direction spot-check + cohort-vigilance discipline held in this round.
+- **Subagent dispatch:** XO authored A1 council in-thread successfully; matches ADR 0028-A9 council precedent for compact reviews.
+- **Sibling-chain closure:** ADR 0031-A1 closes the 4-sibling-amendment chain. All 4 W#33-derived sibling intakes now have authored amendments + council reviews where applicable.
+- **Standing rung-6 task:** XO spot-checks A1.12's added/modified citations + 2 new audit constants within 24h of merge.
+
+A5 + A6 council recommendations (3 missing subscription lifecycle types; subscribedEvents filter atomicity) are **encouraged-tier** and deferred — not blocking A1's Stage 06 build; future A1.x amendment when UX surfaces drive the need.
