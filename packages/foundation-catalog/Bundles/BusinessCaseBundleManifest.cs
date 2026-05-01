@@ -64,4 +64,23 @@ public sealed record BusinessCaseBundleManifest
 
     /// <summary>Free-form compliance framing and notes.</summary>
     public string? ComplianceNotes { get; init; }
+
+    /// <summary>
+    /// Per ADR 0007-A1 — install-time minimum-spec gating per ADR 0063.
+    /// Null (default) preserves backward-compat: bundles that don't opt
+    /// in have no install-time gating. When non-null, the bundle's
+    /// install-UX surface consumes the <see cref="MinimumSpec"/> per
+    /// ADR 0063's Steam-style System Requirements page.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="MinimumSpec"/> type is currently a foundation-
+    /// catalog-local stub per the W#38 unblock addendum
+    /// (2026-05-01). It will be replaced with the canonical
+    /// <c>Sunfish.Foundation.MissionSpace.MinimumSpec</c> when ADR
+    /// 0063 Phase 1 substrate ships. The field signature is unchanged
+    /// across that future rename.
+    /// </remarks>
+    [System.Text.Json.Serialization.JsonPropertyName("requirements")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public MinimumSpec? Requirements { get; init; }
 }
