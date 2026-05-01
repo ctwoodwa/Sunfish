@@ -1,5 +1,7 @@
 - name: Overview
   href: overview.md
+- name: Capability-Tier Flow
+  href: capability-tier-flow.md
 - name: Inquiry Defense
   href: inquiry-defense.md
 - name: Audit Emission
