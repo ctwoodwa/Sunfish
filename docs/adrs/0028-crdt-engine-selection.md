@@ -1432,3 +1432,65 @@ Per `feedback_decision_discipline.md` cohort batting average (15-of-15 substrate
 - **Standing rung-6 spot-check** within 24h of A9 merging
 
 **A9 closes ADR 0028's W#33 §7.2 derivative work.** With A9 landed, W#33's substrate-tier amendments to ADR 0028 are: A6+A7 (version-vector compatibility) + A5+A8 (cross-form-factor migration) + A9 (iOS envelope capture-context).
+
+#### A9.8 — Council-fix amendment block (post-council corrections)
+
+**Driver:** Stage 1.5 council review at `icm/07_review/output/adr-audits/0028-A9-council-review-2026-05-01.md` (PR #433) returned verdict **B (Solid)** with 1 Critical + 2 Major findings. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A9.8 absorbs the council's A1 + A2 amendments into A9's surface before W#23 Stage 06 build consumes A9's contract.
+
+**Cohort milestone:** A9 is the **first cohort-recognized citation-failure propagation** — F1 of the council found that A9 inherited a structural-citation failure from parent A6.1 via verbatim copy. The §A0 self-audit pattern caught zero parent-propagated failures (consistent with ADR 0063-A1.15 lesson that §A0 is necessary but not sufficient). Council remains the canonical defense.
+
+##### A9.8.1 — `schemaEpoch` citation correction (council A1 / F1 Critical structural-citation)
+
+A9.2 reads (pre-correction): *"`capturedUnderSchemaEpoch`: read from a schema-epoch lookup against the iPad's local schema-registry view (per ADR 0001 schema-registry-governance)."*
+
+The citation is structurally incorrect. ADR 0001 governs schema-registry tier governance (repo-local vs federated namespace), NOT epoch coordination. Verified via `git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -i epoch` returning **zero** matches.
+
+The correct citation is **paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration)**:
+- §7.1 line 220: *"This is a breaking change requiring a **schema epoch bump** — a version gate that rejects sync connections from nodes below the minimum supported epoch."*
+- §7.4 line 238: *"For truly breaking changes, the architecture uses **schema epochs** coordinated by distributed lease quorum"* + *"Schema epoch coordination protocol"*
+
+**A9.2 reword (post-correction):**
+
+> *"`capturedUnderSchemaEpoch`: read from a schema-epoch lookup against the iPad's local schema-registry view (per **paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration)** — schema epochs are paper-level concepts; the iPad's local schema-registry tracks the current epoch via the §7.4 distributed-lease-quorum coordination protocol)."*
+
+**A9.5 verified-existing entry corrected:**
+
+> *"**Verified existing:** paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration) — provides the `schemaEpoch` semantic A9 consumes. Verified per `grep "schema epoch" _shared/product/local-node-architecture-paper.md` returning hits at lines 220 + 238."*
+
+The pre-correction citation entry "ADR 0001 schema-registry-governance — provides `schemaEpoch` semantic" is **deprecated** in this ADR.
+
+##### A9.8.2 — Build-time-constant vs runtime-DI tradeoff documented (council A1 / F2 Major)
+
+A9.2 gains an explicit tradeoff paragraph:
+
+> **Build-time constant vs runtime DI.** The iOS adapter's choice between baking the kernel version as a build-time constant vs injecting it via `IKernelVersionProvider` at runtime is deferred to the W#23 Stage 06 hand-off. Default expectation: **runtime DI for testability** (unit tests can mock the provider; build-time-constant forces tests to use the actual installed kernel version, which limits the testable scenarios). W#23 hand-off MUST document the chosen path with rationale.
+
+##### A9.8.3 — Pre-A9 fallback known-limitation documented (council A1 / F3 Minor)
+
+A9.3 gains a "Known limitations of pre-A9 fallback" sub-paragraph:
+
+> **Known limitations of pre-A9 fallback.** The upload-time vector applies to ALL queued events, regardless of when individual events were captured. An iPad that captured events at kernel 1.2.0 and then upgraded to 1.3.0 will have ALL its pre-A9 queue events tagged with the 1.3.0 fallback vector (not the actual 1.2.0 capture-time vector). This is the known limitation of forward-only A1.x: pre-A9 envelopes lose capture-time precision permanently. **W#23's Stage 06 hand-off MUST surface this in the migration UX** (e.g., *"Events captured before <date> use approximate version-tagging; precise version-tagging available for events captured after the iPad's last upgrade"*).
+
+##### A9.8.4 — Parent A6.1 citation perpetuation flagged for A10 retraction (council A2 / F1 propagation)
+
+A6.1 (the parent amendment that defines the version-vector tuple) carries the same structurally-incorrect citation that A9 inherited. Specifically, A6.1's spec block reads:
+
+> ```text
+> schemaEpoch:   uint32,                  # monotonic per-schema-cutover; per ADR 0001 schema-registry-governance
+> ```
+
+The "per ADR 0001 schema-registry-governance" comment is structurally incorrect for the same reason F1 names. A9 fixes the citation in A9.2 + A9.5; **A9 does NOT retract the parent A6.1 citation** (out of scope for A9 — A9's surface is iOS envelope augmentation, not the version-vector tuple).
+
+**A10 retraction declared (XO follow-up):** A future A10 retraction amendment (matching the A3 / A4 retraction pattern from the prior cohort) MUST update A6.1's citation to paper §7.1 + §7.4. XO follow-up: file `icm/00_intake/output/2026-05-01_a6.1-schemaepoch-citation-retraction-intake.md` for the A10 amendment.
+
+**Cohort lesson captured:** when authoring a derivative amendment that cites the parent amendment's text, structural-citation verification must extend to the parent's own citations. Verbatim copy + paste perpetuates errors. The A6 council (PR #396) missed the parent-A6.1 citation; A9's §A0 self-audit also missed it (XO copied verbatim). The A9 council (this review's parent) caught it. Memory-side captured (separate edit): the `feedback_council_can_miss_spot_check_negative_existence` memory's "structural citation correctness" entry gains a sub-section on parent-citation propagation.
+
+##### A9.8.5 — Cohort discipline log
+
+Per `feedback_decision_discipline.md`:
+
+- **Substrate-amendment council batting average:** **16-of-16** (forward pattern; A9 council surfaced 1 Critical + 2 Major + 4 verification-passes pre-merge — all mechanical to absorb).
+- **Council false-claim rate (all three directions):** **0 in this council** (cohort 2-of-12 prior).
+- **Structural-citation failure rate (XO-authored):** **11-of-16 (~69%)** — up from 10-of-15 due to F1's cohort-propagated failure. A9 contributed 1 instance (parent-inherited).
+- **Subagent dispatch pattern:** XO authored A9 council in-thread successfully; subagent stalls correlated with long-output briefs (ADR 0064 council). Compact councils (~3,500 words for A9) are reliable in-thread.
+- **Standing rung-6 task:** XO spot-checks A9.8's added/modified citations within 24h of merge. The A6.1 parent retraction (A10) intake is queued separately.
