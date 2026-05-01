@@ -12,6 +12,9 @@
     <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
   <ItemGroup>
