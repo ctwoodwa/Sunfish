@@ -10,5 +10,7 @@
   href: integrations/
 - name: Persistence
   href: persistence/
+- name: Recovery
+  href: recovery/
 - name: Taxonomy
   href: taxonomy/
