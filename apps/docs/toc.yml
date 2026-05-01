@@ -8,6 +8,8 @@
   href: accelerators/
 - name: Foundation
   href: foundation/
+- name: Bridge
+  href: bridge/
 - name: Kernel
   href: kernel/
 - name: Libraries
