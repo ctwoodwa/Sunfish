@@ -446,6 +446,23 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>Per A1.7 — policy-evaluation cache was invalidated due to a probe-status transition (Healthy → Stale / Failed).</summary>
     public static readonly AuditEventType RegulatoryPolicyCacheInvalidated = new("RegulatoryPolicyCacheInvalidated");
 
+    // ===== ADR 0063 — Foundation.MissionSpace.Requirements (W#41) =====
+
+    /// <summary>An <c>IMinimumSpecResolver</c> evaluated a <c>MinimumSpec</c> and produced a <c>SystemRequirementsResult</c>. Per A1.12.</summary>
+    public static readonly AuditEventType MinimumSpecEvaluated = new("MinimumSpecEvaluated");
+
+    /// <summary>Install was blocked because at least one Required dimension failed evaluation. Per A1.12.</summary>
+    public static readonly AuditEventType InstallBlocked = new("InstallBlocked");
+
+    /// <summary>Install proceeded with a UX warning because at least one Recommended dimension failed evaluation. Per A1.12.</summary>
+    public static readonly AuditEventType InstallWarned = new("InstallWarned");
+
+    /// <summary>A post-install spec regression was detected (the runtime mission space drifted from the install-time spec). Per A1.12.</summary>
+    public static readonly AuditEventType PostInstallSpecRegression = new("PostInstallSpecRegression");
+
+    /// <summary>An operator force-enabled an install that would otherwise have been blocked by spec evaluation. Per A1.11 council fix.</summary>
+    public static readonly AuditEventType InstallForceEnabled = new("InstallForceEnabled");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
