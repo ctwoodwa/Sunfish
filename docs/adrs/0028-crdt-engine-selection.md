@@ -1,7 +1,7 @@
 # ADR 0028 — CRDT Engine Selection
 
-**Status:** Accepted (2026-04-22; **A1 + A2 + A3 + A4 mobile amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
-**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments / A3 retraction of A2.4 false-vapourware / A4 retraction of A2.10 false-positive `JsonCanonical` claim)
+**Status:** Accepted (2026-04-22; **A1 + A2 + A3 + A4 amendments landed 2026-04-30; A6 amendment proposed 2026-04-30** — see §"Amendments (post-acceptance)")
+**Date:** 2026-04-22 (Accepted) / 2026-04-30 (A1 mobile amendment / A2 council-fix amendments / A3 retraction of A2.4 false-vapourware / A4 retraction of A2.10 false-positive `JsonCanonical` claim / A6 version-vector compatibility contract — proposed pending pre-merge council; A5 cross-form-factor migration is queued separately and depends on A6's compatibility relation)
 **Resolves:** Paper §9 mandates a CRDT engine with production-grade compaction, GC behavior, and compact binary encoding. Paper §19 names three candidates — Yjs, Loro, and an Automerge-inspired native-.NET implementation. This ADR picks one.
 
 ---
@@ -452,3 +452,212 @@ $ git ls-tree origin/main packages/foundation-canonicalization 2>&1
 #### A4.4 — Lesson extended in memory
 
 The `feedback_council_can_miss_spot_check_negative_existence.md` memory is extended (separate PR / memory edit) to cover positive-existence claims. New title: *"Council subagents can miss in BOTH directions; spot-check both negative-existence claims AND positive-existence verification claims before applying their mechanical fixes."*
+
+### A6 (PROPOSED) — Version-vector compatibility contract for mixed-version Sunfish clusters
+
+**Driver:** W#33 Mission Space Matrix discovery (`icm/01_discovery/output/2026-04-30_mission-space-matrix.md` §5.8) confirmed via A4 spot-check that Sunfish has **no version-vector compatibility contract** for mixed-version clusters. Paper §6.1 (line 180) mentions vector clocks operationally — for *gossip mechanics* (anti-entropy reconciliation between peers that have already agreed they are compatible peers) — but is silent on the upstream question of *whether* two nodes carrying different (kernel × plugin × adapter × schema-epoch × channel × instance-class) tuples can federate at all. Paper §15.2's *"'Couch device' (offline for 3+ major versions) → capability negotiation rejects with clear error"* references the gap without specifying the rejection logic.
+
+A1's iOS Phase 2.1 carve-out (append-only event queue → Anchor merge boundary) is the immediate consumer: when the iPad reconnects after a long offline window, the merge boundary needs a defined contract for "is this iPad's event-envelope shape still compatible with the current Anchor's CRDT store?" — and today that contract doesn't exist.
+
+**Pipeline:** `sunfish-api-change` (introduces compatibility-contract API; affects federation-time handshake; downstream consumers across foundation + accelerators).
+
+**Companion amendment:** A5 (cross-form-factor migration) is a sibling intake authored separately; it builds on A6's compatibility relation. A5 generalizes A1's iOS carve-out to all form factors. **A6 ships first** because A5 depends on A6's comparison semantics.
+
+#### A6.1 — Version-vector type signature
+
+The version-vector tuple is:
+
+```text
+VersionVector ::= {
+    kernel:        SemVer,                  # e.g., "1.3.0"
+    plugins:       Map<PluginId, SemVer>,   # per-plugin version; ordered by PluginId for canonical encoding
+    adapters:      Map<AdapterId, SemVer>,  # blazor / react / maui-blazor; per-adapter version
+    schemaEpoch:   uint32,                  # monotonic per-schema-cutover; per ADR 0001 schema-registry-governance
+    channel:       enum { Stable, Beta, Nightly },
+    instanceClass: enum { SelfHost, ManagedBridge, Embedded }
+}
+```
+
+**JSON canonical shape** (per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — pinned per A4's retraction of `JsonCanonical`):
+
+```json
+{
+  "kernel": "1.3.0",
+  "plugins": {"sunfish.blocks.maintenance": "1.2.0", "sunfish.blocks.public-listings": "1.0.0"},
+  "adapters": {"blazor": "1.3.0", "react": "1.1.0"},
+  "schema_epoch": 7,
+  "channel": "stable",
+  "instance_class": "self_host"
+}
+```
+
+**Normalization rules:**
+
+- `plugins` and `adapters` keys are sorted lexicographically before serialization (canonical order matters for ContentHash binding + signature generation; per `CanonicalJson.Serialize` rules)
+- SemVer comparison follows [SemVer 2.0](https://semver.org) precedence (major > minor > patch)
+- `schemaEpoch` is monotonic; never decreases during the install's lifetime (ADR 0001)
+- `channel` is partial-order: `stable < beta < nightly` (more permissive channels can read stable data; reverse is not implied)
+- `instanceClass` is incomparable across classes — no implicit order
+
+#### A6.2 — Compatibility relation (the contract)
+
+Given two version vectors `V1` (local) and `V2` (remote), `V1` MAY federate with `V2` iff **all** of the following hold:
+
+1. **`schemaEpoch` equality.** `V1.schemaEpoch == V2.schemaEpoch`. Schema-epoch crossings are coordinated cutovers (per ADR 0001); peers MUST be on the same epoch to federate. (One-sided: a node MAY *receive* events from a peer one epoch behind to facilitate that peer's catch-up, but not write to it. Implementation detail in A6.4.)
+2. **Kernel SemVer compatibility window.** `V1.kernel.major == V2.kernel.major` AND `|V1.kernel.minor - V2.kernel.minor| ≤ 2`. Patch versions never gate compatibility. The 2-minor-version window matches the gRPC API design guide deprecation default; tightenable per-deployment via configuration (out of A6 scope; future tunable).
+3. **Plugin set intersection covers required plugins.** For each plugin `p` declared as `required: true` in either node's manifest (per ADR 0007 bundle-manifest-schema), `p ∈ V1.plugins ∩ V2.plugins` AND their SemVer comparison passes the same major + 2-minor rule. Optional plugins MAY be missing from one side without blocking federation.
+4. **Adapter set is informational only.** Adapters are UI-tier; federation is data-tier. `adapters` field is included in the version vector for diagnostic purposes (e.g., "node A is Blazor 1.3, node B is MAUI Blazor 1.2") but does NOT gate federation. Two nodes with disjoint adapter sets can federate cleanly.
+5. **Channel ordering.** `V1.channel ≤ V2.channel` OR `V1.channel == V2.channel`. Stable-channel nodes can read from beta/nightly nodes (in case of beta-channel canary deployments testing forward-compat); the reverse is forbidden by default to prevent stable production data from being polluted by unstable beta state. Configurable at the operator level (production deployments typically pin `channel == stable` strictly).
+6. **Instance-class compatibility.** SelfHost ↔ ManagedBridge ↔ Embedded are all mutually compatible at the data-tier layer. Cross-instance-class federation IS supported. (Operationally, ManagedBridge instances may impose additional capability restrictions per ADR 0031 hybrid-multi-tenant-saas; those are downstream of A6.)
+
+**Comparison semantics summary table:**
+
+| Field | Compatibility rule | Failure → |
+|---|---|---|
+| `schemaEpoch` | Strict equality | Reject; surface as `SchemaEpochMismatch` (one-sided receive-only allowed; see A6.4) |
+| `kernel` SemVer | Same major + ≤2 minor | Reject; surface as `KernelVersionIncompatible` |
+| `plugins` (required) | Intersection covers; SemVer window | Reject; surface as `RequiredPluginIncompatible` with name + V1/V2 versions |
+| `adapters` | Informational | Never blocks |
+| `channel` | `V1 ≤ V2` (stable→beta→nightly partial order) | Reject by default; surface as `ChannelDowngradeForbidden` |
+| `instanceClass` | All classes compatible | Never blocks at A6 layer |
+
+#### A6.3 — Federation-time handshake
+
+The version-vector exchange happens during the **handshake phase** of peer connection establishment (before any gossip / anti-entropy traffic per paper §6.1). It uses the same Noise-pattern session that secures the connection (per ADR 0027 kernel-runtime-split + ADR 0032 multi-team workspace switching).
+
+**Handshake sequence:**
+
+1. Peer A initiates connection to peer B over Tier 1 (mDNS / LAN), Tier 2 (mesh VPN per ADR 0061), or Tier 3 (managed relay).
+2. Noise session establishment (per ADR 0027) completes; both peers have authenticated each other via Ed25519 root keypair (per ADR 0032).
+3. **Version-vector exchange** (this amendment):
+   - Both peers send their canonical-JSON-encoded `VersionVector` in a single `VersionVectorExchange` message inside the established Noise channel
+   - Each peer evaluates the compatibility relation (A6.2) against the received `VersionVector`
+   - If compatible: proceed to gossip (per paper §6.1); BOTH peers MUST agree (the relation is symmetric for everything except `channel` ordering and one-sided `schemaEpoch` receive-only)
+   - If incompatible: see A6.4
+4. Gossip / anti-entropy reconciliation proceeds per paper §6.1 only after handshake clears.
+
+**Wire format:**
+
+```text
+Sunfish.Foundation.Versioning.IVersionVectorExchange
+    + IVersionVectorMessage SendAsync(VersionVector local, CancellationToken ct)
+    + IVersionVectorMessage ReceiveAsync(CancellationToken ct)
+    + IVersionVectorIncompatibility EvaluateCompatibility(VersionVector local, VersionVector remote)
+```
+
+**Cited symbol verification (Decision Discipline Rule 6):** The above types are introduced by this amendment; none exist on `origin/main` today. Implementation hand-off MUST scaffold them in `Sunfish.Foundation.Versioning` namespace.
+
+#### A6.4 — Behavior on incompatibility
+
+When the compatibility relation (A6.2) yields a rejection, the receiving peer SHALL:
+
+1. **Emit an audit event** (per ADR 0049): `AuditEventType.VersionVectorIncompatibilityRejected` with payload-body fields:
+   - `local_kernel`: SemVer string
+   - `remote_kernel`: SemVer string
+   - `local_schema_epoch`: uint32
+   - `remote_schema_epoch`: uint32
+   - `failed_rule`: enum `SchemaEpochMismatch | KernelVersionIncompatible | RequiredPluginIncompatible | ChannelDowngradeForbidden`
+   - `failed_rule_detail`: string (e.g., for `RequiredPluginIncompatible`: `"sunfish.blocks.maintenance: local=1.2.0, remote=1.0.0, window=major+2-minor"`)
+   - `remote_node_id`: string (from Noise handshake)
+2. **Close the federation session cleanly** (no half-open state) — both peers SHOULD log the incompatibility but neither should retry-loop.
+3. **Surface a user-visible error** at the next operator-facing UX moment (Anchor desktop status bar; Bridge admin dashboard; iOS app banner). The error message format:
+
+   > **Cannot sync with `<remote_node_short_id>`.** This node is running `<remote_kernel>` with schema epoch `<remote_schema_epoch>`; we're on `<local_kernel>` with schema epoch `<local_schema_epoch>`. *Reason: `<failed_rule_detail>`.* To resolve: `<recovery_action>`.
+
+   Recovery actions per failure rule:
+   - `SchemaEpochMismatch` → "Update one or both nodes to align schema epochs (run `sunfish migrate`)"
+   - `KernelVersionIncompatible` → "Update the older kernel to at least `<local_kernel.major>.<local_kernel.minor - 2>.0`"
+   - `RequiredPluginIncompatible` → "Install / update plugin `<plugin_name>` on both nodes to at least `<min_compatible_version>`"
+   - `ChannelDowngradeForbidden` → "Either pin both nodes to the same channel, OR set `--allow-channel-downgrade` (at your own risk)"
+
+#### A6.5 — One-sided receive-only mode (long-offline reconnect)
+
+Paper §15.2's "couch device offline for 3+ major versions" scenario needs special handling. When peer A (current) detects peer B is N kernel-minor-versions behind (where N > 2; outside the standard window), A SHALL still accept event uploads from B (one-sided receive-only) iff:
+
+1. `V1.schemaEpoch == V2.schemaEpoch` (epoch hasn't crossed during B's offline window — if it has, hard-reject; B must run `sunfish migrate` first)
+2. B's events use a v0-compatible envelope (per ADR 0028-A1 iOS event envelope contract — append-only events with `device_local_seq` are explicitly forward-compatible)
+
+In this mode:
+
+- A acks B's events as normal (no functional difference for B's send path)
+- A does NOT attempt to write back to B (B's outdated kernel may not understand A's event shape)
+- A emits `AuditEventType.LegacyDeviceReconnected` with `(remote_node_id, remote_kernel, kernel_minor_lag)` — operator sees B is overdue for an update
+- B's user-facing UX shows "Synced — your device is N versions behind; please update soon to enable two-way sync"
+
+When B finally updates and re-handshakes with a current `V2`, the bidirectional path resumes.
+
+#### A6.6 — Acceptance criteria for A6 implementation hand-off
+
+- [ ] `Sunfish.Foundation.Versioning.VersionVector` record per A6.1
+- [ ] `IVersionVectorExchange` interface + reference impl (Noise-channel-backed) per A6.3
+- [ ] `IVersionVectorIncompatibility` result type with `FailedRule` enum + `Detail` string per A6.2
+- [ ] `EvaluateCompatibility` static helper or service implementing A6.2's rule table
+- [ ] Two new `AuditEventType` constants in `Sunfish.Kernel.Audit`: `VersionVectorIncompatibilityRejected`, `LegacyDeviceReconnected`
+- [ ] `VersionVectorAuditPayloads` factory class with 2 methods (matches `TaxonomyAuditPayloadFactory` / `FieldEncryptionAuditPayloadFactory` patterns)
+- [ ] DI registration extended on `AddSunfishKernel()` (or appropriate root extension)
+- [ ] Tests (target ~25-35):
+  - Round-trip encode/decode of `VersionVector` JSON via `CanonicalJson.Serialize`
+  - 6 compatibility-rule tests (one per A6.2 rule)
+  - 4 rejection-error-format tests (one per `FailedRule` enum value)
+  - One-sided receive-only test (legacy device reconnect)
+  - Schema-epoch mismatch hard-rejects even with current kernel
+  - Channel downgrade rejection by default; allow-flag opt-in
+  - Required-plugin missing hard-rejects; optional-plugin missing soft-passes
+  - Adapter set difference does not gate
+  - Cross-instance-class compatibility (SelfHost ↔ ManagedBridge ↔ Embedded)
+  - Audit emission shape per A6.4
+- [ ] User-visible error UX surfaces in Anchor + Bridge + iOS (per A6.4 message format)
+
+#### A6.7 — Cited-symbol verification (Decision Discipline Rule 6)
+
+Per the cohort lesson + standing rung-6 task, every cited `Sunfish.*` symbol classified:
+
+**Existing on `origin/main`** (verified 2026-04-30 via `git ls-tree` / `git grep`):
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (pinned per A4)
+- `Sunfish.Kernel.Audit.AuditEventType` + `AuditPayload` + `IAuditTrail` (verified existing)
+- `Sunfish.Foundation.Crypto.IOperationSigner` (existing per A2 / A4)
+- ADR 0001 schema-registry-governance — verified Accepted on `origin/main`
+- ADR 0027 kernel-runtime-split — verified Accepted
+- ADR 0031 bridge-hybrid-multi-tenant-saas — verified Accepted
+- ADR 0032 multi-team-anchor-workspace-switching — verified Accepted
+- ADR 0007 bundle-manifest-schema — verified Accepted
+- ADR 0049 audit substrate — verified Accepted
+- ADR 0061 three-tier-peer-transport — verified Accepted (per A3 retraction)
+
+**Introduced by A6** (not on `origin/main`; ship in implementation hand-off):
+- `Sunfish.Foundation.Versioning.VersionVector`
+- `Sunfish.Foundation.Versioning.IVersionVectorExchange`
+- `Sunfish.Foundation.Versioning.IVersionVectorIncompatibility`
+- `Sunfish.Foundation.Versioning.FailedRule` (enum)
+- `Sunfish.Foundation.Versioning.VersionVectorAuditPayloads`
+- `AuditEventType.VersionVectorIncompatibilityRejected` (new constant)
+- `AuditEventType.LegacyDeviceReconnected` (new constant)
+
+#### A6.8 — Open questions (deferred)
+
+- **OQ-A6.1:** does the kernel SemVer compatibility window (major + ≤2 minor) need to be tunable per-deployment? Recommend deferring to a Phase 2.2+ deployment-config story; A6 ships the canonical default.
+- **OQ-A6.2:** when a plugin is `required: true` on one side but absent on the other, should the rejection cite "plugin not installed" vs "plugin version mismatch"? Both feel surfacing-worthy; A6.2's reference impl covers both via the `failed_rule_detail` string but a follow-up amendment may split into two `FailedRule` values.
+- **OQ-A6.3:** is `instanceClass = Embedded` a real Phase 2.1 concept or is it premature? A6.1 names it for forward-compat; the compatibility relation treats it as informational; if no real Embedded instance ships in the next ~6 months, defer-but-don't-remove.
+
+#### A6.9 — Companion amendment dependencies (sibling: A5)
+
+A5 (cross-form-factor migration; queued separately at `icm/00_intake/output/2026-04-30_cross-form-factor-migration-intake.md`) builds on A6's compatibility relation. Specifically:
+
+- A6 specifies the static compatibility check at federation time
+- A5 generalizes ADR 0028-A1's iOS Phase 2.1 carve-out (append-only event queue → Anchor merge boundary) into a form-factor-agnostic migration semantic
+- A5 cites A6.5 (one-sided receive-only) as the canonical "long-offline reconnect" pattern that A5's migration semantics inherit
+
+XO authors A5 next per discovery §7.2 sequencing.
+
+#### A6.10 — Cohort discipline
+
+Per `feedback_decision_discipline.md` + cohort batting average (now 7+ substrate amendments needing post-acceptance fixes):
+
+- **Pre-merge council canonical** for A6. Auto-merge on this PR is intentionally DISABLED until a Stage 1.5 council subagent reviews. Council should specifically pressure-test:
+  - Comparison-semantics edge cases (one-sided vs two-sided incompatibility)
+  - The 2-minor-version SemVer window (is gRPC's deprecation-window analog the right precedent here?)
+  - The receive-only mode's audit-event shape under high-throughput legacy-device reconnect storms
+- **Cited-symbol verification** per A6.7 (every introduced symbol explicitly marked; every existing reference verified on `origin/main`)
+- **Standing rung-6 spot-check** within 24h of A6 merging (per ADR 0028-A4.3 commitment)
+
+---
