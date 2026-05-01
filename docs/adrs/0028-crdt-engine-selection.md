@@ -661,3 +661,188 @@ Per `feedback_decision_discipline.md` + cohort batting average (now 7+ substrate
 - **Standing rung-6 spot-check** within 24h of A6 merging (per ADR 0028-A4.3 commitment)
 
 ---
+
+### A7 (REQUIRED, mechanical) — A6 council-review fixes
+
+**Driver:** Stage 1.5 adversarial council review of A6 at `icm/07_review/output/adr-audits/0028-A6-council-review-2026-04-30.md` (PR #396, merged 2026-04-30) returned verdict **B (Solid) with 6 required + 4 encouraged amendments**. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A7 absorbs all 10 recommendations into A6's surface before W#33 Stage 06 build emits its first `VersionVectorExchange` message. The architectural shape of A6 (tuple version vector + handshake-time exchange + small enumerated rules + one-sided receive-only) survives unchanged; A7 fixes the substrate-tier gaps the council surfaced.
+
+**Council severity profile (per review §6):** 1 Critical (F1), 5 Major (F2 + F3 + F4 + F5 + F6), 4 Minor (F7 + F8 + F9 + F10), 4 verification-passes (F11 + F12 + F13 + F14). All 14 findings are addressed below or explicitly verified-as-passing.
+
+#### A7.1 — Symmetric-evaluation handshake (council A1 / F1 Critical)
+
+A6.3 step 3 ("BOTH peers MUST agree (the relation is symmetric for everything except channel ordering and one-sided schemaEpoch receive-only)") is replaced with an explicit two-phase verdict commit:
+
+> **3a.** Each peer evaluates compatibility against the received version-vector (per A6.2) AND records its own verdict (`compatible` | `incompatible`).
+>
+> **3b.** Each peer sends a `VersionVectorVerdict` follow-up message carrying its verdict + (if `incompatible`) the `failed_rule` + `failed_rule_detail` per A6.4. This message is sent inside the same authenticated channel before any teardown.
+>
+> **3c.** Federation proceeds iff BOTH verdicts are `compatible`. If either side reports `incompatible`, both peers MUST close the federation session cleanly per A6.4 (audit emission + UX surface). No half-open state.
+>
+> **3d.** Asymmetric rules (channel ordering rule 5; one-sided receive-only schemaEpoch in A6.5; required-plugin evaluation in A6.2 rule 3 as augmented per A7.3) are evaluated by each peer independently against the received vector — but BOTH peers must independently agree that the asymmetry resolves to `compatible` for federation to proceed. This eliminates the asymmetric-evaluation pathology where peer A says compatible and peer B says incompatible mid-handshake (the canonical case being a stable–nightly channel pairing during beta canary rollout).
+
+The wire-format addition is one new message type:
+
+```text
+VersionVectorVerdict ::= {
+    verdict:             enum { Compatible, Incompatible },
+    failed_rule:         optional FailedRule,            # set iff verdict == Incompatible
+    failed_rule_detail:  optional string                 # set iff verdict == Incompatible
+}
+```
+
+`VersionVectorVerdict` is canonical-JSON-encoded per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (same encoding contract as `VersionVector`).
+
+#### A7.2 — Honest framing of the SemVer compatibility window (council A2 / F2 Major)
+
+A6.2 rule 2 ("matches the gRPC API design guide deprecation default") is replaced with an honest v0-simplification framing:
+
+> **Rule 2 — Kernel SemVer compatibility window (v0 model).** `V1.kernel.major == V2.kernel.major` AND `|V1.kernel.minor - V2.kernel.minor| ≤ 2`.
+>
+> **Rationale:** A6 ships an arithmetic-window v0 model for simplicity. The canonical P2P prior art (libp2p protocol-version negotiation; Apple CloudKit zone-capability sets; Yjs / Automerge format-version handshake; IPFS bitswap version intersection) uses **explicit supported-version sets with intersection-wins negotiation** rather than arithmetic windows. The arithmetic-window model is a v0 simplification that will be revisited in a Phase 3+ amendment when (a) kernel format actually changes (today the format is stable; SemVer minor mostly tracks feature additions, not breaking changes), or (b) a real cross-version interop case demonstrates the arithmetic model is too restrictive (e.g., a 1.5.0 ↔ 1.0.0 pairing where actual format compatibility is preserved but the arithmetic window forbids the federation). Track at OQ-A6.4.
+>
+> **Configuration:** tunable per-deployment (per OQ-A6.1) via a `MaxKernelMinorLag: uint8` setting; default 2. Operators MAY raise this in homogeneous deployments where format stability is independently verified.
+
+A new open question is appended to A6.8:
+
+> **OQ-A6.4:** When does Sunfish migrate from the arithmetic-window kernel-compat model to the libp2p-style explicit-version-set model? Trigger candidates: (a) first kernel format-breaking change ships (forces explicit-set anyway); (b) field deployment surfaces an arithmetic-window false-rejection (legacy device with a still-valid format being rejected purely on minor-distance); (c) Phase 3+ when CRDT-on-mobile lands and per-message versioning becomes the natural pattern. **Default expectation:** revisit at Phase 3.
+
+#### A7.3 — Plugin-required citation correctness + wire-format augmentation (council A3 / F3 Major)
+
+A6.2 rule 3 cited a `required: true` field per ADR 0007 that does not exist on `ModuleManifest` — ADR 0007 has `requiredModules: string[]` on `BusinessCaseBundleManifest` and `required: bool` only on `ProviderRequirement`. Two coupled fixes:
+
+**A7.3.1** — A6.2 rule 3 is rewritten to cite ADR 0007's actual schema:
+
+> **Rule 3 — Required-plugin intersection.** For each plugin `p` listed in `BusinessCaseBundleManifest.requiredModules` of any bundle installed on either peer (per ADR 0007 bundle-manifest-schema), `p ∈ V1.plugins ∩ V2.plugins` AND its SemVer comparison passes the same major-equal + 2-minor-lag rule as kernel (rule 2). Plugins not listed in any peer's bundle's `requiredModules` (i.e., installed-but-optional plugins) MAY be missing from one side without blocking federation.
+
+**A7.3.2** — A6.1's `plugins` map shape is augmented so the wire format carries the required-flag (eliminates the asymmetric-evaluation foot-gun in F1 specifically for rule 3):
+
+> **A6.1 (revised plugins shape):** `plugins` becomes `Map<PluginId, PluginVersionVectorEntry>` where `PluginVersionVectorEntry = { version: SemVer, required: bool }`. The `required` flag is set per-bundle: for each plugin `p` in any installed bundle's `requiredModules`, the entry's `required = true`; otherwise `required = false`. Both peers receive the same canonical view of which plugins each declares required. A6.2 rule 3's evaluation is then symmetric — both peers consult the union of required-flags from both sides' plugin maps.
+
+The revised JSON canonical shape is given in A7.8 (camelCase pin) below.
+
+#### A7.4 — Audit-emission de-duplication (council A4 / F4 Major)
+
+A new sub-section A6.5.1 specifies de-duplication windows for both A6 audit event types:
+
+> **A6.5.1 — Audit-emission rate limits.**
+>
+> Both `VersionVectorIncompatibilityRejected` and `LegacyDeviceReconnected` audit events use de-duplication windows to prevent audit-flood under realistic operational scenarios:
+>
+> - **`VersionVectorIncompatibilityRejected`:** at most one emission per `(remote_node_id, failed_rule, failed_rule_detail)` tuple per **1-hour rolling window**. Subsequent rejections from the same misconfigured peer with the same failure are subsumed.
+> - **`LegacyDeviceReconnected`:** at most one emission per `(remote_node_id, kernel_minor_lag)` tuple per **24-hour rolling window**. A reconnecting legacy device that flaps 50 times in an hour generates 1 audit, not 50.
+>
+> **Implementation:** `VersionVectorAuditPayloads` factory class consults a recent-emissions cache (in-memory; per-node-bounded; eviction-safe) before constructing the payload. Cache resets are not load-bearing — worst case under reset is one duplicate emission per de-dup window. The audit-substrate (per ADR 0049) is independent of dedup: dedup is enforced at the *emission* boundary, not the *substrate* boundary.
+
+A6.6 acceptance criteria gain two test rows:
+
+- [ ] De-duplication tests for both audit types (rapid-reconnect storm; misconfigured-peer-retry storm)
+- [ ] Cache-reset behavior test (at most one duplicate in the de-dup window after reset)
+
+#### A7.5 — iOS append-only path: per-event version-vector semantics (council A5 / F5 Major)
+
+A new sub-section A6.11 specifies how A6's compatibility relation is carried across the iOS A1 append-only path (where the per-event envelope explicitly does NOT carry a `VersionVector`):
+
+> **A6.11 — iOS append-only path version-vector semantics.**
+>
+> Per ADR 0028-A1's iOS event-queue contract (post-A2 fixes), the per-event envelope is `{ device_local_seq, captured_at, device_id, event_type, payload }` — without a per-event `VersionVector`. A6 specifies how cross-version interop is preserved on this path:
+>
+> 1. **Per-event capture-context tagging.** Each event is augmented at capture time with `captured_under_kernel: SemVer` (the kernel version running on the iPad when the event was captured) and `captured_under_schema_epoch: uint32` (the schema epoch the iPad was on at capture time). These two fields are added to the iOS A1 envelope. Per F12-verified `CanonicalJson.Serialize` unknown-field-tolerance, this is a forward-compat addition: older receivers ignore the fields silently; newer receivers consume them.
+> 2. **Merge-boundary evaluation.** When Anchor's merge service consumes an iPad event, it evaluates A6.2 rule 2 against `event.captured_under_kernel` (not against the iPad's *current* version-vector at upload time). Rule 1 is evaluated against `event.captured_under_schema_epoch`.
+> 3. **Cross-epoch events are sequestered, not dropped.** When an event's `captured_under_schema_epoch` does not match Anchor's current epoch, the event is sequestered with a `LegacyEpochEvent` audit-record + held for human review (the iPad captured an event under an old epoch; an operator decides whether the migration logic can safely apply it). Hard-dropping is not the default — epochs change rarely, and silent loss of captured field-data is unacceptable.
+> 4. **Forward-compat for the envelope itself.** The iOS A1 envelope's evolution path is `envelope_version: uint8` added in a future amendment when the envelope shape itself needs to change (vs adding optional fields, which CanonicalJson tolerance handles for free). Until then, additive-only field evolution is the pattern.
+
+**Coordinated A1 amendment required.** A1's envelope schema must be augmented per A6.11; this lands in a follow-up A1.x amendment authored separately. A6 declares the augmentation needed; A1.x ratifies it on the A1 side.
+
+A6.6 acceptance criteria gain two test rows:
+
+- [ ] iOS A1 envelope test that includes `captured_under_kernel` + `captured_under_schema_epoch` fields with round-trip via CanonicalJson
+- [ ] Merge-boundary test for cross-epoch event sequestration (event with stale `captured_under_schema_epoch` lands in `LegacyEpochEvent` audit record, not silently dropped)
+
+#### A7.6 — Strip `instanceClass = Embedded` (council A6 / F6 Major-on-reflection)
+
+A6.1's `instanceClass` enum is reduced from `{ SelfHost, ManagedBridge, Embedded }` to `{ SelfHost, ManagedBridge }`:
+
+> **A6.1 (revised instanceClass):** `instanceClass: enum { SelfHost, ManagedBridge }`. The previously-named `Embedded` value is deferred until a real Embedded consumer ships. Per F12-verified `CanonicalJson.Serialize` unknown-field-tolerance, adding the value later is forward-compat (an additive enum bump). YAGNI applied per UPF anti-pattern 13 (premature precision).
+
+OQ-A6.3 is dropped (the question is answered: defer per YAGNI).
+
+**Verification gate at Stage 06:** A7.6 is *required pending verification* of CanonicalJson enum-bump tolerance. The hand-off MUST include this test:
+
+- Encode `VersionVector` with a hypothetical-future enum value via `CanonicalJson.Serialize`; deserialize on a `JsonStringEnumConverter`-default consumer; observe behavior.
+
+If the test reveals enum-value forward-compat is *not* tolerant (older deserializers reject unknown enum values), A7.6 is reversed in a follow-up amendment that restores the reserved `Embedded` slot — the reserve-fields argument wins over the YAGNI argument in that case. Default expectation: System.Text.Json's `JsonStringEnumConverter` rejects unknown values by default — so the verification result will likely require A7.6 to be reversed OR the implementation to opt into `JsonNumberEnumConverter` / a custom converter with `AllowIntegerValues = true` and an unknown-value fallback. The verification result decides the path.
+
+#### A7.7 — Transport-pattern-agnostic handshake wording (council A7 / F7 Minor)
+
+A6.3 step 2 is reworded to drop the load-bearing claim that ADR 0027 specifies a Noise pattern (it does not; ADR 0027 is the kernel-runtime split, not the transport pattern selection):
+
+> **2. The transport channel is established and authenticated** (Noise pattern per a future transport-tier ADR, or any equivalent authenticated channel; A6's contract is transport-pattern-agnostic at the substrate tier — it requires only mutual authentication of Ed25519 root keypairs per ADR 0032). ADR 0027 defines the kernel-runtime split that makes the kernel transport-pluggable; the actual Noise pattern selection is downstream of A6's compatibility contract and lands in a future transport-tier ADR.
+
+#### A7.8 — Pin canonical-JSON casing to camelCase (council A8 / F8 Minor)
+
+A6.1's JSON canonical example is rewritten with camelCase keys matching the rest of Sunfish (e.g., `tenantId`, `actorId` per `LeaseAuditPayloadFactory`), and incorporating A7.3.2's plugin-shape change:
+
+```json
+{
+  "kernel": "1.3.0",
+  "plugins": {"sunfish.blocks.maintenance": {"version": "1.2.0", "required": true}, "sunfish.blocks.public-listings": {"version": "1.0.0", "required": false}},
+  "adapters": {"blazor": "1.3.0", "react": "1.1.0"},
+  "schemaEpoch": 7,
+  "channel": "stable",
+  "instanceClass": "selfHost"
+}
+```
+
+Multi-word keys are camelCase (`schemaEpoch`, `instanceClass`); enum string values are camelCase (`selfHost`, `managedBridge`); single-word keys remain as-is. CanonicalJson.Serialize sorts keys alphabetically regardless of casing — the casing is a consumer-side convention.
+
+#### A7.9 — Reword A6.2 rule 5's channel direction explanation (council A9 / F10 Encouraged)
+
+A6.2 rule 5 is reworded with cleaner direction-of-arrow framing:
+
+> **Rule 5 — Channel ordering.** A node on a more-permissive channel (`nightly > beta > stable`) MAY federate with a node on a less-permissive channel (consumer-direction; e.g., a nightly-canary node receiving stable production state to validate against). A node on a less-permissive channel MUST NOT accept federation from a more-permissive node by default — this would pollute the less-permissive node's state with state captured under a less-tested code path. Operators MAY override per-deployment via `--allow-channel-downgrade` (e.g., for staged rollout testing where stable receives beta-channel events deliberately). **Configurable at the operator level**: production deployments typically pin `channel == stable` strictly, blocking even the default-allowed direction.
+
+(The rule's *behavior* is unchanged from A6.2; the *prose* is clearer.)
+
+#### A7.10 — What A6 doesn't cover (council A10 / Encouraged scoping)
+
+A new sub-section A6.12 explicitly names what is OUT of A6's scope, to prevent future amendments from accidentally over-claiming A6's surface:
+
+> **A6.12 — What A6 doesn't cover.**
+>
+> A6 covers static compatibility evaluation at federation handshake time. A6 does NOT cover:
+>
+> - **Dynamic mid-session compatibility re-evaluation** if a peer upgrades during a long-lived federation session (out of scope; periodic re-handshake addresses this; spec belongs in a future transport-tier ADR).
+> - **Schema-epoch migration mechanics.** A6 only checks epoch equality (rule 1) + the iOS sequestration carve-out (A6.11.3); the actual `sunfish migrate` command's contract is ADR 0001 + a future migration-tooling ADR.
+> - **Plugin runtime version skew within a single node** (e.g., a node where the kernel was upgraded but a plugin wasn't restarted) — this is a single-node concern, not a federation concern.
+> - **CRDT operation-log compatibility within an established federation.** This is paper §15 and A1's iOS event-queue contract; A6 is upstream of these (A6 decides whether the federation can even open; per-operation compat is decided post-handshake by the engine).
+> - **Capability negotiation beyond compatibility.** A6 answers "are these two nodes structurally compatible to federate?"; the broader negotiation of *which features each side offers* is the Mission Space Negotiation Protocol (queued as ~ADR 0063 per W#33 §7.2).
+
+#### A7.11 — Cited-symbol verification (re-applied per A4.3 standing rung-6 task)
+
+Per the post-A4 standing commitment, A7's added/modified citations are spot-checked in both directions:
+
+**Verified existing on `origin/main`** (positive-existence):
+- All A6 citations remain valid as-listed in A6.7 (no removals).
+- ADR 0007 `BusinessCaseBundleManifest.requiredModules` — verified existing (per F3 council finding which prompted A7.3 specifically).
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — verified existing (per F12 council spot-check).
+
+**Introduced by A7** (not on `origin/main`; ship in implementation hand-off):
+- New wire-format message type: `VersionVectorVerdict` (per A7.1).
+- Augmented type shape: `PluginVersionVectorEntry { version: SemVer, required: bool }` (per A7.3.2).
+- Iterated tuple field: `instanceClass` enum reduced to two values (per A7.6); requires CanonicalJson enum-bump tolerance verification at hand-off.
+- Augmented iOS A1 envelope: `captured_under_kernel: SemVer` + `captured_under_schema_epoch: uint32` (per A7.5; coordinated A1.x amendment required).
+- New audit-record type: `LegacyEpochEvent` for iOS cross-epoch sequestration (per A7.5.3).
+
+#### A7.12 — Cohort discipline log
+
+Per `feedback_decision_discipline.md` cohort batting average:
+
+- **Council batting average** (substrate amendments needing post-acceptance fixes): **8-of-N** (A6 council surfaced 1 Critical + 5 Major + 4 Minor — all mechanical to absorb pre-merge per the auto-merge-disabled posture). Cohort lesson holds: pre-merge council remained dramatically cheaper than post-merge.
+- **Council false-claim rate (both directions):** unchanged at 2-of-9 across the cohort. The A6 council made 0 false-existence + 0 false-non-existence claims (F11–F14 are explicit positive-existence verifications with verification commands). F3 surfaces a NEW failure mode — *structural citation correctness* (the cited field exists in the cited ADR, but at the wrong layer of the schema). XO updates the `feedback_council_can_miss_spot_check_negative_existence` memory to cover this third direction (separate memory edit).
+- **Standing rung-6 task reaffirmed:** XO spot-checks A7's added/modified citations (per A7.11) within 24h of merge. If any A7-added claim turns out to be incorrect, file an A8 retraction matching the A3 / A4 retraction pattern.
+
+#### A7.13 — Companion amendment (A1.x) declared
+
+A7.5's iOS-envelope augmentation requires a coordinated A1.x amendment that ratifies the envelope-shape change on the A1 side. This A1.x amendment is queued as a separate intake; A7 declares the dependency (Stage 06 build of A6's iOS path gates on A1.x landing). The A1.x intake stub is filed at `icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md` (XO follow-up; small mechanical amendment).
+
+---
