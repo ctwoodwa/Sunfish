@@ -296,6 +296,14 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A verified Prospect capability resolved an email that has no matching Prospect entity — capability/data inconsistency (W#28 P5c-4 Slice C).</summary>
     public static readonly AuditEventType ProspectLookupOrphan = new("ProspectLookupOrphan");
 
+    // ===== ADR 0028-A6/A7 — Foundation.Versioning federation handshake (W#34) =====
+
+    /// <summary>A federation handshake's <c>VersionVector</c> evaluation produced an Incompatible verdict; the peer was rejected. Emission is dedup'd 1-per-(remote_node_id, failed_rule, failed_rule_detail) per 1-hour rolling window per A7.4.</summary>
+    public static readonly AuditEventType VersionVectorIncompatibilityRejected = new("VersionVectorIncompatibilityRejected");
+
+    /// <summary>A legacy device reconnected with kernel-minor-lag exceeding the compatibility window; the up-to-date peer entered one-sided receive-only mode per A6.5. Emission is dedup'd 1-per-(remote_node_id, kernel_minor_lag) per 24-hour rolling window per A7.4.</summary>
+    public static readonly AuditEventType LegacyDeviceReconnected = new("LegacyDeviceReconnected");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
