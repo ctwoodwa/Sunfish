@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Sunfish.Federation.Common;
+using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.Transport;
+using Sunfish.Foundation.Transport.Audit;
+using Sunfish.Kernel.Audit;
 
 namespace Sunfish.Providers.Mesh.Headscale;
 
@@ -57,11 +62,15 @@ public sealed class HeadscaleMeshAdapter : IMeshVpnAdapter
     private readonly HeadscaleClient _client;
     private readonly HeadscaleOptions _options;
     private readonly TimeProvider _time;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TenantId _tenantId;
 
     private DateTimeOffset _availabilityCheckedAt = DateTimeOffset.MinValue;
     private bool _availabilityCachedValue;
     private readonly object _availabilityLock = new();
 
+    /// <summary>Audit-disabled overload (test / bootstrap).</summary>
     public HeadscaleMeshAdapter(HeadscaleClient client, HeadscaleOptions options, TimeProvider? time = null)
     {
         ArgumentNullException.ThrowIfNull(client);
@@ -69,6 +78,35 @@ public sealed class HeadscaleMeshAdapter : IMeshVpnAdapter
         _client = client;
         _options = options;
         _time = time ?? TimeProvider.System;
+    }
+
+    /// <summary>
+    /// Audit-enabled overload — emits <see cref="AuditEventType.MeshDeviceRegistered"/>
+    /// on each successful <see cref="RegisterDeviceAsync"/> per ADR 0061 §"Audit emission".
+    /// W#32 both-or-neither contract: audit trail + signer + tenant id required together.
+    /// </summary>
+    public HeadscaleMeshAdapter(
+        HeadscaleClient client,
+        HeadscaleOptions options,
+        IAuditTrail auditTrail,
+        IOperationSigner signer,
+        TenantId tenantId,
+        TimeProvider? time = null)
+    {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(auditTrail);
+        ArgumentNullException.ThrowIfNull(signer);
+        if (tenantId == default)
+        {
+            throw new ArgumentException("tenantId is required when audit emission is wired.", nameof(tenantId));
+        }
+        _client = client;
+        _options = options;
+        _time = time ?? TimeProvider.System;
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _tenantId = tenantId;
     }
 
     /// <inheritdoc />
@@ -195,6 +233,28 @@ public sealed class HeadscaleMeshAdapter : IMeshVpnAdapter
             User = _options.User,
             ForcedTags = tags,
         }, ct).ConfigureAwait(false);
+        await EmitAsync(
+            AuditEventType.MeshDeviceRegistered,
+            TransportAuditPayloads.MeshDeviceRegistered(registration.Peer, AdapterName, registration.DeviceName),
+            ct).ConfigureAwait(false);
+    }
+
+    private async Task EmitAsync(AuditEventType eventType, AuditPayload payload, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null)
+        {
+            return;
+        }
+        var occurredAt = _time.GetUtcNow();
+        var signed = await _signer.SignAsync(payload, occurredAt, Guid.NewGuid(), ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: _tenantId,
+            EventType: eventType,
+            OccurredAt: occurredAt,
+            Payload: signed,
+            AttestingSignatures: ImmutableArray<AttestingSignature>.Empty);
+        await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
     }
 
     // ------------------------------------------------------------------
