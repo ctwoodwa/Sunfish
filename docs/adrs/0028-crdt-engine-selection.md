@@ -1494,3 +1494,93 @@ Per `feedback_decision_discipline.md`:
 - **Structural-citation failure rate (XO-authored):** **11-of-16 (~69%)** — up from 10-of-15 due to F1's cohort-propagated failure. A9 contributed 1 instance (parent-inherited).
 - **Subagent dispatch pattern:** XO authored A9 council in-thread successfully; subagent stalls correlated with long-output briefs (ADR 0064 council). Compact councils (~3,500 words for A9) are reliable in-thread.
 - **Standing rung-6 task:** XO spot-checks A9.8's added/modified citations within 24h of merge. The A6.1 parent retraction (A10) intake is queued separately.
+
+---
+
+### A10 (REQUIRED, mechanical retraction) — A6.1 + A6.2 rule 1 `schemaEpoch` citation correction (parent-propagation fix declared by A9.8.4)
+
+**Driver:** ADR 0028-A9 council finding F1 (PR #433; XO authored in-thread 2026-05-01) surfaced a structural-citation failure originating in A6.1 (the version-vector tuple type signature definition). Both A6.1's spec block AND A6.2 rule 1's narrative cite "ADR 0001 schema-registry-governance" for the `schemaEpoch` semantic, but ADR 0001 does NOT define `schemaEpoch` (verified via `git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -i epoch` returning zero matches). The `schemaEpoch` semantic is paper-level, defined in **paper §7.1 (Expand-Contract Pattern)** + **paper §7.4 (Epoch Coordination and Copy-Transform Migration)**.
+
+A9.8.4 fixed A9's own citations (in A9.2 + A9.5); A9.8.4 explicitly declared the parent A6.1 retraction as a separate A10 follow-up matching the A3 + A4 retraction pattern from the prior cohort. **A10 is that retraction.**
+
+**Pipeline variant:** `sunfish-api-change` (mechanical citation correction; non-breaking).
+
+**Council review posture:** **Pre-merge council WAIVED** per `feedback_decision_discipline` Rule 3 (mechanical retraction; matches A3 + A4 retraction precedent for council-waiver eligibility). Standing rung-6 spot-check within 24h of merge applies.
+
+**Companion intake:** [`icm/00_intake/output/2026-05-01_a6.1-schemaepoch-citation-retraction-intake.md`](../../icm/00_intake/output/2026-05-01_a6.1-schemaepoch-citation-retraction-intake.md) (PR #434; merged).
+
+#### A10.1 — Identification of the structurally-incorrect citations
+
+Three places in this ADR carry the structurally-incorrect "per ADR 0001 schema-registry-governance" citation for the `schemaEpoch` semantic. Pre-A10 line numbers (origin/main as of 2026-05-01 09:00Z, post-A9 merge):
+
+1. **A6.1 spec block (line 939):**
+
+   ```text
+   schemaEpoch:   uint32,                  # monotonic per-schema-cutover; per ADR 0001 schema-registry-governance
+   ```
+
+2. **A6.1 narrative (line 962):** *"`schemaEpoch` is monotonic; never decreases during the install's lifetime (ADR 0001)"*
+
+3. **A6.2 rule 1 (line 970):** *"`schemaEpoch` equality. `V1.schemaEpoch == V2.schemaEpoch`. Schema-epoch crossings are coordinated cutovers (per ADR 0001); peers MUST be on the same epoch to federate."*
+
+A6.7's cited-symbol verification table also lists "ADR 0001 schema-registry-governance — verified Accepted on `origin/main`" — that listing is technically correct (ADR 0001 IS Accepted on `origin/main`) but the implicit attribution of `schemaEpoch` semantics to ADR 0001 is wrong.
+
+#### A10.2 — Corrected citation: paper §7.1 + §7.4
+
+The `schemaEpoch` semantic is defined in **paper §7.1 (Expand-Contract Pattern)** + **paper §7.4 (Epoch Coordination and Copy-Transform Migration)**:
+
+- **Paper §7.1 line 220:** *"This is a breaking change requiring a **schema epoch bump** — a version gate that rejects sync connections from nodes below the minimum supported epoch."*
+- **Paper §7.4 line 238:** *"For truly breaking changes, the architecture uses **schema epochs** coordinated by distributed lease quorum"* + *"Schema epoch coordination protocol"*
+
+**Verification commands:**
+
+```bash
+# Negative-existence verification: confirm ADR 0001 does NOT define schemaEpoch
+git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -i epoch
+# (returns zero matches as of 2026-05-01)
+
+# Positive-existence verification: confirm paper §7.1 + §7.4 DO define schemaEpoch
+grep "schema epoch" /Users/christopherwood/Projects/Sunfish/_shared/product/local-node-architecture-paper.md
+# (returns hits at lines 220 + 238 as of 2026-05-01)
+```
+
+Both verifications confirm the structural-citation correction.
+
+#### A10.3 — Retraction record (matching A3 / A4 retraction pattern)
+
+The structurally-incorrect citations identified in A10.1 are **retracted** by this amendment. **The original A6 amendment text is preserved verbatim on origin/main per the cohort's history-preservation discipline** (no silent edits to prior amendments — see A3 + A4 retraction precedent). The corrected citation chain is:
+
+> **Replace** all three instances of "(per ADR 0001)" / "(per ADR 0001 schema-registry-governance)" / "(ADR 0001)" applied to `schemaEpoch` with **"(per paper §7.1 + §7.4)"** going forward in any A6.1, A6.2, or A9 cross-references.
+>
+> **Replace** the A6.7 cited-symbol verification table entry "ADR 0001 schema-registry-governance — verified Accepted on `origin/main`" — when it is implicitly attributed as the source of `schemaEpoch` — with: *"ADR 0001 schema-registry-governance — Accepted on `origin/main`; **does NOT define `schemaEpoch`** (per A10 retraction). Paper §7.1 + §7.4 are the canonical schemaEpoch reference."*
+
+The retraction is **forward-looking** for any future ADR-amendment authoring that cites A6.1 or A6.2 — the canonical reference is paper §7.1 + §7.4. The retraction does NOT alter the underlying `schemaEpoch` semantic (monotonic per-schema-cutover; coordinated cutover via distributed lease quorum); only the citation chain is corrected.
+
+#### A10.4 — Cohort-discipline log (parent-citation propagation lesson)
+
+This retraction is the **first cohort-recognized parent-citation propagation correction.** The A6 council (PR #396) missed the parent-A6.1 citation; A9 inherited it via verbatim copy; A9's §A0 self-audit also missed it; the A9 council caught it. The lesson:
+
+> **When authoring a derivative amendment that cites the parent amendment's text, structural-citation verification must extend to the parent's own citations — not just confirmation that the parent ADR is Accepted.** Verbatim copy + paste perpetuates errors. The §A0 self-audit pattern (per ADR 0062-A1.14) is necessary but not sufficient against this failure mode.
+
+The memory note `feedback_council_can_miss_spot_check_negative_existence` was updated 2026-05-01 with the parent-citation-propagation lesson + 2 new XO commitments (5 + 6) for verifying parent citations and declaring parent retractions explicitly.
+
+**Cohort metric updates:**
+
+- **Substrate-amendment council batting average:** unchanged at 16-of-16 (A10 itself is not pre-merge-council-reviewed per Decision Discipline Rule 3 council waiver).
+- **Council false-claim rate (all three directions):** unchanged (A9's council made 0 false claims; A10 does not require council).
+- **Structural-citation failure rate (XO-authored):** **11-of-16 (~69%) — A9's parent-propagated failure is now retracted via A10**; the rate measures historical authoring discipline. Future XO authoring should drive this rate down via the new commitments.
+- **Cohort precedent value:** A10 establishes the canonical "parent-citation retraction" amendment shape for future propagation incidents. Future amendments matching this pattern (parent-amendment citation flagged by derivative-amendment council) should follow A10's structure.
+
+#### A10.5 — Standing rung-6 spot-check
+
+XO spot-checks A10's corrected citation within 24h of merge:
+
+```bash
+# Verify paper §7.1 + §7.4 hits remain at expected lines
+grep -n "schema epoch" /Users/christopherwood/Projects/Sunfish/_shared/product/local-node-architecture-paper.md
+
+# Verify ADR 0001 still doesn't define schemaEpoch (sanity check; should remain zero matches unless ADR 0001 is amended later)
+git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -ic epoch
+```
+
+If either spot-check produces unexpected results, file an A11 amendment matching this retraction pattern.
