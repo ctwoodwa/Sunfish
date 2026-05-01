@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.MissionSpace</PackageId>
+    <RootNamespace>Sunfish.Foundation.MissionSpace</RootNamespace>
+    <Description>Foundation-tier substrate for the runtime mission-envelope negotiation protocol (ADR 0062 + A1). Hosts MissionEnvelope (10-dimension snapshot) + EnvelopeChange + FeatureVerdict + 5-value DegradationKind taxonomy + IFeatureGate/IDimensionProbe/IFeatureBespokeProbe contracts + IMissionEnvelopeProvider central coordinator + IFeatureForceEnableSurface operator-only override + LocalizedString + 9 new AuditEventType discriminators. Canonical-load-bearing for the W#33 §7.2 cohort.</Description>
+    <PackageTags>sunfish;foundation;mission-space;feature-gate;adr-0062</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-versioning\Sunfish.Foundation.Versioning.csproj" />
+    <ProjectReference Include="..\foundation-migration\Sunfish.Foundation.Migration.csproj" />
+    <ProjectReference Include="..\foundation-ui-syncstate\Sunfish.Foundation.UI.SyncState.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.MissionSpace.Tests" />
+  </ItemGroup>
+</Project>
