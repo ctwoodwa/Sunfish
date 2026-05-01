@@ -64,7 +64,47 @@ Protected fields — for HUD reporting + civil-rights compliance only:
 - `MaritalStatus`
 - `IncomeSourceType` (e.g., Section 8 voucher — protected under some state laws)
 
-Storage-side: each field is per-tenant-key encrypted (per ADR 0046 `EncryptedField` from W#32 substrate; wiring lands in a follow-up phase). Reading any field requires a separate capability + emits an audit record per read.
+Storage-side: every field is per-tenant-key encrypted (per ADR 0046 `EncryptedField` from W#32 substrate). Reading any field requires an `IFieldDecryptor` capability + emits a `FieldDecrypted` audit record per read. **Wiring shipped in Phase 9** — see "Phase 9 — structural encryption" below for details.
+
+## Phase 9 — structural encryption (post-W#32)
+
+The reflection-based `IApplicationDecisioner_DoesNotAccept_DemographicProfile` test was the original FHA-defense layer. **Phase 9 (post-W#32 substrate) makes the same claim type-system-enforced rather than test-enforced.**
+
+### Two records, two postures
+
+```csharp
+public sealed record DemographicProfileSubmission       // wire form: plaintext, transient
+{
+    public string? RaceOrEthnicity { get; init; }
+    // ... 7 more nullable string fields ...
+}
+
+public sealed record DemographicProfile                  // persisted form: encrypted
+{
+    public EncryptedField? RaceOrEthnicity { get; init; }
+    // ... 7 more nullable EncryptedField fields ...
+}
+```
+
+`SubmitApplicationRequest.Demographics` is typed as `DemographicProfileSubmission` (plaintext); `Application.Demographics` is `DemographicProfile` (encrypted). The `LeasingPipelineService.SubmitApplicationAsync` boundary encrypts every non-null field via `IFieldEncryptor.EncryptAsync` (purpose label `encrypted-field-aes`; per-tenant DEK) and discards plaintext.
+
+### What changes for decisioning code
+
+Nothing — `IApplicationDecisioner` still receives only `DecisioningFacts`. But the FHA-defense claim is now *also* enforced by the type system: even if a decisioning implementation tried to reach into `Application.Demographics`, it would receive `EncryptedField?` values that are opaque without an `IFieldDecryptor` capability the decisioning surface does not hold.
+
+### What changes for legitimate readers
+
+- **HUD reporting tooling** holds an `IDecryptCapability` scoped to compliance reporting; per-field decrypts emit `FieldDecrypted` audits per W#32.
+- **Subject Access Request (SAR) handler** (FCRA §609 / GDPR / CCPA) holds an SAR-scoped capability; same audit pattern.
+- **Decisioning, scoring, screening, ranking, sorting code** holds no decrypt capability — they cannot reach plaintext even if they tried.
+
+### Defense-in-depth
+
+The original reflection-based audit-leak invariant test (`Audit_NeverLeaks_DemographicProfile`) is retained as a **belt-and-braces tripwire**. Type-system enforcement is now primary; the reflection test is a regression detector against accidental serialization paths that bypass the canonical encrypt-on-write boundary.
+
+### Defense-in-depth: graceful fall-back
+
+When `IFieldEncryptor` is not registered (e.g., test bootstrap, dev-only host), `LeasingPipelineService.SubmitApplicationAsync` drops every demographic field rather than silently retaining plaintext. The application is persisted with an all-null `DemographicProfile`. Plaintext never crosses the persistence boundary in any configuration.
 
 ## Legitimate read paths for `DemographicProfile`
 
