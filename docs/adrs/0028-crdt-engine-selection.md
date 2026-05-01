@@ -1309,4 +1309,188 @@ Per `feedback_decision_discipline.md` cohort batting average:
 
 A7.5's iOS-envelope augmentation requires a coordinated A1.x amendment that ratifies the envelope-shape change on the A1 side. This A1.x amendment is queued as a separate intake; A7 declares the dependency (Stage 06 build of A6's iOS path gates on A1.x landing). The A1.x intake stub is filed at `icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md` (XO follow-up; small mechanical amendment).
 
+> **Note on A1.x naming:** "A1.x" was a placeholder meaning "an amendment that extends A1's envelope schema." Per the cohort's sequential numbering convention (A1, A2, ... A8), the actual amendment ships as **A9** (next sequential after A8). A9 (below) ratifies the envelope-shape change on A1's side.
+
 ---
+
+### A9 (PROPOSED) — iOS append-only envelope capture-context tagging (A1.x companion to A6.11 + A7.5)
+
+**Driver:** A7.5's iOS-envelope augmentation declaration + A7.13 sibling-amendment dependency named "A1.x amendment is queued as a separate intake; A7 declares the dependency (Stage 06 build of A6's iOS path gates on A1.x landing)." A9 closes the dependency.
+
+**Pipeline variant:** `sunfish-api-change` (envelope schema change; foundation-tier surface).
+
+**Companion intake:** [`icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md`](../../icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md) (PR #397).
+
+**Why now:** ADR 0028-A6 (post-A7) specifies a federation-time version-vector handshake plus a per-event capture-context tagging path for the iOS append-only queue (per A6.11, added by A7.5). The capture-context fields (`captured_under_kernel` + `captured_under_schema_epoch`) need to live in the iOS A1 envelope itself — but A1's envelope shape currently does not carry them. A9 ratifies the envelope-shape change on A1's side. Without A9, A6.11's merge-boundary contract has no on-the-wire data to evaluate against.
+
+#### A9.1 — Augmented A1 envelope schema
+
+A1's iOS Phase 2.1 append-only event envelope (post-A2/A3/A4) is augmented with two new optional-by-default fields:
+
+```text
+A1Envelope (post-A9) ::= {
+    device_local_seq:           uint64,           // existing per A1
+    captured_at:                ISO 8601 UTC,     // existing per A1
+    device_id:                  string,           // existing per A1
+    event_type:                 enum,             // existing per A1
+    payload:                    JSON-canonical bytes,  // existing per A1
+
+    // NEW (A9):
+    captured_under_kernel:      SemVer,           // kernel version running on iPad at capture time
+    captured_under_schema_epoch: uint32           // schema epoch the iPad was on at capture time
+}
+```
+
+**JSON canonical shape** (per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`; camelCase per A7.8):
+
+```json
+{
+  "deviceLocalSeq": 12345,
+  "capturedAt": "2026-05-01T03:30:00Z",
+  "deviceId": "ipad-...",
+  "eventType": "InspectionPhotoCaptured",
+  "payload": {...},
+  "capturedUnderKernel": "1.3.0",
+  "capturedUnderSchemaEpoch": 7
+}
+```
+
+#### A9.2 — Capture-time population path
+
+The iOS adapter (`accelerators/anchor-mobile-ios/`; W#23 territory) populates these fields at envelope-construction time:
+
+- **`capturedUnderKernel`:** read from a kernel-version constant baked into the iOS app at build time (the kernel version the iPad's installed Sunfish app currently advertises; matches the iOS app's `MissionEnvelope.VersionVector.kernel` per ADR 0062).
+- **`capturedUnderSchemaEpoch`:** read from a schema-epoch lookup against the iPad's local schema-registry view (per ADR 0001 schema-registry-governance).
+
+Both reads are local + cheap (no network round-trip; sub-millisecond). The reads happen at `IFieldEventQueue.EnqueueAsync` time (the existing iOS event-queue contract per A1.2).
+
+#### A9.3 — Backward compatibility for existing queued events
+
+Per the parent intake's scope-item question on backward-compat: an iPad MAY have events already queued under the **pre-A9 envelope shape** (no capture-context fields). A9 specifies the merge-boundary fallback:
+
+> **Pre-A9 envelope handling at the merge boundary.** When Anchor's merge service consumes an iPad event whose envelope LACKS `capturedUnderKernel` AND `capturedUnderSchemaEpoch` (CanonicalJson unknown-field-tolerance applies; the deserializer treats absent fields as `null`):
+>
+> 1. **Fallback to upload-time version-vector.** The merge service uses the iPad's *current* (upload-time) `MissionEnvelope.VersionVector.kernel` + `schemaEpoch` as the implicit capture-context. This is the legacy behavior — pre-A9 envelopes lose the capture-time-vs-upload-time distinction.
+>
+> 2. **Sequester per A6.11.3 if cross-epoch surfaces.** If the iPad's *current* `schemaEpoch` does not match Anchor's current epoch AND the envelope lacks `capturedUnderSchemaEpoch`, the event is sequestered to a `LegacyEpochEvent` audit-record + held for human review (per A7.5.3). Hard-dropping is forbidden.
+>
+> 3. **Audit emission.** Every pre-A9 envelope consumed at the merge boundary emits a `PreA9EnvelopeConsumed` audit event (new constant; W#23 Stage 06 ships) with `(remote_node_id, device_local_seq, fallback_kernel, fallback_schema_epoch)`. Dedup at the emission boundary per ADR 0028-A6.5.1 pattern: at most one emission per `(remote_node_id, fallback_kernel, fallback_schema_epoch)` tuple per **24-hour rolling window** (matches `LegacyDeviceReconnected` dedup cadence; pre-A9 envelopes are a long-tail concern).
+
+#### A9.4 — Acceptance criteria
+
+For A9 implementation to be considered conformant, the W#23 (iOS Field-Capture App) Stage 06 build MUST:
+
+- [ ] Augment the iOS envelope shape with `capturedUnderKernel: SemVer` + `capturedUnderSchemaEpoch: uint32` per A9.1
+- [ ] Populate both fields at envelope-construction time per A9.2
+- [ ] Round-trip the augmented envelope via `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (camelCase per A7.8)
+- [ ] Implement merge-boundary fallback for pre-A9-shape envelopes per A9.3
+- [ ] 1 new `AuditEventType` constant: `PreA9EnvelopeConsumed`
+- [ ] Test coverage:
+  - Round-trip test: augmented envelope → CanonicalJson.Serialize → deserialize → fields preserved
+  - Forward-compat test: post-A9 envelope deserialized by a hypothetical pre-A9 receiver (CanonicalJson unknown-field-tolerance) → unknown fields silently ignored; envelope is otherwise valid
+  - Backward-compat test: pre-A9-shape envelope consumed by post-A9 merge-boundary → fallback applied; `PreA9EnvelopeConsumed` audit emitted; cross-epoch sequesters to `LegacyEpochEvent`
+  - Audit dedup test: 50 pre-A9 envelopes from same `(remote_node_id, fallback_kernel, fallback_schema_epoch)` within 1 hour → 1 emission only
+
+#### A9.5 — Cited-symbol verification
+
+**Existing on `origin/main`** (verified 2026-05-01):
+
+- ADR 0028-A6.11 (post-A7.5) — declares the merge-boundary contract A9 ratifies
+- ADR 0028-A7.5 — declares the iOS envelope augmentation A9 implements
+- ADR 0028-A6.5.1 — audit-emission dedup pattern A9 mirrors
+- ADR 0001 schema-registry-governance — provides `schemaEpoch` semantic A9 consumes
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — encoding contract
+- `Sunfish.Kernel.Audit.AuditEventType` — telemetry surface
+- `LegacyEpochEvent` audit constant — declared in W#35 hand-off (PR #424); will land via W#35 Phase 4
+
+**Introduced by A9** (not on `origin/main`; ship in W#23 Stage 06 build):
+
+- `capturedUnderKernel: SemVer` + `capturedUnderSchemaEpoch: uint32` fields on the iOS envelope shape
+- 1 new `AuditEventType` constant: `PreA9EnvelopeConsumed`
+
+#### A9.6 — Cross-cutting integration with W#23 + W#35
+
+A9 is a **specification amendment**, not a substrate package. The implementation lives in:
+
+- **W#23 iOS Field-Capture App** Stage 06 build — augments the iOS envelope at capture time + the merge-boundary fallback in Anchor
+- **W#35 Foundation.Migration substrate** Phase 4 — declares the `LegacyEpochEvent` audit constant (per A7.5.3 / A8.3 rule 5)
+- **W#34 Foundation.Versioning substrate** (built; PR #423) — provides the `VersionVector` type + `IVersionVectorExchange` handshake A9's merge-boundary fallback consumes
+
+A9 does NOT introduce a new package; it amends A1's envelope schema. The W#23 hand-off (when authored) consumes A9's contract directly.
+
+#### A9.7 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (15-of-15 substrate ADR amendments needing council fixes; structural-citation failure rate 10-of-15 (~67%) XO-authored):
+
+- **Pre-merge council CANONICAL** for A9 despite small scope — substrate-tier amendment to A1 (the iOS append-only envelope is load-bearing for W#23 + W#35 integration). Cost ~30 min council; benefit per cohort precedent. Auto-merge intentionally DISABLED until council reviews.
+- Council should specifically pressure-test:
+  - Pre-A9 envelope fallback at the merge boundary (A9.3): is "use upload-time version-vector" the correct semantic, or should pre-A9 envelopes be rejected entirely?
+  - 24-hour `PreA9EnvelopeConsumed` dedup window
+  - Capture-time population path (A9.2): build-time constant vs runtime-injected dependency (testability)
+  - Sequestration logic composes with W#35 correctly (no double-sequestration)
+- **Cited-symbol verification** per A9.5 (3-direction spot-check)
+- **Standing rung-6 spot-check** within 24h of A9 merging
+
+**A9 closes ADR 0028's W#33 §7.2 derivative work.** With A9 landed, W#33's substrate-tier amendments to ADR 0028 are: A6+A7 (version-vector compatibility) + A5+A8 (cross-form-factor migration) + A9 (iOS envelope capture-context).
+
+#### A9.8 — Council-fix amendment block (post-council corrections)
+
+**Driver:** Stage 1.5 council review at `icm/07_review/output/adr-audits/0028-A9-council-review-2026-05-01.md` (PR #433) returned verdict **B (Solid)** with 1 Critical + 2 Major findings. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A9.8 absorbs the council's A1 + A2 amendments into A9's surface before W#23 Stage 06 build consumes A9's contract.
+
+**Cohort milestone:** A9 is the **first cohort-recognized citation-failure propagation** — F1 of the council found that A9 inherited a structural-citation failure from parent A6.1 via verbatim copy. The §A0 self-audit pattern caught zero parent-propagated failures (consistent with ADR 0063-A1.15 lesson that §A0 is necessary but not sufficient). Council remains the canonical defense.
+
+##### A9.8.1 — `schemaEpoch` citation correction (council A1 / F1 Critical structural-citation)
+
+A9.2 reads (pre-correction): *"`capturedUnderSchemaEpoch`: read from a schema-epoch lookup against the iPad's local schema-registry view (per ADR 0001 schema-registry-governance)."*
+
+The citation is structurally incorrect. ADR 0001 governs schema-registry tier governance (repo-local vs federated namespace), NOT epoch coordination. Verified via `git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -i epoch` returning **zero** matches.
+
+The correct citation is **paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration)**:
+- §7.1 line 220: *"This is a breaking change requiring a **schema epoch bump** — a version gate that rejects sync connections from nodes below the minimum supported epoch."*
+- §7.4 line 238: *"For truly breaking changes, the architecture uses **schema epochs** coordinated by distributed lease quorum"* + *"Schema epoch coordination protocol"*
+
+**A9.2 reword (post-correction):**
+
+> *"`capturedUnderSchemaEpoch`: read from a schema-epoch lookup against the iPad's local schema-registry view (per **paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration)** — schema epochs are paper-level concepts; the iPad's local schema-registry tracks the current epoch via the §7.4 distributed-lease-quorum coordination protocol)."*
+
+**A9.5 verified-existing entry corrected:**
+
+> *"**Verified existing:** paper §7.1 (Expand-Contract Pattern) + §7.4 (Epoch Coordination and Copy-Transform Migration) — provides the `schemaEpoch` semantic A9 consumes. Verified per `grep "schema epoch" _shared/product/local-node-architecture-paper.md` returning hits at lines 220 + 238."*
+
+The pre-correction citation entry "ADR 0001 schema-registry-governance — provides `schemaEpoch` semantic" is **deprecated** in this ADR.
+
+##### A9.8.2 — Build-time-constant vs runtime-DI tradeoff documented (council A1 / F2 Major)
+
+A9.2 gains an explicit tradeoff paragraph:
+
+> **Build-time constant vs runtime DI.** The iOS adapter's choice between baking the kernel version as a build-time constant vs injecting it via `IKernelVersionProvider` at runtime is deferred to the W#23 Stage 06 hand-off. Default expectation: **runtime DI for testability** (unit tests can mock the provider; build-time-constant forces tests to use the actual installed kernel version, which limits the testable scenarios). W#23 hand-off MUST document the chosen path with rationale.
+
+##### A9.8.3 — Pre-A9 fallback known-limitation documented (council A1 / F3 Minor)
+
+A9.3 gains a "Known limitations of pre-A9 fallback" sub-paragraph:
+
+> **Known limitations of pre-A9 fallback.** The upload-time vector applies to ALL queued events, regardless of when individual events were captured. An iPad that captured events at kernel 1.2.0 and then upgraded to 1.3.0 will have ALL its pre-A9 queue events tagged with the 1.3.0 fallback vector (not the actual 1.2.0 capture-time vector). This is the known limitation of forward-only A1.x: pre-A9 envelopes lose capture-time precision permanently. **W#23's Stage 06 hand-off MUST surface this in the migration UX** (e.g., *"Events captured before <date> use approximate version-tagging; precise version-tagging available for events captured after the iPad's last upgrade"*).
+
+##### A9.8.4 — Parent A6.1 citation perpetuation flagged for A10 retraction (council A2 / F1 propagation)
+
+A6.1 (the parent amendment that defines the version-vector tuple) carries the same structurally-incorrect citation that A9 inherited. Specifically, A6.1's spec block reads:
+
+> ```text
+> schemaEpoch:   uint32,                  # monotonic per-schema-cutover; per ADR 0001 schema-registry-governance
+> ```
+
+The "per ADR 0001 schema-registry-governance" comment is structurally incorrect for the same reason F1 names. A9 fixes the citation in A9.2 + A9.5; **A9 does NOT retract the parent A6.1 citation** (out of scope for A9 — A9's surface is iOS envelope augmentation, not the version-vector tuple).
+
+**A10 retraction declared (XO follow-up):** A future A10 retraction amendment (matching the A3 / A4 retraction pattern from the prior cohort) MUST update A6.1's citation to paper §7.1 + §7.4. XO follow-up: file `icm/00_intake/output/2026-05-01_a6.1-schemaepoch-citation-retraction-intake.md` for the A10 amendment.
+
+**Cohort lesson captured:** when authoring a derivative amendment that cites the parent amendment's text, structural-citation verification must extend to the parent's own citations. Verbatim copy + paste perpetuates errors. The A6 council (PR #396) missed the parent-A6.1 citation; A9's §A0 self-audit also missed it (XO copied verbatim). The A9 council (this review's parent) caught it. Memory-side captured (separate edit): the `feedback_council_can_miss_spot_check_negative_existence` memory's "structural citation correctness" entry gains a sub-section on parent-citation propagation.
+
+##### A9.8.5 — Cohort discipline log
+
+Per `feedback_decision_discipline.md`:
+
+- **Substrate-amendment council batting average:** **16-of-16** (forward pattern; A9 council surfaced 1 Critical + 2 Major + 4 verification-passes pre-merge — all mechanical to absorb).
+- **Council false-claim rate (all three directions):** **0 in this council** (cohort 2-of-12 prior).
+- **Structural-citation failure rate (XO-authored):** **11-of-16 (~69%)** — up from 10-of-15 due to F1's cohort-propagated failure. A9 contributed 1 instance (parent-inherited).
+- **Subagent dispatch pattern:** XO authored A9 council in-thread successfully; subagent stalls correlated with long-output briefs (ADR 0064 council). Compact councils (~3,500 words for A9) are reliable in-thread.
+- **Standing rung-6 task:** XO spot-checks A9.8's added/modified citations within 24h of merge. The A6.1 parent retraction (A10) intake is queued separately.
