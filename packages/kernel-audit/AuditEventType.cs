@@ -296,6 +296,78 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A verified Prospect capability resolved an email that has no matching Prospect entity — capability/data inconsistency (W#28 P5c-4 Slice C).</summary>
     public static readonly AuditEventType ProspectLookupOrphan = new("ProspectLookupOrphan");
 
+    // ===== ADR 0028-A6/A7 — Foundation.Versioning federation handshake (W#34) =====
+
+    /// <summary>A federation handshake's <c>VersionVector</c> evaluation produced an Incompatible verdict; the peer was rejected. Emission is dedup'd 1-per-(remote_node_id, failed_rule, failed_rule_detail) per 1-hour rolling window per A7.4.</summary>
+    public static readonly AuditEventType VersionVectorIncompatibilityRejected = new("VersionVectorIncompatibilityRejected");
+
+    /// <summary>A legacy device reconnected with kernel-minor-lag exceeding the compatibility window; the up-to-date peer entered one-sided receive-only mode per A6.5. Emission is dedup'd 1-per-(remote_node_id, kernel_minor_lag) per 24-hour rolling window per A7.4.</summary>
+    public static readonly AuditEventType LegacyDeviceReconnected = new("LegacyDeviceReconnected");
+
+    // ===== ADR 0028-A5/A8 — Foundation.Migration cross-form-factor (W#35) =====
+
+    /// <summary>A host's hardware-tier profile changed (storage / network / sensor / power / adapter / manual reprofile) per A5.3.</summary>
+    public static readonly AuditEventType HardwareTierChanged = new("HardwareTierChanged");
+
+    /// <summary>A plaintext-readable record was UI-hidden because the form factor lacks the feature surface to display it (A8.3 rule 5).</summary>
+    public static readonly AuditEventType PlaintextSequestered = new("PlaintextSequestered");
+
+    /// <summary>An encrypted record was held in ciphertext-only state because the form factor lacks the cryptographic capability to decrypt it (A8.3 rule 5).</summary>
+    public static readonly AuditEventType CiphertextSequestered = new("CiphertextSequestered");
+
+    /// <summary>A previously-sequestered record returned to active visibility on derived-surface expansion (A5.4 rule 2).</summary>
+    public static readonly AuditEventType DataReleased = new("DataReleased");
+
+    /// <summary>A CP-class record was sequestered on a host whose form factor cannot read it; the host's vote is ineligible for that record's quorum (A8.3 rule 6).</summary>
+    public static readonly AuditEventType FormFactorQuorumIneligible = new("FormFactorQuorumIneligible");
+
+    /// <summary>A field-level write was rejected at the local CRDT-write boundary because the form factor lacks the per-tenant key for that field (A8.5 rule 6).</summary>
+    public static readonly AuditEventType FieldWriteSequestered = new("FieldWriteSequestered");
+
+    /// <summary>Adapter version was downgraded; A5.6 sequestration applied. Emission is dedup'd 1-per-(node_id, adapter_id, version_pair) per 6-hour rolling window per A8.7.</summary>
+    public static readonly AuditEventType AdapterRollbackDetected = new("AdapterRollbackDetected");
+
+    /// <summary>A new <c>FormFactorProfile</c> (foundation-migration) was provisioned on a host — initial profile detection or A5.7 enrollment.</summary>
+    public static readonly AuditEventType FormFactorProvisioned = new("FormFactorProvisioned");
+
+    /// <summary>A host completed the A5.7 QR-onboarding form-factor enrollment handshake.</summary>
+    public static readonly AuditEventType FormFactorEnrollmentCompleted = new("FormFactorEnrollmentCompleted");
+
+    /// <summary>An event referencing a schema epoch from before the host's compatibility window per A7.5.3.</summary>
+    public static readonly AuditEventType LegacyEpochEvent = new("LegacyEpochEvent");
+
+    // ===== ADR 0031-A1+A1.12 — Bridge → Anchor subscription-event-emitter (W#36) =====
+
+    /// <summary>Bridge emitted a subscription event (one per attempt; pre-delivery).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventEmitted = new("BridgeSubscriptionEventEmitted");
+
+    /// <summary>Bridge-side delivery succeeded (HTTP 200 from Anchor).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDelivered = new("BridgeSubscriptionEventDelivered");
+
+    /// <summary>Bridge-side retryable failure (HTTP non-200 / timeout / network error). Dedup'd 1-per-(tenant_id, event_id) per 1-hour window.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDeliveryFailed = new("BridgeSubscriptionEventDeliveryFailed");
+
+    /// <summary>Bridge exhausted all 7 retry attempts; event moved to dead-letter queue. Security-relevant; no dedup.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventDeliveryFailedTerminal = new("BridgeSubscriptionEventDeliveryFailedTerminal");
+
+    /// <summary>An Anchor registered a webhook URL with Bridge per A1.4.</summary>
+    public static readonly AuditEventType BridgeSubscriptionWebhookRegistered = new("BridgeSubscriptionWebhookRegistered");
+
+    /// <summary>Per A1.12.1 — Bridge staged a 90-day shared-secret rotation (24-hour grace window during which both old + new secrets are accepted).</summary>
+    public static readonly AuditEventType BridgeSubscriptionWebhookRotationStaged = new("BridgeSubscriptionWebhookRotationStaged");
+
+    /// <summary>Per A1.12.3 — Bridge admin enabled per-Anchor self-signed cert allowance for webhook delivery (default is publicly-rooted CA verification).</summary>
+    public static readonly AuditEventType BridgeWebhookSelfSignedCertsConfigured = new("BridgeWebhookSelfSignedCertsConfigured");
+
+    /// <summary>Anchor successfully verified + processed a Bridge subscription event. Dedup'd 1-per-(tenant_id, event_id) per 24-hour window (idempotency boundary).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventReceived = new("BridgeSubscriptionEventReceived");
+
+    /// <summary>Anchor rejected an event because the HMAC signature didn't verify. Dedup'd 1-per-(tenant_id, source_ip) per 1-hour window (security-relevant; flood guard).</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventSignatureFailed = new("BridgeSubscriptionEventSignatureFailed");
+
+    /// <summary>Anchor rejected an event whose <c>effectiveAt</c> fell outside the ±5-minute clock-skew window per A1.2. Dedup'd 1-per-(tenant_id, event_type) per 1-hour window.</summary>
+    public static readonly AuditEventType BridgeSubscriptionEventStale = new("BridgeSubscriptionEventStale");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

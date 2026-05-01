@@ -14,3 +14,7 @@
   href: recovery/
 - name: Taxonomy
   href: taxonomy/
+- name: Versioning
+  href: versioning/
+- name: Migration
+  href: migration/
