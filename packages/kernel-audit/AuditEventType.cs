@@ -414,6 +414,38 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>The transport selector exhausted Tier 1 + Tier 2 and fell back to Tier 3 (Bridge managed relay) per ADR 0061 §"Decision".</summary>
     public static readonly AuditEventType TransportFallbackToRelay = new("TransportFallbackToRelay");
 
+    // ===== ADR 0064 — Foundation.MissionSpace.Regulatory (W#39) =====
+
+    /// <summary>A <c>JurisdictionalPolicyRule</c> was evaluated. Always-on telemetry per A1.7.</summary>
+    public static readonly AuditEventType PolicyEvaluated = new("PolicyEvaluated");
+
+    /// <summary>A policy rule's <c>EnforcementAction</c> blocked the operation per A1.6.</summary>
+    public static readonly AuditEventType PolicyEnforcementBlocked = new("PolicyEnforcementBlocked");
+
+    /// <summary>The composite-confidence <c>JurisdictionProbe</c> resolved with <c>Confidence.Low</c> per A1.5.</summary>
+    public static readonly AuditEventType JurisdictionProbedWithLowConfidence = new("JurisdictionProbedWithLowConfidence");
+
+    /// <summary>A record-class write violated a <c>DataResidencyConstraint</c> per A1.6.</summary>
+    public static readonly AuditEventType DataResidencyViolation = new("DataResidencyViolation");
+
+    /// <summary>The sanctions screener matched a subject against a sanctions list per A1.6.</summary>
+    public static readonly AuditEventType SanctionsScreeningHit = new("SanctionsScreeningHit");
+
+    /// <summary>A <c>RegimeAcknowledgment</c> was surfaced to a UX consumer (e.g., installer, admin panel).</summary>
+    public static readonly AuditEventType RegimeAcknowledgmentSurfaced = new("RegimeAcknowledgmentSurfaced");
+
+    /// <summary>An <c>EuAiActTierClassification</c> was assigned to a feature per A1.6 (Phase 1 carries the type; emission paths are downstream).</summary>
+    public static readonly AuditEventType EuAiActTierClassified = new("EuAiActTierClassified");
+
+    /// <summary>The host configured the sanctions screener with <c>ScreeningPolicy.AdvisoryOnly</c> per A1.3 (operator opt-out emission path).</summary>
+    public static readonly AuditEventType SanctionsAdvisoryOnlyConfigured = new("SanctionsAdvisoryOnlyConfigured");
+
+    /// <summary>Per A1.16 — rule-content (jurisdictional policy rules + sanctions list) was reloaded; surfaces version transitions.</summary>
+    public static readonly AuditEventType RegulatoryRuleContentReloaded = new("RegulatoryRuleContentReloaded");
+
+    /// <summary>Per A1.7 — policy-evaluation cache was invalidated due to a probe-status transition (Healthy → Stale / Failed).</summary>
+    public static readonly AuditEventType RegulatoryPolicyCacheInvalidated = new("RegulatoryPolicyCacheInvalidated");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

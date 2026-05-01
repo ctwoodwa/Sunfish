@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://sunfish.dev/schemas/regulatory/jurisdictional-policy-rule/v1.json",
+  "title": "JurisdictionalPolicyRule",
+  "description": "Per ADR 0064-A1.14: canonical JSON Schema for a single jurisdictional policy rule. Phase 1 substrate ships the schema; rule content is Phase 3 (counsel-engagement-gated).",
+  "type": "object",
+  "required": ["ruleId", "regime", "evaluationKind", "enforcementAction", "ruleVersion"],
+  "properties": {
+    "ruleId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable identifier; opaque to the substrate."
+    },
+    "regime": {
+      "type": "string",
+      "enum": ["HIPAA", "GDPR", "PCI_DSS_v4", "SOC2", "EU_AI_Act", "FHA", "CCPA", "Other"]
+    },
+    "evaluationKind": {
+      "type": "string",
+      "enum": [
+        "DataResidencyConstraint",
+        "DataExportConstraint",
+        "UserConsentRequirement",
+        "AutomatedDecisionGate",
+        "SanctionsScreening",
+        "FeatureAvailabilityGate",
+        "NotificationRequirement"
+      ]
+    },
+    "enforcementAction": {
+      "type": "string",
+      "enum": [
+        "Block",
+        "BlockWithExplanation",
+        "ReadOnly",
+        "AuditOnly",
+        "PromptUserConsent",
+        "OperatorOverridable"
+      ]
+    },
+    "relevantFeatures": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Optional set of feature-keys this rule applies to. Null = applies to all features."
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "ruleVersion": {
+      "type": "string",
+      "description": "Per A1.16 — rule-content version string; surfaces in RegulatoryRuleContentReloaded audit."
+    }
+  },
+  "additionalProperties": false
+}
