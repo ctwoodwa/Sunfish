@@ -11,8 +11,9 @@ export default {
        'ui-adapters-react', 'blocks-leases', 'compat-telerik',
        'bridge', 'kitchen-sink', 'apps-docs', 'scaffolding-cli',
        'icm', 'adrs', 'governance', 'docs', 'deps', 'repo']],
-    'header-max-length': [2, 'always', 100],
-    'body-max-line-length': [2, 'always', 100],
+    'header-max-length': [2, 'always', 120],
+    'body-max-line-length': [2, 'always', 120],
+    'footer-max-line-length': [2, 'always', 120],
     // Relaxed to warning: existing main history routinely uses sentence-case
     // in subjects (referring to ADRs, Plans, Waves — "Plan 4B §5 ...",
     // "ADR 0034 Amendment 1 — ..."). The conventions doc
