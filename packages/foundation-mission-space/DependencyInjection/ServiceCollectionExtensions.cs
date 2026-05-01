@@ -52,6 +52,10 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton<IFeatureForceEnableSurface>(_ =>
             new DefaultFeatureForceEnableSurface());
 
+        // W#41 — install-UX substrate (ADR 0063 Phase 1).
+        services.TryAddSingleton<IMinimumSpecResolver>(_ => new DefaultMinimumSpecResolver());
+        services.TryAddSingleton<IInstallForceEnableSurface>(_ => new DefaultInstallForceEnableSurface());
+
         return services;
     }
 
@@ -90,6 +94,18 @@ public static class ServiceCollectionExtensions
 
         services.TryAddSingleton<IFeatureForceEnableSurface>(sp =>
             new DefaultFeatureForceEnableSurface(
+                sp.GetRequiredService<IAuditTrail>(),
+                sp.GetRequiredService<IOperationSigner>(),
+                tenantId));
+
+        // W#41 — install-UX substrate (ADR 0063 Phase 1) with audit emission.
+        services.TryAddSingleton<IMinimumSpecResolver>(sp =>
+            new DefaultMinimumSpecResolver(
+                sp.GetRequiredService<IAuditTrail>(),
+                sp.GetRequiredService<IOperationSigner>(),
+                tenantId));
+        services.TryAddSingleton<IInstallForceEnableSurface>(sp =>
+            new DefaultInstallForceEnableSurface(
                 sp.GetRequiredService<IAuditTrail>(),
                 sp.GetRequiredService<IOperationSigner>(),
                 tenantId));
