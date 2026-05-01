@@ -211,3 +211,305 @@ Total: ~7-8 weeks of engineering for Option C end-to-end usable.
 - [`accelerators/anchor/`](../../accelerators/anchor/) — the Zone-A sibling (confirmed unchanged).
 - [`apps/local-node-host/`](../../apps/local-node-host/) — the hosted-node process Bridge will orchestrate per-tenant.
 - [`icm/07_review/output/paper-alignment-audit-2026-04-23-refresh.md`](../../icm/07_review/output/paper-alignment-audit-2026-04-23-refresh.md) — current state audit.
+
+---
+
+## Amendments (post-acceptance, 2026-05-01)
+
+### A1 (PROPOSED) — Bridge → Anchor subscription-event-emitter contract
+
+**Driver:** ADR 0062-A1.6 / A1.16 halt-condition. ADR 0062 (Mission Space Negotiation Protocol; landed post-A1 via PR #406) introduces an `EditionCapabilities` dimension consumed by feature gates to determine commercial-tier-gated availability. Post-A1.6, the cache TTL is **30 seconds** (operationally acceptable ceiling without push events) — but real billing-cycle UX expects sub-second reflection of upgrades. ADR 0062 Phase 1 substrate scaffold halts on either the 30-second TTL being operationally accepted OR ADR 0031 being amended to add a Bridge → Anchor subscription-event-emitter contract. **A1 is that contract.**
+
+**Pipeline variant:** `sunfish-api-change` (introduces new Bridge → Anchor push-event surface).
+
+**Companion intake:** [`icm/00_intake/output/2026-04-30_bridge-subscription-event-emitter-intake.md`](../../icm/00_intake/output/2026-04-30_bridge-subscription-event-emitter-intake.md) (PR #409; merged).
+
+**Council review posture:** **Pre-merge canonical** per cohort discipline (substrate-tier surface introducing new Bridge accelerator contract; not a mechanical schema-extension; council-waiver does NOT apply per Decision Discipline Rule 3 boundaries).
+
+#### A1.1 — Subscription-event types
+
+Bridge emits 7 subscription-event types covering the canonical lifecycle of a Bridge-tenant subscription:
+
+| Event type | Trigger | Payload-specific fields | Notes |
+|---|---|---|---|
+| `SubscriptionStarted` | Tenant first activates a subscribed Edition | `editionAfter` set; `editionBefore == null` | First-ever subscription |
+| `SubscriptionRenewed` | Existing subscription auto-renews | `editionBefore == editionAfter` | Routine; less surface than other events |
+| `SubscriptionCancelled` | Tenant cancels (effective at next billing-cycle boundary) | `editionBefore` set; `editionAfter == null` | Operator-initiated; future-dated effect |
+| `SubscriptionTierUpgraded` | Tier upgrade (e.g., `anchor-self-host` → `bridge-pro`) | `editionBefore` + `editionAfter` set | Upgrade reflects sub-second per A1's purpose |
+| `SubscriptionTierDowngraded` | Tier downgrade | `editionBefore` + `editionAfter` set | Downgrade may sequester features per ADR 0028-A8.3 |
+| `SubscriptionDunning` | Payment failed; entering grace period | `editionBefore` set; `editionAfter` reflects grace-tier semantics | Warning posture; user UX should surface |
+| `SubscriptionExpired` | Grace period exhausted; subscription lapsed | `editionBefore` set; `editionAfter == null` | Final state; differs from `SubscriptionCancelled` (operator-vs-payment-driven) |
+
+Edition keys are strings per ADR 0009 (`IEditionResolver` returns `TenantId → edition key`); the event payload uses these keys verbatim.
+
+#### A1.2 — Event payload + signature
+
+Each subscription event is canonical-JSON-encoded per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`. Wire format (camelCase per ADR 0028-A7.8):
+
+```json
+{
+  "tenantId": "tenant-...",
+  "eventType": "SubscriptionTierUpgraded",
+  "editionBefore": "anchor-self-host",
+  "editionAfter": "bridge-pro",
+  "effectiveAt": "2026-05-01T10:00:00Z",
+  "eventId": "evt-7f9d2a...",
+  "deliveryAttempt": 1,
+  "signature": "hmac-sha256:..."
+}
+```
+
+**Signature scheme:** HMAC-SHA256 over the canonical-JSON bytes (excluding the `signature` field itself). The shared secret is the per-Anchor webhook-registration token (per A1.4). Anchor verifies the signature on every received event; signature failures result in HTTP 401 + audit emission of `BridgeSubscriptionEventSignatureFailed`.
+
+**Idempotency:** the `eventId` field is a globally-unique UUID per delivery + event tuple. Anchor MUST de-duplicate by `eventId` (per-tenant LRU cache; 24-hour retention). Re-delivery is a no-op.
+
+**Replay-attack hardening:** `effectiveAt` is bounded — Anchor rejects events whose `effectiveAt` differs from receive-time by more than ±5 minutes (clock-skew tolerance per AWS Signature V4 + GitHub webhook conventions); rejection emits `BridgeSubscriptionEventStale` audit. Tunable per-deployment.
+
+#### A1.3 — Delivery mechanism
+
+A1 ships **webhook-primary delivery** (HTTPS POST to Anchor-provided URL) with **SSE fallback** for Anchor instances electing long-lived-connection delivery:
+
+- **Webhook (primary):** Bridge POSTs canonical-JSON event to the Anchor's registered URL (per A1.4). 30-second timeout; non-200 → retry per A1.5.
+- **SSE (alternate):** Anchor MAY register SSE mode via `X-Sunfish-Delivery-Mode: sse` header. Bridge maintains long-lived connection; events as `data:` frames with `event:` type. Reconnect on disconnect; backoff per A1.5.
+
+Per ADR 0061 transport-tier model: Anchor instances behind symmetric NAT use webhook (Bridge pushes); Anchor instances with stable outbound use SSE. Vendor selection is per-deployment.
+
+A1 ships in-process Bridge-side delivery (Bridge holds the queue + emits directly). Phase 2.3+ may add `providers-bridge-eventbus-aws-sqs` / `providers-bridge-eventbus-redis-streams` adapters per ADR 0013 provider-neutrality if Bridge load demands externalization.
+
+#### A1.4 — Webhook URL registration
+
+Anchor registers its webhook URL at install time:
+
+```http
+POST /api/v1/tenant/webhook
+Authorization: Bearer <tenant-api-key>
+Content-Type: application/json
+
+{
+  "callbackUrl": "https://anchor.example.com/sunfish/bridge-events",
+  "deliveryMode": "webhook",
+  "subscribedEvents": ["SubscriptionStarted", "SubscriptionTierUpgraded", "SubscriptionTierDowngraded"],
+  "sharedSecret": "<base64-encoded-per-anchor-registration-token>"
+}
+```
+
+`sharedSecret` is generated per-Anchor by Bridge at registration time (Bridge holds it server-side; Anchor stores it in its keystore per ADR 0046). Both sides use it for HMAC signing/verification per A1.2.
+
+`subscribedEvents` is an opt-in filter; Anchor declares which events it cares about. Default: all 7. Re-registration replaces the prior URL/filter atomically.
+
+Webhook URLs MUST be HTTPS (Bridge refuses HTTP at registration). The `callbackUrl` MUST resolve to a non-loopback address.
+
+#### A1.5 — Retry + idempotency
+
+**Retry policy (Bridge-side):** failed deliveries (HTTP non-200 OR timeout OR network error) retried with exponential backoff: 1s → 5s → 30s → 5min → 30min → 2h → 12h. After 7 attempts, the event moves to a dead-letter queue + emits `BridgeSubscriptionEventDeliveryFailedTerminal` audit.
+
+**Idempotency (Anchor-side):** per A1.2, `eventId` is the de-duplication key. Anchor's `IBridgeSubscriptionEventHandler` (per A1.6) enforces idempotency via the per-tenant LRU cache.
+
+**Re-delivery semantics:** Bridge increments `deliveryAttempt` on each retry; Anchor MAY use this for diagnostic surfaces. Re-delivery does NOT change the `effectiveAt` field.
+
+#### A1.6 — Anchor-side handler substrate
+
+```csharp
+namespace Sunfish.Bridge.Subscription;
+
+public interface IBridgeSubscriptionEventHandler
+{
+    /// <summary>
+    /// Handles a Bridge subscription event. MUST be idempotent (per eventId).
+    /// Returns the appropriate HTTP response code for Bridge's delivery acknowledgment.
+    /// </summary>
+    ValueTask<int> HandleAsync(
+        BridgeSubscriptionEvent evt,
+        CancellationToken ct = default
+    );
+}
+
+public sealed record BridgeSubscriptionEvent(
+    string         TenantId,
+    string         EventType,                  // canonical event-type string per A1.1
+    string?        EditionBefore,
+    string?        EditionAfter,
+    DateTimeOffset EffectiveAt,
+    string         EventId,
+    int            DeliveryAttempt,
+    string         Signature
+);
+```
+
+Default implementation:
+
+1. Verify HMAC signature (per A1.2)
+2. Check `eventId` in per-tenant LRU cache; return 200 immediately if dedup-hit
+3. Update local `EditionCapabilities` cache via `IEditionResolver` (consumes `editionAfter`)
+4. Emit `BridgeSubscriptionEventReceived` audit (per A1.7)
+5. Trigger `EnvelopeChange` event via ADR 0062's `IMissionEnvelopeProvider` (the `EditionCapabilities` dimension transition propagates to UI gates)
+6. Return 200
+
+**Per ADR 0062-A1.6:** A1's contract is what closes the halt-condition. Once Anchor consumes `IBridgeSubscriptionEventHandler` events, `EditionCapabilities` flips sub-second instead of waiting for the 30-second cache TTL.
+
+#### A1.7 — Audit emission
+
+8 new `AuditEventType` constants (4 Bridge-side + 4 Anchor-side):
+
+| Constant | Side | Trigger | Dedup window |
+|---|---|---|---|
+| `BridgeSubscriptionEventEmitted` | Bridge | Each emit attempt | None |
+| `BridgeSubscriptionEventDelivered` | Bridge | Delivery succeeded (HTTP 200) | None |
+| `BridgeSubscriptionEventDeliveryFailed` | Bridge | Retryable failure | 1-hour per `(tenant_id, event_id)` |
+| `BridgeSubscriptionEventDeliveryFailedTerminal` | Bridge | All 7 retries exhausted | None (security-relevant) |
+| `BridgeSubscriptionEventReceived` | Anchor | Successfully verified + processed | 24-hour per `(tenant_id, event_id)` |
+| `BridgeSubscriptionEventSignatureFailed` | Anchor | HMAC verification failed | 1-hour per `(tenant_id, source_ip)` |
+| `BridgeSubscriptionEventStale` | Anchor | `effectiveAt` outside ±5min clock-skew | 1-hour per `(tenant_id, event_type)` |
+| `BridgeSubscriptionWebhookRegistered` | Bridge | Anchor registers webhook URL | None (security-relevant) |
+
+#### A1.8 — Acceptance criteria
+
+For A1-conformant implementation:
+
+- [ ] Bridge emits 7 subscription event types per A1.1
+- [ ] Each event canonical-JSON-encoded; HMAC-SHA256 signed; UUID `eventId`; ISO 8601 `effectiveAt`
+- [ ] Webhook delivery (HTTPS POST; 30s timeout) + SSE fallback per A1.3
+- [ ] Webhook URL registration via `POST /api/v1/tenant/webhook` per A1.4 (HTTPS-only; per-Anchor shared secret)
+- [ ] Retry policy 1s/5s/30s/5min/30min/2h/12h (7 attempts; dead-letter after) per A1.5
+- [ ] Anchor-side `IBridgeSubscriptionEventHandler` substrate per A1.6 (idempotent; HMAC verifies; ±5min clock-skew)
+- [ ] 8 new `AuditEventType` constants per A1.7 + per-event dedup
+- [ ] Test coverage: 7 event-type round-trips + HMAC verify success/fail + idempotency (same eventId twice) + replay-attack (>5min stale) + retry-policy timing + SSE fallback round-trip + audit dedup tests
+
+#### A1.9 — Cited-symbol verification
+
+**Existing on `origin/main`** (verified 2026-05-01):
+
+- ADR 0062 (Mission Space Negotiation Protocol; post-A1) — provides `MissionEnvelope` + `EditionCapabilities` dimension + `IMissionEnvelopeProvider`
+- ADR 0009 (Foundation.FeatureManagement; `IEditionResolver`) — verified Accepted
+- ADR 0046 (Foundation.Recovery) — provides keystore for shared-secret storage
+- ADR 0049 (audit substrate) — telemetry emission target
+- ADR 0061 (three-tier peer transport) — transport-tier model rationale for webhook-vs-SSE
+- ADR 0028-A7.8 — camelCase canonical encoding precedent
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — verified existing per ADR 0028-A4 retraction
+- HMAC-SHA256 — RFC 2104 IETF standard
+
+**Introduced by A1** (not on `origin/main`; ship in implementation hand-off):
+
+- 8 new `AuditEventType` constants per A1.7
+- `Sunfish.Bridge.Subscription.IBridgeSubscriptionEventHandler` interface
+- `Sunfish.Bridge.Subscription.BridgeSubscriptionEvent` record
+- Bridge endpoint `POST /api/v1/tenant/webhook` + Bridge-side webhook delivery service (in-process queue + retry policy)
+- Per-tenant LRU dedup cache for Anchor-side idempotency
+
+**Cohort lesson reminder (per ADR 0028-A10 + ADR 0063-A1.15):** §A0 self-audit pattern is necessary but NOT sufficient. Council remains canonical defense. The 3-direction spot-check at draft time was applied.
+
+#### A1.10 — Implementation hand-off
+
+Stage 06 hand-off lands as a medium workstream (~6–10h per parent intake at PR #409). Recommend writing the hand-off file at `icm/_state/handoffs/bridge-subscription-event-emitter-stage06-handoff.md` after pre-merge council review completes.
+
+5-phase split:
+- **Phase 1:** substrate scaffold + 8 audit constants + `IBridgeSubscriptionEventHandler` substrate + `BridgeSubscriptionEvent` record
+- **Phase 2:** Bridge-side event emission queue + HMAC signing + canonical-JSON encoding
+- **Phase 3:** Webhook delivery (primary) + retry policy + dead-letter queue
+- **Phase 4:** SSE delivery (alternate) + webhook URL registration endpoint
+- **Phase 5:** Anchor-side handler default implementation + `IMissionEnvelopeProvider` integration + DI extension + apps/docs + ledger flip
+
+#### A1.11 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (16-of-16 substrate amendments needing council fixes; structural-citation failure rate 11-of-16 ~69% XO-authored — A9's parent-propagation retracted via A10):
+
+- **Pre-merge council CANONICAL** for A1. Auto-merge intentionally DISABLED until a Stage 1.5 council subagent reviews. Council should specifically pressure-test:
+  - Webhook-vs-SSE delivery split — is "primary webhook + alternate SSE" right, or should A1 ship one mechanism?
+  - 7-event taxonomy — any standard subscription lifecycle states missing? (`SubscriptionTrialStarted` / `SubscriptionTrialExpired` / `SubscriptionPaused`?)
+  - HMAC-SHA256 vs Ed25519-signed events (would compose with ADR 0032's keypair)
+  - Retry policy 1s/5s/30s/5min/30min/2h/12h × 7 attempts — covers realistic Anchor outages?
+  - 30-second webhook timeout reasonable for HTTPS POST behind home NAT?
+  - ±5min clock-skew tolerance — too tight for poor-time-sync Anchor instances?
+  - 8 new `AuditEventType` constants — collision check
+- **Cited-symbol verification** per A1.9 (3-direction spot-check at draft time)
+- **Standing rung-6 spot-check** within 24h of A1 merging
+
+**A1 closes ADR 0062-A1.6's halt-condition** (Phase 1 substrate scaffold of ADR 0062 may proceed once A1 lands + Anchor-side handler is wired).
+
+#### A1.12 — Council-fix amendment block (post-council corrections)
+
+**Driver:** Stage 1.5 council review at `icm/07_review/output/adr-audits/0031-A1-council-review-2026-05-01.md` (PR #441) returned verdict **B (Solid)** with 3 Major + 2 Minor + 1 Encouraged + 5 verification-passes. Per `feedback_decision_discipline` Rule 3, mechanical council fixes auto-accept; A1.12 absorbs the 4 Required council recommendations (A1–A4).
+
+**Cohort milestone:** ADR 0031-A1 closes the 4-sibling-amendment chain (ADR 0028-A9 ✓ + ADR 0036-A1 ✓ + ADR 0007-A1 ✓ + ADR 0031-A1 = 4 of 4 from W#33-derived sibling intakes). All 4 council reviewed; cohort batting average 17-of-17 pre-merge.
+
+##### A1.12.1 — Per-Anchor shared-secret rotation policy (council A1 / F1 Major security)
+
+A1.4 gains an explicit rotation paragraph:
+
+> **Shared-secret rotation.** Bridge generates a fresh shared secret on every webhook re-registration (operator-initiated). Per-deployment configuration MAY enforce mandatory rotation cadence (default: 90 days from issuance; tunable via Bridge admin config). On rotation:
+>
+> 1. Bridge generates a new secret + retains the old secret as "previous-acceptable" for a 24-hour grace period.
+> 2. Bridge sends a `BridgeSubscriptionWebhookRotationStaged` audit event (9th new constant) with the rotation timestamp.
+> 3. Anchor receives the new secret out-of-band (re-registration response payload) AND rotates its keystore entry per ADR 0046's existing rotation surface.
+> 4. During the 24-hour grace window, Bridge HMAC-signs events with the new secret BUT Anchor accepts events signed with either the old OR new secret (HMAC verifies against both).
+> 5. After 24 hours, Bridge stops accepting the old secret in any context; expired-secret events fail per `BridgeSubscriptionEventSignatureFailed` audit.
+>
+> **Out-of-scope for A1:** automatic rotation triggers (e.g., "rotate on detected compromise"). Phase 1 ships operator-initiated rotation only.
+
+**9th `AuditEventType` constant added:** `BridgeSubscriptionWebhookRotationStaged`.
+
+##### A1.12.2 — HMAC-SHA256 vs Ed25519 tradeoff explicitly engaged (council A2 / F2 Major security)
+
+A1.2 gains a signature-scheme rationale paragraph:
+
+> **Signature scheme rationale.** A1 ships HMAC-SHA256 as the signature scheme for industry-standard webhook compatibility (Stripe, GitHub, Square, Slack all use HMAC-SHA256). The alternative is Ed25519-signed events using ADR 0032's keypair semantic (Bridge holds an Ed25519 keypair; publishes the public key; Anchor verifies with the public key). Ed25519 trades per-event verification cost (~50µs vs HMAC's ~5µs) for simpler key-management (Bridge publishes one public key; no per-Anchor shared-secret distribution).
+>
+> **Phase 2+ migration trigger:** if shared-secret distribution becomes operationally painful at scale (e.g., > 1000 Anchors per Bridge deployment; rotation overhead becomes the dominant Bridge admin cost), Phase 2+ amendment migrates to Ed25519 per ADR 0032 keypair semantic. The migration is non-breaking — events would carry an `algorithm` field (`HmacSha256` | `Ed25519`); Anchor verifies based on the field; Bridge dual-signs during transition.
+
+##### A1.12.3 — Operator-controllable trust configuration (council A3 / F3 Major deployment)
+
+A1.4's HTTPS-only paragraph is replaced with operator-tier flexibility:
+
+> **Webhook URL trust configuration.** Webhook URLs MUST be HTTPS (Bridge refuses HTTP at registration; operator-deployment self-signed certs are a configurable allowance, not a default). The `callbackUrl` MUST resolve to a non-loopback address.
+>
+> Operator-controllable trust configuration (Bridge admin-tier):
+>
+> - **Default:** Bridge HTTP client trusts only publicly-rooted CAs (Let's Encrypt, public-trusted commercial CAs). Suitable for Phase 1.5+ operator deployments with public DNS.
+> - **Per-Anchor cert pinning:** Anchor uploads its cert chain at registration time (PEM-encoded; included in the registration payload's `trustChain` field). Bridge pins-and-verifies against the registered chain. Suitable for Phase 1 self-hosted Windows-only deployments per ADR 0044 (no public Let's Encrypt; self-signed or internal-CA cert).
+> - **Per-deployment trust override:** Bridge config supports `WebhookHttpClient.AllowSelfSignedCerts: bool` for development / lab deployments. Default `false`; admin sets `true` per-Bridge-deployment with operator-tier audit (`BridgeWebhookSelfSignedCertsConfigured` — 10th new audit constant).
+>
+> Operator decision matrix per deployment shape:
+>
+> | Deployment | Trust mode | Rationale |
+> |---|---|---|
+> | Phase 1 self-hosted Anchor (per ADR 0044) | Per-Anchor cert pinning | Anchor's self-signed cert is uploaded at registration |
+> | Phase 1.5+ public-DNS Anchor (Let's Encrypt) | Default (publicly-rooted CA) | Industry-standard |
+> | Internal enterprise CA (mTLS) | Per-Anchor cert pinning + Bridge-side mTLS client cert | Bridge presents its own cert; Anchor's cert is pinned |
+> | Development / lab | Per-deployment `AllowSelfSignedCerts: true` | Testing-only; audit emits |
+
+**10th `AuditEventType` constant added:** `BridgeWebhookSelfSignedCertsConfigured`.
+
+##### A1.12.4 — SSE reconnect vs webhook retry disambiguation (council A4 / F5 Minor → upgraded to Required for spec clarity)
+
+A1.3's SSE paragraph + A1.5's retry paragraph gain explicit backoff semantics:
+
+A1.3 SSE reconnect clarification:
+
+> **SSE reconnect:** SSE connections drop normally (network blips; Bridge restarts; load balancer recycling). Bridge reconnects with exponential backoff: 1s → 5s → 30s → 60s (capped at 60s). Reconnect is **unbounded** — Bridge keeps trying as long as the Anchor's subscription is active. Events emitted during disconnect are queued in Bridge's per-Anchor event queue (max 1-hour depth; if the queue exceeds 1 hour or 10,000 events, Bridge falls back to webhook-mode delivery for the queued events; the Anchor's `deliveryMode` registration is *not* changed but the specific queued events are delivered via webhook). On reconnect, all queued events ship in order via the SSE stream.
+
+A1.5 retry policy gains a clarifying note:
+
+> **Note: webhook retry is different from SSE reconnect.** This A1.5 retry policy applies to **webhook delivery** (HTTPS POST attempt failed; bounded retries with dead-letter after exhaustion). SSE reconnect (A1.3) is a separate concern with its own backoff (exponential 1s → 5s → 30s → 60s capped; unbounded retries; per-tenant event queue during disconnect). Don't conflate them.
+
+##### A1.12.5 — Audit constant updates
+
+The total audit constant count rises from 8 to 10:
+
+- 8 original (per A1.7)
+- 9th: `BridgeSubscriptionWebhookRotationStaged` (per A1.12.1)
+- 10th: `BridgeWebhookSelfSignedCertsConfigured` (per A1.12.3)
+
+Both new constants are operator-initiated security-relevant events with no dedup (per-attempt; matches `BridgeSubscriptionWebhookRegistered` pattern). Collision check: verified zero matches in `packages/kernel-audit/AuditEventType.cs` for `Rotation` + `SelfSignedCerts` substrings.
+
+##### A1.12.6 — Cohort discipline
+
+Per `feedback_decision_discipline.md`:
+
+- **Substrate-amendment council batting average:** **17-of-17** (forward pattern; ADR 0031-A1 council surfaced 3 Major + 2 Minor + 1 Encouraged + 5 verification-passes pre-merge — all mechanical to absorb).
+- **Council false-claim rate (all three directions):** 0 in this council (cohort 2-of-12 prior).
+- **Structural-citation failure rate (XO-authored):** **11-of-17 (~65%)** — down from 67% post-A10; ADR 0031-A1 contributed 0 instances. The §A0 self-audit + 3-direction spot-check + cohort-vigilance discipline held in this round.
+- **Subagent dispatch:** XO authored A1 council in-thread successfully; matches ADR 0028-A9 council precedent for compact reviews.
+- **Sibling-chain closure:** ADR 0031-A1 closes the 4-sibling-amendment chain. All 4 W#33-derived sibling intakes now have authored amendments + council reviews where applicable.
+- **Standing rung-6 task:** XO spot-checks A1.12's added/modified citations + 2 new audit constants within 24h of merge.
+
+A5 + A6 council recommendations (3 missing subscription lifecycle types; subscribedEvents filter atomicity) are **encouraged-tier** and deferred — not blocking A1's Stage 06 build; future A1.x amendment when UX surfaces drive the need.
