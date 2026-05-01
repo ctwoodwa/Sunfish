@@ -1309,4 +1309,126 @@ Per `feedback_decision_discipline.md` cohort batting average:
 
 A7.5's iOS-envelope augmentation requires a coordinated A1.x amendment that ratifies the envelope-shape change on the A1 side. This A1.x amendment is queued as a separate intake; A7 declares the dependency (Stage 06 build of A6's iOS path gates on A1.x landing). The A1.x intake stub is filed at `icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md` (XO follow-up; small mechanical amendment).
 
+> **Note on A1.x naming:** "A1.x" was a placeholder meaning "an amendment that extends A1's envelope schema." Per the cohort's sequential numbering convention (A1, A2, ... A8), the actual amendment ships as **A9** (next sequential after A8). A9 (below) ratifies the envelope-shape change on A1's side.
+
 ---
+
+### A9 (PROPOSED) — iOS append-only envelope capture-context tagging (A1.x companion to A6.11 + A7.5)
+
+**Driver:** A7.5's iOS-envelope augmentation declaration + A7.13 sibling-amendment dependency named "A1.x amendment is queued as a separate intake; A7 declares the dependency (Stage 06 build of A6's iOS path gates on A1.x landing)." A9 closes the dependency.
+
+**Pipeline variant:** `sunfish-api-change` (envelope schema change; foundation-tier surface).
+
+**Companion intake:** [`icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md`](../../icm/00_intake/output/2026-04-30_ios-envelope-capture-context-tagging-intake.md) (PR #397).
+
+**Why now:** ADR 0028-A6 (post-A7) specifies a federation-time version-vector handshake plus a per-event capture-context tagging path for the iOS append-only queue (per A6.11, added by A7.5). The capture-context fields (`captured_under_kernel` + `captured_under_schema_epoch`) need to live in the iOS A1 envelope itself — but A1's envelope shape currently does not carry them. A9 ratifies the envelope-shape change on A1's side. Without A9, A6.11's merge-boundary contract has no on-the-wire data to evaluate against.
+
+#### A9.1 — Augmented A1 envelope schema
+
+A1's iOS Phase 2.1 append-only event envelope (post-A2/A3/A4) is augmented with two new optional-by-default fields:
+
+```text
+A1Envelope (post-A9) ::= {
+    device_local_seq:           uint64,           // existing per A1
+    captured_at:                ISO 8601 UTC,     // existing per A1
+    device_id:                  string,           // existing per A1
+    event_type:                 enum,             // existing per A1
+    payload:                    JSON-canonical bytes,  // existing per A1
+
+    // NEW (A9):
+    captured_under_kernel:      SemVer,           // kernel version running on iPad at capture time
+    captured_under_schema_epoch: uint32           // schema epoch the iPad was on at capture time
+}
+```
+
+**JSON canonical shape** (per `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`; camelCase per A7.8):
+
+```json
+{
+  "deviceLocalSeq": 12345,
+  "capturedAt": "2026-05-01T03:30:00Z",
+  "deviceId": "ipad-...",
+  "eventType": "InspectionPhotoCaptured",
+  "payload": {...},
+  "capturedUnderKernel": "1.3.0",
+  "capturedUnderSchemaEpoch": 7
+}
+```
+
+#### A9.2 — Capture-time population path
+
+The iOS adapter (`accelerators/anchor-mobile-ios/`; W#23 territory) populates these fields at envelope-construction time:
+
+- **`capturedUnderKernel`:** read from a kernel-version constant baked into the iOS app at build time (the kernel version the iPad's installed Sunfish app currently advertises; matches the iOS app's `MissionEnvelope.VersionVector.kernel` per ADR 0062).
+- **`capturedUnderSchemaEpoch`:** read from a schema-epoch lookup against the iPad's local schema-registry view (per ADR 0001 schema-registry-governance).
+
+Both reads are local + cheap (no network round-trip; sub-millisecond). The reads happen at `IFieldEventQueue.EnqueueAsync` time (the existing iOS event-queue contract per A1.2).
+
+#### A9.3 — Backward compatibility for existing queued events
+
+Per the parent intake's scope-item question on backward-compat: an iPad MAY have events already queued under the **pre-A9 envelope shape** (no capture-context fields). A9 specifies the merge-boundary fallback:
+
+> **Pre-A9 envelope handling at the merge boundary.** When Anchor's merge service consumes an iPad event whose envelope LACKS `capturedUnderKernel` AND `capturedUnderSchemaEpoch` (CanonicalJson unknown-field-tolerance applies; the deserializer treats absent fields as `null`):
+>
+> 1. **Fallback to upload-time version-vector.** The merge service uses the iPad's *current* (upload-time) `MissionEnvelope.VersionVector.kernel` + `schemaEpoch` as the implicit capture-context. This is the legacy behavior — pre-A9 envelopes lose the capture-time-vs-upload-time distinction.
+>
+> 2. **Sequester per A6.11.3 if cross-epoch surfaces.** If the iPad's *current* `schemaEpoch` does not match Anchor's current epoch AND the envelope lacks `capturedUnderSchemaEpoch`, the event is sequestered to a `LegacyEpochEvent` audit-record + held for human review (per A7.5.3). Hard-dropping is forbidden.
+>
+> 3. **Audit emission.** Every pre-A9 envelope consumed at the merge boundary emits a `PreA9EnvelopeConsumed` audit event (new constant; W#23 Stage 06 ships) with `(remote_node_id, device_local_seq, fallback_kernel, fallback_schema_epoch)`. Dedup at the emission boundary per ADR 0028-A6.5.1 pattern: at most one emission per `(remote_node_id, fallback_kernel, fallback_schema_epoch)` tuple per **24-hour rolling window** (matches `LegacyDeviceReconnected` dedup cadence; pre-A9 envelopes are a long-tail concern).
+
+#### A9.4 — Acceptance criteria
+
+For A9 implementation to be considered conformant, the W#23 (iOS Field-Capture App) Stage 06 build MUST:
+
+- [ ] Augment the iOS envelope shape with `capturedUnderKernel: SemVer` + `capturedUnderSchemaEpoch: uint32` per A9.1
+- [ ] Populate both fields at envelope-construction time per A9.2
+- [ ] Round-trip the augmented envelope via `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` (camelCase per A7.8)
+- [ ] Implement merge-boundary fallback for pre-A9-shape envelopes per A9.3
+- [ ] 1 new `AuditEventType` constant: `PreA9EnvelopeConsumed`
+- [ ] Test coverage:
+  - Round-trip test: augmented envelope → CanonicalJson.Serialize → deserialize → fields preserved
+  - Forward-compat test: post-A9 envelope deserialized by a hypothetical pre-A9 receiver (CanonicalJson unknown-field-tolerance) → unknown fields silently ignored; envelope is otherwise valid
+  - Backward-compat test: pre-A9-shape envelope consumed by post-A9 merge-boundary → fallback applied; `PreA9EnvelopeConsumed` audit emitted; cross-epoch sequesters to `LegacyEpochEvent`
+  - Audit dedup test: 50 pre-A9 envelopes from same `(remote_node_id, fallback_kernel, fallback_schema_epoch)` within 1 hour → 1 emission only
+
+#### A9.5 — Cited-symbol verification
+
+**Existing on `origin/main`** (verified 2026-05-01):
+
+- ADR 0028-A6.11 (post-A7.5) — declares the merge-boundary contract A9 ratifies
+- ADR 0028-A7.5 — declares the iOS envelope augmentation A9 implements
+- ADR 0028-A6.5.1 — audit-emission dedup pattern A9 mirrors
+- ADR 0001 schema-registry-governance — provides `schemaEpoch` semantic A9 consumes
+- `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` — encoding contract
+- `Sunfish.Kernel.Audit.AuditEventType` — telemetry surface
+- `LegacyEpochEvent` audit constant — declared in W#35 hand-off (PR #424); will land via W#35 Phase 4
+
+**Introduced by A9** (not on `origin/main`; ship in W#23 Stage 06 build):
+
+- `capturedUnderKernel: SemVer` + `capturedUnderSchemaEpoch: uint32` fields on the iOS envelope shape
+- 1 new `AuditEventType` constant: `PreA9EnvelopeConsumed`
+
+#### A9.6 — Cross-cutting integration with W#23 + W#35
+
+A9 is a **specification amendment**, not a substrate package. The implementation lives in:
+
+- **W#23 iOS Field-Capture App** Stage 06 build — augments the iOS envelope at capture time + the merge-boundary fallback in Anchor
+- **W#35 Foundation.Migration substrate** Phase 4 — declares the `LegacyEpochEvent` audit constant (per A7.5.3 / A8.3 rule 5)
+- **W#34 Foundation.Versioning substrate** (built; PR #423) — provides the `VersionVector` type + `IVersionVectorExchange` handshake A9's merge-boundary fallback consumes
+
+A9 does NOT introduce a new package; it amends A1's envelope schema. The W#23 hand-off (when authored) consumes A9's contract directly.
+
+#### A9.7 — Cohort discipline
+
+Per `feedback_decision_discipline.md` cohort batting average (15-of-15 substrate ADR amendments needing council fixes; structural-citation failure rate 10-of-15 (~67%) XO-authored):
+
+- **Pre-merge council CANONICAL** for A9 despite small scope — substrate-tier amendment to A1 (the iOS append-only envelope is load-bearing for W#23 + W#35 integration). Cost ~30 min council; benefit per cohort precedent. Auto-merge intentionally DISABLED until council reviews.
+- Council should specifically pressure-test:
+  - Pre-A9 envelope fallback at the merge boundary (A9.3): is "use upload-time version-vector" the correct semantic, or should pre-A9 envelopes be rejected entirely?
+  - 24-hour `PreA9EnvelopeConsumed` dedup window
+  - Capture-time population path (A9.2): build-time constant vs runtime-injected dependency (testability)
+  - Sequestration logic composes with W#35 correctly (no double-sequestration)
+- **Cited-symbol verification** per A9.5 (3-direction spot-check)
+- **Standing rung-6 spot-check** within 24h of A9 merging
+
+**A9 closes ADR 0028's W#33 §7.2 derivative work.** With A9 landed, W#33's substrate-tier amendments to ADR 0028 are: A6+A7 (version-vector compatibility) + A5+A8 (cross-form-factor migration) + A9 (iOS envelope capture-context).
