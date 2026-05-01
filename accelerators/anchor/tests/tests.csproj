@@ -45,10 +45,15 @@
     <Compile Include="..\Services\AnchorCrdtDeltaBridge.cs" Link="Anchor\AnchorCrdtDeltaBridge.cs" />
     <Compile Include="..\Services\AnchorBackupService.cs" Link="Anchor\AnchorBackupService.cs" />
     <Compile Include="..\Services\BackupManifest.cs" Link="Anchor\BackupManifest.cs" />
+    <!-- W#23 Phase 0 — MAUI-free pairing surface; compiles directly here. -->
+    <Compile Include="..\Services\Pairing\PairingToken.cs" Link="Anchor\Pairing\PairingToken.cs" />
+    <Compile Include="..\Services\Pairing\IPairingService.cs" Link="Anchor\Pairing\IPairingService.cs" />
+    <Compile Include="..\Services\Pairing\HmacPairingService.cs" Link="Anchor\Pairing\HmacPairingService.cs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
