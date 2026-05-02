@@ -241,3 +241,11 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0007 — [Bundle Manifest Schema](./0007-bundle-manifest-schema.md)
 - ADR 0011 — [Bundle Versioning and Upgrade Policy](./0011-bundle-versioning-upgrade-policy.md)
 - ADR 0028 — [CRDT Engine Selection](./0028-crdt-engine-selection.md)
+
+## ADRs by usage (consumed_by)
+
+_Each row lists the ADR and the other ADRs that compose or extend it._
+_`consumed_by` is auto-derived from `composes`/`extends` arrays; never hand-authored._
+
+- ADR 0028 — [CRDT Engine Selection](./0028-crdt-engine-selection.md) ← consumed by 1: [ADR 0062](./0062-mission-space-negotiation-protocol.md)
+- ADR 0049 — [Audit-Trail Substrate: Distinct Package over Kernel IEventLog](./0049-audit-trail-substrate.md) ← consumed by 1: [ADR 0062](./0062-mission-space-negotiation-protocol.md)
