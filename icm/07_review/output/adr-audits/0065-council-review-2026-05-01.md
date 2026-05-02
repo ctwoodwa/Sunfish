@@ -31,8 +31,8 @@
 ### F4 — Major: ADR 0009 amendment shape underspecified; Phase 5 estimate wrong
 
 **Perspective:** The Manager + Devil's Advocate
-**Issue:** Phase 5 says "Author ADR 0009 amendment (~1h)." That is structurally undersized — an ADR amendment authoring (per cohort precedent) is ~3-5h with council and ~5-8K words. Pulling it into W#36 also conflates substrate authoring with consumer authoring (the 5th-concept extension is a *consumer* of the contract this ADR defines; should be its own workstream). Additionally, the ADR doesn't specify *how* feature-management consumes Standing Orders (what API does ADR 0009 call into?).
-**Disposition:** Non-mechanical (scoping decision). Recommendation: remove Phase 5 from W#36 implementation; file separate workstream row for ADR 0009 amendment authoring. Reduces W#36 to ~15-17h. CO confirmation needed.
+**Issue:** Phase 5 says "Author ADR 0009 amendment (~1h)." That is structurally undersized — an ADR amendment authoring (per cohort precedent) is ~3-5h with council and ~5-8K words. Pulling it into W#42 also conflates substrate authoring with consumer authoring (the 5th-concept extension is a *consumer* of the contract this ADR defines; should be its own workstream). Additionally, the ADR doesn't specify *how* feature-management consumes Standing Orders (what API does ADR 0009 call into?).
+**Disposition:** Non-mechanical (scoping decision). Recommendation: remove Phase 5 from W#42 implementation; file separate workstream row for ADR 0009 amendment authoring. Reduces W#42 to ~15-17h. CO confirmation needed.
 
 ### F5 — Major: Complex-JSON-schema accessibility unaddressed
 
@@ -76,7 +76,7 @@
 
 | Check | Result | Note |
 |---|---|---|
-| 1. Delegation strategy clarity | PASS | W#36 hand-off authoring is sequenced post-CO acceptance; consumer ADRs (~0066/~0067/~0068) are separate workstreams. |
+| 1. Delegation strategy clarity | PASS | W#42 hand-off authoring is sequenced post-CO acceptance; consumer ADRs (~0066/~0067/~0068) are separate workstreams. |
 | 2. Research needs identification | PASS | §Open questions §6 names empirical research need (search latency under load) before Phase 3 close. |
 | 3. Review gate placement | PASS | Pre-merge council canonical (this review); post-Phase-3 perf-tests gate; per-phase WCAG/a11y subagent gate. |
 | 4. Anti-pattern scan (21 patterns) | See below | 3 hits (AP1 unvalidated P95 target → F9; AP14 wrong detail distribution → F4; AP16 hallucinated estimates → F8). All addressed. |
@@ -103,7 +103,7 @@ Applied in this PR's amendment commit:
 
 ## Non-mechanical findings (CO discretion)
 
-- **F4**: Phase 5 (ADR 0009 amendment) should be split into separate workstream. **Recommendation:** remove Phase 5 from W#36; file separate workstream row for ADR 0009 amendment authoring (~3-5h XO time + council). Awaiting CO sign-off.
+- **F4**: Phase 5 (ADR 0009 amendment) should be split into separate workstream. **Recommendation:** remove Phase 5 from W#42; file separate workstream row for ADR 0009 amendment authoring (~3-5h XO time + council). Awaiting CO sign-off.
 - **F5**: Complex-schema a11y contract addition (§7.1 chunked-disclosure structured form). **Recommendation:** add as part of this PR's amendment. Awaiting CO sign-off.
 
 ---

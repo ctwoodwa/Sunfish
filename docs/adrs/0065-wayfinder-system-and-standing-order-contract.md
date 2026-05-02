@@ -293,7 +293,7 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 4. **Search-discoverability.** A 10K-setting catalog stays navigable via the JetBrains-pattern search.
 5. **Form/JSON parity with no surface drift.** VSCode-pattern dual surface; both go through the same `StandingOrderIssuer`.
 6. **WCAG 2.2 AA + EN 301 549 conformance is a contract.** The council's WCAG/a11y subagent enforces; Bridge EU tenants are not procurement-blocked.
-7. **Sequencing for ~0066/~0067/~0068.** Once this ADR lands and W#36 builds Phase 1, the downstream Wayfinder ADRs can author against a stable contract.
+7. **Sequencing for ~0066/~0067/~0068.** Once this ADR lands and W#42 builds Phase 1, the downstream Wayfinder ADRs can author against a stable contract.
 
 ### Negative
 
@@ -359,13 +359,13 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 - [ ] Add `apps/docs/wcag/wayfinder.md` WCAG 2.2 AA + EN 301 549 v3.2.1 conformance report (initial baseline; iterates per release)
 - [ ] Cross-link from `_shared/product/architecture-principles.md` (the "Wayfinder system" section becomes a real link)
 
-### Phase 5 — Ledger flip + close W#36 (~30min)
+### Phase 5 — Ledger flip + close W#42 (~30min)
 
 - [ ] Update `icm/_state/active-workstreams.md` row 36: `design-in-flight` → `built`
 - [ ] Add row note: PR list + new package list + new AuditEventType list
 - [ ] Update memory `project_workstream_36_*.md` with shipped scope
 
-**Note (Council F4):** ADR 0009 amendment authoring (5th-concept feature-management consumer) is **NOT in W#36 scope** per cohort discipline (substrate vs consumer separation). Filed as separate workstream row pending CO disposition.
+**Note (Council F4):** ADR 0009 amendment authoring (5th-concept feature-management consumer) is **NOT in W#42 scope** per cohort discipline (substrate vs consumer separation). Filed as separate workstream row pending CO disposition.
 
 **Total estimate:** ~18-25h sunfish-PM time across 6-7 PRs (council-revised from initial ~16-18h estimate; cohort precedent of 3-5h per phase). Pre-merge council canonical (Stage 1.5 + WCAG/a11y subagent BEFORE any phase commit).
 
@@ -408,7 +408,7 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 
 ### Discovery and intake
 - W#34 discovery: `icm/01_discovery/output/2026-05-01_wayfinder-configuration-ux.md` §5.1 / §6.1 / §7
-- W#36 intake: `icm/00_intake/output/2026-05-01_wayfinder-system-and-standing-order-intake.md`
+- W#42 intake: `icm/00_intake/output/2026-05-01_wayfinder-system-and-standing-order-intake.md`
 - W#34 naming memory: `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_workstream_34_wayfinder_naming.md`
 
 ### Cohort discipline
