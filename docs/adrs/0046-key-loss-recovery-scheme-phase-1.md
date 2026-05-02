@@ -1,3 +1,17 @@
+---
+id: 46
+title: Key-loss recovery scheme for Business MVP Phase 1
+status: Accepted
+date: 2026-04-26
+tier: foundation
+concern:
+  - security
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0046 — Key-loss recovery scheme for Business MVP Phase 1
 
 **Status:** Accepted (2026-04-26; package-placement section added 2026-04-29; **A2 + A3 + A4 + A5 amendments landed 2026-04-30** — see §"Amendments (post-acceptance, 2026-04-30)")

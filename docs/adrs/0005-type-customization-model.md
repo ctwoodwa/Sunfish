@@ -1,3 +1,17 @@
+---
+id: 5
+title: Type-Customization Model (Typed vs. Dynamic Balance)
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0005 — Type-Customization Model (Typed vs. Dynamic Balance)
 
 **Status:** Accepted

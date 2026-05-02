@@ -1,3 +1,19 @@
+---
+id: 31
+title: Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual)
+status: Accepted
+date: 2026-04-23
+tier: accelerator
+concern:
+  - commercial
+  - multi-tenancy
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0031 — Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual)
 
 **Status:** Accepted (2026-04-23)

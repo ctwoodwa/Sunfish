@@ -1,3 +1,17 @@
+---
+id: 9
+title: Foundation.FeatureManagement (Flags vs. Entitlements vs. Editions)
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - configuration
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0009 — Foundation.FeatureManagement (Flags vs. Entitlements vs. Editions)
 
 **Status:** Accepted

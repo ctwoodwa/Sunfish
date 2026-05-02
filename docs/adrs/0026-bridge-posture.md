@@ -1,3 +1,16 @@
+---
+id: 26
+title: Bridge Posture (SaaS Shell vs. Managed Relay)
+status: Superseded
+date: 2026-04-22
+tier: accelerator
+concern: []
+composes: []
+extends: []
+supersedes: []
+superseded_by: 31
+amendments: []
+---
 # ADR 0026 — Bridge Posture (SaaS Shell vs. Managed Relay)
 
 **Status:** Superseded by [ADR 0031](./0031-bridge-hybrid-multi-tenant-saas.md) (2026-04-23)

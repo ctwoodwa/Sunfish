@@ -1,3 +1,18 @@
+---
+id: 41
+title: Dual-Namespace Components by Design (Rich vs. MVP)
+status: Accepted
+date: 2026-04-26
+tier: ui-core
+concern:
+  - dev-experience
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0041 — Dual-Namespace Components by Design (Rich vs. MVP)
 
 **Status:** Accepted (2026-04-26)

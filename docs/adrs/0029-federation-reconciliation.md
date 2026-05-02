@@ -1,3 +1,17 @@
+---
+id: 29
+title: Federation vs. Gossip Reconciliation
+status: Accepted
+date: 2026-04-22
+tier: governance
+concern:
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0029 — Federation vs. Gossip Reconciliation
 
 **Status:** Accepted (2026-04-22)

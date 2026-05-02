@@ -1,3 +1,19 @@
+---
+id: 4
+title: Post-Quantum Signature Migration Plan
+status: Accepted
+date: 2026-04-19
+tier: kernel
+concern:
+  - audit
+  - security
+  - version-management
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0004 — Post-Quantum Signature Migration Plan
 
 **Status:** Accepted

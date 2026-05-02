@@ -1,3 +1,17 @@
+---
+id: 14
+title: UI Adapter Parity Policy (Blazor ↔ React)
+status: Accepted
+date: 2026-04-19
+tier: adapter
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0014 — UI Adapter Parity Policy (Blazor ↔ React)
 
 **Status:** Accepted

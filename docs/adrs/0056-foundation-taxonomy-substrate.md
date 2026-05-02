@@ -1,3 +1,17 @@
+---
+id: 56
+title: Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)
+status: Accepted
+date: 2026-04-29
+tier: foundation
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0056 — Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)
 
 **Status:** Accepted

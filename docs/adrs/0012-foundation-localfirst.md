@@ -1,3 +1,16 @@
+---
+id: 12
+title: Foundation.LocalFirst Contracts + Federation Relationship
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern: []
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0012 — Foundation.LocalFirst Contracts + Federation Relationship
 
 **Status:** Accepted

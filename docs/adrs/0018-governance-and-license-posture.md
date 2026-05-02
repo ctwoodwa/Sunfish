@@ -1,3 +1,18 @@
+---
+id: 18
+title: Governance Model and License Posture
+status: Accepted
+date: 2026-04-20
+tier: governance
+concern:
+  - commercial
+  - governance
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0018 — Governance Model and License Posture
 
 **Status:** Accepted

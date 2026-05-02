@@ -1,3 +1,17 @@
+---
+id: 64
+title: Runtime Regulatory / Jurisdictional Policy Evaluation
+status: Proposed
+date: 2026-04-30
+tier: policy
+concern:
+  - regulatory
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0064 — Runtime Regulatory / Jurisdictional Policy Evaluation
 
 **Status:** Proposed (2026-04-30 — auto-merge intentionally DISABLED until Stage 1.5 council reviewed including a Pedantic-Lawyer perspective subagent per the W#33 §5.9 hardening precedent)

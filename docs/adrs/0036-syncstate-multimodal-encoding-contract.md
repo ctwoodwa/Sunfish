@@ -1,3 +1,18 @@
+---
+id: 36
+title: SyncState Multimodal Encoding Contract
+status: Accepted
+date: 2026-04-24
+tier: foundation
+concern:
+  - distribution
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0036 — SyncState Multimodal Encoding Contract
 
 **Status:** Accepted (2026-04-24); palette amended after CVD audit (2026-04-24, iteration 4)

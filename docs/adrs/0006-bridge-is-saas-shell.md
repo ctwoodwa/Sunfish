@@ -1,3 +1,18 @@
+---
+id: 6
+title: Bridge Is a Generic SaaS Shell, Not a Vertical App
+status: Accepted
+date: 2026-04-19
+tier: accelerator
+concern:
+  - commercial
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0006 — Bridge Is a Generic SaaS Shell, Not a Vertical App
 
 **Status:** Accepted

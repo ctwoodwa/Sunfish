@@ -1,3 +1,17 @@
+---
+id: 44
+title: Anchor ships Windows-only for Business MVP Phase 1
+status: Accepted
+date: 2026-04-26
+tier: accelerator
+concern:
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0044 — Anchor ships Windows-only for Business MVP Phase 1
 
 **Status:** Accepted (2026-04-26), **Amended 2026-04-28** — MacCatalyst build is now functional; "Windows-only" narrows to "Windows is the default Phase 1 deployment target," not a hard build block. See [Amendment 2026-04-28](#amendment-2026-04-28--maccatalyst-build-now-functional) below.

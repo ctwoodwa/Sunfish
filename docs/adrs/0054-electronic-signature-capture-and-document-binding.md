@@ -1,3 +1,25 @@
+---
+id: 54
+title: Electronic Signature Capture & Document Binding
+status: Accepted
+date: 2026-04-28
+tier: block
+concern:
+  - audit
+  - security
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+  - A2
+  - A3
+  - A4
+  - A5
+  - A6
+  - A7
+---
 # ADR 0054 — Electronic Signature Capture & Document Binding
 
 **Status:** Accepted (with 7 amendments — A1 / A2 / A3 / A4 / A5 / A6 / A7)

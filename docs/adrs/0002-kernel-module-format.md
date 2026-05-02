@@ -1,3 +1,17 @@
+---
+id: 2
+title: Kernel Module Format
+status: Accepted
+date: 2026-04-19
+tier: kernel
+concern:
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0002 — Kernel Module Format
 
 **Status:** Accepted

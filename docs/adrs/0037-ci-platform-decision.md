@@ -1,3 +1,18 @@
+---
+id: 37
+title: CI Platform Decision (Stay on GitHub Actions, Adopt `act` for Local)
+status: Accepted
+date: 2026-04-26
+tier: governance
+concern:
+  - governance
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0037 — CI Platform Decision (Stay on GitHub Actions, Adopt `act` for Local)
 
 **Status:** Accepted (2026-04-26)

@@ -1,3 +1,18 @@
+---
+id: 7
+title: Bundle Manifest Schema
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - persistence
+  - version-management
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0007 — Bundle Manifest Schema
 
 **Status:** Accepted

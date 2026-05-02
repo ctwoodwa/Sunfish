@@ -1,3 +1,17 @@
+---
+id: 11
+title: Bundle Versioning and Upgrade Policy
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - version-management
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0011 — Bundle Versioning and Upgrade Policy
 
 **Status:** Accepted

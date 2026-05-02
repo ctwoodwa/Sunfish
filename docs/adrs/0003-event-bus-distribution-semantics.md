@@ -1,3 +1,18 @@
+---
+id: 3
+title: Event-Bus Distribution Semantics
+status: Accepted
+date: 2026-04-19
+tier: kernel
+concern:
+  - audit
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0003 — Event-Bus Distribution Semantics
 
 **Status:** Accepted

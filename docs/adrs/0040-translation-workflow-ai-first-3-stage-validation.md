@@ -1,3 +1,18 @@
+---
+id: 40
+title: 'Translation Workflow: AI-First with 3-Stage Validation Gate'
+status: Accepted
+date: 2026-04-26
+tier: process
+concern:
+  - dev-experience
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0040 — Translation Workflow: AI-First with 3-Stage Validation Gate
 
 **Status:** Accepted (2026-04-26)

@@ -1,3 +1,17 @@
+---
+id: 60
+title: Right-of-Entry Compliance Framework
+status: Accepted
+date: 2026-04-29
+tier: policy
+concern:
+  - regulatory
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0060 — Right-of-Entry Compliance Framework
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B+; amendments A1–A5 **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29 council)")

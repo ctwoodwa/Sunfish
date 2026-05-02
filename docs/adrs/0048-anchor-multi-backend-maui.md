@@ -1,3 +1,18 @@
+---
+id: 48
+title: 'Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly'
+status: Accepted
+date: 2026-04-27
+tier: accelerator
+concern:
+  - operations
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0048 — Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly
 
 **Status:** Accepted (2026-04-27; **A1 + A2 mobile-scope amendments landed 2026-04-30** — see §"Amendments (post-acceptance)")
