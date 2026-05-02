@@ -7,7 +7,8 @@ tier: accelerator
 concern:
   - accessibility
   - ui
-composes: []
+composes:
+  - 31
 extends: []
 supersedes: []
 superseded_by: null

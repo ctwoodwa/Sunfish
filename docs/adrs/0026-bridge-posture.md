@@ -5,7 +5,11 @@ status: Superseded
 date: 2026-04-22
 tier: accelerator
 concern: []
-composes: []
+composes:
+  - 6
+  - 7
+  - 12
+  - 18
 extends: []
 supersedes: []
 superseded_by: 31

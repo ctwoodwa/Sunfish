@@ -7,7 +7,10 @@ tier: policy
 concern:
   - security
   - threat-model
-composes: []
+composes:
+  - 38
+  - 39
+  - 42
 extends: []
 supersedes: []
 superseded_by: null

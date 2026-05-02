@@ -7,7 +7,9 @@ tier: foundation
 concern:
   - persistence
   - version-management
-composes: []
+composes:
+  - 5
+  - 6
 extends: []
 supersedes: []
 superseded_by: null

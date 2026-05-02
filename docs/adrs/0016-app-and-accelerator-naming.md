@@ -7,7 +7,9 @@ tier: governance
 concern:
   - dev-experience
   - governance
-composes: []
+composes:
+  - 6
+  - 14
 extends: []
 supersedes: []
 superseded_by: null

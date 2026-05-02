@@ -5,7 +5,10 @@ status: Proposed
 date: 2026-05-01
 tier: foundation
 concern: []
-composes: []
+composes:
+  - 9
+  - 28
+  - 49
 extends: []
 supersedes: []
 superseded_by: null

@@ -7,7 +7,14 @@ tier: block
 concern:
   - operations
   - security
-composes: []
+composes:
+  - 43
+  - 46
+  - 49
+  - 51
+  - 52
+  - 54
+  - 56
 extends: []
 supersedes: []
 superseded_by: null

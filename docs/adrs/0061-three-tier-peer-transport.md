@@ -6,7 +6,9 @@ date: 2026-04-29
 tier: foundation
 concern:
   - distribution
-composes: []
+composes:
+  - 13
+  - 31
 extends: []
 supersedes: []
 superseded_by: null

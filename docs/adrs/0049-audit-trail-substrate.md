@@ -13,7 +13,8 @@ enables:
   - audit-event-emission
   - audit-record-attestation
   - compliance-query
-composes: []
+composes:
+  - 3
 extends: []
 supersedes: []
 superseded_by: null

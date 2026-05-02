@@ -7,7 +7,14 @@ tier: block
 concern:
   - operations
   - regulatory
-composes: []
+composes:
+  - 28
+  - 43
+  - 49
+  - 52
+  - 54
+  - 55
+  - 56
 extends: []
 supersedes: []
 superseded_by: null

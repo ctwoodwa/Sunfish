@@ -7,7 +7,8 @@ tier: ui-core
 concern:
   - dev-experience
   - ui
-composes: []
+composes:
+  - 22
 extends: []
 supersedes: []
 superseded_by: null

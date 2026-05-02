@@ -7,7 +7,8 @@ tier: accelerator
 concern:
   - commercial
   - operations
-composes: []
+composes:
+  - 5
 extends: []
 supersedes: []
 superseded_by: null

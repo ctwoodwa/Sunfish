@@ -6,7 +6,9 @@ date: 2026-04-19
 tier: tooling
 concern:
   - dev-experience
-composes: []
+composes:
+  - 5
+  - 7
 extends: []
 supersedes: []
 superseded_by: null

@@ -6,7 +6,10 @@ date: 2026-04-22
 tier: ui-core
 concern:
   - ui
-composes: []
+composes:
+  - 14
+  - 22
+  - 23
 extends: []
 supersedes: []
 superseded_by: null

@@ -7,7 +7,14 @@ tier: foundation
 concern:
   - configuration
   - ui
-composes: []
+composes:
+  - 1
+  - 5
+  - 7
+  - 28
+  - 32
+  - 46
+  - 49
 extends: []
 supersedes: []
 superseded_by: null

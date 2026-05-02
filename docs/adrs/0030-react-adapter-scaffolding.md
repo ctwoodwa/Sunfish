@@ -6,7 +6,8 @@ date: 2026-04-22
 tier: adapter
 concern:
   - ui
-composes: []
+composes:
+  - 14
 extends: []
 supersedes: []
 superseded_by: null

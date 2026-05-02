@@ -7,7 +7,11 @@ tier: foundation
 concern:
   - audit
   - security
-composes: []
+composes:
+  - 4
+  - 28
+  - 49
+  - 54
 extends: []
 supersedes: []
 superseded_by: null

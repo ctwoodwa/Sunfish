@@ -7,7 +7,12 @@ tier: block
 concern:
   - threat-model
   - ui
-composes: []
+composes:
+  - 28
+  - 43
+  - 49
+  - 51
+  - 57
 extends: []
 supersedes: []
 superseded_by: null

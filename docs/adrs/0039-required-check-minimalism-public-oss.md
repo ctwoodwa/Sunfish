@@ -7,7 +7,8 @@ tier: governance
 concern:
   - governance
 composes: []
-extends: []
+extends:
+  - 38
 supersedes: []
 superseded_by: null
 amendments: []

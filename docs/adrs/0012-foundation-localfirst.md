@@ -5,7 +5,10 @@ status: Accepted
 date: 2026-04-19
 tier: foundation
 concern: []
-composes: []
+composes:
+  - 5
+  - 7
+  - 11
 extends: []
 supersedes: []
 superseded_by: null

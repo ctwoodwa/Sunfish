@@ -7,7 +7,15 @@ tier: foundation
 concern:
   - capability-model
   - mission-space
-composes: []
+composes:
+  - 7
+  - 9
+  - 28
+  - 36
+  - 44
+  - 48
+  - 49
+  - 62
 extends: []
 supersedes: []
 superseded_by: null

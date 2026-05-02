@@ -6,7 +6,10 @@ date: 2026-04-20
 tier: foundation
 concern:
   - operations
-composes: []
+composes:
+  - 7
+  - 13
+  - 14
 extends: []
 supersedes: []
 superseded_by: null
