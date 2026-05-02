@@ -1,3 +1,25 @@
+---
+id: 49
+title: 'Audit-Trail Substrate: Distinct Package over Kernel IEventLog'
+status: Accepted
+date: 2026-04-27
+tier: kernel
+pipeline_variant: sunfish-feature-change
+concern:
+  - audit
+  - security
+  - persistence
+enables:
+  - audit-event-emission
+  - audit-record-attestation
+  - compliance-query
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
+
 # ADR 0049 — Audit-Trail Substrate: Distinct Package over Kernel `IEventLog`
 
 **Status:** Accepted (2026-04-27)

@@ -1,3 +1,35 @@
+---
+id: 28
+title: CRDT Engine Selection
+status: Accepted
+date: 2026-04-22
+tier: kernel
+pipeline_variant: sunfish-feature-change
+concern:
+  - persistence
+  - distribution
+  - version-management
+enables:
+  - crdt-merge-semantics
+  - per-tenant-document-isolation
+  - schema-epoch-versioning
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+  - A2
+  - A3
+  - A4
+  - A5
+  - A6
+  - A7
+  - A8
+  - A9
+  - A10
+---
+
 # ADR 0028 — CRDT Engine Selection
 
 **Status:** Accepted (2026-04-22; **A1 + A2 + A3 + A4 amendments landed 2026-04-30; A6 amendment proposed 2026-04-30** — see §"Amendments (post-acceptance)")

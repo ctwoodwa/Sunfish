@@ -1,3 +1,29 @@
+---
+id: 62
+title: Mission Space Negotiation Protocol (runtime layer)
+status: Accepted
+date: 2026-04-30
+tier: foundation
+pipeline_variant: sunfish-feature-change
+concern:
+  - capability-model
+  - mission-space
+  - distribution
+  - audit
+enables:
+  - mission-envelope
+  - feature-gate-evaluation
+  - dimension-probe-registration
+composes:
+  - 28
+  - 49
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+---
+
 # ADR 0062 — Mission Space Negotiation Protocol (runtime layer)
 
 **Status:** Proposed (2026-04-30 — auto-merge intentionally DISABLED until Stage 1.5 council reviewed per cohort discipline; see §"Cohort discipline" at end)

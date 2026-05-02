@@ -1,3 +1,29 @@
+---
+id: NNNN
+title: <Short Title>
+status: Proposed
+date: YYYY-MM-DD
+tier: foundation | kernel | ui-core | adapter | block | accelerator | governance | policy | tooling | process
+pipeline_variant: sunfish-feature-change | sunfish-api-change | sunfish-scaffolding | sunfish-docs-change | sunfish-quality-control | sunfish-test-expansion | sunfish-gap-analysis
+
+# Optional — controlled vocabulary; see _FRONTMATTER.md
+concern:
+  - <tag>
+
+# Optional — capabilities this ADR enables (kebab-case identifiers)
+enables: []
+
+# Optional — relationships (integer ADR numbers)
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+deprecated_in_favor_of: null
+
+# Optional — empty for ADRs with no amendments
+amendments: []
+---
+
 # ADR NNNN — <Short Title>
 
 **Status:** Proposed | Accepted | Superseded by NNNN | Deprecated

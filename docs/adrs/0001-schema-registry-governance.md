@@ -1,3 +1,24 @@
+---
+id: 1
+title: Schema Registry Governance Model
+status: Accepted
+date: 2026-04-19
+tier: governance
+pipeline_variant: sunfish-feature-change
+concern:
+  - governance
+  - persistence
+  - version-management
+enables:
+  - schema-registry
+  - schema-evolution-policy
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
+
 # ADR 0001 — Schema Registry Governance Model
 
 **Status:** Accepted
