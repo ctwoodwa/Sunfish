@@ -58,6 +58,7 @@ A reference template lives at [`_template.md`](_template.md). Copy and rename wh
 | [0046](0046-key-loss-recovery-scheme-phase-1.md) | Anchor Key-Loss Recovery Scheme for Phase 1 (Primitive #48 sub-pattern selection) | Accepted | — |
 | [0048](0048-anchor-multi-backend-maui.md) | Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly (extends 0044) | Accepted | — |
 | [0049](0049-audit-trail-substrate.md) | Audit-Trail Substrate — distinct `Sunfish.Kernel.Audit` package, parallel to `Kernel.Ledger`, layered over kernel `IEventLog` | Accepted | — |
+| [0070](0070-multi-session-naval-org-structure.md) | Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman) | Proposed | — |
 
 ## Appendix C Resolution
 

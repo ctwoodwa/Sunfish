@@ -11,4 +11,6 @@ Edges:
 graph LR
   ADR0062 --> ADR0028
   ADR0062 --> ADR0049
+  ADR0070 -.-> ADR0018
+  ADR0070 -.-> ADR0042
 ```
