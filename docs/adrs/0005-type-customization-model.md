@@ -5,6 +5,8 @@ status: Accepted
 date: 2026-04-19
 tier: foundation
 concern:
+  - persistence
+  - configuration
   - dev-experience
 composes: []
 extends: []

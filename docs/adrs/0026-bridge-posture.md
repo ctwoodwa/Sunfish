@@ -4,6 +4,9 @@ title: Bridge Posture (SaaS Shell vs. Managed Relay)
 status: Superseded
 date: 2026-04-22
 tier: accelerator
+concern:
+  - operations
+  - distribution
 concern: []
 composes: []
 extends: []

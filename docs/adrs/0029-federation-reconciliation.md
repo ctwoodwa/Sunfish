@@ -6,6 +6,7 @@ date: 2026-04-22
 tier: governance
 concern:
   - distribution
+  - security
 composes: []
 extends: []
 supersedes: []

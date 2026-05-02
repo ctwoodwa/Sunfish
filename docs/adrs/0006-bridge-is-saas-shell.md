@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-19
 tier: accelerator
 concern:
-  - commercial
   - operations
+  - multi-tenancy
 composes: []
 extends: []
 supersedes: []

@@ -5,8 +5,9 @@ status: Accepted
 date: 2026-04-29
 tier: block
 concern:
-  - threat-model
-  - ui
+  - multi-tenancy
+  - security
+  - regulatory
 composes: []
 extends: []
 supersedes: []

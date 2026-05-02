@@ -6,7 +6,7 @@ date: 2026-04-26
 tier: process
 concern:
   - dev-experience
-  - ui
+  - governance
 composes: []
 extends: []
 supersedes: []
