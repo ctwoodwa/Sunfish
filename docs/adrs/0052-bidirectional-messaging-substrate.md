@@ -1,3 +1,17 @@
+---
+id: 52
+title: Bidirectional Messaging Substrate
+status: Accepted
+date: 2026-04-28
+tier: foundation
+concern:
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0052 — Bidirectional Messaging Substrate
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B+-grade; amendments A1–A5 + Minor **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29)")

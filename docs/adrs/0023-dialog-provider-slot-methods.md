@@ -1,3 +1,17 @@
+---
+id: 23
+title: Dialog Provider-Interface Expansion (Per-Slot Class Methods)
+status: Accepted
+date: 2026-04-22
+tier: ui-core
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0023 — Dialog Provider-Interface Expansion (Per-Slot Class Methods)
 
 **Status:** Accepted (2026-04-22)

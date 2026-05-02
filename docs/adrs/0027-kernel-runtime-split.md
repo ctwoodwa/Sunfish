@@ -1,3 +1,17 @@
+---
+id: 27
+title: Kernel Runtime Split
+status: Accepted
+date: 2026-04-22
+tier: kernel
+concern:
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0027 — Kernel Runtime Split
 
 **Status:** Accepted (2026-04-22)

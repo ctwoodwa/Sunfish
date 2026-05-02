@@ -1,3 +1,17 @@
+---
+id: 17
+title: Spec-First UI Contracts with Native Framework Adapters and an Optional Web-Components Consumption Track
+status: Accepted
+date: 2026-04-20
+tier: ui-core
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0017 — Spec-First UI Contracts with Native Framework Adapters and an Optional Web-Components Consumption Track
 
 **Status:** Accepted

@@ -1,3 +1,17 @@
+---
+id: 15
+title: Module-Entity Registration Pattern (Shared Bridge DbContext)
+status: Accepted
+date: 2026-04-20
+tier: foundation
+concern:
+  - persistence
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0015 — Module-Entity Registration Pattern (Shared Bridge DbContext)
 
 **Status:** Accepted

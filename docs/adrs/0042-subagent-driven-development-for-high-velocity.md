@@ -1,3 +1,17 @@
+---
+id: 42
+title: Subagent-Driven Development for High-Velocity Sessions
+status: Accepted
+date: 2026-04-26
+tier: governance
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0042 — Subagent-Driven Development for High-Velocity Sessions
 
 **Status:** Accepted (2026-04-26)

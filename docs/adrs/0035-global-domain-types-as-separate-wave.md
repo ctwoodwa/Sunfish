@@ -1,3 +1,17 @@
+---
+id: 35
+title: Global Domain Types as a Separate Wave
+status: Accepted
+date: 2026-04-27
+tier: foundation
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0035 — Global Domain Types as a Separate Wave
 
 **Status:** Accepted (2026-04-27)

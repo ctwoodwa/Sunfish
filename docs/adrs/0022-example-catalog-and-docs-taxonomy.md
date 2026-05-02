@@ -1,3 +1,17 @@
+---
+id: 22
+title: Canonical Example Catalog, Documentation Taxonomy, and the Demo-Page Panel
+status: Accepted
+date: 2026-04-21
+tier: foundation
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0022 — Canonical Example Catalog, Documentation Taxonomy, and the Demo-Page Panel
 
 **Status:** Accepted

@@ -1,3 +1,18 @@
+---
+id: 34
+title: Accessibility Harness Per Adapter
+status: Accepted
+date: 2026-04-27
+tier: adapter
+concern:
+  - accessibility
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0034 — Accessibility Harness Per Adapter
 
 **Status:** Accepted (2026-04-27)

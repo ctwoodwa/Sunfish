@@ -1,3 +1,17 @@
+---
+id: 25
+title: CSS Class Prefix Policy (`sf-*`, `mar-*`, `k-*`)
+status: Accepted
+date: 2026-04-22
+tier: ui-core
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0025 — CSS Class Prefix Policy (`sf-*`, `mar-*`, `k-*`)
 
 **Status:** Accepted (2026-04-22)

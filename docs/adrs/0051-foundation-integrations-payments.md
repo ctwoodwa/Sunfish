@@ -1,3 +1,18 @@
+---
+id: 51
+title: Foundation.Integrations.Payments
+status: Accepted
+date: 2026-04-28
+tier: foundation
+concern:
+  - commercial
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0051 — Foundation.Integrations.Payments
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A1–A3 **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29)")

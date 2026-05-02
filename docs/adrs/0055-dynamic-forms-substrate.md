@@ -1,3 +1,18 @@
+---
+id: 55
+title: Dynamic Forms Substrate
+status: Proposed
+date: 2026-04-29
+tier: foundation
+concern:
+  - configuration
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0055 — Dynamic Forms Substrate
 
 **Status:** Proposed

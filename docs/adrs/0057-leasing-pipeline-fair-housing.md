@@ -1,3 +1,18 @@
+---
+id: 57
+title: Leasing Pipeline + Fair Housing Compliance Posture
+status: Accepted
+date: 2026-04-29
+tier: block
+concern:
+  - operations
+  - regulatory
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0057 — Leasing Pipeline + Fair Housing Compliance Posture
 
 **Status:** Accepted (2026-04-29 — ratified post-build per ledger row #22; **A1 amendment landed 2026-04-30** — see §"Amendments (post-acceptance)"). Note: the original Proposed → Accepted transition for this ADR was implicit (W#22 was authored + shipped under the assumption ADR 0057 was Accepted; the Status line not flipping at acceptance time was a process-bug). A1 ratifies + adds the structural-encryption amendment.

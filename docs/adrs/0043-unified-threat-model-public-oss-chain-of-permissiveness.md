@@ -1,3 +1,18 @@
+---
+id: 43
+title: 'Unified Threat Model: The Chain of Permissiveness in Sunfish''s Public-OSS Posture'
+status: Accepted
+date: 2026-04-26
+tier: policy
+concern:
+  - security
+  - threat-model
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0043 — Unified Threat Model: The Chain of Permissiveness in Sunfish's Public-OSS Posture
 
 **Status:** Accepted (2026-04-26)

@@ -1,3 +1,16 @@
+---
+id: 65
+title: Wayfinder System + Standing Order Contract (bundled)
+status: Proposed
+date: 2026-05-01
+tier: foundation
+concern: []
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0065 — Wayfinder System + Standing Order Contract (bundled)
 
 **Status:** Proposed

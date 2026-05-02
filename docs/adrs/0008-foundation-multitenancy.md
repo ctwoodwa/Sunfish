@@ -1,3 +1,17 @@
+---
+id: 8
+title: Foundation.MultiTenancy Contracts + Finbuckle Boundary
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - multi-tenancy
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0008 — Foundation.MultiTenancy Contracts + Finbuckle Boundary
 
 **Status:** Accepted

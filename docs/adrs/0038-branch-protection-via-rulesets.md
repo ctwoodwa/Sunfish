@@ -1,3 +1,18 @@
+---
+id: 38
+title: Branch Protection via GitHub Rulesets (not legacy branch-protection)
+status: Accepted
+date: 2026-04-26
+tier: governance
+concern:
+  - governance
+  - threat-model
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0038 — Branch Protection via GitHub Rulesets (not legacy branch-protection)
 
 **Status:** Accepted (2026-04-26)

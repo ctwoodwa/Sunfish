@@ -1,3 +1,21 @@
+---
+id: 58
+title: Vendor Onboarding Posture
+status: Accepted
+date: 2026-04-29
+tier: block
+concern:
+  - operations
+  - security
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+  - A2
+  - A7
+---
 # ADR 0058 — Vendor Onboarding Posture
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed C-borderline-fail-grade; amendments A1–A6 (required) + A7–A8 (encouraged) **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29 council)")

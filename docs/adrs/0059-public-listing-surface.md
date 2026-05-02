@@ -1,3 +1,24 @@
+---
+id: 59
+title: Public Listing Surface (Bridge-served)
+status: Accepted
+date: 2026-04-29
+tier: block
+concern:
+  - threat-model
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+  - A3
+  - A4
+  - A5
+  - A6
+  - A8
+---
 # ADR 0059 — Public Listing Surface (Bridge-served)
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A1–A10 **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29 council)")

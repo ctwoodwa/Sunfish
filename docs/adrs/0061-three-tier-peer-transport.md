@@ -1,3 +1,18 @@
+---
+id: 61
+title: Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)
+status: Accepted
+date: 2026-04-29
+tier: foundation
+concern:
+  - distribution
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A1
+---
 # ADR 0061 — Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A1–A4 (Critical/Major) **landed 2026-04-29** — see §"Amendments (post-acceptance, 2026-04-29 council)")

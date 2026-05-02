@@ -1,3 +1,17 @@
+---
+id: 30
+title: React Adapter Scaffolding
+status: Accepted
+date: 2026-04-22
+tier: adapter
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0030 — React Adapter Scaffolding
 
 **Status:** Accepted (2026-04-22)

@@ -1,3 +1,17 @@
+---
+id: 10
+title: Templates Module Boundary (Foundation.Catalog vs. blocks-templating)
+status: Accepted
+date: 2026-04-19
+tier: tooling
+concern:
+  - dev-experience
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0010 — Templates Module Boundary (Foundation.Catalog vs. blocks-templating)
 
 **Status:** Accepted

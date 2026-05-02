@@ -1,3 +1,18 @@
+---
+id: 33
+title: Browser Shell v1 Render Model + Trust Posture
+status: Accepted
+date: 2026-04-23
+tier: accelerator
+concern:
+  - threat-model
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0033 — Browser Shell v1 Render Model + Trust Posture
 
 **Status:** Accepted (2026-04-23)

@@ -1,3 +1,18 @@
+---
+id: 32
+title: Multi-Team Anchor (Slack-Style Workspace Switching)
+status: Accepted
+date: 2026-04-23
+tier: accelerator
+concern:
+  - accessibility
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0032 — Multi-Team Anchor (Slack-Style Workspace Switching)
 
 **Status:** Accepted (2026-04-23)

@@ -1,3 +1,18 @@
+---
+id: 16
+title: App and Accelerator Naming Convention
+status: Accepted
+date: 2026-04-19
+tier: governance
+concern:
+  - dev-experience
+  - governance
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0016 — App and Accelerator Naming Convention
 
 **Status:** Accepted

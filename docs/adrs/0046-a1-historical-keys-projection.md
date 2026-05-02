@@ -1,3 +1,20 @@
+---
+id: 46
+title: Historical-Keys Projection for Signature Survival under Operator-Key Rotation
+status: Proposed
+date: 2026-04-29
+tier: foundation
+concern:
+  - audit
+  - security
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments:
+  - A2
+  - A3
+---
 # ADR-0046-A1 — Historical-Keys Projection for Signature Survival under Operator-Key Rotation
 
 **Status:** Proposed

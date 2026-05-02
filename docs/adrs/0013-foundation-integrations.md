@@ -1,3 +1,17 @@
+---
+id: 13
+title: Foundation.Integrations + Provider-Neutrality Policy
+status: Accepted
+date: 2026-04-19
+tier: foundation
+concern:
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0013 — Foundation.Integrations + Provider-Neutrality Policy
 
 **Status:** Accepted

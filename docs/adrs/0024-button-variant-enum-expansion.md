@@ -1,3 +1,17 @@
+---
+id: 24
+title: ButtonVariant Enum Expansion for Cross-Framework Style Parity
+status: Accepted
+date: 2026-04-22
+tier: ui-core
+concern:
+  - ui
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0024 — ButtonVariant Enum Expansion for Cross-Framework Style Parity
 
 **Status:** Accepted (2026-04-22)

@@ -1,3 +1,17 @@
+---
+id: 53
+title: Work Order Domain Model
+status: Accepted
+date: 2026-04-28
+tier: block
+concern:
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0053 — Work Order Domain Model
 
 **Status:** Accepted (2026-04-29 by CO; council-reviewed B-grade; amendments A4–A7 + A8–A9 **landed 2026-04-29** — see § "Amendment 2026-04-29 — Council-review remediation")

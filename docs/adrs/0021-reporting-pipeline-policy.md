@@ -1,3 +1,17 @@
+---
+id: 21
+title: Document and Report Generation Pipeline
+status: Accepted
+date: 2026-04-20
+tier: foundation
+concern:
+  - operations
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0021 — Document and Report Generation Pipeline
 
 **Status:** Accepted

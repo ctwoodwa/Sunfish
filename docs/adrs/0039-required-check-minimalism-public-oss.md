@@ -1,3 +1,17 @@
+---
+id: 39
+title: Required-Check Minimalism on Public OSS Repos
+status: Accepted
+date: 2026-04-26
+tier: governance
+concern:
+  - governance
+composes: []
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
+---
 # ADR 0039 — Required-Check Minimalism on Public OSS Repos
 
 **Status:** Accepted (2026-04-26)
