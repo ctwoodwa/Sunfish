@@ -79,11 +79,12 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0060 — [Right-of-Entry Compliance Framework](./0060-right-of-entry-compliance-framework.md)
 - ADR 0064 — [Runtime Regulatory / Jurisdictional Policy Evaluation](./0064-runtime-regulatory-policy-evaluation.md)
 
-### process (5)
+### process (6)
 
 - ADR 0040 — [Translation Workflow: AI-First with 3-Stage Validation Gate](./0040-translation-workflow-ai-first-3-stage-validation.md)
 - ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 - ADR 0073 — [Stage-06 Hand-off Template Contract](./0073-stage06-handoff-template-contract.md)
 - ADR 0074 — [Session Startup / Recovery Protocol](./0074-session-startup-recovery-protocol.md)
 
@@ -131,7 +132,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0055 — [Dynamic Forms Substrate](./0055-dynamic-forms-substrate.md)
 - ADR 0060 — [Right-of-Entry Compliance Framework](./0060-right-of-entry-compliance-framework.md)
 
-### dev-experience (18)
+### dev-experience (19)
 
 - ADR 0002 — [Kernel Module Format](./0002-kernel-module-format.md)
 - ADR 0005 — [Type-Customization Model (Typed vs. Dynamic Balance)](./0005-type-customization-model.md)
@@ -149,6 +150,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
 - ADR 0071 — [ADR Portfolio System (Event-Sourcing-with-Snapshots)](./0071-adr-portfolio-system.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 - ADR 0073 — [Stage-06 Hand-off Template Contract](./0073-stage06-handoff-template-contract.md)
 - ADR 0074 — [Session Startup / Recovery Protocol](./0074-session-startup-recovery-protocol.md)
 
@@ -162,7 +164,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0061 — [Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)](./0061-three-tier-peer-transport.md)
 - ADR 0062 — [Mission Space Negotiation Protocol (runtime layer)](./0062-mission-space-negotiation-protocol.md)
 
-### governance (14)
+### governance (15)
 
 - ADR 0001 — [Schema Registry Governance Model](./0001-schema-registry-governance.md)
 - ADR 0002 — [Kernel Module Format](./0002-kernel-module-format.md)
@@ -176,6 +178,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0056 — [Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)](./0056-foundation-taxonomy-substrate.md)
 - ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 - ADR 0073 — [Stage-06 Hand-off Template Contract](./0073-stage06-handoff-template-contract.md)
 - ADR 0074 — [Session Startup / Recovery Protocol](./0074-session-startup-recovery-protocol.md)
 
@@ -198,7 +201,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0032 — [Multi-Team Anchor (Slack-Style Workspace Switching)](./0032-multi-team-anchor-workspace-switching.md)
 - ADR 0057 — [Leasing Pipeline + Fair Housing Compliance Posture](./0057-leasing-pipeline-fair-housing.md)
 
-### operations (6)
+### operations (7)
 
 - ADR 0006 — [Bridge Is a Generic SaaS Shell, Not a Vertical App](./0006-bridge-is-saas-shell.md)
 - ADR 0011 — [Bundle Versioning and Upgrade Policy](./0011-bundle-versioning-upgrade-policy.md)
@@ -206,6 +209,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0044 — [Anchor ships Windows-only for Business MVP Phase 1](./0044-anchor-windows-only-phase-1.md)
 - ADR 0048 — [Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly](./0048-anchor-multi-backend-maui.md)
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 
 ### persistence (8)
 
@@ -293,6 +297,7 @@ _`consumed_by` is auto-derived from `composes`/`extends` arrays; never hand-auth
 - ADR 0018 — [Governance Model and License Posture](./0018-governance-and-license-posture.md) ← consumed by 3: [ADR 0026](./0026-bridge-posture.md), [ADR 0035](./0035-global-domain-types-as-separate-wave.md), [ADR 0070](./0070-multi-session-naval-org-structure.md)
 - ADR 0052 — [Bidirectional Messaging Substrate](./0052-bidirectional-messaging-substrate.md) ← consumed by 3: [ADR 0053](./0053-work-order-domain-model.md), [ADR 0057](./0057-leasing-pipeline-fair-housing.md), [ADR 0058](./0058-vendor-onboarding-posture.md)
 - ADR 0054 — [Electronic Signature Capture & Document Binding](./0054-electronic-signature-capture-and-document-binding.md) ← consumed by 3: [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md), [ADR 0057](./0057-leasing-pipeline-fair-housing.md), [ADR 0058](./0058-vendor-onboarding-posture.md)
+- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md) ← consumed by 3: [ADR 0072](./0072-research-inbox-beacon-protocol.md), [ADR 0073](./0073-stage06-handoff-template-contract.md), [ADR 0074](./0074-session-startup-recovery-protocol.md)
 - ADR 0001 — [Schema Registry Governance Model](./0001-schema-registry-governance.md) ← consumed by 2: [ADR 0055](./0055-dynamic-forms-substrate.md), [ADR 0056](./0056-foundation-taxonomy-substrate.md)
 - ADR 0015 — [Module-Entity Registration Pattern (Shared Bridge DbContext)](./0015-module-entity-registration.md) ← consumed by 2: [ADR 0017](./0017-web-components-lit-technical-basis.md), [ADR 0035](./0035-global-domain-types-as-separate-wave.md)
 - ADR 0023 — [Dialog Provider-Interface Expansion (Per-Slot Class Methods)](./0023-dialog-provider-slot-methods.md) ← consumed by 2: [ADR 0024](./0024-button-variant-enum-expansion.md), [ADR 0025](./0025-css-class-prefix-policy.md)
@@ -303,7 +308,6 @@ _`consumed_by` is auto-derived from `composes`/`extends` arrays; never hand-auth
 - ADR 0053 — [Work Order Domain Model](./0053-work-order-domain-model.md) ← consumed by 2: [ADR 0054](./0054-electronic-signature-capture-and-document-binding.md), [ADR 0060](./0060-right-of-entry-compliance-framework.md)
 - ADR 0057 — [Leasing Pipeline + Fair Housing Compliance Posture](./0057-leasing-pipeline-fair-housing.md) ← consumed by 2: [ADR 0059](./0059-public-listing-surface.md), [ADR 0064](./0064-runtime-regulatory-policy-evaluation.md)
 - ADR 0062 — [Mission Space Negotiation Protocol (runtime layer)](./0062-mission-space-negotiation-protocol.md) ← consumed by 2: [ADR 0063](./0063-mission-space-requirements.md), [ADR 0064](./0064-runtime-regulatory-policy-evaluation.md)
-- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md) ← consumed by 2: [ADR 0073](./0073-stage06-handoff-template-contract.md), [ADR 0074](./0074-session-startup-recovery-protocol.md)
 - ADR 0003 — [Event-Bus Distribution Semantics](./0003-event-bus-distribution-semantics.md) ← consumed by 1: [ADR 0049](./0049-audit-trail-substrate.md)
 - ADR 0004 — [Post-Quantum Signature Migration Plan](./0004-post-quantum-signature-migration.md) ← consumed by 1: [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md)
 - ADR 0011 — [Bundle Versioning and Upgrade Policy](./0011-bundle-versioning-upgrade-policy.md) ← consumed by 1: [ADR 0012](./0012-foundation-localfirst.md)

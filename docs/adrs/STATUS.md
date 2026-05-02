@@ -2,7 +2,7 @@
 
 _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not edit by hand._
 
-## Proposed (10)
+## Proposed (11)
 
 - ADR 0046 — [Historical-Keys Projection for Signature Survival under Operator-Key Rotation](./0046-a1-historical-keys-projection.md) — 2026-04-29
 - ADR 0055 — [Dynamic Forms Substrate](./0055-dynamic-forms-substrate.md) — 2026-04-29
@@ -12,6 +12,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md) — 2026-05-01
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md) — 2026-05-01
 - ADR 0071 — [ADR Portfolio System (Event-Sourcing-with-Snapshots)](./0071-adr-portfolio-system.md) — 2026-05-02
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md) — 2026-05-01
 - ADR 0073 — [Stage-06 Hand-off Template Contract](./0073-stage06-handoff-template-contract.md) — 2026-05-01
 - ADR 0074 — [Session Startup / Recovery Protocol](./0074-session-startup-recovery-protocol.md) — 2026-05-01
 
