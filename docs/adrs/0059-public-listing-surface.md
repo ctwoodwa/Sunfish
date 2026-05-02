@@ -5,10 +5,15 @@ status: Accepted
 date: 2026-04-29
 tier: block
 concern:
-  - multi-tenancy
+- multi-tenancy
   - security
   - regulatory
-composes: []
+composes:
+  - 28
+  - 43
+  - 49
+  - 51
+  - 57
 extends: []
 supersedes: []
 superseded_by: null

@@ -7,8 +7,15 @@ tier: block
 concern:
   - identity
   - security
-  - audit
-composes: []
+- audit
+composes:
+  - 43
+  - 46
+  - 49
+  - 51
+  - 52
+  - 54
+  - 56
 extends: []
 supersedes: []
 superseded_by: null

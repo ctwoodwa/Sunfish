@@ -7,8 +7,15 @@ tier: foundation
 concern:
   - persistence
   - configuration
-  - dev-experience
-composes: []
+- dev-experience
+composes:
+  - 1
+  - 5
+  - 7
+  - 28
+  - 32
+  - 46
+  - 49
 extends: []
 supersedes: []
 superseded_by: null

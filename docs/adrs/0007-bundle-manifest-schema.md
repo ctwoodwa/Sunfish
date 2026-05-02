@@ -5,10 +5,12 @@ status: Accepted
 date: 2026-04-19
 tier: foundation
 concern:
-  - configuration
+- configuration
   - multi-tenancy
   - commercial
-composes: []
+composes:
+  - 5
+  - 6
 extends: []
 supersedes: []
 superseded_by: null

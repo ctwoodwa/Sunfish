@@ -8,7 +8,8 @@ concern:
   - governance
   - dev-experience
 composes: []
-extends: []
+extends:
+  - 38
 supersedes: []
 superseded_by: null
 amendments: []

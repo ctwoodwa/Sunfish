@@ -6,8 +6,12 @@ date: 2026-04-29
 tier: foundation
 concern:
   - security
-  - audit
-composes: []
+- audit
+composes:
+  - 4
+  - 28
+  - 49
+  - 54
 extends: []
 supersedes: []
 superseded_by: null

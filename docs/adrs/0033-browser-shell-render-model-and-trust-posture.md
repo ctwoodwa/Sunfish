@@ -9,7 +9,8 @@ concern:
   - identity
   - ui
 composes: []
-extends: []
+extends:
+  - 31
 supersedes: []
 superseded_by: null
 amendments: []

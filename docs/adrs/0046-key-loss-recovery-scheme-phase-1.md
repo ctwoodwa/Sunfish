@@ -6,8 +6,9 @@ date: 2026-04-26
 tier: foundation
 concern:
   - security
-  - identity
-composes: []
+- identity
+composes:
+  - 49
 extends: []
 supersedes: []
 superseded_by: null

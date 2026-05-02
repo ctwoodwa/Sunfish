@@ -5,9 +5,10 @@ status: Accepted
 date: 2026-04-23
 tier: accelerator
 concern:
-  - identity
+- identity
   - multi-tenancy
-composes: []
+composes:
+  - 31
 extends: []
 supersedes: []
 superseded_by: null

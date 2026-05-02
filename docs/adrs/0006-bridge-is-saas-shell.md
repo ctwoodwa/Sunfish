@@ -6,8 +6,9 @@ date: 2026-04-19
 tier: accelerator
 concern:
   - operations
-  - multi-tenancy
-composes: []
+- multi-tenancy
+composes:
+  - 5
 extends: []
 supersedes: []
 superseded_by: null

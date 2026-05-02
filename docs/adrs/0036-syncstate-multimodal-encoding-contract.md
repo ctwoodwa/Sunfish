@@ -6,8 +6,10 @@ date: 2026-04-24
 tier: foundation
 concern:
   - ui
-  - accessibility
-composes: []
+- accessibility
+composes:
+  - 17
+  - 34
 extends: []
 supersedes: []
 superseded_by: null
