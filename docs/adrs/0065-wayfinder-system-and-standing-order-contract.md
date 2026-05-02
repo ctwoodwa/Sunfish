@@ -104,7 +104,7 @@ public readonly record struct AuditRecordId(Guid Value);
 
 `StandingOrder` is **append-only per-tenant**. The per-tenant log composes via `Sunfish.Kernel.Crdt.ICrdtEngine` using last-writer-wins-by-IssuedAt-then-IssuedBy at the per-`(Scope, Path)` grain. Concurrent issuances on disjoint paths merge cleanly; concurrent issuances on the same path produce a `Conflicted` state for the loser, which the validation pipeline surfaces to the issuing operator without overwriting the winner.
 
-Loro and YDotNet (per ADR 0028 §A6.1) carry the underlying CRDT; this ADR adds no new CRDT primitives. The Standing Order log is materialized into a per-tenant Loro document under the document-key `wayfinder/standing-orders/{tenantId}`. Schema epoch follows `Sunfish.Kernel.Crdt`'s shared kernel epoch.
+Loro and YDotNet (per ADR 0028 §A6.1) carry the underlying CRDT; this ADR adds no new CRDT primitives. The Standing Order log is materialized into a per-tenant Loro document under the document-id `wayfinder/standing-orders/{tenantId}` — created via `ICrdtEngine.CreateDocument(documentId)` (fresh) or hydrated from snapshot via `ICrdtEngine.OpenDocument(documentId, snapshot)`. The repository keeps one open document per tenant; document containers (`GetMap`, `GetList`) are accessed lazily as Standing Orders accumulate. Schema epoch follows `Sunfish.Kernel.Crdt`'s shared kernel epoch.
 
 **Conflict resolution is operator-visible** — losing-side operators see their `StandingOrder.State == Conflicted` in the Atlas UI, with a one-click "amend and re-issue" path. This is the *only* conflict UX; we do not present three-way merge dialogs (per W#34 §5.7 — that pattern fails WCAG 3.3.7 error-prevention for non-technical users).
 
@@ -124,7 +124,7 @@ public enum StandingOrderValidatorPriority
 {
     Schema = 100,        // shape; required keys; type check; range
     Policy = 200,        // tenant policy; e.g. "production never has theme=experimental"
-    Authority = 300,     // capability check via Sunfish.Foundation.Capabilities
+    Authority = 300,     // ICapabilityGraph.HasCapability(Principal, CapabilityAction) per Sunfish.Foundation.Capabilities
     Conflict = 400       // detect concurrent issuances; mark conflict state
 }
 
@@ -178,6 +178,8 @@ public static readonly AuditEventType StandingOrderConflictResolved = new("Stand
 
 The issuer internally constructs an `AuditRecord(...)` (with `EventType =` one of the above) and calls `IAuditTrail.AppendAsync(record, ct)`. `StandingOrderConflictResolved` is emitted once per concurrent-issuance pair, citing both `StandingOrderId` values. Exactly one audit record per issuance (audit emission is at the issuance grain, not the triple grain).
 
+**Rescission semantics.** `RescindAsync` emits a *new* audit record (`StandingOrderRescinded`) referencing the rescinded `StandingOrderId`; it does NOT redact the original `StandingOrderIssued` audit record. Audit immutability per ADR 0049 is preserved. The rescission nullifies the *future* effect of the rescinded order on the Atlas projection — downstream effects already realized (e.g., a license issued under the rescinded policy, an operator granted access, a payment authorized) remain and require independent reversal via their own domain mechanisms. The 30-day reversibility window is a UI affordance ("amend within 30 days"), not a transactional rollback contract.
+
 ### 5. Atlas materialized-view contract
 
 `IAtlasProjector` projects the per-tenant Standing Order log into a queryable settings catalog:
@@ -224,7 +226,7 @@ public sealed record AtlasSearchHit(
     double Score);
 ```
 
-**Search target:** P95 ≤ 100ms over 10K settings (per JetBrains-pattern industry baseline). Implementation is left to consumers; the contract requires `IAsyncEnumerable` for streaming hit-by-hit incremental display.
+**Search target:** P95 ≤ 200ms cold-projection (after a fresh hydrate from snapshot or partition recovery); P95 ≤ 100ms with warm projection cache. Empirically validated against a 10K-setting catalog before Phase 3 close. Implementation is left to consumers; the contract requires `IAsyncEnumerable` for streaming hit-by-hit incremental display.
 
 **Dual-surface (form ↔ JSON):** the same `AtlasView` is presented in both surfaces. Form-surface mutations and JSON-surface mutations both produce `StandingOrderDraft` → `IStandingOrderIssuer.IssueAsync`; there is no JSON-side bypass. The JSON view in the Atlas UI uses a syntax-highlighted editor (Monaco / CodeMirror), with a mandatory **accessible alternative** form view per WCAG 2.2 AA (see §WCAG below).
 
@@ -273,8 +275,8 @@ This ADR is **bound** to WCAG 2.2 AA conformance per W#34 §5.7. The following a
 
 The author of this ADR ran the standard 3-direction self-audit on every cited Sunfish.* symbol but acknowledges:
 
-- **§A0.1 Negative-existence**: verified `Sunfish.Foundation.Wayfinder.*`, `Sunfish.Foundation.Capabilities.*`, and `IStandingOrderRepository` *do not yet exist on origin/main* and are introduced by this ADR's Phase 1 build. Council should spot-check this remains true at council-review time (the substrate cohort recently merged 9 new packages; concurrent W#23 Phase 0 may add adjacent surfaces).
-- **§A0.2 Positive-existence**: verified `Sunfish.Kernel.Audit.IAuditTrail`, `Sunfish.Kernel.Audit.AuditEventType` (a `readonly record struct(string Value)` with static-field constants, NOT an enum), `Sunfish.Kernel.Audit.AuditRecord`, `Sunfish.Kernel.Crdt.ICrdtEngine`, `Sunfish.Foundation.MultiTenancy.TenantId`, `Sunfish.Foundation.Identity.ActorId`, `NodaTime.Instant` exist on origin/main as cited.
+- **§A0.1 Negative-existence**: verified `Sunfish.Foundation.Wayfinder.*` and `IStandingOrderRepository` *do not yet exist on origin/main* and are introduced by this ADR's Phase 1 build. **Council F1 correction (2026-05-01):** the original draft incorrectly listed `Sunfish.Foundation.Capabilities.*` as not-yet-existing — it DOES exist (in `packages/foundation/Capabilities/` under namespace `Sunfish.Foundation.Capabilities`, not as a separate `foundation-capabilities` package). See §A0.2.
+- **§A0.2 Positive-existence**: verified `Sunfish.Kernel.Audit.IAuditTrail`, `Sunfish.Kernel.Audit.AuditEventType` (a `readonly record struct(string Value)` with static-field constants, NOT an enum), `Sunfish.Kernel.Audit.AuditRecord`, `Sunfish.Kernel.Crdt.ICrdtEngine` (with API `CreateDocument(string documentId)` + `OpenDocument(string documentId, ReadOnlyMemory<byte> snapshot)`), `Sunfish.Foundation.MultiTenancy.TenantId`, `Sunfish.Foundation.Identity.ActorId`, `Sunfish.Foundation.Capabilities.{Principal, CapabilityAction, CapabilityProof, ICapabilityGraph, MutationResult, CapabilityClosure, CapabilityOp, Resource}` (all in `packages/foundation/Capabilities/`), `NodaTime.Instant` exist on origin/main as cited.
 - **§A0.3 Structural-citation correctness**: per cohort discipline (5-of-5 prior structural-citation failures), this draft was self-corrected for: (a) `AuditRecord.EventType` field name verified correct, (b) `IAuditTrail.AppendAsync(AuditRecord record, CancellationToken ct)` is the actual issuance signature — the issuer constructs the `AuditRecord` then calls `AppendAsync`, NOT a `(AuditEventType, payload, ct)` overload, (c) `AuditEventType` is `readonly record struct`, so the 5 new constants are `public static readonly AuditEventType StandingOrderIssued = new("StandingOrderIssued")` static fields, not enum values, (d) WCAG 2.2 AA SC numbers verified 3.3.7/3.3.8/3.3.9 (not 3.3.5/3.3.6). Council MUST still spot-check (e) `ICrdtEngine`'s document-key API and (f) any field-name drift in `AuditRecord` since cohort merge.
 
 The §A0 self-audit is *necessary but not sufficient* — council remains canonical defense per the cohort batting average of 11-of-17 prior structural-citation failures NOT caught by §A0.
@@ -339,34 +341,33 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 - [ ] Implement `RescindAsync` with 30-day reversibility window
 - [ ] Property tests: 8 tests covering concurrent-issuance CRDT merge + conflict-resolution + audit emission count
 
-### Phase 3 — Atlas projector + search index (~4h)
+### Phase 3a — Atlas projector + search basics (~4h)
 
 - [ ] Implement `DefaultAtlasProjector` projecting from per-tenant log
 - [ ] Define `AtlasView`, `AtlasSettingSnapshot`, `AtlasSchemaDescriptor`, `AtlasSearchHit`, `AtlasSettingKind`
-- [ ] Implement `SearchAsync` with P95 ≤ 100ms target over a 10K-setting catalog (use `MemoryMappedFile` or in-memory inverted index; final choice in scaffolding stage)
-- [ ] Schema-registration analyzer: warn at build time on `AddSunfish*()` calls without `AtlasSchemaDescriptor`
-- [ ] Performance tests: 4 tests covering search latency at 1K / 5K / 10K / 50K settings
+- [ ] Implement `SearchAsync` with target P95 ≤ 200ms cold / ≤ 100ms warm over a 10K-setting catalog (use `MemoryMappedFile` or in-memory inverted index; final choice in scaffolding stage)
+
+### Phase 3b — Schema-registration analyzer + perf tests (~3h)
+
+- [ ] Schema-registration analyzer: NEW `Sunfish.Wayfinder.Analyzers` Roslyn-analyzer package; severity Warning; warns at build time on `AddSunfish*()` invocations that don't register an `AtlasSchemaDescriptor`
+- [ ] Performance tests: 4 tests covering search latency at 1K / 5K / 10K / 50K settings; cold + warm projection scenarios both measured
 
 ### Phase 4 — Cross-package wiring + apps/docs (~2h)
 
 - [ ] Wire `AddSunfishWayfinder()` into `apps/kitchen-sink` to demonstrate one form-view setting
 - [ ] Wire `AddSunfishWayfinder()` into `apps/docs/main` and add `apps/docs/blocks/foundation-wayfinder.md` documentation
-- [ ] Add `apps/docs/wcag/wayfinder.md` WCAG 2.2 AA conformance report (initial baseline; iterates per release)
+- [ ] Add `apps/docs/wcag/wayfinder.md` WCAG 2.2 AA + EN 301 549 v3.2.1 conformance report (initial baseline; iterates per release)
 - [ ] Cross-link from `_shared/product/architecture-principles.md` (the "Wayfinder system" section becomes a real link)
 
-### Phase 5 — ADR 0009 amendment scaffolding (~1h)
-
-- [ ] Author ADR 0009 amendment (separate file `0009-foundation-featuremanagement.md` with `## Amendment A1`) extending feature-management as the 5th concept that consumes Wayfinder per W#34 §6.1
-- [ ] Update `apps/docs/blocks/foundation-featuremanagement.md` to cite Wayfinder
-- [ ] Note: W#36 builds the substrate; the ADR 0009 amendment is the first downstream consumer (separate workstream row)
-
-### Phase 6 — Ledger flip + close W#36 (~30min)
+### Phase 5 — Ledger flip + close W#36 (~30min)
 
 - [ ] Update `icm/_state/active-workstreams.md` row 36: `design-in-flight` → `built`
 - [ ] Add row note: PR list + new package list + new AuditEventType list
 - [ ] Update memory `project_workstream_36_*.md` with shipped scope
 
-**Total estimate:** ~16-18h sunfish-PM time across 5-7 PRs. Pre-merge council canonical (Stage 1.5 + WCAG/a11y subagent BEFORE any phase commit).
+**Note (Council F4):** ADR 0009 amendment authoring (5th-concept feature-management consumer) is **NOT in W#36 scope** per cohort discipline (substrate vs consumer separation). Filed as separate workstream row pending CO disposition.
+
+**Total estimate:** ~18-25h sunfish-PM time across 6-7 PRs (council-revised from initial ~16-18h estimate; cohort precedent of 3-5h per phase). Pre-merge council canonical (Stage 1.5 + WCAG/a11y subagent BEFORE any phase commit).
 
 ---
 
@@ -416,7 +417,7 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 
 ### External
 - WCAG 2.2 AA — W3C Recommendation, October 2023
-- EN 301 549 — Accessibility requirements for ICT products and services (EU procurement compliance)
+- EN 301 549 v3.2.1 (2021) — Accessibility requirements for ICT products and services (EU procurement compliance)
 - VSCode dual-surface settings pattern: <https://code.visualstudio.com/docs/getstarted/settings>
 - JetBrains schema-driven settings pattern: <https://www.jetbrains.com/help/idea/configuring-project-and-ide-settings.html>
 - Stripe Dashboard diff-preview pattern (industry observation, no canonical link)
