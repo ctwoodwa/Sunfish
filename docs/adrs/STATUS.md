@@ -2,13 +2,14 @@
 
 _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not edit by hand._
 
-## Proposed (5)
+## Proposed (6)
 
 - ADR 0046 — [Historical-Keys Projection for Signature Survival under Operator-Key Rotation](./0046-a1-historical-keys-projection.md) — 2026-04-29
 - ADR 0055 — [Dynamic Forms Substrate](./0055-dynamic-forms-substrate.md) — 2026-04-29
 - ADR 0063 — [Mission Space Requirements (install-UX layer)](./0063-mission-space-requirements.md) — 2026-04-30
 - ADR 0064 — [Runtime Regulatory / Jurisdictional Policy Evaluation](./0064-runtime-regulatory-policy-evaluation.md) — 2026-04-30
 - ADR 0065 — [Wayfinder System + Standing Order Contract (bundled)](./0065-wayfinder-system-and-standing-order-contract.md) — 2026-05-01
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md) — 2026-05-01
 
 ## Accepted (55)
 

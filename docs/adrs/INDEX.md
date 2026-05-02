@@ -79,9 +79,10 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0060 — [Right-of-Entry Compliance Framework](./0060-right-of-entry-compliance-framework.md)
 - ADR 0064 — [Runtime Regulatory / Jurisdictional Policy Evaluation](./0064-runtime-regulatory-policy-evaluation.md)
 
-### process (1)
+### process (2)
 
 - ADR 0040 — [Translation Workflow: AI-First with 3-Stage Validation Gate](./0040-translation-workflow-ai-first-3-stage-validation.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 
 ### tooling (1)
 
@@ -128,7 +129,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0009 — [Foundation.FeatureManagement (Flags vs. Entitlements vs. Editions)](./0009-foundation-featuremanagement.md)
 - ADR 0055 — [Dynamic Forms Substrate](./0055-dynamic-forms-substrate.md)
 
-### dev-experience (9)
+### dev-experience (10)
 
 - ADR 0005 — [Type-Customization Model (Typed vs. Dynamic Balance)](./0005-type-customization-model.md)
 - ADR 0010 — [Templates Module Boundary (Foundation.Catalog vs. blocks-templating)](./0010-templates-boundary.md)
@@ -139,6 +140,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0041 — [Dual-Namespace Components by Design (Rich vs. MVP)](./0041-dual-namespace-components-rich-vs-mvp.md)
 - ADR 0042 — [Subagent-Driven Development for High-Velocity Sessions](./0042-subagent-driven-development-for-high-velocity.md)
 - ADR 0056 — [Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)](./0056-foundation-taxonomy-substrate.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 
 ### distribution (9)
 
@@ -152,7 +154,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0061 — [Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)](./0061-three-tier-peer-transport.md)
 - ADR 0062 — [Mission Space Negotiation Protocol (runtime layer)](./0062-mission-space-negotiation-protocol.md)
 
-### governance (6)
+### governance (7)
 
 - ADR 0001 — [Schema Registry Governance Model](./0001-schema-registry-governance.md)
 - ADR 0016 — [App and Accelerator Naming Convention](./0016-app-and-accelerator-naming.md)
@@ -160,6 +162,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0037 — [CI Platform Decision (Stay on GitHub Actions, Adopt `act` for Local)](./0037-ci-platform-decision.md)
 - ADR 0038 — [Branch Protection via GitHub Rulesets (not legacy branch-protection)](./0038-branch-protection-via-rulesets.md)
 - ADR 0039 — [Required-Check Minimalism on Public OSS Repos](./0039-required-check-minimalism-public-oss.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 
 ### mission-space (2)
 
@@ -171,7 +174,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0008 — [Foundation.MultiTenancy Contracts + Finbuckle Boundary](./0008-foundation-multitenancy.md)
 - ADR 0031 — [Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual)](./0031-bridge-hybrid-multi-tenant-saas.md)
 
-### operations (11)
+### operations (12)
 
 - ADR 0006 — [Bridge Is a Generic SaaS Shell, Not a Vertical App](./0006-bridge-is-saas-shell.md)
 - ADR 0013 — [Foundation.Integrations + Provider-Neutrality Policy](./0013-foundation-integrations.md)
@@ -184,6 +187,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0053 — [Work Order Domain Model](./0053-work-order-domain-model.md)
 - ADR 0057 — [Leasing Pipeline + Fair Housing Compliance Posture](./0057-leasing-pipeline-fair-housing.md)
 - ADR 0058 — [Vendor Onboarding Posture](./0058-vendor-onboarding-posture.md)
+- ADR 0072 — [Research-Inbox Beacon Protocol (Cross-Session Signaling)](./0072-research-inbox-beacon-protocol.md)
 
 ### persistence (5)
 
