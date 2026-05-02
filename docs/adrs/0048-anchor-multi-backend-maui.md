@@ -6,7 +6,7 @@ date: 2026-04-27
 tier: accelerator
 concern:
   - operations
-  - ui
+  - dev-experience
 composes: []
 extends: []
 supersedes: []

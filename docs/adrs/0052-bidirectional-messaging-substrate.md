@@ -6,6 +6,8 @@ date: 2026-04-28
 tier: foundation
 concern:
   - distribution
+  - multi-tenancy
+  - audit
 composes: []
 extends: []
 supersedes: []

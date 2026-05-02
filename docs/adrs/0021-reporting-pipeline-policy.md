@@ -5,7 +5,8 @@ status: Accepted
 date: 2026-04-20
 tier: foundation
 concern:
-  - operations
+  - dev-experience
+  - commercial
 composes: []
 extends: []
 supersedes: []

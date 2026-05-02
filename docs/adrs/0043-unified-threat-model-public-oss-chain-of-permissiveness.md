@@ -7,6 +7,7 @@ tier: policy
 concern:
   - security
   - threat-model
+  - governance
 composes: []
 extends: []
 supersedes: []

@@ -5,8 +5,9 @@ status: Accepted
 date: 2026-04-19
 tier: foundation
 concern:
-  - persistence
-  - version-management
+  - configuration
+  - multi-tenancy
+  - commercial
 composes: []
 extends: []
 supersedes: []

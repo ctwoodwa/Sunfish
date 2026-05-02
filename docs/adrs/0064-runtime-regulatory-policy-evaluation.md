@@ -6,6 +6,8 @@ date: 2026-04-30
 tier: policy
 concern:
   - regulatory
+  - data-residency
+  - security
 composes: []
 extends: []
 supersedes: []

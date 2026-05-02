@@ -5,8 +5,9 @@ status: Proposed
 date: 2026-04-30
 tier: foundation
 concern:
-  - capability-model
   - mission-space
+  - capability-model
+  - dev-experience
 composes: []
 extends: []
 supersedes: []

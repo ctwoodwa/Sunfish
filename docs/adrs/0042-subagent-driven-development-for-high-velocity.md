@@ -6,6 +6,7 @@ date: 2026-04-26
 tier: governance
 concern:
   - dev-experience
+  - governance
 composes: []
 extends: []
 supersedes: []

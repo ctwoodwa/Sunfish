@@ -5,8 +5,9 @@ status: Accepted
 date: 2026-04-29
 tier: block
 concern:
-  - operations
+  - identity
   - security
+  - audit
 composes: []
 extends: []
 supersedes: []

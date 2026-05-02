@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-19
 tier: kernel
 concern:
-  - audit
   - distribution
+  - persistence
 composes: []
 extends: []
 supersedes: []

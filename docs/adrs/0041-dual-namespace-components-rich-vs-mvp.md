@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-26
 tier: ui-core
 concern:
-  - dev-experience
   - ui
+  - dev-experience
 composes: []
 extends: []
 supersedes: []
