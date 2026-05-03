@@ -1,0 +1,95 @@
+@page "/components/ai/aiprompt/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.AI
+
+<PageTitle>AIPrompt / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AIPrompt / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/AI/AIPrompt/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAIPrompt</code> is a framework-agnostic shell for sending user prompts to
+            an LLM. The canonical MVP API exposes <code>Value</code> /
+            <code>ValueChanged</code> for two-way binding of the input, an
+            <code>OnPrompt</code> cancellable event carrying a
+            <code>AIPromptEventArgs</code> (<code>Prompt</code> + <code>IsCancelled</code>), a
+            <code>Streaming</code> flag with <code>StreamedOutput</code> for progressive render, a
+            right-rail <code>History</code> list, and an optional <code>Models</code> picker bound
+            through <code>SelectedModel</code>.
+        </p>
+        <p>
+            This stage-1 shell renders the entire layout and dispatches the <code>OnPrompt</code>
+            event — LLM wiring (Microsoft.Extensions.AI integration, commands, toolbar views) lands
+            in later tiers.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem; max-width:720px;">
+            <SunfishAIPrompt @bind-Value="_prompt"
+                             OnPrompt="HandlePromptAsync"
+                             Streaming="_streaming"
+                             StreamedOutput="@_output"
+                             History="_history"
+                             Models="_models"
+                             @bind-SelectedModel="_selectedModel"
+                             Placeholder="Ask the assistant…" />
+            @if (!string.IsNullOrEmpty(_lastSubmitted))
+            {
+                <p style="font-size:.85rem; opacity:.8;">Last submitted: <strong>@_lastSubmitted</strong></p>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "AI", "AIPrompt", "Overview"];
+
+    private string? _prompt;
+    private string _output = string.Empty;
+    private bool _streaming;
+    private string? _lastSubmitted;
+    private string? _selectedModel = "gpt-4o-mini";
+
+    private readonly List<string> _history = new()
+    {
+        "Summarize this document",
+        "Write a product description",
+        "Generate test data",
+    };
+
+    private readonly List<string> _models = new()
+    {
+        "gpt-4o-mini",
+        "gpt-4o",
+        "claude-3-5-sonnet",
+    };
+
+    private async Task HandlePromptAsync(AIPromptEventArgs args)
+    {
+        _lastSubmitted = args.Prompt;
+        _history.Insert(0, args.Prompt);
+
+        // Simulate streaming-output arrival. Real hosts would call into
+        // Microsoft.Extensions.AI / a custom IChatClient here.
+        _streaming = true;
+        _output = string.Empty;
+        StateHasChanged();
+
+        var canned = $"Echo ({args.SelectedModel ?? "default"}): {args.Prompt}";
+        foreach (var ch in canned)
+        {
+            _output += ch;
+            StateHasChanged();
+            await Task.Delay(15);
+        }
+
+        _streaming = false;
+    }
+}

@@ -1,0 +1,89 @@
+.account-layout {
+    --al-bg: var(--marilo-color-bg, #fafafa);
+    --al-surface: var(--marilo-color-surface, #ffffff);
+    --al-border: color-mix(in srgb, var(--marilo-color-text, #1f2328) 8%, transparent);
+    --al-text: var(--marilo-color-text, #1f2328);
+
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    background: var(--al-bg);
+    color: var(--al-text);
+}
+
+.account-layout__sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 20px 12px;
+    background: var(--al-surface);
+    border-right: 1px solid var(--al-border);
+    overflow-y: auto;
+}
+
+.account-layout__scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 30;
+}
+
+.account-layout__mobile-toggle {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 5;
+    background: var(--al-surface);
+    border: 1px solid var(--al-border);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    color: var(--al-text);
+}
+
+.account-layout__mobile-toggle:focus-visible {
+    outline: 2px solid var(--marilo-color-primary, #5b6cff);
+    outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+    .account-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .account-layout__sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: 280px;
+        z-index: 40;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    }
+
+    .account-layout.mobile-open .account-layout__sidebar {
+        transform: translateX(0);
+    }
+
+    .account-layout.mobile-open .account-layout__scrim {
+        display: block;
+    }
+
+    .account-layout__mobile-toggle {
+        display: inline-flex;
+    }
+
+    .account-layout__content {
+        padding: 16px;
+        padding-top: 56px;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .account-layout__sidebar {
+        transition: transform 180ms cubic-bezier(.2,.8,.2,1);
+    }
+}

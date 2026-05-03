@@ -1,0 +1,38 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfGrid<TValue>>
+@inject ILogger<GridEditSettings<TValue>> Logger
+
+@*
+    Child-settings for SfGrid editing. Currently diagnostic only — Sunfish's DataGrid
+    exposes its own editing surface (EditMode, SunfishGridCommandButton, etc.) that does not
+    1:1 map to Syncfusion's GridEditSettings. Consumer migration: use Sunfish grid editing
+    directly. See docs/compat-syncfusion-mapping.md.
+*@
+
+@code {
+    [Parameter] public bool AllowEditing { get; set; }
+    [Parameter] public bool AllowAdding { get; set; }
+    [Parameter] public bool AllowDeleting { get; set; }
+
+    /// <summary>Edit mode ("Normal", "Dialog", "Batch"). Diagnostic only.</summary>
+    [Parameter] public string? Mode { get; set; }
+
+    [Parameter] public bool ShowConfirmDialog { get; set; }
+    [Parameter] public bool ShowDeleteConfirmDialog { get; set; }
+
+    protected override string ShimName => "GridEditSettings";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        _ = RequireParent();
+        Logger.LogDebug(
+            "compat-syncfusion: GridEditSettings AllowEditing={AllowEditing} Mode='{Mode}' registered diagnostically. " +
+            "Sunfish grid editing uses a different surface; see docs/compat-syncfusion-mapping.md.",
+            AllowEditing, Mode);
+    }
+}

@@ -1,0 +1,104 @@
+@page "/components/buttons/segmentedcontrol/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SegmentedControl / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SegmentedControl / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/SegmentedControl/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSegmentedControl</code> presents a set of mutually exclusive choices
+            as a joined row of buttons. Appearance is configured with three parameters:
+            <code>Items</code> (the list of option strings shown), <code>Value</code> (the
+            currently selected string), and <code>Size</code> (<code>ButtonSize.Small</code>,
+            <code>Medium</code>, or <code>Large</code>). <code>Enabled</code> flips the
+            disabled state for the whole control.
+        </p>
+        <p>
+            Because the segment items are plain strings, the control doesn't have
+            variant/fill/shape parameters — the theme supplies one cohesive look. For
+            variant-rich custom surfaces, build a <code>SunfishButtonGroup</code> of
+            <code>SunfishToggleButton</code> children instead.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes</h3>
+                <div style="display:flex; flex-direction:column; gap:.75rem;">
+                    <SunfishSegmentedControl Size="ButtonSize.Small"  Items="_sizeDemoItems" @bind-Value="_sizeSmall" />
+                    <SunfishSegmentedControl Size="ButtonSize.Medium" Items="_sizeDemoItems" @bind-Value="_sizeMedium" />
+                    <SunfishSegmentedControl Size="ButtonSize.Large"  Items="_sizeDemoItems" @bind-Value="_sizeLarge" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Two-option / three-option / four-option sets</h3>
+                <div style="display:flex; flex-direction:column; gap:.75rem;">
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; color:#555;">Two options</p>
+                        <SunfishSegmentedControl Items="_twoOptions" @bind-Value="_twoValue" />
+                    </div>
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; color:#555;">Three options</p>
+                        <SunfishSegmentedControl Items="_threeOptions" @bind-Value="_threeValue" />
+                    </div>
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; color:#555;">Four options</p>
+                        <SunfishSegmentedControl Items="_fourOptions" @bind-Value="_fourValue" />
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled state</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    <code>Enabled="false"</code> disables the whole row and prevents any
+                    selection changes.
+                </p>
+                <SunfishSegmentedControl Items="_threeOptions" Value="@_threeValue" Enabled="false" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Preselected value</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The <code>Value</code> parameter preselects a segment at render time.
+                </p>
+                <SunfishSegmentedControl Items="_viewOptions" @bind-Value="_viewValue" />
+                <p style="margin:.35rem 0 0; color:#555; font-size:.85rem;">
+                    Current view: <strong>@_viewValue</strong>
+                </p>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "SegmentedControl", "Appearance"];
+
+    private readonly List<string> _sizeDemoItems = new() { "Day", "Week", "Month" };
+    private string _sizeSmall  = "Week";
+    private string _sizeMedium = "Week";
+    private string _sizeLarge  = "Week";
+
+    private readonly List<string> _twoOptions   = new() { "On", "Off" };
+    private string _twoValue = "On";
+
+    private readonly List<string> _threeOptions = new() { "Low", "Medium", "High" };
+    private string _threeValue = "Medium";
+
+    private readonly List<string> _fourOptions  = new() { "XS", "S", "M", "L" };
+    private string _fourValue = "M";
+
+    private readonly List<string> _viewOptions  = new() { "List", "Grid", "Kanban" };
+    private string _viewValue = "Grid";
+}

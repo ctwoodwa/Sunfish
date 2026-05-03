@@ -1,0 +1,63 @@
+@page "/components/barcodes"
+@page "/components/barcodes/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Code 128 Barcode" Description="SunfishBarcode renders an SVG barcode. Code128 is the default type, supporting the full alphanumeric character set." Code="@_code128Code">
+        <SunfishBarcode Value="SUNFISH-2026" Type="BarcodeType.Code128" Height="80" BarWidth="2" ShowLabel="true" />
+    </DemoSection>
+
+    <DemoSection Title="Code 39 Barcode" Description="Code39 is a self-checking alphanumeric barcode commonly used in logistics." Code="@_code39Code">
+        <SunfishBarcode Value="ABC-123" Type="BarcodeType.Code39" Height="60" BarWidth="2" Color="#1976d2" ShowLabel="true" />
+    </DemoSection>
+
+    <DemoSection Title="QR Code" Description="SunfishQRCode renders an SVG QR code for a given value. Adjust size, color, and error correction level." Code="@_qrCode">
+        <SunfishQRCode Value="https://sunfish.dev" Size="200" Color="#000000" ErrorCorrection="QRCodeErrorCorrection.Medium" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Customization">
+    <DemoSection Title="Styled Barcode" Description="Customize the barcode color and hide the label." Code="@_styledCode">
+        <SunfishBarcode Value="CUSTOM" Type="BarcodeType.Code128" Height="100" BarWidth="3" Color="#6a1b9a" ShowLabel="false" />
+    </DemoSection>
+
+    <DemoSection Title="Compact QR Code" Description="A smaller QR code suitable for inline use." Code="@_compactQrCode">
+        <SunfishQRCode Value="hello-world" Size="120" Color="#2e7d32" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _code128Code =
+        "<SunfishBarcode Value=\"SUNFISH-2026\"\n" +
+        "               Type=\"BarcodeType.Code128\"\n" +
+        "               Height=\"80\"\n" +
+        "               BarWidth=\"2\"\n" +
+        "               ShowLabel=\"true\" />";
+
+    private const string _code39Code =
+        "<SunfishBarcode Value=\"ABC-123\"\n" +
+        "               Type=\"BarcodeType.Code39\"\n" +
+        "               Height=\"60\"\n" +
+        "               BarWidth=\"2\"\n" +
+        "               Color=\"#1976d2\"\n" +
+        "               ShowLabel=\"true\" />";
+
+    private const string _qrCode =
+        "<SunfishQRCode Value=\"https://sunfish.dev\"\n" +
+        "              Size=\"200\"\n" +
+        "              Color=\"#000000\"\n" +
+        "              ErrorCorrection=\"QRCodeErrorCorrection.Medium\" />";
+
+    private const string _styledCode =
+        "<SunfishBarcode Value=\"CUSTOM\"\n" +
+        "               Type=\"BarcodeType.Code128\"\n" +
+        "               Height=\"100\"\n" +
+        "               BarWidth=\"3\"\n" +
+        "               Color=\"#6a1b9a\"\n" +
+        "               ShowLabel=\"false\" />";
+
+    private const string _compactQrCode =
+        "<SunfishQRCode Value=\"hello-world\"\n" +
+        "              Size=\"120\"\n" +
+        "              Color=\"#2e7d32\" />";
+}

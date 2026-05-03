@@ -1,0 +1,105 @@
+@page "/components/feedback/confirmdialog/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ConfirmDialog / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ConfirmDialog / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ConfirmDialog/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishConfirmDialog</code> is a purpose-built <em>alertdialog</em> that asks the
+            user to confirm or cancel a single action. Its visual surface is controlled by a small
+            set of parameters:
+        </p>
+        <ul>
+            <li><code>Title</code> &mdash; header text summarising the question.</li>
+            <li><code>Message</code> &mdash; plain-text body copy (ignored when <code>DialogContent</code> is set).</li>
+            <li><code>DialogContent</code> &mdash; rich-content render fragment for structured bodies (lists, callouts, nested controls).</li>
+            <li><code>ConfirmText</code> / <code>CancelText</code> &mdash; labels for the two footer buttons (defaults: &ldquo;Confirm&rdquo; / &ldquo;Cancel&rdquo;).</li>
+            <li><code>IsDangerous</code> &mdash; switches the primary action from the neutral <em>primary</em> palette to the destructive <em>danger</em> palette.</li>
+            <li><code>Width</code> / <code>Height</code> &mdash; optional CSS lengths; default is auto-sized.</li>
+            <li><code>ShowCloseButton</code> &mdash; toggles the header close glyph.</li>
+        </ul>
+        <p>
+            The buttons below open four visual variants that cover the common confirm scenarios.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-wrap:wrap; gap:.5rem;">
+            <SunfishButton OnClick="@(() => _basic = true)">Basic confirm</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Danger" OnClick="@(() => _danger = true)">Dangerous confirm</SunfishButton>
+            <SunfishButton OnClick="@(() => _rich = true)">Rich content</SunfishButton>
+            <SunfishButton OnClick="@(() => _custom = true)">Custom button labels</SunfishButton>
+        </div>
+
+        <SunfishConfirmDialog @bind-Visible="_basic"
+                              Title="Publish changes?"
+                              Message="Your changes will become visible to all users. This is reversible within 5 minutes."
+                              OnConfirm="@(() => Report("Published"))"
+                              OnCancel="@(() => Report("Cancelled basic"))" />
+
+        <SunfishConfirmDialog @bind-Visible="_danger"
+                              Title="Delete project?"
+                              Message="This permanently deletes the project and all of its data. This action cannot be undone."
+                              ConfirmText="Delete"
+                              CancelText="Keep"
+                              IsDangerous="true"
+                              Width="440px"
+                              OnConfirm="@(() => Report("Deleted"))"
+                              OnCancel="@(() => Report("Delete cancelled"))" />
+
+        <SunfishConfirmDialog @bind-Visible="_rich"
+                              Title="Move 3 items to archive?"
+                              Width="440px"
+                              OnConfirm="@(() => Report("Archived"))"
+                              OnCancel="@(() => Report("Archive cancelled"))">
+            <DialogContent>
+                <p>The following items will be moved to the archive and hidden from the default view:</p>
+                <ul>
+                    <li>Invoice <strong>INV-00412</strong></li>
+                    <li>Purchase order <strong>PO-13092</strong></li>
+                    <li>Credit memo <strong>CM-00081</strong></li>
+                </ul>
+                <p style="color:#555; font-size:.85rem;">
+                    Archived items can be restored from the Archive tab at any time.
+                </p>
+            </DialogContent>
+        </SunfishConfirmDialog>
+
+        <SunfishConfirmDialog @bind-Visible="_custom"
+                              Title="Submit for review?"
+                              Message="Once submitted, the draft is locked until the reviewer responds."
+                              ConfirmText="Submit for review"
+                              CancelText="Keep editing"
+                              Width="420px"
+                              OnConfirm="@(() => Report("Submitted"))"
+                              OnCancel="@(() => Report("Back to editing"))" />
+
+        @if (_lastAction is not null)
+        {
+            <p style="margin-top:1rem; color:#666;">Last action: <strong>@_lastAction</strong></p>
+        }
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ConfirmDialog", "Appearance"];
+
+    private bool _basic;
+    private bool _danger;
+    private bool _rich;
+    private bool _custom;
+    private string? _lastAction;
+
+    private void Report(string action)
+    {
+        _lastAction = action;
+    }
+}

@@ -1,0 +1,220 @@
+@page "/components/forms/multiselect/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>MultiSelect / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MultiSelect / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/MultiSelect/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMultiSelect</code> exposes the full Telerik-parity event surface. This demo
+            logs every callback so you can see when each fires:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — two-way binding wire for
+                <code>List&lt;TValue&gt;</code>. Fires on option toggle, chip removal, clear, and
+                custom-value add.</li>
+            <li><code>OnChange</code> — semantic alias emitted alongside <code>ValueChanged</code>.</li>
+            <li><code>OnOpen</code> / <code>OnClose</code> — cancellable
+                <code>PopupEventArgs</code>. Toggle the checkbox below to block opening.</li>
+            <li><code>OnRead</code> — server-side data callback. When bound, <code>Data</code> is
+                ignored; the handler receives
+                <code>MultiSelectReadEventArgs&lt;TItem&gt;</code> exposing <code>Filter</code>,
+                <code>FilterOperator</code>, <code>Skip</code>, <code>Take</code>, and
+                <code>Values</code> (already-selected keys), and assigns
+                <code>Data</code> / <code>Total</code> in response.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 360px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+                <section>
+                    <h3 style="margin:0 0 .5rem;">Local data — ValueChanged / OnChange / OnOpen / OnClose</h3>
+                    <SunfishField>
+                        <SunfishLabel>Countries</SunfishLabel>
+                        <SunfishMultiSelect TItem="Country" TValue="int"
+                                            Data="@_countries"
+                                            TextField="Name" ValueField="Id"
+                                            Value="@_value"
+                                            ValueChanged="HandleValueChanged"
+                                            OnChange="HandleOnChange"
+                                            OnOpen="HandleOnOpen"
+                                            OnClose="HandleOnClose"
+                                            Filterable="true"
+                                            ShowClearButton="true"
+                                            Placeholder="Type to filter..." />
+                    </SunfishField>
+                    <p style="margin:.25rem 0 0; font-size:.85rem; color:#555;">
+                        Current selection: <strong>@(_value.Count == 0 ? "(none)" : string.Join(", ", _value))</strong>
+                        — changes: <strong>@_changeCount</strong>
+                    </p>
+                    <label style="display:flex; gap:.5rem; align-items:center; font-size:.85rem; margin-top:.5rem;">
+                        <input type="checkbox" @bind="_blockOpen" />
+                        Cancel <code>OnOpen</code> (popup will not open)
+                    </label>
+                </section>
+
+                <section>
+                    <h3 style="margin:0 0 .5rem;">Server data — OnRead</h3>
+                    <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                        This multi-select has no <code>Data</code> parameter — the <code>OnRead</code>
+                        handler builds a response per keystroke. The log on the right shows each
+                        invocation with its filter, operator, paging, and already-selected values.
+                    </p>
+                    <SunfishField>
+                        <SunfishLabel>Remote cars</SunfishLabel>
+                        <SunfishMultiSelect TItem="Car" TValue="int"
+                                            OnRead="HandleRead"
+                                            TextField="Make" ValueField="Id"
+                                            Value="@_remoteValue"
+                                            ValueChanged="HandleRemoteChanged"
+                                            Filterable="true"
+                                            ShowClearButton="true"
+                                            DebounceDelay="200"
+                                            Placeholder="Type a car brand..." />
+                    </SunfishField>
+                </section>
+
+                <div style="display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="ClearLog">Clear log</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary"
+                                   OnClick="@(() => { _value = new(); _remoteValue = new(); })">
+                        Reset values
+                    </SunfishButton>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:560px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — open the picker)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "MultiSelect", "Events"];
+
+    private List<int> _value = new();
+    private List<int> _remoteValue = new();
+    private int _changeCount;
+    private bool _blockOpen;
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void HandleValueChanged(List<int> value)
+    {
+        _value = value;
+        _changeCount++;
+        Log("ValueChanged", value.Count == 0 ? "(empty)" : $"[{string.Join(",", value)}]");
+    }
+
+    private void HandleRemoteChanged(List<int> value)
+    {
+        _remoteValue = value;
+        Log("ValueChanged(remote)", value.Count == 0 ? "(empty)" : $"[{string.Join(",", value)}]");
+    }
+
+    private void HandleOnChange(List<int> value)
+    {
+        Log("OnChange", value.Count == 0 ? "(empty)" : $"[{string.Join(",", value)}]");
+    }
+
+    private void HandleOnOpen(PopupEventArgs args)
+    {
+        if (_blockOpen)
+        {
+            args.IsCancelled = true;
+            Log("OnOpen", "IsCancelled=true (popup blocked)");
+        }
+        else
+        {
+            Log("OnOpen", "(opening)");
+        }
+    }
+
+    private void HandleOnClose(PopupEventArgs args)
+    {
+        Log("OnClose", "(closing)");
+    }
+
+    private async Task HandleRead(MultiSelectReadEventArgs<Car> args)
+    {
+        Log("OnRead",
+            $"filter=\"{args.Filter ?? string.Empty}\" op={args.FilterOperator} skip={args.Skip} take={args.Take} values=[{string.Join(",", args.Values)}]");
+
+        // Simulate network latency.
+        await Task.Delay(120);
+
+        IEnumerable<Car> source = _allCars;
+        if (!string.IsNullOrEmpty(args.Filter))
+        {
+            source = source.Where(c =>
+                c.Make.Contains(args.Filter, StringComparison.OrdinalIgnoreCase));
+        }
+        var page = source.ToList();
+        args.Data = page;
+        args.Total = page.Count;
+    }
+
+    private void Log(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private record Country(int Id, string Name, string Code);
+    private record Car(int Id, string Make);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Finland", "FI"),
+        new(7, "Ireland", "IE"),
+        new(8, "Japan", "JP"),
+    };
+
+    private readonly List<Car> _allCars = new()
+    {
+        new(1, "Honda"), new(2, "Opel"), new(3, "Audi"), new(4, "Lancia"),
+        new(5, "BMW"), new(6, "Mercedes"), new(7, "Tesla"), new(8, "VW"),
+        new(9, "Alfa Romeo"), new(10, "Chevrolet"), new(11, "Ford"),
+        new(12, "Cadillac"), new(13, "Dodge"), new(14, "Jeep"),
+        new(15, "Chrysler"), new(16, "Lincoln"),
+    };
+}

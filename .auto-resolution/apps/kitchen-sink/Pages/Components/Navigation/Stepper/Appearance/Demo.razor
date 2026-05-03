@@ -1,0 +1,132 @@
+@page "/components/layout/stepper/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Stepper / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Stepper / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Stepper/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishStepper</code> renders a sequence of <code>SunfishStep</code> children as
+            numbered indicators plus a content region. The visual parameters:
+        </p>
+        <ul>
+            <li><code>Orientation</code> — <code>StepperOrientation.Horizontal</code> (default) or
+                <code>Vertical</code>.</li>
+            <li><code>Linear</code> — when <code>true</code>, users can only navigate to the
+                current step or any previously-reached step. Earlier / unreached steps become
+                non-clickable.</li>
+            <li><code>ActiveStep</code> — the 0-based index of the active step. Supports two-way
+                binding.</li>
+        </ul>
+        <p>
+            Each <code>SunfishStep</code> accepts:
+        </p>
+        <ul>
+            <li><code>Title</code> — the label beneath (or beside, when vertical) the indicator.</li>
+            <li><code>Icon</code> — custom indicator glyph (replaces the number / checkmark).</li>
+            <li><code>Optional</code> — renders an "Optional" sub-label.</li>
+            <li><code>Disabled</code> — marks the step non-clickable.</li>
+            <li><code>StepStatus</code> — force <code>Pending</code>, <code>Active</code>,
+                <code>Completed</code>, or <code>Error</code> regardless of active index. Use
+                <code>Error</code> to surface validation failures.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Horizontal stepper</h4>
+                <SunfishStepper @bind-ActiveStep="_horizActive">
+                    <SunfishStep Title="Account">
+                        <p style="margin:0;">Create your account.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Profile">
+                        <p style="margin:0;">Tell us about yourself.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Preferences" Optional="true">
+                        <p style="margin:0;">Optional preferences.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Review">
+                        <p style="margin:0;">Review and submit.</p>
+                    </SunfishStep>
+                </SunfishStepper>
+                <div style="display:flex; gap:.5rem; margin-top:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _horizActive = Math.Max(0, _horizActive - 1)">Back</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _horizActive = Math.Min(3, _horizActive + 1)">Next</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Vertical stepper</h4>
+                <SunfishStepper Orientation="StepperOrientation.Vertical" @bind-ActiveStep="_vertActive">
+                    <SunfishStep Title="Plan">
+                        <p style="margin:0;">Pick a plan.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Billing">
+                        <p style="margin:0;">Enter payment details.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Confirm">
+                        <p style="margin:0;">Confirm and finish.</p>
+                    </SunfishStep>
+                </SunfishStepper>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Linear stepper (only reached steps clickable)</h4>
+                <SunfishStepper Linear="true" @bind-ActiveStep="_linearActive">
+                    <SunfishStep Title="Step 1"><p style="margin:0;">Start here.</p></SunfishStep>
+                    <SunfishStep Title="Step 2"><p style="margin:0;">Continue.</p></SunfishStep>
+                    <SunfishStep Title="Step 3"><p style="margin:0;">Finish.</p></SunfishStep>
+                </SunfishStepper>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Click the indicators — forward jumps are blocked unless you've already reached that step.
+                </p>
+                <div style="display:flex; gap:.5rem; margin-top:.25rem;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _linearActive = Math.Min(2, _linearActive + 1)">Advance</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Status overrides: Error + Disabled</h4>
+                <SunfishStepper ActiveStep="1">
+                    <SunfishStep Title="Account" StepStatus="StepStatus.Completed">
+                        <p style="margin:0;">Completed forcefully.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Validation" StepStatus="StepStatus.Error">
+                        <p style="margin:0;">An error occurred — fix and retry.</p>
+                    </SunfishStep>
+                    <SunfishStep Title="Locked" Disabled="true">
+                        <p style="margin:0;">Waits for validation to pass.</p>
+                    </SunfishStep>
+                </SunfishStepper>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Custom icons</h4>
+                <SunfishStepper ActiveStep="1">
+                    <SunfishStep Title="Draft" Icon="&#9998;"><p style="margin:0;">Write.</p></SunfishStep>
+                    <SunfishStep Title="Review" Icon="&#128270;"><p style="margin:0;">Review.</p></SunfishStep>
+                    <SunfishStep Title="Publish" Icon="&#128640;"><p style="margin:0;">Publish.</p></SunfishStep>
+                </SunfishStepper>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Stepper", "Appearance"];
+
+    private int _horizActive = 0;
+    private int _vertActive = 0;
+    private int _linearActive = 0;
+}

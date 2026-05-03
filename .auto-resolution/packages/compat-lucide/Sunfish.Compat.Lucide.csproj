@@ -1,0 +1,34 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-lucide/POLICY.md.
+    This package MUST NOT reference any Lucide NuGet. It also does NOT bundle Lucide
+    assets (SVG/font/CSS) — consumers remain responsible for loading the Lucide
+    font-face / CSS / SVG sprite themselves (CDN `<link>`, NPM, or self-hosted).
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.Lucide</PackageId>
+    <Description>Lucide-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Lucide Blazor consumers (Blazicons.Lucide / InfiniLore.Lucide / BlazorBlueprint.Icons.Lucide). Does not ship Lucide assets. Policy-gated.</Description>
+    <PackageTags>blazor;compat;lucide;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.Lucide</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.Lucide.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

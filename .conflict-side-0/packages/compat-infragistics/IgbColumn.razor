@@ -1,0 +1,85 @@
+@namespace Sunfish.Compat.Infragistics
+@typeparam TItem
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SunfishDataGrid<TItem>>
+
+@*
+    Ignite-UI-shaped column-declaration shim. Child of IgbGrid.
+
+    IgbGrid forwards ChildContent verbatim into SunfishDataGrid; SunfishDataGrid publishes
+    itself as a cascading value that SunfishGridColumn picks up. This wrapper subclasses
+    CompatChildComponent for diagnostic parent-lookup (matches TelerikGridColumn's pattern).
+
+    JS-template parameters (BodyTemplateScript, InlineEditorTemplateScript) are Ignite UI's
+    shadow-DOM escape hatch for cell templating; they throw NotSupportedException with a
+    migration hint pointing at RenderFragment-based templating on SunfishGridColumn.
+*@
+<SunfishGridColumn TItem="TItem"
+                   Field="@(Field ?? string.Empty)"
+                   Title="Header"
+                   Width="Width"
+                   Sortable="Sortable"
+                   Filterable="Filterable"
+                   Visible="!Hidden"
+                   Template="Template"
+                   HeaderTemplate="HeaderTemplate"
+                   Editable="Editable" />
+
+@code {
+    /// <summary>Field name on the row item.</summary>
+    [Parameter] public string? Field { get; set; }
+
+    /// <summary>Column header label. Ignite UI calls this <c>Header</c> (not Title).</summary>
+    [Parameter] public string? Header { get; set; }
+
+    [Parameter] public bool Sortable { get; set; }
+    [Parameter] public bool Filterable { get; set; }
+    [Parameter] public bool Editable { get; set; }
+    [Parameter] public bool Resizable { get; set; }
+    [Parameter] public bool Hidden { get; set; }
+    [Parameter] public string? Width { get; set; }
+
+    /// <summary>
+    /// JS-side template script reference. THROWS <see cref="System.NotSupportedException"/>
+    /// — Ignite UI renders this inside the WC's shadow root; Sunfish has no equivalent.
+    /// Migrate to <c>Template</c> (a RenderFragment&lt;TItem&gt;) on this column shim.
+    /// </summary>
+    [Parameter] public string? BodyTemplateScript { get; set; }
+
+    /// <summary>
+    /// JS-side inline-editor template script reference. THROWS — same reason as
+    /// <see cref="BodyTemplateScript"/>.
+    /// </summary>
+    [Parameter] public string? InlineEditorTemplateScript { get; set; }
+
+    /// <summary>Blazor-native cell template. Passthrough to <c>SunfishGridColumn.Template</c>.</summary>
+    [Parameter] public RenderFragment<TItem>? Template { get; set; }
+
+    /// <summary>Header-template override. Passthrough.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    protected override string ShimName => "IgbColumn";
+    protected override string ParentName => "IgbGrid";
+
+    protected override void OnParametersSet()
+    {
+        if (BodyTemplateScript is not null)
+        {
+            throw UnsupportedParam.Throw(
+                nameof(BodyTemplateScript), BodyTemplateScript,
+                "Ignite UI JS-side template scripts are not supported. Use a Blazor Template (RenderFragment<TItem>) " +
+                "instead: <IgbColumn Template=\"@(ctx => @<span>@ctx.Value</span>)\" />. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (InlineEditorTemplateScript is not null)
+        {
+            throw UnsupportedParam.Throw(
+                nameof(InlineEditorTemplateScript), InlineEditorTemplateScript,
+                "Ignite UI JS-side editor-template scripts are not supported. Use a Blazor EditorTemplate " +
+                "(RenderFragment<TItem>) on <SunfishGridColumn> instead. See docs/compat-infragistics-mapping.md.");
+        }
+    }
+}

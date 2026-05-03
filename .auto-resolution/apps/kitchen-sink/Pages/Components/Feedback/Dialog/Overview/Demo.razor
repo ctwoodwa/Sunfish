@@ -1,0 +1,61 @@
+@page "/components/feedback/dialog/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Dialog / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Dialog / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Dialog/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDialog</code> presents content in a modal overlay that requires user attention
+            or action. It exposes <code>@@bind-Visible</code> for toggling open state,
+            <code>Title</code> for the header, and separate <code>DialogContent</code> /
+            <code>DialogActions</code> render fragments for body and footer. Predefined button sets are
+            wired through the <code>Buttons</code> parameter and surface results through the
+            <code>OnButtonClick</code> <code>EventCallback&lt;DialogResult&gt;</code>.
+        </p>
+        <p>
+            This overview shows the canonical open-and-close pattern. Separate demo pages cover
+            <a href="/components/feedback/dialog/predefined-dialogs">predefined dialogs</a>,
+            <a href="/components/feedback/dialog/forms-in-dialogs">forms in dialogs</a>,
+            <a href="/components/feedback/dialog/events">events</a>, and
+            <a href="/components/feedback/dialog/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishButton OnClick="@(() => _dialogOpen = true)">Open Dialog</SunfishButton>
+                <SunfishDialog @bind-Visible="_dialogOpen" Title="Example Dialog">
+                    <p>This is a dialog component rendered with pure HTML and CSS.</p>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _dialogOpen = false)">Close</SunfishButton>
+                </SunfishDialog>
+
+                <SunfishButton OnClick="@(() => _structuredOpen = true)">Open Structured Dialog</SunfishButton>
+                <SunfishDialog @bind-Visible="_structuredOpen" Title="Confirm Delete" Width="400px">
+                    <DialogContent>
+                        <p>Are you sure you want to delete this item? This action cannot be undone.</p>
+                    </DialogContent>
+                    <DialogActions>
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@(() => _structuredOpen = false)">Cancel</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Danger" OnClick="@(() => _structuredOpen = false)">Delete</SunfishButton>
+                    </DialogActions>
+                </SunfishDialog>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Dialog", "Overview"];
+
+    private bool _dialogOpen;
+    private bool _structuredOpen;
+}

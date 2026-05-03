@@ -1,0 +1,68 @@
+@page "/components/ai/promptbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.AI
+
+<PageTitle>PromptBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="PromptBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/AI/PromptBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPromptBox</code> is a compact single-line prompt input. Text is bound via
+            <code>Value</code>/<code>ValueChanged</code>, submit fires a cancellable
+            <code>OnSubmit</code> event carrying <code>PromptBoxSubmitEventArgs</code>, and the
+            <code>History</code> list is surfaced as a dropdown for quick recall.
+        </p>
+        <p>
+            The MVP is functionally complete: submit clears the input when the event is not
+            cancelled, and history items repopulate the value on selection.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:.75rem; max-width:560px;">
+            <SunfishPromptBox @bind-Value="_value"
+                              History="_history"
+                              OnSubmit="HandleSubmitAsync"
+                              Placeholder="Type a prompt and press Enter…" />
+            @if (_submissions.Count > 0)
+            {
+                <div style="font-size:.85rem; opacity:.8;">
+                    <strong>Submitted:</strong>
+                    <ul style="margin:.25rem 0 0 1rem;">
+                        @foreach (var item in _submissions)
+                        {
+                            <li>@item</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "AI", "PromptBox", "Overview"];
+
+    private string? _value;
+    private readonly List<string> _submissions = new();
+    private readonly List<string> _history = new()
+    {
+        "Write a haiku about Blazor",
+        "List three startup ideas",
+        "Explain cross-adapter parity",
+    };
+
+    private Task HandleSubmitAsync(PromptBoxSubmitEventArgs args)
+    {
+        _submissions.Insert(0, args.Prompt);
+        _history.Insert(0, args.Prompt);
+        return Task.CompletedTask;
+    }
+}

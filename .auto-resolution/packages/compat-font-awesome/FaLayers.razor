@@ -1,0 +1,38 @@
+@namespace Sunfish.Compat.FontAwesome
+@using Microsoft.AspNetCore.Components
+
+@*
+    Font Awesome's <FaLayers> stacks icons plus overlays (text / counter badges) in one
+    positioned container. Minimal Phase-1 implementation: render a positioned <span>
+    with FA-compatible class names (`fa-layers fa-fw`) so consumer CSS keyed to FA's
+    positioning rules keeps working. Nested content is rendered in DOM order, exactly
+    as FA expects.
+*@
+
+<span class="@_classAttr" @attributes="AdditionalAttributes">
+    @ChildContent
+</span>
+
+@code {
+    /// <summary>Size hint for the container. Accepts the same FA size tokens as <see cref="FontAwesomeIcon.Size"/>.</summary>
+    [Parameter] public string? Size { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _classAttr = "sf-fa-layers fa-layers fa-fw";
+
+    protected override void OnParametersSet()
+    {
+        if (AdditionalAttributes is not null
+            && AdditionalAttributes.TryGetValue("class", out var userClass)
+            && userClass is string s && !string.IsNullOrWhiteSpace(s))
+        {
+            _classAttr = $"sf-fa-layers fa-layers fa-fw {s}";
+            AdditionalAttributes = new Dictionary<string, object>(AdditionalAttributes);
+            AdditionalAttributes.Remove("class");
+        }
+    }
+}

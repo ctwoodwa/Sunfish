@@ -1,0 +1,75 @@
+@page "/components/forms/form/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Form / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Form / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/Form/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishForm</code> is the framework-agnostic form container. It creates an internal
+            <code>EditContext</code> from a <code>Model</code> (or accepts an explicit <code>EditContext</code>),
+            projects the context to descendant fields and validators, and raises <code>OnSubmit</code> /
+            <code>OnValidSubmit</code> / <code>OnInvalidSubmit</code> / <code>OnUpdate</code> events. Layout is
+            controlled by <code>Orientation</code>, <code>Columns</code>, <code>ColumnSpacing</code>, and
+            <code>RowSpacing</code>; fields are described with <code>SunfishField</code> and labelled with
+            <code>SunfishLabel</code> or the <code>Text</code> parameter on the field itself.
+        </p>
+        <p>
+            See sibling demos for
+            <a href="/components/forms/form/orientation">orientation</a>,
+            <a href="/components/forms/form/layout">layout</a>,
+            <a href="/components/forms/form/groups-and-columns">groups and columns</a>,
+            <a href="/components/forms/form/dynamic-fields">dynamic fields</a>,
+            <a href="/components/forms/form/buttons">buttons</a>,
+            <a href="/components/forms/form/templates">templates</a>,
+            <a href="/components/forms/form/validation">validation</a>, and
+            <a href="/components/forms/form/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem; max-width:480px;">
+            <SunfishForm Model="_model" OnValidSubmit="HandleValidSubmit">
+                <SunfishField Text="Name" Id="name">
+                    <SunfishTextBox @bind-Value="_model.Name" />
+                </SunfishField>
+                <SunfishField Text="Email" Id="email">
+                    <SunfishTextBox @bind-Value="_model.Email" />
+                </SunfishField>
+                <div class="demo-row">
+                    <SunfishButton Variant="ButtonVariant.Primary" ButtonType="ButtonType.Submit">Submit</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" ButtonType="ButtonType.Reset">Reset</SunfishButton>
+                </div>
+            </SunfishForm>
+
+            @if (_submitted)
+            {
+                <SunfishAlert Severity="AlertSeverity.Success">
+                    Submitted: @_model.Name &lt;@_model.Email&gt;
+                </SunfishAlert>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Form", "Overview"];
+
+    private readonly ContactModel _model = new();
+    private bool _submitted;
+
+    private void HandleValidSubmit() => _submitted = true;
+
+    private sealed class ContactModel
+    {
+        public string? Name { get; set; }
+        public string? Email { get; set; }
+    }
+}

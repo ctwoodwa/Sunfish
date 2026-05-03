@@ -1,0 +1,127 @@
+@page "/components/buttons/buttongroup/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ButtonGroup / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ButtonGroup / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButtonGroup</code> is a visual container — it renders a
+            <code>role="group"</code> wrapper and cascades itself to child
+            <code>SunfishButton</code> instances. Appearance is configured per-child (so each
+            button keeps its own <code>Variant</code>, <code>Size</code>, <code>FillMode</code>,
+            and <code>Rounded</code> values), while container-level parameters control
+            overall layout: <code>Width</code> constrains the container, <code>Enabled</code>
+            disables every child at once.
+        </p>
+        <p>
+            The examples below mix uniform sets, one-accent sets, outline sets, and
+            icon-only toolbars to show how the container adapts to the children you put in
+            it.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Uniform secondary set</h3>
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Left</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Center</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Right</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Primary accent + secondary supporting</h3>
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Primary">Save</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Save as…</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Discard</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Outline fill mode</h3>
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Day</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Week</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Month</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Year</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes</h3>
+                <div style="display:flex; flex-direction:column; gap:.5rem;">
+                    <SunfishButtonGroup>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Small A</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Small B</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Small C</SunfishButton>
+                    </SunfishButtonGroup>
+                    <SunfishButtonGroup>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Medium">Medium A</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Medium">Medium B</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Medium">Medium C</SunfishButton>
+                    </SunfishButtonGroup>
+                    <SunfishButtonGroup>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Large">Large A</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Large">Large B</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Large">Large C</SunfishButton>
+                    </SunfishButtonGroup>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only toolbar group</h3>
+                <SunfishButtonGroup>
+                    <SunfishButton Variant="ButtonVariant.Secondary" aria-label="Bold">
+                        <Icon><span aria-hidden="true"><strong>B</strong></span></Icon>
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" aria-label="Italic">
+                        <Icon><span aria-hidden="true"><em>I</em></span></Icon>
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" aria-label="Underline">
+                        <Icon><span aria-hidden="true" style="text-decoration:underline;">U</span></Icon>
+                    </SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled group</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Setting <code>Enabled="false"</code> on the container communicates intent,
+                    but each button independently reads its own <code>Enabled</code> value —
+                    so for a hard-disable you set it on each child (as shown below).
+                </p>
+                <SunfishButtonGroup Enabled="false">
+                    <SunfishButton Variant="ButtonVariant.Secondary" Enabled="false">One</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Enabled="false">Two</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Enabled="false">Three</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Width-constrained container</h3>
+                <SunfishButtonGroup Width="320px">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Fit</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Within</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">320px</SunfishButton>
+                </SunfishButtonGroup>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ButtonGroup", "Appearance"];
+}

@@ -1,0 +1,73 @@
+@page "/components/data-display/tooltip/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Tooltip / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Tooltip / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Tooltip/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTooltip</code> renders the tooltip bubble with <code>role="tooltip"</code>. When
+            using the default hover/focus wrapper mode, the tooltip shows on <code>mouseenter</code> /
+            <code>focusin</code> and hides on <code>mouseleave</code> / <code>focusout</code> — keyboard
+            users see the same content as pointer users via Tab focus, which is a WCAG 1.4.13 requirement.
+        </p>
+        <p>
+            For the tooltip to be associated with the trigger in the accessibility tree, pair the trigger
+            with <code>aria-describedby</code> pointing at the tooltip id, or — simpler — include the
+            trigger's own accessible name in the tooltip content so screen-reader users get the same
+            information via the element's label. Use <code>ShowOn="TooltipShowOn.Focus"</code> or
+            <code>Hover</code> so keyboard users are covered; do not use <code>Click</code> alone for
+            information that is critical to completing a task.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishTooltip Text="Delete the current record permanently"
+                                Position="TooltipPosition.Top"
+                                ShowOn="TooltipShowOn.Hover"
+                                ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Danger" aria-label="Delete record">🗑</SunfishButton>
+                </SunfishTooltip>
+                <span>Icon button — the <code>aria-label</code> names the action; the tooltip provides the longer description.</span>
+            </div>
+
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishTooltip Text="Filter visible when pressed"
+                                Position="TooltipPosition.Bottom"
+                                ShowOn="TooltipShowOn.Focus"
+                                ShowCallout="true">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Filter</SunfishButton>
+                </SunfishTooltip>
+                <span>Tab to the button to see the focus-triggered tooltip — keyboard users get the same hint.</span>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>role</strong> on the tooltip bubble</dt>
+                <dd><code>tooltip</code></dd>
+                <dt><strong>Hover AND focus parity</strong></dt>
+                <dd>Default wrapper mode binds both <code>mouseenter</code> and <code>focusin</code>, so keyboard users are never excluded.</dd>
+                <dt><strong>Don't hide essential info inside a click-only tooltip</strong></dt>
+                <dd>Use <code>ShowOn="Hover"</code> or <code>Focus</code> for informational hints.</dd>
+                <dt><strong>Icon-only triggers</strong></dt>
+                <dd>Give the trigger an <code>aria-label</code> of its own — tooltip text alone is not guaranteed to be announced.</dd>
+                <dt><strong>Dismissible (WCAG 1.4.13)</strong></dt>
+                <dd>Tooltip hides on pointer leave and on <code>focusout</code>; pressing <kbd>Escape</kbd> should also dismiss — wire it at the page level if needed.</dd>
+                <dt><strong>Do not use tooltips for errors</strong></dt>
+                <dd>Validation messages belong inline via <code>aria-describedby</code> / <code>aria-invalid</code>, not in a tooltip.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Tooltip", "Accessibility"];
+}

@@ -1,0 +1,694 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Data Grid
+// =================================================================
+// From _bridge-data.scss: .sf-bs-datagrid and related selectors
+// =================================================================
+@use '../foundation/focus' as *;
+
+.sf-bs-datagrid {
+  border: 1px solid var(--sf-color-border);
+  border-radius: var(--sf-radius-md);
+  // Bootstrap table primitive tokens scoped to the grid so the inner <table>
+  // picks up themed coloring without the component emitting `.table` directly.
+  --bs-table-color: var(--bs-emphasis-color);
+  --bs-table-bg: var(--bs-body-bg);
+  --bs-table-border-color: var(--bs-border-color);
+  --bs-table-accent-bg: transparent;
+  --bs-table-striped-bg: rgba(var(--bs-emphasis-color-rgb), 0.05);
+  --bs-table-hover-bg: rgba(var(--bs-emphasis-color-rgb), 0.075);
+  color: var(--bs-table-color);
+  border-color: var(--bs-table-border-color);
+
+  table {
+    margin-bottom: 0;
+    border-collapse: collapse;
+    width: 100%;
+    color: var(--bs-table-color);
+    background-color: var(--bs-table-bg);
+    border-color: var(--bs-table-border-color);
+    vertical-align: top;
+
+    > :not(caption) > * > * {
+      background-color: var(--bs-table-bg);
+      border-bottom: var(--bs-border-width) solid var(--bs-table-border-color);
+    }
+    > tbody { vertical-align: inherit; }
+    > thead { vertical-align: bottom; }
+    > tbody > tr:hover > * {
+      background-color: var(--bs-table-hover-bg);
+    }
+  }
+}
+
+.sf-bs-datagrid-header-cell {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  font-weight: var(--sf-font-weight-semibold);
+  text-align: left;
+  white-space: nowrap;
+  user-select: none;
+  border-bottom: 2px solid var(--sf-color-border);
+
+  &--sortable {
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--sf-color-surface);
+    }
+  }
+
+  &--sorted {
+    font-weight: 600;
+    color: var(--sf-color-primary);
+  }
+}
+
+.sf-bs-datagrid-header {
+  background: var(--sf-color-surface);
+}
+
+.sf-bs-datagrid-row {
+  // SYNTHESIS Batch 3 (P2) — Border hierarchy. Row dividers bump to the
+  // opaque `--bs-border-color` token so they read crisp against the body
+  // surface, while the toolbar divider below uses `--bs-border-color-translucent`
+  // to stay subtle against its bg-surface backdrop.
+  border-bottom: 1px solid var(--bs-border-color, var(--sf-color-border));
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  // Row hover is owned by the .sf-bs-datagrid > table rule above, which wires
+  // --bs-table-hover-bg per BS5's table-hover token. Removed the explicit
+  // :hover rule here (SYNTHESIS Batch 2b) so dark-mode + striped interactions
+  // stay consistent with native BS5.
+  &--selected { background: var(--sf-color-primary-light); }
+  &--selected:hover { background: var(--sf-color-primary-light); }
+}
+
+.sf-bs-datagrid-cell {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// SYNTHESIS Batch 3 (P2-1) — Striping dedup.
+// Bespoke `.sf-bs-datagrid-row--striped:nth-child(even)` duplicated BS5's
+// native `.table-striped` recipe. `.sf-bs-datagrid > table` now wires
+// `--bs-table-striped-bg` via the BS5 token contract at the grid root
+// (lines ~17), so any consumer who opts into `.table-striped` on the inner
+// <table> (or emits `.sf-bs-datagrid-row--striped` on odd/even rows) picks
+// up the correct hue automatically. The legacy rule has been removed.
+
+.sf-bs-datagrid-pager {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-top: 1px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-toolbar {
+  padding: var(--sf-space-sm);
+  // SYNTHESIS Batch 3 (P2) — Border hierarchy. Toolbar uses translucent
+  // border token so it reads softer than the row dividers below.
+  border-bottom: 1px solid var(--bs-border-color-translucent, var(--sf-color-border));
+}
+
+.sf-bs-datagrid-filter-row {
+  background-color: var(--sf-color-surface);
+}
+
+.sf-bs-datagrid-filter-cell {
+  padding: var(--sf-space-xs) var(--sf-space-sm);
+
+  .form-control {
+    font-size: var(--sf-font-size-sm);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.sf-bs-datagrid .sf-bs-datagrid-header-cell {
+  position: relative;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  border: 1px solid var(--sf-color-border);
+  background: var(--bs-body-bg);
+  color: var(--sf-color-text-secondary);
+  border-radius: 4px;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn:hover {
+  border-color: var(--sf-color-primary);
+  color: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-icon {
+  width: .875rem;
+  height: .875rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active {
+  border-color: var(--sf-color-primary);
+  background: rgba(var(--bs-primary-rgb), .1);
+  color: var(--sf-color-primary);
+  box-shadow: 0 0 0 1px rgba(var(--bs-primary-rgb), .25);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-popup {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 40;
+  min-width: 260px;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.5rem;
+  background: var(--bs-body-bg);
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-datagrid-filter-menu-value {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  font-size: var(--sf-font-size-base);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  background: var(--bs-body-bg);
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+.sf-bs-datagrid-group-header td {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+}
+
+// =================================================================
+// Unstyled selectors (DG-08 Phase 5)
+// =================================================================
+
+.sf-bs-datagrid-pager-btn {
+  @extend .btn;
+  @extend .btn-outline-secondary;
+  min-width: 2rem;
+  padding: 0.25rem 0.5rem;
+  font-size: var(--sf-font-size-sm);
+
+  &.active, &--active {
+    @extend .btn-primary;
+    border-color: var(--bs-primary);
+  }
+}
+
+.sf-bs-datagrid-empty {
+  text-align: center;
+  padding: var(--sf-space-xl) var(--sf-space-md);
+  color: var(--bs-secondary-color);
+}
+
+.sf-bs-datagrid-loading-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--bs-body-bg-rgb, 255, 255, 255), 0.7);
+  z-index: 10;
+}
+
+.sf-bs-datagrid-popup-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sf-bs-datagrid-sort-indicator {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.25rem;
+  color: var(--bs-primary);
+  font-size: 0.75rem;
+}
+
+.sf-bs-datagrid-validation-summary {
+  @extend .alert;
+  @extend .alert-danger;
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  font-size: var(--sf-font-size-sm);
+}
+
+.sf-bs-datagrid-footer-row {
+  background-color: var(--bs-tertiary-bg);
+  border-top: 1px solid var(--sf-color-border);
+  font-weight: 600;
+}
+
+// SYNTHESIS Batch 3 (P2) — Group header / footer idiom.
+// `.table-group-divider` is BS5's canonical separator between logical
+// row groups (typical use: `<tfoot class="table-group-divider">`). Style
+// it with a token-driven subtle surface so group headers read as a
+// distinct band when the consumer emits it, while the doubled top border
+// comes from native BS5. Scoped under `.sf-bs-datagrid` so we don't
+// affect other tables on the page.
+.sf-bs-datagrid {
+  .table-group-divider,
+  .sf-bs-datagrid-group-header {
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+// SYNTHESIS Batch 3 (P2) — Detail row accent + canonical class name.
+// Razor emits `.sf-datagrid-detail-row` (no `-bs-` prefix). The `--bs-`
+// alias is kept for consumers who target it directly via CssClass.
+// Switched surface from `--bs-secondary-bg` to `--bs-tertiary-bg` to
+// match BS5's nested-panel convention (lighter, closer to body), and
+// added a 3px primary left border as a visual cue that the row is a
+// nested expansion of the row above.
+.sf-bs-datagrid-detail-row,
+.sf-datagrid-detail-row {
+  background-color: var(--bs-tertiary-bg);
+  border-bottom: 1px solid var(--bs-border-color, var(--sf-color-border));
+  border-left: 3px solid var(--bs-primary);
+
+  > td {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+  }
+}
+
+// B5: Frozen / locked columns — provider-agnostic class (sf-datagrid__ BEM, emitted by C# renderer)
+.sf-datagrid__col--locked {
+  position: sticky;
+  z-index: 1;
+  background-color: var(--sf-datagrid-row-bg, var(--bs-body-bg, #fff));
+  inset-inline-start: var(--sf-datagrid-col-offset-start, auto);
+  inset-inline-end: var(--sf-datagrid-col-offset-end, auto);
+}
+
+// B5.6: header-level frozen cells sit above body-level frozen cells during horizontal scroll.
+th.sf-datagrid__col--locked {
+  z-index: 2;
+  background-color: var(--sf-datagrid-header-bg, var(--bs-body-bg, #f8f9fa));
+}
+
+// B5.5: boundary shadow — indicates the frozen ↔ scrollable transition.
+.sf-datagrid__col--locked-end {
+  box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+// Right-side boundary casts the shadow in the opposite direction.
+.sf-datagrid__col--locked-end[style*="inset-inline-end"],
+.sf-datagrid__col--locked-end[data-frozen-position="End"] {
+  box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.sf-bs-datagrid-searchbox {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-sm);
+  padding: var(--sf-space-xs) var(--sf-space-md);
+  border-bottom: 1px solid var(--sf-color-border);
+
+  input {
+    @extend .form-control;
+    @extend .form-control-sm;
+  }
+}
+
+// =================================================================
+// Focus ring rules (DG-10 Phase 5, Phase 2B: now uses sf-focus-ring
+// provider mixin per SYNTHESIS Theme 5)
+// =================================================================
+
+.sf-bs-datagrid-cell:focus-visible,
+.sf-bs-datagrid-header-cell:focus-visible {
+  @include sf-focus-ring;
+  position: relative;
+  z-index: 1;
+}
+
+.sf-bs-datagrid-row--focused {
+  @include sf-focus-ring;
+}
+
+// =================================================================
+// B3: Column Reordering — drag clone, drop indicator, source highlight
+// =================================================================
+
+.sf-datagrid__col-drag-clone {
+  background: var(--bs-body-bg, #fff);
+  border: 1px solid var(--sf-color-border, #dee2e6);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 0.5rem 0.75rem;
+  font-size: inherit;
+  border-radius: 2px;
+}
+
+.sf-datagrid__col-drop-line {
+  // Styled inline by JS; this class exists for future theming.
+}
+
+th.is-dragging-source {
+  opacity: 0.4;
+}
+
+// =================================================================
+// B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
+// =================================================================
+
+.sf-datagrid__row-drag-handle {
+  cursor: grab;
+  user-select: none;
+  padding: 0 4px;
+  color: var(--sf-datagrid__row-drag-handle-color, #999);
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.sf-datagrid__drag-cell {
+  width: 2rem;
+  text-align: center;
+  padding: 0;
+}
+
+tr.is-row-dragging-source {
+  opacity: 0.4;
+}
+
+.sf-datagrid__row-drop-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--sf-datagrid-reorder-line-color, #1e90ff);
+  pointer-events: none;
+}
+
+// ── C3: Column Menu ───────────────────────────────────────────────────────────
+
+.sf-datagrid__column-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 10;
+  min-width: 180px;
+  background: var(--sf-datagrid-menu-bg, #fff);
+  border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+}
+
+.sf-datagrid__column-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: inherit;
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.05);
+  }
+
+  &:disabled {
+    color: #999;
+    cursor: not-allowed;
+  }
+}
+
+.sf-datagrid__column-menu-divider {
+  height: 1px;
+  margin: 4px 0;
+  background: var(--sf-datagrid-border-color, #dee2e6);
+}
+
+.sf-datagrid__column-menu-trigger {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0 4px;
+  color: var(--sf-datagrid-muted-color, #6c757d);
+  line-height: 1;
+
+  &:hover {
+    color: inherit;
+  }
+}
+
+// SYNTHESIS Theme 1 — dead-CSS fix. The DataGrid Razor emits these classes
+// for command buttons, the column-menu trigger, and the loading spinner, but
+// the BS5 provider had no matching selectors, leaving them unstyled. Scope
+// under `.sf-bs-datagrid` so they only activate inside a Sunfish data grid.
+.sf-bs-datagrid {
+  .sf-datagrid__cmd-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    font-size: var(--sf-font-size-sm, #{$font-size-sm});
+    line-height: 1.2;
+    border: 1px solid transparent;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: $body-color;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+    &:hover:not(:disabled) {
+      background: var(--sf-color-surface, rgba(0, 0, 0, 0.04));
+      border-color: var(--sf-color-border, $border-color);
+    }
+    &:focus-visible {
+      @include sf-focus-ring;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    &--sm {
+      padding: 0.125rem 0.375rem;
+      font-size: 0.75rem;
+    }
+    &--delete {
+      color: $danger;
+      &:hover:not(:disabled) {
+        background: rgba($danger, 0.08);
+        border-color: $danger;
+        color: $danger;
+      }
+    }
+    &--add {
+      color: $success;
+      &:hover:not(:disabled) {
+        background: rgba($success, 0.08);
+        border-color: $success;
+        color: $success;
+      }
+    }
+  }
+
+  .sf-datagrid__column-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.25rem;
+    padding: 0.125rem 0.25rem;
+    border: 1px solid transparent;
+    border-radius: $border-radius-sm;
+    background: transparent;
+    color: var(--sf-color-text-secondary, $text-muted);
+    cursor: pointer;
+    line-height: 1;
+
+    &:hover {
+      border-color: var(--sf-color-border, $border-color);
+      color: var(--sf-color-primary, $primary);
+    }
+    &:focus-visible {
+      @include sf-focus-ring;
+    }
+  }
+
+  .sf-datagrid-loading-spinner {
+    display: inline-block;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 3px solid var(--sf-color-border, $border-color);
+    border-top-color: var(--sf-color-primary, $primary);
+    border-radius: 50%;
+    animation: sf-bs-datagrid-spin 0.9s linear infinite;
+  }
+
+  .sf-datagrid-loading-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+@keyframes sf-bs-datagrid-spin {
+  to { transform: rotate(360deg); }
+}
+
+// =================================================================
+// SYNTHESIS Batch 2b (DataGrid × BS5) — P1 CSS-only items
+// =================================================================
+
+// Loading spinner — align with BS5 .spinner-border pattern.
+// Razor emits `.sf-datagrid-loading-spinner` with child `.sf-datagrid-loading-text`
+// (role="status", visually-hidden sibling). Alias selectors route these onto
+// the BS5 primitives so the spinner reads native-BS5 and the text is hidden
+// from sighted users but announced to screen readers.
+.sf-bs-datagrid .sf-datagrid-loading-spinner {
+  @extend .spinner-border;
+  @extend .text-primary;
+}
+
+.sf-bs-datagrid .sf-datagrid-loading-text {
+  @extend .visually-hidden;
+  // visually-hidden already clips — drop the bespoke clip rule above by
+  // setting the clip property back to the standard pattern explicitly so
+  // whichever rule wins the cascade still produces a hidden sibling.
+  clip: rect(0, 0, 0, 0);
+}
+
+// Empty state — wrap in a BS5 alert-secondary treatment so the "no data" cell
+// reads as an informative BS5 surface instead of a naked table cell.
+.sf-bs-datagrid .sf-datagrid-empty {
+  @extend .alert;
+  @extend .alert-secondary;
+  margin: var(--sf-space-md);
+  text-align: center;
+  border-radius: var(--bs-border-radius);
+}
+
+// Focus ring — ensure :focus-visible (not :focus) is the active selector and
+// we use box-shadow rather than outline to match BS5 focus-ring idiom.
+// The sf-focus-ring mixin already composes box-shadow; this block covers
+// row/nav selectors that fell outside the mixin above.
+.sf-bs-datagrid-pager-btn:focus,
+.sf-bs-datagrid-pager-btn:focus-visible {
+  outline: 0;
+}
+
+.sf-bs-datagrid-pager-btn:focus-visible {
+  box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+// Filter menu input + operator select — route through BS5 .form-control sizing
+// tokens so they visually match other BS5 form fields and respect tier sizing.
+// Razor emits `.sf-datagrid__filter-menu-value` (input) and
+// `.sf-datagrid__filter-menu-operator` (select), scoped under .sf-bs-datagrid.
+.sf-bs-datagrid .sf-datagrid__filter-menu-value,
+.sf-bs-datagrid .sf-datagrid__filter-menu-operator {
+  @extend .form-control;
+  @extend .form-control-sm;
+}
+
+// Searchbox input — same form-control alias. Razor emits
+// `.sf-datagrid-searchbox-input`.
+.sf-bs-datagrid .sf-datagrid-searchbox-input {
+  @extend .form-control;
+  @extend .form-control-sm;
+}
+
+// =================================================================
+// SYNTHESIS Batch 3 (DataGrid × BS5) — P2 CSS-only items
+// =================================================================
+
+// P2 — Scrollbar-gutter. `.sf-datagrid-content` is the horizontally-
+// scrolling inner container. Reserving the gutter stops the scrollbar
+// appearance from jumping the layout when data overflows.
+.sf-bs-datagrid .sf-datagrid-content {
+  scrollbar-gutter: stable;
+}
+
+// P2 — Resize-handle dark-mode adjustment. The default hover/dragging
+// color is keyed off `--bs-emphasis-color-rgb` via the .sf-bs-datagrid
+// token contract above. Under dark mode, emphasis is white so the
+// handle needs the inverse contrast treatment. `.sf-datagrid-resize-handle`
+// is the canonical class; `.sf-datagrid__col-resize-handle` is the
+// legacy alias that Razor still emits.
+[data-bs-theme="dark"] .sf-datagrid-resize-handle,
+[data-bs-theme="dark"] .sf-datagrid__col-resize-handle {
+  background: var(--bs-border-color);
+}
+
+// P2 — Selection cell neutral mode. When a selection column renders
+// in an "indeterminate" or visual-only state (no checkbox tick), it
+// should read as secondary-color text.
+.sf-datagrid-selection-cell--neutral {
+  color: var(--bs-secondary-color);
+}
+
+// P2 — Searchbox focus underline. Subtle inset 2px bottom border on
+// `:focus-visible` reads as a Material-style underline without clobbering
+// the default BS5 .form-control focus ring on the search input.
+.sf-datagrid-searchbox-input:focus-visible {
+  box-shadow: inset 0 -2px 0 var(--bs-primary);
+}
+
+// P2 — Forced-colors / Windows High Contrast support. Ensures row
+// dividers and selection state remain perceivable when the OS forces
+// a system color scheme (WCAG 1.4.11 — non-text contrast).
+@media (forced-colors: active) {
+  .sf-bs-datagrid-row {
+    border: 1px solid CanvasText;
+  }
+  .sf-bs-datagrid-row--selected {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}

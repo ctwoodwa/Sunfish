@@ -1,0 +1,10 @@
+// =============================================================================
+// Component: Panel
+// =============================================================================
+
+.sf-panel {
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    padding: var(--sf-space-lg);
+}

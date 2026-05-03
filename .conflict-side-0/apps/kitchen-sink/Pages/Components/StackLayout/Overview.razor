@@ -1,0 +1,87 @@
+@page "/components/stacklayout"
+@page "/components/stacklayout/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <SunfishAlert Severity="AlertSeverity.Info" style="margin-bottom:16px;">
+        StackLayout is provided by the <strong>SunfishStack</strong> component, which arranges child elements in a horizontal or vertical flex layout.
+    </SunfishAlert>
+
+    <DemoSection Title="Horizontal Stack" Description="By default, SunfishStack arranges children horizontally with configurable spacing." Code="@_horizontalCode">
+        <SunfishStack Orientation="StackDirection.Horizontal" Spacing="12px">
+            <div style="padding:16px; background:#e3f2fd; border-radius:4px;">Item 1</div>
+            <div style="padding:16px; background:#e3f2fd; border-radius:4px;">Item 2</div>
+            <div style="padding:16px; background:#e3f2fd; border-radius:4px;">Item 3</div>
+        </SunfishStack>
+    </DemoSection>
+
+    <DemoSection Title="Vertical Stack" Description="Set Orientation to Vertical to stack children top to bottom." Code="@_verticalCode">
+        <SunfishStack Orientation="StackDirection.Vertical" Spacing="8px" Width="200px">
+            <div style="padding:12px; background:#e8f5e9; border-radius:4px;">Row A</div>
+            <div style="padding:12px; background:#e8f5e9; border-radius:4px;">Row B</div>
+            <div style="padding:12px; background:#e8f5e9; border-radius:4px;">Row C</div>
+        </SunfishStack>
+    </DemoSection>
+
+    <DemoSection Title="Alignment" Description="Use HorizontalAlign and VerticalAlign to control the main-axis and cross-axis alignment of items." Code="@_alignCode">
+        <SunfishStack Orientation="StackDirection.Horizontal"
+                     Spacing="12px"
+                     HorizontalAlign="StackAlignment.Center"
+                     VerticalAlign="StackAlignment.Center"
+                     Width="100%"
+                     Height="120px"
+                     Style="border:1px dashed #ccc; border-radius:8px;">
+            <div style="padding:16px; background:#fce4ec; border-radius:4px;">Centered</div>
+            <div style="padding:24px 16px; background:#fce4ec; border-radius:4px;">Items</div>
+            <div style="padding:12px 16px; background:#fce4ec; border-radius:4px;">Here</div>
+        </SunfishStack>
+    </DemoSection>
+
+    <DemoSection Title="Space Between" Description="Use SpaceBetween alignment to distribute items evenly across the available width." Code="@_spaceBetweenCode">
+        <SunfishStack Orientation="StackDirection.Horizontal"
+                     HorizontalAlign="StackAlignment.SpaceBetween"
+                     Width="100%"
+                     Style="border:1px dashed #ccc; border-radius:8px; padding:8px;">
+            <div style="padding:12px; background:#fff3e0; border-radius:4px;">Start</div>
+            <div style="padding:12px; background:#fff3e0; border-radius:4px;">Middle</div>
+            <div style="padding:12px; background:#fff3e0; border-radius:4px;">End</div>
+        </SunfishStack>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _horizontalCode =
+        "<SunfishStack Orientation=\"StackDirection.Horizontal\" Spacing=\"12px\">\n" +
+        "    <div>Item 1</div>\n" +
+        "    <div>Item 2</div>\n" +
+        "    <div>Item 3</div>\n" +
+        "</SunfishStack>";
+
+    private const string _verticalCode =
+        "<SunfishStack Orientation=\"StackDirection.Vertical\"\n" +
+        "             Spacing=\"8px\"\n" +
+        "             Width=\"200px\">\n" +
+        "    <div>Row A</div>\n" +
+        "    <div>Row B</div>\n" +
+        "</SunfishStack>";
+
+    private const string _alignCode =
+        "<SunfishStack Orientation=\"StackDirection.Horizontal\"\n" +
+        "             Spacing=\"12px\"\n" +
+        "             HorizontalAlign=\"StackAlignment.Center\"\n" +
+        "             VerticalAlign=\"StackAlignment.Center\"\n" +
+        "             Width=\"100%\"\n" +
+        "             Height=\"120px\">\n" +
+        "    <div>Centered</div>\n" +
+        "    <div>Items</div>\n" +
+        "</SunfishStack>";
+
+    private const string _spaceBetweenCode =
+        "<SunfishStack Orientation=\"StackDirection.Horizontal\"\n" +
+        "             HorizontalAlign=\"StackAlignment.SpaceBetween\"\n" +
+        "             Width=\"100%\">\n" +
+        "    <div>Start</div>\n" +
+        "    <div>Middle</div>\n" +
+        "    <div>End</div>\n" +
+        "</SunfishStack>";
+}

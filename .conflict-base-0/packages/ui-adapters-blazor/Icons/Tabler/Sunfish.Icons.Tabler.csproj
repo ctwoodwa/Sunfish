@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Icons.Tabler</PackageId>
+    <RootNamespace>Sunfish.Icons.Tabler</RootNamespace>
+    <AssemblyName>Sunfish.Icons.Tabler</AssemblyName>
+    <Description>Tabler Icons SVG sprite provider for Sunfish (5,000+ MIT icons).</Description>
+    <PackageTags>blazor;icons;tabler;svg;ui-framework;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Icons.Tabler.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\ui-core\Sunfish.UICore.csproj" />
+  </ItemGroup>
+</Project>

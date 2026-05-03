@@ -1,0 +1,455 @@
+// =================================================================
+// Sunfish Bootstrap Provider — DatePicker / DateRangePicker / DateTimePicker
+// =================================================================
+// From _bridge-forms.scss: .sf-datepicker, .sf-date-range-picker,
+//   .sf-datetime-picker and all calendar/popup sub-elements
+// =================================================================
+
+.sf-datepicker,
+.sf-date-range-picker,
+.sf-datetime-picker {
+  position: relative;
+  display: inline-block;
+}
+
+.sf-datepicker__input-wrapper,
+.sf-date-range-picker__input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.25rem;
+}
+
+.sf-datepicker__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1049;
+  background: transparent;
+}
+
+.sf-datepicker__clear {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-muted;
+  border-radius: $border-radius-sm;
+  z-index: 1;
+
+  &:hover {
+    background: $gray-200;
+    color: $body-color;
+  }
+}
+
+// Calendar grid
+.sf-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0 0.5rem;
+}
+
+// Nav buttons — BS5 .btn-sm .btn-outline-secondary treatment (SYNTHESIS Batch 2h).
+// @extend the BS5 primitives so the nav chevron picks up focus ring, hover,
+// and disabled state native to BS5. Bespoke padding/font-size below tightens
+// the tier for the calendar header density.
+.sf-calendar__nav-btn {
+  @extend .btn;
+  @extend .btn-sm;
+  @extend .btn-outline-secondary;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+// Title — BS5 .btn-link treatment so the month/year title reads as an
+// actionable link-button with native focus ring (SYNTHESIS Batch 2h).
+.sf-calendar__title {
+  @extend .btn;
+  @extend .btn-link;
+  font-weight: 600;
+  font-size: $font-size-sm;
+  padding: 0.125rem 0.5rem;
+  text-decoration: none;
+}
+
+// Grid — SYNTHESIS Batch 2h: the Razor emits <table class="sf-calendar__grid">
+// (see SunfishCalendar.razor line 31) so we honor table semantics here rather
+// than overriding with flex. border-collapse keeps cell borders tight; width
+// 100% lets the grid fill the calendar surface without stretching cells.
+// Previously this was `display: flex; flex-direction: column` which collapsed
+// the <tbody>/<tr> structure for all three framework skins.
+.sf-calendar__grid {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.sf-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 0.25rem;
+}
+
+.sf-calendar__weekday {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $text-muted;
+  padding: 0.125rem 0;
+}
+
+.sf-calendar__days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+// Inner-span base (rendered inside each `<td class="sf-calendar__cell ...">`)
+.sf-calendar__day {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 auto;
+  background: none;
+  border: none;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  font-size: $font-size-sm;
+  color: $body-color;
+}
+
+// SYNTHESIS Theme 1 — dead-CSS fix. Razor emits modifiers on the cell (<td>),
+// inner content is `<span class="sf-calendar__day">`. Style via cell-descendant
+// pattern so the classes emitted actually cascade to the day element.
+.sf-calendar__cell {
+  padding: 0;
+  text-align: center;
+
+  // Hover-overlay ordering (P2 verification): `:hover` is declared BEFORE
+  // the `--today`, `--selected`, and `--range-*` modifiers so the
+  // modifier-specific rules win the cascade on equal specificity. This
+  // guarantees the solid primary fill on today/selected is not repainted
+  // by the hover background.
+  &:hover:not(.sf-calendar__cell--disabled) .sf-calendar__day {
+    background: $gray-200;
+  }
+
+  // SYNTHESIS Batch 3 (P2) — Today indicator uses inset box-shadow with
+  // an outline-offset so the subtle primary ring doesn't collide with
+  // the focus-visible box-shadow below. The `outline-offset: 2px`
+  // pushes any ambient outline out by 2px if the consumer overrides.
+  &--today .sf-calendar__day {
+    font-weight: 700;
+    box-shadow: inset 0 0 0 1px var(--bs-primary);
+    outline-offset: 2px;
+  }
+
+  &--selected .sf-calendar__day {
+    background: $primary !important;
+    color: $white !important;
+  }
+
+  // SYNTHESIS Batch 3 (P2) — Disabled opacity unified to BS5's button
+  // token `--bs-btn-disabled-opacity` (.65 per BS5 spec) from the
+  // former .35 hand-rolled value. `.65` is the documented minimum
+  // contrast for disabled controls in BS5 and aligns with
+  // `.btn:disabled` visuals.
+  &--disabled {
+    opacity: var(--bs-btn-disabled-opacity, 0.65);
+    cursor: not-allowed;
+    pointer-events: none;
+
+    .sf-calendar__day { cursor: not-allowed; }
+  }
+
+  // SYNTHESIS Batch 3 (P2) — Out-of-month cells bumped from .5 → .55
+  // opacity. The lower value was double-dimmed when combined with the
+  // `--bs-secondary-color` text; .55 restores legibility while keeping
+  // the band visually recessed from current-month cells.
+  &--other-month .sf-calendar__day {
+    color: $text-muted;
+    opacity: 0.55;
+  }
+
+  // SYNTHESIS Batch 3 (P2) — Focus-visible uses diffused box-shadow
+  // instead of outline so it composes with the today indicator's inset
+  // ring. outline: 0 on :focus-visible clears any UA default.
+  &--focused .sf-calendar__day,
+  .sf-calendar__day:focus-visible {
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+    z-index: 1;
+  }
+
+  &--empty {
+    pointer-events: none;
+  }
+
+  &--in-range {
+    background: rgba($primary, 0.12);
+
+    .sf-calendar__day { border-radius: 0; }
+  }
+
+  &--range-start .sf-calendar__day,
+  &--range-end .sf-calendar__day,
+  &--range-edge .sf-calendar__day {
+    background: $primary !important;
+    color: $white !important;
+  }
+
+  &--range-start .sf-calendar__day {
+    border-radius: $border-radius-sm 0 0 $border-radius-sm;
+  }
+
+  &--range-end .sf-calendar__day {
+    border-radius: 0 $border-radius-sm $border-radius-sm 0;
+  }
+}
+
+// =================================================================
+// SYNTHESIS Batch 3 (Calendar × BS5) — P2 CSS-only items
+// =================================================================
+
+// P2 — Week-number column. Razor emits both `.sf-calendar__weeknum-header`
+// (in thead) and `.sf-calendar__weeknum` (per row). Style with muted
+// secondary color, small typeface, and center alignment. No right border
+// — keep it flush with the day grid for a soft affordance.
+.sf-calendar__weeknum,
+.sf-calendar__weeknum-header {
+  color: var(--bs-secondary-color);
+  font-size: 0.75rem;
+  text-align: center;
+  font-weight: 500;
+  padding: 0.125rem 0.25rem;
+}
+
+// P2 — Month / Year / Decade / Century grid layout + cell styling.
+// Razor emits `sf-calendar__view--year`, `--decade`, `--century` on the
+// outer container plus `.sf-calendar__cell` on each button. The base
+// `.sf-calendar__view--*` rule fans the cells out in a 3-column grid;
+// per-cell padding + body font matches BS5 button token sizing.
+.sf-calendar__view--year,
+.sf-calendar__view--decade,
+.sf-calendar__view--century {
+  .sf-calendar__cell {
+    width: 33.33%;
+    padding: 1rem 0.5rem;
+    font: var(--bs-body-font-style, normal) var(--bs-body-font-weight, 400)
+          var(--bs-body-font-size, 1rem) / var(--bs-body-line-height, 1.5)
+          var(--bs-body-font-family, inherit);
+  }
+}
+
+// P2 — Datepicker popup class aligned with BS5 .dropdown-menu token
+// contract. Use `.sf-calendar__popup` as the canonical surface wrapper
+// for inline calendar popups — emits the same background / shadow /
+// border treatment as a dropdown.
+.sf-calendar__popup {
+  background: var(--bs-tertiary-bg);
+  border: 1px solid var(--bs-border-color-translucent, #{$border-color});
+  border-radius: var(--bs-border-radius, #{$border-radius-lg});
+  box-shadow: var(--bs-box-shadow, #{$box-shadow-lg});
+}
+
+// P2 — View-transition motion. When the user drills between month /
+// year / decade / century views, fade the outgoing/incoming grid with
+// a 150ms opacity transition so the switch reads as a smooth crossfade.
+// The reduced-motion branch below kills this transition for
+// vestibular-sensitive users.
+.sf-calendar__view {
+  transition: opacity 150ms ease-in-out;
+}
+
+// DateRangePicker popup — SYNTHESIS Batch 3 (P2): aligned to BS5
+// .dropdown-menu token contract so dark mode and consumer theming
+// repaint the surface automatically.
+.sf-date-range-picker__popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1050;
+  background: var(--bs-tertiary-bg, #{$white});
+  border: $border-width solid var(--bs-border-color-translucent, #{$border-color});
+  border-radius: var(--bs-border-radius, #{$border-radius-lg});
+  box-shadow: var(--bs-box-shadow, #{$box-shadow-lg});
+  padding: 1rem;
+  min-width: 560px;
+
+  &--vertical {
+    min-width: 280px;
+
+    .sf-date-range-picker__calendars {
+      flex-direction: column;
+    }
+  }
+}
+
+.sf-date-range-picker__calendars {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.sf-date-range-picker__calendar {
+  flex: 1;
+  min-width: 240px;
+}
+
+.sf-date-range-picker__actions,
+.sf-datetime-picker__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: $border-width solid $border-color;
+}
+
+// DateTimePicker popup — SYNTHESIS Batch 3 (P2): aligned to BS5
+// .dropdown-menu token contract (see DateRangePicker popup above).
+.sf-datetime-picker__popup {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 1050;
+  background: var(--bs-tertiary-bg, #{$white});
+  border: $border-width solid var(--bs-border-color-translucent, #{$border-color});
+  border-radius: var(--bs-border-radius, #{$border-radius-lg});
+  box-shadow: var(--bs-box-shadow, #{$box-shadow-lg});
+  padding: 1rem;
+  min-width: 280px;
+}
+
+.sf-datetime-picker__divider {
+  height: 1px;
+  background: $border-color;
+  margin: 1rem 0;
+}
+
+.sf-datetime-picker__time-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.sf-datetime-picker__tumblers {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.sf-datetime-picker__tumbler {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.sf-datetime-picker__tumbler-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.125rem 0.75rem;
+  border-radius: $border-radius-sm;
+  color: $body-color;
+  font-size: 0.6rem;
+
+  &:hover {
+    background: $gray-200;
+  }
+}
+
+.sf-datetime-picker__tumbler-value {
+  font-size: 1.25rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: $body-color;
+  min-width: 2rem;
+  text-align: center;
+  padding: 0.125rem 0.25rem;
+  border: $border-width solid $border-color;
+  border-radius: $border-radius-sm;
+}
+
+.sf-datetime-picker__tumbler-sep {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: $text-muted;
+  padding-top: 0.5rem;
+}
+
+.sf-datetime-picker__icon {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-muted;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  z-index: 1;
+}
+
+// =============================================================================
+// SYNTHESIS Theme 10 — a11y plumbing (Phase 3)
+// Forced-colors + reduced-motion support for calendar / date-picker popups.
+// =============================================================================
+
+@media (forced-colors: active) {
+  .sf-calendar,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .sf-calendar__cell:focus-visible,
+  .sf-calendar__nav-btn:focus-visible,
+  .sf-calendar__title:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+
+  // Selected and range-edge states need forced-color-adjust: none so the
+  // Highlight/HighlightText pair actually renders as inverse video per OS.
+  .sf-calendar__cell--selected .sf-calendar__day,
+  .sf-calendar__cell--range-start .sf-calendar__day,
+  .sf-calendar__cell--range-end .sf-calendar__day,
+  .sf-calendar__cell--range-edge .sf-calendar__day {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sf-calendar,
+  .sf-calendar__cell,
+  .sf-calendar__day,
+  .sf-calendar__view,
+  .sf-datepicker__overlay,
+  .sf-date-range-picker__popup,
+  .sf-datetime-picker__popup {
+    transition: none !important;
+    animation: none !important;
+  }
+}

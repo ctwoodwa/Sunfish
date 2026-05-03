@@ -1,0 +1,32 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@inherits SunfishStepBase
+
+@*
+    SunfishStepperStep — spec-canonical declarative step for SunfishStepper.
+
+    Inherits every stepper-facing parameter from SunfishStepBase; adds the
+    spec-canonical Label alias and the content-when-active render block.
+*@
+
+@{
+    var stepper = ParentStepper;
+    var isActive = stepper != null && stepper.IsStepActive(this);
+}
+@if (isActive)
+{
+    <div class="sf-step__content">
+        @ChildContent
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Human-readable label rendered next to the step indicator. Spec-canonical name.
+    /// </summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Legacy alias for <see cref="Label"/>. Prefer <see cref="Label"/> in new code.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    internal override string? EffectiveLabel => Label ?? Title;
+}

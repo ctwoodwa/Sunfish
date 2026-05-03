@@ -1,0 +1,50 @@
+@page "/components/navigation/menu/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Menu / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Menu / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Menu/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMenu</code> displays a list of actions or options in a popup overlay. Open
+            state is controlled via <code>IsOpen</code> / <code>IsOpenChanged</code>, and menu content
+            is composed from <code>SunfishMenuItem</code> (with optional <code>Icon</code> and
+            <code>IsDisabled</code>) plus <code>SunfishMenuDivider</code> for grouping. Menus can also
+            be data-bound via <code>Data</code>, <code>TextField</code>, <code>IconField</code>,
+            <code>SeparatorField</code>, and <code>DisabledField</code>.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/navigation/menu/data-binding">data binding</a>,
+            <a href="/components/navigation/menu/templates">templates</a>,
+            <a href="/components/navigation/menu/events">events</a>,
+            <a href="/components/navigation/menu/keyboard-navigation">keyboard navigation</a>,
+            and <a href="/components/navigation/menu/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishButton OnClick="ToggleMenu">Toggle Menu</SunfishButton>
+            <SunfishMenu IsOpen="@_menuOpen" IsOpenChanged="@((bool v) => _menuOpen = v)">
+                <SunfishMenuItem>Edit</SunfishMenuItem>
+                <SunfishMenuItem>Duplicate</SunfishMenuItem>
+                <SunfishMenuItem IsDisabled="true">Delete</SunfishMenuItem>
+            </SunfishMenu>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Menu", "Overview"];
+
+    private bool _menuOpen;
+    private void ToggleMenu() => _menuOpen = !_menuOpen;
+}

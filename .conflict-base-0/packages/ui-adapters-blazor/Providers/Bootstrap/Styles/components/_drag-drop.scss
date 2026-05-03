@@ -1,0 +1,20 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Drag and Drop
+// =================================================================
+// From _bridge-utility.scss: .sf-bs-dragdrop, .sf-bs-dropzone, .sf-bs-upload-dropzone
+// =================================================================
+
+.sf-bs-dragdrop {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.sf-bs-dropzone,
+.sf-bs-upload-dropzone {
+  &.border-dashed {
+    border-style: dashed !important;
+  }
+}

@@ -1,0 +1,47 @@
+// =============================================================================
+// Foundation: Typography
+// Font family, size, weight, line-height CSS custom properties + Fluent type ramp
+// =============================================================================
+
+:root {
+    /* Typography */
+    --sf-font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --sf-font-size-xs: 0.625rem;
+    --sf-font-size-sm: 0.75rem;
+    --sf-font-size-base: 0.875rem;
+    --sf-font-size-md: 1rem;
+    --sf-font-size-lg: 1.25rem;
+    --sf-font-size-xl: 1.5rem;
+    --sf-font-size-2xl: 1.75rem;
+    --sf-font-size-3xl: 2rem;
+    --sf-font-size-4xl: 2.5rem;
+    --sf-font-weight-regular: 400;
+    --sf-font-weight-semibold: 600;
+    --sf-font-weight-bold: 700;
+    --sf-line-height-tight: 1.2;
+    --sf-line-height-base: 1.5;
+
+    /* Fluent Design System Base */
+    --body-font: 'Segoe UI Variable', 'Segoe UI', sans-serif;
+    --font-weight: 400;
+
+    /* Fluent Type Ramp */
+    --type-ramp-base-font-size: 14px;
+    --type-ramp-base-line-height: 20px;
+    --type-ramp-minus-1-font-size: 12px;
+    --type-ramp-minus-1-line-height: 16px;
+    --type-ramp-minus-2-font-size: 10px;
+    --type-ramp-minus-2-line-height: 14px;
+    --type-ramp-plus-1-font-size: 16px;
+    --type-ramp-plus-1-line-height: 22px;
+    --type-ramp-plus-2-font-size: 20px;
+    --type-ramp-plus-2-line-height: 26px;
+    --type-ramp-plus-3-font-size: 24px;
+    --type-ramp-plus-3-line-height: 32px;
+    --type-ramp-plus-4-font-size: 28px;
+    --type-ramp-plus-4-line-height: 36px;
+    --type-ramp-plus-5-font-size: 32px;
+    --type-ramp-plus-5-line-height: 40px;
+    --type-ramp-plus-6-font-size: 40px;
+    --type-ramp-plus-6-line-height: 52px;
+}

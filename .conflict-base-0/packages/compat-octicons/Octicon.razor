@@ -1,0 +1,106 @@
+@namespace Sunfish.Compat.Octicons
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<Octicon> Logger
+
+<i class="@_cssClass" role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")" aria-label="@AriaLabel" aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)" @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Octicons-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Octicons icon identifier. Mirrors the dominant Octicons Blazor
+    /// wrapper shape (<c>&lt;Octicon Name="OcticonName.MarkGithub" /&gt;</c>).
+    /// Translates to the canonical <c>octicon-*</c> CSS class via
+    /// <see cref="OcticonNameExtensions.ToSlug(OcticonName)"/>.
+    /// </summary>
+    /// <remarks>
+    /// For icons outside the starter-set <see cref="OcticonName"/> enum, use
+    /// <see cref="NameString"/> to pass the raw Octicons slug (e.g. <c>"rocket"</c>).
+    /// If both are provided, <see cref="NameString"/> wins and a warning is logged —
+    /// specify only one.
+    /// </remarks>
+    [Parameter] public OcticonName? Name { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Octicons slug (e.g. <c>"rocket"</c>). Useful for icons
+    /// not yet covered by the <see cref="OcticonName"/> starter-set enum. The
+    /// value is emitted verbatim as the <c>octicon-*</c> class — no validation is
+    /// performed (upstream Octicons CSS will silently fail to style an unknown class).
+    /// </summary>
+    [Parameter] public string? NameString { get; set; }
+
+    /// <summary>
+    /// Octicon size keyword. Optional — when null, the icon inherits its
+    /// surrounding font-size. Accepted values map to Sunfish-prefixed size-modifier
+    /// classes emitted on the wrapper element (<c>sf-octicon--sm</c>, etc.).
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "octicon sf-octicon";
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Map size → size-class suffix (nullable — when null, no size class is emitted
+        // and the icon inherits its surrounding font-size).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `octicon octicon-*` alongside the
+        // Sunfish prefix `sf-octicon` — this lets migrators keep their Octicons CSS
+        // loaded without visual regressions and lets Sunfish-aware styles target the
+        // wrapper independently. Same split-class convention as compat-lucide /
+        // compat-bootstrap-icons.
+        _cssClass = string.IsNullOrEmpty(slug)
+            ? $"octicon sf-octicon{AppendSizeClass(sizeClass)}"
+            : $"octicon octicon-{slug} sf-octicon{AppendSizeClass(sizeClass)}";
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(NameString))
+        {
+            if (Name.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-octicons: Both Name='{Name}' and NameString='{NameString}' specified on Octicon. NameString wins. See docs/compat-octicons-mapping.md.",
+                    Name.Value, NameString);
+            }
+            return NameString;
+        }
+
+        return Name.HasValue ? Name.Value.ToSlug() : null;
+    }
+
+    private static string AppendSizeClass(string? sizeClass)
+        => string.IsNullOrEmpty(sizeClass) ? string.Empty : " " + sizeClass;
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "sf-octicon--sm",
+        FoundationEnums.IconSize.Medium => "sf-octicon--md",
+        FoundationEnums.IconSize.Large => "sf-octicon--lg",
+        FoundationEnums.IconSize.ExtraLarge => "sf-octicon--xl",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-octicons: Unrecognized Size value '{Value}' on Octicon. Inheriting ambient font-size. See docs/compat-octicons-mapping.md.",
+            received);
+        return null;
+    }
+}

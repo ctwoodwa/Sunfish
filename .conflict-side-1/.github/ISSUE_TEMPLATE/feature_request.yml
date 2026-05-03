@@ -1,0 +1,66 @@
+name: Feature Request
+description: Propose a new component, block, or enhancement
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before opening a feature request, check [Discussions](../../discussions) to see
+        if this has already been proposed or is being designed.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - New component (UI)
+        - New domain block (forms, tasks, scheduling, assets)
+        - New solution accelerator
+        - Existing component enhancement
+        - API / contract change
+        - Tooling / scaffolding CLI
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / Motivation
+      description: What problem does this solve? What are you unable to do today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Solution
+      description: Describe the feature. Include proposed API shape if relevant.
+      placeholder: |
+        ```csharp
+        // Example proposed API
+        <SunfishTimeline Items="@items" />
+        ```
+    validations:
+      required: true
+
+  - type: textarea
+    id: telerik
+    attributes:
+      label: Telerik / Vendor Parity
+      description: Does an equivalent component exist in Telerik UI for Blazor or another vendor? How should compat-telerik handle this?
+      placeholder: "e.g. Telerik has TelerikTimeline — compat-telerik should mirror its API shape."
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: What other approaches did you consider?
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I am willing to submit a PR for this feature

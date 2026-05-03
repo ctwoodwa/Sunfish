@@ -1,0 +1,91 @@
+@page "/components/forms/maskedtextbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>MaskedTextBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="MaskedTextBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/MaskedTextBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishMaskedInput</code> (the implementation behind the MaskedTextBox catalog entry)
+            enforces a format while the user types. The mask engine supports the standard rule tokens
+            — <code>0</code> required digit, <code>9</code> optional digit/space, <code>#</code>
+            digit/space/plus/minus, <code>L</code> required letter, <code>?</code> optional letter,
+            <code>A</code> required alphanumeric, <code>a</code> optional alphanumeric, <code>&amp;</code>
+            required character, <code>C</code> optional character — plus <code>&gt;</code> and
+            <code>&lt;</code> case-shift directives and <code>\</code> to escape a rule as a literal.
+            Anything else in the mask is passed through as a literal position the user can't overwrite.
+        </p>
+        <p>
+            Opt into <code>IncludeLiterals</code> to get the literals in the bound <code>Value</code>.
+            Change the unfilled-position hint with <code>Prompt</code> and the empty-slot placeholder
+            in the bound value with <code>PromptPlaceholder</code>. Toggle <code>MaskOnFocus</code>
+            to show the mask only while the field is focused.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:0.75rem; max-width:380px;">
+            <label>
+                Phone (US, <code>(000) 000-0000</code>)
+                <SunfishMaskedInput @bind-Value="_phoneValue"
+                                    Mask="(000) 000-0000"
+                                    AriaLabel="Phone number" />
+            </label>
+            <div>Raw value: <code>@_phoneValue</code></div>
+
+            <label>
+                Credit card (<code>0000-0000-0000-0000</code>, with literals)
+                <SunfishMaskedInput @bind-Value="_cardValue"
+                                    Mask="0000-0000-0000-0000"
+                                    IncludeLiterals="true"
+                                    ShowClearButton="true"
+                                    AriaLabel="Credit card number" />
+            </label>
+            <div>With literals: <code>@_cardValue</code></div>
+
+            <label>
+                UK postcode (<code>&gt;L0L 0LL</code>, upper-shift)
+                <SunfishMaskedInput @bind-Value="_postcodeValue"
+                                    Mask=">L0L 0LL"
+                                    AriaLabel="UK postcode" />
+            </label>
+            <div>Raw value: <code>@_postcodeValue</code></div>
+
+            <label>
+                SSN (<code>000-00-0000</code>, mask-on-focus)
+                <SunfishMaskedInput @bind-Value="_ssnValue"
+                                    Mask="000-00-0000"
+                                    MaskOnFocus="true"
+                                    Placeholder="SSN"
+                                    AriaLabel="Social security number" />
+            </label>
+            <div>Raw value: <code>@_ssnValue</code></div>
+
+            <label>
+                Invoice (escaped literals — <code>LA-\9\0\00000</code>)
+                <SunfishMaskedInput @bind-Value="_invoiceValue"
+                                    Mask="LA-\9\0\00000"
+                                    IncludeLiterals="true"
+                                    AriaLabel="Invoice number" />
+            </label>
+            <div>Raw value: <code>@_invoiceValue</code></div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "MaskedTextBox", "Overview"];
+
+    private string _phoneValue = "";
+    private string _cardValue = "";
+    private string _postcodeValue = "";
+    private string _ssnValue = "";
+    private string _invoiceValue = "";
+}

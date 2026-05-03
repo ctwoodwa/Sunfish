@@ -1,0 +1,142 @@
+@page "/components/buttons/togglebutton/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ToggleButton / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ToggleButton / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishToggleButton</code> renders a two-state button. Its visual surface
+            is defined by <code>Size</code> (<code>ButtonSize.Small</code> /
+            <code>Medium</code> / <code>Large</code>), the pressed vs unpressed state
+            (via <code>Selected</code>), the <code>Icon</code> render-fragment slot, and
+            the text <code>ChildContent</code>.
+        </p>
+        <p>
+            The component does not expose <code>Variant</code>, <code>FillMode</code>, or
+            <code>Rounded</code> parameters — selected/unselected appearance comes from the
+            design token theme. Pair toggles inside a <code>SunfishButtonGroup</code> when
+            you want them visually joined.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes (all unselected)</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                    <SunfishToggleButton Size="ButtonSize.Small">Small</SunfishToggleButton>
+                    <SunfishToggleButton Size="ButtonSize.Medium">Medium</SunfishToggleButton>
+                    <SunfishToggleButton Size="ButtonSize.Large">Large</SunfishToggleButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Pressed vs unpressed</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The left group shows the unpressed state, the right shows the pressed
+                    state.
+                </p>
+                <div style="display:flex; flex-wrap:wrap; gap:1rem;">
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; color:#555;">Unpressed</p>
+                        <div class="demo-row" style="display:flex; gap:.5rem;">
+                            <SunfishToggleButton>Bold</SunfishToggleButton>
+                            <SunfishToggleButton>Italic</SunfishToggleButton>
+                            <SunfishToggleButton>Underline</SunfishToggleButton>
+                        </div>
+                    </div>
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; color:#555;">Pressed (<code>Selected="true"</code>)</p>
+                        <div class="demo-row" style="display:flex; gap:.5rem;">
+                            <SunfishToggleButton Selected="true">Bold</SunfishToggleButton>
+                            <SunfishToggleButton Selected="true">Italic</SunfishToggleButton>
+                            <SunfishToggleButton Selected="true">Underline</SunfishToggleButton>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled states</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishToggleButton Enabled="false">Disabled</SunfishToggleButton>
+                    <SunfishToggleButton Enabled="false" Selected="true">Disabled (pressed)</SunfishToggleButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With icons</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    The <code>Icon</code> render fragment accepts any markup — an
+                    <code>SVG</code>, Sunfish icon, or even a glyph.
+                </p>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishToggleButton @bind-Selected="_favStar">
+                        <Icon><span aria-hidden="true">&#x2605;</span></Icon>
+                        <ChildContent>Favorite</ChildContent>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_bellOn">
+                        <Icon><span aria-hidden="true">&#x1F514;</span></Icon>
+                        <ChildContent>Notify</ChildContent>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_pinned">
+                        <Icon><span aria-hidden="true">&#x1F4CC;</span></Icon>
+                        <ChildContent>Pin</ChildContent>
+                    </SunfishToggleButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Icon-only toggles</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Provide an <code>aria-label</code> via pass-through so assistive tech has
+                    an accessible name.
+                </p>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishToggleButton @bind-Selected="_boldOnly" aria-label="Bold">
+                        <Icon><span aria-hidden="true"><strong>B</strong></span></Icon>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_italicOnly" aria-label="Italic">
+                        <Icon><span aria-hidden="true"><em>I</em></span></Icon>
+                    </SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_underlineOnly" aria-label="Underline">
+                        <Icon><span aria-hidden="true" style="text-decoration:underline;">U</span></Icon>
+                    </SunfishToggleButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Toggles inside a <code>SunfishButtonGroup</code></h3>
+                <SunfishButtonGroup aria-label="Text alignment">
+                    <SunfishToggleButton @bind-Selected="_alignLeft"   aria-label="Align left">L</SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_alignCenter" aria-label="Align center">C</SunfishToggleButton>
+                    <SunfishToggleButton @bind-Selected="_alignRight"  aria-label="Align right">R</SunfishToggleButton>
+                </SunfishButtonGroup>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ToggleButton", "Appearance"];
+
+    private bool _favStar;
+    private bool _bellOn;
+    private bool _pinned;
+    private bool _boldOnly;
+    private bool _italicOnly;
+    private bool _underlineOnly;
+    private bool _alignLeft = true;
+    private bool _alignCenter;
+    private bool _alignRight;
+}

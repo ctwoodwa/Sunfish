@@ -1,0 +1,359 @@
+@typeparam TItem
+@inherits SunfishComponentBase
+@implements IDisposable
+@using FilterOperator = Sunfish.Foundation.Enums.FilterOperator
+
+@{
+    var adaptiveClass = AdaptiveMode == AutoCompleteAdaptiveMode.Auto ? "mar-autocomplete--adaptive" : "";
+}
+
+<div class="@CombineClasses(CssProvider.AutocompleteClass(_isOpen, Disabled, IsInvalid)) @adaptiveClass"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <div class="sf-autocomplete__input-wrapper">
+        <input type="text"
+               class="@CssProvider.TextBoxClass(IsInvalid, Disabled)"
+               value="@Value"
+               placeholder="@Placeholder"
+               disabled="@Disabled"
+               readonly="@ReadOnly"
+               role="combobox"
+               aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+               aria-autocomplete="list"
+               aria-activedescendant="@(_highlightedIndex >= 0 ? $"autocomplete-option-{_highlightedIndex}" : null)"
+               @oninput="OnInputChanged"
+               @onkeydown="OnKeyDown"
+               @onfocus="OpenDropdown"
+               @onblur="CloseDropdownDelayed" />
+        @if (ShowClearButton && !string.IsNullOrEmpty(Value))
+        {
+            <button type="button"
+                    class="sf-autocomplete__clear"
+                    aria-label="Clear"
+                    tabindex="-1"
+                    @onmousedown="ClearValue"
+                    @onmousedown:preventDefault>
+                &#x2715;
+            </button>
+        }
+    </div>
+    @if (_isOpen && (_filteredTItems.Any() || HeaderTemplate != null || FooterTemplate != null))
+    {
+        <div class="sf-autocomplete__dropdown">
+            @if (HeaderTemplate != null)
+            {
+                <div class="sf-autocomplete__header">
+                    @HeaderTemplate
+                </div>
+            }
+            @if (_filteredTItems.Any())
+            {
+                <ul class="@CssProvider.MenuClass()" role="listbox">
+                    @if (!string.IsNullOrEmpty(GroupField))
+                    {
+                        var groups = _filteredTItems
+                            .GroupBy(item => GetGroupValue(item) ?? "")
+                            .ToList();
+                        var flatIdx = 0;
+                        @foreach (var group in groups)
+                        {
+                            <li class="sf-autocomplete__group-header" role="presentation">@group.Key</li>
+                            @foreach (var item in group)
+                            {
+                                var index = flatIdx;
+                                var displayText = GetDisplayText(item);
+                                var isHighlighted = index == _highlightedIndex;
+                                var isSelected = displayText == Value;
+                                <li id="autocomplete-option-@index"
+                                    class="@CssProvider.AutocompleteItemClass(isHighlighted, isSelected)"
+                                    role="option"
+                                    aria-selected="@(isHighlighted ? "true" : "false")"
+                                    @onmousedown="() => SelectTItem(item)">
+                                    @if (ItemTemplate != null)
+                                    {
+                                        @ItemTemplate(item)
+                                    }
+                                    else
+                                    {
+                                        @displayText
+                                    }
+                                </li>
+                                flatIdx++;
+                            }
+                        }
+                    }
+                    else if (EnableVirtualization)
+                    {
+                        <Virtualize Items="@_filteredTItems" ItemSize="@VirtualItemSize" Context="item">
+                            @{
+                                var vIndex = _filteredTItems.IndexOf(item);
+                                var vDisplayText = GetDisplayText(item);
+                                var vIsHighlighted = vIndex == _highlightedIndex;
+                                var vIsSelected = vDisplayText == Value;
+                            }
+                            <li id="autocomplete-option-@vIndex"
+                                class="@CssProvider.AutocompleteItemClass(vIsHighlighted, vIsSelected)"
+                                role="option"
+                                aria-selected="@(vIsHighlighted ? "true" : "false")"
+                                @onmousedown="() => SelectTItem(item)">
+                                @if (ItemTemplate != null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    @vDisplayText
+                                }
+                            </li>
+                        </Virtualize>
+                    }
+                    else
+                    {
+                        @for (var i = 0; i < _filteredTItems.Count; i++)
+                        {
+                            var index = i;
+                            var item = _filteredTItems[i];
+                            var displayText = GetDisplayText(item);
+                            var isHighlighted = index == _highlightedIndex;
+                            var isSelected = displayText == Value;
+                            <li id="autocomplete-option-@index"
+                                class="@CssProvider.AutocompleteItemClass(isHighlighted, isSelected)"
+                                role="option"
+                                aria-selected="@(isHighlighted ? "true" : "false")"
+                                @onmousedown="() => SelectTItem(item)">
+                                @if (ItemTemplate != null)
+                                {
+                                    @ItemTemplate(item)
+                                }
+                                else
+                                {
+                                    @displayText
+                                }
+                            </li>
+                        }
+                    }
+                </ul>
+            }
+            @if (FooterTemplate != null)
+            {
+                <div class="sf-autocomplete__footer">
+                    @FooterTemplate
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public IEnumerable<string> Items { get; set; } = Enumerable.Empty<string>();
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public string? TextField { get; set; }
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool IsInvalid { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public FilterOperator FilterOperator { get; set; } = FilterOperator.Contains;
+    [Parameter] public int DebounceDelay { get; set; } = 0;
+    [Parameter] public int MinLength { get; set; } = 1;
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+    [Parameter] public string? GroupField { get; set; }
+    [Parameter] public bool EnableVirtualization { get; set; }
+    [Parameter] public float VirtualItemSize { get; set; } = 36;
+
+    /// <summary>
+    /// When set to Auto, the autocomplete renders as a full-screen action sheet
+    /// on small viewports (via CSS media query class), providing a mobile-friendly experience.
+    /// </summary>
+    [Parameter] public AutoCompleteAdaptiveMode AdaptiveMode { get; set; } = AutoCompleteAdaptiveMode.None;
+
+    private bool _isOpen;
+    private List<TItem> _filteredTItems = new();
+    private int _highlightedIndex = -1;
+    private Timer? _debounceTimer;
+    private string _pendingInput = string.Empty;
+
+    private bool UseGenericData => Data != null;
+
+    private IEnumerable<TItem> GetSourceItems()
+    {
+        if (UseGenericData)
+            return Data!;
+
+        // Fallback: when TItem is string and Items is provided
+        if (typeof(TItem) == typeof(string))
+            return (IEnumerable<TItem>)(object)Items;
+
+        return Enumerable.Empty<TItem>();
+    }
+
+    private string GetDisplayText(TItem item)
+    {
+        if (item is string s)
+            return s;
+
+        if (!string.IsNullOrEmpty(TextField))
+        {
+            var val = typeof(TItem).GetProperty(TextField)?.GetValue(item);
+            return val?.ToString() ?? string.Empty;
+        }
+
+        return item?.ToString() ?? string.Empty;
+    }
+
+    private string GetValueText(TItem item)
+    {
+        if (item is string s)
+            return s;
+
+        if (!string.IsNullOrEmpty(ValueField))
+        {
+            var val = typeof(TItem).GetProperty(ValueField)?.GetValue(item);
+            return val?.ToString() ?? string.Empty;
+        }
+
+        return GetDisplayText(item);
+    }
+
+    private string? GetGroupValue(TItem item)
+    {
+        if (item is null || string.IsNullOrEmpty(GroupField)) return null;
+        return typeof(TItem).GetProperty(GroupField)?.GetValue(item)?.ToString();
+    }
+
+    private bool MatchesFilter(string text, string search)
+    {
+        if (string.IsNullOrEmpty(search))
+            return true;
+
+        return FilterOperator switch
+        {
+            FilterOperator.Contains => text.Contains(search, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.StartsWith => text.StartsWith(search, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.EndsWith => text.EndsWith(search, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.Equals => text.Equals(search, StringComparison.OrdinalIgnoreCase),
+            FilterOperator.NotEquals => !text.Equals(search, StringComparison.OrdinalIgnoreCase),
+            _ => text.Contains(search, StringComparison.OrdinalIgnoreCase),
+        };
+    }
+
+    private void FilterItems()
+    {
+        if (string.IsNullOrEmpty(Value) || Value.Length < MinLength)
+        {
+            _filteredTItems = new List<TItem>();
+            _highlightedIndex = -1;
+            return;
+        }
+
+        _filteredTItems = GetSourceItems()
+            .Where(item => MatchesFilter(GetDisplayText(item), Value))
+            .ToList();
+        _highlightedIndex = -1;
+    }
+
+    private async Task OnInputChanged(ChangeEventArgs e)
+    {
+        if (ReadOnly) return;
+
+        var newValue = e.Value?.ToString() ?? string.Empty;
+        Value = newValue;
+        await ValueChanged.InvokeAsync(Value);
+
+        if (DebounceDelay > 0)
+        {
+            _pendingInput = newValue;
+            _debounceTimer?.Dispose();
+            _debounceTimer = new Timer(DebounceCallback, null, DebounceDelay, Timeout.Infinite);
+        }
+        else
+        {
+            FilterItems();
+            _isOpen = _filteredTItems.Any();
+        }
+    }
+
+    private void DebounceCallback(object? state)
+    {
+        InvokeAsync(() =>
+        {
+            FilterItems();
+            _isOpen = _filteredTItems.Any();
+            StateHasChanged();
+        });
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                if (_isOpen && _filteredTItems.Any())
+                {
+                    _highlightedIndex = (_highlightedIndex + 1) % _filteredTItems.Count;
+                }
+                break;
+            case "ArrowUp":
+                if (_isOpen && _filteredTItems.Any())
+                {
+                    _highlightedIndex = _highlightedIndex <= 0 ? _filteredTItems.Count - 1 : _highlightedIndex - 1;
+                }
+                break;
+            case "Enter":
+                if (_highlightedIndex >= 0 && _highlightedIndex < _filteredTItems.Count)
+                {
+                    await SelectTItem(_filteredTItems[_highlightedIndex]);
+                }
+                break;
+            case "Escape":
+                _isOpen = false;
+                break;
+        }
+    }
+
+    private async Task SelectTItem(TItem item)
+    {
+        Value = GetValueText(item);
+        await ValueChanged.InvokeAsync(Value);
+        _isOpen = false;
+    }
+
+    private async Task ClearValue()
+    {
+        Value = string.Empty;
+        await ValueChanged.InvokeAsync(Value);
+        _filteredTItems.Clear();
+        _isOpen = false;
+    }
+
+    private void OpenDropdown()
+    {
+        if (ReadOnly || Disabled) return;
+        FilterItems();
+        _isOpen = _filteredTItems.Any();
+    }
+
+    private void CloseDropdownDelayed()
+    {
+        _ = Task.Delay(200).ContinueWith(_ =>
+        {
+            _isOpen = false;
+            InvokeAsync(StateHasChanged);
+        });
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _debounceTimer?.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+}

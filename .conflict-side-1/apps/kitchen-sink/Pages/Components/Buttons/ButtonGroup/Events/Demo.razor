@@ -1,0 +1,155 @@
+@page "/components/buttons/buttongroup/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ButtonGroup / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ButtonGroup / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ButtonGroup/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Events fire at two levels. Each child
+            (<code>&lt;ButtonGroupButton&gt;</code> or
+            <code>&lt;ButtonGroupToggleButton&gt;</code>) publishes its own
+            <code>OnClick</code>, and toggle children also publish a per-child
+            <code>SelectedChanged(bool)</code> for <code>@@bind-Selected</code>. The container
+            publishes <code>SelectedIndexChanged</code> /
+            <code>SelectedIndexesChanged</code> (depending on selection mode) and a legacy
+            <code>SelectedChanged(int)</code> that carries the index of the toggled child.
+        </p>
+        <p>
+            <code>OnClick</code> always fires <em>before</em> the <code>Selected</code>
+            value changes, per spec.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 340px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+                <section>
+                    <h3 style="margin:0 0 .5rem;">Single selection — container + per-child events</h3>
+                    <SunfishButtonGroup SelectionMode="ButtonGroupSelectionMode.Single"
+                                        @bind-SelectedIndex="_singleIndex"
+                                        SelectedChanged="HandleLegacySelectedChanged">
+                        <ButtonGroupToggleButton Selected="@_toggleAsc"
+                                                 SelectedChanged="@((bool v) => HandleSelectedChanged(0, "Ascending", v))"
+                                                 OnClick="@(args => HandleChildClick(0, "Ascending", args))">
+                            Ascending
+                        </ButtonGroupToggleButton>
+                        <ButtonGroupToggleButton Selected="@_toggleDesc"
+                                                 SelectedChanged="@((bool v) => HandleSelectedChanged(1, "Descending", v))"
+                                                 OnClick="@(args => HandleChildClick(1, "Descending", args))">
+                            Descending
+                        </ButtonGroupToggleButton>
+                        <ButtonGroupToggleButton Selected="@_toggleCustom"
+                                                 SelectedChanged="@((bool v) => HandleSelectedChanged(2, "Custom", v))"
+                                                 OnClick="@(args => HandleChildClick(2, "Custom", args))">
+                            Custom
+                        </ButtonGroupToggleButton>
+                    </SunfishButtonGroup>
+
+                    <p style="margin-top:.5rem; color:#555; font-size:.9rem;">
+                        SelectedIndex: <strong>@_singleIndex</strong>
+                    </p>
+                </section>
+
+                <section>
+                    <h3 style="margin:0 0 .5rem;">Multiple selection — indexes callback</h3>
+                    <SunfishButtonGroup SelectionMode="ButtonGroupSelectionMode.Multiple"
+                                        @bind-SelectedIndexes="_multiIndexes">
+                        <ButtonGroupToggleButton OnClick="@(args => Append("OnClick", "Bold"))">Bold</ButtonGroupToggleButton>
+                        <ButtonGroupToggleButton OnClick="@(args => Append("OnClick", "Italic"))">Italic</ButtonGroupToggleButton>
+                        <ButtonGroupToggleButton OnClick="@(args => Append("OnClick", "Underline"))">Underline</ButtonGroupToggleButton>
+                    </SunfishButtonGroup>
+                    <p style="margin-top:.5rem; color:#555; font-size:.9rem;">
+                        Active indexes: <strong>[@string.Join(", ", _multiIndexes)]</strong>
+                    </p>
+                </section>
+
+                <section>
+                    <h3 style="margin:0 0 .5rem;">Action toolbar (each child independent)</h3>
+                    <SunfishButtonGroup>
+                        <ButtonGroupButton OnClick="@(_ => Append("OnClick", "Copy"))">Copy</ButtonGroupButton>
+                        <ButtonGroupButton OnClick="@(_ => Append("OnClick", "Cut"))">Cut</ButtonGroupButton>
+                        <ButtonGroupButton OnClick="@(_ => Append("OnClick", "Paste"))">Paste</ButtonGroupButton>
+                    </SunfishButtonGroup>
+                </section>
+
+                <div style="display:flex; gap:.5rem; align-items:center;">
+                    <ButtonGroupButton OnClick="@(_ => ClearLog())">Clear log</ButtonGroupButton>
+                    <span style="color:#666; font-size:.85rem;">Events captured: @_log.Count</span>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:440px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ButtonGroup", "Events"];
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private int _singleIndex = -1;
+    private bool _toggleAsc;
+    private bool _toggleDesc;
+    private bool _toggleCustom;
+
+    private int[] _multiIndexes = Array.Empty<int>();
+
+    private void HandleChildClick(int slot, string label, Microsoft.AspNetCore.Components.Web.MouseEventArgs args) =>
+        Append("OnClick (child)", $"slot {slot} → {label} (ctrl={args.CtrlKey || args.MetaKey})");
+
+    private void HandleSelectedChanged(int slot, string label, bool value)
+    {
+        // Update local backing state so @bind-Selected round-trips cleanly.
+        switch (slot)
+        {
+            case 0: _toggleAsc = value; break;
+            case 1: _toggleDesc = value; break;
+            case 2: _toggleCustom = value; break;
+        }
+        Append("SelectedChanged", $"slot {slot} ({label}) → {value}");
+    }
+
+    private void HandleLegacySelectedChanged(int slot) =>
+        Append("SelectedChanged (container)", $"slot {slot}");
+
+    private void Append(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+}

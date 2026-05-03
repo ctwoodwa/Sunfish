@@ -1,0 +1,99 @@
+// =================================================================
+// Foundation: Sync / Freshness State Tokens (paper §5.2, §13.2)
+// =================================================================
+// Encodes node-state visual vocabulary for the LocalFirst components
+// (SunfishSyncStatusIndicator, SunfishFreshnessBadge, SunfishConflictList,
+// SunfishOptimisticButton, SunfishNodeHealthBar).
+//
+// Bootstrap 5 maps:
+//   healthy     -> --bs-success (green)
+//   stale       -> --bs-warning (amber)   -- paper §13.2 5-/10-/15-min thresholds
+//   offline     -> --bs-secondary (gray)  -- missing signal, not an error
+//   conflict    -> --bs-danger  (red)     -- user-actionable merge/lease
+//   quarantine  -> purple (distinct from conflict; non-actionable until operator review)
+// =================================================================
+
+:root {
+  // Healthy — sync is within freshness threshold
+  --sf-sync-healthy-fg: var(--bs-success-text-emphasis, #0a3622);
+  --sf-sync-healthy-bg: var(--bs-success-bg-subtle,  #d1e7dd);
+  --sf-sync-healthy-border: var(--bs-success-border-subtle, #a3cfbb);
+
+  // Stale — beyond freshness threshold, still trusted but flagged
+  --sf-sync-stale-fg: var(--bs-warning-text-emphasis, #664d03);
+  --sf-sync-stale-bg: var(--bs-warning-bg-subtle,  #fff3cd);
+  --sf-sync-stale-border: var(--bs-warning-border-subtle, #ffe69c);
+
+  // Offline — no transport or no signal
+  --sf-sync-offline-fg: var(--bs-secondary-text-emphasis, #2b2f32);
+  --sf-sync-offline-bg: var(--bs-secondary-bg-subtle,  #e2e3e5);
+  --sf-sync-offline-border: var(--bs-secondary-border-subtle, #c4c8cb);
+
+  // Conflict — merge conflict / lease contention / schema-epoch mismatch
+  --sf-sync-conflict-fg: var(--bs-danger-text-emphasis, #58151c);
+  --sf-sync-conflict-bg: var(--bs-danger-bg-subtle,  #f8d7da);
+  --sf-sync-conflict-border: var(--bs-danger-border-subtle, #f1aeb5);
+
+  // Quarantine — data flagged by the replication layer; purple to read
+  // distinctly from conflict-red without collapsing into info-blue
+  --sf-sync-quarantine-fg: #4b1a78;
+  --sf-sync-quarantine-bg: #ebddf9;
+  --sf-sync-quarantine-border: #d1b7ed;
+}
+
+[data-bs-theme="dark"] {
+  --sf-sync-healthy-fg: var(--bs-success-text-emphasis, #75b798);
+  --sf-sync-healthy-bg: var(--bs-success-bg-subtle,  #051b11);
+  --sf-sync-healthy-border: var(--bs-success-border-subtle, #0f5132);
+
+  --sf-sync-stale-fg: var(--bs-warning-text-emphasis, #ffda6a);
+  --sf-sync-stale-bg: var(--bs-warning-bg-subtle,  #332701);
+  --sf-sync-stale-border: var(--bs-warning-border-subtle, #997404);
+
+  --sf-sync-offline-fg: var(--bs-secondary-text-emphasis, #a7acb1);
+  --sf-sync-offline-bg: var(--bs-secondary-bg-subtle,  #161719);
+  --sf-sync-offline-border: var(--bs-secondary-border-subtle, #41464b);
+
+  --sf-sync-conflict-fg: var(--bs-danger-text-emphasis, #ea868f);
+  --sf-sync-conflict-bg: var(--bs-danger-bg-subtle,  #2c0b0e);
+  --sf-sync-conflict-border: var(--bs-danger-border-subtle, #842029);
+
+  --sf-sync-quarantine-fg: #d4b8f7;
+  --sf-sync-quarantine-bg: #24103a;
+  --sf-sync-quarantine-border: #4b1a78;
+}
+
+// ----------------------------------------------------------------------------
+// Utility classes consumed by the LocalFirst Blazor components.
+// Each emits a pill-style surface (fg/bg/border) keyed to the sync state.
+// ----------------------------------------------------------------------------
+
+.sf-sync--healthy {
+  color: var(--sf-sync-healthy-fg);
+  background-color: var(--sf-sync-healthy-bg);
+  border-color: var(--sf-sync-healthy-border);
+}
+
+.sf-sync--stale {
+  color: var(--sf-sync-stale-fg);
+  background-color: var(--sf-sync-stale-bg);
+  border-color: var(--sf-sync-stale-border);
+}
+
+.sf-sync--offline {
+  color: var(--sf-sync-offline-fg);
+  background-color: var(--sf-sync-offline-bg);
+  border-color: var(--sf-sync-offline-border);
+}
+
+.sf-sync--conflict {
+  color: var(--sf-sync-conflict-fg);
+  background-color: var(--sf-sync-conflict-bg);
+  border-color: var(--sf-sync-conflict-border);
+}
+
+.sf-sync--quarantine {
+  color: var(--sf-sync-quarantine-fg);
+  background-color: var(--sf-sync-quarantine-bg);
+  border-color: var(--sf-sync-quarantine-border);
+}

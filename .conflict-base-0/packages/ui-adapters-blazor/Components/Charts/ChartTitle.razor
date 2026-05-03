@@ -1,0 +1,35 @@
+@* ChartTitle — configures the chart title and optional description for accessibility. *@
+
+<CascadingValue Value="this" IsFixed="true">@ChildContent</CascadingValue>
+
+@code {
+    [CascadingParameter] internal SunfishChart? ParentChart { get; set; }
+
+    /// <summary>The title text.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>A longer description for screen readers.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Position of the title relative to the chart.</summary>
+    [Parameter] public ChartPosition Position { get; set; } = ChartPosition.Top;
+
+    /// <summary>Child content for nesting ChartSubtitle.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The subtitle registered by a child ChartSubtitle component.</summary>
+    internal ChartSubtitle? Subtitle { get; private set; }
+
+    internal void SetSubtitle(ChartSubtitle subtitle)
+    {
+        Subtitle = subtitle;
+        ParentChart?.NotifyChildChanged();
+    }
+
+    protected override void OnInitialized()
+    {
+        if (ParentChart is null)
+            throw new InvalidOperationException("ChartTitle must be placed inside a SunfishChart.");
+        ParentChart.SetChartTitle(this);
+    }
+}

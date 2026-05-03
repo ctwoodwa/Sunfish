@@ -1,0 +1,82 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout.Tiles
+@inherits SunfishComponentBase
+
+@* ──────────────────────────────────────────────────────────────────────
+   SunfishTile — a single dashboard tile inside SunfishTileLayout.
+
+   Renders an optional header and body inside a CSS-grid cell positioned by
+   (Col, Row, ColSpan, RowSpan). The header supports arbitrary content so
+   consumers can embed titles, toolbars, or icons.
+   ────────────────────────────────────────────────────────────────────── *@
+
+@if (TileLayout is not null)
+{
+    <div class="@CombineClasses("sf-tile")"
+         style="@CombineStyles(GridAreaStyle(), "display:flex;flex-direction:column;border:1px solid var(--sf-color-border, #e0e0e0);border-radius:4px;background:var(--sf-color-surface, #fff);overflow:hidden;")"
+         data-sf-tile-id="@ResolvedId"
+         @attributes="AdditionalAttributes">
+        @if (Header is not null)
+        {
+            <div class="sf-tile__header"
+                 style="padding:8px 12px;font-weight:600;border-bottom:1px solid var(--sf-color-border, #e0e0e0);background:var(--sf-color-surface-alt, #fafafa);">
+                @Header
+            </div>
+        }
+        <div class="sf-tile__body" style="flex:1 1 auto;padding:12px;overflow:auto;">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Stable identifier for the tile (auto-generated if omitted).</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Header render fragment (title, toolbar, icons).</summary>
+    [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>Tile body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Number of columns this tile spans. Defaults to 1.</summary>
+    [Parameter] public int ColSpan { get; set; } = 1;
+
+    /// <summary>Number of rows this tile spans. Defaults to 1.</summary>
+    [Parameter] public int RowSpan { get; set; } = 1;
+
+    /// <summary>1-based column start (defaults to <c>auto</c> when unset or zero).</summary>
+    [Parameter] public int Col { get; set; }
+
+    /// <summary>1-based row start (defaults to <c>auto</c> when unset or zero).</summary>
+    [Parameter] public int Row { get; set; }
+
+    /// <summary>Parent tile layout resolved through the cascading root.</summary>
+    [CascadingParameter] public SunfishTileLayout? TileLayout { get; set; }
+
+    private readonly string _autoId = $"tile-{Guid.NewGuid():N}";
+
+    internal string ResolvedId => string.IsNullOrWhiteSpace(Id) ? _autoId : Id!;
+
+    protected override void OnInitialized()
+    {
+        TileLayout?.RegisterTile(this);
+    }
+
+    private string GridAreaStyle()
+    {
+        var colStart = Col > 0 ? Col.ToString(System.Globalization.CultureInfo.InvariantCulture) : "auto";
+        var rowStart = Row > 0 ? Row.ToString(System.Globalization.CultureInfo.InvariantCulture) : "auto";
+        var colSpan = ColSpan > 0 ? ColSpan : 1;
+        var rowSpan = RowSpan > 0 ? RowSpan : 1;
+        return $"grid-column:{colStart} / span {colSpan};grid-row:{rowStart} / span {rowSpan};";
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            TileLayout?.UnregisterTile(this);
+        }
+        base.Dispose(disposing);
+    }
+}

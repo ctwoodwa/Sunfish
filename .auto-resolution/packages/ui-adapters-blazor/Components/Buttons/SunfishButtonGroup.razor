@@ -1,0 +1,11 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ButtonGroupClass())"
+     style="@CombineStyles(WidthStyle)"
+     role="group"
+     aria-label="Button group"
+     @attributes="AdditionalAttributes">
+    <CascadingValue Value="this" IsFixed="true">
+        @ChildContent
+    </CascadingValue>
+</div>

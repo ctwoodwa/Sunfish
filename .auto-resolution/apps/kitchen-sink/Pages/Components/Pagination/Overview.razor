@@ -1,0 +1,105 @@
+@page "/components/Pagination"
+@page "/components/Pagination/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishPagination Total="100" PageSize="10" Page="@_page" PageChanged="@(v => _page = v)" />
+        <p><strong>Current page:</strong> @_page</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Features">
+    <DemoSection Title="Page Size Selector" Description="Allow users to change the number of items per page." Code="@_pageSizesCode">
+        <SunfishPagination Total="100" PageSize="@_pageSize" PageSizeChanged="@(s => _pageSize = s)"
+                          PageSizes="@(new List<int> { 5, 10, 25, 50 })"
+                          Page="@_pageSizePage" PageChanged="@(v => _pageSizePage = v)"
+                          ShowInfo="true" />
+        <p><strong>Page size:</strong> @_pageSize | <strong>Page:</strong> @_pageSizePage</p>
+    </DemoSection>
+
+    <DemoSection Title="Page Info" Description="Display item range and total count." Code="@_infoCode">
+        <SunfishPagination Total="47" PageSize="10" Page="1" ShowInfo="true" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="PageChanged" Description="Handle page changes with the PageChanged callback." Code="@_pageChangedCode">
+        <SunfishPagination Total="100" PageSize="10" Page="@_currentPage" PageChanged="@OnPageChanged" />
+        <p><strong>Current page:</strong> @_currentPage</p>
+        <p><strong>Last change:</strong> @_lastChange</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private int _page = 1;
+    private int _currentPage = 1;
+    private int _pageSize = 10;
+    private int _pageSizePage = 1;
+    private string _lastChange = "None";
+
+    private void OnPageChanged(int page)
+    {
+        _currentPage = page;
+        _lastChange = $"Changed to page {page}";
+    }
+
+    private const string _basicCode =
+        "<SunfishPagination Total=\"100\" PageSize=\"10\" Page=\"@_page\" PageChanged=\"@(v => _page = v)\" />\n" +
+        "<p><strong>Current page:</strong> @_page</p>\n\n" +
+        "@code {\n" +
+        "    private int _page = 1;\n" +
+        "}";
+
+    private const string _pageSizesCode =
+        "<SunfishPagination Total=\"100\" PageSize=\"@_pageSize\" PageSizeChanged=\"@(s => _pageSize = s)\"\n" +
+        "                  PageSizes=\"@(new List<int> { 5, 10, 25, 50 })\"\n" +
+        "                  Page=\"@_page\" PageChanged=\"@(v => _page = v)\"\n" +
+        "                  ShowInfo=\"true\" />";
+
+    private const string _infoCode =
+        "<SunfishPagination Total=\"47\" PageSize=\"10\" Page=\"1\" ShowInfo=\"true\" />";
+
+    private const string _pageChangedCode =
+        "<SunfishPagination Total=\"100\" PageSize=\"10\" Page=\"@_currentPage\" PageChanged=\"@OnPageChanged\" />\n" +
+        "<p><strong>Current page:</strong> @_currentPage</p>\n" +
+        "<p><strong>Last change:</strong> @_lastChange</p>\n\n" +
+        "@code {\n" +
+        "    private int _currentPage = 1;\n" +
+        "    private string _lastChange = \"None\";\n\n" +
+        "    private void OnPageChanged(int page)\n" +
+        "    {\n" +
+        "        _currentPage = page;\n" +
+        "        _lastChange = $\"Changed to page {page}\";\n" +
+        "    }\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the next page button"),
+        ("Shift + Tab", "Moves focus to the previous page button"),
+        ("Enter", "Activates the focused page button"),
+        ("Space", "Activates the focused page button"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("nav aria-label=\"pagination\"", "The pagination is wrapped in a nav element with aria-label"),
+        ("aria-current=\"page\"", "Applied to the currently selected page button to indicate the active page"),
+        ("aria-label", "Previous and next buttons have descriptive aria-labels"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The pagination is announced as a navigation landmark.",
+        "The current page button is announced with \"current page\" to indicate the selected page.",
+        "Previous and next buttons are labeled to indicate their navigation direction.",
+    ];
+}

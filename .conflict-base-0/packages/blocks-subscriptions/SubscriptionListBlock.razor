@@ -1,0 +1,70 @@
+@* Read-display subscription list. Consumes ISubscriptionService via DI.
+   Editing, plan changes, and billing workflow are deferred to follow-up work. *@
+
+@inject ISubscriptionService SubscriptionService
+
+@if (_state.IsLoading)
+{
+    <div class="sf-subscription-list__loading">Loading subscriptions…</div>
+}
+else if (_state.Error is not null)
+{
+    <div class="sf-subscription-list__error">@_state.Error</div>
+}
+else if (_state.Subscriptions.Count == 0)
+{
+    <div class="sf-subscription-list__empty">No subscriptions</div>
+}
+else
+{
+    <table class="sf-subscription-list">
+        <thead>
+            <tr>
+                <th class="sf-subscription-list__col-edition">Edition</th>
+                <th class="sf-subscription-list__col-plan">Plan</th>
+                <th class="sf-subscription-list__col-start">Start date</th>
+                <th class="sf-subscription-list__col-end">End date</th>
+                <th class="sf-subscription-list__col-addons">Add-ons</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var sub in _state.Subscriptions)
+            {
+                <tr class="sf-subscription-list__row" data-subscription-id="@sub.Id">
+                    <td class="sf-subscription-list__col-edition">@sub.Edition</td>
+                    <td class="sf-subscription-list__col-plan">@sub.PlanId</td>
+                    <td class="sf-subscription-list__col-start">@sub.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-subscription-list__col-end">@(sub.EndDate?.ToString("yyyy-MM-dd") ?? "—")</td>
+                    <td class="sf-subscription-list__col-addons">@sub.AddOns.Count</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private SubscriptionListState _state = SubscriptionListState.Loading;
+
+    /// <summary>
+    /// Optional filter to pass when loading subscriptions. Defaults to
+    /// <see cref="ListSubscriptionsQuery.Empty"/> (returns all subscriptions for
+    /// the current tenant).
+    /// </summary>
+    [Parameter] public ListSubscriptionsQuery Query { get; set; } = ListSubscriptionsQuery.Empty;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var results = new List<Subscription>();
+            await foreach (var sub in SubscriptionService.ListSubscriptionsAsync(Query))
+                results.Add(sub);
+            _state = new SubscriptionListState(results, IsLoading: false, Error: null);
+        }
+        catch (Exception ex)
+        {
+            _state = new SubscriptionListState([], IsLoading: false, Error: ex.Message);
+        }
+    }
+}

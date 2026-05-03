@@ -1,0 +1,90 @@
+@page "/components/dropdowntree"
+@page "/components/dropdowntree/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A dropdown that presents hierarchical data as an indented tree." Code="@_basicCode">
+        <SunfishDropDownTree Data="@_treeData"
+                            TextField="Text"
+                            ValueField="Id"
+                            ItemsField="Children"
+                            @bind-Value="_selectedValue"
+                            Placeholder="Select a category"
+                            Width="280px" />
+        <p><strong>Selected:</strong> @(_selectedValue ?? "none")</p>
+    </DemoSection>
+
+    <DemoSection Title="Filterable" Description="Enable search filtering within the dropdown tree." Code="@_filterCode">
+        <SunfishDropDownTree Data="@_treeData"
+                            TextField="Text"
+                            ValueField="Id"
+                            ItemsField="Children"
+                            Filterable="true"
+                            Placeholder="Search and select..."
+                            Width="280px" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Custom Popup Size" Description="Adjust the dropdown popup dimensions." Code="@_sizeCode">
+        <SunfishDropDownTree Data="@_treeData"
+                            TextField="Text"
+                            ValueField="Id"
+                            ItemsField="Children"
+                            PopupHeight="300px"
+                            PopupWidth="350px"
+                            Width="280px" />
+    </DemoSection>
+</PageSection>
+
+@code {
+    private object? _selectedValue;
+
+    private readonly List<object> _treeData = new()
+    {
+        new TreeNode { Id = "1", Text = "Electronics", Children = new List<object>
+        {
+            new TreeNode { Id = "1-1", Text = "Phones" },
+            new TreeNode { Id = "1-2", Text = "Laptops", Children = new List<object>
+            {
+                new TreeNode { Id = "1-2-1", Text = "Gaming" },
+                new TreeNode { Id = "1-2-2", Text = "Business" }
+            }},
+        }},
+        new TreeNode { Id = "2", Text = "Clothing", Children = new List<object>
+        {
+            new TreeNode { Id = "2-1", Text = "Men" },
+            new TreeNode { Id = "2-2", Text = "Women" }
+        }},
+        new TreeNode { Id = "3", Text = "Books" }
+    };
+
+    private class TreeNode
+    {
+        public string Id { get; set; } = "";
+        public string Text { get; set; } = "";
+        public List<object>? Children { get; set; }
+    }
+
+    private const string _basicCode =
+        "<SunfishDropDownTree Data=\"@_treeData\"\n" +
+        "                    TextField=\"Text\"\n" +
+        "                    ValueField=\"Id\"\n" +
+        "                    ItemsField=\"Children\"\n" +
+        "                    @bind-Value=\"_selectedValue\"\n" +
+        "                    Placeholder=\"Select a category\"\n" +
+        "                    Width=\"280px\" />";
+
+    private const string _filterCode =
+        "<SunfishDropDownTree Data=\"@_treeData\"\n" +
+        "                    TextField=\"Text\"\n" +
+        "                    ValueField=\"Id\"\n" +
+        "                    ItemsField=\"Children\"\n" +
+        "                    Filterable=\"true\"\n" +
+        "                    Placeholder=\"Search and select...\" />";
+
+    private const string _sizeCode =
+        "<SunfishDropDownTree Data=\"@_treeData\"\n" +
+        "                    PopupHeight=\"300px\"\n" +
+        "                    PopupWidth=\"350px\" />";
+}

@@ -1,0 +1,33 @@
+[Unit]
+# Sunfish local-node headless host — paper §4, §16.
+# Installed by installers/linux/debian/build-deb.sh into
+# /lib/systemd/system/sunfish-local-node.service and enabled by the
+# package's postinst.
+Description=Sunfish local-node kernel host
+Documentation=https://github.com/sunfish-platform/sunfish
+After=network.target
+Wants=network.target
+
+[Service]
+Type=notify
+User=sunfish
+Group=sunfish
+ExecStart=/opt/sunfish/local-node-host/Sunfish.LocalNodeHost
+Restart=on-failure
+RestartSec=5
+# BYOD path-separation per paper §16.3: team data lives under XDG_DATA_HOME
+# (wipe target), user preferences under XDG_CONFIG_HOME (policy-excluded).
+Environment=XDG_DATA_HOME=/var/lib/sunfish
+Environment=XDG_CONFIG_HOME=/etc/sunfish
+# Hardening — tighten in a future pass; these are the safe baseline that does
+# not break the notify protocol or the encrypted-store file writes.
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+NoNewPrivileges=yes
+ReadWritePaths=/var/lib/sunfish
+# Graceful shutdown before systemd SIGKILLs us.
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

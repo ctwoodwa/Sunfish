@@ -1,0 +1,137 @@
+@page "/components/Breadcrumb"
+@page "/components/Breadcrumb/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishBreadcrumb>
+            <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem IsActive="true">Breadcrumb</SunfishBreadcrumbItem>
+        </SunfishBreadcrumb>
+    </DemoSection>
+
+    <DemoSection Title="Data Binding" Description="Provide a Data collection and use TextField/UrlField/IconField to generate breadcrumb items automatically." Code="@_dataCode">
+        <SunfishBreadcrumb Data="@_breadcrumbData" TextField="Label" UrlField="Url" IconField="Icon" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Custom Separator" Description="Breadcrumbs can use a custom separator character." Code="@_separatorCode">
+        <SunfishBreadcrumb Separator="/">
+            <SunfishBreadcrumbItem Href="/">Home</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem Href="/components">Components</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem IsActive="true">Breadcrumb</SunfishBreadcrumbItem>
+        </SunfishBreadcrumb>
+    </DemoSection>
+
+    <DemoSection Title="With Icons" Description="Breadcrumb items can include icons for visual clarity." Code="@_iconsCode">
+        <SunfishBreadcrumb>
+            <SunfishBreadcrumbItem Href="/" Icon="home">Home</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem Href="/components" Icon="grid">Components</SunfishBreadcrumbItem>
+            <SunfishBreadcrumbItem IsActive="true" Icon="navigation">Breadcrumb</SunfishBreadcrumbItem>
+        </SunfishBreadcrumb>
+    </DemoSection>
+
+    <DemoSection Title="Item Template" Description="Use ItemTemplate to customise how each data-bound breadcrumb item renders." Code="@_itemTemplateCode">
+        <SunfishBreadcrumb Data="@_breadcrumbData">
+            <ItemTemplate Context="item">
+                @{
+                    var crumb = (BreadcrumbItem)item;
+                }
+                @if (!string.IsNullOrEmpty(crumb.Url))
+                {
+                    <a href="@crumb.Url" style="display:inline-flex;align-items:center;gap:4px;">
+                        @if (!string.IsNullOrEmpty(crumb.Icon))
+                        {
+                            <span>@crumb.Icon</span>
+                        }
+                        @crumb.Label
+                    </a>
+                }
+                else
+                {
+                    <span style="font-weight:600;">@crumb.Label</span>
+                }
+            </ItemTemplate>
+        </SunfishBreadcrumb>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private record BreadcrumbItem(string Label, string Url, string Icon);
+
+    private BreadcrumbItem[] _breadcrumbData =
+    [
+        new("Home", "/", "🏠"),
+        new("Components", "/components", "🧩"),
+        new("Breadcrumb", "", ""),
+    ];
+
+    private const string _basicCode =
+        "<SunfishBreadcrumb>\n" +
+        "    <SunfishBreadcrumbItem Href=\"/\">Home</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem Href=\"/components\">Components</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem IsActive=\"true\">Breadcrumb</SunfishBreadcrumbItem>\n" +
+        "</SunfishBreadcrumb>";
+
+    private const string _dataCode =
+        "@* BreadcrumbItem record: Label, Url, Icon *@\n" +
+        "<SunfishBreadcrumb Data=\"@_crumbs\" TextField=\"Label\" UrlField=\"Url\" IconField=\"Icon\" />";
+
+    private const string _separatorCode =
+        "<SunfishBreadcrumb Separator=\"/\">\n" +
+        "    <SunfishBreadcrumbItem Href=\"/\">Home</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem Href=\"/components\">Components</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem IsActive=\"true\">Breadcrumb</SunfishBreadcrumbItem>\n" +
+        "</SunfishBreadcrumb>";
+
+    private const string _iconsCode =
+        "<SunfishBreadcrumb>\n" +
+        "    <SunfishBreadcrumbItem Href=\"/\" Icon=\"home\">Home</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem Href=\"/components\" Icon=\"grid\">Components</SunfishBreadcrumbItem>\n" +
+        "    <SunfishBreadcrumbItem IsActive=\"true\" Icon=\"navigation\">Breadcrumb</SunfishBreadcrumbItem>\n" +
+        "</SunfishBreadcrumb>";
+
+    private const string _itemTemplateCode =
+        "<SunfishBreadcrumb Data=\"@_crumbs\">\n" +
+        "    <ItemTemplate Context=\"item\">\n" +
+        "        @{ var crumb = (BreadcrumbItem)item; }\n" +
+        "        @if (!string.IsNullOrEmpty(crumb.Url))\n" +
+        "        {\n" +
+        "            <a href=\"@crumb.Url\">@crumb.Icon @crumb.Label</a>\n" +
+        "        }\n" +
+        "        else\n" +
+        "        {\n" +
+        "            <span>@crumb.Label</span>\n" +
+        "        }\n" +
+        "    </ItemTemplate>\n" +
+        "</SunfishBreadcrumb>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the next breadcrumb link"),
+        ("Shift + Tab", "Moves focus to the previous breadcrumb link"),
+        ("Enter", "Activates the focused breadcrumb link"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("nav aria-label=\"Breadcrumb\"", "The breadcrumb is wrapped in a nav element with aria-label=\"Breadcrumb\""),
+        ("aria-current=\"page\"", "Applied to the current (active) breadcrumb item to indicate the current page"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The breadcrumb navigation is announced as a navigation landmark with the label \"Breadcrumb\".",
+        "The current page item is announced with \"current page\" to indicate the user's location.",
+        "Each breadcrumb link is announced with its text content and the separator is hidden from screen readers.",
+    ];
+}

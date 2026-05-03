@@ -1,0 +1,125 @@
+@page "/components/buttons/button/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Button / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Button / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/Button/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishButton</code> composes its appearance from four orthogonal dials:
+            <code>Variant</code> (semantic color role), <code>Size</code> (density),
+            <code>FillMode</code> (visual weight), and <code>Rounded</code> (corner radius).
+            The <code>Enabled</code> flag flips the disabled state, and the <code>Icon</code>
+            render-fragment slot adds a leading glyph alongside text or on its own.
+        </p>
+        <p>
+            Only values defined on the underlying enums are shown — the enumerations are
+            <code>ButtonVariant</code> (Primary, Secondary, Danger, Warning, Info, Success),
+            <code>ButtonSize</code> (Small, Medium, Large), <code>FillMode</code> (Solid,
+            Outline, Flat, Link, Clear), and <code>RoundedMode</code> (None, Small, Medium,
+            Large, Full). Combine them freely — the provider layer resolves the class set for
+            each pairing.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Variants (semantic colour roles)</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Info">Info</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Sizes</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Small</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Medium">Medium</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Large">Large</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Fill modes</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Solid">Solid</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Outline</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Flat">Flat</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Link">Link</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Clear">Clear</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Rounded / shape</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" Rounded="RoundedMode.None">Square</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Rounded="RoundedMode.Small">Small radius</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Rounded="RoundedMode.Medium">Medium radius</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Rounded="RoundedMode.Large">Large radius</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" Rounded="RoundedMode.Full">Pill</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">States</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary">Enabled</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" Enabled="false">Disabled</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="HandleLoading" Enabled="@(!_loading)">
+                        @(_loading ? "Loading…" : "Click for loading")
+                    </SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">With icons</h3>
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary">
+                        <Icon><span aria-hidden="true">+</span></Icon>
+                        <ChildContent>Add item</ChildContent>
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary">
+                        <Icon><span aria-hidden="true">&#x270E;</span></Icon>
+                        <ChildContent>Edit</ChildContent>
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Danger">
+                        <Icon><span aria-hidden="true">&#x2715;</span></Icon>
+                        <ChildContent>Delete</ChildContent>
+                    </SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" aria-label="Settings">
+                        <Icon><span aria-hidden="true">&#x2699;</span></Icon>
+                    </SunfishButton>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "Button", "Appearance"];
+
+    private bool _loading;
+
+    private async Task HandleLoading()
+    {
+        _loading = true;
+        try { await Task.Delay(900); }
+        finally { _loading = false; }
+    }
+}

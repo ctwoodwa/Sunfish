@@ -1,0 +1,28 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Window
+// =================================================================
+// From _bridge-overlays.scss: .sf-bs-window, .sf-bs-window-titlebar, .sf-bs-window-actions
+// =================================================================
+
+.sf-bs-window {
+  position: fixed;
+  z-index: var(--sf-z-modal);
+  min-width: 300px;
+  min-height: 200px;
+  resize: both;
+  overflow: hidden;
+
+  &--modal {
+    z-index: calc(var(--sf-z-modal) + 1);
+  }
+}
+
+.sf-bs-window-titlebar {
+  cursor: move;
+  user-select: none;
+}
+
+.sf-bs-window-actions {
+  display: flex;
+  gap: var(--sf-space-xs);
+}

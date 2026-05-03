@@ -1,0 +1,71 @@
+// =============================================================================
+// Component: SearchBox
+// =============================================================================
+
+.sf-search-box {
+    display: flex;
+    align-items: center;
+    min-height: var(--sf-input-min-height, 32px);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    background: var(--sf-color-background);
+    transition: border-color var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+
+    &:hover {
+        border-color: var(--sf-color-on-background);
+    }
+
+    &:focus-within {
+        border-color: var(--sf-color-primary);
+        box-shadow: var(--sf-focus-ring);
+    }
+}
+
+.sf-search-box__icon {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sf-space-sm);
+    color: var(--sf-color-text-secondary);
+    flex-shrink: 0;
+}
+
+.sf-search-box input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--sf-space-xs);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    line-height: var(--sf-line-height-base);
+    color: var(--sf-color-on-background);
+    background: transparent;
+    border: none;
+    outline: none;
+
+    &::placeholder {
+        color: var(--sf-color-text-secondary);
+    }
+}
+
+.sf-search-box__clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--sf-space-xl);
+    height: 100%;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--sf-color-text-secondary);
+    opacity: 0;
+    transition: opacity var(--sf-transition-fast), color var(--sf-transition-fast);
+
+    &:hover {
+        color: var(--sf-color-on-background);
+    }
+}
+
+// Show clear button when there is content
+.sf-search-box:has(input:not(:placeholder-shown)) .sf-search-box__clear {
+    opacity: 1;
+}

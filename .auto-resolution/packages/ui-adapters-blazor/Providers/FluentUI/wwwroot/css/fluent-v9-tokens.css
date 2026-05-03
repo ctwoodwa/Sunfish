@@ -1,0 +1,537 @@
+/* =============================================================================
+ * Fluent UI v9 Design Token Shim for Sunfish
+ * -----------------------------------------------------------------------------
+ * Emits the Fluent v9 token ladder (color, typescale, spacing, stroke, radius,
+ * shadow, duration, curve) as CSS custom properties on :root (light) and
+ * [data-sf-theme="dark"] (dark). Sunfish's --sf-* variables reference these
+ * through var(--colorXxx, fallback) chains defined in sunfish-fluentui.css.
+ *
+ * Source of truth: @fluentui/tokens (npm) — values mirror
+ * https://github.com/microsoft/fluentui/tree/master/packages/tokens/src
+ * (light/dark web themes).
+ * ========================================================================== */
+
+:root {
+  /* -------------------------------------------------------------------------
+   * Color: Neutral surface backgrounds (light)
+   * ---------------------------------------------------------------------- */
+  --colorNeutralBackground1: #ffffff;
+  --colorNeutralBackground1Hover: #f5f5f5;
+  --colorNeutralBackground1Pressed: #e0e0e0;
+  --colorNeutralBackground1Selected: #ebebeb;
+  --colorNeutralBackground2: #fafafa;
+  --colorNeutralBackground2Hover: #f0f0f0;
+  --colorNeutralBackground2Pressed: #dbdbdb;
+  --colorNeutralBackground2Selected: #e6e6e6;
+  --colorNeutralBackground3: #f5f5f5;
+  --colorNeutralBackground3Hover: #ebebeb;
+  --colorNeutralBackground3Pressed: #d6d6d6;
+  --colorNeutralBackground3Selected: #e0e0e0;
+  --colorNeutralBackground4: #f0f0f0;
+  --colorNeutralBackground4Hover: #fafafa;
+  --colorNeutralBackground4Pressed: #dbdbdb;
+  --colorNeutralBackground4Selected: #ffffff;
+  --colorNeutralBackground5: #ebebeb;
+  --colorNeutralBackground5Hover: #f5f5f5;
+  --colorNeutralBackground5Pressed: #d6d6d6;
+  --colorNeutralBackground5Selected: #fafafa;
+  --colorNeutralBackground6: #e6e6e6;
+  --colorNeutralBackgroundDisabled: #f0f0f0;
+  --colorNeutralBackgroundInverted: #292929;
+
+  /* Subtle / transparent */
+  --colorSubtleBackground: transparent;
+  --colorSubtleBackgroundHover: #f5f5f5;
+  --colorSubtleBackgroundPressed: #e0e0e0;
+  --colorSubtleBackgroundSelected: #ebebeb;
+  --colorSubtleBackgroundLightAlphaHover: rgba(255, 255, 255, 0.7);
+  --colorSubtleBackgroundLightAlphaPressed: rgba(255, 255, 255, 0.5);
+  --colorSubtleBackgroundLightAlphaSelected: transparent;
+  --colorSubtleBackgroundInverted: transparent;
+  --colorSubtleBackgroundInvertedHover: rgba(0, 0, 0, 0.1);
+  --colorSubtleBackgroundInvertedPressed: rgba(0, 0, 0, 0.3);
+  --colorSubtleBackgroundInvertedSelected: rgba(0, 0, 0, 0.2);
+  --colorTransparentBackground: transparent;
+  --colorTransparentBackgroundHover: transparent;
+  --colorTransparentBackgroundPressed: transparent;
+  --colorTransparentBackgroundSelected: transparent;
+
+  /* Background overlay / scrim (invariant across themes per v9 spec) */
+  --colorBackgroundOverlay: rgba(0, 0, 0, 0.4);
+  --colorScrimOverlay: rgba(0, 0, 0, 0.4);
+  --colorBrandBackgroundStatic: #0f6cbd;
+  --colorNeutralBackgroundStatic: #242424;
+
+  /* -------------------------------------------------------------------------
+   * Color: Neutral foreground (light)
+   * ---------------------------------------------------------------------- */
+  --colorNeutralForeground1: #242424;
+  --colorNeutralForeground1Hover: #242424;
+  --colorNeutralForeground1Pressed: #242424;
+  --colorNeutralForeground1Selected: #242424;
+  --colorNeutralForeground2: #424242;
+  --colorNeutralForeground2Hover: #242424;
+  --colorNeutralForeground2Pressed: #242424;
+  --colorNeutralForeground2Selected: #242424;
+  --colorNeutralForeground2BrandHover: #0f6cbd;
+  --colorNeutralForeground2BrandPressed: #115ea3;
+  --colorNeutralForeground2BrandSelected: #0f6cbd;
+  --colorNeutralForeground3: #616161;
+  --colorNeutralForeground3Hover: #424242;
+  --colorNeutralForeground3Pressed: #424242;
+  --colorNeutralForeground3Selected: #424242;
+  --colorNeutralForeground3BrandHover: #0f6cbd;
+  --colorNeutralForeground3BrandPressed: #115ea3;
+  --colorNeutralForeground3BrandSelected: #0f6cbd;
+  --colorNeutralForeground4: #707070;
+  --colorNeutralForegroundDisabled: #bdbdbd;
+  --colorNeutralForegroundInvertedDisabled: rgba(255, 255, 255, 0.4);
+  --colorNeutralForegroundOnBrand: #ffffff;
+  --colorNeutralForegroundInverted: #ffffff;
+  --colorNeutralForegroundInvertedHover: #ffffff;
+  --colorNeutralForegroundInvertedPressed: #ffffff;
+  --colorNeutralForegroundInvertedSelected: #ffffff;
+  --colorNeutralForegroundInverted2: #ffffff;
+  --colorNeutralForegroundStaticInverted: #ffffff;
+  --colorNeutralForegroundStatic: #242424;
+
+  /* -------------------------------------------------------------------------
+   * Color: Neutral strokes (light)
+   * ---------------------------------------------------------------------- */
+  --colorNeutralStroke1: #d1d1d1;
+  --colorNeutralStroke1Hover: #c7c7c7;
+  --colorNeutralStroke1Pressed: #b3b3b3;
+  --colorNeutralStroke1Selected: #bdbdbd;
+  --colorNeutralStroke2: #e0e0e0;
+  --colorNeutralStroke3: #f0f0f0;
+  --colorNeutralStrokeAccessible: #616161;
+  --colorNeutralStrokeAccessibleHover: #575757;
+  --colorNeutralStrokeAccessiblePressed: #4d4d4d;
+  --colorNeutralStrokeAccessibleSelected: #0f6cbd;
+  --colorNeutralStrokeSubtle: #e0e0e0;
+  --colorNeutralStrokeOnBrand: #ffffff;
+  --colorNeutralStrokeOnBrand2: #ffffff;
+  --colorNeutralStrokeOnBrand2Hover: #ffffff;
+  --colorNeutralStrokeOnBrand2Pressed: #ffffff;
+  --colorNeutralStrokeOnBrand2Selected: #ffffff;
+  --colorNeutralStrokeDisabled: #e0e0e0;
+  --colorNeutralStrokeInvertedDisabled: rgba(255, 255, 255, 0.4);
+  --colorTransparentStroke: transparent;
+  --colorTransparentStrokeInteractive: transparent;
+  --colorTransparentStrokeDisabled: transparent;
+  --colorStrokeFocus1: #ffffff;
+  --colorStrokeFocus2: #000000;
+
+  /* -------------------------------------------------------------------------
+   * Color: Brand (light)
+   * ---------------------------------------------------------------------- */
+  --colorBrandBackground: #0f6cbd;
+  --colorBrandBackgroundHover: #115ea3;
+  --colorBrandBackgroundPressed: #0c3b5e;
+  --colorBrandBackgroundSelected: #0f548c;
+  --colorBrandBackground2: #ebf3fc;
+  --colorBrandBackground2Hover: #cfe4fa;
+  --colorBrandBackground2Pressed: #94c8f9;
+  --colorBrandBackground3Static: #0f548c;
+  --colorBrandBackground4Static: #0c3b5e;
+  --colorBrandBackgroundInverted: #ffffff;
+  --colorBrandBackgroundInvertedHover: #ebf3fc;
+  --colorBrandBackgroundInvertedPressed: #b4d6fa;
+  --colorBrandBackgroundInvertedSelected: #cfe4fa;
+  --colorBrandStroke1: #0f6cbd;
+  --colorBrandStroke2: #b4d6fa;
+  --colorBrandStroke2Contrast: #b4d6fa;
+  --colorBrandStroke2Hover: #77b7f7;
+  --colorBrandStroke2Pressed: #2886de;
+  --colorCompoundBrandStroke: #0f6cbd;
+  --colorCompoundBrandStrokeHover: #115ea3;
+  --colorCompoundBrandStrokePressed: #0f548c;
+  --colorCompoundBrandBackground: #0f6cbd;
+  --colorCompoundBrandBackgroundHover: #115ea3;
+  --colorCompoundBrandBackgroundPressed: #0f548c;
+  --colorCompoundBrandForeground1: #0f6cbd;
+  --colorCompoundBrandForeground1Hover: #115ea3;
+  --colorCompoundBrandForeground1Pressed: #0f548c;
+  --colorBrandForeground1: #0f6cbd;
+  --colorBrandForeground2: #115ea3;
+  --colorBrandForeground2Hover: #0f548c;
+  --colorBrandForeground2Pressed: #0c3b5e;
+  --colorBrandForegroundLink: #115ea3;
+  --colorBrandForegroundLinkHover: #0f548c;
+  --colorBrandForegroundLinkPressed: #0c3b5e;
+  --colorBrandForegroundLinkSelected: #115ea3;
+  --colorBrandForegroundOnLight: #0f6cbd;
+  --colorBrandForegroundOnLightHover: #0f548c;
+  --colorBrandForegroundOnLightPressed: #0c3b5e;
+  --colorBrandForegroundOnLightSelected: #115ea3;
+  --colorBrandForegroundInverted: #479ef5;
+  --colorBrandForegroundInvertedHover: #62abf5;
+  --colorBrandForegroundInvertedPressed: #2886de;
+  --colorBrandForegroundInvertedSelected: #479ef5;
+  --colorBrandShadowAmbient: rgba(0, 0, 0, 0.3);
+  --colorBrandShadowKey: rgba(0, 0, 0, 0.25);
+
+  /* -------------------------------------------------------------------------
+   * Color: Status — danger / warning / success / info (light)
+   * Mirrors --colorStatus{Danger|Warning|Success}{Background|Foreground}{1|2|3}
+   * plus --colorPaletteInfo* for info semantic slot.
+   * ---------------------------------------------------------------------- */
+  --colorStatusDangerBackground1: #fdf3f4;
+  --colorStatusDangerBackground2: #f1bbbc;
+  --colorStatusDangerBackground3: #c50f1f;
+  --colorStatusDangerForeground1: #b10e1c;
+  --colorStatusDangerForeground2: #bc2f32;
+  --colorStatusDangerForeground3: #c50f1f;
+  --colorStatusDangerForegroundInverted: #dc626d;
+  --colorStatusDangerBorderActive: #c50f1f;
+  --colorStatusDangerBorder1: #eeacb2;
+  --colorStatusDangerBorder2: #c50f1f;
+
+  --colorStatusWarningBackground1: #fff9f5;
+  --colorStatusWarningBackground2: #fdcfb4;
+  --colorStatusWarningBackground3: #f7630c;
+  --colorStatusWarningForeground1: #bc4b09;
+  --colorStatusWarningForeground2: #8a3707;
+  --colorStatusWarningForeground3: #f7630c;
+  --colorStatusWarningForegroundInverted: #faa06b;
+  --colorStatusWarningBorderActive: #bc4b09;
+  --colorStatusWarningBorder1: #fdcfb4;
+  --colorStatusWarningBorder2: #bc4b09;
+
+  --colorStatusSuccessBackground1: #f1faf1;
+  --colorStatusSuccessBackground2: #9fd89f;
+  --colorStatusSuccessBackground3: #107c10;
+  --colorStatusSuccessForeground1: #0e700e;
+  --colorStatusSuccessForeground2: #054b16;
+  --colorStatusSuccessForeground3: #107c10;
+  --colorStatusSuccessForegroundInverted: #54b054;
+  --colorStatusSuccessBorderActive: #107c10;
+  --colorStatusSuccessBorder1: #9fd89f;
+  --colorStatusSuccessBorder2: #107c10;
+
+  /* Info uses v9 palette-info tokens (informative state) */
+  --colorPaletteInfoBackground1: #f0f8ff;
+  --colorPaletteInfoBackground2: #a9d3f2;
+  --colorPaletteInfoBackground3: #0078d4;
+  --colorPaletteInfoForeground1: #005a9e;
+  --colorPaletteInfoForeground2: #004578;
+  --colorPaletteInfoForeground3: #0078d4;
+  --colorPaletteInfoBorderActive: #0078d4;
+  --colorPaletteInfoBorder1: #a9d3f2;
+  --colorPaletteInfoBorder2: #0078d4;
+
+  /* -------------------------------------------------------------------------
+   * Typography — Fluent v9 typescale
+   * ---------------------------------------------------------------------- */
+  --fontFamilyBase: 'Segoe UI Variable', 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+  --fontFamilyMonospace: Consolas, 'Courier New', Courier, monospace;
+  --fontFamilyNumeric: 'Bahnschrift', 'Segoe UI Variable', 'Segoe UI', sans-serif;
+
+  --fontSizeBase100: 10px;
+  --fontSizeBase200: 12px;
+  --fontSizeBase300: 14px;
+  --fontSizeBase400: 16px;
+  --fontSizeBase500: 20px;
+  --fontSizeBase600: 24px;
+  --fontSizeHero700: 28px;
+  --fontSizeHero800: 32px;
+  --fontSizeHero900: 40px;
+  --fontSizeHero1000: 68px;
+
+  --lineHeightBase100: 14px;
+  --lineHeightBase200: 16px;
+  --lineHeightBase300: 20px;
+  --lineHeightBase400: 22px;
+  --lineHeightBase500: 28px;
+  --lineHeightBase600: 32px;
+  --lineHeightHero700: 36px;
+  --lineHeightHero800: 40px;
+  --lineHeightHero900: 52px;
+  --lineHeightHero1000: 92px;
+
+  --fontWeightRegular: 400;
+  --fontWeightMedium: 500;
+  --fontWeightSemibold: 600;
+  --fontWeightBold: 700;
+
+  /* -------------------------------------------------------------------------
+   * Spacing — horizontal + vertical ladders
+   * ---------------------------------------------------------------------- */
+  --spacingHorizontalNone: 0;
+  --spacingHorizontalXXS: 2px;
+  --spacingHorizontalXS: 4px;
+  --spacingHorizontalSNudge: 6px;
+  --spacingHorizontalS: 8px;
+  --spacingHorizontalMNudge: 10px;
+  --spacingHorizontalM: 12px;
+  --spacingHorizontalL: 16px;
+  --spacingHorizontalXL: 20px;
+  --spacingHorizontalXXL: 24px;
+  --spacingHorizontalXXXL: 32px;
+
+  --spacingVerticalNone: 0;
+  --spacingVerticalXXS: 2px;
+  --spacingVerticalXS: 4px;
+  --spacingVerticalSNudge: 6px;
+  --spacingVerticalS: 8px;
+  --spacingVerticalMNudge: 10px;
+  --spacingVerticalM: 12px;
+  --spacingVerticalL: 16px;
+  --spacingVerticalXL: 20px;
+  --spacingVerticalXXL: 24px;
+  --spacingVerticalXXXL: 32px;
+
+  /* -------------------------------------------------------------------------
+   * Stroke width
+   * ---------------------------------------------------------------------- */
+  --strokeWidthThin: 1px;
+  --strokeWidthThick: 2px;
+  --strokeWidthThicker: 3px;
+  --strokeWidthThickest: 4px;
+
+  /* -------------------------------------------------------------------------
+   * Border radius
+   * ---------------------------------------------------------------------- */
+  --borderRadiusNone: 0;
+  --borderRadiusSmall: 2px;
+  --borderRadiusMedium: 4px;
+  --borderRadiusLarge: 6px;
+  --borderRadiusXLarge: 8px;
+  --borderRadiusCircular: 10000px;
+
+  /* -------------------------------------------------------------------------
+   * Elevation / shadows — neutral + brand (light)
+   * ---------------------------------------------------------------------- */
+  --shadow2: 0 0 2px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.14);
+  --shadow4: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14);
+  --shadow8: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14);
+  --shadow16: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14);
+  --shadow28: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.24);
+  --shadow64: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.24);
+
+  --shadowBrand2: 0 0 2px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.25);
+  --shadowBrand4: 0 0 2px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadowBrand8: 0 0 2px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.25);
+  --shadowBrand16: 0 0 2px rgba(0, 0, 0, 0.3), 0 8px 16px rgba(0, 0, 0, 0.25);
+  --shadowBrand28: 0 0 8px rgba(0, 0, 0, 0.3), 0 14px 28px rgba(0, 0, 0, 0.4);
+  --shadowBrand64: 0 0 8px rgba(0, 0, 0, 0.3), 0 32px 64px rgba(0, 0, 0, 0.4);
+
+  /* -------------------------------------------------------------------------
+   * Duration + curve
+   * ---------------------------------------------------------------------- */
+  --durationUltraFast: 50ms;
+  --durationFaster: 100ms;
+  --durationFaster2: 150ms;
+  --durationFast: 150ms;
+  --durationNormal: 200ms;
+  --durationSlow: 300ms;
+  --durationSlower: 400ms;
+  --durationUltraSlow: 500ms;
+
+  --curveAccelerateMax: cubic-bezier(0.9, 0.1, 1, 0.2);
+  --curveAccelerateMid: cubic-bezier(1, 0, 1, 1);
+  --curveAccelerateMin: cubic-bezier(0.8, 0, 0.78, 1);
+  --curveDecelerateMax: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --curveDecelerateMid: cubic-bezier(0, 0, 0, 1);
+  --curveDecelerateMin: cubic-bezier(0.33, 0, 0.1, 1);
+  --curveEasyEase: cubic-bezier(0.33, 0, 0.67, 1);
+  --curveEasyEaseMax: cubic-bezier(0.8, 0, 0.2, 1);
+  --curveLinear: cubic-bezier(0, 0, 1, 1);
+}
+
+/* =============================================================================
+ * Dark theme overrides — keyed by [data-sf-theme="dark"]
+ *
+ * Per Fluent v9 web dark theme: neutral surfaces flip dark, neutral foregrounds
+ * flip near-white, compound brand strokes shift to the lighter brand tint, and
+ * scrim/overlay values stay identical to light (per v9 spec).
+ * ========================================================================== */
+[data-sf-theme="dark"] {
+  /* Neutral surfaces */
+  --colorNeutralBackground1: #292929;
+  --colorNeutralBackground1Hover: #3d3d3d;
+  --colorNeutralBackground1Pressed: #1f1f1f;
+  --colorNeutralBackground1Selected: #383838;
+  --colorNeutralBackground2: #1f1f1f;
+  --colorNeutralBackground2Hover: #333333;
+  --colorNeutralBackground2Pressed: #141414;
+  --colorNeutralBackground2Selected: #2e2e2e;
+  --colorNeutralBackground3: #141414;
+  --colorNeutralBackground3Hover: #292929;
+  --colorNeutralBackground3Pressed: #0a0a0a;
+  --colorNeutralBackground3Selected: #242424;
+  --colorNeutralBackground4: #0a0a0a;
+  --colorNeutralBackground4Hover: #1f1f1f;
+  --colorNeutralBackground4Pressed: #000000;
+  --colorNeutralBackground4Selected: #191919;
+  --colorNeutralBackground5: #000000;
+  --colorNeutralBackground5Hover: #141414;
+  --colorNeutralBackground5Pressed: #050505;
+  --colorNeutralBackground5Selected: #0f0f0f;
+  --colorNeutralBackground6: #242424;
+  --colorNeutralBackgroundDisabled: #141414;
+  --colorNeutralBackgroundInverted: #f5f5f5;
+
+  /* Subtle / transparent */
+  --colorSubtleBackground: transparent;
+  --colorSubtleBackgroundHover: #383838;
+  --colorSubtleBackgroundPressed: #2e2e2e;
+  --colorSubtleBackgroundSelected: #333333;
+  --colorSubtleBackgroundLightAlphaHover: rgba(255, 255, 255, 0.05);
+  --colorSubtleBackgroundLightAlphaPressed: rgba(255, 255, 255, 0.02);
+  --colorSubtleBackgroundLightAlphaSelected: transparent;
+  --colorSubtleBackgroundInverted: transparent;
+  --colorSubtleBackgroundInvertedHover: rgba(0, 0, 0, 0.1);
+  --colorSubtleBackgroundInvertedPressed: rgba(0, 0, 0, 0.3);
+  --colorSubtleBackgroundInvertedSelected: rgba(0, 0, 0, 0.2);
+  --colorTransparentBackground: transparent;
+  --colorTransparentBackgroundHover: transparent;
+  --colorTransparentBackgroundPressed: transparent;
+  --colorTransparentBackgroundSelected: transparent;
+
+  /* Overlay/scrim — unchanged per v9 spec (do NOT darken in dark mode) */
+  --colorBackgroundOverlay: rgba(0, 0, 0, 0.4);
+  --colorScrimOverlay: rgba(0, 0, 0, 0.4);
+
+  /* Neutral foreground */
+  --colorNeutralForeground1: #ffffff;
+  --colorNeutralForeground1Hover: #ffffff;
+  --colorNeutralForeground1Pressed: #ffffff;
+  --colorNeutralForeground1Selected: #ffffff;
+  --colorNeutralForeground2: #d6d6d6;
+  --colorNeutralForeground2Hover: #ffffff;
+  --colorNeutralForeground2Pressed: #ffffff;
+  --colorNeutralForeground2Selected: #ffffff;
+  --colorNeutralForeground2BrandHover: #479ef5;
+  --colorNeutralForeground2BrandPressed: #62abf5;
+  --colorNeutralForeground2BrandSelected: #479ef5;
+  --colorNeutralForeground3: #adadad;
+  --colorNeutralForeground3Hover: #d6d6d6;
+  --colorNeutralForeground3Pressed: #d6d6d6;
+  --colorNeutralForeground3Selected: #d6d6d6;
+  --colorNeutralForeground3BrandHover: #479ef5;
+  --colorNeutralForeground3BrandPressed: #62abf5;
+  --colorNeutralForeground3BrandSelected: #479ef5;
+  --colorNeutralForeground4: #999999;
+  --colorNeutralForegroundDisabled: #5c5c5c;
+  --colorNeutralForegroundOnBrand: #ffffff;
+  --colorNeutralForegroundInverted: #242424;
+  --colorNeutralForegroundInvertedHover: #242424;
+  --colorNeutralForegroundInvertedPressed: #242424;
+  --colorNeutralForegroundInvertedSelected: #242424;
+  --colorNeutralForegroundInverted2: #242424;
+
+  /* Neutral strokes */
+  --colorNeutralStroke1: #666666;
+  --colorNeutralStroke1Hover: #757575;
+  --colorNeutralStroke1Pressed: #6b6b6b;
+  --colorNeutralStroke1Selected: #707070;
+  --colorNeutralStroke2: #525252;
+  --colorNeutralStroke3: #3d3d3d;
+  --colorNeutralStrokeAccessible: #adadad;
+  --colorNeutralStrokeAccessibleHover: #bdbdbd;
+  --colorNeutralStrokeAccessiblePressed: #b3b3b3;
+  --colorNeutralStrokeAccessibleSelected: #479ef5;
+  --colorNeutralStrokeSubtle: #3d3d3d;
+  --colorNeutralStrokeDisabled: #424242;
+  --colorStrokeFocus1: #000000;
+  --colorStrokeFocus2: #ffffff;
+
+  /* Brand — dark theme lightens brand tint */
+  --colorBrandBackground: #115ea3;
+  --colorBrandBackgroundHover: #0f6cbd;
+  --colorBrandBackgroundPressed: #0c3b5e;
+  --colorBrandBackgroundSelected: #0f548c;
+  --colorBrandBackground2: #0c3b5e;
+  --colorBrandBackground2Hover: #0f548c;
+  --colorBrandBackground2Pressed: #115ea3;
+  --colorBrandBackgroundInverted: #ffffff;
+  --colorBrandBackgroundInvertedHover: #ebf3fc;
+  --colorBrandBackgroundInvertedPressed: #b4d6fa;
+  --colorBrandBackgroundInvertedSelected: #cfe4fa;
+  --colorBrandStroke1: #479ef5;
+  --colorBrandStroke2: #0f548c;
+  --colorBrandStroke2Contrast: #0f548c;
+  --colorBrandStroke2Hover: #115ea3;
+  --colorBrandStroke2Pressed: #0c3b5e;
+  --colorCompoundBrandStroke: #479ef5;
+  --colorCompoundBrandStrokeHover: #62abf5;
+  --colorCompoundBrandStrokePressed: #2886de;
+  --colorCompoundBrandBackground: #479ef5;
+  --colorCompoundBrandBackgroundHover: #62abf5;
+  --colorCompoundBrandBackgroundPressed: #2886de;
+  --colorCompoundBrandForeground1: #479ef5;
+  --colorCompoundBrandForeground1Hover: #62abf5;
+  --colorCompoundBrandForeground1Pressed: #2886de;
+  --colorBrandForeground1: #479ef5;
+  --colorBrandForeground2: #62abf5;
+  --colorBrandForeground2Hover: #77b7f7;
+  --colorBrandForeground2Pressed: #96bff7;
+  --colorBrandForegroundLink: #479ef5;
+  --colorBrandForegroundLinkHover: #62abf5;
+  --colorBrandForegroundLinkPressed: #2886de;
+  --colorBrandForegroundLinkSelected: #479ef5;
+  --colorBrandForegroundOnLight: #0f6cbd;
+  --colorBrandForegroundOnLightHover: #0f548c;
+  --colorBrandForegroundOnLightPressed: #0c3b5e;
+  --colorBrandForegroundOnLightSelected: #115ea3;
+  --colorBrandForegroundInverted: #0f6cbd;
+  --colorBrandForegroundInvertedHover: #115ea3;
+  --colorBrandForegroundInvertedPressed: #0f548c;
+  --colorBrandForegroundInvertedSelected: #0f6cbd;
+
+  /* Status — v9 dark theme darkens Background3 and lifts foregrounds */
+  --colorStatusDangerBackground1: #3b0509;
+  --colorStatusDangerBackground2: #690a13;
+  --colorStatusDangerBackground3: #dc626d;
+  --colorStatusDangerForeground1: #e37d87;
+  --colorStatusDangerForeground2: #dc626d;
+  --colorStatusDangerForeground3: #dc626d;
+  --colorStatusDangerBorderActive: #dc626d;
+  --colorStatusDangerBorder1: #af2b32;
+  --colorStatusDangerBorder2: #dc626d;
+
+  --colorStatusWarningBackground1: #4a1e04;
+  --colorStatusWarningBackground2: #8a3707;
+  --colorStatusWarningBackground3: #faa06b;
+  --colorStatusWarningForeground1: #faa06b;
+  --colorStatusWarningForeground2: #fdcfb4;
+  --colorStatusWarningForeground3: #faa06b;
+  --colorStatusWarningBorderActive: #faa06b;
+  --colorStatusWarningBorder1: #8a3707;
+  --colorStatusWarningBorder2: #faa06b;
+
+  --colorStatusSuccessBackground1: #052505;
+  --colorStatusSuccessBackground2: #094509;
+  --colorStatusSuccessBackground3: #54b054;
+  --colorStatusSuccessForeground1: #54b054;
+  --colorStatusSuccessForeground2: #7cc77c;
+  --colorStatusSuccessForeground3: #54b054;
+  --colorStatusSuccessBorderActive: #54b054;
+  --colorStatusSuccessBorder1: #0e700e;
+  --colorStatusSuccessBorder2: #54b054;
+
+  --colorPaletteInfoBackground1: #0a1a2a;
+  --colorPaletteInfoBackground2: #12355e;
+  --colorPaletteInfoBackground3: #60cdff;
+  --colorPaletteInfoForeground1: #60cdff;
+  --colorPaletteInfoForeground2: #98d9ff;
+  --colorPaletteInfoForeground3: #60cdff;
+  --colorPaletteInfoBorderActive: #60cdff;
+  --colorPaletteInfoBorder1: #12355e;
+  --colorPaletteInfoBorder2: #60cdff;
+
+  /* Elevation/shadows — darker for dark theme */
+  --shadow2: 0 0 2px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.7);
+  --shadow4: 0 0 2px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.7);
+  --shadow8: 0 0 2px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.7);
+  --shadow16: 0 0 2px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.7);
+  --shadow28: 0 0 8px rgba(0, 0, 0, 0.6), 0 14px 28px rgba(0, 0, 0, 0.8);
+  --shadow64: 0 0 8px rgba(0, 0, 0, 0.6), 0 32px 64px rgba(0, 0, 0, 0.8);
+  --shadowBrand2: 0 0 2px rgba(0, 0, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.7);
+  --shadowBrand4: 0 0 2px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.7);
+  --shadowBrand8: 0 0 2px rgba(0, 0, 0, 0.6), 0 4px 8px rgba(0, 0, 0, 0.7);
+  --shadowBrand16: 0 0 2px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.7);
+  --shadowBrand28: 0 0 8px rgba(0, 0, 0, 0.6), 0 14px 28px rgba(0, 0, 0, 0.8);
+  --shadowBrand64: 0 0 8px rgba(0, 0, 0, 0.6), 0 32px 64px rgba(0, 0, 0, 0.8);
+}

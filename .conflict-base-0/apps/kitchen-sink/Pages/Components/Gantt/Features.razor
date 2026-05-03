@@ -1,0 +1,169 @@
+@page "/components/gantt/features"
+@layout ComponentDemoLayout
+
+<PageSection Title="Sorting & Filtering">
+    <DemoSection Title="Sortable Columns" Description="Click column headers to sort. Sortable is enabled per-column.">
+        <SunfishGantt TItem="GanttTask"
+                     Data="@_tasks"
+                     IdField="Id"
+                     ParentIdField="ParentId"
+                     Height="400px">
+            <GanttColumns>
+                <GanttColumn TItem="GanttTask"
+                             Field="Title"
+                             Expandable="true"
+                             Width="200px"
+                             Sortable="true"
+                             Title="Task" />
+                <GanttColumn TItem="GanttTask"
+                             Field="PercentComplete"
+                             Width="80px"
+                             Sortable="true"
+                             Title="% Done"
+                             TextAlign="right" />
+                <GanttColumn TItem="GanttTask"
+                             Field="Start"
+                             Width="100px"
+                             Sortable="true"
+                             DisplayFormat="{0:d}" />
+            </GanttColumns>
+            <GanttViews>
+                <GanttWeekView />
+                <GanttMonthView />
+            </GanttViews>
+        </SunfishGantt>
+    </DemoSection>
+
+    <DemoSection Title="Text Filter" Description="Type in the filter box to search tasks by title. The filter shows matching tasks and their parent nodes.">
+        <div class="demo-controls">
+            <label>Filter: <input type="text" @bind="_filterText" @bind:event="oninput" style="width:200px;" /></label>
+        </div>
+        <SunfishGantt TItem="GanttTask"
+                     Data="@_tasks"
+                     IdField="Id"
+                     ParentIdField="ParentId"
+                     Filterable="true"
+                     Height="400px">
+            <GanttColumns>
+                <GanttColumn TItem="GanttTask"
+                             Field="Title"
+                             Expandable="true"
+                             Width="200px"
+                             Title="Task" />
+                <GanttColumn TItem="GanttTask"
+                             Field="PercentComplete"
+                             Width="80px"
+                             Title="% Done" />
+            </GanttColumns>
+            <GanttViews>
+                <GanttWeekView />
+            </GanttViews>
+        </SunfishGantt>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Dependencies">
+    <DemoSection Title="Dependency Lines" Description="Tasks can declare dependencies via the DependsOn field. Dependency arrows render as SVG lines between related tasks on the timeline.">
+        <SunfishGantt TItem="GanttTask"
+                     Data="@_depTasks"
+                     IdField="Id"
+                     ParentIdField="ParentId"
+                     DependsOnField="DependsOn"
+                     Height="350px">
+            <GanttColumns>
+                <GanttColumn TItem="GanttTask"
+                             Field="Title"
+                             Expandable="true"
+                             Width="200px"
+                             Title="Task" />
+                <GanttColumn TItem="GanttTask"
+                             Field="Start"
+                             Width="100px"
+                             DisplayFormat="{0:d}" />
+                <GanttColumn TItem="GanttTask"
+                             Field="End"
+                             Width="100px"
+                             DisplayFormat="{0:d}" />
+            </GanttColumns>
+            <GanttViews>
+                <GanttWeekView />
+                <GanttMonthView />
+            </GanttViews>
+        </SunfishGantt>
+        <p class="demo-info">
+            Design depends on Requirements. Development depends on Design. Testing depends on Development.
+        </p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Selection">
+    <DemoSection Title="Task Selection" Description="Click a task row or bar to select it. The selected task is highlighted on the timeline. Use bind-SelectedTask for two-way binding or OnTaskSelect for event-based handling.">
+        <div class="demo-row" style="margin-bottom: 8px;">
+            <span>Selected: <strong>@(_selectedTask?.Title ?? "None")</strong></span>
+        </div>
+        <SunfishGantt TItem="GanttTask"
+                     Data="@_tasks"
+                     IdField="Id"
+                     ParentIdField="ParentId"
+                     Height="350px"
+                     @bind-SelectedTask="_selectedTask">
+            <GanttColumns>
+                <GanttColumn TItem="GanttTask"
+                             Field="Title"
+                             Expandable="true"
+                             Width="200px"
+                             Title="Task" />
+                <GanttColumn TItem="GanttTask"
+                             Field="Start"
+                             Width="100px"
+                             DisplayFormat="{0:d}" />
+                <GanttColumn TItem="GanttTask"
+                             Field="End"
+                             Width="100px"
+                             DisplayFormat="{0:d}" />
+            </GanttColumns>
+            <GanttViews>
+                <GanttWeekView />
+                <GanttMonthView />
+            </GanttViews>
+        </SunfishGantt>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private string? _filterText;
+    private GanttTask? _selectedTask;
+
+    private List<GanttTask> _tasks = GenerateSampleData();
+    private List<GanttTask> _depTasks = GenerateDependencyData();
+
+    private static List<GanttTask> GenerateSampleData()
+    {
+        var today = DateTime.Today;
+        return new List<GanttTask>
+        {
+            new() { Id = "1", Title = "Planning", Start = today, End = today.AddDays(10), PercentComplete = 90 },
+            new() { Id = "1.1", ParentId = "1", Title = "Requirements", Start = today, End = today.AddDays(4), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Scope Review", Start = today.AddDays(4), End = today.AddDays(10), PercentComplete = 80 },
+            new() { Id = "2", Title = "Design", Start = today.AddDays(8), End = today.AddDays(20), PercentComplete = 50 },
+            new() { Id = "2.1", ParentId = "2", Title = "Wireframes", Start = today.AddDays(8), End = today.AddDays(13), PercentComplete = 100 },
+            new() { Id = "2.2", ParentId = "2", Title = "Mockups", Start = today.AddDays(13), End = today.AddDays(20), PercentComplete = 20 },
+            new() { Id = "3", Title = "Development", Start = today.AddDays(18), End = today.AddDays(35), PercentComplete = 10 },
+            new() { Id = "3.1", ParentId = "3", Title = "Backend", Start = today.AddDays(18), End = today.AddDays(28), PercentComplete = 20 },
+            new() { Id = "3.2", ParentId = "3", Title = "Frontend", Start = today.AddDays(22), End = today.AddDays(35), PercentComplete = 0 },
+        };
+    }
+
+    private static List<GanttTask> GenerateDependencyData()
+    {
+        var today = DateTime.Today;
+        return new List<GanttTask>
+        {
+            new() { Id = "req", Title = "Requirements", Start = today, End = today.AddDays(5), PercentComplete = 100 },
+            new() { Id = "des", Title = "Design", Start = today.AddDays(5), End = today.AddDays(12), PercentComplete = 60, DependsOn = new() { "req" } },
+            new() { Id = "dev", Title = "Development", Start = today.AddDays(12), End = today.AddDays(25), PercentComplete = 10, DependsOn = new() { "des" } },
+            new() { Id = "test", Title = "Testing", Start = today.AddDays(25), End = today.AddDays(32), PercentComplete = 0, DependsOn = new() { "dev" } },
+            new() { Id = "deploy", Title = "Deployment", Start = today.AddDays(32), End = today.AddDays(35), PercentComplete = 0, DependsOn = new() { "test" } },
+        };
+    }
+}

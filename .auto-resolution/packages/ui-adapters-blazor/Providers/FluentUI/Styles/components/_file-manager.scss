@@ -1,0 +1,535 @@
+// =============================================================================
+// Component: FileManager
+// =============================================================================
+
+.sf-filemanager {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+    overflow: hidden;
+}
+
+// ── Toolbar ─────────────────────────────────────────────────────────────────
+
+.sf-filemanager__toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    border-bottom: 1px solid var(--sf-color-border);
+    background: var(--sf-color-subtle-background, var(--sf-color-surface));
+    flex-wrap: wrap;
+    min-height: 40px;
+}
+
+.sf-filemanager__path {
+    display: none;
+}
+
+.sf-filemanager__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    font-size: var(--sf-font-size-sm);
+    overflow: hidden;
+}
+
+.sf-filemanager__breadcrumb-segment {
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: var(--sf-radius-sm);
+    white-space: nowrap;
+
+    &:hover {
+        background: var(--sf-color-subtle-background-hover, rgba(0, 0, 0, 0.04));
+    }
+
+    &--active {
+        font-weight: 600;
+        cursor: default;
+
+        &:hover {
+            background: transparent;
+        }
+    }
+}
+
+.sf-filemanager__breadcrumb-separator {
+    color: var(--sf-color-text-secondary);
+    user-select: none;
+}
+
+.sf-filemanager__spacer {
+    flex: 1;
+}
+
+.sf-filemanager__sort-select {
+    font-size: var(--sf-font-size-sm);
+    padding: 2px var(--sf-space-xs);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+}
+
+.sf-filemanager__sort-dir {
+    min-width: 28px;
+}
+
+.sf-filemanager__search {
+    font-size: var(--sf-font-size-sm);
+    padding: 4px var(--sf-space-sm);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+    min-width: 140px;
+    max-width: 220px;
+
+    &::placeholder {
+        color: var(--sf-color-text-secondary);
+    }
+}
+
+.sf-filemanager__upload-btn,
+.sf-filemanager__details-btn,
+.sf-filemanager__view-toggle {
+    // Inherits from .sf-btn base styles; no extra rules needed.
+}
+
+.sf-filemanager__details-btn--active {
+    background: var(--sf-color-subtle-background-selected, rgba(0, 0, 0, 0.08));
+}
+
+// ── Content area ────────────────────────────────────────────────────────────
+
+.sf-filemanager__content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+// ── Sidebar (folder tree) ───────────────────────────────────────────────────
+
+.sf-filemanager__sidebar {
+    width: 220px;
+    min-width: 160px;
+    border-right: 1px solid var(--sf-color-border);
+    overflow-y: auto;
+    padding: var(--sf-space-xs) 0;
+    background: var(--sf-color-subtle-background, var(--sf-color-surface));
+}
+
+.sf-filemanager__tree {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sf-filemanager__tree [role="treeitem"] {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: 4px var(--sf-space-sm);
+    cursor: pointer;
+    font-size: var(--sf-font-size-sm);
+    border-radius: 0;
+    user-select: none;
+
+    &:hover {
+        background: var(--sf-color-subtle-background-hover, rgba(0, 0, 0, 0.04));
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--sf-color-primary);
+        outline-offset: -2px;
+    }
+}
+
+.sf-filemanager__tree-item--active {
+    background: var(--sf-color-subtle-background-selected, rgba(0, 0, 0, 0.08));
+    font-weight: 600;
+}
+
+// ── File list area ──────────────────────────────────────────────────────────
+
+.sf-filemanager__files {
+    flex: 1;
+    overflow: auto;
+
+    &--with-preview {
+        flex: 2;
+    }
+}
+
+.sf-filemanager__loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sf-space-xl);
+    color: var(--sf-color-text-secondary);
+}
+
+// ── Grid view ───────────────────────────────────────────────────────────────
+
+.sf-filemanager__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm);
+}
+
+.sf-filemanager__grid-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: var(--sf-space-sm);
+    border-radius: var(--sf-radius-md);
+    cursor: pointer;
+    user-select: none;
+    text-align: center;
+    word-break: break-word;
+    font-size: var(--sf-font-size-sm);
+
+    &:hover {
+        background: var(--sf-color-subtle-background-hover, rgba(0, 0, 0, 0.04));
+    }
+
+    &--selected {
+        background: var(--sf-color-subtle-background-selected, rgba(0, 0, 0, 0.08));
+    }
+}
+
+.sf-filemanager__icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.sf-filemanager__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// ── List view (table) ───────────────────────────────────────────────────────
+
+.sf-filemanager__list {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--sf-font-size-sm);
+
+    th {
+        text-align: left;
+        padding: var(--sf-space-xs) var(--sf-space-sm);
+        border-bottom: 1px solid var(--sf-color-border);
+        font-weight: 600;
+        color: var(--sf-color-text-secondary);
+        background: var(--sf-color-subtle-background, var(--sf-color-surface));
+        white-space: nowrap;
+    }
+
+    td {
+        padding: var(--sf-space-xs) var(--sf-space-sm);
+        border-bottom: 1px solid var(--sf-color-border-subtle, rgba(0, 0, 0, 0.06));
+        white-space: nowrap;
+    }
+
+    tr[role="row"] {
+        cursor: pointer;
+
+        &:hover td {
+            background: var(--sf-color-subtle-background-hover, rgba(0, 0, 0, 0.04));
+        }
+    }
+}
+
+.sf-filemanager__row--selected td {
+    background: var(--sf-color-subtle-background-selected, rgba(0, 0, 0, 0.08));
+}
+
+// ── Rename input ────────────────────────────────────────────────────────────
+
+.sf-filemanager__rename-input {
+    font-size: var(--sf-font-size-sm);
+    padding: 2px var(--sf-space-xs);
+    border: 1px solid var(--sf-color-primary);
+    border-radius: var(--sf-radius-sm);
+    outline: none;
+    width: 100%;
+    max-width: 200px;
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+}
+
+// ── Preview pane ────────────────────────────────────────────────────────────
+
+.sf-filemanager__preview {
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    border-left: 1px solid var(--sf-color-border);
+    padding: var(--sf-space-md);
+    overflow-y: auto;
+    background: var(--sf-color-subtle-background, var(--sf-color-surface));
+}
+
+.sf-filemanager__preview-empty {
+    color: var(--sf-color-text-secondary);
+    font-style: italic;
+}
+
+.sf-filemanager__preview-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: var(--sf-space-sm);
+}
+
+.sf-filemanager__preview-name {
+    font-weight: 600;
+    font-size: var(--sf-font-size-md);
+    margin-bottom: var(--sf-space-sm);
+    word-break: break-word;
+}
+
+.sf-filemanager__preview-details {
+    font-size: var(--sf-font-size-sm);
+}
+
+.sf-filemanager__preview-meta {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--sf-space-xs) var(--sf-space-sm);
+    margin: 0;
+
+    dt {
+        font-weight: 600;
+        color: var(--sf-color-text-secondary);
+    }
+
+    dd {
+        margin: 0;
+    }
+}
+
+// ── Context menu ────────────────────────────────────────────────────────────
+
+.sf-filemanager__context-menu {
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-elevation-md);
+    min-width: 140px;
+    padding: var(--sf-space-xs) 0;
+}
+
+.sf-filemanager__context-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: var(--sf-space-xs) var(--sf-space-md);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: var(--sf-font-size-sm);
+    color: var(--sf-color-text);
+
+    &:hover {
+        background: var(--sf-color-subtle-background-hover, rgba(0, 0, 0, 0.04));
+    }
+
+    &--delete:hover {
+        background: var(--sf-color-danger-light, #fde7e9);
+        color: var(--sf-color-danger, #d13438);
+    }
+}
+
+// ── Confirm dialog ──────────────────────────────────────────────────────────
+
+.sf-filemanager__confirm-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+}
+
+.sf-filemanager__confirm-dialog {
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-elevation-lg);
+    padding: var(--sf-space-lg);
+    min-width: 280px;
+    max-width: 400px;
+}
+
+.sf-filemanager__confirm-message {
+    margin: 0 0 var(--sf-space-md);
+    font-size: var(--sf-font-size-md);
+}
+
+.sf-filemanager__confirm-actions {
+    display: flex;
+    gap: var(--sf-space-sm);
+    justify-content: flex-end;
+}
+
+// ── Upload dialog ───────────────────────────────────────────────────────────
+
+.sf-filemanager__upload-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+}
+
+.sf-filemanager__upload-dialog {
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-elevation-lg);
+    min-width: 320px;
+    max-width: 500px;
+}
+
+.sf-filemanager__upload-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-bottom: 1px solid var(--sf-color-border);
+    font-weight: 600;
+}
+
+.sf-filemanager__upload-body {
+    padding: var(--sf-space-md);
+}
+
+.sf-filemanager__upload-input {
+    width: 100%;
+}
+
+.sf-filemanager__upload-close {
+    // Inherits from .sf-btn base styles
+}
+
+// ── Dark mode ───────────────────────────────────────────────────────────────
+
+[data-sf-theme="dark"] {
+    .sf-filemanager {
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__toolbar {
+        background: var(--sf-color-subtle-background, #292827);
+    }
+
+    .sf-filemanager__sidebar {
+        background: var(--sf-color-subtle-background, #292827);
+    }
+
+    .sf-filemanager__sort-select {
+        background: var(--sf-color-surface, #252423);
+        color: var(--sf-color-text, #f3f2f1);
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__search {
+        background: var(--sf-color-surface, #252423);
+        color: var(--sf-color-text, #f3f2f1);
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__rename-input {
+        background: var(--sf-color-surface, #252423);
+        color: var(--sf-color-text, #f3f2f1);
+    }
+
+    .sf-filemanager__breadcrumb-segment:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .sf-filemanager__tree [role="treeitem"]:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .sf-filemanager__tree-item--active {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sf-filemanager__grid-item {
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        &--selected {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    .sf-filemanager__list {
+        tr[role="row"]:hover td {
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        td {
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    .sf-filemanager__row--selected td {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sf-filemanager__details-btn--active {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sf-filemanager__preview {
+        background: var(--sf-color-subtle-background, #292827);
+    }
+
+    .sf-filemanager__context-menu {
+        background: var(--sf-color-surface, #252423);
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__context-menu-item:hover {
+        background: rgba(255, 255, 255, 0.06);
+    }
+
+    .sf-filemanager__context-menu-item--delete:hover {
+        background: rgba(208, 52, 56, 0.15);
+        color: #f1707b;
+    }
+
+    .sf-filemanager__confirm-overlay {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .sf-filemanager__confirm-dialog {
+        background: var(--sf-color-surface, #252423);
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__upload-overlay {
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .sf-filemanager__upload-dialog {
+        background: var(--sf-color-surface, #252423);
+        border-color: var(--sf-color-border);
+    }
+
+    .sf-filemanager__list th {
+        background: var(--sf-color-subtle-background, #292827);
+    }
+}

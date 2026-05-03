@@ -1,0 +1,14 @@
+// =============================================================================
+// Patterns: Overlay
+// Overlay shell rules shared by Dialog, Drawer, Popover, Tooltip, Modal
+// =============================================================================
+
+// Overlay backdrop — shared by dialog and modal
+.sf-dialog-overlay,
+.sf-modal-overlay,
+.sf-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--sf-color-overlay);
+    z-index: var(--sf-z-modal-overlay);
+}

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Versioning</PackageId>
+    <RootNamespace>Sunfish.Foundation.Versioning</RootNamespace>
+    <Description>Foundation-tier substrate for cross-version Sunfish federation handshake (ADR 0028-A6+A7). Hosts VersionVector + PluginVersionVectorEntry + VersionVectorVerdict primitives, ICompatibilityRelation 6-rule engine, IVersionVectorExchange two-phase verdict-commit handshake, and IVersionVectorIncompatibility audit-emission with A7.4 dedup. In-memory reference implementations. Audit integrates with kernel-audit per ADR 0049 via 2 new AuditEventType discriminators (VersionVectorIncompatibilityRejected, LegacyDeviceReconnected).</Description>
+    <PackageTags>sunfish;foundation;versioning;federation;handshake;adr-0028</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Versioning.Tests" />
+  </ItemGroup>
+</Project>

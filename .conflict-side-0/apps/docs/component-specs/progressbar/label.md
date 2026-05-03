@@ -1,0 +1,67 @@
+---
+title: Label
+page_title: Label for the Progress Bar
+description: Label for the Progress Bar for Blazor.
+slug: progressbar-label
+tags: sunfish,blazor,progress,bar,progressbar,label
+published: True
+position: 5
+components: ["progressbar"]
+---
+# Label for the ProgressBar
+
+The label for the ProgressBar is a text representation of the completion of the task. By default, the value shows as percent `%` since the default `Max` value is `100`. If you are using a different `Max` value, then override the default label, otherwise the percent value will appear inaccurate.
+
+This article explains how to customize the ProgressBar label position and content.
+
+To access the customization settings use the `<ProgressBarLabel>`. It provides a `Context` which exposes a `Value` parameter which is representation of the current value of the component.
+
+>caption Customize the label for the ProgressBar. The result from the code snippet below.
+
+![customize the labels of the progress bar](images/progress-bar-customize-label.png)
+
+````RAZOR
+<SunfishProgressBar Max="@MaxValue" Value="@PBValue">
+    <ProgressBarLabel Visible="true" Position="@ProgressBarLabelPosition.Center">
+        <Template>
+            <div>
+                The value of the ProgressBar is: <span style="font-weight:bold">@(context.Value)</span>
+            </div>
+        </Template>
+    </ProgressBarLabel>
+</SunfishProgressBar>
+
+@code {
+    public double MaxValue { get; set; } = 50;
+    public double PBValue { get; set; } = 10;
+}
+````
+
+## Features
+
+* [Visible](#visible)
+* [Position](#position)
+* [Template](#template)
+
+### Visible
+
+The `Visible` parameter takes a `boolean` value and controls whether the label of the Progress Bar is visible and defaults to `true`.
+
+### Position
+
+To control the position of the label for the Progress Bar, set the `ProgressBarLabelPosition` enum to one of its members:
+
+* `Start`
+* `Center`
+* `End` - this is the default value
+
+### Template
+
+The `Template` allows you to control the entire rendering of the label for the Progress Bar.
+
+
+## See Also
+
+  * [Live Demo: ProgressBar Label](https://demos.sunfish.dev/blazor-ui/progressbar/label)
+  * [Overview](slug:progressbar-overview)
+  * [Indeterminate state](slug:progressbar-indeterminate-state)

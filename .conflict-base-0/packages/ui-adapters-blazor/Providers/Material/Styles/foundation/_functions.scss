@@ -1,0 +1,82 @@
+// =============================================================================
+// Foundation: Functions — Helper functions for the Material 3 provider
+// =============================================================================
+
+@use 'sass:map';
+@use 'sass:math';
+
+// ----------------------------------------------------------------------------
+// palette-get($color-name, $step)
+// Retrieve a raw value from $material-ref-palette by color name and step.
+// Usage: palette-get(primary, 40) → #6750A4
+// NOTE: $material-ref-palette must be in scope (forwarded before this file).
+// ----------------------------------------------------------------------------
+
+/// Retrieves a palette value from the global ref palette map.
+/// @param {string} $color - Palette key (e.g. primary, neutral)
+/// @param {number} $step  - Palette step (e.g. 10, 40, 80)
+/// @return {color}
+@function material-palette($color, $step) {
+  $palette: map.get($material-ref-palette, $color);
+
+  @if not $palette {
+    @error "material-palette(): unknown color '#{$color}'. Valid keys: primary, secondary, tertiary, neutral, neutral-variant, error.";
+  }
+
+  $value: map.get($palette, $step);
+
+  @if not $value {
+    @error "material-palette(): step '#{$step}' not found in palette '#{$color}'.";
+  }
+
+  @return $value;
+}
+
+// ----------------------------------------------------------------------------
+// type-scale-get($role, $property)
+// Retrieve a single property from the M3 type scale map.
+// Usage: type-scale-get(body-medium, font-size) → 0.875rem
+// NOTE: $material-type-scale must be in scope (forwarded before this file).
+// ----------------------------------------------------------------------------
+
+@function material-type($role, $property) {
+  $scale: map.get($material-type-scale, $role);
+
+  @if not $scale {
+    @error "material-type(): unknown role '#{$role}'.";
+  }
+
+  $value: map.get($scale, $property);
+
+  @if $value == null {
+    @error "material-type(): property '#{$property}' not found in role '#{$role}'.";
+  }
+
+  @return $value;
+}
+
+// ----------------------------------------------------------------------------
+// shape-get($name)
+// Retrieve a shape/radius value from $material-shape.
+// Usage: shape-get(medium) → 12px
+// NOTE: $material-shape must be in scope.
+// ----------------------------------------------------------------------------
+
+@function material-shape($name) {
+  $value: map.get($material-shape, $name);
+
+  @if $value == null {
+    @error "material-shape(): unknown shape '#{$name}'. Valid: none, extra-small, small, medium, large, extra-large, full.";
+  }
+
+  @return $value;
+}
+
+// ----------------------------------------------------------------------------
+// rem($px) — Convert pixel value to rem (assumes 16px root)
+// Usage: rem(24) → 1.5rem
+// ----------------------------------------------------------------------------
+
+@function rem($px) {
+  @return #{math.div($px, 16)}rem;
+}

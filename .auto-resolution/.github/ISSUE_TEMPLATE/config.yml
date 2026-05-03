@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussion / Question
+    url: https://github.com/ctwoodwa/Sunfish/discussions
+    about: Use Discussions for open-ended questions, design conversations, and pre-RFC exploration. Convert to an issue once the shape is clearer.
+  - name: Security Vulnerability
+    url: https://github.com/ctwoodwa/Sunfish/security/advisories/new
+    about: Report security vulnerabilities privately — do not open a public issue. See .github/SECURITY.md.
+  - name: Governance or Conduct Concern
+    url: https://github.com/ctwoodwa/Sunfish/security/advisories/new
+    about: Governance, conduct, and moderation concerns may also be reported privately via GitHub Security Advisories.

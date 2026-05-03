@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Messaging</PackageId>
+    <Description>Bidirectional messaging substrate domain block — Thread + Message entities, InMemoryThreadStore + InMemoryMessagingGateway, MessagingEntityModule contribution per ADR 0015. Phase 2.1 of ADR 0052; consumes contracts from Sunfish.Foundation.Integrations.Messaging.</Description>
+    <PackageTags>messaging;threads;email;sms;blocks;domain;sunfish;adr-0052</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Messaging.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+    <ProjectReference Include="..\foundation-persistence\Sunfish.Foundation.Persistence.csproj" />
+  </ItemGroup>
+</Project>

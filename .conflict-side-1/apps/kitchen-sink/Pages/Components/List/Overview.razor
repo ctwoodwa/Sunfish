@@ -1,0 +1,71 @@
+@page "/components/List"
+@page "/components/List/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishList>
+            <SunfishListItem>First item in the list</SunfishListItem>
+            <SunfishListItem>Second item in the list</SunfishListItem>
+            <SunfishListItem>Third item in the list</SunfishListItem>
+        </SunfishList>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Dense List" Description="A compact list with reduced spacing for dense content." Code="@_denseCode">
+        <SunfishList>
+            <SunfishListItem>Compact item one</SunfishListItem>
+            <SunfishListItem>Compact item two</SunfishListItem>
+            <SunfishListItem>Compact item three</SunfishListItem>
+            <SunfishListItem>Compact item four</SunfishListItem>
+        </SunfishList>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishList>\n" +
+        "    <SunfishListItem>First item in the list</SunfishListItem>\n" +
+        "    <SunfishListItem>Second item in the list</SunfishListItem>\n" +
+        "    <SunfishListItem>Third item in the list</SunfishListItem>\n" +
+        "</SunfishList>";
+
+    private const string _denseCode =
+        "<SunfishList>\n" +
+        "    <SunfishListItem>Compact item one</SunfishListItem>\n" +
+        "    <SunfishListItem>Compact item two</SunfishListItem>\n" +
+        "    <SunfishListItem>Compact item three</SunfishListItem>\n" +
+        "    <SunfishListItem>Compact item four</SunfishListItem>\n" +
+        "</SunfishList>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Arrow Down", "Moves focus to the next list item"),
+        ("Arrow Up", "Moves focus to the previous list item"),
+        ("Home", "Moves focus to the first list item"),
+        ("End", "Moves focus to the last list item"),
+        ("Tab", "Moves focus into or out of the list"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"list\"", "Applied to the list container element"),
+        ("role=\"listitem\"", "Applied to each individual list item"),
+        ("aria-label", "Provides an accessible name for the list when no visible heading exists"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Lists are announced with the number of items (e.g., \"list, 3 items\").",
+        "Each list item is announced with its position (e.g., \"1 of 3\").",
+        "Interactive list items should convey their actionable nature to assistive technology.",
+    ];
+}

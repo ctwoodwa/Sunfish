@@ -1,0 +1,29 @@
+@namespace Sunfish.Compat.Telerik
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@inject ILogger<TelerikDatePicker> Logger
+
+@*
+    Telerik and Sunfish both now use DateTime? for DatePicker.Value — the wrapper
+    forwards parameters verbatim.
+*@
+<SunfishDatePicker Value="Value"
+                   ValueChanged="ValueChanged"
+                   Min="Min"
+                   Max="Max"
+                   Format="Format"
+                   Enabled="Enabled"
+                   @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+    [Parameter] public DateTime? Min { get; set; }
+    [Parameter] public DateTime? Max { get; set; }
+    [Parameter] public string Format { get; set; } = "yyyy-MM-dd";
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+}

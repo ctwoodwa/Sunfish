@@ -1,0 +1,26 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Overlays
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@if (IsVisible)
+{
+    <div id="@_popupId"
+         class="@GetRootClass()"
+         style="@GetPopupStyle()"
+         role="@(FocusTrap ? "dialog" : null)"
+         aria-modal="@(FocusTrap ? "true" : null)"
+         aria-label="@(FocusTrap ? EffectiveAriaLabel : null)"
+         tabindex="-1"
+         data-anchor-h="@AnchorHorizontalAlign.ToString().ToLowerInvariant()"
+         data-anchor-v="@AnchorVerticalAlign.ToString().ToLowerInvariant()"
+         data-popup-h="@PopupHorizontalAlign.ToString().ToLowerInvariant()"
+         data-popup-v="@PopupVerticalAlign.ToString().ToLowerInvariant()"
+         data-collision-h="@EffectiveHorizontalCollision.ToString().ToLowerInvariant()"
+         data-collision-v="@EffectiveVerticalCollision.ToString().ToLowerInvariant()"
+         @ref="_popupRef"
+         @onkeydown="HandleKeyDown"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}

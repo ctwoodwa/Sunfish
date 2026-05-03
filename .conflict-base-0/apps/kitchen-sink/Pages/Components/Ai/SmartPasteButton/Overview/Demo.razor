@@ -1,0 +1,45 @@
+@page "/components/ai/smartpastebutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.AI
+
+<PageTitle>SmartPasteButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SmartPasteButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/AI/SmartPasteButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSmartPasteButton</code> reads the system clipboard via
+            <code>navigator.clipboard.readText()</code> and hands the result to the host via the
+            <code>OnPaste</code> <code>EventCallback&lt;string&gt;</code>. Form-fill / structured
+            extraction logic lives in the host — the MVP button is intentionally unopinionated.
+        </p>
+        <p>
+            Copy some text elsewhere first, then click the button to see the clipboard contents
+            flow into the log below.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:.75rem; max-width:560px;">
+            <SunfishSmartPasteButton OnPaste="HandlePaste" />
+            @if (!string.IsNullOrEmpty(_lastPaste))
+            {
+                <pre style="padding:.5rem; background:var(--sunfish-surface-muted,#f3f4f6); border-radius:.375rem; font-size:.85rem; white-space:pre-wrap;">@_lastPaste</pre>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "AI", "SmartPasteButton", "Overview"];
+
+    private string? _lastPaste;
+
+    private void HandlePaste(string text) => _lastPaste = text;
+}

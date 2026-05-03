@@ -1,0 +1,60 @@
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+
+@if (_isVisible)
+{
+    <div class="@CombineClasses("mar-animation-container") @GetAnimationClass()"
+         style="@CombineStyles() animation-duration: @(AnimationDuration)ms;"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public AnimationType Animation { get; set; } = AnimationType.Fade;
+    [Parameter] public int AnimationDuration { get; set; } = 300;
+    [Parameter] public EventCallback OnShow { get; set; }
+    [Parameter] public EventCallback OnHide { get; set; }
+
+    private bool _isVisible;
+    private bool _isAnimatingOut;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (IsVisible && !_isVisible)
+        {
+            _isVisible = true;
+            _isAnimatingOut = false;
+            await OnShow.InvokeAsync();
+        }
+        else if (!IsVisible && _isVisible)
+        {
+            _isAnimatingOut = true;
+            StateHasChanged();
+            await Task.Delay(AnimationDuration);
+            _isVisible = false;
+            _isAnimatingOut = false;
+            await OnHide.InvokeAsync();
+        }
+    }
+
+    private string GetAnimationClass()
+    {
+        var animName = Animation switch
+        {
+            AnimationType.Fade => "fade",
+            AnimationType.SlideUp => "slide-up",
+            AnimationType.SlideDown => "slide-down",
+            AnimationType.SlideLeft => "slide-left",
+            AnimationType.SlideRight => "slide-right",
+            AnimationType.Zoom => "zoom",
+            AnimationType.Expand => "expand",
+            _ => "fade"
+        };
+
+        var direction = _isAnimatingOut ? "out" : "in";
+        return $"mar-anim--{animName}-{direction}";
+    }
+}

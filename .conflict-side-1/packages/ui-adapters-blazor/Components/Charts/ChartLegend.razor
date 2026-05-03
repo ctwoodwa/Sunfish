@@ -1,0 +1,18 @@
+@* ChartLegend — configures the chart legend's visibility, position, and appearance. *@
+
+@code {
+    [CascadingParameter] internal SunfishChart? ParentChart { get; set; }
+
+    /// <summary>Whether the legend is visible.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>Position of the legend relative to the chart.</summary>
+    [Parameter] public ChartPosition Position { get; set; } = ChartPosition.Bottom;
+
+    protected override void OnInitialized()
+    {
+        if (ParentChart is null)
+            throw new InvalidOperationException("ChartLegend must be placed inside a SunfishChart.");
+        ParentChart.SetChartLegend(this);
+    }
+}

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.Blocks.Accounting SharedResource — source locale (en-US).
+    Wave 2 cluster-A skeleton bundle. One pilot string per package proves the
+    cascade; remaining keys carry generic-but-package-scoped phrasing so the
+    bundle is shippable as-is. Plan 6 replaces these with full translator-grade
+    en-US copy and adds the rest of the per-block UI strings.
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator
+        context (enforced by SUNFISH_I18N_001).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Info</value>
+    <comment>[scaffold-pilot — replace in Plan 6] severity.info in blocks-accounting context — status badge for informational accounting messages (e.g., journal-entry posted, account reconciled). Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>[scaffold-pilot — replace in Plan 6] severity.warning in blocks-accounting context — status badge for non-blocking accounting concerns (e.g., approaching period close, unposted batch). Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Error</value>
+    <comment>[scaffold-pilot — replace in Plan 6] severity.error in blocks-accounting context — status badge for blocking accounting failures (e.g., unbalanced journal, missing GL account). Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>[scaffold-pilot — replace in Plan 6] severity.critical in blocks-accounting context — status badge for ledger-integrity-impacting failures (e.g., trial-balance mismatch, audit-trail gap). Pairs with high-attention visual styling.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Saving accounting record…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] action.save in blocks-accounting context — pilot string for the cluster-A cascade proof. UI button or status label when persisting an accounting record (journal entry, GL account, depreciation schedule). Imperative; sentence case. Trailing U+2026 ellipsis indicates in-progress.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>[scaffold-pilot — replace in Plan 6] action.cancel in blocks-accounting context — dismiss/abort button on accounting forms and dialogs. Imperative; sentence case.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry</value>
+    <comment>[scaffold-pilot — replace in Plan 6] action.retry in blocks-accounting context — retry button after a posting or export failure (e.g., QuickBooks IIF export). Imperative; sentence case.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] state.loading in blocks-accounting context — empty-state placeholder while fetching ledger data. Trailing U+2026 ellipsis (single character); translators preserve the convention.</comment>
+  </data>
+</root>

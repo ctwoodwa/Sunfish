@@ -1,0 +1,286 @@
+@inherits SunfishComponentBase
+@implements IAsyncDisposable
+
+@using Sunfish.Foundation.Enums
+
+<div class="@CombineClasses(CssProvider.FlatColorPickerClass() + " mar-flatcolorpicker" + (Enabled ? "" : " mar-flatcolorpicker--disabled"))"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+
+    @* ── Header: view toggles + preview + clear ──────────────── *@
+    <div class="sf-flatcolorpicker__header">
+        @if (_hasGradientView && _hasPaletteView)
+        {
+            <div class="sf-flatcolorpicker__view-toggle" role="group" aria-label="Color picker view">
+                <button type="button"
+                        class="sf-flatcolorpicker__view-btn @(_activeView == ColorPickerView.Gradient ? "mar-flatcolorpicker__view-btn--active" : "")"
+                        aria-pressed="@(_activeView == ColorPickerView.Gradient ? "true" : "false")"
+                        disabled="@(!Enabled)"
+                        @onclick="() => SwitchViewAsync(ColorPickerView.Gradient)">
+                    <span aria-hidden="true">&#9639;</span>
+                    <span class="sf-sr-only">Gradient</span>
+                </button>
+                <button type="button"
+                        class="sf-flatcolorpicker__view-btn @(_activeView == ColorPickerView.Palette ? "mar-flatcolorpicker__view-btn--active" : "")"
+                        aria-pressed="@(_activeView == ColorPickerView.Palette ? "true" : "false")"
+                        disabled="@(!Enabled)"
+                        @onclick="() => SwitchViewAsync(ColorPickerView.Palette)">
+                    <span aria-hidden="true">&#9638;</span>
+                    <span class="sf-sr-only">Palette</span>
+                </button>
+            </div>
+        }
+
+        @if (ShowPreview)
+        {
+            <div class="sf-flatcolorpicker__preview-container" aria-label="Color preview">
+                <span class="sf-flatcolorpicker__preview-new"
+                      style="background-color: @(_pendingColor ?? _committedColor ?? "transparent");"
+                      title="New color"></span>
+                <span class="sf-flatcolorpicker__preview-current"
+                      style="background-color: @(_committedColor ?? "transparent");"
+                      title="Current color"></span>
+            </div>
+        }
+
+        @if (ShowClearButton && Enabled)
+        {
+            <button type="button"
+                    class="sf-flatcolorpicker__clear-btn"
+                    aria-label="Clear color"
+                    @onclick="ClearColorAsync">
+                &#x2715;
+            </button>
+        }
+    </div>
+
+    @* ── Gradient view ───────────────────────────────────────── *@
+    @if (_activeView == ColorPickerView.Gradient && _hasGradientView)
+    {
+        <div class="sf-flatcolorpicker__gradient-view">
+            <SunfishColorGradient @bind-Value="_gradientColor"
+                                 @bind-Value:after="OnGradientValueChanged"
+                                 ValueFormat="@ValueFormat"
+                                 Format="@Format"
+                                 FormatChanged="@FormatChanged"
+                                 Formats="@Formats"
+                                 ShowOpacityEditor="@ShowOpacityEditor"
+                                 Enabled="@Enabled" />
+        </div>
+    }
+
+    @* ── Palette view ────────────────────────────────────────── *@
+    @if (_activeView == ColorPickerView.Palette && _hasPaletteView)
+    {
+        <div class="sf-flatcolorpicker__palette-view">
+            <SunfishColorPalette @bind-Value="_paletteColor"
+                                @bind-Value:after="OnPaletteValueChanged"
+                                Enabled="@Enabled" />
+        </div>
+    }
+
+    @* ── Action buttons ──────────────────────────────────────── *@
+    @if (ShowButtons)
+    {
+        <div class="sf-flatcolorpicker__actions">
+            <button type="button"
+                    class="sf-flatcolorpicker__apply-btn"
+                    aria-label="Apply color"
+                    disabled="@(!Enabled)"
+                    @onclick="ApplyAsync">
+                Apply
+            </button>
+            <button type="button"
+                    class="sf-flatcolorpicker__cancel-btn"
+                    aria-label="Cancel"
+                    disabled="@(!Enabled)"
+                    @onclick="CancelAsync">
+                Cancel
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    // ── Parameters: Value / Format ──────────────────────────────────────
+    /// <summary>The current color value string. Supports two-way binding.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Callback fired when the committed color changes.</summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>The color format returned to the application (Rgb or Hex).</summary>
+    [Parameter] public ColorFormat ValueFormat { get; set; } = ColorFormat.Rgb;
+
+    /// <summary>The text input format the user sees initially (Hex or Rgb). Supports two-way binding via FormatChanged.</summary>
+    [Parameter] public ColorFormat Format { get; set; } = ColorFormat.Rgb;
+
+    /// <summary>Callback when the text input format changes.</summary>
+    [Parameter] public EventCallback<ColorFormat> FormatChanged { get; set; }
+
+    /// <summary>Which color formats are available for toggling in the gradient view.</summary>
+    [Parameter] public IEnumerable<ColorFormat>? Formats { get; set; }
+
+    // ── Parameters: Views ───────────────────────────────────────────────
+    /// <summary>The currently active view (Gradient or Palette). Supports two-way binding.</summary>
+    [Parameter] public ColorPickerView View { get; set; } = ColorPickerView.Gradient;
+
+    /// <summary>Callback when the active view changes.</summary>
+    [Parameter] public EventCallback<ColorPickerView> ViewChanged { get; set; }
+
+    /// <summary>
+    /// Which views are available. Default: both Gradient and Palette.
+    /// Pass a single-element collection to hide the view-toggle tabs.
+    /// </summary>
+    [Parameter] public IEnumerable<ColorPickerView>? Views { get; set; }
+
+    // ── Parameters: Behavior ────────────────────────────────────────────
+    /// <summary>Whether to show the opacity (alpha) slider and alpha input in the gradient view.</summary>
+    [Parameter] public bool ShowOpacityEditor { get; set; } = true;
+
+    /// <summary>Whether to show the color preview boxes (new + current).</summary>
+    [Parameter] public bool ShowPreview { get; set; } = true;
+
+    /// <summary>Whether to show Apply/Cancel buttons. When false, changes apply immediately.</summary>
+    [Parameter] public bool ShowButtons { get; set; } = true;
+
+    /// <summary>Whether to show the clear button.</summary>
+    [Parameter] public bool ShowClearButton { get; set; } = true;
+
+    /// <summary>Whether the component is enabled for user interaction.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    // ── Internal state ──────────────────────────────────────────────────
+    private ColorPickerView _activeView = ColorPickerView.Gradient;
+    private ColorPickerView _lastView;
+    private bool _hasGradientView = true;
+    private bool _hasPaletteView = true;
+
+    /// <summary>The color committed to Value (the "current" swatch).</summary>
+    private string? _committedColor;
+
+    /// <summary>The in-progress color shown in the "new" swatch.</summary>
+    private string? _pendingColor;
+
+    /// <summary>Bound to SunfishColorGradient's Value.</summary>
+    private string? _gradientColor;
+
+    /// <summary>Bound to SunfishColorPalette's Value.</summary>
+    private string? _paletteColor;
+
+    /// <summary>Tracks the last Value we synced from the parameter to avoid re-parsing.</summary>
+    private string? _lastParamValue;
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+    protected override void OnParametersSet()
+    {
+        // Resolve available views
+        if (Views is not null)
+        {
+            var viewSet = Views.ToHashSet();
+            _hasGradientView = viewSet.Contains(ColorPickerView.Gradient);
+            _hasPaletteView = viewSet.Contains(ColorPickerView.Palette);
+        }
+        else
+        {
+            _hasGradientView = true;
+            _hasPaletteView = true;
+        }
+
+        // Sync active view from parameter
+        if (View != _lastView)
+        {
+            _activeView = View;
+            _lastView = View;
+        }
+
+        // Sync incoming Value
+        if (!string.Equals(Value, _lastParamValue, StringComparison.OrdinalIgnoreCase))
+        {
+            _lastParamValue = Value;
+            _committedColor = Value;
+            _pendingColor = Value;
+            _gradientColor = Value;
+            _paletteColor = Value;
+        }
+    }
+
+    // ── View switching ──────────────────────────────────────────────────
+    private async Task SwitchViewAsync(ColorPickerView view)
+    {
+        if (_activeView == view) return;
+        _activeView = view;
+
+        // Sync the pending color into whichever child is about to render
+        if (view == ColorPickerView.Gradient)
+            _gradientColor = _pendingColor;
+        else
+            _paletteColor = _pendingColor;
+
+        await ViewChanged.InvokeAsync(view);
+    }
+
+    // ── Child component value callbacks ─────────────────────────────────
+    private async Task OnGradientValueChanged()
+    {
+        _pendingColor = _gradientColor;
+        _paletteColor = _gradientColor;
+
+        if (!ShowButtons)
+        {
+            await CommitColorAsync(_gradientColor);
+        }
+    }
+
+    private async Task OnPaletteValueChanged()
+    {
+        _pendingColor = _paletteColor;
+        _gradientColor = _paletteColor;
+
+        if (!ShowButtons)
+        {
+            await CommitColorAsync(_paletteColor);
+        }
+    }
+
+    // ── Apply / Cancel / Clear ──────────────────────────────────────────
+    private async Task ApplyAsync()
+    {
+        await CommitColorAsync(_pendingColor);
+    }
+
+    private Task CancelAsync()
+    {
+        // Revert pending to committed
+        _pendingColor = _committedColor;
+        _gradientColor = _committedColor;
+        _paletteColor = _committedColor;
+        return Task.CompletedTask;
+    }
+
+    private async Task ClearColorAsync()
+    {
+        _pendingColor = null;
+        _gradientColor = null;
+        _paletteColor = null;
+        await CommitColorAsync(null);
+    }
+
+    private async Task CommitColorAsync(string? color)
+    {
+        _committedColor = color;
+        _pendingColor = color;
+        _lastParamValue = color; // prevent re-parse in OnParametersSet
+        Value = color;
+        await ValueChanged.InvokeAsync(color ?? string.Empty);
+    }
+
+    // ── IAsyncDisposable ────────────────────────────────────────────────
+    // The FlatColorPicker itself has no JS interop, but implements
+    // IAsyncDisposable so consumers can use @implements IAsyncDisposable
+    // consistently (SunfishColorGradient handles its own disposal).
+    ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        return ValueTask.CompletedTask;
+    }
+}

@@ -1,0 +1,104 @@
+@page "/components/data-display/listview/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ListView / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListView / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/ListView/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListView&lt;TItem&gt;</code> is a flat, template-driven repeater. Visual structure
+            is controlled entirely by the <code>ItemTemplate</code> render fragment; optional
+            <code>HeaderTemplate</code> and <code>FooterTemplate</code> fragments bracket the item list.
+            Paging turns on via <code>Pageable="true"</code> + <code>PageSize</code>. <code>Width</code>
+            and <code>Height</code> size the scroll viewport.
+        </p>
+        <p>
+            This page shows four item-template shapes: a plain row, a card-like tile, a two-column media
+            row with avatar and action, and a compact badge-tagged row.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <div>
+                <h4 style="margin:0 0 .5rem;">Plain rows</h4>
+                <SunfishListView Data="_people" TItem="Person" Width="340px">
+                    <ItemTemplate Context="p">
+                        <div style="padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            @p.Name — <span style="opacity:.7;">@p.Role</span>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Tile cards</h4>
+                <SunfishListView Data="_people" TItem="Person" Width="520px">
+                    <ItemTemplate Context="p">
+                        <div style="display:inline-block; width:calc(50% - 1rem); margin:.5rem; vertical-align:top;">
+                            <SunfishCard>
+                                <SunfishCardHeader>@p.Name</SunfishCardHeader>
+                                <SunfishCardBody>
+                                    <span style="opacity:.7;">@p.Role</span>
+                                </SunfishCardBody>
+                            </SunfishCard>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Media + action</h4>
+                <SunfishListView Data="_people" TItem="Person" Width="440px">
+                    <ItemTemplate Context="p">
+                        <div style="display:flex; align-items:center; gap:.75rem; padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <SunfishAvatar Initials="@p.Initials" />
+                            <div style="flex:1;">
+                                <div style="font-weight:600;">@p.Name</div>
+                                <div style="font-size:.75rem; opacity:.7;">@p.Role</div>
+                            </div>
+                            <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Contact</SunfishButton>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Badge-tagged + paging</h4>
+                <SunfishListView Data="_many" TItem="Person" Width="440px" Pageable="true" PageSize="4">
+                    <ItemTemplate Context="p">
+                        <div style="display:flex; align-items:center; gap:.5rem; padding:.35rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <span style="flex:1;">@p.Name</span>
+                            <SunfishBadge Variant="BadgeVariant.Info">@p.Role</SunfishBadge>
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "ListView", "Appearance"];
+
+    private record Person(string Name, string Role, string Initials);
+
+    private readonly List<Person> _people =
+    [
+        new("Alice Johnson", "Engineer", "AJ"),
+        new("Bob Smith", "Designer", "BS"),
+        new("Carol White", "Product", "CW"),
+        new("Dan Kim", "QA", "DK"),
+    ];
+
+    private readonly List<Person> _many = Enumerable.Range(1, 12).Select(i =>
+        new Person($"Teammate {i:D2}", i % 3 == 0 ? "Engineer" : i % 3 == 1 ? "Designer" : "Product",
+            $"T{i:D2}")).ToList();
+}

@@ -1,0 +1,23 @@
+// =============================================================================
+// Component: Button Group & Split Button
+// =============================================================================
+
+/* Button Group */
+.sf-button-group {
+    display: inline-flex;
+}
+
+.sf-button-group > .sf-button { border-radius: 0; }
+.sf-button-group > .sf-button:first-child { border-start-start-radius: var(--sf-radius-md); border-end-start-radius: var(--sf-radius-md); }
+.sf-button-group > .sf-button:last-child { border-start-end-radius: var(--sf-radius-md); border-end-end-radius: var(--sf-radius-md); }
+.sf-button-group > .sf-button + .sf-button { margin-inline-start: -1px; }
+
+/* Split Button */
+.sf-split-button {
+    display: inline-flex;
+    border-radius: var(--sf-radius-md);
+}
+
+.sf-split-button__main { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.sf-split-button__trigger { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: 1px solid rgba(255,255,255,0.2); padding: var(--sf-space-sm); min-width: auto; }
+.sf-split-button__dropdown { position: absolute; top: 100%; left: 0; margin-top: var(--sf-space-xxs); }

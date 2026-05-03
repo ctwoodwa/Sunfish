@@ -1,0 +1,86 @@
+@page "/components/feedback/chunkprogressbar/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ChunkProgressBar / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ChunkProgressBar / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ChunkProgressBar/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChunkProgressBar</code> renders <code>role="progressbar"</code> and exposes
+            the standard ARIA value surface (<code>aria-valuemin</code>, <code>aria-valuemax</code>,
+            <code>aria-valuenow</code>) on the host element. The <code>Label</code> parameter drives
+            the <code>aria-label</code>: when unset the bar still has an accessible name (the
+            literal <em>"Progress"</em>) so axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/aria-progressbar-name"
+               target="_blank" rel="noopener">
+                <code>aria-progressbar-name</code>
+            </a>
+            rule never fires &mdash; but a meaningful, context-specific label is far better for AT
+            users than the generic fallback.
+        </p>
+        <ul>
+            <li><strong><code>Label</code> set</strong> &mdash; <code>aria-label</code> matches and the label is also rendered as visible text.</li>
+            <li><strong><code>Label</code> unset</strong> &mdash; <code>aria-label</code> falls back to "Progress" (no visible label).</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 1.3.1 <em>Info and Relationships</em> + SC 4.1.2 <em>Name, Role, Value</em>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled (recommended)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    SR announces "Onboarding steps, progress bar, 3 of 5".
+                </p>
+                <SunfishChunkProgressBar Value="60" Max="100" ChunkCount="5" Label="Onboarding steps" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled — different chunk count</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    SR announces "Account verification, progress bar, 2 of 4".
+                </p>
+                <SunfishChunkProgressBar Value="50" Max="100" ChunkCount="4" Label="Account verification" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">No label (fallback)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    SR announces "Progress, progress bar, 80%". The literal "Progress" is the
+                    safety-net name; prefer to provide a real <code>Label</code>.
+                </p>
+                <SunfishChunkProgressBar Value="80" Max="100" ChunkCount="5" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="progressbar"</code></dt>
+                    <dd>Always applied to the root element.</dd>
+
+                    <dt><code>aria-label</code></dt>
+                    <dd>Driven by <code>Label</code>; defaults to <em>"Progress"</em> when unset.</dd>
+
+                    <dt><code>aria-valuemin</code> / <code>aria-valuemax</code></dt>
+                    <dd>Always <code>0</code> / <code>Max</code>.</dd>
+
+                    <dt><code>aria-valuenow</code></dt>
+                    <dd>Set to <code>Value</code> when determinate; omitted when <code>Indeterminate="true"</code>.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ChunkProgressBar", "Accessibility"];
+}

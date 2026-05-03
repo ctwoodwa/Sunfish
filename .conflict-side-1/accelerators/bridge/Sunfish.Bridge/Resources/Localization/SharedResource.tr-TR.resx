@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Bridge SharedResource — Turkish (Türkiye) satellite. LTR locale.
+       Agglutinative morphology; verb forms vary by context. Brand names stay Latin per ADR 0034. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="errors.not-found" xml:space="preserve">
+    <value>Bulunamadı</value>
+    <comment>Translator: Title of HTTP 404 page; appears as page heading in tenant browser-shell.</comment>
+  </data>
+  <data name="errors.not-found.detail" xml:space="preserve">
+    <value>İstenen kaynak bulunamadı.</value>
+    <comment>Translator: Body text under the 404 title; full sentence.</comment>
+  </data>
+  <data name="errors.unauthorized" xml:space="preserve">
+    <value>Devam etmek için oturum açın</value>
+    <comment>Translator: Imperative title — sign in to continue. Pairs with sign-in button.</comment>
+  </data>
+  <data name="errors.unauthorized.detail" xml:space="preserve">
+    <value>Oturumunuzun süresi doldu veya oturum açmadınız.</value>
+    <comment>Translator: Body text on HTTP 401; mentions both expired and never-signed-in states.</comment>
+  </data>
+  <data name="errors.forbidden" xml:space="preserve">
+    <value>Erişim reddedildi</value>
+    <comment>Translator: Title for HTTP 403; user is signed in but lacks permission.</comment>
+  </data>
+  <data name="errors.forbidden.detail" xml:space="preserve">
+    <value>Bu işlemi gerçekleştirmek için izniniz yok.</value>
+    <comment>Translator: Body text on HTTP 403; full sentence.</comment>
+  </data>
+  <data name="errors.conflict" xml:space="preserve">
+    <value>Çakışma</value>
+    <comment>Translator: Title for HTTP 409; CRDT merge conflict requiring user attention.</comment>
+  </data>
+  <data name="errors.conflict.detail" xml:space="preserve">
+    <value>İstek, kaynağın mevcut durumuyla çakışıyor. Lütfen gözden geçirip tekrar deneyin.</value>
+    <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
+  </data>
+</root>

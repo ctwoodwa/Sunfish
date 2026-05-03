@@ -1,0 +1,107 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout.Dock
+@using Sunfish.UIAdapters.Blazor.Enums
+@implements IAsyncDisposable
+@inherits SunfishComponentBase
+
+@* ──────────────────────────────────────────────────────────────────────
+   SunfishDockPane — content leaf inside a SunfishDockManager tree.
+
+   Renders a panel with an optional title strip and close button. The tab
+   strip is a single-tab placeholder in the MVP; multi-tab groups (with
+   draggable reordering) arrive alongside the drag-to-dock wave.
+   ────────────────────────────────────────────────────────────────────── *@
+
+@if (DockManager is not null && !_isClosed)
+{
+    <div class="@CombineClasses("sf-dockpane")"
+         style="@CombineStyles(FlexStyle(), "display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;")"
+         data-sf-dock-pane="@ResolvedId"
+         data-sf-dock-position="@Position.ToString().ToLowerInvariant()">
+        <div class="sf-dockpane__tabstrip" role="tablist" aria-label="@(Title ?? "Dock pane")">
+            <div class="sf-dockpane__tab sf-dockpane__tab--active"
+                 role="tab"
+                 draggable="true"
+                 aria-selected="true"
+                 data-sf-dock-tab-id="@ResolvedId">
+                <span class="sf-dockpane__tab-title">@(Title ?? ResolvedId)</span>
+                @if (Closable)
+                {
+                    <button type="button"
+                            class="sf-dockpane__tab-close"
+                            aria-label="Close pane"
+                            @onclick="CloseAsync">&times;</button>
+                }
+            </div>
+        </div>
+        <div class="sf-dockpane__content" style="flex:1 1 auto;min-height:0;overflow:auto;">
+            @ChildContent
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>Stable id for the pane (auto-generated if omitted).</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Display title shown in the tab strip.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Whether the pane renders a close button. Defaults to <c>true</c>.</summary>
+    [Parameter] public bool Closable { get; set; } = true;
+
+    /// <summary>Dock anchor position — consumed by drag-to-dock in a later wave; renders tabbed centre in the MVP.</summary>
+    [Parameter] public DockPosition Position { get; set; } = DockPosition.Center;
+
+    /// <summary>
+    /// Optional 0-based index inside the enclosing <see cref="SunfishDockSplit"/>. Used
+    /// to resolve the proportion entry when the split declares <c>Proportions</c>.
+    /// </summary>
+    [Parameter] public int SplitIndex { get; set; }
+
+    /// <summary>Pane body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Parent dock manager (required).</summary>
+    [CascadingParameter] public SunfishDockManager? DockManager { get; set; }
+
+    /// <summary>Enclosing split (optional — top-level pane is legal).</summary>
+    [CascadingParameter] public SunfishDockSplit? ParentSplit { get; set; }
+
+    private readonly string _autoId = $"pane-{Guid.NewGuid():N}";
+    private bool _isClosed;
+
+    internal string ResolvedId => string.IsNullOrWhiteSpace(Id) ? _autoId : Id!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (DockManager is not null)
+        {
+            await DockManager.RegisterPaneAsync(this);
+        }
+    }
+
+    private string FlexStyle()
+    {
+        if (ParentSplit is null) return "flex:1 1 auto;";
+        return $"flex:{ParentSplit.FlexForChild(SplitIndex)};";
+    }
+
+    private async Task CloseAsync()
+    {
+        if (DockManager is null || _isClosed) return;
+        var removed = await DockManager.RequestCloseAsync(this);
+        if (removed)
+        {
+            _isClosed = true;
+            StateHasChanged();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (DockManager is not null)
+        {
+            await DockManager.UnregisterPaneAsync(this);
+        }
+    }
+}

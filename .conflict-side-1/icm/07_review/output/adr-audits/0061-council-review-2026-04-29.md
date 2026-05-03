@@ -1,0 +1,174 @@
+# ADR 0061 — Three-Tier Peer Transport (mDNS / Mesh VPN / Managed Relay) — Council Review
+
+**Date:** 2026-04-29
+**Reviewer:** Adversarial council (Stage 1.5 perspectives + 21-AP scan)
+**Subject:** ADR 0061 v. 2026-04-29 (Proposed — awaiting council review + acceptance)
+**Companion artifacts read:** ADR text (`docs/adrs/0061-three-tier-peer-transport.md`); intake (`icm/00_intake/output/mesh-vpn-cross-network-transport-intake-2026-04-28.md`); paper §6.1 (Gossip Anti-Entropy) + §6.2 (Sync Daemon Protocol) + §17.2 (managed relay) + §20.7 (zone classification); ADR 0013 (provider-neutrality), ADR 0028 (CRDT engine), ADR 0031 (Bridge Zone-C Hybrid), ADR 0049 (audit substrate); existing substrate `packages/federation-common/ISyncTransport.cs` + `PeerId.cs`; `packages/kernel-audit/AuditEventType.cs`; ledger row W#30.
+**Verdict:** **Accept with amendments**
+**Quality grade:** **B (Solid)** — would lift to A with the four critical amendments below
+
+---
+
+## Top-line finding
+
+The ADR is doing a **necessary** thing — paper §6.1's three-tier model has been verbally specified but unpinned for the entire MVP arc, and W#23 (iOS Field-Capture App) is a real forcing function. Stage-0 sparring is honest (three options triangulated; Option B "defer indefinitely" and Option C "build our own control plane" both rejected with named rationale), license-incompatibility carve-outs (NetMaker SSPL, ZeroTier BSL) are a clean exercise of the OSS-permissive posture, and the adapter-family shape is consistent with ADR 0013's neutrality discipline.
+
+**However**, three load-bearing claims are under-specified or contradicted by the actual substrate code, and one entire dependency category — kernel-mode WireGuard, iOS Tailscale-app distribution, and Headscale single-maintainer governance — is treated as background risk when each is a **first-order availability dependency** the ADR's success criteria depend on:
+
+1. **`NodeId` vocabulary drift** — the contract surface uses `NodeId` throughout (10+ occurrences in `IPeerTransport`, `PeerEndpoint`, `IMeshVpnAdapter`, `MeshDeviceRegistration`), but `packages/federation-common/PeerId.cs` defines `PeerId` as the canonical federation-peer identifier. There is no `NodeId` value type anywhere in `packages/federation-*` or `packages/kernel-*`; `NodeId` appears only as `string ActorNodeId` in `foundation-recovery`. This is the same discovery-amnesia anti-pattern that fired on ADR 0051 (`AuditCorrelation` drift). Stage 02 implementer will either (a) invent a `NodeId` value type (creating substrate-vocabulary fork) or (b) stall pending clarification.
+
+2. **Headscale single-maintainer governance is not flagged as a tier-1 risk.** Headscale is the canonical recommendation, but at audit time it is maintained primarily by `juanfont` (single maintainer) with a small contributor pool. The ADR's "Headscale switches license away from BSD-3" revisit trigger covers the license-flip case but **not** the project-abandonment case. Headscale is BSD-3 today, but `if Headscale stops getting commits and Tailscale's protocol drifts` is a more probable failure mode than a Sentry-style relicense, and the ADR's named fallbacks (NetBird, Tailscale OSS) are not equivalent: NetBird is a different control-plane protocol entirely (not a Headscale-compatible drop-in), and Tailscale OSS is the CLIENT — Tailscale Inc. operates the only production-grade Tailscale-protocol control plane and that is closed-source.
+
+3. **iOS Tailscale dependency has no fallback path.** "iOS is Tailscale (Apple App Store distribution; Headscale clients on iOS exist but are less polished)" buries a structural single-point-of-failure: Apple App Store removal of the Tailscale iOS app, Tailscale Inc. discontinuing the iOS app, or Apple deprecating VPN-on-Demand all cut off W#23's transport story with no in-ADR fallback. The "Apple deprecates VPN-on-demand" revisit trigger acknowledges existence of the risk but provides no architectural mitigation; it is a "we will revisit later" placeholder.
+
+Plus four substrate-coupling and observability gaps named below.
+
+---
+
+## Anti-pattern findings (which fired; severity)
+
+| AP | Severity | Finding |
+|---|---|---|
+| **AP-19 Discovery amnesia** | **Critical** | ADR uses `NodeId` as the peer identifier in 10+ places across `IPeerTransport`, `PeerEndpoint`, `IMeshVpnAdapter`, `MeshDeviceRegistration`, `MeshPeer`, and `ITransportSelector.SelectAsync`. The substrate at `packages/federation-common/PeerId.cs` defines `PeerId` (base64url-encoded Ed25519 public key) as the canonical federation-peer identifier; existing `ISyncTransport.SendAsync` uses `PeerDescriptor` (which wraps `PeerId`). `NodeId` exists only as `string` in `foundation-recovery` and refers to **device** identity in the recovery protocol, not federation peers. This is identical in shape to the 0051 `AuditCorrelation` drift the council previously flagged. |
+| **AP-13 Confidence without evidence** | **Critical** | OQ-T3 ("Bridge-hosted Headscale resource costs at multi-tenant scale — Phase 2.3 measurement — if too costly, recommend tenant-self-hosting as the supported pattern") admits the Bridge-hosted-Headscale architecture is unmeasured, yet "Bridge can host Headscale" is named in Decision drivers and the architecture section is concretely specified ("per-tenant SQLite", "feature flag", "Bridge admin UI"). Multi-tenant Headscale at scale has no known production reference (Headscale's own docs target single-tenant self-hosting). The Phase 2.3+ option should be marked SPECULATIVE-PENDING-MEASUREMENT, not architected-then-measured. |
+| **AP-21 Assumed facts without sources** | **Major** | "Tier-2 fallback rate stays <10% in production" is a measured outcome the ADR commits to in Revisit Triggers, but with no instrumentation specified — what counts as a fallback? Per-peer-per-sync, per-handshake-attempt, per-sync-window? No metric definition, no observability target in the audit emission section (the 5 named `AuditEventType` constants record events but give no aggregation contract). Also: "Latency cost; Bridge round-trip is 50–200ms vs 5–20ms direct" cited in Option B rejection is a generic figure with no source — could be lower over a fast-relay or higher over consumer-grade NAT. |
+| **AP-1 Unvalidated assumption** | **Major** | The mesh-VPN-tier failover semantics in `ITransportSelector.SelectAsync` are pseudocode (`Try Tier 1: ... If found + reachable + handshake succeeds`) without timeout, retry, or partial-failure contracts. What does "If found + connected + handshake succeeds" mean operationally when (a) the mesh adapter reports connected but the peer is not registered in the same mesh, (b) handshake stalls indefinitely behind a misbehaving NAT, (c) two `IMeshVpnAdapter`s are registered (Headscale + Tailscale) and disagree on whether peer P is reachable? The 30s cache mentioned for selection results does not bound per-tier handshake attempt time. |
+| **AP-18 Unverifiable gates** | **Major** | "Provider-neutrality enforcement (ADR 0013)" claims `SUNFISH_PROVNEUT_001` analyzer auto-attaches to `providers-mesh-*` packages and `BannedSymbols.txt` per provider package "per the established pattern" — but ADR 0013's enforcement gate is **workstream #14**, which is `ready-to-build` per ledger, NOT `built`. The analyzer infrastructure does not yet exist in the repo (verified: no `providers-*` packages exist; `foundation-integrations` has no `BannedSymbols.txt`). Claiming "enforcement per established pattern" when the established pattern is itself in-flight is a forward reference that may not land before this ADR's adapter packages do. |
+| **AP-9 Skipping Stage 0** | Minor | Three options triangulated — survives. But Option C ("build our own WireGuard control plane") is dispensed with in three lines and the comparison to Headscale is shallow ("BSD-3 + maintained"); the better Option C critique would name the Tailscale wire-protocol reverse-engineering effort + ongoing maintenance burden vs the marginal vendor-control benefit. |
+| **AP-11 Zombie projects** | Minor | Five revisit triggers but only one (Tier-2 fallback rate <10%) has a quantitative threshold; "Bridge tenant exceeds 100+ devices" has a number but no instrumentation; "Nebula or Innernet matures" / "Apple deprecates VPN-on-demand" are externally-observable but not internally-measurable. |
+| **AP-3 Vague success criteria** | Minor | Implementation checklist is 10 bullet points; none have measurable acceptance criteria beyond "package exists with contract surface." No latency SLO, no fallback-rate budget, no test for `ITransportSelector` partial-failure behavior. Closer to "todo list" than "success criteria." |
+
+No AP-2 (vague phases), AP-4 (no rollback — this ADR explicitly states rollback = revert), or AP-12 (timeline fantasy) violations. AP-19 is the load-bearing finding; it is fixable with a 5-minute search-and-replace plus one paragraph of rationale.
+
+---
+
+## Top 3 risks (highest impact first)
+
+1. **`NodeId` substrate-vocabulary fork.** If sunfish-PM implements this ADR literally, two outcomes are likely: (a) they introduce a new `Sunfish.Foundation.Transport.NodeId` value type that is structurally similar but type-incompatible with `Sunfish.Federation.Common.PeerId`, requiring conversion at every call site between transport and federation — the exact integration friction ADR 0013's adapter pattern was designed to avoid, but applied at the WRONG seam (between two foundation-tier identifiers); or (b) they realize at Stage 06 that `PeerId` already exists, refactor the contract surface, and the ADR's signed-off type names diverge from the implemented types. The latter is technically harmless but invalidates the ADR as Cold-Start-Test-passing documentation. **The fix is one paragraph in the ADR explaining the choice, not a code change.** Either: rename `NodeId` → `PeerId` throughout, OR explicitly declare `NodeId` as a NEW type with rationale (e.g., "transport-layer-only; abstracts over federation `PeerId` and recovery `NodeId-as-string` to give the transport tier a single peer-identity surface").
+
+2. **Headscale governance + iOS Tailscale combined dependency risk.** The ADR's recommended deployment is **Headscale server + Tailscale iOS client** (per OQ-MV4 in the intake, accepted into the ADR via Decision-driver "Anchor + iOS need different defaults"). This creates a **two-vendor dependency stack** for the mesh tier: Headscale (single-maintainer BSD-3 reimplementation) on the control plane, Tailscale Inc. (private company with a public iOS app) on the iOS client. Each has a distinct failure mode:
+   - Headscale: maintainer burnout, license flip (covered in revisit triggers but no fallback mechanism), Tailscale wire-protocol drift faster than Headscale tracks it.
+   - Tailscale iOS: App Store removal, Tailscale Inc. acquisition + product discontinuation, Apple VPN-on-Demand API deprecation.
+   **Joint failure probability is non-trivial over a 3–5 year horizon.** The ADR's revisit triggers acknowledge each individually but do not architect a fallback. Concrete mitigation: the ADR should specify what `IMeshVpnAdapter` looks like when neither Headscale nor Tailscale is operable (does iOS device fall through cleanly to Tier 3? is there a graceful mode where the iOS device says "mesh unavailable, using relay"?). Without a defined behavior, Stage 06 implementer will guess.
+
+3. **`ITransportSelector` failover under partial-failure conditions is undefined.** The pseudocode says "Try Tier 2: For each registered IMeshVpnAdapter: Query mesh for P's NodeId: If found + connected + handshake succeeds → use Tier 2." Three operational pathologies are unaddressed:
+   - **Mesh-up-but-peer-not-registered.** Headscale adapter reports `IsAvailable = true` (control plane reachable), peer P not in this device's mesh ACL (peer registered in a different tenant's mesh). What does `ResolvePeerAsync` return — `null`? Throw? How long does the selector wait before deciding "Tier 2 doesn't have P" and falling through to Tier 3?
+   - **Mesh-up-handshake-stuck.** Peer P in mesh, control plane reports both endpoints connected, WireGuard handshake stalls behind asymmetric NAT or PMTU blackhole. Without a per-handshake timeout, the selector blocks indefinitely.
+   - **Two adapters disagree.** Headscale + Tailscale both registered (operator running both during migration). Headscale says peer found, Tailscale says peer not found. Pseudocode says "for each adapter," implying first-success-wins, but adapter-iteration order is implementation-defined.
+   These are not edge cases; they are normal operating conditions for a NAT-traversal mesh. Without explicit timeout + per-tier-budget + tie-break semantics, the system's failure modes are untestable.
+
+Honorable mention (risks 4–6, lower impact):
+
+4. **Provider-neutrality analyzer is a forward reference.** ADR claims "per the established pattern" but the pattern is workstream #14 (`ready-to-build`, not `built`). If W#14 doesn't land before `providers-mesh-headscale`, this ADR's enforcement claim fails open.
+5. **WireGuard kernel-vs-userspace data-plane portability.** ADR mentions "WireGuard tunnels carry sync" but never names where the WireGuard data-plane comes from on each platform: Linux native kernel module, Windows TUN driver (Wintun), macOS userspace (wireguard-go) or system-extension network-extension (Tailscale's iOS path), iOS NetworkExtension (Apple-supplied). Each has distinct install footprints, kernel-version requirements, and end-user-permission flows. Anchor's installer-integration bullet says "offer install" but doesn't specify which one.
+6. **Bridge-hosted Headscale + per-tenant SQLite scaling.** OQ-T3 acknowledges this, but the architecture section already pins "per-tenant SQLite (matches Bridge's existing per-tenant data-plane isolation)" — committing to a storage shape before measuring the operational profile of Headscale at multi-tenant scale. Headscale's own production guidance is single-tenant; multi-tenant operation may reveal SQLite-vs-Postgres preferences, lock-contention patterns, or per-tenant-process-vs-shared-process tradeoffs that aren't visible in the design.
+
+---
+
+## Top 3 strengths (what the ADR gets right)
+
+1. **License-incompatibility carve-outs are accurate and well-cited.** NetMaker did relicense to SSPL in 2023 (Server Side Public License — Mongo's), and ZeroTier did move to BSL (Business Source License — Sentry-style) in 2023. Both are correctly identified as incompatible with Sunfish's permissive-OSS posture. Headscale (BSD-3), NetBird (BSD-3), Tailscale OSS portions (BSD-3), Nebula (MIT), and Innernet (MIT) are correctly identified as compatible. This is the cleanest license-posture exercise in the recent ADR cohort and matches ADR 0013's discipline. *Caveat:* the Tailscale OSS-portion boundary is correctly flagged in OQ-T2 — Tailscale Inc. holds copyright on portions of their iOS/macOS apps that are NOT in the public `tailscale/tailscale` repo. The ADR responsibly defers this to Stage 02 verification.
+
+2. **Stage-0 sparring is honest and Option C is held.** Three options, explicit rejection rationale, the NIH option is dispensed with reference to Headscale's actual maturity rather than rhetorical anti-NIH posture. Option B (defer entirely) is rejected on substantive grounds (paper §6.1 commitment + iOS UX + privacy from Bridge metadata) rather than "we should ship more things." This is the right Stage-0 shape.
+
+3. **Phase placement matches the forcing-function discipline.** Tier 2 is correctly identified as **NOT blocking Phase 1** (single-LAN deployments cover personal scale via Tier 1; Bridge covers cross-network via Tier 3); the timing pin is "W#23 iOS Field-Capture App is the forcing function." This is the right way to sequence speculative substrate work — wait for a real consumer to demand it. Phase 2.1/2.2/2.3 staging of the four adapter packages also makes sense (Headscale first because it's the canonical recommendation; Tailscale second because BDFL has a personal Tailscale account; NetBird + plain WireGuard third because they're alternatives for users with specific preferences).
+
+---
+
+## Specific amendments (Accept-with-amendments)
+
+| # | Severity | Amendment |
+|---|---|---|
+| **A1** | **Critical** | **Resolve the `NodeId` vs `PeerId` vocabulary fork.** Either (a) replace every occurrence of `NodeId` in the contract surface with `PeerId` (matching `packages/federation-common/PeerId.cs`), and remove the implicit assumption that transport-tier identifiers are distinct from federation-tier identifiers; OR (b) explicitly declare `Sunfish.Foundation.Transport.NodeId` as a NEW type, define its relationship to `PeerId` and to `foundation-recovery`'s string `NodeId`, and explain why a new type is needed. Recommend (a) — `PeerId` is already the right identifier and this is a search-and-replace fix. The relationship to `MeshDeviceRegistration.DeviceId` (which is a *device* identity, distinct from a *peer* identity) is the right place to introduce a new type if any new type is needed. |
+| **A2** | **Critical** | **Specify `ITransportSelector` failover contract.** Add to the algorithm pseudocode: (i) per-tier max-attempt budget (e.g., Tier 1 mDNS query timeout 2s; Tier 2 per-adapter handshake timeout 5s; Tier 3 always tried as last resort with 10s connect timeout); (ii) explicit behavior when an `IMeshVpnAdapter` reports `IsAvailable = true` but `ResolvePeerAsync` returns null — fall through to next adapter, then to next tier; (iii) tie-break order when multiple `IMeshVpnAdapter`s are registered (deterministic — first-registered wins, OR config-order wins, OR named priority). The 30s selection-cache should be qualified: cache stores per-peer **selection result** (which tier + which adapter), not per-peer mesh-membership. |
+| **A3** | **Critical** | **Add Headscale-abandonment + iOS-Tailscale-removal fallback section.** The current Revisit Triggers block names both events but provides no architectural mitigation. Two changes: (i) Identify NetBird as the **operational** Headscale fallback, not just license-compatible alternative (NetBird has its own control plane and adapter; if Headscale becomes unmaintained, the migration story is "drain Headscale-mesh, register devices in NetBird-mesh, deprecate `providers-mesh-headscale`"). Note this is NOT a drop-in replacement — devices re-register, mesh ACLs reauthor. (ii) Specify the iOS-mesh-unavailable graceful-degradation: when neither Tailscale iOS app nor any future replacement is operable, iOS device falls through to Tier 3 (Bridge relay) automatically without user intervention. Confirm this is what `ITransportSelector` does today via A2's failover contract. |
+| **A4** | **Major** | **Convert OQ-T3 (Bridge-hosted Headscale at scale) from architecture-then-measure to measure-then-architect.** The current ADR commits to a per-tenant-SQLite layout, feature-flag flow, and Bridge admin-UI integration in advance of any measurement. Rebadge the Bridge-hosted-Headscale subsection as **SPECULATIVE — Phase 2.3+ research spike**, with concrete measurement plan: (i) deploy Headscale single-instance on Bridge dev infra; (ii) load-test with N tenants × M devices (N ∈ {2, 10, 50}, M ∈ {5, 20, 100}); (iii) measure RAM, CPU, SQLite lock contention, control-plane latency under handshake storms; (iv) decide architecture from data. State that **tenant-self-hosting is the supported default** and Bridge-hosted-Headscale is opportunistic. |
+| **A5** | **Major** | **Specify provider-neutrality enforcement timing.** ADR claims `SUNFISH_PROVNEUT_001` analyzer + `BannedSymbols.txt` "per the established pattern." Add explicit sequencing: (i) `providers-mesh-headscale` adapter package MUST NOT land before workstream #14 (provider-neutrality enforcement gate) is `built`; OR (ii) the adapter package ships with a placeholder `BannedSymbols.txt` and an inline NOTE that analyzer enforcement comes online with W#14. Closes the AP-18 forward-reference. |
+| **A6** | **Major** | **Add Verification subsection (currently absent).** Required content: (i) latency SLO for tier selection (e.g., "Tier-1 selection completes in P95 < 500ms"); (ii) fallback-rate observability (Tier-1-attempt-count, Tier-2-success-count, Tier-3-fallback-count per device per day) tied to the existing audit substrate, with explicit mention that the 5 audit events define the metric; (iii) integration test for `ITransportSelector` partial-failure scenarios (mesh up but peer not registered; handshake timeout; multiple-adapter tie-break); (iv) provider-neutrality analyzer architecture test (ensures `blocks-*` packages cannot reference `Headscale-Sharp` / `Tailscale.Net` types). |
+| **A7** | **Major** | **Document the WireGuard data-plane source per platform.** Add a sub-section under "Adapter packages" naming, for each supported OS: (i) Anchor Windows — Wintun TUN driver (auto-installed by Tailscale client; manual install if Headscale-only); (ii) Anchor macOS — wireguard-go userspace tunnel (no kernel extension required since macOS 10.15) OR Tailscale's network-extension app; (iii) Anchor Linux — kernel-native WireGuard module (kernel >= 5.6) or wireguard-tools userspace fallback; (iv) iOS — Tailscale app's NetworkExtension (only supported path; no alternative without re-distributing as separate iOS app). Confirm which of these the Anchor installer "offer install" bullet covers, and which require operator manual setup. |
+| **A8** | Minor | **Quantify revisit triggers.** "Bridge tenant exceeds 100+ devices in mesh" → "Bridge-hosted Headscale tenant has >100 active mesh devices for >7 consecutive days, OR Bridge-hosted Headscale RAM-per-tenant exceeds 200MB at idle." "Tier-2 fallback rate stays <10%" → "Aggregate Tier-3 (`TransportFallbackToRelay`) audit-event count divided by aggregate `TransportTierSelected` event count, measured weekly per device, stays <10% across the cohort." |
+| **A9** | Minor | **Update Confidence Level honestly.** Current "MEDIUM-HIGH" is assessed across all components, but the Bridge-hosted-Headscale path is unmeasured (OQ-T3) and the iOS Tailscale-fallback path is undefined. Suggest: "MEDIUM for the contract surface + Headscale-self-hosted path; LOW-MEDIUM for the Bridge-hosted-Headscale Phase 2.3+ path; LOW for iOS-Tailscale-deprecation contingency." |
+| **A10** | Minor | **Cite paper §6.1 verbatim and acknowledge the gap.** The paper's §6.1 description of mesh VPN is one sentence ("Mesh VPN (e.g., WireGuard-based) — peers across networks connect with automatic NAT traversal; no port forwarding required.") This ADR materially **extends** the paper rather than only pinning it: introducing `IPeerTransport`, `ITransportSelector`, vendor-pluggable adapters, Bridge-hosted Headscale, etc. State this explicitly: "Paper §6.1 names the requirement; this ADR specifies the implementation surface beyond what the paper enumerates." Avoids the AP-13 implication that "paper §6.1 commitment" justifies all the architectural detail in this ADR. |
+
+---
+
+## Quality rubric grade
+
+**B (Solid).** Earns C trivially: all 5 CORE present (Context, Decision drivers, Considered options, Decision, Consequences), multiple CONDITIONAL sections (Compatibility, Open questions, Revisit triggers, References, Pre-acceptance audit), and no AP-2/-4/-5 critical violations. Earns B via Stage-0 sparring (3 honest options) + Confidence Level + Cold Start Test self-assessment + Revisit Triggers + Rollback strategy + Reference Library.
+
+Falls short of A on three counts:
+- **AP-19 substrate-vocabulary drift (`NodeId` vs `PeerId`)** — same Cold-Start-failure shape as ADR 0051's `AuditCorrelation` issue, repeating the lesson rather than absorbing it.
+- **AP-13 confidence-without-evidence on Bridge-hosted Headscale** — architecture-then-measure pattern; the ADR commits to a layout before measuring the load profile.
+- **Verification section is absent** — no SLOs, no observability targets, no integration-test contract for `ITransportSelector` partial failures.
+
+The four Critical-tier amendments (A1, A2, A3 + A4) are tractable: A1 is a 5-minute search-and-replace plus rationale paragraph; A2 is one paragraph of timeout/budget/tie-break specification; A3 is two paragraphs of fallback narrative; A4 is rebadging plus a measurement plan. None require architectural redesign. With those four landed, this ADR clears A on a re-review.
+
+---
+
+## Stage 1.5 — Six adversarial perspectives
+
+### 1. Outside Observer — "What does this look like to a contributor with zero context?"
+
+A contributor opening this ADR for the first time sees a cleanly-structured architecture decision with three triangulated options, named license rationale, and a concrete C# contract surface. They will assume `NodeId` is a Sunfish-defined value type because every other type in the contract surface (`PeerEndpoint`, `MeshNodeStatus`, `MeshPeer`, `MeshDeviceRegistration`) is. They will then `grep -r "NodeId" packages/` and find only `string ActorNodeId` in `foundation-recovery` plus the `PeerId` definition in `federation-common`, and they will not know whether (a) to introduce `NodeId` as a new value type, (b) to alias `PeerId`, or (c) to ask. The ADR does not pre-empt this confusion. The Cold Start Test self-assessment ("Stage 02 contributor reading this ADR + ADR 0013 + ADR 0031 + paper §6.1 should be able to scaffold without asking") fails on this single point.
+
+### 2. Pessimistic Risk Assessor — "What's the worst plausible outcome?"
+
+Worst plausible 18-month outcome: (a) Headscale's single maintainer reduces commit frequency or steps away (probability: non-trivial — single-maintainer OSS projects have an empirically high abandonment rate over multi-year horizons); (b) Tailscale Inc. is acquired or pivots and the iOS app is deprecated; (c) BDFL's iOS field-capture workflow regresses to Bridge-relay-only; (d) Phase 2 commercial deployment hits the latency cost the ADR explicitly named as a reason to reject Option B (50–200ms vs 5–20ms) and the property business productivity story degrades. The ADR's revisit-trigger machinery names each event individually but does not specify the architectural mitigation, so the realized outcome is "we'll figure it out then." The transition cost (re-registering N devices in a different mesh, reauthoring ACLs, retraining users on new client) is not budgeted anywhere.
+
+### 3. Pedantic Lawyer — "What does this commit Sunfish to?"
+
+License posture is correctly identified for the named adapters, but two contract-language risks: (i) "Tailscale OSS portions" is named as BSD-3 in the Decision-drivers block, but the ADR also says "Tailscale's open-source client portions" and OQ-T2 admits the boundary is unclear. The ADR commits to building a `providers-mesh-tailscale` adapter that "uses ONLY the open-source `tailscale.com` repo" — a concrete legal commitment that downstream maintainers must police. Add a one-line acceptance criterion: "every import in `providers-mesh-tailscale` traceable to a file in `github.com/tailscale/tailscale@<commit>` with no closed-source-portion references." (ii) The "RULES OUT NetMaker (SSPL)" line names a license that is technically a source-available-not-OSI-approved license; if Sunfish ever wants to integrate with NetMaker via SSPL-clean isolation patterns (e.g., out-of-process sidecar with documented JSON API), the current ADR text closes that door entirely. Recommend softening from "RULES OUT" to "EXCLUDES from in-process embedding" so a future "use NetMaker via REST API in a sidecar" workstream isn't precluded.
+
+### 4. Skeptical Implementer — "Where will this be hardest to ship?"
+
+Three hardest-to-ship surfaces, in order: (1) **`ITransportSelector` partial-failure semantics** (A2 above). Without explicit timeout + tie-break + adapter-iteration contract, the integration test surface is undefined and Stage 06 will under-test the failure modes. (2) **Anchor installer's mesh-VPN client install flow.** "Detect existing Tailscale/Headscale-client; offer install if absent" is one bullet in the implementation checklist. The actual install flow on Windows requires Wintun TUN driver + admin elevation; on macOS requires either Tailscale's NetworkExtension app (App Store + signed) or wireguard-go + admin elevation; on Linux requires kernel-version detection + package-manager dispatch (apt vs dnf vs pacman vs Nix). Each platform's UX is a 1–3 day implementation by itself. (3) **Bridge-hosted Headscale lifecycle management.** Bridge already runs an Aspire app graph; adding a Headscale process means lifecycle (start/stop/restart on Bridge restart), per-tenant SQLite path management, port allocation (Headscale defaults to 8080 — collides with Bridge's existing services), and TLS termination (Headscale needs HTTPS — does Bridge front it or does Headscale terminate?). The ADR mentions none of this.
+
+### 5. The Manager — "Is this on the critical path? Who blocks?"
+
+Tier 2 is **NOT on the critical path for Phase 1 closure** (single-LAN Tier 1 + Bridge Tier 3 are sufficient) and the ADR correctly identifies this. It IS on the critical path for W#23 iOS Field-Capture App, which is itself a Phase 2 commercial-property workstream. Manager-perspective question: does the current sequencing (this ADR → `providers-mesh-headscale` Phase 2.1 → W#23 Phase 2.3) leave enough slack for the OQ-T3 Bridge-hosted-Headscale measurement spike to inform the architecture? Answer per the ADR: not really — Phase 2.1 ships `providers-mesh-headscale` as a self-hosted-Headscale adapter; Phase 2.3 is when the Bridge-hosted-Headscale module would need to be designed AND when W#23 needs Tier 2 working end-to-end. The compression risks shipping the Bridge-hosted-Headscale path under deadline pressure rather than after measurement, which is exactly the AP-13 trap A4 calls out.
+
+### 6. Devil's Advocate — "Is the recommended option the right one?"
+
+The ADR rejects Option B (defer Tier 2) on substantive grounds: Bridge metadata leak, Bridge availability gating sync, latency cost. All three are real, but Option B has a stronger version not considered: **defer Tier 2 to Phase 3, ship a clean Bridge-relay-only Phase 2 for the BDFL property business, and let the iOS UX be "syncs when phone reconnects to home Wi-Fi via Tier 1" rather than "syncs over Tier 2 when phone is in the field."** This narrower deferral preserves Phase 1 + Phase 2 commercial viability while avoiding the two-vendor-dependency-stack risk and the Bridge-hosted-Headscale architecture-then-measure trap. The ADR's rejection of Option B treats it as "ship nothing for cross-network sync" rather than "ship managed-relay-only and let mesh emerge in Phase 3+." Worth a paragraph naming the narrower defer-to-Phase-3 path and rejecting it explicitly (or accepting it as a contingency if Headscale-or-Tailscale failure modes materialize before Phase 2.3).
+
+---
+
+## 21-AP scan summary
+
+| AP | Name | Status | Severity |
+|---|---|---|---|
+| AP-1 | Unvalidated assumption | **FIRED** | Major (selector failover semantics) |
+| AP-2 | Vague phases | Clean | — |
+| AP-3 | Vague success criteria | **FIRED** | Minor |
+| AP-4 | No rollback | Clean (rollback = revert ADR + adapter packages) | — |
+| AP-5 | Plan ending at deploy | Clean (Revisit Triggers cover post-acceptance) | — |
+| AP-6 | Missing Resume Protocol | N/A (ADR not a multi-session plan) | — |
+| AP-7 | Delegation without contracts | Clean (W#23 hand-off path named) | — |
+| AP-8 | Blind delegation trust | Clean | — |
+| AP-9 | Skipping Stage 0 | **FIRED** | Minor (Option C dispensed thinly) |
+| AP-10 | First idea unchallenged | Clean (3 triangulated options) | — |
+| AP-11 | Zombie projects (no kill criteria) | **FIRED** | Minor (revisit triggers under-quantified) |
+| AP-12 | Timeline fantasy | Clean (no time estimates) | — |
+| AP-13 | Confidence without evidence | **FIRED** | **Critical** (Bridge-hosted Headscale unmeasured) |
+| AP-14 | Wrong detail distribution | Clean | — |
+| AP-15 | Premature precision | Clean | — |
+| AP-16 | Hallucinated effort estimates | Clean (no effort numbers) | — |
+| AP-17 | Delegation without context transfer | Clean | — |
+| AP-18 | Unverifiable gates | **FIRED** | Major (provider-neutrality enforcement is forward reference) |
+| AP-19 | Discovery amnesia | **FIRED** | **Critical** (`NodeId` vs `PeerId` substrate drift) |
+| AP-20 | Missing tool fallbacks | Clean (Tier 3 Bridge relay is ultimate fallback) | — |
+| AP-21 | Assumed facts without sources | **FIRED** | Major (latency figures + fallback-rate metric undefined) |
+
+**Score:** 8 of 21 fired; 2 Critical, 3 Major, 3 Minor. No fatal violations. The Critical pair (AP-19 + AP-13) are the load-bearing findings; both fixable in-ADR with no code changes.
+
+---
+
+## Reviewer's bottom line for the CTO
+
+ADR 0061 is doing the right architectural thing **and** it is doing it at the right time (W#23 iOS Field-Capture App is a real forcing function for Tier 2). The license posture is principled, the Stage-0 sparring is honest, and the adapter-family shape is faithful to ADR 0013. **However**, the same substrate-vocabulary discipline that fired on ADR 0051 (`AuditCorrelation`) has not been internalized: this ADR introduces `NodeId` across 10+ contract types when `PeerId` already exists, and Stage 06 implementer will hit that wall.
+
+Beyond the vocabulary fix, the two structural risks are (a) the **two-vendor dependency stack** (Headscale + Tailscale iOS) without an architected fallback, and (b) the **Bridge-hosted Headscale** path being architected before being measured. Both are addressable in-ADR; neither requires a redesign.
+
+**Recommendation:** Accept after A1–A4 (Critical) land in-ADR; A5–A10 may land during Stage 02 or as Stage 06 implementation guidance. **Do NOT promote to `Accepted` until A1 (vocabulary) is fixed** — it directly affects the contract surface that Stage 02 will commit to. Estimated rewrite cost: 1–2 hours of ADR editing, zero code changes, zero downstream-intake-rework. Worth doing before flipping to Accepted because the W#23 iOS hand-off and Phase 2.1 `providers-mesh-headscale` package skeleton both depend on the contract surface being final.
+
+If A1–A4 don't land within ~1 working day, the right move is **Reject and re-propose** rather than letting the substrate-vocabulary fork ship to Stage 02 (which is the same call the council made on ADR 0053's state-set merge).

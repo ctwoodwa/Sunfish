@@ -1,0 +1,77 @@
+@page "/components/forms/searchbox/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>SearchBox / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SearchBox / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/SearchBox/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSearchBox</code> is an <code>&lt;input type="search"&gt;</code> wrapped with a
+            leading search icon and a trailing clear button that appears only when the value is
+            non-empty. The visual axes are:
+        </p>
+        <ul>
+            <li><code>Placeholder</code> — defaults to <code>"Search..."</code>.</li>
+            <li><code>KbdHint</code> — a keyboard-shortcut hint (e.g., <code>⌘K</code>) shown in the
+                trailing slot when the box is empty.</li>
+            <li><code>Disabled</code> — flips to the disabled visual treatment and removes the control
+                from the tab order.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; max-width:820px;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Plain</h3>
+                <SunfishSearchBox Value="@_a" ValueChanged="@(v => _a = v)" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Custom placeholder</h3>
+                <SunfishSearchBox Value="@_b" ValueChanged="@(v => _b = v)" Placeholder="Search issues..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With keyboard hint</h3>
+                <SunfishSearchBox Value="@_c" ValueChanged="@(v => _c = v)" Placeholder="Quick search" KbdHint="Ctrl+K" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Pre-filled (clear button visible)</h3>
+                <SunfishSearchBox Value="@_d" ValueChanged="@(v => _d = v)" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">With label</h3>
+                <SunfishField>
+                    <SunfishLabel>Global search</SunfishLabel>
+                    <SunfishSearchBox Value="@_e" ValueChanged="@(v => _e = v)" KbdHint="/" />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.8rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Disabled</h3>
+                <SunfishSearchBox Value="offline" Disabled="true" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "SearchBox", "Appearance"];
+
+    private string _a = string.Empty;
+    private string _b = string.Empty;
+    private string _c = string.Empty;
+    private string _d = "kittens";
+    private string _e = string.Empty;
+}

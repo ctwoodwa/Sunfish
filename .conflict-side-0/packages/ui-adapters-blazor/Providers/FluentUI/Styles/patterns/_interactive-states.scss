@@ -1,0 +1,11 @@
+// =============================================================================
+// Patterns: Interactive States
+// Focus ring, hover/pressed/disabled shared patterns
+// =============================================================================
+
+// Focus-visible utility — applied via component selectors individually.
+// The --sf-focus-ring token is defined in foundation/_tokens.scss.
+// Components reference it as: box-shadow: var(--sf-focus-ring)
+
+// Disabled opacity token: var(--disabled-opacity) = 0.3  (Fluent system)
+// Marilo disabled pattern: opacity: 1, color: var(--sf-color-text-disabled), cursor: not-allowed

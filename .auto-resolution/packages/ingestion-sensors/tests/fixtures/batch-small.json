@@ -1,0 +1,7 @@
+[
+  {"sensorId":"s1","timestampUtc":"2026-04-17T14:00:00Z","kind":"temperature","value":21.3,"unit":"celsius"},
+  {"sensorId":"s1","timestampUtc":"2026-04-17T14:01:00Z","kind":"temperature","value":21.5,"unit":"celsius"},
+  {"sensorId":"s2","timestampUtc":"2026-04-17T14:00:00Z","kind":"humidity","value":42.0,"unit":"percent_rh"},
+  {"sensorId":"s3","timestampUtc":"2026-04-17T14:00:00Z","kind":"water_leak","value":0,"unit":"boolean"},
+  {"sensorId":"s3","timestampUtc":"2026-04-17T14:05:00Z","kind":"water_leak","value":1,"unit":"boolean"}
+]

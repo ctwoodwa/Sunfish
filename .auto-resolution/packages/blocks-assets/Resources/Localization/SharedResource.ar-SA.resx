@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Blocks.Assets SharedResource — Arabic (Saudi Arabia) satellite. RTL locale.
+       Wave 2 cluster-B skeleton bundle. Plan 6 replaces these with full translator-grade
+       ar-SA copy and adds the rest of the per-block UI strings. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>معلومات</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Severity label — informational tier in asset-catalog context.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>تحذير</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Severity label — warning in asset-catalog context; non-blocking.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>خطأ</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Severity label — error in asset-catalog context; blocking failure.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>حرج</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Severity label — critical in asset-catalog context; integrity risk.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>حفظ سجل الأصل</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Action verb — save an asset record. Pilot string for cluster-B cascade proof. Imperative.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>إلغاء</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Action verb — dismiss/abort on asset forms and attachment dialogs.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>إعادة المحاولة</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Action verb — retry after an upload, indexing, or save failure.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>جارٍ التحميل…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: Empty-state placeholder while the asset catalog loads. Trailing U+2026 ellipsis preserved.</comment>
+  </data>
+</root>

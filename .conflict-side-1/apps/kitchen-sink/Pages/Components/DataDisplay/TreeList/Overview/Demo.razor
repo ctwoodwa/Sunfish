@@ -1,0 +1,106 @@
+@page "/components/data-display/treelist/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+
+<PageTitle>TreeList / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeList / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeList/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeList&lt;TItem&gt;</code> renders hierarchical data as a grid. Bind
+            <code>Data</code> and either:
+        </p>
+        <ul>
+            <li>pair <code>IdField</code> + <code>ParentIdField</code> for flat self-referencing data, or</li>
+            <li>set <code>ItemsField</code> for a nested-children model (shown below).</li>
+        </ul>
+        <p>
+            Columns are declared with <code>SunfishTreeListColumn</code>. Mark one column
+            <code>Expandable="true"</code> to host the chevron. Common features (<code>Sortable</code>,
+            <code>Pageable</code>, <code>FilterMode</code>, <code>SelectionMode</code>) are opt-in on the
+            parent. Keyboard navigation (<code>Navigable="true"</code>) gives Arrow-right/Arrow-left
+            expand/collapse and home/end jumps.
+        </p>
+    </Narrative>
+
+    <Example>
+        <SunfishTreeList TItem="OrgNode"
+                         Data="_orgChart"
+                         ItemsField="@nameof(OrgNode.Reports)"
+                         Sortable="true"
+                         Pageable="true"
+                         PageSize="5"
+                         SelectionMode="TreeListSelectionMode.Single"
+                         Navigable="true">
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Name)" Title="Name" Expandable="true" Width="260px" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Title)" Title="Role" Width="200px" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Department)" Title="Department" />
+            <SunfishTreeListColumn Field="@nameof(OrgNode.Headcount)" Title="Team size" Width="120px" />
+        </SunfishTreeList>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "TreeList", "Overview"];
+
+    private sealed record OrgNode
+    {
+        public string Name { get; init; } = "";
+        public string Title { get; init; } = "";
+        public string Department { get; init; } = "";
+        public int Headcount { get; init; }
+        public List<OrgNode> Reports { get; init; } = new();
+    }
+
+    private readonly List<OrgNode> _orgChart =
+    [
+        new()
+        {
+            Name = "Ada Lovelace",
+            Title = "CEO",
+            Department = "Executive",
+            Headcount = 42,
+            Reports =
+            [
+                new()
+                {
+                    Name = "Grace Hopper",
+                    Title = "VP Engineering",
+                    Department = "Engineering",
+                    Headcount = 28,
+                    Reports =
+                    [
+                        new() { Name = "Alan Turing", Title = "Eng. Manager", Department = "Platform", Headcount = 9 },
+                        new() { Name = "Linus Torvalds", Title = "Eng. Manager", Department = "Kernel", Headcount = 12 },
+                    ],
+                },
+                new()
+                {
+                    Name = "Margaret Hamilton",
+                    Title = "VP Product",
+                    Department = "Product",
+                    Headcount = 8,
+                    Reports =
+                    [
+                        new() { Name = "Don Knuth", Title = "Principal PM", Department = "Product", Headcount = 0 },
+                    ],
+                },
+                new()
+                {
+                    Name = "Katherine Johnson",
+                    Title = "VP Research",
+                    Department = "Research",
+                    Headcount = 5,
+                    Reports = new(),
+                },
+            ],
+        },
+    ];
+}

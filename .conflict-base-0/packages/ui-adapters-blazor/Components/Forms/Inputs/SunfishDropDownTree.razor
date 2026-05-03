@@ -1,0 +1,49 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-dropdowntree")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+    <div class="sf-dropdowntree__control @(IsInteractive ? "" : "mar-dropdowntree__control--disabled")"
+         @onclick="ToggleDropdown"
+         tabindex="@(IsInteractive ? 0 : -1)"
+         role="combobox"
+         aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+         aria-disabled="@((!IsInteractive).ToString().ToLowerInvariant())"
+         aria-readonly="@ReadOnly.ToString().ToLowerInvariant()">
+        <span class="sf-dropdowntree__value">
+            @if (_selectedItem is not null)
+            {
+                @GetFieldValue(_selectedItem, TextField)
+            }
+            else
+            {
+                <span class="sf-dropdowntree__placeholder">@(Placeholder ?? "Select...")</span>
+            }
+        </span>
+        <span class="sf-dropdowntree__arrow" aria-hidden="true">&#9660;</span>
+    </div>
+
+    @if (_isOpen && IsInteractive)
+    {
+        <div class="sf-dropdowntree__popup"
+             style="@PopupStyles()">
+
+            @if (Filterable)
+            {
+                <input type="text"
+                       class="sf-dropdowntree__filter"
+                       value="@_filterText"
+                       placeholder="Search..."
+                       @oninput="OnFilterInput"
+                       @onclick:stopPropagation="true" />
+            }
+
+            <div class="sf-dropdowntree__tree" role="tree">
+                @if (Data != null)
+                {
+                    @RenderNodes(Data, 0)
+                }
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,33 @@
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+<div @ref="_containerRef"
+     class="@_containerClass"
+     style="@_containerStyle"
+     @attributes="AdditionalAttributes">
+
+    <div class="@_contentClass">
+        @ChildContent
+    </div>
+
+    @if (ShowHandle && Enabled)
+    {
+        @foreach (var edge in _activeHandles)
+        {
+            <button type="button"
+                    class="@GetHandleClass(edge)"
+                    style="@HandleStyle"
+                    aria-label="@(HandleAriaLabel ?? "Resize")"
+                    tabindex="0"
+                    @onfocus="@(() => { _handleFocused = true; StateHasChanged(); })"
+                    @onblur="@(() => { _handleFocused = false; StateHasChanged(); })" />
+        }
+    }
+
+    @if (_isDragging && UseGhostOutline)
+    {
+        <div class="sf-resizable-container__ghost"
+             style="@_ghostStyle" />
+    }
+</div>

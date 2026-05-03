@@ -1,0 +1,119 @@
+@page "/components/feedback/skeleton/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Skeleton / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Skeleton / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Skeleton/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSkeleton</code> renders a single shimmering placeholder block to stand
+            in for real content while it loads. Its appearance is driven entirely by three
+            parameters:
+        </p>
+        <ul>
+            <li><code>Variant</code> &mdash; <code>Text</code>, <code>Rectangular</code>, <code>Circular</code>, or <code>Rounded</code>. Each maps to a provider-specific border-radius and default sizing.</li>
+            <li><code>Width</code> / <code>Height</code> &mdash; any CSS length; omit to inherit the parent or the variant default.</li>
+            <li><code>Visible</code> &mdash; toggles the element in and out of the DOM. Default <code>true</code>.</li>
+        </ul>
+        <p>
+            The panel below shows every variant, a list-row template composed from multiple
+            skeletons, a full card template, and a side-by-side skeleton/real-content toggle so
+            you can A/B the loading state.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Variants</h3>
+                <div style="display:flex; flex-wrap:wrap; gap:1.5rem; align-items:center;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+                        <SunfishSkeleton Variant="SkeletonVariant.Text" Width="220px" Height="16px" />
+                        <span style="font-size:.75rem; color:#666;">Text</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+                        <SunfishSkeleton Variant="SkeletonVariant.Rectangular" Width="220px" Height="120px" />
+                        <span style="font-size:.75rem; color:#666;">Rectangular</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+                        <SunfishSkeleton Variant="SkeletonVariant.Rounded" Width="220px" Height="120px" />
+                        <span style="font-size:.75rem; color:#666;">Rounded</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.5rem;">
+                        <SunfishSkeleton Variant="SkeletonVariant.Circular" Width="64px" Height="64px" />
+                        <span style="font-size:.75rem; color:#666;">Circular</span>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">List-row template</h3>
+                <div style="display:flex; flex-direction:column; gap:.75rem; max-width:480px;">
+                    @for (var i = 0; i < 3; i++)
+                    {
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <SunfishSkeleton Variant="SkeletonVariant.Circular" Width="40px" Height="40px" />
+                            <div style="flex:1; display:flex; flex-direction:column; gap:.35rem;">
+                                <SunfishSkeleton Variant="SkeletonVariant.Text" Width="60%" Height="14px" />
+                                <SunfishSkeleton Variant="SkeletonVariant.Text" Width="40%" Height="12px" />
+                            </div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Card template</h3>
+                <div style="max-width:320px; padding:1rem; border:1px solid var(--sf-color-border, #e5e7eb); border-radius:.5rem; display:flex; flex-direction:column; gap:.75rem;">
+                    <SunfishSkeleton Variant="SkeletonVariant.Rectangular" Width="100%" Height="140px" />
+                    <SunfishSkeleton Variant="SkeletonVariant.Text" Width="80%" Height="18px" />
+                    <SunfishSkeleton Variant="SkeletonVariant.Text" Width="100%" Height="12px" />
+                    <SunfishSkeleton Variant="SkeletonVariant.Text" Width="65%" Height="12px" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Loaded vs. loading</h3>
+                <div style="display:flex; gap:.5rem; align-items:center; margin-bottom:.75rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _loading = !_loading)">
+                        @(_loading ? "Show real content" : "Show skeleton")
+                    </SunfishButton>
+                    <span style="color:#666;">State: @(_loading ? "loading" : "loaded")</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; max-width:420px;">
+                    @if (_loading)
+                    {
+                        <SunfishSkeleton Variant="SkeletonVariant.Circular" Width="56px" Height="56px" />
+                        <div style="flex:1; display:flex; flex-direction:column; gap:.35rem;">
+                            <SunfishSkeleton Variant="SkeletonVariant.Text" Width="70%" Height="16px" />
+                            <SunfishSkeleton Variant="SkeletonVariant.Text" Width="50%" Height="12px" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="width:56px; height:56px; border-radius:50%; background:#6366f1; display:flex; align-items:center; justify-content:center; color:white; font-weight:700;">CW</div>
+                        <div style="flex:1;">
+                            <div style="font-weight:600;">Chris Wood</div>
+                            <div style="color:#666; font-size:.85rem;">chris@example.com</div>
+                        </div>
+                    }
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Skeleton", "Appearance"];
+
+    private bool _loading = true;
+}

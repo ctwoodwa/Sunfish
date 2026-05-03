@@ -1,0 +1,226 @@
+// SunfishGantt — Bootstrap Bridge Styles
+// Uses Bootstrap variables where available, falls back to Sunfish tokens
+
+.sf-gantt {
+  position: relative;
+  overflow: hidden;
+
+  &__skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+
+    &:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      overflow: visible;
+      padding: 4px 8px;
+      background: var(--bs-body-bg, #ffffff);
+      color: var(--bs-primary, #0d6efd);
+      border: 1px solid var(--bs-primary, #0d6efd);
+      z-index: 100;
+    }
+  }
+
+  &__announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}
+
+// ── Milestone ──────────────────────────────────────────────────
+.sf-gantt__milestone {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.sf-gantt__milestone-diamond {
+  font-size: 14px;
+  color: var(--bs-primary, #0d6efd);
+  line-height: 1;
+}
+
+// ── Summary bar modifier ──────────────────────────────────────
+.sf-gantt__bar--summary {
+  opacity: 0.85;
+  border-bottom: 2px solid var(--bs-primary, #0d6efd);
+  border-radius: 0;
+}
+
+// ── Progress bar inside task bars ─────────────────────────────
+.sf-gantt__bar-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.3);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+// ── Hover delete button on bars ───────────────────────────────
+.sf-gantt__bar-delete {
+  position: absolute;
+  right: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--bs-danger, #dc3545);
+  font-size: 12px;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.sf-gantt__bar:hover .sf-gantt__bar-delete {
+  display: inline-flex;
+}
+
+// ── Filter menu ───────────────────────────────────────────────
+.sf-gantt__header-cell {
+  position: relative;
+}
+
+.sf-gantt__filter-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 10px;
+  padding: 0 3px;
+  color: var(--bs-secondary-color, #6c757d);
+  margin-left: 4px;
+
+  &--active {
+    color: var(--bs-primary, #0d6efd);
+  }
+}
+
+.sf-gantt__filter-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background: var(--bs-body-bg, #ffffff);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  padding: 8px;
+  min-width: 160px;
+  box-shadow: var(--bs-box-shadow-sm, 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075));
+}
+
+.sf-gantt__filter-menu-input {
+  width: 100%;
+  padding: 4px 6px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.sf-gantt__filter-menu-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.sf-gantt__filter-menu-btn {
+  flex: 1;
+  padding: 4px 8px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background: var(--bs-body-bg, #ffffff);
+  cursor: pointer;
+  font-size: 12px;
+
+  &:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+}
+
+// ── Command column ────────────────────────────────────────────
+.sf-gantt__cmd-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 14px;
+  line-height: 1;
+
+  &--save { color: var(--bs-success, #198754); }
+  &--cancel { color: var(--bs-danger, #dc3545); }
+  &--edit { color: var(--bs-secondary-color, #6c757d); }
+  &--delete { color: var(--bs-danger, #dc3545); }
+  &--add { color: var(--bs-primary, #0d6efd); }
+}
+
+// ── Incell editable cell cursor ───────────────────────────────
+.sf-gantt__task-cell--editable {
+  cursor: text;
+
+  &:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+}
+
+// ── Dark mode patch ───────────────────────────────────────────
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+  .sf-gantt__filter-menu {
+    background: var(--bs-body-bg, #212529);
+    border-color: var(--bs-border-color, #495057);
+  }
+
+  .sf-gantt__filter-menu-input {
+    background: var(--bs-body-bg, #212529);
+    color: var(--bs-body-color, #dee2e6);
+    border-color: var(--bs-border-color, #495057);
+  }
+
+  .sf-gantt__bar-delete {
+    color: var(--bs-danger, #ea868f);
+  }
+}
+
+// ── Accessibility: reduced motion ─────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sf-gantt,
+  .sf-gantt * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Accessibility: high contrast ──────────────────────────────
+@media (forced-colors: active) {
+  .sf-gantt__bar {
+    border: 1px solid ButtonText;
+  }
+
+  .sf-gantt__bar-progress {
+    background: Highlight;
+  }
+
+  .sf-gantt__milestone-diamond {
+    color: Highlight;
+  }
+
+  .sf-gantt__filter-btn--active {
+    color: Highlight;
+  }
+}

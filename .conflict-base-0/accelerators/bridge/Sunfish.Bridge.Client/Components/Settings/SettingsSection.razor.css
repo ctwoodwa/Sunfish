@@ -1,0 +1,30 @@
+.settings-section {
+    --local-text: var(--marilo-color-text, #1f2328);
+    --local-text-muted: var(--marilo-color-text-muted, #6b7280);
+
+    margin-bottom: 32px;
+}
+
+:global([data-marilo-theme="dark"]) .settings-section {
+    --local-text: var(--marilo-color-text, #f3f3ef);
+    --local-text-muted: var(--marilo-color-text-muted, #9a9a92);
+}
+
+.settings-section__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--local-text);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.settings-section__description {
+    font-size: 13px;
+    color: var(--local-text-muted);
+    margin: 4px 0 0;
+    line-height: 1.5;
+}
+
+.settings-section__body {
+    margin-top: 16px;
+}

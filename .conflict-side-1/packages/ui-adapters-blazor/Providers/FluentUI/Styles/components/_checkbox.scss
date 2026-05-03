@@ -1,0 +1,17 @@
+// =============================================================================
+// Component: Checkbox
+// =============================================================================
+
+.sf-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    cursor: pointer;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    user-select: none;
+}
+
+.sf-checkbox--checked {
+    color: var(--sf-color-primary);
+}

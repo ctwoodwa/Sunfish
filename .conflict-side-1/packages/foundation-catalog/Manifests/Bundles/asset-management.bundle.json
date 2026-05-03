@@ -1,0 +1,117 @@
+{
+  "key": "sunfish.bundles.asset-management",
+  "name": "Asset Management",
+  "version": "0.1.0",
+  "description": "Reference Sunfish bundle for asset-heavy operators: fleet, manufacturing equipment, facility assets, IT hardware. Composes existing Sunfish blocks (assets, maintenance, inspections, scheduling, tasks, workflow, accounting, tax-reporting) with P2 generic modules (contacts, documents, diligence, reporting, invoicing, billing, reconciliation) and optional composition with projects, vendors, procurement, and logistics.",
+  "category": "Operations",
+  "status": "Draft",
+  "maturity": "Scaffold",
+  "requiredModules": [
+    "sunfish.blocks.workflow",
+    "sunfish.blocks.forms",
+    "sunfish.blocks.tasks",
+    "sunfish.blocks.scheduling",
+    "sunfish.blocks.assets",
+    "sunfish.blocks.maintenance",
+    "sunfish.blocks.inspections"
+  ],
+  "optionalModules": [
+    "sunfish.blocks.contacts",
+    "sunfish.blocks.communications",
+    "sunfish.blocks.documents",
+    "sunfish.blocks.diligence",
+    "sunfish.blocks.reporting",
+    "sunfish.blocks.searchworkspace",
+    "sunfish.blocks.projects",
+    "sunfish.blocks.vendors",
+    "sunfish.blocks.procurement",
+    "sunfish.blocks.invoicing",
+    "sunfish.blocks.accounting",
+    "sunfish.blocks.billing",
+    "sunfish.blocks.reconciliation",
+    "sunfish.blocks.tax-reporting",
+    "sunfish.blocks.logistics"
+  ],
+  "featureDefaults": {
+    "assets.lifecycle.tracking.enabled": "true",
+    "assets.depreciation.autoCalculate": "false",
+    "assets.warrantyReminders.enabled": "true",
+    "maintenance.vendorQuotes.enabled": "true",
+    "maintenance.photos.required": "true",
+    "inspections.photos.required": "true",
+    "inspections.severity.required": "true",
+    "logistics.transfers.enabled": "false"
+  },
+  "editionMappings": {
+    "lite": [
+      "sunfish.blocks.assets",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.tasks"
+    ],
+    "standard": [
+      "sunfish.blocks.assets",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting"
+    ],
+    "enterprise": [
+      "sunfish.blocks.assets",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.diligence",
+      "sunfish.blocks.projects",
+      "sunfish.blocks.vendors",
+      "sunfish.blocks.procurement",
+      "sunfish.blocks.accounting",
+      "sunfish.blocks.reconciliation",
+      "sunfish.blocks.tax-reporting",
+      "sunfish.blocks.logistics"
+    ]
+  },
+  "deploymentModesSupported": ["Lite", "SelfHosted", "HostedSaaS"],
+  "providerRequirements": [
+    {
+      "category": "BankingFeed",
+      "required": false,
+      "purpose": "Bank transaction import for CapEx tracking and depreciation reconciliation."
+    },
+    {
+      "category": "Payments",
+      "required": false,
+      "purpose": "Vendor payments for maintenance and procurement workflows."
+    },
+    {
+      "category": "Messaging",
+      "required": false,
+      "purpose": "Maintenance notifications, warranty reminders, inspection scheduling alerts."
+    }
+  ],
+  "integrationProfiles": [
+    "payment-gateway-default",
+    "bank-feed-default",
+    "messaging-default"
+  ],
+  "seedWorkspaces": [
+    "fleet-management",
+    "manufacturing-equipment",
+    "facility-assets",
+    "it-hardware"
+  ],
+  "personas": [
+    "asset-owner",
+    "operations-manager",
+    "maintenance-tech",
+    "inspector",
+    "finance-analyst",
+    "procurement-officer"
+  ],
+  "dataOwnership": "Tenant-owned. Exportable to JSON/CSV in all deployment modes; full data portability is a requirement for lite and self-hosted modes.",
+  "complianceNotes": "Asset tagging regimes, depreciation schedules, disposal and retirement regulations, and safety-inspection requirements vary by jurisdiction and asset class. Expressed as bundle configuration rather than core behavior."
+}

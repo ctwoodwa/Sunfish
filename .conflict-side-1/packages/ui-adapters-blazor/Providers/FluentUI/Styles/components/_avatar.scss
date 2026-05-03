@@ -1,0 +1,23 @@
+// =============================================================================
+// Component: Avatar
+// =============================================================================
+
+.sf-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--sf-radius-full);
+    background: var(--sf-color-primary);
+    color: var(--sf-color-on-primary);
+    font-family: var(--sf-font-family);
+    font-weight: var(--sf-font-weight-semibold);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.sf-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.sf-avatar--extrasmall { width: 20px; height: 20px; font-size: var(--sf-font-size-xs); }
+.sf-avatar--small { width: 28px; height: 28px; font-size: var(--sf-font-size-sm); }
+.sf-avatar--medium { width: 36px; height: 36px; font-size: var(--sf-font-size-base); }
+.sf-avatar--large { width: 48px; height: 48px; font-size: var(--sf-font-size-lg); }
+.sf-avatar--extralarge { width: 72px; height: 72px; font-size: var(--sf-font-size-2xl); }

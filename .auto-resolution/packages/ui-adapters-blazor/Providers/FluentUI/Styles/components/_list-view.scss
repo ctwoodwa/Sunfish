@@ -1,0 +1,17 @@
+// =============================================================================
+// Component: ListView
+// =============================================================================
+
+.sf-listview {
+    display: flex;
+    flex-direction: column;
+}
+
+.sf-listview-item {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-bottom: 1px solid var(--sf-color-border);
+    transition: background 0.15s ease;
+
+    &:hover { background: var(--sf-color-surface-hover); }
+    &--selected { background: var(--sf-color-primary-light); }
+}

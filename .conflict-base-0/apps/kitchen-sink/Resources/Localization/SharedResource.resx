@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.KitchenSink SharedResource — source locale (en-US).
+    Demo composition root. These strings cover kitchen-sink-specific user-facing
+    copy (runner UI, settings panel, demo prompts) — NOT generic phrases (those
+    live in Sunfish.Foundation.Localization.SharedResource and are consumed via
+    IStringLocalizer<Sunfish.Foundation.Localization.SharedResource>).
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator
+        context (enforced by SUNFISH_I18N_001 once wired).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036.
+
+    Pilot strings are kitchen-sink-flavoured (e.g., "Saving demo…") so the
+    cascade test surface visually distinguishes the demo bundle from the
+    foundation bundle when both render in the same view.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Demo info</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge in the kitchen-sink runner UI for informational demo events. Short noun; sentence case. Distinct from foundation severity.info so the cascade test can verify per-package bundle resolution.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Demo warning</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge in the kitchen-sink runner UI for warning-level demo events. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Demo error</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge in the kitchen-sink runner UI for error-level demo events. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Demo critical</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge in the kitchen-sink runner UI for critical demo events. Short noun; sentence case; pairs with high-attention styling.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Saving demo…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Progress label on the kitchen-sink settings-panel save button while persistence is in flight. Includes trailing horizontal ellipsis (U+2026) — translators preserve the ellipsis convention even when their language uses different terminal punctuation.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel demo</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Dismiss/abort label on the kitchen-sink settings-panel cancel button. Imperative; sentence case.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry demo</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Retry label on the kitchen-sink runner after a demo step fails. Imperative; sentence case; appears next to severity badges.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading demo…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Empty-state placeholder shown while a kitchen-sink demo page is fetching its initial data. Includes trailing horizontal ellipsis (U+2026).</comment>
+  </data>
+</root>

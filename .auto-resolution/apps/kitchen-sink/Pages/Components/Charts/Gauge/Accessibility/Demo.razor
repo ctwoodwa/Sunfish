@@ -1,0 +1,110 @@
+@page "/components/charts/gauges/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Charts
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Gauge / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Gauge / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Gauge/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishGauge</code> renders an SVG image with <code>role="img"</code> and an
+            <code>aria-label</code>. The default label is the literal <em>"Gauge value"</em>, which
+            satisfies axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/svg-img-alt"
+               target="_blank" rel="noopener">
+                <code>svg-img-alt</code>
+            </a>
+            rule but tells AT users nothing about <em>what</em> is being measured. The
+            <code>AriaLabel</code> parameter lets you supply a domain-specific name so the SR
+            announcement becomes meaningful.
+        </p>
+        <p>
+            <code>AriaLabel</code> is forwarded to all four primitives
+            (<code>SunfishArcGauge</code>, <code>SunfishRadialGauge</code>,
+            <code>SunfishCircularGauge</code>, <code>SunfishLinearGauge</code>) so the same
+            parameter works regardless of the <code>Type</code> selected.
+        </p>
+        <ul>
+            <li><strong>Best practice</strong> &mdash; include the metric and units (e.g. <em>"CPU usage 62 percent"</em>).</li>
+            <li><strong>Live updates</strong> &mdash; the value is part of the <code>aria-label</code> string you build, so a binding can keep it in sync.</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 1.1.1 <em>Non-text Content</em> + SC 4.1.2 <em>Name, Role, Value</em>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:1.5rem; align-items:start;">
+
+            <div class="demo-card" style="text-align:center;">
+                <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Arc · default name</div>
+                <SunfishGauge Value="62" Min="0" Max="100" Type="GaugeType.Arc" />
+                <div style="font-size:.8rem; color:#999; margin-top:.25rem;">SR: "Gauge value"</div>
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Arc · with <code>AriaLabel</code></div>
+                <SunfishGauge Value="62"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Arc"
+                              AriaLabel="CPU usage 62 percent"
+                              ThemeColor="#1976d2" />
+                <div style="font-size:.8rem; color:#999; margin-top:.25rem;">SR: "CPU usage 62 percent"</div>
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Radial · with <code>AriaLabel</code></div>
+                <SunfishGauge Value="78"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Radial"
+                              AriaLabel="Engine RPM 78 percent" />
+                <div style="font-size:.8rem; color:#999; margin-top:.25rem;">SR: "Engine RPM 78 percent"</div>
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Circular · with <code>AriaLabel</code></div>
+                <SunfishGauge Value="45"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Circular"
+                              AriaLabel="Battery 45 percent"
+                              ThemeColor="#4caf50" />
+                <div style="font-size:.8rem; color:#999; margin-top:.25rem;">SR: "Battery 45 percent"</div>
+            </div>
+
+            <div class="demo-card" style="text-align:center;">
+                <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Linear · with <code>AriaLabel</code></div>
+                <SunfishGauge Value="34"
+                              Min="0"
+                              Max="100"
+                              Type="GaugeType.Linear"
+                              AriaLabel="Disk space used 34 percent" />
+                <div style="font-size:.8rem; color:#999; margin-top:.25rem;">SR: "Disk space used 34 percent"</div>
+            </div>
+
+        </div>
+
+        <section style="margin-top:1.5rem;">
+            <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+            <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                <dt><code>role="img"</code></dt>
+                <dd>Applied to the root SVG so AT users hear it as an image rather than as raw shapes.</dd>
+
+                <dt><code>aria-label</code></dt>
+                <dd>Driven by <code>AriaLabel</code>; falls back to <em>"Gauge value"</em> when unset.</dd>
+            </dl>
+        </section>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Charts", "Gauge", "Accessibility"];
+}

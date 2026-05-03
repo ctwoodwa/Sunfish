@@ -1,0 +1,9 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Motion (Transition) Tokens
+// =================================================================
+
+:root {
+  --sf-transition-fast: 150ms ease-in-out;
+  --sf-transition-normal: 200ms ease-in-out;
+  --sf-transition-slow: 300ms ease-in-out;
+}

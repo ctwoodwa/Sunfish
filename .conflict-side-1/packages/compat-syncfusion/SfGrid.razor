@@ -1,0 +1,83 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<SfGrid<TValue>> Logger
+
+@*
+    Syncfusion's <SfGrid<TValue>> is the generic grid. Child-component settings
+    (GridPageSettings, GridSelectionSettings, etc.) are read via cascading values published
+    by each child shim in OnParametersSet.
+
+    The shim publishes itself via a CascadingValue<SfGrid<TValue>> so child shims can reach
+    back and mutate parent state.
+*@
+<CascadingValue Value="this" IsFixed="true">
+    <SunfishDataGrid TItem="TValue"
+                     Data="DataSource"
+                     Pageable="AllowPaging"
+                     PageSize="_pageSize"
+                     Sortable="AllowSorting"
+                     SelectionMode="_selectionMode"
+                     @attributes="AdditionalAttributes">
+        @ChildContent
+    </SunfishDataGrid>
+</CascadingValue>
+
+@code {
+    [Parameter] public IEnumerable<TValue>? DataSource { get; set; }
+    [Parameter] public bool AllowPaging { get; set; }
+    [Parameter] public bool AllowSorting { get; set; }
+    [Parameter] public bool AllowFiltering { get; set; }
+    [Parameter] public bool AllowGrouping { get; set; }
+    [Parameter] public bool AllowSelection { get; set; } = true;
+    [Parameter] public bool AllowReordering { get; set; }
+    [Parameter] public bool AllowResizing { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public bool EnableVirtualization { get; set; }
+    [Parameter] public double RowHeight { get; set; }
+
+    /// <summary>Untyped toolbar parameter (Syncfusion accepts <c>List&lt;string&gt;</c> or <c>List&lt;ItemModel&gt;</c>).
+    /// Log-and-drop in the initial shim.</summary>
+    [Parameter] public object? Toolbar { get; set; }
+
+    [Parameter] public string? ID { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- State populated by child shims via cascading-child feedback ---
+    internal int PageSizeFromChildren { get; set; } = 10;
+    internal FoundationEnums.GridSelectionMode SelectionModeFromChildren { get; set; } = FoundationEnums.GridSelectionMode.None;
+
+    private int _pageSize = 10;
+    private FoundationEnums.GridSelectionMode _selectionMode;
+
+    protected override void OnParametersSet()
+    {
+        _pageSize = PageSizeFromChildren;
+        _selectionMode = AllowSelection
+            ? (SelectionModeFromChildren == FoundationEnums.GridSelectionMode.None
+                ? FoundationEnums.GridSelectionMode.Single
+                : SelectionModeFromChildren)
+            : FoundationEnums.GridSelectionMode.None;
+
+        if (Toolbar is not null)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfGrid.Toolbar dropped — Sunfish toolbar surface differs. " +
+                "See docs/compat-syncfusion-mapping.md.");
+        }
+        if (AllowGrouping)
+        {
+            Logger.LogWarning("compat-syncfusion: SfGrid.AllowGrouping best-effort — verify column-group behavior manually.");
+        }
+    }
+
+    internal void RequestRefresh() => StateHasChanged();
+}

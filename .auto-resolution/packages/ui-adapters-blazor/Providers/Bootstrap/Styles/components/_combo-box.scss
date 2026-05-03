@@ -1,0 +1,18 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Combo Box
+// =================================================================
+// From _bridge-utility.scss: .sf-bs-combobox
+// =================================================================
+
+.sf-bs-combobox {
+  position: relative;
+
+  .form-control,
+  .form-select {
+    cursor: pointer;
+  }
+
+  &--open .dropdown-menu {
+    display: block;
+  }
+}

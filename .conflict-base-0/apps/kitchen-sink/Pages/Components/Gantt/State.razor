@@ -1,0 +1,252 @@
+@page "/components/gantt/state"
+@layout ComponentDemoLayout
+
+<PageSection Title="State Management">
+    <DemoSection Title="OnStateChanged Event" Description="The OnStateChanged event fires when sort, filter, expand/collapse, or view changes. The PropertyName field tells you what changed. This example logs each state change below the chart. Try sorting a column, filtering, or switching views." Code="@_stateCode">
+        <div class="demo-row">
+            <SunfishGantt @ref="_ganttRef"
+                         TItem="StateTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Sortable="true"
+                         FilterMode="GanttFilterMode.FilterRow"
+                         Height="380px"
+                         Width="100%"
+                         @bind-View="_currentView"
+                         OnStateChanged="@OnStateChangedHandler"
+                         OnUpdate="@UpdateItem">
+                <GanttColumns>
+                    <GanttColumn TItem="StateTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task"
+                                 Sortable="true"
+                                 Filterable="true" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="PercentComplete"
+                                 Width="80px"
+                                 Title="% Done"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right"
+                                 Sortable="true"
+                                 Filterable="true" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}"
+                                 Sortable="true" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                    <GanttYearView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+        <div class="demo-controls" style="margin-top: 8px;">
+            <button class="sf-btn" @onclick="ResetState">Reset State</button>
+            <button class="sf-btn" @onclick="SetPresetState">Apply Preset (Sort by End, Week View)</button>
+        </div>
+        <div style="margin-top: 12px; max-height: 150px; overflow-y: auto; border: 1px solid var(--sf-color-border); border-radius: 4px; padding: 8px; font-size: 0.85em;">
+            <strong>State Change Log:</strong>
+            @if (_stateLog.Count == 0)
+            {
+                <p style="color: var(--sf-text-secondary);">Interact with the Gantt to see state changes here.</p>
+            }
+            else
+            {
+                @foreach (var entry in _stateLog)
+                {
+                    <div>@entry</div>
+                }
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Column Chooser (VisibleColumns)" Description="Toggle column visibility using the built-in column chooser. Set ShowColumnChooser to true. The VisibleColumns property in GanttState tracks which columns are shown. Click the column chooser button (hamburger icon) in the toolbar to toggle columns." Code="@_chooserCode">
+        <div class="demo-row">
+            <SunfishGantt TItem="StateTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="380px"
+                         Width="100%"
+                         ShowColumnChooser="true"
+                         @bind-View="_chooserView">
+                <GanttColumns>
+                    <GanttColumn TItem="StateTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="200px"
+                                 Title="Task" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="PercentComplete"
+                                 Width="80px"
+                                 Title="% Done"
+                                 DisplayFormat="{0:N0}%" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="StateTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private SunfishGantt<StateTask>? _ganttRef;
+    private GanttView _currentView = GanttView.Week;
+    private GanttView _chooserView = GanttView.Week;
+
+    private List<string> _stateLog = new();
+
+    private class StateTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<StateTask> _tasks = GenerateData();
+
+    private static List<StateTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<StateTask>
+        {
+            new() { Id = "1", Title = "Planning", Start = today, End = today.AddDays(12), PercentComplete = 80 },
+            new() { Id = "1.1", ParentId = "1", Title = "Requirements", Start = today, End = today.AddDays(5), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Scope Review", Start = today.AddDays(5), End = today.AddDays(12), PercentComplete = 60 },
+
+            new() { Id = "2", Title = "Design", Start = today.AddDays(10), End = today.AddDays(22), PercentComplete = 40 },
+            new() { Id = "2.1", ParentId = "2", Title = "Wireframes", Start = today.AddDays(10), End = today.AddDays(15), PercentComplete = 100 },
+            new() { Id = "2.2", ParentId = "2", Title = "UI Mockups", Start = today.AddDays(15), End = today.AddDays(22), PercentComplete = 0 },
+
+            new() { Id = "3", Title = "Development", Start = today.AddDays(20), End = today.AddDays(40), PercentComplete = 15 },
+            new() { Id = "3.1", ParentId = "3", Title = "Backend API", Start = today.AddDays(20), End = today.AddDays(30), PercentComplete = 30 },
+            new() { Id = "3.2", ParentId = "3", Title = "Frontend UI", Start = today.AddDays(28), End = today.AddDays(40), PercentComplete = 0 },
+        };
+    }
+
+    private void OnStateChangedHandler(GanttStateEventArgs<StateTask> args)
+    {
+        var msg = $"[{DateTime.Now:HH:mm:ss}] Changed: {args.PropertyName}";
+
+        if (args.PropertyName == "SortDescriptor" && args.State.SortDescriptor is not null)
+        {
+            msg += $" (Field={args.State.SortDescriptor.Field}, Asc={args.State.SortDescriptor.Ascending})";
+        }
+        else if (args.PropertyName == "FilterValues" && args.State.FilterValues is not null)
+        {
+            var filters = string.Join(", ", args.State.FilterValues.Select(kv => $"{kv.Key}={kv.Value}"));
+            msg += $" ({filters})";
+        }
+        else if (args.PropertyName == "View")
+        {
+            msg += $" ({args.State.View})";
+        }
+
+        _stateLog.Insert(0, msg);
+        if (_stateLog.Count > 20) _stateLog.RemoveRange(20, _stateLog.Count - 20);
+    }
+
+    private async Task ResetState()
+    {
+        if (_ganttRef is not null)
+        {
+            await _ganttRef.SetStateAsync(null);
+            _stateLog.Insert(0, $"[{DateTime.Now:HH:mm:ss}] State RESET (SetStateAsync(null))");
+        }
+    }
+
+    private async Task SetPresetState()
+    {
+        if (_ganttRef is not null)
+        {
+            var preset = new GanttState<StateTask>
+            {
+                SortDescriptor = new GanttSortDescriptor { Field = "End", Ascending = true },
+                View = GanttView.Week
+            };
+            await _ganttRef.SetStateAsync(preset);
+            _stateLog.Insert(0, $"[{DateTime.Now:HH:mm:ss}] Applied preset state (Sort=End Asc, View=Week)");
+        }
+    }
+
+    private void UpdateItem(GanttUpdateEventArgs args)
+    {
+        var item = args.Item as StateTask;
+        if (item is null) return;
+        var found = _tasks.FirstOrDefault(t => t.Id == item.Id);
+        if (found is not null)
+        {
+            found.Title = item.Title;
+            found.Start = item.Start;
+            found.End = item.End;
+            found.PercentComplete = item.PercentComplete;
+        }
+    }
+
+    private const string _stateCode = @"<SunfishGantt @ref=""_ganttRef""
+             TItem=""StateTask""
+             Data=""@_tasks""
+             OnStateChanged=""@OnStateChangedHandler""
+             Sortable=""true""
+             FilterMode=""GanttFilterMode.FilterRow""
+             @bind-View=""_currentView"">
+    ...
+</SunfishGantt>
+
+private void OnStateChangedHandler(GanttStateEventArgs<StateTask> args)
+{
+    // args.PropertyName tells you what changed:
+    // ""SortDescriptor"", ""FilterValues"", ""ExpandedItems"",
+    // ""View"", ""VisibleColumns""
+    Console.WriteLine($""Changed: {args.PropertyName}"");
+}
+
+// Programmatically set state:
+await _ganttRef.SetStateAsync(new GanttState<StateTask>
+{
+    SortDescriptor = new GanttSortDescriptor { Field = ""End"", Ascending = true },
+    View = GanttView.Week
+});
+
+// Reset state to defaults:
+await _ganttRef.SetStateAsync(null);";
+
+    private const string _chooserCode = @"<SunfishGantt TItem=""StateTask""
+             Data=""@_tasks""
+             ShowColumnChooser=""true""
+             @bind-View=""_currentView"">
+    <GanttColumns>
+        <GanttColumn TItem=""StateTask"" Field=""Title"" Width=""200px"" />
+        <GanttColumn TItem=""StateTask"" Field=""PercentComplete"" Width=""80px"" />
+        <GanttColumn TItem=""StateTask"" Field=""Start"" Width=""100px"" />
+        <GanttColumn TItem=""StateTask"" Field=""End"" Width=""100px"" />
+    </GanttColumns>
+    ...
+</SunfishGantt>
+
+// ShowColumnChooser=""true"" adds a toolbar button.
+// The VisibleColumns property in GanttState tracks
+// which columns are shown/hidden.";
+}

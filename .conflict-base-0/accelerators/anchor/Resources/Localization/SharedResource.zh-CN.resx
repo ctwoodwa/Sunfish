@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Anchor SharedResource — Chinese Simplified (China) satellite. LTR locale.
+       Mainland China norms; brand names (Sunfish/Anchor) stay Latin per ADR 0034. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="onboarding.welcome.title" xml:space="preserve">
+    <value>欢迎使用 Sunfish Anchor</value>
+    <comment>Translator: Heading on first-run onboarding page; appears as h1.</comment>
+  </data>
+  <data name="onboarding.welcome.detail" xml:space="preserve">
+    <value>设置您的本地工作区,开始离线优先的协作。</value>
+    <comment>Translator: Body text under welcome title; full sentence about offline-first workspace.</comment>
+  </data>
+  <data name="onboarding.join-team.title" xml:space="preserve">
+    <value>加入团队</value>
+    <comment>Translator: Title on QR-onboarding page; imperative phrasing pairs with "Scan QR code" CTA.</comment>
+  </data>
+  <data name="onboarding.join-team.detail" xml:space="preserve">
+    <value>扫描其他团队成员显示的二维码以共享您的工作区。</value>
+    <comment>Translator: Body text on join-team page; describes QR-pairing flow per ADR 0032.</comment>
+  </data>
+  <data name="errors.network-unavailable" xml:space="preserve">
+    <value>正在离线工作</value>
+    <comment>Translator: Status — working offline. Neutral tone (offline is normal in Anchor).</comment>
+  </data>
+  <data name="errors.network-unavailable.detail" xml:space="preserve">
+    <value>您的更改已保存在本地,将在对等节点可用时同步。</value>
+    <comment>Translator: Body text under offline status; reassures changes are saved locally.</comment>
+  </data>
+  <data name="errors.team-not-found" xml:space="preserve">
+    <value>未找到团队</value>
+    <comment>Translator: Error shown when switching to a team that no longer exists in local registry.</comment>
+  </data>
+  <data name="errors.team-not-found.detail" xml:space="preserve">
+    <value>此团队在本设备上已不可用。如有需要,请通过二维码重新加入。</value>
+    <comment>Translator: Body text on team-not-found; suggests recovery via re-join QR.</comment>
+  </data>
+</root>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.Blocks.Tasks SharedResource — source locale (en-US).
+    Wave 2 Cluster C skeleton cascade (Plan 2 Task 3.5). Eight-key skeleton
+    seeded from foundation. Pattern B (Razor SDK, no DI surface) — this
+    bundle ships resources + marker class only; downstream apps wire the
+    ISunfishLocalizer<> registration in their composition root. Plan 6
+    replaces these scaffold strings with task-block end-user content
+    (task board, kanban transitions, due-date / assignee labels).
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment>.
+      • SmartFormat ICU-style placeholders per ADR 0036.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Info</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for informational task status. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for warnings on overdue tasks, blocked dependencies, or assignment conflicts. Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Error</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for blocking failures (task persistence, transition rejection). Short noun; sentence case.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity label for critical task incidents (board corruption, mass-update failure). Short noun; sentence case.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Save task</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Action verb on the task save / commit button. Imperative; sentence case. Block-scoped pilot string for cascade verification.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Action verb on dismiss/abort buttons in task dialogs. Imperative; sentence case. Distinct from any future "cancel task" domain action.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Action verb on retry button after a failed task save / move. Imperative; sentence case.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading tasks…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Empty-state placeholder shown while the task board is loading. Trailing horizontal ellipsis (U+2026).</comment>
+  </data>
+</root>

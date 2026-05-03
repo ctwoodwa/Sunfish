@@ -1,0 +1,58 @@
+.settings-select-row {
+    --local-text: var(--marilo-color-text, #1f2328);
+    --local-text-muted: var(--marilo-color-text-muted, #6b7280);
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0;
+}
+
+:global([data-marilo-theme="dark"]) .settings-select-row {
+    --local-text: var(--marilo-color-text, #f3f3ef);
+    --local-text-muted: var(--marilo-color-text-muted, #9a9a92);
+}
+
+.settings-select-row__label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--local-text);
+}
+
+.settings-select-row__description {
+    font-size: 13px;
+    color: var(--local-text-muted);
+    margin-top: 2px;
+    line-height: 1.5;
+}
+
+.settings-select-row__control {
+    flex-shrink: 0;
+    max-width: 200px;
+}
+
+.settings-select-row__control ::deep select {
+    appearance: auto;
+    padding: 6px 10px;
+    border: 1px solid var(--marilo-color-border, rgba(0,0,0,0.12));
+    border-radius: 6px;
+    background: var(--marilo-color-surface, #fff);
+    color: var(--local-text);
+    font-size: 13px;
+    min-width: 160px;
+}
+
+:global([data-marilo-theme="dark"]) .settings-select-row__control ::deep select {
+    background: var(--marilo-color-surface, #252423);
+    color: var(--marilo-color-text, #e1dfdd);
+    border-color: var(--marilo-color-border, rgba(255,255,255,0.15));
+}
+
+@media (max-width: 480px) {
+    .settings-select-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}

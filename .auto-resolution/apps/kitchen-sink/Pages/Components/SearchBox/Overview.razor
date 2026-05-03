@@ -1,0 +1,80 @@
+@page "/components/SearchBox"
+@page "/components/SearchBox/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishSearchBox Value="@_search" ValueChanged="@(v => _search = v)" Placeholder="Search..." />
+        @if (!string.IsNullOrEmpty(_search))
+        {
+            <p><strong>Search term:</strong> @_search</p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="With Keyboard Hint" Description="Display a keyboard shortcut hint inside the search box." Code="@_kbdCode">
+        <SunfishSearchBox Value="@_kbdSearch" ValueChanged="@(v => _kbdSearch = v)" Placeholder="Search..." KbdHint="/" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle search input changes with the ValueChanged callback." Code="@_interactiveCode">
+        <SunfishSearchBox Value="@_evSearch" ValueChanged="@(v => _evSearch = v)" Placeholder="Search..." />
+        <p><strong>Search term:</strong> @_evSearch</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private string _search = "";
+    private string _kbdSearch = "";
+    private string _evSearch = "";
+
+    private const string _basicCode =
+        "<SunfishSearchBox Value=\"@_search\" ValueChanged=\"@(v => _search = v)\" Placeholder=\"Search...\" />\n" +
+        "@if (!string.IsNullOrEmpty(_search))\n" +
+        "{\n" +
+        "    <p><strong>Search term:</strong> @_search</p>\n" +
+        "}\n\n" +
+        "@code {\n" +
+        "    private string _search = \"\";\n" +
+        "}";
+
+    private const string _kbdCode =
+        "<SunfishSearchBox Value=\"@_search\" ValueChanged=\"@(v => _search = v)\" Placeholder=\"Search...\" KbdHint=\"/\" />";
+
+    private const string _interactiveCode =
+        "<SunfishSearchBox Value=\"@_search\" ValueChanged=\"@(v => _search = v)\" Placeholder=\"Search...\" />\n" +
+        "<p><strong>Search term:</strong> @_search</p>\n\n" +
+        "@code {\n" +
+        "    private string _search = \"\";\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus to the search box"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+        ("Escape", "Clears the search input and removes focus"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"searchbox\"", "Identifies the input as a search box"),
+        ("aria-label", "Provides an accessible name for the search input"),
+        ("aria-disabled=\"true\"", "Applied when the Disabled parameter is set"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The search box is announced with its placeholder text and the \"search text\" role.",
+        "The built-in search icon is decorative and does not affect screen reader announcements.",
+        "The clear button, when visible, is announced as a separate actionable element.",
+    ];
+}

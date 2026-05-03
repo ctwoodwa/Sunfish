@@ -1,0 +1,333 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Button / Split Button / Tonal Variants
+// =================================================================
+// From _bridge-buttons.scss: .sf-bs-split-button, .sf-bs-fab,
+//   tonal button @each loop
+// =================================================================
+
+.sf-bs-split-button {
+  .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+.sf-bs-fab {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sf-shadow-md);
+  border: 0;
+  transition: box-shadow var(--sf-transition-normal);
+
+  &:hover {
+    box-shadow: var(--sf-shadow-lg);
+  }
+
+  &--mini {
+    width: 40px;
+    height: 40px;
+    font-size: var(--sf-font-size-sm);
+  }
+
+  &--small {
+    width: 48px;
+    height: 48px;
+  }
+
+  &--large {
+    width: 72px;
+    height: 72px;
+    font-size: var(--sf-font-size-lg);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Icon-only variant — SYNTHESIS Theme 1 / ADR 0025 canonical class
+// Squares the button into a 1:1 target using Bootstrap's --bs-btn-padding-*
+// tokens and --bs-border-radius, so the icon-only button inherits BS5's
+// visual language (border-radius, focus ring, theme colors) from the base
+// .btn. Size follows the existing .btn-sm / .btn-lg modifiers.
+// ----------------------------------------------------------------------------
+
+.btn.sf-button--icon-only {
+  --bs-btn-padding-x: var(--bs-btn-padding-y, 0.375rem);
+  aspect-ratio: 1 / 1;
+  border-radius: var(--bs-border-radius);
+
+  &.btn-sm {
+    --bs-btn-padding-x: var(--bs-btn-padding-y, 0.25rem);
+  }
+
+  &.btn-lg {
+    --bs-btn-padding-x: var(--bs-btn-padding-y, 0.5rem);
+  }
+}
+
+// Tonal button variant — uses $theme-colors map with Sass color values
+@each $color, $value in $theme-colors {
+  .sf-bs-btn--tonal-#{$color} {
+    background-color: rgba($value, 0.15);
+    color: $value;
+    border-color: transparent;
+    text-decoration: none;
+
+    &:hover {
+      background-color: rgba($value, 0.25);
+      color: shade-color($value, 10%);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Icon-with-text layout — SYNTHESIS Batch 2a (Button × BS5)
+// SunfishButton.razor emits <span class="sf-button__icon"> when Icon is set
+// but no CSS sized the icon row or gapped the text. Primary rule uses :has
+// (Chromium/Safari/Firefox 121+). Fallback rule keys off a modifier class
+// that providers MAY add (sf-button--has-icon) for engines without :has.
+// ----------------------------------------------------------------------------
+
+.btn:has(.sf-button__icon),
+.btn.sf-button--has-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sf-button__icon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+// ----------------------------------------------------------------------------
+// FillMode.Flat + FillMode.Clear — SYNTHESIS Batch 2a (Button × BS5)
+// BootstrapCssProvider emits "btn-light border-0 text-{variant}" for Flat and
+// "btn-link text-decoration-none" for Clear. These leave hover/active/focus
+// using Bootstrap-Light defaults which don't match the audit's requested
+// transparent treatment. These rules define .sf-btn-flat / .sf-btn-clear as
+// opt-in hooks that zero out the Bootstrap --bs-btn-* surface tokens. A
+// follow-up Provider change will emit these classes alongside Flat / Clear;
+// until then they're latent hooks (safe to leave in place — no consumer picks
+// them up without opting in via class). Keeps the BS5 button machinery
+// (focus ring, disabled state, sizing) working through the existing .btn.
+//
+// NOTE: new enum values (Tonal, Subtle, etc.) are ADR-0024-gated. This
+// implementation only realigns the existing Flat / Clear FillModes to BS5
+// idioms without expanding the enum surface.
+// ----------------------------------------------------------------------------
+
+.btn.sf-btn-flat {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.075);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: rgba(var(--bs-emphasis-color-rgb, 0, 0, 0), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+.btn.sf-btn-clear {
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-bg: transparent;
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-bg: transparent;
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  --bs-btn-box-shadow: none;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+// =================================================================
+// SYNTHESIS Batch 3 (Button × BS5) — P2 CSS-only items
+// =================================================================
+
+// P2 — Focus-ring utility hook. Expose a consistent diffused-glow ring
+// on every `.btn:focus-visible` so the helper matches BS5's documented
+// `.focus-ring` recipe (https://getbootstrap.com/docs/5.3/helpers/focus-ring/).
+// Bootstrap's bundled .btn:focus-visible already box-shadows the button's
+// own focus color, but the ring width tracks button CSS vars rather than
+// `--bs-focus-ring-*`. This rule re-homes the ring to the documented
+// helper tokens so any consumer who sets `--bs-focus-ring-width` or
+// `--bs-focus-ring-color` sees a consistent ring across their chrome.
+.btn:focus-visible {
+  box-shadow: 0 0 0 var(--bs-focus-ring-width, 0.25rem)
+              var(--bs-focus-ring-color, rgba(var(--bs-primary-rgb), 0.25));
+}
+
+// P2 — Link-variant color defaults. `.btn.btn-link` should pick up
+// `--bs-link-color` and transition to `--bs-link-hover-color`, matching
+// the native <a> treatment in BS5. The bundled Bootstrap output already
+// sets these via `--bs-btn-*` CSS vars, but routing them through
+// `--bs-link-*` keeps buttons in sync with any consumer who themes
+// their link palette.
+.btn.btn-link {
+  --bs-btn-color: var(--bs-link-color);
+  --bs-btn-hover-color: var(--bs-link-hover-color);
+  --bs-btn-active-color: var(--bs-link-hover-color);
+}
+
+// P2 — Text-overflow ellipsis on button root. Prevents long labels
+// from blowing out button width when the consumer constrains the
+// button to a fixed container (e.g., a sidebar). `min-width: 0` on
+// the button allows flex children to shrink; the inner `> *` selector
+// picks up label spans / icon spans and clips them with an ellipsis.
+.btn {
+  min-width: 0;
+}
+.btn > * {
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+// SKIP (API-gated, per Batch 3 scope):
+//   - FullWidth API → requires ButtonParameter
+//   - btn-check segmented control → requires Razor input+label refactor
+//   - Vertical button-group + toolbar → requires ButtonGroupClass overload
+//   - Split-button dropdown toggle → new component
+//   - Outline taxonomy rename → enum change
+//   - Icon-filled/regular hover swap → BS5 doesn't distinguish variants
+
+// =================================================================
+// ADR 0024 — ButtonVariant expansion (Subtle / Transparent / Light / Dark)
+// =================================================================
+// Bootstrap 5 already ships .btn-light / .btn-dark / .btn-outline-secondary /
+// .btn-link natively, so these Sunfish-authored rules are thin enhancers that
+// route the new variant vocabulary through Bootstrap's own --bs-btn-* token
+// ladder. Full hover/focus/disabled/active states and forced-colors HC
+// fallback for accessibility.
+// ----------------------------------------------------------------------------
+
+// Subtle — BS5 has no native btn-subtle; BootstrapCssProvider maps Subtle to
+// `btn-outline-secondary`. These rules ensure any caller that emits .sf-btn-subtle
+// directly gets a consistent subtle surface via BS5's --bs-btn-* vars.
+.btn.sf-btn-subtle {
+  --bs-btn-color: var(--bs-secondary-text-emphasis, var(--bs-secondary-color));
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-secondary-rgb), 0.12);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-secondary-rgb), 0.18);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+}
+
+// Transparent — BS5 maps Transparent to .btn-link; this rule zeros out
+// underline-on-rest (BS5 default) and lets hover surface the underline to
+// avoid visual noise when the button sits next to non-link affordances.
+.btn.sf-btn-transparent {
+  --bs-btn-color: var(--bs-body-color);
+  --bs-btn-bg: transparent;
+  --bs-btn-border-color: transparent;
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.06);
+  --bs-btn-hover-border-color: transparent;
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.12);
+  --bs-btn-active-border-color: transparent;
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: transparent;
+  --bs-btn-disabled-border-color: transparent;
+  text-decoration: none;
+
+  &:hover { text-decoration: none; }
+}
+
+// Light — BS5 native .btn-light already provides full state coverage. The
+// Sunfish .sf-btn-light alias keeps the cross-framework class name available
+// and pairs a consistent dark-mode override (BS5's built-in .btn-light is
+// legible on light surfaces but needs a bump in dark mode).
+.btn.sf-btn-light {
+  --bs-btn-color: var(--bs-light-text-emphasis, var(--bs-body-color));
+  --bs-btn-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-hover-color: var(--bs-body-color);
+  --bs-btn-hover-bg: var(--bs-light-bg-subtle, #fcfcfd);
+  --bs-btn-hover-border-color: var(--bs-light-border-subtle, var(--bs-border-color));
+  --bs-btn-active-color: var(--bs-body-color);
+  --bs-btn-active-bg: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-active-border-color: var(--bs-tertiary-bg, #e9ecef);
+  --bs-btn-disabled-color: var(--bs-secondary-color);
+  --bs-btn-disabled-bg: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-border-color: var(--bs-light, #f8f9fa);
+}
+
+// Dark — BS5 native .btn-dark; Sunfish alias follows the same token routing.
+.btn.sf-btn-dark {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--bs-dark, #212529);
+  --bs-btn-border-color: var(--bs-dark, #212529);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: #424649;
+  --bs-btn-hover-border-color: #373b3e;
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: #4d5154;
+  --bs-btn-active-border-color: #373b3e;
+  --bs-btn-disabled-color: var(--bs-light, #f8f9fa);
+  --bs-btn-disabled-bg: var(--bs-secondary-color);
+  --bs-btn-disabled-border-color: var(--bs-secondary-color);
+}
+
+// Dark-mode branch — SYNTHESIS Theme 6. Swap Light / Dark polarity so the
+// neutral-surface treatment remains readable when [data-bs-theme="dark"] is
+// applied to the ancestor element.
+[data-bs-theme="dark"] {
+  .btn.sf-btn-light {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-bg: var(--bs-tertiary-bg, #343a40);
+    --bs-btn-border-color: var(--bs-border-color);
+    --bs-btn-hover-bg: var(--bs-secondary-bg, #495057);
+    --bs-btn-active-bg: var(--bs-secondary-bg, #495057);
+  }
+
+  .btn.sf-btn-dark {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #0d0f11;
+    --bs-btn-border-color: #0d0f11;
+    --bs-btn-hover-bg: #1a1d20;
+    --bs-btn-active-bg: #26292c;
+  }
+}
+
+// Forced-colors (HC) fallback — keep the new variants legible in Windows HC
+// mode where --bs-* tokens collapse to system colors. ButtonFace / ButtonText
+// are the HC-equivalent of the BS5 neutral-surface pair.
+@media (forced-colors: active) {
+  .btn.sf-btn-subtle,
+  .btn.sf-btn-transparent,
+  .btn.sf-btn-light,
+  .btn.sf-btn-dark {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: none;
+
+    &:disabled,
+    &.disabled {
+      color: GrayText;
+      border-color: GrayText;
+    }
+  }
+}

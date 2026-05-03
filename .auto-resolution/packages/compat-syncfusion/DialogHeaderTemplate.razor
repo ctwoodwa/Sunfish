@@ -1,0 +1,23 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfDialog>
+
+@*
+    Standalone DialogHeaderTemplate shim. Most consumers use <DialogTemplates><Header /></DialogTemplates>;
+    this is a convenience alias for consumers that declared the standalone form.
+*@
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override string ShimName => "DialogHeaderTemplate";
+    protected override string ParentName => "SfDialog";
+
+    protected override void OnParametersSet()
+    {
+        var parent = RequireParent();
+        parent.HeaderTemplate = ChildContent;
+        parent.RequestRefresh();
+    }
+}

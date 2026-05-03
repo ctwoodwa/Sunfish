@@ -1,0 +1,19 @@
+- name: Overview
+  href: overview.md
+- name: Ai Assistant Tools Setup
+  href: ai-assistant-tools-setup.md
+- name: Ai Chat Assistant
+  href: ai-chat-assistant.md
+- name: Ai Column Assistant
+  href: ai-column-assistant.md
+- name: Ai Row Highlight
+  href: ai-row-highlight.md
+- name: Ai Semantic Search
+  href: ai-semantic-search.md
+- name: Ai Service Setup
+  href: ai-service-setup.md
+- name: Ai Smart Box
+  href: ai-smart-box.md
+- name: Ai Toolbar Assistant
+  href: ai-toolbar-assistant.md
+

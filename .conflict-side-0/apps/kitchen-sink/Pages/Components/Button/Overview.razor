@@ -1,0 +1,212 @@
+@page "/components/Button"
+@page "/components/Button/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary">Click me</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Disabled" Code="@_disabledCode">
+        <div class="demo-row">
+            <SunfishButton Enabled="false">Disabled</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Danger" Enabled="false">Disabled Danger</SunfishButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Variants" Description="Buttons come in several variants to indicate different levels of emphasis." Code="@_variantsCode">
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary">Primary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary">Secondary</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Danger">Danger</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Warning">Warning</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Info">Info</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Success">Success</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Sizes" Code="@_sizesCode">
+        <div class="demo-row">
+            <SunfishButton Size="ButtonSize.Small">Small</SunfishButton>
+            <SunfishButton Size="ButtonSize.Medium">Medium</SunfishButton>
+            <SunfishButton Size="ButtonSize.Large">Large</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Fill Modes" Description="FillMode controls the visual weight of the button — from solid to outline, flat, link-style, or invisible." Code="@_fillModeCode">
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Solid">Solid</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Outline">Outline</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Flat">Flat</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Link">Link</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Primary" FillMode="FillMode.Clear">Clear</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Rounded" Description="Control the border-radius of the button with the Rounded parameter." Code="@_roundedCode">
+        <div class="demo-row">
+            <SunfishButton Rounded="RoundedMode.None">None</SunfishButton>
+            <SunfishButton Rounded="RoundedMode.Small">Small</SunfishButton>
+            <SunfishButton Rounded="RoundedMode.Medium">Medium</SunfishButton>
+            <SunfishButton Rounded="RoundedMode.Large">Large</SunfishButton>
+            <SunfishButton Rounded="RoundedMode.Full">Full</SunfishButton>
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="With Icon" Description="Use the Icon render fragment slot to place an icon inside the button." Code="@_iconCode">
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary">
+                <Icon>★</Icon>
+                <ChildContent>Star</ChildContent>
+            </SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Success">
+                <Icon>✓</Icon>
+                <ChildContent>Confirm</ChildContent>
+            </SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Danger" FillMode="FillMode.Outline">
+                <Icon>✕</Icon>
+                <ChildContent>Delete</ChildContent>
+            </SunfishButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Button Type">
+    <DemoSection Title="Submit and Reset" Description="Use ButtonType to integrate with HTML forms." Code="@_typeCode">
+        <EditForm Model="@_formModel" OnValidSubmit="@OnFormSubmit">
+            <div style="display:flex;flex-direction:column;gap:8px;max-width:300px;">
+                <input class="sf-input" @bind="_formModel.Name" placeholder="Enter your name" />
+                <div class="demo-row">
+                    <SunfishButton ButtonType="ButtonType.Submit" Variant="ButtonVariant.Primary">Submit</SunfishButton>
+                    <SunfishButton ButtonType="ButtonType.Reset" Variant="ButtonVariant.Secondary">Reset</SunfishButton>
+                </div>
+            </div>
+        </EditForm>
+        @if (!string.IsNullOrEmpty(_submittedName))
+        {
+            <p style="margin-top:8px;">Submitted: <strong>@_submittedName</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnClick" Description="Handle button clicks with the OnClick callback." Code="@_clickCode">
+        <div class="demo-row">
+            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@OnClickHandler">Click me: @_clickCount</SunfishButton>
+            <SunfishButton Variant="ButtonVariant.Secondary" OnClick="@OnResetHandler">Reset</SunfishButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private const string _basicCode =
+        "<SunfishButton Variant=\"ButtonVariant.Primary\">Click me</SunfishButton>";
+
+    private const string _disabledCode =
+        "<SunfishButton Enabled=\"false\">Disabled</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Danger\" Enabled=\"false\">Disabled Danger</SunfishButton>";
+
+    // Appearance
+    private const string _variantsCode =
+        "<SunfishButton Variant=\"ButtonVariant.Primary\">Primary</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Secondary\">Secondary</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Danger\">Danger</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Warning\">Warning</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Info\">Info</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Success\">Success</SunfishButton>";
+
+    private const string _sizesCode =
+        "<SunfishButton Size=\"ButtonSize.Small\">Small</SunfishButton>\n" +
+        "<SunfishButton Size=\"ButtonSize.Medium\">Medium</SunfishButton>\n" +
+        "<SunfishButton Size=\"ButtonSize.Large\">Large</SunfishButton>";
+
+    private const string _fillModeCode =
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" FillMode=\"FillMode.Solid\">Solid</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" FillMode=\"FillMode.Outline\">Outline</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" FillMode=\"FillMode.Flat\">Flat</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" FillMode=\"FillMode.Link\">Link</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" FillMode=\"FillMode.Clear\">Clear</SunfishButton>";
+
+    private const string _roundedCode =
+        "<SunfishButton Rounded=\"RoundedMode.None\">None</SunfishButton>\n" +
+        "<SunfishButton Rounded=\"RoundedMode.Small\">Small</SunfishButton>\n" +
+        "<SunfishButton Rounded=\"RoundedMode.Medium\">Medium</SunfishButton>\n" +
+        "<SunfishButton Rounded=\"RoundedMode.Large\">Large</SunfishButton>\n" +
+        "<SunfishButton Rounded=\"RoundedMode.Full\">Full</SunfishButton>";
+
+    private const string _iconCode =
+        "<SunfishButton Variant=\"ButtonVariant.Primary\">\n" +
+        "    <Icon>★</Icon>\n" +
+        "    Star\n" +
+        "</SunfishButton>\n" +
+        "<SunfishButton Variant=\"ButtonVariant.Success\">\n" +
+        "    <Icon>✓</Icon>\n" +
+        "    Confirm\n" +
+        "</SunfishButton>";
+
+    // Button Type
+    private class FormModel { public string Name { get; set; } = ""; }
+    private FormModel _formModel = new();
+    private string _submittedName = "";
+
+    private void OnFormSubmit()
+    {
+        _submittedName = _formModel.Name;
+    }
+
+    private const string _typeCode =
+        "<EditForm Model=\"@_model\" OnValidSubmit=\"@OnFormSubmit\">\n" +
+        "    <input @bind=\"_model.Name\" placeholder=\"Enter your name\" />\n" +
+        "    <SunfishButton ButtonType=\"ButtonType.Submit\" Variant=\"ButtonVariant.Primary\">Submit</SunfishButton>\n" +
+        "    <SunfishButton ButtonType=\"ButtonType.Reset\" Variant=\"ButtonVariant.Secondary\">Reset</SunfishButton>\n" +
+        "</EditForm>";
+
+    // Events
+    private int _clickCount;
+    private void OnClickHandler() => _clickCount++;
+    private void OnResetHandler() => _clickCount = 0;
+
+    private const string _clickCode =
+        "<SunfishButton Variant=\"ButtonVariant.Primary\" OnClick=\"@OnClickHandler\">\n" +
+        "    Click me: @_clickCount\n" +
+        "</SunfishButton>\n\n" +
+        "@code {\n" +
+        "    private int _clickCount;\n" +
+        "    private void OnClickHandler() => _clickCount++;\n" +
+        "}";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter", "Activates the button"),
+        ("Space", "Activates the button"),
+        ("Tab", "Moves focus to the next focusable element"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"button\"", "Implicitly set by the <button> element"),
+        ("aria-disabled=\"true\"", "Applied when the Enabled parameter is false"),
+        ("aria-label", "Can be set for icon-only buttons that have no visible text"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Buttons are announced with their visible text content and the \"button\" role.",
+        "Disabled buttons are announced as \"dimmed\" or \"unavailable\" depending on the screen reader.",
+        "Icon-only buttons should use aria-label to provide an accessible name.",
+    ];
+}

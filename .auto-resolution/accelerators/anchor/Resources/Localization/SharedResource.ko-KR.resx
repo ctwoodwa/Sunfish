@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Anchor SharedResource — Korean (Korea) satellite. LTR locale.
+       Polite/formal app register (요/입니다 endings) appropriate for end-user UI. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="onboarding.welcome.title" xml:space="preserve">
+    <value>Sunfish Anchor에 오신 것을 환영합니다</value>
+    <comment>Translator: Heading on first-run onboarding page; appears as h1.</comment>
+  </data>
+  <data name="onboarding.welcome.detail" xml:space="preserve">
+    <value>로컬 워크스페이스를 설정하여 오프라인 우선 협업을 시작하세요.</value>
+    <comment>Translator: Body text under welcome title; full sentence about offline-first workspace.</comment>
+  </data>
+  <data name="onboarding.join-team.title" xml:space="preserve">
+    <value>팀 참여</value>
+    <comment>Translator: Title on QR-onboarding page; imperative phrasing pairs with "Scan QR code" CTA.</comment>
+  </data>
+  <data name="onboarding.join-team.detail" xml:space="preserve">
+    <value>다른 팀원이 표시하는 QR 코드를 스캔하여 워크스페이스를 공유하세요.</value>
+    <comment>Translator: Body text on join-team page; describes QR-pairing flow per ADR 0032.</comment>
+  </data>
+  <data name="errors.network-unavailable" xml:space="preserve">
+    <value>오프라인 작업 중</value>
+    <comment>Translator: Status — working offline. Neutral tone (offline is normal in Anchor).</comment>
+  </data>
+  <data name="errors.network-unavailable.detail" xml:space="preserve">
+    <value>변경 사항은 로컬에 저장되며 피어에 연결되면 동기화됩니다.</value>
+    <comment>Translator: Body text under offline status; reassures changes are saved locally.</comment>
+  </data>
+  <data name="errors.team-not-found" xml:space="preserve">
+    <value>팀을 찾을 수 없음</value>
+    <comment>Translator: Error shown when switching to a team that no longer exists in local registry.</comment>
+  </data>
+  <data name="errors.team-not-found.detail" xml:space="preserve">
+    <value>이 팀은 더 이상 이 디바이스에서 사용할 수 없습니다. 필요한 경우 QR 코드로 다시 참여하세요.</value>
+    <comment>Translator: Body text on team-not-found; suggests recovery via re-join QR.</comment>
+  </data>
+</root>

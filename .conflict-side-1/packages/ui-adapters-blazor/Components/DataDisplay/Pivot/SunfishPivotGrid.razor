@@ -1,0 +1,121 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay.Pivot
+@typeparam TItem
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("sf-pivotgrid")"
+     style="@CombineStyles(SizeStyle())"
+     role="grid"
+     aria-label="@(AriaLabel ?? "Pivot grid")"
+     @attributes="AdditionalAttributes">
+
+    @if (RowKeys.Count == 0 || ColumnKeys.Count == 0)
+    {
+        <div class="sf-pivotgrid__empty" role="status">
+            <p>Configure <code>RowFields</code>, <code>ColumnFields</code>, and <code>Measures</code>, then provide data.</p>
+        </div>
+    }
+    else
+    {
+        var measures = EffectiveMeasures;
+        var firstRowField = RowFields.FirstOrDefault() ?? "";
+
+        <table class="sf-pivotgrid__table">
+            <thead>
+                <tr>
+                    <th class="sf-pivotgrid__corner" scope="col">@firstRowField</th>
+                    @foreach (var colTuple in ColumnKeys)
+                    {
+                        @foreach (var measure in measures)
+                        {
+                            <th class="sf-pivotgrid__col-header" scope="col">
+                                <div class="sf-pivotgrid__col-header-values">
+                                    @for (var i = 0; i < colTuple.Length; i++)
+                                    {
+                                        <span>@colTuple[i]</span>
+                                    }
+                                </div>
+                                @if (measures.Count > 1 || !string.Equals(measure.Field, "*", StringComparison.Ordinal))
+                                {
+                                    <div class="sf-pivotgrid__measure-header">@measure.EffectiveHeader</div>
+                                }
+                            </th>
+                        }
+                    }
+                    @if (ShowGrandTotals)
+                    {
+                        @foreach (var measure in measures)
+                        {
+                            <th class="sf-pivotgrid__col-header sf-pivotgrid__col-header--total" scope="col">
+                                @TotalLabel
+                                @if (measures.Count > 1)
+                                {
+                                    <div class="sf-pivotgrid__measure-header">@measure.EffectiveHeader</div>
+                                }
+                            </th>
+                        }
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rowTuple in RowKeys)
+                {
+                    <tr>
+                        <th class="sf-pivotgrid__row-header" scope="row">
+                            @for (var i = 0; i < rowTuple.Length; i++)
+                            {
+                                <span>@rowTuple[i]</span>
+                                @if (i < rowTuple.Length - 1)
+                                {
+                                    <span class="sf-pivotgrid__row-sep"> / </span>
+                                }
+                            }
+                        </th>
+                        @foreach (var colTuple in ColumnKeys)
+                        {
+                            @foreach (var measure in measures)
+                            {
+                                var cell = GetCell(rowTuple, colTuple, measure);
+                                <td class="sf-pivotgrid__cell" role="gridcell">
+                                    @(cell?.Formatted ?? "-")
+                                </td>
+                            }
+                        }
+                        @if (ShowGrandTotals)
+                        {
+                            @foreach (var measure in measures)
+                            {
+                                var total = GetRowTotal(rowTuple, measure);
+                                <td class="sf-pivotgrid__cell sf-pivotgrid__cell--total" role="gridcell">
+                                    @(total?.Formatted ?? "-")
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+                @if (ShowGrandTotals)
+                {
+                    <tr class="sf-pivotgrid__row--total">
+                        <th class="sf-pivotgrid__row-header sf-pivotgrid__row-header--total" scope="row">@TotalLabel</th>
+                        @foreach (var colTuple in ColumnKeys)
+                        {
+                            @foreach (var measure in measures)
+                            {
+                                var total = GetColumnTotal(colTuple, measure);
+                                <td class="sf-pivotgrid__cell sf-pivotgrid__cell--total" role="gridcell">
+                                    @(total?.Formatted ?? "-")
+                                </td>
+                            }
+                        }
+                        @foreach (var measure in measures)
+                        {
+                            var grand = GetGrandTotal(measure);
+                            <td class="sf-pivotgrid__cell sf-pivotgrid__cell--grand-total" role="gridcell">
+                                @(grand?.Formatted ?? "-")
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

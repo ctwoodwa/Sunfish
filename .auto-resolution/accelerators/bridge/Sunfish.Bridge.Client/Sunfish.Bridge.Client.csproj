@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sunfish.Bridge.Client</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\FluentUI\Sunfish.Providers.FluentUI.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\Bootstrap\Sunfish.Providers.Bootstrap.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Providers\Material\Sunfish.Providers.Material.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation-catalog\Sunfish.Foundation.Catalog.csproj" />
+    <ProjectReference Include="..\..\..\packages\blocks-subscriptions\Sunfish.Blocks.Subscriptions.csproj" />
+    <ProjectReference Include="..\..\..\packages\blocks-tenant-admin\Sunfish.Blocks.TenantAdmin.csproj" />
+    <ProjectReference Include="..\..\..\packages\blocks-businesscases\Sunfish.Blocks.BusinessCases.csproj" />
+  </ItemGroup>
+
+</Project>

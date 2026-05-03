@@ -1,0 +1,100 @@
+@page "/components/navigation/pagination/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Pagination / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Pagination / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Pagination/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPagination</code> exposes three page-selector modes via
+            <code>InputType</code>:
+        </p>
+        <ul>
+            <li><code>PagerInputType.Buttons</code> (default) — numeric page buttons with ellipsis
+                collapsing when the page count exceeds <code>ButtonCount</code>.</li>
+            <li><code>PagerInputType.Dropdown</code> — a native <code>&lt;select&gt;</code> listing
+                every page, rendered as "Page [n] of N". Ideal for dense data tables with a
+                predictable page count.</li>
+            <li><code>PagerInputType.Input</code> — a numeric input. The page commits on blur or
+                <kbd>Enter</kbd> to avoid firing a page change on every keystroke.</li>
+        </ul>
+        <p>
+            Each variant below is bound to its own page index so you can exercise them
+            independently. All three share the same <code>Total</code> and <code>PageSize</code>
+            so the computed total-pages value (20) is identical.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Buttons (default)</h3>
+                <SunfishPagination @bind-Page="@_pageButtons"
+                                   Total="200"
+                                   PageSize="10"
+                                   ButtonCount="7"
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageButtons</strong></small>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Dropdown</h3>
+                <SunfishPagination @bind-Page="@_pageDropdown"
+                                   Total="200"
+                                   PageSize="10"
+                                   InputType="PagerInputType.Dropdown"
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageDropdown</strong></small>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">InputType = Input</h3>
+                <SunfishPagination @bind-Page="@_pageInput"
+                                   Total="200"
+                                   PageSize="10"
+                                   InputType="PagerInputType.Input"
+                                   Info="true" />
+                <small style="opacity:.7;">Current page: <strong>@_pageInput</strong></small>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Arrows toggled off (PreviousNext / FirstLast = false)</h3>
+                <SunfishPagination @bind-Page="@_pageMinimal"
+                                   Total="200"
+                                   PageSize="10"
+                                   PreviousNext="false"
+                                   FirstLast="false"
+                                   ButtonCount="7"
+                                   Info="true" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Re-skinned via <code>Style</code></h3>
+                <SunfishPagination @bind-Page="@_pageReskin"
+                                   Total="60"
+                                   PageSize="10"
+                                   Style="background: var(--sunfish-surface-muted, #f3f4f6); padding:.5rem; border-radius:999px; gap:.25rem; display:inline-flex;" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Pagination", "Appearance"];
+
+    private int _pageButtons = 5;
+    private int _pageDropdown = 5;
+    private int _pageInput = 5;
+    private int _pageMinimal = 1;
+    private int _pageReskin = 1;
+}

@@ -1,0 +1,24 @@
+// =============================================================================
+// Component: Switch
+// =============================================================================
+
+.sf-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    cursor: pointer;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    user-select: none;
+}
+
+.sf-switch--on { color: var(--sf-color-primary); }
+
+// Slider (related form control)
+.sf-slider { width: 100%; accent-color: var(--sf-color-primary); }
+.sf-slider--vertical {
+    writing-mode: vertical-lr;
+    direction: rtl;
+    height: 200px;
+    width: auto;
+}

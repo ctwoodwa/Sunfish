@@ -1,0 +1,66 @@
+@page "/components/forms/colorpicker/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>ColorPicker / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPicker / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ColorPicker/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPicker</code> is the unified picker component. By default it renders a
+            trigger button with a popup containing a gradient (HSV) surface, a palette, and
+            value inputs. Set <code>FlatMode="true"</code> to render it inline (the old
+            <code>SunfishFlatColorPicker</code> role). Use <code>View</code> to select
+            <code>Gradient</code>, <code>Palette</code>, or <code>GradientPalette</code>
+            (both surfaces together).
+        </p>
+        <p>
+            Events: <code>ValueChanged</code> (two-way), <code>OnChange</code> (on commit),
+            <code>OnOpen</code> / <code>OnClose</code> (cancellable).
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem; max-width:420px;">
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <SunfishColorPicker @bind-Value="_color"
+                                    Format="ColorPickerFormat.Hex"
+                                    OnChange="HandleCommitted" />
+                <span>Current:
+                    <strong style="color:@_color;">@(_color ?? "(none)")</strong>
+                </span>
+            </div>
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <SunfishColorPicker @bind-Value="_rgbColor"
+                                    Format="ColorPickerFormat.Rgb"
+                                    View="ColorPickerView.GradientPalette"
+                                    Palette='@("officecolors")'
+                                    Columns="10"
+                                    Preview="true"
+                                    ClearButton="true" />
+                <span>GradientPalette view + Office preset — <strong>@_rgbColor</strong></span>
+            </div>
+            <p style="margin:0; color:#6b7280;">Last commit: <em>@_lastCommit</em></p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorPicker", "Overview"];
+
+    private string? _color = "#4472c4";
+    private string? _rgbColor = "rgb(46, 117, 182)";
+    private string _lastCommit = "(none)";
+
+    private void HandleCommitted(object? value)
+    {
+        _lastCommit = value?.ToString() ?? "(cleared)";
+    }
+}

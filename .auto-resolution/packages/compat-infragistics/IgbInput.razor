@@ -1,0 +1,132 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@inject ILogger<IgbInput> Logger
+
+@*
+    Ignite-UI-shaped input wrapper.
+    IgbInput covers Ignite UI's text + email + password + numeric + search surfaces;
+    delegated to SunfishTextBox with DisplayType forwarded as the HTML type attribute.
+    For native numeric inputs consumers should migrate to SunfishNumericInput after
+    the using-swap.
+*@
+<SunfishTextBox Value="@(Value ?? string.Empty)"
+                ValueChanged="OnSunfishValueChanged"
+                Placeholder="Placeholder"
+                Disabled="Disabled"
+                ReadOnly="Readonly"
+                InputType="_inputType"
+                IsInvalid="Invalid"
+                Autocomplete="Autocomplete"
+                MaxLength="MaxLengthInt"
+                @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string?> ValueChanged { get; set; }
+
+    /// <summary>Ignite-UI-shaped change event.</summary>
+    [Parameter] public EventCallback<IgbInputChangeEventArgs> Change { get; set; }
+
+    /// <summary>Ignite UI's <c>DisplayType</c> — maps to the HTML input <c>type</c>.</summary>
+    [Parameter] public CompatEnums.InputType DisplayType { get; set; } = CompatEnums.InputType.Text;
+
+    /// <summary>Inline HTML <c>inputmode</c> attribute — forwarded via AdditionalAttributes.</summary>
+    [Parameter] public string? InputMode { get; set; }
+
+    /// <summary>Regex pattern — forwarded via AdditionalAttributes.</summary>
+    [Parameter] public string? Pattern { get; set; }
+
+    /// <summary>Ignite UI uses <c>double</c> for MinLength/MaxLength (matches WC's attribute typing).</summary>
+    [Parameter] public double? MinLength { get; set; }
+
+    /// <summary>Ignite UI uses <c>double</c> for MinLength/MaxLength.</summary>
+    [Parameter] public double? MaxLength { get; set; }
+
+    /// <summary>Numeric min (for numeric input types).</summary>
+    [Parameter] public double? Min { get; set; }
+
+    /// <summary>Numeric max (for numeric input types).</summary>
+    [Parameter] public double? Max { get; set; }
+
+    /// <summary>Numeric step.</summary>
+    [Parameter] public double? Step { get; set; }
+
+    [Parameter] public bool Autofocus { get; set; }
+    [Parameter] public string? Autocomplete { get; set; }
+    [Parameter] public bool ValidateOnly { get; set; }
+
+    /// <summary>Ignite UI label — forwarded as Placeholder if Placeholder is null.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    [Parameter] public string? Name { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _inputType = "text";
+    internal int? MaxLengthInt;
+
+    protected override void OnParametersSet()
+    {
+        _inputType = DisplayType switch
+        {
+            CompatEnums.InputType.Email => "email",
+            CompatEnums.InputType.Password => "password",
+            CompatEnums.InputType.Tel => "tel",
+            CompatEnums.InputType.Url => "url",
+            CompatEnums.InputType.Search => "search",
+            CompatEnums.InputType.Number => "number",
+            _ => "text"
+        };
+
+        if (string.IsNullOrEmpty(Placeholder) && !string.IsNullOrEmpty(Label))
+        {
+            Placeholder = Label;
+        }
+
+        MaxLengthInt = MaxLength is null ? null : (int)MaxLength.Value;
+
+        // Forward miscellaneous form-participation attributes via AdditionalAttributes.
+        if (Name is not null || Required || Autofocus || InputMode is not null || Pattern is not null
+            || Min is not null || Max is not null || Step is not null || MinLength is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Name is not null && !AdditionalAttributes.ContainsKey("name"))
+                AdditionalAttributes["name"] = Name;
+            if (Required && !AdditionalAttributes.ContainsKey("required"))
+                AdditionalAttributes["required"] = true;
+            if (Autofocus && !AdditionalAttributes.ContainsKey("autofocus"))
+                AdditionalAttributes["autofocus"] = true;
+            if (InputMode is not null && !AdditionalAttributes.ContainsKey("inputmode"))
+                AdditionalAttributes["inputmode"] = InputMode;
+            if (Pattern is not null && !AdditionalAttributes.ContainsKey("pattern"))
+                AdditionalAttributes["pattern"] = Pattern;
+            if (Min is not null && !AdditionalAttributes.ContainsKey("min"))
+                AdditionalAttributes["min"] = Min.Value;
+            if (Max is not null && !AdditionalAttributes.ContainsKey("max"))
+                AdditionalAttributes["max"] = Max.Value;
+            if (Step is not null && !AdditionalAttributes.ContainsKey("step"))
+                AdditionalAttributes["step"] = Step.Value;
+            if (MinLength is not null && !AdditionalAttributes.ContainsKey("minlength"))
+                AdditionalAttributes["minlength"] = (int)MinLength.Value;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(string v)
+    {
+        Value = v;
+        if (ValueChanged.HasDelegate)
+            await ValueChanged.InvokeAsync(v);
+        if (Change.HasDelegate)
+            await Change.InvokeAsync(new IgbInputChangeEventArgs { Value = v, Name = Name });
+    }
+}

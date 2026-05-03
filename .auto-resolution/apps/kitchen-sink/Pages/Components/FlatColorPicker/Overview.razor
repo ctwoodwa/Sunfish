@@ -1,0 +1,45 @@
+@page "/components/flatcolorpicker"
+@page "/components/flatcolorpicker/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="SunfishFlatColorPicker is an inline color picker that combines a gradient view and a palette view. It includes Apply/Cancel buttons by default." Code="@_basicCode">
+        <SunfishFlatColorPicker @bind-Value="_color1" />
+        <p style="margin-top:8px;">Committed color: <strong>@_color1</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Immediate Mode" Description="Set ShowButtons to false to apply color changes immediately without requiring Apply/Cancel." Code="@_immediateCode">
+        <SunfishFlatColorPicker @bind-Value="_color2" ShowButtons="false" />
+        <p style="margin-top:8px;">Color: <strong>@_color2</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Palette Only" Description="Restrict the picker to only the palette view by passing a single-element Views collection." Code="@_paletteOnlyCode">
+        <SunfishFlatColorPicker @bind-Value="_color3"
+                               Views="@_paletteOnly"
+                               ShowButtons="false" />
+        <p style="margin-top:8px;">Color: <strong>@_color3</strong></p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private string _color1 = "rgb(25, 118, 210)";
+    private string _color2 = "#E91E63";
+    private string _color3 = "#4CAF50";
+
+    private readonly ColorPickerView[] _paletteOnly = [ColorPickerView.Palette];
+
+    private const string _basicCode =
+        "<SunfishFlatColorPicker @bind-Value=\"_color\" />\n\n" +
+        "@code {\n" +
+        "    private string _color = \"rgb(25, 118, 210)\";\n" +
+        "}";
+
+    private const string _immediateCode =
+        "<SunfishFlatColorPicker @bind-Value=\"_color\"\n" +
+        "                       ShowButtons=\"false\" />";
+
+    private const string _paletteOnlyCode =
+        "<SunfishFlatColorPicker @bind-Value=\"_color\"\n" +
+        "                       Views=\"@(new[] { ColorPickerView.Palette })\"\n" +
+        "                       ShowButtons=\"false\" />";
+}

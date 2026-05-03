@@ -1,0 +1,56 @@
+@page "/components/data-display/badge/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Badge / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Badge / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Badge/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishBadge</code> displays a short label, count, or notification dot anchored to its
+            parent. Choose a color with <code>Variant</code> (Default, Primary, Secondary, Danger, Warning,
+            Info, Success). Control placement with <code>Position</code> (edge, inline, inside, outside)
+            plus <code>HorizontalAlign</code> and <code>VerticalAlign</code>. Omit child content for a dot
+            badge; toggle <code>Visible</code> to show or hide dynamically.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/badge/appearance">appearance</a> and
+            <a href="/components/data-display/badge/icons">icons</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishBadge Variant="BadgeVariant.Default">Default</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Primary">Primary</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Danger">Danger</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Warning">Warning</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Info">Info</SunfishBadge>
+                <SunfishBadge Variant="BadgeVariant.Success">Success</SunfishBadge>
+            </div>
+
+            <div class="demo-row">
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Inbox</SunfishButton>
+                    <SunfishBadge Variant="BadgeVariant.Danger" Position="edge" />
+                </div>
+                <div style="position:relative;display:inline-flex;">
+                    <SunfishButton Variant="ButtonVariant.Secondary">Messages</SunfishButton>
+                    <SunfishBadge Variant="BadgeVariant.Primary" Position="edge">4</SunfishBadge>
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Badge", "Overview"];
+}

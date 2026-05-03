@@ -1,0 +1,17 @@
+// =============================================================================
+// Foundation: Radius
+// Border radius CSS custom properties + Fluent corner radius tokens
+// =============================================================================
+
+:root {
+    /* Shape */
+    --sf-radius-sm: 2px;
+    --sf-radius-md: 4px;
+    --sf-radius-lg: 8px;
+    --sf-radius-xl: 12px;
+    --sf-radius-full: 9999px;
+
+    /* Fluent Corner Radius */
+    --control-corner-radius: 4;
+    --layer-corner-radius: 8;
+}

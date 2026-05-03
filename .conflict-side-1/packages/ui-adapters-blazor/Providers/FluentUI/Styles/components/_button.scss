@@ -1,0 +1,457 @@
+// =============================================================================
+// Component: Button
+// =============================================================================
+@use '../foundation/focus' as *;
+
+.sf-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sf-space-sm);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    font-weight: var(--fontWeightSemibold, 600);
+    line-height: 1;
+    min-width: 0; // Batch 3 — allow flex-item shrink so ellipsis can engage
+    border: 1px solid transparent;
+    border-radius: var(--sf-radius-md);
+    cursor: pointer;
+    transition:
+        background   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        border-color var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        color        var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1)),
+        box-shadow   var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1));
+    // Batch 3 (P2-4) — text-overflow safety net. Fluent v9 root ships
+    // `overflow: hidden`; we pair with an ellipsis cascade on `.sf-button__label`
+    // below so truncated labels render a "…" glyph instead of visual clipping.
+    overflow: hidden;
+    white-space: nowrap;
+    text-decoration: none;
+    user-select: none;
+    vertical-align: middle;
+}
+
+// Batch 3 — ellipsis for the inner label slot. The min-width:0 on the root
+// lets the label shrink; the label itself runs the ellipsis cascade.
+.sf-button__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Phase 2B — SYNTHESIS Theme 5: Fluent v9 double-stroke focus ring.
+// See Providers/FluentUI/Styles/foundation/_focus.scss for the mixin body.
+.sf-button:focus-visible {
+    @include sf-focus-ring;
+}
+
+/* Button Sizes — per Fluent v9 sizing ladder.
+   Batch 2i: size-coupled font-weight (small = regular, medium/large = semibold)
+   and size-coupled min-width (small = 64px, medium/large = 96px). */
+.sf-button--small {
+    padding: 4px 8px;
+    font-size: var(--sf-font-size-sm);
+    font-weight: var(--fontWeightRegular, 400);
+    min-height: 24px;
+    min-width: 64px;
+}
+.sf-button--medium {
+    padding: 6px 12px;
+    font-size: var(--sf-font-size-base);
+    font-weight: var(--fontWeightSemibold, 600);
+    min-height: 32px;
+    min-width: 96px;
+}
+.sf-button--large {
+    padding: 8px 20px;
+    font-size: var(--sf-font-size-md);
+    font-weight: var(--fontWeightSemibold, 600);
+    min-height: 40px;
+    min-width: 96px;
+}
+
+/* Icon slot — Batch 2i: inline-flex with size-coupled icon box.
+   Default 20x20; small 16x16; large 24x24 per Fluent v9 Button icon sizing. */
+.sf-button__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+
+    > svg,
+    > img {
+        width: 100%;
+        height: 100%;
+    }
+}
+.sf-button--small .sf-button__icon { width: 16px; height: 16px; }
+.sf-button--large .sf-button__icon { width: 24px; height: 24px; }
+
+/* Icon-only collapse — Batch 2i: square aspect ratio, no horizontal padding,
+   no min-width so the icon box drives the footprint. */
+.sf-button--icon-only {
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    min-width: 0;
+}
+.sf-button--icon-only.sf-button--small { width: 24px; }
+.sf-button--icon-only.sf-button--medium { width: 32px; }
+.sf-button--icon-only.sf-button--large { width: 40px; }
+
+/* Button Variants */
+.sf-button--primary { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+.sf-button--primary:hover { background: var(--sf-color-primary-hover); border-color: var(--sf-color-primary-hover); }
+.sf-button--primary:active { background: var(--sf-color-primary-active); border-color: var(--sf-color-primary-active); }
+
+.sf-button--secondary { background: var(--sf-color-surface); color: var(--sf-color-on-surface); border-color: var(--sf-color-border-strong); }
+.sf-button--secondary:hover { background: var(--sf-color-surface-hover); }
+.sf-button--secondary:active { background: var(--sf-color-border); }
+
+.sf-button--danger { background: var(--sf-color-danger); color: var(--sf-color-on-danger); border-color: var(--sf-color-danger); }
+.sf-button--danger:hover { background: var(--sf-color-danger-hover); border-color: var(--sf-color-danger-hover); }
+.sf-button--danger:active { background: var(--sf-color-danger-active); border-color: var(--sf-color-danger-active); }
+
+.sf-button--warning { background: var(--sf-color-warning); color: var(--sf-color-on-warning); border-color: var(--sf-color-warning); }
+.sf-button--warning:hover { background: var(--sf-color-warning-hover); border-color: var(--sf-color-warning-hover); }
+.sf-button--warning:active { background: var(--sf-color-warning-active); border-color: var(--sf-color-warning-active); }
+
+.sf-button--info { background: var(--sf-color-info); color: var(--sf-color-on-info); border-color: var(--sf-color-info); }
+.sf-button--info:hover { background: var(--sf-color-info-hover); border-color: var(--sf-color-info-hover); }
+.sf-button--info:active { background: var(--sf-color-info-active); border-color: var(--sf-color-info-active); }
+
+.sf-button--success { background: var(--sf-color-success); color: var(--sf-color-on-success); border-color: var(--sf-color-success); }
+.sf-button--success:hover { background: var(--sf-color-success-hover); border-color: var(--sf-color-success-hover); }
+.sf-button--success:active { background: var(--sf-color-success-active); border-color: var(--sf-color-success-active); }
+
+/* Button Outline */
+.sf-button--outline { background: transparent; }
+.sf-button--outline.sf-button--primary { color: var(--sf-color-primary); border-color: var(--sf-color-primary); }
+.sf-button--outline.sf-button--primary:hover { background: var(--sf-color-primary-light); }
+.sf-button--outline.sf-button--secondary { color: var(--sf-color-on-surface); border-color: var(--sf-color-border-strong); }
+.sf-button--outline.sf-button--secondary:hover { background: var(--sf-color-surface); }
+.sf-button--outline.sf-button--danger { color: var(--sf-color-danger); border-color: var(--sf-color-danger); }
+.sf-button--outline.sf-button--danger:hover { background: var(--sf-color-danger-light); }
+.sf-button--outline.sf-button--warning { color: #986400; border-color: var(--sf-color-warning); }
+.sf-button--outline.sf-button--warning:hover { background: var(--sf-color-warning-light); }
+.sf-button--outline.sf-button--info { color: var(--sf-color-info); border-color: var(--sf-color-info); }
+.sf-button--outline.sf-button--info:hover { background: var(--sf-color-info-light); }
+.sf-button--outline.sf-button--success { color: var(--sf-color-success); border-color: var(--sf-color-success); }
+.sf-button--outline.sf-button--success:hover { background: var(--sf-color-success-light); }
+
+/* Button Disabled */
+.sf-button--disabled,
+.sf-button:disabled {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-disabled);
+    border-color: var(--sf-color-border);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Extended FillMode & Rounded (Phase 3) */
+.sf-button--fill-outline { background: transparent; border: 1px solid currentColor; }
+.sf-button--fill-flat { background: transparent; border-color: transparent; }
+.sf-button--fill-flat:hover { background: var(--sf-color-surface-hover); }
+.sf-button--fill-link { background: transparent; border-color: transparent; text-decoration: underline; padding: 0; min-height: auto; }
+.sf-button--fill-clear { background: transparent; border-color: transparent; }
+
+// Batch 3 (P2-6) — link variant. Fluent v9 routes link color through the
+// dedicated `BrandForegroundLink*` ladder so links land at a slightly
+// higher contrast than the brand foreground used for buttons/pills.
+// Matches `.sf-button--link` and the legacy `.sf-button--fill-link` alias.
+.sf-button--link,
+.sf-button--fill-link {
+    color: var(--colorBrandForegroundLink, var(--sf-color-primary));
+}
+.sf-button--link:hover,
+.sf-button--fill-link:hover {
+    color: var(--colorBrandForegroundLinkHover, var(--sf-color-primary-hover));
+}
+.sf-button--link:active,
+.sf-button--fill-link:active {
+    color: var(--colorBrandForegroundLinkPressed, var(--sf-color-primary-active));
+}
+
+.sf-button--rounded-none { border-radius: 0; }
+.sf-button--rounded-small { border-radius: var(--sf-radius-sm); }
+.sf-button--rounded-large { border-radius: var(--sf-radius-lg); }
+.sf-button--rounded-full { border-radius: 9999px; }
+
+/* Toggle Button */
+.sf-toggle-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    background: var(--sf-color-surface);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    cursor: pointer;
+    transition: all var(--sf-transition-fast);
+}
+
+.sf-toggle-button:hover { background: var(--sf-color-surface-hover); }
+.sf-toggle-button--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+
+/* Chip / Tag */
+.sf-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+    padding: 2px 10px;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    border-radius: var(--sf-radius-full);
+    border: 1px solid var(--sf-color-border);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-on-surface);
+    cursor: pointer;
+    transition: all var(--sf-transition-fast);
+    user-select: none;
+}
+
+.sf-chip:hover { background: var(--sf-color-surface-hover); }
+.sf-chip--default { background: var(--sf-color-surface); }
+.sf-chip--primary { background: var(--sf-color-primary-light); color: var(--sf-color-primary); border-color: var(--sf-color-primary); }
+.sf-chip--secondary { background: var(--sf-color-surface); border-color: var(--sf-color-border-strong); }
+.sf-chip--danger { background: var(--sf-color-danger-light); color: var(--sf-color-danger); border-color: var(--sf-color-danger); }
+.sf-chip--warning { background: var(--sf-color-warning-light); color: #986400; border-color: var(--sf-color-warning); }
+.sf-chip--info { background: var(--sf-color-info-light); color: var(--sf-color-info); border-color: var(--sf-color-info); }
+.sf-chip--success { background: var(--sf-color-success-light); color: var(--sf-color-success); border-color: var(--sf-color-success); }
+.sf-chip--selected { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+
+.sf-chip-set,
+.sf-chipset {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sf-space-sm);
+}
+
+/* FAB */
+.sf-fab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--sf-color-primary);
+    color: var(--sf-color-on-primary);
+    border: none;
+    border-radius: var(--sf-radius-full);
+    box-shadow: var(--sf-shadow-lg);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast), box-shadow var(--sf-transition-fast);
+}
+
+.sf-fab:hover { background: var(--sf-color-primary-hover); box-shadow: var(--sf-shadow-xl); }
+.sf-fab:focus-visible { @include sf-focus-ring; }
+.sf-fab--small { width: 40px; height: 40px; }
+.sf-fab--medium { width: 56px; height: 56px; }
+.sf-fab--large { width: 72px; height: 72px; }
+
+/* Segmented Control */
+.sf-segmented { display: inline-flex; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-md); overflow: hidden; }
+.sf-segmented__item { padding: var(--sf-space-sm) var(--sf-space-lg); background: var(--sf-color-background); border: none; border-right: 1px solid var(--sf-color-border); cursor: pointer; font-family: var(--sf-font-family); font-size: var(--sf-font-size-sm); color: var(--sf-color-on-background); transition: all var(--sf-transition-fast); }
+.sf-segmented__item:last-child { border-right: none; }
+.sf-segmented__item:hover { background: var(--sf-color-surface); }
+.sf-segmented__item--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); }
+
+/* Link */
+.sf-link {
+    color: var(--sf-color-primary);
+    text-decoration: none;
+    font-family: var(--sf-font-family);
+    cursor: pointer;
+    transition: color var(--sf-transition-fast);
+}
+
+.sf-link:hover { text-decoration: underline; color: var(--sf-color-primary-hover); }
+.sf-link:focus-visible { outline: none; box-shadow: var(--sf-focus-ring); border-radius: var(--sf-radius-sm); }
+
+// =============================================================================
+// ADR 0024 — ButtonVariant expansion (Subtle / Transparent / Light / Dark)
+// -----------------------------------------------------------------------------
+// Token-backed to Fluent v9's `--colorNeutral*` / `--colorBrand*` ramp. When
+// the v9 CSS-variables bundle (`fluent-v9-tokens.css`) is loaded, these rules
+// inherit Fluent's documented subtle / transparent / neutral-surface values.
+// Sunfish `--sf-*` fallbacks keep each rule legible even when the Fluent
+// token bundle is not yet loaded.
+// =============================================================================
+
+// Subtle — mirrors Fluent `fui-Button--subtle`. Resting state is transparent
+// with neutral-foreground text; hover lifts onto `colorSubtleBackgroundHover`.
+.sf-button.sf-btn-subtle,
+.sf-btn-subtle {
+    background: transparent;
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    border-color: transparent;
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, var(--sf-color-surface-hover));
+        color: var(--colorNeutralForeground2Hover, var(--sf-color-on-surface));
+        border-color: transparent;
+    }
+
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, var(--sf-color-border));
+        color: var(--colorNeutralForeground2Pressed, var(--sf-color-on-surface));
+        border-color: transparent;
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: transparent;
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: transparent;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Transparent — Fluent `fui-Button--transparent`. Resting, hover, and
+// pressed are all transparent surfaces; the hierarchy is carried solely
+// by the foreground color ladder.
+.sf-button.sf-btn-transparent,
+.sf-btn-transparent {
+    background: transparent;
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    border-color: transparent;
+
+    &:hover {
+        background: transparent;
+        color: var(--colorNeutralForeground2BrandHover, var(--sf-color-primary-hover));
+        border-color: transparent;
+    }
+
+    &:active {
+        background: transparent;
+        color: var(--colorNeutralForeground2BrandPressed, var(--sf-color-primary-active));
+        border-color: transparent;
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: transparent;
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: transparent;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Light — subtle surface on the light-neutral background ramp. Acts like
+// a resting card surface with a button affordance.
+.sf-button.sf-btn-light,
+.sf-btn-light {
+    background: var(--colorNeutralBackground1, var(--sf-color-surface));
+    color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+    border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+
+    &:hover {
+        background: var(--colorNeutralBackground1Hover, var(--sf-color-surface-hover));
+        color: var(--colorNeutralForeground1Hover, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1Hover, var(--sf-color-border-strong));
+    }
+
+    &:active {
+        background: var(--colorNeutralBackground1Pressed, var(--sf-color-border));
+        color: var(--colorNeutralForeground1Pressed, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1Pressed, var(--sf-color-border-strong));
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: var(--colorNeutralBackgroundDisabled, var(--sf-color-surface));
+        color: var(--colorNeutralForegroundDisabled, var(--sf-color-text-disabled));
+        border-color: var(--colorNeutralStrokeDisabled, var(--sf-color-border));
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Dark — subtle surface on the inverted / dark neutral ramp. High-contrast
+// against the default light surface, used for callout affordances.
+.sf-button.sf-btn-dark,
+.sf-btn-dark {
+    background: var(--colorNeutralBackgroundInverted, #292929);
+    color: var(--colorNeutralForegroundInverted, #ffffff);
+    border-color: var(--colorNeutralBackgroundInverted, #292929);
+
+    &:hover {
+        background: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+        color: var(--colorNeutralForegroundInvertedHover, #ffffff);
+        border-color: var(--colorNeutralBackgroundInvertedHover, #3d3d3d);
+    }
+
+    &:active {
+        background: var(--colorNeutralBackgroundInvertedPressed, #525252);
+        color: var(--colorNeutralForegroundInvertedPressed, #ffffff);
+        border-color: var(--colorNeutralBackgroundInvertedPressed, #525252);
+    }
+
+    &:focus-visible { @include sf-focus-ring; }
+
+    &:disabled,
+    &[aria-disabled="true"],
+    &.sf-button--disabled {
+        background: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+        color: var(--colorNeutralForegroundInvertedDisabled, #b3b3b3);
+        border-color: var(--colorNeutralBackgroundInvertedDisabled, #4b4b4b);
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+}
+
+// Dark-mode branch — SYNTHESIS Theme 6. When [data-theme="dark"] is applied,
+// swap Light / Dark polarity so the neutral-surface treatment remains legible.
+[data-theme="dark"] {
+    .sf-button.sf-btn-light,
+    .sf-btn-light {
+        background: var(--colorNeutralBackground3, var(--sf-color-surface));
+        color: var(--colorNeutralForeground1, var(--sf-color-on-surface));
+        border-color: var(--colorNeutralStroke1, var(--sf-color-border));
+    }
+
+    .sf-button.sf-btn-dark,
+    .sf-btn-dark {
+        background: var(--colorNeutralBackground1, #1a1a1a);
+        color: var(--colorNeutralForeground1, #ffffff);
+        border-color: var(--colorNeutralStroke1, #3d3d3d);
+    }
+}
+
+// Forced-colors (HC) fallback — system palette for accessibility.
+@media (forced-colors: active) {
+    .sf-button.sf-btn-subtle,
+    .sf-btn-subtle,
+    .sf-button.sf-btn-transparent,
+    .sf-btn-transparent,
+    .sf-button.sf-btn-light,
+    .sf-btn-light,
+    .sf-button.sf-btn-dark,
+    .sf-btn-dark {
+        border: 1px solid ButtonText;
+        background: ButtonFace;
+        color: ButtonText;
+        forced-color-adjust: none;
+
+        &:disabled,
+        &[aria-disabled="true"],
+        &.sf-button--disabled {
+            color: GrayText;
+            border-color: GrayText;
+        }
+    }
+}

@@ -1,0 +1,102 @@
+// =============================================================================
+// Component: Snackbar / Toast Notification
+// =============================================================================
+
+.sf-snackbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-md);
+    min-width: var(--sf-snackbar-min-width, 280px);
+    max-width: var(--sf-snackbar-max-width, 480px);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    background: var(--sf-color-on-background);
+    color: var(--sf-color-background);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-lg);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    animation: sf-snackbar-enter 0.2s ease-out;
+}
+
+@keyframes sf-snackbar-enter {
+    from {
+        opacity: 0;
+        transform: translateY(var(--sf-space-xs, 8px));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+// Severity variants
+.sf-snackbar--success {
+    background: var(--sf-color-success);
+    color: var(--sf-color-on-success);
+}
+
+.sf-snackbar--warning {
+    background: var(--sf-color-warning);
+    color: var(--sf-color-on-warning);
+}
+
+.sf-snackbar--danger {
+    background: var(--sf-color-danger);
+    color: var(--sf-color-on-danger);
+}
+
+.sf-snackbar--info {
+    background: var(--sf-color-info);
+    color: var(--sf-color-on-info);
+}
+
+.sf-snackbar__icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    font-size: 1.1em;
+}
+
+.sf-snackbar__message {
+    flex: 1;
+    line-height: var(--sf-line-height-base);
+}
+
+.sf-snackbar__action {
+    flex-shrink: 0;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: var(--sf-radius-sm);
+    padding: var(--sf-space-xxs) var(--sf-space-sm);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    font-weight: var(--sf-font-weight-semibold);
+    color: inherit;
+    cursor: pointer;
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.15); // white overlay — correct for any severity bg
+    }
+}
+
+.sf-snackbar__close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--sf-snackbar-close-size, 24px);
+    height: var(--sf-snackbar-close-size, 24px);
+    background: transparent;
+    border: none;
+    border-radius: var(--sf-radius-sm);
+    cursor: pointer;
+    color: inherit;
+    opacity: 0.7; // intentional: close button dimmed relative to snackbar content
+    transition: opacity var(--sf-transition-fast), background var(--sf-transition-fast);
+
+    &:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.15); // white overlay — correct for any severity bg
+    }
+}

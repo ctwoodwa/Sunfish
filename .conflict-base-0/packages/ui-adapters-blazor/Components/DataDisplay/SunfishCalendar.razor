@@ -1,0 +1,243 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("sf-calendar", OrientationClass)"
+     style="@CombineStyles()"
+     tabindex="0"
+     aria-label="Calendar"
+     @onkeydown="HandleKeyDown"
+     @attributes="AdditionalAttributes">
+
+    @if (View == CalendarView.Month)
+    {
+        <div class="sf-calendar__header">
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Previous month" @onclick="PreviousMonth">&lsaquo;</button>
+                <button type="button" class="sf-calendar__title" @onclick="SwitchToYearView">
+                    @_displayDate.ToString("MMMM yyyy")
+                </button>
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Next month" @onclick="NextMonth">&rsaquo;</button>
+            }
+        </div>
+        var weeks = GetWeeks();
+        var colCount = DisplayWeekNumbers ? 8 : 7;
+        <table class="sf-calendar__grid" role="grid" aria-rowcount="@(weeks.Count + 1)" aria-colcount="@colCount" aria-label="@_displayDate.ToString("MMMM yyyy")">
+            <thead>
+                <tr role="row">
+                    @if (DisplayWeekNumbers)
+                    {
+                        <th class="sf-calendar__weeknum-header" role="columnheader" scope="col" aria-label="Week number">Wk</th>
+                    }
+                    @foreach (var day in GetDayHeaders())
+                    {
+                        <th class="sf-calendar__day-header" role="columnheader" scope="col" aria-label="@day">@day</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var week in weeks)
+                {
+                    <tr role="row">
+                        @if (DisplayWeekNumbers)
+                        {
+                            var weekNum = GetWeekNumber(week[0]);
+                            <td class="sf-calendar__weeknum" role="rowheader">
+                                @if (WeekCellTemplate != null)
+                                {
+                                    @WeekCellTemplate(weekNum)
+                                }
+                                else
+                                {
+                                    @weekNum
+                                }
+                            </td>
+                        }
+                        @foreach (var date in week)
+                        {
+                            var isCurrentMonth = date.Month == _displayDate.Month;
+                            var isSelected = IsSelected(date);
+                            var isToday = date.Date == DateTime.Today;
+                            var isDisabled = IsDateDisabled(date);
+                            var isFocused = date.Date == _focusedDate;
+                            var isRangeEdge = IsRangeEdge(date);
+                            var isRangeStart = SelectionMode == Sunfish.UIAdapters.Blazor.Enums.CalendarSelectionMode.Range
+                                && Start.HasValue && Start.Value.Date == date.Date;
+                            var isRangeEnd = SelectionMode == Sunfish.UIAdapters.Blazor.Enums.CalendarSelectionMode.Range
+                                && End.HasValue && End.Value.Date == date.Date;
+                            var isInRange = SelectionMode == Sunfish.UIAdapters.Blazor.Enums.CalendarSelectionMode.Range
+                                && Start.HasValue && End.HasValue
+                                && date.Date > Start.Value.Date && date.Date < End.Value.Date;
+
+                            if (!isCurrentMonth && !ShowOtherMonthDays)
+                            {
+                                <td class="sf-calendar__cell sf-calendar__cell--empty"></td>
+                            }
+                            else
+                            {
+                                var classes = "sf-calendar__cell";
+                                if (!isCurrentMonth) classes += " sf-calendar__cell--other-month";
+                                if (isSelected) classes += " sf-calendar__cell--selected";
+                                if (isRangeEdge) classes += " sf-calendar__cell--range-edge";
+                                if (isRangeStart) classes += " sf-calendar__cell--range-start";
+                                if (isRangeEnd) classes += " sf-calendar__cell--range-end";
+                                if (isInRange) classes += " sf-calendar__cell--in-range";
+                                if (isToday) classes += " sf-calendar__cell--today";
+                                if (isDisabled) classes += " sf-calendar__cell--disabled";
+                                if (isFocused) classes += " sf-calendar__cell--focused";
+                                var captured = date;
+                                var disabled = isDisabled;
+
+                                <td class="@classes"
+                                    role="gridcell"
+                                    aria-selected="@(isSelected ? "true" : "false")"
+                                    aria-disabled="@(isDisabled ? "true" : null)"
+                                    aria-current="@(isToday ? "date" : null)"
+                                    @onclick="@(() => OnCellClick(captured, disabled))">
+                                    @if (CellTemplate != null)
+                                    {
+                                        @CellTemplate(captured)
+                                    }
+                                    else
+                                    {
+                                        <span class="sf-calendar__day">@captured.Day</span>
+                                    }
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else if (View == CalendarView.Year)
+    {
+        <div class="sf-calendar__header">
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Previous year" @onclick="PreviousYear">&lsaquo;</button>
+                <button type="button" class="sf-calendar__title" @onclick="SwitchToDecadeView">
+                    @_displayDate.Year
+                </button>
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Next year" @onclick="NextYear">&rsaquo;</button>
+            }
+        </div>
+        <div class="sf-calendar__year-grid">
+            @for (int m = 1; m <= 12; m++)
+            {
+                var month = m;
+                var monthDate = new DateTime(_displayDate.Year, month, 1);
+                var isSelected = Value.HasValue && Value.Value.Year == _displayDate.Year && Value.Value.Month == month;
+                var isCurrent = DateTime.Today.Year == _displayDate.Year && DateTime.Today.Month == month;
+                var cls = "sf-calendar__month-cell";
+                if (isSelected) cls += " sf-calendar__month-cell--selected";
+                if (isCurrent) cls += " sf-calendar__month-cell--current";
+
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectMonth(month))">
+                    @if (CellTemplate != null)
+                    {
+                        @CellTemplate(monthDate)
+                    }
+                    else
+                    {
+                        @monthDate.ToString("MMM")
+                    }
+                </button>
+            }
+        </div>
+    }
+    else if (View == CalendarView.Decade)
+    {
+        var decadeStart = _displayDate.Year / 10 * 10;
+        <div class="sf-calendar__header">
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Previous decade" @onclick="PreviousDecade">&lsaquo;</button>
+                <button type="button" class="sf-calendar__title" @onclick="SwitchToCenturyView">
+                    @($"{decadeStart} - {decadeStart + 9}")
+                </button>
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Next decade" @onclick="NextDecade">&rsaquo;</button>
+            }
+        </div>
+        <div class="sf-calendar__decade-grid">
+            @for (int y = decadeStart; y < decadeStart + 10; y++)
+            {
+                var year = y;
+                var yearDate = new DateTime(year, 1, 1);
+                var isSelected = Value.HasValue && Value.Value.Year == year;
+                var isCurrent = DateTime.Today.Year == year;
+                var cls = "sf-calendar__year-cell";
+                if (isSelected) cls += " sf-calendar__year-cell--selected";
+                if (isCurrent) cls += " sf-calendar__year-cell--current";
+
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectYear(year))">
+                    @if (CellTemplate != null)
+                    {
+                        @CellTemplate(yearDate)
+                    }
+                    else
+                    {
+                        @year
+                    }
+                </button>
+            }
+        </div>
+    }
+    else if (View == CalendarView.Century)
+    {
+        var centuryStart = _displayDate.Year / 100 * 100;
+        <div class="sf-calendar__header">
+            @if (HeaderTemplate != null)
+            {
+                @HeaderTemplate
+            }
+            else
+            {
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Previous century" @onclick="PreviousCentury">&lsaquo;</button>
+                <span class="sf-calendar__title">@($"{centuryStart} - {centuryStart + 99}")</span>
+                <button type="button" class="sf-calendar__nav-btn"
+                        aria-label="Next century" @onclick="NextCentury">&rsaquo;</button>
+            }
+        </div>
+        <div class="sf-calendar__century-grid">
+            @for (int d = centuryStart; d < centuryStart + 100; d += 10)
+            {
+                var decadeStart = d;
+                var decadeDate = new DateTime(decadeStart, 1, 1);
+                var isCurrent = DateTime.Today.Year >= decadeStart && DateTime.Today.Year < decadeStart + 10;
+                var cls = "sf-calendar__decade-cell";
+                if (isCurrent) cls += " sf-calendar__decade-cell--current";
+
+                <button type="button" class="@cls" style="min-width:24px;min-height:24px;" @onclick="@(() => SelectDecade(decadeStart))">
+                    @if (CellTemplate != null)
+                    {
+                        @CellTemplate(decadeDate)
+                    }
+                    else
+                    {
+                        @($"{decadeStart} - {decadeStart + 9}")
+                    }
+                </button>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,51 @@
+@namespace Sunfish.Compat.MaterialIcons
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Foundation.Enums
+
+<span class="@_classAttr"
+      role="@(string.IsNullOrEmpty(AriaLabel) ? null : "img")"
+      aria-label="@AriaLabel"
+      @attributes="AdditionalAttributes">@Name</span>
+
+@code {
+    // --- Material-Icons-shaped public parameters ---
+
+    /// <summary>
+    /// Material Icon ligature identifier (lowercase_snake_case), e.g. <c>"home"</c>,
+    /// <c>"calendar_today"</c>, or any <see cref="MaterialIconName"/> member.
+    /// Rendered as the element's text content so Google's Material Icons webfont
+    /// (loaded by the consumer) resolves it to a glyph via CSS ligatures.
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>
+    /// Sunfish-enum size. Emits a Sunfish-prefixed modifier class
+    /// (<c>sf-material-size-sm/md/lg/xl</c>) alongside the native
+    /// <c>material-icons</c> class. Omit for the consumer's default sizing.
+    /// </summary>
+    [Parameter] public IconSize? Size { get; set; }
+
+    /// <summary>
+    /// Accessible label for the icon. When set, the host element uses
+    /// <c>role="img"</c>; the ligature text content remains visible to sighted users
+    /// only while the webfont loads (same as Google's official rendering path).
+    /// </summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Additional attributes (<c>class</c>, <c>style</c>, <c>title</c>, etc.) splatted onto the host <c>&lt;span&gt;</c>.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _classAttr = "material-icons sf-material-icon";
+
+    protected override void OnParametersSet()
+    {
+        // Preserve Google's native `material-icons` class alongside the Sunfish-prefix
+        // `sf-material-icon` hook (per Phase 1 convention). Append the size modifier
+        // only when a size was explicitly requested.
+        var sizeClass = MaterialSizeClass.ToClass(Size);
+        _classAttr = string.IsNullOrEmpty(sizeClass)
+            ? "material-icons sf-material-icon"
+            : $"material-icons sf-material-icon {sizeClass}";
+    }
+}

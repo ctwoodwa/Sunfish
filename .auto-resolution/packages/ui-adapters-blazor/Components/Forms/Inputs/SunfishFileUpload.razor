@@ -1,0 +1,165 @@
+@inherits SunfishComponentBase
+@using Microsoft.AspNetCore.Components.Forms
+@implements IAsyncDisposable
+
+<div class="@CombineClasses(CssProvider.FileUploadClass())"
+     style="@CombineStyles()"
+     role="region"
+     aria-label="File selection"
+     @attributes="AdditionalAttributes">
+
+    @* Drop zone / select button *@
+    <label class="@DropZoneCssClass()"
+           for="@InputId"
+           @ondragenter="HandleDragEnter"
+           @ondragover="HandleDragOver"
+           @ondragleave="HandleDragLeave"
+           @ondrop="HandleDrop"
+           @ondragenter:preventDefault
+           @ondragover:preventDefault
+           @ondrop:preventDefault>
+
+        @if (SelectFilesButtonTemplate != null)
+        {
+            @SelectFilesButtonTemplate
+        }
+        else
+        {
+            <span class="sf-file-upload__icon" aria-hidden="true">
+                @IconProvider.GetIconMarkup("upload", Sunfish.Foundation.Enums.IconSize.Medium)
+            </span>
+            <span class="sf-file-upload__text">
+                Drag and drop file@(Multiple ? "s" : "") here, or
+                <span class="sf-file-upload__browse-link">browse</span>
+            </span>
+
+            @if (AllowedExtensions?.Any() == true)
+            {
+                <span class="sf-file-upload__hint">
+                    Allowed: @string.Join(", ", AllowedExtensions)
+                </span>
+            }
+        }
+
+        <InputFile id="@InputId"
+                   OnChange="HandleFileSelected"
+                   multiple="@Multiple"
+                   accept="@Accept"
+                   capture="@Capture"
+                   disabled="@(!IsInteractive)"
+                   class="sf-file-upload__input"
+                   aria-hidden="true"
+                   tabindex="-1" />
+    </label>
+
+    @* File list *@
+    @if (ShowFileList && _files.Count > 0)
+    {
+        <ul class="@CssProvider.FileUploadFileListClass()"
+            role="list"
+            aria-label="Selected files">
+            @foreach (var file in _files)
+            {
+                <li class="sf-file-upload__file-item @(file.IsInvalid ? "mar-file-upload__file-item--invalid" : "")"
+                    role="listitem">
+                    @if (FileTemplate != null)
+                    {
+                        @FileTemplate(BuildTemplateContext(file))
+                    }
+                    else
+                    {
+                        <span class="sf-file-upload__file-icon" aria-hidden="true">
+                            @IconProvider.GetIconMarkup("file", Sunfish.Foundation.Enums.IconSize.Small)
+                        </span>
+
+                        <span class="sf-file-upload__file-info">
+                            @if (FileInfoTemplate != null)
+                            {
+                                @FileInfoTemplate(BuildTemplateContext(file))
+                            }
+                            else
+                            {
+                                <span class="sf-file-upload__file-name" title="@file.Name">@file.Name</span>
+                                <span class="sf-file-upload__file-size">@FormatFileSize(file.Size)</span>
+                                @if (file.IsInvalid)
+                                {
+                                    <span class="sf-file-upload__file-error" role="alert">
+                                        @ValidationSummary(file)
+                                    </span>
+                                }
+                            }
+                        </span>
+
+                        @if (IsUploadMode)
+                        {
+                            <span class="sf-file-upload__file-status mar-file-upload__file-status--@file.Status.ToString().ToLower()"
+                                  aria-live="polite">
+                                @file.Status
+                            </span>
+
+                            @if (file.Status == UploadFileStatus.Uploading)
+                            {
+                                <div class="sf-file-upload__progress" role="progressbar"
+                                     aria-valuenow="@file.Progress"
+                                     aria-valuemin="0"
+                                     aria-valuemax="100"
+                                     aria-label="Uploading @file.Name: @(file.Progress)%">
+                                    <div class="sf-file-upload__progress-bar" style="width:@(file.Progress)%"></div>
+                                </div>
+
+                                <button type="button"
+                                        class="sf-file-upload__cancel-btn"
+                                        aria-label="Cancel upload of @file.Name"
+                                        @onclick="() => CancelFile(file.Id)">
+                                    <span aria-hidden="true">&#x23F8;</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="sf-file-upload__file-remove"
+                                        aria-label="Remove @file.Name"
+                                        @onclick="() => RemoveFileInternalAsync(file)">
+                                    <span aria-hidden="true">&#x2715;</span>
+                                </button>
+                            }
+                        }
+                        else
+                        {
+                            <button type="button"
+                                    class="sf-file-upload__file-remove"
+                                    aria-label="Remove @file.Name"
+                                    @onclick="() => RemoveFileInternalAsync(file)">
+                                <span aria-hidden="true">&#x2715;</span>
+                            </button>
+                        }
+                    }
+                </li>
+            }
+        </ul>
+
+        @if (CanUploadManually || CanClear)
+        {
+            <div class="sf-file-upload__actions" role="toolbar" aria-label="Upload actions">
+                @if (CanUploadManually)
+                {
+                    <button type="button"
+                            class="sf-file-upload__upload-btn"
+                            aria-label="Upload all files"
+                            @onclick="UploadFiles">
+                        Upload
+                    </button>
+                }
+                @if (CanClear)
+                {
+                    <button type="button"
+                            class="sf-file-upload__clear-btn"
+                            aria-label="Clear file list"
+                            @onclick="ClearFiles">
+                        Clear
+                    </button>
+                }
+            </div>
+        }
+    }
+</div>

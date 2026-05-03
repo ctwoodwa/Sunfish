@@ -1,0 +1,122 @@
+@page "/components/feedback/progressbar/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@implements IDisposable
+
+<PageTitle>ProgressBar / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ProgressBar / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishProgressBar</code> renders <code>role="progressbar"</code> with the full
+            ARIA 1.2 surface: <code>aria-valuemin</code>, <code>aria-valuemax</code>, and
+            <code>aria-valuenow</code> for determinate states. When <code>Indeterminate="true"</code>,
+            <code>aria-valuenow</code> is omitted and <code>aria-busy="true"</code> is set so
+            assistive tech announces the bar as <em>busy</em> rather than reading a stale number.
+        </p>
+        <ul>
+            <li><strong>Accessible name</strong> &mdash; <code>Label</code> becomes the <code>aria-label</code>.</li>
+            <li><strong>Determinate announcements</strong> &mdash; SRs read the current percentage as the value updates.</li>
+            <li><strong>Indeterminate announcements</strong> &mdash; SRs read the bar as busy (no value).</li>
+            <li><strong><code>prefers-reduced-motion</code></strong> &mdash; the indeterminate animation is keyframed and respected by the CSS.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Determinate (<code>aria-valuenow</code>)</h3>
+                <label for="upload-progress" style="display:block; font-weight:600; margin-bottom:.25rem;">Upload progress</label>
+                <SunfishProgressBar Value="@_percent" Label="Upload progress" ShowLabel="true" id="upload-progress" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _percent = Math.Max(0, _percent - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _percent = Math.Min(100, _percent + 10))">+10</SunfishButton>
+                    <span style="color:#555;">SR: "Upload progress, @_percent percent"</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Indeterminate (<code>aria-busy="true"</code>)</h3>
+                <p id="sync-status" role="status" style="margin:0 0 .25rem; color:#555;">
+                    Syncing ledger entries &mdash; this may take a minute.
+                </p>
+                <SunfishProgressBar Indeterminate="true" Label="Syncing ledger entries" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Live-updating bar (auto-advance)</h3>
+                <SunfishProgressBar Value="@_tick" ShowLabel="true" Label="Auto-advancing progress" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="ToggleTicker">@(_running ? "Pause" : "Start")</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _tick = 0)">Reset</SunfishButton>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="progressbar"</code></dt>
+                    <dd>Applied to the root element.</dd>
+
+                    <dt><code>aria-valuemin</code> / <code>aria-valuemax</code></dt>
+                    <dd>Driven by <code>Min</code> (default 0) and <code>Max</code> (default 100).</dd>
+
+                    <dt><code>aria-valuenow</code></dt>
+                    <dd>Set to the clamped <code>Value</code> when determinate; omitted when <code>Indeterminate</code>.</dd>
+
+                    <dt><code>aria-busy</code></dt>
+                    <dd>Set to <code>"true"</code> when <code>Indeterminate</code>; omitted otherwise.</dd>
+
+                    <dt><code>aria-label</code></dt>
+                    <dd>Driven by the <code>Label</code> parameter.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ProgressBar", "Accessibility"];
+
+    private double _percent = 40;
+    private double _tick;
+    private bool _running;
+    private System.Threading.Timer? _timer;
+
+    private void ToggleTicker()
+    {
+        _running = !_running;
+        if (_running)
+        {
+            _timer = new System.Threading.Timer(_ =>
+            {
+                InvokeAsync(() =>
+                {
+                    _tick = Math.Min(100, _tick + 5);
+                    if (_tick >= 100) { _running = false; _timer?.Dispose(); _timer = null; }
+                    StateHasChanged();
+                });
+            }, null, 1000, 1000);
+        }
+        else
+        {
+            _timer?.Dispose();
+            _timer = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        _timer?.Dispose();
+        _timer = null;
+    }
+}

@@ -1,0 +1,52 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.MvpEditor
+@inherits Sunfish.UIAdapters.Blazor.Base.SunfishComponentBase
+@inject IJSRuntime JS
+
+@*
+    SunfishEditor (MVP surface under Forms/Inputs)
+    -----------------------------------------------
+    ADR 0022, Tier 3 W3-7. Lean rich-text editor using contenteditable +
+    document.execCommand, distinct from the richer production editor at
+    Sunfish.UIAdapters.Blazor.Components.Editors.SunfishEditor (which is
+    not exCommand-based and has a much larger API surface).
+
+    This namespace — Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.MvpEditor —
+    is intentionally NOT imported from _Imports.razor so that the MVP and
+    the production editor can coexist under the same SunfishEditor name
+    without ambiguity. Consumers that want the MVP surface reference the
+    fully-qualified type.
+*@
+
+<div class="mar-editor-mvp @Class"
+     style="@Style"
+     @attributes="AdditionalAttributes">
+
+    @if (Tools is { Count: > 0 })
+    {
+        <div class="mar-editor-mvp__toolbar" role="toolbar" aria-label="Editor formatting">
+            @foreach (var tool in Tools)
+            {
+                var capture = tool;
+                <button type="button"
+                        class="mar-editor-mvp__tool mar-editor-mvp__tool--@capture.ToString().ToLowerInvariant()"
+                        title="@GetToolLabel(capture)"
+                        aria-label="@GetToolLabel(capture)"
+                        disabled="@ReadOnly"
+                        @onclick="() => InvokeToolAsync(capture)">
+                    @GetToolGlyph(capture)
+                </button>
+            }
+        </div>
+    }
+
+    <div class="mar-editor-mvp__surface"
+         style="@SurfaceStyle()"
+         contenteditable="@((!ReadOnly).ToString().ToLowerInvariant())"
+         role="textbox"
+         aria-multiline="true"
+         aria-readonly="@ReadOnly.ToString().ToLowerInvariant()"
+         data-placeholder="@Placeholder"
+         spellcheck="true"
+         @ref="_surfaceRef"
+         @oninput="HandleInput">@((MarkupString)(Value ?? string.Empty))</div>
+</div>

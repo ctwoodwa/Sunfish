@@ -1,0 +1,226 @@
+- name: Overview
+  href: README.md
+- name: Layout & Containers
+  items:
+    - name: AppBar
+      href: appbar/overview.md
+    - name: Card
+      href: card/overview.md
+    - name: Dialog
+      href: dialog/
+    - name: Dock Manager
+      href: dockmanager/
+    - name: Drawer
+      href: drawer/
+    - name: Grid Layout
+      href: gridlayout/
+    - name: Panel Bar (Accordion)
+      href: panelbar/
+    - name: Splitter
+      href: splitter/
+    - name: Stack Layout
+      href: stacklayout/
+    - name: TabStrip
+      href: tabstrip/overview.md
+    - name: Tile Layout
+      href: tilelayout/
+    - name: Window
+      href: window/overview.md
+- name: Navigation
+  items:
+    - name: Breadcrumb
+      href: breadcrumb/overview.md
+    - name: Context Menu
+      href: contextmenu/
+    - name: Menu
+      href: menu/
+    - name: Pager
+      href: pager/
+    - name: Stepper
+      href: stepper/
+    - name: Toolbar
+      href: toolbar/
+    - name: TreeView
+      href: treeview/overview.md
+    - name: Wizard
+      href: wizard/overview.md
+- name: Buttons & Actions
+  items:
+    - name: Button
+      href: button/overview.md
+    - name: Button Group
+      href: buttongroup/overview.md
+    - name: Chip
+      href: chip/
+    - name: Chip List
+      href: chiplist/
+    - name: Dropdown Button
+      href: dropdownbutton/
+    - name: Floating Action Button
+      href: floatingactionbutton/
+    - name: Split Button
+      href: splitbutton/
+    - name: Toggle Button
+      href: togglebutton/
+- name: Forms & Inputs
+  items:
+    - name: Autocomplete
+      href: autocomplete/overview.md
+    - name: Checkbox
+      href: checkbox/overview.md
+    - name: Color Gradient
+      href: colorgradient/
+    - name: Color Palette
+      href: colorpalette/overview.md
+    - name: Color Picker
+      href: colorpicker/overview.md
+    - name: ComboBox
+      href: combobox/overview.md
+    - name: Date Input
+      href: dateinput/overview.md
+    - name: Date Picker
+      href: datepicker/overview.md
+    - name: Date Range Picker
+      href: daterangepicker/overview.md
+    - name: DateTime Picker
+      href: datetimepicker/overview.md
+    - name: Dropdown List
+      href: dropdownlist/overview.md
+    - name: Dropdown Tree
+      href: dropdowntree/
+    - name: Editor
+      href: editor/
+    - name: File Manager
+      href: filemanager/
+    - name: File Select
+      href: fileselect/
+    - name: Filter
+      href: filter/
+    - name: Flat Color Picker
+      href: flatcolorpicker/
+    - name: Floating Label
+      href: floatinglabel/
+    - name: Form
+      href: form/
+    - name: List Box
+      href: listbox/
+    - name: Masked TextBox
+      href: maskedtextbox/overview.md
+    - name: Multi-Column ComboBox
+      href: multicolumncombobox/
+    - name: MultiSelect
+      href: multiselect/
+    - name: Numeric TextBox
+      href: numerictextbox/
+    - name: Radio Group
+      href: radiogroup/
+    - name: Range Slider
+      href: rangeslider/
+    - name: Rating
+      href: rating/
+    - name: Signature
+      href: signature/
+    - name: Slider
+      href: slider/
+    - name: Switch
+      href: switch/
+    - name: TextArea
+      href: textarea/
+    - name: TextBox
+      href: textbox/
+    - name: Time Picker
+      href: timepicker/overview.md
+    - name: Upload
+      href: upload/overview.md
+    - name: Validation
+      href: validation/overview.md
+- name: Data Display
+  items:
+    - name: Avatar
+      href: avatar/overview.md
+    - name: Badge
+      href: badge/overview.md
+    - name: Grid (Data Grid)
+      href: grid/
+    - name: ListView
+      href: listview/
+    - name: Pivot Grid
+      href: pivotgrid/
+    - name: Popover
+      href: popover/
+    - name: Spreadsheet
+      href: spreadsheet/
+    - name: Tooltip
+      href: tooltip/
+    - name: TreeList
+      href: treelist/
+- name: Feedback & Notifications
+  items:
+    - name: Chunk Progress Bar
+      href: chunkprogressbar/overview.md
+    - name: Loader
+      href: loader/
+    - name: Loader Container
+      href: loadercontainer/
+    - name: Notification
+      href: notification/
+    - name: Progress Bar
+      href: progressbar/
+    - name: Skeleton
+      href: skeleton/
+- name: Charts & Gauges
+  items:
+    - name: Chart
+      href: chart/
+    - name: Gauges
+      href: gauges/
+    - name: Sankey Diagram
+      href: sankey/
+    - name: Stock Chart
+      href: stockchart/
+- name: Scheduling
+  items:
+    - name: Calendar
+      href: calendar/overview.md
+    - name: Gantt
+      href: gantt/
+    - name: Scheduler
+      href: scheduler/
+- name: Barcodes & Media
+  items:
+    - name: Barcodes
+      href: barcodes/
+    - name: Carousel
+      href: carousel/
+    - name: Map
+      href: map/
+    - name: PDF Viewer
+      href: pdfviewer/
+- name: AI Components
+  items:
+    - name: AI Prompt
+      href: aiprompt/overview.md
+    - name: Chat
+      href: chat/
+    - name: Inline AI Prompt
+      href: inlineaiprompt/
+    - name: Prompt Box
+      href: promptbox/
+    - name: Smart Paste Button
+      href: smartpastebutton/
+    - name: Speech to Text Button
+      href: speechtotextbutton/
+- name: Utility & Infrastructure
+  items:
+    - name: Animation Container
+      href: animationcontainer/overview.md
+    - name: Diagram
+      href: diagram/
+    - name: Drop Zone
+      href: dropzone/
+    - name: Media Query
+      href: mediaquery/
+    - name: Popup
+      href: popup/
+    - name: Root Component
+      href: rootcomponent/

@@ -1,0 +1,82 @@
+@page "/components/feedback/progressbar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>ProgressBar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ProgressBar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ProgressBar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishProgressBar</code> visualises determinate or indeterminate progress in
+            four flavours driven off the same component: a continuous fill, a discrete chunked
+            track (<code>ChunkCount</code> &gt; 0), a vertical bar, and an animated indeterminate
+            state for unknown-duration work.
+        </p>
+        <p>
+            This overview demonstrates each variant side-by-side. See the
+            <a href="/components/feedback/progressbar/appearance">appearance</a> page for theme
+            colours and the <a href="/components/feedback/progressbar/accessibility">accessibility</a>
+            page for screen-reader behaviour.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Standard determinate</h3>
+                <p style="margin:0 0 .5rem; color:#666;">Progress: @_progress%</p>
+                <SunfishProgressBar Value="@_progress" ShowLabel="true" OnComplete="OnDone" />
+                <div class="demo-row" style="margin-top:.5rem; display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Max(0, _progress - 10))">-10</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _progress = Math.Min(100, _progress + 10))">+10</SunfishButton>
+                    @if (_lastComplete.HasValue)
+                    {
+                        <span style="color:#2e7d32; font-weight:600;">
+                            OnComplete fired at @_lastComplete.Value.ToString("F0")
+                        </span>
+                    }
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Indeterminate</h3>
+                <SunfishProgressBar Indeterminate="true" Label="Syncing..." />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Chunked (<code>ChunkCount=5</code>)</h3>
+                <SunfishProgressBar Value="@_progress" ChunkCount="5" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Vertical</h3>
+                <div style="height:140px; width:24px;">
+                    <SunfishProgressBar Value="@_progress"
+                                        Orientation="ProgressBarOrientation.Vertical"
+                                        Style="height:100%; width:100%;" />
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ProgressBar", "Overview"];
+
+    private double _progress = 45;
+    private double? _lastComplete;
+
+    private void OnDone(double final)
+    {
+        _lastComplete = final;
+    }
+}

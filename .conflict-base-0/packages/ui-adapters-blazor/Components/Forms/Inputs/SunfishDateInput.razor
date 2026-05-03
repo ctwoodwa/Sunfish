@@ -1,0 +1,55 @@
+@inherits SunfishComponentBase
+
+@*
+    SunfishDateInput — segmented keyboard-first date text field.
+
+    Renders one <span> per format segment (e.g. month / day / year) inside a
+    focusable wrapper. Arrow keys move between segments; ArrowUp/ArrowDown
+    increment/decrement the focused segment; digit keys replace the segment
+    value (clamped to segment range). See the `dateinput` spec under
+    apps/docs/component-specs/dateinput for the parity surface.
+
+    Distinct from SunfishDatePicker — no popup calendar.
+*@
+
+<div class="@CombineClasses("mar-dateinput", "sf-dateinput", Disabled ? "sf-dateinput--disabled" : null, ReadOnly ? "sf-dateinput--readonly" : null)"
+     style="@CombineStyles(WidthStyle())"
+     role="group"
+     aria-label="@(AriaLabel ?? "Date input")"
+     @attributes="AdditionalAttributes">
+    <div class="sf-dateinput__segments"
+         tabindex="@(Disabled ? -1 : TabIndex)"
+         @onfocusin="HandleFocusIn"
+         @onfocusout="HandleFocusOut"
+         @onkeydown="HandleKeyDown"
+         @onkeydown:preventDefault="_preventDefault">
+        @for (var i = 0; i < _segments.Count; i++)
+        {
+            var idx = i;
+            var seg = _segments[idx];
+            if (seg.IsLiteral)
+            {
+                <span class="sf-dateinput__literal">@seg.Display</span>
+            }
+            else
+            {
+                <span class="sf-dateinput__segment @(idx == _focusedIndex && _hasFocus ? "sf-dateinput__segment--focused" : "") @(seg.HasValue ? "sf-dateinput__segment--filled" : "sf-dateinput__segment--placeholder")"
+                      role="spinbutton"
+                      aria-label="@seg.AriaLabel"
+                      aria-valuenow="@(seg.HasValue ? seg.Value?.ToString() : null)"
+                      aria-valuemin="@seg.Min"
+                      aria-valuemax="@seg.Max"
+                      @onclick="@(() => FocusSegment(idx))">@seg.Display</span>
+            }
+        }
+        @if (ShowClearButton && _value.HasValue && !Disabled && !ReadOnly)
+        {
+            <button type="button"
+                    class="sf-dateinput__clear"
+                    aria-label="Clear"
+                    tabindex="-1"
+                    @onclick="ClearValue"
+                    @onclick:stopPropagation="true">&#x2715;</button>
+        }
+    </div>
+</div>

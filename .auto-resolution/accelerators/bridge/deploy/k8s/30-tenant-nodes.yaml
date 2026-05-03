@@ -1,0 +1,125 @@
+# ============================================================================
+# Tenant-node slots — StatefulSet
+# ============================================================================
+# Per _shared/research/aspire-13-runtime-resource-mutation.md, we pre-allocate
+# N slots as StatefulSet replicas. `spec.replicas` is the pool size; edit
+# kustomization.yaml's replicas patch to change it without touching this file.
+#
+# Each pod reads POD_ORDINAL from its hostname ("bridge-tenant-node-3" -> 3)
+# and dials Bridge's assignment endpoint to learn which TenantId it's serving
+# during this lifecycle. Idle slots keep the container running but don't
+# subscribe to any tenant's gossip.
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: bridge-tenant-node
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: tenant-node
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge-tenant-node
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: tenant-node
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/component: tenant-node
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bridge-tenant-node
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: tenant-node
+spec:
+  serviceName: bridge-tenant-node
+  # Pool size — bump via Kustomize replicas patch.
+  replicas: 8
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: tenant-node
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: sunfish-bridge
+        app.kubernetes.io/component: tenant-node
+    spec:
+      serviceAccountName: bridge-tenant-node
+      containers:
+        - name: local-node-host
+          # Customer-published. Overwrite via Kustomize image transformer.
+          image: ghcr.io/CHANGE_ME/sunfish-local-node-host:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            # Entrypoint parses POD_NAME's trailing number into SLOT_ORDINAL.
+            # For explicit injection a custom entrypoint can shell out to
+            # `POD_NAME##*-` and export SUNFISH_NODE_SLOT_ORDINAL.
+            - name: SUNFISH_NODE_SLOT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: SUNFISH_BRIDGE_ENDPOINT
+              value: http://bridge-web.sunfish-bridge-acmedemo.svc.cluster.local
+            - name: SUNFISH_BRIDGE_DEPLOYMENT_MODE
+              value: OptionB-Dedicated
+          volumeMounts:
+            - name: install-seed
+              mountPath: /etc/sunfish/seed
+              readOnly: true
+            - name: sqlcipher
+              mountPath: /var/lib/sunfish/sqlcipher
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+      volumes:
+        - name: install-seed
+          secret:
+            secretName: bridge-install-seed
+            defaultMode: 0400
+  volumeClaimTemplates:
+    - metadata:
+        name: sqlcipher
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 4Gi

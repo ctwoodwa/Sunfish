@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <!-- NU1608: Npgsql.EntityFrameworkCore.PostgreSQL preview.2 declares an exact dependency on
+         EF Core preview.2, but the repo is on preview.3. Runtime compatibility holds; NuGet's
+         strict constraint check is the only objection. Suppress until Npgsql publishes preview.3. -->
+    <NoWarn>$(NoWarn);NU1608</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\..\..\packages\foundation-persistence\Sunfish.Foundation.Persistence.csproj" />
+  </ItemGroup>
+
+</Project>

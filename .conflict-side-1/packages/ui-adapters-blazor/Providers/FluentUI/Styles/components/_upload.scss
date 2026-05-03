@@ -1,0 +1,43 @@
+// =============================================================================
+// Component: Upload
+// =============================================================================
+
+.sf-upload {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sf-space-sm);
+}
+
+.sf-upload-dropzone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sf-space-sm);
+    min-height: 120px;
+    border: 2px dashed var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    padding: var(--sf-space-lg);
+    text-align: center;
+    color: var(--sf-color-text-secondary);
+    transition: border-color 0.15s ease, background 0.15s ease;
+
+    &:hover { border-color: var(--sf-color-border-strong); }
+    &--active { border-color: var(--sf-color-primary); background: var(--sf-color-primary-light); }
+}
+
+.sf-upload-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sf-space-xs);
+}
+
+.sf-upload-file-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    background: var(--sf-color-surface);
+    border-radius: var(--sf-radius-sm);
+    font-size: var(--sf-font-size-sm);
+}

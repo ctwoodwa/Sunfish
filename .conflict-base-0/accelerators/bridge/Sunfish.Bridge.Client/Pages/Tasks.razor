@@ -1,0 +1,51 @@
+@page "/tasks"
+
+<PageTitle>Task List · Sunfish PM</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0 0 4px;">Task List</h1>
+        <p style="margin:0;color:#6b7280;">@_tasks.Length tasks across all projects</p>
+    </div>
+    <SunfishButton Variant="ButtonVariant.Primary">+ New Task</SunfishButton>
+</div>
+
+<SunfishDataGrid TItem="TaskRow"
+                Data="@_tasks"
+                Sortable="true"
+                Striped="true"
+                Pageable="true"
+                PageSize="10"
+                FilterMode="GridFilterMode.FilterRow"
+                ShowCheckboxColumn="true">
+    <SunfishGridColumn TItem="TaskRow" Field="Title" Title="Task" Width="280px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Project" Width="160px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Assignee" Width="140px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Priority" Width="100px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Status" Width="120px" />
+    <SunfishGridColumn TItem="TaskRow" Field="DueDate" Title="Due Date" Format="yyyy-MM-dd" Width="110px" />
+    <SunfishGridColumn TItem="TaskRow" Field="Progress" Title="%" Format="P0" TextAlign="right" Width="70px" />
+</SunfishDataGrid>
+
+@code {
+    record TaskRow(string Title, string Project, string Assignee, string Priority, string Status, DateTime DueDate, double Progress);
+
+    readonly TaskRow[] _tasks =
+    [
+        new("Define API contracts",         "Platform",   "J. Park",  "High",   "Done",        new DateTime(2026, 4, 2),  1.0),
+        new("Design system audit",          "Design",     "L. Gomez", "Medium", "Done",        new DateTime(2026, 4, 5),  1.0),
+        new("Auth service integration",     "Platform",   "J. Park",  "High",   "In Progress", new DateTime(2026, 4, 10), 0.7),
+        new("Dashboard wireframes",         "Design",     "L. Gomez", "Medium", "In Progress", new DateTime(2026, 4, 12), 0.5),
+        new("Unit tests – data layer",      "Platform",   "T. Smith", "High",   "In Progress", new DateTime(2026, 4, 14), 0.4),
+        new("Risk register setup",          "Governance", "A. Chen",  "Medium", "Todo",        new DateTime(2026, 4, 18), 0.0),
+        new("Budget import script",         "Finance",    "A. Chen",  "Low",    "Todo",        new DateTime(2026, 4, 20), 0.0),
+        new("Stakeholder presentation",     "Governance", "A. Chen",  "High",   "Todo",        new DateTime(2026, 4, 25), 0.0),
+        new("Performance benchmarks",       "Platform",   "T. Smith", "Medium", "Todo",        new DateTime(2026, 4, 28), 0.0),
+        new("Accessibility review",         "Design",     "L. Gomez", "Medium", "Todo",        new DateTime(2026, 5, 2),  0.0),
+        new("CI/CD pipeline hardening",     "Platform",   "T. Smith", "Low",    "Todo",        new DateTime(2026, 5, 5),  0.0),
+        new("User acceptance testing",      "QA",         "R. Patel", "High",   "Blocked",     new DateTime(2026, 5, 8),  0.0),
+        new("Release notes draft",          "Design",     "L. Gomez", "Low",    "Todo",        new DateTime(2026, 5, 10), 0.0),
+        new("Security penetration test",    "Platform",   "J. Park",  "High",   "Todo",        new DateTime(2026, 5, 12), 0.0),
+        new("Go-live runbook",              "Governance", "A. Chen",  "Medium", "Todo",        new DateTime(2026, 5, 15), 0.0),
+    ];
+}

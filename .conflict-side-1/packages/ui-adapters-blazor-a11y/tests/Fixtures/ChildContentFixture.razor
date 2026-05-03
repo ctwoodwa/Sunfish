@@ -1,0 +1,25 @@
+@*
+  Fixture component for Plan 4 Task 1.3 determinism gate. Exercises RenderFragment
+  child content to catch non-determinism in render-tree ordering for compositional
+  components (Sunfish's SunfishDialog, SunfishButton, etc. all use RenderFragment).
+*@
+
+<section class="test-composed" aria-labelledby="@($"hdr-{Id}")">
+    <h2 id="@($"hdr-{Id}")">@Heading</h2>
+    @if (ChildContent is not null)
+    {
+        <div class="test-composed__body">
+            @ChildContent
+        </div>
+    }
+    <footer class="test-composed__footer">
+        <small>@Footer</small>
+    </footer>
+</section>
+
+@code {
+    [Parameter] public string Id { get; set; } = "default";
+    [Parameter] public string Heading { get; set; } = "Heading";
+    [Parameter] public string Footer { get; set; } = "Footer";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

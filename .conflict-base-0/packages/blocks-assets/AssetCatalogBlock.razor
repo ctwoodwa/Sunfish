@@ -1,0 +1,23 @@
+@* Split layout: DataGrid of asset records on the left, SunfishFileManager on the right.
+   Read-display only — upload, transform, tag, version are all deferred.
+
+   Note: the parameter is named 'Items' (not 'Assets') because 'Assets' collides
+   with the 'ComponentBase.Assets' property introduced in .NET 10. *@
+
+<div class="sf-asset-catalog" style="display:grid;grid-template-columns:2fr 1fr;gap:16px;height:100%;">
+    <div class="sf-asset-catalog__grid">
+        <SunfishDataGrid Data="Items" TItem="AssetRecord">
+        </SunfishDataGrid>
+    </div>
+    <div class="sf-asset-catalog__files">
+        @if (ShowFileManager)
+        {
+            <SunfishFileManager TItem="AssetRecord" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<AssetRecord> Items { get; set; } = System.Array.Empty<AssetRecord>();
+    [Parameter] public bool ShowFileManager { get; set; } = true;
+}

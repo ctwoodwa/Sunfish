@@ -1,0 +1,7 @@
+// =============================================================================
+// Component: Image
+// =============================================================================
+
+.sf-image { display: inline-block; }
+.sf-image img { display: block; max-width: 100%; height: auto; }
+.sf-image--rounded img { border-radius: var(--sf-radius-full); }

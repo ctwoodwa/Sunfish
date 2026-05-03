@@ -1,0 +1,19 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfGrid<TValue>>
+
+@*
+    Syncfusion uses <GridColumns>...</GridColumns> as a semantic wrapper inside <SfGrid> to
+    group the <GridColumn> children. It has no functional behavior beyond rendering its
+    children — this shim mirrors that shape so consumer markup flips cleanly.
+*@
+@ChildContent
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override string ShimName => "GridColumns";
+    protected override string ParentName => "SfGrid";
+}

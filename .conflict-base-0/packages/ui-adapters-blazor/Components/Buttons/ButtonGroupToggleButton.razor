@@ -1,0 +1,26 @@
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    <button class="@CombineClasses(CssProvider.ToggleButtonClass(Selected))"
+            style="@CombineStyles()"
+            type="button"
+            aria-pressed="@Selected.ToString().ToLowerInvariant()"
+            disabled="@(!EffectiveEnabled)"
+            title="@Title"
+            @onclick="HandleClick"
+            @attributes="AdditionalAttributes">
+        @if (Icon != null)
+        {
+            <span class="sf-button__icon">@Icon</span>
+        }
+        @if (ChildContent != null)
+        {
+            @ChildContent
+        }
+        else if (!string.IsNullOrEmpty(Text))
+        {
+            @Text
+        }
+    </button>
+}

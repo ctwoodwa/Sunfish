@@ -1,0 +1,124 @@
+@page "/components/datadisplay/popover/withtitle"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Popover / With Title · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Popover / With Title"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Popover/WithTitle/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPopover</code> picks its ARIA role at render time. When the popover has
+            focusable actions (anything supplied via <code>ActionsContent</code>) it renders as
+            <code>role="dialog"</code>; otherwise it renders as <code>role="tooltip"</code>.
+            Dialogs <strong>must</strong> have an accessible name, and the
+            <code>Title</code> parameter is the simplest way to provide one when there is no
+            <code>HeaderContent</code>.
+        </p>
+        <ul>
+            <li><strong><code>HeaderContent</code> set</strong> &mdash; the header element gets an id and the popover uses <code>aria-labelledby</code>. <code>Title</code> is ignored.</li>
+            <li><strong><code>HeaderContent</code> not set, <code>Title</code> set</strong> &mdash; <code>Title</code> populates <code>aria-label</code>.</li>
+            <li><strong>Both unset</strong> &mdash; <code>aria-label</code> falls back to the literal <em>"Popover"</em> so axe's
+                <a href="https://dequeuniversity.com/rules/axe/4.7/aria-dialog-name"
+                   target="_blank" rel="noopener">
+                    <code>aria-dialog-name</code>
+                </a>
+                rule never fires &mdash; but a domain-specific name is much better.</li>
+            <li><strong>WCAG mapping</strong> &mdash; SC 4.1.2 <em>Name, Role, Value</em>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Popover with <code>Title</code> (no header content)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Renders as <code>role="dialog"</code> because of the action button. SR
+                    announces "Confirm shipping address dialog".
+                </p>
+                <SunfishPopover IsOpen="@_open1" IsOpenChanged="@((bool v) => _open1 = v)" Title="Confirm shipping address">
+                    <ChildContent>
+                        <SunfishButton OnClick="() => _open1 = !_open1">Address summary</SunfishButton>
+                    </ChildContent>
+                    <PopoverContent>
+                        <p style="margin:0 0 .5rem;">123 Local Node Way<br />Inverted Stack City, IS 00100</p>
+                    </PopoverContent>
+                    <ActionsContent>
+                        <SunfishButton OnClick="() => _open1 = false">Confirm</SunfishButton>
+                    </ActionsContent>
+                </SunfishPopover>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Popover with <code>HeaderContent</code> (Title ignored)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    The header drives <code>aria-labelledby</code>; <code>Title</code> would be
+                    redundant and is ignored.
+                </p>
+                <SunfishPopover IsOpen="@_open2" IsOpenChanged="@((bool v) => _open2 = v)">
+                    <ChildContent>
+                        <SunfishButton OnClick="() => _open2 = !_open2">Notification settings</SunfishButton>
+                    </ChildContent>
+                    <HeaderContent>
+                        <strong>Notification settings</strong>
+                    </HeaderContent>
+                    <PopoverContent>
+                        <p style="margin:0;">Choose how you want to be notified about new messages.</p>
+                    </PopoverContent>
+                    <ActionsContent>
+                        <SunfishButton OnClick="() => _open2 = false">Save</SunfishButton>
+                    </ActionsContent>
+                </SunfishPopover>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Tooltip-style popover (no actions, no Title needed)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Without <code>ActionsContent</code> the popover renders as
+                    <code>role="tooltip"</code> and the <code>Title</code>/<code>aria-label</code>
+                    requirement does not apply.
+                </p>
+                <SunfishPopover IsOpen="@_open3" IsOpenChanged="@((bool v) => _open3 = v)">
+                    <ChildContent>
+                        <SunfishButton OnClick="() => _open3 = !_open3">What is a local node?</SunfishButton>
+                    </ChildContent>
+                    <PopoverContent>
+                        <p style="margin:0;">A local node is a peer that holds a full replica of the dataset.</p>
+                    </PopoverContent>
+                </SunfishPopover>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="dialog"</code></dt>
+                    <dd>Applied when <code>ActionsContent</code> is set (focusable content present).</dd>
+
+                    <dt><code>role="tooltip"</code></dt>
+                    <dd>Applied when no <code>ActionsContent</code>; not naming-required.</dd>
+
+                    <dt><code>aria-labelledby</code></dt>
+                    <dd>Set to the header id when <code>HeaderContent</code> is provided (dialog only).</dd>
+
+                    <dt><code>aria-label</code></dt>
+                    <dd>Set to <code>Title</code> when there is no header (dialog only); falls back to <em>"Popover"</em>.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "DataDisplay", "Popover", "WithTitle"];
+
+    private bool _open1;
+    private bool _open2;
+    private bool _open3;
+}

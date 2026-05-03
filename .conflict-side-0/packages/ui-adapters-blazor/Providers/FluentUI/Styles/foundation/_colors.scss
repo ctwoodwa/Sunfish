@@ -1,0 +1,191 @@
+// =============================================================================
+// Foundation: Colors
+// Color CSS custom properties — light theme + dark theme overrides
+//
+// NOTE: --sf-color-* vars flow through Fluent v9 tokens (see fluent-v9-tokens.css)
+// when available, with Fabric-era fallbacks preserved as the second arg so
+// consumers who have not yet loaded the v9 token shim still get a sane render.
+// Source of truth for v9 token values: @fluentui/tokens npm package.
+// =============================================================================
+
+:root {
+    /* Primary — brand. v9: colorBrandBackground #0f6cbd (was Fabric v8 #0078d4) */
+    --sf-color-primary: var(--colorBrandBackground, #0f6cbd);
+    --sf-color-primary-hover: var(--colorBrandBackgroundHover, #115ea3);
+    --sf-color-primary-active: var(--colorBrandBackgroundPressed, #0c3b5e);
+    --sf-color-primary-light: var(--colorBrandBackground2, #ebf3fc);
+    --sf-color-on-primary: var(--colorNeutralForegroundOnBrand, #ffffff);
+
+    /* Semantic status */
+    --sf-color-success: var(--colorStatusSuccessBackground3, #107c10);
+    --sf-color-success-light: var(--colorStatusSuccessBackground1, #f1faf1);
+    --sf-color-on-success: var(--colorNeutralForegroundOnBrand, #ffffff);
+    --sf-color-warning: var(--colorStatusWarningBackground3, #f7630c);
+    --sf-color-warning-light: var(--colorStatusWarningBackground1, #fff9f5);
+    --sf-color-on-warning: var(--colorNeutralForeground1, #242424);
+    --sf-color-danger: var(--colorStatusDangerBackground3, #c50f1f);
+    --sf-color-danger-light: var(--colorStatusDangerBackground1, #fdf3f4);
+    --sf-color-on-danger: var(--colorNeutralForegroundOnBrand, #ffffff);
+    --sf-color-info: var(--colorPaletteInfoBackground3, #0078d4);
+    --sf-color-info-light: var(--colorPaletteInfoBackground1, #f0f8ff);
+    --sf-color-on-info: var(--colorNeutralForegroundOnBrand, #ffffff);
+
+    /* Button hover/active — v9 status foreground1 for hover, foreground2 for active */
+    --sf-color-danger-hover: var(--colorStatusDangerForeground1, #b10e1c);
+    --sf-color-danger-active: var(--colorStatusDangerForeground2, #bc2f32);
+    --sf-color-warning-hover: var(--colorStatusWarningForeground1, #bc4b09);
+    --sf-color-warning-active: var(--colorStatusWarningForeground2, #8a3707);
+    --sf-color-info-hover: var(--colorPaletteInfoForeground1, #005a9e);
+    --sf-color-info-active: var(--colorPaletteInfoForeground2, #004578);
+    --sf-color-success-hover: var(--colorStatusSuccessForeground1, #0e700e);
+    --sf-color-success-active: var(--colorStatusSuccessForeground2, #054b16);
+
+    /* Neutral surfaces */
+    --sf-color-background: var(--colorNeutralBackground1, #ffffff);
+    --sf-color-surface: var(--colorNeutralBackground2, #fafafa);
+    --sf-color-surface-hover: var(--colorSubtleBackgroundHover, #f5f5f5);
+    --sf-color-on-background: var(--colorNeutralForeground1, #242424);
+    --sf-color-on-surface: var(--colorNeutralForeground1, #242424);
+    --sf-color-text-secondary: var(--colorNeutralForeground2, #424242);
+    --sf-color-text-disabled: var(--colorNeutralForegroundDisabled, #bdbdbd);
+    --sf-color-border: var(--colorNeutralStroke2, #e0e0e0);
+    --sf-color-border-strong: var(--colorNeutralStroke1, #d1d1d1);
+    --sf-color-stroke-focus: var(--colorStrokeFocus2, #000000);
+    --sf-color-overlay: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
+
+    /* Fluent Color System */
+    --base-layer-luminance: 0.98;
+    --neutral-base-color: #808080;
+    --accent-base-color: #0f6cbd;
+
+    /* Fluent Neutral Fills */
+    --fill-color: #fbfbfb;
+    --neutral-fill-rest: #ffffff;
+    --neutral-fill-hover: #f7f7f7;
+    --neutral-fill-active: #fbfbfb;
+    --neutral-fill-focus: #fbfbfb;
+    --neutral-fill-input-rest: #ffffff;
+    --neutral-fill-input-hover: #f7f7f7;
+    --neutral-fill-input-active: #fbfbfb;
+    --neutral-fill-input-focus: #ffffff;
+    --neutral-fill-input-alt-rest: #f3f3f3;
+    --neutral-fill-input-alt-hover: #ebebeb;
+    --neutral-fill-input-alt-active: #e0e0e0;
+    --neutral-fill-input-alt-focus: #f3f3f3;
+    --neutral-fill-layer-rest: #ffffff;
+    --neutral-fill-layer-hover: #ffffff;
+    --neutral-fill-layer-active: #ffffff;
+    --neutral-fill-layer-alt-rest: #ffffff;
+    --neutral-fill-secondary-rest: #efefef;
+    --neutral-fill-secondary-hover: #f3f3f3;
+    --neutral-fill-secondary-active: #f7f7f7;
+    --neutral-fill-secondary-focus: #efefef;
+    --neutral-fill-stealth-rest: #fbfbfb;
+    --neutral-fill-stealth-hover: #efefef;
+    --neutral-fill-stealth-active: #f3f3f3;
+    --neutral-fill-stealth-focus: #fbfbfb;
+    --neutral-fill-strong-rest: #717171;
+    --neutral-fill-strong-hover: #4b4b4b;
+    --neutral-fill-strong-active: #868686;
+    --neutral-fill-strong-focus: #717171;
+
+    /* Fluent Neutral Foreground */
+    --neutral-foreground-rest: #1a1a1a;
+    --neutral-foreground-hover: #7a7a7a;
+    --neutral-foreground-active: #a8a8a8;
+    --neutral-foreground-focus: #1a1a1a;
+    --neutral-foreground-hint: #717171;
+
+    /* Fluent Accent Fills */
+    --accent-fill-rest: #036ac4;
+    --accent-fill-hover: #0473ce;
+    --accent-fill-active: #0481e0;
+    --accent-fill-focus: #036ac4;
+    --foreground-on-accent-rest: #ffffff;
+    --foreground-on-accent-hover: #ffffff;
+    --foreground-on-accent-active: #ffffff;
+    --foreground-on-accent-focus: #ffffff;
+    --accent-foreground-rest: #023b8f;
+    --accent-foreground-hover: #012e7f;
+    --accent-foreground-active: #0360b9;
+    --accent-foreground-focus: #023b8f;
+
+    /* Fluent Stroke */
+    --neutral-stroke-rest: #d6d6d6;
+    --neutral-stroke-hover: #c6c6c6;
+    --neutral-stroke-active: #e0e0e0;
+    --neutral-stroke-focus: #d6d6d6;
+    --neutral-stroke-control-rest: linear-gradient(#efefef 90%, #d6d6d6 100%);
+    --neutral-stroke-control-hover: linear-gradient(#e5e5e5 90%, #cecece 100%);
+    --neutral-stroke-control-active: #e5e5e5;
+    --neutral-stroke-control-focus: linear-gradient(#e5e5e5 90%, #cecece 100%);
+    --neutral-stroke-divider-rest: #ebebeb;
+    --neutral-stroke-input-rest: linear-gradient(#efefef calc(100% - 1px), #929292 calc(100% - 1px), #929292);
+    --neutral-stroke-input-hover: linear-gradient(#e5e5e5 calc(100% - 1px), #8a8a8a calc(100% - 1px), #8a8a8a);
+    --neutral-stroke-input-active: #e5e5e5;
+    --neutral-stroke-input-focus: linear-gradient(#e5e5e5 calc(100% - 1px), #8a8a8a calc(100% - 1px), #8a8a8a);
+    --neutral-stroke-layer-rest: #efefef;
+    --neutral-stroke-strong-rest: #636363;
+    --neutral-stroke-strong-hover: #636363;
+    --neutral-stroke-strong-active: #636363;
+    --neutral-stroke-strong-focus: #636363;
+    --accent-stroke-control-rest: linear-gradient(#1c79ca 90%, #024885 100%);
+    --accent-stroke-control-hover: linear-gradient(#1b80d2 90%, #035292 100%);
+    --accent-stroke-control-active: #1b8ce3;
+    --accent-stroke-control-focus: linear-gradient(#1c79ca 90%, #024885 100%);
+
+    /* Fluent Layer Colors */
+    --neutral-layer-floating: #ffffff;
+    --neutral-layer-1: #fbfbfb;
+    --neutral-layer-2: #f3f3f3;
+    --neutral-layer-3: #ebebeb;
+    --neutral-layer-4: #e0e0e0;
+
+    /* Fluent Input Placeholder */
+    --input-placeholder-rest: #767676;
+    --input-placeholder-hover: #717171;
+}
+
+[data-sf-theme="dark"] {
+    /* Brand — dark theme lifts to lighter tint */
+    --sf-color-primary: var(--colorBrandBackground, #115ea3);
+    --sf-color-primary-hover: var(--colorBrandBackgroundHover, #0f6cbd);
+    --sf-color-primary-active: var(--colorBrandBackgroundPressed, #0c3b5e);
+    --sf-color-primary-light: var(--colorBrandBackground2, #0c3b5e);
+    --sf-color-on-primary: var(--colorNeutralForegroundOnBrand, #ffffff);
+
+    --sf-color-success: var(--colorStatusSuccessBackground3, #54b054);
+    --sf-color-success-light: var(--colorStatusSuccessBackground1, #052505);
+    --sf-color-on-success: var(--colorNeutralForegroundOnBrand, #ffffff);
+    --sf-color-warning: var(--colorStatusWarningBackground3, #faa06b);
+    --sf-color-warning-light: var(--colorStatusWarningBackground1, #4a1e04);
+    --sf-color-on-warning: var(--colorNeutralForeground1, #ffffff);
+    --sf-color-danger: var(--colorStatusDangerBackground3, #dc626d);
+    --sf-color-danger-light: var(--colorStatusDangerBackground1, #3b0509);
+    --sf-color-on-danger: var(--colorNeutralForegroundOnBrand, #ffffff);
+    --sf-color-info: var(--colorPaletteInfoBackground3, #60cdff);
+    --sf-color-info-light: var(--colorPaletteInfoBackground1, #0a1a2a);
+    --sf-color-on-info: var(--colorNeutralForegroundOnBrand, #ffffff);
+
+    /* Status hover/active — dark theme uses Foreground1/2 which flip to tints */
+    --sf-color-danger-hover: var(--colorStatusDangerForeground1, #e37d87);
+    --sf-color-danger-active: var(--colorStatusDangerForeground2, #dc626d);
+    --sf-color-warning-hover: var(--colorStatusWarningForeground1, #faa06b);
+    --sf-color-warning-active: var(--colorStatusWarningForeground2, #fdcfb4);
+    --sf-color-info-hover: var(--colorPaletteInfoForeground1, #60cdff);
+    --sf-color-info-active: var(--colorPaletteInfoForeground2, #98d9ff);
+    --sf-color-success-hover: var(--colorStatusSuccessForeground1, #54b054);
+    --sf-color-success-active: var(--colorStatusSuccessForeground2, #7cc77c);
+
+    --sf-color-background: var(--colorNeutralBackground1, #292929);
+    --sf-color-surface: var(--colorNeutralBackground2, #1f1f1f);
+    --sf-color-surface-hover: var(--colorSubtleBackgroundHover, #383838);
+    --sf-color-on-background: var(--colorNeutralForeground1, #ffffff);
+    --sf-color-on-surface: var(--colorNeutralForeground1, #ffffff);
+    --sf-color-text-secondary: var(--colorNeutralForeground2, #d6d6d6);
+    --sf-color-text-disabled: var(--colorNeutralForegroundDisabled, #5c5c5c);
+    --sf-color-border: var(--colorNeutralStroke2, #525252);
+    --sf-color-border-strong: var(--colorNeutralStroke1, #666666);
+    --sf-color-stroke-focus: var(--colorStrokeFocus2, #ffffff);
+    --sf-color-overlay: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
+}

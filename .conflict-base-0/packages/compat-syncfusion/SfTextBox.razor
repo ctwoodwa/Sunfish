@@ -1,0 +1,123 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using Sunfish.Compat.Shared
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfTextBox> Logger
+
+<SunfishTextBox Value="@(Value ?? string.Empty)"
+                ValueChanged="OnSunfishValueChanged"
+                Placeholder="Placeholder"
+                InputType="_inputType"
+                Disabled="!Enabled"
+                ReadOnly="Readonly"
+                ShowClearButton="ShowClearButton"
+                Autocomplete="_autocomplete"
+                @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+
+    /// <summary>Multiline (textarea). Not supported in the initial shim — logs warning when true.</summary>
+    [Parameter] public bool Multiline { get; set; }
+
+    /// <summary>Input type. <c>Password</c> combined with <c>Multiline=true</c> throws.</summary>
+    [Parameter] public CompatEnums.InputType Type { get; set; } = CompatEnums.InputType.Text;
+
+    /// <summary>Floating-label display mode. Not-in-scope — log-and-drop.</summary>
+    [Parameter] public CompatEnums.FloatLabelType FloatLabelType { get; set; } = CompatEnums.FloatLabelType.Never;
+
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public int? TabIndex { get; set; }
+    [Parameter] public CompatEnums.AutoComplete Autocomplete { get; set; } = CompatEnums.AutoComplete.On;
+
+    /// <summary>Wrapper-level HTML attributes. Merged into AdditionalAttributes.</summary>
+    [Parameter] public Dictionary<string, object>? HtmlAttributes { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string _inputType = "text";
+    private string _autocomplete = "on";
+
+    protected override void OnParametersSet()
+    {
+        // Forbidden combo.
+        if (Multiline && Type == CompatEnums.InputType.Password)
+        {
+            throw UnsupportedParam.Throw(
+                "Type", $"{Type} (with Multiline=true)",
+                "Syncfusion rejects Multiline+Password. Use Type=Text for multiline inputs.");
+        }
+
+        _inputType = Type switch
+        {
+            CompatEnums.InputType.Text => "text",
+            CompatEnums.InputType.Password => "password",
+            CompatEnums.InputType.Email => "email",
+            CompatEnums.InputType.Number => "number",
+            CompatEnums.InputType.Tel => "tel",
+            CompatEnums.InputType.Url => "url",
+            CompatEnums.InputType.Search => "search",
+            _ => "text"
+        };
+
+        _autocomplete = Autocomplete == CompatEnums.AutoComplete.Off ? "off" : "on";
+
+        if (Multiline)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfTextBox.Multiline=true not supported by the initial shim. " +
+                "Falling back to single-line input. See docs/compat-syncfusion-mapping.md.");
+        }
+        if (FloatLabelType != CompatEnums.FloatLabelType.Never)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfTextBox.FloatLabelType='{Value}' not-in-scope (Sunfish lacks floating-label surface). " +
+                "See docs/compat-syncfusion-mapping.md.",
+                FloatLabelType);
+        }
+
+        // Merge HtmlAttributes + CssClass + Width + TabIndex into AdditionalAttributes.
+        if (HtmlAttributes is not null && HtmlAttributes.Count > 0)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            foreach (var kv in HtmlAttributes)
+            {
+                if (!AdditionalAttributes.ContainsKey(kv.Key))
+                    AdditionalAttributes[kv.Key] = kv.Value;
+            }
+        }
+        if (!string.IsNullOrEmpty(CssClass))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("class"))
+                AdditionalAttributes["class"] = CssClass!;
+        }
+        if (!string.IsNullOrEmpty(Width))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            var existing = AdditionalAttributes.TryGetValue("style", out var s) ? s?.ToString() ?? "" : "";
+            AdditionalAttributes["style"] = string.IsNullOrEmpty(existing) ? $"width: {Width}" : $"{existing}; width: {Width}";
+        }
+        if (TabIndex is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("tabindex"))
+                AdditionalAttributes["tabindex"] = TabIndex.Value;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(string v)
+    {
+        Value = v;
+        await ValueChanged.InvokeAsync(v);
+    }
+}

@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Anchor.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Anchor.Tests</RootNamespace>
+    <!--
+      The Anchor csproj multi-targets net11.0-windows10.0.19041.0; we only need
+      the pure-.NET services for unit tests (AnchorSessionService, QrOnboardingService).
+      Compile the source files directly against net11.0 to sidestep the MAUI
+      workload requirement on CI.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="System.Formats.Cbor" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile only the MAUI-free Anchor services directly. We deliberately
+         do NOT ProjectReference the Anchor csproj because it targets
+         net11.0-windows* / net11.0-maccatalyst and requires the MAUI workload.
+         AnchorBootstrapHostedService is excluded because it references
+         Microsoft.Maui.Storage (Preferences, FileSystem) which is only
+         available in the MAUI-workload targets. Wave 6.7.A replaced the
+         AnchorRootSeedReader stub with the keystore-backed
+         IRootSeedProvider in Sunfish.Kernel.Security; MauiProgram now
+         resolves the seed from DI at composition time.
+         AnchorV1MigrationService is MAUI-free (takes dataDirectory in ctor)
+         so it compiles here for Wave 6.7 migration tests.
+         Phase 1 G1 — AnchorSyncHostedService is MAUI-free (takes IGossipDaemon
+         + IPeerDiscovery + ILogger via constructor) so it compiles here for
+         the gossip-daemon hosted-service tests. -->
+    <Compile Include="..\Services\AnchorSessionService.cs" Link="Anchor\AnchorSessionService.cs" />
+    <Compile Include="..\Services\QrOnboardingService.cs" Link="Anchor\QrOnboardingService.cs" />
+    <Compile Include="..\Services\MauiHostedServiceLifetime.cs" Link="Anchor\MauiHostedServiceLifetime.cs" />
+    <Compile Include="..\Services\AnchorV1MigrationService.cs" Link="Anchor\AnchorV1MigrationService.cs" />
+    <Compile Include="..\Services\AnchorSyncHostedService.cs" Link="Anchor\AnchorSyncHostedService.cs" />
+    <Compile Include="..\Services\AnchorCrdtDeltaBridge.cs" Link="Anchor\AnchorCrdtDeltaBridge.cs" />
+    <Compile Include="..\Services\AnchorBackupService.cs" Link="Anchor\AnchorBackupService.cs" />
+    <Compile Include="..\Services\BackupManifest.cs" Link="Anchor\BackupManifest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
+    <ProjectReference Include="..\..\..\packages\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+
+</Project>

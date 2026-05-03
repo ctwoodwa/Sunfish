@@ -1,0 +1,136 @@
+@page "/components/scheduling/allocation-scheduler/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AllocationScheduler / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AllocationScheduler / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Scheduling/AllocationScheduler/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The <code>SunfishAllocationScheduler</code> exposes a family of <code>EventCallback</code> parameters
+            that fire when a user edits a cell, changes a selection range, triggers a context-menu command, or
+            navigates the timeline.
+        </p>
+        <p>
+            Each interaction below appends a timestamped entry to the append-only event log on the right.
+            Drag across cells to trigger range selection, double-click a cell to edit, use the toolbar arrows or
+            the grain selector to change the visible range, and right-click any cell to fire a context-menu event.
+        </p>
+        <p>
+            The event names shown mirror the public contract: <code>OnCellEdited</code>, <code>OnRangeEdited</code>,
+            <code>OnSelectionChanged</code>, <code>OnVisibleRangeChanged</code>, and
+            <code>OnContextMenuAction</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:1rem;align-items:start">
+            <div>
+                <SunfishAllocationScheduler TResource="StaffResource"
+                                            Resources="@_resources"
+                                            Allocations="@_allocations"
+                                            AuthoritativeLevel="TimeGranularity.Week"
+                                            ViewGrain="TimeGranularity.Week"
+                                            ValueMode="AllocationValueMode.Hours"
+                                            SelectionMode="AllocationSelectionMode.Range"
+                                            AllowKeyboardEdit="true"
+                                            EnableContextMenu="true"
+                                            VisibleStart="@_demoStart"
+                                            MinVisibleColumns="3"
+                                            DefaultRangeUnit="TimeGranularity.Month"
+                                            Height="320px"
+                                            OnCellEdited="HandleCellEdited"
+                                            OnRangeEdited="HandleRangeEdited"
+                                            OnSelectionChanged="HandleSelectionChanged"
+                                            OnVisibleRangeChanged="HandleVisibleRangeChanged"
+                                            OnContextMenuAction="HandleContextMenuAction">
+                    <AllocationResourceColumns>
+                        <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                        <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+                    </AllocationResourceColumns>
+                </SunfishAllocationScheduler>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #e5e7eb);border-radius:.5rem;background:var(--sf-color-surface, #ffffff);padding:.75rem;">
+                <header style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+                    <strong>Event log</strong>
+                    <button type="button" class="btn btn-link btn-sm" @onclick="ClearLog">Clear</button>
+                </header>
+                <div style="max-height:280px;overflow:auto;font-size:.8125rem;font-family:var(--sf-font-mono, ui-monospace, Menlo, monospace);">
+                    @if (_log.Count == 0)
+                    {
+                        <div style="color:var(--sf-color-text-muted, #6b7280)">
+                            No events yet. Try editing a cell, dragging a selection, or changing the visible range.
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </aside>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Scheduling", "AllocationScheduler", "Events"];
+
+    private readonly DateTime _demoStart = new(2026, 4, 6);
+    private readonly List<string> _log = new();
+
+    private void Append(string message)
+    {
+        _log.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {message}");
+        if (_log.Count > 50) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void HandleCellEdited(CellEditedArgs args) =>
+        Append($"OnCellEdited — resource {args.ResourceKey} @ {args.BucketStart:yyyy-MM-dd}: {args.OldValue} → {args.NewValue}");
+
+    private void HandleRangeEdited(RangeEditedArgs args) =>
+        Append($"OnRangeEdited — {args.AffectedRecords.Count} cell(s) set to {args.Value}");
+
+    private void HandleSelectionChanged(SelectionChangedArgs args) =>
+        Append($"OnSelectionChanged — {args.SelectedCells.Count} cell(s) selected (mode: {args.SelectionMode})");
+
+    private void HandleVisibleRangeChanged(VisibleRangeChangedArgs args) =>
+        Append($"OnVisibleRangeChanged — {args.NewStart:yyyy-MM-dd} → {args.NewEnd:yyyy-MM-dd} ({args.ViewGrain})");
+
+    private void HandleContextMenuAction(ContextMenuActionArgs args) =>
+        Append($"OnContextMenuAction — command \"{args.CommandName}\" on {args.TargetCells.Count} cell(s)");
+
+    private readonly List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA"  },
+        new() { Id = 4, Name = "David Kim",   Role = "PM"  },
+    };
+
+    private readonly List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 4, TaskId = 104, TaskName = "Release Plan", BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 8,  Unit = AllocationUnit.Hours },
+    };
+
+    public class StaffResource
+    {
+        public int    Id   { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+    }
+}

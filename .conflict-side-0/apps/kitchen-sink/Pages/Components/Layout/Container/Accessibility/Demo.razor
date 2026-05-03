@@ -1,0 +1,86 @@
+@page "/components/layout/container/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Container / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Container / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Container/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishContainer</code> renders a plain <code>&lt;div&gt;</code>. It has no
+            implicit ARIA role and contributes nothing to the accessibility tree by itself. Apply
+            semantics through the content you place inside, or promote the container to a named
+            landmark via <code>role</code> / HTML5 element wrappers.
+        </p>
+        <ul>
+            <li><strong>Promote to a landmark.</strong> Add <code>role="main"</code> +
+                <code>aria-label</code> for the primary content region; prefer the native
+                <code>&lt;main&gt;</code> element when possible.</li>
+            <li><strong>Skip links.</strong> Provide a "skip to main content" link anchored to the
+                container's ID so keyboard users can bypass global navigation.</li>
+            <li><strong>Regions.</strong> Multiple sibling containers should each declare their
+                own label (via <code>aria-labelledby</code> pointing at a heading) so screen
+                readers can enumerate sections.</li>
+            <li><strong>Do not nest landmarks of the same role.</strong> One <code>main</code>
+                per page; don't wrap a second container in <code>role="main"</code> beneath it.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <p style="margin:0;">
+                <a href="#skip-target" style="background:#111827; color:#fff; padding:.25rem .5rem; border-radius:.25rem; font-size:.85rem;">
+                    Skip to main content
+                </a>
+            </p>
+
+            <nav aria-label="Example navigation" style="background:var(--sunfish-surface-3, #f3f4f6); padding:.75rem; border-radius:.375rem;">
+                <SunfishStack Orientation="StackDirection.Horizontal" Spacing="1rem">
+                    <a href="#">Home</a>
+                    <a href="#">Docs</a>
+                    <a href="#">API</a>
+                </SunfishStack>
+            </nav>
+
+            <SunfishContainer id="skip-target" role="main" aria-label="Main content" tabindex="-1">
+                <div style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                    <h2 style="margin:0 0 .5rem; font-size:1.1rem;">Main Content</h2>
+                    <p style="margin:0;">
+                        This container is promoted to a <code>main</code> landmark with
+                        <code>role="main"</code> and <code>aria-label</code>. The skip link above
+                        targets its <code>id</code>.
+                    </p>
+                </div>
+            </SunfishContainer>
+
+            <SunfishContainer role="region" aria-labelledby="summary-heading">
+                <h3 id="summary-heading" style="margin:0 0 .5rem; font-size:1rem;">Summary</h3>
+                <p style="margin:0; font-size:.9rem;">
+                    A sibling container labelled as a generic region via
+                    <code>role="region"</code> + <code>aria-labelledby</code>.
+                </p>
+            </SunfishContainer>
+
+            <SunfishContainer role="complementary" aria-label="Related links">
+                <p style="margin:0; font-size:.9rem;">
+                    <code>role="complementary"</code> marks supporting content (sidebars, related
+                    links). Prefer the native <code>&lt;aside&gt;</code> element when the whole
+                    container is complementary — you can also use
+                    <code>&lt;aside&gt;</code> children inside a plain container.
+                </p>
+            </SunfishContainer>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Container", "Accessibility"];
+}

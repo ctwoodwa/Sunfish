@@ -1,0 +1,13 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Autocomplete
+// =================================================================
+// From _bridge-forms.scss: .sf-bs-autocomplete
+// =================================================================
+
+.sf-bs-autocomplete {
+  position: relative;
+
+  &--open .dropdown-menu {
+    display: block;
+  }
+}

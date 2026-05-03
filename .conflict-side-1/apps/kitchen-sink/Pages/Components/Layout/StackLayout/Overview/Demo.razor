@@ -1,0 +1,47 @@
+@page "/components/layout/stacklayout/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>StackLayout / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="StackLayout / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/StackLayout/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <span style="display:inline-block; font-size:.6875rem; font-weight:600; letter-spacing:.05em;
+                         color:#92400e; background:#fef3c7; padding:.125rem .5rem; border-radius:999px;
+                         margin-inline-end:.5rem; vertical-align:middle;">ASPIRATIONAL</span>
+            Horizontal/vertical stack layout arrangement.
+        </p>
+        <p>
+            <strong>Sunfish component:</strong> not yet built.<br />
+            <strong>Parity reference:</strong> <code>TelerikStackLayout</code> —
+            see <a href="https://demos.telerik.com/blazor-ui/" target="_blank" rel="noopener">Telerik Blazor demos</a>
+            for the target shape.
+        </p>
+        <p>
+            This node is reserved in <a href="/_shared/product/example-catalog.yaml">example-catalog.yaml</a>
+            for cross-provider parity tracking. When Sunfish implements this component, the live demo will
+            replace the placeholder below.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="aspirational-placeholder" style="padding:2rem; border:1px dashed #f59e0b; background:#fffbeb;
+                                                     border-radius:.5rem; color:#78350f; text-align:center;">
+            <div style="font-size:1.125rem; font-weight:600; margin-bottom:.5rem;">StackLayout — aspirational</div>
+            <div style="font-size:.875rem;">
+                Parity reference: <code>TelerikStackLayout</code>. Sunfish implementation TBD.
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "StackLayout", "Overview"];
+}

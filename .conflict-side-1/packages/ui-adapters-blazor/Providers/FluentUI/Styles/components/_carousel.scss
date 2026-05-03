@@ -1,0 +1,17 @@
+// =============================================================================
+// Component: Carousel
+// =============================================================================
+
+.sf-carousel {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--sf-radius-lg);
+}
+
+.sf-carousel__track { display: flex; transition: transform var(--sf-transition-slow); }
+.sf-carousel__prev, .sf-carousel__next { position: absolute; top: 50%; transform: translateY(-50%); background: var(--sf-color-background); border: 1px solid var(--sf-color-border); border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--sf-shadow-sm); z-index: 1; }
+.sf-carousel__prev { left: var(--sf-space-sm); }
+.sf-carousel__next { right: var(--sf-space-sm); }
+.sf-carousel__dots { display: flex; justify-content: center; gap: var(--sf-space-xs); padding: var(--sf-space-sm); }
+.sf-carousel__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--sf-color-border); border: none; cursor: pointer; padding: 0; }
+.sf-carousel__dot--active { background: var(--sf-color-primary); }

@@ -1,0 +1,143 @@
+@page "/components/overlays/window/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Window / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Window / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Window/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWindow</code> follows the WAI-ARIA
+            <a href="https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/" target="_blank" rel="noopener">Dialog (Modal)</a>
+            pattern. The root element renders with <code>role="dialog"</code>, a stable
+            <code>aria-labelledby</code> pointing at the title element, and
+            <code>tabindex="-1"</code> so programmatic focus lands on the window container when it opens.
+        </p>
+        <ul>
+            <li><strong>Role.</strong> Use <code>role="dialog"</code> for informational windows and
+                <code>role="alertdialog"</code> for windows that interrupt the user with a message
+                requiring a response (destructive confirmations, fatal errors, etc.). Pass this via
+                the standard <code>role</code> attribute — the default is <code>dialog</code>.</li>
+            <li><strong>Labelling.</strong> The <code>Title</code> parameter is rendered inside a
+                <code>&lt;span id=&quot;mar-window-title-…&quot;&gt;</code>. The window's
+                <code>aria-labelledby</code> references this ID so screen readers announce the title
+                when focus enters the window.</li>
+            <li><strong>Modality.</strong> When <code>Modal="true"</code>, the component sets
+                <code>aria-modal="true"</code> and renders a scrim that intercepts clicks on
+                background content. Pair this with a focus trap for full compliance — see below.</li>
+            <li><strong>Keyboard.</strong> <kbd>Esc</kbd> closes the window when
+                <code>WindowAction.Close</code> is in <code>Actions</code> (or a custom Close
+                <code>WindowActionButton</code> is present). <kbd>Tab</kbd> and <kbd>Shift+Tab</kbd>
+                move between focusable elements inside the window.</li>
+            <li><strong>Focus management.</strong> On open, focus is sent to the window container.
+                Place a primary action or the first input early in the DOM to give it focus after
+                the container receives it. On close, return focus to the element that opened the
+                window (the buttons below do this automatically since Blazor re-renders the trigger).</li>
+            <li><strong>Action buttons.</strong> The built-in Minimize, Maximize, and Close buttons
+                each carry an <code>aria-label</code> (Maximize flips to "Restore" when the window
+                is maximized) so they are announced correctly by assistive technology.</li>
+        </ul>
+        <p>
+            Try the examples below with a screen reader (NVDA, JAWS, or VoiceOver) to hear the
+            announcements, and use the keyboard alone to verify the interaction flow.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showDialog = true">Open role=&quot;dialog&quot;</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showAlertDialog = true">Open role=&quot;alertdialog&quot;</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showModalTrap = true">Open Modal (Esc to Close)</SunfishButton>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showKeyboardForm = true">Open Keyboard-Navigable Form</SunfishButton>
+            </div>
+
+            <SunfishWindow Title="Informational Window"
+                           @bind-Visible="_showDialog"
+                           Modal="true"
+                           role="dialog"
+                           Width="520px"
+                           Height="260px"
+                           Actions="WindowAction.Close">
+                <p>
+                    This window uses <code>role="dialog"</code>. Screen readers will announce the
+                    title ("Informational Window") as focus enters.
+                </p>
+                <p style="font-size:0.85rem; opacity:0.75;">Press <kbd>Esc</kbd> to close.</p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Critical Alert"
+                           @bind-Visible="_showAlertDialog"
+                           Modal="true"
+                           role="alertdialog"
+                           aria-describedby="alertdialog-desc"
+                           Width="480px"
+                           Height="240px"
+                           Actions="WindowAction.Close">
+                <p id="alertdialog-desc">
+                    This window uses <code>role="alertdialog"</code> for urgent messages that
+                    require acknowledgement. Pair with <code>aria-describedby</code> pointing at
+                    the body content for richer announcements.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Modal With Esc-to-Close"
+                           @bind-Visible="_showModalTrap"
+                           Modal="true"
+                           CloseOnOverlayClick="true"
+                           Width="520px"
+                           Height="280px"
+                           Actions="WindowAction.Close">
+                <p>
+                    <code>CloseOnOverlayClick="true"</code> lets users dismiss by clicking the
+                    backdrop. <kbd>Esc</kbd> also dismisses because
+                    <code>WindowAction.Close</code> is present.
+                </p>
+                <p style="font-size:0.85rem; opacity:0.75;">
+                    For WCAG 2.1.2 (No Keyboard Trap), always provide a keyboard escape route.
+                </p>
+            </SunfishWindow>
+
+            <SunfishWindow Title="Keyboard-Navigable Form"
+                           @bind-Visible="_showKeyboardForm"
+                           Modal="true"
+                           Width="520px"
+                           Height="340px"
+                           Actions="WindowAction.Close">
+                <div style="display:flex; flex-direction:column; gap:0.75rem;">
+                    <p style="margin:0;">
+                        Tab through the inputs, then <kbd>Shift+Tab</kbd> to reverse. <kbd>Esc</kbd>
+                        dismisses the window.
+                    </p>
+                    <label>
+                        Name
+                        <input type="text" aria-label="Name" style="display:block; width:100%; margin-top:0.25rem;" />
+                    </label>
+                    <label>
+                        Email
+                        <input type="email" aria-label="Email" style="display:block; width:100%; margin-top:0.25rem;" />
+                    </label>
+                    <div style="display:flex; gap:0.5rem; margin-top:0.25rem;">
+                        <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => _showKeyboardForm = false">Cancel</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Primary" OnClick="() => _showKeyboardForm = false">Save</SunfishButton>
+                    </div>
+                </div>
+            </SunfishWindow>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Overlays", "Window", "Accessibility"];
+
+    private bool _showDialog;
+    private bool _showAlertDialog;
+    private bool _showModalTrap;
+    private bool _showKeyboardForm;
+}

@@ -1,0 +1,88 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@inject ILogger<IgbDatePicker> Logger
+
+@*
+    Ignite-UI-shaped date-picker wrapper.
+    Both Ignite UI and Sunfish use DateTime? — passthrough. Mode / Locale / DisabledDates
+    are cosmetic-dropped with warnings.
+*@
+<SunfishDatePicker Value="Value"
+                   ValueChanged="OnSunfishValueChanged"
+                   Min="Min"
+                   Max="Max"
+                   Format="@(DisplayFormat ?? InputFormat ?? "yyyy-MM-dd")"
+                   Enabled="!Disabled"
+                   @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public DateTime? Value { get; set; }
+    [Parameter] public EventCallback<DateTime?> ValueChanged { get; set; }
+
+    /// <summary>Ignite-UI-shaped change event.</summary>
+    [Parameter] public EventCallback<IgbInputChangeEventArgs> Change { get; set; }
+
+    /// <summary>Dialog vs dropdown presentation. Cosmetic-dropped (Sunfish uses a single style).</summary>
+    [Parameter] public CompatEnums.PickerMode Mode { get; set; } = CompatEnums.PickerMode.DropDown;
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public DateTime? Min { get; set; }
+    [Parameter] public DateTime? Max { get; set; }
+
+    /// <summary>Disabled-dates collection. Not shimmed — cosmetic-dropped with a warning.</summary>
+    [Parameter] public object? DisabledDates { get; set; }
+
+    /// <summary>Week-start enum — cosmetic-dropped.</summary>
+    [Parameter] public string? WeekStart { get; set; }
+
+    /// <summary>Display-time format (e.g. <c>"MM/dd/yyyy"</c>).</summary>
+    [Parameter] public string? DisplayFormat { get; set; }
+
+    /// <summary>Input-entry format. Falls back to DisplayFormat when unset.</summary>
+    [Parameter] public string? InputFormat { get; set; }
+
+    [Parameter] public string? Locale { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public bool KeepOpenOnSelect { get; set; }
+    [Parameter] public bool Outlined { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (DisabledDates is not null || WeekStart is not null || Locale is not null
+            || Mode == CompatEnums.PickerMode.Dialog || Open || KeepOpenOnSelect || Outlined)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbDatePicker.Mode/Locale/DisabledDates/WeekStart/Open/" +
+                "KeepOpenOnSelect/Outlined parameters are cosmetic-dropped. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (Required || Invalid)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Required && !AdditionalAttributes.ContainsKey("required"))
+                AdditionalAttributes["required"] = true;
+            if (Invalid && !AdditionalAttributes.ContainsKey("aria-invalid"))
+                AdditionalAttributes["aria-invalid"] = true;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(DateTime? v)
+    {
+        Value = v;
+        if (ValueChanged.HasDelegate)
+            await ValueChanged.InvokeAsync(v);
+        if (Change.HasDelegate)
+            await Change.InvokeAsync(new IgbInputChangeEventArgs { Value = v });
+    }
+}

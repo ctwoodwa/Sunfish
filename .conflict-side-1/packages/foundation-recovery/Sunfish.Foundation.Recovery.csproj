@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Recovery</PackageId>
+    <RootNamespace>Sunfish.Foundation.Recovery</RootNamespace>
+    <Description>Foundation-tier orchestration over the kernel-security crypto substrate for Sunfish key-loss recovery (ADR 0046). Hosts IRecoveryCoordinator + the multi-sig request/attestation/dispute state machine, RecoveryRequest / TrusteeAttestation / RecoveryDispute / RecoveryEvent message envelopes, paper-key BIP-39 derivation orchestration, and the in-memory state store. Audit-record emission integrates with kernel-audit per ADR 0049. Crypto primitives (Ed25519, X25519, SqlCipher rekey, key derivation) stay in kernel-security.</Description>
+    <PackageTags>sunfish;foundation;recovery;multisig;orchestration</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- BIP-39 English wordlist embedded (moved from kernel-security per ADR 0046
+         package-placement amendment); LogicalName updated so PaperKeyDerivation's
+         reflection-based loader resolves it under the new namespace. -->
+    <EmbeddedResource Include="bip39-english.txt"
+                      LogicalName="Sunfish.Foundation.Recovery.bip39-english.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Recovery.Tests" />
+  </ItemGroup>
+</Project>

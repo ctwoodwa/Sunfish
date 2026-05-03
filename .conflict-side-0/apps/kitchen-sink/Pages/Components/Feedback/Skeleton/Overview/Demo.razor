@@ -1,0 +1,41 @@
+@page "/components/feedback/skeleton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Skeleton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Skeleton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Skeleton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSkeleton</code> provides a low-fidelity preview of content while the real
+            data is loading, which reduces perceived wait time. Choose the shape via
+            <code>Variant</code> (<code>SkeletonVariant.Text</code> / <code>Circular</code> /
+            <code>Rectangular</code>) and size with <code>Width</code> and <code>Height</code>.
+        </p>
+        <p>
+            This overview shows the three variants side by side. Separate demo pages cover
+            <a href="/components/feedback/skeleton/templates">templates</a> and
+            <a href="/components/feedback/skeleton/shapes">shapes</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishSkeleton Variant="SkeletonVariant.Text" Width="200px" Height="16px" />
+                <SunfishSkeleton Variant="SkeletonVariant.Circular" Width="48px" Height="48px" />
+                <SunfishSkeleton Variant="SkeletonVariant.Rectangular" Width="200px" Height="120px" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Skeleton", "Overview"];
+}

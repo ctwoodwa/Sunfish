@@ -1,0 +1,19 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Callout
+// =================================================================
+// From _bridge-feedback.scss: .sf-bs-callout
+// =================================================================
+
+.sf-bs-callout {
+  padding: var(--sf-space-md) var(--sf-space-lg);
+  margin-bottom: var(--sf-space-md);
+  border-left: 4px solid;
+  border-radius: var(--sf-radius-sm);
+  background-color: var(--sf-color-surface);
+
+  &--info    { border-left-color: var(--sf-color-info); }
+  &--warning { border-left-color: var(--sf-color-warning); }
+  &--danger  { border-left-color: var(--sf-color-danger); }
+  &--success { border-left-color: var(--sf-color-success); }
+  &--note    { border-left-color: var(--sf-color-secondary); }
+}

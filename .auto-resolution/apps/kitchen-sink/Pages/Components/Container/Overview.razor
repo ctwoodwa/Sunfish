@@ -1,0 +1,68 @@
+@page "/components/Container"
+@page "/components/Container/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishContainer>
+            <SunfishAlert Severity="AlertSeverity.Info">This alert is inside a container that centers and constrains its width.</SunfishAlert>
+        </SunfishContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Max Width" Description="Containers support different maximum width presets." Code="@_maxWidthCode">
+        <SunfishContainer MaxWidth="ContainerMaxWidth.Small">
+            <SunfishAlert Severity="AlertSeverity.Info">Small container</SunfishAlert>
+        </SunfishContainer>
+        <SunfishContainer MaxWidth="ContainerMaxWidth.Medium">
+            <SunfishAlert Severity="AlertSeverity.Info">Medium container</SunfishAlert>
+        </SunfishContainer>
+        <SunfishContainer MaxWidth="ContainerMaxWidth.Large">
+            <SunfishAlert Severity="AlertSeverity.Info">Large container</SunfishAlert>
+        </SunfishContainer>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishContainer>\n" +
+        "    <SunfishAlert Variant=\"AlertVariant.Info\">This alert is inside a container.</SunfishAlert>\n" +
+        "</SunfishContainer>";
+
+    private const string _maxWidthCode =
+        "<SunfishContainer MaxWidth=\"ContainerMaxWidth.Small\">\n" +
+        "    <SunfishAlert Variant=\"AlertVariant.Info\">Small container</SunfishAlert>\n" +
+        "</SunfishContainer>\n" +
+        "<SunfishContainer MaxWidth=\"ContainerMaxWidth.Medium\">\n" +
+        "    <SunfishAlert Variant=\"AlertVariant.Info\">Medium container</SunfishAlert>\n" +
+        "</SunfishContainer>\n" +
+        "<SunfishContainer MaxWidth=\"ContainerMaxWidth.Large\">\n" +
+        "    <SunfishAlert Variant=\"AlertVariant.Info\">Large container</SunfishAlert>\n" +
+        "</SunfishContainer>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus through interactive content within the container"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role", "No special ARIA role is needed; the container is a semantic wrapper element"),
+        ("aria-label", "Can be added when the container represents a distinct section of content"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The container is a semantic wrapper and does not require special ARIA attributes.",
+        "Content within the container is read in normal document order.",
+        "Use landmark roles on the container only when it represents a meaningful page region.",
+    ];
+}

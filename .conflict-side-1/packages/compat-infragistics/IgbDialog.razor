@@ -1,0 +1,89 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Overlays
+@inject ILogger<IgbDialog> Logger
+
+@*
+    Ignite-UI-shaped dialog wrapper.
+
+    Polarity flip: Ignite UI uses `KeepOpenOnEscape` (inverted from Telerik's
+    `CloseOnEscape`). The shim maps both back to Sunfish's window behavior.
+*@
+<SunfishWindow Visible="Open"
+               VisibleChanged="OnVisibleChanged"
+               Title="Title"
+               @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishWindow>
+
+@code {
+    /// <summary>Open state. Ignite UI's equivalent of Sunfish's Visible.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Two-way binding companion for <see cref="Open"/>.</summary>
+    [Parameter] public EventCallback<bool> OpenChanged { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Hides the default "OK / Cancel" footer row — cosmetic-dropped (Sunfish has no built-in footer).</summary>
+    [Parameter] public bool HideDefaultAction { get; set; }
+
+    /// <summary>
+    /// Ignite UI polarity: when <c>true</c>, Escape does NOT close the dialog. This is the
+    /// inverse of Telerik's <c>CloseOnEscape</c>.
+    /// Currently cosmetic-dropped (SunfishWindow's close-on-Escape is implicit); logged
+    /// when the non-default value is set.
+    /// </summary>
+    [Parameter] public bool KeepOpenOnEscape { get; set; }
+
+    /// <summary>Outside-click behavior. Cosmetic-dropped with a warning.</summary>
+    [Parameter] public bool CloseOnOutsideClick { get; set; } = true;
+
+    /// <summary>Return value from the dialog's built-in form. Cosmetic — compat does not re-plumb.</summary>
+    [Parameter] public string? ReturnValue { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (HideDefaultAction || KeepOpenOnEscape || !CloseOnOutsideClick || ReturnValue is not null)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbDialog.HideDefaultAction / KeepOpenOnEscape / " +
+                "CloseOnOutsideClick / ReturnValue are cosmetic-dropped. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+    }
+
+    private async Task OnVisibleChanged(bool visible)
+    {
+        Open = visible;
+        if (OpenChanged.HasDelegate)
+            await OpenChanged.InvokeAsync(visible);
+    }
+
+    /// <summary>Imperative show — sets Open=true and notifies <see cref="OpenChanged"/>.</summary>
+    public Task ShowAsync()
+    {
+        Open = true;
+        return OpenChanged.HasDelegate ? OpenChanged.InvokeAsync(true) : Task.CompletedTask;
+    }
+
+    /// <summary>Imperative hide — sets Open=false and notifies <see cref="OpenChanged"/>.</summary>
+    public Task HideAsync()
+    {
+        Open = false;
+        return OpenChanged.HasDelegate ? OpenChanged.InvokeAsync(false) : Task.CompletedTask;
+    }
+
+    /// <summary>Imperative toggle.</summary>
+    public Task ToggleAsync()
+    {
+        Open = !Open;
+        return OpenChanged.HasDelegate ? OpenChanged.InvokeAsync(Open) : Task.CompletedTask;
+    }
+}

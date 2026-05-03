@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Migration</PackageId>
+    <RootNamespace>Sunfish.Foundation.Migration</RootNamespace>
+    <Description>Foundation-tier substrate for cross-form-factor migration semantics (ADR 0028-A5+A8). Hosts FormFactorProfile + HardwareTierChangeEvent + DerivedSurface primitives, IFormFactorMigrationService contract with sequestration-over-deletion semantics (Invariant DLF: data-loss-vs-feature-loss), ISequestrationStore for the sequestration partition, MigrationAuditPayloads factory, and 10 new AuditEventType discriminators. In-memory reference implementations.</Description>
+    <PackageTags>sunfish;foundation;migration;form-factor;invariant-dlf;adr-0028</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-versioning\Sunfish.Foundation.Versioning.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Migration.Tests" />
+  </ItemGroup>
+</Project>

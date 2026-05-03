@@ -1,0 +1,32 @@
+// =============================================================================
+// Component: Card
+// =============================================================================
+
+.sf-card {
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-sm);
+    overflow: hidden;
+    transition: box-shadow var(--sf-transition-fast);
+}
+
+.sf-card:hover { box-shadow: var(--sf-shadow-md); }
+
+.sf-card-header {
+    padding: var(--sf-space-lg);
+    border-bottom: 1px solid var(--sf-color-border);
+    font-family: var(--sf-font-family);
+    font-weight: var(--sf-font-weight-semibold);
+    font-size: var(--sf-font-size-md);
+}
+
+.sf-card-body { padding: var(--sf-space-lg); }
+
+.sf-card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    border-top: 1px solid var(--sf-color-border);
+}

@@ -1,0 +1,10 @@
+- name: Overview
+  href: overview.md
+- name: Installation
+  href: installation.md
+- name: Blazor Web App
+  href: web-app.md
+- name: First Component
+  href: first-component.md
+- name: Choosing a Provider
+  href: provider-selection.md

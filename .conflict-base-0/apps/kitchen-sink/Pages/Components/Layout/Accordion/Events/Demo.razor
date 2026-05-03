@@ -1,0 +1,179 @@
+@page "/components/layout/accordion/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Accordion / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Accordion / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Accordion/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>Accordion emits the following events:</p>
+        <ul>
+            <li><strong><code>OnExpand</code></strong> (data-driven) — fires <em>before</em> an item
+                expands. Set <code>args.IsCancelled = true</code> to abort.</li>
+            <li><strong><code>OnCollapse</code></strong> (data-driven) — fires <em>before</em>
+                collapse. Cancellable in the same way.</li>
+            <li><strong><code>ExpandedItemsChanged</code></strong> (data-driven) — fires after the
+                set of expanded items changes. Enables <code>@@bind-ExpandedItems</code>.</li>
+            <li><strong><code>IsExpandedChanged</code></strong> (declarative <code>SunfishAccordionItem</code>) — fires on individual-item toggle. Enables <code>@@bind-IsExpanded</code>.</li>
+        </ul>
+        <p>
+            The log below is append-only (newest first). The "Veto collapse" checkbox below
+            demonstrates the cancellable <code>OnCollapse</code> event — try collapsing an expanded
+            item while it's on.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Declarative (IsExpandedChanged)</h4>
+                <SunfishAccordion>
+                    <SunfishAccordionItem Title="Item A"
+                                          IsExpanded="_a"
+                                          IsExpandedChanged="v => HandleItem(nameof(_a), v, () => _a = v)">
+                        <p style="margin:0;">First item body.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Item B"
+                                          IsExpanded="_b"
+                                          IsExpandedChanged="v => HandleItem(nameof(_b), v, () => _b = v)">
+                        <p style="margin:0;">Second item body.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Item C"
+                                          IsExpanded="_c"
+                                          IsExpandedChanged="v => HandleItem(nameof(_c), v, () => _c = v)">
+                        <p style="margin:0;">Third item body.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+                <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _a, nameof(_a))">Toggle A</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _b, nameof(_b))">Toggle B</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => Toggle(ref _c, nameof(_c))">Toggle C</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ClearLog">Clear Log</SunfishButton>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Data-driven (OnExpand / OnCollapse)</h4>
+                <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.5rem;">
+                    <input type="checkbox" @bind="_vetoCollapse" />
+                    <span style="font-size:.85rem;">Veto collapse (<code>args.IsCancelled = true</code>)</span>
+                </label>
+                <SunfishAccordion Data="@_items"
+                                  TextField="Title"
+                                  ExpandMode="AccordionExpandMode.Single"
+                                  ExpandedItems="@_expandedItems"
+                                  ExpandedItemsChanged="HandleExpandedItemsChanged"
+                                  OnExpand="HandleOnExpand"
+                                  OnCollapse="HandleOnCollapse" />
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Currently expanded:
+                    <strong>
+                        @(_expandedItems.Cast<DataItem>().Select(x => x.Title).DefaultIfEmpty("(none)").Aggregate((a, b) => $"{a}, {b}"))
+                    </strong>
+                </p>
+            </div>
+
+            <div style="grid-column:1 / -1;">
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:220px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — toggle an item to emit.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Accordion", "Events"];
+
+    private bool _a;
+    private bool _b;
+    private bool _c;
+    private bool _vetoCollapse;
+
+    private IEnumerable<object> _expandedItems = Array.Empty<object>();
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void HandleItem(string name, bool value, Action apply)
+    {
+        apply();
+        Log($"{name}.IsExpandedChanged -> {value}");
+    }
+
+    private void Toggle(ref bool state, string name)
+    {
+        state = !state;
+        Log($"Programmatic Toggle {name} -> {state}");
+    }
+
+    private void HandleExpandedItemsChanged(IEnumerable<object> items)
+    {
+        _expandedItems = items;
+        var titles = items.Cast<DataItem>().Select(x => x.Title);
+        var joined = titles.Any() ? string.Join(", ", titles) : "(none)";
+        Log($"ExpandedItemsChanged -> [{joined}]");
+    }
+
+    private void HandleOnExpand(AccordionExpandEventArgs args)
+    {
+        var title = (args.Item as DataItem)?.Title ?? "?";
+        Log($"OnExpand -> {title}");
+    }
+
+    private void HandleOnCollapse(AccordionCollapseEventArgs args)
+    {
+        var title = (args.Item as DataItem)?.Title ?? "?";
+        if (_vetoCollapse)
+        {
+            args.IsCancelled = true;
+            Log($"OnCollapse -> {title} (VETOED)");
+        }
+        else
+        {
+            Log($"OnCollapse -> {title}");
+        }
+    }
+
+    public class DataItem
+    {
+        public string Title { get; set; } = "";
+    }
+
+    private readonly List<DataItem> _items =
+    [
+        new() { Title = "Alpha" },
+        new() { Title = "Bravo" },
+        new() { Title = "Charlie" },
+    ];
+}

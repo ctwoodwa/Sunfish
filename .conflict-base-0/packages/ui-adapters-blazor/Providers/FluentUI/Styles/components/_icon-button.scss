@@ -1,0 +1,46 @@
+// =============================================================================
+// Component: Icon Button
+// =============================================================================
+
+.sf-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--sf-radius-md);
+    color: var(--sf-color-on-background);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast);
+}
+
+.sf-icon-button:hover { background: var(--sf-color-surface-hover); }
+.sf-icon-button:focus-visible { outline: none; box-shadow: var(--sf-focus-ring); }
+.sf-icon-button--small { width: 24px; height: 24px; }
+.sf-icon-button--medium { width: 32px; height: 32px; }
+.sf-icon-button--large { width: 40px; height: 40px; }
+
+// Icon utility classes
+.sf-icon {
+    display: inline-block;
+    vertical-align: middle;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.sf-icon--small { width: 16px; height: 16px; }
+.sf-icon--medium { width: 20px; height: 20px; }
+.sf-icon--large { width: 24px; height: 24px; }
+.sf-icon--extralarge { width: 32px; height: 32px; }
+
+.sf-icon--flip-horizontal { transform: scaleX(-1); }
+.sf-icon--flip-vertical { transform: scaleY(-1); }
+.sf-icon--flip-both { transform: scale(-1); }
+
+.sf-icon--primary { color: var(--sf-color-primary); }
+.sf-icon--secondary { color: var(--sf-color-text-secondary); }
+.sf-icon--success { color: var(--sf-color-success); }
+.sf-icon--warning { color: var(--sf-color-warning); }
+.sf-icon--danger { color: var(--sf-color-danger); }
+.sf-icon--info { color: var(--sf-color-info); }
+.sf-icon--inherit { color: inherit; }

@@ -1,0 +1,9 @@
+@* Optional ergonomic wrapper for scheduler view configuration children.
+   This is a simple passthrough — it renders its ChildContent directly. *@
+@ChildContent
+
+@code {
+    /// <summary>Child content containing <see cref="SchedulerDayView"/>, <see cref="SchedulerWeekView"/>,
+    /// and/or <see cref="SchedulerMonthView"/> configuration components.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

@@ -1,0 +1,59 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@typeparam TItem
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<SunfishDropDownList TItem="TItem"
+                     TValue="TValue"
+                     Data="DataSource"
+                     TextField="_textField"
+                     ValueField="_valueField"
+                     Value="Value"
+                     ValueChanged="ValueChanged"
+                     Placeholder="Placeholder"
+                     Enabled="Enabled"
+                     ReadOnly="Readonly"
+                     Filterable="AllowFiltering"
+                     ItemTemplate="ItemTemplate"
+                     ValueTemplate="ValueTemplate"
+                     @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public IEnumerable<TItem> DataSource { get; set; } = Enumerable.Empty<TItem>();
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public int? Index { get; set; }
+    [Parameter] public EventCallback<int?> IndexChanged { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public bool Readonly { get; set; }
+    [Parameter] public bool AllowFiltering { get; set; }
+    [Parameter] public bool ShowClearButton { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? PopupHeight { get; set; }
+    [Parameter] public string? PopupWidth { get; set; }
+    [Parameter] public RenderFragment<TItem>? ValueTemplate { get; set; }
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+    [Parameter] public RenderFragment? NoRecordsTemplate { get; set; }
+
+    /// <summary>
+    /// Cascading field-settings values published by <see cref="DropDownListFieldSettings"/>
+    /// when the consumer uses <c>&lt;DropDownListFieldSettings Text=".." Value=".." /&gt;</c>.
+    /// </summary>
+    [CascadingParameter(Name = "SfDropDown_TextField")] private string? CascadingTextField { get; set; }
+    [CascadingParameter(Name = "SfDropDown_ValueField")] private string? CascadingValueField { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string? _textField;
+    private string? _valueField;
+
+    protected override void OnParametersSet()
+    {
+        _textField = CascadingTextField;
+        _valueField = CascadingValueField;
+    }
+}

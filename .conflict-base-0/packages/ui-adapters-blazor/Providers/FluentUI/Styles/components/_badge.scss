@@ -1,0 +1,39 @@
+// =============================================================================
+// Component: Badge
+// =============================================================================
+
+.sf-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 8px;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    font-weight: var(--sf-font-weight-semibold);
+    border-radius: var(--sf-radius-full);
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.sf-badge--default { background: var(--sf-color-surface); color: var(--sf-color-on-surface); }
+.sf-badge--primary { background: var(--sf-color-primary); color: var(--sf-color-on-primary); }
+.sf-badge--secondary { background: var(--sf-color-surface); color: var(--sf-color-on-surface); border: 1px solid var(--sf-color-border-strong); }
+.sf-badge--danger { background: var(--sf-color-danger); color: var(--sf-color-on-danger); }
+.sf-badge--warning { background: var(--sf-color-warning); color: var(--sf-color-on-warning); }
+.sf-badge--info { background: var(--sf-color-info); color: var(--sf-color-on-info); }
+.sf-badge--success { background: var(--sf-color-success); color: var(--sf-color-on-success); }
+
+// Environment Badge (Phase 3)
+.sf-env-badge {
+    margin-left: var(--sf-space-sm);
+    font-size: var(--sf-font-size-xs);
+    letter-spacing: 0.5px;
+    font-weight: var(--sf-font-weight-semibold);
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border-radius: var(--sf-radius-sm);
+}
+
+.sf-env-badge--dev        { background: var(--sf-color-warning-light); color: var(--sf-color-on-warning); }
+.sf-env-badge--staging    { background: var(--sf-color-info-light);    color: var(--sf-color-on-info); }
+.sf-env-badge--production { background: var(--sf-color-danger-light);  color: var(--sf-color-on-danger); }

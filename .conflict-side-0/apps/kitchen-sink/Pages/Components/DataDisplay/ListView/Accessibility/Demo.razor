@@ -1,0 +1,91 @@
+@page "/components/data-display/listview/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ListView / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListView / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/ListView/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListView&lt;TItem&gt;</code> is a lightweight repeater rather than an ARIA-strict
+            listbox — its role depends on what you render inside <code>ItemTemplate</code>. If each item is
+            a selectable entity, upgrade the container to a listbox by adding
+            <code>role="listbox"</code> and giving every item <code>role="option"</code> plus an
+            <code>aria-selected</code> value. For browse-only lists (feed cards, search results), a
+            <code>role="list"</code> with <code>role="listitem"</code> children is usually the better fit.
+        </p>
+        <p>
+            When <code>SelectionMode</code> is <code>Single</code> or <code>Multiple</code>, expose selection
+            state to assistive tech via <code>aria-selected</code> inside your item template. The example
+            below shows a small selectable feed wired up with proper ARIA and a visible accessible name.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <h4 id="listview-a11y-title" style="margin:0;">Recent activity</h4>
+            <div role="listbox"
+                 aria-labelledby="listview-a11y-title"
+                 aria-multiselectable="false">
+                <SunfishListView Data="_entries"
+                                 TItem="Entry"
+                                 Width="420px"
+                                 SelectionMode="GridSelectionMode.Single"
+                                 @bind-SelectedItems="_selected">
+                    <ItemTemplate Context="e">
+                        <div role="option"
+                             aria-selected="@_selected.Contains(e)"
+                             style="display:flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border-bottom:1px solid var(--sunfish-border, #e5e7eb);">
+                            <SunfishAvatar Initials="@e.Who" Size="AvatarSize.Small" />
+                            <div style="flex:1;">
+                                <div><strong>@e.Title</strong></div>
+                                <div style="font-size:.75rem; opacity:.7;">@e.When</div>
+                            </div>
+                            @if (_selected.Contains(e))
+                            {
+                                <SunfishBadge Variant="BadgeVariant.Success">selected</SunfishBadge>
+                            }
+                        </div>
+                    </ItemTemplate>
+                </SunfishListView>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>Browse lists</strong></dt>
+                <dd>Wrap in <code>role="list"</code> and give each item <code>role="listitem"</code>.</dd>
+                <dt><strong>Selectable lists</strong></dt>
+                <dd>Use <code>role="listbox"</code> + per-item <code>role="option"</code> + <code>aria-selected</code>.</dd>
+                <dt><strong>Accessible name</strong></dt>
+                <dd>Wire <code>aria-labelledby</code> or <code>aria-label</code> on the wrapping container.</dd>
+                <dt><strong>Paging</strong></dt>
+                <dd>The built-in pager uses native <code>&lt;button&gt;</code> elements; the "Page X of Y" indicator is plain text, read verbatim by screen readers.</dd>
+                <dt><strong>Keyboard (browse lists)</strong></dt>
+                <dd>Ensure any interactive controls inside <code>ItemTemplate</code> — links, buttons — are reachable by <kbd>Tab</kbd>.</dd>
+                <dt><strong>Keyboard (listbox pattern)</strong></dt>
+                <dd>Implement roving <kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> / <kbd>Home</kbd> / <kbd>End</kbd> at the container level when you opt into the listbox role.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "ListView", "Accessibility"];
+
+    private record Entry(string Title, string Who, string When);
+
+    private readonly List<Entry> _entries =
+    [
+        new("Alice commented on PR #421", "AL", "5 min ago"),
+        new("Bob merged release/2026-04", "BO", "1 hr ago"),
+        new("Carol opened ticket #88", "CA", "Yesterday"),
+        new("Dan updated the changelog", "DA", "2 days ago"),
+    ];
+
+    private IEnumerable<Entry> _selected = [];
+}

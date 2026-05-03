@@ -1,0 +1,223 @@
+// =============================================================================
+// Component: Map (Bootstrap provider)
+// BEM root: .sf-map
+// =============================================================================
+
+.sf-map {
+    position: relative;
+    font-family: var(--bs-body-font-family, #{$font-family-base});
+    border: 1px solid var(--bs-border-color, #{$border-color});
+    border-radius: var(--bs-border-radius, 0.375rem);
+    background: var(--bs-body-bg, #ffffff);
+    overflow: hidden;
+
+    &__container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    &__controls {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+
+        &--top-left {
+            top: 0.5rem;
+            left: 0.5rem;
+        }
+
+        &--top-right {
+            top: 0.5rem;
+            right: 0.5rem;
+        }
+
+        &--bottom-left {
+            bottom: 0.5rem;
+            left: 0.5rem;
+        }
+
+        &--bottom-right {
+            bottom: 0.5rem;
+            right: 0.5rem;
+        }
+    }
+
+    &__control-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--bs-border-color, #{$border-color});
+        border-radius: var(--bs-border-radius-sm, 0.25rem);
+        background: var(--bs-body-bg, #ffffff);
+        color: var(--bs-body-color, #{$body-color});
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.15s ease-in-out;
+
+        &:hover {
+            background: var(--bs-tertiary-bg, #f8f9fa);
+        }
+
+        &:active {
+            background: var(--bs-secondary-bg, #e9ecef);
+        }
+    }
+
+    &__attribution {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2px 0.25rem;
+        background: rgba(255, 255, 255, 0.85);
+        font-size: 0.625rem;
+        color: var(--bs-secondary-color, #6c757d);
+        line-height: 1.4;
+        z-index: 2;
+
+        a {
+            color: var(--bs-link-color, #{$primary});
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    &__marker {
+        position: absolute;
+        transform: translate(-50%, -100%);
+        cursor: pointer;
+        z-index: 1;
+
+        &--pin {
+            width: 24px;
+            height: 32px;
+        }
+
+        &--pin-target {
+            width: 28px;
+            height: 36px;
+        }
+    }
+
+    &__marker-icon {
+        fill: var(--bs-primary, #{$primary});
+        stroke: #ffffff;
+        stroke-width: 1px;
+    }
+
+    &__marker-tooltip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 0.25rem 0.5rem;
+        background: var(--bs-body-bg, #ffffff);
+        border: 1px solid var(--bs-border-color, #{$border-color});
+        border-radius: var(--bs-border-radius-sm, 0.25rem);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        font-size: 0.75rem;
+        color: var(--bs-body-color, #{$body-color});
+        white-space: nowrap;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    &__bubble {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        opacity: 0.7;
+        cursor: pointer;
+        transition: opacity 0.15s ease-in-out;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    &__shape {
+        pointer-events: all;
+        cursor: pointer;
+    }
+
+    &__loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.6);
+        z-index: 10;
+    }
+
+    &__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        color: var(--bs-secondary-color, #6c757d);
+        font-size: 0.875rem;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Dark mode
+// ---------------------------------------------------------------------------
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+    .sf-map {
+        border-color: var(--bs-border-color, #495057);
+        background: var(--bs-body-bg, #212529);
+
+        &__control-btn {
+            background: var(--bs-body-bg, #212529);
+            border-color: var(--bs-border-color, #495057);
+            color: var(--bs-body-color, #dee2e6);
+
+            &:hover {
+                background: var(--bs-tertiary-bg, #2b3035);
+            }
+
+            &:active {
+                background: var(--bs-secondary-bg, #343a40);
+            }
+        }
+
+        &__attribution {
+            background: rgba(33, 37, 41, 0.85);
+            color: var(--bs-secondary-color, #adb5bd);
+
+            a {
+                color: var(--bs-link-color, #6ea8fe);
+            }
+        }
+
+        &__marker-tooltip {
+            background: var(--bs-body-bg, #212529);
+            border-color: var(--bs-border-color, #495057);
+            color: var(--bs-body-color, #dee2e6);
+        }
+
+        &__loading {
+            background: rgba(33, 37, 41, 0.6);
+        }
+
+        &__placeholder {
+            background: var(--bs-tertiary-bg, #2b3035);
+            color: var(--bs-secondary-color, #adb5bd);
+        }
+    }
+}

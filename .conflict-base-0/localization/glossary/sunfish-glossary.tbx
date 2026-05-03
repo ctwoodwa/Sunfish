@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sunfish Translator Glossary (TermBase eXchange v2)
+  Seeded per Plan 2 Task 3.3. Imported into Weblate via admin UI
+  (Project → Glossary → Import).
+  Every entry with <descrip type="context"> gives translators the
+  Sunfish-specific meaning that must survive localization.
+  Entries with noTranslate="true" are do-not-translate brand / protocol terms.
+-->
+<tbx type="TBX-Basic" xml:lang="en-US">
+  <martifHeader>
+    <fileDesc>
+      <titleStmt>
+        <title>Sunfish Global-First UX Glossary</title>
+      </titleStmt>
+      <sourceDesc>
+        <p>Seeded 2026-04-24 for the Global-First UX initiative (spec §3B).</p>
+      </sourceDesc>
+    </fileDesc>
+    <encodingDesc>
+      <p type="XCSURI">http://www.lisa.org/fileadmin/standards/tbx_basic/TBXBasicXCSV02.xcs</p>
+    </encodingDesc>
+  </martifHeader>
+  <text>
+    <body>
+
+      <termEntry id="tid-sunfish">
+        <descrip type="subjectField">brand</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Sunfish</term>
+            <termNote type="partOfSpeech">properNoun</termNote>
+            <termNote type="administrativeStatus">standardized-term-admn-sts</termNote>
+            <note>DO NOT TRANSLATE. Product name; preserve verbatim including capitalization.</note>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-anchor">
+        <descrip type="subjectField">product-surface</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Anchor</term>
+            <termNote type="partOfSpeech">properNoun</termNote>
+            <note>DO NOT TRANSLATE. Sunfish's local-first desktop product (Zone A per paper §20.7).</note>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-bridge">
+        <descrip type="subjectField">product-surface</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Bridge</term>
+            <termNote type="partOfSpeech">properNoun</termNote>
+            <note>DO NOT TRANSLATE. Sunfish's hybrid SaaS shell (Zone C per paper §20.7). Distinguish from the English common noun "bridge".</note>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-crdt">
+        <descrip type="subjectField">technical-protocol</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>CRDT</term>
+            <termNote type="partOfSpeech">acronym</termNote>
+            <descrip type="context">Conflict-free Replicated Data Type. Keep as CRDT in user-facing copy; expand on first mention only. The acronym is industry-standard and translates poorly.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-block">
+        <descrip type="subjectField">domain-model</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Block</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish domain-modeling primitive — one of a composable set of feature modules (blocks-accounting, blocks-tasks, etc.). Capitalize when referring to the concept; lowercase when used as a generic English word. Translators should prefer a culturally idiomatic term for "module" over literal "block" where the domain-model capitalization is not obvious.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-sync">
+        <descrip type="subjectField">technical-protocol</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Sync</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Shorthand for "synchronization" between local node and peers. In English both noun and verb; in many target locales the noun form and verb form differ. Prefer locale-native idiom for "data synchronization" where possible; keep "Sync" in UI micro-copy where space is constrained (e.g., button labels).</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-offline">
+        <descrip type="subjectField">technical-state</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Offline</term>
+            <termNote type="partOfSpeech">adjective</termNote>
+            <descrip type="context">Refers to Sunfish's local-first offline-capable state. Prefer the locale's native technology idiom for "offline" — most target languages have an established term.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-conflict">
+        <descrip type="subjectField">technical-state</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Conflict</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish sync-state: two versions of the same record diverged and require review. Distinct from the English idiomatic "conflict" (interpersonal dispute). Translators should use a term that conveys "data divergence" or "version mismatch".</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-quarantine">
+        <descrip type="subjectField">technical-state</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Quarantine</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish sync-state: a record can't sync and has been held pending diagnostic review. NOT the medical term; avoid medical connotations in the target language. Prefer a technical term for "held for review" or "restricted/isolated" without disease associations. Some locales may need a compound term with a gloss.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-stale">
+        <descrip type="subjectField">technical-state</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Stale</term>
+            <termNote type="partOfSpeech">adjective</termNote>
+            <descrip type="context">Sunfish sync-state: last sync was earlier; data may be behind peers but is not broken. Prefer a locale idiom for "outdated" or "not recent" without food/freshness connotations.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-peer">
+        <descrip type="subjectField">technical-protocol</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Peer</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish's distributed-systems term for a node participating in the sync protocol. NOT the social English sense of "peer" (colleague, equal). Translators should use the locale's networking-software idiom for "node" or "participant".</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-node">
+        <descrip type="subjectField">technical-protocol</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Node</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish's local-node / hosted-node architecture term (paper §20.7). A node is one running instance of Sunfish software. Preserve the technical meaning; avoid botanical / anatomical connotations.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-kernel">
+        <descrip type="subjectField">technical-architecture</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Kernel</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Sunfish's kernel/plugin architecture layer (paper §3.1). NOT the OS kernel or the corn kernel; technical meaning is "core runtime that plugins extend". Translate consistently with the locale's established software-architecture term.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+      <termEntry id="tid-plugin">
+        <descrip type="subjectField">technical-architecture</descrip>
+        <langSet xml:lang="en-US">
+          <tig>
+            <term>Plugin</term>
+            <termNote type="partOfSpeech">noun</termNote>
+            <descrip type="context">Extension module installed into the Sunfish kernel. Most target locales have an established term; use it consistently. Do not mix "plugin" and "extension" in the same locale file.</descrip>
+          </tig>
+        </langSet>
+      </termEntry>
+
+    </body>
+  </text>
+</tbx>

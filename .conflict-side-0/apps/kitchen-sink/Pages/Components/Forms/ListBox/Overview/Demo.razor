@@ -1,0 +1,132 @@
+@page "/components/forms/listbox/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>ListBox / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ListBox / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ListBox/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishListBox&lt;TItem&gt;</code> is a generic selectable list with an optional
+            built-in toolbar, pairing with a sibling <em>connected</em> ListBox, and HTML5
+            drag-and-drop. The demo below shows three modes:
+        </p>
+        <ol>
+            <li><strong>Standalone</strong> — Single/Multiple selection, no toolbar.</li>
+            <li><strong>Toolbar</strong> — MoveUp / MoveDown / Remove, rendered to the right.</li>
+            <li><strong>Connected pair</strong> — TransferTo / TransferFrom between two lists, plus
+                drag-and-drop between the two panels.</li>
+        </ol>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:2rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0;">1. Standalone</h3>
+                <SunfishListBox TItem="Fruit"
+                                Data="@_fruits1"
+                                TextField="Name"
+                                ValueField="Id"
+                                SelectionMode="ListBoxSelectionMode.Multiple"
+                                @bind-SelectedItems="_selected1"
+                                Width="220px"
+                                Height="180px" />
+                <p style="margin:.5rem 0 0 0; font-size:.85rem; color:#555;">
+                    Selected:
+                    <strong>@(_selected1.Any() ? string.Join(", ", _selected1.Select(f => f.Name)) : "(none)")</strong>
+                </p>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0;">2. Toolbar (MoveUp / MoveDown / Remove)</h3>
+                <SunfishListBox TItem="Fruit"
+                                Data="@_fruits2"
+                                TextField="Name"
+                                ValueField="Id"
+                                SelectionMode="ListBoxSelectionMode.Multiple"
+                                @bind-SelectedItems="_selected2"
+                                Toolbar="true"
+                                ToolBarPosition="ListBoxToolBarPosition.Right"
+                                Width="280px"
+                                Height="200px" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0;">3. Connected pair + drag-and-drop</h3>
+                <div style="display:flex; gap:1rem; align-items:flex-start;">
+                    <div>
+                        <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Available</div>
+                        <SunfishListBox @ref="_listA"
+                                        TItem="Fruit"
+                                        Id="listbox-a"
+                                        Data="@_fruitsA"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        SelectionMode="ListBoxSelectionMode.Multiple"
+                                        @bind-SelectedItems="_selectedA"
+                                        Connected="listbox-b"
+                                        Toolbar="true"
+                                        DraggableConnected="true"
+                                        Width="220px"
+                                        Height="220px" />
+                    </div>
+                    <div>
+                        <div style="font-size:.85rem; color:#555; margin-bottom:.25rem;">Selected</div>
+                        <SunfishListBox @ref="_listB"
+                                        TItem="Fruit"
+                                        Id="listbox-b"
+                                        Data="@_fruitsB"
+                                        TextField="Name"
+                                        ValueField="Id"
+                                        SelectionMode="ListBoxSelectionMode.Multiple"
+                                        @bind-SelectedItems="_selectedB"
+                                        Connected="listbox-a"
+                                        DraggableConnected="true"
+                                        Width="220px"
+                                        Height="220px" />
+                    </div>
+                </div>
+                <p style="margin:.5rem 0 0 0; font-size:.85rem; color:#555;">
+                    Click an item in the left list, then use the toolbar arrows to move it across.
+                    Or drag an item between the two panels.
+                </p>
+            </section>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ListBox", "Overview"];
+
+    private SunfishListBox<Fruit>? _listA;
+    private SunfishListBox<Fruit>? _listB;
+
+    private IEnumerable<Fruit> _selected1 = new List<Fruit>();
+    private IEnumerable<Fruit> _selected2 = new List<Fruit>();
+    private IEnumerable<Fruit> _selectedA = new List<Fruit>();
+    private IEnumerable<Fruit> _selectedB = new List<Fruit>();
+
+    private readonly List<Fruit> _fruits1 = BuildList("f1", 1);
+    private readonly List<Fruit> _fruits2 = BuildList("f2", 1);
+    private readonly List<Fruit> _fruitsA = BuildList("fa", 1);
+    private readonly List<Fruit> _fruitsB = new();
+
+    private static List<Fruit> BuildList(string prefix, int start) => new()
+    {
+        new($"{prefix}-{start}", "Apples"),
+        new($"{prefix}-{start + 1}", "Bananas"),
+        new($"{prefix}-{start + 2}", "Cherries"),
+        new($"{prefix}-{start + 3}", "Dates"),
+        new($"{prefix}-{start + 4}", "Elderberries"),
+    };
+
+    private record Fruit(string Id, string Name);
+}

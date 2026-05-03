@@ -1,0 +1,25 @@
+// =============================================================================
+// Sunfish FluentUI Provider — Focus Ring Mixin (SYNTHESIS Theme 5)
+// =============================================================================
+// Phase 2B: Fluent v9's signature focus indicator is a DOUBLE stroke:
+//   outline:     2px solid transparent   (keeps forced-colors perception)
+//   box-shadow:  inset 0 0 0 1px colorStrokeFocus1 (inner)
+//                inset 0 0 0 2px colorStrokeFocus2 (outer)
+//
+// colorStrokeFocus1 is the inner stroke (black on light / white on dark).
+// colorStrokeFocus2 is the outer high-contrast stroke.
+//
+// The `--colorStrokeFocus*` CSS custom properties are provided by
+// fluent-v9-tokens.css; we fall back to black/white for robustness in case
+// the token shim isn't loaded.
+//
+// Usage:
+//   :focus-visible { @include sf-focus-ring; }
+// =============================================================================
+
+@mixin sf-focus-ring {
+  outline: 2px solid transparent;
+  box-shadow:
+    inset 0 0 0 1px var(--colorStrokeFocus1, #ffffff),
+    inset 0 0 0 2px var(--colorStrokeFocus2, #000000);
+}

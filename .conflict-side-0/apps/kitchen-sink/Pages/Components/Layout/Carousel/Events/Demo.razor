@@ -1,0 +1,171 @@
+@page "/components/layout/carousel/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Layout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Carousel / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Carousel / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Carousel/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCarousel</code> exposes two callbacks for slide transitions:
+        </p>
+        <ul>
+            <li><code>OnSlideChange</code> — fires <em>before</em> the slide index changes.
+                Receives a <code>CarouselSlideChangeEventArgs</code> with
+                <code>PreviousSlideIndex</code> + <code>CurrentSlideIndex</code>; set
+                <code>IsCancelled = true</code> to veto the transition.</li>
+            <li><code>CurrentSlideIndexChanged</code> (and the legacy
+                <code>ActiveIndexChanged</code>) — fire <em>after</em> navigation commits, supplying
+                two-way binding.</li>
+        </ul>
+        <p>
+            The demo below logs every slide change and vetoes the first attempt to leave slide 2 as
+            a gate demo. <code>NextAsync</code>, <code>PreviousAsync</code>, and
+            <code>GoToAsync</code> are the public API for programmatic navigation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 340px); gap:1.25rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Carousel with event gate</h4>
+                <SunfishCarousel @ref="_carousel"
+                                 @bind-CurrentSlideIndex="_slide"
+                                 OnSlideChange="HandleSlideChange"
+                                 LoopItems="true"
+                                 Width="420px"
+                                 Height="200px"
+                                 AriaLabel="Instrumented carousel">
+                    <SunfishCarouselSlide AriaLabel="Alpha">
+                        <div style="background:#e1bee7; height:100%; display:flex; align-items:center; justify-content:center; font-weight:600;">
+                            Alpha (index 0)
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Beta">
+                        <div style="background:#b2dfdb; height:100%; display:flex; align-items:center; justify-content:center; font-weight:600;">
+                            Beta (index 1) — first forward leave is vetoed
+                        </div>
+                    </SunfishCarouselSlide>
+                    <SunfishCarouselSlide AriaLabel="Gamma">
+                        <div style="background:#ffe0b2; height:100%; display:flex; align-items:center; justify-content:center; font-weight:600;">
+                            Gamma (index 2)
+                        </div>
+                    </SunfishCarouselSlide>
+                </SunfishCarousel>
+
+                <div style="display:flex; gap:.5rem; margin-top:.75rem; flex-wrap:wrap;">
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokePrevious">PreviousAsync()</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="InvokeNext">NextAsync()</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => GoTo(0)">GoToAsync(0)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="() => GoTo(2)">GoToAsync(2)</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ResetDemo">Reset</SunfishButton>
+                </div>
+
+                <p style="margin:.5rem 0 0; font-size:.85rem; opacity:.75;">
+                    Current index: <strong>@_slide</strong> ·
+                    Beta-veto consumed: <strong>@_betaVetoed</strong>
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Event log</h4>
+                <div style="border:1px solid var(--sunfish-border, #d0d0d0); border-radius:8px; background:var(--sunfish-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.78rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — click arrows, dots, or the API buttons.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+                <button type="button" class="sf-btn" style="margin-top:.5rem;"
+                        @onclick="ClearLog">
+                    Clear log
+                </button>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Carousel", "Events"];
+
+    private SunfishCarousel? _carousel;
+    private int _slide;
+    private bool _betaVetoed;
+
+    private readonly List<string> _log = new();
+
+    private void Log(string entry)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {entry}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private void ResetDemo()
+    {
+        _slide = 0;
+        _betaVetoed = false;
+        _log.Clear();
+    }
+
+    private Task HandleSlideChange(CarouselSlideChangeEventArgs args)
+    {
+        // Veto first forward leave from Beta (index 1) to showcase cancellation.
+        if (args.PreviousSlideIndex == 1 && args.CurrentSlideIndex == 2 && !_betaVetoed)
+        {
+            _betaVetoed = true;
+            args.IsCancelled = true;
+            Log("OnSlideChange 1 -> 2 (vetoed: beta gate consumed)");
+        }
+        else
+        {
+            Log($"OnSlideChange {args.PreviousSlideIndex} -> {args.CurrentSlideIndex} (cancelled={args.IsCancelled})");
+        }
+        return Task.CompletedTask;
+    }
+
+    private async Task InvokeNext()
+    {
+        if (_carousel is not null)
+        {
+            await _carousel.NextAsync();
+            Log("Invoked NextAsync()");
+        }
+    }
+
+    private async Task InvokePrevious()
+    {
+        if (_carousel is not null)
+        {
+            await _carousel.PreviousAsync();
+            Log("Invoked PreviousAsync()");
+        }
+    }
+
+    private async Task GoTo(int index)
+    {
+        if (_carousel is not null)
+        {
+            await _carousel.GoToAsync(index);
+            Log($"Invoked GoToAsync({index})");
+        }
+    }
+}

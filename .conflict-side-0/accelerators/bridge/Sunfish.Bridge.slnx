@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Sunfish.Bridge.Client/Sunfish.Bridge.Client.csproj" />
+  <Project Path="Sunfish.Bridge/Sunfish.Bridge.csproj" />
+  <Project Path="Sunfish.Bridge.AppHost/Sunfish.Bridge.AppHost.csproj" />
+  <Project Path="Sunfish.Bridge.ServiceDefaults/Sunfish.Bridge.ServiceDefaults.csproj" />
+  <Project Path="MockOktaService/MockOktaService.csproj" />
+  <Project Path="Sunfish.Bridge.Data/Sunfish.Bridge.Data.csproj" />
+  <Project Path="Sunfish.Bridge.MigrationService/Sunfish.Bridge.MigrationService.csproj" />
+  <Project Path="tests/Sunfish.Bridge.Tests.Unit/Sunfish.Bridge.Tests.Unit.csproj" />
+  <Project Path="tests/Sunfish.Bridge.Tests.Integration/Sunfish.Bridge.Tests.Integration.csproj" />
+  <Project Path="tests/Sunfish.Bridge.Tests.Performance/Sunfish.Bridge.Tests.Performance.csproj" />
+</Solution>

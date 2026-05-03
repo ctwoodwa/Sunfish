@@ -1,0 +1,27 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout.Dock
+@inherits SunfishComponentBase
+
+@* ──────────────────────────────────────────────────────────────────────
+   SunfishDockManager (MVP surface — Tier 3 W3-6)
+
+   Canonical composition root for recursively splittable dock panels with
+   draggable tabs. The MVP renders the declared SunfishDockSplit/Pane tree
+   as nested CSS flex containers; tabbed pane groups show a title strip and
+   the currently-active pane body. Drag-to-dock, splitter resize handles,
+   and save/load layout are tracked as documented gaps and will land in
+   follow-up waves.
+   ────────────────────────────────────────────────────────────────────── *@
+
+<div class="@CombineClasses("sf-dockmanager")"
+     style="@CombineStyles(HeightStyle(), WidthStyle(), "position:relative;display:flex;overflow:hidden")"
+     data-sf-dockmanager-root="true"
+     @attributes="AdditionalAttributes">
+    <CascadingValue Value="this" IsFixed="true">
+        @if (ChildContent is not null)
+        {
+            <div class="sf-dockmanager__root" style="flex:1 1 auto;display:flex;min-width:0;min-height:0;">
+                @ChildContent
+            </div>
+        }
+    </CascadingValue>
+</div>

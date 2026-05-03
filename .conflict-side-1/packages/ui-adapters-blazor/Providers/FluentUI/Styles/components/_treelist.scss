@@ -1,0 +1,282 @@
+// =============================================================================
+// Component: TreeList — FluentUI Provider Styles
+// BEM classes emitted by MariloTreeList.razor
+// =============================================================================
+
+.sf-treelist {
+  width: 100%;
+  border: 1px solid var(--sf-color-border, #e1dfdd);
+  border-radius: var(--sf-radius-md, 4px);
+  overflow: auto;
+  font-family: var(--sf-font-family, 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif);
+  font-size: var(--sf-font-size-base, 14px);
+  color: var(--sf-color-text, #323130);
+  background: var(--sf-color-surface, #ffffff);
+}
+
+.sf-treelist__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+// ── Header ────────────────────────────────────────────────────
+.sf-treelist__th {
+  padding: var(--sf-space-sm, 8px) var(--sf-space-md, 12px);
+  text-align: left;
+  font-weight: var(--sf-font-weight-semibold, 600);
+  background: var(--sf-color-subtle-background, #faf9f8);
+  border-bottom: 1px solid var(--sf-color-border, #e1dfdd);
+  white-space: nowrap;
+  user-select: none;
+  color: var(--sf-color-text, #323130);
+}
+
+// ── Row ───────────────────────────────────────────────────────
+.sf-treelist__row {
+  border-bottom: 1px solid var(--sf-color-border, #edebe9);
+  transition: background var(--sf-transition-fast, 0.1s ease);
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--sf-color-subtle-background, #faf9f8);
+  }
+}
+
+// ── Selected row ─────────────────────────────────────────────
+.sf-treelist__row--selected {
+  background: color-mix(in srgb, var(--sf-color-primary, #0078d4) 10%, var(--sf-color-surface, #ffffff));
+}
+
+// ── Focused row (keyboard navigation) ────────────────────────
+.sf-treelist__row--focused {
+  outline: 2px solid var(--sf-color-primary, #0078d4);
+  outline-offset: -2px;
+}
+
+// ── Cell ──────────────────────────────────────────────────────
+.sf-treelist__td {
+  padding: var(--sf-space-sm, 8px) var(--sf-space-md, 12px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+// ── Toggle button (expand/collapse) ──────────────────────────
+// Note: the component emits `sf-tree-item__toggle` (shared with TreeView)
+.sf-tree-item__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--sf-radius-sm, 2px);
+  background: transparent;
+  color: var(--sf-color-text-secondary, #605e5c);
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background var(--sf-transition-fast, 0.1s ease),
+              color var(--sf-transition-fast, 0.1s ease);
+
+  &:hover {
+    background: var(--sf-color-subtle-background, #f3f2f1);
+    color: var(--sf-color-text, #323130);
+  }
+
+  &:active {
+    background: var(--sf-color-subtle-background, #edebe9);
+  }
+}
+
+// ── Sortable header ──────────────────────────────────────────
+.sf-treelist__th--sortable {
+  cursor: pointer;
+}
+
+// ── Column resize handle ─────────────────────────────────────
+.sf-treelist__resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 1;
+  transition: background var(--sf-transition-fast, 0.1s ease);
+
+  &:hover,
+  &:active {
+    background: var(--sf-color-primary, #0078d4);
+  }
+}
+
+.sf-treelist__th {
+  position: relative;
+}
+
+// ── Column reorder drag indicator ────────────────────────────
+.sf-treelist__th--drag-over {
+  box-shadow: inset -2px 0 0 0 var(--sf-color-primary, #0078d4);
+}
+
+// ── Pager ────────────────────────────────────────────────────
+.sf-treelist__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sf-space-xs, 4px);
+  padding: var(--sf-space-sm, 8px) var(--sf-space-md, 12px);
+  border-top: 1px solid var(--sf-color-border, #e1dfdd);
+}
+
+.sf-treelist__pager-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 var(--sf-space-sm, 8px);
+  border: 1px solid var(--sf-color-border, #e1dfdd);
+  border-radius: var(--sf-radius-sm, 2px);
+  background: var(--sf-color-surface, #ffffff);
+  color: var(--sf-color-text, #323130);
+  font-size: var(--sf-font-size-base, 14px);
+  cursor: pointer;
+  transition: background var(--sf-transition-fast, 0.1s ease),
+              border-color var(--sf-transition-fast, 0.1s ease);
+
+  &:hover:not(:disabled) {
+    background: var(--sf-color-subtle-background, #f3f2f1);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--active {
+    background: var(--sf-color-primary, #0078d4);
+    color: var(--sf-color-on-primary, #ffffff);
+    border-color: var(--sf-color-primary, #0078d4);
+
+    &:hover:not(:disabled) {
+      background: var(--sf-color-primary, #0078d4);
+    }
+  }
+}
+
+// ── Accessibility: reduced motion ─────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sf-treelist,
+  .sf-treelist * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Accessibility: high contrast ──────────────────────────────
+@media (forced-colors: active) {
+  .sf-treelist {
+    border-color: ButtonText;
+  }
+
+  .sf-treelist__th {
+    border-bottom-color: ButtonText;
+  }
+
+  .sf-treelist__row:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .sf-tree-item__toggle {
+    color: ButtonText;
+
+    &:hover {
+      color: Highlight;
+    }
+  }
+}
+
+// ── Dark mode ─────────────────────────────────────────────────
+[data-sf-theme="dark"] {
+  .sf-treelist {
+    border-color: var(--sf-color-border, #484644);
+    background: var(--sf-color-surface, #252423);
+    color: var(--sf-color-text, #f3f2f1);
+  }
+
+  .sf-treelist__th {
+    background: var(--sf-color-subtle-background, #323130);
+    border-bottom-color: var(--sf-color-border, #484644);
+    color: var(--sf-color-text, #f3f2f1);
+  }
+
+  .sf-treelist__row {
+    border-bottom-color: var(--sf-color-border, #3b3a39);
+
+    &:hover {
+      background: var(--sf-color-subtle-background, #3b3a39);
+    }
+  }
+
+  .sf-tree-item__toggle {
+    color: var(--sf-color-text-secondary, #a19f9d);
+
+    &:hover {
+      background: var(--sf-color-subtle-background, #484644);
+      color: var(--sf-color-text, #f3f2f1);
+    }
+  }
+
+  .sf-treelist__row--selected {
+    background: color-mix(in srgb, var(--sf-color-primary, #479ef5) 15%, var(--sf-color-surface, #252423));
+  }
+
+  .sf-treelist__row--focused {
+    outline-color: var(--sf-color-primary, #479ef5);
+  }
+
+  .sf-treelist__resize-handle {
+    &:hover,
+    &:active {
+      background: var(--sf-color-primary, #479ef5);
+    }
+  }
+
+  .sf-treelist__th--drag-over {
+    box-shadow: inset -2px 0 0 0 var(--sf-color-primary, #479ef5);
+  }
+
+  .sf-treelist__pager {
+    border-top-color: var(--sf-color-border, #484644);
+  }
+
+  .sf-treelist__pager-btn {
+    background: var(--sf-color-surface, #252423);
+    color: var(--sf-color-text, #f3f2f1);
+    border-color: var(--sf-color-border, #484644);
+
+    &:hover:not(:disabled) {
+      background: var(--sf-color-subtle-background, #3b3a39);
+    }
+
+    &--active {
+      background: var(--sf-color-primary, #479ef5);
+      color: var(--sf-color-on-primary, #ffffff);
+      border-color: var(--sf-color-primary, #479ef5);
+    }
+  }
+}

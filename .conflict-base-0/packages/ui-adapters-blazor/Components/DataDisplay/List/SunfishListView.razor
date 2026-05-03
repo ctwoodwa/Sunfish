@@ -1,0 +1,146 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@inherits SunfishComponentBase
+@typeparam TItem
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Sunfish.Foundation.Data
+
+<div class="@CombineClasses(CssProvider.ListViewClass())"
+     style="@CombineStyles(SizeStyle)"
+     role="list"
+     @attributes="AdditionalAttributes">
+
+    @if (HeaderTemplate != null)
+    {
+        <div class="sf-listview__header">@HeaderTemplate</div>
+    }
+
+    @if (_isLoading && EnableLoaderContainer)
+    {
+        <div class="sf-listview__loader-container" aria-busy="true">
+            <div class="sf-listview__loader" role="status" aria-label="Loading">Loading...</div>
+        </div>
+    }
+
+    <div class="sf-listview__items">
+        @if (_pagedItems != null)
+        {
+            @if (Groupable && _groupedItems != null && _groupedItems.Count > 0)
+            {
+                @foreach (var group in _groupedItems)
+                {
+                    <div class="sf-listview__group" role="group" aria-label="@group.Header">
+                        @if (GroupHeaderTemplate != null)
+                        {
+                            <div class="sf-listview__group-header">@GroupHeaderTemplate(group)</div>
+                        }
+                        else
+                        {
+                            <div class="sf-listview__group-header">
+                                <strong>@group.Field:</strong> @group.Header
+                                <span class="sf-listview__group-count">(@group.Items.Count)</span>
+                            </div>
+                        }
+                        <div class="sf-listview__group-items">
+                            @{
+                                var gIdx = 0;
+                            }
+                            @foreach (var item in group.Items)
+                            {
+                                @RenderItem(item, gIdx++)
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else if (Virtual)
+            {
+                <div class="sf-listview__virtual" style="height:@VirtualContainerHeight;overflow:auto;">
+                    <Virtualize Items="@_pagedItemsList"
+                                Context="vitem"
+                                ItemSize="@((float)VirtualItemHeight)">
+                        @RenderItem(vitem, -1)
+                    </Virtualize>
+                </div>
+            }
+            else
+            {
+                var idx = 0;
+                foreach (var item in _pagedItems)
+                {
+                    <text>@RenderItem(item, idx++)</text>
+                }
+            }
+        }
+    </div>
+
+    @if (FooterTemplate != null)
+    {
+        <div class="sf-listview__footer">@FooterTemplate</div>
+    }
+
+    @if (Pageable && _totalCount > PageSize)
+    {
+        <div class="sf-listview__pager">
+            <button type="button"
+                    class="sf-listview__pager-btn"
+                    disabled="@(_currentPage <= 0)"
+                    @onclick="PreviousPage">
+                Previous
+            </button>
+            <span class="sf-listview__pager-info">
+                Page @(_currentPage + 1) of @TotalPages
+            </span>
+            <button type="button"
+                    class="sf-listview__pager-btn"
+                    disabled="@(_currentPage >= TotalPages - 1)"
+                    @onclick="NextPage">
+                Next
+            </button>
+
+            @if (PageSizes != null && PageSizes.Count > 0)
+            {
+                <select class="sf-listview__pager-size"
+                        @onchange="HandlePageSizeChanged"
+                        aria-label="Page size">
+                    @foreach (var size in PageSizes)
+                    {
+                        <option value="@size" selected="@(size == PageSize)">@size</option>
+                    }
+                </select>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private RenderFragment RenderItem(TItem item, int indexHint) => __builder =>
+    {
+        var isSelected = _selectedItems.Contains(item);
+        var isEditing = _editingItem != null && EqualityComparer<TItem>.Default.Equals(_editingItem, item);
+        var isAlternate = indexHint >= 0 && indexHint % 2 == 1;
+        var itemClass = CssProvider.ListViewItemClass(isSelected);
+        if (isAlternate) itemClass += " sf-listview__item--alt";
+
+        <div class="@itemClass"
+             role="listitem"
+             aria-selected="@(SelectionMode != GridSelectionMode.None ? isSelected.ToString().ToLowerInvariant() : null)"
+             @onclick="() => HandleItemClick(item)">
+            @if (isEditing && EditTemplate != null)
+            {
+                @EditTemplate(item)
+            }
+            else if (isAlternate && AlternatingItemTemplate != null)
+            {
+                @AlternatingItemTemplate(item)
+            }
+            else if (Template != null)
+            {
+                @Template(item)
+            }
+            else if (ItemTemplate != null)
+            {
+                @ItemTemplate(item)
+            }
+        </div>
+    };
+}

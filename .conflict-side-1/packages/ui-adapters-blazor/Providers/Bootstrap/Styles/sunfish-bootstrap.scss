@@ -1,0 +1,67 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Full Build Entry Point
+// =================================================================
+// Compiles into a SINGLE self-contained CSS file that includes:
+//   1. Bootstrap 5.3 (customized via Sass)
+//   2. Sunfish bridge styles (sf-bs-* classes)
+//
+// Consumers do NOT need to load Bootstrap separately.
+//
+// Build:  npm run scss:build:bootstrap
+// Watch:  npm run scss:watch:bootstrap
+// =================================================================
+
+// ── Step 1: Bootstrap functions (needed for variable overrides) ──
+@import "bootstrap/scss/functions";
+
+// ── Step 2: Sunfish variable overrides (before BS variables) ──────
+@import "variables";
+
+// ── Step 3: Bootstrap variables + dark mode variables ────────────
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/variables-dark";
+
+// ── Step 4: Bootstrap maps, mixins, root ─────────────────────────
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+
+// ── Step 5: Bootstrap component partials (selective) ─────────────
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/tables";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/transitions";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/button-group";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/accordion";
+@import "bootstrap/scss/breadcrumb";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/progress";
+@import "bootstrap/scss/list-group";
+@import "bootstrap/scss/close";
+@import "bootstrap/scss/toasts";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/tooltip";
+@import "bootstrap/scss/popover";
+@import "bootstrap/scss/carousel";
+@import "bootstrap/scss/spinners";
+@import "bootstrap/scss/offcanvas";
+@import "bootstrap/scss/placeholders";
+@import "bootstrap/scss/helpers";
+
+// ── Step 6: Utilities API (generates utility classes) ────────────
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
+
+// ── Step 7: Sunfish styles (tokens + components via structured index) ─
+@import "index";

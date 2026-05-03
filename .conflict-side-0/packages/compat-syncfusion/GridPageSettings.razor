@@ -1,0 +1,25 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfGrid<TValue>>
+
+@*
+    Child-settings for SfGrid paging. Publishes PageSize back to the parent SfGrid.
+*@
+
+@code {
+    [Parameter] public int PageSize { get; set; } = 12;
+    [Parameter] public int PageCount { get; set; } = 8;
+    [Parameter] public int CurrentPage { get; set; } = 1;
+
+    protected override string ShimName => "GridPageSettings";
+    protected override string ParentName => "SfGrid";
+
+    protected override void OnParametersSet()
+    {
+        var parent = RequireParent();
+        parent.PageSizeFromChildren = PageSize;
+        parent.RequestRefresh();
+    }
+}

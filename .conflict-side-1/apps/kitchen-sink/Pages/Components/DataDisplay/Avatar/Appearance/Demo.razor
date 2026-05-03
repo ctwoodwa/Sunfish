@@ -1,0 +1,79 @@
+@page "/components/data-display/avatar/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Avatar / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Avatar / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Avatar/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAvatar</code> appearance comes from four orthogonal knobs: <em>content</em>
+            (<code>Initials</code>, <code>Src</code>/<code>Alt</code>, or <code>ChildContent</code>);
+            <em>size</em> via the <code>AvatarSize</code> enum (<code>ExtraSmall</code>, <code>Small</code>,
+            <code>Medium</code>, <code>Large</code>, <code>ExtraLarge</code>) or explicit
+            <code>Width</code>/<code>Height</code>; <em>shape</em> via the <code>Rounded</code> boolean
+            (defaults to true for a circle; false yields a rounded square); and a <code>Bordered</code> flag
+            that adds a ring.
+        </p>
+        <p>
+            Sibling pages cover <a href="/components/data-display/avatar/types">types</a> and
+            <a href="/components/data-display/avatar/sizes">sizes</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <strong style="min-width:110px;">Initials:</strong>
+                <SunfishAvatar Initials="AB" />
+                <SunfishAvatar Initials="CD" />
+                <SunfishAvatar Initials="EF" />
+                <SunfishAvatar Initials="GH" />
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <strong style="min-width:110px;">Image:</strong>
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=11" Alt="Person 11" />
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=14" Alt="Person 14" />
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=21" Alt="Person 21" />
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <strong style="min-width:110px;">Sizes:</strong>
+                <SunfishAvatar Size="AvatarSize.ExtraSmall" Initials="XS" />
+                <SunfishAvatar Size="AvatarSize.Small" Initials="SM" />
+                <SunfishAvatar Size="AvatarSize.Medium" Initials="MD" />
+                <SunfishAvatar Size="AvatarSize.Large" Initials="LG" />
+                <SunfishAvatar Size="AvatarSize.ExtraLarge" Initials="XL" />
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <strong style="min-width:110px;">Shape:</strong>
+                <SunfishAvatar Initials="RD" Rounded="true" />
+                <SunfishAvatar Initials="SQ" Rounded="false" />
+                <SunfishAvatar Initials="BD" Bordered="true" />
+                <SunfishAvatar Initials="BS" Bordered="true" Rounded="false" />
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <strong style="min-width:110px;">Custom:</strong>
+                <SunfishAvatar Width="56px" Height="56px" Bordered="true">
+                    <span style="font-size:1.5rem;">✨</span>
+                </SunfishAvatar>
+                <SunfishAvatar Width="56px" Height="56px" Bordered="true">
+                    <span style="font-size:1.25rem; font-weight:600;">AI</span>
+                </SunfishAvatar>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Avatar", "Appearance"];
+}

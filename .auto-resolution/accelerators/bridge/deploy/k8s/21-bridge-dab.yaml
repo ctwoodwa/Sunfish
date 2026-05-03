@@ -1,0 +1,69 @@
+# ============================================================================
+# DAB — Deployment + ClusterIP Service (internal-only)
+# ============================================================================
+# DAB 1.7.90 matches the version pinned in the shared-Bridge AppHost.
+# DAB config is expected to be baked into the image today; TODO(w5.5.1) is to
+# mount dab-config.json from a ConfigMap and point DAB at it via --ConfigFile.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge-dab
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: bridge-dab
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/component: bridge-dab
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bridge-dab
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: bridge-dab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: bridge-dab
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: sunfish-bridge
+        app.kubernetes.io/component: bridge-dab
+    spec:
+      containers:
+        - name: dab
+          image: mcr.microsoft.com/azure-databases/data-api-builder:1.7.90
+          ports:
+            - name: http
+              containerPort: 5000
+          env:
+            - name: dab-connection-string
+              valueFrom:
+                secretKeyRef:
+                  name: bridge-postgres
+                  key: connection-string
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10

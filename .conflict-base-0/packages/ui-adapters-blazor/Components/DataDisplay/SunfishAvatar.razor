@@ -1,0 +1,52 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(AvatarClass)"
+     style="@CombineStyles(SizeStyle)"
+     @attributes="AdditionalAttributes">
+    @if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else if (!string.IsNullOrEmpty(Src))
+    {
+        <img src="@Src" alt="@(Alt ?? "Avatar")" class="sf-avatar__image" />
+    }
+    else if (!string.IsNullOrEmpty(Initials))
+    {
+        <span class="sf-avatar__initials">@Initials</span>
+    }
+</div>
+
+@code {
+    [Parameter] public AvatarSize Size { get; set; } = AvatarSize.Medium;
+    [Parameter] public string? Src { get; set; }
+    [Parameter] public string? Alt { get; set; }
+    [Parameter] public string? Initials { get; set; }
+    [Parameter] public bool Bordered { get; set; }
+    [Parameter] public bool Rounded { get; set; } = true;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string AvatarClass
+    {
+        get
+        {
+            var cls = CssProvider.AvatarClass(Size);
+            if (Bordered) cls += " mar-avatar--bordered";
+            if (Rounded) cls += " mar-avatar--rounded";
+            return cls;
+        }
+    }
+
+    private string? SizeStyle
+    {
+        get
+        {
+            var parts = new List<string>();
+            if (Width != null) parts.Add($"width:{Width};");
+            if (Height != null) parts.Add($"height:{Height};");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+}

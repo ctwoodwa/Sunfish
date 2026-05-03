@@ -1,0 +1,14 @@
+@using Sunfish.Foundation.Enums
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<div style="font-size:.8rem; color:#64748b;">
+    Cascading values seen by nested child — GlobalDir: <strong>@GlobalDir</strong>,
+    LogLevel: <strong>@LogLevel</strong>,
+    localized strings: <strong>@(Strings?.Count ?? 0)</strong>
+</div>
+
+@code {
+    [CascadingParameter(Name = "GlobalDir")] public TextDirection GlobalDir { get; set; }
+    [CascadingParameter(Name = "DefaultLocalization")] public IDictionary<string, string>? Strings { get; set; }
+    [CascadingParameter(Name = "SunfishLogLevel")] public SunfishLogLevel LogLevel { get; set; }
+}

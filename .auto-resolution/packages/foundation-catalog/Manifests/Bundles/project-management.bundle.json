@@ -1,0 +1,114 @@
+{
+  "key": "sunfish.bundles.project-management",
+  "name": "Project Management",
+  "version": "0.1.0",
+  "description": "Reference Sunfish bundle for project-driven work: client services, consulting, internal initiatives, and product development. Composes workflow, forms, tasks, and scheduling with P2 generic modules (contacts, CRM, communications, documents, diligence, reporting, invoicing, billing) and optional composition with a dedicated projects module, vendors/procurement, and reservations for bookable resources.",
+  "category": "Operations",
+  "status": "Draft",
+  "maturity": "Scaffold",
+  "requiredModules": [
+    "sunfish.blocks.workflow",
+    "sunfish.blocks.forms",
+    "sunfish.blocks.tasks",
+    "sunfish.blocks.scheduling"
+  ],
+  "optionalModules": [
+    "sunfish.blocks.projects",
+    "sunfish.blocks.contacts",
+    "sunfish.blocks.crm",
+    "sunfish.blocks.communications",
+    "sunfish.blocks.documents",
+    "sunfish.blocks.diligence",
+    "sunfish.blocks.reporting",
+    "sunfish.blocks.searchworkspace",
+    "sunfish.blocks.invoicing",
+    "sunfish.blocks.billing",
+    "sunfish.blocks.accounting",
+    "sunfish.blocks.reconciliation",
+    "sunfish.blocks.vendors",
+    "sunfish.blocks.procurement",
+    "sunfish.blocks.reservations"
+  ],
+  "featureDefaults": {
+    "projects.ganttView.enabled": "false",
+    "projects.budgetTracking.enabled": "true",
+    "tasks.subtasks.enabled": "true",
+    "tasks.dependencies.enabled": "true",
+    "scheduling.resourceBooking.enabled": "true",
+    "scheduling.capacityTracking.enabled": "false",
+    "reservations.conflictDetection.enabled": "true",
+    "crm.pipelineStages.default": "prospect,qualified,proposal,negotiation,won,lost"
+  },
+  "editionMappings": {
+    "lite": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.scheduling"
+    ],
+    "standard": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.projects",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting"
+    ],
+    "enterprise": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.projects",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.contacts",
+      "sunfish.blocks.crm",
+      "sunfish.blocks.diligence",
+      "sunfish.blocks.invoicing",
+      "sunfish.blocks.billing",
+      "sunfish.blocks.accounting",
+      "sunfish.blocks.reconciliation",
+      "sunfish.blocks.vendors",
+      "sunfish.blocks.procurement",
+      "sunfish.blocks.reservations"
+    ]
+  },
+  "deploymentModesSupported": ["Lite", "SelfHosted", "HostedSaaS"],
+  "providerRequirements": [
+    {
+      "category": "Messaging",
+      "required": false,
+      "purpose": "Team collaboration notifications, status updates, stakeholder outreach."
+    },
+    {
+      "category": "IdentityProvider",
+      "required": false,
+      "purpose": "SSO for team members, contractors, and external collaborators."
+    },
+    {
+      "category": "Payments",
+      "required": false,
+      "purpose": "Client invoicing and services billing collection (enterprise edition)."
+    }
+  ],
+  "integrationProfiles": [
+    "messaging-default",
+    "payment-gateway-default",
+    "identity-provider-default"
+  ],
+  "seedWorkspaces": [
+    "client-services-projects",
+    "internal-initiatives",
+    "product-development",
+    "consulting-engagements"
+  ],
+  "personas": [
+    "project-manager",
+    "team-lead",
+    "contributor",
+    "stakeholder",
+    "sponsor",
+    "client",
+    "consultant"
+  ],
+  "dataOwnership": "Tenant-owned. Project records, time entries, documents, and billing history are exportable to JSON/CSV. Client-facing records exportable separately for onboarding/offboarding.",
+  "complianceNotes": "Time-tracking, billing practices, professional-services regulations, and client-confidentiality rules vary by industry. Expressed as bundle configuration rather than core behavior."
+}

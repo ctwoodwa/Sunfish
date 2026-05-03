@@ -1,0 +1,102 @@
+@page "/components/data-display/chart/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Chart / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chart / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Charts/Chart/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishChart</code> visual presentation is the product of the <code>Title</code>,
+            <code>Height</code> / <code>Width</code>, <code>Palette</code>, <code>ShowLegend</code>,
+            <code>ShowTooltips</code>, and <code>Transitions</code> parameters combined with the
+            <code>ChartSeriesType</code> you pick for each <code>SunfishChartSeries</code>. Supported
+            series types are Line, Column, Bar, Area, Pie, Donut, Scatter, ScatterLine, and Bubble.
+        </p>
+        <p>
+            This page renders four concrete shapes against the same dataset: a Line chart with a custom
+            palette, a side-by-side Column chart, an Area chart, and a Donut chart.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishChart Title="Monthly Revenue (line)" Height="300px" Palette="_brand">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_sales"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Line" />
+                    <SunfishChartSeries Name="Profit"
+                                        Data="_sales"
+                                        Field="Profit"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Line" />
+                </SunfishChart>
+            </div>
+
+            <div class="demo-row">
+                <SunfishChart Title="Revenue vs Profit (column)" Height="300px">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_sales"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Column"
+                                        Color="#4e79a7" />
+                    <SunfishChartSeries Name="Profit"
+                                        Data="_sales"
+                                        Field="Profit"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Column"
+                                        Color="#59a14f" />
+                </SunfishChart>
+            </div>
+
+            <div class="demo-row">
+                <SunfishChart Title="Revenue trend (area)" Height="300px">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_sales"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Area"
+                                        Color="#6a4cff" />
+                </SunfishChart>
+            </div>
+
+            <div class="demo-row">
+                <SunfishChart Title="Revenue by month (donut)" Height="300px" ShowLegend="true">
+                    <SunfishChartSeries Name="Revenue"
+                                        Data="_sales"
+                                        Field="Revenue"
+                                        CategoryField="Month"
+                                        Type="ChartSeriesType.Donut" />
+                </SunfishChart>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Chart", "Appearance"];
+
+    private readonly string[] _brand = ["#6a4cff", "#ff6ea0", "#ffbe0b", "#42a5f5"];
+
+    private record SalesData(string Month, double Revenue, double Profit);
+
+    private readonly List<SalesData> _sales =
+    [
+        new("Jan", 12000, 3200),
+        new("Feb", 15000, 4100),
+        new("Mar", 13500, 3800),
+        new("Apr", 17000, 5200),
+        new("May", 19500, 6100),
+        new("Jun", 21000, 7000),
+    ];
+}

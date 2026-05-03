@@ -1,0 +1,24 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<GridSortColumn> Logger
+
+@*
+    Declarative sort descriptor inside <GridSortSettings>. Currently diagnostic only —
+    Sunfish's DataGrid manages sort state via its own API. Consumer migration guidance:
+    set initial sort in the Sunfish grid state object. See docs/compat-syncfusion-mapping.md.
+*@
+
+@code {
+    [Parameter] public string? Field { get; set; }
+    [Parameter] public CompatEnums.SortDirection Direction { get; set; } = CompatEnums.SortDirection.Ascending;
+
+    protected override void OnParametersSet()
+    {
+        Logger.LogDebug(
+            "compat-syncfusion: GridSortColumn Field='{Field}' Direction='{Direction}' registered as diagnostic only. " +
+            "Sunfish's DataGrid manages sort state via its own API. See docs/compat-syncfusion-mapping.md.",
+            Field, Direction);
+    }
+}

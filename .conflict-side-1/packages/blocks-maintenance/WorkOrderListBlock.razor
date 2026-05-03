@@ -1,0 +1,127 @@
+@* Read-display work order list. Consumes IMaintenanceService + IAuditTrail via DI.
+   Transition UI, editing, vendor portal, and mobile capture are deferred. *@
+
+@using Sunfish.Kernel.Audit
+@inject IMaintenanceService MaintenanceService
+@inject IAuditTrail AuditTrail
+
+@if (_rows is null)
+{
+    <div class="sf-work-order-list__loading">Loading work orders…</div>
+}
+else if (_rows.Count == 0)
+{
+    <div class="sf-work-order-list__empty">No work orders</div>
+}
+else
+{
+    <table class="sf-work-order-list">
+        <thead>
+            <tr>
+                <th class="sf-work-order-list__col-date">Scheduled date</th>
+                <th class="sf-work-order-list__col-status">Status</th>
+                <th class="sf-work-order-list__col-vendor">Vendor</th>
+                <th class="sf-work-order-list__col-priority">Priority</th>
+                <th class="sf-work-order-list__col-estimated-cost">Estimated cost</th>
+                <th class="sf-work-order-list__col-actual-cost">Total cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _rows)
+            {
+                <tr class="sf-work-order-list__row" data-work-order-id="@row.WorkOrder.Id">
+                    <td class="sf-work-order-list__col-date">@row.WorkOrder.ScheduledDate.ToString("yyyy-MM-dd")</td>
+                    <td class="sf-work-order-list__col-status">@row.WorkOrder.Status</td>
+                    <td class="sf-work-order-list__col-vendor">@row.VendorDisplayName</td>
+                    <td class="sf-work-order-list__col-priority">@row.RequestPriority</td>
+                    <td class="sf-work-order-list__col-estimated-cost">@(row.WorkOrder.EstimatedCost?.Amount.ToString("C") ?? "—")</td>
+                    <td class="sf-work-order-list__col-actual-cost">@(row.WorkOrder.TotalCost?.Amount.ToString("C") ?? "—")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<WorkOrderRow>? _rows;
+
+    private sealed record WorkOrderRow(
+        WorkOrder WorkOrder,
+        string VendorDisplayName,
+        string RequestPriority);
+
+    /// <summary>
+    /// Optional filter to pass when loading work orders. Defaults to <see cref="ListWorkOrdersQuery.Empty"/>
+    /// (returns all work orders).
+    /// </summary>
+    [Parameter] public ListWorkOrdersQuery Query { get; set; } = ListWorkOrdersQuery.Empty;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var rows = new List<WorkOrderRow>();
+
+            await foreach (var wo in MaintenanceService.ListWorkOrdersAsync(Query))
+            {
+                var vendor = await MaintenanceService.GetVendorAsync(wo.AssignedVendorId);
+                var vendorName = vendor?.DisplayName ?? wo.AssignedVendorId.Value;
+
+                // W#19 Phase 5.1: resolve the originating MaintenanceRequest from
+                // the first WorkOrderCreated audit record's payload body. Phase 5
+                // dropped WorkOrder.RequestId; the audit trail is the source of
+                // truth for the polymorphic source pointer (source_kind + source_id).
+                var priority = await ResolvePriorityFromAuditAsync(wo);
+
+                rows.Add(new WorkOrderRow(wo, vendorName, priority));
+            }
+
+            _rows = rows;
+        }
+        catch
+        {
+            _rows = [];
+        }
+    }
+
+    private async Task<string> ResolvePriorityFromAuditAsync(WorkOrder wo)
+    {
+        // Phase 5.1 pragmatic resolver: query for WorkOrderCreated events under
+        // the tenant + filter client-side by work_order_id. AuditQuery doesn't
+        // support a CorrelationFilter today (per W#19 Phase 5.1 addendum the
+        // ideal shape would; deferred until kernel-audit grows that surface).
+        var query = new AuditQuery(wo.Tenant, AuditEventType.WorkOrderCreated);
+        AuditRecord? match = null;
+        await foreach (var record in AuditTrail.QueryAsync(query))
+        {
+            var body = record.Payload.Payload.Body;
+            if (body.TryGetValue("work_order_id", out var workOrderIdObj) &&
+                workOrderIdObj is string workOrderIdValue &&
+                workOrderIdValue == wo.Id.Value)
+            {
+                match = record;
+                break;
+            }
+        }
+
+        if (match is null) return "—";
+
+        var matchBody = match.Payload.Payload.Body;
+        if (!matchBody.TryGetValue("source_kind", out var sourceKindObj) ||
+            sourceKindObj is not string sourceKind ||
+            sourceKind != "MaintenanceRequest")
+        {
+            return "—";
+        }
+
+        if (!matchBody.TryGetValue("source_id", out var sourceIdObj) ||
+            sourceIdObj is not string sourceId)
+        {
+            return "—";
+        }
+
+        var request = await MaintenanceService.GetRequestAsync(new MaintenanceRequestId(sourceId));
+        return request?.Priority.ToString() ?? "—";
+    }
+}

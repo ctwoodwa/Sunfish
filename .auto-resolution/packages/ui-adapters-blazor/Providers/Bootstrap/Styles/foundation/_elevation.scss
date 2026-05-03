@@ -1,0 +1,11 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Elevation (Shadow) Tokens
+// =================================================================
+// Derived from Bootstrap's $box-shadow-* Sass variables.
+// =================================================================
+
+:root {
+  --sf-shadow-sm: #{$box-shadow-sm};
+  --sf-shadow-md: #{$box-shadow};
+  --sf-shadow-lg: #{$box-shadow-lg};
+}

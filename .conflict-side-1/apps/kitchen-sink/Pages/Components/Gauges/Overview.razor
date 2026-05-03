@@ -1,0 +1,108 @@
+@page "/components/gauges"
+@page "/components/gauges/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Arc Gauge" Description="SunfishArcGauge renders a partial arc from StartAngle to EndAngle with an optional center label. Supports color ranges for conditional styling." Code="@_arcCode">
+        <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+            <SunfishArcGauge Value="72" Min="0" Max="100" Size="180" StrokeWidth="14" ShowLabel="true" Color="#1976d2" />
+            <SunfishArcGauge Value="45" Min="0" Max="100" Size="180" StrokeWidth="14" ShowLabel="true"
+                            Ranges="@_arcRanges" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Circular Gauge" Description="SunfishCircularGauge draws a full-circle progress ring, ideal for percentage displays." Code="@_circularCode">
+        <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+            <SunfishCircularGauge Value="85" Min="0" Max="100" Size="160" StrokeWidth="12" ShowLabel="true" Color="#4caf50" />
+            <SunfishCircularGauge Value="30" Min="0" Max="100" Size="160" StrokeWidth="12" ShowLabel="true" Color="#ff9800" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Linear Gauge" Description="SunfishLinearGauge renders a horizontal or vertical bar with an optional pointer and scale." Code="@_linearCode">
+        <div style="max-width:400px;">
+            <SunfishLinearGauge Value="62" Min="0" Max="100" ShowPointer="true" ShowScale="true" ShowLabel="true" />
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Radial Gauge" Description="SunfishRadialGauge renders a classic dial with a needle pointer and colored range arcs." Code="@_radialCode">
+        <SunfishRadialGauge Value="68" Min="0" Max="100" Size="220" ShowLabel="true"
+                           Ranges="@_radialRanges" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Interactive">
+    <DemoSection Title="Adjust Value" Description="Use the slider to change the gauge value interactively." Code="@_interactiveCode">
+        <div style="display:flex; gap:24px; align-items:center; flex-wrap:wrap;">
+            <SunfishArcGauge Value="@_interactiveValue" Min="0" Max="100" Size="160" StrokeWidth="12" ShowLabel="true" Color="#1976d2" />
+            <SunfishCircularGauge Value="@_interactiveValue" Min="0" Max="100" Size="160" StrokeWidth="12" ShowLabel="true" Color="#4caf50" />
+            <SunfishRadialGauge Value="@_interactiveValue" Min="0" Max="100" Size="180" ShowLabel="true" Ranges="@_radialRanges" />
+        </div>
+        <div style="margin-top:12px; max-width:300px;">
+            <input type="range" min="0" max="100" value="@_interactiveValue"
+                   @oninput="@(e => _interactiveValue = double.Parse(e.Value?.ToString() ?? "0"))"
+                   style="width:100%;" />
+            <p>Value: <strong>@_interactiveValue.ToString("F0")</strong></p>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private double _interactiveValue = 50;
+
+    private readonly List<GaugeRange> _arcRanges =
+    [
+        new() { From = 0, To = 33, Color = "#4caf50" },
+        new() { From = 33, To = 66, Color = "#ff9800" },
+        new() { From = 66, To = 100, Color = "#f44336" },
+    ];
+
+    private readonly List<GaugeRange> _radialRanges =
+    [
+        new() { From = 0, To = 40, Color = "#4caf50" },
+        new() { From = 40, To = 70, Color = "#ff9800" },
+        new() { From = 70, To = 100, Color = "#f44336" },
+    ];
+
+    private const string _arcCode =
+        "<SunfishArcGauge Value=\"72\"\n" +
+        "                Min=\"0\" Max=\"100\"\n" +
+        "                Size=\"180\"\n" +
+        "                StrokeWidth=\"14\"\n" +
+        "                ShowLabel=\"true\"\n" +
+        "                Color=\"#1976d2\" />";
+
+    private const string _circularCode =
+        "<SunfishCircularGauge Value=\"85\"\n" +
+        "                     Min=\"0\" Max=\"100\"\n" +
+        "                     Size=\"160\"\n" +
+        "                     StrokeWidth=\"12\"\n" +
+        "                     ShowLabel=\"true\"\n" +
+        "                     Color=\"#4caf50\" />";
+
+    private const string _linearCode =
+        "<SunfishLinearGauge Value=\"62\"\n" +
+        "                   Min=\"0\" Max=\"100\"\n" +
+        "                   ShowPointer=\"true\"\n" +
+        "                   ShowScale=\"true\"\n" +
+        "                   ShowLabel=\"true\" />";
+
+    private const string _radialCode =
+        "<SunfishRadialGauge Value=\"68\"\n" +
+        "                   Min=\"0\" Max=\"100\"\n" +
+        "                   Size=\"220\"\n" +
+        "                   ShowLabel=\"true\"\n" +
+        "                   Ranges=\"@_ranges\" />\n\n" +
+        "@code {\n" +
+        "    private List<GaugeRange> _ranges = [\n" +
+        "        new() { From = 0, To = 40, Color = \"#4caf50\" },\n" +
+        "        new() { From = 40, To = 70, Color = \"#ff9800\" },\n" +
+        "        new() { From = 70, To = 100, Color = \"#f44336\" },\n" +
+        "    ];\n" +
+        "}";
+
+    private const string _interactiveCode =
+        "<SunfishArcGauge Value=\"@_value\" Min=\"0\" Max=\"100\" Size=\"160\" />\n" +
+        "<SunfishCircularGauge Value=\"@_value\" Min=\"0\" Max=\"100\" Size=\"160\" />\n" +
+        "<SunfishRadialGauge Value=\"@_value\" Min=\"0\" Max=\"100\" Size=\"180\" />\n\n" +
+        "<input type=\"range\" min=\"0\" max=\"100\" @oninput=\"...\" />";
+}

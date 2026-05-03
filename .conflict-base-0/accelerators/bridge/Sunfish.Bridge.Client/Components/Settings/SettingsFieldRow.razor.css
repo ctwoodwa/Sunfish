@@ -1,0 +1,46 @@
+.settings-field-row {
+    --local-text: var(--marilo-color-text, #1f2328);
+    --local-text-muted: var(--marilo-color-text-muted, #6b7280);
+    --local-border: var(--marilo-color-border, rgba(0,0,0,0.08));
+
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 12px;
+    align-items: center;
+    font-size: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--local-border);
+}
+
+.settings-field-row:last-child {
+    border-bottom: none;
+}
+
+:global([data-marilo-theme="dark"]) .settings-field-row {
+    --local-text: var(--marilo-color-text, #f3f3ef);
+    --local-text-muted: var(--marilo-color-text-muted, #9a9a92);
+    --local-border: var(--marilo-color-border, rgba(255,255,255,0.08));
+}
+
+.settings-field-row__label {
+    color: var(--local-text-muted);
+    font-weight: 500;
+}
+
+.settings-field-row__value {
+    color: var(--local-text);
+}
+
+.settings-field-row__description {
+    grid-column: 1 / -1;
+    font-size: 12px;
+    color: var(--local-text-muted);
+    line-height: 1.5;
+}
+
+@media (max-width: 480px) {
+    .settings-field-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}

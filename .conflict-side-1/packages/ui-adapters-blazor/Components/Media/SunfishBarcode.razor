@@ -1,0 +1,133 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Media
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+@*
+    SunfishBarcode — canonical MVP surface for the `barcodes` catalog leaf (Tier 3 media).
+    Renders an inline SVG with rect bars. Code128 uses a simple pass-through hash encoding
+    (each char → 11 deterministic bars alternating) that is visually plausible but not a
+    real, scannable Code128 payload. Other symbologies render a "not yet" placeholder.
+*@
+
+<div class="@CombineClasses("sf-barcode")"
+     style="@CombineStyles($"display:inline-block;line-height:0;")"
+     @attributes="AdditionalAttributes">
+
+    @if (_supported)
+    {
+        <svg viewBox="@($"0 0 {_totalWidth} {_totalHeight}")"
+             width="@_totalWidth" height="@_totalHeight"
+             xmlns="http://www.w3.org/2000/svg"
+             role="img" aria-label="@($"Barcode: {Value}")">
+            @for (int i = 0; i < _bars.Count; i++)
+            {
+                var bar = _bars[i];
+                if (bar.Solid)
+                {
+                    <rect x="@bar.X" y="0" width="@bar.Width" height="@Height" fill="@Color" />
+                }
+            }
+            @if (ShowText && !string.IsNullOrEmpty(Value))
+            {
+                <svg:text x="@_textAnchorX" y="@(Height + 14)"
+                      text-anchor="@_textAnchor"
+                      font-size="12" font-family="system-ui, sans-serif"
+                      fill="@Color">@Value</svg:text>
+            }
+        </svg>
+    }
+    else
+    {
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px dashed #c5a000;border-radius:4px;background:#fff9db;color:#6b5200;font-size:12px;font-family:system-ui,sans-serif;">
+            <span>⚠</span>
+            <span>@Symbology symbology not yet implemented in MVP — only Code128 is supported.</span>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>Value encoded into the barcode.</summary>
+    [Parameter] public string Value { get; set; } = string.Empty;
+
+    /// <summary>Barcode symbology. Default <see cref="BarcodeSymbology.Code128"/>.</summary>
+    [Parameter] public BarcodeSymbology Symbology { get; set; } = BarcodeSymbology.Code128;
+
+    /// <summary>Width, in pixels, of a single bar module. Default 2.</summary>
+    [Parameter] public int Width { get; set; } = 2;
+
+    /// <summary>Height, in pixels, of the barcode. Default 80.</summary>
+    [Parameter] public int Height { get; set; } = 80;
+
+    /// <summary>Bar color. Default <c>#000000</c>.</summary>
+    [Parameter] public string Color { get; set; } = "#000000";
+
+    /// <summary>Render the human-readable value under the bars. Default true.</summary>
+    [Parameter] public bool ShowText { get; set; } = true;
+
+    /// <summary>Horizontal alignment of the human-readable value.</summary>
+    [Parameter] public TextAlignment TextAlignment { get; set; } = TextAlignment.Center;
+
+    private readonly List<BarInfo> _bars = new();
+    private int _totalWidth;
+    private int _totalHeight;
+    private bool _supported;
+    private int _textAnchorX;
+    private string _textAnchor = "middle";
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        _bars.Clear();
+        _supported = Symbology == BarcodeSymbology.Code128;
+        if (!_supported) return;
+
+        var pattern = EncodeCode128Passthrough(Value);
+        int x = 0;
+        for (int i = 0; i < pattern.Length; i++)
+        {
+            _bars.Add(new BarInfo(x, Width, pattern[i] == '1'));
+            x += Width;
+        }
+        _totalWidth = Math.Max(x, Width);
+        _totalHeight = Height + (ShowText ? 18 : 0);
+
+        _textAnchor = TextAlignment switch
+        {
+            TextAlignment.Start => "start",
+            TextAlignment.End => "end",
+            _ => "middle",
+        };
+        _textAnchorX = TextAlignment switch
+        {
+            TextAlignment.Start => 0,
+            TextAlignment.End => _totalWidth,
+            _ => _totalWidth / 2,
+        };
+    }
+
+    /// <summary>
+    /// MVP "Code128" encoding: emits 11 deterministic bars per character derived from the
+    /// char code so output is stable and visually plausible, but NOT a scannable payload.
+    /// Swapping this out for a real Code128 engine is tracked as a gap.
+    /// </summary>
+    private static string EncodeCode128Passthrough(string value)
+    {
+        if (string.IsNullOrEmpty(value)) return "11010010000"; // Start B only
+        var sb = new System.Text.StringBuilder();
+        sb.Append("11010010000"); // Start B
+        foreach (var ch in value)
+        {
+            int seed = ch;
+            for (int i = 0; i < 11; i++)
+            {
+                // bit 1 when the i-th bit of the char-derived seed is set — keeps
+                // output deterministic per input character.
+                sb.Append(((seed >> i) & 1) == 1 ? '1' : '0');
+            }
+        }
+        sb.Append("1100011101011"); // Stop
+        return sb.ToString();
+    }
+
+    private readonly record struct BarInfo(int X, int Width, bool Solid);
+}

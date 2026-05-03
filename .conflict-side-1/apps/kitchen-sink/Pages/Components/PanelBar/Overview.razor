@@ -1,0 +1,80 @@
+@page "/components/panelbar"
+@page "/components/panelbar/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <SunfishAlert Severity="AlertSeverity.Info" style="margin-bottom:16px;">
+        The PanelBar is provided by the <strong>SunfishAccordion</strong> and <strong>SunfishAccordionItem</strong> components, which support both manual (declarative) and data-driven accordion patterns.
+    </SunfishAlert>
+
+    <DemoSection Title="Basic Accordion" Description="Use SunfishAccordion with SunfishAccordionItem children to create expandable panels. Each item has a Title and optional child content." Code="@_basicCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Getting Started" IsExpanded="true">
+                <p>Sunfish is an enterprise-grade Blazor component library for .NET 10. Install the NuGet package and add the theme provider to get started.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Components">
+                <p>The library includes buttons, inputs, data grids, layout containers, overlays, and more — all driven by a pluggable provider architecture.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Theming">
+                <p>Wrap your application in SunfishThemeProvider to enable CSS variable-based theming with light and dark mode support.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Single Expand Mode" Description="Set ExpandMode to Single so only one panel can be open at a time. Opening a new panel collapses the previous one." Code="@_singleCode">
+        <SunfishAccordion ExpandMode="AccordionExpandMode.Single">
+            <SunfishAccordionItem Title="Section A">
+                <p>Content for section A. Only one section can be open at a time.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section B">
+                <p>Content for section B.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Section C">
+                <p>Content for section C.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+
+    <DemoSection Title="Disabled Items" Description="Set Disabled on individual SunfishAccordionItem elements to prevent expansion." Code="@_disabledCode">
+        <SunfishAccordion>
+            <SunfishAccordionItem Title="Available">
+                <p>This panel can be toggled normally.</p>
+            </SunfishAccordionItem>
+            <SunfishAccordionItem Title="Disabled Panel" Disabled="true">
+                <p>This content is not reachable.</p>
+            </SunfishAccordionItem>
+        </SunfishAccordion>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishAccordion>\n" +
+        "    <SunfishAccordionItem Title=\"Getting Started\" IsExpanded=\"true\">\n" +
+        "        <p>Install the NuGet package to get started.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"Components\">\n" +
+        "        <p>Buttons, inputs, grids, and more.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _singleCode =
+        "<SunfishAccordion ExpandMode=\"AccordionExpandMode.Single\">\n" +
+        "    <SunfishAccordionItem Title=\"Section A\">\n" +
+        "        <p>Only one section open at a time.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"Section B\">\n" +
+        "        <p>Content for section B.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+
+    private const string _disabledCode =
+        "<SunfishAccordion>\n" +
+        "    <SunfishAccordionItem Title=\"Available\">\n" +
+        "        <p>This panel can be toggled.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "    <SunfishAccordionItem Title=\"Disabled Panel\" Disabled=\"true\">\n" +
+        "        <p>Not reachable.</p>\n" +
+        "    </SunfishAccordionItem>\n" +
+        "</SunfishAccordion>";
+}

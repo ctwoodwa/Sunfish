@@ -1,0 +1,133 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("mar-barcode")"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes">
+    <svg viewBox="0 0 @(_barWidth) @Height" width="@_barWidth" height="@Height"
+         xmlns="http://www.w3.org/2000/svg" role="img" aria-label="@($"Barcode: {Value}")">
+        @foreach (var bar in _bars)
+        {
+            <rect x="@bar.X" y="0" width="@bar.Width" height="@Height"
+                  fill="@(bar.IsBlack ? Color : "transparent")" />
+        }
+        @if (ShowLabel)
+        {
+            <svg:text x="@(_barWidth / 2)" y="@(Height + 14)" text-anchor="middle"
+                  font-size="12" fill="@Color">@Value</svg:text>
+        }
+    </svg>
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public BarcodeType Type { get; set; } = BarcodeType.Code128;
+    [Parameter] public int Height { get; set; } = 80;
+    [Parameter] public int BarWidth { get; set; } = 2;
+    [Parameter] public string Color { get; set; } = "#000000";
+    [Parameter] public bool ShowLabel { get; set; } = true;
+
+    private record BarInfo(double X, double Width, bool IsBlack);
+    private List<BarInfo> _bars = new();
+    private double _barWidth;
+
+    protected override void OnParametersSet()
+    {
+        EncodeValue();
+    }
+
+    private void EncodeValue()
+    {
+        _bars.Clear();
+        if (string.IsNullOrEmpty(Value)) return;
+
+        var pattern = Type switch
+        {
+            BarcodeType.Code128 => EncodeCode128(Value),
+            BarcodeType.Code39 => EncodeCode39(Value),
+            _ => EncodeCode128(Value)
+        };
+
+        double x = 0;
+        for (var i = 0; i < pattern.Length; i++)
+        {
+            var isBlack = pattern[i] == '1';
+            _bars.Add(new BarInfo(x, BarWidth, isBlack));
+            x += BarWidth;
+        }
+        _barWidth = x;
+    }
+
+    private static string EncodeCode128(string value)
+    {
+        // Simplified Code 128B encoding
+        var result = "11010010000"; // Start Code B
+        var checksum = 104;
+        for (var i = 0; i < value.Length; i++)
+        {
+            var code = (int)value[i] - 32;
+            if (code < 0 || code > 95) code = 0;
+            checksum += code * (i + 1);
+            result += GetCode128Pattern(code);
+        }
+        checksum %= 103;
+        result += GetCode128Pattern(checksum);
+        result += "1100011101011"; // Stop
+        return result;
+    }
+
+    private static string GetCode128Pattern(int index)
+    {
+        // Subset of Code 128B patterns
+        string[] patterns = [
+            "11011001100", "11001101100", "11001100110", "10010011000", "10010001100",
+            "10001001100", "10011001000", "10011000100", "10001100100", "11001001000",
+            "11001000100", "11000100100", "10110011100", "10011011100", "10011001110",
+            "10111001100", "10011101100", "10011100110", "11001110010", "11001011100",
+            "11001001110", "11011100100", "11001110100", "11101101110", "11101001100",
+            "11100101100", "11100100110", "11101100100", "11100110100", "11100110010",
+            "11011011000", "11011000110", "11000110110", "10100011000", "10001011000",
+            "10001000110", "10110001000", "10001101000", "10001100010", "11010001000",
+            "11000101000", "11000100010", "10110111000", "10110001110", "10001101110",
+            "10111011000", "10111000110", "10001110110", "11101110110", "11010001110",
+            "11000101110", "11011101000", "11011100010", "11011101110", "11101011000",
+            "11101000110", "11100010110", "11101101000", "11101100010", "11100011010",
+            "11101111010", "11001000010", "11110001010", "10100110000", "10100001100",
+            "10010110000", "10010000110", "10000101100", "10000100110", "10110010000",
+            "10110000100", "10011010000", "10011000010", "10000110100", "10000110010",
+            "11000010010", "11001010000", "11110111010", "11000010100", "10001111010",
+            "10100111100", "10010111100", "10010011110", "10111100100", "10011110100",
+            "10011110010", "11110100100", "11110010100", "11110010010", "11011011110",
+            "11011110110", "11110110110", "10101111000", "10100011110", "10001011110",
+            "10111101000", "10111100010", "11110101000", "11110100010", "10111011110",
+            "10111101110", "11101011110", "11110101110", "11010000100", "11010010000",
+            "11010011100"
+        ];
+        return index >= 0 && index < patterns.Length ? patterns[index] : patterns[0];
+    }
+
+    private static string EncodeCode39(string value)
+    {
+        var result = "100101101101011010"; // Start *
+        foreach (var c in value.ToUpper())
+        {
+            result += GetCode39Pattern(c);
+            result += "0"; // Inter-character gap
+        }
+        result += "100101101101011010"; // Stop *
+        return result;
+    }
+
+    private static string GetCode39Pattern(char c)
+    {
+        return c switch
+        {
+            '0' => "101001101101",  '1' => "110100101011",  '2' => "101100101011",
+            '3' => "110110010101",  '4' => "101001101011",  '5' => "110100110101",
+            '6' => "101100110101",  '7' => "101001011011",  '8' => "110100101101",
+            '9' => "101100101101",  'A' => "110101001011",  'B' => "101101001011",
+            'C' => "110110100101",  'D' => "101011001011",  'E' => "110101100101",
+            'F' => "101101100101",  'G' => "101010011011",  'H' => "110101001101",
+            'I' => "101101001101",  'J' => "101011001101",  _ => "101001101101"
+        };
+    }
+}

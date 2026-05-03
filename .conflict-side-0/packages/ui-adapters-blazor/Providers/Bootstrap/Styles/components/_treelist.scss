@@ -1,0 +1,281 @@
+// =============================================================================
+// Component: TreeList — Bootstrap Bridge Styles
+// Uses Bootstrap variables where available, falls back to Sunfish tokens
+// =============================================================================
+
+.sf-treelist {
+  width: 100%;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius, 0.375rem);
+  overflow: auto;
+  font-family: var(--bs-body-font-family, system-ui, -apple-system, sans-serif);
+  font-size: var(--bs-body-font-size, 1rem);
+  color: var(--bs-body-color, #212529);
+  background: var(--bs-body-bg, #ffffff);
+}
+
+.sf-treelist__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+// ── Header ────────────────────────────────────────────────────
+.sf-treelist__th {
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  white-space: nowrap;
+  user-select: none;
+  color: var(--bs-body-color, #212529);
+}
+
+// ── Row ───────────────────────────────────────────────────────
+.sf-treelist__row {
+  border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  transition: background 0.1s ease;
+  cursor: pointer;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+}
+
+// ── Selected row ─────────────────────────────────────────────
+.sf-treelist__row--selected {
+  background: color-mix(in srgb, var(--bs-primary, #0d6efd) 10%, var(--bs-body-bg, #ffffff));
+}
+
+// ── Focused row (keyboard navigation) ────────────────────────
+.sf-treelist__row--focused {
+  outline: 2px solid var(--bs-primary, #0d6efd);
+  outline-offset: -2px;
+}
+
+// ── Cell ──────────────────────────────────────────────────────
+.sf-treelist__td {
+  padding: 8px 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+// ── Toggle button (expand/collapse) ──────────────────────────
+// Note: the component emits `sf-tree-item__toggle` (shared with TreeView)
+.sf-tree-item__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background: transparent;
+  color: var(--bs-secondary-color, #6c757d);
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.1s ease, color 0.1s ease;
+
+  &:hover {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    color: var(--bs-body-color, #212529);
+  }
+
+  &:active {
+    background: var(--bs-secondary-bg, #e9ecef);
+  }
+}
+
+// ── Sortable header ──────────────────────────────────────────
+.sf-treelist__th--sortable {
+  cursor: pointer;
+}
+
+// ── Column resize handle ─────────────────────────────────────
+.sf-treelist__resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  z-index: 1;
+  transition: background 0.1s ease;
+
+  &:hover,
+  &:active {
+    background: var(--bs-primary, #0d6efd);
+  }
+}
+
+.sf-treelist__th {
+  position: relative;
+}
+
+// ── Column reorder drag indicator ────────────────────────────
+.sf-treelist__th--drag-over {
+  box-shadow: inset -2px 0 0 0 var(--bs-primary, #0d6efd);
+}
+
+// ── Pager ────────────────────────────────────────────────────
+.sf-treelist__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.sf-treelist__pager-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--bs-border-radius-sm, 0.25rem);
+  background: var(--bs-body-bg, #ffffff);
+  color: var(--bs-body-color, #212529);
+  font-size: var(--bs-body-font-size, 1rem);
+  cursor: pointer;
+  transition: background 0.1s ease, border-color 0.1s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &--active {
+    background: var(--bs-primary, #0d6efd);
+    color: #ffffff;
+    border-color: var(--bs-primary, #0d6efd);
+
+    &:hover:not(:disabled) {
+      background: var(--bs-primary, #0d6efd);
+    }
+  }
+}
+
+// ── Dark mode patch ───────────────────────────────────────────
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+  .sf-treelist {
+    border-color: var(--bs-border-color, #495057);
+    background: var(--bs-body-bg, #212529);
+    color: var(--bs-body-color, #dee2e6);
+  }
+
+  .sf-treelist__th {
+    background: var(--bs-tertiary-bg, #2b3035);
+    border-bottom-color: var(--bs-border-color, #495057);
+    color: var(--bs-body-color, #dee2e6);
+  }
+
+  .sf-treelist__row {
+    border-bottom-color: var(--bs-border-color, #373b3e);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+  }
+
+  .sf-tree-item__toggle {
+    color: var(--bs-secondary-color, #adb5bd);
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--bs-body-color, #dee2e6);
+    }
+  }
+
+  .sf-treelist__row--selected {
+    background: color-mix(in srgb, var(--bs-primary, #6ea8fe) 15%, var(--bs-body-bg, #212529));
+  }
+
+  .sf-treelist__row--focused {
+    outline-color: var(--bs-primary, #6ea8fe);
+  }
+
+  .sf-treelist__resize-handle {
+    &:hover,
+    &:active {
+      background: var(--bs-primary, #6ea8fe);
+    }
+  }
+
+  .sf-treelist__th--drag-over {
+    box-shadow: inset -2px 0 0 0 var(--bs-primary, #6ea8fe);
+  }
+
+  .sf-treelist__pager {
+    border-top-color: var(--bs-border-color, #495057);
+  }
+
+  .sf-treelist__pager-btn {
+    background: var(--bs-body-bg, #212529);
+    color: var(--bs-body-color, #dee2e6);
+    border-color: var(--bs-border-color, #495057);
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &--active {
+      background: var(--bs-primary, #6ea8fe);
+      color: #ffffff;
+      border-color: var(--bs-primary, #6ea8fe);
+    }
+  }
+}
+
+// ── Accessibility: reduced motion ─────────────────────────────
+@media (prefers-reduced-motion: reduce) {
+  .sf-treelist,
+  .sf-treelist * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ── Accessibility: high contrast ──────────────────────────────
+@media (forced-colors: active) {
+  .sf-treelist {
+    border-color: ButtonText;
+  }
+
+  .sf-treelist__th {
+    border-bottom-color: ButtonText;
+  }
+
+  .sf-treelist__row:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .sf-tree-item__toggle {
+    color: ButtonText;
+
+    &:hover {
+      color: Highlight;
+    }
+  }
+}

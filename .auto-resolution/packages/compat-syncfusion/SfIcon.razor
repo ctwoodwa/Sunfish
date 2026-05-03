@@ -1,0 +1,92 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfIcon> Logger
+
+<SunfishIcon Name="@_mappedName"
+             Size="_size"
+             AriaLabel="Title"
+             @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>
+    /// Syncfusion's <c>IconName</c> enum has ~1,500 values. compat-syncfusion accepts the
+    /// string form (Syncfusion enum literal <c>ToString()</c> output) and maps a curated subset
+    /// to Sunfish icon names. Unmapped values LogAndFallback to a placeholder.
+    /// See <c>docs/compat-syncfusion-mapping.md</c> §SfIcon for the mapping table.
+    /// </summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>CSS class(es) for a custom font-icon. Forwarded verbatim via AdditionalAttributes["class"].</summary>
+    [Parameter] public string? IconCss { get; set; }
+
+    /// <summary>Icon size. Default <see cref="CompatEnums.IconSize.Medium"/>.</summary>
+    [Parameter] public CompatEnums.IconSize Size { get; set; } = CompatEnums.IconSize.Medium;
+
+    /// <summary>Title attribute (tooltip + a11y label).</summary>
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private string? _mappedName;
+    private FoundationEnums.IconSize _size;
+
+    // Curated subset of the Syncfusion IconName enum. Consumers calling SfIcon with an
+    // unmapped name get LogAndFallback to the raw string (passed to Sunfish's IconProvider,
+    // which may or may not resolve it). Expand via policy-gated PR.
+    private static readonly HashSet<string> _knownIconNames = new(System.StringComparer.OrdinalIgnoreCase)
+    {
+        "Add", "Cancel", "Cart", "Check", "Close", "Copy", "Cut", "Delete", "Download",
+        "Edit", "Email", "File", "Filter", "Folder", "Group", "Help", "Home", "Image",
+        "Info", "Inbox", "Like", "Location", "Lock", "Logout", "Menu", "More", "New",
+        "Open", "Paste", "Phone", "Play", "Plus", "Print", "Refresh", "Remove", "Save",
+        "Search", "Settings", "Share", "Sort", "Star", "Stop", "Tag", "Trash", "Undo",
+        "Unlock", "Upload", "User", "Users", "Warning", "Zoom"
+    };
+
+    protected override void OnParametersSet()
+    {
+        _size = Size switch
+        {
+            CompatEnums.IconSize.Small => FoundationEnums.IconSize.Small,
+            CompatEnums.IconSize.Medium => FoundationEnums.IconSize.Medium,
+            CompatEnums.IconSize.Large => FoundationEnums.IconSize.Large,
+            _ => FoundationEnums.IconSize.Medium
+        };
+
+        if (string.IsNullOrEmpty(Name))
+        {
+            // If IconCss was provided but Name was not, use a placeholder name so the inner
+            // SunfishIcon renders — the AdditionalAttributes["class"] forwarding will carry
+            // the Syncfusion font-class to the output span.
+            _mappedName = string.IsNullOrEmpty(IconCss) ? null : "placeholder";
+        }
+        else if (_knownIconNames.Contains(Name))
+        {
+            _mappedName = Name.ToLowerInvariant();
+        }
+        else
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfIcon.Name='{Name}' is not in the curated subset. " +
+                "Passing through to Sunfish IconProvider (may not resolve). " +
+                "See docs/compat-syncfusion-mapping.md §SfIcon for the mapping table.",
+                Name);
+            _mappedName = Name.ToLowerInvariant();
+        }
+
+        if (!string.IsNullOrEmpty(IconCss))
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (!AdditionalAttributes.ContainsKey("class"))
+            {
+                AdditionalAttributes["class"] = IconCss!;
+            }
+        }
+    }
+}

@@ -1,0 +1,70 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout.Dock
+@using Sunfish.UIAdapters.Blazor.Enums
+@inherits SunfishComponentBase
+
+@* ──────────────────────────────────────────────────────────────────────
+   SunfishDockSplit — recursive splitter container.
+
+   Each direct child (pane or nested split) is wrapped in a flex item sized
+   by the matching entry in Proportions (fallback: equal share). Splitter
+   resize handles are intentionally NOT rendered in the MVP; consumers
+   declare proportions up-front and drag-to-resize arrives in a later wave.
+   ────────────────────────────────────────────────────────────────────── *@
+
+<CascadingValue Value="this" IsFixed="true">
+    <div class="@CombineClasses(SplitClass())"
+         style="@CombineStyles(LayoutStyle())"
+         data-sf-dock-split="@Id"
+         data-sf-dock-orientation="@Orientation.ToString().ToLowerInvariant()">
+        @ChildContent
+    </div>
+</CascadingValue>
+
+@code {
+    /// <summary>Optional identifier so consumers can correlate layout-changed events.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Split orientation. Horizontal splits render a row, vertical splits a column.</summary>
+    [Parameter] public DockOrientation Orientation { get; set; } = DockOrientation.Horizontal;
+
+    /// <summary>
+    /// Flex proportions for direct children. Values should sum to ~1.0 (MVP clamps and
+    /// normalises so consumers can pass any positive numbers). If omitted, children
+    /// share space equally via the default <c>flex:1 1 0</c>.
+    /// </summary>
+    [Parameter] public double[]? Proportions { get; set; }
+
+    /// <summary>Nested pane or split descriptors.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Parent dock manager, resolved through the cascading root.</summary>
+    [CascadingParameter] public SunfishDockManager? DockManager { get; set; }
+
+    /// <summary>Enclosing split (if this split is itself nested inside another).</summary>
+    [CascadingParameter] public SunfishDockSplit? ParentSplit { get; set; }
+
+    private string SplitClass() =>
+        Orientation == DockOrientation.Vertical
+            ? "sf-dockmanager__split sf-dockmanager__split--vertical"
+            : "sf-dockmanager__split sf-dockmanager__split--horizontal";
+
+    private string LayoutStyle()
+    {
+        var flexDir = Orientation == DockOrientation.Vertical ? "column" : "row";
+        return $"display:flex;flex-direction:{flexDir};flex:1 1 auto;min-width:0;min-height:0;";
+    }
+
+    /// <summary>
+    /// Returns the CSS <c>flex</c> value for the child at <paramref name="childIndex"/>.
+    /// Used by <c>SunfishDockPane</c> and nested splits when the caller supplies an index.
+    /// </summary>
+    internal string FlexForChild(int childIndex)
+    {
+        if (Proportions is null || Proportions.Length == 0) return "1 1 0";
+        if (childIndex < 0 || childIndex >= Proportions.Length) return "1 1 0";
+
+        var raw = Proportions[childIndex];
+        var weight = raw > 0 ? raw : 0.0001;
+        return $"{weight.ToString(System.Globalization.CultureInfo.InvariantCulture)} 1 0";
+    }
+}

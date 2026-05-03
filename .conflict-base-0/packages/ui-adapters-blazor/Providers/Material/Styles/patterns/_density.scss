@@ -1,0 +1,33 @@
+// =============================================================================
+// Patterns: Density — Material 3 Density System
+// Source: https://m3.material.io/foundations/layout/applying-density
+//
+// M3 density is expressed as a scale: 0 (default), -1, -2, -3 (most compact).
+// Each step reduces component height by 4px.
+// =============================================================================
+
+// TODO: Placeholder — full Material 3 density styles not yet defined.
+
+// Density scale as CSS custom property
+// Set on :root or a container to cascade density changes
+:root {
+  --sf-density: 0;
+}
+
+// Density modifier classes (apply to a container or the provider root)
+.sf-density--compact {
+  --sf-density: -2;
+  --sf-field-height:       48px;   // 56 - 2*4
+  --sf-field-height-dense: 32px;   // 40 - 2*4
+}
+
+.sf-density--comfortable {
+  --sf-density: -1;
+  --sf-field-height:       52px;   // 56 - 1*4
+  --sf-field-height-dense: 36px;   // 40 - 1*4
+}
+
+.sf-density--standard {
+  --sf-density: 0;
+  // Defaults — no overrides needed
+}

@@ -1,0 +1,37 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ButtonGroupClass())"
+     style="@CombineStyles()"
+     role="radiogroup"
+     aria-label="Segmented control"
+     @attributes="AdditionalAttributes">
+    @if (Items != null)
+    {
+        @foreach (var item in Items)
+        {
+            var isSelected = item == Value;
+            <button class="@CssProvider.ToggleButtonClass(isSelected)"
+                    role="radio"
+                    aria-checked="@isSelected.ToString().ToLowerInvariant()"
+                    disabled="@(!Enabled)"
+                    @onclick="() => SelectItem(item)">
+                @item
+            </button>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public string Value { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+    [Parameter] public List<string>? Items { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+    [Parameter] public ButtonSize Size { get; set; } = ButtonSize.Medium;
+
+    private async Task SelectItem(string item)
+    {
+        if (!Enabled) return;
+        Value = item;
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

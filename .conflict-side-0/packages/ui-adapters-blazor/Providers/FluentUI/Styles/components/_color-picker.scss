@@ -1,0 +1,153 @@
+// =============================================================================
+// Component: ColorPicker / ColorGradient / ColorPalette / FlatColorPicker
+// =============================================================================
+
+// Trigger button with color swatch
+.sf-color-picker {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    min-height: var(--sf-input-min-height, 32px);
+    padding: var(--sf-space-xxs) var(--sf-space-sm);
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    cursor: pointer;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-on-background);
+    transition: border-color var(--sf-transition-fast);
+
+    &:hover {
+        border-color: var(--sf-color-on-background);
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--sf-focus-ring);
+    }
+}
+
+.sf-color-picker__swatch {
+    display: inline-block;
+    width: var(--sf-color-swatch-size, 20px);
+    height: var(--sf-color-swatch-size, 20px);
+    border-radius: var(--sf-radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.2); // semi-transparent overlay works on any swatch color
+    flex-shrink: 0;
+    // background-color is set inline by the component
+}
+
+// Popup panel
+.sf-color-picker__popup {
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-lg);
+    padding: var(--sf-space-md);
+    z-index: var(--sf-z-dropdown);
+}
+
+// Color gradient — 2D saturation/brightness picker
+.fui-colorgradient {
+    position: relative;
+    width: var(--sf-colorgradient-width, 220px);
+    height: var(--sf-colorgradient-height, 160px);
+    border-radius: var(--sf-radius-sm);
+    overflow: hidden;
+    cursor: crosshair;
+    user-select: none;
+
+    // Gradient layers overlay each other
+    // These are literal color values required to render the gradient spectrum
+    .fui-colorgradient__white {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to right, #fff 0%, transparent 100%);
+    }
+
+    .fui-colorgradient__black {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 0%, #000 100%);
+    }
+
+    .fui-colorgradient__thumb {
+        position: absolute;
+        width: var(--sf-colorgradient-thumb-size, 12px);
+        height: var(--sf-colorgradient-thumb-size, 12px);
+        border: 2px solid #fff; // white border ensures visibility on any hue
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        box-shadow: 0 0 2px rgba(0, 0, 0, 0.5); // shadow for visibility
+        cursor: grab;
+
+        &:active {
+            cursor: grabbing;
+        }
+    }
+}
+
+// Hue slider
+.fui-colorgradient__hue {
+    position: relative;
+    height: var(--sf-colorslider-height, 12px);
+    border-radius: var(--sf-radius-full);
+    // hsl() values represent the literal color spectrum — not theming tokens
+    background: linear-gradient(to right,
+        hsl(0, 100%, 50%),
+        hsl(60, 100%, 50%),
+        hsl(120, 100%, 50%),
+        hsl(180, 100%, 50%),
+        hsl(240, 100%, 50%),
+        hsl(300, 100%, 50%),
+        hsl(360, 100%, 50%)
+    );
+    cursor: pointer;
+    margin-top: var(--sf-space-sm);
+}
+
+// Alpha slider
+.fui-colorgradient__alpha {
+    position: relative;
+    height: var(--sf-colorslider-height, 12px);
+    border-radius: var(--sf-radius-full);
+    margin-top: var(--sf-space-sm);
+    cursor: pointer;
+    // background set inline by component (alpha gradient over current color)
+}
+
+// Color palette grid
+.fui-colorpalette {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, var(--sf-palette-swatch-size, 22px));
+    gap: var(--sf-space-xxs);
+    padding: var(--sf-space-sm);
+}
+
+.fui-colorpalette__swatch {
+    width: var(--sf-palette-swatch-size, 22px);
+    height: var(--sf-palette-swatch-size, 22px);
+    border-radius: var(--sf-radius-sm);
+    border: 1px solid rgba(0, 0, 0, 0.1); // semi-transparent overlay works on any swatch color
+    cursor: pointer;
+    transition: transform var(--sf-transition-fast);
+
+    &:hover {
+        transform: scale(1.2);
+        border-color: rgba(0, 0, 0, 0.3);
+    }
+
+    &--selected {
+        outline: 2px solid var(--sf-color-primary);
+        outline-offset: 1px;
+    }
+}
+
+// Flat (always-visible) color picker
+.fui-flatcolorpicker {
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    padding: var(--sf-space-md);
+}

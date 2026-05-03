@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Transport</PackageId>
+    <RootNamespace>Sunfish.Foundation.Transport</RootNamespace>
+    <Description>Foundation-tier substrate for the three-tier peer transport stack (ADR 0061): mDNS link-local (Tier 1) + WireGuard mesh-VPN (Tier 2) + Bridge HTTPS managed-relay (Tier 3). Hosts IPeerTransport / ITransportSelector / IMeshVpnAdapter / IDuplexStream contracts, PeerEndpoint / MeshNodeStatus / MeshPeer / MeshDeviceRegistration value records, and TransportTier discriminator. Concrete tier implementations live in foundation-transport (Tier 1 + Tier 3) and providers-mesh-* adapter packages (Tier 2).</Description>
+    <PackageTags>sunfish;foundation;transport;mesh-vpn;peer;adr-0061</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Makaretu.Dns.Multicast.New" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Transport.Tests" />
+  </ItemGroup>
+</Project>

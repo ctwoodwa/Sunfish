@@ -1,0 +1,114 @@
+@page "/components/forms/upload/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Upload / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Upload / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Upload/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishUpload</code> renders a drop-zone + file queue that sends files to a remote
+            endpoint. The visible surface is driven by:
+        </p>
+        <ul>
+            <li><code>AutoUpload</code> — when <code>true</code> (default) files upload immediately
+                on select; when <code>false</code>, explicit Upload / Clear buttons appear.</li>
+            <li><code>Multiple</code> — allow selecting more than one file at once.</li>
+            <li><code>Accept</code>, <code>AllowedExtensions</code>,
+                <code>MaxFileSize</code> / <code>MinFileSize</code> — client-side validation
+                surfaces inline error chrome on invalid files.</li>
+            <li><code>Files</code> — pre-populate the queue with server-side entries.</li>
+            <li><code>FileTemplate</code> / <code>FileInfoTemplate</code> /
+                <code>SelectFilesButtonTemplate</code> — replace individual list-item / info / button
+                markup.</li>
+            <li><code>Enabled="false"</code> — dims the drop-zone and disables selection.</li>
+        </ul>
+        <p>
+            Each demo points at the placeholder URL <code>/api/upload</code>. That endpoint is not
+            wired in the kitchen-sink host, so uploads will fail at the network layer — the visual
+            chrome (progress, retry, pause, validation errors) is what these demos exercise.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default (auto-upload, multiple)</h3>
+                <SunfishUpload SaveUrl="/api/upload" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Deferred upload (AutoUpload=false)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Files stay in the queue until the user presses <em>Upload</em>; a
+                    <em>Clear</em> button also appears.
+                </p>
+                <SunfishUpload SaveUrl="/api/upload" AutoUpload="false" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Single file only</h3>
+                <SunfishUpload SaveUrl="/api/upload" Multiple="false" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Validation (extensions + size)</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Accepts only <code>.png</code>, <code>.jpg</code>, <code>.pdf</code> up to
+                    <code>5&nbsp;MB</code>. Invalid files display an inline validation message.
+                </p>
+                <SunfishUpload SaveUrl="/api/upload"
+                               AllowedExtensions="@_allowedExtensions"
+                               MaxFileSize="5_242_880" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Pre-populated queue</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Items supplied via <code>Files</code> render as already-uploaded entries the
+                    user can remove.
+                </p>
+                <SunfishUpload SaveUrl="/api/upload" Files="@_initialFiles" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Disabled</h3>
+                <SunfishUpload SaveUrl="/api/upload" Enabled="false" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Upload", "Appearance"];
+
+    private readonly List<string> _allowedExtensions = new() { ".png", ".jpg", ".pdf" };
+
+    private readonly List<UploadFileInfo> _initialFiles = new()
+    {
+        new UploadFileInfo
+        {
+            Name = "quarterly-report.pdf",
+            Size = 1_842_334,
+            Extension = ".pdf",
+            Status = UploadFileStatus.Uploaded,
+            Progress = 100,
+        },
+        new UploadFileInfo
+        {
+            Name = "logo.png",
+            Size = 24_576,
+            Extension = ".png",
+            Status = UploadFileStatus.Uploaded,
+            Progress = 100,
+        },
+    };
+}

@@ -1,0 +1,146 @@
+// =============================================================================
+// Component: DropDownList
+// =============================================================================
+
+// Trigger (closed state)
+.sf-dropdownlist {
+    display: inline-flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    min-width: 200px;
+    min-height: 32px;
+    padding: 0 10px;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-on-background);
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border-strong);
+    border-radius: var(--sf-radius-md);
+    cursor: pointer;
+    user-select: none;
+    transition: border-color var(--sf-transition-fast);
+
+    &::after {
+        content: '';
+        display: block;
+        flex-shrink: 0;
+        width: 12px;
+        height: 12px;
+        margin-left: var(--sf-space-sm);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.15 4.65a.5.5 0 0 1 .7 0L6 7.79l3.15-3.14a.5.5 0 0 1 .7.7l-3.5 3.5a.5.5 0 0 1-.7 0l-3.5-3.5a.5.5 0 0 1 0-.7z' fill='%231a1a1a'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-size: contain;
+        pointer-events: none;
+        transition: transform var(--sf-transition-fast);
+    }
+}
+
+.sf-dropdownlist:hover {
+    border-color: var(--sf-color-on-background);
+}
+
+.sf-dropdownlist:focus-visible {
+    outline: none;
+    box-shadow: var(--sf-focus-ring);
+}
+
+.sf-dropdownlist--open {
+    border-color: var(--sf-color-primary);
+    box-shadow: 0 0 0 1px var(--sf-color-primary);
+
+    &::after {
+        transform: rotate(180deg);
+    }
+}
+
+.sf-dropdownlist--disabled {
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text-disabled);
+    border-color: var(--sf-color-border);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sf-dropdownlist--invalid {
+    border-color: var(--sf-color-danger);
+}
+
+.sf-dropdownlist__value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-dropdownlist__placeholder {
+    color: var(--sf-color-text-secondary);
+}
+
+// Popup
+.sf-dropdownlist-popup {
+    min-width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-md);
+    z-index: var(--sf-z-dropdown);
+
+    ul {
+        list-style: none;
+        margin: 0;
+        padding: var(--sf-space-xs) 0;
+    }
+}
+
+.sf-dropdownlist__filter-input {
+    display: block;
+    width: 100%;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    border: none;
+    border-bottom: 1px solid var(--sf-color-border);
+    outline: none;
+    background: var(--sf-color-surface);
+}
+
+.sf-dropdownlist__group-header {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-size: var(--sf-font-size-xs);
+    font-weight: var(--sf-font-weight-semibold);
+    color: var(--sf-color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+// Items
+.sf-dropdownlist-item {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    color: var(--sf-color-on-background);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast);
+
+    &:hover {
+        background: var(--sf-color-surface);
+    }
+}
+
+.sf-dropdownlist-item--highlighted {
+    background: var(--sf-color-surface);
+}
+
+.sf-dropdownlist-item--selected {
+    background: var(--sf-color-primary-light);
+    color: var(--sf-color-primary);
+    font-weight: var(--sf-font-weight-semibold);
+}
+
+.sf-dropdownlist-item--selected.sf-dropdownlist-item--highlighted {
+    background: var(--sf-color-primary-light);
+}

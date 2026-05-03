@@ -1,0 +1,21 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Icon
+// =================================================================
+// From _bridge-utility.scss: .sf-icon
+// =================================================================
+
+.sf-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+
+  &--small      { width: 16px; height: 16px; }
+  &--medium     { width: 20px; height: 20px; }
+  &--large      { width: 24px; height: 24px; }
+  &--extralarge { width: 32px; height: 32px; }
+
+  &--flip-horizontal { transform: scaleX(-1); }
+  &--flip-vertical   { transform: scaleY(-1); }
+  &--flip-both       { transform: scale(-1); }
+}

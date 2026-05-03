@@ -1,0 +1,51 @@
+@inherits SunfishComponentBase
+
+<label class="@GetCheckboxClass()" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    <input type="checkbox"
+           checked="@Value"
+           disabled="@(!Enabled)"
+           aria-checked="@GetAriaChecked()"
+           @onchange="OnCheckChanged" />
+    @if (!string.IsNullOrEmpty(Label))
+    {
+        <span class="@(LabelPosition == "before" ? "mar-checkbox__label--before" : "")">@Label</span>
+    }
+</label>
+
+@code {
+    /// <summary>The checked state. Supports two-way binding via <c>@@bind-Value</c>.</summary>
+    [Parameter] public bool Value { get; set; }
+
+    /// <summary>Fires when the user toggles the checkbox. Powers <c>@@bind-Value</c>.</summary>
+    [Parameter] public EventCallback<bool> ValueChanged { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public bool Indeterminate { get; set; }
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Label position relative to checkbox ("before" or "after"). Defaults to "after".</summary>
+    [Parameter] public string LabelPosition { get; set; } = "after";
+
+    private string GetCheckboxClass()
+    {
+        return ClassBuilder.Clear()
+            .AddClass(CssProvider.CheckboxClass(Value))
+            .AddClass("mar-checkbox--indeterminate", Indeterminate)
+            .AddClass("mar-checkbox--disabled", !Enabled)
+            .AddClass(Class)
+            .Build();
+    }
+
+    private string GetAriaChecked()
+    {
+        if (Indeterminate) return "mixed";
+        return Value ? "true" : "false";
+    }
+
+    private async Task OnCheckChanged(ChangeEventArgs e)
+    {
+        if (!Enabled) return;
+        Value = (bool)(e.Value ?? false);
+        await ValueChanged.InvokeAsync(Value);
+    }
+}

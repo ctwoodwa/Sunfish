@@ -1,0 +1,98 @@
+// =============================================================================
+// Patterns: Interactive States — Material 3 State Layer System
+// Source: https://m3.material.io/foundations/interaction/states
+//
+// M3 uses "state layers" — translucent color overlays applied on top of
+// a component's surface to communicate interaction feedback. The overlay
+// color is taken from the component's content color (e.g. on-primary for
+// a filled button), not the primary color itself.
+// =============================================================================
+
+:root {
+  // State layer opacity levels per M3 spec
+  --sf-state-hover-opacity:    0.08;
+  --sf-state-focus-opacity:    0.12;
+  --sf-state-pressed-opacity:  0.12;
+  --sf-state-dragged-opacity:  0.16;
+}
+
+// ----------------------------------------------------------------------------
+// sf-state-layer($color)
+// Mixin: adds a ::before pseudo-element as an M3 state layer.
+// The host element MUST have position: relative and overflow: hidden.
+//
+// Usage:
+//   .sf-button {
+//     position: relative;
+//     overflow: hidden;
+//     @include sf-state-layer(var(--sf-color-on-primary));
+//   }
+// ----------------------------------------------------------------------------
+
+@mixin sf-state-layer($color: var(--sf-color-on-surface)) {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background-color: $color;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before       { opacity: var(--sf-state-hover-opacity); }
+  &:focus-visible::before { opacity: var(--sf-state-focus-opacity); }
+  &:active::before      { opacity: var(--sf-state-pressed-opacity); }
+
+  &[data-dragging]::before,
+  &.sf--dragging::before {
+    opacity: var(--sf-state-dragged-opacity);
+  }
+}
+
+// ----------------------------------------------------------------------------
+// Utility classes for state layers (used by components without mixin access)
+// ----------------------------------------------------------------------------
+
+.sf-state-layer {
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0;
+    background-color: currentColor;
+    transition: opacity var(--sf-transition-fast);
+    pointer-events: none;
+  }
+
+  &:hover::before        { opacity: var(--sf-state-hover-opacity); }
+  &:focus-visible::before { opacity: var(--sf-state-focus-opacity); }
+  &:active::before       { opacity: var(--sf-state-pressed-opacity); }
+}
+
+// ----------------------------------------------------------------------------
+// Ripple placeholder — M3 touch feedback.
+// Full ripple implementation requires JS; this scaffolds the CSS contract.
+// ----------------------------------------------------------------------------
+
+.sf-ripple {
+  position: absolute;
+  border-radius: 50%;
+  transform: scale(0);
+  animation: sf-ripple 600ms var(--sf-motion-easing-standard) forwards;
+  background-color: currentColor;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+@keyframes sf-ripple {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}

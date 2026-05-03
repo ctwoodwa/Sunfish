@@ -1,0 +1,145 @@
+@page "/components/forms/autocomplete/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Autocomplete / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Autocomplete / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAutocomplete</code> follows the ARIA combobox pattern with list autocomplete.
+            The text input carries <code>role="combobox"</code>,
+            <code>aria-autocomplete="list"</code>, <code>aria-expanded</code>, and
+            <code>aria-activedescendant</code> pointing at the currently highlighted option. The
+            popup is a <code>role="listbox"</code> of <code>role="option"</code> items.
+        </p>
+        <ul>
+            <li><strong>Input</strong> — <code>role="combobox"</code>,
+                <code>aria-autocomplete="list"</code>,
+                <code>aria-expanded</code> reflects popup state,
+                <code>aria-activedescendant</code> points at the highlighted option id.</li>
+            <li><strong>Listbox</strong> — <code>role="listbox"</code> wraps the suggestion
+                <code>&lt;ul&gt;</code>.</li>
+            <li><strong>Options</strong> — each <code>&lt;li&gt;</code> carries
+                <code>role="option"</code> and an id that
+                <code>aria-activedescendant</code> can reference.</li>
+            <li><strong>Labelling</strong> — wrap the input in a <code>SunfishField</code> +
+                <code>SunfishLabel</code> so the accessible name is programmatic.</li>
+            <li><strong>Keyboard</strong> — <kbd>Arrow Down</kbd> / <kbd>Arrow Up</kbd> walk the
+                suggestions, <kbd>Enter</kbd> commits the highlighted one, <kbd>Esc</kbd> closes.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled autocomplete</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab to focus, type to filter, <kbd>Arrow Down</kbd> to walk the suggestions,
+                    <kbd>Enter</kbd> to commit. A screen reader announces each option as
+                    <code>aria-activedescendant</code> moves over it.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>City</SunfishLabel>
+                    <SunfishAutocomplete TItem="string" Items="@_cities"
+                                         @bind-Value="@_value"
+                                         ShowClearButton="true"
+                                         Placeholder="Type to filter..." />
+                </SunfishField>
+                @if (!string.IsNullOrEmpty(_value))
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Committed value: <strong>@_value</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Grouped suggestions</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    With <code>GroupField</code>, the popup inserts semantic group headers
+                    (<code>role="presentation"</code> non-focusable labels) between option blocks
+                    so screen readers announce category transitions without landing on them.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishAutocomplete TItem="Country"
+                                         Data="@_countries"
+                                         TextField="Name"
+                                         GroupField="Region"
+                                         @bind-Value="@_grouped"
+                                         Placeholder="Type a country..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="combobox"</code></dt>
+                    <dd>On the <code>&lt;input&gt;</code> — marks it as an editable combobox.</dd>
+
+                    <dt><code>aria-autocomplete="list"</code></dt>
+                    <dd>Announces that the popup shows a filtered list rather than an inline
+                        completion.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd><code>"true"</code> when the popup is visible, <code>"false"</code> otherwise.</dd>
+
+                    <dt><code>aria-activedescendant</code></dt>
+                    <dd>Points at the id of the highlighted option so AT can announce it without
+                        moving DOM focus.</dd>
+
+                    <dt><code>role="listbox"</code></dt>
+                    <dd>Wraps the suggestion <code>&lt;ul&gt;</code>.</dd>
+
+                    <dt><code>role="option"</code></dt>
+                    <dd>On each <code>&lt;li&gt;</code>.</dd>
+
+                    <dt><kbd>Arrow Down</kbd> / <kbd>Arrow Up</kbd></dt>
+                    <dd>Walks through the suggestions.</dd>
+
+                    <dt><kbd>Enter</kbd></dt>
+                    <dd>Commits the highlighted suggestion.</dd>
+
+                    <dt><kbd>Esc</kbd></dt>
+                    <dd>Closes the popup without committing.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Autocomplete", "Accessibility"];
+
+    private string _value = string.Empty;
+    private string _grouped = string.Empty;
+
+    private record Country(int Id, string Name, string Region);
+
+    private readonly List<string> _cities = new()
+    {
+        "New York", "London", "Paris", "Tokyo", "Berlin",
+        "Madrid", "Rome", "Amsterdam", "Vienna", "Prague",
+    };
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "Americas"),
+        new(2, "Canada", "Americas"),
+        new(3, "Brazil", "Americas"),
+        new(4, "United Kingdom", "Europe"),
+        new(5, "Germany", "Europe"),
+        new(6, "France", "Europe"),
+        new(7, "Japan", "Asia"),
+        new(8, "Singapore", "Asia"),
+    };
+}

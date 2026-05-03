@@ -1,0 +1,108 @@
+@typeparam TValue
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(GroupClass)"
+     style="@CombineStyles()"
+     role="radiogroup"
+     aria-label="@Label"
+     @attributes="AdditionalAttributes">
+
+    @if (Data != null)
+    {
+        @foreach (var item in Data)
+        {
+            var itemValue = GetPropertyValue<TValue>(item, ValueField);
+            var itemText = GetPropertyText(item, TextField) ?? itemValue?.ToString() ?? item.ToString();
+            var isSelected = EqualityComparer<TValue?>.Default.Equals(itemValue, Value);
+
+            <label class="@CssProvider.RadioClass(isSelected)">
+                <input type="radio"
+                       name="@Name"
+                       value="@itemValue"
+                       checked="@isSelected"
+                       disabled="@(!Enabled)"
+                       @onchange="() => SelectValue(itemValue!)" />
+                <span>@itemText</span>
+            </label>
+        }
+    }
+    else
+    {
+        <CascadingValue Value="this" IsFixed="false">
+            @ChildContent
+        </CascadingValue>
+    }
+</div>
+
+@code {
+    /// <summary>The selected value. Supports two-way binding.</summary>
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>The radio group name (shared across all radios in the group).</summary>
+    [Parameter] public string Name { get; set; } = $"rg-{Guid.NewGuid().ToString("N")[..8]}";
+
+    /// <summary>Label for the group (used as aria-label).</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Data source for data-driven radio buttons.</summary>
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+
+    /// <summary>Property name for the display text.</summary>
+    [Parameter] public string TextField { get; set; } = "Text";
+
+    /// <summary>Property name for the value.</summary>
+    [Parameter] public string ValueField { get; set; } = "Value";
+
+    /// <summary>Layout direction (Horizontal or Vertical). Defaults to Vertical.</summary>
+    [Parameter] public string Layout { get; set; } = "vertical";
+
+    /// <summary>Whether the radio group is enabled.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>Manual child content (SunfishRadio components).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string GroupClass
+    {
+        get
+        {
+            var cls = CssProvider.RadioGroupClass();
+            if (Layout == "horizontal") cls += " mar-radio-group--horizontal";
+            if (!Enabled) cls += " mar-radio-group--disabled";
+            return cls;
+        }
+    }
+
+    internal async Task SelectValue(TValue value)
+    {
+        if (!Enabled) return;
+        Value = value;
+        await ValueChanged.InvokeAsync(value);
+    }
+
+    internal bool IsSelected(TValue candidate) =>
+        EqualityComparer<TValue?>.Default.Equals(Value, candidate);
+
+    private static T? GetPropertyValue<T>(object item, string propertyName)
+    {
+        var prop = item.GetType().GetProperty(propertyName);
+        if (prop is null) return default;
+        var raw = prop.GetValue(item);
+        if (raw is T typed) return typed;
+        if (raw is null) return default;
+        try
+        {
+            return (T)Convert.ChangeType(raw, typeof(T));
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    private static string? GetPropertyText(object item, string propertyName)
+    {
+        return item.GetType().GetProperty(propertyName)?.GetValue(item)?.ToString();
+    }
+}

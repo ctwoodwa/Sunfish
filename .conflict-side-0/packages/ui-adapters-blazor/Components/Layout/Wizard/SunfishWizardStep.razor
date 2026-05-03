@@ -1,0 +1,70 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@implements IDisposable
+
+@{
+    // Render nothing — the parent SunfishWizard composes the step indicator + panel.
+}
+
+@code {
+    /// <summary>Parent wizard, resolved via cascading value.</summary>
+    [CascadingParameter] public SunfishWizard? ParentWizard { get; set; }
+
+    /// <summary>Human-readable label shown on the stepper rail.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Optional icon name (rendered inside the step chip).</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Short text override for the chip (falls back to the 1-based index).</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Marks the step as optional — a "(Optional)" hint is rendered next to the label.</summary>
+    [Parameter] public bool Optional { get; set; }
+
+    /// <summary>Disables the step. Disabled steps cannot be navigated to or away from.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
+    /// Three-state validity: <c>true</c> (valid), <c>false</c> (invalid), <c>null</c> (not validated).
+    /// In linear mode an <c>false</c> value on the current step blocks Next.
+    /// </summary>
+    [Parameter] public bool? Valid { get; set; }
+
+    /// <summary>Optional custom template for the step chip on the rail.</summary>
+    [Parameter] public RenderFragment? StepTemplate { get; set; }
+
+    /// <summary>
+    /// Panel content. Canonical name going forward.
+    /// If both <see cref="ContentTemplate"/> and <see cref="Content"/>/<see cref="ChildContent"/>
+    /// are provided, <see cref="ContentTemplate"/> wins.
+    /// </summary>
+    [Parameter] public RenderFragment? ContentTemplate { get; set; }
+
+    /// <summary>Spec-compatible alias for <see cref="ContentTemplate"/>.</summary>
+    [Parameter] public RenderFragment? Content { get; set; }
+
+    /// <summary>Default-slot alias for <see cref="ContentTemplate"/>.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Fires on this step before navigation leaves it. Set
+    /// <see cref="WizardStepChangeEventArgs.IsCancelled"/> to veto the transition.
+    /// </summary>
+    [Parameter] public EventCallback<WizardStepChangeEventArgs> OnChange { get; set; }
+
+    /// <summary>Fires after this step becomes the active step.</summary>
+    [Parameter] public EventCallback<int> OnActivate { get; set; }
+
+    /// <summary>Resolved content for the panel, honouring ContentTemplate &gt; Content &gt; ChildContent.</summary>
+    internal RenderFragment? EffectiveContent => ContentTemplate ?? Content ?? ChildContent;
+
+    protected override void OnInitialized()
+    {
+        ParentWizard?.RegisterStep(this);
+    }
+
+    public void Dispose()
+    {
+        ParentWizard?.UnregisterStep(this);
+    }
+}

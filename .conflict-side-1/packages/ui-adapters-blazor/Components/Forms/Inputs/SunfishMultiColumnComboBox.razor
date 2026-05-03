@@ -1,0 +1,211 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@typeparam TItem
+@typeparam TValue
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses("sf-multicolumncombobox")"
+     style="@CombineStyles(WidthStyle())"
+     @attributes="AdditionalAttributes">
+
+    <div class="sf-multicolumncombobox__input-wrapper">
+        <input type="text"
+               class="sf-multicolumncombobox__input"
+               value="@_inputText"
+               placeholder="@(Placeholder ?? "Select...")"
+               disabled="@EffectiveDisabled"
+               role="combobox"
+               aria-expanded="@_isOpen.ToString().ToLowerInvariant()"
+               @oninput="OnInput"
+               @onfocus="Open"
+               @onblur="CloseDelayed" />
+        <button type="button"
+                class="sf-multicolumncombobox__toggle"
+                tabindex="-1"
+                disabled="@EffectiveDisabled"
+                @onclick="Toggle"
+                @onclick:stopPropagation="true">
+            &#9660;
+        </button>
+    </div>
+
+    @if (_isOpen && !EffectiveDisabled)
+    {
+        <div class="sf-multicolumncombobox__popup"
+             style="@PopupStyles()">
+            <table class="sf-multicolumncombobox__table">
+                <thead>
+                    <tr>
+                        @foreach (var col in EffectiveColumns)
+                        {
+                            <th style="@(col.Width is null ? null : $"width:{col.Width}")">
+                                @(string.IsNullOrEmpty(col.Title) ? col.Field : col.Title)
+                            </th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var rows = VisibleItems;
+                    }
+                    @if (rows.Count == 0)
+                    {
+                        <tr class="sf-multicolumncombobox__empty">
+                            <td colspan="@EffectiveColumns.Count">No items found</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in rows)
+                        {
+                            var selected = IsSelected(item);
+                            <tr class="@(selected ? "sf-multicolumncombobox__row--selected" : null)"
+                                @onmousedown="() => SelectItem(item)"
+                                @onmousedown:preventDefault="true">
+                                @foreach (var col in EffectiveColumns)
+                                {
+                                    <td>
+                                        @if (col.Template is not null)
+                                        {
+                                            @col.Template(item!)
+                                        }
+                                        else
+                                        {
+                                            @GetFieldValue(item, col.Field)
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+    [Parameter] public List<ComboBoxColumn>? Columns { get; set; }
+    [Parameter] public string TextField { get; set; } = "Text";
+    [Parameter] public string? ValueField { get; set; }
+    [Parameter] public TValue? Value { get; set; }
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+    [Parameter] public EventCallback<MultiColumnComboBoxReadEventArgs<TItem>> OnRead { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? PopupWidth { get; set; }
+    [Parameter] public string? PopupHeight { get; set; } = "240px";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public int PageSize { get; set; }
+
+    private string? _inputText;
+    private bool _isOpen;
+    private List<TItem>? _loadedData;
+    private int _total;
+
+    private bool EffectiveDisabled => Disabled || ReadOnly;
+
+    private List<ComboBoxColumn> EffectiveColumns =>
+        Columns ?? new List<ComboBoxColumn> { new() { Field = TextField } };
+
+    private List<TItem> VisibleItems
+    {
+        get
+        {
+            var source = _loadedData ?? Data?.ToList() ?? new List<TItem>();
+            if (string.IsNullOrEmpty(_inputText)) return source;
+            var needle = _inputText;
+            return source
+                .Where(item => (GetFieldValue(item, TextField)?.ToString() ?? string.Empty)
+                    .Contains(needle, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+    }
+
+    private string WidthStyle() =>
+        string.IsNullOrEmpty(Width) ? string.Empty : $"width:{Width};";
+
+    private string PopupStyles()
+    {
+        var parts = new List<string>();
+        if (!string.IsNullOrEmpty(PopupWidth)) parts.Add($"width:{PopupWidth}");
+        if (!string.IsNullOrEmpty(PopupHeight)) parts.Add($"max-height:{PopupHeight}");
+        return string.Join(";", parts);
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (Value is not null)
+        {
+            var source = _loadedData ?? Data?.ToList() ?? new List<TItem>();
+            var match = source.FirstOrDefault(IsSelected);
+            if (match is not null)
+                _inputText = GetFieldValue(match, TextField)?.ToString();
+        }
+    }
+
+    private async Task OnInput(ChangeEventArgs e)
+    {
+        _inputText = e.Value?.ToString();
+        _isOpen = true;
+        if (OnRead.HasDelegate)
+        {
+            var args = new MultiColumnComboBoxReadEventArgs<TItem>
+            {
+                Filter = _inputText,
+                Skip = 0,
+                Take = PageSize,
+            };
+            await OnRead.InvokeAsync(args);
+            _loadedData = args.Data.ToList();
+            _total = args.Total;
+        }
+    }
+
+    private Task Open()
+    {
+        if (!EffectiveDisabled) _isOpen = true;
+        return Task.CompletedTask;
+    }
+
+    private async Task CloseDelayed()
+    {
+        await Task.Delay(120);
+        _isOpen = false;
+        StateHasChanged();
+    }
+
+    private void Toggle()
+    {
+        if (!EffectiveDisabled) _isOpen = !_isOpen;
+    }
+
+    private bool IsSelected(TItem item)
+    {
+        if (Value is null || item is null) return false;
+        var fieldName = ValueField ?? TextField;
+        var val = GetFieldValue(item, fieldName);
+        return Equals(val, Value);
+    }
+
+    private async Task SelectItem(TItem item)
+    {
+        var fieldName = ValueField ?? TextField;
+        var raw = GetFieldValue(item, fieldName);
+        if (raw is TValue tv)
+        {
+            Value = tv;
+            await ValueChanged.InvokeAsync(tv);
+        }
+        _inputText = GetFieldValue(item, TextField)?.ToString();
+        _isOpen = false;
+    }
+
+    private static object? GetFieldValue(TItem item, string fieldName)
+    {
+        if (item is null || string.IsNullOrEmpty(fieldName)) return null;
+        var prop = typeof(TItem).GetProperty(fieldName);
+        return prop?.GetValue(item);
+    }
+}

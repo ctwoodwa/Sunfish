@@ -1,0 +1,65 @@
+<!--
+    Roslyn analyzer that enforces ADR 0013 provider-neutrality: domain code in
+    packages/blocks-* and packages/foundation-* must NOT reference vendor SDK
+    namespaces (Stripe, Plaid, SendGrid, Twilio). Only packages/providers-*
+    are allowed to reference vendor SDKs.
+
+    Targets netstandard2.0 (the Roslyn-hosted analyzer contract). Must NOT
+    inherit the repo-wide net11.0 TargetFramework or central package pins,
+    because Roslyn analyzers are build-time assemblies loaded by the compiler
+    via NuGet's analyzers/dotnet/cs folder, not runtime libraries.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Opt out of Central Package Management; analyzer needs Microsoft.CodeAnalysis.* not in repo-wide pins. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Analyzers.ProviderNeutrality</PackageId>
+    <Description>Roslyn analyzer that enforces ADR 0013 provider-neutrality: forbids vendor SDK namespace references (Stripe, Plaid, SendGrid, Twilio, etc.) in packages/blocks-* and packages/foundation-*.</Description>
+    <PackageTags>roslyn;analyzer;sunfish;adr-0013;provider-neutrality;vendor-isolation</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Sunfish.Analyzers.ProviderNeutrality</RootNamespace>
+    <AssemblyName>Sunfish.Analyzers.ProviderNeutrality</AssemblyName>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Analyzers.ProviderNeutrality.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Roslyn analyzer release-tracking files satisfy the RS2008 check. -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,91 @@
+# ============================================================================
+# RabbitMQ — StatefulSet + Service + management plugin
+# ============================================================================
+# Single-node Rabbit with the management plugin enabled. Customers wanting HA
+# should swap in the RabbitMQ Cluster Operator
+# (https://www.rabbitmq.com/kubernetes/operator/operator-overview.html).
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge-rabbit
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: rabbit
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/component: rabbit
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: 5672
+    - name: management
+      port: 15672
+      targetPort: 15672
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bridge-rabbit
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: rabbit
+spec:
+  serviceName: bridge-rabbit
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: rabbit
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: sunfish-bridge
+        app.kubernetes.io/component: rabbit
+    spec:
+      containers:
+        - name: rabbit
+          image: rabbitmq:3.13-management-alpine
+          ports:
+            - name: amqp
+              containerPort: 5672
+            - name: management
+              containerPort: 15672
+          envFrom:
+            - secretRef:
+                name: bridge-rabbit
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/rabbitmq
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          readinessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - check_running
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command:
+                - rabbitmq-diagnostics
+                - ping
+            initialDelaySeconds: 60
+            periodSeconds: 30
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 8Gi

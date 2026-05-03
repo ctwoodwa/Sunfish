@@ -1,0 +1,190 @@
+// =============================================================================
+// Component: Editor
+// =============================================================================
+
+.sf-editor {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+}
+
+.sf-editor-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sf-space-xxs);
+    padding: var(--sf-space-xs) var(--sf-space-sm);
+    background: var(--sf-color-surface);
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-editor-content {
+    flex: 1;
+    min-height: 200px;
+    padding: var(--sf-space-md);
+    outline: none;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    line-height: var(--sf-line-height-base);
+    overflow-y: auto;
+}
+
+.sf-editor-tool-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: var(--sf-radius-sm, 2px);
+    background: transparent;
+    color: var(--sf-color-text, #323130);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: var(--sf-font-size-sm, 14px);
+
+    &:hover {
+        background: var(--sf-color-subtle-background, #f3f2f1);
+    }
+
+    &--active {
+        background: var(--sf-color-subtle-background, #edebe9);
+        border-color: var(--sf-color-border, #8a8886);
+    }
+}
+
+.sf-editor-preview {
+    color: var(--sf-color-text, #323130);
+    background: var(--sf-color-surface, #ffffff);
+}
+
+.sf-editor-source {
+    color: var(--sf-color-text, #323130);
+    background: var(--sf-color-surface, #ffffff);
+    font-family: 'Cascadia Code', 'Consolas', monospace;
+    font-size: var(--sf-font-size-sm, 13px);
+    border: none;
+    resize: vertical;
+}
+
+.sf-editor-wysiwyg {
+    color: var(--sf-color-text, #323130);
+    background: var(--sf-color-surface, #ffffff);
+
+    &[data-placeholder]:empty::before {
+        content: attr(data-placeholder);
+        color: var(--sf-color-text-secondary, #605e5c);
+        pointer-events: none;
+    }
+}
+
+.sf-editor-tool-btn--more {
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.sf-editor__tool-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: var(--sf-radius-sm, 2px);
+    background: transparent;
+    color: var(--sf-color-text, #323130);
+    cursor: pointer;
+    padding: 2px 4px;
+    font-size: var(--sf-font-size-sm, 14px);
+
+    &:hover {
+        background: var(--sf-color-subtle-background, #f3f2f1);
+    }
+}
+
+.sf-editor-overflow-popup {
+    background: var(--sf-color-surface, #ffffff);
+    border: 1px solid var(--sf-color-border, #8a8886);
+    border-radius: var(--sf-radius-md, 4px);
+    box-shadow: var(--sf-elevation-md, 0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+.sf-editor-img-resize-wrapper {
+    position: relative;
+    display: inline-block;
+    line-height: 0;
+}
+
+.sf-editor-img-resize-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--sf-color-primary, #0078d4);
+    border: 1px solid #fff;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
+// ── Dark Theme Patches ───────────────────────────────────────────────
+[data-sf-theme="dark"] {
+    .sf-editor {
+        border-color: var(--sf-color-border, #484644);
+    }
+
+    .sf-editor-toolbar {
+        background: var(--sf-color-surface, #252423);
+        border-bottom-color: var(--sf-color-border, #484644);
+    }
+
+    .sf-editor-content {
+        color: var(--sf-color-text, #f3f2f1);
+    }
+
+    .sf-editor-tool-btn {
+        color: var(--sf-color-text, #f3f2f1);
+
+        &:hover {
+            background: var(--sf-color-subtle-background, #3b3a39);
+        }
+
+        &--active {
+            background: var(--sf-color-subtle-background, #484644);
+            border-color: var(--sf-color-border, #605e5c);
+        }
+    }
+
+    .sf-editor-preview,
+    .sf-editor-wysiwyg {
+        color: var(--sf-color-text, #f3f2f1);
+        background: var(--sf-color-surface, #252423);
+    }
+
+    .sf-editor-source {
+        color: var(--sf-color-text, #f3f2f1);
+        background: var(--sf-color-surface, #1b1a19);
+    }
+
+    .sf-editor-wysiwyg[data-placeholder]:empty::before {
+        color: var(--sf-color-text-secondary, #a19f9d);
+    }
+
+    .sf-editor-overflow-popup {
+        background: var(--sf-color-surface, #252423);
+        border-color: var(--sf-color-border, #484644);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    }
+
+    .sf-editor__tool-button {
+        color: var(--sf-color-text, #f3f2f1);
+
+        &:hover {
+            background: var(--sf-color-subtle-background, #3b3a39);
+        }
+    }
+
+    .sf-editor-img-resize-handle {
+        background: var(--sf-color-primary, #2886de);
+        border-color: var(--sf-color-surface, #252423);
+    }
+}

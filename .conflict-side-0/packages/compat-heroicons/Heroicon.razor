@@ -1,0 +1,125 @@
+@namespace Sunfish.Compat.Heroicons
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<Heroicon> Logger
+
+<i class="@_cssClass"
+   role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")"
+   aria-label="@AriaLabel"
+   aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)"
+   @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Heroicons-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Heroicons identifier. Mirrors Blazor.Heroicons'
+    /// <c>&lt;Heroicon Name="@HeroiconName.Home" /&gt;</c> shape. Translates to the
+    /// canonical <c>heroicon-&lt;slug&gt;</c> CSS class via
+    /// <see cref="HeroiconNameExtensions.ToSlug(HeroiconName)"/>.
+    /// </summary>
+    /// <remarks>
+    /// For icons outside the starter-set <see cref="HeroiconName"/> enum, use
+    /// <see cref="NameString"/> to pass the raw Heroicons slug (e.g.
+    /// <c>"academic-cap"</c>). If both are provided, <see cref="NameString"/> wins
+    /// and a warning is logged — specify only one.
+    /// </remarks>
+    [Parameter] public HeroiconName? Name { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Heroicons slug (e.g. <c>"academic-cap"</c>). Useful
+    /// for icons not yet covered by the <see cref="HeroiconName"/> starter-set enum.
+    /// The value is emitted verbatim as the <c>heroicon-&lt;slug&gt;</c> class — no
+    /// validation is performed.
+    /// </summary>
+    [Parameter] public string? NameString { get; set; }
+
+    /// <summary>
+    /// Heroicons stylistic variant — <see cref="HeroiconVariant.Outline"/> (default,
+    /// 24×24 stroke), <see cref="HeroiconVariant.Solid"/> (24×24 filled), or
+    /// <see cref="HeroiconVariant.Mini"/> (20×20 filled). Selects the
+    /// <c>heroicon-outline</c> / <c>heroicon-solid</c> / <c>heroicon-mini</c>
+    /// class suffix so the corresponding SVG (loaded by the consumer) renders.
+    /// Matches Heroicons' own default of <c>Outline</c>.
+    /// </summary>
+    [Parameter] public HeroiconVariant Variant { get; set; } = HeroiconVariant.Outline;
+
+    /// <summary>
+    /// Sunfish-enum size. Emits a Sunfish-prefixed modifier class
+    /// (<c>sf-heroicon-size-sm/md/lg/xl</c>) alongside the native <c>heroicon-*</c>
+    /// classes. Omit to inherit the consumer's default sizing (e.g. Tailwind's
+    /// <c>w-6 h-6</c> utilities).
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Additional attributes splatted onto the host <c>&lt;i&gt;</c>.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "heroicon heroicon-outline sf-heroicon";
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Resolve the variant slug (outline/solid/mini).
+        string variantSlug = Variant.ToSlug();
+
+        // Map size → Sunfish-prefixed size-modifier class (nullable — when null,
+        // no size class is emitted and the icon inherits ambient sizing).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `heroicon heroicon-<slug>
+        // heroicon-<variant>` alongside the Sunfish-prefix `sf-heroicon` hook so
+        // migrators keep existing Heroicons CSS working without visual regressions
+        // and Sunfish-aware styles can target the wrapper independently.
+        string baseClasses = string.IsNullOrEmpty(slug)
+            ? $"heroicon heroicon-{variantSlug} sf-heroicon"
+            : $"heroicon heroicon-{slug} heroicon-{variantSlug} sf-heroicon";
+
+        _cssClass = string.IsNullOrEmpty(sizeClass)
+            ? baseClasses
+            : $"{baseClasses} {sizeClass}";
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(NameString))
+        {
+            if (Name.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-heroicons: Both Name='{Name}' and NameString='{NameString}' specified on Heroicon. NameString wins. See docs/compat-heroicons-mapping.md.",
+                    Name.Value, NameString);
+            }
+            return NameString;
+        }
+
+        return Name.HasValue ? Name.Value.ToSlug() : null;
+    }
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "sf-heroicon-size-sm",
+        FoundationEnums.IconSize.Medium => "sf-heroicon-size-md",
+        FoundationEnums.IconSize.Large => "sf-heroicon-size-lg",
+        FoundationEnums.IconSize.ExtraLarge => "sf-heroicon-size-xl",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-heroicons: Unrecognized Size value '{Value}' on Heroicon. Inheriting ambient sizing. See docs/compat-heroicons-mapping.md.",
+            received);
+        return null;
+    }
+}

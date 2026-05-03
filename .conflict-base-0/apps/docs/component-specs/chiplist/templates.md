@@ -1,0 +1,61 @@
+---
+title: Templates
+page_title: ChipList - Templates
+description: Templates in the ChipList for Blazor.
+slug: chiplist-templates
+tags: sunfish,blazor,chiplist,templates
+published: True
+position: 25
+components: ["chiplist"]
+---
+# ChipList Templates
+
+The ChipList component allows you to change what is rendered in the chip. This article explains the built-in templates in the Blazor ChipList.
+
+* [Item Template](#item-template)
+
+## Item Template
+
+The `<ItemTemplate>` allows you to control the rendering of the chips in the ChipList. This template receives a `context` argument that represents the current item.
+
+````RAZOR
+<SunfishChipList Data="@ChipListSource">
+    <ItemTemplate>
+        @{
+            <div>
+                <SunfishSvgIcon Icon="@context.Icon"></SunfishSvgIcon>
+                Item: @context.Text
+            </div>
+        }
+    </ItemTemplate>
+</SunfishChipList>
+
+@code {
+    private IEnumerable<ChipModel> ChipListSelectedItems { get; set; } = new List<ChipModel>();
+
+    private List<ChipModel> ChipListSource { get; set; } = new List<ChipModel>()
+    {
+        new ChipModel()
+        {
+            Text = "Audio",
+            Icon = SvgIcon.FileAudio
+        },
+        new ChipModel()
+        {
+            Text = "Video",
+            Icon = SvgIcon.FileVideo
+        }
+    };
+
+    public class ChipModel
+    {
+        public string Text { get; set; }
+        public ISvgIcon Icon { get; set; }
+    }
+}
+````
+## See Also
+
+  * [ChipList Overview](slug:chiplist-overview)
+   
+  

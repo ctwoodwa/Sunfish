@@ -1,0 +1,76 @@
+<!--
+    Roslyn analyzer + code-fix package.
+
+    Analyzers must target netstandard2.0 (the Roslyn-hosted analyzer contract).
+    They MUST NOT inherit the repo-wide Directory.Build.props TargetFramework (net11.0)
+    or the Directory.Packages.props preview Microsoft.AspNetCore.* pins; Roslyn analyzers
+    are build-time assemblies shipped into a NuGet analyzers/ folder, not runtime libs.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Opt out of Central Package Management for this project only. Analyzer packages
+       need versions (Microsoft.CodeAnalysis.*) that are not pinned in the repo-wide
+       Directory.Packages.props; the props file targets runtime packages. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Override the inherited net11.0 TargetFramework. Roslyn analyzers must be
+         netstandard2.0 so the Roslyn-hosted compiler can load them across SDKs. -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Analyzers.CompatVendorUsings</PackageId>
+    <Description>Roslyn analyzer + code fix that detects vendor Blazor using directives (Telerik/Syncfusion/Infragistics, Font Awesome / Material / Fluent / etc.) and suggests the Sunfish.Compat.* replacement.</Description>
+    <PackageTags>roslyn;analyzer;codefix;sunfish;compat;migration;blazor</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <!-- Suppress doc-gen for the analyzer itself (XML docs are unnecessary for analyzers). -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Relaxed compared to the repo-wide setting: Roslyn analyzer patterns occasionally
+         require unavoidable nullable-annotation warnings against the Roslyn API surface. -->
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Sunfish.Analyzers.CompatVendorUsings</RootNamespace>
+    <AssemblyName>Sunfish.Analyzers.CompatVendorUsings</AssemblyName>
+    <!-- Disable implicit usings; this is a netstandard2.0 analyzer project. -->
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Ship the analyzer DLL into the NuGet analyzers/dotnet/cs folder so it activates
+         automatically for consumers that reference the package. -->
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Tests need access to the internal Diagnostics descriptor constants so
+         DiagnosticResult(...) can be constructed with a shared type reference. -->
+    <InternalsVisibleTo Include="Sunfish.Analyzers.CompatVendorUsings.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude test sources from the analyzer assembly. -->
+    <Compile Remove="tests/**/*.cs" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Roslyn analyzer release-tracking files satisfy the RS2008 check. -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+
+</Project>

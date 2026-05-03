@@ -1,0 +1,87 @@
+name: RFC / Design Proposal
+description: Propose an architectural change or significant design decision
+title: "RFC: <short title>"
+labels: ["rfc", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for design-level proposals — anything that would normally become an ADR or a cross-cutting change. For bugs use the Bug Report template; for specific feature requests use Feature Request. For open-ended questions, start a [Discussion](https://github.com/ctwoodwa/Sunfish/discussions) first.
+
+        Please follow the **Universal Planning Framework (UPF)** shape where applicable: surface the problem, list alternatives, name success and failure criteria. See [`_shared/engineering/planning-framework.md`](../_shared/engineering/planning-framework.md) for the structure.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What problem does this RFC address? Two to four sentences. Cite constraints and who is affected.
+      placeholder: |
+        Today, X cannot be done because Y. This affects Z. The constraint is W.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: Proposed solution
+      description: What's your proposed approach? High-level shape, not implementation detail.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other approaches did you consider, and why did you reject them? At least two alternatives.
+      placeholder: |
+        1. **Alternative A** — ... rejected because ...
+        2. **Alternative B** — ... rejected because ...
+    validations:
+      required: true
+  - type: textarea
+    id: success-criteria
+    attributes:
+      label: Success criteria (measurable)
+      description: How will we know this worked? Observable outcomes, not vague sentiment.
+    validations:
+      required: true
+  - type: textarea
+    id: failed-conditions
+    attributes:
+      label: FAILED conditions (kill criteria)
+      description: When would we conclude this RFC should be rolled back or abandoned? UPF anti-pattern #11 forbids zombie projects without kill criteria.
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      description: Which layer(s) does this touch?
+      multiple: true
+      options:
+        - Foundation (cross-cutting primitives)
+        - UI Core (headless contracts)
+        - UI Adapters (Blazor / React / other)
+        - Domain modules (blocks-*)
+        - Bundles (business-case manifests)
+        - Accelerator (Bridge)
+        - Ingestion
+        - Federation
+        - Kernel
+        - Governance / process / docs
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: adr-needed
+    attributes:
+      label: Does this need an ADR?
+      description: Significant architectural decisions become ADRs once the RFC converges. Select your best guess; the maintainer will confirm during review.
+      options:
+        - "Yes — cross-cutting or long-lived decision"
+        - "No — reversible change within a single package"
+        - "Unsure"
+    validations:
+      required: true
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to related ADRs, docs, issues, external standards, or prior art.

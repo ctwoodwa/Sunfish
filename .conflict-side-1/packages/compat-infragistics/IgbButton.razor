@@ -1,0 +1,154 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Buttons
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@inject ILogger<IgbButton> Logger
+
+@*
+    Ignite-UI-shaped button wrapper.
+    - Delegation only: renders <SunfishButton>, never <igc-button>.
+    - Size is Ignite-UI-driven via the `--ig-size` CSS custom property upstream; the shim
+      accepts a Size parameter and maps it to Sunfish ButtonSize. Raw `--ig-size` values
+      passed via AdditionalAttributes are forwarded verbatim.
+*@
+<SunfishButton Variant="_variant"
+               Size="_size"
+               FillMode="_fillMode"
+               Enabled="!Disabled"
+               ButtonType="_buttonType"
+               OnClick="OnClickAdapter"
+               @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishButton>
+
+@code {
+    // --- Ignite-UI-shaped public parameters ---
+
+    /// <summary>Igb button variant. Contained is the Ignite UI default.</summary>
+    [Parameter] public CompatEnums.ButtonVariant Variant { get; set; } = CompatEnums.ButtonVariant.Contained;
+
+    /// <summary>Igb button type. <c>Reset</c> throws — Sunfish has no Reset semantics.</summary>
+    [Parameter] public CompatEnums.ButtonBaseType Type { get; set; } = CompatEnums.ButtonBaseType.Button;
+
+    /// <summary>Opposite polarity to Sunfish <c>Enabled</c>.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Ignite-UI-styled size: "large", "medium", "small". Passthrough with mapping.</summary>
+    [Parameter] public string? Size { get; set; }
+
+    /// <summary>
+    /// Anchor-style button. Ignite UI renders the button as an <c>&lt;a&gt;</c> when Href is
+    /// set. Sunfish has no direct analog — rendered via OnClick navigation handler when set.
+    /// </summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>Anchor target ("_blank", "_self" etc.) — forwarded via AdditionalAttributes when Href is set.</summary>
+    [Parameter] public string? Target { get; set; }
+
+    /// <summary>Form-participation name attribute — forwarded via AdditionalAttributes.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Form-participation value attribute — forwarded via AdditionalAttributes.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Ignite-UI-shaped click event. Maps to Sunfish OnClick.</summary>
+    [Parameter] public EventCallback<MouseEventArgs> Click { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Mapped Sunfish values ---
+    private FoundationEnums.ButtonVariant _variant;
+    private FoundationEnums.ButtonSize _size;
+    private FoundationEnums.FillMode _fillMode;
+    private FoundationEnums.ButtonType _buttonType;
+
+    protected override void OnParametersSet()
+    {
+        _buttonType = MapButtonType(Type);
+        _variant = FoundationEnums.ButtonVariant.Primary;
+        (_fillMode, _) = MapVariant(Variant);
+        _size = MapSize(Size);
+
+        // Forward Name / Value / Href / Target through AdditionalAttributes.
+        if (Name is not null || Value is not null || Href is not null || Target is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Name is not null && !AdditionalAttributes.ContainsKey("name"))
+                AdditionalAttributes["name"] = Name;
+            if (Value is not null && !AdditionalAttributes.ContainsKey("value"))
+                AdditionalAttributes["value"] = Value;
+            if (Href is not null && !AdditionalAttributes.ContainsKey("data-href"))
+                AdditionalAttributes["data-href"] = Href;
+            if (Target is not null && !AdditionalAttributes.ContainsKey("data-target"))
+                AdditionalAttributes["data-target"] = Target;
+        }
+    }
+
+    // Ignite UI `Variant` conflates visual style + chrome (Flat/Contained/Outlined/Fab).
+    // Sunfish separates variant (theme color) and fill mode. Variant maps to FillMode.
+    // Primary/Secondary/etc. must be carried via Sunfish design tokens; compat keeps
+    // FoundationEnums.ButtonVariant.Primary as the default and maps Variant → FillMode.
+    private (FoundationEnums.FillMode fill, FoundationEnums.ButtonVariant variant) MapVariant(CompatEnums.ButtonVariant v) => v switch
+    {
+        CompatEnums.ButtonVariant.Contained => (FoundationEnums.FillMode.Solid, FoundationEnums.ButtonVariant.Primary),
+        CompatEnums.ButtonVariant.Outlined => (FoundationEnums.FillMode.Outline, FoundationEnums.ButtonVariant.Primary),
+        CompatEnums.ButtonVariant.Flat => (FoundationEnums.FillMode.Flat, FoundationEnums.ButtonVariant.Primary),
+        CompatEnums.ButtonVariant.Fab => LogFabFallback(),
+        _ => LogAndFallbackVariant(v.ToString())
+    };
+
+    private (FoundationEnums.FillMode, FoundationEnums.ButtonVariant) LogFabFallback()
+    {
+        Logger.LogWarning(
+            "compat-infragistics: ButtonVariant.Fab on IgbButton has no direct Sunfish equivalent. " +
+            "Falling back to Contained (Solid). See docs/compat-infragistics-mapping.md.");
+        return (FoundationEnums.FillMode.Solid, FoundationEnums.ButtonVariant.Primary);
+    }
+
+    private (FoundationEnums.FillMode, FoundationEnums.ButtonVariant) LogAndFallbackVariant(string received)
+    {
+        Logger.LogWarning(
+            "compat-infragistics: Unrecognized Variant '{Value}' on IgbButton. Falling back to Contained.",
+            received);
+        return (FoundationEnums.FillMode.Solid, FoundationEnums.ButtonVariant.Primary);
+    }
+
+    private FoundationEnums.ButtonSize MapSize(string? s) => s?.ToLowerInvariant() switch
+    {
+        null or "" or "medium" or "md" => FoundationEnums.ButtonSize.Medium,
+        "small" or "sm" => FoundationEnums.ButtonSize.Small,
+        "large" or "lg" => FoundationEnums.ButtonSize.Large,
+        _ => LogAndFallbackSize(s!)
+    };
+
+    private FoundationEnums.ButtonSize LogAndFallbackSize(string received)
+    {
+        Logger.LogWarning(
+            "compat-infragistics: Unrecognized Size '{Value}' on IgbButton. Falling back to Medium.",
+            received);
+        return FoundationEnums.ButtonSize.Medium;
+    }
+
+    private FoundationEnums.ButtonType MapButtonType(CompatEnums.ButtonBaseType t) => t switch
+    {
+        CompatEnums.ButtonBaseType.Button => FoundationEnums.ButtonType.Button,
+        CompatEnums.ButtonBaseType.Submit => FoundationEnums.ButtonType.Submit,
+        CompatEnums.ButtonBaseType.Reset => throw UnsupportedParam.Throw(
+            nameof(Type), "Reset",
+            "Sunfish has no Reset button type. Use an OnClick handler that resets form state explicitly. See docs/compat-infragistics-mapping.md."),
+        _ => throw UnsupportedParam.Throw(nameof(Type), t.ToString(), "Unknown ButtonBaseType value.")
+    };
+
+    private async Task OnClickAdapter(MouseEventArgs args)
+    {
+        if (Click.HasDelegate)
+            await Click.InvokeAsync(args);
+    }
+}

@@ -1,0 +1,127 @@
+@page "/components/Grid"
+@page "/components/Grid/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishGridLayout>
+            <SunfishRow>
+                <SunfishColumn Span="4"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 4</div></SunfishColumn>
+                <SunfishColumn Span="4"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 4</div></SunfishColumn>
+                <SunfishColumn Span="4"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 4</div></SunfishColumn>
+            </SunfishRow>
+            <SunfishRow>
+                <SunfishColumn Span="6"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 6</div></SunfishColumn>
+                <SunfishColumn Span="6"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 6</div></SunfishColumn>
+            </SunfishRow>
+            <SunfishRow>
+                <SunfishColumn Span="3"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 3</div></SunfishColumn>
+                <SunfishColumn Span="6"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 6</div></SunfishColumn>
+                <SunfishColumn Span="3"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 3</div></SunfishColumn>
+            </SunfishRow>
+        </SunfishGridLayout>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Column Offsets" Description="Use Offset to push columns to the right." Code="@_offsetCode">
+        <SunfishGridLayout>
+            <SunfishRow>
+                <SunfishColumn Span="4" Offset="4"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Offset 4, Span 4</div></SunfishColumn>
+            </SunfishRow>
+            <SunfishRow>
+                <SunfishColumn Span="3" Offset="3"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Offset 3, Span 3</div></SunfishColumn>
+                <SunfishColumn Span="3" Offset="3"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Offset 3, Span 3</div></SunfishColumn>
+            </SunfishRow>
+        </SunfishGridLayout>
+    </DemoSection>
+
+    <DemoSection Title="Nested Grids" Description="Grids can be nested inside columns for complex layouts." Code="@_nestedCode">
+        <SunfishGridLayout>
+            <SunfishRow>
+                <SunfishColumn Span="8">
+                    <div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">
+                        <SunfishGridLayout>
+                            <SunfishRow>
+                                <SunfishColumn Span="6"><div style="background:var(--sf-color-secondary-light);padding:8px;border-radius:4px;">Nested 6</div></SunfishColumn>
+                                <SunfishColumn Span="6"><div style="background:var(--sf-color-secondary-light);padding:8px;border-radius:4px;">Nested 6</div></SunfishColumn>
+                            </SunfishRow>
+                        </SunfishGridLayout>
+                    </div>
+                </SunfishColumn>
+                <SunfishColumn Span="4"><div style="background:var(--sf-color-primary-light);padding:12px;border-radius:4px;">Col 4</div></SunfishColumn>
+            </SunfishRow>
+        </SunfishGridLayout>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishGridLayout>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"4\">Col 4</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"4\">Col 4</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"4\">Col 4</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"6\">Col 6</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"6\">Col 6</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"3\">Col 3</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"6\">Col 6</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"3\">Col 3</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "</SunfishGridLayout>";
+
+    private const string _offsetCode =
+        "<SunfishGridLayout>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"4\" Offset=\"4\">Offset 4, Span 4</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"3\" Offset=\"3\">Offset 3, Span 3</SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"3\" Offset=\"3\">Offset 3, Span 3</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "</SunfishGridLayout>";
+
+    private const string _nestedCode =
+        "<SunfishGridLayout>\n" +
+        "    <SunfishRow>\n" +
+        "        <SunfishColumn Span=\"8\">\n" +
+        "            <SunfishGridLayout>\n" +
+        "                <SunfishRow>\n" +
+        "                    <SunfishColumn Span=\"6\">Nested 6</SunfishColumn>\n" +
+        "                    <SunfishColumn Span=\"6\">Nested 6</SunfishColumn>\n" +
+        "                </SunfishRow>\n" +
+        "            </SunfishGridLayout>\n" +
+        "        </SunfishColumn>\n" +
+        "        <SunfishColumn Span=\"4\">Col 4</SunfishColumn>\n" +
+        "    </SunfishRow>\n" +
+        "</SunfishGridLayout>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus through interactive content within grid cells"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"grid\"", "Not required; the semantic grid uses standard HTML elements for layout"),
+        ("aria-label", "Can be added to describe the grid's purpose when used for data layout"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The grid uses semantic HTML elements, so no special ARIA roles are needed for layout purposes.",
+        "Content within grid cells is read in document order.",
+        "Ensure grid content has proper heading hierarchy for screen reader navigation.",
+    ];
+}

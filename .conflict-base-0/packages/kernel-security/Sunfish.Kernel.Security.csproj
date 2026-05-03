@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Security</PackageId>
+    <RootNamespace>Sunfish.Kernel.Security</RootNamespace>
+    <Description>Role attestation and per-role symmetric key distribution for the Sunfish local-node architecture (paper §11.3). Provides Ed25519-signed attestation bundles, X25519 sealed-box key wrapping, and a role-key manager that persists unwrapped keys in the OS keystore.</Description>
+    <PackageTags>sunfish;kernel;security;attestation;crypto</PackageTags>
+    <!-- Stub interfaces and XML-doc gaps will be filled during review hardening.
+         CS1591 kept noisy-but-off until the first stable release, matching the
+         Foundation and Kernel facade packages. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="NSec.Cryptography" />
+    <PackageReference Include="System.Formats.Cbor" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Security.Tests" />
+  </ItemGroup>
+</Project>

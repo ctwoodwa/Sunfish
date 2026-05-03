@@ -1,0 +1,27 @@
+name: Commitlint
+
+on:
+  pull_request:
+    branches: [main]
+
+# Public-repo hardening: commitlint reads PR commits to lint subject/body.
+# `contents: read` for the checkout; `pull-requests: read` so the action
+# can fetch the PR commit list via the GitHub API (per wagoid/commitlint-
+# github-action README). No write surface needed.
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  commitlint:
+    name: Lint PR commits
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: wagoid/commitlint-github-action@v6
+        with:
+          configFile: commitlint.config.mjs
+          helpURL: https://github.com/ctwoodwa/Sunfish/blob/main/_shared/engineering/commit-conventions.md

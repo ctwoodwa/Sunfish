@@ -1,0 +1,96 @@
+@page "/components/layout/appbar/nested"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AppBar / Nested · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AppBar / Nested"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/AppBar/Nested/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAppBar</code> renders <code>role="banner"</code> when it sits at the top
+            of the document. Each page should have <strong>at most one</strong> banner landmark, so
+            when you compose a sub-app or a card that contains its own AppBar inside a layout shell
+            that already declares a banner, the nested AppBar must suppress its own
+            <code>role="banner"</code> to satisfy axe's
+            <a href="https://dequeuniversity.com/rules/axe/4.7/landmark-banner-is-top-level"
+               target="_blank" rel="noopener">
+                <code>landmark-banner-is-top-level</code>
+            </a>
+            rule.
+        </p>
+        <p>
+            Set <code>Nested="true"</code> on any AppBar that is not the document's primary banner.
+            The element keeps its visual role and child content; only the ARIA landmark is removed
+            so screen-reader landmark navigation stays unambiguous.
+        </p>
+        <ul>
+            <li><strong>Default (<code>Nested="false"</code>)</strong> &mdash; emits <code>&lt;header role="banner"&gt;</code> when <code>Position="AppBarPosition.Top"</code>.</li>
+            <li><strong>Nested (<code>Nested="true"</code>)</strong> &mdash; emits <code>&lt;header&gt;</code> with no landmark role, regardless of <code>Position</code>.</li>
+            <li><strong>WCAG mapping</strong> &mdash; supports SC 1.3.1 <em>Info and Relationships</em> by ensuring landmark structure is not duplicated.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Top-level AppBar (default — emits <code>role="banner"</code>)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    Use this shape for the outermost shell header. There must be at most one of these per page.
+                </p>
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden;">
+                    <SunfishAppBar Position="AppBarPosition.Top">
+                        <strong>Sunfish App</strong>
+                    </SunfishAppBar>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Nested AppBar (no landmark)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    A card-scoped AppBar inside a page that already has a banner. Setting
+                    <code>Nested="true"</code> keeps the visual chrome but drops <code>role="banner"</code>.
+                </p>
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden;">
+                    <SunfishAppBar Position="AppBarPosition.Top" Nested="true">
+                        <strong>Card · Section header</strong>
+                    </SunfishAppBar>
+                    <div style="padding:1rem;">Card body content lives here.</div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Bottom AppBar (no banner regardless)</h3>
+                <p style="margin:.25rem 0 .5rem; color:#555; font-size:.9rem;">
+                    <code>Position="AppBarPosition.Bottom"</code> never emits <code>role="banner"</code>;
+                    <code>Nested</code> is mostly relevant for top-positioned bars.
+                </p>
+                <div style="border:1px solid var(--sunfish-border, #d1d5db); border-radius:.375rem; overflow:hidden;">
+                    <SunfishAppBar Position="AppBarPosition.Bottom">
+                        <span>Footer actions</span>
+                    </SunfishAppBar>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">When to set <code>Nested="true"</code></h3>
+                <ul style="margin:.25rem 0 0 1.25rem;">
+                    <li>The page already declares a banner via another header (e.g. shell layout).</li>
+                    <li>The AppBar belongs to a sub-region: card header, modal header, embedded widget.</li>
+                    <li>You see axe <code>landmark-banner-is-top-level</code> warnings.</li>
+                </ul>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "AppBar", "Nested"];
+}

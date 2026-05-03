@@ -1,0 +1,33 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Stepper
+// =================================================================
+// From _bridge-layout.scss: .sf-bs-stepper, .sf-bs-step
+// =================================================================
+
+.sf-bs-stepper {
+  gap: var(--sf-space-sm);
+  align-items: center;
+}
+
+.sf-bs-step {
+  display: flex;
+  align-items: center;
+  gap: var(--sf-space-xs);
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-radius: var(--sf-radius-md);
+  font-size: var(--sf-font-size-sm);
+
+  &--active {
+    font-weight: 600;
+    color: var(--sf-color-primary);
+    background-color: var(--sf-color-primary-light);
+  }
+
+  &--completed {
+    color: var(--sf-color-success);
+  }
+
+  &--error {
+    background-color: var(--sf-color-danger-light);
+  }
+}

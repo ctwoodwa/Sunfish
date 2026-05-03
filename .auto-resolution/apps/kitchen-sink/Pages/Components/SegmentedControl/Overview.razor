@@ -1,0 +1,107 @@
+@page "/components/SegmentedControl"
+@page "/components/SegmentedControl/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishSegmentedControl Value="@_view" ValueChanged="@(v => _view = v)"
+                                 Items="@_viewItems" />
+        <p><strong>Selected:</strong> @_view</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Multiple Segments" Description="Segmented controls can contain varying numbers of options." Code="@_multipleCode">
+        <SunfishSegmentedControl Value="@_size" ValueChanged="@(v => _size = v)"
+                                 Items="@_sizeItems" />
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="ValueChanged" Description="Handle selection changes with the ValueChanged callback." Code="@_changedCode">
+        <SunfishSegmentedControl Value="@_mode" ValueChanged="@OnModeChanged"
+                                 Items="@_modeItems" />
+        <p><strong>Mode:</strong> @_mode (changed @_changeCount times)</p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private string _view = "List";
+    private readonly List<string> _viewItems = new() { "List", "Grid", "Map" };
+
+    private const string _basicCode =
+        "<SunfishSegmentedControl Value=\"@_view\" ValueChanged=\"@(v => _view = v)\"\n" +
+        "                         Items=\"@(new List<string> { \\\"List\\\", \\\"Grid\\\", \\\"Map\\\" })\" />\n" +
+        "<p><strong>Selected:</strong> @_view</p>\n\n" +
+        "@code {\n" +
+        "    private string _view = \"List\";\n" +
+        "}";
+
+    // Appearance
+    private string _size = "M";
+    private readonly List<string> _sizeItems = new() { "S", "M", "L", "XL" };
+
+    private const string _multipleCode =
+        "<SunfishSegmentedControl Value=\"@_size\" ValueChanged=\"@(v => _size = v)\"\n" +
+        "                         Items=\"@(new List<string> { \\\"S\\\", \\\"M\\\", \\\"L\\\", \\\"XL\\\" })\" />\n\n" +
+        "@code {\n" +
+        "    private string _size = \"M\";\n" +
+        "}";
+
+    // Events
+    private string _mode = "Light";
+    private int _changeCount;
+    private readonly List<string> _modeItems = new() { "Light", "Dark", "System" };
+
+    private void OnModeChanged(string value)
+    {
+        _mode = value;
+        _changeCount++;
+    }
+
+    private const string _changedCode =
+        "<SunfishSegmentedControl Value=\"@_mode\" ValueChanged=\"@OnModeChanged\"\n" +
+        "                         Items=\"@(new List<string> { \\\"Light\\\", \\\"Dark\\\", \\\"System\\\" })\" />\n\n" +
+        "@code {\n" +
+        "    private string _mode = \"Light\";\n" +
+        "    private int _changeCount;\n\n" +
+        "    private void OnModeChanged(string value)\n" +
+        "    {\n" +
+        "        _mode = value;\n" +
+        "        _changeCount++;\n" +
+        "    }\n" +
+        "}";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Arrow Left", "Moves focus to the previous segment"),
+        ("Arrow Right", "Moves focus to the next segment"),
+        ("Enter", "Selects the focused segment"),
+        ("Space", "Selects the focused segment"),
+        ("Tab", "Moves focus into or out of the segmented control"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"radiogroup\"", "Applied to the segmented control container"),
+        ("role=\"radio\"", "Applied to each segment item"),
+        ("aria-checked=\"true/false\"", "Indicates the selected segment"),
+        ("aria-label", "Can be set on the container to describe the control purpose"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "The segmented control is announced as a radio group with its label.",
+        "Each segment is announced as a radio button with its selected state.",
+        "Arrow key navigation between segments is announced with the new focused item.",
+    ];
+}

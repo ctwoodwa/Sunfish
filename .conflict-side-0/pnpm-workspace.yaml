@@ -1,0 +1,5 @@
+packages:
+  - 'packages/ui-core'
+  - 'packages/ui-adapters-react'
+  - 'tooling/*'
+  - 'apps/kitchen-sink'

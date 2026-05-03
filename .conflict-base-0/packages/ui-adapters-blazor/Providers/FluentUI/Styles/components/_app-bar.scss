@@ -1,0 +1,18 @@
+// =============================================================================
+// Component: AppBar
+// =============================================================================
+
+.sf-appbar {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sf-space-lg);
+    height: 48px;
+    background: var(--sf-color-surface);
+    border-bottom: 1px solid var(--sf-color-border);
+    gap: var(--sf-space-md);
+}
+
+.sf-appbar--top { position: relative; }
+.sf-appbar--bottom { border-bottom: none; border-top: 1px solid var(--sf-color-border); }
+.sf-appbar--fixed { position: fixed; top: 0; left: 0; right: 0; z-index: var(--sf-z-fixed); }
+.sf-appbar--sticky { position: sticky; top: 0; z-index: var(--sf-z-sticky); }

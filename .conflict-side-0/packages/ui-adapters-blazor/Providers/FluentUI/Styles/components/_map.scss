@@ -1,0 +1,230 @@
+// =============================================================================
+// Component: Map
+// BEM root: .sf-map
+// =============================================================================
+
+.sf-map {
+    position: relative;
+    font-family: var(--sf-font-family);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    background: var(--sf-color-background);
+    overflow: hidden;
+
+    // Inner container holding the tile engine canvas
+    &__container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+
+    // Navigation / zoom controls overlay
+    &__controls {
+        position: absolute;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        gap: var(--sf-space-xs);
+
+        &--top-left {
+            top: var(--sf-space-sm);
+            left: var(--sf-space-sm);
+        }
+
+        &--top-right {
+            top: var(--sf-space-sm);
+            right: var(--sf-space-sm);
+        }
+
+        &--bottom-left {
+            bottom: var(--sf-space-sm);
+            left: var(--sf-space-sm);
+        }
+
+        &--bottom-right {
+            bottom: var(--sf-space-sm);
+            right: var(--sf-space-sm);
+        }
+    }
+
+    &__control-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--sf-color-border);
+        border-radius: var(--sf-radius-sm);
+        background: var(--sf-color-surface, #ffffff);
+        color: var(--sf-color-text);
+        cursor: pointer;
+        font-size: 14px;
+        transition: background var(--sf-motion-duration-fast) var(--sf-motion-ease);
+
+        &:hover {
+            background: var(--sf-color-subtle-background, #f3f2f1);
+        }
+
+        &:active {
+            background: var(--sf-color-subtle-background-pressed, #edebe9);
+        }
+    }
+
+    // Attribution bar
+    &__attribution {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 2px var(--sf-space-xs);
+        background: rgba(255, 255, 255, 0.85);
+        font-size: var(--sf-font-size-xs, 10px);
+        color: var(--sf-color-text-secondary, #605e5c);
+        line-height: 1.4;
+        z-index: 2;
+
+        a {
+            color: var(--sf-color-primary);
+            text-decoration: none;
+
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    // Marker pin overlay elements
+    &__marker {
+        position: absolute;
+        transform: translate(-50%, -100%);
+        cursor: pointer;
+        z-index: 1;
+
+        &--pin {
+            width: 24px;
+            height: 32px;
+        }
+
+        &--pin-target {
+            width: 28px;
+            height: 36px;
+        }
+    }
+
+    &__marker-icon {
+        fill: var(--sf-color-primary);
+        stroke: var(--sf-color-on-primary, #ffffff);
+        stroke-width: 1px;
+    }
+
+    &__marker-tooltip {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 50%;
+        transform: translateX(-50%);
+        padding: var(--sf-space-xs) var(--sf-space-sm);
+        background: var(--sf-color-surface, #ffffff);
+        border: 1px solid var(--sf-color-border);
+        border-radius: var(--sf-radius-sm);
+        box-shadow: var(--sf-elevation-4);
+        font-size: var(--sf-font-size-sm, 12px);
+        color: var(--sf-color-text);
+        white-space: nowrap;
+        z-index: 3;
+        pointer-events: none;
+    }
+
+    // Bubble layer elements
+    &__bubble {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        opacity: 0.7;
+        cursor: pointer;
+        transition: opacity var(--sf-motion-duration-fast) var(--sf-motion-ease);
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+
+    // Shape layer (GeoJSON polygons/lines rendered by engine)
+    &__shape {
+        pointer-events: all;
+        cursor: pointer;
+    }
+
+    // Loading overlay
+    &__loading {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.6);
+        z-index: 10;
+    }
+
+    // Prototype placeholder (shown before JS engine is wired)
+    &__placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: var(--sf-color-subtle-background, #f3f2f1);
+        color: var(--sf-color-text-secondary, #605e5c);
+        font-size: var(--sf-font-size-md, 14px);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Dark mode
+// ---------------------------------------------------------------------------
+[data-sf-theme="dark"] {
+    .sf-map {
+        border-color: var(--sf-color-border);
+        background: var(--sf-color-background);
+
+        &__control-btn {
+            background: var(--sf-color-surface, #252423);
+            border-color: var(--sf-color-border);
+            color: var(--sf-color-text);
+
+            &:hover {
+                background: var(--sf-color-subtle-background, #3b3a39);
+            }
+
+            &:active {
+                background: var(--sf-color-subtle-background-pressed, #484644);
+            }
+        }
+
+        &__attribution {
+            background: rgba(37, 36, 35, 0.85);
+            color: var(--sf-color-text-secondary, #a19f9d);
+
+            a {
+                color: var(--sf-color-primary);
+            }
+        }
+
+        &__marker-tooltip {
+            background: var(--sf-color-surface, #252423);
+            border-color: var(--sf-color-border);
+            color: var(--sf-color-text);
+        }
+
+        &__loading {
+            background: rgba(37, 36, 35, 0.6);
+        }
+
+        &__placeholder {
+            background: var(--sf-color-subtle-background, #3b3a39);
+            color: var(--sf-color-text-secondary, #a19f9d);
+        }
+    }
+}

@@ -1,0 +1,98 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Button Bridge Styles
+// =================================================================
+
+.sf-bs-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.375rem;
+  line-height: 1;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--sf-radius-md);
+  color: var(--sf-color-text);
+  cursor: pointer;
+  transition: background-color var(--sf-transition-fast);
+
+  &:hover {
+    background-color: var(--sf-color-surface);
+  }
+}
+
+.sf-bs-split-button {
+  .btn:first-child {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .btn:last-child {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+.sf-bs-chip {
+  cursor: pointer;
+  font-size: var(--sf-font-size-sm);
+  padding: 0.35em 0.65em;
+  transition: opacity var(--sf-transition-fast);
+
+  &--selected {
+    outline: 2px solid var(--sf-color-primary);
+    outline-offset: 1px;
+  }
+}
+
+.sf-bs-chip-set {
+  min-height: 2rem;
+}
+
+.sf-bs-fab {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--sf-shadow-md);
+  border: 0;
+  transition: box-shadow var(--sf-transition-normal);
+
+  &:hover {
+    box-shadow: var(--sf-shadow-lg);
+  }
+
+  &--mini {
+    width: 40px;
+    height: 40px;
+    font-size: var(--sf-font-size-sm);
+  }
+
+  &--small {
+    width: 48px;
+    height: 48px;
+  }
+
+  &--large {
+    width: 72px;
+    height: 72px;
+    font-size: var(--sf-font-size-lg);
+  }
+}
+
+// Tonal button variant — uses $theme-colors map with Sass color values
+@each $color, $value in $theme-colors {
+  .sf-bs-btn--tonal-#{$color} {
+    background-color: rgba($value, 0.15);
+    color: $value;
+    border-color: transparent;
+    text-decoration: none;
+
+    &:hover {
+      background-color: rgba($value, 0.25);
+      color: shade-color($value, 10%);
+    }
+  }
+}

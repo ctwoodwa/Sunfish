@@ -1,0 +1,38 @@
+@* Canonical Kanban-style board. Read-display: groups items by status into columns.
+   Drag/drop between columns is deferred to follow-up work. *@
+
+<div class="sf-task-board" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
+    @foreach (var status in System.Enum.GetValues<TaskStatus>())
+    {
+        var itemsInStatus = Items?.Where(i => i.Status == status).ToArray() ?? System.Array.Empty<TaskItem>();
+        <div class="sf-task-board__column">
+            <div class="sf-task-board__column-header" style="font-size:13px;font-weight:600;text-transform:uppercase;color:#6b7280;margin-bottom:10px;">
+                @status (@itemsInStatus.Length)
+            </div>
+            <div class="sf-task-board__column-body" style="display:flex;flex-direction:column;gap:10px;">
+                @foreach (var item in itemsInStatus)
+                {
+                    @if (ItemTemplate is not null)
+                    {
+                        @ItemTemplate(item)
+                    }
+                    else
+                    {
+                        <div class="sf-task-board__card" style="padding:12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;">
+                            <div style="font-weight:500;margin-bottom:6px;">@item.Title</div>
+                            @if (!string.IsNullOrEmpty(item.Assignee))
+                            {
+                                <div style="font-size:12px;color:#6b7280;">@item.Assignee</div>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<TaskItem> Items { get; set; } = System.Array.Empty<TaskItem>();
+    [Parameter] public RenderFragment<TaskItem>? ItemTemplate { get; set; }
+}

@@ -1,0 +1,40 @@
+// =============================================================================
+// Foundation: Tokens
+// Fluent design system base variables, z-index, focus ring.
+// Base/reset styles (box-sizing) emitted here.
+//
+// Note: Color, spacing, typography, radius, elevation, motion partials are
+// imported separately by _index.scss before this file. Do NOT re-forward them
+// here to avoid duplicate CSS output.
+// =============================================================================
+
+:root {
+    /* Fluent Design System Base */
+    --direction: ltr;
+    --disabled-opacity: 0.3;
+    --base-height-multiplier: 8;
+    --base-horizontal-spacing-multiplier: 3;
+    --density: 0;
+    --design-unit: 4;
+    --stroke-width: 1;
+
+    /* Focus */
+    --sf-focus-ring: 0 0 0 2px var(--sf-color-background), 0 0 0 4px var(--sf-color-primary);
+
+    /* Z-index */
+    --sf-z-dropdown: 1000;
+    --sf-z-sticky: 1020;
+    --sf-z-fixed: 1030;
+    --sf-z-modal-overlay: 1040;
+    --sf-z-modal: 1050;
+    --sf-z-popover: 1060;
+    --sf-z-tooltip: 1070;
+    --sf-z-toast: 1080;
+}
+
+// Base / Reset
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}

@@ -1,0 +1,135 @@
+@page "/components/ConfirmDialog"
+@page "/components/ConfirmDialog/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="A confirm dialog asks users to verify an action before proceeding." Code="@_basicCode">
+        <SunfishButton OnClick="@(() => _confirmOpen = true)">Confirm Action</SunfishButton>
+        <SunfishConfirmDialog @bind-Visible="_confirmOpen"
+                             Title="Confirm Action"
+                             Message="Are you sure you want to proceed with this action?"
+                             OnConfirm="@(() => _result = "Confirmed!")"
+                             OnCancel="@(() => _result = "Cancelled.")" />
+        @if (!string.IsNullOrEmpty(_result))
+        {
+            <p style="margin-top: 8px;">Result: <strong>@_result</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Dangerous Action" Description="A confirm dialog styled for destructive operations." Code="@_dangerousCode">
+        <SunfishButton Variant="ButtonVariant.Danger" OnClick="@(() => _appConfirmOpen = true)">Delete Item</SunfishButton>
+        <SunfishConfirmDialog @bind-Visible="_appConfirmOpen"
+                             Title="Confirm Delete"
+                             Message="Are you sure you want to delete this item? This action cannot be undone."
+                             IsDangerous="true"
+                             ConfirmText="Delete"
+                             OnConfirm="@(() => _confirmResult = "Confirmed!")"
+                             OnCancel="@(() => _confirmResult = "Cancelled.")" />
+        @if (!string.IsNullOrEmpty(_confirmResult))
+        {
+            <p style="margin-top: 8px;">Result: <strong>@_confirmResult</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="OnConfirm / OnCancel" Description="Handle confirm and cancel actions with callbacks." Code="@_eventsCode">
+        <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _evConfirmOpen = true)">Open Confirm Dialog</SunfishButton>
+        <SunfishConfirmDialog @bind-Visible="_evConfirmOpen"
+                             Title="Confirm Changes"
+                             Message="Do you want to save your changes?"
+                             ConfirmText="Save"
+                             OnConfirm="@OnConfirm"
+                             OnCancel="@OnCancel" />
+        @if (!string.IsNullOrEmpty(_eventResult))
+        {
+            <p style="margin-top: 8px;">Last action: <strong>@_eventResult</strong></p>
+        }
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private bool _confirmOpen;
+    private string? _result;
+
+    private bool _appConfirmOpen;
+    private string? _confirmResult;
+
+    private bool _evConfirmOpen;
+    private string? _eventResult;
+
+    private void OnConfirm()
+    {
+        _eventResult = $"Confirmed at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private void OnCancel()
+    {
+        _eventResult = $"Cancelled at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private const string _basicCode =
+        "<SunfishButton OnClick=\"@(() => _confirmOpen = true)\">Confirm Action</SunfishButton>\n" +
+        "<SunfishConfirmDialog @bind-Visible=\"_confirmOpen\"\n" +
+        "                     Title=\"Confirm Action\"\n" +
+        "                     Message=\"Are you sure you want to proceed?\" />\n\n" +
+        "@code { private bool _confirmOpen; }";
+
+    private const string _dangerousCode =
+        "<SunfishButton Variant=\"ButtonVariant.Danger\" OnClick=\"@(() => _confirmOpen = true)\">Delete Item</SunfishButton>\n" +
+        "<SunfishConfirmDialog @bind-Visible=\"_confirmOpen\"\n" +
+        "                     Title=\"Confirm Delete\"\n" +
+        "                     Message=\"Are you sure you want to delete this item?\"\n" +
+        "                     IsDangerous=\"true\"\n" +
+        "                     ConfirmText=\"Delete\" />\n\n" +
+        "@code { private bool _confirmOpen; }";
+
+    private const string _eventsCode =
+        "<SunfishButton OnClick=\"@(() => _confirmOpen = true)\">Open Confirm Dialog</SunfishButton>\n" +
+        "<SunfishConfirmDialog @bind-Visible=\"_confirmOpen\"\n" +
+        "                     Title=\"Confirm Changes\"\n" +
+        "                     Message=\"Do you want to save your changes?\"\n" +
+        "                     ConfirmText=\"Save\"\n" +
+        "                     OnConfirm=\"@OnConfirm\"\n" +
+        "                     OnCancel=\"@OnCancel\" />\n\n" +
+        "@code {\n" +
+        "    private bool _confirmOpen;\n" +
+        "    private void OnConfirm() { /* handle confirm */ }\n" +
+        "    private void OnCancel() { /* handle cancel */ }\n" +
+        "}";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Escape", "Closes the confirm dialog and returns focus to the triggering element"),
+        ("Tab", "Moves focus between the confirm and cancel buttons (focus is trapped)"),
+        ("Shift + Tab", "Moves focus to the previous focusable element within the dialog"),
+        ("Enter", "Activates the focused confirm or cancel button"),
+        ("Space", "Activates the focused confirm or cancel button"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"dialog\"", "Applied to the confirm dialog container"),
+        ("aria-modal=\"true\"", "Indicates the dialog is modal and blocks background interaction"),
+        ("aria-labelledby", "References the dialog title for an accessible name"),
+        ("aria-describedby", "References the confirmation message for additional context"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "When the confirm dialog opens, focus moves to the confirm or cancel button.",
+        "The dialog title and message are announced when the dialog opens.",
+        "Focus is trapped within the dialog between the confirm and cancel buttons.",
+        "For dangerous actions, the confirm button should clearly announce the destructive intent.",
+        "When the dialog closes, focus returns to the element that triggered it.",
+    ];
+}

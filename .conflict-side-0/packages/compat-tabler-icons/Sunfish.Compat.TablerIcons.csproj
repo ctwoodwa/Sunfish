@@ -1,0 +1,39 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-tabler-icons/POLICY.md.
+    This package MUST NOT reference any Tabler Icons NuGet. It also does NOT bundle Tabler
+    assets (SVG/font/CSS) — consumers remain responsible for loading the Tabler Icons
+    font-face / CSS / SVG sprite themselves (CDN `<link>`, NPM, or self-hosted).
+
+    Disambiguation: this is the migration-compat SHIM for apps already using a Tabler
+    Icons Blazor wrapper (Vizor.Icons.Tabler / Kebechet.Blazor.Tabler.Icons / NgIcons.TablerIcons).
+    For Sunfish's native Tabler-backed icon PROVIDER, see the separate
+    `Sunfish.Icons.Tabler` package under packages/ui-adapters-blazor/Icons/Tabler/.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.TablerIcons</PackageId>
+    <Description>Tabler-Icons-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Tabler Icons Blazor consumers (Vizor.Icons.Tabler / Kebechet.Blazor.Tabler.Icons / NgIcons.TablerIcons). Does not ship Tabler assets. Distinct from the native Sunfish.Icons.Tabler provider package. Policy-gated.</Description>
+    <PackageTags>blazor;compat;tabler;tabler-icons;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.TablerIcons</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.TablerIcons.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

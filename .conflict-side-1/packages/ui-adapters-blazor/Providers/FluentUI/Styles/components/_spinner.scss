@@ -1,0 +1,26 @@
+// =============================================================================
+// Component: Spinner & Skeleton
+// =============================================================================
+
+.sf-spinner {
+    display: inline-block;
+    border: 2px solid var(--sf-color-surface);
+    border-top-color: var(--sf-color-primary);
+    border-radius: var(--sf-radius-full);
+    animation: sf-spin 0.8s linear infinite;
+}
+
+.sf-spinner--small { width: 16px; height: 16px; }
+.sf-spinner--medium { width: 24px; height: 24px; }
+.sf-spinner--large { width: 40px; height: 40px; border-width: 3px; }
+
+// Skeleton
+.sf-skeleton {
+    background: var(--sf-color-surface);
+    animation: sf-pulse 1.5s ease-in-out infinite;
+}
+
+.sf-skeleton--text { height: 1em; border-radius: var(--sf-radius-sm); width: 100%; }
+.sf-skeleton--rectangular { height: 120px; border-radius: var(--sf-radius-md); }
+.sf-skeleton--circular { border-radius: var(--sf-radius-full); width: 40px; height: 40px; }
+.sf-skeleton--rounded { height: 120px; border-radius: var(--sf-radius-lg); }

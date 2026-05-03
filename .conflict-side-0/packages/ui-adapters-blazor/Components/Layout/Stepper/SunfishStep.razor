@@ -1,0 +1,27 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Layout
+@inherits SunfishStepBase
+
+@*
+    SunfishStep — legacy tag alias. Inherits the full SunfishStepBase surface
+    (Icon / Optional / Disabled / Valid / Successful / Error / Text / StepStatus /
+    OnChange / ChildContent) plus its own Title property (non-spec legacy name).
+    New code should use SunfishStepperStep with Label instead.
+*@
+
+@{
+    var stepper = ParentStepper;
+    var isActive = stepper != null && stepper.IsStepActive(this);
+}
+@if (isActive)
+{
+    <div class="sf-step__content">
+        @ChildContent
+    </div>
+}
+
+@code {
+    /// <summary>Title text displayed in the step indicator. Legacy name; prefer <c>Label</c> on <c>SunfishStepperStep</c>.</summary>
+    [Parameter] public string Title { get; set; } = "";
+
+    internal override string? EffectiveLabel => string.IsNullOrEmpty(Title) ? null : Title;
+}

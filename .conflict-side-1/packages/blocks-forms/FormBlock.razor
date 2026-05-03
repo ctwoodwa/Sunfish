@@ -1,0 +1,87 @@
+@* FormBlock — opinionated one-page validated form.
+   Wraps SunfishForm + SunfishValidation with sensible defaults:
+   - vertical layout, single column
+   - inline validation messages
+   - default Submit button unless FormButtons slot is provided
+   - exposes a FormBlockState via OnStateChanged for consumers
+   Deep features (multi-page, autosave, wizard) are deferred. *@
+
+@typeparam TModel where TModel : class
+
+<SunfishForm Model="@Model"
+             Id="@Id"
+             Orientation="FormOrientation.Vertical"
+             Columns="Columns"
+             ValidationMessageType="FormValidationMessageType.Inline"
+             OnValidSubmit="HandleValidSubmitAsync"
+             OnInvalidSubmit="HandleInvalidSubmitAsync"
+             FormValidation="@_validationFragment">
+    <FormItems>
+        @FormItems
+    </FormItems>
+    <FormButtons>
+        @if (FormButtons is not null)
+        {
+            @FormButtons
+        }
+        else
+        {
+            <SunfishButton Variant="ButtonVariant.Primary"
+                           ButtonType="ButtonType.Submit"
+                           Enabled="@(!State.IsSubmitting)">
+                @(SubmitText ?? "Submit")
+            </SunfishButton>
+        }
+    </FormButtons>
+</SunfishForm>
+
+@code {
+    [Parameter, EditorRequired] public TModel Model { get; set; } = default!;
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public int Columns { get; set; } = 1;
+    [Parameter] public string? SubmitText { get; set; }
+    [Parameter] public RenderFragment? FormItems { get; set; }
+    [Parameter] public RenderFragment? FormButtons { get; set; }
+    [Parameter] public EventCallback<TModel> OnSubmitted { get; set; }
+    [Parameter] public EventCallback<FormBlockState> OnStateChanged { get; set; }
+
+    public FormBlockState State { get; } = new();
+
+    private readonly RenderFragment _validationFragment = builder =>
+    {
+        builder.OpenComponent<SunfishValidation>(0);
+        builder.CloseComponent();
+    };
+
+    private async Task HandleValidSubmitAsync(EditContext ctx)
+    {
+        State.IsSubmitting = true;
+        State.LastSubmitAttemptUtc = DateTime.UtcNow;
+        await NotifyStateAsync();
+        try
+        {
+            if (OnSubmitted.HasDelegate)
+            {
+                await OnSubmitted.InvokeAsync(Model);
+            }
+            State.LastSubmitWasValid = true;
+            State.HasSubmitted = true;
+        }
+        finally
+        {
+            State.IsSubmitting = false;
+            await NotifyStateAsync();
+        }
+    }
+
+    private async Task HandleInvalidSubmitAsync(EditContext ctx)
+    {
+        State.LastSubmitAttemptUtc = DateTime.UtcNow;
+        State.LastSubmitWasValid = false;
+        State.HasSubmitted = true;
+        await NotifyStateAsync();
+    }
+
+    private Task NotifyStateAsync()
+        => OnStateChanged.HasDelegate ? OnStateChanged.InvokeAsync(State) : Task.CompletedTask;
+}

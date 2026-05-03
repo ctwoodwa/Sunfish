@@ -1,0 +1,104 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+@inject ILogger<SfDataForm> Logger
+
+@*
+    Divergences (see docs/compat-syncfusion-mapping.md §SfDataForm):
+    - SfDataForm auto-generates field layout from the bound model. SunfishForm is thinner
+      (closer to EditForm) and delegates layout to the consumer. The shim drops
+      ColumnCount / ColumnSpacing / ButtonsAlignment / EnableFloatingLabel / LabelPosition
+      with warnings.
+    - ValidationDisplayMode=ToolTip throws (no Sunfish equivalent).
+*@
+<SunfishForm Model="Model"
+             EditContext="EditContext"
+             OnValidSubmit="OnValidSubmitHandler"
+             OnInvalidSubmit="OnInvalidSubmit"
+             Id="ID"
+             Width="Width"
+             @attributes="AdditionalAttributes">
+    @ChildContent
+</SunfishForm>
+
+@code {
+    [Parameter] public object? Model { get; set; }
+    [Parameter] public EditContext? EditContext { get; set; }
+
+    /// <summary>Form column count. Layout parameter — log-and-drop (Sunfish delegates layout to consumer).</summary>
+    [Parameter] public int ColumnCount { get; set; } = 1;
+
+    /// <summary>Horizontal gap. Log-and-drop.</summary>
+    [Parameter] public string? ColumnSpacing { get; set; }
+
+    /// <summary>Validation-message display mode. <see cref="CompatEnums.ValidationDisplayMode.ToolTip"/> throws.</summary>
+    [Parameter] public CompatEnums.ValidationDisplayMode ValidationDisplayMode { get; set; } = CompatEnums.ValidationDisplayMode.Inline;
+
+    /// <summary>Buttons alignment. Log-and-drop.</summary>
+    [Parameter] public CompatEnums.ButtonsAlignment ButtonsAlignment { get; set; } = CompatEnums.ButtonsAlignment.Left;
+
+    [Parameter] public EventCallback OnSubmit { get; set; }
+    [Parameter] public EventCallback<EditContext> OnValidSubmit { get; set; }
+    [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; set; }
+    [Parameter] public EventCallback OnUpdate { get; set; }
+
+    /// <summary>Floating labels on fields. Log-and-drop.</summary>
+    [Parameter] public bool EnableFloatingLabel { get; set; }
+
+    /// <summary>Field label position. Log-and-drop.</summary>
+    [Parameter] public CompatEnums.FormLabelPosition LabelPosition { get; set; } = CompatEnums.FormLabelPosition.Top;
+
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? ID { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ValidationDisplayMode == CompatEnums.ValidationDisplayMode.ToolTip)
+        {
+            throw UnsupportedParam.Throw(
+                nameof(ValidationDisplayMode), ValidationDisplayMode.ToString(),
+                "Sunfish has no tooltip-based validation display. " +
+                "Use ValidationDisplayMode.Inline or .None.");
+        }
+
+        if (ColumnCount != 1)
+        {
+            Logger.LogWarning(
+                "compat-syncfusion: SfDataForm.ColumnCount='{Value}' dropped — Sunfish's SunfishForm delegates layout to the consumer. " +
+                "Migration: wrap form children in a Sunfish grid/flex layout. See docs/compat-syncfusion-mapping.md.",
+                ColumnCount);
+        }
+        if (!string.IsNullOrEmpty(ColumnSpacing))
+        {
+            Logger.LogWarning("compat-syncfusion: SfDataForm.ColumnSpacing='{Value}' dropped — layout is a consumer concern.", ColumnSpacing);
+        }
+        if (ButtonsAlignment != CompatEnums.ButtonsAlignment.Left)
+        {
+            Logger.LogWarning("compat-syncfusion: SfDataForm.ButtonsAlignment='{Value}' dropped — layout is a consumer concern.", ButtonsAlignment);
+        }
+        if (EnableFloatingLabel)
+        {
+            Logger.LogWarning("compat-syncfusion: SfDataForm.EnableFloatingLabel dropped — Sunfish has no floating-label surface.");
+        }
+        if (LabelPosition != CompatEnums.FormLabelPosition.Top)
+        {
+            Logger.LogWarning("compat-syncfusion: SfDataForm.LabelPosition='{Value}' dropped — consumer controls field label position.", LabelPosition);
+        }
+    }
+
+    private async Task OnValidSubmitHandler(EditContext ctx)
+    {
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync(ctx);
+        if (OnSubmit.HasDelegate)
+            await OnSubmit.InvokeAsync();
+    }
+}

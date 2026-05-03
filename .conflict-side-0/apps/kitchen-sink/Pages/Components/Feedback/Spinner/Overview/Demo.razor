@@ -1,0 +1,89 @@
+@page "/components/feedback/spinner/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Spinner / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Spinner / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Spinner/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSpinner</code> is a dual-mode component. Without
+            <code>ChildContent</code> it renders a stand-alone spinning indicator. When
+            <code>ChildContent</code> is set, it switches to <em>loader-container</em> mode and
+            overlays a backdrop + spinner on top of the content whenever
+            <code>Loading</code> is <code>true</code>. Content is always rendered in the DOM;
+            the overlay just covers it while work is in flight.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Basic spinner</h3>
+                <div style="display:flex; gap:1rem; align-items:center;">
+                    <SunfishSpinner Size="SpinnerSize.Small" />
+                    <SunfishSpinner Size="SpinnerSize.Medium" />
+                    <SunfishSpinner Size="SpinnerSize.Large" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Loader-container with toggle</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; margin-bottom:.75rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="Simulate">
+                        @(_loading ? "Loading..." : "Simulate load (2s)")
+                    </SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _loading = !_loading)">
+                        Toggle
+                    </SunfishButton>
+                </div>
+
+                <SunfishSpinner Loading="_loading"
+                                LoaderType="LoaderType.Spinner"
+                                LoaderPosition="LoaderPosition.Center"
+                                Panel="LoaderPanel.Transparent"
+                                Size="SpinnerSize.Large"
+                                ThemeColor="primary">
+                    <ChildContent>
+                        <div style="padding:1.5rem; border:1px solid #d1d5db; border-radius:.5rem; min-height:140px;">
+                            <h4 style="margin:0 0 .5rem;">Expense report &mdash; Q3</h4>
+                            <p style="margin:0 0 .5rem; color:#555;">
+                                Total expenses: <strong>$12,480.22</strong> across 38 line items.
+                                The data below refreshes when you click <em>Simulate load</em>.
+                            </p>
+                            <ul style="margin:0; padding-inline-start:1.25rem; color:#555;">
+                                <li>Travel &mdash; $4,120</li>
+                                <li>Software &mdash; $2,350</li>
+                                <li>Equipment &mdash; $6,010</li>
+                            </ul>
+                        </div>
+                    </ChildContent>
+                </SunfishSpinner>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Spinner", "Overview"];
+
+    private bool _loading;
+
+    private async Task Simulate()
+    {
+        _loading = true;
+        StateHasChanged();
+        await Task.Delay(2000);
+        _loading = false;
+        StateHasChanged();
+    }
+}

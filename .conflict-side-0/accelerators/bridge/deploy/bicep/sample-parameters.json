@@ -1,0 +1,59 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "tenantSlug": {
+      "value": "acmedemo"
+    },
+    "location": {
+      "value": "eastus2"
+    },
+    "tenantNodeSlotCount": {
+      "value": 4
+    },
+    "bridgeImage": {
+      "value": "ghcr.io/YOUR-ORG/sunfish-bridge:latest"
+    },
+    "localNodeImage": {
+      "value": "ghcr.io/YOUR-ORG/sunfish-local-node-host:latest"
+    },
+    "dabImage": {
+      "value": "mcr.microsoft.com/azure-databases/data-api-builder:1.7.90"
+    },
+    "postgresAdminUser": {
+      "value": "bridgeadmin"
+    },
+    "postgresAdminPassword": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/SUBSCRIPTION-ID/resourceGroups/rg-operator-secrets/providers/Microsoft.KeyVault/vaults/operator-secrets-kv"
+        },
+        "secretName": "bridge-postgres-admin-acmedemo"
+      }
+    },
+    "postgresSkuName": {
+      "value": "Standard_B2s"
+    },
+    "postgresTier": {
+      "value": "Burstable"
+    },
+    "redisSku": {
+      "value": "Basic"
+    },
+    "redisCapacity": {
+      "value": 1
+    },
+    "serviceBusSku": {
+      "value": "Standard"
+    },
+    "tags": {
+      "value": {
+        "deployment": "bridge-option-b",
+        "tenantSlug": "acmedemo",
+        "contract": "CONTRACT-ID-HERE",
+        "owner": "ops@example.com",
+        "costCenter": "CC-1234"
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+@page "/components/data-display/avatar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Avatar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Avatar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Avatar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAvatar</code> represents a user or entity. Supply <code>Initials</code> for a text
+            avatar, <code>Src</code> (with <code>Alt</code>) for an image, or child content for custom
+            markup. Pick a preset dimension with <code>Size</code> (ExtraSmall → ExtraLarge) or override via
+            <code>Width</code> / <code>Height</code>. Toggle <code>Bordered</code> and <code>Rounded</code>
+            for appearance variants.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/avatar/types">types</a> and
+            <a href="/components/data-display/avatar/sizes">sizes</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row">
+                <SunfishAvatar Initials="AB" />
+                <SunfishAvatar Initials="CD" />
+                <SunfishAvatar Initials="EF" />
+            </div>
+
+            <div class="demo-row">
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=1" Alt="Alice Johnson" />
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=5" Alt="Bob Smith" />
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=12" Alt="Carol White" />
+            </div>
+
+            <div class="demo-row">
+                <SunfishAvatar Size="AvatarSize.Small" Initials="SM" />
+                <SunfishAvatar Size="AvatarSize.Medium" Initials="MD" />
+                <SunfishAvatar Size="AvatarSize.Large" Initials="LG" />
+                <SunfishAvatar Size="AvatarSize.ExtraLarge" Initials="XL" />
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Avatar", "Overview"];
+}

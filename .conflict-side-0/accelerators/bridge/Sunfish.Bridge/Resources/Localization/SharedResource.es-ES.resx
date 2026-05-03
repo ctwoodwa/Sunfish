@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Bridge SharedResource — Spanish (Spain) satellite. LTR locale.
+       Spain norms; neutral usted-form (shared with es-419 and es-MX) for UI strings. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="errors.not-found" xml:space="preserve">
+    <value>No encontrado</value>
+    <comment>Translator: Title of HTTP 404 page; appears as page heading in tenant browser-shell.</comment>
+  </data>
+  <data name="errors.not-found.detail" xml:space="preserve">
+    <value>No se ha podido encontrar el recurso solicitado.</value>
+    <comment>Translator: Body text under the 404 title; full sentence.</comment>
+  </data>
+  <data name="errors.unauthorized" xml:space="preserve">
+    <value>Inicie sesión para continuar</value>
+    <comment>Translator: Imperative title — sign in to continue. Pairs with sign-in button.</comment>
+  </data>
+  <data name="errors.unauthorized.detail" xml:space="preserve">
+    <value>Su sesión ha caducado o no ha iniciado sesión.</value>
+    <comment>Translator: Body text on HTTP 401; mentions both expired and never-signed-in states.</comment>
+  </data>
+  <data name="errors.forbidden" xml:space="preserve">
+    <value>Acceso denegado</value>
+    <comment>Translator: Title for HTTP 403; user is signed in but lacks permission.</comment>
+  </data>
+  <data name="errors.forbidden.detail" xml:space="preserve">
+    <value>No tiene permiso para realizar esta acción.</value>
+    <comment>Translator: Body text on HTTP 403; full sentence.</comment>
+  </data>
+  <data name="errors.conflict" xml:space="preserve">
+    <value>Conflicto</value>
+    <comment>Translator: Title for HTTP 409; CRDT merge conflict requiring user attention.</comment>
+  </data>
+  <data name="errors.conflict.detail" xml:space="preserve">
+    <value>La solicitud entra en conflicto con el estado actual del recurso. Revísela e inténtelo de nuevo.</value>
+    <comment>Translator: Body text on HTTP 409; tells user the request lost a race and to retry.</comment>
+  </data>
+
+  <!-- Validation messages — neutral usted-form (shared with es-419 / es-MX). -->
+  <data name="validation.required" xml:space="preserve">
+    <value>Este campo es obligatorio.</value>
+    <comment>Translator: Inline form-validation; required field is empty.</comment>
+  </data>
+  <data name="validation.min-length" xml:space="preserve">
+    <value>Debe tener al menos {min} caracteres.</value>
+    <comment>Translator: Min-length violation; {min} is integer character count.</comment>
+  </data>
+  <data name="validation.max-length" xml:space="preserve">
+    <value>Debe tener {max} caracteres o menos.</value>
+    <comment>Translator: Max-length violation; {max} is integer character count.</comment>
+  </data>
+  <data name="validation.email-format" xml:space="preserve">
+    <value>Introduzca una dirección de correo electrónico válida.</value>
+    <comment>Translator: Email parse failed; full "correo electrónico" preferred over "email" loanword in es-ES.</comment>
+  </data>
+  <data name="validation.url-format" xml:space="preserve">
+    <value>Introduzca una URL válida.</value>
+    <comment>Translator: URL parse failed; "URL" stays as loanword.</comment>
+  </data>
+  <data name="validation.numeric-only" xml:space="preserve">
+    <value>Introduzca solo números.</value>
+    <comment>Translator: Numeric-only field received non-digit characters.</comment>
+  </data>
+  <data name="validation.date-format" xml:space="preserve">
+    <value>Introduzca una fecha válida.</value>
+    <comment>Translator: Date parse failed; locale uses DD/MM/AAAA by convention.</comment>
+  </data>
+  <data name="validation.future-date-only" xml:space="preserve">
+    <value>La fecha debe ser futura.</value>
+    <comment>Translator: Future-date-only field; strictly after today.</comment>
+  </data>
+  <data name="validation.past-date-only" xml:space="preserve">
+    <value>La fecha debe ser pasada.</value>
+    <comment>Translator: Past-date-only field; strictly before today.</comment>
+  </data>
+
+  <!-- Action verbs — button labels. Imperative form (usted). -->
+  <data name="actions.save" xml:space="preserve">
+    <value>Guardar</value>
+    <comment>Translator: Button label — commit draft. Imperative.</comment>
+  </data>
+  <data name="actions.cancel" xml:space="preserve">
+    <value>Cancelar</value>
+    <comment>Translator: Button label — discard draft. Imperative.</comment>
+  </data>
+  <data name="actions.retry" xml:space="preserve">
+    <value>Reintentar</value>
+    <comment>Translator: Button label — reattempt failed sync. Imperative.</comment>
+  </data>
+  <data name="actions.delete" xml:space="preserve">
+    <value>Eliminar</value>
+    <comment>Translator: Button label — destructive removal. Imperative.</comment>
+  </data>
+  <data name="actions.confirm" xml:space="preserve">
+    <value>Confirmar</value>
+    <comment>Translator: Button label — proceed with displayed action. Imperative.</comment>
+  </data>
+  <data name="actions.edit" xml:space="preserve">
+    <value>Editar</value>
+    <comment>Translator: Button label — switch to edit-mode. Imperative.</comment>
+  </data>
+  <data name="actions.search" xml:space="preserve">
+    <value>Buscar</value>
+    <comment>Translator: Button label or placeholder — execute query. Imperative.</comment>
+  </data>
+
+  <!-- Status states — short badge labels. -->
+  <data name="status.loading" xml:space="preserve">
+    <value>Cargando</value>
+    <comment>Translator: Status — initial fetch in progress.</comment>
+  </data>
+  <data name="status.saving" xml:space="preserve">
+    <value>Guardando</value>
+    <comment>Translator: Status — write to ledger in progress.</comment>
+  </data>
+  <data name="status.processing" xml:space="preserve">
+    <value>Procesando</value>
+    <comment>Translator: Status — generic in-flight operation.</comment>
+  </data>
+  <data name="status.completed" xml:space="preserve">
+    <value>Completado</value>
+    <comment>Translator: Status — terminal success state.</comment>
+  </data>
+  <data name="status.failed" xml:space="preserve">
+    <value>Error</value>
+    <comment>Translator: Status — terminal failure state. Noun "Error" is the standard compact-badge form in Spanish UIs.</comment>
+  </data>
+  <data name="status.idle" xml:space="preserve">
+    <value>Inactivo</value>
+    <comment>Translator: Status — no operation in flight; quiescent state.</comment>
+  </data>
+</root>

@@ -1,0 +1,26 @@
+// =============================================================================
+// Component: List
+// =============================================================================
+
+.sf-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+}
+
+.sf-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-md);
+    padding: var(--sf-space-md) var(--sf-space-lg);
+    border-bottom: 1px solid var(--sf-color-border);
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    transition: background var(--sf-transition-fast);
+}
+
+.sf-list-item:last-child { border-bottom: none; }
+.sf-list-item:hover { background: var(--sf-color-surface); }

@@ -1,0 +1,117 @@
+@page "/components/forms/colorpicker/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ColorPicker / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPicker / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ColorPicker/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPicker</code> is a keyboard- and screen-reader-friendly control. The
+            trigger button advertises the popup via <code>aria-haspopup="dialog"</code> and
+            <code>aria-expanded</code>, and the popup itself is rendered as a modal
+            <code>role="dialog"</code>. Inside the popup every interactive element — the HSV canvas,
+            hue/opacity sliders, text inputs, palette tiles, and action buttons — carries an
+            explicit <code>aria-label</code> so assistive technology can narrate the current state.
+        </p>
+        <ul>
+            <li><strong>Trigger</strong> — <code>aria-haspopup="dialog"</code>,
+                <code>aria-expanded</code> reflects open/closed, <code>aria-label</code> includes
+                the current colour value.</li>
+            <li><strong>Popup</strong> — <code>role="dialog"</code>, <code>aria-modal="true"</code>,
+                <code>aria-label="Color picker"</code>.</li>
+            <li><strong>HSV canvas</strong> — focusable (<code>tabindex="0"</code>), arrow keys
+                nudge saturation and brightness in <code>0.02</code> steps.</li>
+            <li><strong>Palette tiles</strong> — <code>role="grid"</code> /
+                <code>role="gridcell"</code>, each tile carries <code>aria-label</code> = colour
+                value and <code>aria-selected</code>.</li>
+            <li><strong>Hue / Opacity</strong> — native range inputs with live
+                <code>aria-label</code>s (&ldquo;Hue: 200 degrees&rdquo;, &ldquo;Opacity: 65%&rdquo;).</li>
+            <li><strong>Keyboard</strong> — <kbd>Enter</kbd> or <kbd>Space</kbd> on the trigger to
+                toggle the popup; <kbd>Esc</kbd> cancels; <kbd>Enter</kbd> inside the popup applies
+                when action buttons are shown.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled trigger + dialog popup</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab to focus the swatch button — a screen reader announces
+                    <em>&ldquo;Color picker, current color: <code>@_color</code>, collapsed,
+                    button&rdquo;</em>. Press <kbd>Enter</kbd> or <kbd>Space</kbd> to open the
+                    modal dialog.
+                </p>
+                <SunfishColorPicker @bind-Value="@_color" />
+                @if (!string.IsNullOrEmpty(_color))
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Announced value: <strong>@_color</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Palette view with gridcell semantics</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Opening this picker in <code>ColorPickerView.Palette</code> exposes the tile grid.
+                    Each tile is a <code>role="gridcell"</code> button whose
+                    <code>aria-label</code> is the CSS colour string and whose
+                    <code>aria-selected</code> attribute tracks the active pick.
+                </p>
+                <SunfishColorPicker @bind-Value="@_paletteColor"
+                                    View="ColorPickerView.Palette" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>aria-haspopup="dialog"</code></dt>
+                    <dd>On the trigger, announces that activation opens a dialog.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Toggles between <code>"true"</code> and <code>"false"</code> as the popup
+                        opens and closes.</dd>
+
+                    <dt><code>role="dialog"</code> + <code>aria-modal="true"</code></dt>
+                    <dd>Applied to the popup, so assistive tech treats it as a modal region.</dd>
+
+                    <dt><code>role="grid"</code> / <code>role="gridcell"</code></dt>
+                    <dd>On the palette container and individual swatch tiles.</dd>
+
+                    <dt><code>aria-selected</code></dt>
+                    <dd><code>"true"</code> on the currently-selected palette tile.</dd>
+
+                    <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt>
+                    <dd>On the trigger, toggles the popup.</dd>
+
+                    <dt><kbd>Esc</kbd></dt>
+                    <dd>Closes the popup and restores the previous value (Cancel semantics).</dd>
+
+                    <dt><kbd>Arrow keys</kbd></dt>
+                    <dd>On the HSV canvas, nudges saturation (left/right) and brightness (up/down)
+                        by <code>0.02</code>.</dd>
+
+                    <dt><kbd>Enter</kbd> (inside popup)</dt>
+                    <dd>Applies the current colour when <code>ShowButtons="true"</code>.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorPicker", "Accessibility"];
+
+    private string? _color = "#3498db";
+    private string? _paletteColor = "#e67e22";
+}

@@ -1,0 +1,79 @@
+@page "/components/data-display/avatar/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Avatar / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Avatar / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Avatar/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAvatar</code> is purely decorative by default: it has no role, is not focusable,
+            and does not capture keyboard events. The accessibility work happens around it — via the text
+            associated with the image, or by making the avatar part of a focusable trigger (button, link)
+            when it acts as a control.
+        </p>
+        <p>
+            For image avatars, always supply <code>Alt</code>. If the avatar sits next to a visible name
+            label, pass <code>Alt=""</code> so the image does not duplicate the name for screen-reader
+            users. For initials avatars, the rendered text already appears in the accessibility tree. When
+            the avatar acts as a menu trigger or profile link, wrap it in a <code>&lt;button&gt;</code> or
+            anchor with <code>aria-label</code> describing the action, not the person.
+        </p>
+        <p>
+            <strong>Keyboard</strong> — non-interactive avatars are skipped by Tab. Interactive avatars
+            (button-wrapped) respond to Enter and Space via native button semantics.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=30" Alt="Alice Nguyen" />
+                <span>Image avatar with descriptive <code>Alt</code> — screen readers announce the name.</span>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <SunfishAvatar Src="https://i.pravatar.cc/80?img=31" Alt="" />
+                <span><strong>Alice Nguyen</strong> — empty <code>Alt</code> avoids duplicating the visible name.</span>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <SunfishAvatar Initials="AN" />
+                <span>Initials avatar — the text content is exposed in the accessibility tree automatically.</span>
+            </div>
+
+            <div class="demo-row" style="align-items:center; gap:0.75rem;">
+                <button type="button"
+                        class="sf-avatar-trigger"
+                        aria-label="Open profile menu for Alice Nguyen"
+                        style="background:transparent;border:0;padding:0;cursor:pointer;border-radius:50%;">
+                    <SunfishAvatar Initials="AN" Bordered="true" />
+                </button>
+                <span>Interactive avatar — real <code>&lt;button&gt;</code> with <code>aria-label</code> names the action.</span>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>Alt</strong> on image avatars</dt>
+                <dd>Descriptive when the avatar stands alone; empty <code>""</code> when a visible name is adjacent.</dd>
+                <dt><strong>Initials</strong></dt>
+                <dd>Rendered as text, so it is read by screen readers without any extra ARIA.</dd>
+                <dt><strong>Interactive wrapping</strong></dt>
+                <dd>Wrap in a <code>&lt;button&gt;</code> or anchor when the avatar is clickable; supply
+                <code>aria-label</code> describing the action (e.g. "Open profile menu").</dd>
+                <dt><strong>Keyboard</strong></dt>
+                <dd>Non-interactive avatars: not focusable. Interactive: Enter and Space fire the wrapping
+                button's click handler via native browser behavior.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Avatar", "Accessibility"];
+}

@@ -1,0 +1,85 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Overlays
+@inject ILogger<SfDialog> Logger
+
+@*
+    Syncfusion's SfDialog is the analog of Telerik's TelerikWindow. Sunfish has
+    SunfishWindow; compat-syncfusion intentionally does NOT ship an <SfWindow> — Syncfusion
+    has no SfWindow type. The shim class is <SfDialog>.
+
+    Child-component contract (via CascadingValue):
+    - DialogTemplates — publishes Header / Content / FooterTemplate fragments
+    - DialogButtons — publishes an ordered list of DialogButton children
+*@
+<CascadingValue Value="this" IsFixed="true">
+    <SunfishWindow Visible="Visible"
+                   VisibleChanged="VisibleChanged"
+                   Title="@(Header ?? string.Empty)"
+                   Width="Width"
+                   Height="Height"
+                   Modal="IsModal"
+                   @attributes="AdditionalAttributes">
+        @if (HeaderTemplate is not null)
+        {
+            @HeaderTemplate
+        }
+        @if (ContentTemplate is not null)
+        {
+            @ContentTemplate
+        }
+        else if (!string.IsNullOrEmpty(Content))
+        {
+            @((MarkupString)Content)
+        }
+        else
+        {
+            @ChildContent
+        }
+        @if (FooterTemplateFragment is not null)
+        {
+            @FooterTemplateFragment
+        }
+    </SunfishWindow>
+</CascadingValue>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback<bool> VisibleChanged { get; set; }
+
+    /// <summary>Title bar content (HTML-accepted).</summary>
+    [Parameter] public string? Header { get; set; }
+
+    /// <summary>Body content (HTML-accepted; alternative to DialogTemplates).</summary>
+    [Parameter] public string? Content { get; set; }
+
+    [Parameter] public string Width { get; set; } = "100%";
+    [Parameter] public string Height { get; set; } = "auto";
+    [Parameter] public bool IsModal { get; set; }
+    [Parameter] public bool ShowCloseIcon { get; set; } = true;
+    [Parameter] public bool AllowDragging { get; set; }
+    [Parameter] public bool EnableResize { get; set; }
+    [Parameter] public string? Target { get; set; }
+    [Parameter] public string? CssClass { get; set; }
+    [Parameter] public string? MinHeight { get; set; }
+    [Parameter] public bool CloseOnEscape { get; set; } = true;
+    [Parameter] public double ZIndex { get; set; } = 1000;
+    [Parameter] public bool EnableRtl { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public EventCallback<BeforeOpenEventArgs> BeforeOpen { get; set; }
+    [Parameter] public EventCallback<BeforeCloseEventArgs> BeforeClose { get; set; }
+    [Parameter] public EventCallback OnOpen { get; set; }
+    [Parameter] public EventCallback Closed { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Child-published slots ---
+    internal RenderFragment? HeaderTemplate { get; set; }
+    internal RenderFragment? ContentTemplate { get; set; }
+    internal RenderFragment? FooterTemplateFragment { get; set; }
+
+    internal void RequestRefresh() => StateHasChanged();
+}

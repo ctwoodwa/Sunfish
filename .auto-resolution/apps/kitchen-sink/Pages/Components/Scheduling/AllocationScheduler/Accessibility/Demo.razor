@@ -1,0 +1,133 @@
+@page "/components/scheduling/allocation-scheduler/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AllocationScheduler / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AllocationScheduler / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Scheduling/AllocationScheduler/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            The <code>SunfishAllocationScheduler</code> renders as a WAI-ARIA grid. The root container carries
+            <code>role="grid"</code> with an <code>aria-label</code>, timeline header cells use
+            <code>role="columnheader"</code>, and every allocation cell uses <code>role="gridcell"</code> with
+            <code>aria-selected</code>, <code>aria-disabled</code>, <code>aria-readonly</code>, and a fully
+            formatted <code>aria-label</code> describing resource, period, and value.
+        </p>
+        <p>
+            <strong>Keyboard model</strong>: Tab enters the toolbar and the grid, arrow keys move cell focus,
+            Enter (or F2) begins an in-cell edit when <code>AllowKeyboardEdit</code> is enabled, Escape cancels
+            an in-progress edit, and the context-menu key opens the right-click menu for the focused cell. The
+            splitter between the resource pane and the timeline pane is itself focusable and uses arrow keys to
+            resize when <code>AllowSplitterCollapse</code> is on.
+        </p>
+        <p>
+            <strong>Screen-reader announcements</strong>: selection changes fire the <code>OnSelectionChanged</code>
+            callback with a full <code>SelectedCells</code> list that can be surfaced through a dedicated live
+            region. The demo below wires that callback to a polite <code>aria-live</code> panel so you can verify
+            announcements without launching a screen reader.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin-bottom:.75rem;font-size:.875rem">
+            <strong>Try it:</strong>
+            <span>Tab into the grid, then use</span>
+            <kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd>
+            <span>to move, </span>
+            <kbd>Enter</kbd>
+            <span>to allocate, </span>
+            <kbd>Esc</kbd>
+            <span>to cancel.</span>
+        </div>
+
+        <SunfishAllocationScheduler TResource="StaffResource"
+                                    Resources="@_resources"
+                                    Allocations="@_allocations"
+                                    AuthoritativeLevel="TimeGranularity.Week"
+                                    ViewGrain="TimeGranularity.Week"
+                                    ValueMode="AllocationValueMode.Hours"
+                                    SelectionMode="AllocationSelectionMode.Range"
+                                    AllowKeyboardEdit="true"
+                                    EnableContextMenu="true"
+                                    AllowSplitterCollapse="true"
+                                    VisibleStart="@_demoStart"
+                                    MinVisibleColumns="3"
+                                    DefaultRangeUnit="TimeGranularity.Month"
+                                    Height="300px"
+                                    OnSelectionChanged="HandleSelectionChanged"
+                                    OnCellEdited="HandleCellEdited">
+            <AllocationResourceColumns>
+                <AllocationResourceColumn TResource="StaffResource" Field="Name" Title="Resource" Width="180px" />
+                <AllocationResourceColumn TResource="StaffResource" Field="Role" Title="Role" Width="120px" />
+            </AllocationResourceColumns>
+        </SunfishAllocationScheduler>
+
+        @* Polite live region — announces selection and edit activity to assistive tech. *@
+        <div role="status"
+             aria-live="polite"
+             aria-atomic="true"
+             style="margin-top:1rem;padding:.75rem;border:1px solid var(--sf-color-border, #e5e7eb);border-radius:.5rem;background:var(--sf-color-surface, #f9fafb);font-size:.875rem;min-height:2.5rem">
+            <strong>Live region:</strong>
+            <span>@(_announcement ?? "Awaiting interaction…")</span>
+        </div>
+
+        <details style="margin-top:1rem">
+            <summary style="cursor:pointer;font-weight:600">ARIA semantics at a glance</summary>
+            <ul style="margin-top:.5rem;font-size:.875rem;line-height:1.6">
+                <li><code>role="grid"</code> on the container with <code>aria-label="Allocation Scheduler"</code>.</li>
+                <li><code>role="columnheader"</code> on time-bucket headers, with <code>aria-current="date"</code> on the current period.</li>
+                <li><code>role="gridcell"</code> on every allocation cell, with <code>aria-selected</code>, <code>aria-disabled</code>, <code>aria-readonly</code>, and an <code>aria-label</code> describing resource, bucket, and value.</li>
+                <li><code>role="separator"</code> on the pane splitter with <code>aria-valuenow</code> / <code>aria-valuemin</code> for the resource-column width.</li>
+                <li><code>role="toolbar"</code> on the navigation toolbar and the scenario strip.</li>
+            </ul>
+        </details>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Scheduling", "AllocationScheduler", "Accessibility"];
+
+    private readonly DateTime _demoStart = new(2026, 4, 6);
+    private string? _announcement;
+
+    private void HandleSelectionChanged(SelectionChangedArgs args)
+    {
+        _announcement = args.SelectedCells.Count == 0
+            ? "Selection cleared."
+            : $"{args.SelectedCells.Count} cell(s) selected ({args.SelectionMode}).";
+    }
+
+    private void HandleCellEdited(CellEditedArgs args)
+    {
+        _announcement = $"Cell updated for resource {args.ResourceKey} on {args.BucketStart:MMM d, yyyy}: {args.OldValue} to {args.NewValue}.";
+    }
+
+    private readonly List<StaffResource> _resources = new()
+    {
+        new() { Id = 1, Name = "Alice Chen",  Role = "Dev" },
+        new() { Id = 2, Name = "Bob Torres",  Role = "Dev" },
+        new() { Id = 3, Name = "Carol Singh", Role = "QA"  },
+        new() { Id = 4, Name = "David Kim",   Role = "PM"  },
+    };
+
+    private readonly List<AllocationRecord> _allocations = new()
+    {
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 1, TaskId = 101, TaskName = "Backend API",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 32, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 2, TaskId = 102, TaskName = "Frontend UI",  BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 24, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 3, TaskId = 103, TaskName = "Test Suite",   BucketStart = new(2026, 4, 13), BucketEnd = new(2026, 4, 20), Value = 16, Unit = AllocationUnit.Hours },
+        new() { AllocationId = Guid.NewGuid(), ResourceId = 4, TaskId = 104, TaskName = "Release Plan", BucketStart = new(2026, 4, 6),  BucketEnd = new(2026, 4, 13), Value = 8,  Unit = AllocationUnit.Hours },
+    };
+
+    public class StaffResource
+    {
+        public int    Id   { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+    }
+}

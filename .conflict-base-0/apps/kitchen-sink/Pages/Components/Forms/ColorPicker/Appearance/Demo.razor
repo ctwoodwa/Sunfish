@@ -1,0 +1,94 @@
+@page "/components/forms/colorpicker/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>ColorPicker / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ColorPicker / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/ColorPicker/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishColorPicker</code> supports three views and a handful of preset palettes.
+            Choose a <code>View</code> from <code>Gradient</code>, <code>Palette</code>, or
+            <code>GradientPalette</code> (shows both surfaces together), and pass a preset name
+            through <code>Palette</code> (e.g. <code>"basic"</code>, <code>"officecolors"</code>,
+            <code>"extended"</code>, <code>"flat"</code>, <code>"applea"</code>) — or an arbitrary
+            <code>IEnumerable&lt;string&gt;</code> of CSS colors.
+        </p>
+        <p>
+            Tweak <code>Columns</code> and <code>PaletteTileSize</code> to shape the swatch grid,
+            toggle <code>Preview</code> and <code>ClearButton</code>, and turn on
+            <code>ContrastTool</code> to display a live WCAG contrast check against
+            <code>ContrastBackground</code>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem; max-width:520px;">
+
+            <div>
+                <label style="display:block; margin-bottom:.25rem; font-weight:600;">View</label>
+                <select @bind="_view" style="padding:.25rem .5rem;">
+                    <option value="@ColorPickerView.Gradient">Gradient</option>
+                    <option value="@ColorPickerView.Palette">Palette</option>
+                    <option value="@ColorPickerView.GradientPalette">GradientPalette</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display:block; margin-bottom:.25rem; font-weight:600;">Palette preset</label>
+                <select @bind="_palette" style="padding:.25rem .5rem;">
+                    <option value="basic">basic</option>
+                    <option value="officecolors">officecolors</option>
+                    <option value="extended">extended</option>
+                    <option value="flat">flat</option>
+                    <option value="applea">applea</option>
+                </select>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:0.75rem; flex-wrap:wrap;">
+                <label style="display:flex; align-items:center; gap:.35rem;">
+                    <input type="checkbox" @bind="_preview" /> Preview
+                </label>
+                <label style="display:flex; align-items:center; gap:.35rem;">
+                    <input type="checkbox" @bind="_clearButton" /> ClearButton
+                </label>
+                <label style="display:flex; align-items:center; gap:.35rem;">
+                    <input type="checkbox" @bind="_contrast" /> ContrastTool
+                </label>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:0.75rem;">
+                <SunfishColorPicker @bind-Value="_color"
+                                    View="_view"
+                                    Palette="_palette"
+                                    Columns="10"
+                                    PaletteTileSize="22"
+                                    Format="ColorPickerFormat.Hex"
+                                    Preview="_preview"
+                                    ClearButton="_clearButton"
+                                    ContrastTool="_contrast"
+                                    ContrastBackground="#ffffff" />
+                <span>Selected: <strong style="color:@_color;">@(_color ?? "(none)")</strong></span>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ColorPicker", "Appearance"];
+
+    private ColorPickerView _view = ColorPickerView.GradientPalette;
+    private string _palette = "officecolors";
+    private bool _preview = true;
+    private bool _clearButton = true;
+    private bool _contrast = false;
+    private string? _color = "#4472c4";
+}

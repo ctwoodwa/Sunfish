@@ -1,0 +1,53 @@
+@page "/components/feedback/loadercontainer/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>LoaderContainer / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="LoaderContainer / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/LoaderContainer/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishLoaderContainer</code> wraps arbitrary content and shows a loading overlay
+            whenever the <code>Loading</code> parameter is <code>true</code>. Customise the message
+            with <code>Text</code>, the spinner scale with <code>Size</code>
+            (<code>SpinnerSize.Small</code> / <code>Medium</code> / <code>Large</code>), or supply a
+            custom <code>LoaderTemplate</code> render fragment to replace the default spinner
+            entirely.
+        </p>
+        <p>
+            This overview shows the toggle-loading pattern. Separate demo pages cover
+            <a href="/components/feedback/loadercontainer/panel">panel</a> and
+            <a href="/components/feedback/loadercontainer/events">events</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <SunfishLoaderContainer Loading="@_loading">
+                <div style="padding: 24px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                    <p><strong>Data Panel</strong></p>
+                    <p>Row 1 - John Doe - Engineering</p>
+                    <p>Row 2 - Jane Smith - Marketing</p>
+                    <p>Row 3 - Bob Wilson - Sales</p>
+                </div>
+            </SunfishLoaderContainer>
+            <div class="demo-row">
+                <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _loading = !_loading)">
+                    @(_loading ? "Stop" : "Start") Loading
+                </SunfishButton>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "LoaderContainer", "Overview"];
+
+    private bool _loading = true;
+}

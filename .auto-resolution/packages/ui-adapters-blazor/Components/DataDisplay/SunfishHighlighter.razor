@@ -1,0 +1,50 @@
+@inherits SunfishComponentBase
+
+<span class="@CombineClasses("mar-highlighter")" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(HighlightText) && !string.IsNullOrEmpty(Text) && Text.Contains(HighlightText, StringComparison.OrdinalIgnoreCase))
+    {
+        @((MarkupString)BuildHighlightedText())
+    }
+    else if (ChildContent != null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        @Text
+    }
+</span>
+
+@code {
+    [Parameter] public string Text { get; set; } = string.Empty;
+    [Parameter] public string? HighlightText { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string BuildHighlightedText()
+    {
+        if (string.IsNullOrEmpty(HighlightText) || string.IsNullOrEmpty(Text))
+            return System.Net.WebUtility.HtmlEncode(Text);
+
+        var result = new System.Text.StringBuilder();
+        var remaining = Text;
+        var searchLower = HighlightText.ToLowerInvariant();
+
+        while (remaining.Length > 0)
+        {
+            var index = remaining.ToLowerInvariant().IndexOf(searchLower);
+            if (index < 0)
+            {
+                result.Append(System.Net.WebUtility.HtmlEncode(remaining));
+                break;
+            }
+
+            result.Append(System.Net.WebUtility.HtmlEncode(remaining[..index]));
+            result.Append("<mark>");
+            result.Append(System.Net.WebUtility.HtmlEncode(remaining[index..(index + HighlightText.Length)]));
+            result.Append("</mark>");
+            remaining = remaining[(index + HighlightText.Length)..];
+        }
+
+        return result.ToString();
+    }
+}

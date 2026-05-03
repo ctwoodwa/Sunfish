@@ -1,0 +1,83 @@
+@page "/components/data-display/card/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Card / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Card / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Card/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCard</code> is a semantic container rather than a single interactive widget, so
+            accessibility is driven by the content you place inside. Use landmark roles and headings where
+            appropriate: a card that acts as a named section should carry <code>role="region"</code> and an
+            <code>aria-labelledby</code> that points at its <code>SunfishCardHeader</code>. A card that is
+            entirely clickable should expose a real <code>&lt;button&gt;</code> or link — do not rely on
+            <code>onclick</code> on a plain <code>&lt;div&gt;</code>.
+        </p>
+        <p>
+            When a card contains a media image, supply a descriptive <code>Alt</code> on
+            <code>SunfishCardImage</code>. Decorative imagery should pass <code>Alt=""</code>. Action rows
+            (<code>SunfishCardActions</code>) should carry enough label text on each button for screen-reader
+            users to distinguish destructive actions from neutral ones — icon-only buttons need
+            <code>aria-label</code>.
+        </p>
+        <p>
+            <strong>Keyboard</strong> — because the card itself is not focusable, keyboard navigation moves
+            through the focusable descendants in DOM order (link → buttons → form fields). Ensure the
+            visually-prominent primary action is also the first interactive element in the DOM so Tab lands
+            there first.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishCard Width="320px" role="region" aria-labelledby="card-proj-alpha">
+                    <SunfishCardHeader>
+                        <span id="card-proj-alpha">Project Alpha</span>
+                    </SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>This card exposes a named landmark via <code>role="region"</code> and
+                        <code>aria-labelledby</code> referencing the header id.</p>
+                    </SunfishCardBody>
+                    <SunfishCardActions>
+                        <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small" aria-label="Open Project Alpha">Open</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Danger" Size="ButtonSize.Small" aria-label="Archive Project Alpha">Archive</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+
+                <SunfishCard Width="320px" role="region" aria-labelledby="card-media">
+                    <SunfishCardImage Src="https://picsum.photos/seed/a11y-card/320/140" Alt="Quarterly revenue chart showing a rising trend across four quarters" />
+                    <SunfishCardHeader>
+                        <span id="card-media">Quarterly Report</span>
+                    </SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>The media image carries a descriptive <code>Alt</code> so screen-reader users get
+                        the same information sighted users do.</p>
+                    </SunfishCardBody>
+                </SunfishCard>
+            </div>
+
+            <dl style="font-size:0.875rem; max-width:640px;">
+                <dt><strong>role</strong></dt>
+                <dd>region (when card represents a named section), article (for self-contained feed items)</dd>
+                <dt><strong>aria-labelledby</strong></dt>
+                <dd>Points at the id of the element inside <code>SunfishCardHeader</code> that names the card.</dd>
+                <dt><strong>Image alt text</strong></dt>
+                <dd>Descriptive for meaningful visuals; empty <code>Alt=""</code> for decorative images.</dd>
+                <dt><strong>Keyboard order</strong></dt>
+                <dd>Tab traverses descendants in DOM order. Place the primary action first.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Card", "Accessibility"];
+}

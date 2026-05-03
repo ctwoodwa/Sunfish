@@ -1,0 +1,100 @@
+@page "/components/feedback/alert/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Alert / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Alert / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Alert/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAlert</code> supports four severity tones via the <code>Severity</code>
+            parameter — <code>Info</code>, <code>Success</code>, <code>Warning</code>, and
+            <code>Critical</code> — each mapped to the active theme provider's tokens. Mark an
+            alert with <code>IsDismissible="true"</code> to render a close button that invokes
+            the <code>OnDismiss</code> callback. Slot a custom <code>Icon</code>
+            <code>RenderFragment</code> to override the default visual glyph, and wrap multiple
+            related alerts with <code>SunfishAlertStrip</code> for module-level announcements.
+        </p>
+        <p>
+            The panel below shows every severity, a dismissible alert, a custom-iconed alert,
+            and a grouped alert strip driven by a strongly typed <code>AlertItem</code> list.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+
+            <section style="display:flex; flex-direction:column; gap:.5rem;">
+                <h3 style="margin:0;">Severity tones</h3>
+                <SunfishAlert Severity="AlertSeverity.Info">
+                    <strong>Info.</strong> Your export will be emailed when it is ready.
+                </SunfishAlert>
+                <SunfishAlert Severity="AlertSeverity.Success">
+                    <strong>Success.</strong> Invoice INV-00412 was posted to the ledger.
+                </SunfishAlert>
+                <SunfishAlert Severity="AlertSeverity.Warning">
+                    <strong>Warning.</strong> Two draft line items are missing tax codes.
+                </SunfishAlert>
+                <SunfishAlert Severity="AlertSeverity.Critical">
+                    <strong>Critical.</strong> Cannot reach the ERP hub — retrying in background.
+                </SunfishAlert>
+            </section>
+
+            <section style="display:flex; flex-direction:column; gap:.5rem;">
+                <h3 style="margin:0;">Dismissible</h3>
+                @if (_dismissibleVisible)
+                {
+                    <SunfishAlert Severity="AlertSeverity.Warning"
+                                  IsDismissible="true"
+                                  OnDismiss="DismissAlert">
+                        <strong>Heads up.</strong> This alert can be closed — click the &times; on the right.
+                    </SunfishAlert>
+                }
+                else
+                {
+                    <SunfishButton Size="ButtonSize.Small" OnClick="RestoreAlert">Restore dismissible alert</SunfishButton>
+                }
+            </section>
+
+            <section style="display:flex; flex-direction:column; gap:.5rem;">
+                <h3 style="margin:0;">Custom icon</h3>
+                <SunfishAlert Severity="AlertSeverity.Info" AriaLabel="Tip of the day">
+                    <Icon>
+                        <span aria-hidden="true" style="font-size:1.25rem;">&#128161;</span>
+                    </Icon>
+                    <ChildContent>
+                        <strong>Tip.</strong> Press <kbd>?</kbd> anywhere in the app to open the shortcut cheatsheet.
+                    </ChildContent>
+                </SunfishAlert>
+            </section>
+
+            <section style="display:flex; flex-direction:column; gap:.5rem;">
+                <h3 style="margin:0;">Grouped alert strip</h3>
+                <SunfishAlertStrip Alerts="_stripAlerts" />
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Alert", "Appearance"];
+
+    private bool _dismissibleVisible = true;
+
+    private void DismissAlert() => _dismissibleVisible = false;
+    private void RestoreAlert() => _dismissibleVisible = true;
+
+    private static readonly IReadOnlyList<AlertItem> _stripAlerts = new[]
+    {
+        new AlertItem { Title = "Ledger sync",    Detail = "Completed at 09:41",          Module = "Finance",    Severity = AlertSeverity.Success },
+        new AlertItem { Title = "Unpaid invoices", Detail = "3 overdue > 30 days",        Module = "AR",         Severity = AlertSeverity.Warning },
+        new AlertItem { Title = "EDI feed down",   Detail = "Retry in 5 min",             Module = "Integrations", Severity = AlertSeverity.Critical }
+    };
+}

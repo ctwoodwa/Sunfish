@@ -1,0 +1,27 @@
+@inherits SunfishComponentBase
+
+@if (Visible)
+{
+    <div class="@CombineClasses(SkeletonClass)"
+         style="@CombineStyles(BuildSizeStyle())"
+         aria-hidden="true"
+         @attributes="AdditionalAttributes">
+    </div>
+}
+
+@code {
+    [Parameter] public SkeletonVariant Variant { get; set; } = SkeletonVariant.Text;
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool Visible { get; set; } = true;
+
+    private string SkeletonClass => CssProvider.SkeletonClass(Variant);
+
+    private string? BuildSizeStyle()
+    {
+        var parts = new List<string>();
+        if (Width != null) parts.Add($"width:{Width};");
+        if (Height != null) parts.Add($"height:{Height};");
+        return parts.Count > 0 ? string.Join("", parts) : null;
+    }
+}

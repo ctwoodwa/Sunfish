@@ -1,0 +1,86 @@
+@namespace Sunfish.Compat.Infragistics
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@using CompatEnums = Sunfish.Compat.Infragistics.Enums
+@inject ILogger<IgbCheckbox> Logger
+
+@*
+    Ignite-UI-shaped checkbox wrapper.
+
+    Divergence from Telerik/other vendors: Ignite UI uses `Checked` (plus a `Change` event
+    carrying IgbInputChangeEventArgs) instead of `Value`/`ValueChanged`. The wrapper keeps
+    the Ignite shape at the public surface and adapts to Sunfish's `Value`/`ValueChanged`
+    internally.
+*@
+<SunfishCheckbox Value="Checked"
+                 ValueChanged="OnSunfishValueChanged"
+                 Enabled="!Disabled"
+                 Indeterminate="Indeterminate"
+                 @attributes="AdditionalAttributes" />
+
+@code {
+    /// <summary>Ignite-UI-shaped checked state. Use <see cref="CheckedChanged"/> for two-way binding.</summary>
+    [Parameter] public bool Checked { get; set; }
+
+    /// <summary>Two-way binding companion for <see cref="Checked"/>.</summary>
+    [Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+
+    /// <summary>Ignite-UI-shaped change event. Carries <see cref="IgbInputChangeEventArgs"/>.</summary>
+    [Parameter] public EventCallback<IgbInputChangeEventArgs> Change { get; set; }
+
+    [Parameter] public bool Indeterminate { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+
+    /// <summary>Form-participation name attribute.</summary>
+    [Parameter] public string? Name { get; set; }
+
+    /// <summary>Form-participation value attribute.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Label positioning. Currently cosmetic-dropped with a warning — Sunfish's layout differs.</summary>
+    [Parameter] public CompatEnums.LabelPosition LabelPosition { get; set; } = CompatEnums.LabelPosition.After;
+
+    /// <summary>aria-labelledby passthrough.</summary>
+    [Parameter] public string? AriaLabelledby { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        // Forward Name / Value attributes for form-participation.
+        if (Name is not null || Value is not null || AriaLabelledby is not null || Required || Invalid)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Name is not null && !AdditionalAttributes.ContainsKey("name"))
+                AdditionalAttributes["name"] = Name;
+            if (Value is not null && !AdditionalAttributes.ContainsKey("value"))
+                AdditionalAttributes["value"] = Value;
+            if (AriaLabelledby is not null && !AdditionalAttributes.ContainsKey("aria-labelledby"))
+                AdditionalAttributes["aria-labelledby"] = AriaLabelledby;
+            if (Required && !AdditionalAttributes.ContainsKey("required"))
+                AdditionalAttributes["required"] = true;
+            if (Invalid && !AdditionalAttributes.ContainsKey("aria-invalid"))
+                AdditionalAttributes["aria-invalid"] = true;
+        }
+
+        if (LabelPosition == CompatEnums.LabelPosition.Before)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbCheckbox.LabelPosition.Before has no Sunfish equivalent; defaulting to after. " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+    }
+
+    private async Task OnSunfishValueChanged(bool newValue)
+    {
+        Checked = newValue;
+        if (CheckedChanged.HasDelegate)
+            await CheckedChanged.InvokeAsync(newValue);
+        if (Change.HasDelegate)
+            await Change.InvokeAsync(new IgbInputChangeEventArgs { Value = newValue, Name = Name });
+    }
+}

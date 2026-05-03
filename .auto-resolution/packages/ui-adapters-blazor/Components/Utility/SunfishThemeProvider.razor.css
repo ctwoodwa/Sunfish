@@ -1,0 +1,16 @@
+/*
+  SunfishThemeProvider — Tier 2 Wave 2 surface.
+  NOTE: CSS prefix audit is tracked separately; these rules keep the established
+  `sf-` prefix to match the component base. Do not bikeshed the prefix here.
+*/
+
+::deep .sf-popup-root {
+    /* Zero-sized portal host. Descendant popups / dialogs / tooltips position
+       themselves absolutely relative to the viewport; this container exists
+       only to escape overflow:hidden / scroll-trap ancestors. */
+    position: relative;
+    width: 0;
+    height: 0;
+    overflow: visible;
+    z-index: 9999;
+}

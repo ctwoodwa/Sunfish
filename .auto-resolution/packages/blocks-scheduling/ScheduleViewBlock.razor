@@ -1,0 +1,31 @@
+@* Picks between SunfishScheduler (Day/Week/Month) and SunfishAllocationScheduler
+   based on the View parameter. Heavy lifting is delegated to the underlying
+   components — this block is a thin view-switcher with opinionated defaults.
+
+   SunfishAllocationScheduler is generic over TResource. To keep this block
+   usable for the simple (Day/Week/Month) cases without forcing consumers to
+   pick a resource type, TResource defaults to object. Consumers using
+   Allocation mode should set the type argument explicitly. *@
+
+@typeparam TResource
+
+@switch (View)
+{
+    case ScheduleBlockView.Allocation:
+        <SunfishAllocationScheduler TResource="TResource" @attributes="ForwardedAttributes" />
+        break;
+
+    case ScheduleBlockView.Day:
+    case ScheduleBlockView.Week:
+    case ScheduleBlockView.Month:
+    default:
+        <SunfishScheduler @attributes="ForwardedAttributes" />
+        break;
+}
+
+@code {
+    [Parameter] public ScheduleBlockView View { get; set; } = ScheduleBlockView.Week;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? ForwardedAttributes { get; set; }
+}

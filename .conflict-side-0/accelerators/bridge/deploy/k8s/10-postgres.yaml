@@ -1,0 +1,93 @@
+# ============================================================================
+# Postgres — StatefulSet + headless Service
+# ============================================================================
+# Single-replica StatefulSet for Option B. Customers needing HA should swap
+# in an operator like CloudNativePG (https://cloudnative-pg.io/) — parity
+# with RDS Multi-AZ in AWS or Flexible Server HA in Azure.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: bridge-postgres
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: postgres
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/component: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bridge-postgres
+  namespace: sunfish-bridge-acmedemo
+  labels:
+    app.kubernetes.io/part-of: sunfish-bridge
+    app.kubernetes.io/component: postgres
+spec:
+  serviceName: bridge-postgres
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: postgres
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/part-of: sunfish-bridge
+        app.kubernetes.io/component: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - name: postgres
+              containerPort: 5432
+          envFrom:
+            - secretRef:
+                name: bridge-postgres
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "1000m"
+              memory: "2Gi"
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - bridgeadmin
+                - -d
+                - bridge
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - bridgeadmin
+            initialDelaySeconds: 30
+            periodSeconds: 15
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 32Gi
+        # storageClassName: "" — omit to use cluster default. Override per
+        # environment via Kustomize patch for tuned throughput.

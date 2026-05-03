@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Persistence</PackageId>
+    <Description>EF-Core-adjacent persistence abstractions for Sunfish: ISunfishEntityModule (module-entity registration pattern, ADR 0015) and shared tenant-query-filter extensions (ADR 0008).</Description>
+    <PackageTags>sunfish;foundation;persistence;efcore;modules</PackageTags>
+    <RootNamespace>Sunfish.Foundation.Persistence</RootNamespace>
+    <AssemblyName>Sunfish.Foundation.Persistence</AssemblyName>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Persistence.Tests" />
+  </ItemGroup>
+</Project>

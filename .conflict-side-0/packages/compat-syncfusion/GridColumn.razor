@@ -1,0 +1,73 @@
+@namespace Sunfish.Compat.Syncfusion
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay
+@using Sunfish.Compat.Shared
+@using CompatEnums = Sunfish.Compat.Syncfusion.Enums
+
+@*
+    Syncfusion: <SfGrid><GridColumns><GridColumn Field="Name" HeaderText="Name" /></GridColumns></SfGrid>
+    Compat    : <SfGrid><GridColumns><GridColumn Field="Name" HeaderText="Name" /></GridColumns></SfGrid>
+                (same element names; GridColumn delegates to SunfishGridColumn.)
+
+    The inner SunfishGridColumn picks up the cascading SunfishDataGrid<TValue> parent that
+    SfGrid's underlying render tree publishes — no extra wiring required here.
+*@
+<SunfishGridColumn TItem="TValue"
+                   Field="@(Field ?? string.Empty)"
+                   Title="@(HeaderText ?? Field)"
+                   Width="Width"
+                   Sortable="AllowSorting"
+                   Filterable="AllowFiltering"
+                   Visible="Visible"
+                   TextAlign="_textAlign"
+                   Format="Format"
+                   Editable="AllowEditing"
+                   Template="Template"
+                   HeaderTemplate="HeaderTemplate"
+                   EditorTemplate="EditTemplate" />
+
+@code {
+    /// <summary>The model property this column binds to.</summary>
+    [Parameter] public string? Field { get; set; }
+
+    /// <summary>Column header text. Defaults to <see cref="Field"/> if null.</summary>
+    [Parameter] public string? HeaderText { get; set; }
+
+    [Parameter] public string? Width { get; set; }
+    [Parameter] public bool AllowSorting { get; set; } = true;
+    [Parameter] public bool AllowFiltering { get; set; } = true;
+    [Parameter] public bool AllowEditing { get; set; } = true;
+    [Parameter] public bool AllowReordering { get; set; } = true;
+    [Parameter] public bool AllowResizing { get; set; } = true;
+    [Parameter] public bool Visible { get; set; } = true;
+    [Parameter] public string? Format { get; set; }
+    [Parameter] public string? Type { get; set; }
+
+    /// <summary>Text alignment ("Left", "Center", "Right").</summary>
+    [Parameter] public string? TextAlign { get; set; }
+
+    /// <summary>Cell template. Passthrough.</summary>
+    [Parameter] public RenderFragment<TValue>? Template { get; set; }
+
+    /// <summary>Header template. Passthrough.</summary>
+    [Parameter] public RenderFragment? HeaderTemplate { get; set; }
+
+    /// <summary>Edit cell template. Passthrough.</summary>
+    [Parameter] public RenderFragment<TValue>? EditTemplate { get; set; }
+
+    private string? _textAlign;
+
+    protected override void OnParametersSet()
+    {
+        _textAlign = TextAlign?.Trim() switch
+        {
+            null or "" => null,
+            var s when s.Equals("Left", System.StringComparison.OrdinalIgnoreCase) => "left",
+            var s when s.Equals("Center", System.StringComparison.OrdinalIgnoreCase) => "center",
+            var s when s.Equals("Right", System.StringComparison.OrdinalIgnoreCase) => "right",
+            var s when s.Equals("Justify", System.StringComparison.OrdinalIgnoreCase) => "justify",
+            var raw => raw
+        };
+    }
+}

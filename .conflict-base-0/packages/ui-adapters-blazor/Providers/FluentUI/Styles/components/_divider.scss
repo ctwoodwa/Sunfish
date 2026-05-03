@@ -1,0 +1,19 @@
+// =============================================================================
+// Component: Divider
+// =============================================================================
+
+.sf-divider {
+    border: 0;
+    border-top: 1px solid var(--sf-color-border);
+    margin-block: var(--sf-space-md);
+}
+
+.sf-divider--vertical {
+    border-top: 0;
+    border-inline-start: 1px solid var(--sf-color-border);
+    margin-block: 0;
+    margin-inline: var(--sf-space-md);
+    align-self: stretch;
+    height: auto;
+    min-height: 1em;
+}

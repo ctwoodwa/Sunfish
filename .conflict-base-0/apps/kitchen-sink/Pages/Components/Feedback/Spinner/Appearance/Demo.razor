@@ -1,0 +1,97 @@
+@page "/components/feedback/spinner/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Spinner / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Spinner / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Spinner/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSpinner</code> renders an animated ring indicator for indeterminate
+            loading. Its visual surface is intentionally small:
+        </p>
+        <ul>
+            <li><code>Size</code> (<code>SpinnerSize.Small</code> / <code>Medium</code> / <code>Large</code>) &mdash; presets tuned to the active provider's icon sizing scale.</li>
+            <li><code>Visible</code> &mdash; toggles the entire element in and out of the DOM; the default is <code>true</code>.</li>
+            <li><code>Style</code> / <code>Class</code> &mdash; for tokenised colour overrides (<code>--sf-color-primary</code>) or stroke width adjustments.</li>
+        </ul>
+        <p>
+            The panel below contrasts the three sizes, shows an inline-with-text pairing, a
+            centred on-surface variant, and a tokenised colour override.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Size scale</h3>
+                <div style="display:flex; gap:1.5rem; align-items:center;">
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.25rem;">
+                        <SunfishSpinner Size="SpinnerSize.Small" />
+                        <span style="font-size:.75rem; color:#666;">Small</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.25rem;">
+                        <SunfishSpinner Size="SpinnerSize.Medium" />
+                        <span style="font-size:.75rem; color:#666;">Medium</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:.25rem;">
+                        <SunfishSpinner Size="SpinnerSize.Large" />
+                        <span style="font-size:.75rem; color:#666;">Large</span>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Inline with label</h3>
+                <div style="display:inline-flex; align-items:center; gap:.5rem; padding:.5rem .75rem; border:1px solid var(--sf-color-border, #d1d5db); border-radius:.375rem;">
+                    <SunfishSpinner Size="SpinnerSize.Small" />
+                    <span>Loading records&hellip;</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Centred on a surface</h3>
+                <div style="display:flex; align-items:center; justify-content:center; height:200px; background:var(--sf-color-surface, #f8fafc); border:1px solid var(--sf-color-border, #e5e7eb); border-radius:.5rem;">
+                    <SunfishSpinner Size="SpinnerSize.Large" />
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Toggle visibility</h3>
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="@(() => _visible = !_visible)">
+                        @(_visible ? "Hide" : "Show")
+                    </SunfishButton>
+                    <div style="min-width:2rem;">
+                        <SunfishSpinner Visible="@_visible" Size="SpinnerSize.Medium" />
+                    </div>
+                    <span style="color:#666; font-size:.85rem;">Visible = @_visible</span>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Tokenised colour override</h3>
+                <div style="display:flex; gap:1rem;">
+                    <div style="--sf-color-primary:#0ea5e9;"><SunfishSpinner Size="SpinnerSize.Medium" /></div>
+                    <div style="--sf-color-primary:#10b981;"><SunfishSpinner Size="SpinnerSize.Medium" /></div>
+                    <div style="--sf-color-primary:#f59e0b;"><SunfishSpinner Size="SpinnerSize.Medium" /></div>
+                    <div style="--sf-color-primary:#ef4444;"><SunfishSpinner Size="SpinnerSize.Medium" /></div>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "Spinner", "Appearance"];
+
+    private bool _visible = true;
+}

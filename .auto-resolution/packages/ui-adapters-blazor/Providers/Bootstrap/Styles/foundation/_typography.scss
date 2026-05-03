@@ -1,0 +1,18 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Typography Tokens
+// =================================================================
+// Derived from Bootstrap's $font-family-base and $font-size-* Sass variables.
+// =================================================================
+
+:root {
+  --sf-font-family: #{inspect($font-family-base)};
+  --sf-font-size-xs: #{$font-size-base * 0.75};
+  --sf-font-size-sm: #{$font-size-sm};
+  --sf-font-size-base: #{$font-size-base};
+  --sf-font-size-md: #{$font-size-base * 1.125};
+  --sf-font-size-lg: #{$font-size-lg};
+  --sf-font-size-xl: #{$h4-font-size};
+  --sf-font-size-2xl: #{$h3-font-size};
+  --sf-font-size-3xl: #{$h2-font-size};
+  --sf-line-height-base: #{$line-height-base};
+}

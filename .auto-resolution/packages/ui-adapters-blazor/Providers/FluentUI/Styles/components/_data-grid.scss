@@ -1,0 +1,613 @@
+// =============================================================================
+// Component: DataGrid
+// =============================================================================
+@use '../foundation/focus' as *;
+
+.sf-datagrid {
+    width: 100%;
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+
+    // Batch 3 — scrollbar-gutter keeps horizontal scrollbar from overlapping
+    // the row edge when overflow toggles. `stable both-edges` preserves the
+    // grid's visual width across states.
+    scrollbar-gutter: stable both-edges;
+}
+
+.sf-datagrid-content > table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+.sf-datagrid-header {
+    background: var(--sf-color-surface);
+    font-weight: var(--sf-font-weight-semibold);
+    border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-datagrid-row {
+    // Batch 3 — border hierarchy: rows use `colorNeutralStroke1` so the row
+    // separators read stronger than toolbar/footer borders (which use Stroke2).
+    border-bottom: 1px solid var(--colorNeutralStroke1, var(--sf-color-border));
+    transition: background var(--sf-transition-fast);
+}
+
+.sf-datagrid-row:last-child { border-bottom: none; }
+.sf-datagrid-row:hover { background: var(--sf-color-surface); }
+.sf-datagrid-row--selected { background: var(--sf-color-primary-light); }
+.sf-datagrid-row--selected:hover { background: var(--sf-color-primary-light); }
+
+// Batch 2c — striped rows use Fluent v9's subtle hover-layer neutral instead of
+// the flat surface token, so zebra striping reads as "one notch" off base, not
+// the same shade the hover state also uses.
+.sf-datagrid-row--striped:nth-child(even) {
+    background: var(--colorNeutralBackground1Hover, var(--sf-color-surface));
+}
+
+// Batch 2c — highlight token routing. Previous revisions hardcoded `yellow`
+// with `!important`; route to the Fluent marigold palette token with a sane
+// amber fallback so the rule composes with row hover/selection without the
+// specificity club.
+.sf-datagrid__row--highlighted,
+.sf-datagrid-row--highlighted {
+    background: var(--colorPaletteMarigoldBackground2, rgb(255, 232, 179));
+}
+
+// Batch 2c — checkbox column hover reveal. Row-level selection checkboxes
+// are rendered with this class so they stay subtle until the row receives
+// hover/focus, matching Fluent v9's interaction pattern.
+.sf-datagrid-selection-cell--subtle {
+    opacity: 0;
+    transition: opacity var(--sf-duration-faster, 100ms) var(--sf-curve-easy-ease, cubic-bezier(0.33, 0, 0.67, 1));
+}
+
+.sf-datagrid-row:hover .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-row:focus-within .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-row--selected .sf-datagrid-selection-cell--subtle,
+.sf-datagrid-selection-cell--subtle:focus-visible,
+.sf-datagrid-selection-cell--subtle:focus-within {
+    opacity: 1;
+}
+
+.sf-datagrid-cell {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sf-datagrid-pager {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-top: 1px solid var(--sf-color-border);
+    background: var(--sf-color-surface);
+}
+
+// Extended (Phase 3)
+.sf-datagrid-header-cell {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    font-weight: var(--sf-font-weight-semibold);
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+
+    &--sortable { cursor: pointer; }
+    &--sortable:hover { background: var(--sf-color-surface-hover); }
+    &--sorted { color: var(--sf-color-primary); }
+}
+
+.sf-datagrid-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    // Batch 3 — toolbar uses subtler `colorNeutralStroke2` so the data rows
+    // (Stroke1) stay visually dominant over the chrome.
+    border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+}
+
+.sf-datagrid-filter-row {
+    background: var(--sf-color-surface);
+}
+
+.sf-datagrid-filter-cell {
+    padding: var(--sf-space-xs) var(--sf-space-md);
+}
+
+.sf-datagrid-group-header {
+    font-weight: var(--sf-font-weight-semibold);
+    // Batch 3 — group header/footer use `colorNeutralBackground2` +
+    // `colorNeutralForeground2` per Fluent v9 spec; they sit one notch above
+    // the data rows so the group banner reads as chrome, not data.
+    background: var(--colorNeutralBackground2, var(--sf-color-surface));
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    padding: var(--sf-space-xs) var(--sf-space-md);
+    border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+}
+
+.sf-datagrid .sf-datagrid-header-cell,
+.sf-datagrid .sf-datagrid-header-cell--sortable,
+.sf-datagrid .sf-datagrid-header-cell--sorted {
+    position: relative;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.35rem;
+    border: 1px solid var(--sf-color-border, #c8c6c4);
+    background: var(--sf-color-surface, #ffffff);
+    color: var(--sf-color-text-muted, #605e5c);
+    border-radius: 4px;
+    line-height: 1;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    cursor: pointer;
+    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn:hover {
+    border-color: var(--sf-color-primary, #0f6cbd);
+    color: var(--sf-color-primary, #0f6cbd);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-btn--active {
+    border-color: var(--sf-color-primary, #0f6cbd);
+    background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 10%, var(--sf-color-surface, #ffffff));
+    color: var(--sf-color-primary, #0f6cbd);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 35%, transparent);
+}
+
+// Batch 2c — active-indicator dot uses the Fluent compound-brand background
+// token directly (previously `color-mix(...)` which diluted the signal) so the
+// dot stays brand-true in both light + dark themes.
+.sf-datagrid .sf-datagrid-filter-menu-btn--active::after {
+    content: "";
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--colorCompoundBrandBackground, var(--sf-color-primary, #0f6cbd));
+}
+
+.sf-datagrid .sf-datagrid-filter-popup {
+    position: absolute;
+    top: calc(100% + 0.35rem);
+    right: 0;
+    z-index: 30;
+    min-width: 260px;
+}
+
+.sf-datagrid .sf-datagrid-filter-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    border-radius: 8px;
+    background: var(--sf-color-surface, #ffffff);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sf-color-text, #323130);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-operator,
+.sf-datagrid .sf-datagrid-filter-menu-value {
+    width: 100%;
+    border: 1px solid var(--sf-color-border, #c8c6c4);
+    border-radius: 4px;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.9rem;
+    background: var(--sf-color-surface);
+}
+
+.sf-datagrid .sf-datagrid-filter-menu-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+// SYNTHESIS Theme 1 (Phase 3) — `FluentUICssProvider.DataGridCommandButtonClass()`
+// returns the BEM `sf-datagrid__cmd-btn` (the comment in the provider is
+// stale). Until the bundle is re-compiled, alias both selector forms so the
+// provider-emitted class is no longer dead-CSS while existing single-hyphen
+// consumers continue to render. A rule body is also added at top level
+// (below) so command buttons used outside the filter-menu actions get a
+// minimum hover/focus affordance.
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn,
+.sf-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid__cmd-btn {
+    border: 1px solid var(--sf-color-border, #c8c6c4);
+    border-radius: 6px;
+    padding: 0.35rem 0.75rem;
+    background: var(--sf-color-surface);
+    cursor: pointer;
+}
+
+.sf-datagrid-cmd-btn,
+.sf-datagrid__cmd-btn {
+    // Fluent v9 `subtle` button surface — neutral chrome that lifts on hover.
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 1px solid transparent;
+    border-radius: var(--borderRadiusMedium, 4px);
+    background: transparent;
+    color: var(--colorNeutralForeground1, var(--sf-color-text));
+    font-size: var(--fontSizeBase200, 12px);
+    cursor: pointer;
+    transition: background-color var(--sf-transition-fast, 100ms);
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, var(--sf-color-surface));
+    }
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, var(--sf-color-surface));
+    }
+    &:focus-visible {
+        outline: 2px solid var(--colorStrokeFocus2, var(--sf-color-primary));
+        outline-offset: 1px;
+    }
+}
+
+// =============================================================================
+// Unstyled selectors (DG-08 Phase 5)
+// =============================================================================
+
+.sf-datagrid-pager-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 var(--sf-space-xs);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-sm);
+    background: var(--sf-color-surface);
+    color: var(--sf-color-text);
+    cursor: pointer;
+    transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+
+    &:hover { background: var(--sf-color-surface-hover); }
+    &--active { background: var(--sf-color-primary); color: var(--sf-color-on-primary); border-color: var(--sf-color-primary); }
+    &:disabled { color: var(--sf-color-text-muted); cursor: not-allowed; }
+}
+
+.sf-datagrid-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--sf-space-xl) var(--sf-space-md);
+    color: var(--sf-color-text-muted);
+    font-size: var(--sf-font-size-base);
+}
+
+// Batch 2c — loading overlay uses the Fluent v9 background-overlay token
+// (semi-transparent black, invariant across themes per v9 spec) so the grid
+// dims consistently while loading. Compose with SunfishSpinner for the
+// spinner itself.
+.sf-datagrid-loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--colorBackgroundOverlay, rgba(0, 0, 0, 0.4));
+    z-index: 10;
+}
+
+.sf-datagrid-popup-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// Batch 2c — sort indicator. Fluent v9 does NOT brand-color sort glyphs; they
+// use `colorNeutralForeground2`. Replace the Unicode `▲`/`▼` content emitted
+// by Razor with the `ArrowSort` SVG via CSS mask-image so the visual reads as
+// a real Fluent icon without requiring a Razor change to add SunfishIcon.
+// The Razor span keeps its text content for screen readers (the `aria-hidden`
+// wrapper hides the glyph from AT); the mask hides the text from sighted users.
+.sf-datagrid-sort-indicator {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 0.25rem;
+    color: var(--colorNeutralForeground2, #424242);
+    font-size: 0.75rem;
+
+    // Hide the Unicode glyph text; render the Fluent ArrowSort SVG via mask.
+    > :is(*) { display: none; }
+
+    &::before {
+        content: "";
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background-color: currentColor;
+        mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.8 3.2 3.4 5.6a.5.5 0 1 0 .7.7L5.3 5.1V15.5a.5.5 0 0 0 1 0V5.1l1.2 1.2a.5.5 0 1 0 .7-.7L5.8 3.2ZM14.2 16.8l2.4-2.4a.5.5 0 1 0-.7-.7l-1.2 1.2V4.5a.5.5 0 1 0-1 0v10.4l-1.2-1.2a.5.5 0 1 0-.7.7l2.4 2.4Z' fill='currentColor'/></svg>");
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><path d='M5.8 3.2 3.4 5.6a.5.5 0 1 0 .7.7L5.3 5.1V15.5a.5.5 0 0 0 1 0V5.1l1.2 1.2a.5.5 0 1 0 .7-.7L5.8 3.2ZM14.2 16.8l2.4-2.4a.5.5 0 1 0-.7-.7l-1.2 1.2V4.5a.5.5 0 1 0-1 0v10.4l-1.2-1.2a.5.5 0 1 0-.7.7l2.4 2.4Z' fill='currentColor'/></svg>");
+        mask-repeat: no-repeat;
+        -webkit-mask-repeat: no-repeat;
+        mask-position: center;
+        -webkit-mask-position: center;
+        mask-size: contain;
+        -webkit-mask-size: contain;
+    }
+}
+
+.sf-datagrid-validation-summary {
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border: 1px solid var(--sf-color-danger, #d92626);
+    border-radius: var(--sf-radius-sm);
+    background: color-mix(in srgb, var(--sf-color-danger, #d92626) 8%, var(--sf-color-surface));
+    color: var(--sf-color-danger, #d92626);
+    font-size: var(--sf-font-size-sm);
+}
+
+.sf-datagrid-footer-row {
+    // Batch 3 — footer parity with group-header: Fluent v9 background2 +
+    // foreground2 so aggregated totals read as chrome, not another data row.
+    background: var(--colorNeutralBackground2, var(--sf-color-surface));
+    color: var(--colorNeutralForeground2, var(--sf-color-on-surface));
+    border-top: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+    font-weight: var(--sf-font-weight-semibold);
+}
+
+.sf-datagrid-detail-row {
+    // Batch 3 — detail row uses Background3 (one tier below header) with a
+    // 3px compound-brand accent rail on the leading edge. The accent visually
+    // tethers the detail to the owning row.
+    background: var(--colorNeutralBackground3, var(--sf-color-surface));
+    border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+    border-left: 3px solid var(--colorCompoundBrandStroke, var(--sf-color-primary));
+
+    > td, > .sf-datagrid-cell {
+        padding: var(--sf-space-sm) var(--sf-space-md);
+    }
+}
+
+// B5: Frozen / locked columns — provider-agnostic class (sf-datagrid__ BEM, emitted by C# renderer)
+.sf-datagrid__col--locked {
+    position: sticky;
+    z-index: 1;
+    background-color: var(--sf-datagrid-row-bg, var(--sf-color-surface, #fff));
+    inset-inline-start: var(--sf-datagrid-col-offset-start, auto);
+    inset-inline-end: var(--sf-datagrid-col-offset-end, auto);
+}
+
+// B5.6: header-level frozen cells sit above body-level frozen cells during horizontal scroll.
+th.sf-datagrid__col--locked {
+    z-index: 2;
+    background-color: var(--sf-datagrid-header-bg, var(--sf-color-surface-container, #f5f5f5));
+}
+
+// B5.5: boundary shadow — indicates the frozen ↔ scrollable transition.
+.sf-datagrid__col--locked-end {
+    box-shadow: 4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+// Right-side boundary casts the shadow in the opposite direction.
+.sf-datagrid__col--locked-end[style*="inset-inline-end"],
+.sf-datagrid__col--locked-end[data-frozen-position="End"] {
+    box-shadow: -4px 0 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.sf-datagrid-searchbox {
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-xs) var(--sf-space-md);
+    border-bottom: 1px solid var(--colorNeutralStroke2, var(--sf-color-border));
+
+    input {
+        flex: 1;
+        border: 1px solid var(--sf-color-border);
+        border-radius: var(--sf-radius-sm);
+        padding: 0.3rem 0.6rem;
+        font-size: var(--sf-font-size-base);
+        background: var(--sf-color-surface);
+        color: var(--sf-color-text);
+
+        &::placeholder { color: var(--sf-color-text-muted); }
+
+        // Batch 3 — focus underline. Fluent v9 routes the text-field focus
+        // through the double-stroke focus ring mixin (inset shadow pair) so
+        // the keyboard affordance is consistent with other chrome.
+        &:focus-visible {
+            @include sf-focus-ring;
+            border-color: var(--colorCompoundBrandStroke, var(--sf-color-primary));
+        }
+    }
+}
+
+// =============================================================================
+// Focus ring rules (DG-10 Phase 5, Phase 2B: now uses sf-focus-ring
+// provider mixin per SYNTHESIS Theme 5 — Fluent v9 double-stroke)
+// =============================================================================
+
+.sf-datagrid-cell:focus-visible,
+.sf-datagrid-header-cell:focus-visible {
+    @include sf-focus-ring;
+    position: relative;
+    z-index: 1;
+}
+
+.sf-datagrid-row--focused {
+    @include sf-focus-ring;
+}
+
+// =================================================================
+// B3: Column Reordering — drag clone, drop indicator, source highlight
+// =================================================================
+
+.sf-datagrid__col-drag-clone {
+    background: var(--sf-datagrid-row-bg, var(--sf-color-surface, #fff));
+    border: 1px solid var(--sf-datagrid-border-color, var(--sf-color-border, #e0e0e0));
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 0.5rem 0.75rem;
+    font-size: inherit;
+    border-radius: 2px;
+}
+
+.sf-datagrid__col-drop-line {
+    // Styled inline by JS; this class exists for future theming.
+}
+
+th.is-dragging-source {
+    opacity: 0.4;
+}
+
+// =================================================================
+// B4: Row Drag-and-Drop — drag handle, clone, drop indicator, source highlight
+// =================================================================
+
+.sf-datagrid__row-drag-handle {
+    cursor: grab;
+    user-select: none;
+    padding: 0 4px;
+    color: var(--sf-datagrid__row-drag-handle-color, #999);
+
+    &:active {
+        cursor: grabbing;
+    }
+}
+
+.sf-datagrid__drag-cell {
+    width: 2rem;
+    text-align: center;
+    padding: 0;
+}
+
+tr.is-row-dragging-source {
+    opacity: 0.4;
+}
+
+.sf-datagrid__row-drop-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--sf-datagrid-reorder-line-color, #1e90ff);
+    pointer-events: none;
+}
+
+// ── C3: Column Menu ───────────────────────────────────────────────────────────
+
+.sf-datagrid__column-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: 10;
+    min-width: 180px;
+    background: var(--sf-datagrid-menu-bg, #fff);
+    border: 1px solid var(--sf-datagrid-border-color, #dee2e6);
+    border-radius: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 4px 0;
+}
+
+.sf-datagrid__column-menu-item {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    text-align: left;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: inherit;
+
+    &:hover:not(:disabled) {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    &:disabled {
+        color: #999;
+        cursor: not-allowed;
+    }
+}
+
+.sf-datagrid__column-menu-divider {
+    height: 1px;
+    margin: 4px 0;
+    background: var(--sf-datagrid-border-color, #dee2e6);
+}
+
+// Batch 3 — column-menu trigger routed to Fluent neutral foreground 2 with
+// the standard medium border-radius and the v9 subtle hover overlay. Prior
+// revision emitted a muted fallback hex; this routes to the token ladder.
+.sf-datagrid__column-menu-trigger {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--colorSubtleBackground, transparent);
+    border: none;
+    padding: 0 4px;
+    color: var(--colorNeutralForeground2, var(--sf-datagrid-muted-color, #6c757d));
+    border-radius: var(--borderRadiusMedium, 4px);
+    line-height: 1;
+    transition:
+        background var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1)),
+        color      var(--durationFaster, 100ms) var(--curveEasyEase, cubic-bezier(0.33, 0, 0.67, 1));
+
+    &:hover {
+        background: var(--colorSubtleBackgroundHover, rgba(0, 0, 0, 0.06));
+        color: var(--colorNeutralForeground2Hover, inherit);
+    }
+
+    &:active {
+        background: var(--colorSubtleBackgroundPressed, rgba(0, 0, 0, 0.10));
+    }
+
+    &:focus-visible {
+        @include sf-focus-ring;
+    }
+}
+
+// Batch 3 — selection-neutral mode. Used by grids that show selection with a
+// muted affordance (e.g., bulk-select patterns where the row stays readable
+// instead of flipping to brand color). Renders foreground at NeutralForeground3.
+.sf-datagrid-selection-cell--neutral {
+    color: var(--colorNeutralForeground3, var(--sf-color-text-muted));
+}
+
+// Batch 3 — forced-colors (Windows High Contrast) support. Rows gain a
+// CanvasText border so separators survive; selected rows swap to the system
+// Highlight pair so the selection remains perceptible under HC.
+@media (forced-colors: active) {
+    .sf-datagrid-row {
+        border: 1px solid CanvasText;
+    }
+    .sf-datagrid-row--selected {
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
+    }
+    .sf-datagrid-cell:focus-visible,
+    .sf-datagrid-header-cell:focus-visible {
+        outline: 2px solid Highlight;
+        outline-offset: 2px;
+    }
+}

@@ -1,0 +1,27 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfDialog>
+
+@*
+    Container for <DialogButton> children. The child-content render fragment is forwarded
+    to the parent dialog's footer slot so the buttons appear where Syncfusion would render
+    them.
+*@
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override string ShimName => "DialogButtons";
+    protected override string ParentName => "SfDialog";
+
+    protected override void OnParametersSet()
+    {
+        var parent = RequireParent();
+        if (ChildContent is not null)
+        {
+            parent.FooterTemplateFragment = ChildContent;
+            parent.RequestRefresh();
+        }
+    }
+}

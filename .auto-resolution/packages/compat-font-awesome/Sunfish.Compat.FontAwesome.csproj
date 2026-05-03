@@ -1,0 +1,34 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-font-awesome/POLICY.md.
+    This package MUST NOT reference any Font Awesome NuGet. It also does NOT bundle Font
+    Awesome assets (SVG/fonts/CSS) — consumers remain responsible for their existing FA
+    asset pipeline (CDN, NPM, self-hosted).
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.FontAwesome</PackageId>
+    <Description>Font-Awesome-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Font Awesome Blazor consumers. Does not ship FA assets. Policy-gated.</Description>
+    <PackageTags>blazor;compat;fontawesome;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.FontAwesome</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.FontAwesome.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

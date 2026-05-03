@@ -1,0 +1,102 @@
+@page "/components/layout/container/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Container / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Container / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Container/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishContainer</code> is the page-width wrapper. It has a deliberately minimal
+            parameter surface — just <code>ChildContent</code>. All visual configuration (max-width,
+            breakpoint clamps, horizontal padding, centering) is handled by the active CSS provider
+            via <code>CssProvider.ContainerClass()</code>.
+        </p>
+        <p>
+            Practical configuration levers:
+        </p>
+        <ul>
+            <li><strong>Width presets.</strong> Swap providers (Bootstrap, Material, FluentUI) to
+                inherit their default container widths and breakpoint clamps.</li>
+            <li><strong>Per-instance overrides.</strong> Pass <code>Style</code> (inline) or
+                <code>Class</code> via standard <code>AdditionalAttributes</code> to tweak
+                <code>max-width</code>, <code>padding</code>, or background per-container.</li>
+            <li><strong>Nesting.</strong> Containers compose with stacks, grids, and panels. Use
+                them at the outermost page level; never nest multiple <code>SunfishContainer</code>s
+                for layout reasons alone.</li>
+            <li><strong>Visual variants.</strong> Paint accent backgrounds with plain CSS on the
+                container or on its first child to create hero / summary sections.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Default container</h4>
+                <SunfishContainer>
+                    <div class="demo-wall" style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                        <p style="margin:0;">
+                            Default max-width / padding / centering supplied by the CSS provider.
+                        </p>
+                    </div>
+                </SunfishContainer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Narrow article (per-instance Style override)</h4>
+                <SunfishContainer Style="max-width:640px;">
+                    <article style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                        <h3 style="margin:0 0 .5rem;">Readable column</h3>
+                        <p style="margin:0;">
+                            Narrower containers read better for long-form text. Here
+                            <code>max-width:640px</code> overrides the provider default.
+                        </p>
+                    </article>
+                </SunfishContainer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Fluid container (full-bleed)</h4>
+                <SunfishContainer Style="max-width:100%; padding-inline:1.5rem;">
+                    <div style="background:var(--sunfish-surface-2, #eef2ff); padding:1rem; border-radius:.375rem;">
+                        <p style="margin:0;">
+                            <code>max-width:100%</code> disables the width clamp. Useful for dashboards
+                            and full-width hero sections.
+                        </p>
+                    </div>
+                </SunfishContainer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Container + nested Stack</h4>
+                <SunfishContainer Style="max-width:720px;">
+                    <SunfishStack Orientation="StackDirection.Vertical" Spacing="1rem">
+                        <div style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">Section A</div>
+                        <div style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">Section B</div>
+                        <div style="background:var(--sunfish-surface-2, #eef2ff); padding:.75rem; border-radius:.375rem;">Section C</div>
+                    </SunfishStack>
+                </SunfishContainer>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Accent / hero container</h4>
+                <SunfishContainer Style="max-width:100%; background:linear-gradient(90deg, #4f46e5 0%, #6a4cff 100%); color:#fff; padding:2rem 1.5rem; border-radius:.5rem;">
+                    <h2 style="margin:0; font-size:1.5rem;">Hero section</h2>
+                    <p style="margin:.5rem 0 0; opacity:.92;">Plain CSS on the container creates a full-bleed hero.</p>
+                </SunfishContainer>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Container", "Appearance"];
+}

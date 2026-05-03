@@ -1,0 +1,25 @@
+// =============================================================================
+// Component: Icon
+// =============================================================================
+
+.sf-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    // width/height inherit from font-size or inline style
+    vertical-align: middle;
+
+    svg {
+        width: 1em;
+        height: 1em;
+        fill: currentColor;
+    }
+}
+
+// Size variants (font-size cascades to em-based svg dimensions)
+.sf-icon--xs { font-size: 0.75rem; }
+.sf-icon--sm { font-size: 1rem; }
+.sf-icon--md { font-size: 1.25rem; }
+.sf-icon--lg { font-size: 1.5rem; }
+.sf-icon--xl { font-size: 2rem; }

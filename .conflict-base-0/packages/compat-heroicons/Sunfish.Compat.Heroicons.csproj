@@ -1,0 +1,35 @@
+<!--
+    POLICY-GATED PACKAGE.
+    All changes require explicit reviewer sign-off per packages/compat-heroicons/POLICY.md.
+    This package MUST NOT reference any Heroicons NuGet. It also does NOT bundle Heroicons
+    assets (SVGs) — consumers remain responsible for their existing Heroicons asset
+    pipeline (NPM install, CDN, or self-hosted SVGs), exactly as they would alongside
+    Blazor.Heroicons / TailBlazor.HeroIcons.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Compat.Heroicons</PackageId>
+    <Description>Heroicons-API-shaped compatibility surface over Sunfish components. Migration off-ramp for Blazor consumers of Heroicons wrappers (Blazor.Heroicons, TailBlazor.HeroIcons, HeroIcons.Blazor). Ships all three Heroicons variants (Outline / Solid / Mini) via a Variant discriminator. Does not ship Heroicons SVG assets. Policy-gated.</Description>
+    <PackageTags>blazor;compat;heroicons;tailwind;icons;migration;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Sunfish.Compat.Heroicons</RootNamespace>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Compat.Heroicons.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\compat-shared\Sunfish.Compat.Shared.csproj" />
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <ProjectReference Include="..\ui-adapters-blazor\Sunfish.UIAdapters.Blazor.csproj" />
+  </ItemGroup>
+</Project>

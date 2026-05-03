@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.UIAdapters.Blazor</PackageId>
+    <RootNamespace>Sunfish.UIAdapters.Blazor</RootNamespace>
+    <AssemblyName>Sunfish.UIAdapters.Blazor</AssemblyName>
+    <Description>Blazor component implementations for Sunfish.</Description>
+    <PackageTags>blazor;components;razor-class-library;ui-framework;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- TODO(SUNFISH_I18N_002): Path A temporary suppression. ui-adapters-blazor's
+         SharedResource bundle (default + ar-SA) defines 8 cascade keys that aren't yet
+         consumed by any .cs / .razor in this package — scaffolded ahead of consumer wiring.
+         Remove this suppression once consumers wire the keys via IStringLocalizer indexer or
+         GetString. -->
+    <NoWarn>CS1591;SUNFISH_I18N_002</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <!-- Providers live in their own Razor class library projects under Providers/<Name>/ -->
+    <Compile Remove="Providers/**/*.cs" />
+    <Content Remove="Providers/**/*" />
+    <None Remove="Providers/**/*" />
+    <EmbeddedResource Remove="Providers/**/*" />
+    <!-- Icon packages live in their own projects under Icons/<Name>/ -->
+    <Compile Remove="Icons/**/*.cs" />
+    <Content Remove="Icons/**/*" />
+    <None Remove="Icons/**/*" />
+    <EmbeddedResource Remove="Icons/**/*" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.UIAdapters.Blazor.Tests" />
+    <!-- Required for NSubstitute to mock internal interfaces in tests -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Microsoft.Playwright" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\ui-core\Sunfish.UICore.csproj" />
+    <!-- Wave 6.6: SunfishTeamSwitcher binds to IActiveTeamAccessor / ITeamContextFactory / INotificationAggregator from kernel-runtime. -->
+    <ProjectReference Include="..\kernel-runtime\Sunfish.Kernel.Runtime.csproj" />
+  </ItemGroup>
+</Project>

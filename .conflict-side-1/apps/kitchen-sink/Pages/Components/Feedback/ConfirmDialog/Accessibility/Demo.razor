@@ -1,0 +1,148 @@
+@page "/components/feedback/confirmdialog/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ConfirmDialog / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ConfirmDialog / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/ConfirmDialog/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Unlike a general-purpose <code>SunfishDialog</code>, <code>SunfishConfirmDialog</code>
+            renders its surface with <code>role="alertdialog"</code> and
+            <code>aria-modal="true"</code>. Assistive technology treats an alertdialog as a
+            high-priority interruption that <em>must</em> be acted on before users can return to
+            the underlying content &mdash; exactly what a confirmation prompt needs.
+        </p>
+        <ul>
+            <li>
+                <strong>Role</strong>: <code>role="alertdialog"</code> (vs. <code>dialog</code>) so
+                screen readers announce the prompt as an alert that requires a response.
+            </li>
+            <li>
+                <strong>Accessible name</strong>: the <code>Title</code> parameter drives the
+                visible header text. The alertdialog is named by that header.
+            </li>
+            <li>
+                <strong>Destructive actions</strong>: set <code>IsDangerous="true"</code> to switch
+                the Confirm button to the destructive palette (<code>mar-btn--danger</code>). The
+                text is kept visible so colour alone does not carry meaning; prefer verbs like
+                <em>Delete</em>, <em>Discard</em>, <em>Remove</em> over generic &ldquo;OK&rdquo;.
+            </li>
+            <li>
+                <strong>Keyboard exit paths</strong>: <kbd>Tab</kbd> cycles through the close
+                button, body, Cancel, and Confirm. <kbd>Enter</kbd>/<kbd>Space</kbd> activates the
+                focused button. Clicking the modal scrim is equivalent to Cancel unless
+                <code>CloseOnOverlayClick="false"</code>.
+            </li>
+            <li>
+                <strong>Focus restoration</strong>: after the dialog closes, restore focus to the
+                control that opened it. The example below wires this up explicitly.
+            </li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Destructive confirm with focus restoration</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Focus the button below, press <kbd>Enter</kbd>, then press <kbd>Esc</kbd> or
+                    click an exit option. Focus returns here so keyboard users never lose their place.
+                </p>
+                <button type="button"
+                        @ref="_trigger"
+                        class="mar-btn mar-btn--danger"
+                        @onclick="@(() => _deleteVisible = true)">
+                    Delete account&hellip;
+                </button>
+
+                <SunfishConfirmDialog @bind-Visible="_deleteVisible"
+                                      Title="Delete account?"
+                                      Message="This permanently deletes your account and all associated data. This cannot be undone."
+                                      ConfirmText="Delete account"
+                                      CancelText="Keep account"
+                                      IsDangerous="true"
+                                      Width="460px"
+                                      OnConfirm="RestoreFocus"
+                                      OnCancel="RestoreFocus" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Rich content stays inside the live region</h3>
+                <p style="margin:0 0 .5rem; color:#666; font-size:.85rem;">
+                    Nested structured content (headings, lists, code) rendered inside
+                    <code>DialogContent</code> remains part of the alertdialog, so screen readers
+                    announce the entire body when the dialog appears.
+                </p>
+                <SunfishButton OnClick="@(() => _richVisible = true)">Open rich confirm</SunfishButton>
+                <SunfishConfirmDialog @bind-Visible="_richVisible"
+                                      Title="Revoke 3 API keys?"
+                                      ConfirmText="Revoke all"
+                                      CancelText="Keep them"
+                                      IsDangerous="true"
+                                      Width="460px">
+                    <DialogContent>
+                        <p>The following keys will stop working immediately:</p>
+                        <ul>
+                            <li><code>sk_live_&hellip;a12f</code> (CI pipeline)</li>
+                            <li><code>sk_live_&hellip;b44a</code> (Ops dashboard)</li>
+                            <li><code>sk_live_&hellip;c901</code> (Legacy integration)</li>
+                        </ul>
+                        <p style="color:#555; font-size:.85rem;">You can generate new keys at any time.</p>
+                    </DialogContent>
+                </SunfishConfirmDialog>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Keyboard &amp; ARIA reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="alertdialog"</code></dt>
+                    <dd>Applied to the dialog surface. Stronger signal than <code>dialog</code>.</dd>
+
+                    <dt><code>aria-modal="true"</code></dt>
+                    <dd>Always set &mdash; the confirm dialog is always modal.</dd>
+
+                    <dt><code>aria-label</code> on close button</dt>
+                    <dd>&ldquo;Close&rdquo;. The button is native and keyboard-operable.</dd>
+
+                    <dt><kbd>Tab</kbd> / <kbd>Shift</kbd>+<kbd>Tab</kbd></dt>
+                    <dd>Cycle through close, body, Cancel, Confirm.</dd>
+
+                    <dt><kbd>Enter</kbd> / <kbd>Space</kbd></dt>
+                    <dd>Activate the focused button.</dd>
+
+                    <dt><kbd>Esc</kbd> / overlay click</dt>
+                    <dd>Equivalent to Cancel (disabled by <code>CloseOnOverlayClick="false"</code>).</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "ConfirmDialog", "Accessibility"];
+
+    private ElementReference _trigger;
+    private bool _deleteVisible;
+    private bool _richVisible;
+
+    private async Task RestoreFocus()
+    {
+        try
+        {
+            await _trigger.FocusAsync();
+        }
+        catch
+        {
+            // ignore
+        }
+    }
+}

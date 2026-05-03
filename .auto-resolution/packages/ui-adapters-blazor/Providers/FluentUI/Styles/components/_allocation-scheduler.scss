@@ -1,0 +1,673 @@
+// MariloAllocationScheduler - FluentUI Styles
+// BEM naming: sf-allocation-scheduler__[element]--[modifier]
+
+.sf-allocation-scheduler {
+  // Shared header row heights — used in BOTH the resource pane and timeline pane
+  // so their headers are pixel-identical and body rows start at the same baseline.
+  --mas-header-group-height: 30px;   // top group row (Month-Year, Year, etc.)
+  --mas-header-leaf-height: 36px;    // bottom leaf row (Resource/Role or W15·Apr6)
+
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--sf-color-border, #d1d1d1);
+  border-radius: var(--sf-border-radius, 4px);
+  background: var(--sf-color-surface, #ffffff);
+  overflow: hidden;
+  font-family: var(--sf-font-family, 'Segoe UI', system-ui, sans-serif);
+  font-size: 0.875rem;
+
+  // ── Toolbar ──────────────────────────────────────────
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--sf-color-border, #d1d1d1);
+    background: var(--sf-color-subtle-background, #fafafa);
+  }
+
+  // ── Scenario Strip ───────────────────────────────────
+  &__scenario-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--sf-color-border, #d1d1d1);
+    background: var(--sf-color-subtle-background, #fafafa);
+    overflow-x: auto;
+  }
+
+  &__scenario-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    border-radius: 16px;
+    background: var(--sf-color-surface, #ffffff);
+    cursor: pointer;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    transition: border-color 0.15s, background-color 0.15s;
+
+    &:hover {
+      border-color: var(--sf-color-primary, #0f6cbd);
+    }
+
+    &--active {
+      border-color: var(--sf-color-primary, #0f6cbd);
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 8%, var(--sf-color-surface, #ffffff));
+      font-weight: 600;
+    }
+
+    &--locked {
+      opacity: 0.85;
+    }
+  }
+
+  // ── Grain Selector ────────────────────────────────────
+  &__grain-select {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    border-radius: var(--sf-border-radius, 4px);
+    background: var(--sf-color-surface, #ffffff);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    cursor: pointer;
+
+    &:focus-visible {
+      outline: 2px solid var(--sf-color-primary, #0f6cbd);
+      outline-offset: -1px;
+    }
+  }
+
+  // ── Jump-to-Date Controls ─────────────────────────────
+  &__jump-date-input {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    border-radius: var(--sf-border-radius, 4px);
+    background: var(--sf-color-surface, #ffffff);
+    color: var(--sf-color-text, #323130);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    line-height: 1.4;
+
+    &:hover {
+      border-color: var(--sf-color-primary, #0f6cbd);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--sf-color-primary, #0f6cbd);
+      outline-offset: -1px;
+    }
+  }
+
+  &__jump-date-btn {
+    padding: 0.25rem 0.625rem;
+    border: 1px solid var(--sf-color-primary, #0f6cbd);
+    border-radius: var(--sf-border-radius, 4px);
+    background: var(--sf-color-primary, #0f6cbd);
+    color: var(--sf-color-primary-foreground, #ffffff);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 85%, #000000);
+      border-color: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 85%, #000000);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--sf-color-primary, #0f6cbd);
+      outline-offset: 1px;
+    }
+  }
+
+  // ── Split-Panel Grid Surface ──────────────────────────
+  &__grid {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__resource-panel {
+    flex: 0 0 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: none;
+    background: var(--sf-color-surface, #ffffff);
+    z-index: 2;
+
+    // Thin visible scrollbar so keyboard/SR users can discover scrollability.
+    // Sync scrolling still driven by JS from the timeline panel.
+    scrollbar-width: thin;
+    scrollbar-color: var(--sf-color-border, #d1d1d1) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--sf-color-border, #d1d1d1);
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+
+  &__splitter {
+    flex: 0 0 var(--allocation-scheduler-splitter-width, 8px);
+    background: var(--allocation-scheduler-splitter-background, var(--sf-color-border, #d1d1d1));
+    cursor: var(--allocation-scheduler-splitter-cursor, col-resize);
+    z-index: 3;
+    transition: background-color 0.15s;
+    position: relative;
+
+    // Expanded hit area (24px) for easier targeting
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      cursor: var(--allocation-scheduler-splitter-cursor, col-resize);
+    }
+
+    &:hover {
+      background: var(--allocation-scheduler-splitter-hover-background, var(--sf-color-primary, #0f6cbd));
+    }
+
+    &--dragging {
+      background: var(--allocation-scheduler-splitter-active-background, var(--sf-color-primary, #0f6cbd));
+    }
+
+    &--focused {
+      outline: 2px solid var(--sf-color-primary, #0f6cbd);
+      outline-offset: -1px;
+      background: var(--allocation-scheduler-splitter-hover-background, var(--sf-color-primary, #0f6cbd));
+    }
+
+    &--locked {
+      cursor: default;
+
+      &::before {
+        cursor: default;
+      }
+
+      &:hover {
+        background: var(--allocation-scheduler-splitter-background, var(--sf-color-border, #d1d1d1));
+      }
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring, 2px solid var(--sf-color-primary, #0f6cbd));
+      outline-offset: -1px;
+    }
+  }
+
+  // ── Splitter Restore Zones ──────────────────────────────────
+  &__splitter-restore {
+    flex: 0 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--allocation-scheduler-splitter-collapse-indicator-background, var(--sf-color-subtle-background, #fafafa));
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    cursor: pointer;
+    z-index: 3;
+    transition: background-color 0.15s;
+
+    span {
+      color: var(--allocation-scheduler-splitter-collapse-indicator-icon-color, var(--sf-color-primary, #0f6cbd));
+      font-size: 0.75rem;
+    }
+
+    &:hover {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 8%, var(--sf-color-surface, #ffffff));
+    }
+
+    &:focus-visible {
+      outline: var(--focus-ring, 2px solid var(--sf-color-primary, #0f6cbd));
+      outline-offset: -1px;
+    }
+
+    &--left {
+      border-right: none;
+    }
+
+    &--right {
+      border-left: none;
+    }
+  }
+
+  // ── Pane collapse modifier ──────────────────────────────────
+  &__pane--collapsed {
+    width: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+  }
+
+  &__timeline-panel {
+    flex: 1 1 0;
+    overflow: auto;
+  }
+
+  // Table shared between both panels.
+  // IMPORTANT: border-collapse:separate (not collapse) is required for
+  // position:sticky on <th> to properly reserve header space in all browsers.
+  // With collapse, the <thead> can fail to reserve its height, causing the
+  // first <tbody> row to be hidden behind sticky headers.
+  &__table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  // ── Grouped Header Row (top row of multi-row header stack) ──
+  // Rendered above the leaf header row for Day/Week/Month/Quarter views.
+  // Shows grouped date context (e.g., "Jan 2026", "2026").
+  &__header-group-row {
+    background: var(--sf-color-subtle-background, #fafafa);
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 3;  // above leaf header row
+      background: var(--sf-color-subtle-background, #fafafa);
+    }
+
+  }
+
+  &__header-group-cell {
+    // Explicit height + vertical-align:middle centres text without line-height.
+    // Do NOT set line-height equal to height — it exceeds the border-box content
+    // area (height - border) and causes the cell to expand, breaking cross-pane
+    // alignment between the spacer cell and text-bearing cells.
+    height: var(--mas-header-group-height);
+    box-sizing: border-box;
+    padding: 0 0.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    vertical-align: middle;
+    border-right: 1px solid var(--sf-color-border, #e1dfdd);
+    border-bottom: 1px solid var(--sf-color-border, #e1dfdd);
+    color: var(--sf-color-text, #323130);
+  }
+
+  &__header-row {
+    background: var(--sf-color-subtle-background, #fafafa);
+
+    th {
+      position: sticky;
+      top: 0;  // default: stick to top when no group row exists
+      z-index: 2;
+      background: var(--sf-color-subtle-background, #fafafa);
+      // 2px bottom border draws the header-body separator on cells directly
+      // (border-separate mode ignores borders on <tr> elements)
+      border-bottom: 2px solid var(--sf-color-border, #d1d1d1);
+    }
+  }
+
+  // When a group row precedes the leaf row, offset the leaf row below it.
+  // This applies in BOTH panes (resource panel spacer + timeline panel groups).
+  &__header-group-row ~ &__header-row th {
+    top: var(--mas-header-group-height, 30px);
+  }
+
+  // ── Resource Columns (left panel) ────────────────────
+  &__resource-col {
+    padding: 0.5rem 0.75rem;
+    border-right: 1px solid var(--sf-color-border, #e1dfdd);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+
+    // Sticky + anchor for resize handle — explicit height matches time-header leaf row.
+    // position:sticky (not relative) so headers stay pinned on vertical scroll;
+    // sticky also creates a containing block for the absolute-positioned resize handle.
+    &[role="columnheader"] {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      overflow: visible;    // let the handle extend to edge without clipping
+      height: var(--mas-header-leaf-height);
+      box-sizing: border-box;
+      background: var(--sf-color-surface, #ffffff);  // opaque — prevent data rows bleeding through
+    }
+
+    // When grouped headers are active, resource column headers span both rows
+    // (rowspan="2") and are vertically centered across the full header height.
+    &--spanning[role="columnheader"] {
+      height: calc(var(--mas-header-group-height) + var(--mas-header-leaf-height));
+      vertical-align: middle;
+      border-bottom: 2px solid var(--sf-color-border, #d1d1d1);
+    }
+
+    &[role="gridcell"] {
+      font-weight: 400;
+    }
+  }
+
+  // ── Column Resize Handle ─────────────────────────────
+  // Theme-neutral class — same markup rendered for all themes.
+  &__col-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    z-index: 5;
+    user-select: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      bottom: 20%;
+      right: 1px;
+      width: 2px;
+      background: transparent;
+      border-radius: 1px;
+      transition: background-color 0.12s;
+    }
+
+    &:hover::after {
+      background: rgba(var(--sf-color-primary-rgb, 15, 108, 189), 0.4);
+    }
+
+    &--active::after {
+      background: var(--sf-color-primary, #0f6cbd) !important;
+      top: 10%;
+      bottom: 10%;
+    }
+  }
+
+  // ── Time Headers (right panel) ───────────────────────
+  &__time-header {
+    padding: 0.5rem 0.25rem;
+    text-align: center;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-right: 1px solid var(--sf-color-border, #e1dfdd);
+    font-variant-numeric: tabular-nums;
+    // Explicit height matches resource-col[role="columnheader"] for cross-pane alignment
+    height: var(--mas-header-leaf-height);
+    box-sizing: border-box;
+
+    // Anchor for resize handle
+    position: relative;
+  }
+
+  // ── Resource Rows (shared by both panels) ────────────
+  &__row {
+    transition: background-color 0.1s;
+
+    // Fixed row height to keep both panels in sync.
+    // border-bottom on cells (not <tr>) for border-separate compatibility.
+    td, th {
+      height: 40px;
+      box-sizing: border-box;
+      border-bottom: 1px solid var(--sf-color-border, #e1dfdd);
+    }
+
+    &:hover {
+      background: var(--sf-color-subtle-background, #f5f5f5);
+    }
+
+    &--selected {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 6%, var(--sf-color-surface, #ffffff));
+    }
+
+    &--over-allocated {
+      background: color-mix(in srgb, var(--sf-color-danger, #bc2f32) 6%, var(--sf-color-surface, #ffffff));
+    }
+
+    &--striped {
+      background: var(--sf-color-subtle-background, #fafafa);
+    }
+  }
+
+  // ── Allocation Cells (right panel) ───────────────────
+  &__cell {
+    padding: 0.375rem 0.25rem;
+    text-align: center;
+    border-right: 1px solid var(--sf-color-border, #e1dfdd);
+    cursor: default;
+    transition: background-color 0.1s, box-shadow 0.1s;
+    position: relative;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--editable {
+      cursor: text;
+
+      &:hover {
+        background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 4%, var(--sf-color-surface, #ffffff));
+      }
+    }
+
+    &--selected {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 10%, var(--sf-color-surface, #ffffff));
+      box-shadow: inset 0 0 0 2px var(--sf-color-primary, #0f6cbd);
+    }
+
+    &--conflict {
+      background: color-mix(in srgb, var(--sf-color-danger, #bc2f32) 10%, var(--sf-color-surface, #ffffff));
+    }
+
+    &--disabled {
+      background: var(--sf-color-disabled-background, #f0f0f0);
+      color: var(--sf-color-disabled-text, #a19f9d);
+      cursor: not-allowed;
+    }
+
+    // Active cell: stronger selected ring, shows fill handle
+    &--active {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 10%, var(--sf-color-surface, #ffffff));
+      box-shadow: inset 0 0 0 2px var(--sf-color-primary, #0f6cbd);
+      outline: none;
+    }
+
+    &--drag-target {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 8%, var(--sf-color-surface, #ffffff));
+      outline: 2px dashed var(--sf-color-primary, #0f6cbd);
+      outline-offset: -2px;
+    }
+
+    &--editing {
+      padding: 0;
+
+      input {
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: 2px solid var(--sf-color-primary, #0f6cbd);
+        text-align: center;
+        font-size: inherit;
+        font-family: inherit;
+        font-variant-numeric: tabular-nums;
+        background: var(--sf-color-surface, #ffffff);
+        color: var(--sf-color-text, #323130);
+        padding: 0.375rem 0.25rem;
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  // ── Fill Handle ──────────────────────────────────────
+  // Shown in the bottom-right corner of the active editable cell.
+  // Dragging this handle copies the source cell value to adjacent cells.
+  &__conflict-icon {
+    margin-inline-start: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  &__fill-handle {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 8px;
+    height: 8px;
+    background: var(--sf-color-primary, #0f6cbd);
+    border: 2px solid var(--sf-color-surface, #ffffff);
+    border-radius: 1px;
+    cursor: crosshair;
+    z-index: 4;
+    pointer-events: auto;
+
+    &:hover {
+      background: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 80%, #000000);
+      transform: scale(1.25);
+    }
+  }
+
+  // ── Time Column Resize Handle ─────────────────────────
+  // Theme-neutral class — same markup rendered for all themes.
+  // Positioned inside timeline <th> cells for drag-to-resize.
+  &__time-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    z-index: 5;
+    user-select: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      bottom: 20%;
+      right: 1px;
+      width: 2px;
+      background: transparent;
+      border-radius: 1px;
+      transition: background-color 0.12s;
+    }
+
+    &:hover::after {
+      background: rgba(var(--sf-color-primary-rgb, 15, 108, 189), 0.4);
+    }
+
+    &--active::after {
+      background: var(--sf-color-primary, #0f6cbd) !important;
+      top: 10%;
+      bottom: 10%;
+    }
+  }
+
+  // ── Current-Period Column Highlight ──────────────────
+  // Applied to both header cells and data cells in the column whose
+  // period contains "now" (today/this week/this month/this quarter/this year).
+  &__col-current {
+    background-color: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 7%, var(--sf-color-surface, #ffffff));
+
+    // Header cell variant: stronger tint + top accent border
+    &.sf-allocation-scheduler__time-header {
+      background-color: color-mix(in srgb, var(--sf-color-primary, #0f6cbd) 13%, var(--sf-color-surface, #ffffff));
+      font-weight: 700;
+      color: var(--sf-color-primary, #0f6cbd);
+      border-top: 3px solid var(--sf-color-primary, #0f6cbd);
+    }
+  }
+
+  // ── Cell Value ───────────────────────────────────────
+  &__cell-value {
+    font-variant-numeric: tabular-nums;
+
+    &--hours { color: var(--sf-color-text, #323130); }
+    &--currency { color: var(--sf-color-success, #107c10); }
+  }
+
+  // ── Delta Indicator ──────────────────────────────────
+  &__delta {
+    font-size: 0.75rem;
+    margin-left: 0.25rem;
+
+    &--over { color: var(--sf-color-danger, #bc2f32); }
+    &--under { color: var(--sf-color-warning, #f7630c); }
+  }
+
+  // ── Ghost Bar (baseline diff overlay) ────────────────
+  &__ghost-bar {
+    color: var(--sf-color-disabled-text, #a19f9d);
+    opacity: 0.5;
+    border: 1px dashed var(--sf-color-border, #d1d1d1);
+    border-radius: 2px;
+    padding: 0 0.25rem;
+    margin-right: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  // ── Context Menu ─────────────────────────────────────
+  &__context-menu {
+    position: absolute;
+    z-index: 10;
+    background: var(--sf-color-surface, #ffffff);
+    border: 1px solid var(--sf-color-border, #d1d1d1);
+    border-radius: 4px;
+    box-shadow: var(--sf-shadow-16, 0 8px 24px rgba(0, 0, 0, 0.12));
+    min-width: 200px;
+  }
+
+  // ── Empty State ──────────────────────────────────────
+  &__empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--sf-color-disabled-text, #a19f9d);
+  }
+
+  // ── Loader ───────────────────────────────────────────
+  &__loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+}
+
+// ── Dark Theme Patches ───────────────────────────────────────────────
+// These tokens are used in the component SCSS but absent from the main
+// [data-sf-theme="dark"] token override set in _generated-base.scss.
+// Scoped to the component so they don't bleed into unrelated styles.
+[data-sf-theme="dark"] {
+  .sf-allocation-scheduler {
+    // Subtle surface — toolbar, headers, stripes, row hover, splitter restore
+    --sf-color-subtle-background: #2d2c2b;    // one step above surface #252423
+
+    // Disabled cell colours
+    --sf-color-disabled-background: #333231;
+    --sf-color-disabled-text:       #8a8886;
+
+    // RGB triplet for dark primary (#60cdff = 96 205 255)
+    // Used in rgba() calculations for resize handles and interactive tints
+    --sf-color-primary-rgb: 96, 205, 255;
+
+    // Cell/header text — MariloColorPalette.OnBackground defaults to #323130 (near-black)
+    // even when no Dark palette is configured (Default theme). Bridge to the system-level
+    // dark text token so Default-theme dark mode renders readable light text.
+    // Themes with an explicit Dark.OnBackground will have their value set via ThemeProvider
+    // inline style on the parent; this patch provides the correct fallback for the default case.
+    --sf-color-text: var(--sf-color-on-background, #e0e0e0);
+  }
+}

@@ -1,0 +1,9 @@
+<div class="settings-danger-zone">
+    <h3 class="settings-danger-zone__title">@Title</h3>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Danger zone";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

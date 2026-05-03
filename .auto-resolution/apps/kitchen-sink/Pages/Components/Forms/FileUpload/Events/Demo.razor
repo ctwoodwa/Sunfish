@@ -1,0 +1,135 @@
+@page "/components/forms/fileupload/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>FileUpload / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileUpload / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FileUpload/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            Wire a <code>SaveUrl</code> to switch the component into upload mode. Every file
+            goes through a predictable lifecycle:
+        </p>
+        <ul>
+            <li><code>OnSelect</code> (<code>FileUploadSelectEventArgs</code>) — picked, pre-upload.</li>
+            <li><code>OnUpload</code> (<code>UploadEventArgs</code>) — about to POST; mutate
+                <code>RequestData</code> / <code>RequestHeaders</code>.</li>
+            <li><code>OnProgress</code> — per-chunk progress percentage.</li>
+            <li><code>OnSuccess</code> / <code>OnError</code> — terminal outcome.</li>
+            <li><code>OnCancel</code> / <code>OnRemove</code> / <code>OnClear</code> — user-driven removals.</li>
+        </ul>
+        <p>
+            The endpoint below is intentionally fake — requests will fail with a network
+            error so the <code>OnError</code> path is exercised in the log.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 320px; min-width:280px; display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishFileUpload SaveUrl="/api/upload/save"
+                                   RemoveUrl="/api/upload/remove"
+                                   AutoUpload="true"
+                                   Multiple="true"
+                                   MaxFileSize="10_000_000"
+                                   ChunkSize="262_144"
+                                   ResumableUploads="true"
+                                   OnSelect="HandleSelect"
+                                   OnUpload="HandleUpload"
+                                   OnProgress="HandleProgress"
+                                   OnSuccess="HandleSuccess"
+                                   OnError="HandleError"
+                                   OnCancel="HandleCancel"
+                                   OnRemove="HandleRemove"
+                                   OnClear="HandleClear" />
+
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 360px; min-width:300px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:320px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — pick a file to see the lifecycle.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FileUpload", "Events"];
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 120) _log.RemoveRange(120, _log.Count - 120);
+    }
+
+    private void HandleSelect(FileUploadSelectEventArgs args)
+    {
+        foreach (var f in args.Files)
+            Log($"OnSelect: {f.Name} ({f.Size} bytes){(f.IsInvalid ? " [invalid]" : "")}");
+    }
+
+    private void HandleUpload(UploadEventArgs args)
+    {
+        Log($"OnUpload: {args.Files.Count} file(s) queued");
+        args.RequestHeaders["X-Demo-Source"] = "kitchen-sink";
+    }
+
+    private void HandleProgress(UploadProgressEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        if (file != null) Log($"OnProgress: {file.Name} -> {args.Progress}%");
+    }
+
+    private void HandleSuccess(UploadSuccessEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        Log($"OnSuccess ({args.Operation}): {file?.Name} [HTTP {args.Request.Status}]");
+    }
+
+    private void HandleError(UploadErrorEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        Log($"OnError ({args.Operation}): {file?.Name} [{args.Request.Status}] {args.Request.StatusText}");
+    }
+
+    private void HandleCancel(UploadCancelEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        Log($"OnCancel: {file?.Name}");
+    }
+
+    private void HandleRemove(UploadEventArgs args)
+    {
+        var file = args.Files.FirstOrDefault();
+        Log($"OnRemove: {file?.Name}");
+    }
+
+    private void HandleClear(UploadClearEventArgs args)
+    {
+        Log($"OnClear: cleared {args.Files.Count} file(s)");
+    }
+
+    private void ClearLog() => _log.Clear();
+}

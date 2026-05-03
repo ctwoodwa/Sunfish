@@ -1,0 +1,65 @@
+@page "/components/ai/chat/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using ChatMessage = Sunfish.UIAdapters.Blazor.Components.AI.ChatMessage
+
+<PageTitle>Chat / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Chat / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/AI/Chat/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>Sunfish.UIAdapters.Blazor.Components.AI.SunfishChat</code> is the spec-aligned AI
+            conversational surface. Messages are a sequence of
+            <code>ChatMessage</code> records tagged with <code>ChatRole</code>
+            (<code>User</code> / <code>Assistant</code> / <code>System</code>). The
+            <code>OnSend</code> callback fires with the composer text, and the
+            <code>TypingIndicator</code> flag renders an animated placeholder while the assistant
+            is generating.
+        </p>
+        <p>
+            The legacy <code>Feedback.SunfishChat</code> (for generic human-to-human chat keyed on
+            author strings) is still available under the <em>Feedback</em> namespace. This page
+            demonstrates the AI-flavoured surface.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="max-width:560px;">
+            <Sunfish.UIAdapters.Blazor.Components.AI.SunfishChat
+                Messages="_messages"
+                OnSend="HandleSendAsync"
+                TypingIndicator="_assistantTyping"
+                Placeholder="Message the assistant…" />
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "AI", "Chat", "Overview"];
+
+    private readonly List<ChatMessage> _messages = new()
+    {
+        new ChatMessage(ChatRole.System, "You are a helpful assistant.", DateTimeOffset.Now.AddMinutes(-10)),
+        new ChatMessage(ChatRole.User, "Hi — can you summarize Sunfish?", DateTimeOffset.Now.AddMinutes(-9)),
+        new ChatMessage(ChatRole.Assistant, "Sunfish is a framework-agnostic UI toolkit with Blazor and React adapters.", DateTimeOffset.Now.AddMinutes(-8)),
+    };
+
+    private bool _assistantTyping;
+
+    private async Task HandleSendAsync(string text)
+    {
+        _messages.Add(ChatMessage.Create(ChatRole.User, text));
+        _assistantTyping = true;
+        StateHasChanged();
+        await Task.Delay(400);
+        _messages.Add(ChatMessage.Create(ChatRole.Assistant, $"Echo: {text}"));
+        _assistantTyping = false;
+    }
+}

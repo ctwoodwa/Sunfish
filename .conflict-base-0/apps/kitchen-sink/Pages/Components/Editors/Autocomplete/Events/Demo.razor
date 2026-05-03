@@ -1,0 +1,121 @@
+@page "/components/forms/autocomplete/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Autocomplete / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Autocomplete / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Autocomplete/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAutocomplete</code> exposes a single typed value callback and relies on
+            attribute pass-through for DOM focus events:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — two-way binding wire for the input's
+                <code>string</code> value. Fires on every keystroke, suggestion pick, and
+                <kbd>Esc</kbd> / Clear reset.</li>
+            <li><code>@@onfocus</code> / <code>@@onblur</code> — native DOM focus events pass through
+                the inner <code>&lt;input&gt;</code> via <code>AdditionalAttributes</code>.</li>
+            <li><code>@@oninput</code> — available via pass-through for low-level keystroke
+                observation. The append-only log below captures it alongside
+                <code>ValueChanged</code>.</li>
+        </ul>
+        <p>
+            Type in the input, pick a suggestion, press <kbd>Esc</kbd>, and watch the log on the right
+            populate.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 320px; gap:1rem; align-items:start;">
+
+            <div style="display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishField>
+                    <SunfishLabel>City</SunfishLabel>
+                    <SunfishAutocomplete TItem="string"
+                                         Items="@_cities"
+                                         Value="@_value"
+                                         ValueChanged="HandleValueChanged"
+                                         ShowClearButton="true"
+                                         Placeholder="Type a city..."
+                                         @onfocus="@(() => Log("focus", "input"))"
+                                         @onblur="@(() => Log("blur", "input"))" />
+                </SunfishField>
+
+                <p style="margin:0; font-size:.85rem; color:#555;">
+                    Current value: <strong>@(string.IsNullOrEmpty(_value) ? "(empty)" : _value)</strong>
+                    — changes: <strong>@_changeCount</strong>
+                </p>
+
+                <div style="display:flex; gap:.5rem;">
+                    <SunfishButton Size="ButtonSize.Small" OnClick="ClearLog">Clear log</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary"
+                                   OnClick="@(() => _value = string.Empty)">
+                        Reset value
+                    </SunfishButton>
+                </div>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:340px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    Event log (newest last)
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet — focus and type)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>
+                                <span style="color:#888;">[@entry.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                                <strong>@entry.Event</strong> — @entry.Detail
+                            </li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Autocomplete", "Events"];
+
+    private string _value = string.Empty;
+    private int _changeCount;
+
+    private record LogEntry(DateTime Timestamp, string Event, string Detail);
+    private readonly List<LogEntry> _log = new();
+
+    private void HandleValueChanged(string value)
+    {
+        _value = value;
+        _changeCount++;
+        Log("ValueChanged", string.IsNullOrEmpty(value) ? "(cleared)" : $"\"{value}\"");
+    }
+
+    private void Log(string evt, string detail)
+    {
+        _log.Add(new LogEntry(DateTime.Now, evt, detail));
+        if (_log.Count > 200) _log.RemoveAt(0);
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    private readonly List<string> _cities = new()
+    {
+        "New York", "London", "Paris", "Tokyo", "Berlin",
+        "Madrid", "Rome", "Amsterdam", "Vienna", "Prague",
+        "Dublin", "Lisbon", "Athens", "Oslo", "Helsinki",
+    };
+}

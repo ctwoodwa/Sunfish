@@ -1,0 +1,105 @@
+@namespace Sunfish.Compat.Lucide
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<LucideIcon> Logger
+
+<i class="@_cssClass" role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")" aria-label="@AriaLabel" aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)" @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Lucide-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Lucide icon identifier. Mirrors the dominant Lucide Blazor
+    /// wrapper shape (<c>&lt;LucideIcon Icon="@LucideIcons.Home" /&gt;</c>).
+    /// Translates to the canonical <c>lucide-*</c> CSS class via
+    /// <see cref="LucideIconNameExtensions.ToSlug(LucideIconName)"/>.
+    /// </summary>
+    /// <remarks>
+    /// For icons outside the starter-set <see cref="LucideIconName"/> enum, use
+    /// <see cref="NameString"/> to pass the raw Lucide slug (e.g. <c>"rocket"</c>).
+    /// If both are provided, <see cref="NameString"/> wins and a warning is logged —
+    /// specify only one.
+    /// </remarks>
+    [Parameter] public LucideIconName? Name { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Lucide slug (e.g. <c>"rocket"</c>). Useful for icons
+    /// not yet covered by the <see cref="LucideIconName"/> starter-set enum. The
+    /// value is emitted verbatim as the <c>lucide-*</c> class — no validation is
+    /// performed (upstream Lucide CSS will silently fail to style an unknown class).
+    /// </summary>
+    [Parameter] public string? NameString { get; set; }
+
+    /// <summary>
+    /// Lucide icon size keyword. Optional — when null, the icon inherits its
+    /// surrounding font-size. Accepted values map to Sunfish-prefixed size-modifier
+    /// classes emitted on the wrapper element (<c>sf-lucide-icon--sm</c>, etc.).
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "lucide sf-lucide-icon";
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Map size → size-class suffix (nullable — when null, no size class is emitted
+        // and the icon inherits its surrounding font-size).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `lucide lucide-*` alongside the
+        // Sunfish prefix `sf-lucide-icon` — this lets migrators keep their Lucide CSS
+        // loaded without visual regressions and lets Sunfish-aware styles target the
+        // wrapper independently. Same split-class convention as compat-bootstrap-icons.
+        _cssClass = string.IsNullOrEmpty(slug)
+            ? $"lucide sf-lucide-icon{AppendSizeClass(sizeClass)}"
+            : $"lucide lucide-{slug} sf-lucide-icon{AppendSizeClass(sizeClass)}";
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(NameString))
+        {
+            if (Name.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-lucide: Both Name='{Name}' and NameString='{NameString}' specified on LucideIcon. NameString wins. See docs/compat-lucide-mapping.md.",
+                    Name.Value, NameString);
+            }
+            return NameString;
+        }
+
+        return Name.HasValue ? Name.Value.ToSlug() : null;
+    }
+
+    private static string AppendSizeClass(string? sizeClass)
+        => string.IsNullOrEmpty(sizeClass) ? string.Empty : " " + sizeClass;
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "sf-lucide-icon--sm",
+        FoundationEnums.IconSize.Medium => "sf-lucide-icon--md",
+        FoundationEnums.IconSize.Large => "sf-lucide-icon--lg",
+        FoundationEnums.IconSize.ExtraLarge => "sf-lucide-icon--xl",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-lucide: Unrecognized Size value '{Value}' on LucideIcon. Inheriting ambient font-size. See docs/compat-lucide-mapping.md.",
+            received);
+        return null;
+    }
+}

@@ -1,0 +1,16 @@
+@*
+  Fixture component for Plan 4 Task 1.3 bUnit determinism gate.
+  Minimal — renders plain text with attribute parameters. If bUnit cannot produce
+  byte-identical markup for THIS, the bridge approach is dead before we test anything
+  Sunfish-specific.
+*@
+
+<div class="test-simple" data-testid="simple" data-title="@Title">
+    <h1>@Title</h1>
+    <p>@Body</p>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Default Title";
+    [Parameter] public string Body { get; set; } = "Default body content";
+}

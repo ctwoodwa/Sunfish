@@ -1,0 +1,46 @@
+// =============================================================================
+// Component: NavBar / NavMenu / NavItem
+// =============================================================================
+
+.sf-navbar {
+    display: flex;
+    align-items: center;
+    padding: 0 var(--sf-space-lg);
+    height: 48px;
+    background: var(--sf-color-surface);
+    border-bottom: 1px solid var(--sf-color-border);
+    gap: var(--sf-space-lg);
+}
+
+.sf-navmenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--sf-space-xxs);
+    padding: var(--sf-space-sm);
+}
+
+.sf-navmenu ul { list-style: none; padding: 0; }
+
+.sf-navitem {
+    display: block;
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-sm);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    border-radius: var(--sf-radius-md);
+    color: var(--sf-color-on-background);
+    text-decoration: none;
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-base);
+    transition: background var(--sf-transition-fast), color var(--sf-transition-fast);
+    cursor: pointer;
+}
+
+.sf-navitem a, .sf-navitem button { display: flex; align-items: center; gap: var(--sf-space-sm); padding: var(--sf-space-sm) var(--sf-space-lg); color: var(--sf-color-on-surface); text-decoration: none; border: none; background: none; width: 100%; cursor: pointer; font-family: var(--sf-font-family); font-size: var(--sf-font-size-base); border-radius: var(--sf-radius-md); transition: background var(--sf-transition-fast); }
+.sf-navitem a:hover, .sf-navitem button:hover { background: var(--sf-color-surface-hover); }
+.sf-navitem--active a, .sf-navitem--active button { color: var(--sf-color-primary); font-weight: var(--sf-font-weight-semibold); background: var(--sf-color-primary-light); }
+.sf-navitem:hover { background: var(--sf-color-surface-hover); }
+.sf-navitem--active { background: var(--sf-color-primary-light); color: var(--sf-color-primary); font-weight: var(--sf-font-weight-semibold); }

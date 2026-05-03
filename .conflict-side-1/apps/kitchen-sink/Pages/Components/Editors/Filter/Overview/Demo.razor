@@ -1,0 +1,68 @@
+@page "/components/forms/filter/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using FilterDescriptor = Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.FilterDescriptor
+
+<PageTitle>Filter / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Filter / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/Filter/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFilter</code> is a composable filter builder that lets end users assemble query
+            expressions at runtime — add, remove, and reorder rows that target fields with operators and
+            values. Two-way bind the composite state with <code>Value</code> / <code>ValueChanged</code>,
+            and react to user confirmation through <code>OnApply</code>. The resulting
+            <code>CompositeFilterDescriptor</code> can be fed to data grids, queries, or services.
+        </p>
+        <p>
+            See <a href="/components/editors/filter/template">template</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishFilter TItem="object" @bind-Value="_filter" OnApply="HandleApply" />
+            @if (_applied)
+            {
+                <div style="margin-top:12px;padding:12px;background:#f5f5f5;border-radius:4px;">
+                    <strong>Applied filter:</strong>
+                    @if (_filter is Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.FilterLeafDescriptor leaf)
+                    {
+                        <div style="margin:8px 0 0 0;">
+                            <code>@leaf.Field @leaf.Operator @leaf.Value</code>
+                        </div>
+                    }
+                    else if (_filter is Sunfish.UIAdapters.Blazor.Components.Forms.Inputs.FilterCompositeDescriptor composite)
+                    {
+                        <div style="margin:8px 0 0 0;">
+                            <code>@composite.Logic group with @composite.Filters.Count filter(s)</code>
+                        </div>
+                    }
+                    else
+                    {
+                        <span>No filter</span>
+                    }
+                </div>
+            }
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "Filter", "Overview"];
+
+    private FilterDescriptor? _filter;
+    private bool _applied;
+
+    private void HandleApply(FilterDescriptor fd)
+    {
+        _filter = fd;
+        _applied = true;
+    }
+}

@@ -1,0 +1,33 @@
+// =============================================================================
+// Patterns: Overlay — M3 Scrim and overlay surface patterns
+// Source: https://m3.material.io/components/dialogs/guidelines#scrim
+// =============================================================================
+
+// M3 Scrim — used behind dialogs, drawers, and bottom sheets
+.sf-scrim {
+  position: fixed;
+  inset: 0;
+  background-color: var(--sf-color-scrim);
+  opacity: 0.32;
+  z-index: var(--sf-z-modal-overlay);
+}
+
+// Scrim with transition (for animated show/hide)
+.sf-scrim--animated {
+  transition: opacity var(--sf-transition-normal);
+
+  &.sf-scrim--hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+}
+
+// Generic overlay backdrop (lower opacity, used for dropdowns/popovers)
+.sf-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: transparent;
+  z-index: calc(var(--sf-z-dropdown) - 1);
+}
+
+// TODO: Placeholder — full overlay animation patterns not yet defined.

@@ -1,0 +1,334 @@
+@page "/components/DataGrid/events"
+@layout ComponentDemoLayout
+
+<PageSection Title="Row Events">
+    <DemoSection Title="Row Click"
+                 Description="Use OnRowClick to respond when a user clicks a data row."
+                 Code="@_rowClickCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" OnRowClick="@OnRowClick">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Last clicked: <strong>@_lastClicked</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Row Double Click"
+                 Description="Use OnRowDoubleClick to respond to double-click events on rows."
+                 Code="@_rowDblClickCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" OnRowDoubleClick="@OnRowDoubleClick">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Double-clicked: <strong>@_lastDblClicked</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Row Context Menu"
+                 Description="Use OnRowContextMenu to handle right-click events on rows."
+                 Code="@_rowContextCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees" OnRowContextMenu="@OnRowContextMenu">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Right-clicked: <strong>@_lastContextMenu</strong></p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Detail Expansion Events">
+    <DemoSection Title="OnRowExpand / OnRowCollapse"
+                 Description="Track when detail rows are expanded or collapsed."
+                 Code="@_expandCollapseCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        OnRowExpand="@OnExpand" OnRowCollapse="@OnCollapse">
+            <DetailTemplate>
+                <div style="padding:12px 24px;">
+                    <p><strong>@context.Name</strong> — @context.Department</p>
+                    <p>Salary: @context.Salary.ToString("C2")</p>
+                </div>
+            </DetailTemplate>
+            <ChildContent>
+                <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+                <SunfishGridColumn TItem="Employee" Field="Department" />
+            </ChildContent>
+        </SunfishDataGrid>
+        <p>Last event: <strong>@_lastExpandEvent</strong></p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Editing Events">
+    <DemoSection Title="CRUD Event Lifecycle"
+                 Description="Track the full editing lifecycle: OnEdit, OnCreate, OnUpdate, OnDelete, OnCancel."
+                 Code="@_editEventsCode">
+        <SunfishDataGrid TItem="Employee"
+                        Data="@_editEmployees"
+                        EditMode="GridEditMode.Inline"
+                        OnEdit="@OnEditEvent"
+                        OnCreate="@OnCreateEvent"
+                        OnUpdate="@OnUpdateEvent"
+                        OnDelete="@OnDeleteEvent"
+                        OnCancel="@OnCancelEvent"
+                        OnModelInit="@OnModelInitEvent">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name">
+                <EditorTemplate>
+                    <input type="text" value="@context.Name"
+                           @onchange="@(e => context.Name = e.Value?.ToString() ?? "")" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+            <SunfishGridColumn TItem="Employee" Field="Department">
+                <EditorTemplate>
+                    <input type="text" value="@context.Department"
+                           @onchange="@(e => context.Department = e.Value?.ToString() ?? "")" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right">
+                <EditorTemplate>
+                    <input type="number" value="@context.Salary"
+                           @onchange="@(e => { if (decimal.TryParse(e.Value?.ToString(), out var v)) context.Salary = v; })" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+        </SunfishDataGrid>
+        <div style="margin-top:8px;max-height:150px;overflow:auto;padding:8px;background:#f5f5f5;font-size:0.85em;">
+            <strong>Event Log:</strong>
+            @foreach (var entry in _eventLog)
+            {
+                <div>@entry</div>
+            }
+            @if (_eventLog.Count == 0)
+            {
+                <div style="color:#888;">No events yet. Try editing, adding, or deleting a row.</div>
+            }
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="State Events">
+    <DemoSection Title="OnStateChanged"
+                 Description="OnStateChanged fires after any state change (sort, filter, page, selection). Use it to persist or react to grid state."
+                 Code="@_stateChangedCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        Sortable="true"
+                        Pageable="true" PageSize="3"
+                        FilterMode="GridFilterMode.FilterRow"
+                        OnStateChanged="@OnStateChangedHandler">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <div style="margin-top:8px;max-height:120px;overflow:auto;padding:8px;background:#f5f5f5;font-size:0.85em;">
+            <strong>State Changes:</strong>
+            @foreach (var entry in _stateLog)
+            {
+                <div>@entry</div>
+            }
+            @if (_stateLog.Count == 0)
+            {
+                <div style="color:#888;">Interact with the grid (sort, filter, page) to see state changes.</div>
+            }
+        </div>
+    </DemoSection>
+
+    <DemoSection Title="Page Changed"
+                 Description="Use the PageChanged callback to respond when the user navigates between pages."
+                 Code="@_pageChangedCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        Pageable="true" PageSize="3"
+                        PageChanged="@OnPageChangedHandler">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Current page: <strong>@_currentPage</strong></p>
+    </DemoSection>
+
+    <DemoSection Title="Selection Changed"
+                 Description="Use SelectedItemsChanged to respond to selection changes in real time."
+                 Code="@_selectionChangedCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        SelectionMode="GridSelectionMode.Multiple"
+                        ShowCheckboxColumn="true"
+                        SelectedItems="@_selectedItems"
+                        SelectedItemsChanged="@OnSelectionChangedHandler">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Selected (@_selectedItems.Count): @string.Join(", ", _selectedItems.Select(e => e.Name))</p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private List<Employee> _employees =
+    [
+        new("Alice Johnson", "Engineering", new DateTime(2019, 3, 15), 95000m),
+        new("Bob Smith", "Marketing", new DateTime(2020, 7, 1), 72000m),
+        new("Carol White", "Engineering", new DateTime(2018, 1, 10), 105000m),
+        new("David Brown", "Sales", new DateTime(2021, 11, 20), 68000m),
+        new("Eve Davis", "Engineering", new DateTime(2022, 5, 5), 88000m),
+        new("Frank Miller", "Marketing", new DateTime(2017, 9, 12), 78000m),
+        new("Grace Lee", "Sales", new DateTime(2023, 2, 28), 65000m),
+    ];
+
+    public class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime HireDate { get; set; }
+        public decimal Salary { get; set; }
+
+        public Employee() { }
+        public Employee(string name, string department, DateTime hireDate, decimal salary)
+        {
+            Name = name; Department = department; HireDate = hireDate; Salary = salary;
+        }
+    }
+
+    // ── Row Click Events ───────────────────────────────────────────────
+    private string _lastClicked = "(none)";
+    private string _lastDblClicked = "(none)";
+    private string _lastContextMenu = "(none)";
+
+    private void OnRowClick(GridRowClickEventArgs<Employee> args) =>
+        _lastClicked = $"{args.Item.Name} (column: {args.Field ?? "n/a"})";
+
+    private void OnRowDoubleClick(GridRowClickEventArgs<Employee> args) =>
+        _lastDblClicked = args.Item.Name;
+
+    private void OnRowContextMenu(GridRowClickEventArgs<Employee> args) =>
+        _lastContextMenu = args.Item.Name;
+
+    // ── Expand / Collapse ──────────────────────────────────────────────
+    private string _lastExpandEvent = "(none)";
+
+    private void OnExpand(Employee item) => _lastExpandEvent = $"Expanded: {item.Name}";
+    private void OnCollapse(Employee item) => _lastExpandEvent = $"Collapsed: {item.Name}";
+
+    // ── Editing Events ─────────────────────────────────────────────────
+    private List<Employee> _editEmployees = null!;
+    private List<string> _eventLog = [];
+
+    private void LogEvent(string msg)
+    {
+        _eventLog.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {msg}");
+        if (_eventLog.Count > 20) _eventLog.RemoveAt(_eventLog.Count - 1);
+    }
+
+    private void OnEditEvent(GridEditEventArgs<Employee> args) => LogEvent($"OnEdit: {args.Item.Name}");
+    private void OnCreateEvent(GridEditEventArgs<Employee> args)
+    {
+        LogEvent($"OnCreate: {args.Item.Name}");
+        _editEmployees.Add(args.Item);
+    }
+    private void OnUpdateEvent(GridEditEventArgs<Employee> args) => LogEvent($"OnUpdate: {args.Item.Name}");
+    private void OnDeleteEvent(GridEditEventArgs<Employee> args)
+    {
+        LogEvent($"OnDelete: {args.Item.Name}");
+        _editEmployees.Remove(args.Item);
+    }
+    private void OnCancelEvent(GridEditEventArgs<Employee> args) => LogEvent($"OnCancel: {args.Item.Name}");
+    private void OnModelInitEvent(GridModelInitEventArgs<Employee> args)
+    {
+        args.Item = new Employee("", "", DateTime.Today, 0m);
+        LogEvent("OnModelInit: new blank model created");
+    }
+
+    // ── State Events ───────────────────────────────────────────────────
+    private List<string> _stateLog = [];
+
+    private void OnStateChangedHandler(GridStateChangedEventArgs args)
+    {
+        _stateLog.Insert(0, $"[{DateTime.Now:HH:mm:ss}] {args.PropertyName} changed — Page: {args.State.CurrentPage}, Sorts: {args.State.SortDescriptors.Count}, Filters: {args.State.FilterDescriptors.Count}");
+        if (_stateLog.Count > 20) _stateLog.RemoveAt(_stateLog.Count - 1);
+    }
+
+    // ── Page Changed ───────────────────────────────────────────────────
+    private int _currentPage = 1;
+    private void OnPageChangedHandler(int page) => _currentPage = page;
+
+    // ── Selection Changed ──────────────────────────────────────────────
+    private List<Employee> _selectedItems = [];
+    private void OnSelectionChangedHandler(IEnumerable<Employee> items) => _selectedItems = items.ToList();
+
+    // ── Lifecycle ──────────────────────────────────────────────────────
+    protected override void OnInitialized()
+    {
+        _editEmployees = _employees.Select(e => new Employee(e.Name, e.Department, e.HireDate, e.Salary)).ToList();
+    }
+
+    // ── Code Samples ───────────────────────────────────────────────────
+    private const string _rowClickCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\" OnRowClick=\"@OnRowClick\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>\n\n" +
+        "@code {\n" +
+        "    private void OnRowClick(GridRowClickEventArgs<Employee> args)\n" +
+        "    {\n" +
+        "        _lastClicked = args.Item.Name;\n" +
+        "    }\n" +
+        "}";
+
+    private const string _rowDblClickCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                OnRowDoubleClick=\"@OnRowDoubleClick\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _rowContextCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                OnRowContextMenu=\"@OnRowContextMenu\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _expandCollapseCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                OnRowExpand=\"@OnExpand\" OnRowCollapse=\"@OnCollapse\">\n" +
+        "    <DetailTemplate>\n" +
+        "        <p>@context.Name — @context.Department</p>\n" +
+        "    </DetailTemplate>\n" +
+        "    <ChildContent>...</ChildContent>\n" +
+        "</SunfishDataGrid>";
+
+    private const string _editEventsCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                EditMode=\"GridEditMode.Inline\"\n" +
+        "                OnEdit=\"@OnEdit\" OnCreate=\"@OnCreate\"\n" +
+        "                OnUpdate=\"@OnUpdate\" OnDelete=\"@OnDelete\"\n" +
+        "                OnCancel=\"@OnCancel\" OnModelInit=\"@OnModelInit\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _stateChangedCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                Sortable=\"true\" Pageable=\"true\" PageSize=\"3\"\n" +
+        "                FilterMode=\"GridFilterMode.FilterRow\"\n" +
+        "                OnStateChanged=\"@OnStateChanged\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>\n\n" +
+        "@code {\n" +
+        "    private void OnStateChanged(GridStateChangedEventArgs args)\n" +
+        "    {\n" +
+        "        Console.WriteLine($\"{args.PropertyName} changed\");\n" +
+        "    }\n" +
+        "}";
+
+    private const string _pageChangedCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                Pageable=\"true\" PageSize=\"3\"\n" +
+        "                PageChanged=\"@OnPageChanged\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>\n\n" +
+        "@code {\n" +
+        "    private int _currentPage = 1;\n" +
+        "    private void OnPageChanged(int page) => _currentPage = page;\n" +
+        "}";
+
+    private const string _selectionChangedCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                SelectionMode=\"GridSelectionMode.Multiple\"\n" +
+        "                ShowCheckboxColumn=\"true\"\n" +
+        "                SelectedItems=\"@_selected\"\n" +
+        "                SelectedItemsChanged=\"@OnSelectionChanged\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+}

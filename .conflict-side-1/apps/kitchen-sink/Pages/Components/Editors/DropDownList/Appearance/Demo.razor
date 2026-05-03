@@ -1,0 +1,166 @@
+@page "/components/forms/dropdownlist/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DropDownList / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropDownList / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DropDownList/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropDownList</code> is a single-select picker whose trigger shows the currently
+            selected option's text (or a <code>DefaultText</code> prompt) and whose popup renders a
+            <code>role="listbox"</code> of options. Unlike <code>SunfishComboBox</code>, the trigger is
+            not a text input — users pick from the list rather than typing free text.
+        </p>
+        <ul>
+            <li><code>DefaultText</code> — prompt displayed when no value is selected.</li>
+            <li><code>Filterable</code> — when <code>true</code>, the popup shows a search box that
+                filters options as the user types.</li>
+            <li><code>GroupField</code> — adds sticky group headers keyed by the property name.</li>
+            <li><code>ItemTemplate</code> / <code>ValueTemplate</code> — custom markup for popup
+                options and the selected-value chrome respectively.</li>
+            <li>State flags — <code>Disabled</code>, <code>ReadOnly</code>, <code>IsInvalid</code>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default</h3>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         @bind-Value="@_basic"
+                                         DefaultText="Select a country..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Filterable</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Open the popup and type in the inline search box to filter options.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         @bind-Value="@_filterable"
+                                         Filterable="true"
+                                         DefaultText="Search and pick..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Grouped</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>GroupField="Region"</code> inserts sticky group headers above each region's
+                    options.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         GroupField="Region"
+                                         @bind-Value="@_grouped"
+                                         DefaultText="Pick by region..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom templates</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    <code>ItemTemplate</code> renders each popup option;
+                    <code>ValueTemplate</code> renders the selected-value chrome on the trigger.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         @bind-Value="@_templated"
+                                         DefaultText="Pick a country...">
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                        <ValueTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888;">@country.Code</span>
+                                <strong>@country.Name</strong>
+                            </span>
+                        </ValueTemplate>
+                    </SunfishDropDownList>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">State flags</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Disabled</SunfishLabel>
+                        <SunfishDropDownList TItem="Country" TValue="int?"
+                                             Data="@_countries" TextField="Name" ValueField="Id"
+                                             Value="2" Disabled="true"
+                                             DefaultText="Disabled" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Read only</SunfishLabel>
+                        <SunfishDropDownList TItem="Country" TValue="int?"
+                                             Data="@_countries" TextField="Name" ValueField="Id"
+                                             Value="3" ReadOnly="true"
+                                             DefaultText="Read only" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Invalid</SunfishLabel>
+                        <SunfishDropDownList TItem="Country" TValue="int?"
+                                             Data="@_countries" TextField="Name" ValueField="Id"
+                                             Value="@_invalid"
+                                             ValueChanged="@((int? v) => _invalid = v)"
+                                             IsInvalid="true"
+                                             DefaultText="Required" />
+                    </SunfishField>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DropDownList", "Appearance"];
+
+    private int? _basic;
+    private int? _filterable;
+    private int? _grouped;
+    private int? _templated;
+    private int? _invalid;
+
+    private record Country(int Id, string Name, string Code, string Region);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US", "Americas"),
+        new(2, "Canada", "CA", "Americas"),
+        new(3, "Brazil", "BR", "Americas"),
+        new(4, "United Kingdom", "GB", "Europe"),
+        new(5, "Germany", "DE", "Europe"),
+        new(6, "France", "FR", "Europe"),
+        new(7, "Japan", "JP", "Asia"),
+        new(8, "Singapore", "SG", "Asia"),
+        new(9, "Australia", "AU", "Oceania"),
+        new(10, "New Zealand", "NZ", "Oceania"),
+    };
+}

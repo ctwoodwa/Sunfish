@@ -1,0 +1,88 @@
+@page "/components/data-display/card/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Card / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Card / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Card/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCard</code> styling is driven entirely by composition and size parameters. The
+            building-block components (<code>SunfishCardHeader</code>, <code>SunfishCardBody</code>,
+            <code>SunfishCardFooter</code>, <code>SunfishCardActions</code>, <code>SunfishCardImage</code>)
+            let you assemble different visual shapes without a variant enum. Dimensions come from
+            <code>Width</code> and <code>Height</code> (any CSS length), and layout direction is switched
+            via the <code>Orientation</code> string (<code>"vertical"</code> default, <code>"horizontal"</code>).
+        </p>
+        <p>
+            This page shows five concrete variants: a full composition, a minimal header-plus-body card,
+            a media card with an image, an action-bar card, and a horizontal layout. Colour and spacing are
+            inherited from Sunfish design tokens, so swapping a provider re-themes every card.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishCard Width="300px">
+                    <SunfishCardHeader>Full Composition</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>Header, body, footer, and action buttons.</p>
+                    </SunfishCardBody>
+                    <SunfishCardFooter>Updated today</SunfishCardFooter>
+                    <SunfishCardActions>
+                        <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Open</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">More</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+
+                <SunfishCard Width="260px">
+                    <SunfishCardHeader>Minimal</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>A lean card with just header and body.</p>
+                    </SunfishCardBody>
+                </SunfishCard>
+
+                <SunfishCard Width="280px">
+                    <SunfishCardImage Src="https://picsum.photos/seed/sunfish-card/280/140" Alt="Sample media" />
+                    <SunfishCardHeader>Media Card</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>Uses <code>SunfishCardImage</code> for a hero visual.</p>
+                    </SunfishCardBody>
+                </SunfishCard>
+            </div>
+
+            <div class="demo-row" style="gap:1rem; flex-wrap:wrap;">
+                <SunfishCard Width="320px">
+                    <SunfishCardHeader>Actions Only</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>A card focused on a call-to-action bar.</p>
+                    </SunfishCardBody>
+                    <SunfishCardActions>
+                        <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Approve</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Danger" Size="ButtonSize.Small">Reject</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Defer</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+
+                <SunfishCard Width="480px" Orientation="horizontal">
+                    <SunfishCardImage Src="https://picsum.photos/seed/sunfish-h/160/160" Alt="Side media" />
+                    <SunfishCardBody>
+                        <SunfishCardHeader>Horizontal Layout</SunfishCardHeader>
+                        <p>Setting <code>Orientation="horizontal"</code> stacks content side-by-side.</p>
+                    </SunfishCardBody>
+                </SunfishCard>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Card", "Appearance"];
+}

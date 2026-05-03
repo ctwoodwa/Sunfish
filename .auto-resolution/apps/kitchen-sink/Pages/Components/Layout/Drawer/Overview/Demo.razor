@@ -1,0 +1,46 @@
+@page "/components/layout/drawer/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Drawer / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Drawer / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Drawer/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDrawer</code> is a sliding panel for supplementary navigation or contextual content. Its
+            open state is two-way bound via <code>@@bind-Expanded</code>, it slides in from any edge using
+            <code>Position</code> (<code>Left</code> / <code>Right</code> / <code>Top</code> / <code>Bottom</code>),
+            and its layout behaviour is controlled by <code>Mode</code> (<code>Overlay</code> or <code>Push</code>)
+            and <code>Width</code>.
+        </p>
+        <p>
+            Sibling feature demos cover
+            <a href="/components/layout/drawer/modes">modes</a>,
+            <a href="/components/layout/drawer/templates">templates</a>,
+            <a href="/components/layout/drawer/events">events</a>,
+            <a href="/components/layout/drawer/keyboard-navigation">keyboard navigation</a>, and
+            <a href="/components/layout/drawer/rtl">RTL</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <SunfishButton OnClick="@(() => _drawerOpen = true)">Open Drawer</SunfishButton>
+        <SunfishDrawer @bind-Expanded="_drawerOpen" Position="DrawerPosition.Right" Width="360px">
+            <h3>Drawer Content</h3>
+            <p>This is supplementary content displayed inside the drawer panel.</p>
+            <SunfishButton OnClick="@(() => _drawerOpen = false)">Close</SunfishButton>
+        </SunfishDrawer>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Drawer", "Overview"];
+
+    private bool _drawerOpen;
+}

@@ -1,0 +1,162 @@
+@page "/components/layout/tabstrip/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>TabStrip / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TabStrip / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/TabStrip/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTabStrip</code> exposes a rich appearance surface through enum parameters:
+        </p>
+        <ul>
+            <li><code>TabPosition</code> — <code>Top</code> (default), <code>Bottom</code>,
+                <code>Left</code>, <code>Right</code>. Vertical positions switch the flex axis and
+                <code>aria-orientation</code>.</li>
+            <li><code>TabAlignment</code> — <code>Start</code> (default), <code>Center</code>,
+                <code>End</code>, <code>Justify</code>, <code>Stretched</code>.</li>
+            <li><code>Size</code> — <code>TabSize.Small</code>, <code>Medium</code> (default), or
+                <code>Large</code>.</li>
+            <li><code>OverflowMode</code> — <code>None</code> (default), <code>Scroll</code>
+                (scroll buttons when tabs exceed available width), or <code>Menu</code> (overflow
+                moves to a dropdown).</li>
+            <li><code>MaxVisibleTabs</code> — when <code>OverflowMode="TabStripOverflowMode.Menu"</code>,
+                caps the number of tabs shown inline; the rest appear in the menu.</li>
+        </ul>
+        <p>
+            Individual <code>TabStripTab</code>s also carry <code>Disabled</code>,
+            <code>Closeable</code>, <code>Pinnable</code>, and <code>HeaderTemplate</code> props
+            for per-tab customisation.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">TabPosition: Top / Bottom / Left / Right</h4>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem;">
+
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Top</p>
+                        <SunfishTabStrip TabPosition="TabPosition.Top">
+                            <TabStripTab Title="Overview"><p style="margin:0;">Top tabs above content.</p></TabStripTab>
+                            <TabStripTab Title="Details"><p style="margin:0;">Details body.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Bottom</p>
+                        <SunfishTabStrip TabPosition="TabPosition.Bottom">
+                            <TabStripTab Title="Overview"><p style="margin:0;">Bottom tabs below content.</p></TabStripTab>
+                            <TabStripTab Title="Details"><p style="margin:0;">Details body.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Left (vertical)</p>
+                        <SunfishTabStrip TabPosition="TabPosition.Left">
+                            <TabStripTab Title="Overview"><p style="margin:0;">Left tabs, vertical list.</p></TabStripTab>
+                            <TabStripTab Title="Details"><p style="margin:0;">Details body.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Right (vertical)</p>
+                        <SunfishTabStrip TabPosition="TabPosition.Right">
+                            <TabStripTab Title="Overview"><p style="margin:0;">Right tabs, vertical list.</p></TabStripTab>
+                            <TabStripTab Title="Details"><p style="margin:0;">Details body.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">TabAlignment</h4>
+                <div style="display:flex; flex-direction:column; gap:.75rem;">
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Center</p>
+                        <SunfishTabStrip TabAlignment="TabAlignment.Center">
+                            <TabStripTab Title="One"><p style="margin:0;">Centered tab list.</p></TabStripTab>
+                            <TabStripTab Title="Two"><p style="margin:0;">Second.</p></TabStripTab>
+                            <TabStripTab Title="Three"><p style="margin:0;">Third.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+                    <div>
+                        <p style="margin:0 0 .25rem; font-size:.85rem; opacity:.75;">Stretched (equal-width)</p>
+                        <SunfishTabStrip TabAlignment="TabAlignment.Stretched">
+                            <TabStripTab Title="One"><p style="margin:0;">Equal-width tabs.</p></TabStripTab>
+                            <TabStripTab Title="Two"><p style="margin:0;">Second.</p></TabStripTab>
+                            <TabStripTab Title="Three"><p style="margin:0;">Third.</p></TabStripTab>
+                        </SunfishTabStrip>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Size: Small / Medium / Large</h4>
+                <div style="display:flex; flex-direction:column; gap:.75rem;">
+                    <SunfishTabStrip Size="TabSize.Small">
+                        <TabStripTab Title="Small A"><p style="margin:0;">Small tabs.</p></TabStripTab>
+                        <TabStripTab Title="Small B"><p style="margin:0;">B body.</p></TabStripTab>
+                    </SunfishTabStrip>
+                    <SunfishTabStrip Size="TabSize.Medium">
+                        <TabStripTab Title="Medium A"><p style="margin:0;">Medium tabs (default).</p></TabStripTab>
+                        <TabStripTab Title="Medium B"><p style="margin:0;">B body.</p></TabStripTab>
+                    </SunfishTabStrip>
+                    <SunfishTabStrip Size="TabSize.Large">
+                        <TabStripTab Title="Large A"><p style="margin:0;">Large tabs.</p></TabStripTab>
+                        <TabStripTab Title="Large B"><p style="margin:0;">B body.</p></TabStripTab>
+                    </SunfishTabStrip>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Overflow: Menu with MaxVisibleTabs</h4>
+                <SunfishTabStrip OverflowMode="TabStripOverflowMode.Menu" MaxVisibleTabs="3">
+                    <TabStripTab Title="Dashboard"><p style="margin:0;">Dashboard.</p></TabStripTab>
+                    <TabStripTab Title="Analytics"><p style="margin:0;">Analytics.</p></TabStripTab>
+                    <TabStripTab Title="Reports"><p style="margin:0;">Reports.</p></TabStripTab>
+                    <TabStripTab Title="Settings"><p style="margin:0;">Settings (overflow).</p></TabStripTab>
+                    <TabStripTab Title="Billing"><p style="margin:0;">Billing (overflow).</p></TabStripTab>
+                    <TabStripTab Title="Integrations"><p style="margin:0;">Integrations (overflow).</p></TabStripTab>
+                </SunfishTabStrip>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    First 3 tabs are inline; the rest appear in the overflow dropdown.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Per-tab states: Disabled / Closeable / HeaderTemplate</h4>
+                <SunfishTabStrip>
+                    <TabStripTab Title="Active"><p style="margin:0;">Regular tab.</p></TabStripTab>
+                    <TabStripTab Title="Disabled" Disabled="true"><p style="margin:0;">Never shown.</p></TabStripTab>
+                    <TabStripTab Title="Closeable" Closeable="true"><p style="margin:0;">Click the × on the tab to close.</p></TabStripTab>
+                    <TabStripTab>
+                        <HeaderTemplate>
+                            <span style="display:inline-flex; align-items:center; gap:.4rem;">
+                                <span aria-hidden="true" style="color:#6a4cff;">&#9733;</span>
+                                <span>Custom header</span>
+                            </span>
+                        </HeaderTemplate>
+                        <Content>
+                            <p style="margin:0;">Header rendered via <code>HeaderTemplate</code>.</p>
+                        </Content>
+                    </TabStripTab>
+                </SunfishTabStrip>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "TabStrip", "Appearance"];
+}

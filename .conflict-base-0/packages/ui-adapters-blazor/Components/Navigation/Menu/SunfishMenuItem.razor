@@ -1,0 +1,77 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Navigation
+@inherits SunfishComponentBase
+
+@if (!string.IsNullOrEmpty(Url))
+{
+    <a class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
+       style="@CombineStyles()"
+       href="@Url"
+       role="@(InMenu ? "menuitem" : null)"
+       aria-disabled="@(IsDisabled ? "true" : null)"
+       @onclick="HandleClick"
+       @attributes="AdditionalAttributes">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-menu-item__icon">@Icon</span>
+        }
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            @Text
+        }
+        @ChildContent
+    </a>
+}
+else
+{
+    <button type="button"
+            class="@CombineClasses(CssProvider.MenuItemClass(IsDisabled))"
+            style="@CombineStyles()"
+            role="@(InMenu ? "menuitem" : null)"
+            disabled="@IsDisabled"
+            @onclick="HandleClick"
+            @attributes="AdditionalAttributes">
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <span class="sf-menu-item__icon">@Icon</span>
+        }
+        @if (!string.IsNullOrEmpty(Text))
+        {
+            @Text
+        }
+        @ChildContent
+    </button>
+}
+
+@code {
+    /// <summary>Display text for the menu item.</summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>Navigation URL. When set, renders as <c>&lt;a&gt;</c> instead of <c>&lt;button&gt;</c>.</summary>
+    [Parameter] public string? Url { get; set; }
+
+    /// <summary>Fires when the item is clicked.</summary>
+    [Parameter] public EventCallback OnClick { get; set; }
+
+    /// <summary>Whether this item is disabled.</summary>
+    [Parameter] public bool IsDisabled { get; set; }
+
+    /// <summary>Icon class or name.</summary>
+    [Parameter] public string? Icon { get; set; }
+
+    /// <summary>Item content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether this item is rendered inside a parent <c>role="menu"</c>/<c>menubar</c> container.
+    /// Set <c>true</c> when nested in <see cref="SunfishMenu"/>; defaults <c>false</c> to avoid
+    /// emitting an orphan <c>role="menuitem"</c> (axe <c>aria-required-parent</c>). Mirrors the
+    /// <c>SunfishChip</c> Listbox pattern.
+    /// </summary>
+    [Parameter] public bool InMenu { get; set; }
+
+    private async Task HandleClick()
+    {
+        if (!IsDisabled && OnClick.HasDelegate)
+            await OnClick.InvokeAsync();
+    }
+}

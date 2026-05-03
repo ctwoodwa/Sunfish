@@ -1,0 +1,65 @@
+@page "/components/forms/fileupload/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+
+<PageTitle>FileUpload / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="FileUpload / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/FileUpload/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishFileUpload</code> is a unified component that covers both the
+            <strong>FileSelect</strong> and <strong>Upload</strong> specs. When no
+            <code>SaveUrl</code> is provided, it behaves as a pure file picker and surfaces the
+            chosen files via <code>FilesChanged</code>. When a <code>SaveUrl</code> is set, the
+            same markup performs the server-side upload with progress reporting, cancellation,
+            and optional chunking.
+        </p>
+        <p>
+            Restrict input with <code>AllowedExtensions</code>, <code>MaxFileSize</code>,
+            <code>MinFileSize</code>, and <code>Multiple</code>. Use <code>ShowFileList=false</code>
+            to hide the built-in list when rendering a custom preview.
+        </p>
+        <p>
+            See <a href="/components/forms/fileupload/events">events</a> and
+            <a href="/components/forms/fileupload/appearance">appearance</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row" style="display:flex; flex-direction:column; gap:1rem; max-width:720px;">
+            <SunfishFileUpload Multiple="true"
+                               AllowedExtensions="@_allowed"
+                               MaxFileSize="10_000_000"
+                               MinFileSize="1"
+                               ShowFileList="true"
+                               FilesChanged="HandleFilesChanged" />
+
+            <p style="margin:0; font-size:.85rem; opacity:.75;">
+                Selected: <strong>@_selected.Count</strong> file(s)
+                @if (_selected.Count > 0)
+                {
+                    <span>— @string.Join(", ", _selected.Select(f => f.Name))</span>
+                }
+            </p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "FileUpload", "Overview"];
+
+    private readonly List<string> _allowed = [".png", ".jpg", ".jpeg", ".gif", ".pdf"];
+    private IList<SelectedFile> _selected = new List<SelectedFile>();
+
+    private void HandleFilesChanged(IList<SelectedFile> files)
+    {
+        _selected = files;
+    }
+}

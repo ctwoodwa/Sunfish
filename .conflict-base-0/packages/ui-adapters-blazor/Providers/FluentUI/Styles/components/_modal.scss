@@ -1,0 +1,36 @@
+// =============================================================================
+// Component: Modal
+// =============================================================================
+
+.sf-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.95);
+    background: var(--sf-color-background);
+    border-radius: var(--sf-radius-lg);
+    box-shadow: var(--sf-shadow-xl);
+    z-index: var(--sf-z-modal);
+    display: none;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.sf-modal--open {
+    display: flex;
+    transform: translate(-50%, -50%) scale(1);
+    animation: sf-fade-in var(--sf-transition-normal);
+}
+
+.sf-modal--small { width: 400px; }
+.sf-modal--medium { width: 600px; }
+.sf-modal--large { width: 800px; }
+.sf-modal--fullscreen { width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; }
+
+.sf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--sf-color-overlay);
+    z-index: var(--sf-z-modal-overlay);
+}

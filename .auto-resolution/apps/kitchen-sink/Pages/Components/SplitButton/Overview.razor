@@ -1,0 +1,20 @@
+@page "/components/splitbutton"
+@page "/components/splitbutton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Description="SplitButton provides a primary action button with a dropdown for secondary actions." Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishSplitButton>
+                Save
+            </SunfishSplitButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishSplitButton>\n" +
+        "    Save\n" +
+        "</SunfishSplitButton>";
+}

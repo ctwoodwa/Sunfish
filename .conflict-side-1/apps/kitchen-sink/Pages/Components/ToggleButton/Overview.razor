@@ -1,0 +1,95 @@
+@page "/components/ToggleButton"
+@page "/components/ToggleButton/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <div class="demo-row">
+            <SunfishToggleButton @bind-Selected="@_bold">Bold</SunfishToggleButton>
+            <SunfishToggleButton @bind-Selected="@_italic">Italic</SunfishToggleButton>
+            <SunfishToggleButton @bind-Selected="@_underline">Underline</SunfishToggleButton>
+        </div>
+        <p style="font-weight: @(_bold ? "bold" : "normal"); font-style: @(_italic ? "italic" : "normal"); text-decoration: @(_underline ? "underline" : "none");">
+            Preview text
+        </p>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Selected vs Unselected" Description="Toggle buttons visually indicate their current state." Code="@_statesCode">
+        <div class="demo-row">
+            <SunfishToggleButton Selected="true">Selected</SunfishToggleButton>
+            <SunfishToggleButton Selected="false">Unselected</SunfishToggleButton>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Events">
+    <DemoSection Title="SelectedChanged" Description="Handle toggle state changes with the SelectedChanged callback." Code="@_changedCode">
+        <div class="demo-row">
+            <SunfishToggleButton Selected="@_isActive" SelectedChanged="@((bool v) => _isActive = v)">Toggle</SunfishToggleButton>
+            <span style="align-self: center;">State: @(_isActive ? "Active" : "Inactive")</span>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    // Overview
+    private bool _bold, _italic, _underline;
+
+    private const string _basicCode =
+        "<SunfishToggleButton @bind-Selected=\"@_bold\">Bold</SunfishToggleButton>\n" +
+        "<SunfishToggleButton @bind-Selected=\"@_italic\">Italic</SunfishToggleButton>\n" +
+        "<SunfishToggleButton @bind-Selected=\"@_underline\">Underline</SunfishToggleButton>\n" +
+        "<p>Preview text</p>\n\n" +
+        "@code {\n" +
+        "    private bool _bold, _italic, _underline;\n" +
+        "}";
+
+    // Appearance
+    private const string _statesCode =
+        "<SunfishToggleButton Selected=\"true\">Selected</SunfishToggleButton>\n" +
+        "<SunfishToggleButton Selected=\"false\">Unselected</SunfishToggleButton>";
+
+    // Events
+    private bool _isActive;
+
+    private const string _changedCode =
+        "<SunfishToggleButton Selected=\"@_isActive\" SelectedChanged=\"@((bool v) => _isActive = v)\">\n" +
+        "    Toggle\n" +
+        "</SunfishToggleButton>\n" +
+        "<span>State: @(_isActive ? \"Active\" : \"Inactive\")</span>\n\n" +
+        "@code {\n" +
+        "    private bool _isActive;\n" +
+        "}";
+
+    // Accessibility
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Enter", "Toggles the button state"),
+        ("Space", "Toggles the button state"),
+        ("Tab", "Moves focus to the next focusable element"),
+        ("Shift + Tab", "Moves focus to the previous focusable element"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"button\"", "Implicitly set by the <button> element"),
+        ("aria-pressed=\"true/false\"", "Indicates the current toggle state"),
+        ("aria-disabled=\"true\"", "Applied when the toggle button is disabled"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Toggle buttons are announced with their text content and pressed state.",
+        "When toggled, screen readers announce the change from \"pressed\" to \"not pressed\" or vice versa.",
+        "The aria-pressed attribute is essential for conveying the toggle state to assistive technology.",
+    ];
+}

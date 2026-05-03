@@ -1,0 +1,10 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(CssProvider.ValidationMessageClass(Severity))" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @Message
+</div>
+
+@code {
+    [Parameter] public ValidationSeverity Severity { get; set; }
+    [Parameter] public string? Message { get; set; }
+}

@@ -1,0 +1,108 @@
+{
+  "key": "sunfish.bundles.acquisition-underwriting",
+  "name": "Acquisition and Underwriting",
+  "version": "0.1.0",
+  "description": "Reference Sunfish bundle for deal-flow and underwriting teams: real-estate acquisitions, M&A intake, portfolio underwriting, compliance reviews. Diligence-heavy composition built on CRM lead intake, due-diligence checklists, documents / data rooms, approvals workflows, reporting, and financial-analysis hooks. Complements the property-management and asset-management bundles without duplicating their operational scope.",
+  "category": "Diligence",
+  "status": "Draft",
+  "maturity": "Scaffold",
+  "requiredModules": [
+    "sunfish.blocks.workflow",
+    "sunfish.blocks.forms",
+    "sunfish.blocks.tasks"
+  ],
+  "optionalModules": [
+    "sunfish.blocks.contacts",
+    "sunfish.blocks.crm",
+    "sunfish.blocks.diligence",
+    "sunfish.blocks.communications",
+    "sunfish.blocks.documents",
+    "sunfish.blocks.reporting",
+    "sunfish.blocks.searchworkspace",
+    "sunfish.blocks.scheduling",
+    "sunfish.blocks.accounting",
+    "sunfish.blocks.billing",
+    "sunfish.blocks.invoicing",
+    "sunfish.blocks.reconciliation"
+  ],
+  "featureDefaults": {
+    "crm.pipelineStages.default": "lead,qualified,term-sheet,diligence,approval,closed-won,closed-lost",
+    "diligence.evidenceRequired": "true",
+    "diligence.approvalGates.enabled": "true",
+    "documents.dataRoom.enabled": "true",
+    "documents.watermarking.enabled": "false",
+    "documents.externalAccess.auditTrail": "true",
+    "reporting.financialAnalysis.enabled": "true"
+  },
+  "editionMappings": {
+    "lite": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.forms"
+    ],
+    "standard": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.forms",
+      "sunfish.blocks.contacts",
+      "sunfish.blocks.crm",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.communications"
+    ],
+    "enterprise": [
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.forms",
+      "sunfish.blocks.contacts",
+      "sunfish.blocks.crm",
+      "sunfish.blocks.diligence",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.searchworkspace",
+      "sunfish.blocks.accounting",
+      "sunfish.blocks.billing",
+      "sunfish.blocks.invoicing",
+      "sunfish.blocks.reconciliation"
+    ]
+  },
+  "deploymentModesSupported": ["SelfHosted", "HostedSaaS"],
+  "providerRequirements": [
+    {
+      "category": "Storage",
+      "required": false,
+      "purpose": "Data-room document storage with access controls and audit."
+    },
+    {
+      "category": "IdentityProvider",
+      "required": false,
+      "purpose": "External-counsel, investor, and sponsor access via SSO / time-bound invites."
+    },
+    {
+      "category": "Messaging",
+      "required": false,
+      "purpose": "Diligence request notifications, evidence upload reminders, approval prompts."
+    }
+  ],
+  "integrationProfiles": [
+    "storage-default",
+    "identity-provider-default",
+    "messaging-default"
+  ],
+  "seedWorkspaces": [
+    "real-estate-acquisitions",
+    "portfolio-underwriting",
+    "compliance-reviews",
+    "vendor-onboarding-diligence"
+  ],
+  "personas": [
+    "deal-maker",
+    "analyst",
+    "approver",
+    "sponsor",
+    "external-counsel",
+    "subject-matter-expert",
+    "compliance-officer"
+  ],
+  "dataOwnership": "Tenant-owned. Deal records, diligence checklists, evidence, approval decisions, and data-room access logs exportable for investor reporting and audit retention.",
+  "complianceNotes": "Regulatory regimes vary heavily by deal type: SEC / FINRA / state-specific for securities transactions, GLBA / privacy for consumer data rooms, sector-specific (healthcare, utilities) for compliance reviews. Data-residency and retention expressed as bundle configuration; lite mode is intentionally not supported because data-room and audit-trail requirements exceed what a local-first deployment can guarantee."
+}

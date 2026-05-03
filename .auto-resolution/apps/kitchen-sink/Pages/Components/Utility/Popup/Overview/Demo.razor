@@ -1,0 +1,122 @@
+@page "/components/utility/popup/overview"
+@page "/components/overlays/popup/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Popup / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Popup / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Utility/Popup/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPopup</code> is a lightweight anchor-positioned overlay. Bind
+            <code>Visible</code> with <code>@@bind-Visible</code>, point it at a trigger via
+            <code>AnchorSelector</code> (CSS), <code>AnchorId</code> (element id), or a
+            captured <code>AnchorElement</code>, and compose content through
+            <code>ChildContent</code>. Outside clicks and <kbd>Escape</kbd> close the popup
+            by default.
+        </p>
+        <p>
+            See <a href="/components/utility/popup/appearance">appearance</a> for alignment
+            and collision combinations.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Basic popup — two-way binding</h3>
+                <div class="demo-row" style="display:flex; gap:1rem; align-items:center;">
+                    <SunfishButton id="basic-popup-anchor" OnClick="ToggleBasic">
+                        @(_basicVisible ? "Hide popup" : "Show popup")
+                    </SunfishButton>
+                    <SunfishPopup @bind-Visible="_basicVisible"
+                                  AnchorSelector="#basic-popup-anchor"
+                                  Width="240px"
+                                  CloseOnEscape="true">
+                        <div style="padding:.75rem; background:var(--sf-color-surface, #fff); border:1px solid var(--sf-color-border, #ddd); border-radius:.25rem; box-shadow:0 4px 12px rgba(0,0,0,.1);">
+                            <strong>Hello from the popup</strong>
+                            <p style="margin:.25rem 0 0; color:#555; font-size:.85rem;">
+                                Click outside, press Escape, or toggle the button to close.
+                            </p>
+                        </div>
+                    </SunfishPopup>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Programmatic show / hide</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="ShowProgrammatic">Show</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="HideProgrammatic">Hide</SunfishButton>
+                    <span id="programmatic-anchor" style="display:inline-block; padding:.25rem .5rem; background:#eef; border:1px dashed #88a; border-radius:.25rem;">
+                        Anchor
+                    </span>
+                    <SunfishPopup @ref="_programmaticRef"
+                                  AnchorSelector="#programmatic-anchor"
+                                  AnchorVerticalAlign="PopupAnchorVerticalAlign.Bottom"
+                                  PopupVerticalAlign="PopupVerticalAlign.Top"
+                                  Width="220px">
+                        <div style="padding:.75rem; background:var(--sf-color-surface, #fff); border:1px solid var(--sf-color-border, #ddd); border-radius:.25rem;">
+                            Opened programmatically via <code>Show()</code>.
+                        </div>
+                    </SunfishPopup>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Focus trap + role=dialog</h3>
+                <div class="demo-row" style="display:flex; gap:.5rem; align-items:center;">
+                    <SunfishButton id="focus-trap-anchor" OnClick="@(() => _focusTrapVisible = !_focusTrapVisible)">
+                        Toggle dialog-style popup
+                    </SunfishButton>
+                    <SunfishPopup @bind-Visible="_focusTrapVisible"
+                                  AnchorSelector="#focus-trap-anchor"
+                                  FocusTrap="true"
+                                  Width="280px">
+                        <div style="padding:1rem; background:var(--sf-color-surface, #fff); border:1px solid var(--sf-color-border, #ddd); border-radius:.25rem;">
+                            <p style="margin:0 0 .5rem;">Focus is trapped here while open.</p>
+                            <input type="text" placeholder="First field" style="width:100%; margin-bottom:.25rem;" />
+                            <input type="text" placeholder="Second field" style="width:100%; margin-bottom:.5rem;" />
+                            <SunfishButton Variant="ButtonVariant.Primary" OnClick="@(() => _focusTrapVisible = false)">Close</SunfishButton>
+                        </div>
+                    </SunfishPopup>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Utility", "Popup", "Overview"];
+
+    private bool _basicVisible;
+    private bool _focusTrapVisible;
+    private SunfishPopup? _programmaticRef;
+
+    private void ToggleBasic() => _basicVisible = !_basicVisible;
+
+    private async Task ShowProgrammatic()
+    {
+        if (_programmaticRef is not null)
+        {
+            await _programmaticRef.Show();
+        }
+    }
+
+    private async Task HideProgrammatic()
+    {
+        if (_programmaticRef is not null)
+        {
+            await _programmaticRef.Hide();
+        }
+    }
+}

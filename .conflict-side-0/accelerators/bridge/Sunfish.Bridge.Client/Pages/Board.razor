@@ -1,0 +1,76 @@
+@page "/board"
+
+<PageTitle>Task Board · Sunfish PM</PageTitle>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+        <h1 style="margin:0 0 4px;">Task Board</h1>
+        <p style="margin:0;color:#6b7280;">Sprint 14 · Apr 1 – Apr 15, 2026</p>
+    </div>
+    <SunfishButton Variant="ButtonVariant.Primary">+ Add Task</SunfishButton>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;align-items:start;">
+    @foreach (var col in _columns)
+    {
+        <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                <span style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;">@col.Title</span>
+                <span style="background:#e5e7eb;color:#374151;font-size:11px;font-weight:600;padding:2px 7px;border-radius:999px;">@col.Items.Length</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                @foreach (var item in col.Items)
+                {
+                    <SunfishCard>
+                        <SunfishCardBody>
+                            <div style="font-size:14px;font-weight:500;margin-bottom:8px;">@item.Title</div>
+                            <div style="display:flex;align-items:center;justify-content:space-between;">
+                                <SunfishChip Variant="@PriorityVariant(item.Priority)" Text="@item.Priority" />
+                                <span style="font-size:12px;color:#6b7280;">@item.Assignee</span>
+                            </div>
+                            @if (item.DueDate.HasValue)
+                            {
+                                <div style="font-size:11px;color:#9ca3af;margin-top:6px;">Due @item.DueDate.Value.ToString("MMM d")</div>
+                            }
+                        </SunfishCardBody>
+                    </SunfishCard>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    record BoardItem(string Title, string Priority, string Assignee, DateTime? DueDate = null);
+    record BoardColumn(string Title, BoardItem[] Items);
+
+    static ChipVariant PriorityVariant(string p) => p switch
+    {
+        "High"   => ChipVariant.Danger,
+        "Medium" => ChipVariant.Warning,
+        _        => ChipVariant.Default,
+    };
+
+    readonly BoardColumn[] _columns =
+    [
+        new("Backlog", [
+            new("Release notes draft",      "Low",    "L. Gomez"),
+            new("Budget import script",     "Low",    "A. Chen",  new DateTime(2026, 4, 20)),
+            new("Accessibility review",     "Medium", "L. Gomez", new DateTime(2026, 5, 2)),
+        ]),
+        new("Todo", [
+            new("Risk register setup",      "Medium", "A. Chen",  new DateTime(2026, 4, 18)),
+            new("Stakeholder presentation", "High",   "A. Chen",  new DateTime(2026, 4, 25)),
+            new("Performance benchmarks",   "Medium", "T. Smith", new DateTime(2026, 4, 28)),
+        ]),
+        new("In Progress", [
+            new("Auth service integration", "High",   "J. Park",  new DateTime(2026, 4, 10)),
+            new("Dashboard wireframes",     "Medium", "L. Gomez", new DateTime(2026, 4, 12)),
+            new("Unit tests – data layer",  "High",   "T. Smith", new DateTime(2026, 4, 14)),
+        ]),
+        new("Done", [
+            new("Define API contracts",     "High",   "J. Park"),
+            new("Design system audit",      "Medium", "L. Gomez"),
+        ]),
+    ];
+}

@@ -1,0 +1,135 @@
+@page "/components/feedback/snackbarhost/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@implements IDisposable
+@inject ISunfishNotificationService Notifications
+
+<PageTitle>SnackbarHost / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="SnackbarHost / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/SnackbarHost/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishSnackbarHost</code> is event-driven through
+            <code>ISunfishNotificationService</code>. The host itself has no callback parameters
+            &mdash; it subscribes to the service's <code>OnChange</code> event and re-renders
+            whenever items are added or removed.
+        </p>
+        <ul>
+            <li>
+                <strong><code>ISunfishNotificationService.OnChange</code></strong> &mdash; fires every
+                time the notification list mutates (<code>Show</code>, <code>Hide</code>,
+                <code>HideAll</code>, or an auto-close timer firing).
+            </li>
+            <li>
+                <strong>Auto-close timers</strong> &mdash; the host owns a timer per notification with
+                a positive <code>CloseAfterMs</code>. When the timer elapses, the host calls
+                <code>NotificationService.Hide(id)</code>, which in turn raises
+                <code>OnChange</code>.
+            </li>
+            <li>
+                <strong>User dismissal</strong> &mdash; clicking a notification's close button calls
+                <code>NotificationService.Hide(id)</code> directly; the event log captures the
+                ensuing <code>OnChange</code> emission.
+            </li>
+        </ul>
+        <p>
+            This page wires a handler to <code>OnChange</code> and records every transition.
+            Push toasts from the buttons below to populate the live log.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:grid; grid-template-columns: minmax(0, 1fr) 340px; gap:1rem; align-items:start;">
+
+            <div>
+                <div class="demo-row" style="display:flex; gap:.5rem; flex-wrap:wrap;">
+                    <SunfishButton OnClick="@(() => Push("Saved draft", ToastSeverity.Info))">Info toast</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Success" OnClick="@(() => Push("Payment posted", ToastSeverity.Success))">Success toast</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Warning" OnClick="@(() => Push("Draft missing tax codes", ToastSeverity.Warning))">Warning toast</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Danger"  OnClick="@(() => Push("Upload failed", ToastSeverity.Error))">Error toast</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="Notifications.HideAll">HideAll</SunfishButton>
+                    <SunfishButton Size="ButtonSize.Small" Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                </div>
+
+                <p style="margin-top:.5rem; color:#666; font-size:.85rem;">
+                    Live count: <strong>@Notifications.GetNotifications().Count</strong> &middot;
+                    Events logged: <strong>@_log.Count</strong>
+                </p>
+            </div>
+
+            <aside style="border:1px solid var(--sf-color-border, #ddd); border-radius:4px; background:var(--sf-color-surface, #fafafa); height:360px; display:flex; flex-direction:column;">
+                <header style="padding:.5rem .75rem; font-weight:600; border-bottom:1px solid var(--sf-color-border, #ddd);">
+                    OnChange log
+                </header>
+                <ol style="flex:1; overflow:auto; margin:0; padding:.5rem .75rem .5rem 2rem; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem; line-height:1.45;">
+                    @if (_log.Count == 0)
+                    {
+                        <li style="list-style:none; color:#888;">(no events yet)</li>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <li>[@entry.Time.ToString("HH:mm:ss")] <strong>@entry.Event</strong> &mdash; count: @entry.Count</li>
+                        }
+                    }
+                </ol>
+            </aside>
+
+        </div>
+
+        <SunfishSnackbarHost VerticalPosition="NotificationVerticalPosition.Bottom"
+                             HorizontalPosition="NotificationHorizontalPosition.Right"
+                             AnimationType="NotificationAnimation.SlideIn"
+                             MaxCount="5" />
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Feedback", "SnackbarHost", "Events"];
+
+    private record LogEntry(DateTime Time, string Event, int Count);
+    private readonly List<LogEntry> _log = new();
+    private int _pushCounter;
+
+    protected override void OnInitialized()
+    {
+        Notifications.OnChange += HandleChange;
+    }
+
+    private void HandleChange()
+    {
+        InvokeAsync(() =>
+        {
+            var count = Notifications.GetNotifications().Count;
+            _log.Add(new LogEntry(DateTime.Now, "OnChange", count));
+            if (_log.Count > 200) _log.RemoveAt(0);
+            StateHasChanged();
+        });
+    }
+
+    private void Push(string message, ToastSeverity severity)
+    {
+        _pushCounter++;
+        Notifications.Show(new NotificationModel
+        {
+            Message      = $"{message} (#{_pushCounter})",
+            Severity     = severity,
+            CloseAfterMs = 3500,
+            Closeable    = true
+        });
+    }
+
+    private void ClearLog() => _log.Clear();
+
+    public void Dispose()
+    {
+        Notifications.OnChange -= HandleChange;
+    }
+}

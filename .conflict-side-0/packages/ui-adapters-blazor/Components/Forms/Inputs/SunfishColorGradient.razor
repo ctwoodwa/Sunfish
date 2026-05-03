@@ -1,0 +1,610 @@
+@inherits SunfishComponentBase
+@inject IJSRuntime JS
+@implements IAsyncDisposable
+
+@using Sunfish.Foundation.Enums
+
+<div class="@CombineClasses(CssProvider.ColorGradientClass() + " mar-colorgradient" + (Enabled ? "" : " mar-colorgradient--disabled"))"
+     style="@CombineStyles()"
+     @attributes="AdditionalAttributes"
+     @ref="_rootRef">
+
+    @* ── HSV canvas ─────────────────────────────────────────────── *@
+    <div class="sf-colorgradient__canvas-container">
+        <canvas @ref="_canvasRef"
+                class="sf-colorgradient__canvas"
+                width="220"
+                height="150"
+                aria-label="Color saturation and brightness selector. Use arrow keys to adjust."
+                tabindex="@(Enabled ? "0" : "-1")"
+                @onkeydown="OnCanvasKeyDown" />
+        <div class="sf-colorgradient__canvas-thumb"
+             style="left: @($"{_thumbX:F1}px"); top: @($"{_thumbY:F1}px");"
+             aria-hidden="true"></div>
+    </div>
+
+    @* ── Hue slider ─────────────────────────────────────────────── *@
+    <div class="sf-colorgradient__hue-container">
+        <label class="sf-sr-only" for="@_hueInputId">Hue</label>
+        <input id="@_hueInputId"
+               type="range"
+               class="sf-colorgradient__hue-slider"
+               min="0" max="360" step="1"
+               value="@((int)_hue)"
+               disabled="@(!Enabled)"
+               aria-label="Hue: @((int)_hue) degrees"
+               @oninput="OnHueInput" />
+    </div>
+
+    @* ── Opacity slider (conditional) ───────────────────────────── *@
+    @if (ShowOpacityEditor)
+    {
+        <div class="sf-colorgradient__opacity-container">
+            <label class="sf-sr-only" for="@_opacityInputId">Opacity</label>
+            <div class="sf-colorgradient__opacity-track"
+                 style="background: linear-gradient(to right, transparent, @HsvToRgbCss(_hue, 1, 1));">
+                <input id="@_opacityInputId"
+                       type="range"
+                       class="sf-colorgradient__opacity-slider"
+                       min="0" max="100" step="1"
+                       value="@((int)(_alpha * 100))"
+                       disabled="@(!Enabled)"
+                       aria-label="Opacity: @((int)(_alpha * 100))%"
+                       @oninput="OnOpacityInput" />
+            </div>
+        </div>
+    }
+
+    @* ── Text inputs: hex / rgb ─────────────────────────────────── *@
+    <div class="sf-colorgradient__inputs">
+        @if (_textFormat == ColorFormat.Hex)
+        {
+            <div class="sf-colorgradient__input-group">
+                <label class="sf-sr-only" for="@_hexInputId">Hex</label>
+                <input id="@_hexInputId"
+                       type="text"
+                       class="sf-colorgradient__hex-input"
+                       maxlength="9"
+                       value="@_hexText"
+                       disabled="@(!Enabled)"
+                       aria-label="Hex color value"
+                       @onchange="OnHexInputChange"
+                       @oninput="OnHexInputInput" />
+                <span class="sf-colorgradient__input-label" aria-hidden="true">HEX</span>
+            </div>
+        }
+        else
+        {
+            <div class="sf-colorgradient__input-group">
+                <label class="sf-sr-only" for="@_rInputId">Red</label>
+                <input id="@_rInputId" type="number" class="sf-colorgradient__rgb-input"
+                       min="0" max="255" value="@_r" disabled="@(!Enabled)" aria-label="Red: @_r"
+                       @onchange="e => OnRgbChannelChange(e, 0)" />
+                <span class="sf-colorgradient__input-label" aria-hidden="true">R</span>
+            </div>
+            <div class="sf-colorgradient__input-group">
+                <label class="sf-sr-only" for="@_gInputId">Green</label>
+                <input id="@_gInputId" type="number" class="sf-colorgradient__rgb-input"
+                       min="0" max="255" value="@_g" disabled="@(!Enabled)" aria-label="Green: @_g"
+                       @onchange="e => OnRgbChannelChange(e, 1)" />
+                <span class="sf-colorgradient__input-label" aria-hidden="true">G</span>
+            </div>
+            <div class="sf-colorgradient__input-group">
+                <label class="sf-sr-only" for="@_bInputId">Blue</label>
+                <input id="@_bInputId" type="number" class="sf-colorgradient__rgb-input"
+                       min="0" max="255" value="@_b" disabled="@(!Enabled)" aria-label="Blue: @_b"
+                       @onchange="e => OnRgbChannelChange(e, 2)" />
+                <span class="sf-colorgradient__input-label" aria-hidden="true">B</span>
+            </div>
+            @if (ShowOpacityEditor)
+            {
+                <div class="sf-colorgradient__input-group">
+                    <label class="sf-sr-only" for="@_aInputId">Alpha</label>
+                    <input id="@_aInputId" type="number" class="sf-colorgradient__rgb-input"
+                           min="0" max="100" value="@((int)(_alpha * 100))" disabled="@(!Enabled)"
+                           aria-label="Alpha: @((int)(_alpha * 100))%"
+                           @onchange="e => OnRgbChannelChange(e, 3)" />
+                    <span class="sf-colorgradient__input-label" aria-hidden="true">A</span>
+                </div>
+            }
+        }
+
+        @if (_hasHexFormat && _hasRgbFormat)
+        {
+            <button type="button"
+                    class="sf-colorgradient__format-toggle"
+                    disabled="@(!Enabled)"
+                    aria-label="Toggle color format"
+                    title="Toggle between HEX and RGB"
+                    @onclick="ToggleTextFormat">
+                &#8644;
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    // ── Parameters ──────────────────────────────────────────────────────
+    /// <summary>The current color value string (HEX or RGB). Supports two-way binding.</summary>
+    [Parameter] public string? Value { get; set; }
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>The color format returned to the application (Rgb or Hex).</summary>
+    [Parameter] public ColorFormat ValueFormat { get; set; } = ColorFormat.Rgb;
+
+    /// <summary>The text input format the user sees initially (Hex or Rgb). Supports two-way binding.</summary>
+    [Parameter] public ColorFormat Format { get; set; } = ColorFormat.Rgb;
+    [Parameter] public EventCallback<ColorFormat> FormatChanged { get; set; }
+
+    /// <summary>
+    /// Which color formats are available for toggling. Default: both Hex and Rgb.
+    /// If only one format is provided, the toggle button is hidden.
+    /// </summary>
+    [Parameter] public IEnumerable<ColorFormat>? Formats { get; set; }
+
+    /// <summary>Whether to show the opacity (alpha) slider and alpha input.</summary>
+    [Parameter] public bool ShowOpacityEditor { get; set; } = true;
+
+    /// <summary>Whether the component is enabled for user interaction.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    // ── Internal state ──────────────────────────────────────────────────
+    // HSV color model: H 0-360, S 0-1, V 0-1, A 0-1
+    private double _hue;
+    private double _sat;
+    private double _val = 1.0;
+    private double _alpha = 1.0;
+
+    // Canvas thumb position (pixels within the 220x150 canvas)
+    private double _thumbX;
+    private double _thumbY;
+
+    // RGB breakdown (0-255) for text inputs
+    private int _r, _g, _b;
+
+    // Current hex string in the text input
+    private string _hexText = "#000000";
+
+    // Text input format toggle
+    private ColorFormat _textFormat;
+    private ColorFormat _lastFormat;
+    private bool _hasHexFormat = true;
+    private bool _hasRgbFormat = true;
+
+    // Track the last committed value to avoid re-parsing on unchanged parameters
+    private string? _lastParsedValue;
+
+    // ── JS interop ──────────────────────────────────────────────────────
+    private ElementReference _canvasRef;
+    private ElementReference _rootRef;
+    private IJSObjectReference? _jsModule;
+    private DotNetObjectReference<SunfishColorGradient>? _dotNetRef;
+    private bool _canvasInitialized;
+
+    // ── Unique IDs for accessibility ────────────────────────────────────
+    private readonly string _uid = Guid.NewGuid().ToString("N")[..8];
+    private string _hueInputId => $"mar-cg-hue-{_uid}";
+    private string _opacityInputId => $"mar-cg-opacity-{_uid}";
+    private string _hexInputId => $"mar-cg-hex-{_uid}";
+    private string _rInputId => $"mar-cg-r-{_uid}";
+    private string _gInputId => $"mar-cg-g-{_uid}";
+    private string _bInputId => $"mar-cg-b-{_uid}";
+    private string _aInputId => $"mar-cg-a-{_uid}";
+
+    // ── Lifecycle ───────────────────────────────────────────────────────
+    protected override void OnParametersSet()
+    {
+        // Resolve which formats are available
+        if (Formats is not null)
+        {
+            var fmts = Formats.ToHashSet();
+            _hasHexFormat = fmts.Contains(ColorFormat.Hex);
+            _hasRgbFormat = fmts.Contains(ColorFormat.Rgb);
+        }
+        else
+        {
+            _hasHexFormat = true;
+            _hasRgbFormat = true;
+        }
+
+        if (Format != _lastFormat)
+        {
+            _textFormat = Format;
+            _lastFormat = Format;
+        }
+
+        // Parse the incoming Value when it changes
+        if (!string.Equals(Value, _lastParsedValue, StringComparison.OrdinalIgnoreCase))
+        {
+            _lastParsedValue = Value;
+            if (Value is { Length: > 0 })
+            {
+                ParseColorToHsv(Value);
+                SyncTextInputs();
+            }
+            else
+            {
+                _hue = 0; _sat = 0; _val = 1; _alpha = 1;
+                UpdateThumbFromHsv();
+                SyncTextInputs();
+            }
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", GetCanvasScript());
+        }
+
+        // Initialize / re-draw canvas
+        if (_jsModule is not null)
+        {
+            try
+            {
+                if (!_canvasInitialized)
+                {
+                    _dotNetRef?.Dispose();
+                    _dotNetRef = DotNetObjectReference.Create(this);
+                    await _jsModule.InvokeVoidAsync("initCanvas", _canvasRef,
+                        _dotNetRef, _hue, _sat, _val);
+                    _canvasInitialized = true;
+                }
+                else
+                {
+                    await _jsModule.InvokeVoidAsync("updateHue", _hue, _sat, _val);
+                }
+            }
+            catch { /* canvas element may not be in DOM yet */ }
+        }
+    }
+
+    // ── Hue slider ──────────────────────────────────────────────────────
+    private async Task OnHueInput(ChangeEventArgs e)
+    {
+        if (!Enabled) return;
+        if (double.TryParse(e.Value?.ToString(), out var h))
+        {
+            _hue = h;
+            SyncTextInputs();
+            await EmitValueAsync();
+            if (_jsModule is not null)
+                await _jsModule.InvokeVoidAsync("updateHue", _hue, _sat, _val);
+        }
+    }
+
+    // ── Opacity slider ──────────────────────────────────────────────────
+    private async Task OnOpacityInput(ChangeEventArgs e)
+    {
+        if (!Enabled) return;
+        if (double.TryParse(e.Value?.ToString(), out var pct))
+        {
+            _alpha = pct / 100.0;
+            SyncTextInputs();
+            await EmitValueAsync();
+        }
+    }
+
+    // ── Hex text input ──────────────────────────────────────────────────
+    private void OnHexInputInput(ChangeEventArgs e)
+    {
+        _hexText = e.Value?.ToString() ?? "";
+    }
+
+    private async Task OnHexInputChange(ChangeEventArgs e)
+    {
+        if (!Enabled) return;
+        var raw = (e.Value?.ToString() ?? "").Trim();
+        if (!raw.StartsWith('#')) raw = "#" + raw;
+        if (TryParseHex(raw, out var r, out var g, out var b, out var a))
+        {
+            _r = r; _g = g; _b = b; _alpha = a / 255.0;
+            RgbToHsv(r, g, b, out _hue, out _sat, out _val);
+            UpdateThumbFromHsv();
+            _hexText = BuildHex();
+            await EmitValueAsync();
+        }
+    }
+
+    // ── RGB channel inputs ──────────────────────────────────────────────
+    private async Task OnRgbChannelChange(ChangeEventArgs e, int channel)
+    {
+        if (!Enabled) return;
+        if (!int.TryParse(e.Value?.ToString(), out var v)) return;
+        v = Math.Clamp(v, 0, channel == 3 ? 100 : 255);
+        switch (channel)
+        {
+            case 0: _r = v; break;
+            case 1: _g = v; break;
+            case 2: _b = v; break;
+            case 3: _alpha = v / 100.0; break;
+        }
+        if (channel < 3)
+            RgbToHsv(_r, _g, _b, out _hue, out _sat, out _val);
+        UpdateThumbFromHsv();
+        _hexText = BuildHex();
+        await EmitValueAsync();
+    }
+
+    // ── JS invokable: canvas drag callback ──────────────────────────────
+    [JSInvokable]
+    public async Task OnCanvasPick(double saturation, double brightness, double thumbX, double thumbY)
+    {
+        if (!Enabled) return;
+        _sat = saturation;
+        _val = brightness;
+        _thumbX = thumbX;
+        _thumbY = thumbY;
+        SyncTextInputs();
+        await EmitValueAsync();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    // ── Canvas keyboard navigation ──────────────────────────────────────
+    private async Task OnCanvasKeyDown(KeyboardEventArgs e)
+    {
+        if (!Enabled) return;
+        const double step = 0.02;
+        switch (e.Key)
+        {
+            case "ArrowRight": _sat = Math.Min(1, _sat + step); break;
+            case "ArrowLeft":  _sat = Math.Max(0, _sat - step); break;
+            case "ArrowUp":    _val = Math.Min(1, _val + step); break;
+            case "ArrowDown":  _val = Math.Max(0, _val - step); break;
+            default: return;
+        }
+        UpdateThumbFromHsv();
+        SyncTextInputs();
+        await EmitValueAsync();
+        if (_jsModule is not null)
+            await _jsModule.InvokeVoidAsync("updateHue", _hue, _sat, _val);
+    }
+
+    // ── Format toggle ───────────────────────────────────────────────────
+    private async Task ToggleTextFormat()
+    {
+        _textFormat = _textFormat == ColorFormat.Hex ? ColorFormat.Rgb : ColorFormat.Hex;
+        await FormatChanged.InvokeAsync(_textFormat);
+    }
+
+    // ── Emit value to consumer ──────────────────────────────────────────
+    private async Task EmitValueAsync()
+    {
+        var color = BuildOutputColor();
+        _lastParsedValue = color; // prevent re-parse in OnParametersSet
+        await ValueChanged.InvokeAsync(color);
+    }
+
+    // ── Color math helpers ──────────────────────────────────────────────
+    private void ParseColorToHsv(string? color)
+    {
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            _hue = 0; _sat = 0; _val = 1; _alpha = 1;
+            UpdateThumbFromHsv();
+            return;
+        }
+
+        if (color.StartsWith('#'))
+        {
+            if (TryParseHex(color, out var r, out var g, out var b, out var a))
+            {
+                _r = r; _g = g; _b = b; _alpha = a / 255.0;
+                RgbToHsv(r, g, b, out _hue, out _sat, out _val);
+            }
+        }
+        else if (color.StartsWith("rgb", StringComparison.OrdinalIgnoreCase))
+        {
+            if (TryParseRgb(color, out var r, out var g, out var b, out var a))
+            {
+                _r = r; _g = g; _b = b; _alpha = a;
+                RgbToHsv(r, g, b, out _hue, out _sat, out _val);
+            }
+        }
+
+        UpdateThumbFromHsv();
+    }
+
+    private void UpdateThumbFromHsv()
+    {
+        _thumbX = _sat * 220;
+        _thumbY = (1 - _val) * 150;
+    }
+
+    private void SyncTextInputs()
+    {
+        HsvToRgb(_hue, _sat, _val, out var r, out var g, out var b);
+        _r = r; _g = g; _b = b;
+        _hexText = BuildHex();
+    }
+
+    private string BuildHex()
+    {
+        var alpha = ShowOpacityEditor ? _alpha : 1.0;
+        if (alpha >= 1.0)
+            return $"#{_r:X2}{_g:X2}{_b:X2}";
+        return $"#{_r:X2}{_g:X2}{_b:X2}{(int)(alpha * 255):X2}";
+    }
+
+    private string BuildOutputColor()
+    {
+        if (ValueFormat == ColorFormat.Hex)
+            return BuildHex();
+
+        // RGB / RGBA
+        var alpha = ShowOpacityEditor ? _alpha : 1.0;
+        if (alpha >= 1.0)
+            return $"rgb({_r}, {_g}, {_b})";
+        return $"rgba({_r}, {_g}, {_b}, {alpha:F2})";
+    }
+
+    /// <summary>Returns an rgb() CSS string for the pure hue at full S/V — used by the opacity slider gradient.</summary>
+    private static string HsvToRgbCss(double hue, double s, double v)
+    {
+        HsvToRgb(hue, s, v, out var r, out var g, out var b);
+        return $"rgb({r},{g},{b})";
+    }
+
+    private static void HsvToRgb(double h, double s, double v, out int r, out int g, out int b)
+    {
+        h = h % 360;
+        if (h < 0) h += 360;
+        double R, G, B;
+        if (s == 0)
+        {
+            R = G = B = v;
+        }
+        else
+        {
+            double sector = h / 60.0;
+            int i = (int)sector;
+            double f = sector - i;
+            double p = v * (1 - s);
+            double q = v * (1 - s * f);
+            double t = v * (1 - s * (1 - f));
+            switch (i % 6)
+            {
+                case 0: R = v; G = t; B = p; break;
+                case 1: R = q; G = v; B = p; break;
+                case 2: R = p; G = v; B = t; break;
+                case 3: R = p; G = q; B = v; break;
+                case 4: R = t; G = p; B = v; break;
+                default: R = v; G = p; B = q; break;
+            }
+        }
+        r = (int)Math.Round(R * 255);
+        g = (int)Math.Round(G * 255);
+        b = (int)Math.Round(B * 255);
+    }
+
+    private static void RgbToHsv(int r, int g, int b, out double h, out double s, out double v)
+    {
+        double rf = r / 255.0, gf = g / 255.0, bf = b / 255.0;
+        double max = Math.Max(rf, Math.Max(gf, bf));
+        double min = Math.Min(rf, Math.Min(gf, bf));
+        double delta = max - min;
+        v = max;
+        s = max == 0 ? 0 : delta / max;
+        if (delta == 0) { h = 0; return; }
+        if (max == rf)      h = 60 * (((gf - bf) / delta) % 6);
+        else if (max == gf) h = 60 * ((bf - rf) / delta + 2);
+        else                h = 60 * ((rf - gf) / delta + 4);
+        if (h < 0) h += 360;
+    }
+
+    private static bool TryParseHex(string hex, out int r, out int g, out int b, out int a)
+    {
+        r = g = b = 0; a = 255;
+        hex = hex.TrimStart('#');
+        if (hex.Length == 3)
+            hex = $"{hex[0]}{hex[0]}{hex[1]}{hex[1]}{hex[2]}{hex[2]}";
+        if (hex.Length == 6)
+        {
+            try { r = Convert.ToInt32(hex[..2], 16); g = Convert.ToInt32(hex[2..4], 16); b = Convert.ToInt32(hex[4..6], 16); return true; }
+            catch { return false; }
+        }
+        if (hex.Length == 8)
+        {
+            try { r = Convert.ToInt32(hex[..2], 16); g = Convert.ToInt32(hex[2..4], 16); b = Convert.ToInt32(hex[4..6], 16); a = Convert.ToInt32(hex[6..8], 16); return true; }
+            catch { return false; }
+        }
+        return false;
+    }
+
+    private static bool TryParseRgb(string css, out int r, out int g, out int b, out double a)
+    {
+        r = g = b = 0; a = 1.0;
+        try
+        {
+            var s = css.ToLowerInvariant();
+            bool hasAlpha = s.StartsWith("rgba");
+            var inner = s[(hasAlpha ? 5 : 4)..].TrimEnd(')');
+            var parts = inner.Split(',');
+            if (parts.Length < 3) return false;
+            r = Math.Clamp(int.Parse(parts[0].Trim()), 0, 255);
+            g = Math.Clamp(int.Parse(parts[1].Trim()), 0, 255);
+            b = Math.Clamp(int.Parse(parts[2].Trim()), 0, 255);
+            if (hasAlpha && parts.Length >= 4)
+                a = Math.Clamp(double.Parse(parts[3].Trim(), System.Globalization.CultureInfo.InvariantCulture), 0, 1);
+            return true;
+        }
+        catch { return false; }
+    }
+
+    // ── JS module: canvas HSV picker ────────────────────────────────────
+    // Shares the same inline eval pattern as SunfishColorPicker
+    private static string GetCanvasScript() => """
+    (() => {
+        const mod = {};
+        let canvas, ctx, dotNet, dragging = false;
+        const CANVAS_W = 220, CANVAS_H = 150;
+
+        function drawCanvas(hue, sat, val) {
+            if (!canvas || !ctx) return;
+            const hueRgb = hsvToRgb(hue, 1, 1);
+            const gradH = ctx.createLinearGradient(0, 0, CANVAS_W, 0);
+            gradH.addColorStop(0, 'rgb(255,255,255)');
+            gradH.addColorStop(1, `rgb(${hueRgb.r},${hueRgb.g},${hueRgb.b})`);
+            ctx.fillStyle = gradH;
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+            const gradV = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
+            gradV.addColorStop(0, 'rgba(0,0,0,0)');
+            gradV.addColorStop(1, 'rgba(0,0,0,1)');
+            ctx.fillStyle = gradV;
+            ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+        }
+
+        function hsvToRgb(h, s, v) {
+            h = ((h % 360) + 360) % 360;
+            const sector = h / 60, i = Math.floor(sector), f = sector - i;
+            const p = v * (1 - s), q = v * (1 - s * f), t = v * (1 - s * (1 - f));
+            let r, g, b;
+            switch (i % 6) {
+                case 0: r=v; g=t; b=p; break; case 1: r=q; g=v; b=p; break;
+                case 2: r=p; g=v; b=t; break; case 3: r=p; g=q; b=v; break;
+                case 4: r=t; g=p; b=v; break; default: r=v; g=p; b=q;
+            }
+            return { r: Math.round(r*255), g: Math.round(g*255), b: Math.round(b*255) };
+        }
+
+        function pickAt(x, y) {
+            x = Math.max(0, Math.min(x, CANVAS_W));
+            y = Math.max(0, Math.min(y, CANVAS_H));
+            const sat = x / CANVAS_W;
+            const val = 1 - y / CANVAS_H;
+            dotNet.invokeMethodAsync('OnCanvasPick', sat, val, x, y);
+        }
+
+        mod.initCanvas = (canvasEl, ref, hue, sat, val) => {
+            canvas = canvasEl;
+            ctx = canvas.getContext('2d');
+            dotNet = ref;
+            drawCanvas(hue, sat, val);
+
+            canvas.addEventListener('pointerdown', e => {
+                dragging = true; canvas.setPointerCapture(e.pointerId);
+                pickAt(e.offsetX, e.offsetY);
+            });
+            canvas.addEventListener('pointermove', e => { if (dragging) pickAt(e.offsetX, e.offsetY); });
+            canvas.addEventListener('pointerup', () => { dragging = false; });
+            canvas.addEventListener('pointercancel', () => { dragging = false; });
+        };
+
+        mod.updateHue = (hue, sat, val) => { drawCanvas(hue, sat, val); };
+        mod.dispose = () => { canvas = null; ctx = null; dotNet = null; };
+        return mod;
+    })()
+    """;
+
+    // ── IAsyncDisposable ────────────────────────────────────────────────
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (_jsModule is not null)
+        {
+            try { await _jsModule.InvokeVoidAsync("dispose"); } catch { }
+            await _jsModule.DisposeAsync();
+        }
+        _dotNetRef?.Dispose();
+    }
+}

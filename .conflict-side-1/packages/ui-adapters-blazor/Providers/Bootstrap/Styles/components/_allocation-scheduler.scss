@@ -1,0 +1,855 @@
+// SunfishAllocationScheduler - Bootstrap Bridge Styles
+// Maps sf-bs-allocation-scheduler classes to Bootstrap utilities
+// and adds custom rules where Bootstrap has no equivalent.
+//
+// Class naming contract:
+//   - Root and provider-injected classes:  sf-bs-allocation-scheduler[__element[--modifier]]
+//   - Hardcoded structural classes:        sf-allocation-scheduler__[element[--modifier]]
+//     (splitter, grid, panels, table, header-row, grain-select, cell--editing)
+//
+// Design tokens (override on the root element or a parent scope):
+//   --bs-scheduler-row-height           row height in both panels (default 38px)
+//   --bs-scheduler-cell-pad-x           timeline cell horizontal padding
+//   --bs-scheduler-cell-pad-y           timeline cell vertical padding
+//   --bs-scheduler-col-pad-x            resource column horizontal padding
+//   --bs-scheduler-disabled-bg          disabled cell background
+//   --bs-scheduler-disabled-color       disabled cell text color
+//   --bs-scheduler-disabled-pattern     disabled cell diagonal-stripe gradient
+//   --bs-scheduler-conflict-bg          conflict cell background
+//   --bs-scheduler-conflict-shadow      conflict cell inset border (box-shadow)
+//   --bs-scheduler-toolbar-gap          gap between toolbar controls
+
+.sf-bs-allocation-scheduler {
+  // ── Design tokens ───────────────────────────────────
+  --mas-header-group-height:         32px;
+  --mas-header-leaf-height:          38px;
+  --bs-scheduler-row-height:         38px;
+  --bs-scheduler-cell-pad-x:         0.4rem;
+  --bs-scheduler-cell-pad-y:         0.3rem;
+  --bs-scheduler-col-pad-x:          0.625rem;
+  --bs-scheduler-toolbar-gap:        0.375rem;
+  --bs-scheduler-disabled-bg:        #e9ecef;
+  --bs-scheduler-disabled-color:     #6c757d;
+  --bs-scheduler-disabled-pattern:   repeating-linear-gradient(
+    135deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.07) 3px,
+    rgba(0, 0, 0, 0.07) 6px
+  );
+  --bs-scheduler-conflict-bg:        rgba(var(--bs-danger-rgb), 0.13);
+  --bs-scheduler-conflict-shadow:    inset 0 0 0 1px rgba(var(--bs-danger-rgb), 0.45);
+  // Border token — consumers can override; falls back to Bootstrap's border color
+  // then to a visible RGBA value so cells always show a grid even without Bootstrap.
+  --sf-scheduler-border-color:   var(--bs-border-color, rgba(0, 0, 0, 0.15));
+
+  // ── Root layout ─────────────────────────────────────
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--bs-border-color);
+  border-radius: var(--bs-border-radius);
+  background: var(--bs-body-bg);
+  overflow: hidden;
+  font-size: 0.875rem;
+  font-family: var(--bs-font-sans-serif, system-ui, sans-serif);
+}
+
+// ── Scoped structural and provider-injected styles ───
+.sf-bs-allocation-scheduler {
+
+  // ── Toolbar ──────────────────────────────────────────
+  .sf-bs-allocation-scheduler__toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--bs-scheduler-toolbar-gap);
+    padding: 0.375rem 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+    flex-shrink: 0;
+
+    // Toolbar nav/action buttons
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      border: 1px solid var(--bs-border-color);
+      border-radius: var(--bs-border-radius-sm);
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background-color 0.12s, border-color 0.12s;
+
+      &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        border-color: rgba(var(--bs-primary-rgb), 0.45);
+        color: var(--bs-primary);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 1px;
+      }
+    }
+  }
+
+  // ── Scenario Strip ───────────────────────────────────
+  .sf-bs-allocation-scheduler__scenario-strip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.375rem 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+    background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+    overflow-x: auto;
+    flex-shrink: 0;
+  }
+
+  // ── Scenario Chip ────────────────────────────────────
+  // Provider emits badge + bg-primary/bg-secondary utilities.
+  // These overrides tune the chip to look scheduler-native.
+  .sf-bs-allocation-scheduler__scenario-chip {
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.65rem;
+    border-radius: 12px;
+    white-space: nowrap;
+    transition: opacity 0.12s, box-shadow 0.12s;
+
+    &:hover {
+      opacity: 0.88;
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgba(255, 255, 255, 0.6);
+      outline-offset: 1px;
+    }
+  }
+
+  // ── Grain Selector (hardcoded class in markup) ────────
+  .sf-allocation-scheduler__grain-select {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    cursor: pointer;
+    line-height: 1.4;
+
+    &:hover {
+      border-color: rgba(var(--bs-primary-rgb), 0.45);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  // ── Jump-to-Date Controls (hardcoded classes in markup) ─
+  .sf-allocation-scheduler__jump-date-input {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: var(--bs-border-radius-sm);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: 0.8125rem;
+    font-family: inherit;
+    line-height: 1.4;
+
+    &:hover {
+      border-color: rgba(var(--bs-primary-rgb), 0.45);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  .sf-allocation-scheduler__jump-date-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8125rem;
+    font-family: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    border: 1px solid var(--bs-primary);
+    border-radius: var(--bs-border-radius-sm);
+    background: var(--bs-primary);
+    color: var(--bs-white, #fff);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background-color 0.12s, border-color 0.12s;
+
+    &:hover {
+      background: rgba(var(--bs-primary-rgb), 0.85);
+      border-color: rgba(var(--bs-primary-rgb), 0.85);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  // ── Split-Panel Grid Surface ──────────────────────────
+  // Hardcoded in markup — keeps sf-allocation-scheduler__ prefix.
+  .sf-allocation-scheduler__grid {
+    display: flex;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sf-allocation-scheduler__resource-panel {
+    flex: 0 0 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--bs-body-bg);
+    z-index: 2;
+
+    // Thin visible scrollbar so keyboard/SR users can discover scrollability.
+    // Sync scrolling still driven by JS from the timeline panel.
+    scrollbar-width: thin;
+    scrollbar-color: var(--bs-border-color) transparent;
+
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: var(--bs-border-color);
+      border-radius: 3px;
+    }
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+
+  // ── Splitter handle (hardcoded class) ─────────────────
+  .sf-allocation-scheduler__splitter {
+    flex: 0 0 var(--allocation-scheduler-splitter-width, 8px);
+    background: var(--allocation-scheduler-splitter-background, var(--bs-border-color));
+    cursor: var(--allocation-scheduler-splitter-cursor, col-resize);
+    z-index: 3;
+    transition: background-color 0.15s;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24px;
+      cursor: var(--allocation-scheduler-splitter-cursor, col-resize);
+    }
+
+    &:hover {
+      background: var(--allocation-scheduler-splitter-hover-background, var(--bs-primary));
+    }
+
+    &--dragging {
+      background: var(--allocation-scheduler-splitter-active-background, var(--bs-primary));
+    }
+
+    &--focused {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: -1px;
+      background: var(--allocation-scheduler-splitter-hover-background, var(--bs-primary));
+    }
+
+    &--locked {
+      cursor: default;
+
+      &::before { cursor: default; }
+
+      &:hover {
+        background: var(--allocation-scheduler-splitter-background, var(--bs-border-color));
+      }
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: -1px;
+    }
+  }
+
+  // ── Splitter Restore Zones (hardcoded class) ──────────
+  .sf-allocation-scheduler__splitter-restore {
+    flex: 0 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--allocation-scheduler-splitter-collapse-indicator-background, var(--bs-tertiary-bg, var(--bs-light)));
+    border: 1px solid var(--bs-border-color);
+    cursor: pointer;
+    z-index: 3;
+    transition: background-color 0.15s;
+
+    span {
+      color: var(--allocation-scheduler-splitter-collapse-indicator-icon-color, var(--bs-primary));
+      font-size: 0.75rem;
+    }
+
+    &:hover {
+      background: rgba(var(--bs-primary-rgb), 0.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--bs-primary);
+      outline-offset: -1px;
+    }
+
+    &--left  { border-right: none; }
+    &--right { border-left: none;  }
+  }
+
+  // ── Pane collapse modifier (hardcoded class) ──────────
+  .sf-allocation-scheduler__pane--collapsed {
+    width: 0 !important;
+    overflow: hidden !important;
+    border: none !important;
+  }
+
+  .sf-allocation-scheduler__timeline-panel {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: auto;
+  }
+
+  // ── Table (hardcoded class, both panels) ──────────────
+  // No width: 100% here — scoped below.
+  // Resource panel: 100% fills the panel (panel width = sum of column widths).
+  // Timeline panel: natural/auto width so column widths from <col> are NOT
+  //   compressed to fit a narrower container; the panel uses overflow:auto to
+  //   handle the horizontal overflow when many buckets are visible.
+  // IMPORTANT: border-collapse:separate is required for position:sticky on <th>
+  // to properly reserve header space. With collapse, the first <tbody> row can
+  // be hidden behind sticky headers in some browsers.
+  .sf-allocation-scheduler__table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .sf-allocation-scheduler__resource-panel .sf-allocation-scheduler__table {
+    width: 100%;
+  }
+
+  // Timeline table width is controlled by GetTimelineTableStyle() in C#:
+  //   Month/Week/Quarter/Year → inline style: table-layout:fixed; width:100%
+  //     Columns use calc(100%/N) from GetBucketWidthStyle(), filling the panel exactly.
+  //   Day → inline style: table-layout:fixed  (no explicit width)
+  //     Fixed-pixel columns auto-size the table; overflow:auto on the panel shows scrollbar.
+  // No CSS width/min-width override here — let the inline style govern table sizing.
+  .sf-allocation-scheduler__timeline-panel .sf-allocation-scheduler__table {
+    // intentionally empty — width managed via C#-generated inline style
+  }
+
+  // ── Grouped Header Row (hardcoded class) ────────────────
+  // Rendered above the leaf header row for Day/Week/Month/Quarter views.
+  .sf-allocation-scheduler__header-group-row {
+    background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+    }
+
+  }
+
+  .sf-allocation-scheduler__header-group-cell {
+    // Explicit height + vertical-align:middle. Do NOT use line-height equal to
+    // height — it exceeds the border-box content area and causes cell expansion.
+    height: var(--mas-header-group-height);
+    box-sizing: border-box;
+    padding: 0 0.5rem;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-right: 1px solid var(--sf-scheduler-border-color);
+    border-bottom: 1px solid var(--sf-scheduler-border-color);
+    color: var(--bs-secondary-color, #6c757d);
+    vertical-align: middle;
+  }
+
+  // ── Header Row (hardcoded class) ──────────────────────
+  // NOTE: border-bottom on <tr> is unreliable in border-collapse:collapse.
+  // The 2px bottom separator is applied directly on the <th> cells below.
+  .sf-allocation-scheduler__header-row {
+    background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: var(--bs-tertiary-bg, var(--bs-light, #f8f9fa));
+    }
+  }
+
+  // When a group row precedes the leaf row, offset the leaf row below it
+  .sf-allocation-scheduler__header-group-row ~ .sf-allocation-scheduler__header-row th {
+    top: var(--mas-header-group-height, 32px);
+  }
+
+  // ── Resource Column Cells (provider-injected class) ───
+  .sf-bs-allocation-scheduler__resource-col {
+    padding: 0.375rem var(--bs-scheduler-col-pad-x);
+    border-right: 1px solid var(--sf-scheduler-border-color);
+    border-bottom: 1px solid var(--sf-scheduler-border-color);
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: left;
+    vertical-align: middle;
+    height: var(--mas-header-leaf-height, var(--bs-scheduler-row-height));
+    box-sizing: border-box;
+
+    // Cell content: enforce flex so avatar+text templates don't overflow
+    > * {
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      overflow: hidden;
+    }
+
+    &[role="columnheader"] {
+      position: sticky;         // sticky (not relative) so headers stay pinned on vertical scroll;
+      top: 0;                   // sticky also creates a containing block for the resize handle
+      z-index: 3;
+      overflow: visible;        // allow handle to extend to cell edge without clipping
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      color: var(--bs-secondary-color, var(--bs-secondary));
+      background: var(--bs-body-bg);  // opaque — prevent data rows bleeding through
+      // Header separator is 2px to visually distinguish header from body rows
+      border-bottom: 2px solid var(--sf-scheduler-border-color);
+    }
+
+    &[role="gridcell"] {
+      font-weight: 400;
+    }
+  }
+
+  // When grouped headers are active, resource column headers span both rows
+  // (rowspan="2") and are vertically centered across the full header height.
+  .sf-allocation-scheduler__resource-col--spanning[role="columnheader"] {
+    height: calc(var(--mas-header-group-height) + var(--mas-header-leaf-height));
+    vertical-align: middle;
+    border-bottom: 2px solid var(--sf-scheduler-border-color);
+  }
+
+  // ── Time Headers (provider-injected class) ────────────
+  .sf-bs-allocation-scheduler__time-header {
+    padding: var(--bs-scheduler-cell-pad-y) var(--bs-scheduler-cell-pad-x);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;           // prevent wrapping regardless of column width
+    overflow: hidden;              // clip text that overflows a narrow column
+    text-overflow: ellipsis;       // show ellipsis when clipped (cosmetic fallback)
+    height: var(--mas-header-leaf-height, var(--bs-scheduler-row-height));
+    box-sizing: border-box;
+    vertical-align: middle;
+    border-right: 1px solid var(--sf-scheduler-border-color);
+    // 2px bottom border matches resource-col[role="columnheader"] — draws the
+    // header separator on the <th> cell so it renders in border-collapse:collapse
+    border-bottom: 2px solid var(--sf-scheduler-border-color);
+    color: var(--bs-secondary-color, #6c757d);
+    font-variant-numeric: tabular-nums;
+    position: relative;            // anchor for time resize handle
+
+    // Day view: tighter label hierarchy
+    &--day {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  // ── Resource Rows (provider-injected class) ───────────
+  // NOTE: border-bottom on <tr> is unreliable in border-collapse:collapse;
+  // the actual bottom border is applied via border-bottom on <td>/<th> cells.
+  // We keep it here as a non-collapsing-layout fallback (e.g. flex-based consumers).
+  .sf-bs-allocation-scheduler__row {
+    transition: background-color 0.1s;
+
+    td, th {
+      height: var(--bs-scheduler-row-height);
+      box-sizing: border-box;
+      vertical-align: middle;
+    }
+
+    &--striped {
+      background-color: rgba(0, 0, 0, 0.022);
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.04) !important;
+    }
+
+    // Row-level state modifiers
+    &--selected {
+      background-color: rgba(var(--bs-primary-rgb), 0.07) !important;
+    }
+
+    &--over-allocated {
+      background-color: rgba(var(--bs-danger-rgb), 0.07) !important;
+    }
+  }
+
+  // ── Allocation Cells (provider-injected class) ────────
+  .sf-bs-allocation-scheduler__cell {
+    padding: var(--bs-scheduler-cell-pad-y) var(--bs-scheduler-cell-pad-x);
+    text-align: center;
+    border-right: 1px solid var(--sf-scheduler-border-color);
+    border-bottom: 1px solid var(--sf-scheduler-border-color);
+    position: relative;
+    cursor: default;
+    transition: background-color 0.1s;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--editable {
+      cursor: text;
+
+      &:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+      }
+    }
+
+    // Selected: blue fill + inset ring (color + shape — accessible)
+    &--selected {
+      background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+      box-shadow: inset 0 0 0 2px var(--bs-primary);
+    }
+
+    // Conflict: red tint + inset border (color + shape)
+    &--conflict {
+      background-color: var(--bs-scheduler-conflict-bg) !important;
+      box-shadow: var(--bs-scheduler-conflict-shadow);
+    }
+
+    // Disabled: diagonal stripes + muted text (pattern + color — accessible)
+    &--disabled {
+      background-color: var(--bs-scheduler-disabled-bg) !important;
+      background-image: var(--bs-scheduler-disabled-pattern) !important;
+      color: var(--bs-scheduler-disabled-color) !important;
+      cursor: not-allowed;
+
+      // Strip out any Bootstrap table-primary/table-danger overrides on disabled cells
+      --bs-table-bg: transparent;
+    }
+
+    // Active cell: keyboard-focus point, shows fill handle
+    &--active {
+      background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+      box-shadow: inset 0 0 0 2px var(--bs-primary);
+      outline: none;
+    }
+
+    // Drag-fill target: dashed outline preview
+    &--drag-target {
+      background-color: rgba(var(--bs-primary-rgb), 0.08) !important;
+      outline: 2px dashed var(--bs-primary);
+      outline-offset: -2px;
+    }
+
+    // Edit mode: inline input fills cell
+    &--editing {
+      padding: 0;
+
+      input {
+        width: 100%;
+        height: 100%;
+        border: none;
+        outline: 2px solid var(--bs-primary);
+        outline-offset: -2px;
+        text-align: center;
+        font-size: inherit;
+        font-family: inherit;
+        font-variant-numeric: tabular-nums;
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        padding: var(--bs-scheduler-cell-pad-y) var(--bs-scheduler-cell-pad-x);
+        box-sizing: border-box;
+      }
+    }
+  }
+
+  // ── Conflict Icon ──
+  .sf-allocation-scheduler__conflict-icon {
+    margin-inline-start: 4px;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  // ── Fill Handle (hardcoded class — same for all themes) ──
+  .sf-allocation-scheduler__fill-handle {
+    position: absolute;
+    right: -4px;
+    bottom: -4px;
+    width: 8px;
+    height: 8px;
+    background: var(--bs-primary);
+    border: 2px solid var(--bs-body-bg);
+    border-radius: 1px;
+    cursor: crosshair;
+    z-index: 4;
+    pointer-events: auto;
+
+    &:hover {
+      filter: brightness(0.85);
+      transform: scale(1.25);
+    }
+  }
+
+  // Active cell (hardcoded class applied in Razor markup)
+  .sf-allocation-scheduler__cell--active {
+    background-color: rgba(var(--bs-primary-rgb), 0.12) !important;
+    box-shadow: inset 0 0 0 2px var(--bs-primary);
+    outline: none;
+  }
+
+  // Hardcoded --editing modifier added directly in markup
+  .sf-allocation-scheduler__cell--editing {
+    padding: 0;
+
+    input {
+      width: 100%;
+      height: 100%;
+      border: none;
+      outline: 2px solid var(--bs-primary);
+      outline-offset: -2px;
+      text-align: center;
+      font-size: inherit;
+      font-family: inherit;
+      font-variant-numeric: tabular-nums;
+      background: var(--bs-body-bg);
+      color: var(--bs-body-color);
+      padding: var(--bs-scheduler-cell-pad-y) var(--bs-scheduler-cell-pad-x);
+      box-sizing: border-box;
+    }
+  }
+
+  // ── Current-Period Column Highlight (structural class) ──
+  // Applied to header and data cells in the column whose period contains "now".
+  .sf-allocation-scheduler__col-current {
+    background-color: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.07);
+
+    // Header cell variant: stronger tint + top accent border
+    &.sf-bs-allocation-scheduler__time-header,
+    &.sf-allocation-scheduler__time-header {
+      background-color: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.13);
+      font-weight: 600;
+      color: var(--bs-primary, #0d6efd);
+      border-top: 3px solid var(--bs-primary, #0d6efd);
+    }
+  }
+
+  // ── Cell Value (provider-injected class) ──────────────
+  .sf-bs-allocation-scheduler__cell-value {
+    font-variant-numeric: tabular-nums;
+
+    &--currency { color: var(--bs-success); }
+  }
+
+  // ── Delta Indicator (provider-injected class) ─────────
+  .sf-bs-allocation-scheduler__delta {
+    font-size: 0.7rem;
+    margin-left: 0.2rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // ── Ghost Bar (provider-injected class) ───────────────
+  .sf-bs-allocation-scheduler__ghost-bar {
+    border: 1px dashed var(--bs-border-color);
+    border-radius: 2px;
+    padding: 0 0.2rem;
+    margin-right: 0.2rem;
+    font-size: 0.7rem;
+  }
+
+  // ── Context Menu (provider-injected class) ────────────
+  // Provider also applies .dropdown-menu which gives bg/shadow/border.
+  // These rules add scheduler-specific sizing.
+  .sf-bs-allocation-scheduler__context-menu {
+    min-width: 200px;
+    font-size: 0.875rem;
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 0.35rem 1rem;
+      text-align: left;
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--bs-body-color);
+      white-space: nowrap;
+
+      &:hover {
+        background: var(--bs-tertiary-bg, var(--bs-light));
+      }
+
+      &:disabled {
+        color: var(--bs-secondary-color, #6c757d);
+        cursor: default;
+      }
+    }
+  }
+
+  // ── Empty / Loader (provider-injected class) ──────────
+  .sf-bs-allocation-scheduler__empty {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .sf-bs-allocation-scheduler__loader {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // ── Column Resize Handle (hardcoded class — theme-neutral) ─
+  // Rendered by the Razor markup inside resource column <th> cells.
+  // Uses position:absolute relative to the <th> (which has position:relative
+  // via the [role="columnheader"] rule above).
+  .sf-allocation-scheduler__col-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 8px;           // visible drag zone width
+    cursor: col-resize;
+    z-index: 5;
+    user-select: none;
+
+    // Thin visual indicator — appears on hover/drag
+    &::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      bottom: 20%;
+      right: 1px;
+      width: 2px;
+      background: transparent;
+      border-radius: 1px;
+      transition: background-color 0.12s;
+    }
+
+    &:hover::after {
+      background: rgba(var(--bs-primary-rgb), 0.5);
+    }
+  }
+
+  // Active resize state — set by JS during drag
+  .sf-allocation-scheduler__col-resize-handle--active::after {
+    background: var(--bs-primary) !important;
+    top: 10%;
+    bottom: 10%;
+  }
+
+  // ── Time Column Resize Handle (hardcoded class — theme-neutral) ─
+  // Positioned inside timeline <th> cells for drag-to-resize time columns.
+  .sf-allocation-scheduler__time-resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    z-index: 5;
+    user-select: none;
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      bottom: 20%;
+      right: 1px;
+      width: 2px;
+      background: transparent;
+      border-radius: 1px;
+      transition: background-color 0.12s;
+    }
+
+    &:hover::after {
+      background: rgba(var(--bs-primary-rgb), 0.5);
+    }
+  }
+
+  .sf-allocation-scheduler__time-resize-handle--active::after {
+    background: var(--bs-primary) !important;
+    top: 10%;
+    bottom: 10%;
+  }
+}
+
+// ── Dark Theme Patches ───────────────────────────────────────────────
+// The demo uses [data-sf-theme="dark"] rather than Bootstrap's native
+// [data-bs-theme="dark"], so --bs-* tokens do NOT automatically switch to
+// their dark values. We patch all the --bs-* tokens the component depends
+// on here, scoped to the component root so they cascade into every child.
+// Both selectors are listed so the patch applies regardless of which
+// dark-mode mechanism the host application uses.
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+  .sf-bs-allocation-scheduler {
+    // ── Core layout tokens ─────────────────────────────
+    --bs-body-bg:        #212529;  // dark page/cell background
+    --bs-body-color:     #dee2e6;  // primary text
+    --bs-border-color:   #495057;  // all cell/header borders
+    --bs-tertiary-bg:    #2b3035;  // toolbar, header rows, scenario strip
+    --bs-secondary-color: #adb5bd; // muted header labels
+
+    // Component-level border token (derived from bs-border-color)
+    --sf-scheduler-border-color: #495057;
+
+    // ── Disabled cell tokens ───────────────────────────
+    --bs-scheduler-disabled-bg:    #2b3035;
+    --bs-scheduler-disabled-color: #adb5bd;
+
+    // ── Row hover / stripe ─────────────────────────────
+    // Light black-tint RGBA is invisible on a dark surface — flip to white tints.
+    .sf-bs-allocation-scheduler__row {
+      &--striped { background-color: rgba(255, 255, 255, 0.04); }
+      &:hover    { background-color: rgba(255, 255, 255, 0.07) !important; }
+    }
+
+    // ── Disabled cell pattern ──────────────────────────
+    // The default diagonal-stripe gradient uses black-tint lines which are invisible
+    // on dark backgrounds. Override with white-tint lines for dark mode.
+    --bs-scheduler-disabled-pattern: repeating-linear-gradient(
+      135deg,
+      transparent,
+      transparent 3px,
+      rgba(255, 255, 255, 0.06) 3px,
+      rgba(255, 255, 255, 0.06) 6px
+    );
+  }
+}

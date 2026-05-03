@@ -1,0 +1,19 @@
+.settings-danger-zone {
+    --local-danger: var(--marilo-color-danger, #ef4444);
+    --local-text: var(--marilo-color-text, #1f2328);
+
+    border-left: 3px solid var(--local-danger);
+    padding-left: 16px;
+}
+
+:global([data-marilo-theme="dark"]) .settings-danger-zone {
+    --local-danger: var(--marilo-color-danger, #ef4444);
+    --local-text: var(--marilo-color-text, #f3f3ef);
+}
+
+.settings-danger-zone__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--local-danger);
+    margin: 0 0 12px;
+}

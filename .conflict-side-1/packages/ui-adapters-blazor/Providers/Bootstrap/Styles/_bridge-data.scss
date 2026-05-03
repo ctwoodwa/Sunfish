@@ -1,0 +1,246 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Data Display Bridge Styles
+// =================================================================
+
+// Avatar
+.sf-bs-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--sf-color-primary);
+  color: #{color-contrast($primary)};
+  font-weight: 600;
+  overflow: hidden;
+
+  &--xs { width: 24px; height: 24px; font-size: 0.625rem; }
+  &--sm { width: 32px; height: 32px; font-size: 0.75rem; }
+  &--md { width: 40px; height: 40px; font-size: 0.875rem; }
+  &--lg { width: 56px; height: 56px; font-size: 1.125rem; }
+  &--xl { width: 72px; height: 72px; font-size: 1.5rem; }
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+// Tooltip
+.sf-bs-tooltip {
+  &--show-click,
+  &--show-focus {
+    pointer-events: auto;
+  }
+}
+
+// Popover
+.sf-bs-popover {
+  position: absolute;
+  z-index: var(--sf-z-popover);
+}
+
+// Timeline
+.sf-bs-timeline {
+  position: relative;
+  padding-left: 2rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--sf-color-border);
+  }
+}
+
+.sf-bs-timeline-item {
+  position: relative;
+  padding-bottom: var(--sf-space-xl);
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -1.625rem;
+    top: 0.25rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--sf-color-primary);
+    border: 2px solid var(--sf-color-bg);
+  }
+}
+
+// DataGrid
+.sf-bs-datagrid {
+  border: 1px solid var(--sf-color-border);
+  border-radius: var(--sf-radius-md);
+
+  table {
+    margin-bottom: 0;
+  }
+}
+
+.sf-bs-datagrid-header-cell {
+  &--sortable {
+    cursor: pointer;
+    user-select: none;
+
+    &:hover {
+      background-color: var(--sf-color-surface);
+    }
+  }
+
+  &--sorted {
+    font-weight: 600;
+    color: var(--sf-color-primary);
+  }
+}
+
+.sf-bs-datagrid-row--striped {
+  &:nth-child(even) {
+    background-color: #{$table-striped-bg};
+  }
+}
+
+.sf-bs-datagrid-pager {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+  border-top: 1px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-toolbar {
+  padding: var(--sf-space-sm);
+  border-bottom: 1px solid var(--sf-color-border);
+}
+
+.sf-bs-datagrid-filter-row {
+  background-color: var(--sf-color-surface);
+}
+
+.sf-bs-datagrid-filter-cell {
+  padding: var(--sf-space-xs) var(--sf-space-sm);
+
+  .form-control {
+    font-size: var(--sf-font-size-sm);
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+.sf-bs-datagrid .sf-bs-datagrid-header-cell {
+  position: relative;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.35rem;
+  border: 1px solid var(--sf-color-border);
+  background: #fff;
+  color: var(--sf-color-text-secondary);
+  border-radius: 4px;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn:hover {
+  border-color: var(--sf-color-primary);
+  color: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-icon {
+  width: .875rem;
+  height: .875rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active {
+  border-color: var(--sf-color-primary);
+  background: rgba(var(--bs-primary-rgb), .1);
+  color: var(--sf-color-primary);
+  box-shadow: 0 0 0 1px rgba(var(--bs-primary-rgb), .25);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-btn--active::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--sf-color-primary);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-popup {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 40;
+  min-width: 260px;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.5rem;
+  background: #fff;
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-operator,
+.sf-bs-datagrid .sf-datagrid-filter-menu-value {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  font-size: var(--sf-font-size-base);
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.sf-bs-datagrid .sf-datagrid-filter-menu-actions .sf-datagrid-cmd-btn {
+  border: 1px solid var(--sf-color-border);
+  border-radius: 0.375rem;
+  background: #fff;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+}
+
+.sf-bs-datagrid-group-header td {
+  padding: var(--sf-space-sm) var(--sf-space-md);
+}
+
+// TreeView
+.sf-bs-treeview {
+  .sf-bs-tree-item--expanded > .sf-bs-tree-children {
+    display: block;
+  }
+
+  .sf-bs-tree-children {
+    display: none;
+    padding-left: var(--sf-space-lg);
+  }
+
+  .list-group-item {
+    border-left: 0;
+    border-right: 0;
+    cursor: pointer;
+  }
+}
+
+// ListView
+.sf-bs-listview {
+  // Inherits list-group styles; no additional bridge needed
+}

@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <AssemblyName>Sunfish.Federation.BlobReplication.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Federation.BlobReplication.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="coverlet.collector" />
+    <PackageReference Include="NSubstitute" />
+    <PackageReference Include="Testcontainers" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Sunfish.Federation.BlobReplication.csproj" />
+    <ProjectReference Include="..\..\federation-common\Sunfish.Federation.Common.csproj" />
+    <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="xunit.runner.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>

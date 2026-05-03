@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sunfish local-node host LaunchDaemon.
+  Installed at /Library/LaunchDaemons/com.sunfish.local-node-host.plist
+  by installers/macos/build-pkg.sh. Loaded system-wide by launchd at boot;
+  does not require user login. Paper §4, §16.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.sunfish.local-node-host</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Library/Application Support/Sunfish/LocalNodeHost/Sunfish.LocalNodeHost</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <!--
+      Per paper §16.3, LaunchDaemons run as root but the host process drops
+      to a dedicated `_sunfish` user in a future wave. For now it runs as
+      root with read-only SystemRoot and no network-hardening beyond
+      launchd's defaults.
+    -->
+    <key>StandardOutPath</key>
+    <string>/var/log/sunfish/local-node-host.log</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/sunfish/local-node-host.err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <!-- Pre-seeded-config path the host reads on start. -->
+        <key>SUNFISH_CONFIG_PATH</key>
+        <string>/Library/Application Support/Sunfish/node-config.json</string>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>5</integer>
+</dict>
+</plist>

@@ -1,0 +1,39 @@
+- name: Area
+  href: area.md
+- name: Bar
+  href: bar.md
+- name: Bubble
+  href: bubble.md
+- name: Candlestick
+  href: candlestick.md
+- name: Column
+  href: column.md
+- name: Donut
+  href: donut.md
+- name: Heatmap
+  href: heatmap.md
+- name: Line
+  href: line.md
+- name: Ohlc
+  href: ohlc.md
+- name: Pie
+  href: pie.md
+- name: Radar Area
+  href: radar-area.md
+- name: Radar Column
+  href: radar-column.md
+- name: Radar Line
+  href: radar-line.md
+- name: Rangearea
+  href: rangearea.md
+- name: Rangebar
+  href: rangebar.md
+- name: Rangecolumn
+  href: rangecolumn.md
+- name: Scatter
+  href: scatter.md
+- name: Scatterline
+  href: scatterline.md
+- name: Waterfall
+  href: waterfall.md
+

@@ -1,0 +1,13 @@
+{
+  "name": "@sunfish/resx-xss-scanner",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Scans RESX <comment> elements for unescaped <, >, & characters that could be exploited via the Weblate render path (Plan 5 Task 6).",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test tests/scanner.test.mjs"
+  }
+}

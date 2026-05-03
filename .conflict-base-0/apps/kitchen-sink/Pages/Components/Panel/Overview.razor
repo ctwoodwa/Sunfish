@@ -1,0 +1,81 @@
+@page "/components/Panel"
+@page "/components/Panel/overview"
+@layout ComponentDemoLayout
+
+<PageSection Title="Overview">
+    <DemoSection Title="Basic Usage" Code="@_basicCode">
+        <SunfishPanel>
+            <p>This content is displayed inside a panel with elevation and padding.</p>
+        </SunfishPanel>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Appearance">
+    <DemoSection Title="Elevation" Description="Panels support different elevation levels to create visual depth." Code="@_elevationCode">
+        <SunfishPanel Elevation="0">
+            <p>Elevation 0 (flat)</p>
+        </SunfishPanel>
+        <SunfishPanel Elevation="1">
+            <p>Elevation 1</p>
+        </SunfishPanel>
+        <SunfishPanel Elevation="2">
+            <p>Elevation 2</p>
+        </SunfishPanel>
+    </DemoSection>
+
+    <DemoSection Title="With Header" Description="Panels can include a header for labeling grouped content." Code="@_headerCode">
+        <SunfishPanel>
+            <h3 style="margin:0 0 8px;">Panel Header</h3>
+            <p>Panel body content goes here.</p>
+        </SunfishPanel>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessibility">
+    <AccessibilityInfo
+        KeyboardInteractions="@_keyboard"
+        AriaAttributes="@_aria"
+        ScreenReaderNotes="@_screenReader" />
+</PageSection>
+
+@code {
+    private const string _basicCode =
+        "<SunfishPanel>\n" +
+        "    <p>This content is displayed inside a panel with elevation and padding.</p>\n" +
+        "</SunfishPanel>";
+
+    private const string _elevationCode =
+        "<SunfishPanel Elevation=\"0\">\n" +
+        "    <p>Elevation 0 (flat)</p>\n" +
+        "</SunfishPanel>\n" +
+        "<SunfishPanel Elevation=\"1\">\n" +
+        "    <p>Elevation 1</p>\n" +
+        "</SunfishPanel>\n" +
+        "<SunfishPanel Elevation=\"2\">\n" +
+        "    <p>Elevation 2</p>\n" +
+        "</SunfishPanel>";
+
+    private const string _headerCode =
+        "<SunfishPanel>\n" +
+        "    <h3>Panel Header</h3>\n" +
+        "    <p>Panel body content goes here.</p>\n" +
+        "</SunfishPanel>";
+
+    private static readonly (string Key, string Action)[] _keyboard =
+    [
+        ("Tab", "Moves focus through interactive content within the panel"),
+    ];
+
+    private static readonly (string Attribute, string Description)[] _aria =
+    [
+        ("role=\"region\"", "Defines the panel as a landmark region for screen readers"),
+        ("aria-labelledby", "References the panel header element to provide an accessible name"),
+    ];
+
+    private static readonly string[] _screenReader =
+    [
+        "Use role=\"region\" with aria-labelledby pointing to the panel header so screen readers announce the panel as a named region.",
+        "Panels without headers should use aria-label to provide an accessible name.",
+        "Content within the panel is read in document order.",
+    ];
+}

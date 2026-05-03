@@ -1,0 +1,106 @@
+@page "/components/gantt/milestones"
+@layout ComponentDemoLayout
+
+<PageSection Title="Milestones">
+    <DemoSection Title="Zero-Duration Milestones" Description="A milestone is a task where Start equals End (zero duration). Milestones render as a diamond shape on the timeline instead of a bar. Use milestones to mark key checkpoints like approvals, deadlines, or go/no-go decisions." Code="@_milestoneCode">
+        <div class="demo-row">
+            <SunfishGantt TItem="MilestoneTask"
+                         Data="@_tasks"
+                         IdField="Id"
+                         ParentIdField="ParentId"
+                         Height="450px"
+                         Width="100%"
+                         @bind-View="_currentView">
+                <GanttColumns>
+                    <GanttColumn TItem="MilestoneTask"
+                                 Field="Title"
+                                 Expandable="true"
+                                 Width="220px"
+                                 Title="Task" />
+                    <GanttColumn TItem="MilestoneTask"
+                                 Field="PercentComplete"
+                                 Width="70px"
+                                 Title="Progress"
+                                 DisplayFormat="{0:N0}%"
+                                 TextAlign="right" />
+                    <GanttColumn TItem="MilestoneTask"
+                                 Field="Start"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                    <GanttColumn TItem="MilestoneTask"
+                                 Field="End"
+                                 Width="100px"
+                                 DisplayFormat="{0:d}" />
+                </GanttColumns>
+                <GanttViews>
+                    <GanttWeekView />
+                    <GanttMonthView />
+                </GanttViews>
+            </SunfishGantt>
+        </div>
+        <p class="demo-info">
+            Tasks "Requirements Sign-Off", "Design Approval", and "Go-Live" are milestones (Start == End). They render as diamond shapes instead of bars.
+        </p>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private GanttView _currentView = GanttView.Week;
+
+    private class MilestoneTask
+    {
+        public string Id { get; set; } = "";
+        public string? ParentId { get; set; }
+        public string Title { get; set; } = "";
+        public DateTime Start { get; set; }
+        public DateTime End { get; set; }
+        public double PercentComplete { get; set; }
+    }
+
+    private List<MilestoneTask> _tasks = GenerateData();
+
+    private static List<MilestoneTask> GenerateData()
+    {
+        var today = DateTime.Today;
+        return new List<MilestoneTask>
+        {
+            // Phase 1: Requirements
+            new() { Id = "1", Title = "Requirements", Start = today, End = today.AddDays(10), PercentComplete = 100 },
+            new() { Id = "1.1", ParentId = "1", Title = "Gather Requirements", Start = today, End = today.AddDays(5), PercentComplete = 100 },
+            new() { Id = "1.2", ParentId = "1", Title = "Document Specs", Start = today.AddDays(5), End = today.AddDays(9), PercentComplete = 100 },
+            // Milestone: zero duration (Start == End)
+            new() { Id = "1.3", ParentId = "1", Title = "Requirements Sign-Off", Start = today.AddDays(10), End = today.AddDays(10), PercentComplete = 100 },
+
+            // Phase 2: Design
+            new() { Id = "2", Title = "Design", Start = today.AddDays(10), End = today.AddDays(22), PercentComplete = 60 },
+            new() { Id = "2.1", ParentId = "2", Title = "Wireframes", Start = today.AddDays(10), End = today.AddDays(15), PercentComplete = 100 },
+            new() { Id = "2.2", ParentId = "2", Title = "Visual Design", Start = today.AddDays(15), End = today.AddDays(21), PercentComplete = 40 },
+            // Milestone
+            new() { Id = "2.3", ParentId = "2", Title = "Design Approval", Start = today.AddDays(22), End = today.AddDays(22), PercentComplete = 0 },
+
+            // Phase 3: Build
+            new() { Id = "3", Title = "Build", Start = today.AddDays(22), End = today.AddDays(40), PercentComplete = 10 },
+            new() { Id = "3.1", ParentId = "3", Title = "Backend", Start = today.AddDays(22), End = today.AddDays(32), PercentComplete = 20 },
+            new() { Id = "3.2", ParentId = "3", Title = "Frontend", Start = today.AddDays(28), End = today.AddDays(38), PercentComplete = 0 },
+            new() { Id = "3.3", ParentId = "3", Title = "Integration", Start = today.AddDays(36), End = today.AddDays(40), PercentComplete = 0 },
+
+            // Milestone at root level
+            new() { Id = "4", Title = "Go-Live", Start = today.AddDays(42), End = today.AddDays(42), PercentComplete = 0 },
+        };
+    }
+
+    private const string _milestoneCode = @"// A milestone is any task where Start == End
+new MilestoneTask
+{
+    Id = ""1.3"",
+    ParentId = ""1"",
+    Title = ""Requirements Sign-Off"",
+    Start = today.AddDays(10),
+    End = today.AddDays(10),  // same as Start = milestone
+    PercentComplete = 100
+}
+
+// No special parameter needed -- the Gantt
+// automatically detects zero-duration tasks
+// and renders them as diamonds.";
+}

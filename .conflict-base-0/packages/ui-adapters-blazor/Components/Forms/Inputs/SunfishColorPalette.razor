@@ -1,0 +1,156 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(RootCss)"
+     style="@CombineStyles()"
+     role="grid"
+     aria-label="Color palette"
+     aria-colcount="@Columns"
+     id="@Id"
+     tabindex="@(TabIndex ?? 0)"
+     @attributes="AdditionalAttributes"
+     @onkeydown="OnKeyDown">
+
+    <div class="sf-colorpalette__tiles"
+         style="grid-template-columns: repeat(@Columns, @EffectiveTileWidth);">
+        @{ var index = 0; }
+        @foreach (var color in _colorList)
+        {
+            var c = color;
+            var i = index;
+            var isSelected = string.Equals(c, Value, StringComparison.OrdinalIgnoreCase);
+            var isFocused = i == _focusedIndex;
+            <button type="button"
+                    role="gridcell"
+                    class="sf-colorpalette__tile @(isSelected ? "mar-colorpalette__tile--selected" : "") @(isFocused ? "mar-colorpalette__tile--focused" : "")"
+                    style="background-color: @c; width: @EffectiveTileWidth; height: @EffectiveTileHeight;"
+                    aria-label="@c"
+                    aria-selected="@isSelected.ToString().ToLowerInvariant()"
+                    disabled="@(!Enabled)"
+                    tabindex="-1"
+                    @onclick="() => SelectColorAsync(c, i)"></button>
+            index++;
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>Selected color value (CSS color string). Supports two-way binding.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>Callback fired when the selected color changes.</summary>
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>The collection of colors to display. Defaults to the Office preset palette.</summary>
+    [Parameter] public IEnumerable<string>? Colors { get; set; }
+
+    /// <summary>Number of tile columns in the grid. Default 10.</summary>
+    [Parameter] public int Columns { get; set; } = 10;
+
+    /// <summary>CSS height for each color tile (e.g., "24px", "2em").</summary>
+    [Parameter] public string? TileHeight { get; set; }
+
+    /// <summary>CSS width for each color tile (e.g., "24px", "2em").</summary>
+    [Parameter] public string? TileWidth { get; set; }
+
+    /// <summary>Whether the component is interactive. Default true.</summary>
+    [Parameter] public bool Enabled { get; set; } = true;
+
+    /// <summary>HTML id attribute on the root element.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>Tab index on the root element.</summary>
+    [Parameter] public int? TabIndex { get; set; }
+
+    private List<string> _colorList = new();
+    private int _focusedIndex = -1;
+
+    private string EffectiveTileWidth => TileWidth ?? "24px";
+    private string EffectiveTileHeight => TileHeight ?? "24px";
+
+    private string RootCss
+    {
+        get
+        {
+            var css = CssProvider.ColorPaletteClass() + " mar-colorpalette";
+            if (!Enabled) css += " mar-colorpalette--disabled";
+            return css;
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        _colorList = (Colors ?? ColorPalettePresets.Office).ToList();
+
+        if (_focusedIndex >= _colorList.Count)
+            _focusedIndex = _colorList.Count > 0 ? _colorList.Count - 1 : -1;
+
+        // Sync focused index to current value
+        if (!string.IsNullOrEmpty(Value))
+        {
+            var idx = _colorList.FindIndex(c => string.Equals(c, Value, StringComparison.OrdinalIgnoreCase));
+            if (idx >= 0) _focusedIndex = idx;
+        }
+    }
+
+    private async Task SelectColorAsync(string color, int index)
+    {
+        if (!Enabled) return;
+
+        _focusedIndex = index;
+        if (!string.Equals(Value, color, StringComparison.OrdinalIgnoreCase))
+        {
+            Value = color;
+            await ValueChanged.InvokeAsync(color);
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (!Enabled || _colorList.Count == 0) return;
+
+        var count = _colorList.Count;
+        var cols = Math.Max(1, Columns);
+        var oldIndex = _focusedIndex < 0 ? 0 : _focusedIndex;
+        var newIndex = oldIndex;
+
+        switch (e.Key)
+        {
+            case "ArrowRight":
+            {
+                var rowEnd = Math.Min((oldIndex / cols + 1) * cols - 1, count - 1);
+                newIndex = Math.Min(oldIndex + 1, rowEnd);
+                break;
+            }
+            case "ArrowLeft":
+            {
+                var rowStart = (oldIndex / cols) * cols;
+                newIndex = Math.Max(oldIndex - 1, rowStart);
+                break;
+            }
+            case "ArrowDown":
+                newIndex = Math.Min(oldIndex + cols, count - 1);
+                break;
+            case "ArrowUp":
+                newIndex = Math.Max(oldIndex - cols, 0);
+                break;
+            case "Home":
+                newIndex = 0;
+                break;
+            case "End":
+                newIndex = count - 1;
+                break;
+            case "Enter":
+            case " ":
+                if (_focusedIndex >= 0 && _focusedIndex < count)
+                {
+                    await SelectColorAsync(_colorList[_focusedIndex], _focusedIndex);
+                }
+                return;
+            default:
+                return;
+        }
+
+        _focusedIndex = newIndex;
+        await InvokeAsync(StateHasChanged);
+    }
+}

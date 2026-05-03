@@ -1,0 +1,181 @@
+@page "/components/overlays/window/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Window / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Window / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Feedback/Window/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishWindow</code> exposes the following events. Each is an
+            <code>EventCallback</code> you can wire up to handlers — the log panel on the right
+            records every invocation in real time.
+        </p>
+        <ul>
+            <li><code>VisibleChanged</code> — fires whenever the <code>Visible</code> value changes,
+                including when the user clicks a Close action, presses Esc, or clicks the backdrop
+                (when <code>CloseOnOverlayClick</code> is true). Two-way binding via
+                <code>@@bind-Visible</code> is built on top of this.</li>
+            <li><code>OnAction</code> — fires after a title-bar action button is clicked, with the
+                <code>WindowAction</code> flag (<code>Close</code>, <code>Minimize</code>, or
+                <code>Maximize</code>) identifying which one.</li>
+            <li><code>StateChanged</code> — fires when the <code>WindowDisplayState</code> transitions
+                between <code>Normal</code>, <code>Minimized</code>, and <code>Maximized</code>.</li>
+            <li><code>OnMove</code> — fires once after a drag gesture completes, after
+                <code>Top</code> / <code>Left</code> have been updated.</li>
+            <li><code>OnResize</code> — fires once after a resize gesture completes, after
+                <code>Width</code> / <code>Height</code> (and <code>Top</code> / <code>Left</code>
+                if dragged from a north/west handle) have been updated.</li>
+        </ul>
+        <p>
+            Drag the title bar, grab an edge handle, click Minimize/Maximize/Close, or press Esc to
+            see the callbacks fire.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 260px; min-width:240px; display:flex; flex-direction:column; gap:0.5rem;">
+                <div class="demo-row" style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                    <SunfishButton Variant="ButtonVariant.Primary" OnClick="OpenWindow">Open Event-Logged Window</SunfishButton>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear Log</SunfishButton>
+                </div>
+                <p style="margin:0; font-size:0.85rem; opacity:0.75;">
+                    Current visible: <strong>@_visible</strong> — state: <strong>@_state</strong> —
+                    position: <strong>@(_top ?? "auto")</strong> / <strong>@(_left ?? "auto")</strong> —
+                    size: <strong>@(_width ?? "auto")</strong> × <strong>@(_height ?? "auto")</strong>
+                </p>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:0.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:0.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:0.6;">No events yet — open the window and interact with it.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <SunfishWindow Title="Event-Logged Window"
+                       Visible="_visible"
+                       VisibleChanged="HandleVisibleChanged"
+                       State="_state"
+                       StateChanged="HandleStateChanged"
+                       Top="_top"
+                       TopChanged="HandleTopChanged"
+                       Left="_left"
+                       LeftChanged="HandleLeftChanged"
+                       Width="_width"
+                       WidthChanged="HandleWidthChanged"
+                       Height="_height"
+                       HeightChanged="HandleHeightChanged"
+                       Actions="WindowAction.Close | WindowAction.Minimize | WindowAction.Maximize"
+                       OnAction="HandleAction"
+                       OnMove="HandleMove"
+                       OnResize="HandleResize"
+                       Modal="false">
+            <p>Drag, resize, minimize, maximize, or close this window to emit events.</p>
+            <p style="font-size:0.85rem; opacity:0.75;">
+                Esc closes the window (triggers <code>OnAction = Close</code> and
+                <code>VisibleChanged = false</code>).
+            </p>
+        </SunfishWindow>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Overlays", "Window", "Events"];
+
+    private bool _visible;
+    private WindowDisplayState _state = WindowDisplayState.Normal;
+    private string? _top;
+    private string? _left;
+    private string? _width = "520px";
+    private string? _height = "300px";
+
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100)
+            _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void OpenWindow()
+    {
+        _visible = true;
+        Log("OpenWindow clicked → Visible=true");
+    }
+
+    private void ClearLog()
+    {
+        _log.Clear();
+    }
+
+    private void HandleVisibleChanged(bool visible)
+    {
+        _visible = visible;
+        Log($"VisibleChanged → {visible}");
+    }
+
+    private void HandleStateChanged(WindowDisplayState state)
+    {
+        _state = state;
+        Log($"StateChanged → {state}");
+    }
+
+    private void HandleTopChanged(string? value)
+    {
+        _top = value;
+        Log($"TopChanged → {value}");
+    }
+
+    private void HandleLeftChanged(string? value)
+    {
+        _left = value;
+        Log($"LeftChanged → {value}");
+    }
+
+    private void HandleWidthChanged(string? value)
+    {
+        _width = value;
+        Log($"WidthChanged → {value}");
+    }
+
+    private void HandleHeightChanged(string? value)
+    {
+        _height = value;
+        Log($"HeightChanged → {value}");
+    }
+
+    private void HandleAction(WindowAction action)
+    {
+        Log($"OnAction → {action}");
+    }
+
+    private void HandleMove()
+    {
+        Log($"OnMove (top={_top}, left={_left})");
+    }
+
+    private void HandleResize()
+    {
+        Log($"OnResize (width={_width}, height={_height})");
+    }
+}

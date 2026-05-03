@@ -1,0 +1,9 @@
+// =============================================================================
+// Patterns: Density
+// Density mode support — controlled via --density CSS custom property (default: 0)
+// =============================================================================
+
+// The --density token is defined in foundation/_tokens.scss.
+// Components use it via Fluent height calculations:
+//   height: calc((var(--base-height-multiplier) + var(--density)) * var(--design-unit) * 1px)
+// Density overrides can be applied by setting --density on a container or :root.

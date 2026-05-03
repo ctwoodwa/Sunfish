@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Providers.Recaptcha</PackageId>
+    <RootNamespace>Sunfish.Providers.Recaptcha</RootNamespace>
+    <Description>Google reCAPTCHA v3 adapter for Sunfish.Foundation.Integrations.Captcha (W#28 Phase 3.1 + ADR 0013 + ADR 0059). HttpClient-based; no Google SDK dependency. First providers-* package in the codebase — establishes the providers-{vendor} naming convention.</Description>
+    <PackageTags>sunfish;providers;captcha;recaptcha;adr-0059</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Providers.Recaptcha.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation-integrations\Sunfish.Foundation.Integrations.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,130 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Utility
+@using Sunfish.UIAdapters.Blazor.Enums
+@inherits SunfishComponentBase
+
+@*
+    SunfishDiagram — SVG node/edge diagram.
+
+    MVP surface (Tier 3 W3-9, mapping "partial"):
+      * Nodes: rectangle / ellipse / diamond / rounded shapes, positioned absolutely in SVG units.
+      * Connections: straight / bezier / orthogonal paths routed between node bounding-box centers.
+      * Pointer-based drag on nodes mutates X/Y live; OnNodeDragEnd is cancellable.
+      * OnNodeClick / OnConnectionClick raise with the respective model instance.
+
+    Follow-up work (tracked under the component's resolution notes):
+      * Connector attach points, arrowheads, selection state, zoom/pan, z-order reshuffling,
+        and keyboard-accessible drag semantics are intentionally deferred.
+*@
+
+<div class="@CombineClasses("sf-diagram")"
+     style="@CombineStyles($"width:{Width};height:{Height};position:relative;user-select:none;touch-action:none;")"
+     @ref="_rootRef"
+     @attributes="AdditionalAttributes">
+    <svg class="sf-diagram__surface"
+         width="100%"
+         height="100%"
+         xmlns="http://www.w3.org/2000/svg"
+         @onpointermove="HandlePointerMove"
+         @onpointerup="HandlePointerUp"
+         @onpointercancel="HandlePointerUp">
+
+        @* Connections are drawn first so node shapes render on top. *@
+        <svg:g class="sf-diagram__connections">
+            @if (Connections is not null)
+            {
+                foreach (var conn in Connections)
+                {
+                    var path = BuildConnectionPath(conn);
+                    if (path is null) continue;
+                    var stroke = string.IsNullOrEmpty(conn.Color) ? "#6b7280" : conn.Color;
+                    <svg:g class="sf-diagram__connection"
+                           @key="conn.Id"
+                           @onclick="@(() => HandleConnectionClick(conn))"
+                           style="cursor:pointer;">
+                        <svg:path d="@path.Data"
+                                  fill="none"
+                                  stroke="@stroke"
+                                  stroke-width="2" />
+                        @if (!string.IsNullOrEmpty(conn.Label))
+                        {
+                            <svg:text x="@path.LabelX.ToString(CultureInvariant)"
+                                      y="@path.LabelY.ToString(CultureInvariant)"
+                                      text-anchor="middle"
+                                      dominant-baseline="middle"
+                                      font-size="12"
+                                      fill="#374151">@conn.Label</svg:text>
+                        }
+                    </svg:g>
+                }
+            }
+        </svg:g>
+
+        <svg:g class="sf-diagram__nodes">
+            @if (Nodes is not null)
+            {
+                foreach (var node in Nodes)
+                {
+                    var fill = string.IsNullOrEmpty(node.Fill) ? "#ffffff" : node.Fill;
+                    var stroke = string.IsNullOrEmpty(node.Stroke) ? "#374151" : node.Stroke;
+                    var cx = node.X + node.Width / 2d;
+                    var cy = node.Y + node.Height / 2d;
+                    <svg:g class="sf-diagram__node"
+                           @key="node.Id"
+                           data-node-id="@node.Id"
+                           style="cursor:move;"
+                           @onpointerdown="@(e => HandlePointerDown(e, node))"
+                           @onclick="@(() => HandleNodeClick(node))">
+                        @switch (node.Shape)
+                        {
+                            case DiagramNodeShape.Ellipse:
+                                <svg:ellipse cx="@cx.ToString(CultureInvariant)"
+                                             cy="@cy.ToString(CultureInvariant)"
+                                             rx="@((node.Width / 2d).ToString(CultureInvariant))"
+                                             ry="@((node.Height / 2d).ToString(CultureInvariant))"
+                                             fill="@fill"
+                                             stroke="@stroke"
+                                             stroke-width="1.5" />
+                                break;
+                            case DiagramNodeShape.Diamond:
+                                <svg:polygon points="@BuildDiamondPoints(node)"
+                                             fill="@fill"
+                                             stroke="@stroke"
+                                             stroke-width="1.5" />
+                                break;
+                            case DiagramNodeShape.Rounded:
+                                <svg:rect x="@node.X.ToString(CultureInvariant)"
+                                          y="@node.Y.ToString(CultureInvariant)"
+                                          width="@node.Width.ToString(CultureInvariant)"
+                                          height="@node.Height.ToString(CultureInvariant)"
+                                          rx="8"
+                                          ry="8"
+                                          fill="@fill"
+                                          stroke="@stroke"
+                                          stroke-width="1.5" />
+                                break;
+                            default:
+                                <svg:rect x="@node.X.ToString(CultureInvariant)"
+                                          y="@node.Y.ToString(CultureInvariant)"
+                                          width="@node.Width.ToString(CultureInvariant)"
+                                          height="@node.Height.ToString(CultureInvariant)"
+                                          fill="@fill"
+                                          stroke="@stroke"
+                                          stroke-width="1.5" />
+                                break;
+                        }
+                        @if (!string.IsNullOrEmpty(node.Label))
+                        {
+                            <svg:text x="@cx.ToString(CultureInvariant)"
+                                      y="@cy.ToString(CultureInvariant)"
+                                      text-anchor="middle"
+                                      dominant-baseline="middle"
+                                      font-size="13"
+                                      fill="#111827"
+                                      style="pointer-events:none;">@node.Label</svg:text>
+                        }
+                    </svg:g>
+                }
+            }
+        </svg:g>
+    </svg>
+</div>

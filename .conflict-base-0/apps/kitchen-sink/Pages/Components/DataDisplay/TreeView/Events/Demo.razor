@@ -1,0 +1,146 @@
+@page "/components/navigation/treeview/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>TreeView / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="TreeView / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/TreeView/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishTreeView</code> exposes a rich set of callbacks. The tree below is wired
+            to every one; each invocation is appended to the log on the right. Most state-bearing
+            callbacks also support two-way binding via <code>@@bind-*</code> shorthand.
+        </p>
+        <ul>
+            <li><code>SelectedItemsChanged</code> — fires when the set of selected item IDs
+                changes. Backed by <code>SelectedItems</code> (two-way bindable).</li>
+            <li><code>OnItemClick</code> — fires on any item click with the underlying data
+                object (after the selection state has been updated).</li>
+            <li><code>ExpandedItemsChanged</code> — fires when the set of expanded IDs changes
+                (arrow toggle, click when <code>ExpandOnClick</code>, keyboard left/right, or
+                programmatic <code>ExpandAllAsync</code> / <code>CollapseAllAsync</code>).</li>
+            <li><code>CheckedItemsChanged</code> — fires when checkbox state changes. With
+                <code>AllowCheckChildren</code> and <code>AllowCheckParents</code> enabled,
+                ancestor/descendant propagation fires a single event with the final set.</li>
+            <li><code>OnItemContextMenu</code> — fires on right-click with the data item, its ID,
+                and the raw mouse event args. Right-click any node to see it.</li>
+        </ul>
+        <p>
+            Try clicking, checking, expanding, and right-clicking the tree to see the callbacks
+            fire. The status panel at the top of the right column shows the currently bound state.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 320px; min-width:280px;">
+                <SunfishTreeView Data="_data"
+                                 IdField="Id"
+                                 ParentIdField="ParentId"
+                                 TextField="Name"
+                                 IconField="Icon"
+                                 SelectionMode="TreeSelectionMode.Multiple"
+                                 CheckBoxMode="CheckBoxMode.Multiple"
+                                 AllowCheckChildren="true"
+                                 AllowCheckParents="true"
+                                 SelectedItems="@_selected"
+                                 SelectedItemsChanged="@HandleSelectionChanged"
+                                 ExpandedItems="@_expanded"
+                                 ExpandedItemsChanged="@HandleExpansionChanged"
+                                 CheckedItems="@_checked"
+                                 CheckedItemsChanged="@HandleCheckChanged"
+                                 OnItemClick="@HandleItemClick"
+                                 OnItemContextMenu="@HandleContextMenu" />
+            </div>
+
+            <div style="flex:1 1 320px; min-width:280px; display:flex; flex-direction:column; gap:.75rem;">
+                <div>
+                    <h4 style="margin:0 0 .25rem 0; font-size:.85rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">State</h4>
+                    <ul style="list-style:none; padding:0; margin:0; font-size:.9rem;">
+                        <li>Selected: <strong>[@string.Join(", ", _selected)]</strong></li>
+                        <li>Expanded: <strong>[@string.Join(", ", _expanded)]</strong></li>
+                        <li>Checked: <strong>[@string.Join(", ", _checked)]</strong></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 style="margin:0 0 .25rem 0; font-size:.85rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Event log</h4>
+                    <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+                    <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.8rem; max-height:320px; overflow:auto; margin:.5rem 0 0 0;">@(_log.Count == 0 ? "(no events yet — interact with the tree)" : string.Join("\n", _log))</pre>
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "TreeView", "Events"];
+
+    private record FileNode(string Id, string? ParentId, string Name, string? Icon);
+
+    private readonly List<FileNode> _data = new()
+    {
+        new("1", null, "Documents", "folder"),
+        new("2", "1", "Reports", "folder"),
+        new("3", "2", "Q1.pdf", "file"),
+        new("4", "2", "Q2.pdf", "file"),
+        new("5", "1", "Images", "folder"),
+        new("6", "5", "logo.png", "file"),
+        new("7", null, "Downloads", "folder"),
+    };
+
+    private IEnumerable<string> _selected = Array.Empty<string>();
+    private IEnumerable<string> _expanded = new[] { "1" };
+    private IEnumerable<string> _checked = Array.Empty<string>();
+    private readonly List<string> _log = new();
+
+    private void HandleSelectionChanged(IEnumerable<string> ids)
+    {
+        _selected = ids.ToArray();
+        Append($"SelectedItemsChanged → [{string.Join(", ", _selected)}]");
+    }
+
+    private void HandleExpansionChanged(IEnumerable<string> ids)
+    {
+        _expanded = ids.ToArray();
+        Append($"ExpandedItemsChanged → [{string.Join(", ", _expanded)}]");
+    }
+
+    private void HandleCheckChanged(IEnumerable<string> ids)
+    {
+        _checked = ids.ToArray();
+        Append($"CheckedItemsChanged → [{string.Join(", ", _checked)}]");
+    }
+
+    private void HandleItemClick(object item)
+    {
+        if (item is FileNode node)
+            Append($"OnItemClick → {node.Name} (id={node.Id})");
+        else
+            Append($"OnItemClick → {item}");
+    }
+
+    private void HandleContextMenu(TreeItemContextMenuEventArgs args)
+    {
+        var name = args.Item is FileNode n ? n.Name : args.ItemId;
+        Append($"OnItemContextMenu → {name} (id={args.ItemId})");
+    }
+
+    private void ClearLog()
+    {
+        _log.Clear();
+    }
+
+    private void Append(string entry)
+    {
+        var stamp = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{stamp}] {entry}");
+        if (_log.Count > 80) _log.RemoveAt(_log.Count - 1);
+    }
+}

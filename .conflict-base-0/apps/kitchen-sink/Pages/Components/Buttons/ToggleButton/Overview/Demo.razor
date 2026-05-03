@@ -1,0 +1,50 @@
+@page "/components/buttons/togglebutton/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ToggleButton / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ToggleButton / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Buttons/ToggleButton/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishToggleButton</code> switches between pressed and unpressed states and mirrors its
+            value through the <code>Selected</code> two-way binding. The component sets
+            <code>aria-pressed</code> automatically so assistive technology announces the state change.
+        </p>
+        <p>
+            Primary parameters: <code>Selected</code> (<code>@("@bind-Selected")</code> supported),
+            <code>SelectedChanged</code>, <code>OnClick</code>, <code>Enabled</code>, <code>Size</code>,
+            and the <code>Icon</code> slot. See sibling demos for
+            <a href="/components/buttons/togglebutton/appearance">appearance</a>,
+            <a href="/components/buttons/togglebutton/events">events</a>, and
+            <a href="/components/buttons/togglebutton/keyboard-navigation">keyboard navigation</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <div class="demo-row">
+                <SunfishToggleButton @bind-Selected="@_bold">Bold</SunfishToggleButton>
+                <SunfishToggleButton @bind-Selected="@_italic">Italic</SunfishToggleButton>
+                <SunfishToggleButton @bind-Selected="@_underline">Underline</SunfishToggleButton>
+            </div>
+            <p style="font-weight: @(_bold ? "bold" : "normal"); font-style: @(_italic ? "italic" : "normal"); text-decoration: @(_underline ? "underline" : "none");">
+                Preview text
+            </p>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Buttons", "ToggleButton", "Overview"];
+
+    private bool _bold;
+    private bool _italic;
+    private bool _underline;
+}

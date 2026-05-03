@@ -1,0 +1,374 @@
+// =================================================================
+// Sunfish Bootstrap Provider — DataSheet
+// Spreadsheet-like editing grid. Bootstrap utilities handle most
+// layout; these rules fill the BEM gaps for hard-coded razor classes.
+// =================================================================
+
+// ── Root ────────────────────────────────────────────────────────────
+.sf-bs-datasheet {
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    overflow: hidden;
+    position: relative;
+
+    &--loading {
+        pointer-events: none;
+        opacity: 0.6;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+        margin-bottom: 0;
+    }
+}
+
+// ── Toolbar ─────────────────────────────────────────────────────────
+.sf-bs-datasheet__toolbar {
+    border-bottom: 1px solid var(--sf-color-border);
+    padding: var(--sf-space-sm) var(--sf-space-md);
+    background: var(--bs-body-bg, #ffffff);
+}
+
+// Hard-coded razor classes (not provider-prefixed; shared across providers)
+.sf-datasheet__add-btn,
+.sf-datasheet__save-btn,
+.sf-datasheet__reset-btn {
+    .sf-bs-datasheet & {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.25rem 0.75rem;
+        border: 1px solid var(--bs-border-color, #dee2e6);
+        border-radius: 0.375rem;
+        background: var(--bs-body-bg, #ffffff);
+        color: var(--bs-body-color, #212529);
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background-color 0.15s, border-color 0.15s;
+
+        &:hover:not(:disabled) {
+            background: var(--bs-tertiary-bg, #f8f9fa);
+            border-color: var(--bs-primary, #0d6efd);
+        }
+
+        &:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    }
+}
+
+.sf-datasheet__save-btn {
+    .sf-bs-datasheet & {
+        background: var(--bs-primary, #0d6efd);
+        color: #ffffff;
+        border-color: var(--bs-primary, #0d6efd);
+
+        &:hover:not(:disabled) {
+            background: var(--bs-primary-hover, #0b5ed7);
+            color: #ffffff;
+        }
+    }
+}
+
+.sf-datasheet__dirty-badge {
+    .sf-bs-datasheet & {
+        font-size: 0.875rem;
+        color: var(--bs-warning-text-emphasis, #664d03);
+        font-weight: 600;
+    }
+}
+
+.sf-datasheet__spinner {
+    .sf-bs-datasheet & {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: sf-datasheet-spin 0.6s linear infinite;
+    }
+}
+
+@keyframes sf-datasheet-spin {
+    to { transform: rotate(360deg); }
+}
+
+// ── Bulk Action Bar ─────────────────────────────────────────────────
+.sf-bs-datasheet__bulk-bar {
+    padding: var(--sf-space-xs) var(--sf-space-md);
+    background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.08);
+    border-bottom: 1px solid var(--sf-color-border);
+
+    button {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--bs-border-color, #dee2e6);
+        border-radius: 0.375rem;
+        background: var(--bs-body-bg, #ffffff);
+        font-size: 0.875rem;
+        cursor: pointer;
+
+        &:hover {
+            background: var(--bs-tertiary-bg, #f8f9fa);
+        }
+    }
+}
+
+// ── Content ─────────────────────────────────────────────────────────
+.sf-datasheet__content {
+    .sf-bs-datasheet & {
+        overflow: auto;
+    }
+}
+
+// ── Header Cells ────────────────────────────────────────────────────
+.sf-bs-datasheet__header-cell {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    user-select: none;
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    border-bottom: 2px solid var(--bs-border-color, #dee2e6);
+
+    &--sortable {
+        cursor: pointer;
+
+        &:hover {
+            background: var(--bs-secondary-bg, #e9ecef);
+        }
+    }
+}
+
+.sf-datasheet__select-header,
+.sf-datasheet__actions-header {
+    .sf-bs-datasheet & {
+        padding: 0.5rem 0.25rem;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        border-bottom: 2px solid var(--bs-border-color, #dee2e6);
+        text-align: center;
+    }
+}
+
+// ── Rows ────────────────────────────────────────────────────────────
+.sf-bs-datasheet__row {
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+    transition: background-color 0.15s;
+
+    &:last-child { border-bottom: none; }
+    &:hover { background: var(--bs-tertiary-bg, #f8f9fa); }
+}
+
+// ── Cells ───────────────────────────────────────────────────────────
+.sf-bs-datasheet__cell {
+    padding: 0.375rem 0.75rem;
+    cursor: default;
+    position: relative;
+    vertical-align: middle;
+    border-right: 1px solid var(--bs-border-color-translucent, rgba(0, 0, 0, 0.1));
+
+    &:last-child { border-right: none; }
+
+    &--readonly {
+        color: var(--bs-secondary-color, #6c757d);
+        background: var(--bs-tertiary-bg, #f8f9fa);
+    }
+}
+
+.sf-datasheet__cell-text {
+    .sf-bs-datasheet & {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.sf-datasheet__select-cell,
+.sf-datasheet__actions-cell {
+    .sf-bs-datasheet & {
+        text-align: center;
+        padding: 0.375rem 0.25rem;
+        vertical-align: middle;
+    }
+}
+
+.sf-datasheet__delete-btn {
+    .sf-bs-datasheet & {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border: none;
+        border-radius: 0.25rem;
+        background: transparent;
+        color: var(--bs-secondary-color, #6c757d);
+        cursor: pointer;
+        font-size: 0.875rem;
+
+        &:hover {
+            color: var(--bs-danger, #dc3545);
+            background: rgba(var(--bs-danger-rgb, 220, 53, 69), 0.1);
+        }
+    }
+}
+
+// ── Editor Inputs ───────────────────────────────────────────────────
+.sf-datasheet__editor-input,
+.sf-datasheet__editor-select {
+    .sf-bs-datasheet & {
+        width: 100%;
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--bs-primary, #0d6efd);
+        border-radius: 0.25rem;
+        font-size: inherit;
+        font-family: inherit;
+        background: var(--bs-body-bg, #ffffff);
+        color: var(--bs-body-color, #212529);
+        outline: none;
+
+        &:focus {
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb, 13, 110, 253), 0.25);
+        }
+    }
+}
+
+// ── Save Footer ─────────────────────────────────────────────────────
+.sf-bs-datasheet__save-footer {
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    background: var(--bs-body-bg, #ffffff);
+    font-size: 0.875rem;
+    min-height: 1.75rem;
+    padding: 0.25rem 0.75rem;
+
+    &--has-changes {
+        color: var(--bs-warning-text-emphasis, #664d03);
+        font-weight: 600;
+    }
+}
+
+// ── Empty State ─────────────────────────────────────────────────────
+.sf-datasheet__empty {
+    .sf-bs-datasheet & {
+        text-align: center;
+        padding: 2rem 1rem;
+        color: var(--bs-secondary-color, #6c757d);
+        font-style: italic;
+    }
+}
+
+// ── Loading Skeleton ────────────────────────────────────────────────
+.sf-datasheet__skeleton {
+    .sf-bs-datasheet & {
+        padding: 1rem;
+    }
+}
+
+.sf-datasheet__skeleton-row {
+    .sf-bs-datasheet & {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+}
+
+.sf-datasheet__skeleton-cell {
+    .sf-bs-datasheet & {
+        flex: 1;
+        height: 1.5rem;
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        border-radius: 0.25rem;
+        animation: sf-bs-datasheet-skeleton-pulse 1.5s ease-in-out infinite;
+    }
+}
+
+@keyframes sf-bs-datasheet-skeleton-pulse {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.4; }
+}
+
+.sf-datasheet__loading-text {
+    .sf-bs-datasheet & {
+        display: block;
+        text-align: center;
+        color: var(--bs-secondary-color, #6c757d);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+}
+
+// ── SR-Only & Aria Live ─────────────────────────────────────────────
+.sf-datasheet__sr-only,
+.sf-datasheet__aria-live {
+    .sf-bs-datasheet & {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+}
+
+// ── Dark Theme ──────────────────────────────────────────────────────
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+    .sf-bs-datasheet__toolbar {
+        background: var(--bs-body-bg, #212529);
+    }
+
+    .sf-bs-datasheet__header-cell {
+        background: var(--bs-tertiary-bg, #2b3035);
+    }
+
+    .sf-bs-datasheet__row:hover {
+        background: rgba(255, 255, 255, 0.04);
+    }
+
+    .sf-bs-datasheet__cell--readonly {
+        background: var(--bs-tertiary-bg, #2b3035);
+        color: var(--bs-secondary-color, #adb5bd);
+    }
+
+    .sf-bs-datasheet__save-footer {
+        background: var(--bs-body-bg, #212529);
+
+        &--has-changes {
+            color: var(--bs-warning, #ffc107);
+        }
+    }
+
+    .sf-bs-datasheet__bulk-bar {
+        background: rgba(var(--bs-primary-rgb, 13, 110, 253), 0.12);
+    }
+
+    .sf-datasheet__dirty-badge {
+        color: var(--bs-warning, #ffc107);
+    }
+
+    .sf-datasheet__select-header,
+    .sf-datasheet__actions-header {
+        background: var(--bs-tertiary-bg, #2b3035);
+    }
+
+    .sf-datasheet__skeleton-cell {
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sf-datasheet__delete-btn:hover {
+        background: rgba(var(--bs-danger-rgb, 220, 53, 69), 0.15);
+    }
+
+    .sf-datasheet__editor-input,
+    .sf-datasheet__editor-select {
+        background: var(--bs-body-bg, #212529);
+        color: var(--bs-body-color, #dee2e6);
+    }
+}

@@ -1,0 +1,57 @@
+@page "/components/data-display/card/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>Card / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Card / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/Card/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishCard</code> is a container for self-contained content. Compose it with the building
+            blocks <code>SunfishCardHeader</code>, <code>SunfishCardBody</code>, <code>SunfishCardFooter</code>,
+            <code>SunfishCardActions</code>, and <code>SunfishCardImage</code>. Use <code>Orientation</code>
+            to stack horizontally, and <code>Width</code> / <code>Height</code> to control size.
+        </p>
+        <p>
+            Sibling demos cover
+            <a href="/components/data-display/card/orientation">orientation</a>,
+            <a href="/components/data-display/card/action-buttons">action buttons</a>, and
+            <a href="/components/data-display/card/separator">separator</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <div class="demo-row" style="gap:1rem;">
+                <SunfishCard Width="320px">
+                    <SunfishCardHeader>Project Alpha</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>A card with header, body, footer, and actions.</p>
+                    </SunfishCardBody>
+                    <SunfishCardFooter>Last updated: April 2026</SunfishCardFooter>
+                    <SunfishCardActions>
+                        <SunfishButton Variant="ButtonVariant.Primary" Size="ButtonSize.Small">Open</SunfishButton>
+                        <SunfishButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Small">Archive</SunfishButton>
+                    </SunfishCardActions>
+                </SunfishCard>
+
+                <SunfishCard Width="240px">
+                    <SunfishCardHeader>Compact</SunfishCardHeader>
+                    <SunfishCardBody>
+                        <p>A simpler card with just header and body.</p>
+                    </SunfishCardBody>
+                </SunfishCard>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "Card", "Overview"];
+}

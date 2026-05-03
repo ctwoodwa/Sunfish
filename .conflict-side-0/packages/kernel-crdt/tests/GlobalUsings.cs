@@ -1,0 +1,13 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading;
+global using System.Threading.Tasks;
+
+global using Xunit;
+
+global using Sunfish.Kernel.Crdt;
+global using Sunfish.Kernel.Crdt.Backends;
+global using Sunfish.Kernel.Crdt.GarbageCollection;
+global using Sunfish.Kernel.Crdt.Sharding;
+global using Sunfish.Kernel.Crdt.SnapshotScheduling;

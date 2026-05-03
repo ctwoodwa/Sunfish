@@ -1,0 +1,70 @@
+@implements IDisposable
+@inject NavigationManager Nav
+
+<nav class="settings-sidebar" aria-label="Settings">
+    @foreach (var group in NavGroups)
+    {
+        <div class="settings-sidebar__group">
+            <h3 class="settings-sidebar__group-title">@group.Title</h3>
+            <ul class="settings-sidebar__list">
+                @foreach (var item in group.Items)
+                {
+                    var isActive = IsActive(item);
+                    <li class="settings-sidebar__item">
+                        <a class="settings-sidebar__link @(isActive ? "settings-sidebar__link--active" : "")"
+                           href="@item.Href"
+                           @onclick="() => NavigateTo(item.Href)"
+                           @onclick:preventDefault>
+                            @if (!string.IsNullOrEmpty(item.Icon))
+                            {
+                                <span class="settings-sidebar__icon">@item.Icon</span>
+                            }
+                            <span class="settings-sidebar__label">@item.Label</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</nav>
+
+@code {
+    [Parameter] public List<SettingsNavGroup> NavGroups { get; set; } = new();
+
+    private string _currentUri = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _currentUri = Nav.Uri;
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _currentUri = e.Location;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsActive(SettingsNavItem item)
+    {
+        var currentPath = new Uri(_currentUri).AbsolutePath.TrimEnd('/');
+        var itemPath = item.Href.TrimEnd('/');
+
+        if (item.MatchPrefix)
+        {
+            return currentPath.StartsWith(itemPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        return string.Equals(currentPath, itemPath, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void NavigateTo(string href)
+    {
+        Nav.NavigateTo(href);
+    }
+
+    public void Dispose()
+    {
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

@@ -1,0 +1,77 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Kitchen Sink",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-kitchen-sink",
+      "program": "${workspaceFolder}/apps/kitchen-sink/bin/Debug/net11.0/Sunfish.KitchenSink.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/apps/kitchen-sink",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Bridge AppHost (Aspire)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-bridge-apphost",
+      "program": "${workspaceFolder}/accelerators/bridge/Sunfish.Bridge.AppHost/bin/Debug/net11.0/Sunfish.Bridge.AppHost.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/accelerators/bridge/Sunfish.Bridge.AppHost",
+      "stopAtEntry": false,
+      "console": "internalConsole",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DOTNET_ENVIRONMENT": "Development",
+        "DOTNET_ASPIRE_CONTAINER_RUNTIME": "docker",
+        "DOTNET_DASHBOARD_OTLP_ENDPOINT_URL": "https://localhost:21101",
+        "DOTNET_RESOURCE_SERVICE_ENDPOINT_URL": "https://localhost:22101"
+      },
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Login to the dashboard at\\s+(https?://\\S+)"
+      }
+    },
+    {
+      "name": "Anchor (MAUI Windows)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build-anchor",
+      "program": "${workspaceFolder}/accelerators/anchor/bin/Debug/net11.0-windows10.0.19041.0/win-x64/Sunfish.Anchor.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}/accelerators/anchor/bin/Debug/net11.0-windows10.0.19041.0/win-x64",
+      "stopAtEntry": false,
+      "console": "externalTerminal"
+    },
+    {
+      "name": "Docs (DocFX serve)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "docfx-restore-tools",
+      "program": "dotnet",
+      "args": [
+        "docfx",
+        "${workspaceFolder}/apps/docs/docfx.json",
+        "--serve"
+      ],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Serving .*on\\s+(https?://\\S+)",
+        "killOnServerStop": true
+      }
+    }
+  ]
+}

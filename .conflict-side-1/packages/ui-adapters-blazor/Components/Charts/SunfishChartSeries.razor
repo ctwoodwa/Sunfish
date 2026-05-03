@@ -1,0 +1,153 @@
+@implements IDisposable
+
+@code {
+    [CascadingParameter] public SunfishChart? ParentChart { get; set; }
+
+    /// <summary>Display name for the series (shown in legend).</summary>
+    [Parameter] public string Name { get; set; } = "Series";
+
+    /// <summary>The data source for this series.</summary>
+    [Parameter] public IEnumerable<object>? Data { get; set; }
+
+    /// <summary>Property name for the value (Y axis) in data items.</summary>
+    [Parameter] public string Field { get; set; } = "";
+
+    /// <summary>Property name for the category (X axis label) in data items.</summary>
+    [Parameter] public string CategoryField { get; set; } = "";
+
+    /// <summary>Property name for X values in scatter/bubble charts.</summary>
+    [Parameter] public string? XField { get; set; }
+
+    /// <summary>Property name for Y values in scatter/bubble charts.</summary>
+    [Parameter] public string? YField { get; set; }
+
+    /// <summary>Property name for bubble size in bubble charts.</summary>
+    [Parameter] public string? SizeField { get; set; }
+
+    /// <summary>Chart type for this series.</summary>
+    [Parameter] public ChartSeriesType Type { get; set; } = ChartSeriesType.Line;
+
+    /// <summary>Custom color for the series.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Whether this series is visible. Supports legend-driven toggle.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>Runtime visibility state set by legend toggle. When non-null, takes precedence over Visible parameter.</summary>
+    internal bool? RuntimeVisible { get; set; }
+
+    /// <summary>Gets the effective visibility (runtime override or parameter value).</summary>
+    internal bool IsVisible => RuntimeVisible ?? Visible;
+
+    /// <summary>Gap between categories (0-1 ratio for bar/column).</summary>
+    [Parameter] public double? Gap { get; set; }
+
+    /// <summary>Spacing between bars in a group (0-1 ratio).</summary>
+    [Parameter] public double? Spacing { get; set; }
+
+    protected override void OnInitialized()
+    {
+        ParentChart?.AddSeries(this);
+    }
+
+    protected void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            ParentChart?.RemoveSeries(this);
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Extracts data points from the Data collection. Handles both model objects (with Field/CategoryField)
+    /// and primitive values (index-based categories).
+    /// </summary>
+    internal IReadOnlyList<ChartDataPoint> GetDataPoints()
+    {
+        var points = new List<ChartDataPoint>();
+        if (Data == null) return points;
+
+        int index = 0;
+        foreach (var item in Data)
+        {
+            var itemType = item.GetType();
+
+            // XY scatter/bubble mode takes precedence when XField+YField are set,
+            // because scatter/bubble series are defined by X/Y coordinates and typically
+            // leave Field unset.
+            if (!string.IsNullOrEmpty(XField) && !string.IsNullOrEmpty(YField))
+            {
+                var xProp = itemType.GetProperty(XField);
+                var yProp = itemType.GetProperty(YField);
+                var sizeProp = !string.IsNullOrEmpty(SizeField) ? itemType.GetProperty(SizeField) : null;
+
+                double xVal = xProp != null ? Convert.ToDouble(xProp.GetValue(item)) : index;
+                double yVal = yProp != null ? Convert.ToDouble(yProp.GetValue(item)) : 0;
+                double sizeVal = sizeProp != null ? Convert.ToDouble(sizeProp.GetValue(item)) : 0;
+
+                points.Add(new ChartDataPoint
+                {
+                    X = xVal,
+                    Y = yVal,
+                    Value = yVal,
+                    BubbleSize = sizeVal,
+                    Category = xVal.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    DataItem = item,
+                    Index = index
+                });
+            }
+            else if (!string.IsNullOrEmpty(Field))
+            {
+                // Standard field-based data binding
+                var valueProp = itemType.GetProperty(Field);
+                var categoryProp = !string.IsNullOrEmpty(CategoryField) ? itemType.GetProperty(CategoryField) : null;
+
+                if (valueProp == null) { index++; continue; }
+
+                var rawValue = valueProp.GetValue(item);
+                var numericValue = Convert.ToDouble(rawValue);
+                var category = categoryProp?.GetValue(item)?.ToString() ?? index.ToString();
+
+                points.Add(new ChartDataPoint
+                {
+                    Category = category,
+                    Value = numericValue,
+                    DataItem = item,
+                    Index = index
+                });
+            }
+            else if (itemType.IsPrimitive || item is decimal)
+            {
+                // Primitive / numeric data with no binding metadata — index-based categories.
+                var numericValue = Convert.ToDouble(item);
+                points.Add(new ChartDataPoint
+                {
+                    Category = index.ToString(),
+                    Value = numericValue,
+                    DataItem = item,
+                    Index = index
+                });
+            }
+            // No binding info and item is not numeric — skip rather than crash.
+
+            index++;
+        }
+
+        return points;
+    }
+
+    /// <summary>
+    /// Legacy method for backward compatibility.
+    /// </summary>
+    internal IReadOnlyList<(string Category, double Value)> GetLegacyDataPoints()
+    {
+        return GetDataPoints().Select(p => (p.Category, p.Value)).ToList();
+    }
+}
+

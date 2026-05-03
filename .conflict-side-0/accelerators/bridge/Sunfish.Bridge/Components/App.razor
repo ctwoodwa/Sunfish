@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <ResourcePreloader />
+    <link id="marilo-provider-fluentui" rel="stylesheet" href="_content/Sunfish.Providers.FluentUI/css/marilo-fluentui.css" />
+    <link id="marilo-provider-bootstrap" rel="stylesheet" href="_content/Sunfish.Providers.Bootstrap/css/marilo-bootstrap.css" disabled />
+    <link id="marilo-provider-material" rel="stylesheet" href="_content/Sunfish.Providers.Material/css/marilo-material.css" disabled />
+    <script>
+        try {
+            var p = localStorage.getItem('marilo:provider');
+            if (p === 'bootstrap') {
+                document.getElementById('marilo-provider-fluentui').disabled = true;
+                document.getElementById('marilo-provider-bootstrap').disabled = false;
+            } else if (p === 'material') {
+                document.getElementById('marilo-provider-fluentui').disabled = true;
+                document.getElementById('marilo-provider-material').disabled = false;
+            }
+        } catch(e) {}
+    </script>
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["Sunfish.Bridge.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

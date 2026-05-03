@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel</PackageId>
+    <Description>Kernel contract facade for Sunfish — exposes the platform spec §3 kernel primitives (entity store, version store, audit log, permission evaluator, blob store) at the spec-named Layer 2 surface. Ships as type-forwarded wrappers over Sunfish.Foundation primitives. The Schema Registry (§3.4) ships from the sibling Sunfish.Kernel.SchemaRegistry package (gap G2). The Event Bus (§3.6) ships from the sibling Sunfish.Kernel.EventBus package (gap G3).</Description>
+    <PackageTags>sunfish;kernel;contracts;facade</PackageTags>
+    <!-- Stub interfaces are intentionally empty and documented via xmldoc, but the
+         empty-interface analyzer and CS1591 (missing doc on member) are noisy for a
+         pure facade. Foundation suppresses CS1591 the same way pending stable-release
+         doc hardening. -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Exclude the sibling test project from library compilation. -->
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+</Project>

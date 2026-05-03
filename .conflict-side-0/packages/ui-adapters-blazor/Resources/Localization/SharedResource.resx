@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Sunfish.UIAdapters.Blazor SharedResource — source locale (en-US).
+    Adapter-context generic phrases shared by Blazor renderer surfaces — severity
+    badges, action buttons, and empty-state placeholders rendered by Sunfish's Blazor
+    component implementations of the ui-core contracts.
+
+    Conventions per spec §3A + ADR 0034:
+      • Stable dotted keys; never English-text-as-key.
+      • Every <data> entry MUST carry a non-empty <comment> for translator context
+        (enforced by SUNFISH_I18N_001).
+      • SmartFormat ICU-style placeholders ({count:plural:...}) per ADR 0036.
+
+    Pattern A (adapter with DI surface): ui-adapters-blazor exposes
+    RendererServiceCollectionExtensions; this cascade also registers
+    ISunfishLocalizer<> via TryAddSingleton there. AddLocalization() itself is NOT
+    called from this adapter — consumers (apps / accelerators) own that call per the
+    Cluster A sentinel ratification.
+
+    All entries below are Wave-2 scaffold pilots — replaced with real Blazor adapter
+    strings in Plan 6 (end-user content cascade). The [scaffold-pilot — replace in
+    Plan 6] token in every <comment> makes them grep-able for the Plan 6 sweep.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>Info</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge label rendered by Blazor adapter notification components. Short noun; sentence case; pairs with the info icon.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>Warning</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge label rendered by Blazor adapter notification components. Short noun; sentence case; pairs with the warning icon.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>Error</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge label rendered by Blazor adapter notification components. Short noun; sentence case; pairs with the error icon.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>Critical</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Severity badge label rendered by Blazor adapter notification components for system-impacting incidents. Pairs with high-attention visual styling.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>Save</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Submit-button label on Blazor adapter form components. Imperative; sentence case; pairs with action.cancel in dialogs.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Dismiss-button label on Blazor adapter dialog components. Imperative; sentence case; pairs with action.save.</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>Retry</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Retry-button label on Blazor adapter error/empty-state components. Imperative; sentence case.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>Loading…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Skeleton / spinner placeholder rendered by Blazor adapter while async children resolve. Trailing U+2026 ellipsis preserved across translations.</comment>
+  </data>
+</root>

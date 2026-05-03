@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- Sunfish.Blocks.Tasks SharedResource — Arabic (Saudi Arabia) satellite. RTL locale. Wave 2 Cluster C skeleton. -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+
+  <data name="severity.info" xml:space="preserve">
+    <value>معلومات</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: severity label — informational task status.</comment>
+  </data>
+  <data name="severity.warning" xml:space="preserve">
+    <value>تحذير</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: severity label — overdue / blocked task warning.</comment>
+  </data>
+  <data name="severity.error" xml:space="preserve">
+    <value>خطأ</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: severity label — blocking task failure.</comment>
+  </data>
+  <data name="severity.critical" xml:space="preserve">
+    <value>حرج</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: severity label — critical task incident.</comment>
+  </data>
+  <data name="action.save" xml:space="preserve">
+    <value>حفظ المهمة</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: imperative — save task.</comment>
+  </data>
+  <data name="action.cancel" xml:space="preserve">
+    <value>إلغاء</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: imperative — cancel/dismiss dialog (not domain "cancel task" action).</comment>
+  </data>
+  <data name="action.retry" xml:space="preserve">
+    <value>إعادة المحاولة</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: imperative — retry after failure.</comment>
+  </data>
+  <data name="state.loading" xml:space="preserve">
+    <value>جارٍ التحميل…</value>
+    <comment>[scaffold-pilot — replace in Plan 6] Translator: empty-state placeholder while loading. Preserve ellipsis (U+2026).</comment>
+  </data>
+</root>

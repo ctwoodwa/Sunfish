@@ -1,0 +1,42 @@
+@inherits SunfishComponentBase
+
+<div class="@CombineClasses(BuildFieldClass())" style="@CombineStyles()" @attributes="AdditionalAttributes">
+    @if (!string.IsNullOrEmpty(Text))
+    {
+        <label class="@CssProvider.LabelClass()" for="@Id">@Text</label>
+    }
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// The label text displayed for this field. When set, renders a label element.
+    /// </summary>
+    [Parameter] public string? Text { get; set; }
+
+    /// <summary>
+    /// The id for the label's for attribute and child input association.
+    /// </summary>
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [CascadingParameter] private EditContext? EditContext { get; set; }
+
+    private string BuildFieldClass()
+    {
+        var baseClass = CssProvider.FieldClass();
+        var hasValidationErrors = false;
+
+        if (EditContext != null && !string.IsNullOrEmpty(Id))
+        {
+            var fieldIdentifier = EditContext.Field(Id);
+            hasValidationErrors = EditContext.GetValidationMessages(fieldIdentifier).Any();
+        }
+
+        return new CssClassBuilder()
+            .AddClass(baseClass)
+            .AddClass("mar-field--invalid", hasValidationErrors)
+            .Build();
+    }
+}

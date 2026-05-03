@@ -1,0 +1,195 @@
+@namespace Sunfish.UIAdapters.Blazor.Components.Utility
+@inherits SunfishComponentBase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Base
+
+<CascadingValue Value="@Theme">
+    <CascadingValue Value="@_effectiveDir" Name="GlobalDir">
+        <CascadingValue Value="@DefaultLocalization" Name="DefaultLocalization">
+            <CascadingValue Value="@LogLevel" Name="SunfishLogLevel">
+                <div class="@CombineClasses("sf-theme-provider")"
+                     style="@GenerateRootStyles()"
+                     dir="@DirAttributeValue"
+                     data-sf-theme="@(ThemeService.IsDarkMode ? "dark" : "light")"
+                     @attributes="AdditionalAttributes">
+                    @ChildContent
+                    @if (GlobalPopupContainer)
+                    {
+                        <div id="sf-popup-root" class="sf-popup-root" data-sf-popup-host="true"></div>
+                    }
+                </div>
+            </CascadingValue>
+        </CascadingValue>
+    </CascadingValue>
+</CascadingValue>
+
+@code {
+    /// <summary>
+    /// Theme tokens (colors, typography, shape) cascaded to all descendants and rendered
+    /// as CSS custom properties on the root wrapper.
+    /// </summary>
+    [Parameter] public SunfishTheme Theme { get; set; } = new();
+
+    /// <summary>
+    /// Application content wrapped by the provider. Typically the whole
+    /// <c>&lt;App&gt;</c> / <c>MainLayout</c> tree.
+    /// </summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Fires when the active theme changes — e.g. via <c>ISunfishThemeService</c> dark-mode toggle.
+    /// </summary>
+    [Parameter] public EventCallback<ThemeChangedEventArgs> ThemeChanged { get; set; }
+
+    /// <summary>
+    /// Layout direction for all descendant Sunfish components. Defaults to
+    /// <see cref="TextDirection.Ltr"/>. Rendered as the root element's <c>dir</c> attribute
+    /// and cascaded as the <c>GlobalDir</c> value for RTL-aware components.
+    /// </summary>
+    [Parameter] public TextDirection Dir { get; set; } = TextDirection.Ltr;
+
+    /// <summary>
+    /// Default localization strings (key → localized value) cascaded to descendants.
+    /// Any Sunfish component with user-visible strings reads this dictionary via a
+    /// <c>[CascadingParameter(Name = "DefaultLocalization")]</c> fallback before
+    /// resolving through <c>ISunfishStringLocalizer</c>.
+    /// </summary>
+    [Parameter] public IDictionary<string, string>? DefaultLocalization { get; set; }
+
+    /// <summary>
+    /// When <c>true</c> (default) the provider renders a single top-level
+    /// <c>&lt;div id="sf-popup-root"&gt;</c> container that popups, dialogs, and tooltips
+    /// portal their content into. Escapes any <c>overflow:hidden</c> or scroll-trap ancestor.
+    /// </summary>
+    [Parameter] public bool GlobalPopupContainer { get; set; } = true;
+
+    /// <summary>
+    /// Structured diagnostic verbosity cascaded to descendants. Defaults to
+    /// <see cref="SunfishLogLevel.None"/>. Components opt in via
+    /// <c>[CascadingParameter(Name = "SunfishLogLevel")]</c>.
+    /// </summary>
+    [Parameter] public SunfishLogLevel LogLevel { get; set; } = SunfishLogLevel.None;
+
+    /// <summary>
+    /// Additional CSS custom properties (variable → value) applied as inline styles on
+    /// the root wrapper. Merged after the built-in theme variables so consumers can
+    /// override any token. Keys may be written with or without the leading <c>--</c>.
+    /// </summary>
+    [Parameter] public IDictionary<string, string>? CssVariables { get; set; }
+
+    private TextDirection _effectiveDir;
+
+    /// <summary>
+    /// Resolves the <c>dir</c> attribute value. <c>Auto</c> falls back to theme service
+    /// RTL detection so existing <see cref="ISunfishThemeService.IsRtl"/>-driven flows
+    /// keep working; explicit Ltr/Rtl always wins.
+    /// </summary>
+    private string? DirAttributeValue => _effectiveDir switch
+    {
+        TextDirection.Rtl => "rtl",
+        TextDirection.Ltr => "ltr",
+        TextDirection.Auto => "auto",
+        _ => null
+    };
+
+    protected override void OnInitialized()
+    {
+        ThemeService.ThemeChanged += OnThemeServiceChanged;
+        RecalculateDir();
+    }
+
+    protected override void OnParametersSet()
+    {
+        RecalculateDir();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await ThemeService.InitializeAsync();
+        }
+    }
+
+    private void RecalculateDir()
+    {
+        // Explicit parameter wins. If caller leaves it at Ltr (the default) but the
+        // theme service already reports RTL (legacy Theme.IsRtl flow used by MainLayout),
+        // prefer RTL so we don't regress existing behaviour.
+        _effectiveDir = Dir switch
+        {
+            TextDirection.Rtl => TextDirection.Rtl,
+            TextDirection.Auto => TextDirection.Auto,
+            TextDirection.Ltr when Theme.IsRtl || ThemeService.IsRtl => TextDirection.Rtl,
+            _ => TextDirection.Ltr
+        };
+    }
+
+    private async void OnThemeServiceChanged(object? sender, ThemeChangedEventArgs e)
+    {
+        try
+        {
+            Theme = e.NewTheme;
+            RecalculateDir();
+            await ThemeChanged.InvokeAsync(e);
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or TaskCanceledException)
+        {
+            // Component disposed during async operation — safe to ignore
+        }
+    }
+
+    private string GenerateRootStyles()
+    {
+        var colors = ThemeService.IsDarkMode && Theme.Colors.Dark is not null
+            ? Theme.Colors.Dark
+            : Theme.Colors;
+
+        var builder = new StyleBuilder()
+            // Color tokens
+            .AddStyle("--sf-color-primary", colors.Primary)
+            .AddStyle("--sf-color-secondary", colors.Secondary)
+            .AddStyle("--sf-color-danger", colors.Danger)
+            .AddStyle("--sf-color-warning", colors.Warning)
+            .AddStyle("--sf-color-info", colors.Info)
+            .AddStyle("--sf-color-success", colors.Success)
+            .AddStyle("--sf-color-bg", colors.Background)
+            .AddStyle("--sf-color-surface", colors.Surface)
+            .AddStyle("--sf-color-text", colors.OnBackground)
+            // Typography tokens
+            .AddStyle("--sf-font-family", Theme.Typography.FontFamily)
+            .AddStyle("--sf-font-size-base", Theme.Typography.FontSizeBase)
+            // Shape tokens
+            .AddStyle("--sf-radius-md", Theme.Shape.BorderRadius)
+            .AddStyle("--sf-radius-lg", Theme.Shape.BorderRadiusLarge)
+            .AddStyle("--sf-shadow-sm", Theme.Shape.Elevation1)
+            .AddStyle("--sf-shadow-md", Theme.Shape.Elevation2)
+            .AddStyle("--sf-shadow-lg", Theme.Shape.Elevation3);
+
+        // Consumer-supplied CSS variables override theme defaults.
+        if (CssVariables is not null)
+        {
+            foreach (var kv in CssVariables)
+            {
+                if (string.IsNullOrWhiteSpace(kv.Key)) continue;
+                var name = kv.Key.StartsWith("--", StringComparison.Ordinal) ? kv.Key : "--" + kv.Key;
+                builder.AddStyle(name, kv.Value);
+            }
+        }
+
+        // Append user-supplied Style parameter last so it wins.
+        builder.AddStyle(Style);
+
+        return builder.Build();
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            ThemeService.ThemeChanged -= OnThemeServiceChanged;
+        }
+        base.Dispose(disposing);
+    }
+}

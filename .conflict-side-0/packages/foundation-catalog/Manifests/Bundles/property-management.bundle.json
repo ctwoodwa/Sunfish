@@ -1,0 +1,122 @@
+{
+  "key": "sunfish.bundles.property-management",
+  "name": "Property Management",
+  "version": "0.1.0",
+  "description": "Reference Sunfish bundle for residential, mixed-use, and small-to-midmarket property management operators. Composes existing Sunfish blocks (leases, rent collection, maintenance, inspections, scheduling, tasks, workflow, accounting, tax reporting) with P2 generic modules (contacts, CRM, communications, documents, invoicing, billing, diligence) and optional composition with reservations/vendors/procurement.",
+  "category": "Operations",
+  "status": "Draft",
+  "maturity": "Scaffold",
+  "requiredModules": [
+    "sunfish.blocks.workflow",
+    "sunfish.blocks.forms",
+    "sunfish.blocks.tasks",
+    "sunfish.blocks.scheduling",
+    "sunfish.blocks.leases",
+    "sunfish.blocks.maintenance",
+    "sunfish.blocks.inspections",
+    "sunfish.blocks.rent-collection",
+    "sunfish.blocks.accounting",
+    "sunfish.blocks.tax-reporting"
+  ],
+  "optionalModules": [
+    "sunfish.blocks.assets",
+    "sunfish.blocks.contacts",
+    "sunfish.blocks.crm",
+    "sunfish.blocks.communications",
+    "sunfish.blocks.documents",
+    "sunfish.blocks.diligence",
+    "sunfish.blocks.invoicing",
+    "sunfish.blocks.billing",
+    "sunfish.blocks.reconciliation",
+    "sunfish.blocks.reporting",
+    "sunfish.blocks.searchworkspace",
+    "sunfish.blocks.vendors",
+    "sunfish.blocks.procurement",
+    "sunfish.blocks.reservations"
+  ],
+  "featureDefaults": {
+    "leases.renewals.autoReminders": "true",
+    "rent-collection.lateFees.enabled": "true",
+    "maintenance.vendorQuotes.enabled": "true",
+    "inspections.photos.required": "true",
+    "reservations.shortTerm.channelSync": "false"
+  },
+  "editionMappings": {
+    "lite": [
+      "sunfish.blocks.leases",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.tasks"
+    ],
+    "standard": [
+      "sunfish.blocks.leases",
+      "sunfish.blocks.rent-collection",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting"
+    ],
+    "enterprise": [
+      "sunfish.blocks.leases",
+      "sunfish.blocks.rent-collection",
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.accounting",
+      "sunfish.blocks.tax-reporting",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.diligence",
+      "sunfish.blocks.reconciliation",
+      "sunfish.blocks.vendors",
+      "sunfish.blocks.procurement",
+      "sunfish.blocks.reservations"
+    ]
+  },
+  "deploymentModesSupported": ["Lite", "SelfHosted", "HostedSaaS"],
+  "providerRequirements": [
+    {
+      "category": "Payments",
+      "required": false,
+      "purpose": "Rent collection, security deposit handling, and fee processing."
+    },
+    {
+      "category": "BankingFeed",
+      "required": false,
+      "purpose": "Bank transaction import for rent reconciliation and trust accounting."
+    },
+    {
+      "category": "ChannelManager",
+      "required": false,
+      "purpose": "Short-term rental channel sync when the reservations module is enabled."
+    },
+    {
+      "category": "Messaging",
+      "required": false,
+      "purpose": "Resident communications (rent reminders, maintenance updates, renewal outreach)."
+    }
+  ],
+  "integrationProfiles": [
+    "payment-gateway-default",
+    "bank-feed-default",
+    "channel-manager-default",
+    "messaging-default"
+  ],
+  "seedWorkspaces": [
+    "residential-multi-family",
+    "small-portfolio",
+    "short-term-rentals"
+  ],
+  "personas": [
+    "property-manager",
+    "leasing-agent",
+    "maintenance-tech",
+    "inspector",
+    "accounting-clerk",
+    "portfolio-owner"
+  ],
+  "dataOwnership": "Tenant-owned. Exportable to JSON/CSV in all deployment modes; full data portability is a requirement for lite and self-hosted modes.",
+  "complianceNotes": "Fair-housing notices, security-deposit jurisdictional rules, and rent-control regimes vary by locale and are expressed as bundle configuration rather than as core bundle behavior."
+}

@@ -1,0 +1,105 @@
+@namespace Sunfish.Compat.Infragistics
+@typeparam TItem
+@typeparam TValue
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.UIAdapters.Blazor.Components.Forms.Inputs
+@inject ILogger<IgbCombo<TItem, TValue>> Logger
+
+@*
+    Ignite-UI-shaped combobox wrapper.
+    Maps cleanly because IgbCombo uses Data + DisplayKey/ValueKey, same shape as Sunfish's
+    SunfishComboBox (Data + TextField + ValueField).
+*@
+<SunfishComboBox TItem="TItem"
+                 TValue="TValue"
+                 Data="Data"
+                 TextField="DisplayKey"
+                 ValueField="ValueKey"
+                 Value="_singleValue"
+                 ValueChanged="OnSunfishValueChanged"
+                 Placeholder="Placeholder"
+                 Enabled="!Disabled"
+                 @attributes="AdditionalAttributes" />
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Data { get; set; }
+
+    /// <summary>
+    /// Ignite UI's Value is <c>object</c> (scalar in single-select mode, array in multi-select).
+    /// Shim currently forwards scalar through to Sunfish's ComboBox; multi-select coverage is
+    /// tracked as a future policy-gated gap. Consumers using array values in multi-select mode
+    /// should migrate to SunfishMultiSelect directly.
+    /// </summary>
+    [Parameter] public object? Value { get; set; }
+
+    /// <summary>Two-way binding companion for <see cref="Value"/>. Scalar single-select shape.</summary>
+    [Parameter] public EventCallback<TValue?> ValueChanged { get; set; }
+
+    /// <summary>Field name to use as the visible text (maps to Sunfish <c>TextField</c>).</summary>
+    [Parameter] public string? DisplayKey { get; set; }
+
+    /// <summary>Field name to use as the underlying value (maps to Sunfish <c>ValueField</c>).</summary>
+    [Parameter] public string? ValueKey { get; set; }
+
+    /// <summary>Optional group-by field. Cosmetic-dropped with a warning in Phase 0.</summary>
+    [Parameter] public string? GroupKey { get; set; }
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public string? Placeholder { get; set; }
+    [Parameter] public bool SingleSelect { get; set; } = true;
+    [Parameter] public bool Outlined { get; set; }
+    [Parameter] public string? PlaceholderSearch { get; set; }
+    [Parameter] public bool Open { get; set; }
+    [Parameter] public bool Autofocus { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Required { get; set; }
+    [Parameter] public bool Invalid { get; set; }
+    [Parameter] public string? Name { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private TValue? _singleValue;
+
+    protected override void OnParametersSet()
+    {
+        if (Value is TValue tv) _singleValue = tv;
+        else if (Value is null) _singleValue = default;
+
+        if (!SingleSelect)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbCombo.SingleSelect=false (multi-select) is not shimmed. " +
+                "Migrate to SunfishMultiSelect. See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (GroupKey is not null)
+        {
+            Logger.LogWarning(
+                "compat-infragistics: IgbCombo.GroupKey is not shimmed (cosmetic-dropped). " +
+                "See docs/compat-infragistics-mapping.md.");
+        }
+
+        if (Open || Autofocus || Required || Invalid || Name is not null)
+        {
+            AdditionalAttributes ??= new Dictionary<string, object>();
+            if (Name is not null && !AdditionalAttributes.ContainsKey("name"))
+                AdditionalAttributes["name"] = Name;
+            if (Required && !AdditionalAttributes.ContainsKey("required"))
+                AdditionalAttributes["required"] = true;
+            if (Invalid && !AdditionalAttributes.ContainsKey("aria-invalid"))
+                AdditionalAttributes["aria-invalid"] = true;
+            if (Autofocus && !AdditionalAttributes.ContainsKey("autofocus"))
+                AdditionalAttributes["autofocus"] = true;
+        }
+    }
+
+    private async Task OnSunfishValueChanged(TValue? v)
+    {
+        _singleValue = v;
+        Value = v;
+        if (ValueChanged.HasDelegate)
+            await ValueChanged.InvokeAsync(v);
+    }
+}

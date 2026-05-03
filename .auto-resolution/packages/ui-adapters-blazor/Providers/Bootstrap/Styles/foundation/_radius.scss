@@ -1,0 +1,13 @@
+// =================================================================
+// Sunfish Bootstrap Provider — Radius Tokens
+// =================================================================
+// Derived from Bootstrap's $border-radius-* Sass variables.
+// =================================================================
+
+:root {
+  --sf-radius-sm: #{$border-radius-sm};
+  --sf-radius-md: #{$border-radius};
+  --sf-radius-lg: #{$border-radius-lg};
+  --sf-radius-xl: #{$border-radius-xl};
+  --sf-radius-full: 50rem;
+}

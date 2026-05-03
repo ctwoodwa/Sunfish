@@ -1,0 +1,64 @@
+@page "/components/navigation/pagination/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+
+<PageTitle>Pagination / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Pagination / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Navigation/Pagination/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPagination</code> renders a semantic <code>&lt;nav&gt;</code> with a window
+            of numeric page buttons (collapsing via ellipsis once the page count exceeds
+            <code>ButtonCount</code>), first / previous / next / last arrows, an optional page-size
+            selector, an optional info counter (<code>1-10 of 50 items</code>), and an optional
+            refresh button.
+        </p>
+        <p>
+            The demo below wires the default button mode to a page-size selector and the info
+            string. Change the page or page size to see the rendered slice update in lock-step.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+            <SunfishPagination @bind-Page="@_page"
+                               @bind-PageSize="@_pageSize"
+                               Total="@_total"
+                               PageSizes="@(new List<int> { 10, 25, 50, 100 })"
+                               Info="true"
+                               ButtonCount="7" />
+
+            <section>
+                <h4 style="margin:.5rem 0 .25rem 0; font-size:.85rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Current slice</h4>
+                <ul style="margin:0; padding-inline-start:1.2rem; font-size:.9rem; columns: 3; column-gap: 2rem;">
+                    @foreach (var n in CurrentSlice())
+                    {
+                        <li>Item #@n</li>
+                    }
+                </ul>
+            </section>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Navigation", "Pagination", "Overview"];
+
+    private int _page = 1;
+    private int _pageSize = 25;
+    private int _total = 237;
+
+    private IEnumerable<int> CurrentSlice()
+    {
+        var start = (_page - 1) * _pageSize + 1;
+        var end = Math.Min(_page * _pageSize, _total);
+        for (var i = start; i <= end; i++) yield return i;
+    }
+}

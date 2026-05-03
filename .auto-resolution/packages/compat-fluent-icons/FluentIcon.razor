@@ -1,0 +1,216 @@
+@namespace Sunfish.Compat.FluentIcons
+@using System.Reflection
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using Sunfish.UIAdapters.Blazor.Components.Utility
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<FluentIcon> Logger
+
+<SunfishIcon Name="@_iconName"
+             Icon="@_iconFragment"
+             Size="@_mappedSize"
+             AriaLabel="@AriaLabel"
+             @attributes="AdditionalAttributes" />
+
+@code {
+    // --- Fluent-UI-shaped public parameters ---
+
+    /// <summary>
+    /// Fluent UI System Icons identifier. Accepts (in priority order):
+    /// <list type="bullet">
+    ///   <item><description>A typed Fluent icon instance (e.g. <c>new Size20.Regular.Home()</c>) — duck-typed via a <c>Name</c> property, or otherwise falls back to <c>ToString()</c>.</description></item>
+    ///   <item><description>A <c>string</c> (kebab-case icon name) — e.g. <c>"home"</c>.</description></item>
+    ///   <item><description>A <see cref="RenderFragment"/> — rendered verbatim as the icon body.</description></item>
+    ///   <item><description>Any other <see cref="object"/> — routed through <see cref="CompatIconAdapter.ToRenderFragment(object?)"/>.</description></item>
+    /// </list>
+    /// Matches the Fluent UI Blazor wrapper's <c>Value</c> parameter shape
+    /// (e.g. <c>&lt;FluentIcon Value="@(new Size20.Regular.Home())" /&gt;</c>).
+    /// </summary>
+    [Parameter] public object? Value { get; set; }
+
+    /// <summary>
+    /// Optional explicit size override. When <c>null</c>, the compat wrapper attempts to
+    /// extract the size from the <see cref="Value"/> type's declaring namespace
+    /// (e.g. <c>Size20</c> in <c>Sunfish.Compat.FluentIcons.Size20</c> → <see cref="FoundationEnums.IconSize.Medium"/>).
+    /// Fluent's pixel-accurate sizes (10/12/16/20/24/28/32/48) are bucketed into
+    /// Sunfish's four-step <see cref="FoundationEnums.IconSize"/> enum — see
+    /// <c>docs/compat-fluent-icons-mapping.md</c> for the mapping table.
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the underlying element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Fluent UI <c>Slot</c> parameter — used when the icon is placed in a named slot of a
+    /// parent component (e.g. <c>&lt;FluentButton IconStart="..."&gt;</c>). LogAndFallback —
+    /// Sunfish does not model slot-named icons at this layer; forward via
+    /// <see cref="AdditionalAttributes"/> if the slot target reads it.
+    /// </summary>
+    [Parameter] public string? Slot { get; set; }
+
+    /// <summary>
+    /// Fluent UI <c>Title</c> parameter — native tooltip. LogAndFallback — use standard
+    /// HTML <c>title</c> attribute via <see cref="AdditionalAttributes"/> for equivalent
+    /// behavior.
+    /// </summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>
+    /// Fluent UI <c>Color</c> parameter (a palette token such as <c>Accent</c>,
+    /// <c>Neutral</c>, <c>Error</c>, <c>Success</c>). Throws — Sunfish maps color via
+    /// <c>IconThemeColor</c> on the underlying <c>SunfishIcon</c>; the compat package
+    /// does not auto-translate Fluent palette tokens in Phase 2A.
+    /// </summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>
+    /// Fluent UI <c>CustomColor</c> parameter (an arbitrary CSS color). Throws — pass a
+    /// <c>style</c> attribute via <see cref="AdditionalAttributes"/> instead.
+    /// </summary>
+    [Parameter] public string? CustomColor { get; set; }
+
+    /// <summary>
+    /// Fluent UI <c>Width</c> parameter (pixel-precise sizing as a string such as
+    /// <c>"24px"</c>). Throws — Sunfish <c>IconSize</c> is enum-only in Phase 2A.
+    /// Style via CSS on the host element for pixel-precise sizing.
+    /// </summary>
+    [Parameter] public string? Width { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Mapped Sunfish values ---
+    private string? _iconName;
+    private RenderFragment? _iconFragment;
+    private FoundationEnums.IconSize _mappedSize = FoundationEnums.IconSize.Medium;
+
+    protected override void OnParametersSet()
+    {
+        // Value normalization — duck-typed resolution per intake §5 Decision 2 Option A.
+        switch (Value)
+        {
+            case null:
+                _iconName = null;
+                _iconFragment = ChildContent; // fall through to child content if caller provided one
+                break;
+            case string s:
+                _iconName = s;
+                _iconFragment = null;
+                break;
+            case RenderFragment rf:
+                _iconName = null;
+                _iconFragment = rf;
+                break;
+            default:
+                _iconName = ExtractIconName(Value);
+                if (_iconName is null)
+                {
+                    _iconFragment = CompatIconAdapter.ToRenderFragment(Value);
+                }
+                else
+                {
+                    _iconFragment = null;
+                }
+                break;
+        }
+
+        // Size resolution: explicit Size wins; else extract from Value's type namespace.
+        _mappedSize = Size ?? ExtractSizeFromValueType(Value) ?? FoundationEnums.IconSize.Medium;
+
+        // Throws — parameters that change semantics if silently dropped.
+        if (!string.IsNullOrEmpty(Color))
+        {
+            throw UnsupportedParam.Throw(
+                nameof(Color), Color,
+                "Fluent UI Color palette tokens are not auto-translated. Pass IconThemeColor via a Sunfish-native path, or style via CSS. See docs/compat-fluent-icons-mapping.md.");
+        }
+        if (!string.IsNullOrEmpty(CustomColor))
+        {
+            throw UnsupportedParam.Throw(
+                nameof(CustomColor), CustomColor,
+                "Fluent UI CustomColor (CSS color string) is not supported. Use a `style` attribute instead. See docs/compat-fluent-icons-mapping.md.");
+        }
+        if (!string.IsNullOrEmpty(Width))
+        {
+            throw UnsupportedParam.Throw(
+                nameof(Width), Width,
+                "Fluent UI Width (pixel-precise) is not supported; use Sunfish IconSize enum via the Size parameter. See docs/compat-fluent-icons-mapping.md.");
+        }
+
+        // LogAndFallback for cosmetic-only Fluent parameters.
+        if (!string.IsNullOrEmpty(Slot)) LogDrop(nameof(Slot), Slot, "Sunfish does not model slot-named icons at this layer.");
+        if (!string.IsNullOrEmpty(Title)) LogDrop(nameof(Title), Title, "Use the HTML `title` attribute via AdditionalAttributes for equivalent behavior.");
+    }
+
+    /// <summary>
+    /// Duck-typed icon-name extraction. Looks for a public <c>Name</c> property on the
+    /// Value's type; falls back to <see cref="object.ToString"/>. Returns <c>null</c>
+    /// when neither yields a usable string (caller then routes through CompatIconAdapter).
+    /// </summary>
+    private static string? ExtractIconName(object value)
+    {
+        var nameProp = value.GetType().GetProperty(
+            "Name",
+            BindingFlags.Public | BindingFlags.Instance);
+        if (nameProp is not null && nameProp.PropertyType == typeof(string))
+        {
+            var nameValue = nameProp.GetValue(value) as string;
+            if (!string.IsNullOrEmpty(nameValue))
+            {
+                return nameValue;
+            }
+        }
+
+        var asString = value.ToString();
+        // Reject the default object.ToString() (type-name) — those aren't icon names.
+        if (!string.IsNullOrEmpty(asString) && asString != value.GetType().FullName)
+        {
+            return asString;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Best-effort Size extraction from a Fluent-shaped typed icon. Reads the Value
+    /// type's declaring-namespace tail (e.g. <c>...FluentIcons.Size20</c> →
+    /// <see cref="FoundationEnums.IconSize.Medium"/>). Returns <c>null</c> when no
+    /// bucket can be inferred.
+    /// </summary>
+    private static FoundationEnums.IconSize? ExtractSizeFromValueType(object? value)
+    {
+        if (value is null) return null;
+        var ns = value.GetType().Namespace;
+        if (string.IsNullOrEmpty(ns)) return null;
+
+        // Walk the namespace looking for a "Size<N>" segment — Fluent's convention.
+        foreach (var segment in ns.Split('.'))
+        {
+            if (segment.StartsWith("Size", StringComparison.Ordinal)
+                && int.TryParse(segment.AsSpan(4), out var px))
+            {
+                return MapFluentSizeToSunfish(px);
+            }
+        }
+        return null;
+    }
+
+    internal static FoundationEnums.IconSize MapFluentSizeToSunfish(int px) => px switch
+    {
+        <= 12 => FoundationEnums.IconSize.Small,
+        <= 20 => FoundationEnums.IconSize.Medium,
+        <= 28 => FoundationEnums.IconSize.Large,
+        _ => FoundationEnums.IconSize.ExtraLarge
+    };
+
+    private void LogDrop(string paramName, string? value, string reason)
+    {
+        Logger.LogWarning(
+            "compat-fluent-icons: Parameter '{Param}={Value}' on FluentIcon is not implemented in Phase 2A. {Reason} See docs/compat-fluent-icons-mapping.md.",
+            paramName, value, reason);
+    }
+}

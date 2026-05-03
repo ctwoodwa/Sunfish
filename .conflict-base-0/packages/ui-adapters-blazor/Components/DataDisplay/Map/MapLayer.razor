@@ -1,0 +1,10 @@
+@using Sunfish.Foundation.Enums
+@inherits SunfishComponentBase
+@implements IMapLayerSettingsHost
+
+@* MapLayer is a non-visual registration component — it renders no markup of its own,
+   but accepts child settings components via CascadingValue. *@
+
+<CascadingValue Value="(IMapLayerSettingsHost)this" IsFixed="true">
+    @ChildContent
+</CascadingValue>

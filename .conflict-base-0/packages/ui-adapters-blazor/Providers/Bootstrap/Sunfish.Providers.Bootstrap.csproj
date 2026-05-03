@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Providers.Bootstrap</PackageId>
+    <RootNamespace>Sunfish.Providers.Bootstrap</RootNamespace>
+    <AssemblyName>Sunfish.Providers.Bootstrap</AssemblyName>
+    <Description>Bootstrap 5 design-system provider for Sunfish.</Description>
+    <PackageTags>blazor;sunfish;bootstrap;ui-provider;razor-class-library</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\..\..\ui-core\Sunfish.UICore.csproj" />
+  </ItemGroup>
+  <!-- SCSS files are authored but not compiled by MSBuild; CSS is pre-compiled via npm -->
+  <ItemGroup>
+    <None Remove="Styles\**\*.scss" />
+    <Content Include="Styles\**\*.scss" Pack="false" />
+  </ItemGroup>
+</Project>

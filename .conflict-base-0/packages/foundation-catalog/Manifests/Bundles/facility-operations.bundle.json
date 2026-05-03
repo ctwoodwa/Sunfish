@@ -1,0 +1,117 @@
+{
+  "key": "sunfish.bundles.facility-operations",
+  "name": "Facility Operations",
+  "version": "0.1.0",
+  "description": "Reference Sunfish bundle for facility operators: campuses, office buildings, labs, industrial plants, mixed-use venues. Composes maintenance, inspections, and scheduling with P2 generic modules (contacts, communications, documents, vendors, procurement, reservations for bookable spaces, reporting). Optional finance composition for cost accounting. Complements the property-management and asset-management bundles without duplicating their scope.",
+  "category": "Operations",
+  "status": "Draft",
+  "maturity": "Scaffold",
+  "requiredModules": [
+    "sunfish.blocks.workflow",
+    "sunfish.blocks.forms",
+    "sunfish.blocks.tasks",
+    "sunfish.blocks.scheduling",
+    "sunfish.blocks.maintenance",
+    "sunfish.blocks.inspections",
+    "sunfish.blocks.assets"
+  ],
+  "optionalModules": [
+    "sunfish.blocks.contacts",
+    "sunfish.blocks.communications",
+    "sunfish.blocks.documents",
+    "sunfish.blocks.diligence",
+    "sunfish.blocks.reporting",
+    "sunfish.blocks.searchworkspace",
+    "sunfish.blocks.vendors",
+    "sunfish.blocks.procurement",
+    "sunfish.blocks.reservations",
+    "sunfish.blocks.invoicing",
+    "sunfish.blocks.billing",
+    "sunfish.blocks.accounting",
+    "sunfish.blocks.reconciliation"
+  ],
+  "featureDefaults": {
+    "maintenance.workOrderIntake.multiChannel": "true",
+    "maintenance.slaTracking.enabled": "true",
+    "maintenance.vendorQuotes.enabled": "true",
+    "maintenance.photos.required": "true",
+    "inspections.photos.required": "true",
+    "inspections.recurring.enabled": "true",
+    "scheduling.resourceBooking.enabled": "true",
+    "reservations.conflictDetection.enabled": "true",
+    "vendors.performanceScoring.enabled": "false"
+  },
+  "editionMappings": {
+    "lite": [
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.assets"
+    ],
+    "standard": [
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.assets",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.reservations"
+    ],
+    "enterprise": [
+      "sunfish.blocks.maintenance",
+      "sunfish.blocks.tasks",
+      "sunfish.blocks.inspections",
+      "sunfish.blocks.scheduling",
+      "sunfish.blocks.assets",
+      "sunfish.blocks.documents",
+      "sunfish.blocks.communications",
+      "sunfish.blocks.reporting",
+      "sunfish.blocks.reservations",
+      "sunfish.blocks.vendors",
+      "sunfish.blocks.procurement",
+      "sunfish.blocks.diligence",
+      "sunfish.blocks.accounting",
+      "sunfish.blocks.reconciliation"
+    ]
+  },
+  "deploymentModesSupported": ["Lite", "SelfHosted", "HostedSaaS"],
+  "providerRequirements": [
+    {
+      "category": "Messaging",
+      "required": false,
+      "purpose": "Work-order notifications, vendor dispatch, occupant alerts, inspection reminders."
+    },
+    {
+      "category": "Payments",
+      "required": false,
+      "purpose": "Vendor payments for maintenance and procurement."
+    },
+    {
+      "category": "BankingFeed",
+      "required": false,
+      "purpose": "Cost-center reconciliation against facility budget lines."
+    }
+  ],
+  "integrationProfiles": [
+    "messaging-default",
+    "payment-gateway-default",
+    "bank-feed-default"
+  ],
+  "seedWorkspaces": [
+    "campus-operations",
+    "commercial-office",
+    "lab-facility",
+    "industrial-plant"
+  ],
+  "personas": [
+    "facility-manager",
+    "maintenance-tech",
+    "vendor-coordinator",
+    "space-coordinator",
+    "inspector",
+    "occupant-liaison"
+  ],
+  "dataOwnership": "Tenant-owned. Work-order history, inspection records, vendor performance data, and reservation history exportable to JSON/CSV.",
+  "complianceNotes": "Fire, life-safety, accessibility, and industry-specific (lab, food, clinical) inspection regimes vary by jurisdiction and building class. Expressed as bundle configuration rather than core behavior."
+}

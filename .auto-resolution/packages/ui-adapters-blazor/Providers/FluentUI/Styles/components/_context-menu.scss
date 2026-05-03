@@ -1,0 +1,17 @@
+// =============================================================================
+// Component: Context Menu
+// =============================================================================
+
+// Context menu shares styles with the menu component.
+// See _menu.scss for .sf-menu and .sf-menu-item rules.
+
+.sf-context-menu {
+    position: absolute;
+    min-width: 180px;
+    background: var(--sf-color-background);
+    border: 1px solid var(--sf-color-border);
+    border-radius: var(--sf-radius-md);
+    box-shadow: var(--sf-shadow-lg);
+    padding: var(--sf-space-xs) 0;
+    z-index: var(--sf-z-dropdown);
+}

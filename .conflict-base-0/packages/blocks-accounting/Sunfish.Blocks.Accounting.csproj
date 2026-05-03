@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.Accounting</PackageId>
+    <Description>Accounting entities (GL accounts, journal entries, depreciation schedules), in-memory service, and QuickBooks IIF exporter for Sunfish — first pass, export-only (Option B). Defers: ledger UI, Xero export, automatic JE generation, depreciation computation.</Description>
+    <PackageTags>accounting;general-ledger;journal-entries;quickbooks;iif;blocks;domain;sunfish</PackageTags>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.Accounting.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,17 @@
+// =============================================================================
+// Component: Stack
+// =============================================================================
+
+.sf-stack {
+    display: flex;
+    gap: var(--sf-space-md);
+}
+
+.sf-stack--horizontal { flex-direction: row; }
+.sf-stack--vertical { flex-direction: column; }
+.sf-stack--start { align-items: flex-start; }
+.sf-stack--center { align-items: center; }
+.sf-stack--end { align-items: flex-end; }
+.sf-stack--stretch { align-items: stretch; }
+.sf-stack--spacebetween { justify-content: space-between; }
+.sf-stack--spacearound { justify-content: space-around; }

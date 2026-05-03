@@ -1,0 +1,287 @@
+// =============================================================================
+// Component: PivotGrid (container, configurator, configurator-button)
+// =============================================================================
+
+// ── Container ────────────────────────────────────────────────────────────────
+
+.sf-pivotgrid-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    gap: 0;
+}
+
+.sf-pivotgrid-container--with-configurator {
+    .sf-pivotgrid-container__content {
+        flex: 1 1 0;
+        min-width: 0;
+        overflow: auto;
+    }
+}
+
+.sf-pivotgrid-container__content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sf-pivotgrid-container__configurator-panel {
+    flex: 0 0 260px;
+    border-left: 1px solid var(--bs-border-color, #dee2e6);
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    overflow-y: auto;
+}
+
+// ── Configurator ─────────────────────────────────────────────────────────────
+
+.sf-pivotgrid-configurator {
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+}
+
+.sf-pivotgrid-configurator__section {
+    margin-bottom: 0.75rem;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.sf-pivotgrid-configurator__section-title {
+    margin: 0 0 0.25rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color, #6c757d);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sf-pivotgrid-configurator__field-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.sf-pivotgrid-configurator__field-item {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.25rem;
+    margin-bottom: 0.25rem;
+    background: var(--bs-body-bg, #ffffff);
+    color: var(--bs-body-color, #212529);
+    cursor: default;
+}
+
+.sf-pivotgrid-configurator__field-item--row {
+    border-left: 3px solid var(--bs-primary, #0d6efd);
+}
+
+.sf-pivotgrid-configurator__field-item--column {
+    border-left: 3px solid var(--bs-success, #198754);
+}
+
+.sf-pivotgrid-configurator__field-item--measure {
+    border-left: 3px solid var(--bs-warning, #ffc107);
+}
+
+.sf-pivotgrid-configurator__empty-hint {
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    color: var(--bs-secondary-color, #6c757d);
+    font-style: italic;
+}
+
+// ── Configurator Button ──────────────────────────────────────────────────────
+
+.sf-pivotgrid-configurator-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.25rem;
+    background: var(--bs-body-bg, #ffffff);
+    color: var(--bs-body-color, #212529);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+
+    &:hover {
+        background: var(--bs-tertiary-bg, #f8f9fa);
+    }
+}
+
+.sf-pivotgrid-configurator-button--active {
+    background: var(--bs-primary, #0d6efd);
+    color: #ffffff;
+    border-color: var(--bs-primary, #0d6efd);
+
+    &:hover {
+        background: darken(#0d6efd, 10%);
+    }
+}
+
+.sf-pivotgrid-configurator-button__icon {
+    font-size: 14px;
+}
+
+.sf-pivotgrid-configurator-button__text {
+    // Inherits from parent
+}
+
+// ── PivotGrid Table ─────────────────────────────────────────────────────────
+
+.sf-pivotgrid {
+    font-size: 0.8125rem;
+    color: var(--bs-body-color, #212529);
+}
+
+.sf-pivotgrid__table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.sf-pivotgrid__corner {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    padding: 0.5rem;
+    font-weight: 600;
+    text-align: left;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    color: var(--bs-secondary-color, #6c757d);
+
+    span + span::before {
+        content: " / ";
+        color: var(--bs-secondary-color, #6c757d);
+    }
+}
+
+.sf-pivotgrid__col-header {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    padding: 0.5rem;
+    font-weight: 600;
+    text-align: center;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    white-space: nowrap;
+}
+
+.sf-pivotgrid__row-header {
+    background: var(--bs-tertiary-bg, #f8f9fa);
+    padding: 0.5rem;
+    font-weight: 600;
+    text-align: left;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    white-space: nowrap;
+}
+
+.sf-pivotgrid__cell {
+    padding: 0.5rem;
+    text-align: right;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    font-variant-numeric: tabular-nums;
+}
+
+.sf-pivotgrid__scroll {
+    overflow: auto;
+}
+
+.sf-pivotgrid__col-header,
+.sf-pivotgrid__row-header {
+    &:hover {
+        background: var(--bs-tertiary-bg, #f8f9fa);
+        filter: brightness(0.97);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary, #0d6efd);
+        outline-offset: -2px;
+    }
+}
+
+.sf-pivotgrid__cell {
+    &:hover {
+        background: rgba(0, 0, 0, 0.04);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary, #0d6efd);
+        outline-offset: -2px;
+    }
+}
+
+.sf-pivotgrid__empty {
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--bs-secondary-color, #6c757d);
+    font-style: italic;
+}
+
+// ── Dark Mode ──────────────────────────────────────────────────────────────
+
+[data-sf-theme="dark"],
+[data-bs-theme="dark"] {
+    .sf-pivotgrid {
+        color: var(--bs-body-color, #dee2e6);
+    }
+
+    .sf-pivotgrid__table {
+        border-color: var(--bs-border-color, #495057);
+    }
+
+    .sf-pivotgrid__corner,
+    .sf-pivotgrid__col-header,
+    .sf-pivotgrid__row-header {
+        background: var(--bs-tertiary-bg, #2b3035);
+        border-color: var(--bs-border-color, #495057);
+        color: var(--bs-secondary-color, #adb5bd);
+    }
+
+    .sf-pivotgrid__col-header,
+    .sf-pivotgrid__row-header {
+        &:hover {
+            background: var(--bs-tertiary-bg, #2b3035);
+            filter: brightness(1.15);
+        }
+    }
+
+    .sf-pivotgrid__cell {
+        border-color: var(--bs-border-color, #495057);
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+    }
+
+    .sf-pivotgrid__empty {
+        color: var(--bs-secondary-color, #adb5bd);
+    }
+
+    .sf-pivotgrid-container__configurator-panel {
+        border-left-color: var(--bs-border-color, #495057);
+        background: var(--bs-tertiary-bg, #2b3035);
+    }
+
+    .sf-pivotgrid-configurator__section-title {
+        color: var(--bs-secondary-color, #adb5bd);
+    }
+
+    .sf-pivotgrid-configurator__field-item {
+        border-color: var(--bs-border-color, #495057);
+        background: var(--bs-body-bg, #212529);
+        color: var(--bs-body-color, #dee2e6);
+    }
+
+    .sf-pivotgrid-configurator__empty-hint {
+        color: var(--bs-secondary-color, #adb5bd);
+    }
+
+    .sf-pivotgrid-configurator-button {
+        border-color: var(--bs-border-color, #495057);
+        background: var(--bs-body-bg, #212529);
+        color: var(--bs-body-color, #dee2e6);
+
+        &:hover {
+            background: var(--bs-tertiary-bg, #2b3035);
+        }
+    }
+}

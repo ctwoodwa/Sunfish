@@ -1,0 +1,53 @@
+@inherits SunfishComponentBase
+
+<span class="@CombineClasses(BadgeClass)"
+      style="@CombineStyles(PositionStyle)"
+      @attributes="AdditionalAttributes">
+    @ChildContent
+</span>
+
+@code {
+    [Parameter] public BadgeVariant Variant { get; set; } = BadgeVariant.Primary;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Position relative to the parent (e.g. "edge", "inside", "outside").</summary>
+    [Parameter] public string? Position { get; set; }
+
+    /// <summary>Horizontal alignment (start/center/end).</summary>
+    [Parameter] public string? HorizontalAlign { get; set; }
+
+    /// <summary>Vertical alignment (top/center/bottom).</summary>
+    [Parameter] public string? VerticalAlign { get; set; }
+
+    /// <summary>Whether the badge is visible.</summary>
+    [Parameter] public bool Visible { get; set; } = true;
+
+    /// <summary>Whether to show the cutout border around the badge.</summary>
+    [Parameter] public bool ShowCutoutBorder { get; set; }
+
+    private string BadgeClass
+    {
+        get
+        {
+            var cls = CssProvider.BadgeClass(Variant);
+            if (!Visible) cls += " mar-badge--hidden";
+            if (ShowCutoutBorder) cls += " mar-badge--cutout";
+            return cls;
+        }
+    }
+
+    private string? PositionStyle
+    {
+        get
+        {
+            if (Position == null && HorizontalAlign == null && VerticalAlign == null) return null;
+            var parts = new List<string>();
+            if (Position == "edge" || Position == "outside") parts.Add("position:absolute;");
+            if (HorizontalAlign == "start") parts.Add("left:0;");
+            else if (HorizontalAlign == "end") parts.Add("right:0;");
+            if (VerticalAlign == "top") parts.Add("top:0;");
+            else if (VerticalAlign == "bottom") parts.Add("bottom:0;");
+            return parts.Count > 0 ? string.Join("", parts) : null;
+        }
+    }
+}

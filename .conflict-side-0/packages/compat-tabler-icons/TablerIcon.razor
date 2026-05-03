@@ -1,0 +1,122 @@
+@namespace Sunfish.Compat.TablerIcons
+@using System.Globalization
+@using Microsoft.AspNetCore.Components
+@using Microsoft.Extensions.Logging
+@using Sunfish.Compat.Shared
+@using FoundationEnums = Sunfish.Foundation.Enums
+@inject ILogger<TablerIcon> Logger
+
+<i class="@_cssClass" style="@_styleAttr" role="@(string.IsNullOrEmpty(AriaLabel) ? "presentation" : "img")" aria-label="@AriaLabel" aria-hidden="@(string.IsNullOrEmpty(AriaLabel) ? "true" : null)" @attributes="AdditionalAttributes"></i>
+
+@code {
+    // --- Tabler-shaped public parameters ---
+
+    /// <summary>
+    /// Strongly-typed Tabler Icons identifier. Mirrors the dominant Tabler Icons Blazor
+    /// wrapper shape (<c>&lt;TablerIcon Icon="@TablerIconName.Home" /&gt;</c>).
+    /// Translates to the canonical <c>tabler-*</c> CSS class via
+    /// <see cref="TablerIconNameExtensions.ToSlug(TablerIconName)"/>.
+    /// </summary>
+    /// <remarks>
+    /// For icons outside the starter-set <see cref="TablerIconName"/> enum, use
+    /// <see cref="NameString"/> to pass the raw Tabler slug (e.g. <c>"rocket"</c>).
+    /// If both are provided, <see cref="NameString"/> wins and a warning is logged —
+    /// specify only one.
+    /// </remarks>
+    [Parameter] public TablerIconName? Name { get; set; }
+
+    /// <summary>
+    /// Alternative raw-string Tabler slug (e.g. <c>"rocket"</c>). Useful for icons
+    /// not yet covered by the <see cref="TablerIconName"/> starter-set enum. The
+    /// value is emitted verbatim as the <c>tabler-*</c> class — no validation is
+    /// performed (upstream Tabler CSS will silently fail to style an unknown class).
+    /// </summary>
+    [Parameter] public string? NameString { get; set; }
+
+    /// <summary>
+    /// Tabler icon size keyword. Optional — when null, the icon inherits its
+    /// surrounding font-size. Accepted values map to Sunfish-prefixed size-modifier
+    /// classes emitted on the wrapper element (<c>sf-tabler-icon--sm</c>, etc.).
+    /// </summary>
+    [Parameter] public FoundationEnums.IconSize? Size { get; set; }
+
+    /// <summary>Accessible label for the icon. When set, the element uses <c>role="img"</c>.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>
+    /// Tabler Icons stroke width — Tabler's distinguishing parameter. Tabler's outlined
+    /// glyphs are drawn from configurable stroke paths; upstream default is <c>2.0</c>.
+    /// When set, emits <c>style="stroke-width: &lt;value&gt;"</c> on the element.
+    /// Leave null to inherit upstream / consumer-stylesheet defaults.
+    /// </summary>
+    [Parameter] public double? Stroke { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    // --- Derived values ---
+    private string _cssClass = "tabler sf-tabler-icon";
+    private string? _styleAttr;
+
+    protected override void OnParametersSet()
+    {
+        // Resolve the active icon slug.
+        string? slug = ResolveSlug();
+
+        // Map size → size-class suffix (nullable — when null, no size class is emitted
+        // and the icon inherits its surrounding font-size).
+        string? sizeClass = MapSize(Size);
+
+        // Build the class string. Preserve upstream `tabler tabler-*` alongside the
+        // Sunfish prefix `sf-tabler-icon` — this lets migrators keep their Tabler CSS
+        // loaded without visual regressions and lets Sunfish-aware styles target the
+        // wrapper independently. Same split-class convention as compat-lucide /
+        // compat-bootstrap-icons.
+        _cssClass = string.IsNullOrEmpty(slug)
+            ? $"tabler sf-tabler-icon{AppendSizeClass(sizeClass)}"
+            : $"tabler tabler-{slug} sf-tabler-icon{AppendSizeClass(sizeClass)}";
+
+        // Tabler's distinguishing parameter — pass stroke-width through as an inline
+        // style. Null means "inherit upstream / consumer stylesheet".
+        _styleAttr = Stroke.HasValue
+            ? $"stroke-width: {Stroke.Value.ToString(CultureInfo.InvariantCulture)}"
+            : null;
+    }
+
+    private string? ResolveSlug()
+    {
+        if (!string.IsNullOrEmpty(NameString))
+        {
+            if (Name.HasValue)
+            {
+                Logger.LogWarning(
+                    "compat-tabler-icons: Both Name='{Name}' and NameString='{NameString}' specified on TablerIcon. NameString wins. See docs/compat-tabler-icons-mapping.md.",
+                    Name.Value, NameString);
+            }
+            return NameString;
+        }
+
+        return Name.HasValue ? Name.Value.ToSlug() : null;
+    }
+
+    private static string AppendSizeClass(string? sizeClass)
+        => string.IsNullOrEmpty(sizeClass) ? string.Empty : " " + sizeClass;
+
+    private string? MapSize(FoundationEnums.IconSize? size) => size switch
+    {
+        null => null,
+        FoundationEnums.IconSize.Small => "sf-tabler-icon--sm",
+        FoundationEnums.IconSize.Medium => "sf-tabler-icon--md",
+        FoundationEnums.IconSize.Large => "sf-tabler-icon--lg",
+        FoundationEnums.IconSize.ExtraLarge => "sf-tabler-icon--xl",
+        _ => LogAndFallbackSize(size.Value),
+    };
+
+    private string? LogAndFallbackSize(FoundationEnums.IconSize received)
+    {
+        Logger.LogWarning(
+            "compat-tabler-icons: Unrecognized Size value '{Value}' on TablerIcon. Inheriting ambient font-size. See docs/compat-tabler-icons-mapping.md.",
+            received);
+        return null;
+    }
+}

@@ -1,0 +1,16 @@
+// =============================================================================
+// Patterns: Validation
+// Validation visual styles (form validation states)
+// =============================================================================
+
+.sf-validation-message {
+    font-family: var(--sf-font-family);
+    font-size: var(--sf-font-size-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--sf-space-xs);
+}
+
+.sf-validation-message--info { color: var(--sf-color-info); }
+.sf-validation-message--warning { color: #986400; }
+.sf-validation-message--error { color: var(--sf-color-danger); }

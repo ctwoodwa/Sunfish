@@ -1,0 +1,104 @@
+@page "/components/data-display/datagrid/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DataGrid / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataGrid / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataGrid/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataGrid</code> styling flows through a few layout-level parameters and the
+            column definitions themselves. <code>Size</code> (<code>DataGridSize.Small</code>,
+            <code>Medium</code>, <code>Large</code>) changes cell padding, row height, and font size via
+            CSS custom properties. <code>Striped</code> alternates row backgrounds. <code>Width</code> and
+            <code>Height</code> drive the scrollable viewport; per-column <code>Width</code>,
+            <code>TextAlign</code>, and <code>Template</code> shape each cell.
+        </p>
+        <p>
+            This page walks through four concrete variants: default, compact striped, wide with per-column
+            templates, and a scrollable grid with fixed height.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <div>
+                <h4 style="margin:0 0 .5rem;">Default (Medium)</h4>
+                <SunfishDataGrid Data="_products" TItem="Product">
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Name" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Compact (Small) + striped</h4>
+                <SunfishDataGrid Data="_products"
+                                 TItem="Product"
+                                 Size="DataGridSize.Small"
+                                 Striped="true">
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Name" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Custom column templates</h4>
+                <SunfishDataGrid Data="_products" TItem="Product">
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Product" Width="220px">
+                        <Template Context="p">
+                            <div style="display:flex;align-items:center;gap:.5rem;">
+                                <SunfishAvatar Initials="@p.Name[..1]" Size="AvatarSize.Small" />
+                                <strong>@p.Name</strong>
+                            </div>
+                        </Template>
+                    </SunfishGridColumn>
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category">
+                        <Template Context="p">
+                            <SunfishBadge Variant="BadgeVariant.Info">@p.Category</SunfishBadge>
+                        </Template>
+                    </SunfishGridColumn>
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Scrollable (Height=220px) + Large</h4>
+                <SunfishDataGrid Data="_many"
+                                 TItem="Product"
+                                 Height="220px"
+                                 Size="DataGridSize.Large">
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Name" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category" />
+                    <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+                </SunfishDataGrid>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataGrid", "Appearance"];
+
+    private record Product(string Name, string Category, decimal Price);
+
+    private readonly List<Product> _products =
+    [
+        new("Keyboard", "Peripheral", 89.99m),
+        new("Monitor", "Display", 349.00m),
+        new("Mouse", "Peripheral", 29.50m),
+        new("Webcam", "Peripheral", 79.99m),
+        new("Laptop Stand", "Accessory", 45.00m),
+    ];
+
+    private readonly List<Product> _many = Enumerable.Range(1, 25)
+        .Select(i => new Product($"Item {i:D2}", i % 2 == 0 ? "Peripheral" : "Accessory", i * 12.5m))
+        .ToList();
+}

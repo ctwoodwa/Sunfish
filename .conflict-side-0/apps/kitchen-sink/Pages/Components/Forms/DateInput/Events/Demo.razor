@@ -1,0 +1,100 @@
+@page "/components/forms/dateinput/events"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DateInput / Events · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DateInput / Events"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Forms/DateInput/Events/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDateInput</code> exposes three callbacks:
+        </p>
+        <ul>
+            <li><code>ValueChanged</code> — fires as soon as the three date segments parse to a valid
+                <code>DateTime</code>. Powers <code>@@bind-Value</code>.</li>
+            <li><code>OnChange</code> — fires on <kbd>Enter</kbd> and on blur.</li>
+            <li><code>OnBlur</code> — fires when focus leaves the segment wrapper.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; gap:1.25rem; flex-wrap:wrap;">
+            <div style="flex:1 1 280px; min-width:260px; display:flex; flex-direction:column; gap:.75rem;">
+                <SunfishDateInput Value="@_date"
+                                  ValueChanged="HandleValueChanged"
+                                  OnChange="HandleOnChange"
+                                  OnBlur="HandleBlur"
+                                  Format="MM/dd/yyyy"
+                                  Width="200px"
+                                  AriaLabel="Event demo" />
+                <p style="margin:0; font-size:.85rem; opacity:.75;">
+                    value=<strong>@(_date?.ToString("yyyy-MM-dd") ?? "(null)")</strong>,
+                    changes=<strong>@_changeCount</strong>,
+                    commits=<strong>@_commitCount</strong>,
+                    blurs=<strong>@_blurCount</strong>
+                </p>
+                <SunfishButton Variant="ButtonVariant.Secondary" OnClick="ClearLog">Clear log</SunfishButton>
+            </div>
+
+            <div style="flex:2 1 320px; min-width:280px;">
+                <div style="border:1px solid var(--mar-border-color, #d0d0d0); border-radius:8px; background:var(--mar-surface-2, #fafafa); padding:.75rem; height:260px; overflow:auto; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:.8rem;">
+                    @if (_log.Count == 0)
+                    {
+                        <em style="opacity:.6;">No events yet — edit a segment, press Enter, or Tab away.</em>
+                    }
+                    else
+                    {
+                        @foreach (var entry in _log)
+                        {
+                            <div>@entry</div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DateInput", "Events"];
+
+    private DateTime? _date = new DateTime(2026, 4, 21);
+    private int _changeCount;
+    private int _commitCount;
+    private int _blurCount;
+    private readonly List<string> _log = new();
+
+    private void Log(string message)
+    {
+        var ts = DateTime.Now.ToString("HH:mm:ss.fff");
+        _log.Insert(0, $"[{ts}] {message}");
+        if (_log.Count > 100) _log.RemoveRange(100, _log.Count - 100);
+    }
+
+    private void HandleValueChanged(DateTime? v)
+    {
+        _date = v;
+        _changeCount++;
+        Log($"ValueChanged -> {v?.ToString("yyyy-MM-dd") ?? "(null)"}");
+    }
+
+    private void HandleOnChange(DateTime? v)
+    {
+        _commitCount++;
+        Log($"OnChange -> {v?.ToString("yyyy-MM-dd") ?? "(null)"}");
+    }
+
+    private void HandleBlur()
+    {
+        _blurCount++;
+        Log("OnBlur fired");
+    }
+
+    private void ClearLog() => _log.Clear();
+}

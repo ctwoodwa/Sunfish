@@ -1,0 +1,136 @@
+@page "/components/forms/dropdownlist/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DropDownList / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DropDownList / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/DropDownList/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDropDownList</code> follows the ARIA listbox pattern. The trigger element is a
+            focusable container (<code>tabindex="0"</code>) carrying
+            <code>role="listbox"</code>, <code>aria-expanded</code>, and <code>aria-disabled</code>.
+            The popup renders <code>role="option"</code> items, and the currently-selected option
+            carries <code>aria-selected="true"</code>.
+        </p>
+        <ul>
+            <li><strong>Trigger</strong> — <code>role="listbox"</code> on a focusable element; the
+                accessible name comes from an associated <code>SunfishLabel</code>.</li>
+            <li><strong>Options</strong> — <code>role="option"</code>, <code>aria-selected</code>
+                mirrors <code>Value</code>.</li>
+            <li><strong>Popup</strong> — <code>aria-expanded="true"</code> on the trigger while open,
+                <code>"false"</code> while closed.</li>
+            <li><strong>State</strong> — <code>aria-disabled="true"</code> when <code>Disabled</code>.</li>
+            <li><strong>Keyboard</strong> — <kbd>Arrow Down</kbd> / <kbd>Enter</kbd> opens,
+                <kbd>Arrow Up</kbd> / <kbd>Arrow Down</kbd> moves highlight,
+                <kbd>Enter</kbd> commits, <kbd>Esc</kbd> closes.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Labelled dropdown</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Tab to the trigger, <kbd>Arrow Down</kbd> to open, arrows to walk the list,
+                    <kbd>Enter</kbd> to commit. A screen reader announces each option as it receives
+                    the visual highlight.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         @bind-Value="@_value"
+                                         DefaultText="Pick a country..." />
+                </SunfishField>
+                @if (_value.HasValue)
+                {
+                    <p style="margin-top:.5rem;" aria-live="polite">
+                        Selected country id: <strong>@_value</strong>
+                    </p>
+                }
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Filterable popup</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    With <code>Filterable="true"</code>, opening the popup focuses the inline search
+                    input so screen-reader users can type to filter options directly.
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishDropDownList TItem="Country" TValue="int?"
+                                         Data="@_countries"
+                                         TextField="Name" ValueField="Id"
+                                         @bind-Value="@_filterValue"
+                                         Filterable="true"
+                                         DefaultText="Search and pick..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">ARIA &amp; keyboard reference</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; gap:.4rem 1rem; margin:0;">
+                    <dt><code>role="listbox"</code></dt>
+                    <dd>On the trigger — marks it as a single-select listbox collapsed into a
+                        button.</dd>
+
+                    <dt><code>aria-expanded</code></dt>
+                    <dd>Toggles between <code>"true"</code> when the popup is visible and
+                        <code>"false"</code> when it is not.</dd>
+
+                    <dt><code>aria-disabled</code></dt>
+                    <dd><code>"true"</code> when <code>Disabled</code> is set, so assistive tech can
+                        announce the state.</dd>
+
+                    <dt><code>role="option"</code></dt>
+                    <dd>On each popup item, with <code>aria-selected="true"</code> for the current
+                        pick.</dd>
+
+                    <dt><code>tabindex="0"</code></dt>
+                    <dd>Makes the non-input trigger keyboard-focusable.</dd>
+
+                    <dt><kbd>Arrow Down</kbd></dt>
+                    <dd>Opens the popup if closed; moves highlight down otherwise.</dd>
+
+                    <dt><kbd>Arrow Up</kbd></dt>
+                    <dd>Moves highlight up.</dd>
+
+                    <dt><kbd>Enter</kbd></dt>
+                    <dd>Commits the highlighted option and closes the popup.</dd>
+
+                    <dt><kbd>Esc</kbd></dt>
+                    <dd>Closes the popup without committing.</dd>
+                </dl>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "DropDownList", "Accessibility"];
+
+    private int? _value;
+    private int? _filterValue;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Japan", "JP"),
+    };
+}

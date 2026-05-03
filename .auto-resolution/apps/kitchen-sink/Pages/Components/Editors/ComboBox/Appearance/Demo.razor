@@ -1,0 +1,177 @@
+@page "/components/forms/combobox/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>ComboBox / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="ComboBox / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Editors/ComboBox/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishComboBox</code> pairs a free-text field with a filterable option list. The
+            visible surface is driven by:
+        </p>
+        <ul>
+            <li><code>Placeholder</code> — prompt text while no value is selected.</li>
+            <li><code>FilterMode</code> (<code>ComboBoxFilterMode.Contains</code> |
+                <code>StartsWith</code> | <code>EndsWith</code>) — how the type-ahead matches options.</li>
+            <li><code>ShowClearButton</code> — exposes an inline reset affordance.</li>
+            <li><code>AllowCustom</code> — lets the user commit a value that is not in the
+                <code>Data</code> source (e.g. a free-form tag).</li>
+            <li><code>ItemTemplate</code> — custom markup for each option (icons, multi-line layouts).</li>
+            <li>State flags — <code>Disabled</code>, <code>ReadOnly</code>, <code>IsInvalid</code>.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Default</h3>
+                <SunfishField>
+                    <SunfishLabel>Country</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    @bind-Value="@_basic"
+                                    Placeholder="Type to search..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Filter modes</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Contains (default)</SunfishLabel>
+                        <SunfishComboBox TItem="Country" TValue="int?"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_filterContains"
+                                        FilterMode="ComboBoxFilterMode.Contains"
+                                        Placeholder="Try 'land'" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>StartsWith</SunfishLabel>
+                        <SunfishComboBox TItem="Country" TValue="int?"
+                                        Data="@_countries"
+                                        TextField="Name" ValueField="Id"
+                                        @bind-Value="@_filterStarts"
+                                        FilterMode="ComboBoxFilterMode.StartsWith"
+                                        Placeholder="Try 'un'" />
+                    </SunfishField>
+                </div>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Clear button</h3>
+                <SunfishField>
+                    <SunfishLabel>With clear affordance</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    @bind-Value="@_clearable"
+                                    ShowClearButton="true"
+                                    Placeholder="Pick a country..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Allow custom values</h3>
+                <p style="margin:0 0 .5rem; font-size:.85rem; color:#555;">
+                    Type a value that is not in the list — <code>AllowCustom="true"</code> commits
+                    the typed text when it matches an option by text (useful for free-form tag
+                    entry).
+                </p>
+                <SunfishField>
+                    <SunfishLabel>Tag</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    @bind-Value="@_custom"
+                                    AllowCustom="true"
+                                    Placeholder="Type anything..." />
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">Custom item template</h3>
+                <SunfishField>
+                    <SunfishLabel>Country with flag</SunfishLabel>
+                    <SunfishComboBox TItem="Country" TValue="int?"
+                                    Data="@_countries"
+                                    TextField="Name" ValueField="Id"
+                                    @bind-Value="@_templated"
+                                    Placeholder="Pick a country...">
+                        <ItemTemplate Context="country">
+                            <span style="display:flex; align-items:center; gap:.5rem;">
+                                <span style="font-family:ui-monospace, Menlo, monospace; color:#888; min-width:2.5rem;">@country.Code</span>
+                                <span>@country.Name</span>
+                            </span>
+                        </ItemTemplate>
+                    </SunfishComboBox>
+                </SunfishField>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem;">State flags</h3>
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:.75rem;">
+                    <SunfishField>
+                        <SunfishLabel>Disabled</SunfishLabel>
+                        <SunfishComboBox TItem="Country" TValue="int?"
+                                        Data="@_countries" TextField="Name" ValueField="Id"
+                                        Value="2" Disabled="true" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Read only</SunfishLabel>
+                        <SunfishComboBox TItem="Country" TValue="int?"
+                                        Data="@_countries" TextField="Name" ValueField="Id"
+                                        Value="3" ReadOnly="true" />
+                    </SunfishField>
+                    <SunfishField>
+                        <SunfishLabel>Invalid</SunfishLabel>
+                        <SunfishComboBox TItem="Country" TValue="int?"
+                                        Data="@_countries" TextField="Name" ValueField="Id"
+                                        Value="@_invalid"
+                                        ValueChanged="@((int? v) => _invalid = v)"
+                                        IsInvalid="true"
+                                        Placeholder="Required" />
+                    </SunfishField>
+                </div>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Forms", "ComboBox", "Appearance"];
+
+    private int? _basic;
+    private int? _filterContains;
+    private int? _filterStarts;
+    private int? _clearable;
+    private int? _custom;
+    private int? _templated;
+    private int? _invalid;
+
+    private record Country(int Id, string Name, string Code);
+
+    private readonly List<Country> _countries = new()
+    {
+        new(1, "United States", "US"),
+        new(2, "Canada", "CA"),
+        new(3, "United Kingdom", "GB"),
+        new(4, "Germany", "DE"),
+        new(5, "France", "FR"),
+        new(6, "Finland", "FI"),
+        new(7, "Ireland", "IE"),
+        new(8, "Iceland", "IS"),
+        new(9, "New Zealand", "NZ"),
+        new(10, "Japan", "JP"),
+    };
+}

@@ -1,0 +1,30 @@
+@namespace Sunfish.Compat.Syncfusion
+@using Microsoft.AspNetCore.Components
+@using Sunfish.Compat.Shared
+@inherits CompatChildComponent<SfDialog>
+
+@*
+    Syncfusion: <SfDialog><DialogTemplates><Header>...</Header><Content>...</Content><FooterTemplate>...</FooterTemplate></DialogTemplates></SfDialog>
+
+    This container aggregates the three template slots and publishes them to the parent
+    <SfDialog> for render-time composition. It has no DOM output of its own.
+*@
+
+@code {
+    [Parameter] public RenderFragment? Header { get; set; }
+    [Parameter] public RenderFragment? Content { get; set; }
+    [Parameter] public RenderFragment? FooterTemplate { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override string ShimName => "DialogTemplates";
+    protected override string ParentName => "SfDialog";
+
+    protected override void OnParametersSet()
+    {
+        var parent = RequireParent();
+        parent.HeaderTemplate = Header;
+        parent.ContentTemplate = Content;
+        parent.FooterTemplateFragment = FooterTemplate;
+        parent.RequestRefresh();
+    }
+}

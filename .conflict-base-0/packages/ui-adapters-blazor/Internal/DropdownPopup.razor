@@ -1,0 +1,15 @@
+@inherits SunfishComponentBase
+
+@if (IsOpen)
+{
+    <div class="@CombineClasses(CssProvider.DropdownPopupClass())"
+         style="@CombineStyles()"
+         @attributes="AdditionalAttributes">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

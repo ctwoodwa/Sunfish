@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Kernel.Audit</PackageId>
+    <RootNamespace>Sunfish.Kernel.Audit</RootNamespace>
+    <Description>Sunfish kernel audit-trail subsystem (ADR 0049). Append-only domain-typed audit records — recovery events, capability grants, payment authorizations — with multi-party signed attestation. Durability delegated to the kernel IEventLog substrate, parallel to how Kernel.Ledger uses IEventLog.</Description>
+    <PackageTags>sunfish;kernel;audit;compliance;event-sourced;append-only</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Kernel.Audit.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\kernel\Sunfish.Kernel.csproj" />
+    <ProjectReference Include="..\kernel-event-bus\Sunfish.Kernel.EventBus.csproj" />
+  </ItemGroup>
+</Project>

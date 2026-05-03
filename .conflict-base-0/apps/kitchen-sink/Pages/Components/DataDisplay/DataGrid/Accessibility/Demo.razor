@@ -1,0 +1,86 @@
+@page "/components/data-display/datagrid/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>DataGrid / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="DataGrid / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/DataGrid/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishDataGrid</code> renders a true HTML <code>&lt;table&gt;</code>, so native table
+            semantics (<code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code>, <code>&lt;th&gt;</code>,
+            <code>&lt;td&gt;</code>) are honored by assistive tech out of the box. Sortable columns update
+            <code>aria-sort</code> on the header to <code>"ascending"</code>, <code>"descending"</code>, or
+            absent. Enable <code>Navigable="true"</code> to turn on arrow-key cell navigation.
+        </p>
+        <p>
+            Pair the grid with a visible heading via <code>aria-labelledby</code>, or supply
+            <code>aria-label</code> directly. Use column <code>Title</code> attributes for concise
+            header text; screen readers announce each cell as "<em>column header</em>, <em>value</em>".
+            The built-in command column uses labelled <code>&lt;button&gt;</code> elements, and the
+            selection checkbox column announces row selection state.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.25rem;">
+            <h4 id="grid-a11y-heading" style="margin:0;">Product catalogue</h4>
+            <SunfishDataGrid Data="_products"
+                             TItem="Product"
+                             aria-labelledby="grid-a11y-heading"
+                             Sortable="true"
+                             Navigable="true"
+                             SelectionMode="GridSelectionMode.Multiple"
+                             ShowCheckboxColumn="true">
+                <SunfishGridColumn TItem="Product" Field="@nameof(Product.Name)" Title="Name" />
+                <SunfishGridColumn TItem="Product" Field="@nameof(Product.Category)" Title="Category" />
+                <SunfishGridColumn TItem="Product" Field="@nameof(Product.Price)" Title="Price" Format="C2" TextAlign="right" />
+            </SunfishDataGrid>
+
+            <dl style="font-size:0.875rem; max-width:680px;">
+                <dt><strong>Table semantics</strong></dt>
+                <dd>Native <code>&lt;table&gt;</code> / <code>&lt;thead&gt;</code> / <code>&lt;tbody&gt;</code> — no <code>role="grid"</code> override needed.</dd>
+                <dt><strong>aria-sort</strong></dt>
+                <dd>On <code>&lt;th&gt;</code> elements of sortable columns — mirrors the active sort direction.</dd>
+                <dt><strong>aria-labelledby / aria-label</strong></dt>
+                <dd>Set on the root to give the grid an accessible name.</dd>
+                <dt><strong>Selection</strong></dt>
+                <dd>Checkbox column renders real <code>&lt;input type="checkbox"&gt;</code> with <code>aria-label</code> per row.</dd>
+                <dt><strong>Navigable="true"</strong></dt>
+                <dd>
+                    <ul style="margin:.25rem 0 0 1rem;">
+                        <li><kbd>Tab</kbd> — enter / leave the grid</li>
+                        <li><kbd>ArrowUp</kbd> / <kbd>ArrowDown</kbd> / <kbd>ArrowLeft</kbd> / <kbd>ArrowRight</kbd> — move between cells</li>
+                        <li><kbd>Home</kbd> / <kbd>End</kbd> — jump to first / last cell in the row</li>
+                        <li><kbd>Space</kbd> / <kbd>Enter</kbd> — toggle selection or activate the focused command</li>
+                    </ul>
+                </dd>
+                <dt><strong>Row / column announcements</strong></dt>
+                <dd>Each cell inherits its header via the native table relationship — screen readers announce "<em>Price</em>, $89.99" as you move across a row.</dd>
+                <dt><strong>Loading state</strong></dt>
+                <dd><code>IsLoading="true"</code> renders a labelled spinner overlay; combine with <code>aria-busy="true"</code> on a wrapping region if needed.</dd>
+            </dl>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "DataGrid", "Accessibility"];
+
+    private record Product(string Name, string Category, decimal Price);
+
+    private readonly List<Product> _products =
+    [
+        new("Keyboard", "Peripheral", 89.99m),
+        new("Monitor", "Display", 349.00m),
+        new("Mouse", "Peripheral", 29.50m),
+        new("Webcam", "Peripheral", 79.99m),
+        new("Laptop Stand", "Accessory", 45.00m),
+    ];
+}

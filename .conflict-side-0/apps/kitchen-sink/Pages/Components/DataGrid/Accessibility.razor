@@ -1,0 +1,210 @@
+@page "/components/DataGrid/accessibility"
+@layout ComponentDemoLayout
+
+<PageSection Title="Keyboard Navigation">
+    <DemoSection Title="Navigable Grid"
+                 Description="Set Navigable to true to enable full keyboard navigation. Use Arrow keys to move between cells, Enter to sort headers, and Tab to move through interactive elements."
+                 Code="@_navigableCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        Navigable="true"
+                        Sortable="true"
+                        Pageable="true" PageSize="4"
+                        SelectionMode="GridSelectionMode.Single"
+                        SelectedItems="@_selected"
+                        SelectedItemsChanged="@OnSelectionChanged">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="HireDate" Title="Hire Date" Format="yyyy-MM-dd" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <p>Selected: <strong>@string.Join(", ", _selected.Select(e => e.Name))</strong></p>
+        <div style="margin-top:8px;padding:12px;background:#f5f5f5;border-radius:4px;font-size:0.85em;">
+            <strong>Keyboard shortcuts:</strong>
+            <ul style="margin:4px 0 0 16px;">
+                <li><kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> — Move between focusable elements</li>
+                <li><kbd>Arrow keys</kbd> — Navigate between rows/cells</li>
+                <li><kbd>Enter</kbd> — Sort column (on header), select row</li>
+                <li><kbd>Home</kbd> / <kbd>End</kbd> — Jump to first/last cell in row</li>
+                <li><kbd>Page Up</kbd> / <kbd>Page Down</kbd> — Navigate between pages</li>
+            </ul>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="ARIA Attributes">
+    <DemoSection Title="Built-in ARIA Support"
+                 Description="The grid automatically includes ARIA roles and attributes for screen reader accessibility. Inspect the HTML to see role='grid', role='row', role='gridcell', role='columnheader', aria-sort, aria-selected, aria-label, and aria-busy attributes."
+                 Code="@_ariaCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        Sortable="true"
+                        SelectionMode="GridSelectionMode.Single"
+                        SelectedItems="@_ariaSelected"
+                        SelectedItemsChanged="@OnAriaSelectionChanged"
+                        ShowCheckboxColumn="true">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+        <div style="margin-top:8px;padding:12px;background:#f5f5f5;border-radius:4px;font-size:0.85em;">
+            <strong>ARIA attributes applied automatically:</strong>
+            <ul style="margin:4px 0 0 16px;">
+                <li><code>role="grid"</code> on the root container</li>
+                <li><code>role="row"</code> on each tr element</li>
+                <li><code>role="columnheader"</code> on header cells</li>
+                <li><code>role="gridcell"</code> on data cells</li>
+                <li><code>aria-sort="ascending|descending"</code> on sorted columns</li>
+                <li><code>aria-selected="true"</code> on selected rows</li>
+                <li><code>aria-rowcount</code> reflecting total visible rows</li>
+                <li><code>aria-colcount</code> reflecting visible column count</li>
+                <li><code>aria-busy="true"</code> when IsLoading is set</li>
+                <li><code>aria-label</code> on filter inputs, search box, pagination, and checkboxes</li>
+                <li><code>aria-expanded</code> on detail row expand/collapse buttons</li>
+            </ul>
+        </div>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessible Editing">
+    <DemoSection Title="Keyboard-Accessible Inline Editing"
+                 Description="When Navigable is enabled with inline editing, users can Tab through editor fields, press Enter to save, and Escape to cancel without using a mouse."
+                 Code="@_accessibleEditCode">
+        <SunfishDataGrid TItem="Employee" Data="@_accessibleEmployees"
+                        Navigable="true"
+                        EditMode="GridEditMode.Inline"
+                        OnUpdate="@OnAccessibleUpdate"
+                        OnDelete="@OnAccessibleDelete"
+                        OnCreate="@OnAccessibleCreate"
+                        OnModelInit="@OnAccessibleModelInit">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name">
+                <EditorTemplate>
+                    <input type="text" value="@context.Name"
+                           aria-label="Employee name"
+                           @onchange="@(e => context.Name = e.Value?.ToString() ?? "")" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+            <SunfishGridColumn TItem="Employee" Field="Department">
+                <EditorTemplate>
+                    <input type="text" value="@context.Department"
+                           aria-label="Department"
+                           @onchange="@(e => context.Department = e.Value?.ToString() ?? "")" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right">
+                <EditorTemplate>
+                    <input type="number" value="@context.Salary"
+                           aria-label="Salary"
+                           @onchange="@(e => { if (decimal.TryParse(e.Value?.ToString(), out var v)) context.Salary = v; })" />
+                </EditorTemplate>
+            </SunfishGridColumn>
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+<PageSection Title="Accessible Filtering">
+    <DemoSection Title="Labeled Filter Inputs"
+                 Description="Filter row inputs automatically include aria-label attributes (e.g. 'Filter Full Name') for screen reader users."
+                 Code="@_accessibleFilterCode">
+        <SunfishDataGrid TItem="Employee" Data="@_employees"
+                        FilterMode="GridFilterMode.FilterRow"
+                        Navigable="true"
+                        ShowSearchBox="true"
+                        SearchBoxPlaceholder="Search employees...">
+            <SunfishGridColumn TItem="Employee" Field="Name" Title="Full Name" />
+            <SunfishGridColumn TItem="Employee" Field="Department" />
+            <SunfishGridColumn TItem="Employee" Field="Salary" Format="C2" TextAlign="right" />
+        </SunfishDataGrid>
+    </DemoSection>
+</PageSection>
+
+@code {
+    private List<Employee> _employees =
+    [
+        new("Alice Johnson", "Engineering", new DateTime(2019, 3, 15), 95000m),
+        new("Bob Smith", "Marketing", new DateTime(2020, 7, 1), 72000m),
+        new("Carol White", "Engineering", new DateTime(2018, 1, 10), 105000m),
+        new("David Brown", "Sales", new DateTime(2021, 11, 20), 68000m),
+        new("Eve Davis", "Engineering", new DateTime(2022, 5, 5), 88000m),
+        new("Frank Miller", "Marketing", new DateTime(2017, 9, 12), 78000m),
+        new("Grace Lee", "Sales", new DateTime(2023, 2, 28), 65000m),
+    ];
+
+    public class Employee
+    {
+        public string Name { get; set; } = "";
+        public string Department { get; set; } = "";
+        public DateTime HireDate { get; set; }
+        public decimal Salary { get; set; }
+
+        public Employee() { }
+        public Employee(string name, string department, DateTime hireDate, decimal salary)
+        {
+            Name = name; Department = department; HireDate = hireDate; Salary = salary;
+        }
+    }
+
+    // ── Keyboard Nav Selection ─────────────────────────────────────────
+    private List<Employee> _selected = [];
+    private void OnSelectionChanged(IEnumerable<Employee> items) => _selected = items.ToList();
+
+    // ── ARIA Selection ─────────────────────────────────────────────────
+    private List<Employee> _ariaSelected = [];
+    private void OnAriaSelectionChanged(IEnumerable<Employee> items) => _ariaSelected = items.ToList();
+
+    // ── Accessible Editing ─────────────────────────────────────────────
+    private List<Employee> _accessibleEmployees = null!;
+
+    private void OnAccessibleCreate(GridEditEventArgs<Employee> args) => _accessibleEmployees.Add(args.Item);
+    private void OnAccessibleUpdate(GridEditEventArgs<Employee> args) { }
+    private void OnAccessibleDelete(GridEditEventArgs<Employee> args) => _accessibleEmployees.Remove(args.Item);
+    private void OnAccessibleModelInit(GridModelInitEventArgs<Employee> args) =>
+        args.Item = new Employee("", "", DateTime.Today, 0m);
+
+    protected override void OnInitialized()
+    {
+        _accessibleEmployees = _employees.Select(e => new Employee(e.Name, e.Department, e.HireDate, e.Salary)).ToList();
+    }
+
+    // ── Code Samples ───────────────────────────────────────────────────
+    private const string _navigableCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                Navigable=\"true\"\n" +
+        "                Sortable=\"true\"\n" +
+        "                Pageable=\"true\" PageSize=\"4\"\n" +
+        "                SelectionMode=\"GridSelectionMode.Single\">\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Name\" Title=\"Full Name\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Department\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"HireDate\" Title=\"Hire Date\" Format=\"yyyy-MM-dd\" />\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Salary\" Format=\"C2\" TextAlign=\"right\" />\n" +
+        "</SunfishDataGrid>";
+
+    private const string _ariaCode =
+        "@* ARIA attributes are applied automatically — no extra configuration needed *@\n" +
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                Sortable=\"true\"\n" +
+        "                SelectionMode=\"GridSelectionMode.Single\"\n" +
+        "                ShowCheckboxColumn=\"true\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _accessibleEditCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                Navigable=\"true\"\n" +
+        "                EditMode=\"GridEditMode.Inline\" ...>\n" +
+        "    <SunfishGridColumn TItem=\"Employee\" Field=\"Name\">\n" +
+        "        <EditorTemplate>\n" +
+        "            <input type=\"text\" value=\"@context.Name\"\n" +
+        "                   aria-label=\"Employee name\" ... />\n" +
+        "        </EditorTemplate>\n" +
+        "    </SunfishGridColumn>\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+
+    private const string _accessibleFilterCode =
+        "<SunfishDataGrid TItem=\"Employee\" Data=\"@_employees\"\n" +
+        "                FilterMode=\"GridFilterMode.FilterRow\"\n" +
+        "                Navigable=\"true\"\n" +
+        "                ShowSearchBox=\"true\"\n" +
+        "                SearchBoxPlaceholder=\"Search employees...\">\n" +
+        "    ...\n" +
+        "</SunfishDataGrid>";
+}

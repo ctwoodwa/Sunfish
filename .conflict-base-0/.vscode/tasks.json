@@ -1,0 +1,67 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-kitchen-sink",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/apps/kitchen-sink/Sunfish.KitchenSink.csproj",
+        "/consoleloggerparameters:NoSummary",
+        "/property:GenerateFullPaths=true"
+      ],
+      "group": "build",
+      "presentation": { "reveal": "silent", "clear": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-bridge-apphost",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/accelerators/bridge/Sunfish.Bridge.AppHost/Sunfish.Bridge.AppHost.csproj",
+        "/consoleloggerparameters:NoSummary",
+        "/property:GenerateFullPaths=true"
+      ],
+      "group": "build",
+      "presentation": { "reveal": "silent", "clear": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "build-anchor",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "build",
+        "${workspaceFolder}/accelerators/anchor/Sunfish.Anchor.csproj",
+        "-f",
+        "net11.0-windows10.0.19041.0",
+        "/consoleloggerparameters:NoSummary",
+        "/property:GenerateFullPaths=true"
+      ],
+      "group": "build",
+      "presentation": { "reveal": "silent", "clear": true },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "docfx-restore-tools",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["tool", "restore"],
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": []
+    },
+    {
+      "label": "docfx-build",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["docfx", "${workspaceFolder}/apps/docs/docfx.json"],
+      "dependsOn": ["docfx-restore-tools"],
+      "group": "build",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    }
+  ]
+}

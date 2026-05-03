@@ -1,0 +1,41 @@
+@page "/components/layout/appbar/overview"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+
+<PageTitle>AppBar / Overview · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="AppBar / Overview"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/AppBar/Overview/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAppBar</code> is a top-level navigation bar for an application shell. It hosts a horizontal
+            row of branding, navigation, and action content, and pins itself to the viewport via the
+            <code>Position</code> parameter (<code>AppBarPosition.Top</code> or <code>AppBarPosition.Bottom</code>).
+            Arbitrary child content is projected into the bar so you can compose logos, menus, spacers, and buttons
+            to taste.
+        </p>
+        <p>
+            Sibling feature demos cover
+            <a href="/components/layout/appbar/spacer">spacers</a>,
+            <a href="/components/layout/appbar/scrollable">scrollable content</a>, and
+            <a href="/components/layout/appbar/themebuilder-integration">themebuilder integration</a>.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div class="demo-row">
+            <SunfishAppBar Position="AppBarPosition.Top">
+                <span>My Application</span>
+            </SunfishAppBar>
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "AppBar", "Overview"];
+}

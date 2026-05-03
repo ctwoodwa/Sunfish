@@ -1,0 +1,6 @@
+# packages/compat-infragistics/CODEOWNERS
+# Policy-gated package. All changes require sign-off from a listed owner.
+# IgbGrid additions BEYOND shape-parity additionally require explicit BDFL review
+# because igniteui-webcomponents grids are commercial-licensed upstream.
+# Replace placeholder handle with real GitHub handles before merge.
+* @sunfish-maintainers

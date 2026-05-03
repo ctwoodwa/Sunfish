@@ -1,0 +1,157 @@
+@page "/components/layout/accordion/appearance"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.Foundation.Enums
+
+<PageTitle>Accordion / Appearance · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="Accordion / Appearance"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/Layout/Accordion/Appearance/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishAccordion</code> has two authoring modes:
+        </p>
+        <ul>
+            <li><strong>Declarative.</strong> Nest <code>SunfishAccordionItem</code> children with
+                <code>Title</code>, optional <code>Icon</code>, and <code>@@bind-IsExpanded</code>.</li>
+            <li><strong>Data-driven.</strong> Bind <code>Data</code> to an enumerable and point
+                <code>TextField</code> / <code>IconField</code> / <code>UrlField</code> /
+                <code>DisabledField</code> at your object's property names.
+                <code>HeaderTemplate</code> and <code>ContentTemplate</code> let you render custom
+                markup per item.</li>
+        </ul>
+        <p>
+            The main appearance controls are:
+        </p>
+        <ul>
+            <li><code>ExpandMode</code> — <code>AccordionExpandMode.Multiple</code> (default) lets
+                any number of items stay open simultaneously; <code>Single</code> enforces
+                one-at-a-time (expanding one collapses the others).</li>
+            <li><code>ExpandedItems</code> / <code>ExpandedItemsChanged</code> — two-way binding
+                for data-driven expansion state.</li>
+            <li><code>IsExpanded</code> on each <code>SunfishAccordionItem</code> in declarative
+                mode, supporting <code>@@bind-IsExpanded</code>.</li>
+            <li><code>Disabled</code> on an item blocks the toggle and applies disabled styling.</li>
+        </ul>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Multiple expansion (default)</h4>
+                <SunfishAccordion ExpandMode="AccordionExpandMode.Multiple">
+                    <SunfishAccordionItem Title="Shipping" @bind-IsExpanded="_m1">
+                        <p style="margin:0;">Standard shipping takes 5–7 business days.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Returns" @bind-IsExpanded="_m2">
+                        <p style="margin:0;">Free returns within 30 days.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Warranty" @bind-IsExpanded="_m3">
+                        <p style="margin:0;">1-year manufacturer warranty.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Multiple items can be open at once.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Single expansion (exclusive)</h4>
+                <SunfishAccordion ExpandMode="AccordionExpandMode.Single">
+                    <SunfishAccordionItem Title="Step 1: Account" @bind-IsExpanded="_s1">
+                        <p style="margin:0;">Create an account to get started.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Step 2: Verify email" @bind-IsExpanded="_s2">
+                        <p style="margin:0;">Click the confirmation link we emailed you.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Step 3: Configure profile" @bind-IsExpanded="_s3">
+                        <p style="margin:0;">Choose a display name and avatar.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+                <p style="margin:.25rem 0 0; font-size:.8rem; opacity:.75;">
+                    Opening one closes any other expanded item automatically.
+                </p>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Disabled item</h4>
+                <SunfishAccordion>
+                    <SunfishAccordionItem Title="Available" @bind-IsExpanded="_d1">
+                        <p style="margin:0;">You can expand and collapse this item.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Locked (Disabled)" Disabled="true">
+                        <p style="margin:0;">This item can't be toggled.</p>
+                    </SunfishAccordionItem>
+                    <SunfishAccordionItem Title="Also available" @bind-IsExpanded="_d2">
+                        <p style="margin:0;">Another open-able item.</p>
+                    </SunfishAccordionItem>
+                </SunfishAccordion>
+            </div>
+
+            <div>
+                <h4 style="margin:0 0 .5rem;">Data-driven + HeaderTemplate / ContentTemplate</h4>
+                <SunfishAccordion Data="@_faqItems"
+                                  TextField="Question"
+                                  ExpandMode="AccordionExpandMode.Single"
+                                  ExpandedItems="@_expandedFaq"
+                                  ExpandedItemsChanged="HandleExpandedItemsChanged">
+                    <HeaderTemplate>
+                        @{
+                            var faq = (FaqItem)context;
+                        }
+                        <span style="display:flex; align-items:center; gap:.5rem;">
+                            <span aria-hidden="true" style="font-size:.9rem; color:#6a4cff;">&#9679;</span>
+                            <strong>@faq.Question</strong>
+                        </span>
+                    </HeaderTemplate>
+                    <ContentTemplate>
+                        @{
+                            var faq = (FaqItem)context;
+                        }
+                        <p style="margin:0;">@faq.Answer</p>
+                    </ContentTemplate>
+                </SunfishAccordion>
+            </div>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Layout", "Accordion", "Appearance"];
+
+    private bool _m1 = true;
+    private bool _m2;
+    private bool _m3;
+    private bool _s1 = true;
+    private bool _s2;
+    private bool _s3;
+    private bool _d1;
+    private bool _d2;
+
+    private IEnumerable<object> _expandedFaq = Array.Empty<object>();
+
+    private void HandleExpandedItemsChanged(IEnumerable<object> items)
+    {
+        _expandedFaq = items;
+    }
+
+    public class FaqItem
+    {
+        public string Question { get; set; } = "";
+        public string Answer { get; set; } = "";
+    }
+
+    private readonly List<FaqItem> _faqItems =
+    [
+        new() { Question = "Is my data encrypted?", Answer = "Yes — TLS 1.3 in transit, AES-256 at rest." },
+        new() { Question = "Can I export my data?", Answer = "You can export CSV, JSON, and Parquet from the Settings panel." },
+        new() { Question = "How do I cancel?", Answer = "Billing → Cancel subscription. Access continues through the paid period." },
+    ];
+}

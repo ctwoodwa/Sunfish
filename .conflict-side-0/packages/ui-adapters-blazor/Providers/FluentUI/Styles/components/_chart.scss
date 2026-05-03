@@ -1,0 +1,223 @@
+// =============================================================================
+// Component: Chart
+// Provider:  FluentUI
+// =============================================================================
+
+.sf-chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 200px;
+    font-family: var(--sf-font-family, 'Segoe UI', system-ui, sans-serif);
+    color: var(--sf-color-text, #323130);
+    background: var(--sf-chart-bg, transparent);
+    border-radius: var(--sf-radius-md, 4px);
+    overflow: hidden;
+
+    &:focus-visible {
+        outline: 2px solid var(--sf-color-primary, #0078d4);
+        outline-offset: -2px;
+    }
+
+    svg {
+        width: 100%;
+        display: block;
+
+        text {
+            fill: var(--sf-color-text, #323130);
+            font-family: inherit;
+        }
+
+        line {
+            stroke: var(--sf-color-border, #e1dfdd);
+        }
+    }
+}
+
+// ── Title & Subtitle ────────────────────────────────────────────────────────
+
+.sf-chart-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--sf-color-text, #323130);
+    padding: 12px 16px 4px;
+    line-height: 1.4;
+}
+
+.sf-chart-subtitle {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--sf-color-secondary-text, #605e5c);
+    padding: 0 16px 8px;
+    line-height: 1.4;
+}
+
+// ── No Data ─────────────────────────────────────────────────────────────────
+
+.sf-chart-no-data {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 120px;
+    font-size: 14px;
+    color: var(--sf-color-secondary-text, #605e5c);
+    font-style: italic;
+}
+
+// ── Tooltip ─────────────────────────────────────────────────────────────────
+
+.sf-chart-tooltip {
+    position: absolute;
+    z-index: 1000;
+    background: var(--sf-color-surface, #ffffff);
+    color: var(--sf-color-text, #323130);
+    border: 1px solid var(--sf-color-border, #e1dfdd);
+    border-radius: var(--sf-radius-sm, 2px);
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    box-shadow: var(--sf-elevation-4, 0 2px 4px rgba(0, 0, 0, 0.14));
+    pointer-events: none;
+    white-space: nowrap;
+    max-width: 300px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+// ── Animation ───────────────────────────────────────────────────────────────
+
+.sf-chart-animate {
+    transition: stroke-dashoffset 0.6s ease-in-out,
+                opacity 0.4s ease-in-out;
+}
+
+// ── Data Points (interactive SVG elements) ──────────────────────────────────
+
+.sf-chart-point {
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease, filter 0.15s ease;
+
+    &:hover {
+        opacity: 0.85;
+        filter: brightness(1.1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--sf-color-primary, #0078d4);
+        outline-offset: 2px;
+    }
+
+    &:active {
+        opacity: 0.7;
+    }
+}
+
+// ── Legend ───────────────────────────────────────────────────────────────────
+
+.sf-chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+    padding: 8px 16px;
+    font-size: 12px;
+    color: var(--sf-color-text, #323130);
+}
+
+.sf-chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    user-select: none;
+    border-radius: var(--sf-radius-sm, 2px);
+    padding: 2px 4px;
+    transition: opacity 0.15s ease, background 0.15s ease;
+
+    &:hover {
+        background: var(--sf-color-subtle-background, #f3f2f1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--sf-color-primary, #0078d4);
+        outline-offset: 1px;
+    }
+
+    &--hidden {
+        opacity: 0.4;
+        text-decoration: line-through;
+    }
+}
+
+// ── Screen-reader only ──────────────────────────────────────────────────────
+
+.sf-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// ── Gauge (retained from prior styles) ──────────────────────────────────────
+
+.sf-gauge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+// ── Dark Mode ───────────────────────────────────────────────────────────────
+
+[data-sf-theme="dark"] {
+    .sf-chart-container {
+        color: var(--sf-color-text, #e1dfdd);
+
+        svg text {
+            fill: var(--sf-color-text, #e1dfdd);
+        }
+
+        svg line {
+            stroke: var(--sf-color-border, #484644);
+        }
+    }
+
+    .sf-chart-title {
+        color: var(--sf-color-text, #e1dfdd);
+    }
+
+    .sf-chart-subtitle {
+        color: var(--sf-color-secondary-text, #a19f9d);
+    }
+
+    .sf-chart-no-data {
+        color: var(--sf-color-secondary-text, #a19f9d);
+    }
+
+    .sf-chart-tooltip {
+        background: var(--sf-color-surface, #252423);
+        color: var(--sf-color-text, #e1dfdd);
+        border-color: var(--sf-color-border, #484644);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.36);
+    }
+
+    .sf-chart-legend {
+        color: var(--sf-color-text, #e1dfdd);
+    }
+
+    .sf-chart-legend-item {
+        &:hover {
+            background: var(--sf-color-subtle-background, #3b3a39);
+        }
+    }
+
+    .sf-chart-point {
+        &:hover {
+            filter: brightness(1.2);
+        }
+    }
+}

@@ -1,0 +1,59 @@
+// =============================================================================
+// Component: Container
+// =============================================================================
+
+.sf-container {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: var(--sf-space-lg);
+}
+
+.sf-container--sm { max-width: 640px; }
+.sf-container--md { max-width: 768px; }
+.sf-container--lg { max-width: 1024px; }
+.sf-container--xl { max-width: 1280px; }
+.sf-container--fluid { max-width: 100%; }
+
+// Grid (12-column)
+.sf-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: var(--sf-space-lg);
+}
+
+.sf-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-inline: calc(var(--sf-space-sm) * -1);
+}
+
+.sf-col {
+    flex: 1 1 0%;
+    padding-inline: var(--sf-space-sm);
+    min-width: 0;
+}
+
+.sf-col--1 { flex: 0 0 calc(100% / 12 * 1); max-width: calc(100% / 12 * 1); }
+.sf-col--2 { flex: 0 0 calc(100% / 12 * 2); max-width: calc(100% / 12 * 2); }
+.sf-col--3 { flex: 0 0 calc(100% / 12 * 3); max-width: calc(100% / 12 * 3); }
+.sf-col--4 { flex: 0 0 calc(100% / 12 * 4); max-width: calc(100% / 12 * 4); }
+.sf-col--5 { flex: 0 0 calc(100% / 12 * 5); max-width: calc(100% / 12 * 5); }
+.sf-col--6 { flex: 0 0 calc(100% / 12 * 6); max-width: calc(100% / 12 * 6); }
+.sf-col--7 { flex: 0 0 calc(100% / 12 * 7); max-width: calc(100% / 12 * 7); }
+.sf-col--8 { flex: 0 0 calc(100% / 12 * 8); max-width: calc(100% / 12 * 8); }
+.sf-col--9 { flex: 0 0 calc(100% / 12 * 9); max-width: calc(100% / 12 * 9); }
+.sf-col--10 { flex: 0 0 calc(100% / 12 * 10); max-width: calc(100% / 12 * 10); }
+.sf-col--11 { flex: 0 0 calc(100% / 12 * 11); max-width: calc(100% / 12 * 11); }
+.sf-col--12 { flex: 0 0 100%; max-width: 100%; }
+
+.sf-col--offset-1 { margin-inline-start: calc(100% / 12 * 1); }
+.sf-col--offset-2 { margin-inline-start: calc(100% / 12 * 2); }
+.sf-col--offset-3 { margin-inline-start: calc(100% / 12 * 3); }
+.sf-col--offset-4 { margin-inline-start: calc(100% / 12 * 4); }
+.sf-col--offset-5 { margin-inline-start: calc(100% / 12 * 5); }
+.sf-col--offset-6 { margin-inline-start: calc(100% / 12 * 6); }
+.sf-col--offset-7 { margin-inline-start: calc(100% / 12 * 7); }
+.sf-col--offset-8 { margin-inline-start: calc(100% / 12 * 8); }
+.sf-col--offset-9 { margin-inline-start: calc(100% / 12 * 9); }
+.sf-col--offset-10 { margin-inline-start: calc(100% / 12 * 10); }
+.sf-col--offset-11 { margin-inline-start: calc(100% / 12 * 11); }

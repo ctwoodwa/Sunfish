@@ -1,0 +1,131 @@
+@page "/components/data-display/pivotgrid/accessibility"
+@layout MainLayout
+@using Sunfish.UIAdapters.Blazor.Components.Showcase
+@using Sunfish.UIAdapters.Blazor.Enums
+@using Sunfish.UIAdapters.Blazor.Components.DataDisplay.Pivot
+
+<PageTitle>PivotGrid / Accessibility · Sunfish Kitchen Sink</PageTitle>
+
+<SunfishExamplePanel Title="PivotGrid / Accessibility"
+                     Breadcrumb="@_breadcrumb"
+                     GitHubUrl="https://github.com/ctwoodwa/Sunfish/blob/main/apps/kitchen-sink/Pages/Components/DataDisplay/PivotGrid/Accessibility/Demo.razor"
+                     Sources="@GeneratedSources">
+
+    <Narrative>
+        <p>
+            <code>SunfishPivotGrid&lt;TItem&gt;</code> cross-tabulates a flat dataset into a
+            two-dimensional aggregate view. The outer container is marked <code>role="grid"</code> and
+            labelled via the <code>AriaLabel</code> parameter. Row-group and column-group headers use
+            native <code>&lt;th scope="row"&gt;</code> / <code>&lt;th scope="col"&gt;</code>, so screen
+            readers announce each measure cell with both axes ("North, Widget A, $1,200").
+        </p>
+        <p>
+            <strong>MVP status.</strong> The current release ships the static read-only surface: roles,
+            scopes, and an accessible name. Interactive affordances — keyboard cell navigation, drill-in
+            announcements via a live region, sort / filter controls on headers, and virtualized rows with
+            <code>aria-rowcount</code> / <code>aria-rowindex</code> — are <em>planned</em> and documented
+            below as the target a11y contract.
+        </p>
+    </Narrative>
+
+    <Example>
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.95rem;">Sales by region and product</h3>
+                <Sunfish.UIAdapters.Blazor.Components.DataDisplay.Pivot.SunfishPivotGrid TItem="SalesRecord"
+                                                                                        Data="_salesData"
+                                                                                        RowFields="_rowFields"
+                                                                                        ColumnFields="_columnFields"
+                                                                                        Measures="_measures"
+                                                                                        AriaLabel="Sales by region and product, pivot grid"
+                                                                                        ShowGrandTotals="true"
+                                                                                        Height="320px" />
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">ARIA &amp; semantic contract (shipped)</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.9rem;">
+                    <dt><code>role="grid"</code></dt>
+                    <dd>On the outer wrapper — signals "interactive tabular aggregate" to AT.</dd>
+                    <dt><code>aria-label</code></dt>
+                    <dd>From the <code>AriaLabel</code> parameter. Defaults to <em>"Pivot grid"</em> if unset.</dd>
+                    <dt><code>&lt;th scope="col"&gt;</code></dt>
+                    <dd>Every column-group header (including nested measures and grand-total columns).</dd>
+                    <dt><code>&lt;th scope="row"&gt;</code></dt>
+                    <dd>Every row-group header (with <code>"/"</code>-separated spans for multi-dimensional row tuples).</dd>
+                    <dt><code>role="gridcell"</code></dt>
+                    <dd>On every measure cell, including grand-total and row-total cells.</dd>
+                    <dt><code>role="status"</code> empty state</dt>
+                    <dd>When <code>RowFields</code> / <code>ColumnFields</code> / <code>Measures</code> aren't configured, a polite status message explains what to provide.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Planned a11y contract (engineering targets)</h3>
+                <dl style="display:grid; grid-template-columns: max-content 1fr; column-gap:1rem; row-gap:.35rem; margin:0; font-size:.9rem;">
+                    <dt><code>aria-colspan</code> / <code>aria-rowspan</code></dt>
+                    <dd><em>Planned — MVP.</em> For multi-level column/row groups once header merging ships.</dd>
+                    <dt><code>aria-sort</code> on header cells</dt>
+                    <dd><em>Planned — MVP.</em> Requires interactive header sorting (not yet wired).</dd>
+                    <dt><code>aria-label</code> on filter/sort affordances</dt>
+                    <dd><em>Planned — MVP.</em> Per-dimension filter chips and sort toggles are on the roadmap.</dd>
+                    <dt>Drill-in live region (<code>role="status"</code> or <code>aria-live="polite"</code>)</dt>
+                    <dd><em>Planned — MVP.</em> When a user drills into a cell, announce "Drilled into North / Widget A, showing 4 records".</dd>
+                    <dt><code>aria-rowcount</code> / <code>aria-rowindex</code></dt>
+                    <dd><em>Planned — MVP.</em> Required once virtualized row rendering ships (per Overview, virtualization is deferred).</dd>
+                    <dt>Keyboard cell navigation</dt>
+                    <dd><em>Planned — MVP.</em> Target: arrow keys between cells, <kbd>Ctrl</kbd>+<kbd>Home</kbd> to corner, <kbd>Enter</kbd> to drill-in, <kbd>Escape</kbd> to drill-out.</dd>
+                </dl>
+            </section>
+
+            <section>
+                <h3 style="margin:0 0 .5rem 0; font-size:.9rem; opacity:.7; text-transform:uppercase; letter-spacing:.05em;">Screen-reader output (expected)</h3>
+                <pre style="background:var(--sunfish-surface-muted, #f3f4f6); padding:.75rem; border-radius:.375rem; font-size:.85rem; overflow:auto;"><code>Sales by region and product, pivot grid
+  Column header: Widget A
+  Column header: Widget B
+  Column header: Total
+  Row header: North
+    North, Widget A: $1,200
+    North, Widget B: $800
+    North, Total: $2,000
+  Row header: South
+    ...</code></pre>
+            </section>
+
+        </div>
+    </Example>
+
+</SunfishExamplePanel>
+
+@code {
+    private static readonly string[] _breadcrumb =
+        ["Components", "Data Display", "PivotGrid", "Accessibility"];
+
+    private readonly List<string> _rowFields = new() { "Region" };
+    private readonly List<string> _columnFields = new() { "Product" };
+    private readonly List<PivotMeasure> _measures = new()
+    {
+        new PivotMeasure
+        {
+            Field = "Revenue",
+            Aggregation = PivotAggregation.Sum,
+            DisplayName = "Revenue",
+            Format = "C0",
+        },
+    };
+
+    private readonly List<SalesRecord> _salesData = new()
+    {
+        new SalesRecord("North", "Widget A", 1200),
+        new SalesRecord("North", "Widget B", 800),
+        new SalesRecord("South", "Widget A", 950),
+        new SalesRecord("South", "Widget B", 1100),
+        new SalesRecord("East",  "Widget A", 700),
+        new SalesRecord("East",  "Widget B", 1500),
+        new SalesRecord("West",  "Widget A", 1300),
+        new SalesRecord("West",  "Widget B", 600),
+    };
+
+    public record SalesRecord(string Region, string Product, double Revenue);
+}

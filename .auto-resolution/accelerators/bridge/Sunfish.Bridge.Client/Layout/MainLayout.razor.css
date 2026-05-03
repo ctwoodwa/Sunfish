@@ -1,0 +1,124 @@
+/* ══════════════════════════════════════════════════════════════
+   Sidebar Footer — layout for account menu + notification bell
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Expanded: horizontal button group [ avatar+name | bell ] ── */
+
+.sidebar-footer--expanded {
+    position: relative;
+}
+
+.sidebar-footer__group {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid color-mix(in srgb, var(--marilo-color-text, #1f2328) 10%, transparent);
+    border-radius: var(--marilo-radius-md, 8px);
+    background: var(--marilo-color-surface, #ffffff);
+    overflow: visible;
+    position: relative;
+}
+
+.sidebar-footer__group ::deep .mar-account-menu {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sidebar-footer__group ::deep .mar-account-menu__trigger {
+    width: 100%;
+    border-radius: var(--marilo-radius-md, 8px) 0 0 var(--marilo-radius-md, 8px);
+}
+
+.sidebar-footer__bell--grouped {
+    flex: 0 0 42px;
+    width: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-left: 1px solid color-mix(in srgb, var(--marilo-color-text, #1f2328) 10%, transparent);
+    border-radius: 0 var(--marilo-radius-md, 8px) var(--marilo-radius-md, 8px) 0;
+    color: color-mix(in srgb, var(--marilo-color-text, #1f2328) 55%, transparent);
+    cursor: pointer;
+    position: relative;
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-footer__bell--grouped:hover {
+    background: color-mix(in srgb, var(--marilo-color-text, #1f2328) 5%, transparent);
+    color: var(--marilo-color-text, #1f2328);
+}
+
+.sidebar-footer__bell--grouped:focus-visible {
+    outline: 2px solid var(--marilo-color-primary, #5b6cff);
+    outline-offset: -2px;
+}
+
+/* ── Collapsed: vertical stack (bell on top, avatar below) ── */
+
+.sidebar-footer--collapsed {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    position: relative;
+}
+
+.sidebar-footer--collapsed .sidebar-footer__bell {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: color-mix(in srgb, var(--marilo-color-text, #1f2328) 55%, transparent);
+    transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+.sidebar-footer--collapsed .sidebar-footer__bell:hover {
+    background: color-mix(in srgb, var(--marilo-color-text, #1f2328) 8%, transparent);
+    color: var(--marilo-color-text, #1f2328);
+}
+
+.sidebar-footer--collapsed .sidebar-footer__bell:focus-visible {
+    outline: 2px solid var(--marilo-color-primary, #5b6cff);
+    outline-offset: 2px;
+}
+
+/* ── Badge (shared) ── */
+
+.sidebar-footer__bell ::deep .mar-appshell__badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Blazor error UI
+   ══════════════════════════════════════════════════════════════ */
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
