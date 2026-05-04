@@ -1725,8 +1725,10 @@ The XML doc explicitly names the distinguisher between this value and `Plaintext
 XO spot-checks A11 within 24h of merge:
 
 ```bash
-# Confirm the 6th enum value landed on origin/main
-git show origin/main:packages/foundation-migration/Models/Enums.cs | grep -c "^    [A-Z][a-zA-Z]*,$"
+# Confirm the 6th enum value landed on origin/main (scoped to SequestrationFlagKind block)
+git show origin/main:packages/foundation-migration/Models/Enums.cs \
+  | awk '/public enum SequestrationFlagKind/,/^}/' \
+  | grep -c "^    [A-Z][a-zA-Z]*,$"
 # (expect 6 — was 5 pre-A11)
 
 # Confirm tests still green
