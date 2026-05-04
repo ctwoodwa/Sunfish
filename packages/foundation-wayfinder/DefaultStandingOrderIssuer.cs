@@ -167,7 +167,13 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
         {
             var result = await validator.ValidateAsync(order, context, ct).ConfigureAwait(false);
             issues.AddRange(result.Issues);
-            if (result.Issues.Any(i => i.Severity == StandingOrderValidationSeverity.Block))
+            // Honour both signals: any Block-severity issue rejects per
+            // ADR 0065 §3, AND a validator that explicitly returns
+            // Accepted=false (e.g., for the sub-admin Error→Block reduction
+            // documented on StandingOrderValidationResult.Accepted) rejects
+            // even if no individual issue carries Block severity.
+            if (!result.Accepted ||
+                result.Issues.Any(i => i.Severity == StandingOrderValidationSeverity.Block))
             {
                 blocked = true;
             }
@@ -185,7 +191,15 @@ public sealed class DefaultStandingOrderIssuer : IStandingOrderIssuer
         // projector replaces this with a tenant-aware index.
         if (_repository is not CrdtStandingOrderRepository crdt)
         {
-            yield break;
+            // Loud failure rather than silent "not found": a host that swaps
+            // in a non-CRDT IStandingOrderRepository implementation must also
+            // provide a tenant-aware lookup index for rescissions to work.
+            // Phase 3a Atlas projector closes this gap.
+            throw new InvalidOperationException(
+                "DefaultStandingOrderIssuer.RescindAsync requires CrdtStandingOrderRepository " +
+                "for the substrate-Phase-2 cross-tenant scan; bind a tenant-aware index " +
+                "(planned in Phase 3a Atlas projector) when registering an alternate " +
+                "IStandingOrderRepository implementation.");
         }
 
         foreach (var tenantId in crdt.KnownTenants)
