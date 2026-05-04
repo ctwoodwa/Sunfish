@@ -38,6 +38,16 @@ amendments:
       ReceiveTextAsync single-consumer contract; CloseAsync/DisposeAsync semantics; RFC 4122 UUID
       encoding mandate; IDuplexStream threading contract documented; stale P-256 text removed;
       NSec.Cryptography confirmed as sole new dependency; confidence HIGH.
+  - date: 2026-05-04
+    summary: >
+      A1 wire-encoding ratification (unblocks W#45 P2): (1) transcript-hash
+      canonical form changed to reduced field-extract
+      SHA-256(ephemA||idA||ephemB||idB||uint32BE(len(tenantBytes))||tenantBytes||negotiatedCap)
+      — robust to MessagePack key-ordering; full-frame-bytes are brittle and implementation-matched
+      reduced form; (2) tenantId wire encoding redefined as UTF-8 bytes of TenantId.Value (string-backed
+      value object; no UUID semantics; avoids touching every multi-tenant package); (3) peerId wire
+      encoding redefined as raw bytes[32] Ed25519 identity public key (PrincipalId bytes, base64url
+      string-equivalent PeerId.From(PrincipalId)); UUID encoding mandate scoped to messageId fields only.
 ---
 
 # ADR 0076 — Crew Comms: `foundation-channels` Contracts and Native Implementation
@@ -155,12 +165,12 @@ Payload encoding: MessagePack (binary-native; avoids base64 overhead on audio fr
 
 | Byte | Name | Direction | Payload |
 |---|---|---|---|
-| `0x01` | `HELLO` | bidirectional on connect | `{ ephemeralPublicKey: bytes[32], identityPublicKey: bytes[32], tenantId: uuid, signature: bytes[64], presence: PresenceHeartbeat }` — `signature` = Ed25519(longTermPrivKey, ephemeralPublicKey \|\| identityPublicKey \|\| tenantId) |
-| `0x02` | `HEARTBEAT` | broadcast | `{ peerId: uuid, tenantId: uuid, caps: uint8, timestamp: int64, signature: bytes[64] }` — `signature` = Ed25519(longTermPrivKey, peerId \|\| tenantId \|\| caps \|\| timestamp) |
+| `0x01` | `HELLO` | bidirectional on connect | `{ ephemeralPublicKey: bytes[32], identityPublicKey: bytes[32], tenantId: bytes (UTF-8 of TenantId.Value), signature: bytes[64], presence: PresenceHeartbeat }` — `signature` = Ed25519(longTermPrivKey, ephemeralPublicKey \|\| identityPublicKey \|\| UTF8(tenantId.Value)) |
+| `0x02` | `HEARTBEAT` | broadcast | `{ peerId: bytes[32] (raw Ed25519 identity public key), tenantId: bytes (UTF-8 of TenantId.Value), caps: uint8, timestamp: int64, signature: bytes[64] }` — `signature` = Ed25519(longTermPrivKey, peerId[32] \|\| UTF8(tenantId.Value) \|\| caps[1] \|\| timestamp[8 BE]) |
 | `0x03` | `INVITE` | initiator → recipient | `{ capabilities: uint8 }` — flags-combined; negotiation picks highest common capability |
 | `0x04` | `ACCEPT` | recipient → initiator | `{ capability: uint8 }` — negotiated level |
 | `0x05` | `REJECT` | recipient → initiator | `{ reason: string? }` |
-| `0x0A` | `CONFIRM` | both sides after ACCEPT | `{ transcriptHash: bytes[32] }` — SHA-256 of all HELLO + INVITE + ACCEPT frame bytes; both sides MUST verify agreement before entering ACTIVE |
+| `0x0A` | `CONFIRM` | both sides after ACCEPT | `{ transcriptHash: bytes[32] }` — SHA-256(ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1]); both sides MUST verify agreement before entering ACTIVE. See §A1 rationale. |
 | `0x06` | `BYE` | either direction | `{}` |
 | `0x07` | `TYPING` | either in ACTIVE | `{}` — suppressed 3s after last keystroke |
 | `0x08` | `DELIVERED` | either in ACTIVE | `{ messageId: bytes[16] }` — RFC 4122 big-endian UUID |
@@ -169,14 +179,14 @@ Payload encoding: MessagePack (binary-native; avoids base64 overhead on audio fr
 | `0x20` | `AUDIO_FRAME` | either in ACTIVE | opaque Opus packet — Phase 3 |
 | `0x30` | `VIDEO_FRAME` | either in ACTIVE | opaque H.264/VP8 — Phase 4 |
 
-**UUID/GUID encoding in MessagePack payloads:** all UUID fields MUST be encoded as `fixext 16` in RFC 4122 big-endian byte order. Do NOT use `Guid.ToByteArray()` — it produces a mixed-endian layout (little-endian `Data1`, little-endian `Data2`/`Data3`, big-endian `Data4`). Instead write each UUID component with `BinaryPrimitives.WriteUInt32BigEndian` / `WriteUInt16BigEndian`, or use a normalizing MessagePack extension that guarantees RFC 4122 byte order. Failure to normalize breaks interoperability with any non-.NET endpoint.
+**UUID/GUID encoding in MessagePack payloads:** `messageId` fields (`DELIVERED 0x08`, `TEXT 0x10`) carry RFC 4122 UUIDs and MUST be encoded as `fixext 16` in RFC 4122 big-endian byte order. Do NOT use `Guid.ToByteArray()` — it produces a mixed-endian layout (little-endian `Data1`, little-endian `Data2`/`Data3`, big-endian `Data4`). Instead write each UUID component with `BinaryPrimitives.WriteUInt32BigEndian` / `WriteUInt16BigEndian`, or use a normalizing MessagePack extension that guarantees RFC 4122 byte order. Failure to normalize breaks interoperability with any non-.NET endpoint. **`tenantId` and `peerId` are not UUIDs** — they are raw byte sequences (see A1 amendment above); the `fixext 16` constraint does not apply to them.
 
 **Encryption handshake (on every connection — no session resumption):**
 
 ```
 1. Both peers generate ephemeral X25519 key pair
-2. Construct HELLO: { ephemeralPublicKey, identityPublicKey (Ed25519), tenantId,
-      signature = Ed25519Sign(longTermPrivKey, ephemeralPublicKey || identityPublicKey || tenantId) }
+2. Construct HELLO: { ephemeralPublicKey, identityPublicKey (Ed25519), tenantId (UTF-8 bytes of TenantId.Value),
+      signature = Ed25519Sign(longTermPrivKey, ephemeralPublicKey[32] || identityPublicKey[32] || UTF8(tenantId.Value)) }
 3. Exchange HELLO frames (plaintext)
 4. Receiver validates: Ed25519Verify(sender.identityPublicKey, sender.signature)
    → reject if invalid; close stream immediately
@@ -191,10 +201,27 @@ Payload encoding: MessagePack (binary-native; avoids base64 overhead on audio fr
 8. All frames after HELLO encrypted as:
    [Nonce (12B counter)] ++ ChaCha20Poly1305.Encrypt(sessionKey, nonce, plainFrame)
 9. After ACCEPT, both sides independently compute:
-   transcriptHash = SHA-256(HELLO_A_bytes || HELLO_B_bytes || INVITE_bytes || ACCEPT_bytes)
+   tenantBytes = UTF8(tenantId.Value)
+   transcriptHash = SHA-256(
+     ephemA[32] || idA[32] ||         // from HELLO_A
+     ephemB[32] || idB[32] ||         // from HELLO_B
+     uint32BE(len(tenantBytes)) || tenantBytes ||  // tenant binding
+     negotiatedCap[1]                 // ACCEPT.capability byte
+   )
    and send CONFIRM { transcriptHash }.
    Mismatch → REJECT + close. Session enters ACTIVE only after both CONFIRMs verified.
+   Rationale (A1): reduced-form is robust to MessagePack key-ordering variance across
+   platforms; full-frame-bytes bind to serialization details rather than semantic content.
 ```
+
+**§A1 — Wire-encoding ratification (2026-05-04, unblocks W#45 P2):**
+Three wire-encoding choices ratified after P2 council pre-merge review (1 Critical + 4 Major):
+
+1. **Transcript-hash canonical form (Critical finding).** The original draft specified `SHA-256(HELLO_A_bytes || HELLO_B_bytes || INVITE_bytes || ACCEPT_bytes)` — binding to full MessagePack serialization of the framed messages. This is brittle: MessagePack key ordering is implementation-defined, meaning two conformant implementations may serialize identical logical payloads to different byte sequences, causing spurious CONFIRM mismatches across platforms. **Decision: reduced field-extract form** — `SHA-256(ephemA[32] || idA[32] || ephemB[32] || idB[32] || uint32BE(len(tenantBytes)) || tenantBytes || negotiatedCap[1])` — extracting fixed-width semantic fields directly. This form is invariant to MessagePack key ordering. The length-prefix on `tenantBytes` prevents extension attack via variable-length field adjacency. The implementation already matched the reduced form; the ADR text now matches the implementation.
+
+2. **`tenantId` wire encoding.** The original draft specified `tenantId: uuid (fixext 16, RFC 4122)`. However, `Sunfish.Foundation.Assets.Common.TenantId` is `string Value`-backed with no UUID semantics — forcing UUID encoding would require redefining `TenantId` across every multi-tenant package. **Decision: `tenantId` encodes as raw UTF-8 bytes of `TenantId.Value`** in HELLO and HEARTBEAT. This is internally consistent with the rest of the multi-tenant surface and avoids a cross-package breaking change.
+
+3. **`peerId` wire encoding.** The original draft specified `peerId: uuid (fixext 16, RFC 4122)`. The implementation's `PeerId.From(PrincipalId)` produces the raw 32-byte Ed25519 identity public key. **Decision: `peerId` encodes as raw `bytes[32]`** (the raw Ed25519 public key). This is semantically correct (the peer *is* identified by its public key) and consistent with `identityPublicKey: bytes[32]` already in HELLO. The `fixext 16` UUID constraint is now scoped to `messageId` fields only.
 
 **No session resumption:** each new `IDuplexStream` connection MUST perform a fresh DH handshake from step 1. Prior session keys MUST be zeroed in memory immediately on `CloseAsync`/`DisposeAsync`. There is no session ticket, no session ID carried across reconnects.
 
@@ -404,7 +431,7 @@ services.AddSunfishCrewComms(roster =>
 - All channel traffic is E2E encrypted before leaving the sender's process. The Bridge relay (Tier 3) handles only ciphertext, preserving ADR 0031's tenant-data-isolation posture.
 - Forward secrecy: each session derives a fresh key from ephemeral DH material. No session resumption; prior session keys are zeroed on `CloseAsync`/`DisposeAsync`. Compromise of `PeerId` Ed25519 long-term key does not expose past sessions.
 - **HELLO authentication:** ephemeral DH public keys are signed with the sender's Ed25519 long-term key. Receivers MUST verify the signature before computing the shared secret; reject and close immediately on failure. This prevents a relay or network attacker from substituting a different ephemeral public key (classic X25519 MitM).
-- **HEARTBEAT authentication:** each HEARTBEAT carries an Ed25519 signature over `(peerId || tenantId || caps || timestamp)`. Receivers MUST verify before accepting presence updates; reject on failure. This prevents roster poisoning from unauthenticated broadcast frames.
+- **HEARTBEAT authentication:** each HEARTBEAT carries an Ed25519 signature over `(peerId[32] || UTF8(tenantId.Value) || caps[1] || timestamp[8 BE])` where `peerId` is the raw 32-byte Ed25519 identity public key. Receivers MUST verify before accepting presence updates; reject on failure. This prevents roster poisoning from unauthenticated broadcast frames.
 - **Capability negotiation integrity:** both sides send `CONFIRM { transcriptHash }` after ACCEPT. Mismatch → reject + close. This prevents a downgrade attack that tricks one side into using a lower capability than the other.
 - **Tenant binding:** HELLO includes `tenantId`; receiver MUST verify `sender.tenantId == local.tenantId` AND `sender.identityPublicKey ∈ ICrewRoster`. Reject if either check fails. This closes the cross-tenant HELLO injection vector.
 - `MessageId` UUIDs are generated locally; they must not encode timestamps or device fingerprints (use `Guid.NewGuid()`, not time-based UUIDs).
@@ -433,7 +460,7 @@ No existing packages are modified. Two new packages added:
 - [ ] Implement `ChannelCapability`, `PresenceStatus`, `CrewPresence`, `CrewMember` value types
 - [ ] Implement `ICrewRoster`, `IChannelSession`, `IChannelInvitation`, `IChannelProvider` interfaces
 - [ ] Scaffold `packages/blocks-crew-comms/Sunfish.Blocks.CrewComms.csproj` — IsPackable, deps on foundation-channels + foundation-transport + foundation-multitenancy
-- [ ] Implement `FrameProtocol` — length-prefix framing + MessagePack encode/decode for all v1 message types; RFC 4122 big-endian UUID encoding for all UUID fields (not `Guid.ToByteArray()`)
+- [ ] Implement `FrameProtocol` — length-prefix framing + MessagePack encode/decode for all v1 message types; RFC 4122 big-endian UUID encoding for `messageId` fields only (not `Guid.ToByteArray()`); `tenantId` as raw UTF-8 bytes; `peerId` as raw bytes[32] Ed25519 key (A1)
 - [ ] Implement `EncryptionHandshake` — ephemeral X25519 + HKDF-SHA256 + ChaCha20-Poly1305 via `NSec.Cryptography`; Ed25519 sign (HELLO + HEARTBEAT) + verify; roster membership check on HELLO; CONFIRM transcript-hash exchange; session key zeroed on close; no session resume
 - [ ] Implement `PresenceBus` — 30s heartbeat timer with signed HEARTBEAT frames; `ICrewRoster.GetCrewAsync` for peer list; TTL-eviction at 45s; 20s in-session keepalive; mDNS cache fast-path via `ITransportSelector`
 - [ ] Implement `NativeChannelSession` — dedicated reader Task (concurrent with writer; verify `IDuplexStream` threading contract first); TEXT/TYPING/DELIVERED routing; `Completed` TaskCompletionSource; `CloseAsync` with 2s drain + BYE; `DisposeAsync` best-effort BYE
