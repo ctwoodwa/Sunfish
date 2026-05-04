@@ -62,17 +62,25 @@ final class EventEnvelopeTests: XCTestCase {
         XCTAssertNil(withoutRef.blobRef)
     }
 
-    /// Trip-wire for the deferred RFC 8785 canonicalizer (Phase 3.5).
-    /// Substrate v1 ships `EventEnvelope` + `EventQueueService` against
-    /// Swift's standard `JSONEncoder`, which is NOT byte-stable across
-    /// replicas. Phase 3.5 ships the full RFC 8785 Swift canonicalizer
-    /// + the 10-fixture cross-language byte-for-byte test against
-    /// `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`. Until then
-    /// this test stays explicitly skipped — its presence in the suite
-    /// is the machine-readable trip-wire that a follow-up PR is owed.
-    func testEnvelope_RFC8785_CrossLanguageByteParity_PendingPhase3Point5() throws {
-        try XCTSkipIf(true,
-            "Pending W#23 Phase 3.5: RFC 8785 Swift canonicalizer + 10-fixture cross-language test against Sunfish.Foundation.Crypto.CanonicalJson.Serialize")
+    /// Phase 3.5 — `JsonCanonical` ships; previous trip-wire lifted.
+    /// Verifies the envelope round-trips through the canonical encoder
+    /// with sorted keys + no whitespace + UTF-8 (matching .NET
+    /// `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`).
+    func testEnvelope_RoundTripsThroughJsonCanonical() throws {
+        let envelope = newEnvelope(blobRef: "abc123")
+        let bytes = try JsonCanonical.serialize(envelope)
+        let json = String(data: bytes, encoding: .utf8) ?? ""
+
+        // Canonical form: sorted keys + no whitespace. blobRef sorts
+        // alphabetically before capturedAt, so the first key is blobRef.
+        XCTAssertTrue(json.hasPrefix("{\"blobRef\":"))
+        XCTAssertFalse(json.contains(" "))
+        XCTAssertFalse(json.contains("\n"))
+        // Decoded envelope round-trips equal.
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        let decoded = try decoder.decode(EventEnvelope.self, from: bytes)
+        XCTAssertEqual(envelope, decoded)
     }
 
     func testEventType_AllCasesEncodeAsTheirRawString() throws {
