@@ -1,0 +1,155 @@
+# Sunfish naming canon
+
+**Status**: living document. Updated as conventions are established or vocabulary is locked. The companion `tools/naming/check.py` is the machine-readable view of this same intent.
+
+This doc + `_shared/engineering/naming-registry.yaml` together form the canon. AI sessions should consult both BEFORE proposing any new name.
+
+---
+
+## Why this exists
+
+Naming friction has been a recurring source of cohort-quality issues. Specific incidents:
+
+- **W#24 Assets first-slice collision** (2026-04-28): proposed `blocks-assets` already existed as a UI-only catalog package. Resolved by renaming to `blocks-property-assets` + adopting `blocks-property-*` cluster prefix. Cost: ~1 hr re-work + a hand-off rewrite.
+- **ADR 0073 frontmatter drift** (2026-05-04): used `adr:` instead of `id:`, `concerns:` instead of `concern:`, `pipeline-variant:` instead of `pipeline_variant:` — silently broke the projection tool. Cost: 2 PR rebases + a follow-up frontmatter-fix PR.
+- **ADR 0028 amendment number drift** (2026-05-04): I told a subagent "use Amendment A9" but A9 + A10 were already taken; subagent's §A0 negative-existence check caught this and corrected to A11. The cohort discipline saved the work.
+- **Wayfinder brainstorm rejected 8 candidates** (2026-05-01): Mission Control / Capability Center / Control Center / Bridge / Cockpit / Flight Deck / Flight Plan / Trade Space / Chart Table — each had collisions with macOS UI, Sunfish accelerators, prior ADRs, or commerce vocabulary.
+- **Naval-org "Yeoman" collision** (2026-05-01): Sunfish-side "Yeoman" role would have collided with the book-side technical-writer "Yeoman" session. Renamed Sunfish-side to "Scribe."
+
+Each of these wasted 30 min – 2 hr. The pattern is clear: **propose-then-discover** is expensive; **search-then-propose** is cheap.
+
+## How to use this canon
+
+When proposing a new name (any kind):
+
+1. **Run `tools/naming/check.py`** first. It's <100 ms; no excuse to skip.
+2. **Read the relevant section below** for the category you're naming.
+3. **If the name passes both gates**, propose it.
+4. **If a brainstorm rejects a candidate**, add it to `naming-registry.yaml` under `rejected_vocabulary` with a one-line reason. Future sessions won't re-propose.
+
+```bash
+# Quick checks
+tools/naming/check.py adr 76                  # is ADR number 76 available?
+tools/naming/check.py adr-amendment 28 A12    # is ADR 0028 amendment A12 available?
+tools/naming/check.py package blocks-foo      # is package name blocks-foo available?
+tools/naming/check.py namespace Sunfish.X.Y   # is C# namespace available?
+tools/naming/check.py vocabulary "MyTerm"     # is vocabulary term reserved/rejected?
+tools/naming/check.py auto Sunfish.Foo.Bar    # auto-detect what kind & check
+```
+
+### Tool limitation: in-flight PRs
+
+`check.py` reflects the **on-disk origin/main state**. If a name is reserved by an open PR (e.g., a new ADR amendment authored in a branch but not yet merged), the tool reports CLEAN. To check in-flight reservations, also run:
+
+```bash
+gh pr list --state open --search "in:title <candidate-name>"
+```
+
+When in doubt, search the in-flight workstream ledger at `icm/_state/active-workstreams.md` and the open PR list.
+
+---
+
+## Naming conventions by category
+
+### ADR numbers
+
+- 4-digit zero-padded: `0001` through `0099` so far.
+- Gap-free chronological numbering — first available; don't skip for aesthetic reasons.
+- **Reserved tentative numbers** (intake stub filed; not yet authored): see `naming-registry.yaml § reserved_adrs`. As of 2026-05-04: 0066, 0067, 0068.
+- ADR amendments: `A1`, `A2`, `A11` — gap-free per parent ADR. Next-available is `max(existing) + 1`. Sub-numbers (`A1.2`, `A2.5`) are sub-bullets within a single amendment, not separate amendments.
+
+### Package directories (`packages/`)
+
+- Lowercase, kebab-case.
+- Cluster prefixes (see `naming-registry.yaml § cluster_conventions`):
+  - `foundation-*` — framework-agnostic contracts (`Sunfish.Foundation.*` namespace)
+  - `kernel-*` — runtime substrates (`Sunfish.Kernel.*` namespace)
+  - `blocks-*` — composition layer
+  - `blocks-property-*` — property operations cluster (established 2026-04-28 after W#24 collision)
+  - `ui-adapters-*` — UI adapter layers
+  - `compat-*` — vendor-compatibility layers (`Sunfish.Compat.*` namespace)
+  - `providers-mesh-*` — mesh-VPN providers
+- For new clusters: pick a prefix that won't collide with existing prefixes; document in registry.
+
+### C# namespaces
+
+- PascalCase; period-separated.
+- Top level: `Sunfish.<Tier>.<Component>`
+- Tier vocabulary: `Foundation`, `Kernel`, `UI`, `Bridge`, `Anchor`, `Compat`.
+- Within a package: namespace reflects directory structure where reasonable.
+- See `_shared/engineering/coding-standards.md` for the full convention.
+
+### ADR YAML frontmatter fields
+
+These are the **exact** field names per `docs/adrs/_FRONTMATTER.md` (the schema). Drift breaks the projection tool:
+
+| Field | NOT |
+|---|---|
+| `id:` (integer) | NOT `adr:` |
+| `concern:` (singular; list) | NOT `concerns:` (plural) |
+| `pipeline_variant:` (underscore) | NOT `pipeline-variant:` (hyphen) |
+| `composes:` (integer list) | NOT `composes_adrs:` |
+| `superseded_by:` (single int or null) | NOT `superseded-by:` |
+
+Run `python3 tools/adr-projections/project.py --check-only` after authoring; 0 errors required before commit.
+
+### Workstream numbers
+
+- Sequential integers in `icm/_state/active-workstreams.md` ledger.
+- Currently goes up to W#44 (verified 2026-05-04). Next available varies; check ledger.
+- Sub-workstreams: not used yet; if needed, propose via ADR.
+
+### Locked Sunfish vocabulary
+
+Canonical names. Don't reuse for unrelated concepts. See `naming-registry.yaml § locked_vocabulary` for the authoritative list with definitions.
+
+Highlights:
+- **Wayfinder / Helm / Atlas / Standing Order** — configuration system (ADR 0065)
+- **Mission Space / Mission Envelope** — capability dimensions (ADR 0062)
+- **Anchor / Bridge** — accelerator names (ADRs 0031, 0032)
+- **Quarterdeck / Engine Room / Tactical / Sick Bay / Ship's Office** — Ship Architecture locations (W#35)
+- **CO / XO / COB / PAO / Yeoman** — multi-session roles (ADR 0070)
+
+### Rejected vocabulary
+
+Don't re-propose. See `naming-registry.yaml § rejected_vocabulary` for the full list with reasons. As of 2026-05-04: 17 rejected names.
+
+If a brainstorm session re-raises one of these, point at the registry's `rejected_in:` field and continue.
+
+---
+
+## Workflow for proposing a brand-new name
+
+1. **Frame the concept in 1-2 sentences.** What does it represent? What's its scope?
+2. **Brainstorm 3-5 candidates.** Mix of: descriptive, metaphorical, naval (per Sunfish convention), short-and-punchy.
+3. **For each candidate, run `check.py`** + grep for industry collisions (Google search if internet available; otherwise rely on registry).
+4. **Eliminate collisions.** Note WHY each rejected candidate was rejected; this becomes registry input.
+5. **Pick the winner.** Document the choice + rejected alternatives in the relevant ADR or intake doc.
+6. **Update the registry**:
+   - If the name becomes locked vocabulary → add to `locked_vocabulary`
+   - Add rejected candidates to `rejected_vocabulary` with reasons
+   - If a new cluster convention emerges → add to `cluster_conventions`
+
+---
+
+## Cohort lessons
+
+- **First-time names get §A0'd**: any new name in an ADR's body should be in §A0.1 (introduced by this ADR) or §A0.2 (verified existing). The cohort batting average shows ~65% of structural-citation failures are caught by council, NOT §A0 — assume your first naming attempt is wrong-in-some-way until verified.
+- **Naming brainstorms cost more than naming registries**: the time spent rejecting "Mission Control" 3 times across 3 brainstorms is more than the time to maintain the registry.
+- **Rejected names are valuable signal**: future contributors (human + AI) will independently arrive at the same names. The registry preserves the institutional memory of why we said no.
+
+---
+
+## Cross-references
+
+- `_shared/engineering/naming-registry.yaml` — machine-readable registry
+- `tools/naming/check.py` — collision-check CLI
+- `_shared/engineering/coding-standards.md` — broader code-style canon
+- `docs/adrs/0070-multi-session-naval-org-structure.md` — naval-org role names (CO/XO/COB/PAO/Yeoman)
+- `docs/adrs/0069-adr-authoring-discipline.md` — pre-merge council canonical (catches naming drift among other things)
+- `docs/adrs/_FRONTMATTER.md` — ADR frontmatter schema (field name authority)
+- `tools/adr-projections/project.py` — ADR projection tool (validates frontmatter conventions)
+
+---
+
+**Living document**: append-only in spirit (rejected names stay rejected; reasons accumulate). When a convention is broken intentionally, document the exception here with rationale and date.

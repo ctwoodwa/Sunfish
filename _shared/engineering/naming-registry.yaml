@@ -1,0 +1,150 @@
+# Sunfish naming registry — hand-curated reservations + rejections
+#
+# This file is consulted by tools/naming/check.py to flag collisions with
+# names that aren't visible from the filesystem alone (reserved tentative
+# numbers, rejected-during-brainstorm names, locked vocabulary).
+#
+# Filesystem-derivable names (existing packages, namespaces, ADR numbers,
+# amendment IDs) are scanned automatically by check.py — don't duplicate
+# them here unless they need annotation.
+#
+# Update this file when:
+#  - A new ADR or intake claims a tentative number (`~ADR XXXX`)
+#  - A naming brainstorm rejects candidates (record reason)
+#  - A vocabulary term is locked (Wayfinder, Mission Space, etc.)
+#  - A cluster convention is established (`blocks-property-*`)
+
+# === Reserved tentative ADR numbers ===
+# These ADRs have intake stubs filed but the ADR itself is not yet authored.
+# When authoring a new ADR, do NOT use these numbers — they are claimed.
+reserved_adrs:
+  - number: 66
+    title: "Helm + Identity Atlas"
+    intake: icm/00_intake/output/2026-05-01_helm-and-identity-atlas-intake.md
+    reserver: W#34 follow-on
+  - number: 67
+    title: "Atlas Integration-Config"
+    intake: icm/00_intake/output/2026-05-01_atlas-integration-config-intake.md
+    reserver: W#34 follow-on
+  - number: 68
+    title: "Tenant Security Policy"
+    intake: icm/00_intake/output/2026-05-01_tenant-security-policy-intake.md
+    reserver: W#34 follow-on (W#37; needs general counsel)
+
+# === Locked Sunfish vocabulary ===
+# Canonical names with established meanings. Don't reuse for unrelated concepts.
+locked_vocabulary:
+  Wayfinder:
+    definition: "The configuration system (umbrella term). Per ADR 0065."
+    composes: [Helm, Atlas, "Standing Order"]
+  Helm:
+    definition: "Live-state pane within Wayfinder. Per W#34 brainstorm 2026-05-01."
+  Atlas:
+    definition: "Deep-config user-facing UI within Wayfinder. Per ADR 0065."
+  Standing Order:
+    definition: "Internal config-change record / event type within Wayfinder. Per ADR 0065 + 0028."
+  Mission Space:
+    definition: "Capability-dimensions framework. Per W#33 + ADR 0062. NOT 'Capability Matrix' (5-way collision)."
+  Mission Envelope:
+    definition: "Per-context capability snapshot. Per ADR 0062."
+  Anchor:
+    definition: "Zone A local-first desktop accelerator. Per ADR 0032."
+  Bridge:
+    definition: "Zone C hybrid hosted-node-as-SaaS accelerator. Per ADR 0031."
+    note: "Reserved as accelerator name; do NOT reuse for unrelated 'bridge' concepts."
+  Quarterdeck:
+    definition: "Entry-point location in Ship Architecture. Per W#35."
+  Engine Room:
+    definition: "Operations + observability location in Ship Architecture. Per W#35."
+  Tactical:
+    definition: "Anomaly-detection location in Ship Architecture. Per W#35."
+  Sick Bay:
+    definition: "Aggregation + diagnostics location in Ship Architecture. Per W#35."
+  Ship's Office:
+    definition: "Scribe / content location in Ship Architecture. Per W#35."
+
+# === Rejected vocabulary (do not propose; explain why if a brainstorm raises) ===
+rejected_vocabulary:
+  - name: "Capability Center"
+    reason: "5-way collision with existing usages of 'Capability'."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Control Center"
+    reason: "iOS/macOS quick-toggle UI collision."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Mission Control"
+    reason: "macOS Cmd+Up shortcut collision."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Bridge"
+    reason: "Already taken — Sunfish accelerator name (ADR 0031)."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Cockpit"
+    reason: "Already taken — W#29 (per memory note)."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Flight Deck"
+    reason: "Carrier-only naval stretch; doesn't fit local-first software framing."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Flight Plan"
+    reason: "Carrier-only naval stretch."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Trade Space"
+    reason: "Commerce confusion."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Chart Table"
+    reason: "UX-charting collision."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Chart Room"
+    reason: "UX-charting collision."
+    rejected_in: W#34 Wayfinder brainstorm 2026-05-01
+  - name: "Capability Matrix"
+    reason: "5-way collision with existing 'Capability' usages."
+    rejected_in: W#33 Mission Space brainstorm 2026-04-30
+  - name: "Surgeon"
+    reason: "Replaced by IDC (Independent Duty Corpsman) in W#35 brainstorm — IDC captures the local-first-with-escalation pattern better."
+    rejected_in: W#35 Ship Architecture brainstorm 2026-05-01
+  - name: "WEAPS"
+    reason: "Replaced by TAC (Tactical) in W#35 — broader scope than weapons."
+    rejected_in: W#35 Ship Architecture brainstorm 2026-05-01
+  - name: "Watchkeeper"
+    reason: "Replaced by TAC in W#35."
+    rejected_in: W#35 Ship Architecture brainstorm 2026-05-01
+  - name: "Yeoman"
+    reason: "Naval-org role-name; reserved for the book-side technical-writer session (per project memory). Sunfish-side equivalent is Scribe."
+    rejected_in: W#35 brainstorm 2026-05-01
+  - name: "Logroom"
+    reason: "Real-Navy doctrine puts Scribe in Ship's Office; operational logs already have homes (Engine Room engineering log, Quarterdeck deck log, Wayfinder Standing Orders log)."
+    rejected_in: W#35 brainstorm 2026-05-01
+  - name: "Crow's Nest"
+    reason: "CO preferred Lookout."
+    rejected_in: W#35 brainstorm 2026-05-01
+
+# === Cluster naming conventions ===
+# Established prefix patterns for related package families.
+cluster_conventions:
+  - cluster: "Property operations cluster"
+    prefix: "blocks-property-*"
+    example_packages: [blocks-property-assets, blocks-property-receipts, blocks-property-equipment]
+    note: "Established 2026-04-28 after W#24 collision with existing UI-only blocks-assets package."
+  - cluster: "Foundation packages"
+    prefix: "foundation-*"
+    namespace: "Sunfish.Foundation.*"
+    note: "Framework-agnostic contracts."
+  - cluster: "Kernel packages"
+    prefix: "kernel-*"
+    namespace: "Sunfish.Kernel.*"
+    note: "Runtime substrates."
+  - cluster: "UI adapter packages"
+    prefix: "ui-adapters-*"
+    examples: [ui-adapters-blazor, ui-adapters-react]
+  - cluster: "Compat packages"
+    prefix: "compat-*"
+    namespace: "Sunfish.Compat.*"
+    note: "Vendor-compatibility layers (Telerik, Syncfusion, etc.)."
+  - cluster: "Bridge subscription"
+    prefix: "Sunfish.Bridge.*"
+    note: "Bridge-side packages."
+
+# === ADR amendment numbering note ===
+# Amendment IDs are simple integers (A1, A2, ...) — gap-free per ADR.
+# When proposing an amendment, run: grep -E "^## Amendment A\d+" docs/adrs/NNNN-*.md
+# to find the highest existing amendment number; next available is N+1.
+# Example: ADR 0028 has A1-A11 (verified 2026-05-04); next available is A12.
