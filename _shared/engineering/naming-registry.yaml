@@ -17,11 +17,13 @@
 # === Reserved tentative ADR numbers ===
 # These ADRs have intake stubs filed but the ADR itself is not yet authored.
 # When authoring a new ADR, do NOT use these numbers — they are claimed.
+#
+# Note: ADR 0066 was reserved here for Helm + Identity Atlas (intake 2026-05-01)
+# and is now actively in flight via PR #529 — moved out of "reserved_adrs" list.
+# A parallel ONR session attempted ADR 0066 on 2026-05-04 for Crew Comms; that
+# work was renumbered to 0076 per CO directive (first-claim discipline). The
+# 0076 entry below preserves the reservation against future collisions.
 reserved_adrs:
-  - number: 66
-    title: "Helm + Identity Atlas"
-    intake: icm/00_intake/output/2026-05-01_helm-and-identity-atlas-intake.md
-    reserver: W#34 follow-on
   - number: 67
     title: "Atlas Integration-Config"
     intake: icm/00_intake/output/2026-05-01_atlas-integration-config-intake.md
@@ -30,6 +32,10 @@ reserved_adrs:
     title: "Tenant Security Policy"
     intake: icm/00_intake/output/2026-05-01_tenant-security-policy-intake.md
     reserver: W#34 follow-on (W#37; needs general counsel)
+  - number: 76
+    title: "Crew Comms — foundation-channels Contracts and Native Implementation"
+    intake: docs/adrs/0076-crew-comms-foundation-channels.md (Status: Proposed; in-flight uncommitted)
+    reserver: ONR session 2026-05-04 (renumbered from 0066 per CO directive after collision with W#34 follow-on Helm + Identity Atlas)
 
 # === Locked Sunfish vocabulary ===
 # Canonical names with established meanings. Don't reuse for unrelated concepts.
