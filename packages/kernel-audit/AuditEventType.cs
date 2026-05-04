@@ -463,6 +463,23 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An operator force-enabled an install that would otherwise have been blocked by spec evaluation. Per A1.11 council fix.</summary>
     public static readonly AuditEventType InstallForceEnabled = new("InstallForceEnabled");
 
+    // ===== ADR 0065 — Wayfinder System + Standing Order Contract (W#42) =====
+
+    /// <summary>A new <c>StandingOrder</c> was issued (validation chain passed; the order's <c>State</c> is <c>Issued</c>/<c>Validated</c>/<c>Applied</c>). Per ADR 0065 §4.</summary>
+    public static readonly AuditEventType StandingOrderIssued = new("StandingOrderIssued");
+
+    /// <summary>An existing <c>StandingOrder</c> was amended (e.g., re-issued after the operator addressed a <c>Conflicted</c> tie-break). Per ADR 0065 §4.</summary>
+    public static readonly AuditEventType StandingOrderAmended = new("StandingOrderAmended");
+
+    /// <summary>An existing <c>StandingOrder</c> was rescinded; emits a new audit record without redacting the original issuance record (audit immutability per ADR 0049). Per ADR 0065 §4.</summary>
+    public static readonly AuditEventType StandingOrderRescinded = new("StandingOrderRescinded");
+
+    /// <summary>A <c>StandingOrder</c> issuance was rejected because the validation chain surfaced a <c>Block</c>-severity issue. Per ADR 0065 §3 / §4.</summary>
+    public static readonly AuditEventType StandingOrderRejected = new("StandingOrderRejected");
+
+    /// <summary>A pair of concurrent <c>StandingOrder</c> issuances on the same (<c>Scope</c>, <c>Path</c>) was reconciled via the LWW tie-break; emitted once per pair, citing both <c>StandingOrderId</c> values. Per ADR 0065 §2 / §4.</summary>
+    public static readonly AuditEventType StandingOrderConflictResolved = new("StandingOrderConflictResolved");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
