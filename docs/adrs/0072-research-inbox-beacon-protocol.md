@@ -36,13 +36,29 @@ They share the Sunfish git repository (and the book repository via a filesystem
 symlink) as their only coordination medium.
 
 ADR 0070 establishes the naval command structure that defines these roles and
-their authority boundaries. Section 6 of that ADR names a signaling need: sub-XO
-sessions must be able to signal XO without polling all state files on every
-iteration. ADR 0070 acknowledges that the mechanism was operational before it was documented
-and flags the pattern as a "potential future ADR candidate" — the protocol has
-enough surface area (file naming, body schema, archive policy, cross-repo handling,
-escalation thresholds, spam mitigation) that a single section in a governance ADR
-is insufficient.
+their authority boundaries. Its §6 ("Live signaling: the research-inbox beacon
+protocol") provides an operational specification of the mechanism — file
+location, who writes what, the XO scan loop, archive cadence, escalation SLA,
+and spam mitigation. ADR 0070 §6 also names two open questions explicitly:
+**OQ-2** (automated beacon processing — currently human-driven on every loop
+iteration) and **OQ-3** (PAO cross-repo worktree fragility — flagged as
+deferred until the fragility actually causes a dropped beacon). ADR 0070 is
+therefore not under-spec'd; it is a working operational specification with two
+named gaps.
+
+This ADR exists not to fill a deferred slot but to specify the protocol more
+rigorously and to audit the as-built behavior against the spec. The protocol
+has accumulated 13 archived beacons across two senders since 2026-04-29; that
+empirical record exposes schema ambiguities, race conditions, and procedural
+gaps that ADR 0070 §6's prose pass did not anticipate (notably: schema-key
+divergence between `cob-*` and `pao-*` beacons, branch-cleanup omissions in
+the PAO worktree procedure, and concurrent-writer race conditions on the
+`_archive/` move). This ADR formalizes the schema as actually practiced,
+documents the procedural gaps, and adds a §8 Concurrency section addressing
+the race conditions identified pre-merge by canonical Opus council. ADR 0070
+§6 remains the primary cross-reference for the policy framing; this ADR
+supersedes its prose pass as the authoritative specification of the
+mechanism's surface area.
 
 The concrete problem the protocol solves: COB finishes a workstream and has no
 `ready-to-build` row in the priority queue. Without a signaling channel, COB
@@ -219,9 +235,13 @@ ADR cadence or other XO work.
 | `status` | Informational signal not requiring XO action |
 | `maintenance` | Reporting a completed housekeeping or maintenance run |
 
-**Timestamp format:** ISO-8601 UTC, minute precision, dashes for colons:
-`2026-05-01T14-30Z`. This is the moment the beacon is written, not the moment
-the triggering event occurred.
+**Timestamp format:** ISO-8601 UTC, second precision, dashes for colons:
+`2026-05-01T14-30-22Z`. This is the moment the beacon is written, not the
+moment the triggering event occurred. (The 13 archive beacons use the
+earlier minute-precision form `YYYY-MM-DDTHH-MMZ`; that form is grandfathered
+for the existing archive but is not canonical for new beacons. Second
+precision is required for new beacons to prevent filename collisions across
+concurrent writers — see §8.)
 
 **Slug:** 2-5 hyphen-separated lowercase tokens summarizing the beacon content.
 Tokens may be plain words or alphanumeric codes (e.g., workstream IDs like `w28`,
@@ -241,13 +261,23 @@ yeoman-status-2026-05-03T11-00Z-ch22-draft-complete.md
 
 ### §3 Body schema
 
-Every beacon file uses this structure:
+The body schema formalizes the practice observed across the 13 archived
+beacons. The schema deliberately accepts the per-sender key divergence
+(`workstream` for `cob-*` beacons, `chapter` for `pao-*` beacons) and the
+optional metadata keys that have appeared organically (`filed-by`, `filed-at`,
+`severity`, `sender`, `date`, `from`, `to`). This is the **formalize-practice**
+path: the spec describes what beacons actually look like, not a tighter
+schema that would invalidate the archive. A subsequent ADR amendment may
+tighten the schema once the operational record justifies the migration cost.
+
+**Skeleton:**
 
 ```
 ---
 type: <type>
-workstream-or-chapter: <workstream ID (W#NN) or chapter ID (ChNN)>
+<sender-specific work key>: <value>
 last-pr: <last PR merged or opened by this sender; "none" if no PR>
+[optional metadata keys per sender type]
 ---
 
 <≤2 lines of context: what was just shipped / what is blocked / why this beacon>
@@ -255,23 +285,77 @@ last-pr: <last PR merged or opened by this sender; "none" if no PR>
 <≤2 lines of "what would unblock me" / what XO action is requested>
 ```
 
-**Rules:**
-- Frontmatter must be valid YAML (3 keys exactly; no extras unless XO approves
-  schema extension via ADR amendment).
+**Required keys (all senders): 3.** Every beacon MUST carry these three keys:
+
+| Key | Value |
+|---|---|
+| `type` | beacon type (see enum below) |
+| `<work key>` | sender-specific (`workstream` or `chapter`; see table) |
+| `last-pr` | last PR merged or opened by this sender; `none` or `n/a` if no PR |
+
+**Sender-specific work key:**
+
+| Sender | Work key | Accepted values |
+|---|---|---|
+| `cob` | `workstream` | numeric workstream ID (e.g., `31`, `28`), `multi` (cross-workstream), or `none` (no specific workstream) |
+| `pao` | `chapter` | chapter ID (e.g., `Ch22`), `process / cross-cutting (no specific chapter)`, or `n/a (program-level)` |
+| `yeoman` | `chapter` | chapter ID; PAO-bypass beacons MUST also include the literal text "PAO-bypass" in the context block |
+| `routine` | `workstream` | reserved for future use; use `none` when no workstream context |
+
+**Optional keys (any sender):**
+
+| Key | When to use |
+|---|---|
+| `filed-by` | Sender role for clarity (e.g., `COB`, `PAO`) — used by 4 of 13 archive beacons |
+| `filed-at` | Timestamp duplicating filename timestamp — useful when filename truncation is suspected |
+| `sender` | Alternative to `filed-by`; used by 1 archive beacon |
+| `date` | ISO-8601 form of the timestamp (e.g., `2026-04-30T07:35Z`) — used by 2 archive beacons |
+| `from` / `to` | For PAO `resumed` beacons documenting cross-program re-entry |
+| `severity` | For incident-class beacons; values `low` / `medium` / `high` / `critical` |
+
+**Total key count range:** 3-7 keys per beacon. Empirically: 3 of 13 archive
+beacons use the minimum 3 keys; 5 of 13 use 5 keys; 1 uses 6; 1 uses 7. Any
+key not enumerated above MUST be approved via ADR amendment before use.
+
+**`type` enum (current archive + spec extensions):**
+
+| Value | When used |
+|---|---|
+| `idle` | sender priority queue empty; short form (used by `cob-*` beacons) |
+| `question` | sender blocked on a design decision; short form |
+| `resumed` | sender back online; short form |
+| `cob-idle` | sender-prefixed long form (functional equivalent of `idle`); used in 1 of 3 cob-idle beacons |
+| `cob-question` | sender-prefixed long form (equivalent of `question`); used in 4 of 8 cob-question beacons |
+| `pao-incident` | PAO incident report (extended-context allowed); 1 archive beacon |
+| `pao-resumed` | PAO re-entry; 1 archive beacon |
+| `status` | informational signal not requiring XO action (reserved; spec extension) |
+| `maintenance` | completed housekeeping or maintenance run (reserved; spec extension) |
+
+Both short forms (`idle`, `question`, `resumed`) and sender-prefixed long
+forms (`cob-idle`, `cob-question`, `pao-incident`, `pao-resumed`) are
+canonical. The sender-prefixed form gives filename-grep symmetry with the
+filename's `{sender}-{type}-...` prefix; the short form is more concise.
+Senders MAY use either; XO MUST recognize both.
+
+**Body rules:**
+
 - Context block: target ≤2 lines, ≤120 characters each. Facts only; no narrative.
 - Unblock block: target ≤2 lines, ≤120 characters each.
-- **`type: question` beacons MUST contain exactly one concrete ask.** Compound
-  asks (two unrelated questions in one beacon) MUST be split into separate
-  `question` beacon files. Beacon proliferation from over-splitting is a named
-  negative consequence; batching genuinely related sub-questions into one ask is
-  acceptable.
-- Beacons with `type: status` MAY exceed the prose targets when documenting an
-  incident or multi-phase decision; the body MUST justify the deviation in its
-  first line (e.g., "Extended-context beacon: incident report covering [scope].").
-  All other types (`idle`, `question`, `resumed`, `maintenance`) MUST conform to
-  the 2-line target. The `pao-incident-2026-04-30T07-35Z-destructive-action-
-  reset-hard.md` beacon in the archive is the canonical extended-context example
-  (pre-formalization; written under `type: status` semantics).
+- **`type: question` (or `cob-question`) beacons MUST contain exactly one
+  concrete ask.** Compound asks (two unrelated questions in one beacon) MUST
+  be split into separate `question` beacon files. Beacon proliferation from
+  over-splitting is a named negative consequence; batching genuinely related
+  sub-questions into one ask is acceptable.
+- Beacons with `type: status`, `pao-incident`, or other extended-context
+  classifications MAY exceed the prose targets when documenting an incident
+  or multi-phase decision; the body MUST justify the deviation in its first
+  line (e.g., "Extended-context beacon: incident report covering [scope].").
+  All other types (`idle`, `question`, `resumed`, `cob-idle`, `cob-question`,
+  `pao-resumed`, `maintenance`) MUST conform to the 2-line target.
+- The `pao-incident-2026-04-30T07-35Z-destructive-action-reset-hard.md`
+  beacon in the archive is the canonical extended-context example. Its
+  `type: pao-incident` and 6-key frontmatter are spec-conformant under this
+  schema.
 
 ---
 
@@ -291,16 +375,42 @@ last-pr: <last PR merged or opened by this sender; "none" if no PR>
 **PAO writes `pao-*` beacons:**
 
 PAO operates from the book repository. To write a beacon to the Sunfish inbox,
-PAO adds a Sunfish worktree from the book repo shell:
+PAO adds a Sunfish worktree from the book repo shell. The procedure captures
+the timestamp into a shell variable so the worktree-creation and cleanup steps
+agree on the same branch name (a naive double-invocation of `date` can cross a
+minute boundary at the 59-second mark and produce different branch names);
+the `-u` flag forces UTC so the trailing `Z` in the filename is honest:
 
 ```bash
-cd /Users/christopherwood/Projects/the-inverted-stack
-git -C /Users/christopherwood/Projects/Sunfish worktree add \
-  /tmp/sunfish-pao-signal-wt -b pao/signal-$(date +%Y%m%dT%H%MZ) origin/main
+TS=$(date -u +%Y%m%dT%H%MZ)
+WT=/tmp/sunfish-pao-signal-wt
+BRANCH=pao/signal-$TS
+git -C /Users/christopherwood/Projects/Sunfish worktree add "$WT" -b "$BRANCH" origin/main
 # Write the beacon file
-# Commit + push + open PR
-git -C /Users/christopherwood/Projects/Sunfish worktree remove /tmp/sunfish-pao-signal-wt
+# Commit + push + open PR (with --auto-merge per pre-merge council canonical)
+git -C /Users/christopherwood/Projects/Sunfish worktree remove "$WT"
+git -C /Users/christopherwood/Projects/Sunfish branch -d "$BRANCH"   # after PR has merged
 ```
+
+**Both cleanup steps are required.** `git worktree remove` deletes the
+worktree directory but leaves the local branch `pao/signal-<timestamp>`
+intact in the Sunfish repo's branch list. `git branch -d` deletes that local
+branch reference. Without both, every PAO signal accumulates a dangling local
+branch that complicates `git branch -a` and `gh pr list --state open` output.
+Run `git branch -d` only **after** the PR has merged (or after confirming the
+branch is no longer needed); attempting `-d` on an unmerged branch fails
+safely. Use `-D` (force) only when the PR was closed without merge and the
+branch is intentionally being abandoned.
+
+**Known fragility (inherits ADR 0070 OQ-3).** ADR 0070 §6 OQ-3 flagged the
+PAO cross-repo worktree pattern as fragile and "deferred until the fragility
+actually causes a dropped beacon." This ADR codifies the procedure but does
+not resolve OQ-3; the failure modes (mid-procedure session crash leaving a
+half-written worktree; `origin/main` advancing during the worktree's life
+producing a beacon based on stale state) remain. If a beacon is ever
+demonstrably dropped, the resolution path is to revisit OQ-3 and consider an
+in-tree alternative (e.g., a book-repo-local script that pushes via Sunfish's
+HTTPS remote without a worktree).
 
 PAO writes beacons when it encounters a question requiring Sunfish architecture,
 ADR, or workstream context that the PAO cannot resolve from the book + Sunfish
@@ -399,6 +509,74 @@ no access-control gate. Mitigation layers:
 
 ---
 
+### §8 Concurrency and uniqueness
+
+The protocol assumes XO is the sole writer that performs the `git mv beacon
+_archive/` step (§5 step 4). It does **not** assume single-writer semantics
+across the inbox as a whole — sub-XO senders can write new beacons while XO
+is processing existing ones, and PAO can open a PR from a worktree while XO
+opens a parallel archive PR. This section names the race conditions and
+specifies the rules that prevent them from resurrecting archived beacons or
+producing silent collisions.
+
+**Filename precision.** Beacons MUST use second-precision timestamps:
+`YYYY-MM-DDTHH-MM-SSZ` (e.g., `2026-05-04T14-30-22Z`). The earlier
+minute-precision form (`YYYY-MM-DDTHH-MMZ`) is grandfathered for the 13
+archive beacons but is no longer canonical for new beacons. Second precision
+makes filename collisions vanishingly unlikely across concurrent writers; the
+prior minute precision had a real collision risk when multiple sessions
+fired within a 60-second window.
+
+**Filename collision tiebreaker.** If two senders generate identical
+filenames despite second precision (e.g., both fire at the exact same wall
+clock second), the second writer to push appends a 4-character random
+hexadecimal suffix to the slug: `...slug-a3f7.md`. The first writer's PR
+keeps the un-suffixed name. The PR-review gate makes this resolution visible.
+
+**Archive-vs-root precedence rule.** If a beacon's filename appears in
+`_archive/` AND ALSO in the inbox root (e.g., after a rebase that introduces
+a copy of a previously-archived beacon), the **root-version is the canonical
+state** and the archive entry is the obsolete pre-archive snapshot. Readers
+(including XO scan logic) MUST NEVER resurrect a beacon by copying it from
+`_archive/` back to the root. The archive is read-only with respect to the
+active inbox.
+
+**Rebase-introduces-archived-beacon rule.** A rebase that re-introduces a
+beacon file already-archived on `origin/main` is an error condition. The
+canonical resolution is to delete the rebased copy from the rebased branch
+(`git rm icm/_state/research-inbox/<filename>`) before pushing. The
+archived version on `origin/main` remains the authoritative resolution
+record. This most often arises when a sub-XO PR was authored against an
+older `origin/main` and is rebased after XO archived an unrelated beacon
+in the same iteration; the rebase-resolution step is mechanical.
+
+**Archive-during-write race.** If XO archives a beacon that a sub-XO sender
+is in the process of writing (sub-XO PR in flight against an older `origin/main`):
+
+1. XO's archive PR lands first; the beacon moves from root to `_archive/`.
+2. Sub-XO's PR rebases on the new `origin/main`. The rebase reveals that the
+   beacon now lives in `_archive/`, not in root.
+3. Sub-XO's PR MUST treat the absence of the beacon from root as "already
+   archived" — i.e., the signal has been received and resolved. Sub-XO MUST
+   NOT re-introduce the beacon to the inbox root. If sub-XO's PR contains
+   only the beacon and no other changes, sub-XO closes the PR without merge.
+   If sub-XO's PR contains additional changes, sub-XO drops the beacon-add
+   from the PR and proceeds with the remaining changes.
+
+**XO single-writer constraint on `_archive/`.** XO MUST NOT batch multiple
+`git mv` operations against the same `_archive/` directory across PRs that
+are in flight simultaneously. Each archive operation is one PR; PRs are
+serialized by `gh pr merge --auto --squash` against the auto-merge queue.
+This prevents merge conflicts from interleaved archive operations.
+
+**Detection (Open Question).** A CI lint job that greps for filename
+collisions across `icm/_state/research-inbox/*.md` and
+`icm/_state/research-inbox/_archive/*.md` would catch the rebase-introduces-
+archived-beacon failure mode automatically. Implementation deferred to OQ-4
+(below); the rule is enforceable manually until then.
+
+---
+
 ## Consequences
 
 ### Positive
@@ -491,6 +669,15 @@ archive are unaffected; new beacons should use the full enum.
    policy (XO checks beacon age during each iteration). A CI job that comments
    on old beacons or opens a GitHub issue would harden the escalation path.
    Low priority; the policy is sufficient for current session frequency.
+4. **Filename-collision CI lint (§8 detection).** A CI job that greps for
+   filename collisions across `icm/_state/research-inbox/*.md` and
+   `icm/_state/research-inbox/_archive/*.md` would catch the
+   rebase-introduces-archived-beacon failure mode automatically. The §8
+   archive-vs-root precedence rule is enforceable manually until then; CI
+   automation upgrades enforcement from human-attentive to mechanical.
+   Trigger to implement: first occurrence of a beacon being silently
+   resurrected, or beacon volume exceeding 5 active beacons (whichever is
+   sooner).
 
 ---
 
