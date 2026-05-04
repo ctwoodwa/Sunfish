@@ -44,12 +44,24 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "SunfishField",
+            // The SPM-vs-Xcode entry-point split is handled by a
+            // `#if !SWIFT_PACKAGE` guard around the `@main` attribute in
+            // SunfishFieldApp.swift, so the file is shared cleanly between
+            // both build systems.
             exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "SunfishFieldIdentityTests",
             dependencies: ["SunfishFieldIdentity"],
             path: "Tests/SunfishFieldIdentityTests"
+        ),
+        .testTarget(
+            name: "SunfishFieldPersistenceTests",
+            dependencies: [
+                "SunfishField",
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ],
+            path: "Tests/SunfishFieldPersistenceTests"
         ),
     ]
 )
