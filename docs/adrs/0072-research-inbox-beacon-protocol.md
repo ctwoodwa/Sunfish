@@ -56,7 +56,7 @@ Yeoman needs a tiered escalation path.
 
 The existing practice — evidenced by the `icm/_state/research-inbox/_archive/`
 directory accumulating beacons since 2026-04-29 — has already demonstrated that
-the protocol works. The archive contains 13 resolved beacons from three senders
+the protocol works. The archive contains 13 resolved beacons from two senders
 (`cob`, `pao`) across multiple session-days. Those beacons unblocked:
 
 - W#31 taxonomy substrate (COB idled 2026-04-29T20-42Z after shipping PRs
@@ -223,9 +223,11 @@ ADR cadence or other XO work.
 `2026-05-01T14-30Z`. This is the moment the beacon is written, not the moment
 the triggering event occurred.
 
-**Slug:** 2-5 hyphen-separated lowercase words summarizing the beacon content.
+**Slug:** 2-5 hyphen-separated lowercase tokens summarizing the beacon content.
+Tokens may be plain words or alphanumeric codes (e.g., workstream IDs like `w28`,
+phase codes like `p5c4`, or chapter IDs like `ch22`).
 Examples: `w31-built-queue-dry`, `w18-encrypted-field-design`,
-`w19-p3-prereqs`, `p5-w20-substrate-adaptation`.
+`w19-p3-prereqs`, `p5c4-w20-substrate-adaptation`.
 
 **Full filename examples:**
 ```
@@ -256,15 +258,20 @@ last-pr: <last PR merged or opened by this sender; "none" if no PR>
 **Rules:**
 - Frontmatter must be valid YAML (3 keys exactly; no extras unless XO approves
   schema extension via ADR amendment).
-- Context block: ≤2 lines, ≤120 characters each. Facts only; no narrative.
-- Unblock block: ≤2 lines, ≤120 characters each. One concrete ask per beacon.
-  Compound asks (two unrelated questions in one beacon) should be split into
-  two beacon files.
-- Beacons that require extended context (e.g., a PAO incident report) may exceed
-  the prose limits, but must still include the 3-line frontmatter and must mark
-  themselves `type: status` or `type: question` as appropriate. The `pao-incident-
-  2026-04-30T07-35Z-destructive-action-reset-hard.md` beacon in the archive is the
-  canonical example of an extended-context beacon.
+- Context block: target ≤2 lines, ≤120 characters each. Facts only; no narrative.
+- Unblock block: target ≤2 lines, ≤120 characters each.
+- **`type: question` beacons MUST contain exactly one concrete ask.** Compound
+  asks (two unrelated questions in one beacon) MUST be split into separate
+  `question` beacon files. Beacon proliferation from over-splitting is a named
+  negative consequence; batching genuinely related sub-questions into one ask is
+  acceptable.
+- Beacons with `type: status` MAY exceed the prose targets when documenting an
+  incident or multi-phase decision; the body MUST justify the deviation in its
+  first line (e.g., "Extended-context beacon: incident report covering [scope].").
+  All other types (`idle`, `question`, `resumed`, `maintenance`) MUST conform to
+  the 2-line target. The `pao-incident-2026-04-30T07-35Z-destructive-action-
+  reset-hard.md` beacon in the archive is the canonical extended-context example
+  (pre-formalization; written under `type: status` semantics).
 
 ---
 
@@ -374,9 +381,11 @@ no access-control gate. Mitigation layers:
 
 1. **Naming convention enforcement.** Beacons with malformed filenames (wrong
    sender prefix, invalid type, wrong timestamp format) are ignored by XO's
-   scan path (`ls *.md` returns them; XO processes only files matching the
-   convention; malformed files are flagged in the loop iteration log and XO
-   writes a memory note).
+   processing logic (`ls *.md` returns all `.md` files; XO applies the naming
+   convention filter before acting; malformed files are flagged in the loop
+   iteration log and XO writes a memory note). A CI lint step (see Implementation
+   checklist) validates filenames at PR merge time and flags violations before
+   they reach the scan path.
 2. **PR-gated writes.** Beacons written from feature-branch PRs are reviewed
    before landing on `main`. The PR diff makes the beacon content visible;
    no surprise files appear without a PR record.
@@ -462,8 +471,9 @@ archive are unaffected; new beacons should use the full enum.
 - [ ] Add this ADR to `docs/adrs/STATUS.md` (Proposed status)
 - [ ] Add `CLAUDE.md` cross-reference: update §"Live signaling to XO —
   `research-inbox/`" to cite ADR 0072 as the protocol specification
-- [ ] (Optional, non-blocking) Add a CI lint step that validates beacon
-  filenames match the naming convention pattern; report violations as warnings
+- [ ] Add a CI lint step that validates beacon filenames match the naming
+  convention regex; report violations as warnings (non-blocking initially;
+  upgrade to blocking when the scan path is hardened per §7 layer 1)
 
 ---
 
@@ -524,9 +534,9 @@ This ADR should be re-evaluated when **any one** of the following occurs:
   — trust model for the repo. The beacon protocol's trust impact section (§7)
   is consistent with the chain-of-permissiveness analysis; beacons do not
   introduce new trust boundaries.
-- **ADR 0070** (not yet merged; PR #489 awaiting CO accept) — naval command
-  structure. ADR 0072 composes ADR 0070: 0070 names the protocol exists; 0072
-  specifies it. The `composes: [70]` frontmatter field records this dependency.
+- **ADR 0070** (merged via PR #489) — naval command structure. ADR 0072 composes
+  ADR 0070: 0070 names the protocol exists; 0072 specifies it. The
+  `composes: [70]` frontmatter field records this dependency.
 
 ### Canonical protocol specification
 
@@ -544,7 +554,7 @@ This ADR should be re-evaluated when **any one** of the following occurs:
 ### Unblock chains driven by beacons (evidence of protocol value)
 
 - **W#31 taxonomy substrate unblock (2026-04-29):** `cob-idle-2026-04-29T20-42Z-
-  31-built-queue-dry.md` signaled COB at rung 6; XO queued three follow-on
+  31-built-queue-dry.md` signaled XO at rung 6; XO queued three follow-on
   workstreams; COB resumed within one loop iteration.
 - **W#18 vendor substrate unblock (2026-04-29/30):** sequence of `cob-question-*`
   beacons surfaced encrypted-field design questions; XO escalated to ADR
