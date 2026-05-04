@@ -44,12 +44,23 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "SunfishField",
-            exclude: ["Info.plist"]
+            // SunfishFieldApp.swift has @main which collides with the SPM
+            // test-runner's _main symbol. The app entry is Xcode-only;
+            // Project.xcodeproj/project.pbxproj references it directly.
+            exclude: ["Info.plist", "SunfishFieldApp.swift"]
         ),
         .testTarget(
             name: "SunfishFieldIdentityTests",
             dependencies: ["SunfishFieldIdentity"],
             path: "Tests/SunfishFieldIdentityTests"
+        ),
+        .testTarget(
+            name: "SunfishFieldPersistenceTests",
+            dependencies: [
+                "SunfishField",
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ],
+            path: "Tests/SunfishFieldPersistenceTests"
         ),
     ]
 )
