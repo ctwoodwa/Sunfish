@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\foundation\Sunfish.Foundation.csproj" />
     <ProjectReference Include="..\..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
     <ProjectReference Include="..\..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <ProjectReference Include="..\..\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
   </ItemGroup>
 
 </Project>
