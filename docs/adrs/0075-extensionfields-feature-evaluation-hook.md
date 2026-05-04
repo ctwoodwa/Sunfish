@@ -45,7 +45,7 @@ amendments: []
 
 - `Sunfish.Foundation.Catalog.ExtensionFields.FeatureGateOffPolicy` (new enum: `Hide` / `Sequester` / `Redact`).
 - `ExtensionFieldSpec.FeatureKey` and `ExtensionFieldSpec.FeatureGateOffPolicy` (two new optional record parameters appended to the existing 8-parameter record → 10 parameters total).
-- `Sunfish.Kernel.Audit.AuditEventType.{ExtensionFieldGated, ExtensionFieldFiltered, ExtensionFieldSequestered, ExtensionFieldRedacted}` static-readonly fields.
+- `Sunfish.Kernel.Audit.AuditEventType.{ExtensionFieldGated, ExtensionFieldFiltered, ExtensionFieldSequestered, ExtensionFieldRedacted, ExtensionFieldGateEvaluationFailed}` static-readonly fields (5 constants; `ExtensionFieldGateEvaluationFailed` records fail-closed evaluator errors per §Gate-evaluator failure semantics below).
 - New `IExtensionFieldCatalog.GetFieldsAsync(Type, FeatureEvaluationContext, CancellationToken)` overload (additive; does not modify the existing 1-arg `GetFields`).
 - New `MaterializedExtensionField` record + `GateState` enum (returned by the new overload).
 - New `Sunfish.Foundation.Catalog.ExtensionFields.ExtensionFieldRedactionDeniedException` (parallel to `Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException`; thrown by the catalog's `Redact` path when the capability check fails). Constructor: `(string action, string entityTypeFullName, string fieldKey, string reason)`.
@@ -73,7 +73,7 @@ amendments: []
 - The audit emission factory `ExtensionFieldGateAuditPayloads` is parallel to the existing `MigrationAuditPayloads` (`packages/foundation-migration/Audit/MigrationAuditPayloads.cs`) — proven pattern.
 - The ADR 0009 §Resolution-order chain (catalog → provider → entitlements → catalog default → throw) is preserved verbatim. This ADR adds a **separate** evaluation site at the catalog boundary — it does not modify `DefaultFeatureEvaluator`.
 - `ICapabilityGraph` consumer-facing authority check is `QueryAsync(PrincipalId, Resource, CapabilityAction, DateTimeOffset, CancellationToken) → ValueTask<bool>`. The Redact gate calls `await _capabilityGraph.QueryAsync(_signer.IssuerId, redactResource, RedactExtensionFieldAction, _clock.UtcNow, ct)` — `IOperationSigner.IssuerId` is the only canonical "current principal" surface available at a foundation-tier component (no `IUserContext` exists; `FeatureEvaluationContext.UserId` is `string?`, not a `PrincipalId`). The `redactResource` is `new Resource($"extension-field#{entityType.FullName}#{spec.Key.Value}")` — same shape as the §Sequester composition's catalog-level sentinel `recordId` so the two sequestration paths address the same conceptual resource.
-- The catalog's csproj must add `ProjectReference` to `Sunfish.Foundation` (already present transitively via `Sunfish.Kernel.Audit`'s graph, but called out here so the explicit dependency on `Sunfish.Foundation.Capabilities` and `Sunfish.Foundation.Crypto` is recorded). Both namespaces live inside the `Sunfish.Foundation` package — no new csproj `ProjectReference` is needed beyond what §A0.3 already records.
+- The catalog's csproj must add `ProjectReference` to `Sunfish.Foundation` (accessible via the direct `ProjectReference` to `Sunfish.Foundation` — where `Sunfish.Foundation.Capabilities` and `Sunfish.Foundation.Crypto` are sub-namespaces of the foundation package — NOT transitively via `Sunfish.Kernel.Audit`). Both namespaces live inside the `Sunfish.Foundation` package — no new csproj `ProjectReference` is needed beyond what §A0.3 already records.
 
 ### §A0.4 Cross-ADR claims (guilty-until-proven-innocent per ADR 0069 D3)
 
@@ -160,6 +160,16 @@ Catalog returns all specs unchanged; the materializer filters per record using t
 
 **Verdict:** Rejected — fidelity gain is not worth the perf cost.
 
+### Option D — Push-not-pull (event-driven invalidation) [REJECTED]
+
+The feature evaluator pushes invalidation signals to the catalog materializer when a gate flips; the catalog reacts to push events rather than polling `IFeatureEvaluator` on each call.
+
+- **Pro:** eliminates per-call evaluation overhead; materializer always has a current snapshot.
+- **Con:** introduces bi-directional dependency between `foundation-featuremanagement` and `foundation-catalog`. Currently the dependency flows one way: the catalog consumes `IFeatureEvaluator`. Push-based invalidation requires `foundation-featuremanagement` to know about (and call back into) the catalog, creating a circular package dependency.
+- **Con:** the pull model (Option A, current choice) preserves the single-direction dependency and tolerates brief staleness within the ADR 0065 §F9 P95 200ms replication budget — a constraint the system is already designed around.
+
+**Verdict:** Rejected — circular dependency defeats the layering contract; the pull model is sufficient given the ADR 0065 replication-latency budget.
+
 ---
 
 ## Decision
@@ -245,6 +255,10 @@ public interface IExtensionFieldCatalog
 }
 ```
 
+#### Synchronous overload deprecation note
+
+The synchronous `GetFields(Type)` overload is marked `[Obsolete("Use GetFieldsAsync which supports feature-gate evaluation. GetFields does not apply FeatureGateOffPolicy.")]` as of Phase 1 build. The Roslyn analyzer pattern (ADR 0065 Phase 3b, `SUNFISH_WAYFINDER001` precedent) applies: callers are warned at compile time when they use the ungated synchronous overload. This is an informational `[Obsolete]` (not an error); call sites that genuinely do not have a `FeatureEvaluationContext` (e.g., startup-time metadata builders, schema-generation tooling) are expected to suppress the warning with a brief explanatory comment. The purpose of the warning is to prompt call-site authors to consider whether feature-gate semantics are needed, not to force a migration.
+
 #### `MaterializedExtensionField` (new record)
 
 ```csharp
@@ -284,7 +298,7 @@ For policies `Hidden`, `Sequestered`, `Redacted`, the field is **excluded** from
 
 #### Audit emission
 
-Four new `AuditEventType` static-readonly fields on `Sunfish.Kernel.Audit.AuditEventType`:
+Five new `AuditEventType` static-readonly fields on `Sunfish.Kernel.Audit.AuditEventType`:
 
 ```csharp
 // In packages/kernel-audit/AuditEventType.cs (new section, ADR 0075).
@@ -292,6 +306,7 @@ public static readonly AuditEventType ExtensionFieldGated = new("ExtensionFieldG
 public static readonly AuditEventType ExtensionFieldFiltered = new("ExtensionFieldFiltered");
 public static readonly AuditEventType ExtensionFieldSequestered = new("ExtensionFieldSequestered");
 public static readonly AuditEventType ExtensionFieldRedacted = new("ExtensionFieldRedacted");
+public static readonly AuditEventType ExtensionFieldGateEvaluationFailed = new("ExtensionFieldGateEvaluationFailed");
 ```
 
 Semantics:
@@ -302,6 +317,7 @@ Semantics:
 | `ExtensionFieldFiltered` | Spec has a `FeatureKey`; gate evaluated to OFF; policy is `Hide`; field excluded from list. |
 | `ExtensionFieldSequestered` | Spec has a `FeatureKey`; gate evaluated to OFF; policy is `Sequester`; field excluded AND `ISequestrationStore.SequesterAsync(...)` was called. |
 | `ExtensionFieldRedacted` | Spec has a `FeatureKey`; gate evaluated to OFF; policy is `Redact`; field excluded AND underlying data was tombstoned. |
+| `ExtensionFieldGateEvaluationFailed` | `IFeatureEvaluator.IsEnabledAsync` threw; gate treated as OFF (fail-closed); exception message and `FeatureKey` captured in payload. |
 
 Audit payloads use a new factory helper `ExtensionFieldGateAuditPayloads` (parallel to `MigrationAuditPayloads` in `packages/foundation-migration/Audit/`) that constructs the `AuditPayload` + `SignedOperation<AuditPayload>` envelope from the gating outcome. The factory is in the catalog package; signing is delegated via constructor-injected `IOperationSigner` (already a foundation-tier abstraction).
 
@@ -454,6 +470,14 @@ Three properties of this design:
 - The catalog package gains `ProjectReference` to `Sunfish.Foundation.Migration` for `ISequestrationStore` and `SequestrationFlagKind`. This is a new cross-foundation dependency; is acceptable because all involved packages are foundation-tier and `Sunfish.Foundation.Migration` is the canonical home for sequestration semantics.
 - The `WayfinderFeatureProvider` from ADR 0009 Amendment A1 is the canonical operator-runtime provider; this ADR does NOT couple to it directly. Instead, the catalog calls `IFeatureEvaluator`, which (via DI configuration) resolves through the entire ADR 0009 chain — `WayfinderFeatureProvider` is one of several providers in that chain. **The catalog has no knowledge of the operator-runtime layer; it only knows the foundation evaluator surface.** This preserves the decoupling promised in ADR 0009 Amendment A1 §A1.4.
 
+### Gate-evaluator failure semantics
+
+If `IFeatureEvaluator.IsEnabledAsync` throws, the materializer treats the gate as OFF (fail-closed). The failure is recorded via a new `ExtensionFieldGateEvaluationFailed` audit event type (5th constant, parallel to the existing 4; added to §A0.1 negative-existence list and the Phase 2 implementation checklist). Fail-closed behavior prevents feature-gate errors from silently exposing gated fields. The audit record captures the exception message and the spec's `FeatureKey` so operators can diagnose evaluator failures without examining application logs directly.
+
+### Trust impact — operator-flip / GetFieldsAsync race
+
+The operator-flip / `GetFieldsAsync` race is bounded by Standing-Order replication latency (P95 200ms per ADR 0065 §F9). During the race window, stale materializer results may expose or hide fields inconsistently. For `FeatureGateOffPolicy.Redact`, a MUST requirement is added: the materializer MUST require Standing Order quorum confirmation (not just local-projection observation) before applying the Redact partition — local-only projection is insufficient for a security-sensitive hide operation.
+
 ---
 
 ## Consequences
@@ -488,7 +512,7 @@ Three properties of this design:
 ### Affected packages
 
 - `packages/foundation-catalog/` — new types (`FeatureGateOffPolicy`, `MaterializedExtensionField`, `GateState`), extended `ExtensionFieldSpec`, new `IExtensionFieldCatalog.GetFieldsAsync(...)` overload, new `ExtensionFieldGateAuditPayloads` factory. New csproj `ProjectReference`s to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, `Sunfish.Foundation.Migration`.
-- `packages/kernel-audit/` — four new `AuditEventType` static-readonly fields.
+- `packages/kernel-audit/` — five new `AuditEventType` static-readonly fields (including `ExtensionFieldGateEvaluationFailed` per §Gate-evaluator failure semantics).
 - `packages/foundation-migration/` — possible new `SequestrationFlagKind.FeatureGateOff` enum value (§Open questions item 2; W#35 amendment).
 
 ### Migration path
@@ -509,8 +533,8 @@ Three properties of this design:
 ## Implementation checklist
 
 - [ ] **Phase 1 — substrate types.** Add `FeatureGateOffPolicy` enum, `MaterializedExtensionField` record, `GateState` enum to `packages/foundation-catalog/ExtensionFields/`. Extend `ExtensionFieldSpec` record with two new optional positional parameters (`FeatureKey` and `FeatureGateOffPolicy`).
-- [ ] **Phase 2 — audit-event-type constants.** Add four new `public static readonly AuditEventType` fields (`ExtensionFieldGated`, `ExtensionFieldFiltered`, `ExtensionFieldSequestered`, `ExtensionFieldRedacted`) to `packages/kernel-audit/AuditEventType.cs` under a new `// ===== ADR 0075 — extension-field feature-gate hook =====` section header.
-- [ ] **Phase 3 — audit-payload factory.** Create `packages/foundation-catalog/ExtensionFields/Audit/ExtensionFieldGateAuditPayloads.cs` (parallel to `MigrationAuditPayloads`). Constructs `AuditPayload` + `SignedOperation<AuditPayload>` envelopes for the four event types.
+- [ ] **Phase 2 — audit-event-type constants.** Add five new `public static readonly AuditEventType` fields (`ExtensionFieldGated`, `ExtensionFieldFiltered`, `ExtensionFieldSequestered`, `ExtensionFieldRedacted`, `ExtensionFieldGateEvaluationFailed`) to `packages/kernel-audit/AuditEventType.cs` under a new `// ===== ADR 0075 — extension-field feature-gate hook =====` section header. `ExtensionFieldGateEvaluationFailed` records fail-closed evaluator errors per §Gate-evaluator failure semantics.
+- [ ] **Phase 3 — audit-payload factory.** Create `packages/foundation-catalog/ExtensionFields/Audit/ExtensionFieldGateAuditPayloads.cs` (parallel to `MigrationAuditPayloads`). Constructs `AuditPayload` + `SignedOperation<AuditPayload>` envelopes for all five event types (including `ExtensionFieldGateEvaluationFailed`).
 - [ ] **Phase 4 — catalog wiring.** Add `IExtensionFieldCatalog.GetFieldsAsync(Type, FeatureEvaluationContext, CancellationToken)` overload. Update concrete `ExtensionFieldCatalog` to accept nullable `IFeatureEvaluator`, `IAuditTrail`, `ISequestrationStore`, and signer / node-id / record-id-resolver providers. Implement gate evaluation, policy application, audit emission, and sequestration-store integration.
 - [ ] **Phase 5 — DI registration.** Add `ServiceCollectionExtensions.AddExtensionFieldCatalogWithFeatureGating(...)` overload that wires the dependencies. The existing `AddExtensionFieldCatalog()` method is preserved unchanged.
 - [ ] **Phase 6 — csproj updates.** Add `ProjectReference` to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, and `Sunfish.Foundation.Migration` in `packages/foundation-catalog/Sunfish.Foundation.Catalog.csproj`.
@@ -526,7 +550,7 @@ Three properties of this design:
 1. **`IFeatureEvaluator` mandatory vs. optional.** Current: optional (lazy DI). Risk: deployments that should gate but forget to register the evaluator silently bypass gating. Mitigation: `MustGateOption` flag in `AddExtensionFieldCatalog(...)` that throws on `GetFieldsAsync` if no evaluator is registered. Council to decide.
 2. **`SequestrationFlagKind` value.** Current: reuse `PlaintextSequestered` (closest existing). Cleaner: amend W#35 (foundation-migration) to add `SequestrationFlagKind.FeatureGateOff`. Whether to do it in this PR or as a separate W#35 amendment first — open.
 3. **`WayfinderFeatureProvider` interaction.** Current: catalog calls `IFeatureEvaluator` (full ADR 0009 chain), not `WayfinderFeatureProvider` directly — preserves the decoupling promised in Amendment A1 §A1.4. A "Wayfinder-only" mode would couple — probably not, but worth pressure-testing.
-4. **Audit-volume management for `ExtensionFieldGated`.** High-traffic SaaS at 10 gated fields × 10K renders/day = 100K daily redundant records. Options: (a) emit always (default), (b) emit on state-change only (requires stateful change-detector), (c) sampling. Council to recommend.
+4. **Audit-volume management for `ExtensionFieldGated`.** High-traffic SaaS at 10 gated fields × 10K renders/day = 100K daily redundant records. Options: (a) emit always, (b) emit on state-change only (requires stateful change-detector), (c) sampling. **Recommended default: (b) state-change only** — emit an audit record only when a gate changes the outcome compared to the previous evaluation for the same `(entityType, FeatureKey, TenantId)` tuple. Regulated tenants who need a full per-evaluation record can opt in to `MustEmitEveryEvaluation = true` via the feature spec. This reduces the common-case audit volume to near-zero while preserving full audit fidelity when operators need it. **Trust impact (regulated bundles):** Regulated bundles should default to `FeatureGateOffPolicy.Sequester` (not `Hide`) — `Hide` is silent and untraceable in the audit trail; `Sequester` preserves the data with an audit record of the gate state. Callers targeting regulated tenants should be warned (via an analyzer diagnostic, following the `SUNFISH_WAYFINDER001` pattern) if they configure `Hide` on a regulated bundle's extension field.
 5. **`GetFieldsWithGatesAsync(...)` query.** Some UI consumers want to render "field disabled by your tier" affordances for sequestered/redacted fields. Default: ship `GetFieldsAsync` only in v1; track follow-up Amendment if the kitchen-sink demo motivates it.
 6. **`Redact` tombstone shape.** Options: (a) remove field from extension JSON entirely (no tombstone); (b) replace value with `RedactedFieldMarker` sentinel preserving field-name presence; (c) mark entire entity redacted (overkill). Default: option (b). Council to confirm.
 7. **Field-level vs. record-level sequestration.** `SequesteredRecord` supports both via `"{recordId}#{fieldName}"`. For feature-gate sequestration the natural granularity is field-level — confirm composition with W#35's existing record-level form-factor sequestration is conflict-free.
