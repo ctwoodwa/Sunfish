@@ -12,11 +12,21 @@ let package = Package(
             name: "SunfishFieldIdentity",
             targets: ["SunfishFieldIdentity"]
         ),
+        // Phase 1 scaffold — SwiftUI app shell. The real app builds via
+        // Project.xcodeproj; this library product lets `swift build` verify
+        // the SwiftUI sources compile without a full Xcode invocation.
+        .library(
+            name: "SunfishField",
+            targets: ["SunfishField"]
+        ),
     ],
     dependencies: [
-        // swift-crypto provides Ed25519 + HMAC parity with the .NET side per
-        // ADR 0004. Apple-maintained; pinned to a stable 3.x.
+        // swift-crypto: Ed25519 + HMAC parity with .NET per ADR 0004.
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.0.0"),
+        // GRDB.swift: SQLite ORM for local persistence (Phase 2).
+        // Declared here so Package.resolved pins the version before Phase 2
+        // begins (per pre-release-latest-first policy).
+        .package(url: "https://github.com/groue/GRDB.swift.git", from: "6.0.0"),
     ],
     targets: [
         .target(
@@ -25,6 +35,16 @@ let package = Package(
                 .product(name: "Crypto", package: "swift-crypto"),
             ],
             path: "Sources/Identity"
+        ),
+        .target(
+            name: "SunfishField",
+            dependencies: [
+                "SunfishFieldIdentity",
+                // GRDB pinned in Package.resolved; Phase 2 adds the imports.
+                .product(name: "GRDB", package: "GRDB.swift"),
+            ],
+            path: "SunfishField",
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "SunfishFieldIdentityTests",
