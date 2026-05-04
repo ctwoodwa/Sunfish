@@ -37,6 +37,10 @@ public static class WayfinderServiceExtensions
         services.TryAddSingleton<IStandingOrderRepository>(
             sp => sp.GetRequiredService<CrdtStandingOrderRepository>());
         services.TryAddSingleton<IStandingOrderIssuer, DefaultStandingOrderIssuer>();
+        // Phase 3a — Atlas projector (LWW projection + linear search).
+        services.TryAddSingleton<DefaultAtlasProjector>();
+        services.TryAddSingleton<IAtlasProjector>(
+            sp => sp.GetRequiredService<DefaultAtlasProjector>());
         services.TryAddSingleton(TimeProvider.System);
         return services;
     }
