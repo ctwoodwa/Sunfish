@@ -9,7 +9,7 @@ final class EventEnvelopeTests: XCTestCase {
         seq: UInt64 = 42,
         eventType: EventType = .Inspection,
         payload: Data = Data("hello".utf8),
-        blobRefs: [String]? = nil
+        blobRef: String? = nil
     ) -> EventEnvelope {
         EventEnvelope(
             deviceLocalSeq: seq,
@@ -17,7 +17,7 @@ final class EventEnvelopeTests: XCTestCase {
             deviceId: "ipad-abcdef0123456789",
             eventType: eventType,
             payload: payload,
-            blobRefs: blobRefs,
+            blobRef: blobRef,
             capturedUnderKernel: "1.3.0",
             capturedUnderSchemaEpoch: 7)
     }
@@ -55,11 +55,24 @@ final class EventEnvelopeTests: XCTestCase {
         XCTAssertEqual(envelope.capturedUnderSchemaEpoch, 7)
     }
 
-    func testEnvelope_BlobRefsOptionalAndOptional() throws {
-        let withRefs = newEnvelope(blobRefs: ["abc123", "def456"])
-        let withoutRefs = newEnvelope(blobRefs: nil)
-        XCTAssertEqual(withRefs.blobRefs?.count, 2)
-        XCTAssertNil(withoutRefs.blobRefs)
+    func testEnvelope_BlobRefOptional() throws {
+        let withRef = newEnvelope(blobRef: "abc123")
+        let withoutRef = newEnvelope(blobRef: nil)
+        XCTAssertEqual(withRef.blobRef, "abc123")
+        XCTAssertNil(withoutRef.blobRef)
+    }
+
+    /// Trip-wire for the deferred RFC 8785 canonicalizer (Phase 3.5).
+    /// Substrate v1 ships `EventEnvelope` + `EventQueueService` against
+    /// Swift's standard `JSONEncoder`, which is NOT byte-stable across
+    /// replicas. Phase 3.5 ships the full RFC 8785 Swift canonicalizer
+    /// + the 10-fixture cross-language byte-for-byte test against
+    /// `Sunfish.Foundation.Crypto.CanonicalJson.Serialize`. Until then
+    /// this test stays explicitly skipped — its presence in the suite
+    /// is the machine-readable trip-wire that a follow-up PR is owed.
+    func testEnvelope_RFC8785_CrossLanguageByteParity_PendingPhase3Point5() throws {
+        try XCTSkipIf(true,
+            "Pending W#23 Phase 3.5: RFC 8785 Swift canonicalizer + 10-fixture cross-language test against Sunfish.Foundation.Crypto.CanonicalJson.Serialize")
     }
 
     func testEventType_AllCasesEncodeAsTheirRawString() throws {

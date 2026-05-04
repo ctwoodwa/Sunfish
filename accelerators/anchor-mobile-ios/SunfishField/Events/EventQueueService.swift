@@ -39,7 +39,9 @@ public final class EventQueueService: EventQueueServicing, @unchecked Sendable {
         // Phase 3 substrate: persist via Codable round-trip into the
         // event_queue row's payload BLOB. Phase 3.5's RFC 8785
         // canonicalizer replaces the JSONEncoder used here so the
-        // bytes are byte-stable across replicas.
+        // bytes are byte-stable across replicas. Phase 4 (sync engine)
+        // re-encodes the envelope at upload time, so single-replica
+        // byte-instability is acceptable for substrate v1.
         let encoder = JSONEncoder()
         encoder.dateEncodingStrategy = .iso8601
         let payload = try encoder.encode(envelope)
@@ -51,7 +53,7 @@ public final class EventQueueService: EventQueueServicing, @unchecked Sendable {
                     capturedAt: envelope.capturedAt,
                     eventType: envelope.eventType.rawValue,
                     payload: payload,
-                    blobRef: envelope.blobRefs?.first,
+                    blobRef: envelope.blobRef,
                     queueStatus: .pending,
                     attemptCount: 0)
                 try record.insert(db)
@@ -86,6 +88,11 @@ public final class EventQueueService: EventQueueServicing, @unchecked Sendable {
         // string is logged to the local audit_local table (per Phase 2
         // V1Migration); the Phase 6 queue-status home screen surfaces
         // it from there.
+        //
+        // payload column shape: UTF-8 reason string (substrate v1).
+        // Phase 6 may upgrade to a {reason, retry_count, last_error}
+        // JSON envelope when the queue-status row needs richer surface.
+        let nowIso = ISO8601DateFormatter().string(from: Date())
         try await Task {
             try database.queue.write { db in
                 try db.execute(
@@ -93,7 +100,7 @@ public final class EventQueueService: EventQueueServicing, @unchecked Sendable {
                     arguments: [QueueStatus.failedPermanent.rawValue, deviceLocalSeq])
                 try db.execute(
                     sql: "INSERT INTO audit_local (occurred_at, event_type, payload) VALUES (?, ?, ?)",
-                    arguments: [Date(), "EventQueueMarkedFailed", Data(reason.utf8)])
+                    arguments: [nowIso, "EventQueueMarkedFailed", Data(reason.utf8)])
             }
         }.value
     }

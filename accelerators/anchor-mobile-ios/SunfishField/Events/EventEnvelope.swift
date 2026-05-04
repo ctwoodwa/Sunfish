@@ -15,7 +15,7 @@ import Foundation
 /// Per ADR 0028-A7.8 the wire form uses camelCase property names — the
 /// `CodingKeys` map below bridges Swift's PascalCase struct fields to
 /// the camelCase wire form.
-public struct EventEnvelope: Codable, Sendable, Equatable {
+public struct EventEnvelope: Codable, Sendable, Equatable, Hashable {
     /// Monotonically-increasing per-install sequence number assigned at
     /// capture time. Uniquely identifies the event within the device.
     public let deviceLocalSeq: UInt64
@@ -34,9 +34,12 @@ public struct EventEnvelope: Codable, Sendable, Equatable {
     /// Phase 3.5 ships the full RFC 8785 Swift canonicalizer.
     public let payload: Data
 
-    /// Optional content addresses (lowercase hex SHA-256) for binary
-    /// attachments stored in the BlobStore (Phase 2).
-    public let blobRefs: [String]?
+    /// Optional content address (lowercase hex SHA-256) for the binary
+    /// attachment stored in the BlobStore (Phase 2). Substrate v1 carries
+    /// a single attachment per envelope to match the V1Migration
+    /// `event_queue.blob_ref` TEXT column shape; Phase 4+ extends to an
+    /// N-ary join table when capture flows need multi-attachment events.
+    public let blobRef: String?
 
     /// **A9 (post-A9):** kernel SemVer running on the iPad at capture
     /// time. Per ADR 0028-A9 + A6.11 the merge boundary uses this to
@@ -54,7 +57,7 @@ public struct EventEnvelope: Codable, Sendable, Equatable {
         deviceId: String,
         eventType: EventType,
         payload: Data,
-        blobRefs: [String]? = nil,
+        blobRef: String? = nil,
         capturedUnderKernel: String,
         capturedUnderSchemaEpoch: UInt32
     ) {
@@ -63,13 +66,13 @@ public struct EventEnvelope: Codable, Sendable, Equatable {
         self.deviceId = deviceId
         self.eventType = eventType
         self.payload = payload
-        self.blobRefs = blobRefs
+        self.blobRef = blobRef
         self.capturedUnderKernel = capturedUnderKernel
         self.capturedUnderSchemaEpoch = capturedUnderSchemaEpoch
     }
 
     enum CodingKeys: String, CodingKey {
-        case deviceLocalSeq, capturedAt, deviceId, eventType, payload, blobRefs
+        case deviceLocalSeq, capturedAt, deviceId, eventType, payload, blobRef
         case capturedUnderKernel, capturedUnderSchemaEpoch
     }
 }
