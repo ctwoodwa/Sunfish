@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Channels</PackageId>
+    <RootNamespace>Sunfish.Foundation.Channels</RootNamespace>
+    <Description>Contracts for real-time crew communication channels (ADR 0076). Hosts IChannelProvider / IChannelSession / IChannelInvitation / ICrewRoster + the supporting CrewPresence / CrewMember / ChannelCapability flags + ChannelSessionState / ChannelTerminationReason / PresenceStatus enums. Native reference implementation lives in `blocks-crew-comms` (Phase 3+).</Description>
+    <PackageTags>sunfish;foundation;channels;crew-comms;adr-0076</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-transport\Sunfish.Foundation.Transport.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
+  </ItemGroup>
+</Project>
