@@ -60,6 +60,9 @@ amendments: []
 - `Sunfish.Kernel.Audit.{IAuditTrail, AuditEventType, AuditRecord}` — `packages/kernel-audit/`. `IAuditTrail.AppendAsync(AuditRecord, CancellationToken)` is the issuance signature. `AuditEventType` is `readonly record struct(string Value)` (NOT enum); new event types are `public static readonly AuditEventType` fields.
 - `Sunfish.Foundation.Migration.{ISequestrationStore, SequesteredRecord, SequestrationFlagKind}` — `packages/foundation-migration/{Services,Models}/`. `SequesterAsync(string nodeId, string recordId, SequestrationFlagKind flag, CancellationToken)` is the canonical signature; field-level convention encodes `recordId = "{recordId}#{fieldName}"`.
 - `SequestrationFlagKind` enum values: `FormFactorFilteredOut`, `StorageBudgetExceeded`, `PlaintextSequestered`, `CiphertextSequestered`, `FormFactorQuorumIneligible` — **none names a "feature-gate-off" semantic**; §Open question 2 tracks adding `FeatureGateOff`.
+- `Sunfish.Foundation.Capabilities.{ICapabilityGraph, CapabilityAction, Resource, Principal}` — `packages/foundation/Capabilities/`. `ICapabilityGraph.QueryAsync(PrincipalId subject, Resource resource, CapabilityAction action, DateTimeOffset asOf, CancellationToken ct)` returning `ValueTask<bool>` is the canonical authority-check signature consumers see (NOT `HasCapability` — that name belongs to the internal static `CapabilityClosure.HasCapability(...)` graph-walk used inside `InMemoryCapabilityGraph`). `CapabilityAction` is `readonly record struct(string Name)` with a public ctor accepting any string; the type's xml-doc explicitly authorises consumer-defined domain-specific actions (precedent verb `sign_inspection`). `Resource` is `readonly record struct(string Id)`.
+- `Sunfish.Foundation.Crypto.{PrincipalId, IOperationSigner}` — `packages/foundation/Crypto/`. `PrincipalId` is the 32-byte Ed25519 public-key wrapper used as the universal subject identifier in `ICapabilityGraph` and as `SignedOperation<T>.IssuerId`. `IOperationSigner` exposes `PrincipalId IssuerId { get; }` — the canonical "current signing principal" surface available to any audit-emitting foundation component, and is already required by this ADR for audit-payload signing per §A0.3 / Council pressure-test point #4.
+- `Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException` — `packages/foundation-recovery/Crypto/FieldDecryptionDeniedException.cs`. `sealed class : Exception` with constructor `(string capabilityId, string reason)` and read-only properties `CapabilityId` + `Reason`. Used by `IFieldDecryptor.DecryptAsync` per ADR 0046-A2/A3. This ADR uses it as the **shape precedent** for the new `ExtensionFieldRedactionDeniedException` (which carries action + entity-type-fullname + field-key + reason, since the catalog gate has no per-call `capabilityId` — it constructs an authority query against the graph rather than presenting a pre-issued capability proof).
 
 ### §A0.3 Structural-citation correctness (5-of-5 prior failure rate ⇒ paranoid)
 
@@ -69,6 +72,8 @@ amendments: []
 - `AuditRecord` requires `(Guid AuditId, TenantId, AuditEventType, DateTimeOffset OccurredAt, SignedOperation<AuditPayload> Payload, IReadOnlyList<AttestingSignature> AttestingSignatures, int FormatVersion = 0)` — the catalog package will need an `IOperationSigner` and access to `Sunfish.Foundation.Crypto.SignedOperation<T>`. `Sunfish.Foundation.Crypto.SignedOperation<T>` lives in the `Sunfish.Foundation` package (sub-namespace, not a separate package); the catalog's existing `ProjectReference` to `Sunfish.Foundation` already provides access. Only the `IOperationSigner` injection is new — that requires a DI registration, not a project-graph change. **Council pressure-test point #4 below.**
 - The audit emission factory `ExtensionFieldGateAuditPayloads` is parallel to the existing `MigrationAuditPayloads` (`packages/foundation-migration/Audit/MigrationAuditPayloads.cs`) — proven pattern.
 - The ADR 0009 §Resolution-order chain (catalog → provider → entitlements → catalog default → throw) is preserved verbatim. This ADR adds a **separate** evaluation site at the catalog boundary — it does not modify `DefaultFeatureEvaluator`.
+- `ICapabilityGraph` consumer-facing authority check is `QueryAsync(PrincipalId, Resource, CapabilityAction, DateTimeOffset, CancellationToken) → ValueTask<bool>`. The Redact gate calls `await _capabilityGraph.QueryAsync(_signer.IssuerId, redactResource, RedactExtensionFieldAction, _clock.UtcNow, ct)` — `IOperationSigner.IssuerId` is the only canonical "current principal" surface available at a foundation-tier component (no `IUserContext` exists; `FeatureEvaluationContext.UserId` is `string?`, not a `PrincipalId`). The `redactResource` is `new Resource($"extension-field#{entityType.FullName}#{spec.Key.Value}")` — same shape as the §Sequester composition's catalog-level sentinel `recordId` so the two sequestration paths address the same conceptual resource.
+- The catalog's csproj must add `ProjectReference` to `Sunfish.Foundation` (already present transitively via `Sunfish.Kernel.Audit`'s graph, but called out here so the explicit dependency on `Sunfish.Foundation.Capabilities` and `Sunfish.Foundation.Crypto` is recorded). Both namespaces live inside the `Sunfish.Foundation` package — no new csproj `ProjectReference` is needed beyond what §A0.3 already records.
 
 ### §A0.4 Cross-ADR claims (guilty-until-proven-innocent per ADR 0069 D3)
 
@@ -319,16 +324,129 @@ The `SequesterAsync` call requires a record-level `recordId`. For catalog-level 
 The concrete `ExtensionFieldCatalog` implementation accepts:
 
 ```csharp
+using Sunfish.Foundation.Capabilities;
+using Sunfish.Foundation.Crypto;
+
 public ExtensionFieldCatalog(
     IFeatureEvaluator? featureEvaluator = null,
     IAuditTrail? auditTrail = null,
     ISequestrationStore? sequestrationStore = null,
-    /* signing + node-id + record-id resolver providers */)
+    ICapabilityGraph? capabilityGraph = null,
+    IOperationSigner? signer = null,
+    INodeIdProvider? nodeIdProvider = null,
+    IRecordIdResolver? recordIdResolver = null,
+    TimeProvider? clock = null)
 ```
 
-When `featureEvaluator` is `null`: gating is skipped; `GetFieldsAsync(Type, ctx)` returns every registered spec with `GateState.Ungated`. `auditTrail` and `sequestrationStore` are independently nullable; Sequester policy with a null `sequestrationStore` throws (since the policy requires the substrate to honor its contract).
+When `featureEvaluator` is `null`: gating is skipped; `GetFieldsAsync(Type, ctx)` returns every registered spec with `GateState.Ungated`. `auditTrail`, `sequestrationStore`, and `capabilityGraph` are independently nullable. Substrate-required throws:
 
-This preserves the no-mandatory-new-dependency posture from §Decision drivers — hosts that do not register feature management continue to work unchanged.
+- **`Sequester` policy with a null `sequestrationStore`** ⇒ `InvalidOperationException` at first encounter ("Sequester policy requires `ISequestrationStore` registration; see ADR 0075 §Lazy-DI optionality").
+- **`Redact` policy with a null `capabilityGraph` OR null `signer`** ⇒ `InvalidOperationException` at first encounter ("Redact policy requires `ICapabilityGraph` + `IOperationSigner` registration"). The Redact path cannot fail-open: a host that has registered a `Redact` policy but not the capability substrate is mis-configured, and the catalog is the canonical place to reject the misconfiguration.
+- **Audit emission with a null `auditTrail`** ⇒ silent skip. Audit-by-construction degrades gracefully when audit is not wired (matches the existing `TenantKeyProviderFieldDecryptor` pattern in `Sunfish.Foundation.Recovery.Crypto`).
+
+This preserves the no-mandatory-new-dependency posture from §Decision drivers — hosts that do not register feature management continue to work unchanged. Hosts that register `Redact`-policy specs MUST also register the capability substrate; the substrate-required throws catch this at first call rather than silently fail-open.
+
+#### `Redact` capability gate (full spec)
+
+The `Redact` path is destructive and one-way. Before invoking the tombstone path, the catalog MUST consult the capability graph for explicit operator authority. The check uses the existing `ICapabilityGraph` consumer surface (verified in §A0.2): `QueryAsync(PrincipalId subject, Resource resource, CapabilityAction action, DateTimeOffset asOf, CancellationToken ct)` returning `ValueTask<bool>`.
+
+```csharp
+namespace Sunfish.Foundation.Catalog.ExtensionFields;
+
+internal sealed partial class ExtensionFieldCatalog : IExtensionFieldCatalog
+{
+    // Action verb — local to this consumer. Constructed via the public
+    // CapabilityAction(string Name) ctor, NOT a static field added to the
+    // CapabilityAction type itself (the type's authoritative static slots
+    // are Read/Write/Delete/Delegate/Sign and stay closed). The verb name
+    // mirrors the ADR 0046 convention for domain-specific actions
+    // (e.g. "sign_inspection").
+    private static readonly CapabilityAction RedactExtensionFieldAction =
+        new("redact-extension-field");
+
+    private async ValueTask AssertRedactAuthorisedAsync(
+        Type entityType,
+        ExtensionFieldSpec spec,
+        CancellationToken ct)
+    {
+        // Substrate-required for Redact policy — see Lazy-DI optionality block.
+        if (_capabilityGraph is null || _signer is null)
+        {
+            throw new InvalidOperationException(
+                "Redact policy requires ICapabilityGraph + IOperationSigner registration; " +
+                "see ADR 0075 §Lazy-DI optionality.");
+        }
+
+        // The "current acting principal" for a foundation-tier component is
+        // IOperationSigner.IssuerId — the same principal used to sign the
+        // accompanying audit record. No IUserContext exists at the foundation
+        // tier; FeatureEvaluationContext.UserId is a string?, not a PrincipalId,
+        // and is therefore not authoritative.
+        PrincipalId actor = _signer.IssuerId;
+
+        // Resource shape mirrors the §Sequester composition's catalog-level
+        // sentinel so the two sequestration paths address the same conceptual
+        // resource.
+        var resource = new Resource(
+            $"extension-field#{entityType.FullName}#{spec.Key.Value}");
+
+        var asOf = (_clock ?? TimeProvider.System).GetUtcNow();
+
+        bool authorised = await _capabilityGraph
+            .QueryAsync(actor, resource, RedactExtensionFieldAction, asOf, ct)
+            .ConfigureAwait(false);
+
+        if (!authorised)
+        {
+            throw new ExtensionFieldRedactionDeniedException(
+                action: RedactExtensionFieldAction.Name,
+                entityTypeFullName: entityType.FullName ?? entityType.Name,
+                fieldKey: spec.Key.Value,
+                reason: "capability-graph denied");
+        }
+    }
+}
+
+/// <summary>
+/// Thrown when <see cref="IExtensionFieldCatalog.GetFieldsAsync"/> evaluates
+/// a spec whose <see cref="FeatureGateOffPolicy"/> is <see cref="FeatureGateOffPolicy.Redact"/>
+/// to OFF, but the configured <see cref="ICapabilityGraph"/> denies the
+/// <c>redact-extension-field</c> action for the current
+/// <see cref="IOperationSigner.IssuerId"/>. Parallel in shape to
+/// <see cref="Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException"/>;
+/// every denial emits an <see cref="AuditEventType.ExtensionFieldRedacted"/>
+/// audit record (with the denial captured in the payload) before the
+/// exception propagates.
+/// </summary>
+public sealed class ExtensionFieldRedactionDeniedException : Exception
+{
+    public ExtensionFieldRedactionDeniedException(
+        string action,
+        string entityTypeFullName,
+        string fieldKey,
+        string reason)
+        : base($"Extension-field redaction denied " +
+               $"(action='{action}', entity='{entityTypeFullName}', " +
+               $"field='{fieldKey}'): {reason}")
+    {
+        Action = action;
+        EntityTypeFullName = entityTypeFullName;
+        FieldKey = fieldKey;
+        Reason = reason;
+    }
+
+    public string Action { get; }
+    public string EntityTypeFullName { get; }
+    public string FieldKey { get; }
+    public string Reason { get; }
+}
+```
+
+Three properties of this design:
+
+1. **No new exception type on `Sunfish.Foundation.Capabilities`.** A previous draft cited `CapabilityRequiredException` — that type does NOT exist on `origin/main` (verified 2026-05-04 by `grep -r "CapabilityRequiredException" packages/`). This ADR introduces a domain-specific `ExtensionFieldRedactionDeniedException` whose shape is the existing `FieldDecryptionDeniedException` precedent rather than inventing a generic foundation-tier exception (which would over-reach this ADR's scope; see §Open questions item 9 if a generic mechanism is later wanted across multiple Redact-style consumers).
+2. **No new static slot on `CapabilityAction`.** The `CapabilityAction` type's xml-doc explicitly invites consumers to construct domain-specific verbs locally — `RedactExtensionFieldAction` is a private constant on `ExtensionFieldCatalog`, NOT a public addition to `CapabilityAction.{Read,Write,Delete,Delegate,Sign}`. The closed type stays closed; the consumer owns its verbs.
+3. **Principal lookup is `IOperationSigner.IssuerId`.** No `IUserContext` exists at the foundation tier (verified by `grep -rn "IUserContext|ICurrentPrincipal|IPrincipalAccessor|ICurrentUser" packages/` returning zero hits). The signer is already injected for audit-payload signing; reusing it as the principal source means the audit record and the capability check attribute the same identity — which is exactly the ADR 0049 audit-by-construction story.
 
 ### Substrate / layering notes
 
@@ -360,7 +478,7 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 
 - **Hide (default)** is non-destructive and the safest. Data is preserved in storage; a UI consumer simply sees a smaller list. Reversibility is intrinsic.
 - **Sequester** preserves auditability via W#35's `SequesteredRecord`. The data is tracked in the sequestration partition, the gate-flip-OFF event is auditable, the gate-flip-ON event triggers a release path. Trust boundary: ISequestrationStore and IAuditTrail are now both transitively required by every consumer that adopts the new overload.
-- **Redact** is destructive. The data is tombstoned. **Re-flipping the gate ON does NOT resurrect the data** — it surfaces an empty field. This is the correct behavior for legal-hold scenarios, but it is a one-way door. The implementation MUST require an explicit operator capability (per ADR 0046's capability-graph reasoning) before invoking the Redact path; the audit record MUST attest to the capability proof. The §Implementation checklist includes "Redact path requires `CapabilityAction.RedactExtensionField` capability proof; throws `CapabilityRequiredException` otherwise."
+- **Redact** is destructive. The data is tombstoned. **Re-flipping the gate ON does NOT resurrect the data** — it surfaces an empty field. This is the correct behavior for legal-hold scenarios, but it is a one-way door. The implementation MUST consult `ICapabilityGraph.QueryAsync(actor, resource, RedactExtensionFieldAction, asOf, ct)` (see §`Redact` capability gate (full spec) above) before invoking the tombstone path; on a `false` reply the catalog throws `ExtensionFieldRedactionDeniedException` (this ADR's new exception, parallel in shape to `FieldDecryptionDeniedException`) and emits an `ExtensionFieldRedacted` audit record carrying the denial in the payload. The actor is `IOperationSigner.IssuerId` — the same signing principal that attests to the audit record, so the capability check and the audit attestation refer to the same identity.
 - **Audit storage is append-only (ADR 0049)** — every gating decision is permanent. Tenants who want to limit audit-volume for routine `ExtensionFieldGated` events should adopt the §Open questions item 4 sampling policy; the substrate itself does not filter.
 
 ---
@@ -396,7 +514,7 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 - [ ] **Phase 4 — catalog wiring.** Add `IExtensionFieldCatalog.GetFieldsAsync(Type, FeatureEvaluationContext, CancellationToken)` overload. Update concrete `ExtensionFieldCatalog` to accept nullable `IFeatureEvaluator`, `IAuditTrail`, `ISequestrationStore`, and signer / node-id / record-id-resolver providers. Implement gate evaluation, policy application, audit emission, and sequestration-store integration.
 - [ ] **Phase 5 — DI registration.** Add `ServiceCollectionExtensions.AddExtensionFieldCatalogWithFeatureGating(...)` overload that wires the dependencies. The existing `AddExtensionFieldCatalog()` method is preserved unchanged.
 - [ ] **Phase 6 — csproj updates.** Add `ProjectReference` to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, and `Sunfish.Foundation.Migration` in `packages/foundation-catalog/Sunfish.Foundation.Catalog.csproj`.
-- [ ] **Phase 7 — tests.** Unit tests for: (a) ungated spec returns `GateState.Ungated` regardless of evaluator state; (b) gated-on spec returns `GateState.GatedOn` and emits `ExtensionFieldGated`; (c) gated-off Hide returns no entry and emits `ExtensionFieldFiltered`; (d) gated-off Sequester emits `ExtensionFieldSequestered` AND calls `ISequestrationStore.SequesterAsync`; (e) gated-off Redact requires capability proof, emits `ExtensionFieldRedacted`, throws `CapabilityRequiredException` without proof; (f) null-evaluator short-circuits to all-ungated.
+- [ ] **Phase 7 — tests.** Unit tests for: (a) ungated spec returns `GateState.Ungated` regardless of evaluator state; (b) gated-on spec returns `GateState.GatedOn` and emits `ExtensionFieldGated`; (c) gated-off Hide returns no entry and emits `ExtensionFieldFiltered`; (d) gated-off Sequester emits `ExtensionFieldSequestered` AND calls `ISequestrationStore.SequesterAsync`; (e) gated-off Redact: with an `ICapabilityGraph` stub returning `true` for `(_signer.IssuerId, Resource("extension-field#…"), RedactExtensionFieldAction, …)` ⇒ tombstone path runs and emits `ExtensionFieldRedacted`; with the same stub returning `false` ⇒ throws `ExtensionFieldRedactionDeniedException` AND emits `ExtensionFieldRedacted` with the denial in the payload; with a null `_capabilityGraph` or null `_signer` AND a Redact-policy spec ⇒ throws `InvalidOperationException` per §Lazy-DI optionality; (f) null-evaluator short-circuits to all-ungated; (g) `CapabilityAction` constant reference: assert `RedactExtensionFieldAction.Name == "redact-extension-field"` and that `CapabilityAction.{Read,Write,Delete,Delegate,Sign}` static slots remain unmodified by this ADR.
 - [ ] **Phase 8 — Stage 06 deliverables.** Kitchen-sink demo registers a feature-gated extension field; apps/docs page documents the hook; XML docs on every public API; changelog entry citing ADR 0075 + W#44.
 - [x] **Phase 9 — pre-merge council.** Per ADR 0069 D1, dispatch four-perspective adversarial council (Outside Observer, Pessimistic Risk Assessor, Pedantic Lawyer, Skeptical Implementer) at `high` effort, Opus 4.7. Pressure-test points enumerated in §A0.5.
 - [ ] **Phase 10 — open-question resolution.** Resolve §Open questions items 1, 2, 3, 4 either inline in the ADR (mechanical fixes) or as follow-up amendments before flipping `Status: Accepted`.
@@ -413,6 +531,8 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 6. **`Redact` tombstone shape.** Options: (a) remove field from extension JSON entirely (no tombstone); (b) replace value with `RedactedFieldMarker` sentinel preserving field-name presence; (c) mark entire entity redacted (overkill). Default: option (b). Council to confirm.
 7. **Field-level vs. record-level sequestration.** `SequesteredRecord` supports both via `"{recordId}#{fieldName}"`. For feature-gate sequestration the natural granularity is field-level — confirm composition with W#35's existing record-level form-factor sequestration is conflict-free.
 8. **`recordId` resolver for catalog-level gating.** Catalog gates per `(entityType, FeatureKey)`; no specific record id at the gate-evaluation site. Current encoding: synthetic `"catalog-gate#{entityType.FullName}#{spec.Key.Value}"`. Should `ISequestrationStore` admit a catalog-level entry shape? (Tracks back to item 2.)
+9. **Generic Redact-denial exception.** Current: this ADR introduces `ExtensionFieldRedactionDeniedException` local to the catalog package, parallel in shape to `Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException`. Cleaner future option if more Redact-style consumers emerge: a generic `Sunfish.Foundation.Capabilities.CapabilityDeniedException(Resource resource, CapabilityAction action, PrincipalId actor, string reason)` type that any consumer can throw. Deferred to keep this ADR's scope tight; the local exception is shape-compatible with a future generic refactor.
+10. **`FeatureEvaluationContext.UserId` vs. `PrincipalId`.** Current: catalog uses `IOperationSigner.IssuerId` for the actor in the capability query because `FeatureEvaluationContext.UserId` is `string?`, not a `PrincipalId`, and is therefore not authoritative for capability-graph queries. If a future ADR widens `FeatureEvaluationContext` to carry an authoritative `PrincipalId? Actor` slot, the Redact path could prefer `ctx.Actor ?? _signer.IssuerId` (caller-supplied identity wins, signer is fallback). Track here so it's not lost.
 
 ---
 
@@ -461,6 +581,12 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 - `packages/foundation-migration/Models/SequesteredRecord.cs`
 - `packages/foundation-migration/Models/Enums.cs` (for `SequestrationFlagKind`)
 - `packages/foundation-migration/Audit/MigrationAuditPayloads.cs` (factory pattern reference)
+- `packages/foundation/Capabilities/ICapabilityGraph.cs` (consumer-facing `QueryAsync`)
+- `packages/foundation/Capabilities/CapabilityAction.cs` (`readonly record struct(string Name)` ctor pattern; closed static slots)
+- `packages/foundation/Capabilities/Resource.cs` (`readonly record struct(string Id)`)
+- `packages/foundation/Crypto/IOperationSigner.cs` (`PrincipalId IssuerId { get; }` — current-principal surface)
+- `packages/foundation/Crypto/PrincipalId.cs` (32-byte Ed25519 public-key wrapper; subject identifier)
+- `packages/foundation-recovery/Crypto/FieldDecryptionDeniedException.cs` (shape precedent for `ExtensionFieldRedactionDeniedException`)
 
 ### External
 
