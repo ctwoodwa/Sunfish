@@ -45,15 +45,24 @@ python3 tools/adr-projections/embed_search.py search "feature gate evaluation"
 # Top-N
 python3 tools/adr-projections/embed_search.py search "audit trail" --top 10
 
+# Collapse to unique ADRs (best chunk per ADR)
+python3 tools/adr-projections/embed_search.py search "audit trail" --top 5 --collapse
+
 # Use a remote Ollama (e.g., Windows GPU box)
 python3 tools/adr-projections/embed_search.py search "..." --ollama http://desktop-umt08rn:11434
 ```
 
-**Index location**: `tools/adr-projections/.embeddings.json` (one row per ADR; cached by content hash; incremental rebuild)
+**Index location**: `tools/adr-projections/.embeddings.json` — content-hash-keyed; incremental rebuild.
 
-**What gets embedded**: structured frontmatter (title / tier / concerns / status) + first ~800 words of the body. This captures Context + Decision drivers reliably; misses content in long Amendments sections (e.g., ADR 0028's A1-A11). Future enhancement: embed each amendment separately.
+**What gets embedded** (format v2; bumped 2026-05-04):
+- Each ADR's main body (frontmatter + first ~800 words)
+- **Each amendment as a separate chunk** (e.g., ADR 0028 A1, A2, ..., A11 are 11 separate entries)
 
-**When to rebuild**: after adding a new ADR, or when frontmatter changes. The index is content-hash-keyed, so re-running on unchanged ADRs is fast (<1 sec for a no-op rebuild).
+The amendment chunking captures content that the original v1 indexer missed (anything past the 800-word body budget). Coverage at 2026-05-04: **67 ADRs + 85 amendment chunks = 152 total entries**. Roughly 2.3× the index size of v1.
+
+Index entries have `chunk_id` (e.g., `"28"` for main body or `"28-A8"` for amendment), `adr_id`, and `amendment` fields. Search results include the amendment label when relevant; use `--collapse` to dedupe to unique ADRs.
+
+**When to rebuild**: after adding a new ADR or amendment, or when frontmatter changes. Incremental rebuild via content-hash; unchanged chunks are fast (<1 sec for a no-op rebuild). Format-version mismatch triggers full rebuild.
 
 **Ollama prerequisite**: `ollama pull nomic-embed-text` (one-time; ~274 MB). The tool fails gracefully if Ollama is unreachable.
 
