@@ -7,7 +7,6 @@ tier: tooling
 pipeline_variant: sunfish-quality-control
 
 concern:
-  - governance
   - dev-experience
 
 enables:
@@ -39,7 +38,9 @@ By May 2026, Sunfish had 65 Architecture Decision Records accumulated across rou
 active development. Each ADR is a durable record: written, reviewed, and committed; never edited
 retroactively. That append-only discipline is correct — ADRs are architecture history. But it
 created an emerging problem: **a purely chronological journal scales O(N) for every "current
-state" query.**
+state" query.** (Note: the journal grew from 61 ADRs at the 2026-Q2 snapshot date to 65+ ADRs
+at this ADR's authoring date; counts cited throughout this ADR reflect the authoring-date state
+unless otherwise noted.)
 
 Concrete pain points observed in the 2026 development cycle:
 
@@ -51,7 +52,7 @@ Concrete pain points observed in the 2026 development cycle:
 - Cross-ADR relationship graphs (`composes`, `extends`, `supersedes`) existed in prose but were
   not extractable without parsing natural-language references.
 - The 2026-Q2 quarterly snapshot review cycle flagged **"tooling tier" as a gap**: only one
-  prior ADR (ADR 0042 — Subagent-Driven Development) carried `tier: tooling`, and the
+  prior ADR (ADR 0010 — Templates Module Boundary) carried `tier: tooling`, and the
   scaffolding CLI, Roslyn analyzers, and ADR projection tooling were entirely undocumented at
   the architectural decision level (Stage 5 quarterly snapshot review, PR #487).
 
@@ -169,7 +170,7 @@ layer. Define the foundational paper as the stable long-horizon layer.
   merge.
 
 **Con:**
-- Requires a one-time migration to add frontmatter to all existing ADRs (56-ADR bulk apply,
+- Requires a one-time migration to add frontmatter to all existing ADRs (57-ADR bulk apply,
   PR #483). Migration is mechanical but large.
 - Projection tool is a custom tool; contributors must understand it exists and run it when
   authoring ADRs.
@@ -230,6 +231,11 @@ and the current accelerator map.
 Snapshots are updated quarterly by the XO research session, or when a major wave of ADRs
 lands that materially changes the architecture picture. They are not auto-generated.
 
+**Note:** Layer 3 snapshots are hand-curated narrative, not auto-derived from the journal.
+This is a deliberate divergence from textbook event-sourcing, where snapshots are
+re-derivable from the log. The hand-curation requirement is intentional: the snapshot's
+value is narrative synthesis and architectural judgment, not mechanical projection.
+
 ### Layer 4 — Foundational paper
 
 `_shared/product/local-node-architecture-paper.md` serves as the long-horizon stable narrative.
@@ -283,17 +289,23 @@ Adding a vocabulary value requires updating both `project.py` (`VALID_*` sets) a
 CI runs `python3 tools/adr-projections/project.py --check-only` on every PR touching
 `docs/adrs/`. Validation failures block merge.
 
+**YAML subset accepted by the tool:** The projection tool uses a minimal hand-rolled YAML
+parser (no third-party dependencies). The accepted YAML subset is: key/value scalar strings,
+integer scalars, ISO-8601 date strings, and simple lists (`- value`). Multi-line strings,
+flow style, anchors, aliases, and quoted strings with escape sequences are not supported.
+The examples in `docs/adrs/_FRONTMATTER.md` define the de-facto accepted surface.
+
 ### Migration
 
 The one-time migration (`bulk_apply_frontmatter.py`, shipped in PR #483) applied frontmatter
-to all 56 ADRs that predated the schema introduction (PRs #481 introduced the schema + 4-ADR
+to all 57 ADRs that predated the schema introduction (PRs #481 introduced the schema + 4-ADR
 pilot). The tool is retained at `tools/adr-projections/bulk_apply_frontmatter.py` as a
 reference for future bulk operations.
 
 A follow-on pass (PR #485) refined `concern` tags based on body analysis, correcting cases
-where the initial bulk pass assigned incorrect or missing tags. A further pass (PR #490, open)
-backfills `composes`/`extends` cross-references across all 61 ADRs to complete the dependency
-graph.
+where the initial bulk pass assigned incorrect or missing tags. A further pass (PR #490, merged
+2026-05-04 via squash) backfills `composes`/`extends` cross-references across all 61 ADRs to
+complete the dependency graph.
 
 ### Immutability invariants
 
@@ -380,13 +392,14 @@ post-hoc verification that the full pattern was implemented:
 - [x] `tools/adr-projections/bulk_apply_frontmatter.py` — one-time migration script
   (Stage 4, PR #483).
 - [x] 4-ADR pilot frontmatter applied (ADRs 0001, 0028, 0049, 0062) — PR #481.
-- [x] 56-ADR bulk frontmatter apply — PR #483.
+- [x] 57-ADR bulk frontmatter apply — PR #483.
 - [x] Concern-tag refinement pass — PR #485.
 - [x] `docs/architecture/snapshot-2026-Q2.md` — first quarterly snapshot (PR #487).
-- [x] `composes`/`extends` backfill across 61 ADRs — PR #490 (open at time of authoring).
+- [x] `composes`/`extends` backfill across 61 ADRs — PR #490 (merged 2026-05-04 via squash).
 - [x] `docs/adrs/README.md` updated to reference INDEX/STATUS/GRAPH — PR #483.
 - [ ] CI workflow `adr-validation.yml` — in progress (worktree `sunfish-adr-ci-wt` at
-  time of authoring; pending PR).
+  time of authoring; pending PR). This checkbox will be flipped to `[x]` in a follow-on
+  commit once the CI workflow PR merges.
 - [ ] ADR 0071 (this document) accepted — CO sign-off required.
 
 ---
@@ -410,6 +423,13 @@ post-hoc verification that the full pattern was implemented:
    (e.g., `["A1", "A2.1"]`). The current schema does not capture the date or status of each
    amendment. A future frontmatter amendment (pun intended) could add per-amendment metadata.
    Deferred until there is a concrete use case (e.g., an amendment that is itself superseded).
+
+4. **Vocabulary drift between `project.py` and `_FRONTMATTER.md`.** Adding a new `tier` or
+   `concern` value requires updating both `project.py` (the `VALID_*` sets) and
+   `_FRONTMATTER.md` (the spec). There is currently no automated test asserting that the two
+   are in sync. Risk: low while the team is small and vocabulary changes are infrequent. Defer
+   a parity test until the first observed drift incident; at that point, add a `--print-vocab`
+   flag or a CI assertion to enforce parity mechanically.
 
 ---
 
@@ -446,15 +466,14 @@ post-hoc verification that the full pattern was implemented:
 
 - **PR #481** — portfolio foundation: `_FRONTMATTER.md` schema + projection tool MVP +
   4-ADR pilot + `_template.md` update.
-- **PR #483** — Stage 4: bulk frontmatter apply across 56 ADRs (61 total covered).
-- **PR #484** — `consumed_by` auto-derivation added to `project.py` (open at time of
-  authoring).
+- **PR #483** — Stage 4: bulk frontmatter apply across 57 ADRs (61 total covered).
+- **PR #484** — `consumed_by` auto-derivation added to `project.py` (merged 2026-05-04).
 - **PR #485** — concern-tag refinement pass based on ADR body analysis.
 - **PR #487** — first quarterly snapshot (`docs/architecture/snapshot-2026-Q2.md`),
   Stage 5 of ADR portfolio foundation; also surfaced the `tooling` tier gap that prompted
   this ADR.
-- **PR #490** — `composes`/`extends` cross-reference backfill across 61 ADRs (open at time
-  of authoring).
+- **PR #490** — `composes`/`extends` cross-reference backfill across 61 ADRs (merged
+  2026-05-04 via squash).
 
 ### Predecessor ADRs (governance and process tier)
 
