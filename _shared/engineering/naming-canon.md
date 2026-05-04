@@ -15,8 +15,9 @@ Naming friction has been a recurring source of cohort-quality issues. Specific i
 - **ADR 0028 amendment number drift** (2026-05-04): I told a subagent "use Amendment A9" but A9 + A10 were already taken; subagent's §A0 negative-existence check caught this and corrected to A11. The cohort discipline saved the work.
 - **Wayfinder brainstorm rejected 8 candidates** (2026-05-01): Mission Control / Capability Center / Control Center / Bridge / Cockpit / Flight Deck / Flight Plan / Trade Space / Chart Table — each had collisions with macOS UI, Sunfish accelerators, prior ADRs, or commerce vocabulary.
 - **Naval-org "Yeoman" collision** (2026-05-01): Sunfish-side "Yeoman" role would have collided with the book-side technical-writer "Yeoman" session. Renamed Sunfish-side to "Scribe."
+- **ADR 0066 parallel-session collision** (2026-05-04): two parallel sessions both reached for ADR 0066 on the same day — XO (Helm + Identity Atlas, intake filed 2026-05-01) and ONR (Crew Comms — foundation-channels, drafted 2026-05-04). Resolved by first-claim discipline: Helm + Identity Atlas kept 0066 (3-day-prior intake); Crew Comms renumbered to 0076. **Reinforces**: cross-session naming requires registry discipline AND multi-session ADR-number-claim broadcasts. Future cross-session work should consult `naming-registry.yaml § reserved_adrs` BEFORE drafting (registry was already populated; ONR just didn't read it).
 
-Each of these wasted 30 min – 2 hr. The pattern is clear: **propose-then-discover** is expensive; **search-then-propose** is cheap.
+Each of these wasted 30 min – 2 hr. The pattern is clear: **propose-then-discover** is expensive; **search-then-propose** is cheap. **Multi-session caveat**: each session must also broadcast its claims to the registry, not just consult it.
 
 ## How to use this canon
 
