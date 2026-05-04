@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Wayfinder</PackageId>
+    <RootNamespace>Sunfish.Foundation.Wayfinder</RootNamespace>
+    <Description>Foundation-tier substrate for the Wayfinder system + Standing Order contract (ADR 0065). Hosts StandingOrder + StandingOrderTriple + ApprovalChain + 5-value StandingOrderScope + 6-value StandingOrderState + IStandingOrderRepository + IStandingOrderIssuer + IStandingOrderValidator + 4-value StandingOrderValidatorPriority + 4-value StandingOrderValidationSeverity + 5 new AuditEventType discriminators. Composes ADR 0049 (audit by construction) + ADR 0028 (CRDT-native per-tenant log).</Description>
+    <PackageTags>sunfish;foundation;wayfinder;standing-order;adr-0065</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+    <ProjectReference Include="..\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Wayfinder.Tests" />
+  </ItemGroup>
+</Project>
