@@ -4,13 +4,12 @@ import Foundation
 /// shape) + ADR 0028-A9 (post-A9 augmentation: `capturedUnderKernel` +
 /// `capturedUnderSchemaEpoch`).
 ///
-/// **Serialization is via canonical JSON** (RFC 8785 / JCS) so the
-/// Anchor-side merge boundary verifies the byte-stable canonical form.
-/// The full RFC 8785 Swift canonicalizer + the 10-fixture cross-language
-/// test against `Sunfish.Foundation.Crypto.CanonicalJson.Serialize` ship
-/// in a focused follow-up PR; this file commits the wire shape so
-/// downstream phases (sync engine + capture flows) can persist + emit
-/// envelopes against the post-A9 contract.
+/// **Serialization is via pragmatic canonical JSON** matching
+/// `Sunfish.Foundation.Crypto.CanonicalJson` on the .NET side
+/// (sorted keys + no whitespace + UTF-8; NOT full RFC 8785 / JCS).
+/// W#23 Phase 3.5 ships the Swift mirror at
+/// `SunfishField/Events/JsonCanonical.swift`; the merge-boundary date
+/// fidelity gap is documented in that file's `FIXME(W#23-P4)` block.
 ///
 /// Per ADR 0028-A7.8 the wire form uses camelCase property names — the
 /// `CodingKeys` map below bridges Swift's PascalCase struct fields to
