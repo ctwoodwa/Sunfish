@@ -20,7 +20,7 @@ namespace Sunfish.Foundation.Wayfinder;
 /// </remarks>
 /// <param name="TenantId">Tenant the view was projected for.</param>
 /// <param name="ProjectedAt">Wall-clock time at which the projection was computed.</param>
-/// <param name="SettingsByPath">Path-keyed dictionary of current settings.</param>
+/// <param name="SettingsByPath">Composite-key-keyed dictionary of current settings. Keys are <c>"&lt;scope&gt;:&lt;path&gt;"</c> (lowercase scope name + literal colon + path) so the same path under two scopes appears as two distinct entries. <see cref="AtlasSettingSnapshot.Path"/> on each value carries the raw path without the scope prefix.</param>
 public sealed record AtlasView(
     [property: JsonPropertyName("tenantId")] TenantId TenantId,
     [property: JsonPropertyName("projectedAt")] DateTimeOffset ProjectedAt,

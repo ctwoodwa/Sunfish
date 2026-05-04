@@ -22,7 +22,7 @@ public enum AtlasSettingKind
     /// <summary>One of a fixed set of choices; the schema enumerates the allowed values.</summary>
     Enum,
 
-    /// <summary>Structured JSON object; the schema describes the shape.</summary>
+    /// <summary>Structured JSON value (object or array); the schema describes the shape. The Atlas form view renders both with the JSON tree renderer.</summary>
     JsonObject,
 
     /// <summary>Secret value (token, key, password). UX must reveal-on-tap and never log.</summary>
