@@ -1,0 +1,45 @@
+<!--
+    Tests for Sunfish.Wayfinder.Analyzers. Mirrors the
+    Sunfish.Analyzers.ProviderNeutrality.Tests pinning pattern: targets
+    net8.0 (analyzer testing harness pins to LTS metadata bundles), opts
+    out of central package management, pins Microsoft.CodeAnalysis.*
+    4.8.0 explicitly to defeat the transitive 1.0.1 floor.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Sunfish.Wayfinder.Analyzers.Tests</AssemblyName>
+    <RootNamespace>Sunfish.Wayfinder.Analyzers.Tests</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <IsRoslynComponent>false</IsRoslynComponent>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" Version="1.1.3" />
+    <!-- Transitive 1.0.1 floor on Microsoft.CodeAnalysis.* breaks net8.0
+         restoration; pin 4.8.0 explicitly per the cohort precedent
+         (provider-neutrality / compat-vendor-usings). -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sunfish.Wayfinder.Analyzers.csproj" />
+  </ItemGroup>
+
+</Project>
