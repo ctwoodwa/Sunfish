@@ -145,6 +145,44 @@ linking and categories to provide topical navigation.
 **Verdict:** Rejected. Auditable history is the core value of the ADR practice; a wiki trades
 it for convenience that the projection approach provides more cheaply.
 
+### Option C-alt — Grep alone (no schema; no projections; pure search)
+
+Skip the YAML frontmatter and the projection tool entirely. Encode all categorical information
+in the ADR body's prose, and rely on `grep`/`ripgrep`/`git grep` for discovery. A contributor
+asking "which ADRs touch the foundation tier?" runs `git grep -l 'foundation tier' docs/adrs/`
+and reads the matches. Cross-references are discovered by grepping for ADR numbers
+(`git grep -l '0046' docs/adrs/`).
+
+**Pro:**
+- Zero tooling. No Python script, no CI step, no schema to maintain.
+- Works on any clone with standard Unix tools.
+- The simplest possible alternative; fits the "lazy default" case.
+
+**Con:**
+- No schema discipline. Different ADR authors phrase the same concept differently
+  ("foundation tier" vs. "the foundation layer" vs. "Foundation"), and grep matches the
+  literal text. The projection tool's controlled vocabularies (`tier`, `concern`, `status`,
+  `pipeline_variant`) cannot be enforced or even spell-checked.
+- Cannot detect supersession or status drift. An ADR superseded by another carries no
+  machine-readable signal; a reader who finds the old ADR via grep has no built-in cue that
+  it is no longer current. The `superseded_by` / `status` fields are the structural defense.
+- Cannot detect dependency relationships. `composes` / `extends` / `supersedes` arrays are
+  load-bearing for understanding which ADRs build on which; grep-against-prose surfaces
+  textual mentions but cannot distinguish "A extends B" from "A mentions B in passing."
+- Does not compose into snapshots. The Layer 3 quarterly snapshot synthesizes derived
+  projection output (`STATUS.md`, `INDEX.md`, `GRAPH.md`) into narrative; without projections,
+  the snapshot author must hand-roll every cross-reference, which is the failure mode that
+  motivated the projection tool in the first place.
+- Does not survive ADR-author drift in cross-reference phrasing. Two authors writing about
+  the same dependency in different sentences produce two grep matches that do not coalesce;
+  the projection tool's frontmatter arrays coalesce trivially.
+
+**Verdict:** Rejected. Grep is a useful complement to the projection tool (and a fallback if
+the projection tool is unavailable in a given environment), but it is not a substitute for
+the schema discipline + dependency-graph derivation + supersession-detection + controlled
+vocabularies that the four-layer model provides. Grep alone is the correct choice only for
+projects too small to need the discipline; Sunfish's 65+ ADR portfolio is past that threshold.
+
 ### Option C — Journal + projections + snapshots (four-layer event-sourcing model) [RECOMMENDED]
 
 Retain ADRs as an append-only journal. Add a lightweight YAML frontmatter block to every ADR
