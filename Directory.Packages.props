@@ -23,9 +23,9 @@
     <PackageVersion Include="JsonSchema.Net" Version="9.2.0"/>
     <PackageVersion Include="MessagePack" Version="3.1.4"/>
     <PackageVersion Include="System.Formats.Cbor" Version="11.0.0-preview.3.26207.106"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-preview.2.26159.112"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-preview.2.26159.112"/>
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0-preview.2"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="11.0.0-preview.3.26207.106"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="11.0.0-preview.3.26207.106"/>
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="11.0.0-preview.3"/>
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.11.0"/>
     <PackageVersion Include="ClosedXML" Version="0.105.0"/>
     <PackageVersion Include="Microsoft.Playwright" Version="1.59.0"/>
@@ -62,7 +62,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="11.0.0-preview.2.26159.112"/>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="11.0.0-preview.2.26159.112"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Relational" Version="11.0.0-preview.3.26207.106"/>
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.5.0"/>
     <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.5.0"/>
     <PackageVersion Include="Microsoft.FeatureManagement.AspNetCore" Version="4.5.0"/>
