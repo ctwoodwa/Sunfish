@@ -60,6 +60,7 @@ A reference template lives at [`_template.md`](_template.md). Copy and rename wh
 | [0049](0049-audit-trail-substrate.md) | Audit-Trail Substrate — distinct `Sunfish.Kernel.Audit` package, parallel to `Kernel.Ledger`, layered over kernel `IEventLog` | Accepted | — |
 | [0069](0069-adr-authoring-discipline.md) | ADR Authoring Discipline (pre-merge council + §A0 + three-direction) | Proposed | — |
 | [0070](0070-multi-session-naval-org-structure.md) | Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman) | Proposed | — |
+| [0071](0071-adr-portfolio-system.md) | ADR Portfolio System (Event-Sourcing-with-Snapshots) | Proposed | — |
 
 ## Appendix C Resolution
 

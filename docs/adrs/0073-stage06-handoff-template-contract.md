@@ -4,16 +4,12 @@ title: Stage-06 Hand-off Template Contract
 status: Proposed
 date: 2026-05-01
 tier: process
-pipeline_variant: sunfish-quality-control
 concern:
   - governance
   - dev-experience
-enables: []
-composes: [70]
-extends: []
-supersedes: []
-superseded_by: null
-amendments: []
+pipeline_variant: sunfish-quality-control
+composes:
+  - 70
 ---
 
 # ADR 0073 — Stage-06 Hand-off Template Contract
