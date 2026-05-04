@@ -63,5 +63,10 @@ let package = Package(
             ],
             path: "Tests/SunfishFieldPersistenceTests"
         ),
+        .testTarget(
+            name: "SunfishFieldEventsTests",
+            dependencies: ["SunfishField"],
+            path: "Tests/SunfishFieldEventsTests"
+        ),
     ]
 )
