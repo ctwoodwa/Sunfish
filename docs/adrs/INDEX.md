@@ -162,7 +162,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0061 — [Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)](./0061-three-tier-peer-transport.md)
 - ADR 0062 — [Mission Space Negotiation Protocol (runtime layer)](./0062-mission-space-negotiation-protocol.md)
 
-### governance (15)
+### governance (14)
 
 - ADR 0001 — [Schema Registry Governance Model](./0001-schema-registry-governance.md)
 - ADR 0002 — [Kernel Module Format](./0002-kernel-module-format.md)
@@ -176,7 +176,6 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0056 — [Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)](./0056-foundation-taxonomy-substrate.md)
 - ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
 - ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
-- ADR 0071 — [ADR Portfolio System (Event-Sourcing-with-Snapshots)](./0071-adr-portfolio-system.md)
 - ADR 0073 — [Stage-06 Hand-off Template Contract](./0073-stage06-handoff-template-contract.md)
 - ADR 0074 — [Session Startup / Recovery Protocol](./0074-session-startup-recovery-protocol.md)
 
