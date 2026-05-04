@@ -4,6 +4,9 @@ title: Foundation.LocalFirst Contracts + Federation Relationship
 status: Accepted
 date: 2026-04-19
 tier: foundation
+concern:
+  - persistence
+  - distribution
 concern: []
 composes: []
 extends: []

@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-24
 tier: foundation
 concern:
-  - distribution
   - ui
+  - accessibility
 composes: []
 extends: []
 supersedes: []

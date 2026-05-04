@@ -5,7 +5,8 @@ status: Accepted
 date: 2026-04-23
 tier: accelerator
 concern:
-  - threat-model
+  - security
+  - identity
   - ui
 composes: []
 extends: []

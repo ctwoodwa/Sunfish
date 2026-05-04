@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-20
 tier: governance
 concern:
-  - commercial
   - governance
+  - security
 composes: []
 extends: []
 supersedes: []

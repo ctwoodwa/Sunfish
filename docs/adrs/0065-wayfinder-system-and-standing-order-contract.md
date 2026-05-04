@@ -4,6 +4,11 @@ title: Wayfinder System + Standing Order Contract (bundled)
 status: Proposed
 date: 2026-05-01
 tier: foundation
+concern:
+  - configuration
+  - audit
+  - distribution
+  - accessibility
 concern: []
 composes: []
 extends: []

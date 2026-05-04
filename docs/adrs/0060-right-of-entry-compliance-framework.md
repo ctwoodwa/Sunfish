@@ -6,6 +6,8 @@ date: 2026-04-29
 tier: policy
 concern:
   - regulatory
+  - audit
+  - configuration
 composes: []
 extends: []
 supersedes: []

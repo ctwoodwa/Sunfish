@@ -5,7 +5,8 @@ status: Accepted
 date: 2026-04-19
 tier: kernel
 concern:
-  - distribution
+  - governance
+  - dev-experience
 composes: []
 extends: []
 supersedes: []

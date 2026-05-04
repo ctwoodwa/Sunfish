@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-19
 tier: governance
 concern:
-  - dev-experience
   - governance
+  - dev-experience
 composes: []
 extends: []
 supersedes: []

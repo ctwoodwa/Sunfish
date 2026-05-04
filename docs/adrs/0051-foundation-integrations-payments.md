@@ -6,7 +6,8 @@ date: 2026-04-28
 tier: foundation
 concern:
   - commercial
-  - operations
+  - security
+  - regulatory
 composes: []
 extends: []
 supersedes: []

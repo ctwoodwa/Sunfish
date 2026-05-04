@@ -5,6 +5,7 @@ status: Accepted
 date: 2026-04-22
 tier: kernel
 concern:
+  - dev-experience
   - distribution
 composes: []
 extends: []

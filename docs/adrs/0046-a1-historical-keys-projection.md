@@ -5,8 +5,8 @@ status: Proposed
 date: 2026-04-29
 tier: foundation
 concern:
-  - audit
   - security
+  - audit
 composes: []
 extends: []
 supersedes: []

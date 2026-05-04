@@ -6,6 +6,8 @@ date: 2026-04-19
 tier: foundation
 concern:
   - version-management
+  - commercial
+  - operations
 composes: []
 extends: []
 supersedes: []

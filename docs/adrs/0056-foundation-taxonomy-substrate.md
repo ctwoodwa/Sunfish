@@ -5,7 +5,9 @@ status: Accepted
 date: 2026-04-29
 tier: foundation
 concern:
-  - dev-experience
+  - configuration
+  - version-management
+  - governance
 composes: []
 extends: []
 supersedes: []

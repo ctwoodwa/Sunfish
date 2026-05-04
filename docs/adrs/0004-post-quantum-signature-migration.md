@@ -5,7 +5,6 @@ status: Accepted
 date: 2026-04-19
 tier: kernel
 concern:
-  - audit
   - security
   - version-management
 composes: []
