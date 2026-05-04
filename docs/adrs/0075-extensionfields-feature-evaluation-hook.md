@@ -39,15 +39,17 @@ amendments: []
 
 ## §A0 — Self-audit limitation block (per ADR 0069 D2 + D3)
 
-`tier: foundation` ⇒ full ADR 0069 D1+D2+D3 discipline applies. Cohort batting average at draft time: 21-of-21 substrate amendments needed council-sourced fixes; structural-citation failures pass §A0 self-audit at ~65%. **§A0 is necessary-but-not-sufficient; council remains canonical defense.**
+`tier: foundation` ⇒ full ADR 0069 D1+D2+D3 discipline applies. Cohort batting average at draft time: high single-to-double-digit count of substrate amendments needed council-sourced fixes (zero counter-examples in the 2026-04/05 cohort per ADR 0069 §Cohort batting average); the §A0 self-audit catch rate for structural-citation failures is empirically below 50% (per the same source). **§A0 is necessary-but-not-sufficient; council remains canonical defense.**
 
-### §A0.1 Negative-existence (introduced by this ADR — absent on origin/main 2026-05-04)
+### §A0.1 Negative-existence (introduced by this ADR's Phase 1 build — absent on origin/main 2026-05-04)
 
 - `Sunfish.Foundation.Catalog.ExtensionFields.FeatureGateOffPolicy` (new enum: `Hide` / `Sequester` / `Redact`).
 - `ExtensionFieldSpec.FeatureKey` and `ExtensionFieldSpec.FeatureGateOffPolicy` (two new optional record parameters appended to the existing 8-parameter record → 10 parameters total).
 - `Sunfish.Kernel.Audit.AuditEventType.{ExtensionFieldGated, ExtensionFieldFiltered, ExtensionFieldSequestered, ExtensionFieldRedacted}` static-readonly fields.
 - New `IExtensionFieldCatalog.GetFieldsAsync(Type, FeatureEvaluationContext, CancellationToken)` overload (additive; does not modify the existing 1-arg `GetFields`).
 - New `MaterializedExtensionField` record + `GateState` enum (returned by the new overload).
+- New `Sunfish.Foundation.Catalog.ExtensionFields.ExtensionFieldRedactionDeniedException` (parallel to `Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException`; thrown by the catalog's `Redact` path when the capability check fails). Constructor: `(string action, string entityTypeFullName, string fieldKey, string reason)`.
+- New private static-readonly `CapabilityAction` constant on the concrete `ExtensionFieldCatalog`: `private static readonly CapabilityAction RedactExtensionFieldAction = new("redact-extension-field");`. Per the `CapabilityAction(string Name)` `readonly record struct` ctor pattern verified in §A0.2 below — NOT a new static member added to the `CapabilityAction` type itself (the type's own static-readonly slots `Read`/`Write`/`Delete`/`Delegate`/`Sign` stay closed; consumer-defined verbs are constructed at the consumer per the type's xml-doc explicitly authorising arbitrary domain-specific action strings, e.g. `sign_inspection`).
 
 ### §A0.2 Positive-existence (cited as existing — verified on origin/main 2026-05-04)
 
@@ -64,13 +66,13 @@ amendments: []
 - `ExtensionFieldSpec` is a **positional sealed record**; appending two parameters with default values preserves all existing call sites (positional-with-fewer-than-8 → still works via defaults; named-arguments → already addressed by name; positional-with-all-8 → still works since new ones are appended).
 - `IExtensionFieldCatalog.GetFields(Type)` is **synchronous** and returns `IReadOnlyList<ExtensionFieldSpec>` directly — no context, no token. This ADR does **not** modify it; the new gating overload is a sibling `GetFieldsAsync(...)` returning `ValueTask<IReadOnlyList<MaterializedExtensionField>>`.
 - The catalog csproj currently `ProjectReference`s only `Sunfish.Foundation`. This ADR adds `ProjectReference`s to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, and `Sunfish.Foundation.Migration`. Runtime dependencies are nullable (lazy DI); compile-time dependencies are unconditional.
-- `AuditRecord` requires `(Guid AuditId, TenantId, AuditEventType, DateTimeOffset OccurredAt, SignedOperation<AuditPayload> Payload, IReadOnlyList<AttestingSignature> AttestingSignatures, int FormatVersion = 0)` — the catalog package will need an `ISigner` and access to `Sunfish.Foundation.Crypto.SignedOperation<T>`. Since `Sunfish.Foundation.Crypto` is a transitive dependency of `Sunfish.Kernel.Audit`, the ProjectReference graph already covers this. **Council pressure-test point #4 below.**
+- `AuditRecord` requires `(Guid AuditId, TenantId, AuditEventType, DateTimeOffset OccurredAt, SignedOperation<AuditPayload> Payload, IReadOnlyList<AttestingSignature> AttestingSignatures, int FormatVersion = 0)` — the catalog package will need an `IOperationSigner` and access to `Sunfish.Foundation.Crypto.SignedOperation<T>`. `Sunfish.Foundation.Crypto.SignedOperation<T>` lives in the `Sunfish.Foundation` package (sub-namespace, not a separate package); the catalog's existing `ProjectReference` to `Sunfish.Foundation` already provides access. Only the `IOperationSigner` injection is new — that requires a DI registration, not a project-graph change. **Council pressure-test point #4 below.**
 - The audit emission factory `ExtensionFieldGateAuditPayloads` is parallel to the existing `MigrationAuditPayloads` (`packages/foundation-migration/Audit/MigrationAuditPayloads.cs`) — proven pattern.
 - The ADR 0009 §Resolution-order chain (catalog → provider → entitlements → catalog default → throw) is preserved verbatim. This ADR adds a **separate** evaluation site at the catalog boundary — it does not modify `DefaultFeatureEvaluator`.
 
 ### §A0.4 Cross-ADR claims (guilty-until-proven-innocent per ADR 0069 D3)
 
-- ADR 0009 Amendment A1 (W#43; merged 2026-05-02 as PR #486) introduces `WayfinderFeatureProvider : IFeatureProvider`, canonical Standing Order path `features.{key}`. **Verified** by reading `docs/adrs/0009-foundation-featuremanagement.md` Amendment A1.
+- ADR 0009 Amendment A1 (W#43; merged 2026-05-04 as PR #486) introduces `WayfinderFeatureProvider : IFeatureProvider`, canonical Standing Order path `features.{key}`. **Verified** by reading `docs/adrs/0009-foundation-featuremanagement.md` Amendment A1.
 - ADR 0049 establishes `IAuditTrail` as the canonical kernel-tier audit substrate. **Verified.**
 - ADR 0028-A5.4 / A8.3 specifies the sequestration partition contract. **Verified** via the xml-doc on `ISequestrationStore`.
 - ADR 0069 D1 mandates pre-merge council canonical for substrate-tier ADRs. `tier: foundation` qualifies. **Verified.**
@@ -80,7 +82,7 @@ amendments: []
 1. Parallel-overload footgun — does the ungated `GetFields(Type)` silently bypass gating in real call sites?
 2. `Sequester` reuses `SequestrationFlagKind.PlaintextSequestered`; semantically wrong? Should W#35 add `FeatureGateOff`?
 3. Lazy-DI optionality — null-evaluator silently bypasses gating; risk in incomplete-DI deployments.
-4. Audit envelope constructability — does catalog have access to `SignedOperation<T>` + an `ISigner` via the new ProjectReference graph?
+4. Audit envelope constructability — does catalog have access to `SignedOperation<T>` + an `IOperationSigner` via the new ProjectReference graph?
 5. `Redact` is a one-way door — what prevents accidental issuance? Capability proof + explicit operator confirmation gate?
 6. Multi-tenancy + singleton catalog — gating decision is per-evaluation, but is there any tenant-affecting cache?
 7. ADR 0028-A5 form-factor migration composition — gates compose cleanly with form-factor sequestration?
@@ -92,7 +94,7 @@ amendments: []
 ADR 0009 (Foundation.FeatureManagement) declared six follow-ups at its 2026-04-19 acceptance. Five are landed or scheduled; **follow-up #5 — the feature-evaluation hook into `Sunfish.Foundation.Catalog.ExtensionFields` — is the last open promise** from that ADR. It was deliberately held until:
 
 1. **ADR 0065 (W#42, Wayfinder System + Standing Order Contract)** — operator-issued configuration substrate.
-2. **ADR 0009 Amendment A1 (W#43, `WayfinderFeatureProvider`; merged 2026-05-02 as PR #486)** — wires Wayfinder Standing Orders into the `IFeatureProvider` chain so feature evaluation is operator-runtime-controllable, not just startup-bound.
+2. **ADR 0009 Amendment A1 (W#43, `WayfinderFeatureProvider`; merged 2026-05-04 as PR #486)** — wires Wayfinder Standing Orders into the `IFeatureProvider` chain so feature evaluation is operator-runtime-controllable, not just startup-bound.
 
 Pre-W#42/W#43 a feature-gate hook was implementable but startup-bound — operators could not toggle a field gate without a host restart. Post-W#42/W#43 the hook becomes runtime-controllable: an operator issues a Standing Order flipping the feature OFF, the next call to `GetFieldsAsync(Type, ctx)` sees the gate flip, the configured `FeatureGateOffPolicy` runs, the audit trail records the decision, and (for `Sequester` policy) data is preserved per ADR 0028's sequestration substrate.
 
@@ -296,7 +298,7 @@ Semantics:
 | `ExtensionFieldSequestered` | Spec has a `FeatureKey`; gate evaluated to OFF; policy is `Sequester`; field excluded AND `ISequestrationStore.SequesterAsync(...)` was called. |
 | `ExtensionFieldRedacted` | Spec has a `FeatureKey`; gate evaluated to OFF; policy is `Redact`; field excluded AND underlying data was tombstoned. |
 
-Audit payloads use a new factory helper `ExtensionFieldGateAuditPayloads` (parallel to `MigrationAuditPayloads` in `packages/foundation-migration/Audit/`) that constructs the `AuditPayload` + `SignedOperation<AuditPayload>` envelope from the gating outcome. The factory is in the catalog package; signing is delegated via constructor-injected `ISigner` (already a foundation-tier abstraction).
+Audit payloads use a new factory helper `ExtensionFieldGateAuditPayloads` (parallel to `MigrationAuditPayloads` in `packages/foundation-migration/Audit/`) that constructs the `AuditPayload` + `SignedOperation<AuditPayload>` envelope from the gating outcome. The factory is in the catalog package; signing is delegated via constructor-injected `IOperationSigner` (already a foundation-tier abstraction).
 
 #### `Sequester` composition with W#35
 
@@ -396,7 +398,7 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 - [ ] **Phase 6 — csproj updates.** Add `ProjectReference` to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, and `Sunfish.Foundation.Migration` in `packages/foundation-catalog/Sunfish.Foundation.Catalog.csproj`.
 - [ ] **Phase 7 — tests.** Unit tests for: (a) ungated spec returns `GateState.Ungated` regardless of evaluator state; (b) gated-on spec returns `GateState.GatedOn` and emits `ExtensionFieldGated`; (c) gated-off Hide returns no entry and emits `ExtensionFieldFiltered`; (d) gated-off Sequester emits `ExtensionFieldSequestered` AND calls `ISequestrationStore.SequesterAsync`; (e) gated-off Redact requires capability proof, emits `ExtensionFieldRedacted`, throws `CapabilityRequiredException` without proof; (f) null-evaluator short-circuits to all-ungated.
 - [ ] **Phase 8 — Stage 06 deliverables.** Kitchen-sink demo registers a feature-gated extension field; apps/docs page documents the hook; XML docs on every public API; changelog entry citing ADR 0075 + W#44.
-- [ ] **Phase 9 — pre-merge council.** Per ADR 0069 D1, dispatch four-perspective adversarial council (Outside Observer, Pessimistic Risk Assessor, Pedantic Lawyer, Skeptical Implementer) at `high` effort, Opus 4.7. Pressure-test points enumerated in §A0.5.
+- [x] **Phase 9 — pre-merge council.** Per ADR 0069 D1, dispatch four-perspective adversarial council (Outside Observer, Pessimistic Risk Assessor, Pedantic Lawyer, Skeptical Implementer) at `high` effort, Opus 4.7. Pressure-test points enumerated in §A0.5.
 - [ ] **Phase 10 — open-question resolution.** Resolve §Open questions items 1, 2, 3, 4 either inline in the ADR (mechanical fixes) or as follow-up amendments before flipping `Status: Accepted`.
 
 ---
@@ -432,8 +434,8 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 - [ADR 0005](./0005-type-customization-model.md) — catalog-required rule (origin of `IExtensionFieldCatalog`)
 - [ADR 0007](./0007-bundle-manifest-schema.md) — bundle manifests; `featureDefaults` sourced here
 - [ADR 0009](./0009-foundation-featuremanagement.md) — parent ADR; this is follow-up #5; Amendment A1 (W#43) is the immediate runtime-control consumer
-- [ADR 0028](./0028-decentralized-collaboration.md) — A5.4 / A8.3 sequestration partition substrate
-- [ADR 0046](./0046-multi-sig-shared-account-recovery-and-key-recovery.md) — capability-graph reasoning + capability-required actions for `Redact` policy
+- [ADR 0028](./0028-crdt-engine-selection.md) — A5.4 / A8.3 sequestration partition substrate
+- [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md) — capability-graph reasoning + capability-required actions for `Redact` policy
 - [ADR 0049](./0049-audit-trail-substrate.md) — kernel-tier audit substrate; canonical `IAuditTrail` consumer
 - [ADR 0065](./0065-wayfinder-system-and-standing-order-contract.md) — Wayfinder substrate; W#42 prerequisite for operator-runtime control
 - [ADR 0069](./0069-adr-authoring-discipline.md) — D1 + D2 + D3 disciplines applied to this ADR
@@ -480,4 +482,4 @@ This preserves the no-mandatory-new-dependency posture from §Decision drivers �
 
 ---
 
-*This ADR runs the ADR 0069 D1 + D2 + D3 disciplines in full. The §A0 self-audit catches what XO can catch from a draft-time mental model; the pre-merge council is canonical defense. Cohort batting average: 21-of-21 substrate amendments needed council fixes; this ADR will not be the counter-example.*
+*This ADR runs the ADR 0069 D1 + D2 + D3 disciplines in full. The §A0 self-audit catches what XO can catch from a draft-time mental model; the pre-merge council is canonical defense. Cohort batting average: high single-to-double-digit substrate amendments needed council fixes (per ADR 0069 §Cohort batting average); this ADR will not be the counter-example.*
