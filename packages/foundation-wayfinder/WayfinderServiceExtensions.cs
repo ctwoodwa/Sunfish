@@ -27,8 +27,10 @@ public static class WayfinderServiceExtensions
     public static IServiceCollection AddSunfishWayfinder(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        // Phase 1 is contract-only. No singleton repository / issuer here;
-        // those land in Phase 2 with the CRDT-backed implementations.
+        // TODO(Phase 2): register CrdtStandingOrderRepository as
+        // IStandingOrderRepository singleton + DefaultStandingOrderIssuer as
+        // IStandingOrderIssuer singleton (both audit-emitting; both consume
+        // the validator chain registered via AddStandingOrderValidator<T>()).
         return services;
     }
 

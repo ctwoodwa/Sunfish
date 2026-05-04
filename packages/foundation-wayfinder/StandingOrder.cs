@@ -30,7 +30,7 @@ namespace Sunfish.Foundation.Wayfinder;
 /// <param name="Id">Stable identifier for this Standing Order.</param>
 /// <param name="TenantId">Tenant this Standing Order is scoped to. Required (non-default) per <see cref="IMustHaveTenant"/>.</param>
 /// <param name="IssuedBy">The actor that issued the order.</param>
-/// <param name="IssuedAt">Wall-clock time at which the order was issued.</param>
+/// <param name="IssuedAt">Wall-clock time at which the order was issued. ADR 0065 §1 specifies <c>NodaTime.Instant</c>; cohort precedent (W#34 / W#35 / W#40 / W#41) uses <see cref="DateTimeOffset"/> to align with <c>Sunfish.Kernel.Audit.AuditRecord.OccurredAt</c> — same choice followed here.</param>
 /// <param name="Scope">Scope under which the order applies; see <see cref="StandingOrderScope"/>.</param>
 /// <param name="Triples">One or more atomic <c>(path, oldValue, newValue)</c> triples; the issuance pipeline either commits all or none. Bundled per ADR 0065 §"Decision options" Option B.</param>
 /// <param name="Rationale">Operator-supplied free-text rationale; required for audit / forensic review.</param>
