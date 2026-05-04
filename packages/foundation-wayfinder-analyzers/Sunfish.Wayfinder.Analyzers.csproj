@@ -1,0 +1,63 @@
+<!--
+    Roslyn analyzer for Sunfish Wayfinder (ADR 0065 / W#42 Phase 3b).
+    Targets netstandard2.0 (Roslyn analyzer contract); ships into NuGet analyzers/dotnet/cs.
+-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Opt out of Central Package Management; analyzer needs Microsoft.CodeAnalysis.* not in repo-wide pins. -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!--
+      The Directory.Build.props BannedApiAnalyzers auto-attach predicate
+      excludes any project ending in `.Analyzers`, so this project falls
+      outside the auto-attach automatically — no local opt-out needed.
+    -->
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsRoslynComponent>true</IsRoslynComponent>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Wayfinder.Analyzers</PackageId>
+    <Description>Roslyn analyzer that emits SUNFISH_WAYFINDER001 on AddSunfish*() invocations whose containing project does not register an AtlasSchemaDescriptor for at least one settable path. Per ADR 0065 / W#42 Phase 3b.</Description>
+    <PackageTags>roslyn;analyzer;sunfish;wayfinder;adr-0065</PackageTags>
+    <DevelopmentDependency>true</DevelopmentDependency>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RootNamespace>Sunfish.Wayfinder.Analyzers</RootNamespace>
+    <AssemblyName>Sunfish.Wayfinder.Analyzers</AssemblyName>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(OutputPath)\$(AssemblyName).dll"
+          Pack="true"
+          PackagePath="analyzers/dotnet/cs"
+          Visible="false" />
+    <None Include="README.md" Pack="true" PackagePath="\" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Wayfinder.Analyzers.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+    <None Remove="tests/**/*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Roslyn analyzer release-tracking files satisfy the RS2008 check. -->
+    <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+    <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+  </ItemGroup>
+</Project>
