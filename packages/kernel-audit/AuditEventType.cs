@@ -480,6 +480,20 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A pair of concurrent <c>StandingOrder</c> issuances on the same (<c>Scope</c>, <c>Path</c>) was reconciled via the LWW tie-break; emitted once per pair, citing both <c>StandingOrderId</c> values. Per ADR 0065 §2 / §4.</summary>
     public static readonly AuditEventType StandingOrderConflictResolved = new("StandingOrderConflictResolved");
 
+    // ===== ADR 0028-A2.6 + A9 — W#23 iOS Field-Capture App (P4 + P4.5) =====
+
+    /// <summary>An iOS-paired device successfully posted a field-event envelope to <c>POST /api/v1/field/event</c>; per W#23 P4.5 unblock addendum.</summary>
+    public static readonly AuditEventType FieldEventAccepted = new("FieldEventAccepted");
+
+    /// <summary>An iOS-paired-device <c>POST /api/v1/field/event</c> request was rejected (schema-validation failure, signature drift on duplicate eventId, unsupported schema epoch, or invalid pairing-token); per W#23 P4.5 unblock addendum.</summary>
+    public static readonly AuditEventType FieldEventRejected = new("FieldEventRejected");
+
+    /// <summary>An iOS-paired device successfully posted a content-addressed blob to <c>POST /api/v1/field/blob/{sha256}</c>; per W#23 P4.5 unblock addendum.</summary>
+    public static readonly AuditEventType FieldBlobAccepted = new("FieldBlobAccepted");
+
+    /// <summary>An iOS-paired-device <c>POST /api/v1/field/blob/{sha256}</c> request was rejected (SHA-256 path-param mismatch, payload too large, invalid pairing-token); per W#23 P4.5 unblock addendum.</summary>
+    public static readonly AuditEventType FieldBlobRejected = new("FieldBlobRejected");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

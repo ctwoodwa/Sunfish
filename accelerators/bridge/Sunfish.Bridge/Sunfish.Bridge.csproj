@@ -23,6 +23,9 @@
          BridgeOptions.Mode == Relay. SaaS posture does not activate them. -->
     <ProjectReference Include="..\..\..\packages\kernel-sync\Sunfish.Kernel.Sync.csproj" />
     <ProjectReference Include="..\..\..\packages\kernel-security\Sunfish.Kernel.Security.csproj" />
+    <!-- W#23 P4.5 — Bridge audit emission for field-event + field-blob endpoints
+         (Option C in-memory v1 per the audit-infra unblock addendum). -->
+    <ProjectReference Include="..\..\..\packages\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
 
   <ItemGroup>

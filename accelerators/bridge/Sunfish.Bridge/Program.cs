@@ -12,6 +12,7 @@ using Sunfish.Bridge.Localization;
 using Sunfish.Bridge.Client.Services;
 using Sunfish.Bridge.Authorization;
 using Sunfish.Bridge.Components;
+using Sunfish.Bridge.Field;
 using Sunfish.Bridge.Orchestration;
 using Sunfish.Bridge.Services;
 using Sunfish.Foundation.Authorization;
@@ -50,6 +51,20 @@ builder.Services.Configure<BridgeOptions>(
 
 // Aspire service defaults (OTEL, health checks, resilience, service discovery).
 builder.AddServiceDefaults();
+
+// W#23 P4.5 audit-infra (Option C in-memory v1 per the audit-infra unblock
+// addendum). Bridge's first audit-emitting flow is the /api/v1/field/* route
+// family; v1 is restart-volatile + non-verifying. Persistent + verifying audit
+// infra defers to ~ADR 0076.
+//
+// v1: signer key is process-volatile per ~ADR 0076. Every Bridge restart
+// generates a fresh Ed25519 keypair; audit records issued under previous
+// restarts cannot be verifier-cross-checked against the new key. Production
+// Bridge identity (signer key in IRootKeyStore or equivalent) lands with
+// ~ADR 0076.
+builder.Services.AddSingleton<Sunfish.Kernel.Audit.IAuditTrail, Sunfish.Kernel.Audit.InMemoryAuditTrail>();
+builder.Services.AddSingleton<Sunfish.Foundation.Crypto.IOperationSigner>(
+    _ => new Sunfish.Foundation.Crypto.Ed25519Signer(Sunfish.Foundation.Crypto.KeyPair.Generate()));
 
 if (bridgeOptions.Mode == BridgeMode.Relay)
 {
@@ -128,6 +143,11 @@ app.MapHub<BridgeHub>("/hubs/bridge");
 // Human-facing /listings + /listings/{slug} pages and the inquiry POST path
 // follow in subsequent phases.
 app.MapListingsEndpoints();
+
+// W#23 Phase 4.5 — iOS field-capture endpoints (POST /api/v1/field/event +
+// POST /api/v1/field/blob/{sha256}). Per the audit-infra unblock addendum,
+// audit emission is in-memory only for v1; persistent infra defers to ~ADR 0076.
+app.MapFieldEndpoints();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
