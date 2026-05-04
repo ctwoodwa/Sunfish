@@ -30,10 +30,12 @@ namespace Sunfish.Foundation.Wayfinder;
 /// </para>
 /// <para>
 /// <b>Idempotency.</b> Re-appending an order with the same
-/// <see cref="StandingOrder.Id"/> is a no-op (the existing entry remains
-/// unchanged). The CRDT map's deterministic Lamport tie-break makes this safe
-/// across replicas — a re-append from a peer with the same Id resolves to the
-/// same canonical bytes.
+/// <see cref="StandingOrder.Id"/> on a single replica is a no-op (the local
+/// <c>ContainsKey</c> guard preserves the first-written canonical bytes).
+/// Cross-replica concurrent appends with the same Id but diverging content
+/// fall through to the underlying engine's CRDT tie-break — the
+/// <see cref="StandingOrderState.Conflicted"/> state surfaces the loser per
+/// ADR 0065 §2 conflict UX.
 /// </para>
 /// </remarks>
 public sealed class CrdtStandingOrderRepository : IStandingOrderRepository
