@@ -12,10 +12,14 @@ namespace Sunfish.Foundation.Wayfinder;
 public static class WayfinderServiceExtensions
 {
     /// <summary>
-    /// Register the Wayfinder substrate without an audit-emitter coupling.
-    /// Phase 1 registers no concrete <see cref="IStandingOrderRepository"/> /
-    /// <see cref="IStandingOrderIssuer"/> implementations — those land in
-    /// Phase 2 (CRDT-backed) and are wired by their own DI extensions.
+    /// Register the Wayfinder substrate: CRDT-backed
+    /// <see cref="CrdtStandingOrderRepository"/> + reference
+    /// <see cref="DefaultStandingOrderIssuer"/> + a <see cref="TimeProvider"/>
+    /// fallback (<see cref="TimeProvider.System"/>) when none has been
+    /// registered. Hosts MUST separately register an
+    /// <see cref="Sunfish.Kernel.Crdt.ICrdtEngine"/> and an
+    /// <see cref="Sunfish.Foundation.Crypto.IOperationSigner"/>; the issuer
+    /// resolves them at first construction.
     /// </summary>
     /// <remarks>
     /// Hosts add validators via
@@ -23,14 +27,17 @@ public static class WayfinderServiceExtensions
     /// (for example, a <c>SchemaValidator</c> at
     /// <see cref="StandingOrderValidatorPriority.Schema"/> or a
     /// <c>PolicyValidator</c> at <see cref="StandingOrderValidatorPriority.Policy"/>).
+    /// Validators run in ascending priority at issuance time; ties resolve
+    /// to registration order.
     /// </remarks>
     public static IServiceCollection AddSunfishWayfinder(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
-        // TODO(Phase 2): register CrdtStandingOrderRepository as
-        // IStandingOrderRepository singleton + DefaultStandingOrderIssuer as
-        // IStandingOrderIssuer singleton (both audit-emitting; both consume
-        // the validator chain registered via AddStandingOrderValidator<T>()).
+        services.TryAddSingleton<CrdtStandingOrderRepository>();
+        services.TryAddSingleton<IStandingOrderRepository>(
+            sp => sp.GetRequiredService<CrdtStandingOrderRepository>());
+        services.TryAddSingleton<IStandingOrderIssuer, DefaultStandingOrderIssuer>();
+        services.TryAddSingleton(TimeProvider.System);
         return services;
     }
 
