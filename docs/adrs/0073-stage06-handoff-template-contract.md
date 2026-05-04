@@ -1,13 +1,19 @@
 ---
-adr: "0073"
-title: "Stage-06 Hand-off Template Contract"
-status: "Proposed"
-date: "2026-05-01"
-authors: ["XO research session"]
+id: 73
+title: Stage-06 Hand-off Template Contract
+status: Proposed
+date: 2026-05-01
 tier: process
-concerns: ["governance", "dev-experience"]
-pipeline-variant: "sunfish-quality-control"
-composes: ["0070"]
+pipeline_variant: sunfish-quality-control
+concern:
+  - governance
+  - dev-experience
+enables: []
+composes: [70]
+extends: []
+supersedes: []
+superseded_by: null
+amendments: []
 ---
 
 # ADR 0073 — Stage-06 Hand-off Template Contract
