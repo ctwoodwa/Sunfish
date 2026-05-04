@@ -6,9 +6,17 @@ date: 2026-04-30
 tier: foundation
 concern:
   - mission-space
-  - capability-model
+- capability-model
   - dev-experience
-composes: []
+composes:
+  - 7
+  - 9
+  - 28
+  - 36
+  - 44
+  - 48
+  - 49
+  - 62
 extends: []
 supersedes: []
 superseded_by: null

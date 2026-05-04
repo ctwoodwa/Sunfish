@@ -6,9 +6,13 @@ date: 2026-04-28
 tier: block
 concern:
   - security
-  - audit
+- audit
   - regulatory
-composes: []
+composes:
+  - 28
+  - 46
+  - 49
+  - 53
 extends: []
 supersedes: []
 superseded_by: null

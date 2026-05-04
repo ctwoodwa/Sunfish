@@ -6,8 +6,12 @@ date: 2026-04-20
 tier: foundation
 concern:
   - persistence
-  - dev-experience
-composes: []
+- dev-experience
+composes:
+  - 6
+  - 7
+  - 8
+  - 9
 extends: []
 supersedes: []
 superseded_by: null

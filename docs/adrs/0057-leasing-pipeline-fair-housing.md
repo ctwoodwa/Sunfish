@@ -6,9 +6,16 @@ date: 2026-04-29
 tier: block
 concern:
   - regulatory
-  - audit
+- audit
   - multi-tenancy
-composes: []
+composes:
+  - 28
+  - 43
+  - 49
+  - 52
+  - 54
+  - 55
+  - 56
 extends: []
 supersedes: []
 superseded_by: null

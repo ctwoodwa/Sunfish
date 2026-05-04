@@ -5,10 +5,15 @@ status: Accepted
 date: 2026-04-29
 tier: foundation
 concern:
-  - configuration
+- configuration
   - version-management
   - governance
-composes: []
+composes:
+  - 1
+  - 7
+  - 28
+  - 46
+  - 49
 extends: []
 supersedes: []
 superseded_by: null

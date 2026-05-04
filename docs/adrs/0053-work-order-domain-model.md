@@ -5,10 +5,13 @@ status: Accepted
 date: 2026-04-28
 tier: block
 concern:
-  - persistence
+- persistence
   - audit
   - regulatory
-composes: []
+composes:
+  - 28
+  - 49
+  - 52
 extends: []
 supersedes: []
 superseded_by: null

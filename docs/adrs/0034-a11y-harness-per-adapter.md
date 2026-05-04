@@ -7,7 +7,9 @@ tier: adapter
 concern:
   - accessibility
   - ui
-composes: []
+composes:
+  - 17
+  - 30
 extends: []
 supersedes: []
 superseded_by: null

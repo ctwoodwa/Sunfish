@@ -6,9 +6,17 @@ date: 2026-04-30
 tier: policy
 concern:
   - regulatory
-  - data-residency
+- data-residency
   - security
-composes: []
+composes:
+  - 9
+  - 31
+  - 49
+  - 56
+  - 57
+  - 60
+  - 62
+  - 63
 extends: []
 supersedes: []
 superseded_by: null

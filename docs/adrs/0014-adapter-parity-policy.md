@@ -6,8 +6,10 @@ date: 2026-04-19
 tier: adapter
 concern:
   - ui
-  - dev-experience
-composes: []
+- dev-experience
+composes:
+  - 6
+  - 7
 extends: []
 supersedes: []
 superseded_by: null

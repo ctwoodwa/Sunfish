@@ -6,8 +6,9 @@ date: 2026-04-22
 tier: governance
 concern:
   - distribution
-  - security
-composes: []
+- security
+composes:
+  - 13
 extends: []
 supersedes: []
 superseded_by: null

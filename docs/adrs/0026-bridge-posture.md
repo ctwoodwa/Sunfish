@@ -8,7 +8,11 @@ concern:
   - operations
   - distribution
 concern: []
-composes: []
+composes:
+  - 6
+  - 7
+  - 12
+  - 18
 extends: []
 supersedes: []
 superseded_by: 31
