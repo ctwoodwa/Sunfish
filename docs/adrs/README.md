@@ -61,6 +61,7 @@ A reference template lives at [`_template.md`](_template.md). Copy and rename wh
 | [0069](0069-adr-authoring-discipline.md) | ADR Authoring Discipline (pre-merge council + §A0 + three-direction) | Proposed | — |
 | [0070](0070-multi-session-naval-org-structure.md) | Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman) | Proposed | — |
 | [0071](0071-adr-portfolio-system.md) | ADR Portfolio System (Event-Sourcing-with-Snapshots) | Proposed | — |
+| [0072](0072-research-inbox-beacon-protocol.md) | Research-Inbox Beacon Protocol (Cross-Session Signaling) | Proposed | — |
 
 ## Appendix C Resolution
 
