@@ -113,6 +113,25 @@ def collect():
     return metas
 
 
+def derive_consumed_by(metas):
+    """Build a reverse-index: for each ADR X, collect all ADRs Y where X appears
+    in Y's `composes` or `extends` arrays.  Returns a dict mapping ADR id → sorted
+    list of consumer ADR ids.  consumed_by is tooling-derived; it is never written
+    back to the ADR files on disk."""
+    consumers: dict[int, list[int]] = defaultdict(list)
+    for _name, m in metas:
+        if m is None:
+            continue
+        source_id = m.get("id")
+        if source_id is None:
+            continue
+        for target in (m.get("composes") or []) + (m.get("extends") or []):
+            if isinstance(target, int):
+                consumers[target].append(source_id)
+    # Sort each list so output is deterministic
+    return {k: sorted(v) for k, v in consumers.items()}
+
+
 def project_status(metas):
     by_status = defaultdict(list)
     for name, m in metas:
@@ -139,15 +158,17 @@ def project_status(metas):
     return "\n".join(out)
 
 
-def project_topical(metas):
+def project_topical(metas, consumed_by=None):
     by_tier = defaultdict(list)
     by_concern = defaultdict(list)
+    id_to_entry: dict[int, tuple] = {}
     for name, m in metas:
         if m is None:
             continue
         by_tier[m["tier"]].append((m["id"], m["title"], name))
         for c in m.get("concern") or []:
             by_concern[c].append((m["id"], m["title"], name))
+        id_to_entry[m["id"]] = (m["id"], m["title"], name)
     out = ["# ADR Topical Index",
            "",
            "_Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not edit by hand._",
@@ -168,6 +189,41 @@ def project_topical(metas):
         for id_, title, name in sorted(by_concern[concern]):
             out.append(f"- ADR {id_:04d} — [{title}](./{name})")
         out.append("")
+
+    # consumed_by section — tooling-derived reverse-index of composes + extends
+    if consumed_by is not None:
+        out.append("## ADRs by usage (consumed_by)")
+        out.append("")
+        out.append("_Each row lists the ADR and the other ADRs that compose or extend it._")
+        out.append("_`consumed_by` is auto-derived from `composes`/`extends` arrays; never hand-authored._")
+        out.append("")
+        # Sort by descending consumer count, then ascending ADR id for tiebreak
+        ranked = sorted(consumed_by.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+        if ranked:
+            for target_id, consumer_ids in ranked:
+                entry = id_to_entry.get(target_id)
+                if entry:
+                    _, title, name = entry
+                    consumers_str = ", ".join(
+                        f"[ADR {c:04d}](./{id_to_entry[c][2]})"
+                        if c in id_to_entry
+                        else f"ADR {c:04d}"
+                        for c in consumer_ids
+                    )
+                    out.append(
+                        f"- ADR {target_id:04d} — [{title}](./{name}) "
+                        f"← consumed by {len(consumer_ids)}: {consumers_str}"
+                    )
+                else:
+                    out.append(
+                        f"- ADR {target_id:04d} (not found) "
+                        f"← consumed by {len(consumer_ids)}: {consumer_ids}"
+                    )
+            out.append("")
+        else:
+            out.append("_No `composes` or `extends` relationships populated yet._")
+            out.append("")
+
     return "\n".join(out)
 
 
@@ -206,18 +262,27 @@ def main():
     for name, meta in metas:
         all_errs.extend(validate(meta, name))
 
+    # Derive consumed_by reverse-index (tooling-derived; never written to disk ADR files)
+    consumed_by = derive_consumed_by(metas)
+
     if verbose or check_only:
         coverage = sum(1 for _, m in metas if m is not None)
         print(f"ADRs scanned: {len(metas)}; with frontmatter: {coverage}; "
               f"errors: {len(all_errs)}", file=sys.stderr)
         for e in all_errs:
             print(f"  {e}", file=sys.stderr)
+        if consumed_by:
+            ranked = sorted(consumed_by.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+            print(f"consumed_by entries: {len(consumed_by)} ADRs have consumers; "
+                  f"top-5: {[(k, len(v)) for k, v in ranked[:5]]}",
+                  file=sys.stderr)
 
     if check_only:
         return 1 if all_errs else 0
 
     (ADR_DIR / "STATUS.md").write_text(project_status(metas), encoding="utf-8")
-    (ADR_DIR / "INDEX.md").write_text(project_topical(metas), encoding="utf-8")
+    (ADR_DIR / "INDEX.md").write_text(project_topical(metas, consumed_by=consumed_by),
+                                      encoding="utf-8")
     (ADR_DIR / "GRAPH.md").write_text(project_graph(metas), encoding="utf-8")
     print(f"Wrote STATUS.md, INDEX.md, GRAPH.md to {ADR_DIR}", file=sys.stderr)
     return 0
