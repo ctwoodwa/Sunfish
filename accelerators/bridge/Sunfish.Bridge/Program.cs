@@ -56,6 +56,12 @@ builder.AddServiceDefaults();
 // addendum). Bridge's first audit-emitting flow is the /api/v1/field/* route
 // family; v1 is restart-volatile + non-verifying. Persistent + verifying audit
 // infra defers to ~ADR 0076.
+//
+// v1: signer key is process-volatile per ~ADR 0076. Every Bridge restart
+// generates a fresh Ed25519 keypair; audit records issued under previous
+// restarts cannot be verifier-cross-checked against the new key. Production
+// Bridge identity (signer key in IRootKeyStore or equivalent) lands with
+// ~ADR 0076.
 builder.Services.AddSingleton<Sunfish.Kernel.Audit.IAuditTrail, Sunfish.Kernel.Audit.InMemoryAuditTrail>();
 builder.Services.AddSingleton<Sunfish.Foundation.Crypto.IOperationSigner>(
     _ => new Sunfish.Foundation.Crypto.Ed25519Signer(Sunfish.Foundation.Crypto.KeyPair.Generate()));

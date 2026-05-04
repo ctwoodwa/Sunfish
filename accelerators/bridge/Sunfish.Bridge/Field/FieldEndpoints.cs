@@ -47,6 +47,33 @@ public static class FieldEndpoints
     private const long MaxBlobBytes = 10L * 1024 * 1024;
 
     /// <summary>
+    /// Sentinel tenant attribution for unauthenticated / pre-validation
+    /// audit records. Substrate v1 uses an explicit sentinel because
+    /// <see cref="TenantId.Default"/> ("default") is a real tenant
+    /// candidate and would mis-attribute pre-auth records.
+    /// </summary>
+    private static readonly TenantId BridgeAnonymousTenant = new("bridge-anonymous");
+
+    /// <summary>
+    /// Configurable blob-storage root. Reads <c>Bridge:Field:BlobRoot</c>
+    /// from configuration; falls back to <c>var/blobs/</c> next to the
+    /// current working directory. Production deploys MUST set the option
+    /// when <see cref="AppContext.BaseDirectory"/> is read-only
+    /// (containerized Bridge).
+    /// </summary>
+    private static string ResolveBlobRoot(HttpRequest request)
+    {
+        var configured = request.HttpContext.RequestServices
+            .GetService<Microsoft.Extensions.Configuration.IConfiguration>()?
+            .GetValue<string>("Bridge:Field:BlobRoot");
+        if (!string.IsNullOrEmpty(configured))
+        {
+            return configured;
+        }
+        return Path.Combine(Directory.GetCurrentDirectory(), "var", "blobs");
+    }
+
+    /// <summary>
     /// In-process idempotency cache: keys on <c>eventId</c>; value is the
     /// canonical-JSON envelope bytes that produced the original 200 response.
     /// Restart-volatile (matches the audit-trail's v1 in-memory posture).
@@ -92,7 +119,7 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldEventRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("schema-validation-failed", ex.Message),
                 ct).ConfigureAwait(false);
             return Results.BadRequest(new { error = "schema-validation-failed", detail = ex.Message });
@@ -101,16 +128,18 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldEventRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("missing-event-id", "envelope eventId is required"),
                 ct).ConfigureAwait(false);
             return Results.BadRequest(new { error = "missing-event-id" });
         }
 
         // Idempotency: re-POST of the same eventId returns the original
-        // success response (200 with the original accepted_at).
-        var canonicalBytes = JsonSerializer.SerializeToUtf8Bytes(envelope,
-            new JsonSerializerOptions { WriteIndented = false });
+        // success response. Uses Sunfish.Foundation.Crypto.CanonicalJson
+        // for byte-stable comparison so two semantically-equal envelopes
+        // whose payload JsonElement differs in key order do not trip a
+        // spurious 409.
+        var canonicalBytes = CanonicalJson.Serialize(envelope);
         if (_eventIdempotencyCache.TryGetValue(envelope.EventId, out var stored))
         {
             // Diverging content under the same eventId is a signature drift —
@@ -161,7 +190,7 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldBlobRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("invalid-sha256-format", "path param must be 64 hex chars"),
                 ct).ConfigureAwait(false);
             return Results.BadRequest(new { error = "invalid-sha256-format" });
@@ -171,7 +200,7 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldBlobRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("payload-too-large", $"max {MaxBlobBytes} bytes"),
                 ct).ConfigureAwait(false);
             return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
@@ -183,7 +212,7 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldBlobRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("payload-too-large", $"max {MaxBlobBytes} bytes"),
                 ct).ConfigureAwait(false);
             return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
@@ -195,7 +224,7 @@ public static class FieldEndpoints
         {
             await EmitAuditAsync(auditTrail, signer,
                 AuditEventType.FieldBlobRejected,
-                tenantId: TenantId.Default,
+                tenantId: BridgeAnonymousTenant,
                 payload: BuildRejectPayload("sha256-mismatch", $"expected {sha256}; got {actualHash}"),
                 ct).ConfigureAwait(false);
             return Results.BadRequest(new { error = "sha256-mismatch" });
@@ -203,7 +232,10 @@ public static class FieldEndpoints
 
         // Local-disk content-addressed storage per the unblock addendum
         // halt-condition #4 (default backend): var/blobs/<sha256[0:2]>/<sha256>.
-        var blobRoot = Path.Combine(AppContext.BaseDirectory, "var", "blobs", sha256[..2]);
+        // Path is configurable via Bridge:Field:BlobRoot — production
+        // deploys MUST set the option if the current-working-directory
+        // default is not writable.
+        var blobRoot = Path.Combine(ResolveBlobRoot(request), sha256[..2]);
         Directory.CreateDirectory(blobRoot);
         var blobPath = Path.Combine(blobRoot, sha256);
         if (!File.Exists(blobPath))
