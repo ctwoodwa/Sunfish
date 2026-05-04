@@ -518,6 +518,10 @@ public interface IStandingOrderEventStream
 
 The stream is **in-process only**. Cross-process / cross-host fanout (e.g., Bridge → remote-Anchor subscription delivery) is the existing ADR 0031 §A1 subscription-event-emitter's responsibility; a future workstream wires `IStandingOrderEventStream.Subscribe(...)` into that emitter as a producer.
 
+**`ReplayAll()` is restart-volatile.** For durable replay across process restarts, consumers rebuild from the persistent CRDT log via `IStandingOrderRepository.EnumerateAsync` (filtered to `State == Applied`). The in-memory event stream is the in-process fanout; the durable substrate is the per-tenant CRDT log.
+
+**`Subscribe` is all-tenant by design** (mirroring `IAuditEventStream`). The interface carries no tenant filter; consumers are responsible for filtering on `TenantId`. See §A1.6 for the recommended consumer idiom.
+
 #### A1.3 — One new `AuditEventType` constant
 
 A new `static readonly AuditEventType StandingOrderApplied = new("StandingOrderApplied");` in `Sunfish.Kernel.Audit.AuditEventType` (`packages/kernel-audit/AuditEventType.cs`).
@@ -527,6 +531,8 @@ ADR 0065 §4 already lists 5 constants (`StandingOrderIssued`, `StandingOrderAme
 #### A1.4 — `InMemoryStandingOrderEventStream` default implementation
 
 A default in-memory implementation, structurally parallel to `Sunfish.Kernel.Audit.InMemoryAuditEventStream` (`packages/kernel-audit/InMemoryAuditEventStream.cs`): `internal sealed class` with a list + lock + subscriber-snapshot pattern; `Publish(StandingOrderAppliedEvent)` adds to the list, snapshots subscribers under the lock, and invokes them outside the lock. The class is `internal` so it is not part of the public API surface; consumers see only `IStandingOrderEventStream`.
+
+Concurrent issuance ordering is **FIFO-by-Publish-call-order**: the lock serializes append + subscriber-snapshot, then invokes subscribers outside the lock. Consumers requiring monotonic-by-`AppliedAt` ordering must sort their own buffer.
 
 Cohort precedent for in-memory variants: kernel-audit's `InMemoryAuditEventStream`, kernel-audit's `InMemoryAuditTrail` (`packages/kernel-audit/InMemoryAuditTrail.cs`).
 
@@ -540,7 +546,32 @@ services.TryAddSingleton<IStandingOrderEventStream>(
     sp => sp.GetRequiredService<InMemoryStandingOrderEventStream>());
 ```
 
-`DefaultStandingOrderIssuer` (`packages/foundation-wayfinder/DefaultStandingOrderIssuer.cs`) gains a constructor parameter (`InMemoryStandingOrderEventStream eventStream`) and, after the `AppendAsync` + audit-emission pair completes for a `Validated` / `Applied` state transition, calls `eventStream.Publish(new StandingOrderAppliedEvent(...))`. The publish is the **last** step of the issuance — emitting before the CRDT append + audit append would expose consumers to events for un-persisted orders.
+`DefaultStandingOrderIssuer` (`packages/foundation-wayfinder/DefaultStandingOrderIssuer.cs`) gains a constructor parameter (`InMemoryStandingOrderEventStream eventStream`) and, after the `AppendAsync` + audit-emission pair completes, calls `eventStream.Publish(new StandingOrderAppliedEvent(...))`.
+
+**Publish-site topology — Phase 1 vs Phase 2 (council NM-1).** The publish fires for the `Applied` state. In Phase 1 (this amendment), the `Validated` → `Applied` transition is synchronous in single-anchor topologies — `DefaultStandingOrderIssuer` publishes immediately after `AppendAsync` + audit-emit, making the publish the **last** step of the issuance (emitting before the CRDT append + audit append would expose consumers to events for un-persisted orders). In multi-anchor topologies (Phase 2 follow-on per ADR 0028 §A6.1), a separate `IAtlasProjector`-driven publisher fires `StandingOrderAppliedEvent` after CRDT convergence; in that mode the issuer's synchronous publish is suppressed to avoid double-firing.
+
+#### A1.6 — Consumer idiom: subscribe-then-replay with dedup + tenant filter
+
+Consumers that maintain a projection cache MUST subscribe **before** replaying to avoid missing events published in the gap between the two calls. The `StandingOrderId`-keyed `HashSet` provides natural idempotency for the overlap window:
+
+```csharp
+// CORRECT: subscribe first so no events fire-and-forget while we replay.
+var seen = new HashSet<StandingOrderId>();
+using var subscription = stream.Subscribe(evt =>
+{
+    if (evt.TenantId != myTenantId) return;  // tenant-scope filter (mandatory)
+    if (seen.Add(evt.StandingOrderId)) Process(evt);
+});
+foreach (var historical in stream.ReplayAll())
+{
+    if (historical.TenantId != myTenantId) continue;
+    if (seen.Add(historical.StandingOrderId)) Process(historical);
+}
+```
+
+**Tenant-scope filter is mandatory for tenant-scoped services.** `IStandingOrderEventStream.Subscribe` is all-tenant by design — a `WayfinderFeatureProvider` registered as `AddScoped<IFeatureManager, WayfinderFeatureProvider>()` MUST filter on `TenantId` to avoid recomputing on other tenants' applied events. Platform-admin services that legitimately observe all tenants may omit the filter; they MUST carry the appropriate `Capability.PlatformAdmin` (W#37 territory) before reading other tenants' Standing Orders.
+
+**`ReplayAll()` is restart-volatile.** Projection caches lost on process restart rebuild from `IStandingOrderRepository.EnumerateAsync(tenantId, ct)` (filtered to `State == Applied`) — not from `ReplayAll()`. The event stream is the in-process fanout; the CRDT log is the durable substrate.
 
 ### Compatibility
 
@@ -568,5 +599,5 @@ Pre-merge Opus 4.7 canonical council (2026-05-04) reviewed all five pre-flagged 
 1. **Issued-vs-Applied semantic distinction — council CONFIRMED load-bearing.** The distinction is necessary: ADR 0066 §1.3 trigger #2 (Helm widgets) cares about post-projection state; in multi-anchor + Bridge-fanout topologies (ADR 0028 §A6.1 + ADR 0031 §A1) the gap between `Validated` and `Applied` can be seconds (CRDT convergence + delivery latency). Firing `StandingOrderIssued` as "applied" would expose Helm widgets to stale-write surface — contradicting the "no surface drift" decision driver (ADR 0065 §"Decision drivers" #4). No amendment to §A1.1 structure required; prose clarification added per council recommendation.
 2. **`IStandingOrderEventStream` vs `IObservable<StandingOrderAppliedEvent>` — council CONFIRMED named interface.** Zero substrate-tier `IObservable<T>` uses found on origin/main; kernel-audit + kernel-ledger both use named-interface form. Author's choice stands.
 3. **Parent ADR 0065 §A0.2 namespace drift — council CONFIRMED SEPARATE-PR.** See §A0.2 note above; do NOT inline the parent-ADR fix into this amendment.
-4. **DI subscribe-then-replay race — council CONFIRMED, NM-2 finding, non-mechanical.** Flagged for CO disposition; subscribe-then-replay idiom prose is an author-judgment additive addition.
+4. **DI subscribe-then-replay race — council CONFIRMED, NM-2 finding, non-mechanical, applied.** §A1.6 adds the subscribe-then-replay idiom with `HashSet<StandingOrderId>` dedup + tenant-filter exemplar (NM-2 + NM-4 combined in §A1.6). §A1.2 adds the restart-volatility framing (NM-3). §A1.5 adds the Phase 1 / Phase 2 publish-site topology framing (NM-1).
 5. **Concurrent `Publish` ordering — council CONFIRMED FIFO-by-Publish-call-order.** The lock pattern serializes append + subscriber-snapshot; subscribers invoked outside the lock. Consumers requiring monotonic-by-`AppliedAt` ordering must sort their own buffer. No API change required.
