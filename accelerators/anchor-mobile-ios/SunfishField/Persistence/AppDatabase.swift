@@ -62,8 +62,12 @@ public final class AppDatabase: @unchecked Sendable {
     /// device is locked — Phase 4 will need to negotiate the protection
     /// class against background-task constraints; substrate v1 ships
     /// Complete and documents the open question.
+    ///
+    /// macOS hosts (test runners + dev machines) and Linux hosts skip this
+    /// call — the file-system protection attribute is iOS-only. macCatalyst
+    /// is included since it ships against the iOS Foundation APIs.
     private func applyDataProtection() throws {
-        #if canImport(Foundation) && os(iOS)
+        #if os(iOS) || targetEnvironment(macCatalyst)
         let attributes: [FileAttributeKey: Any] = [
             .protectionKey: FileProtectionType.complete,
         ]

@@ -1,5 +1,6 @@
 import Foundation
 import GRDB
+import os
 
 /// Bounds the local persistence layer per ADR 0028-A2.7:
 /// 5000-event hard cap, 500 MB blob cap, 30-day soft warning, 90-day forced
@@ -58,6 +59,12 @@ public struct CompactionPolicy: Sendable {
         in db: Database,
         blobStore: BlobStore
     ) throws -> Int {
+        // Caller serializes via DatabaseQueue.write { db in sweepAcked(...) }
+        // which already wraps in a SQLite transaction; nesting another
+        // BEGIN here would error. The SELECT-then-DELETE is therefore
+        // atomic with respect to any concurrent caller (the queue
+        // serializes writes per its `Configuration.label`), and
+        // `db.changesCount` after the DELETE is the canonical count.
         let ackedBlobRefs: [String?] = try String?.fetchAll(
             db,
             sql: "SELECT blob_ref FROM event_queue WHERE queue_status = ?",
@@ -65,7 +72,7 @@ public struct CompactionPolicy: Sendable {
         try db.execute(
             sql: "DELETE FROM event_queue WHERE queue_status = ?",
             arguments: [QueueStatus.acked.rawValue])
-        let ackedRowsRemoved = ackedBlobRefs.count
+        let ackedRowsRemoved = db.changesCount
 
         // Blobs are reference-counted by the event_queue.blob_ref column; a
         // hash that still appears for a non-acked row must be preserved.
@@ -75,9 +82,21 @@ public struct CompactionPolicy: Sendable {
                 sql: "SELECT EXISTS(SELECT 1 FROM event_queue WHERE blob_ref = ?)",
                 arguments: [blobRef]) ?? false
             if !stillReferenced {
-                _ = try? blobStore.remove(address: blobRef)
+                do {
+                    try blobStore.remove(address: blobRef)
+                } catch {
+                    // Surface I/O errors via the system log so a stuck
+                    // blob (permissions / missing-file race / disk full)
+                    // doesn't disappear silently.
+                    Self.compactionLogger.error(
+                        "BlobStore.remove failed for orphaned blob \(blobRef, privacy: .public): \(String(describing: error), privacy: .public)")
+                }
             }
         }
         return ackedRowsRemoved
     }
+
+    private static let compactionLogger = Logger(
+        subsystem: "dev.sunfish.field",
+        category: "CompactionPolicy")
 }

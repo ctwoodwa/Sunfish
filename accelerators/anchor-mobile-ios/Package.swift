@@ -44,10 +44,11 @@ let package = Package(
                 .product(name: "GRDB", package: "GRDB.swift"),
             ],
             path: "SunfishField",
-            // SunfishFieldApp.swift has @main which collides with the SPM
-            // test-runner's _main symbol. The app entry is Xcode-only;
-            // Project.xcodeproj/project.pbxproj references it directly.
-            exclude: ["Info.plist", "SunfishFieldApp.swift"]
+            // The SPM-vs-Xcode entry-point split is handled by a
+            // `#if !SWIFT_PACKAGE` guard around the `@main` attribute in
+            // SunfishFieldApp.swift, so the file is shared cleanly between
+            // both build systems.
+            exclude: ["Info.plist"]
         ),
         .testTarget(
             name: "SunfishFieldIdentityTests",
