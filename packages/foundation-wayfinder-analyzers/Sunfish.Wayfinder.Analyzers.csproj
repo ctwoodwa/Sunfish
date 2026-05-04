@@ -11,15 +11,10 @@
 
   <PropertyGroup>
     <!--
-      Opt out of the Directory.Build.props BannedApiAnalyzers auto-attach.
-      The repo-wide predicate excludes projects whose name starts with
-      "Sunfish.Analyzers." (the pre-W#42 cohort naming); this analyzer
-      project uses the Wayfinder-namespaced "Sunfish.Wayfinder.Analyzers"
-      name per the W#42 hand-off, so it falls outside the predicate.
-      Setting the property false here applies the same "is an analyzer
-      project" semantics as the prefix exclusion would.
+      The Directory.Build.props BannedApiAnalyzers auto-attach predicate
+      excludes any project ending in `.Analyzers`, so this project falls
+      outside the auto-attach automatically — no local opt-out needed.
     -->
-    <_SunfishBannedApiTarget>false</_SunfishBannedApiTarget>
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsRoslynComponent>true</IsRoslynComponent>
     <IsPackable>true</IsPackable>

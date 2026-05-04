@@ -60,8 +60,7 @@ public sealed class SchemaRegistrationAnalyzer : DiagnosticAnalyzer
 
             compilationStart.RegisterSyntaxNodeAction(
                 ctx => AnalyzeObjectCreation(ctx, perCompilation),
-                SyntaxKind.ObjectCreationExpression,
-                SyntaxKind.ImplicitObjectCreationExpression);
+                SyntaxKind.ObjectCreationExpression);
 
             compilationStart.RegisterCompilationEndAction(compilationEnd =>
             {
@@ -99,20 +98,16 @@ public sealed class SchemaRegistrationAnalyzer : DiagnosticAnalyzer
         {
             return;
         }
-        switch (context.Node)
+        // Target-typed `new()` is intentionally NOT handled — granting it a
+        // descriptor would be a false-NEGATIVE (e.g., a project doing
+        // `services.AddSunfishWayfinder(); var x = new(); /* unrelated */`
+        // would silently suppress the warning everywhere). Cohort precedent
+        // (ProviderNeutralityAnalyzer) likewise ignores target-typed `new()`.
+        if (context.Node is ObjectCreationExpressionSyntax explicitCreation
+            && GetSimpleTypeName(explicitCreation.Type) is { } explicitName
+            && explicitName == SchemaDescriptorTypeName)
         {
-            case ObjectCreationExpressionSyntax explicitCreation
-                when GetSimpleTypeName(explicitCreation.Type) is { } explicitName
-                    && explicitName == SchemaDescriptorTypeName:
-                state.HasSchemaDescriptor = true;
-                break;
-            case ImplicitObjectCreationExpressionSyntax:
-                // `new()` target-typed creation. Without symbol resolution we
-                // can't know the target type; conservatively assume it could
-                // be an AtlasSchemaDescriptor and avoid false-positives.
-                // Council can tighten this later if false-negatives matter.
-                state.HasSchemaDescriptor = true;
-                break;
+            state.HasSchemaDescriptor = true;
         }
     }
 

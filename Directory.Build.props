@@ -112,6 +112,10 @@
     <_SunfishBannedApiTarget Condition="$(MSBuildProjectName.EndsWith('.Tests'))">false</_SunfishBannedApiTarget>
     <_SunfishBannedApiTarget Condition="'$(MSBuildProjectName)' == 'tests'">false</_SunfishBannedApiTarget>
     <_SunfishBannedApiTarget Condition="$(MSBuildProjectName.StartsWith('Sunfish.Analyzers.'))">false</_SunfishBannedApiTarget>
+    <!-- Also exclude any project whose name ends in `.Analyzers` (e.g.
+         Sunfish.Wayfinder.Analyzers per W#42 P3b). Future analyzer projects
+         under any namespace inherit this exclusion automatically. -->
+    <_SunfishBannedApiTarget Condition="$(MSBuildProjectName.EndsWith('.Analyzers'))">false</_SunfishBannedApiTarget>
   </PropertyGroup>
   <ItemGroup Condition="'$(_SunfishBannedApiTarget)' == 'true'">
     <PackageReference Include="Microsoft.CodeAnalysis.BannedApiAnalyzers">
