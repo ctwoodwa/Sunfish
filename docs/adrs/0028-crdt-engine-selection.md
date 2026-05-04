@@ -1616,3 +1616,126 @@ git show origin/main:docs/adrs/0001-schema-registry-governance.md | grep -ic epo
 ```
 
 If either spot-check produces unexpected results, file an A11 amendment matching this retraction pattern.
+
+---
+
+### A11 (PROPOSED) — `SequestrationFlagKind.FeatureGateOff` (audit-by-construction for feature-gate-driven sequestration)
+
+**Driver:** ADR 0075 (W#44 ExtensionFields feature-evaluation hook) authored 2026-05-04 introduced a `FeatureGateOffPolicy` with a `Sequester` value that places extension-field rows into the sequestration partition when a feature gate flips OFF and the spec's gate-off policy is `Sequester`. The ADR's first draft reused `SequestrationFlagKind.PlaintextSequestered` for the audit flag. The canonical Opus council review of PR #508 (`icm/07_review/output/adr-audits/0075-council-review-2026-05-04.md`, finding DA-5 + Open Question 2) found that this reuse is **incompatible with audit-by-construction**: the audit trail can no longer answer "why is this record sequestered?" without joining against external state (the gate's value at the time the row was sequestered, the feature-evaluation context, the operator action history). ADR 0049 establishes audit-by-construction as the substrate's design principle; the W#35 enum is part of that substrate's surface; the enum must therefore carry a value that names the cause directly.
+
+**Pipeline variant:** `sunfish-feature-change` (additive enum extension on a foundation-tier substrate; no contract break).
+
+**Companion ADR:** [`./0075-extensionfields-feature-evaluation-hook.md`](./0075-extensionfields-feature-evaluation-hook.md) — open in PR #508 at the time A11 is drafted; will reference `SequestrationFlagKind.FeatureGateOff` directly once A11 lands.
+
+**Council finding cited:**
+
+- DA-5 (non-mechanical, audit-substrate-relevant): *"PlaintextSequestered semantics in W#35 are form-factor-driven (host can't read the plaintext for surface-coverage reasons). The W#44 Sequester policy is feature-gate-driven (the gate flipped OFF and the operator's policy is to retain the data behind a recoverable curtain). Recording both under `PlaintextSequestered` makes the audit trail unable to answer 'why' without joining against external state. **This is an audit-by-construction violation** — and ADR 0049 explicitly establishes audit-by-construction as the substrate's design principle."*
+- Recommendation #10: *"Resolve §Open questions item 2 BEFORE accepting this ADR: amend W#35 (foundation-migration) to add `SequestrationFlagKind.FeatureGateOff`; ship as a pre-requisite mini-amendment. The 'ship-with-PlaintextSequestered' path is incompatible with audit-by-construction."*
+
+**Why now:** ADR 0075 cannot be `Accepted` without this enum value existing on `origin/main`. The council recommendation explicitly sequences A11 ahead of ADR 0075 acceptance ("[A11] amendment lands" is item 4 in the council's "Do not flip `Status: Accepted` until..." list). A11 is the dependency-bearing pre-requisite the council named.
+
+#### A11.1 — Decision
+
+Extend `SequestrationFlagKind` (defined in `packages/foundation-migration/Models/Enums.cs`) from 5 values to 6 by adding `FeatureGateOff`:
+
+```csharp
+/// <summary>
+/// Record was sequestered because a feature gate flipped OFF and the gate-off policy
+/// is Sequester (preserves data; auditable; reversible if the gate flips back ON).
+/// Distinct from PlaintextSequestered because the cause is feature-gate-driven
+/// (operator-controlled) rather than form-factor-capability-driven; the audit trail
+/// must be self-describing per ADR 0049 audit-by-construction. Per ADR 0028-A11 + ADR 0075.
+/// </summary>
+FeatureGateOff,
+```
+
+The wire form is the literal name (`"FeatureGateOff"`) per the existing W#35 cohort's `JsonStringEnumConverter` + literal-name convention (mirrors A8.3's other 5 values). Deserialization is `Enum.TryParse` ordinal — pre-A11 readers will reject the new value at the boundary, which is the correct CP-record behavior on schema-drift.
+
+The XML doc explicitly names the distinguisher between this value and `PlaintextSequestered`: `PlaintextSequestered` is **form-factor-capability-driven** (the host cannot decrypt or render the field's plaintext on this device-class); `FeatureGateOff` is **operator-policy-driven** (a feature gate flipped OFF and the spec's `FeatureGateOffPolicy` is `Sequester`). Both are sequestered + reversible, but the cause is materially different and the audit trail must reflect it.
+
+#### A11.2 — Compatibility plan
+
+**Additive enum extension; no breaking change to the `SequestrationFlagKind` contract.**
+
+- **Switch expressions over `SequestrationFlagKind`** that did NOT supply a `default` / `_` arm will surface as compiler warning CS8509 (non-exhaustive switch) for the new value. The existing call site at `packages/foundation-migration/Services/InMemoryFormFactorMigrationService.cs:166-172` already supplies a `_` arm (defaults to `AuditEventType.PlaintextSequestered` for the form-factor-driven cases that the migration service itself classifies). That call site does NOT classify `FeatureGateOff` — only the W#44 ADR 0075 consumer code path will produce `FeatureGateOff` flags — so the existing `_` arm continues to be correct: it covers form-factor-driven defaults, and W#44's consumer wires its own audit-event-type for the feature-gate-off path.
+- **Tests that pin enum count** (`FormFactorProfileTests.SequestrationFlagKind_AllFiveValuesRoundTrip`) use `Enum.GetValues<SequestrationFlagKind>()` and so auto-extend over the 6th value. The test name is renamed to `_AllValuesRoundTrip` for accuracy + a new audit-by-construction pin (`SequestrationFlagKind_FeatureGateOff_IsDistinctFromPlaintextSequestered`) is added.
+- **Persistence schema:** `SequesteredRecord.Flag` is typed `SequestrationFlagKind?` with `JsonStringEnumConverter<SequestrationFlagKind>`; the literal-name wire form means existing persisted rows continue to deserialize unchanged. Pre-A11 readers encountering a `"FeatureGateOff"` flag will fail to parse — the correct CP behavior.
+- **Audit factory:** `MigrationAuditPayloads.Sequestered(...)` accepts `SequestrationFlagKind flag` and writes `flag.ToString()` into the body's `"flag"` key. No factory-level changes required for A11 — the literal-name surface carries the new value automatically.
+
+#### A11.3 — Implementation checklist
+
+1. **`packages/foundation-migration/Models/Enums.cs`** — add `FeatureGateOff` as the 6th value of `SequestrationFlagKind`. Update the type-level `<summary>` to "per A8.3 + A11" (was "per A8.3"). Author XML doc explicitly names the distinguisher between `FeatureGateOff` and `PlaintextSequestered`. **Done in this PR.**
+
+2. **`packages/foundation-migration/tests/FormFactorProfileTests.cs`** — rename `SequestrationFlagKind_AllFiveValuesRoundTrip` to `SequestrationFlagKind_AllValuesRoundTrip`; auto-extends via `Enum.GetValues<>()`. Add new test `SequestrationFlagKind_FeatureGateOff_IsDistinctFromPlaintextSequestered` pinning the audit-by-construction property. **Done in this PR.**
+
+3. **`packages/foundation-migration/Services/InMemoryFormFactorMigrationService.cs`** — no change required. The migration service's `ClassifySequestrationFlag(...)` does not return `FeatureGateOff` (W#44 consumer code is the only producer). The existing `_` arm in the `flag switch` correctly covers `StorageBudgetExceeded` + `FormFactorFilteredOut` for migration-service-driven sequestration; A11's value is consumer-classified and will not flow through this service.
+
+4. **`packages/foundation-migration/Audit/MigrationAuditPayloads.cs`** — no change required. The `Sequestered` factory accepts `SequestrationFlagKind` and emits `flag.ToString()`; the literal-name surface carries the new value transparently.
+
+5. **`docs/adrs/0075-extensionfields-feature-evaluation-hook.md`** — separate PR (#508 amendment). The ADR will reference `SequestrationFlagKind.FeatureGateOff` directly in §Decision (replacing prior `PlaintextSequestered` references) and §Open questions item 2 will resolve to "Resolved per ADR 0028-A11." This A11 PR does NOT touch ADR 0075 — A11 is the substrate; the consumer ADR amendment lands separately on its existing branch.
+
+#### A11.4 — Decision consequences
+
+**Positive:**
+
+- Audit trail is self-describing for the feature-gate-driven sequestration case. A regulatory query "show me every record sequestered because a feature gate flipped OFF, separately from records sequestered because of form-factor capability" is now answerable from the audit substrate alone — no join against gate-state-at-time-of-write or operator-action-history is required.
+- Reversibility semantics are differentiable. Form-factor-driven sequestration reverses when the form-factor's capability surface widens (e.g., user adds a sensor permission); feature-gate-driven sequestration reverses when the gate flips back ON. The two reversal paths can be reasoned about independently.
+- Cohort-precedent: this is the first sub-ADR-driven enum extension to W#35's substrate. It establishes the canonical "additive enum extension via mini-amendment" pattern for future feature-gate-style sequestration variants (e.g., regulatory-hold sequestration, retention-policy sequestration).
+
+**Negative:**
+
+- The `_` default arm in `InMemoryFormFactorMigrationService` quietly does the right thing for `FeatureGateOff` (it would map to `PlaintextSequestered` audit-event-type IF the service ever produced a `FeatureGateOff` flag — which it does not). A future maintainer adding a 7th value who fails to update the W#44 consumer would silently fall through. This is a known cohort risk for `_`-arm switches; not an A11-specific defect, but the council reviewer for the W#44 amendment should pin this explicitly.
+- A new audit-event-type for `FeatureGateOff` is NOT added in A11. The W#44 consumer (ADR 0075) will register its own audit-event-type; the existing `AuditEventType.PlaintextSequestered` / `AuditEventType.CiphertextSequestered` event-type taxonomy is form-factor-driven and stays form-factor-driven. This is intentional separation: the **flag** carries the cause; the **audit-event-type** reflects the substrate that emitted the audit row.
+
+#### A11.5 — §A0 self-audit (3-direction)
+
+**Negative-existence checks (does the cited symbol exist?)** — verified on origin/main HEAD `085a0a0`:
+
+- `SequestrationFlagKind` enum: **EXISTS** at `packages/foundation-migration/Models/Enums.cs:84-100` with 5 values (`FormFactorFilteredOut`, `StorageBudgetExceeded`, `PlaintextSequestered`, `CiphertextSequestered`, `FormFactorQuorumIneligible`) — verified via `git show origin/main:packages/foundation-migration/Models/Enums.cs`.
+- `MigrationAuditPayloads.Sequestered` factory: **EXISTS** at `packages/foundation-migration/Audit/MigrationAuditPayloads.cs:26-33` with the cited `SequestrationFlagKind flag` parameter signature — verified.
+- `InMemoryFormFactorMigrationService` switch arm: **EXISTS** at `packages/foundation-migration/Services/InMemoryFormFactorMigrationService.cs:166-172` with the cited `_` default arm — verified.
+- `FormFactorProfileTests.SequestrationFlagKind_AllFiveValuesRoundTrip`: **EXISTS** at `packages/foundation-migration/tests/FormFactorProfileTests.cs:174-185` — verified.
+- `SequesteredRecord.Flag` typed `SequestrationFlagKind?` with `JsonStringEnumConverter<SequestrationFlagKind>`: **EXISTS** at `packages/foundation-migration/Models/SequesteredRecord.cs:55-56` — verified.
+- ADR 0049 audit-trail-substrate: **EXISTS** at `docs/adrs/0049-audit-trail-substrate.md` (Accepted) — verified via `git ls-tree`.
+- ADR 0075 ExtensionFields feature-evaluation hook: **EXISTS in PR #508** (state: OPEN, head ref `docs/adr-0075-extensionfields-feature-gate`); does NOT yet exist on `origin/main` — verified via `gh pr view 508`. A11 sequences ahead of 0075 acceptance per the council recommendation.
+- 0075 council review at `icm/07_review/output/adr-audits/0075-council-review-2026-05-04.md`: **EXISTS** on origin/main (merged in PR #509) — verified via `git ls-tree`.
+
+**Positive-existence checks (does the cited claim hold?):**
+
+- The 0075 council review's DA-5 finding text is verbatim what is quoted in this amendment's "Council finding cited" section — verified by direct read of the audit file at lines 337-359.
+- The 0075 council review's Recommendation #10 is verbatim what is quoted — verified at line 425.
+- ADR 0049 establishes audit-by-construction as the substrate's design principle: this is paraphrase, not direct quote; the principle is the explicit subject of ADR 0049 §Context + §Decision (verified by reading 0049's §Context).
+
+**Structural-citation checks (do the cited file paths + line numbers resolve?):**
+
+- `packages/foundation-migration/Models/Enums.cs:84-100` — verified by `sed -n '84,100p'` on origin/main snapshot.
+- `packages/foundation-migration/Audit/MigrationAuditPayloads.cs:26-33` — verified.
+- `packages/foundation-migration/Services/InMemoryFormFactorMigrationService.cs:166-172` — verified.
+- `packages/foundation-migration/tests/FormFactorProfileTests.cs:174-185` — verified.
+- `packages/foundation-migration/Models/SequesteredRecord.cs:55-56` — verified.
+- Cohort-relative-link discipline (per A10 retraction lesson + 0075 council SC-1 + SC-2 findings): the `[./0075-extensionfields-feature-evaluation-hook.md]` companion-ADR link uses the exact filename ADR 0075 will land under (the head ref is `docs/adr-0075-extensionfields-feature-gate`; the filename inside the PR is `docs/adrs/0075-extensionfields-feature-evaluation-hook.md` per the PR's title format). Pre-merge verification: `gh pr view 508 --json files | jq -r '.files[].path'` should list this exact path.
+
+**Cohort-discipline notes:**
+
+- A11 is **not** a retraction (matches A1, A5, A6, A8, A9 amendment-shape — additive substrate change), so the council-waiver criteria from Decision Discipline Rule 3 do NOT apply. **A11 must go through pre-merge canonical Opus council per ADR 0069 D1.** This PR's body explicitly disables auto-merge.
+- A11 is small + well-scoped (1 enum value + 1 test rename + 1 new test + the ADR text); the council should be able to evaluate it in a single pass.
+
+#### A11.6 — Standing rung-6 spot-check
+
+XO spot-checks A11 within 24h of merge:
+
+```bash
+# Confirm the 6th enum value landed on origin/main
+git show origin/main:packages/foundation-migration/Models/Enums.cs | grep -c "^    [A-Z][a-zA-Z]*,$"
+# (expect 6 — was 5 pre-A11)
+
+# Confirm tests still green
+cd /Users/christopherwood/Projects/Sunfish && dotnet test packages/foundation-migration/tests/Sunfish.Foundation.Migration.Tests.csproj --no-build --filter "FullyQualifiedName~SequestrationFlagKind"
+# (expect 2 passing — _AllValuesRoundTrip + _FeatureGateOff_IsDistinctFromPlaintextSequestered)
+
+# Confirm ADR 0075 has been amended to reference FeatureGateOff (separate PR, follow-up)
+gh pr view 508 --json files | jq -r '.files[].path' | grep 0075
+# (after the W#44 consumer amendment lands, ADR 0075 §Decision should reference SequestrationFlagKind.FeatureGateOff)
+```
+
+If any spot-check produces unexpected results, file an A12 amendment.

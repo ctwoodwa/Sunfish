@@ -78,8 +78,8 @@ public enum TriggeringEventKind
 }
 
 /// <summary>
-/// Sequestration flag per A8.3 — distinguishes the various reasons a record / field is held
-/// in the sequestration partition rather than the active surface.
+/// Sequestration flag per A8.3 + A11 — distinguishes the various reasons a record / field is
+/// held in the sequestration partition rather than the active surface.
 /// </summary>
 public enum SequestrationFlagKind
 {
@@ -97,4 +97,13 @@ public enum SequestrationFlagKind
 
     /// <summary>The record is sequestered + the form factor is ineligible for CP-record quorum participation per A8.3 rule 6.</summary>
     FormFactorQuorumIneligible,
+
+    /// <summary>
+    /// Record was sequestered because a feature gate flipped OFF and the gate-off policy
+    /// is <c>Sequester</c> (preserves data; auditable; reversible if the gate flips back ON).
+    /// Distinct from <see cref="PlaintextSequestered"/> because the cause is feature-gate-driven
+    /// (operator-controlled) rather than form-factor-capability-driven; the audit trail must
+    /// be self-describing per ADR 0049 audit-by-construction. Per ADR 0028-A11 + ADR 0075.
+    /// </summary>
+    FeatureGateOff,
 }

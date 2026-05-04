@@ -172,15 +172,30 @@ public sealed class FormFactorProfileTests
     }
 
     [Fact]
-    public void SequestrationFlagKind_AllFiveValuesRoundTrip()
+    public void SequestrationFlagKind_AllValuesRoundTrip()
     {
         // Lightweight pin: every SequestrationFlagKind value parses
         // through Enum.TryParse so future serialization (P3 sequestration
-        // store) can rely on the literal-name surface.
+        // store + W#44 ExtensionFields feature-gate-off path) can rely on
+        // the literal-name surface. Per ADR 0028-A11 the enum is 6 values
+        // (5 form-factor-driven + 1 feature-gate-driven `FeatureGateOff`).
         foreach (var flag in Enum.GetValues<SequestrationFlagKind>())
         {
             Assert.True(Enum.TryParse<SequestrationFlagKind>(flag.ToString(), out var parsed));
             Assert.Equal(flag, parsed);
         }
+    }
+
+    [Fact]
+    public void SequestrationFlagKind_FeatureGateOff_IsDistinctFromPlaintextSequestered()
+    {
+        // Audit-by-construction pin (ADR 0028-A11 + ADR 0049): the audit
+        // trail must distinguish form-factor-driven sequestration from
+        // feature-gate-driven sequestration. Sharing the wire form would
+        // collapse the distinction at deserialization time.
+        Assert.NotEqual(SequestrationFlagKind.PlaintextSequestered, SequestrationFlagKind.FeatureGateOff);
+        Assert.NotEqual(
+            SequestrationFlagKind.PlaintextSequestered.ToString(),
+            SequestrationFlagKind.FeatureGateOff.ToString());
     }
 }
