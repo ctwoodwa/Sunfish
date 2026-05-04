@@ -560,6 +560,13 @@
 | 13:47 | Created ../../../../tmp/sunfish-foundation-taxonomy-handoff-wt/icm/_state/handoffs/foundation-taxonomy-phase1-stage06-handoff.md | — | ~6058 |
 | 13:47 | Edited ../../../../tmp/sunfish-foundation-taxonomy-handoff-wt/icm/_state/active-workstreams.md | 3→4 lines | ~327 |
 
+## Session: 2026-05-04 (XO — ADR 0077 Shared Design System)
+
+| Time | Action | File(s) | Outcome | ~Tokens |
+|------|--------|---------|---------|--------|
+| — | Created docs/adrs/0077-shared-design-system.md | PR #543 | ADR 0077 Proposed; triple council (adversarial+WCAG/a11y+security) complete; 3 Blocking + 9 NM + 11 SC/Mech resolved pre-commit | ~10k |
+| — | Edited icm/_state/active-workstreams.md | W#44+W#45+W#46 rows added; header updated | backfill + W#46 ledger row | — |
+
 ## Session: 2026-04-30 01:49
 
 | Time | Action | File(s) | Outcome | ~Tokens |
