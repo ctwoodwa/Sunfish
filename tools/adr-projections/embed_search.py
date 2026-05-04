@@ -105,11 +105,44 @@ def _extract_meta(frontmatter: str) -> dict:
     return meta
 
 
-def _build_embed_text(meta: dict, body: str) -> str:
-    """Compose the text we embed: structured metadata + first N words of body."""
+def _split_amendments(body: str) -> list[tuple[str | None, str]]:
+    """Split ADR body into (amendment_id, text) chunks.
+
+    Returns at minimum [(None, main_body)]. If the body contains amendment
+    headings (## or ### with `Amendment AN` or bare `An` form), each amendment
+    becomes its own chunk: [(None, main), ("A1", amendment_1_body), ...].
+
+    Heading patterns matched (top-level amendments only; nested A1.2 sub-bullets
+    are part of their parent A1's chunk):
+      ## Amendment A1 — title
+      ### Amendment A1 — title
+      ### A1 — title              (ADR 0028 style)
+    """
+    pattern = re.compile(
+        r"^(##|###)\s+(?:Amendment\s+)?(A\d+)\b.*$",
+        re.MULTILINE,
+    )
+    matches = list(pattern.finditer(body))
+    if not matches:
+        return [(None, body)]
+    chunks: list[tuple[str | None, str]] = []
+    # Main body: everything before the first amendment heading
+    chunks.append((None, body[: matches[0].start()]))
+    for i, m in enumerate(matches):
+        amend_id = m.group(2)
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(body)
+        chunks.append((amend_id, body[m.start():end]))
+    return chunks
+
+
+def _build_embed_text(meta: dict, body: str, amendment: str | None = None) -> str:
+    """Compose the text we embed: structured metadata + first N words of body chunk."""
     parts = []
-    if "title" in meta:
-        parts.append(f"Title: {meta['title']}")
+    title = meta.get("title", "")
+    if amendment:
+        parts.append(f"Title: ADR {meta.get('id', '?')} — {title} (Amendment {amendment})")
+    elif title:
+        parts.append(f"Title: ADR {meta.get('id', '?')} — {title}")
     if "tier" in meta:
         parts.append(f"Tier: {meta['tier']}")
     if "concern" in meta and meta["concern"]:
@@ -126,10 +159,21 @@ def _content_hash(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
 
 
+INDEX_FORMAT_VERSION = 2  # bumped 2026-05-04 for amendment-chunking
+
+
 def _load_index() -> dict:
     if INDEX_FILE.exists():
-        return json.loads(INDEX_FILE.read_text())
-    return {"model": DEFAULT_MODEL, "dim": None, "entries": []}
+        idx = json.loads(INDEX_FILE.read_text())
+        if idx.get("format_version") != INDEX_FORMAT_VERSION:
+            print(
+                f"Index format changed ({idx.get('format_version', 1)} → {INDEX_FORMAT_VERSION}); "
+                "discarding cached entries (full rebuild on next index)",
+                file=sys.stderr,
+            )
+            return {"format_version": INDEX_FORMAT_VERSION, "model": DEFAULT_MODEL, "dim": None, "entries": []}
+        return idx
+    return {"format_version": INDEX_FORMAT_VERSION, "model": DEFAULT_MODEL, "dim": None, "entries": []}
 
 
 def _save_index(idx: dict) -> None:
@@ -137,13 +181,16 @@ def _save_index(idx: dict) -> None:
 
 
 def cmd_index(args: argparse.Namespace) -> int:
-    """(Re)build the index. Skips entries whose content_hash is unchanged."""
+    """(Re)build the index. Splits each ADR into main-body + per-amendment chunks.
+
+    Each chunk is a separate index entry keyed by `chunk_id` (e.g., "28" for
+    main body, "28-A8" for ADR 0028's A8 amendment). Skips entries whose
+    content_hash is unchanged (incremental rebuild)."""
     idx = _load_index()
     if idx.get("model") != args.model:
-        # Model changed → rebuild from scratch
         print(f"Model changed ({idx.get('model')} → {args.model}); rebuilding from scratch", file=sys.stderr)
-        idx = {"model": args.model, "dim": None, "entries": []}
-    by_id = {e["id"]: e for e in idx["entries"]}
+        idx = {"format_version": INDEX_FORMAT_VERSION, "model": args.model, "dim": None, "entries": []}
+    by_chunk = {e["chunk_id"]: e for e in idx["entries"] if "chunk_id" in e}
 
     files = sorted(ADR_DIR.glob("[0-9][0-9][0-9][0-9]-*.md"))
     print(f"Indexing {len(files)} ADRs against {args.ollama} (model={args.model})", file=sys.stderr)
@@ -168,38 +215,53 @@ def cmd_index(args: argparse.Namespace) -> int:
             skipped_no_meta += 1
             continue
 
-        embed_text = _build_embed_text(meta, body)
-        chash = _content_hash(embed_text)
+        # Split body into main + amendment chunks
+        chunks = _split_amendments(body)
+        for amendment_id, chunk_body in chunks:
+            chunk_id = f"{adr_id}" if amendment_id is None else f"{adr_id}-{amendment_id}"
 
-        existing = by_id.get(adr_id)
-        if existing and existing.get("content_hash") == chash:
-            new_entries.append(existing)
-            skipped_unchanged += 1
-            continue
+            embed_text = _build_embed_text(meta, chunk_body, amendment=amendment_id)
+            chash = _content_hash(embed_text)
 
-        embedding = _embed(embed_text, args.model, args.ollama)
-        new_entries.append({
-            "id": adr_id,
-            "title": meta.get("title", ""),
-            "filename": path.name,
-            "tier": meta.get("tier", ""),
-            "concern": meta.get("concern", []),
-            "status": meta.get("status", ""),
-            "content_hash": chash,
-            "embedding": embedding,
-        })
-        embedded += 1
-        if embedded % 5 == 0:
-            print(f"  ...embedded {embedded}", file=sys.stderr)
+            existing = by_chunk.get(chunk_id)
+            if existing and existing.get("content_hash") == chash:
+                new_entries.append(existing)
+                skipped_unchanged += 1
+                continue
 
-    new_entries.sort(key=lambda e: e["id"])
+            embedding = _embed(embed_text, args.model, args.ollama)
+            new_entries.append({
+                "chunk_id": chunk_id,
+                "adr_id": adr_id,
+                "amendment": amendment_id,
+                "title": meta.get("title", ""),
+                "filename": path.name,
+                "tier": meta.get("tier", ""),
+                "concern": meta.get("concern", []),
+                "status": meta.get("status", ""),
+                "content_hash": chash,
+                "embedding": embedding,
+            })
+            embedded += 1
+            if embedded % 10 == 0:
+                print(f"  ...embedded {embedded}", file=sys.stderr)
+
+    # Sort: by adr_id, then main body before amendments, then amendments by number
+    def _sort_key(e: dict):
+        amend = e.get("amendment")
+        amend_num = int(amend[1:]) if amend and amend[0] == "A" else -1
+        return (e["adr_id"], amend_num)
+    new_entries.sort(key=_sort_key)
     idx["entries"] = new_entries
     if new_entries:
         idx["dim"] = len(new_entries[0]["embedding"])
     _save_index(idx)
 
+    main_count = sum(1 for e in new_entries if e.get("amendment") is None)
+    amend_count = len(new_entries) - main_count
     print(f"Done. {embedded} embedded, {skipped_unchanged} unchanged, {skipped_no_meta} skipped (no meta).", file=sys.stderr)
     print(f"Index: {INDEX_FILE} (dim={idx['dim']})", file=sys.stderr)
+    print(f"Coverage: {main_count} main-body chunks + {amend_count} amendment chunks = {len(new_entries)} total entries", file=sys.stderr)
     return 0
 
 
@@ -211,7 +273,8 @@ def _cosine(a: list[float], b: list[float]) -> float:
 
 
 def cmd_search(args: argparse.Namespace) -> int:
-    """Search the index for top-K matches to `query`."""
+    """Search the index for top-K matches to `query`. Searches across main-body
+    and amendment chunks; collapses multiple chunks of the same ADR if requested."""
     idx = _load_index()
     if not idx["entries"]:
         print("Index is empty. Run `index` first.", file=sys.stderr)
@@ -221,14 +284,31 @@ def cmd_search(args: argparse.Namespace) -> int:
     scored = [(e, _cosine(query_emb, e["embedding"])) for e in idx["entries"]]
     scored.sort(key=lambda x: -x[1])
 
-    print(f"Top {args.top} ADRs matching: {args.query!r}\n")
+    # Optional: collapse to top-K UNIQUE ADRs (best chunk per ADR)
+    if args.collapse:
+        seen_adrs: set[int] = set()
+        collapsed = []
+        for entry, score in scored:
+            adr_id = entry.get("adr_id", entry.get("id"))
+            if adr_id in seen_adrs:
+                continue
+            seen_adrs.add(adr_id)
+            collapsed.append((entry, score))
+        scored = collapsed
+
+    print(f"Top {args.top} matches for: {args.query!r}\n")
     for entry, score in scored[: args.top]:
         concerns = entry["concern"]
         if isinstance(concerns, list):
             concern_str = ", ".join(concerns) if concerns else "(none)"
         else:
             concern_str = str(concerns)
-        print(f"  ADR {entry['id']:04d} (score {score:.3f}) — {entry['title']}")
+        adr_id = entry.get("adr_id", entry.get("id", 0))
+        amend = entry.get("amendment")
+        if amend:
+            print(f"  ADR {adr_id:04d} {amend} (score {score:.3f}) — {entry['title']}")
+        else:
+            print(f"  ADR {adr_id:04d}    (score {score:.3f}) — {entry['title']}")
         print(f"    tier: {entry['tier']:<12} concerns: {concern_str}")
         print(f"    file: docs/adrs/{entry['filename']}")
         print()
@@ -246,6 +326,8 @@ def main() -> int:
     s = sub.add_parser("search", help="Top-K most-similar ADRs to a query")
     s.add_argument("query")
     s.add_argument("--top", type=int, default=5)
+    s.add_argument("--collapse", action="store_true",
+                   help="Collapse to top-K UNIQUE ADRs (best chunk per ADR)")
     s.set_defaults(fn=cmd_search)
 
     args = p.parse_args()
