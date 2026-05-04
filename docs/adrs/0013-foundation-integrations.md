@@ -5,7 +5,9 @@ status: Accepted
 date: 2026-04-19
 tier: foundation
 concern:
-  - operations
+  - distribution
+  - security
+  - configuration
 composes: []
 extends: []
 supersedes: []

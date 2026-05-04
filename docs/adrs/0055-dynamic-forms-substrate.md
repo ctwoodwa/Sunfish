@@ -5,8 +5,9 @@ status: Proposed
 date: 2026-04-29
 tier: foundation
 concern:
+  - persistence
   - configuration
-  - ui
+  - dev-experience
 composes: []
 extends: []
 supersedes: []

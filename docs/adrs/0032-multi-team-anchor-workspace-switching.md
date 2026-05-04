@@ -5,8 +5,8 @@ status: Accepted
 date: 2026-04-23
 tier: accelerator
 concern:
-  - accessibility
-  - ui
+  - identity
+  - multi-tenancy
 composes: []
 extends: []
 supersedes: []

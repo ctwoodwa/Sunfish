@@ -5,7 +5,9 @@ status: Accepted
 date: 2026-04-28
 tier: block
 concern:
-  - operations
+  - persistence
+  - audit
+  - regulatory
 composes: []
 extends: []
 supersedes: []

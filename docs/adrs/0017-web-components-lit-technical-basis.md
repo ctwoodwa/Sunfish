@@ -6,6 +6,7 @@ date: 2026-04-20
 tier: ui-core
 concern:
   - ui
+  - accessibility
 composes: []
 extends: []
 supersedes: []

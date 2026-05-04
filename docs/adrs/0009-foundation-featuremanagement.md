@@ -6,6 +6,8 @@ date: 2026-04-19
 tier: foundation
 concern:
   - configuration
+  - commercial
+  - multi-tenancy
 composes: []
 extends: []
 supersedes: []
