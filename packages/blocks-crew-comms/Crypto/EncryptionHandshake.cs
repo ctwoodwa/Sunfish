@@ -173,7 +173,12 @@ public sealed class EncryptionHandshake : IDisposable
     /// <summary>
     /// Computes the SHA-256 transcript hash over the canonical handshake
     /// inputs. Both peers compute identically; mismatch indicates active
-    /// MITM tampering at the signaling layer.
+    /// MITM tampering at the signaling layer. Per ADR 0076 §A1, the canonical
+    /// form is:
+    /// <c>SHA-256(ephemA[32] || idA[32] || ephemB[32] || idB[32] || uint32BE(len(tenantBytes)) || tenantBytes || negotiatedCap[1])</c>.
+    /// The <c>uint32BE</c> length-prefix on <c>tenantBytes</c> prevents a
+    /// length-extension collision via the variable-length adjacency between
+    /// tenant-bytes and the negotiated-capability byte.
     /// </summary>
     public static byte[] ComputeTranscriptHash(
         ReadOnlySpan<byte> initiatorHelloEphemeral,
@@ -185,7 +190,7 @@ public sealed class EncryptionHandshake : IDisposable
     {
         var totalLen = initiatorHelloEphemeral.Length + initiatorHelloIdentity.Length
             + responderHelloEphemeral.Length + responderHelloIdentity.Length
-            + tenantIdBytes.Length + 1;
+            + sizeof(uint) + tenantIdBytes.Length + 1;
         var buffer = totalLen <= 256 ? stackalloc byte[totalLen] : new byte[totalLen];
         var offset = 0;
         initiatorHelloEphemeral.CopyTo(buffer.Slice(offset, initiatorHelloEphemeral.Length));
@@ -196,6 +201,9 @@ public sealed class EncryptionHandshake : IDisposable
         offset += responderHelloEphemeral.Length;
         responderHelloIdentity.CopyTo(buffer.Slice(offset, responderHelloIdentity.Length));
         offset += responderHelloIdentity.Length;
+        System.Buffers.Binary.BinaryPrimitives.WriteUInt32BigEndian(
+            buffer.Slice(offset, sizeof(uint)), (uint)tenantIdBytes.Length);
+        offset += sizeof(uint);
         tenantIdBytes.CopyTo(buffer.Slice(offset, tenantIdBytes.Length));
         offset += tenantIdBytes.Length;
         buffer[offset] = negotiatedCapability;
