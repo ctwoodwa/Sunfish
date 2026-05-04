@@ -10,7 +10,9 @@ xcuserdata/
 # Swift Package Manager
 .build/
 Packages/
-*.xcodeproj
+# Note: Project.xcodeproj IS committed (it is the Xcode project for this app).
+# Per-user Xcode state inside it is excluded via the *.xcodeproj/xcuserdata
+# rule above.
 .swiftpm/
 .swiftpm/configuration/registries.json
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
