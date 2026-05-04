@@ -111,6 +111,23 @@ A single `IIntegrationAtlasProvider` (specialization of ADR 0066's `IAtlasProvid
 
 **Verdict.** Accepted. The expressiveness ceiling is mitigated by the §6.3 escape hatch; schema migration is handled via the schema-version field on `IntegrationProviderSchema` (§4.2). The cons are real but bounded; Option A's costs grow without bound as the provider catalog expands.
 
+### Option D — Six per-category `IAtlasProvider<T>` specializations
+
+Instead of one `IIntegrationAtlasProvider`, ship six smaller per-category interfaces (`IPaymentsAtlasProvider`, `ITransactionalEmailAtlasProvider`, etc.) each specializing ADR 0066's `IAtlasProvider<T>` directly, with category-specific view models and dedicated dynamic-schema renderers.
+
+**Pros.**
+- Category-specific types eliminate the need for the `IntegrationCategory` routing dispatch inside the implementation — each category is its own DI registration.
+- A new category is a new interface, which makes the category boundary explicit in the type system.
+- Smaller interfaces are easier to mock and test in isolation.
+
+**Cons.**
+- Cross-category concerns (credential masking, WCAG-compliant accessible authentication, audit emission, license-posture acknowledgement) must be re-implemented or re-composed per category — multiplicative work and multiplicative a11y test burden.
+- The tenant-admin "what is configured?" summary view requires aggregating six providers rather than projecting one `IntegrationAtlasView`.
+- New-category extension (e.g. `IntegrationCategory.SignatureCapture`) requires a new interface, new DI registration, and new rendering host wiring — not a single enum value.
+- Six DI registrations, six validator discovery loops, six schema-provider enumerations — operational fan-out for no behavioral gain.
+
+**Verdict.** Rejected. Option D's category-specific type clarity is outweighed by the multiplicative cost on cross-category concerns. The single-surface framing wins on consistency, new-category extension, and the unified "what's configured?" view. Considered here per council §5.1 recommendation.
+
 ### Option C — Static integration config baked into appsettings.json
 
 No runtime admin UI. Tenant operators edit `appsettings.json` (Anchor) or environment variables (Bridge), restart the host. Validation is offline. No audit trail at the application layer (relies on infra-level config-change auditing).
@@ -289,6 +306,16 @@ public enum IntegrationCategory
 ```csharp
 public static class IntegrationCategoryMapping
 {
+    /// <summary>
+    /// Projects an <see cref="IntegrationCategory"/> value to the coarser-grained
+    /// <see cref="ProviderCategory"/> used by the catalog substrate.
+    ///
+    /// This mapping is one-direction only (<see cref="IntegrationCategory"/> →
+    /// <see cref="ProviderCategory"/>). The reverse projection is intentionally
+    /// undefined: <c>Messaging</c> maps to multiple <c>IntegrationCategory</c>
+    /// values (<c>TransactionalEmail</c>, <c>MarketingEmail</c>, <c>Sms</c>).
+    /// Do not introduce a <c>ToIntegrationCategory(ProviderCategory)</c> overload.
+    /// </summary>
     public static ProviderCategory ToProviderCategory(IntegrationCategory category) => category switch
     {
         IntegrationCategory.Payments => ProviderCategory.Payments,
@@ -361,6 +388,8 @@ public interface IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView
 
 **Issuance ordering invariant** (per §5.5): `IssueProviderChangeAsync` for a `LicensePostureKind.StrongCopyleft` provider MUST throw `LicenseAcknowledgementRequiredException` (§3.10) if no `IntegrationLicenseAcknowledged` Standing Order exists for that (tenant, provider) pair. Callers must invoke `IssueLicenseAcknowledgementAsync` first.
 
+**"Exists" defined:** an `IntegrationLicenseAcknowledged` Standing Order "exists" for a (tenant, provider) pair when the most-recent Standing Order at `integrations.{category}.license-acknowledged.{provider}` has a non-null `NewValue`. The acknowledgement is a **tenant-level legal commitment** — it is satisfied by any acknowledgement issued by *any* tenant principal, not exclusively by the same principal who is now attempting activation. A system administrator who acknowledges on behalf of the organization satisfies the invariant for all subsequent activations by any other tenant principal.
+
 ### §3.6 — `IntegrationAtlasView`
 
 ```csharp
@@ -425,12 +454,22 @@ public enum ProviderValidationStatus
 ```csharp
 public sealed class LicenseAcknowledgementRequiredException : Exception
 {
-    public required string ProviderName { get; init; }
-    public required LicensePostureKind PostureKind { get; init; }
+    public LicenseAcknowledgementRequiredException(
+        string providerName,
+        LicensePostureKind postureKind,
+        string? message = null)
+        : base(message ?? $"License acknowledgement required for provider '{providerName}' (posture: {postureKind}).")
+    {
+        ProviderName = providerName;
+        PostureKind = postureKind;
+    }
+
+    public string ProviderName { get; }
+    public LicensePostureKind PostureKind { get; }
 }
 ```
 
-Thrown by `IssueProviderChangeAsync` when activation is attempted without a prior acknowledgement Standing Order. The Atlas form-renderer catches this exception and surfaces the acknowledgement modal (§5.5).
+Thrown by `IssueProviderChangeAsync` when activation is attempted without a prior acknowledgement Standing Order. The Atlas form-renderer catches this exception and surfaces the acknowledgement modal (§5.5). Uses a positional constructor — `required` on `Exception` subclass init-only properties does not work at the throw site because C# `required` members must be set via object initializer syntax, which is unsupported after a `base(...)` call chain.
 
 ---
 
@@ -583,6 +622,8 @@ Admin changes the active provider (e.g. Stripe → Square):
 5. The admin retains the option to revert by re-issuing `active-provider = "providers-stripe"`; the prior credentials are still in the Standing Order log.
 6. To explicitly clear stale credentials, the admin uses a "Clear unused credentials" affordance (§7.3 — out of v1 surface scope; deferred).
 
+**Webhook-secret rotation window (providers-stripe, providers-twilio).** For providers that issue webhooks back to Sunfish, a rotation event creates a transition window where webhooks signed with the *previous* webhook secret may arrive after the new active provider's Standing Order has issued. The `IIntegrationProviderValidator` for these providers MUST accept both the old and new webhook secrets during validation and must surface both secrets to the adapter's webhook-signature-verification path until the previous provider's credentials are explicitly cleared. The Atlas projection retains both credential sets precisely to support this; clearing the old webhook secret before the transition window closes is an explicit admin action, not an automatic consequence of rotation.
+
 ---
 
 ## §6 — DI surface + composition
@@ -724,6 +765,8 @@ Audit-record payloads (the `AuditRecord.Payload` JSON) carry per-event detail:
 
 The redaction rule is contractual: audit payload fields named `value`, `apiKey`, `secret`, `password`, `token`, `webhookSecret`, or any field whose name starts with `credential.` or ends with `.value` MUST never appear in an audit record produced by ADR 0067 code. A test asserts this against a corpus of representative audit records.
 
+**Matcher semantics:** the forbidden-field-name check is **case-insensitive** (e.g. `Secret`, `SECRET`, `ApiKey`, and `apikey` all match). The matcher walks the `AuditPayload.Body` dictionary recursively — including nested object values, list elements, and nested dictionaries — and checks each *key* (never value text) against the forbidden patterns. Negative-test cases must include: (a) a key like `previousProvider` containing the word "secret" as a *value* (must pass — only key names are screened); (b) a key like `details.value` (must fail — ends with `.value`); (c) a key like `webhook-secret` normalized to `webhooksecret` for matching (must fail — matches `webhookSecret` case-insensitively after removing hyphens).
+
 ---
 
 ## §9 — Open questions
@@ -748,6 +791,10 @@ Some Bridge tenants may want credentials stored in their own KMS (AWS Secrets Ma
 ### §9.4 — Webhook URL provisioning
 
 Some providers (Stripe, Twilio) issue webhooks back to Sunfish. The webhook URL is *not* a credential the admin enters — it's a value Sunfish must surface for the admin to copy into the provider's dashboard. The Atlas form likely needs a "read-only output field" concept distinct from `CredentialFieldSpec`. Deferred to a future amendment; v1 handles webhook URLs as `HelpText` content directing the admin to the docs.
+
+### §9.5 — OAuth-flow provider support
+
+The §6.3 custom-renderer escape hatch explicitly names "OAuth redirect dance" as the canonical example of a credential-capture workflow that cannot fit `CredentialFieldSpec`. v1 ships without any OAuth-flow providers. The first OAuth provider (e.g. a future `providers-google-workspace`, `providers-quickbooks`) requires its own ADR addressing: (a) callback URL whitelisting and per-tenant callback uniqueness; (b) CSRF-resistant `state` token generation and cross-tenant collision prevention; (c) PKCE challenge/verifier flow; (d) `aria-live` announcements for the popup/redirect lifecycle (per WCAG SC 4.1.3). Adapter authors MUST NOT add an OAuth-backed `IIntegrationSchemaProvider` to v1 without a companion ADR that addresses these requirements — doing so would leave CSRF and cross-tenant `state` collision undefined at the surface level.
 
 ---
 
@@ -855,9 +902,20 @@ The drift is structural metadata only — the underlying contract semantics alig
 
 `IAtlasProvider<T>`, `IIdentityAtlasSurface`, and `IHelmWidget` (introduced by ADR 0066) are on PR #529 (open as of 2026-05-04) but not yet merged to origin/main. ADR 0067 is authored against the ADR 0066 specification (the ADR text on the PR), not against an origin/main implementation. **Mitigation:** Phase 1 of the §10 implementation checklist MUST land *after* ADR 0066's Phase 1 — the Phase 1 hand-off explicitly carries this dependency. If ADR 0066's surface drifts from its ADR text during build, ADR 0067's Phase 1 hand-off must be re-validated against the post-build origin/main shape; a regenerated §A0 captures the resolution.
 
-### §A0.4 — Soft-prerequisite (in flight; uncommitted)
+### §A0.4 — Correction: `IMeshVpnAdapter` is already on origin/main
 
-`IMeshVpnAdapter` is uncommitted in the working tree at `packages/foundation-transport/IMeshVpnAdapter.cs` (W#30 build in flight). §6.2 references `IMeshVpnAdapter.ValidateAsync()` for mesh-VPN validation. **Mitigation:** the W#30 PR will land before ADR 0067 Phase 3 starts; if `IMeshVpnAdapter` lands without a `ValidateAsync` method, the Phase 3 hand-off carries an instruction to add one (or to define the validation hook directly in `providers-mesh-tailscale` as a fallback).
+**Council correction (2026-05-04):** `IMeshVpnAdapter` IS present on `origin/main` at `packages/foundation-transport/IMeshVpnAdapter.cs` — it is not an uncommitted working-tree artifact. The §A0 pre-acceptance audit incorrectly classified it as in-flight. The actual interface surface on origin/main is:
+
+```csharp
+public interface IMeshVpnAdapter : IPeerTransport
+{
+    string AdapterName { get; }
+    Task<MeshNodeStatus> GetMeshStatusAsync(CancellationToken ct);
+    Task RegisterDeviceAsync(MeshDeviceRegistration registration, CancellationToken ct);
+}
+```
+
+**Blocking implication (BLOCKING — left for CO disposition):** `IMeshVpnAdapter` has no `ValidateAsync` method. §6.2's claim that "the validator calls into the adapter's own `IMeshVpnAdapter.ValidateAsync()`" cannot compile against the committed surface. Adding `ValidateAsync` to `IMeshVpnAdapter` is a breaking change to a published transport contract that requires its own ADR amendment. The §6.2 dispatch path for mesh-VPN validation requires rework (non-mechanical; left for author + CO disposition).
 
 ### §A0.5 — Net-new package (no prior origin/main artifact)
 
