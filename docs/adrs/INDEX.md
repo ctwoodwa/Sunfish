@@ -79,9 +79,11 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0060 — [Right-of-Entry Compliance Framework](./0060-right-of-entry-compliance-framework.md)
 - ADR 0064 — [Runtime Regulatory / Jurisdictional Policy Evaluation](./0064-runtime-regulatory-policy-evaluation.md)
 
-### process (1)
+### process (3)
 
 - ADR 0040 — [Translation Workflow: AI-First with 3-Stage Validation Gate](./0040-translation-workflow-ai-first-3-stage-validation.md)
+- ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
+- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
 
 ### tooling (1)
 
@@ -143,7 +145,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 
 - ADR 0064 — [Runtime Regulatory / Jurisdictional Policy Evaluation](./0064-runtime-regulatory-policy-evaluation.md)
 
-### dev-experience (21)
+### dev-experience (23)
 
 - ADR 0002 — [Kernel Module Format](./0002-kernel-module-format.md)
 - ADR 0005 — [Type-Customization Model (Typed vs. Dynamic Balance)](./0005-type-customization-model.md)
@@ -166,6 +168,8 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0048 — [Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly](./0048-anchor-multi-backend-maui.md)
 - ADR 0055 — [Dynamic Forms Substrate](./0055-dynamic-forms-substrate.md)
 - ADR 0063 — [Mission Space Requirements (install-UX layer)](./0063-mission-space-requirements.md)
+- ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
+- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
 
 ### distribution (8)
 
@@ -178,7 +182,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0061 — [Three-Tier Peer Transport Model (mDNS / Mesh VPN / Managed Relay)](./0061-three-tier-peer-transport.md)
 - ADR 0062 — [Mission Space Negotiation Protocol (runtime layer)](./0062-mission-space-negotiation-protocol.md)
 
-### governance (11)
+### governance (13)
 
 - ADR 0001 — [Schema Registry Governance Model](./0001-schema-registry-governance.md)
 - ADR 0002 — [Kernel Module Format](./0002-kernel-module-format.md)
@@ -191,6 +195,8 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0042 — [Subagent-Driven Development for High-Velocity Sessions](./0042-subagent-driven-development-for-high-velocity.md)
 - ADR 0043 — [Unified Threat Model: The Chain of Permissiveness in Sunfish''s Public-OSS Posture](./0043-unified-threat-model-public-oss-chain-of-permissiveness.md)
 - ADR 0056 — [Foundation.Taxonomy Substrate (Versioned Product Model with Lineage)](./0056-foundation-taxonomy-substrate.md)
+- ADR 0069 — [ADR Authoring Discipline (pre-merge council + §A0 + three-direction)](./0069-adr-authoring-discipline.md)
+- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
 
 ### identity (5)
 
@@ -217,13 +223,14 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 - ADR 0057 — [Leasing Pipeline + Fair Housing Compliance Posture](./0057-leasing-pipeline-fair-housing.md)
 - ADR 0059 — [Public Listing Surface (Bridge-served)](./0059-public-listing-surface.md)
 
-### operations (5)
+### operations (6)
 
 - ADR 0006 — [Bridge Is a Generic SaaS Shell, Not a Vertical App](./0006-bridge-is-saas-shell.md)
 - ADR 0011 — [Bundle Versioning and Upgrade Policy](./0011-bundle-versioning-upgrade-policy.md)
 - ADR 0031 — [Bridge as Hybrid Multi-Tenant SaaS (Zone C default, Option B contractual)](./0031-bridge-hybrid-multi-tenant-saas.md)
 - ADR 0044 — [Anchor ships Windows-only for Business MVP Phase 1](./0044-anchor-windows-only-phase-1.md)
 - ADR 0048 — [Anchor multi-backend MAUI: native MAUI for Win/Mac/iOS/Android, MAUI Avalonia for Linux/WebAssembly](./0048-anchor-multi-backend-maui.md)
+- ADR 0070 — [Multi-Session Naval-Org Structure (CO/XO/COB/PAO/Yeoman)](./0070-multi-session-naval-org-structure.md)
 
 ### persistence (10)
 
@@ -298,5 +305,7 @@ _Auto-generated from frontmatter by `tools/adr-projections/project.py`. Do not e
 _Each row lists the ADR and the other ADRs that compose or extend it._
 _`consumed_by` is auto-derived from `composes`/`extends` arrays; never hand-authored._
 
+- ADR 0018 — [Governance Model and License Posture](./0018-governance-and-license-posture.md) ← consumed by 1: [ADR 0070](./0070-multi-session-naval-org-structure.md)
 - ADR 0028 — [CRDT Engine Selection](./0028-crdt-engine-selection.md) ← consumed by 1: [ADR 0062](./0062-mission-space-negotiation-protocol.md)
+- ADR 0042 — [Subagent-Driven Development for High-Velocity Sessions](./0042-subagent-driven-development-for-high-velocity.md) ← consumed by 1: [ADR 0070](./0070-multi-session-naval-org-structure.md)
 - ADR 0049 — [Audit-Trail Substrate: Distinct Package over Kernel IEventLog](./0049-audit-trail-substrate.md) ← consumed by 1: [ADR 0062](./0062-mission-space-negotiation-protocol.md)
