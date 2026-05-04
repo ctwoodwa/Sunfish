@@ -38,7 +38,7 @@ Sunfish's ICM pipeline specifies what moves through stages; until now it has sai
 Three disciplines have emerged organically from that cohort and stabilised across ADRs 0062–0065. They are now reliable enough to formalize so they become part of every future substrate ADR rather than being re-derived each session:
 
 **D1 — Pre-merge council canonical for substrate-tier ADRs.**
-Stage 1.5 adversarial review (four perspectives + 21-AP scan) runs BEFORE a substrate-tier ADR merges, not as a post-acceptance triage. The primary driver is a cohort batting average of **20-of-20 substrate amendments needing council-sourced fixes**. Running council post-acceptance converts those fixes into ADR amendments (numbered noise, audit-trail churn). Running council pre-merge absorbs them as inline corrections before the ADR is marked Accepted.
+Stage 1.5 adversarial review (four perspectives + 21-AP scan) runs BEFORE a substrate-tier ADR merges, not as a post-acceptance triage. The primary driver is a cohort batting average of **27-of-28 substrate amendments needing council-sourced fixes** (ADR 0028-A11 is the cohort's first clean-pass counter-example — see Decision drivers). Running council post-acceptance converts those fixes into ADR amendments (numbered noise, audit-trail churn). Running council pre-merge absorbs them as inline corrections before the ADR is marked Accepted.
 
 **D2 — §A0 self-audit limitation block.**
 Every substrate-tier ADR begins with a §A0 section listing every cited symbol, ADR, and package path classified as Existing / Introduced / Removed. §A0 forces enumeration at draft time. It does NOT replace council; the §A0 catch rate across the 2026-04/05 cohort was **0-of-5 structural-citation failures caught** (failures were caught by pre-merge council, not §A0). §A0 is necessary-but-not-sufficient: the act of enumeration is itself a sanity-check, but XO's mental model is precisely what the enumeration mirrors — so the same blind spots propagate.
@@ -57,7 +57,7 @@ The Stage 5 quarterly snapshot (PR #487) flagged the absence of a canonical proc
 
 ## Decision drivers
 
-- **Cohort batting average: 20-of-20 substrate amendments needed council-sourced fixes.** (Updated per ADR 0065 context — was 18-of-18 at ADR 0065 draft time.) Zero counter-examples exist in the 2026-04/05 cohort. Statistical support for "pre-merge council canonical" is as strong as the sample size permits.
+- **Cohort batting average: 27-of-28 substrate amendments needed council-sourced fixes.** (Updated through ADR 0028-A11, 2026-05-04. Was 20-of-20 at ADR 0069 draft time; 18-of-18 at ADR 0065 draft time.) **One counter-example: ADR 0028-A11** (SequestrationFlagKind.FeatureGateOff) passed canonical pre-merge council on first try with zero required fixes. A11 is the cohort's first clean-pass amendment; the pattern that produced it — small additive scope + thorough §A0 self-audit (8-of-8 cited symbols verified in three directions) + verbatim quotation of cited prior council findings — is the template for "well-shaped" substrate amendments. Statistical support for "pre-merge council canonical" remains as strong as the sample size permits; 27-of-28 is not materially different from 27-of-27 for process-design purposes.
 - **§A0 catch rate: 0-of-5.** ADR 0063's council found 4 structural-citation failures that all passed the §A0 self-audit (F1 `MinimumSpecDimension`, F2 `SyncStateSpec.AcceptableStates` state-names, F3 `NetworkSpec.RequiredTransports` enum values, F5 `packages/foundation-bundles/` vs. `packages/foundation-catalog/`). ADR 0028-A9's council found a 5th (parent-propagated citation of `schemaEpoch` to ADR 0001 instead of paper §7.1). §A0's failure mode: it mirrors XO's draft-time mental model; where the model is wrong, the enumeration is wrong.
 - **Post-acceptance amendment cost.** A structural-citation failure that lands in an Accepted ADR produces: (1) a numbered amendment commit, (2) an ADR audit-trail wart, (3) downstream ADRs that may have inherited the bad citation via verbatim copy (the "parent-propagation" failure mode from ADR 0028-A6 → A9). Pre-merge cost: an inline correction. Post-merge cost: amendment + possible cascade.
 - **Formalizing informally-stable practice.** Decision Discipline Rule 3 (auto-accept mechanical-fix council amendments) and the §A0 pattern (introduced in ADR 0062-A1.14) have been applied consistently across 0062/0063/0064/0065. Formalizing in an ADR makes the discipline durable across sessions and communicates expectations to future contributors.
@@ -74,7 +74,7 @@ Continue relying on CLAUDE.md notes + session memories to propagate the discipli
 - **Pro:** Zero new overhead — authors who already know the conventions are unaffected.
 - **Pro:** No friction for process-tier ADRs where structural-citation risk is low.
 - **Con:** Conventions decay across sessions. Memory files are point-in-time observations; new sessions start cold.
-- **Con:** "Pre-merge council canonical" is only enforced when the author remembers it. The 20-of-20 batting average exists precisely because the current cohort ran council; there is no guarantee a future session will.
+- **Con:** "Pre-merge council canonical" is only enforced when the author remembers it. The 27-of-28 batting average exists precisely because the current cohort ran council; there is no guarantee a future session will.
 - **Con:** New contributors (human or AI) have no single document explaining the expected authoring posture. The disciplines are scattered across memories, CLAUDE.md amendments, and cohort-specific ADR preamble notes.
 
 **Verdict:** Rejected. The gap is real and the cost of a formal ADR is low.
@@ -151,7 +151,7 @@ Council false-claim rate in the 2026-04/05 cohort: **2-of-12** council findings 
 
 **Limitation acknowledgment:** §A0 MUST end with a standard limitation note:
 
-> *§A0 is necessary but not sufficient. Structural-citation failures in the 2026-04/05 cohort had a 0-of-5 §A0 catch rate; all were caught by pre-merge council. §A0 forces enumeration; it does not substitute for pre-merge council review.*
+> *§A0 is necessary but not sufficient. Structural-citation failures in the 2026-04/05 cohort had a 0-of-5 §A0 catch rate; all were caught by pre-merge council. §A0 forces enumeration — this enumeration habit is itself valuable (ADR 0028-A11's thorough 8-of-8 §A0 verification contributed to its first-try council clean pass) — but it does not substitute for pre-merge council review.*
 
 **When §A0 catches nothing vs. flags something:** Both outcomes are valid. An empty §A0 (all citations Existing; none Introduced or Removed) is a useful signal. A §A0 with `Introduced` entries is required to list those entries in the Implementation checklist.
 
@@ -212,7 +212,7 @@ git grep -n "class <TypeName>|record <TypeName>" packages/
 
 ## Scope boundary
 
-These disciplines apply most strongly to **substrate-tier** ADRs — those introducing new types, contracts, or packages across multiple packages. The justification is empirical: 20-of-20 failing council-without-pre-merge is a substrate-tier phenomenon; the cited symbol surface is what creates the risk.
+These disciplines apply most strongly to **substrate-tier** ADRs — those introducing new types, contracts, or packages across multiple packages. The justification is empirical: 27-of-28 failing council-without-pre-merge is a substrate-tier phenomenon; the cited symbol surface is what creates the risk. (The one exception, ADR 0028-A11, was a single-value enum addition — the smallest possible substrate surface.)
 
 **Process-tier ADRs** (like this one) SHOULD run §A0 and three-direction spot-check where citations are present. Pre-merge council is RECOMMENDED but not required — process-tier changes rarely introduce structural-citation risk unless they cite specific code symbols.
 
@@ -227,7 +227,7 @@ These disciplines apply most strongly to **substrate-tier** ADRs — those intro
 ### Positive
 
 - Structural-citation failures — which have appeared in 71% of substrate amendments in the 2026-04/05 cohort (~10-of-14) — are caught pre-merge rather than post-acceptance.
-- Post-acceptance amendment volume drops. The 20-of-20 batting average implies near-total absorption if D1 is applied consistently.
+- Post-acceptance amendment volume drops. The 27-of-28 batting average implies near-total absorption if D1 is applied consistently; the A11 counter-example shows that very small-scope amendments with thorough §A0 can occasionally achieve a first-try clean pass.
 - New contributors (human or AI) have a single ADR to read that explains expected authoring posture; they no longer have to reverse-engineer the cohort's accumulated session memories.
 - §A0's enumeration habit remains valuable even with 0% standalone catch rate, because it forces the author to name what they're citing — a prerequisite for the spot-check.
 
@@ -336,7 +336,7 @@ Per [`docs/adrs/_template.md`](./template.md):
 - [x] **AHA pass.** Three options considered (status quo / CLAUDE.md checklist / canonical ADR). Options A and B rejected with documented rationale.
 - [x] **FAILED conditions / kill triggers.** Council batting average dropping below 70% named as revisit trigger. §A0 catch rate improving named as revisit trigger.
 - [x] **Rollback strategy.** Reverting this ADR to `Withdrawn` and re-editing CLAUDE.md is sufficient — no code surface to unwind.
-- [x] **Confidence level.** HIGH. 20-of-20 cohort batting average is unambiguous. §A0 0-of-5 catch rate is unambiguous. Both are empirically grounded in this repo's documented history, not assumption.
+- [x] **Confidence level.** HIGH. 27-of-28 cohort batting average (with A11 as the documented counter-example pattern) is unambiguous. §A0 0-of-5 catch rate is unambiguous. Both are empirically grounded in this repo's documented history, not assumption.
 - [x] **Cited-symbol verification.** This is a process-tier ADR; it cites ADR numbers and file paths rather than `Sunfish.*` code symbols. All cited ADR numbers and file paths verified via `git ls-tree origin/main` above in §A0. No code symbols to verify.
 - [x] **Anti-pattern scan.** AP-1 (unvalidated assumptions): empirical cohort data cited. AP-3 (vague phases): no implementation phases — one-time checklist. AP-9 (skipping Stage 0): §A0 above + three options considered. AP-11 (zombie project): revisit triggers named. AP-12 (timeline fantasy): no timeline dependencies. AP-21 (assumed facts without sources): cited-symbol verification clean; cohort statistics sourced from memory files (cited in References).
 - [x] **Revisit triggers.** Named: batting-average drop, §A0 catch-rate improvement, ADR volume > 200, process-tier ADRs acquiring structural citations.
