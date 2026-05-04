@@ -1,7 +1,7 @@
 ---
 id: 66
 title: Helm Composition + Identity Atlas Surface
-status: Proposed
+status: Accepted
 date: 2026-05-01
 tier: ui-core
 pipeline_variant: sunfish-feature-change
@@ -33,7 +33,7 @@ amendments: []
 ---
 # ADR 0066 — Helm Composition + Identity Atlas Surface
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-01
 **Authors:** XO research session
 **Pipeline variant:** `sunfish-feature-change`
@@ -51,6 +51,13 @@ Proposed. Substrate-tier UI contract — pre-merge council canonical per ADR 006
 ## Context
 
 The Wayfinder discovery doc (W#34, `icm/01_discovery/output/2026-05-01_wayfinder-configuration-ux.md`) classifies eight Sunfish configuration layers and two cross-cutting UX surfaces. The two cross-cutting surfaces are the **Helm** (live-state pane: "what your device can do right now") and the **Atlas** (deep-config UI: "where you issue Standing Orders"). ADR 0065 (Wayfinder System + Standing Order Contract) specifies the Atlas-as-projection-of-Standing-Orders pattern and the system-wide search/diff-preview surface. ADR 0065 does **not** specify (a) what widgets compose the Helm, (b) the per-widget contract, (c) the layout slots, (d) live-state propagation mechanics, or (e) the identity sub-surface within the Atlas (profile edit, key rotation, recovery contacts, historical keys, active-team switcher).
+
+```
+Wayfinder System (ADR 0065)
+├── Helm Pane          — live-state observation layer
+└── Atlas Surface      — deep-configuration issuance layer
+    └── Identity Atlas — sub-surface: recovery contacts + active team
+```
 
 W#34 §5.8 (Account / identity layer) tags coverage **Partial**. Cryptographic infrastructure is fully built or fully specified: ADR 0046 ships `Sunfish.Foundation.Recovery.EncryptedField` + `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` + role-key wrapping + spouse-recovery semantics; ADR 0046-a1 specifies `HistoricalKeysProjection` for signature survival across operator-key rotation; ADR 0032 ships `Sunfish.Kernel.Runtime.Teams.TeamContext` + `TeamId` for per-team subkey isolation; ADR 0036 ships `Sunfish.Foundation.UI.SyncState` (5-value enum) for live-state encoding; ADR 0049 ships the audit substrate (`AuditRecord`, `IAuditTrail`, `AuditEventType`). What is missing is the **UX**: how the user sees their identity at a glance, enrolls a recovery contact, initiates key rotation, browses historical keys, switches active team. Without this ADR, every block that wants to surface identity invents its own UI; W#23 (iOS Field-Capture) and Phase 2 commercial scope (multi-actor delegation per ADR 0046 spouse-recovery) cannot proceed without a stable identity surface to hang their flows on.
 
@@ -109,6 +116,8 @@ Two contracts because the rendering paradigms are distinct (one-off live-state t
 ---
 
 ## Decision
+
+Option E is selected because it splits Helm and Atlas into named contracts without creating separate packages. The single `ui-core-wayfinder` package boundary keeps the dependency graph flat while enabling separate feature-phasing (Helm Phase 1, Atlas Phase 1, Identity Atlas Phase 2+).
 
 Adopt **Option E**. Specifications follow.
 
@@ -235,6 +244,7 @@ Helm widgets re-compute on three triggers, in priority order:
 1. **Mission Envelope change** — the widget subscribes to `IMissionEnvelopeProvider.Subscribe(IMissionEnvelopeObserver)` (per ADR 0062). On `OnEnvelopeChanged(MissionEnvelopeChange)`, the widget recomputes if its declared `CapabilityGateType` has any dimension that changed.
 2. **Standing Order applied** — the widget subscribes to `IStandingOrderApplied` events (per ADR 0065 §6.4 — *if* §6.4 specifies an event-bus surface; otherwise via a local `IObservable<StandingOrderAppliedEvent>` exposed by `IStandingOrderRepository`). Widgets that render Wayfinder-derived state (e.g., active-team) recompute on every applied StandingOrder whose `Scope` matches.
 3. **Periodic refresh** — backstop refresh at `HelmOptions.PeriodicRefreshInterval` (default `00:01:00`, configurable). Most widgets ignore this (the two reactive triggers cover their state); the recovery-status widget uses it because pending recovery requests have a grace-window expiry that doesn't fire its own event.
+4. **On-reconnect / on-resume** — unconditional full recompute of all widget states; prevents stale-render window after network interruption or process resume.
 
 **Refresh cost discipline.** Widgets MUST be idempotent and side-effect-free. `ComputeAsync` is invoked on the UI thread (Blazor) or via the React render loop; long-running work belongs in a substrate service the widget queries.
 
@@ -242,7 +252,7 @@ Helm widgets re-compute on three triggers, in priority order:
 
 This ADR specifies six **canonical** widgets that ship in Phase 1 of the build (per ADR 0073 stage-06 hand-off contract). Each is implemented in `packages/ui-core/Wayfinder/Widgets/` with adapter-specific renderers in `ui-adapters-*`:
 
-| WidgetId | Slot | OrderHint | Substrate composed | A11y SC critical |
+| WidgetId | Slot | OrderHint | Substrate composed | WCAG SC focus |
 |---|---|---|---|---|
 | `identity-glance` | GlanceBand | 100 | ADR 0046 (role keys), ADR 0046-a1 (`HistoricalKeysProjection`), `KeyFingerprint` (new) | 1.4.3, 1.4.11, 4.1.2 |
 | `sync-state` | GlanceBand | 200 | ADR 0036 (`SyncState`) | 4.1.3, 1.3.3 |
@@ -250,6 +260,7 @@ This ADR specifies six **canonical** widgets that ship in Phase 1 of the build (
 | `mission-envelope-summary` | GlanceBand | 400 | ADR 0062 (`MissionEnvelope`) | 1.4.10, 4.1.3 |
 | `quick-toggles` | ActionStack | 100 | ADR 0065 (`IStandingOrderIssuer`) | 2.5.5, 4.1.2 |
 | `recent-standing-orders` | ActivityFeed | 100 | ADR 0065 (`IStandingOrderRepository`) | 1.3.2, 4.1.2 |
+| `recovery-status` | GlanceBand | 350 | `ICrewRoster` recovery-contact quorum state; amber ≥1 unverified; red = zero verified | 4.1.3, 1.4.3 | *(Phase 2)* |
 
 (Pending Standing Orders + quota / CRDT growth gauge are defer-Phase-2 widgets; out of scope for this ADR's checklist but reserved in the slot table.)
 
@@ -322,7 +333,7 @@ Rotation-window UX: WCAG 2.2.1 (Timing Adjustable) applies — the user can exte
 #### 2.4 — Recovery-contact management
 
 Composes ADR 0046's spouse-recovery semantics. Three operations:
-- **Enroll** — selects an existing `ActorId` (Tenant member) or invites by email/phone. Issues `StandingOrder` with `Path = "identity.recovery.contacts.add"` and `Scope = StandingOrderScope.Security`. Multi-actor approval (per ADR 0046) applies if the issuing actor is a non-primary owner.
+- **Enroll** — selects an existing `ActorId` (Tenant member) or invites by email/phone. Issues `StandingOrder` with `Path = "identity.recovery.contacts.add"` and `Scope = StandingOrderScope.Security`. Multi-actor approval (per ADR 0046) applies if the issuing actor is a non-primary owner. `IStandingOrderValidator` for Path = `"identity.recovery.contacts.add"` enforces ≤5 active recovery contacts per Security-scope window; verifies at least one contact has a verified status before accepting a quorum increase; audit-emits on rate-limit rejection (path mirrors ADR 0049 audit-by-construction pattern).
 - **Verify** — the recovery contact confirms via Standing Order acknowledgment (`Path = "identity.recovery.contacts.verify"`). Until verified, the contact appears in the Atlas with a "pending verification" badge (`SyncState.Stale`).
 - **Remove** — issues `Path = "identity.recovery.contacts.remove"`. Per ADR 0046 spouse-recovery semantics, removing the *last* recovery contact for a tenant requires multi-actor approval; the diff-preview surfaces this requirement before issuance.
 
@@ -334,10 +345,10 @@ Composes ADR 0046-a1's `HistoricalKeysProjection`. Renders a table:
 - Key fingerprint (`KeyFingerprint`)
 - Activated date (`NodaTime.Instant`)
 - Retired date (nullable)
-- `KeyRotationReason` (per ADR 0046-a1 — `Scheduled` / `Compromise` / `Recovery` / `Migration`)
+- `KeyRotationReason` (per ADR 0046-a1 — non-exhaustive values listed here: `Scheduled` / `Compromise` / `Recovery` / `Migration`; see ADR 0046-a1 for the complete `KeyRotationReason` enum)
 - Signature-survival count (number of historical events still verifiable with this key)
 
-Browse is read-only — historical keys are immutable once retired. The view supports filtering by reason and date range; sortable columns with `aria-sort` attributes (WCAG 1.3.1).
+Browse is read-only — historical keys are immutable once retired. The view supports filtering by reason and date range; sortable columns with `aria-sort` attributes (WCAG 1.3.1). Per ARIA 1.2, `aria-sort` accepts `none` | `ascending` | `descending` | `other`; the Atlas table MUST declare `aria-sort` on the current sort column with one of these values and `aria-sort="none"` on unsorted columns.
 
 #### 2.6 — Active-team overview
 
@@ -345,7 +356,7 @@ Composes ADR 0032's `TeamContext` per-team subkey derivation. Renders a list of 
 - Team display name + `TeamId`
 - Current role (per ADR 0046 role-key wrapping)
 - Subkey fingerprint
-- "Switch to this team" action — local UI-only; does NOT issue a Standing Order (team-switch is a session-local concern per ADR 0032 §"Default: Option C" — the kernel-runtime re-binds views; no global state changes)
+- "Switch to this team" action — local UI-only; does NOT issue a Standing Order (team-switch is a session-local concern per ADR 0032 §"Default: Option C" — the kernel-runtime re-binds views; no global state changes). Per ADR 0032 §"Default: Option C", active-team state is a per-process singleton shared across all windows in that Anchor process. A team switch via the Helm pane propagates immediately to all open windows in the same Anchor instance; separate Anchor processes maintain independent active-team state.
 
 A "leave team" action issues a `StandingOrder` with `Path = "identity.teams.{teamId}.membership"`, `Scope = StandingOrderScope.User`. (Multi-actor approval applies if the leaving actor is the team's last admin.)
 
@@ -353,13 +364,13 @@ A "leave team" action issues a `StandingOrder` with `Path = "identity.teams.{tea
 
 Per W#34 §5.7 and ADR 0065 §7, WCAG/a11y is contract. This ADR's identity surfaces add specific SC requirements beyond the Atlas baseline:
 
-- **3.3.7 Redundant Entry** — within a single key-rotation session, the user is NOT asked to re-enter the new key fingerprint or recovery contact info already supplied. Carry-forward is required.
+- **3.3.7 Redundant Entry** — within a single key-rotation session, the user is NOT asked to re-enter the new key fingerprint or recovery contact info already supplied. Carry-forward is required. Session-scope means process-lifetime for Anchor (desktop) and tab-lifetime for Bridge (web); the validator MUST persist user preference for the duration of the relevant scope and MUST NOT reset on navigation.
 - **3.3.8 Accessible Authentication (No Cognitive Function Test)** — recovery-contact verification MUST NOT use cognitive-recall challenges (no "What was your first pet's name"). Verification uses Standing Order acknowledgment via the contact's own Anchor/Bridge installation.
 - **3.3.9 Accessible Authentication (Enhanced)** — key-rotation issuance MAY use device attestation but MUST offer an accessible alternative path (the alternative path is the recovery-contact verification flow per §2.4 — no cognitive recall required).
 - **2.2.1 Timing Adjustable** — rotation grace window is user-extensible up to 30 days.
 - **1.4.11 Non-Text Contrast** — `KeyFingerprint` rendering uses a distinguishable font (monospace) with ≥3:1 contrast against background; never as the *only* identity signal (always paired with role + team labels).
 - **2.4.6 Headings and Labels** — all five identity-Atlas pages have descriptive H1 headings; sub-sections have H2/H3 with `aria-labelledby` linking to form regions.
-- **4.1.3 Status Messages** — sync-state changes in Helm widgets fire `aria-live="polite"` announcements (per ADR 0036 five-channel encoding); rotation-progress changes fire `aria-live="assertive"` for compromise-driven rotations only.
+- **4.1.3 Status Messages** — sync-state changes in Helm widgets fire `aria-live="polite"` announcements (per ADR 0036 five-channel encoding); rotation-progress changes fire `aria-live="assertive"` for compromise-driven rotations only. Compromise events (cryptographic-key compromise, security alert) use `role=alert` (assertive); Scheduled-maintenance events use `aria-live=polite` to avoid interrupting user-initiated actions.
 - **EN 301 549 procurement compliance** — for Bridge tenants in EU jurisdictions; identity-Atlas conformance reports produced per release per `apps/docs/wcag/identity-atlas.md` (new file added in Phase 2 of build).
 
 ### 4. Composition + cross-references
@@ -441,6 +452,7 @@ Verified the following exist on `origin/main` (`bf31e04`) as cited:
 - `Sunfish.Kernel.Audit.AuditRecord`, `Sunfish.Kernel.Audit.IAuditTrail`, `Sunfish.Kernel.Audit.AuditEventType` — `packages/kernel-audit/`. Verified `AuditEventType` is `readonly record struct(string Value)` with static-field constants (NOT an enum — preserves the structural correction first surfaced in ADR 0065 §A0.3).
 - `Sunfish.Foundation.MissionSpace.MissionEnvelope`, `IMissionEnvelopeProvider`, `ICapabilityGate<TCapability>` — per ADR 0062 (verified §A0.2 in ADR 0062's own self-audit + post-A1 amendment cohort).
 - `NodaTime.Instant` — external package; well-established.
+- `IFieldDecryptor` audit-emission contract — `packages/foundation-recovery/Crypto/IFieldDecryptor.cs:6` states "audit-emitting per ADR 0046-A2" via XML doc remark. Widgets MUST NOT call `IFieldDecryptor` from `ComputeAsync` (per OQ-4 recommendation); the fingerprint rendered in the `identity-glance` widget is a non-encrypted projection to avoid spurious audit emission per render.
 
 **Critical structural-citation correction (preserved from authoring):** `ActorId` and `TenantId` are in `Sunfish.Foundation.Assets.Common`, **NOT** `Sunfish.Foundation.Identity` (verified `grep -rn "namespace" packages/foundation/Assets/Common/ActorId.cs`). ADR 0065 §A0.2 cites `Sunfish.Foundation.Identity.ActorId` — that is a structural-citation error in ADR 0065 that THIS ADR does not propagate. The W#33/W#34 cohort will need to address ADR 0065's cite separately; this ADR uses the verified namespace.
 
