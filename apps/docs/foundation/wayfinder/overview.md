@@ -13,7 +13,7 @@
 | `StandingOrderState` (6) | `Issued` → `Validated` → `Applied`, plus terminal `Rescinded` / `Rejected` / `Conflicted`. |
 | `IStandingOrderRepository` | Per-tenant log accessor. `CrdtStandingOrderRepository` ships in Phase 2 over `Sunfish.Kernel.Crdt.ICrdtEngine`. |
 | `IStandingOrderIssuer` | Audit-by-construction issuance: `IssueAsync` + `RescindAsync` both require an `IAuditTrail` parameter (not optional). `DefaultStandingOrderIssuer` ships in Phase 2. |
-| `IStandingOrderValidator` (+ `StandingOrderValidatorPriority`) | Deterministic validator chain: `Schema=100` → `Policy=200` → `Authority=300` → `Conflict=400`. Block-severity issues reject the order; rejection still emits an audit event. |
+| `IStandingOrderValidator` (+ `StandingOrderValidatorPriority`) | Deterministic validator chain: `Schema=100` → `Policy=200` → `Authority=300` → `Conflict=400`. The chain runs every validator to accumulate issues; Block-severity issues fail the verdict and reject the order. Rejection still emits an audit event. |
 | `IAtlasProjector` (+ `AtlasView` / `AtlasSettingSnapshot` / `AtlasSchemaDescriptor` / `AtlasSearchHit`) | Phase 3a — projects per-tenant logs into a queryable settings catalog with last-writer-wins-by-IssuedAt-then-IssuedBy at the (Scope, Path) grain. |
 | `Sunfish.Wayfinder.Analyzers.SchemaRegistrationAnalyzer` | Phase 3b — Roslyn diagnostic `SUNFISH_WAYFINDER001` warning when a project calls `AddSunfishWayfinder()` but never registers an `AtlasSchemaDescriptor`. |
 
@@ -29,11 +29,11 @@ Five new `Sunfish.Kernel.Audit.AuditEventType` constants flow through every issu
 | `StandingOrderRejected` | Block-severity validation failure; state flips to `Rejected` |
 | `StandingOrderConflictResolved` | Per concurrent-issuance pair on the same `(Scope, Path)`; emitted once with both `StandingOrderId` values |
 
-The `IStandingOrderIssuer` interface enforces this at the type level — both `IssueAsync` and `RescindAsync` require an `IAuditTrail` parameter. A configuration change that does not emit an audit record is impossible to construct.
+The `IStandingOrderIssuer` interface enforces this at the type level — both `IssueAsync` and `RescindAsync` require an `IAuditTrail` parameter. A configuration change made via the issuer cannot emit-elide an audit record. (`IStandingOrderRepository.AppendAsync` is the substrate-replay path used during snapshot rehydration; production write paths route through the issuer.)
 
 ## CRDT-native (per ADR 0065 §2)
 
-The per-tenant Standing Order log is materialized at `wayfinder/standing-orders/{tenantId}` via `Sunfish.Kernel.Crdt.ICrdtEngine`. Concurrent issuances on disjoint paths merge cleanly. Concurrent issuances on the same `(Scope, Path)` produce `StandingOrderState.Conflicted` for the loser of the LWW tiebreak; the operator sees the conflict in the Atlas UI with a one-click amend-and-re-issue path. **No three-way merge dialogs** — that pattern fails WCAG 3.3.7 error-prevention for non-technical users (per W#34 §5.7).
+The per-tenant Standing Order log is materialized at `wayfinder/standing-orders/{tenantId}` via `Sunfish.Kernel.Crdt.ICrdtEngine`. Concurrent issuances on disjoint paths merge cleanly. Concurrent issuances on the same `(Scope, Path)` produce `StandingOrderState.Conflicted` for the loser of the LWW tiebreak (substrate-tier guarantee). Per ADR 0065 §"Decision §7" + W#34 §5.7, **adapters MUST present a single-action amend-and-re-issue UX (not a three-way merge dialog)** — the latter pattern fails WCAG 3.3.7 redundant-entry for non-technical operators.
 
 ## Atlas projection (per ADR 0065 §5)
 
@@ -53,7 +53,7 @@ Deterministic tiebreak by path under `string.CompareOrdinal`.
 
 ## Schema-registration analyzer (Phase 3b)
 
-`Sunfish.Wayfinder.Analyzers.SchemaRegistrationAnalyzer` emits `SUNFISH_WAYFINDER001` (Warning) on every `AddSunfish*()` invocation in a project that doesn't also instantiate an `AtlasSchemaDescriptor`. Detection is purely syntactic — the analyzer walks `InvocationExpressionSyntax` for `AddSunfish`-prefixed calls and `ObjectCreationExpressionSyntax` for `AtlasSchemaDescriptor` constructions; if AddSunfish was seen but no descriptor was created, every call site gets a diagnostic. Adding one descriptor anywhere in the project clears the warning everywhere.
+`Sunfish.Wayfinder.Analyzers.SchemaRegistrationAnalyzer` emits `SUNFISH_WAYFINDER001` (Warning) on every `AddSunfish*()` invocation in a project that never instantiates an `AtlasSchemaDescriptor`. Detection is purely syntactic — the analyzer walks `InvocationExpressionSyntax` for `AddSunfish`-prefixed calls and `ObjectCreationExpressionSyntax` for `AtlasSchemaDescriptor` constructions; if any AddSunfish call was seen but no descriptor was created, every call site gets a diagnostic. Adding one descriptor anywhere in the project clears the warning everywhere.
 
 The cost trade-off: false positives on unrelated `AddSunfishX` methods are accepted; false negatives (target-typed `new()` silently crediting a descriptor) are explicitly rejected per the W#42 P3b council A-1 ruling.
 
@@ -65,7 +65,7 @@ The cost trade-off: false positives on unrelated `AddSunfishX` methods are accep
 | P2 — CRDT-backed repository + reference issuer | #504 + #505 (amendments) | merged |
 | P3a — Atlas projector + search | #510 | merged |
 | P3b — SchemaRegistrationAnalyzer | #513 | merged |
-| P3b — perf tests (1K / 5K / 10K / 50K-setting projection benchmarks) | follow-up | deferred |
+| P3b — perf tests (P95 ≤ 200ms cold / ≤ 100ms warm at 10K projection per ADR 0065 council F9) | follow-up | deferred |
 | P4 — kitchen-sink wiring + apps/docs + WCAG baseline | this PR | in flight |
 | P5 — ledger flip → built | follow-up | queued |
 
@@ -81,4 +81,5 @@ The cost trade-off: false positives on unrelated `AddSunfishX` methods are accep
 - [ADR 0065](../../../docs/adrs/0065-wayfinder-system-and-standing-order-contract.md) — Wayfinder System + Standing Order Contract
 - [ADR 0049](../../../docs/adrs/0049-audit-trail.md) — audit immutability that Wayfinder rescission semantics compose
 - [ADR 0028](../../../docs/adrs/0028-crdt-engine-selection.md) — CRDT engine that the per-tenant log materializes against
+- [ADR 0048](../../../docs/adrs/0048-anchor-multi-backend-maui.md) — multi-backend MAUI + native a11y APIs (UIA / NSAccessibility / UIAccessibility / AccessibilityNodeInfo) that adapter Stage 06s surface against
 - [WCAG 2.2 AA + EN 301 549 v3.2.1 conformance baseline](wcag.md)

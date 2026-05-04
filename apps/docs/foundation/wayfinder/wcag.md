@@ -16,31 +16,31 @@ This page captures the **substrate-tier baseline** for the Wayfinder system per 
 - ❌ **Not legal advice.** Per the W#39 reader-caution carry-forward (and ADR 0064 Phase 1): conformance is a regulatory contract; engagement of accessibility counsel is required before any commercial claim.
 - ❌ **Not a substitute for end-user testing.** Automated conformance scans + structural baselines do not replace assistive-technology testing with actual users.
 
+> **Recommendation.** For any commercial conformance claim, contract an accessibility audit firm + engage accessibility counsel (parallel to ADR 0064's "engagement of accessibility counsel" pattern for regulatory claims). The substrate-tier baseline is the floor, not the ceiling.
+
 ## Substrate-tier inherent satisfactions
 
 The substrate-tier API and its audit shape inherently satisfy the following success criteria. **No per-adapter work is required to maintain these** as long as the adapter consumes the API as documented.
 
 ### WCAG 2.2
 
-| SC | Title | How the substrate satisfies it |
+**Wording note:** Each row uses the form "*substrate enables — adapter satisfies at render time*". The substrate is API-tier; SCs are satisfied at the rendering boundary. The substrate gives adapters everything they need to satisfy each SC, but the SC itself is closed by the adapter.
+
+| SC | Title | What the substrate guarantees |
 |---|---|---|
-| 1.3.1 | Info and Relationships | `AtlasSettingSnapshot` / `AtlasSchemaDescriptor` carry semantic structure (path / display name / kind / description) that adapters render with proper ARIA roles. The substrate never collapses meaning into presentation. |
-| 1.3.2 | Meaningful Sequence | `IAtlasProjector.SearchAsync` streams hits in descending score order with a deterministic path tiebreak — programmatic order matches reading order. |
+| 1.3.1 | Info and Relationships | `AtlasSettingSnapshot` / `AtlasSchemaDescriptor` expose programmatically-available semantic structure (path / display name / kind / description) for adapters to project. **Adapter satisfies the SC at render time** by mapping these fields to ARIA roles / native a11y APIs. |
+| 1.3.2 | Meaningful Sequence | `IAtlasProjector.SearchAsync` streams hits in descending score order with a deterministic path tiebreak — programmatic order matches reading order in the API contract. |
 | 2.4.6 | Headings and Labels | `AtlasSchemaDescriptor.DisplayName` is a required (non-nullable) field. Adapters that render Atlas views without descriptive labels will fail the analyzer (`SUNFISH_WAYFINDER001`). |
 | 3.2.4 | Consistent Identification | The `(Scope, Path)` key is the canonical identifier for any setting; cohort-wide convention. |
-| 3.3.1 | Error Identification | `StandingOrderValidationIssue` carries `Severity` + `Path` + `Message` + `RemediationHint`. The substrate guarantees rejected orders surface their issue list to the operator (audit emission + return value). |
+| 3.3.1 | Error Identification | `StandingOrderValidationIssue` carries `Severity` + `Path` + `Message` + `RemediationHint`. The substrate guarantees rejected orders surface their issue list (audit emission + return value); adapter renders to a11y-compliant error list. |
 | 3.3.3 | Error Suggestion | `StandingOrderValidationIssue.RemediationHint` (nullable string) provides operator-facing remediation; surfaces wherever the validator authored one. |
 | 3.3.4 | Error Prevention (Legal, Financial, Data) | Block-severity validation rejects the order at issuance time; no implicit "save" of partial state. Validator chain runs in deterministic priority order. |
-| 4.1.2 | Name, Role, Value | Every Wayfinder API type is named in PascalCase with semantic clarity; `StandingOrderState` enum exposes lifecycle states by name (not by integer). |
-| 4.1.3 | Status Messages | `IAuditTrail` emission on every `IssueAsync` / `RescindAsync` produces an authoritative status record; UX adapters render the operator-facing notification from the audit shape. |
 
 ### EN 301 549 v3.2.1
 
-| Clause | Title | Satisfied via |
+| Clause | Title | What the substrate guarantees |
 |---|---|---|
-| 11.4.1.3 | Status messages (programmatic determination) | Audit emission shape (above) |
-| 11.7.4 | User preferences | `StandingOrderScope.User` reserves a per-user preference scope; substrate guarantees per-user isolation under the `User` key prefix |
-| 12.1.2 | Documentation in accessible electronic format | This document (Markdown) is renderable as accessible HTML by docfx |
+| 12.1.2 | Documentation in accessible electronic format | This document (Markdown) is renderable as accessible HTML by docfx. |
 
 ## Per-adapter responsibilities (NOT inherent — must be addressed at Stage 06)
 
@@ -61,6 +61,10 @@ The following success criteria depend on the **rendering** of the Atlas form vie
 | 3.2.6 | Consistent Help — A (new in 2.2) | If the form view exposes help, place it consistently across pages |
 | 3.3.7 | Redundant Entry — A (new in 2.2) | If the conflict-resolution UX requires re-entry, pre-fill from the original draft |
 | 3.3.8 | Accessible Authentication (Minimum) — AA (new in 2.2) | If issuing a `StandingOrderScope.Security` order requires re-auth, provide a non-cognitive-test alternative |
+| 4.1.2 | Name, Role, Value | Map every Atlas form control + every Standing Order action to its native a11y role / state / value. The substrate-tier API names are not a substitute for control-level role/state — that's render-time. |
+| 4.1.3 | Status Messages | Surface the substrate's `IAuditTrail` audit emission to the platform status-message API (`aria-live`, `UIAccessibilityNotificationAnnouncement`, etc.) on every IssueAsync / RescindAsync outcome. |
+| EN 11.4.1.3 | Status messages (programmatic determination) | Same as 4.1.3 above: substrate emits the authoritative audit record; adapter projects to the platform status-message API. |
+| EN 11.7.4 | User preferences | `StandingOrderScope.User` reserves the per-user preference key prefix; adapter MUST expose the override surface so end-users can adjust their preferences with assistive technology. |
 
 The **WCAG 2.2 new criteria** (2.4.11, 2.5.7, 2.5.8, 3.2.6, 3.3.7, 3.3.8) are explicitly enumerated above so adapter authors don't miss them by checking against an outdated 2.1 baseline. ADR 0065 §"Decision §7" requires the WCAG/a11y subagent council pass to confirm coverage at every UI-bearing Stage 06.
 
