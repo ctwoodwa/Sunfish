@@ -44,7 +44,7 @@ amendments: []
 
 ## Status
 
-Proposed. Substrate-tier UI contract — pre-merge council canonical per ADR 0069 (cohort batting average: 22-of-22 substrate amendments needed council fixes; ADR 0075 in flight extends to 23 if council finds anything; pre-merge council eliminates the post-acceptance amendment cycle). Not auto-mergeable.
+Proposed. Substrate-tier UI contract — pre-merge council canonical per ADR 0069 (cohort batting average: 23-of-23 substrate amendments needed council fixes; pre-merge council eliminates the post-acceptance amendment cycle). Not auto-mergeable.
 
 ---
 
@@ -195,7 +195,7 @@ public sealed record HelmRenderContext(
     NodaTime.Instant Now);
 ```
 
-`HelmWidgetMetadata.WidgetId` follows the kebab-case convention used by ADR 0049 audit-event-type identifiers and ADR 0065's `StandingOrder.Path`. `OrderHint` defaults to `1000` for unattributed widgets to allow Sunfish-canonical widgets (identity-glance = 100, sync-state = 200, active-team = 300) to render leftmost without per-block coordination.
+`HelmWidgetMetadata.WidgetId` follows the kebab-case convention used by ADR 0065's `StandingOrder.Path` for path segments (lowercase, hyphen-separated, e.g., `identity-glance`). This is **distinct** from the PascalCase `AuditEventType` constant naming per ADR 0049 §"Naming convention" — `WidgetId` is path-like (user-facing, URL-safe); `AuditEventType` is type-like (programmatic, code-symbol-safe). `OrderHint` defaults to `1000` for unattributed widgets to allow Sunfish-canonical widgets (identity-glance = 100, sync-state = 200, active-team = 300) to render leftmost without per-block coordination.
 
 #### 1.2 — `IHelmWidgetRegistry` + DI registration
 
@@ -382,7 +382,7 @@ Per W#34 §5.7 and ADR 0065 §7, WCAG/a11y is contract. This ADR's identity surf
 
 | Type | Namespace | Tier | Naming-check verdict |
 |---|---|---|---|
-| `IHelmWidget` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN (fuzzy: "Helm" locked vocabulary — intentional) |
+| `IHelmWidget` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN (fuzzy: "Helm" locked vocabulary — intentional; see `_shared/product/naming.md` §Wayfinder vocabulary registry once §OQ-1 disposition lands) |
 | `IHelmWidgetRegistry` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
 | `HelmWidgetMetadata` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
 | `HelmSlot` (enum) | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
@@ -391,7 +391,7 @@ Per W#34 §5.7 and ADR 0065 §7, WCAG/a11y is contract. This ADR's identity surf
 | `HelmActionInvocationKind` (enum) | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
 | `HelmRenderContext` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
 | `HelmOptions` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
-| `IIdentityAtlasSurface` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN (fuzzy: "Atlas" locked vocabulary — intentional) |
+| `IIdentityAtlasSurface` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN (fuzzy: "Atlas" locked vocabulary — intentional; see `_shared/product/naming.md` §Wayfinder vocabulary registry once §OQ-1 disposition lands) |
 | `IdentityProfileEditViewModel` | `Sunfish.UICore.Wayfinder.Identity` | ui-core | CLEAN |
 | `KeyRotationViewModel` | `Sunfish.UICore.Wayfinder.Identity` | ui-core | CLEAN |
 | `RecoveryContactsViewModel` | `Sunfish.UICore.Wayfinder.Identity` | ui-core | CLEAN |
@@ -408,7 +408,15 @@ Per W#34 §5.7 and ADR 0065 §7, WCAG/a11y is contract. This ADR's identity surf
 
 ## §A0 — Self-audit limitation block
 
-The author of this ADR ran the standard 3-direction self-audit (per ADR 0062-A1.14 cohort discipline; per `feedback_decision_discipline.md`). Cohort batting average: 22-of-22 substrate amendments needed council fixes (extends to 23-of-23 if ADR 0075 council finds anything). Council pre-merge canonical per ADR 0069.
+The author of this ADR ran the standard 3-direction self-audit (per ADR 0062-A1.14 cohort discipline; per `feedback_decision_discipline.md`). Cohort batting average: 23-of-23 substrate amendments needed council fixes (this ADR is the 23rd case per council review 2026-05-04). Council pre-merge canonical per ADR 0069.
+
+**Council dispositions (2026-05-04 council review, auto-accepted per ADR 0069 Decision Discipline Rule 3):**
+
+- **OQ-1 RecoveryContact vs Trustee (council CONFIRMS author choice):** Council confirms the author's proposed split — `Trustee*` for audit/cryptographic vocabulary (matches ADR 0046's existing `AuditEventType.TrusteeSetChanged` surface), `RecoveryContact*` for user-facing UX (plain-language per WCAG 3.1.5 alignment). Synonymy to be documented at `_shared/product/naming.md` once that file is created (see Follow-on F3). (Council NM-1 disposition.)
+- **OQ-2 Flat namespace (council CONFIRMS author choice):** Council confirms `Sunfish.UICore.Wayfinder` flat namespace (not split into `.Helm` + `.IdentityAtlas`). Cohort precedent is `Sunfish.Foundation.Wayfinder` (flat). (Council NM-3 disposition.)
+- **OQ-3 RecoveryContact/Trustee split (council CONFIRMS):** See OQ-1 above. (Council NM-1 disposition.)
+- **OQ-5 / §A0.4 #5 Helm-vs-Cockpit boundary (council CONFIRMS author's §Decision-drivers #7 sketch):** Council confirms the boundary sketch in §"Decision drivers" #7 is sufficient; no separate boundary ADR is needed before ADR 0066 merges. The `revisit_trigger` block already names "W#29 Owner Web Cockpit ADR introduces a competing widget composition contract" as the re-author condition. (Council NM-4 disposition.)
+- **OQ-6 / §A0.4 #6 AuditEventType new constants (council REFUTES — NO new constants needed):** Council confirmed per `packages/foundation-wayfinder/IStandingOrderIssuer.cs:34` that `AuditEventType.StandingOrderIssued` is emitted per issuance regardless of payload; the `Path` field discriminates what changed. No additional `AuditEventType` constants for "ProfileEdited" / "ActiveTeamSwitched" are required or introduced by this ADR. (Council §A0.4 #6 REFUTE disposition.)
 
 ### §A0.1 — Negative-existence (do these symbols NOT exist?)
 
@@ -426,7 +434,7 @@ Verified the following are **introduced by this ADR** (do not exist on `origin/m
 Verified the following exist on `origin/main` (`bf31e04`) as cited:
 
 - `Sunfish.Foundation.Recovery.EncryptedField` — `packages/foundation-recovery/EncryptedField.cs` line 6 (`namespace Sunfish.Foundation.Recovery`). Verified `readonly record struct`.
-- `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` — `packages/foundation-recovery/Crypto/IFieldDecryptor.cs` line 6 (`namespace Sunfish.Foundation.Recovery.Crypto` — note: `.Crypto` sub-namespace, NOT plain `Sunfish.Foundation.Recovery`; the structural-citation correction is preserved in §2.3 / §5).
+- `Sunfish.Foundation.Recovery.Crypto.IFieldDecryptor` — `packages/foundation-recovery/Crypto/IFieldDecryptor.cs:6` (`namespace Sunfish.Foundation.Recovery.Crypto` — note: `.Crypto` sub-namespace, NOT plain `Sunfish.Foundation.Recovery`; the structural-citation correction is preserved in §2.3 / §5).
 - `Sunfish.Foundation.UI.SyncState` — `packages/foundation-ui-syncstate/SyncState.cs` line 1 (`namespace Sunfish.Foundation.UI`). Verified 5-value enum per ADR 0036-A1.
 - `Sunfish.Kernel.Runtime.Teams.TeamId` — `packages/kernel-runtime/Teams/TeamId.cs` line 1 (`namespace Sunfish.Kernel.Runtime.Teams`). Verified `readonly record struct TeamId(Guid Value)`.
 - `Sunfish.Kernel.Runtime.Teams.TeamContext` — `packages/kernel-runtime/Teams/TeamContext.cs` line 3.
@@ -484,6 +492,7 @@ Hand-off contract per ADR 0073 (stage-06 hand-off template). Halt-conditions nam
 - (H1) ADR 0065 must reach `Accepted` status before Phase 1 build starts. ADR 0065 introduces `IStandingOrderIssuer` + `StandingOrder` + `StandingOrderScope` — ALL referenced by this ADR §2. If ADR 0065 is still `Proposed` at hand-off time, COB halts and posts to `cob-question-*.md`.
 - (H2) `Sunfish.Foundation.MissionSpace.MissionEnvelope` must be on `origin/main` (per ADR 0062 Phase 1 build). Verify at hand-off via `grep -rn "namespace Sunfish.Foundation.MissionSpace" packages/foundation-mission-space/`.
 - (H3) Council pre-merge canonical (per ADR 0069) — Phase 1 PR MUST NOT enable auto-merge. COB stages PR with `gh pr ready --draft` or with `--draft` initially; XO triggers council review; mechanical amendments auto-accept; PR is marked ready-for-review only after council verdict.
+- (H8) `IObservable<StandingOrderAppliedEvent>` is not yet defined on `Sunfish.Foundation.Wayfinder` (confirmed by council NM-2 via `grep -rn "IObservable\|StandingOrderApplied" packages/foundation-wayfinder/` = ZERO). Phase 1 of ADR 0066 build halts on §1.3 trigger #2 (Standing Order applied reactive propagation) until ADR 0065-A1 amendment ships the event-stream contract. Until H8 clears, Phase 2 widgets that depend on Standing Order reactive state (`recent-standing-orders`, `quick-toggles` post-issuance refresh) fall back to periodic-refresh + envelope-change triggers only. Resume signal: `grep -rn "StandingOrderAppliedEvent" packages/foundation-wayfinder/` returns ≥1 match after ADR 0065-A1 build lands.
 
 ### Phase 2 — canonical Helm widgets (sunfish-PM)
 
