@@ -18,14 +18,29 @@ import Foundation
 /// scalar value representation, so simple cases (integers, decimal
 /// fractions, ASCII strings) round-trip identically.
 ///
-/// **Cross-language byte parity** is verified by a 10-fixture test suite
-/// (`Tests/SunfishFieldEventsTests/JsonCanonicalCrossLangTests.swift`):
-/// each fixture pairs a JSON input with the byte stream produced by the
-/// .NET implementation; the Swift output must match byte-for-byte.
+/// **Cross-language byte parity** is sanity-checked by a 10-fixture
+/// suite in `Tests/SunfishFieldEventsTests/JsonCanonicalTests.swift`:
+/// each fixture pairs a JSON input with the byte stream the .NET
+/// implementation produces for the equivalent CLR object. The corpus
+/// is hand-derived from the .NET `CanonicalJson` sort + no-whitespace
+/// rules (NOT a programmatic round-trip against the .NET reference);
+/// non-ASCII keys + number edge cases + Date round-trip are deferred to
+/// follow-up fixtures when the .NET cross-check pipeline lands.
 public enum JsonCanonical {
     /// Serialize an `Encodable` value to canonical-JSON UTF-8 bytes.
-    /// Date encoding follows the `.iso8601` strategy (matching the .NET
-    /// `DateTimeOffset.ToString("O")` round-trip format).
+    ///
+    /// FIXME(W#23-P4): the `.iso8601` date encoding strategy emits
+    /// `2026-05-04T12:34:56Z` (second-precision, no fractional) while
+    /// .NET `DateTimeOffset.ToString("O")` emits
+    /// `2026-05-04T12:34:56.7890123+00:00` (7-digit fractional + offset).
+    /// For substrate v1 this is OK because (a) merge-boundary
+    /// verification of envelope canonical bytes hasn't shipped and
+    /// (b) the .NET `SerializeSignable` envelope path is .NET-only
+    /// today. Before P4 ships the sync engine the merge boundary
+    /// verifies, swap in a custom `.formatted(...)` strategy mirroring
+    /// `"O"` (7-digit fractional + `+00:00`), or normalize `Date` →
+    /// `String` upstream of `JsonCanonical.serialize` so byte parity
+    /// holds across replicas.
     public static func serialize<T: Encodable>(_ value: T) throws -> Data {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
