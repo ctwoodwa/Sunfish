@@ -171,6 +171,25 @@ The body of the ADR (everything after the `---` closing delimiter) is unchanged 
 
 Tooling that fails validation MUST emit a clear error citing the ADR and field.
 
+### List syntax (both forms accepted)
+
+Array-valued fields (`concern`, `composes`, `extends`, `supersedes`, `amendments`) accept either:
+
+- **Multi-line list** (preferred for readability when ≥2 items):
+  ```yaml
+  concern:
+    - governance
+    - dev-experience
+  ```
+- **Inline list** (preferred for empty + single-item):
+  ```yaml
+  concern: [governance, dev-experience]
+  composes: []
+  amendments: [A1]
+  ```
+
+The projection tool's hand-rolled YAML parser supports both. Inline lists do NOT support quoted strings with embedded commas (the parser splits on `,` naively); use multi-line syntax if a value contains a comma.
+
 ---
 
 ## Migration strategy (retrofitting 60 existing ADRs)

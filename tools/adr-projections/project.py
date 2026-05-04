@@ -31,7 +31,13 @@ VALID_CONCERN = {"security", "persistence", "ui", "accessibility", "regulatory",
 
 def parse_frontmatter(text):
     """Minimal YAML frontmatter parser for the schema in _FRONTMATTER.md.
-    Supports: key: value (str/int/null/bool), key: [], key:\\n  - item lists."""
+
+    Supports:
+      - key: value (str/int/null/bool)
+      - key: [] (empty list)
+      - key: [a, b, c] (inline list, str/int items only — no quoted commas)
+      - key:\\n  - item (multi-line list)
+    """
     if not text.startswith("---\n"):
         return None, text
     end = text.find("\n---\n", 4)
@@ -55,8 +61,9 @@ def parse_frontmatter(text):
         if val == "":
             meta[key] = []
             cur_key = key
-        elif val == "[]":
-            meta[key] = []
+        elif val.startswith("[") and val.endswith("]"):
+            inner = val[1:-1].strip()
+            meta[key] = [_coerce(item.strip()) for item in inner.split(",")] if inner else []
             cur_key = None
         else:
             meta[key] = _coerce(val)
