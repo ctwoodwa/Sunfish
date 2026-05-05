@@ -643,3 +643,8 @@
 | 19:00 | Discovered W#36 ledger stale — says design-in-flight; ADR 0065 Proposed + W#42 substrate built | `W36-*.md` | Flipped W#36 to `built`; ADR 0065 Proposed pending CO flip |
 | 19:05 | Updated W#49 workstream file — `ready-to-build` → `building`; documented R1–R4 gaps | `W49-ood-watch-rotation.md` | P1+P2 shipped; R1–R4 known gaps; P3 pending |
 | 19:10 | Authored W#49 P2-amendment addendum — R1–R4 fixes required before P3 | `ood-watch-rotation-stage06-p2-amendment-addendum.md` | Specifies: TOCTOU removal; ILogger; OodHandoverKind enum; IOodWatchSweepRepository separation |
+| 2026-05-06 | Session | Action | Files | Note |
+|------|--------|---------|---------|------|
+| loop | Checked ADR acceptance flips — none; all 0065/0068/0082/0083/0084/0085 still Proposed | — | Checked git log + ADR status: fields |
+| loop | Checked COB PRs — only PR #616 open (W#49 P3; auto-merge disabled; held) | — | No new COB PRs |
+| loop | Authored W#23 P5 pairing flow hand-off with council review (NEEDS-AMENDMENT → resolved) | `icm/_state/handoffs/property-ios-field-app-stage06-p5-pairing-handoff.md` | 2 BLOCKING fixed (HMAC devId sentinel; CAS-remove race); 6 NM applied |
