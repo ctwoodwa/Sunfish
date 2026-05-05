@@ -599,3 +599,17 @@
 | 20:50 | Committed + pushed ADR 0084; created PR #597 | docs/adrs/0084-tenant-selection-and-sentinel-governance.md | NO auto-merge (CO required) |
 | 20:52 | Updated W#1 ledger row | active-workstreams.md | PR #598 auto-merge |
 | 20:53 | Archived XO idle beacons; wrote new beacon | icm/_state/research-inbox/ | session state captured |
+
+## Session: 2026-05-05 (XO /loop — W#37 hand-off + ADR 0085 W#1 WS-B)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| 22:00 | Verified CO merged all 5 pending ADRs (0082/0083/0068/0084 + W#53 hand-off) | — | All W#35 cohort ADRs accepted |
+| 22:05 | Authored W#37 Stage 06 hand-off (Tenant Security Policy) | `icm/_state/handoffs/tenant-security-policy-stage06-handoff.md` | 2 phases / ~14–20h; Phase 1 gate = W#46 P1 (ShipRole); Phase 2 gate = ADR 0066-A1 + W#53 P1a; §GC.1 note required on all PRs |
+| 22:10 | Authored ADR 0085 (W#1 WS-B — query migration) | `docs/adrs/0085-tenant-selection-query-migration.md` | Migrates AuditQuery.Tenant + EntityQuery.Tenant + ExportRequest.Tenant (renamed from TenantId) from TenantId? → TenantSelection?; adds Matches(TenantId) helper to foundation-multitenancy |
+| 22:15 | Ran 3-perspective pre-merge council on ADR 0085 | — | 6 BLOCKING returned (InMemoryEntityStore §3.4 missing; Matches _ => false footgun; DataImport deferral; nullable TenantId? caveat; ExportRequest.TenantId rename; ForMultiple empty-set) |
+| 22:20 | Applied 6 BLOCKING council amendments to ADR 0085 | `docs/adrs/0085-tenant-selection-query-migration.md` | §3.4 added; _ => throw; §1.3 rename applied; ForMultiple empty-set guard; DataImport deferred note; §4 classification corrected |
+| 22:25 | Committed + pushed; created PR #606 with auto-merge | — | ADR 0085 + W#37 hand-off; pending CI |
+| 22:30 | Flipped W#37 per-workstream file to ready-to-build | `icm/_state/workstreams/W37-*.md` | Phase 1 gate documented |
+| 22:30 | Updated W#1 per-workstream file | `icm/_state/workstreams/W01-*.md` | ADR 0084 Accepted noted; ADR 0085 Proposed noted |
+| 22:35 | Archived XO idle beacon; wrote new beacon | `icm/_state/research-inbox/` | Next: ADR 0066-A1 once W#53 P1a merges; or W#1 WS-B hand-off once ADR 0085 Accepted |
