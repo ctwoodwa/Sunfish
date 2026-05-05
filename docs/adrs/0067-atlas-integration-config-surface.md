@@ -1,7 +1,7 @@
 ---
 id: 67
 title: Atlas Integration-Config UI Surface
-status: Proposed
+status: Accepted
 date: 2026-05-04
 tier: ui-core
 concern:
@@ -69,7 +69,7 @@ amendments:
 ---
 # ADR 0067 — Atlas Integration-Config UI Surface
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-04
 **Authors:** XO research session
 **Pipeline variant:** `sunfish-feature-change`
@@ -80,7 +80,11 @@ amendments:
 
 ## Status
 
-Proposed. Sibling to ADR 0066 (Helm + Identity Atlas Surface). 0066 defines the *generic* Atlas-issuance contract (`IAtlasProvider<T>`, `IIdentityAtlasSurface`, `IHelmWidget`); ADR 0067 specializes that contract for the **integration-config layer** — the Wayfinder configuration tier covering payment gateways, messaging transports, mesh-VPN control planes, and CAPTCHA verifiers. Pre-merge council canonical (per cohort lesson — 22-of-22 substrate amendments needed council fixes; running council before merge eliminates the post-acceptance amendment cycle).
+Accepted 2026-05-05 (PR #539). Sibling to ADR 0066 (Helm + Identity Atlas Surface). 0066 defines
+the *generic* Atlas-issuance contract (`IAtlasProvider<T>`, `IIdentityAtlasSurface`, `IHelmWidget`);
+ADR 0067 specializes that contract for the **integration-config layer** — the Wayfinder configuration
+tier covering payment gateways, messaging transports, mesh-VPN control planes, and CAPTCHA verifiers.
+Stage 06 hand-off at `icm/_state/handoffs/atlas-integration-config-stage06-handoff.md`.
 
 ---
 
