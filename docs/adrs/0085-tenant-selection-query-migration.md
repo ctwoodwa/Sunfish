@@ -44,15 +44,17 @@ amendments: []
 | `Sunfish.Foundation.Assets.Common.TenantId` | Existing (ADR 0084 — sentinel + `TenantId.System`) | yes |
 | `Sunfish.Foundation.MultiTenancy.TenantSelection` | **Introduced by ADR 0084** — `foundation-multitenancy` | yes per ADR 0084 Decision §2 |
 | `TenantSelection.ForSingle` / `.ForMultiple` / `.AllAccessible` | **Introduced by ADR 0084** | yes per ADR 0084 Decision §2 |
-| `packages/foundation/Assets/Audit/InMemoryAuditLog.cs` | Existing consumer | yes — `query.Tenant is not { } tenant` pattern |
-| `packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs` | Existing consumer | yes — `query.Tenant is { } tenant` pattern |
-| `packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs` | Existing consumer | yes — `query.Tenant is { } tenant` pattern |
+| `packages/foundation/Assets/Audit/InMemoryAuditLog.cs` | Existing consumer | yes — `query.Tenant is not { } tenant` pattern (line 81) |
+| `packages/foundation/Assets/Entities/InMemoryEntityStore.cs` | Existing consumer | yes — `query.Tenant is { } tenant && ... tenant.Value` pattern (line 385) — **must be updated in §3.4** |
+| `packages/foundation-assets-postgres/Audit/PostgresAuditLog.cs` | Existing consumer | yes — `query.Tenant is { } tenant` pattern (line 110) |
+| `packages/foundation-assets-postgres/Entities/PostgresEntityStore.cs` | Existing consumer | yes — `query.Tenant is { } tenant` pattern (line 359) |
+| `Sunfish.Kernel.Audit.AuditQuery` | **Explicitly NOT migrated** — `packages/kernel-audit/AuditQuery.cs` — required, non-nullable `TenantId TenantId` per ADR 0049 v0 | yes — confirmed non-nullable; excluded by design |
 
 ---
 
 ## Status
 
-Proposed. Pre-merge council pending.
+Proposed. Pre-merge council complete (adversarial + API-design + migration-safety; amendments applied 2026-05-05). Pending CO acceptance.
 
 ---
 
@@ -70,7 +72,7 @@ Three query-type properties still hold `TenantId?` for their tenant filter:
 |---|---|---|---|
 | `AuditQuery` | `Tenant` | `foundation` | `TenantId? = null` |
 | `EntityQuery` | `Tenant` | `foundation` | `TenantId? = null` |
-| `ExportRequest` | `TenantId` | `foundation-localfirst` | `TenantId? = null` |
+| `ExportRequest` | `Tenant` (renamed from `TenantId` — see §1.3) | `foundation-localfirst` | `TenantId? = null` |
 
 These sites limit multi-tenant query expressiveness: callers cannot ask "give me records for
 these three tenants" or "give me all accessible records" without issuing separate queries. The
@@ -127,9 +129,9 @@ for in-memory implementations. Update Postgres implementations to use `IN` claus
 Remove `?`; use `TenantSelection.All` where callers formerly passed `null`.
 
 - **Pro:** Explicit type at all sites; no null ambiguity.
-- **Con:** All call sites that constructed `new AuditQuery()` or relied on default
-  parameters break unless they update their constructors. Higher blast radius for minimal
-  gain (the existing `null` = AllAccessible convention is already well-understood).
+- **Con (language-level blocker):** `TenantSelection.All` is `static readonly`, not `const`
+  — it cannot appear as an optional-parameter default in C#. `TenantSelection Tenant = TenantSelection.All`
+  is a compile error. This is the hard rejection; the blast-radius argument is secondary.
 - **Rejected.**
 
 ---
@@ -190,7 +192,7 @@ public sealed record EntityQuery(
     int? Limit = null);
 ```
 
-**1.3 `ExportRequest.TenantId` — `packages/foundation-localfirst/DataExport.cs`**
+**1.3 `ExportRequest.Tenant` — `packages/foundation-localfirst/DataExport.cs`**
 
 Before:
 ```csharp
@@ -213,14 +215,22 @@ public sealed record ExportRequest
     /// tenant, <see cref="TenantSelection.ForMultiple"/> for a set, or null /
     /// <see cref="TenantSelection.AllAccessible"/> for a system-scope export.
     /// </summary>
-    public TenantSelection? TenantId { get; init; }
+    public TenantSelection? Tenant { get; init; }
     ...
 }
 ```
 
-> **Note.** The property name `TenantId` is retained despite the type change to avoid a
-> second rename-churn on call sites that use the named init syntax. A future api-change ADR
-> may rename it to `Tenant` for consistency with `AuditQuery`/`EntityQuery`.
+> **Rename rationale.** Renaming `TenantId → Tenant` is applied in this ADR (not deferred)
+> because (a) `ExportRequest` has zero production callers at time of migration, (b) the
+> property name `TenantId` would become a type-lie after migration (type is `TenantSelection?`,
+> not a `TenantId`), and (c) consistency with `AuditQuery.Tenant` / `EntityQuery.Tenant`
+> eliminates the source of future reader confusion.
+>
+> **`DataImport.TargetTenantId` is explicitly deferred.** `packages/foundation-localfirst/DataImport.cs`
+> has `TenantId? TargetTenantId { get; init; }` — the symmetric import counterpart.
+> It is deferred because import targets exactly one tenant by design (importing to multiple
+> tenants simultaneously is not a supported use case), so `ForMultiple` semantics are
+> inappropriate. It retains `TenantId?` until a future ADR addresses the import contract.
 
 ---
 
@@ -233,7 +243,8 @@ Add to `packages/foundation-multitenancy/TenantSelection.cs`:
 /// Returns true if this selection includes <paramref name="id"/>.
 /// <list type="bullet">
 /// <item><see cref="ForSingle"/> — matches iff <c>Tenant == id</c>.</item>
-/// <item><see cref="ForMultiple"/> — matches iff <c>Tenants.Contains(id)</c>.</item>
+/// <item><see cref="ForMultiple"/> — matches iff <c>Tenants.Contains(id)</c>. An empty
+///     <see cref="ForMultiple"/> matches no tenant (empty set returns false).</item>
 /// <item><see cref="AllAccessible"/> — always true.</item>
 /// </list>
 /// </summary>
@@ -242,9 +253,32 @@ public bool Matches(TenantId id) => this switch
     ForSingle s    => s.Tenant == id,
     ForMultiple m  => m.Tenants.Contains(id),
     AllAccessible  => true,
-    _              => false,
+    _              => throw new InvalidOperationException(
+                         $"Unknown TenantSelection variant: {GetType().Name}. " +
+                         "This indicates a new variant was added without updating Matches."),
 };
 ```
+
+> **`ForMultiple` empty-set semantics.** An empty `ForMultiple` (zero tenants) returns
+> `false` for every tenant — meaning "no match." This is consistent with set-membership
+> semantics (membership in the empty set is always false). Note that `ForMultiple`'s
+> constructor in ADR 0084 §2 validates non-empty (`if (arr.IsEmpty) throw`), so an empty
+> `ForMultiple` cannot be constructed via the public constructor; only `ImmutableArray.Empty`
+> direct construction could produce one. The `false` result is a safe fallback. For Postgres
+> implementations with an empty `tenants` array, short-circuit to "no rows" rather than
+> emitting `WHERE ... IN ()` (SQL syntax error in some dialects):
+>
+> ```csharp
+> else if (query.Tenant is TenantSelection.ForMultiple { Tenants: var tenants })
+> {
+>     if (tenants.IsEmpty)
+>     {
+>         return AsyncEnumerable.Empty<AuditRecord>(); // or equivalent for IQueryable: q = q.Where(_ => false)
+>     }
+>     var values = tenants.Select(t => t.Value).ToArray();
+>     q = q.Where(a => values.Contains(a.Tenant));
+> }
+> ```
 
 This is a pure additive extension to `foundation-multitenancy` (no new package, no new
 dependency). It ships as part of the same PR that migrates `AuditQuery` and `EntityQuery`
@@ -291,11 +325,29 @@ else if (query.Tenant is TenantSelection.ForMultiple { Tenants: var tenants })
 Same pattern as §3.2 above — replace `query.Tenant is { } tenant ... tenant.Value` with
 ForSingle/ForMultiple/fallthrough pattern.
 
-**3.4 Existing test call sites**
+**3.4 `foundation/Assets/Entities/InMemoryEntityStore.cs` (§3.4)**
+
+Before (line 385):
+```csharp
+if (query.Tenant is { } tenant && !string.Equals(record.Tenant.Value, tenant.Value, StringComparison.Ordinal))
+    continue;
+```
+
+After:
+```csharp
+if (query.Tenant is not null && !query.Tenant.Matches(record.Tenant))
+    continue;
+```
+
+**3.5 Existing test call sites**
 
 Tests constructing `new EntityQuery(Tenant: new TenantId("t1"))` continue to compile
 without change because the implicit cast `TenantId → TenantSelection` is in scope. No
 test-file edits required unless tests assert on the type of the Tenant parameter.
+
+> **`TenantId.Default` obsolete warning.** Any test passing `Tenant: TenantId.Default` will
+> emit a warning after ADR 0084 marks it `[Obsolete]`. These should be updated to
+> `new TenantId("test")` or `TenantId.System` as appropriate in the same PR.
 
 ---
 
@@ -303,27 +355,34 @@ test-file edits required unless tests assert on the type of the Tenant parameter
 
 | Surface | Classification | Reason |
 |---|---|---|
-| `AuditQuery.Tenant` type `TenantId?` → `TenantSelection?` | **Source-compatible** at most call sites (implicit cast) | Call sites passing a `TenantId` value continue to compile |
-| `EntityQuery.Tenant` type | **Source-compatible** | Same |
-| `ExportRequest.TenantId` type | **Source-compatible** | Same |
-| `InMemoryAuditLog` / `PostgresAuditLog` / `PostgresEntityStore` | Internal implementation — not public ABI | No binary impact |
+| `AuditQuery.Tenant` type `TenantId?` → `TenantSelection?` | **Mostly source-compatible** — non-null `TenantId` call sites unchanged; see edge cases below | Call sites passing a `TenantId` value compile via implicit cast |
+| `EntityQuery.Tenant` type | **Mostly source-compatible** | Same |
+| `ExportRequest.TenantId` → `ExportRequest.Tenant` (type + rename) | **Source-compatible** — zero production callers at migration time | Both type and name change in single ADR |
+| `InMemoryAuditLog` / `PostgresAuditLog` / `PostgresEntityStore` / `InMemoryEntityStore` | Internal implementation — not public ABI | No binary impact |
 | `TenantSelection.Matches(TenantId)` | **Additive** | New method; no existing caller breaks |
 | **Pre-v1 binary compat** | N/A | Repository has not shipped a NuGet binary; no binary compat halt |
 
 **Source-incompatible edge cases:**
 
-1. **Code that pattern-matches on `AuditQuery.Tenant` as `TenantId?`** — e.g.:
+1. **Code that pattern-matches on `.Tenant` as `TenantId?`** — e.g.:
    ```csharp
    if (q.Tenant is { } id && id.Value == "abc") // ← id is now TenantSelection, not TenantId
    ```
    These sites must switch to `q.Tenant is TenantSelection.ForSingle(var id) && id.Value == "abc"`.
-   Scan: `grep -rn "\.Tenant is { }" packages/ apps/` and `grep -rn "\.Tenant\.Value" packages/ apps/`.
+   Scan: `grep -rn "\.Tenant is { }\|query\.Tenant\." packages/ apps/ --include="*.cs"` and
+   `grep -rn "\.Tenant\.Value\b" packages/ apps/ --include="*.cs"`.
 
-2. **Serialized `AuditQuery` / `EntityQuery` / `ExportRequest` payloads** — if any call site
-   serializes these records to JSON/Protobuf/MessagePack and deserializes them on a different
-   assembly version, the discriminated-union shape breaks wire compatibility. In the current
-   codebase these are in-process POCO types, not serialized across a wire boundary. COB
-   should confirm no serialization usage before merging.
+2. **Call sites passing `TenantId?` (nullable)** — the implicit cast `TenantId → TenantSelection`
+   is on `TenantId`, not on `TenantId?` (`Nullable<TenantId>`). C# does not auto-lift user-defined
+   conversions through `Nullable<T>` when the target type is a reference type. Any call site with
+   a `TenantId?` variable must be updated to `maybeId is { } id ? (TenantSelection)id : null`
+   or `maybeId.HasValue ? TenantSelection.Of(maybeId.Value) : null`. Scan:
+   `grep -rn "Tenant:\s*maybe\|Tenant:\s*opt\|Tenant:\s*[a-z]*TenantId\?" packages/ apps/ --include="*.cs"`.
+
+3. **Serialized `AuditQuery` / `EntityQuery` / `ExportRequest` payloads** — in the current
+   codebase these are in-process POCO types, not serialized across a wire boundary (verified:
+   no `[JsonConverter]` / `MessagePack` / `JsonSerialize` attributes on any of the three).
+   COB should confirm before merging: `grep -rn "JsonSerializ\|MessagePack\|Newtonsoft" packages/foundation/Assets/ packages/foundation-localfirst/ --include="*.cs"`.
 
 ---
 
@@ -342,10 +401,19 @@ test-file edits required unless tests assert on the type of the Tenant parameter
 ### Negative
 
 - Implementations that relied on `.Value` on the Tenant property must update their pattern
-  match. Three implementations affected (InMemory, PostgresAudit, PostgresEntity).
-- `ForMultiple` in PostgresAuditLog / PostgresEntityStore generates an `IN (...)` clause;
-  very large tenant sets will generate large SQL; callers of `ForMultiple` should cap the
-  tenant set in application logic.
+  match. **Four** implementations affected: `InMemoryAuditLog`, `InMemoryEntityStore`,
+  `PostgresAuditLog`, `PostgresEntityStore`.
+- `ForMultiple` in PostgresAuditLog / PostgresEntityStore generates an `IN (...)`
+  clause (Npgsql translates `string[].Contains` to `= ANY(array)`). Very large tenant
+  sets generate long queries; cap `ForMultiple.Tenants.Length` at ≤ 1000 in application
+  logic; batch or use `AllAccessible` + post-filter for larger sets.
+- `null` and `AllAccessible` are semantically equivalent ("no tenant filter") but not
+  reference-equal. Callers that compare two `AuditQuery` instances may see unexpected
+  inequality when one uses `null` and the other uses `AllAccessible`. Use `Matches` for
+  filter-site comparisons rather than equality on the selection object.
+- `ExportRequest.TenantId` is renamed to `Tenant`; any call site using named-init syntax
+  `new ExportRequest { TenantId = ... }` must be updated (verified: zero production call
+  sites at migration time).
 
 ---
 
@@ -353,8 +421,41 @@ test-file edits required unless tests assert on the type of the Tenant parameter
 
 - A call site surfaces that serializes `AuditQuery` / `EntityQuery` / `ExportRequest` over
   a wire boundary. Amendment needed to specify versioned deserialization path.
-- `ExportRequest.TenantId` rename to `Tenant` is desired for consistency. Defer to a
-  separate api-change amendment.
+- `DataImport.TargetTenantId` (in `foundation-localfirst`) is **not** migrated: import
+  targets exactly one tenant; `ForMultiple` semantics are inappropriate. If a multi-tenant
+  import use case emerges, a follow-up api-change ADR can address it.
+- When `IStandingOrderEventStream.Subscribe` is wired in host registrations (ADR 0065-A1),
+  any cache keyed on `TenantSelection` equality may see `null` and `AllAccessible` as
+  distinct keys. Normalize to `AllAccessible` at cache-population time.
+
+---
+
+## Open questions (resolved)
+
+| ID | Question | Disposition |
+|---|---|---|
+| OQ-1 | Should `DataImport.TargetTenantId` be migrated in this ADR? | Resolved: NO — import targets exactly one tenant; `ForMultiple` semantics inappropriate. Deferred; see §1.3 note. |
+| OQ-2 | Should `ExportRequest.TenantId` be renamed in this ADR? | Resolved: YES — zero production callers; type-lie avoidance; consistency with `AuditQuery`/`EntityQuery`. |
+| OQ-3 | `_ => false` vs `_ => throw` in `Matches` switch? | Resolved: `_ => throw new InvalidOperationException(...)` — silent false on an unknown variant is the worst default for a tenant filter predicate. |
+| OQ-4 | Empty `ForMultiple` — semantics? | Resolved: `false` (set-membership; empty set has no members). Constructor validates non-empty; empty path is a defensive case only. |
+
+---
+
+## Council disposition
+
+| Finding | Severity | Resolution |
+|---|---|---|
+| B-1 — `InMemoryEntityStore.cs:385` missing from §3 + §A0 | Blocking | §3.4 added; §A0 row added |
+| B-2 — `_ => false` arm silently mis-classifies future variants | Blocking | Changed to `_ => throw new InvalidOperationException(...)` |
+| B-3 — `DataImport.TargetTenantId` deferral undocumented | Blocking | §1.3 deferral note added + OQ-1 resolved |
+| B-3 (adv) — Nullable `TenantId?` call sites not covered by implicit cast | Blocking | §4 reclassified as "mostly source-compatible"; edge-case 2 added |
+| B-3 (api) — `ExportRequest.TenantId` rename deferred without justification | Blocking | Rename applied in §1.3; OQ-2 resolved |
+| B-5 — `ForMultiple` empty-set semantics undefined | Blocking | §2 note added + OQ-4 resolved; Postgres empty-set guard shown in §2 |
+| NB-2 (api) — Option C rejection rationale weak | NB | Option C re-stated with C# constant limitation |
+| NB-4 (adv) — `kernel-audit/AuditQuery` absent from §A0 | NB | §A0 NOT-migrated row added |
+| NB-5 (adv) — `kernel/TypeForwards.cs` re-export note | NB | Accepted; no §A0 change needed (type-forward is opaque to shape) |
+| NB-6 (adv) — `TenantId.Default` obsolete warning in tests | NB | §3.5 note added |
+| NB-7 (mig) — Pre-build scan commands incomplete | NB | §4 edge-case 1 + implementation checklist scan commands updated |
 
 ---
 
@@ -378,20 +479,31 @@ grep "Status: Accepted" docs/adrs/0084-tenant-selection-and-sentinel-governance.
 # Confirm TenantSelection is present in foundation-multitenancy
 find packages/foundation-multitenancy -name "TenantSelection.cs" | head -1
 
-# Scan for edge-case call sites (§4)
-grep -rn "\.Tenant is { }" packages/ apps/ --include="*.cs"
-grep -rn "\.Tenant\.Value" packages/ apps/ --include="*.cs"
+# Scan for ALL edge-case call sites (§4 edge cases 1–2)
+grep -rn "\.Tenant is { }\|query\.Tenant\." packages/ apps/ --include="*.cs"
+grep -rn "\.Tenant\.Value\b" packages/ apps/ --include="*.cs"
 grep -rn "\.TenantId\.Value" packages/ apps/ --include="*.cs" | grep -v "kernel-audit"
+
+# Confirm no serialization of the three query types
+grep -rn "JsonSerializ\|MessagePack\|Newtonsoft" \
+  packages/foundation/Assets/ packages/foundation-localfirst/ --include="*.cs"
+
+# Confirm ExportRequest has no named-init call sites for TenantId
+grep -rn "ExportRequest" packages/ apps/ --include="*.cs" | grep "TenantId\s*="
 ```
 
 **Phase 1 (single PR):**
 - [ ] Add `TenantSelection.Matches(TenantId)` to `foundation-multitenancy/TenantSelection.cs`
-- [ ] Migrate `AuditQuery.Tenant` → `TenantSelection?`
-- [ ] Migrate `EntityQuery.Tenant` → `TenantSelection?`
-- [ ] Migrate `ExportRequest.TenantId` → `TenantSelection?`
-- [ ] Update `InMemoryAuditLog.cs` to `query.Tenant.Matches(r.Tenant)` pattern
-- [ ] Update `PostgresAuditLog.cs` to ForSingle/ForMultiple pattern
-- [ ] Update `PostgresEntityStore.cs` to ForSingle/ForMultiple pattern
+  (with `_ => throw new InvalidOperationException(...)`)
+- [ ] Migrate `AuditQuery.Tenant` → `TenantSelection?` (§1.1)
+- [ ] Migrate `EntityQuery.Tenant` → `TenantSelection?` (§1.2)
+- [ ] Rename + migrate `ExportRequest.TenantId → Tenant : TenantSelection?` (§1.3)
+- [ ] Update `InMemoryAuditLog.cs` to `query.Tenant is null || query.Tenant.Matches(r.Tenant)` (§3.1)
+- [ ] Update `InMemoryEntityStore.cs` to `query.Tenant is not null && !query.Tenant.Matches(record.Tenant)` (§3.4)
+- [ ] Update `PostgresAuditLog.cs` to ForSingle/ForMultiple/empty-set-guard pattern (§3.2)
+- [ ] Update `PostgresEntityStore.cs` to ForSingle/ForMultiple/empty-set-guard pattern (§3.3)
+- [ ] Any tests with `TenantId.Default` updated to `new TenantId("test")` (§3.5)
 - [ ] Existing tests green (implicit cast covers `new TenantId("x")` call sites)
-- [ ] New tests: `EntityQuery_ForMultiple_FiltersToSet`, `AuditQuery_AllAccessible_NoFilter`
+- [ ] New tests: `EntityQuery_ForMultiple_FiltersToSet`, `AuditQuery_AllAccessible_NoFilter`,
+  `InMemoryEntityStore_ForMultiple_FiltersToSet`, `TenantSelection_Matches_ForMultiple_Empty_ReturnsFalse`
 - [ ] Pre-merge council complete; no Blocking findings
