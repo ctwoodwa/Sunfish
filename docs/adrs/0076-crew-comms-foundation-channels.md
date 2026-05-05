@@ -38,6 +38,13 @@ amendments:
       ReceiveTextAsync single-consumer contract; CloseAsync/DisposeAsync semantics; RFC 4122 UUID
       encoding mandate; IDuplexStream threading contract documented; stale P-256 text removed;
       NSec.Cryptography confirmed as sole new dependency; confidence HIGH.
+  - date: 2026-05-05
+    summary: >
+      A1 wire-encoding ratification: CONFIRM transcript-hash uses reduced canonical form
+      (ephemA||idA||ephemB||idB||uint32BE(len)||tenantBytes||negotiatedCap) instead of full frame
+      bytes; TenantId encoding changed from uuid-16 to uint32BE-length-prefixed UTF-8 bytes in HELLO
+      and HEARTBEAT signables and payloads; PeerId in HEARTBEAT changed from uuid-16 to raw 32-byte
+      Ed25519 identity public key. Unblocks W#45 P2 COB RETURN-FOR-REWORK.
 ---
 
 # ADR 0076 — Crew Comms: `foundation-channels` Contracts and Native Implementation
@@ -539,3 +546,201 @@ No existing packages are modified. Two new packages added:
 - [x] **Cold Start Test.** Implementation checklist has 17 discrete Phase 1 steps; each is independently verifiable. IDuplexStream threading contract and CONFIRM hash logic are explicit decision gates.
 - [x] **Sources cited.** RFCs cited for X25519, HKDF, ChaCha20-Poly1305. Concentus repo + Opus codec spec cited. ADR 0061 §"Audit emission" cited for relay audit event. RFC 4122 cited for UUID encoding. Ed25519 signing per ADR 0046 key management substrate.
 - [x] **Council review.** 4-perspective adversarial council dispatched 2026-05-04 (Outside Observer, Pessimistic Risk Assessor, Skeptical Implementer, Security/Crypto). All 18 Required findings applied in this ADR version. 0 Required findings unaddressed.
+
+---
+
+## Amendment A1 — Wire-encoding ratification: transcript-hash canonical form, TenantId encoding, PeerId encoding
+
+**Amendment date:** 2026-05-05
+**Authors:** XO research session
+**Workstream:** W#45 P2 (unblocking COB question `cob-question-2026-05-04T21-22Z-w45-p2-adr-0076-a1.md`)
+**Pipeline variant:** `sunfish-api-change` (mechanical wire-encoding clarification; no new types introduced)
+
+---
+
+### A1.1 Context
+
+W#45 Phase 2 (`blocks-crew-comms` + `EncryptionHandshake`) was built locally. The pre-merge
+council returned **RETURN-FOR-REWORK** on three wire-encoding claims in the base ADR that
+the implementation correctly diverged from. This amendment ratifies the implementation's
+choices, which are superior to the base ADR's original text.
+
+The three items requiring ratification:
+
+1. **Transcript-hash canonical form** — the base ADR specifies "SHA-256 of all HELLO + INVITE + ACCEPT frame bytes." The implementation computes a reduced form over the cryptographically significant fields only.
+2. **TenantId encoding in signables** — the base ADR claims `tenantId: uuid` (16 bytes RFC 4122). `TenantId(string Value)` is string-backed with no UUID semantics; UUID encoding is not implementable without a breaking multi-tenant type change.
+3. **PeerId encoding in HEARTBEAT** — the base ADR claims `peerId: uuid`. `PeerId.From(PrincipalId)` is the base64url encoding of the raw 32-byte Ed25519 pubkey; the implementation signs over the raw 32 bytes.
+
+---
+
+### A1.2 Decision drivers
+
+1. **Robustness over full-frame-bytes hashing.** Full MessagePack-serialized frame bytes are sensitive to library-level key-ordering, codec version, and frame-delimiter choices that may evolve across Sunfish versions. A reduced canonical form over the fixed-size cryptographic fields is stable across serialization changes.
+2. **`TenantId` is string-backed.** `Sunfish.Foundation.Assets.Common.TenantId(string Value)` has `string Value` as its only field (verified on `origin/main`). Encoding as UUID-16 is structurally impossible without introducing a parallel UUID-backed `TenantId` variant — a breaking change touching every multi-tenant package. UTF-8 bytes with a length prefix is the correct representation for a variable-length string field in a binary signing context.
+3. **`PeerId` is the base64url form of a 32-byte raw pubkey.** `PeerId.From(PrincipalId)` is defined as `principal.ToBase64Url()` (verified in `packages/federation-common/PeerId.cs`). Signing over the raw 32 bytes directly (the underlying `PrincipalId` bytes) is simpler, avoids double-encoding, and is consistent with HELLO's `identityPublicKey: bytes[32]` which is already the raw key.
+
+---
+
+### A1.3 Decisions
+
+#### A1 — Transcript-hash canonical form (CONFIRM frame)
+
+**Replaces** base ADR §CONFIRM table row and §Handshake step 9.
+
+The CONFIRM `{ transcriptHash: bytes[32] }` MUST be computed as:
+
+```
+transcriptHash = SHA-256(
+    ephemA[32]                                     // HELLO_A.ephemeralPublicKey
+    || idA[32]                                     // HELLO_A.identityPublicKey
+    || ephemB[32]                                  // HELLO_B.ephemeralPublicKey
+    || idB[32]                                     // HELLO_B.identityPublicKey
+    || uint32BE(len(tenantBytes)) || tenantBytes   // TenantId.Value as length-prefixed UTF-8
+    || negotiatedCap[1]                            // ACCEPT.capability (uint8)
+)
+```
+
+Where:
+- `ephemA` / `idA` = the initiator's ephemeral X25519 public key + Ed25519 identity public key from its HELLO frame.
+- `ephemB` / `idB` = the responder's ephemeral X25519 public key + Ed25519 identity public key from its HELLO frame.
+- `tenantBytes` = `System.Text.Encoding.UTF8.GetBytes(TenantId.Value)`.
+- `negotiatedCap` = the single `capability: uint8` byte from the ACCEPT frame.
+
+**Rationale for NOT using full frame bytes:** MessagePack key ordering is serializer-dependent (dictionary vs struct codec); the `presence: PresenceHeartbeat` field in HELLO is variable-length and carries TTL/timestamp state that is irrelevant to session establishment integrity; INVITE has only `capabilities: uint8` which is subsumed by `negotiatedCap`. The reduced form includes every field that affects session security (shared DH material and tenant binding) and capability integrity (negotiated cap). Mismatch still detects all downgrade attacks.
+
+**Total input size:** 32 + 32 + 32 + 32 + 4 + len(tenantBytes) + 1 = 133 + len(tenantBytes) bytes (≤ 200 bytes for any `TenantId.Value` ≤ 63 UTF-8 bytes, which covers all real tenant identifiers).
+
+---
+
+#### A2 — TenantId encoding in HELLO and HEARTBEAT signables
+
+**Replaces** base ADR wire protocol table rows for HELLO and HEARTBEAT, and §Handshake steps 2 and security note for HEARTBEAT.
+
+`tenantId` in ALL binary signables (HELLO signature input, HEARTBEAT signature input, and CONFIRM transcript hash input per A1) MUST be encoded as:
+
+```
+uint32BE(len(tenantBytes)) || tenantBytes
+```
+
+Where `tenantBytes = System.Text.Encoding.UTF8.GetBytes(TenantId.Value)`.
+
+The `tenantId` field in the **MessagePack frame payload** itself is also updated from `uuid` to `bytes`:
+
+| Frame | Field | Old claim | Ratified encoding |
+|---|---|---|---|
+| HELLO payload | `tenantId` | `uuid` (16-byte RFC 4122) | `bytes` — `uint32BE(len) \|\| UTF-8(TenantId.Value)` |
+| HELLO signable | `tenantId` | raw 16-byte UUID | `uint32BE(len(tenantBytes)) \|\| tenantBytes` |
+| HEARTBEAT payload | `tenantId` | `uuid` (16-byte RFC 4122) | `bytes` — `uint32BE(len) \|\| UTF-8(TenantId.Value)` |
+| HEARTBEAT signable | `tenantId` | raw 16-byte UUID | `uint32BE(len(tenantBytes)) \|\| tenantBytes` |
+
+**Implementation note:** The length prefix eliminates ambiguity in the HEARTBEAT signable where `tenantId` is flanked by `peerId[32]` (fixed) and `caps[1] || timestamp[8]` (fixed). Without the prefix, the input boundaries would be inferred by position-from-tail, which is fragile.
+
+---
+
+#### A3 — PeerId encoding in HEARTBEAT signable and payload
+
+**Replaces** base ADR wire protocol table row for HEARTBEAT.
+
+`peerId` in the HEARTBEAT payload and signable MUST be the **raw 32-byte Ed25519 identity public key** (the underlying `PrincipalId` bytes), NOT a UUID representation.
+
+| Frame | Field | Old claim | Ratified encoding |
+|---|---|---|---|
+| HEARTBEAT payload | `peerId` | `uuid` (16-byte RFC 4122) | `bytes[32]` — raw Ed25519 identity public key |
+| HEARTBEAT signable | `peerId` | raw 16-byte UUID | `bytes[32]` — raw Ed25519 identity public key |
+
+The resolved HEARTBEAT signable is:
+
+```
+signature = Ed25519Sign(longTermPrivKey,
+    peerId_raw[32]                                 // raw 32-byte Ed25519 identity pubkey
+    || uint32BE(len(tenantBytes)) || tenantBytes   // TenantId length-prefixed UTF-8
+    || caps[1]                                     // uint8
+    || timestamp_BE[8]                             // int64 big-endian
+)
+```
+
+**Mapping from `PeerId` to signing input:** `PeerId` is `base64url(principalId.Bytes[32])`; the signing input is `principalId.Bytes[32]` directly. The `PeerId.Value` string is NOT used in the signing input.
+
+---
+
+### A1.4 Updated wire protocol table (A1-ratified rows)
+
+Replaces base ADR §Wire protocol frame table rows `0x01`, `0x02`, `0x0A`:
+
+| Byte | Name | Payload (ratified) |
+|---|---|---|
+| `0x01` | `HELLO` | `{ ephemeralPublicKey: bytes[32], identityPublicKey: bytes[32], tenantId: bytes (uint32BE-len-prefixed UTF-8 of TenantId.Value), signature: bytes[64], presence: PresenceHeartbeat }` — `signature` = Ed25519(longTermPrivKey, ephemeralPublicKey \|\| identityPublicKey \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes) |
+| `0x02` | `HEARTBEAT` | `{ peerId: bytes[32] (raw Ed25519 identity pubkey), tenantId: bytes (uint32BE-len-prefixed UTF-8 of TenantId.Value), caps: uint8, timestamp: int64, signature: bytes[64] }` — `signature` = Ed25519(longTermPrivKey, peerId_raw[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| caps[1] \|\| timestamp_BE[8]) |
+| `0x0A` | `CONFIRM` | `{ transcriptHash: bytes[32] }` — SHA-256 over (ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1]); both sides MUST verify agreement before entering ACTIVE |
+
+---
+
+### A1.5 Updated handshake steps
+
+Replaces base ADR §Handshake step 2 and step 9.
+
+**Step 2 (HELLO construction):**
+```
+2. Construct HELLO: {
+       ephemeralPublicKey,
+       identityPublicKey (Ed25519 long-term key),
+       tenantId = uint32BE(len(tenantBytes)) || tenantBytes,   // A1-ratified
+       signature = Ed25519Sign(longTermPrivKey,
+           ephemeralPublicKey || identityPublicKey
+           || uint32BE(len(tenantBytes)) || tenantBytes)        // A1-ratified
+   }
+```
+
+**Step 9 (CONFIRM computation):**
+```
+9. After ACCEPT, both sides independently compute:
+   tenantBytes    = UTF8.GetBytes(localTenantId.Value)
+   transcriptHash = SHA-256(
+       HELLO_A.ephemeralPublicKey[32]
+       || HELLO_A.identityPublicKey[32]
+       || HELLO_B.ephemeralPublicKey[32]
+       || HELLO_B.identityPublicKey[32]
+       || uint32BE(len(tenantBytes)) || tenantBytes             // A1-ratified
+       || ACCEPT.capability[1]                                  // A1-ratified: negotiatedCap only
+   )
+   and send CONFIRM { transcriptHash }.
+   Mismatch → REJECT + close. Session enters ACTIVE only after both CONFIRMs verified.
+```
+
+---
+
+### A1.6 §A0 self-audit (per ADR 0069 discipline)
+
+This amendment introduces **no new `Sunfish.*` types**. All changes are to wire-encoding
+descriptions and signing-input specifications.
+
+| Symbol / Path | Classification | Verified |
+|---|---|---|
+| `Sunfish.Foundation.Assets.Common.TenantId(string Value)` | Existing | yes — string-backed, no UUID field; length-prefix encoding is correct |
+| `Sunfish.Federation.Common.PeerId(string Value)` | Existing | yes — `packages/federation-common/PeerId.cs`; `.Value` is base64url; raw bytes come from underlying `PrincipalId` |
+| `Sunfish.Foundation.Crypto.PrincipalId` | Existing | yes — `PeerId.From(PrincipalId)` confirmed in `PeerId.cs` |
+
+No §A0.1 negative-existence check needed (no new types introduced).
+No §A0.2 false-positive risk: existing types are consumed at their verified signatures.
+§A0.3 structural correctness: `uint32BE` = `BinaryPrimitives.WriteUInt32BigEndian`; standard .NET pattern verified.
+
+---
+
+### A1.7 Implementation checklist (W#45 P2 unblock)
+
+- [ ] `EncryptionHandshake` — update HELLO construction to use `uint32BE(len) || UTF8(tenantId.Value)` in the signable (replaces uuid-16 encoding)
+- [ ] `EncryptionHandshake` — update CONFIRM hash to use reduced-form input (A1.3 / A1.5 step 9), NOT full frame bytes
+- [ ] `PresenceBus` — update HEARTBEAT construction to use `peerId_raw[32]` (raw Ed25519 pubkey bytes) in the signable; update `tenantId` in HEARTBEAT payload to length-prefixed UTF-8
+- [ ] Verify 13/13 existing Phase 2 tests still pass after the encoding changes; no new tests required (existing tests cover the encoding paths; the change is mechanical)
+- [ ] Archive `cob-question-2026-05-04T21-22Z-w45-p2-adr-0076-a1.md` to research-inbox `_archive/` in this PR
+
+**Estimated effort:** ~30min sunfish-PM (mechanical substitution in 3 encoding sites; all tests already written per COB question).
+
+---
+
+### A1.8 References
+
+- COB question: `icm/_state/research-inbox/cob-question-2026-05-04T21-22Z-w45-p2-adr-0076-a1.md`
+- ADR 0076 base: §Wire protocol, §Handshake steps, §HEARTBEAT authentication
+- `packages/federation-common/PeerId.cs` — `PeerId.From(PrincipalId)` definition
+- `packages/foundation/` — `TenantId(string Value)` type (string-backed)
