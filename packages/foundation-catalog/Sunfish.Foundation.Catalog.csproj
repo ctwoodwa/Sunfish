@@ -10,6 +10,9 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-featuremanagement\Sunfish.Foundation.FeatureManagement.csproj" />
+    <ProjectReference Include="..\foundation-migration\Sunfish.Foundation.Migration.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />

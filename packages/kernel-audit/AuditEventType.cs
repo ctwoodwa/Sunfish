@@ -494,6 +494,23 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An iOS-paired-device <c>POST /api/v1/field/blob/{sha256}</c> request was rejected (SHA-256 path-param mismatch, payload too large, invalid pairing-token); per W#23 P4.5 unblock addendum.</summary>
     public static readonly AuditEventType FieldBlobRejected = new("FieldBlobRejected");
 
+    // ===== ADR 0075 — extension-field feature-gate hook =====
+
+    /// <summary>Spec has a <c>FeatureKey</c>; gate evaluated ON; field appears in the materialized list. Per ADR 0075.</summary>
+    public static readonly AuditEventType ExtensionFieldGated = new("ExtensionFieldGated");
+
+    /// <summary>Spec is gated OFF; policy is <c>Hide</c>; field excluded from materialized list. Per ADR 0075.</summary>
+    public static readonly AuditEventType ExtensionFieldFiltered = new("ExtensionFieldFiltered");
+
+    /// <summary>Spec is gated OFF; policy is <c>Sequester</c>; field excluded AND <c>ISequestrationStore.SequesterAsync</c> called. Per ADR 0075.</summary>
+    public static readonly AuditEventType ExtensionFieldSequestered = new("ExtensionFieldSequestered");
+
+    /// <summary>Spec is gated OFF; policy is <c>Redact</c>; field excluded AND underlying data tombstoned. Per ADR 0075.</summary>
+    public static readonly AuditEventType ExtensionFieldRedacted = new("ExtensionFieldRedacted");
+
+    /// <summary><c>IFeatureEvaluator.IsEnabledAsync</c> threw; gate treated as OFF (fail-closed); exception captured in payload. Per ADR 0075.</summary>
+    public static readonly AuditEventType ExtensionFieldGateEvaluationFailed = new("ExtensionFieldGateEvaluationFailed");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
