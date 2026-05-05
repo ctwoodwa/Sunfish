@@ -1,0 +1,67 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Sunfish.Foundation.Assets.Common;
+
+namespace Sunfish.Foundation.Wayfinder;
+
+/// <summary>
+/// Persistence boundary for <see cref="OodWatch"/> records — implementations
+/// own atomicity (the single-Active-per-(tenant, role) invariant must be
+/// enforced under a transaction or equivalent locking strategy). Per
+/// ADR 0078 §1.
+/// </summary>
+public interface IOodWatchRepository
+{
+    /// <summary>Returns the Active watch for <paramref name="tenantId"/> + <paramref name="role"/>, or null if none.</summary>
+    ValueTask<OodWatch?> GetCurrentWatchAsync(
+        TenantId tenantId, OodRole role, CancellationToken ct = default);
+
+    /// <summary>
+    /// Atomically inserts a new Active watch. Implementations MUST throw
+    /// <see cref="OodWatchConflictException"/> when an Active watch already
+    /// exists for the same (TenantId, OodRole) pair.
+    /// </summary>
+    ValueTask<OodWatch> StartWatchAsync(
+        TenantId tenantId, ActorId onWatchActor, OodRole role,
+        TimeSpan? maxDuration, ActorId startedBy, CancellationToken ct = default);
+
+    /// <summary>Transitions the watch with id <paramref name="watchId"/> from Active to <see cref="OodWatchState.Relieved"/>.</summary>
+    ValueTask<OodWatch> RelieveWatchAsync(
+        OodWatchId watchId, ActorId relievedBy, CancellationToken ct = default);
+
+    /// <summary>Transitions the watch from Active to <see cref="OodWatchState.Expired"/>.</summary>
+    ValueTask<OodWatch> ExpireWatchAsync(
+        OodWatchId watchId, CancellationToken ct = default);
+
+    /// <summary>
+    /// Streams every watch (any state) for the supplied (tenant, role)
+    /// whose <see cref="OodWatch.StartedAt"/> falls within
+    /// <paramref name="from"/>..<paramref name="to"/>.
+    /// </summary>
+    IAsyncEnumerable<OodWatch> GetWatchHistoryAsync(
+        TenantId tenantId, OodRole role,
+        DateTimeOffset from, DateTimeOffset to,
+        CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns all Active watches whose
+    /// <c>StartedAt + MaxWatchDuration &lt;= cutoff</c>. Used by the
+    /// expiry sweep to drive TTL across all tenants.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// <b>Cross-tenant enumeration.</b> Unlike every other method on this
+    /// interface, this method is NOT tenant-scoped — it intentionally
+    /// streams Active watches across every tenant in the system. The only
+    /// legitimate caller is <c>OodWatchExpiryService</c> (Phase 2 of W#49),
+    /// which is registered as a singleton background sweep. Application
+    /// code MUST NOT call this method directly. Phase 2 will move the
+    /// sweep contract to a separate internal interface to enforce this
+    /// at the type system per council Finding #5.
+    /// </para>
+    /// </remarks>
+    IAsyncEnumerable<OodWatch> GetExpiredCandidatesAsync(
+        DateTimeOffset cutoff, CancellationToken ct = default);
+}
