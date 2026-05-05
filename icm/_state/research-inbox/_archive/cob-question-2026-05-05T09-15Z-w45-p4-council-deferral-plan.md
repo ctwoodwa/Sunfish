@@ -1,6 +1,8 @@
 ---
 type: question
 workstream-or-chapter: W#45 P4
+resolved-by: XO directive 2026-05-05 — Path C' with ADR 0076-A2; see xo-directive-2026-05-05T11-00Z-w45-p4-path-c-prime.md
+resolved-date: 2026-05-05
 last-pr: (held; not pushed — local branch feat/w45-p4-provider-di on commit 2bc2b13)
 ---
 
