@@ -1,7 +1,7 @@
 ---
 id: 75
 title: ExtensionFields Feature-Evaluation Hook
-status: Proposed
+status: Accepted
 date: 2026-05-04
 tier: foundation
 pipeline_variant: sunfish-api-change
@@ -31,7 +31,7 @@ amendments: []
 
 # ADR 0075 — ExtensionFields Feature-Evaluation Hook
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-04
 **Resolves:** ADR 0009 follow-up #5 (originally proposed 2026-04-19) — "Feature evaluation hook into `Sunfish.Foundation.Catalog.ExtensionFields` — when an extension field is gated by a feature key, evaluate before materializing." Workstream W#44.
 
@@ -59,7 +59,7 @@ amendments: []
 - `Sunfish.Foundation.FeatureManagement.{IFeatureEvaluator, FeatureKey, FeatureValue, FeatureEvaluationContext}` — `packages/foundation-featuremanagement/`. `FeatureKey` is `readonly record struct(string Value)`. `FeatureEvaluationContext` carries `TenantId?` plus edition/bundles/modules/user/environment/attributes.
 - `Sunfish.Kernel.Audit.{IAuditTrail, AuditEventType, AuditRecord}` — `packages/kernel-audit/`. `IAuditTrail.AppendAsync(AuditRecord, CancellationToken)` is the issuance signature. `AuditEventType` is `readonly record struct(string Value)` (NOT enum); new event types are `public static readonly AuditEventType` fields.
 - `Sunfish.Foundation.Migration.{ISequestrationStore, SequesteredRecord, SequestrationFlagKind}` — `packages/foundation-migration/{Services,Models}/`. `SequesterAsync(string nodeId, string recordId, SequestrationFlagKind flag, CancellationToken)` is the canonical signature; field-level convention encodes `recordId = "{recordId}#{fieldName}"`.
-- `SequestrationFlagKind` enum values: `FormFactorFilteredOut`, `StorageBudgetExceeded`, `PlaintextSequestered`, `CiphertextSequestered`, `FormFactorQuorumIneligible` — **none names a "feature-gate-off" semantic**; §Open question 2 tracks adding `FeatureGateOff`.
+- `SequestrationFlagKind` enum values: `FormFactorFilteredOut`, `StorageBudgetExceeded`, `PlaintextSequestered`, `CiphertextSequestered`, `FormFactorQuorumIneligible`, `FeatureGateOff` — `FeatureGateOff` added by ADR 0028-A11 (PR #512) per §Open question 2 resolution.
 - `Sunfish.Foundation.Capabilities.{ICapabilityGraph, CapabilityAction, Resource, Principal}` — `packages/foundation/Capabilities/`. `ICapabilityGraph.QueryAsync(PrincipalId subject, Resource resource, CapabilityAction action, DateTimeOffset asOf, CancellationToken ct)` returning `ValueTask<bool>` is the canonical authority-check signature consumers see (NOT `HasCapability` — that name belongs to the internal static `CapabilityClosure.HasCapability(...)` graph-walk used inside `InMemoryCapabilityGraph`). `CapabilityAction` is `readonly record struct(string Name)` with a public ctor accepting any string; the type's xml-doc explicitly authorises consumer-defined domain-specific actions (precedent verb `sign_inspection`). `Resource` is `readonly record struct(string Id)`.
 - `Sunfish.Foundation.Crypto.{PrincipalId, IOperationSigner}` — `packages/foundation/Crypto/`. `PrincipalId` is the 32-byte Ed25519 public-key wrapper used as the universal subject identifier in `ICapabilityGraph` and as `SignedOperation<T>.IssuerId`. `IOperationSigner` exposes `PrincipalId IssuerId { get; }` — the canonical "current signing principal" surface available to any audit-emitting foundation component, and is already required by this ADR for audit-payload signing per §A0.3 / Council pressure-test point #4.
 - `Sunfish.Foundation.Recovery.Crypto.FieldDecryptionDeniedException` — `packages/foundation-recovery/Crypto/FieldDecryptionDeniedException.cs`. `sealed class : Exception` with constructor `(string capabilityId, string reason)` and read-only properties `CapabilityId` + `Reason`. Used by `IFieldDecryptor.DecryptAsync` per ADR 0046-A2/A3. This ADR uses it as the **shape precedent** for the new `ExtensionFieldRedactionDeniedException` (which carries action + entity-type-fullname + field-key + reason, since the catalog gate has no per-call `capabilityId` — it constructs an authority query against the graph rather than presenting a pre-issued capability proof).
@@ -85,7 +85,7 @@ amendments: []
 ### §A0.5 Council pressure-test points
 
 1. Parallel-overload footgun — does the ungated `GetFields(Type)` silently bypass gating in real call sites?
-2. `Sequester` reuses `SequestrationFlagKind.PlaintextSequestered`; semantically wrong? Should W#35 add `FeatureGateOff`?
+2. `Sequester` flag provenance: `SequestrationFlagKind.PlaintextSequestered` was semantically wrong (form-factor-driven, not operator-gate-driven). **Resolved by ADR 0028-A11 (PR #512):** `FeatureGateOff` added with explicit xml-doc citing distinct provenance per ADR 0049 audit-by-construction.
 3. Lazy-DI optionality — null-evaluator silently bypasses gating; risk in incomplete-DI deployments.
 4. Audit envelope constructability — does catalog have access to `SignedOperation<T>` + an `IOperationSigner` via the new ProjectReference graph?
 5. `Redact` is a one-way door — what prevents accidental issuance? Capability proof + explicit operator confirmation gate?
@@ -329,11 +329,11 @@ When `FeatureGateOffPolicy.Sequester` applies, the catalog implementation calls:
 await _sequestrationStore.SequesterAsync(
     nodeId: _nodeIdProvider.LocalNodeId,
     recordId: $"{recordIdProvider.Resolve(entityType, ctx)}#{spec.Key.Value}",
-    flag: SequestrationFlagKind.PlaintextSequestered,  // see §Open questions item 2
+    flag: SequestrationFlagKind.FeatureGateOff,  // ADR 0028-A11 — audit-by-construction requires distinct provenance
     cancellationToken).ConfigureAwait(false);
 ```
 
-The `SequesterAsync` call requires a record-level `recordId`. For catalog-level "this field is gated for this tenant" semantics — which doesn't have a specific record id — the implementation registers a **catalog-level sentinel** record with `recordId = $"catalog-gate#{entityType.FullName}#{spec.Key.Value}"`. This is a known wart; a cleaner contract that admits catalog-level sequestration is §Open questions item 2.
+The `SequesterAsync` call requires a record-level `recordId`. For catalog-level "this field is gated for this tenant" semantics — which doesn't have a specific record id — the implementation registers a **catalog-level sentinel** record with `recordId = $"catalog-gate#{entityType.FullName}#{spec.Key.Value}"`. This is a known wart; §Open questions item 8 tracks a cleaner contract that admits catalog-level sequestration.
 
 #### Lazy-DI optionality
 
@@ -496,7 +496,7 @@ The operator-flip / `GetFieldsAsync` race is bounded by Standing-Order replicati
 - **N feature evaluations per `GetFieldsAsync` call** for an entity with N gated specs. For a list view of M records, the catalog is called once (specs are entity-type-keyed, not record-keyed); the cost is acceptable. For bulk export over heterogeneous entity types, the cost may add up; mitigation is `DefaultFeatureEvaluator`-level caching (not introduced here).
 - **Two parallel overloads** (`GetFields` and `GetFieldsAsync`) on the same interface is a known footgun — call sites that use the synchronous overload silently bypass gating. Mitigation: documentation; the §Implementation checklist includes a sweep of existing call sites with a determination of which should migrate.
 - **Catalog now indirectly depends on FeatureManagement, Audit, and Migration** at compile time. The constructor's lazy-DI optionality preserves runtime backward compatibility, but the project graph is more entangled.
-- **Sequester policy reuses `SequestrationFlagKind.PlaintextSequestered`** as a closest-existing flag; this is semantically wrong (the flag is meant for form-factor sequestration, not feature-gate sequestration). §Open questions item 2 tracks adding a new `FeatureGateOff` flag value to the enum — that lives in `packages/foundation-migration/Models/Enums.cs` and would be a small ADR-amendable change to W#35.
+- **Sequester policy uses `SequestrationFlagKind.FeatureGateOff`** (added by ADR 0028-A11 / PR #512), providing distinct audit-trail provenance from form-factor-driven sequestration (`PlaintextSequestered`). The flag's xml-doc explicitly notes the feature-gate-off semantic is operator-controlled, not form-factor-capability-driven.
 
 ### Trust impact / Security & privacy
 
@@ -513,7 +513,7 @@ The operator-flip / `GetFieldsAsync` race is bounded by Standing-Order replicati
 
 - `packages/foundation-catalog/` — new types (`FeatureGateOffPolicy`, `MaterializedExtensionField`, `GateState`), extended `ExtensionFieldSpec`, new `IExtensionFieldCatalog.GetFieldsAsync(...)` overload, new `ExtensionFieldGateAuditPayloads` factory. New csproj `ProjectReference`s to `Sunfish.Foundation.FeatureManagement`, `Sunfish.Kernel.Audit`, `Sunfish.Foundation.Migration`.
 - `packages/kernel-audit/` — five new `AuditEventType` static-readonly fields (including `ExtensionFieldGateEvaluationFailed` per §Gate-evaluator failure semantics).
-- `packages/foundation-migration/` — possible new `SequestrationFlagKind.FeatureGateOff` enum value (§Open questions item 2; W#35 amendment).
+- `packages/foundation-migration/` — `SequestrationFlagKind.FeatureGateOff` enum value added (ADR 0028-A11 / PR #512; W#35 amendment resolved §Open questions item 2).
 
 ### Migration path
 
@@ -548,7 +548,7 @@ The operator-flip / `GetFieldsAsync` race is bounded by Standing-Order replicati
 ## Open questions
 
 1. **`IFeatureEvaluator` mandatory vs. optional.** Current: optional (lazy DI). Risk: deployments that should gate but forget to register the evaluator silently bypass gating. Mitigation: `MustGateOption` flag in `AddExtensionFieldCatalog(...)` that throws on `GetFieldsAsync` if no evaluator is registered. Council to decide.
-2. **`SequestrationFlagKind` value.** Current: reuse `PlaintextSequestered` (closest existing). Cleaner: amend W#35 (foundation-migration) to add `SequestrationFlagKind.FeatureGateOff`. Whether to do it in this PR or as a separate W#35 amendment first — open.
+2. **`SequestrationFlagKind` value.** ~~Resolved~~ via ADR 0028-A11 (PR #512): `FeatureGateOff` was added to `SequestrationFlagKind` in `packages/foundation-migration/Models/Enums.cs`, with xml-doc noting distinct provenance from form-factor-driven sequestration. §Sequester composition updated to use `FeatureGateOff`.
 3. **`WayfinderFeatureProvider` interaction.** Current: catalog calls `IFeatureEvaluator` (full ADR 0009 chain), not `WayfinderFeatureProvider` directly — preserves the decoupling promised in Amendment A1 §A1.4. A "Wayfinder-only" mode would couple — probably not, but worth pressure-testing.
 4. **Audit-volume management for `ExtensionFieldGated`.** High-traffic SaaS at 10 gated fields × 10K renders/day = 100K daily redundant records. Options: (a) emit always, (b) emit on state-change only (requires stateful change-detector), (c) sampling. **Recommended default: (b) state-change only** — emit an audit record only when a gate changes the outcome compared to the previous evaluation for the same `(entityType, FeatureKey, TenantId)` tuple. Regulated tenants who need a full per-evaluation record can opt in to `MustEmitEveryEvaluation = true` via the feature spec. This reduces the common-case audit volume to near-zero while preserving full audit fidelity when operators need it. **Trust impact (regulated bundles):** Regulated bundles should default to `FeatureGateOffPolicy.Sequester` (not `Hide`) — `Hide` is silent and untraceable in the audit trail; `Sequester` preserves the data with an audit record of the gate state. Callers targeting regulated tenants should be warned (via an analyzer diagnostic, following the `SUNFISH_WAYFINDER001` pattern) if they configure `Hide` on a regulated bundle's extension field.
 5. **`GetFieldsWithGatesAsync(...)` query.** Some UI consumers want to render "field disabled by your tier" affordances for sequestered/redacted fields. Default: ship `GetFieldsAsync` only in v1; track follow-up Amendment if the kitchen-sink demo motivates it.
@@ -579,7 +579,7 @@ The operator-flip / `GetFieldsAsync` race is bounded by Standing-Order replicati
 - [ADR 0007](./0007-bundle-manifest-schema.md) — bundle manifests; `featureDefaults` sourced here
 - [ADR 0009](./0009-foundation-featuremanagement.md) — parent ADR; this is follow-up #5; Amendment A1 (W#43) is the immediate runtime-control consumer
 - [ADR 0028](./0028-crdt-engine-selection.md) — A5.4 / A8.3 sequestration partition substrate
-- [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md) — capability-graph reasoning + capability-required actions for `Redact` policy
+- [ADR 0046](./0046-key-loss-recovery-scheme-phase-1.md) — key-loss recovery scheme; `FieldDecryptionDeniedException` shape precedent for `ExtensionFieldRedactionDeniedException`
 - [ADR 0049](./0049-audit-trail-substrate.md) — kernel-tier audit substrate; canonical `IAuditTrail` consumer
 - [ADR 0065](./0065-wayfinder-system-and-standing-order-contract.md) — Wayfinder substrate; W#42 prerequisite for operator-runtime control
 - [ADR 0069](./0069-adr-authoring-discipline.md) — D1 + D2 + D3 disciplines applied to this ADR
