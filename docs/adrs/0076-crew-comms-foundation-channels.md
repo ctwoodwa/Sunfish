@@ -45,6 +45,13 @@ amendments:
       bytes; TenantId encoding changed from uuid-16 to uint32BE-length-prefixed UTF-8 bytes in HELLO
       and HEARTBEAT signables and payloads; PeerId in HEARTBEAT changed from uuid-16 to raw 32-byte
       Ed25519 identity public key. Unblocks W#45 P2 COB RETURN-FOR-REWORK.
+  - date: 2026-05-05
+    summary: >
+      A2 capability-negotiation verification: adds INVITE.capabilities[1] to CONFIRM transcript hash
+      (extends A1 reduced form; detects relay-MitM INVITE capability-downgrade attack); adds
+      initiator post-ACCEPT verification that ACCEPT.capability is a subset of INVITE.capabilities.
+      Corrects A1 rationale error ("INVITE.capabilities subsumed by negotiatedCap" was wrong).
+      Unblocks W#45 P4 council finding #8.
 ---
 
 # ADR 0076 — Crew Comms: `foundation-channels` Contracts and Native Implementation
@@ -777,3 +784,198 @@ The ADR uses two distinct endianness contexts that MUST NOT be mixed:
 - ADR 0076 base: §Wire protocol, §Handshake steps, §HEARTBEAT authentication
 - `packages/federation-common/PeerId.cs` — `PeerId.From(PrincipalId)` definition
 - `packages/foundation/` — `TenantId(string Value)` type (string-backed)
+
+---
+
+## Amendment A2 — Capability-negotiation verification: INVITE.capabilities in CONFIRM transcript
+
+**Amendment date:** 2026-05-05
+**Authors:** XO research session
+**Resolves:** W#45 P4 council finding #8 (capability-downgrade MITM not detected)
+
+---
+
+### A2.1 Context
+
+W#45 P4 pre-merge council returned finding #8: the A1 CONFIRM transcript hash bound
+`negotiatedCap[1]` (ACCEPT.capability) and `presenceCapsA/B[1]` (HELLO.presence.caps) but did
+NOT include `INVITE.capabilities[1]` (the offered capability set from the INVITE frame). A
+relay-MitM can silently replace `INVITE.capabilities: 0x07` (text+audio+video) with `0x01`
+(text-only); both sides then compute `ACCEPT.capability = 0x01` and both compute an identical
+(but downgraded) transcript. Neither side detects the downgrade.
+
+The A1 §Rationale stated: *"INVITE has only `capabilities: uint8` which is subsumed by
+`negotiatedCap`."* This claim was incorrect. `INVITE.capabilities` is the *offered* bitmask; 
+`ACCEPT.capability` is the *negotiated result*. They are distinct: an attacker changing the 
+offer does not change the acceptance in a way either side can detect from the transcript alone.
+A2 supersedes that portion of the A1 rationale and corrects the transcript spec.
+
+---
+
+### A2.2 Decision drivers
+
+1. **Protocol completeness.** The CONFIRM transcript must commit all negotiation inputs, not 
+   just the output. `INVITE.capabilities` is an input to the negotiation; `ACCEPT.capability` 
+   is the output. Binding only the output allows the input to be manipulated silently.
+
+2. **Consistency with A1.** A1 added `presence.caps` bindings to CONFIRM to close an analogous 
+   relay-MitM downgrade vector on HELLO capabilities. The same principle applies to INVITE 
+   capabilities; omitting it creates an asymmetry that the cohort's security discipline does 
+   not tolerate.
+
+3. **Minimal change.** One additional byte in the transcript hash; no new frame fields; no new 
+   types; no breaking API change. The known-answer test for CONFIRM transcript (A1.7 test #3) 
+   requires one additional fixture byte.
+
+4. **Belt-and-suspenders initiator verification.** Adding `inviteCaps` to the transcript is 
+   the primary fix. An additional check — initiator verifies `ACCEPT.capability ⊆ 
+   INVITE.capabilities` before computing CONFIRM — provides defense-in-depth and is 
+   trivially cheap.
+
+---
+
+### A2.3 Decisions
+
+#### A1 ext — CONFIRM transcript hash extension (extends §A1.3 §A1)
+
+**Replaces** the §A1.3 §A1 CONFIRM transcript hash spec, §A2.4 wire protocol CONFIRM row, 
+and §A2.5 handshake step 9.
+
+The CONFIRM `{ transcriptHash: bytes[32] }` MUST be computed as:
+
+```
+transcriptHash = SHA-256(
+    ephemA[32]                                     // HELLO_A.ephemeralPublicKey
+    || idA[32]                                     // HELLO_A.identityPublicKey
+    || ephemB[32]                                  // HELLO_B.ephemeralPublicKey
+    || idB[32]                                     // HELLO_B.identityPublicKey
+    || uint32BE(len(tenantBytes)) || tenantBytes   // TenantId.Value as length-prefixed UTF-8
+    || inviteCaps[1]                               // INVITE.capabilities (uint8) — A2 addition
+    || negotiatedCap[1]                            // ACCEPT.capability (uint8)
+    || presenceCapsA[1]                            // HELLO_A.presence.caps (uint8)
+    || presenceCapsB[1]                            // HELLO_B.presence.caps (uint8)
+)
+```
+
+Where (additions beyond §A1.3 §A1):
+- `inviteCaps` = the `capabilities: uint8` byte from the INVITE frame.
+  - **Initiator** uses the capabilities byte it put in its own INVITE frame.
+  - **Responder** uses the capabilities byte it received in the INVITE frame.
+  - If a relay-MitM has modified INVITE.capabilities in transit, the initiator and responder 
+    will have different `inviteCaps` values → transcripts mismatch → both send REJECT → attack 
+    detected.
+
+**Total input size:** 32 + 32 + 32 + 32 + 4 + len(tenantBytes) + 1 + 1 + 1 + 1 = 136 + 
+len(tenantBytes) bytes (previously 135 bytes per §A1.3).
+
+**Correction of A1 §Rationale:** The §A1.3 §A1 rationale stated "INVITE has only 
+`capabilities: uint8` which is subsumed by `negotiatedCap`." A2 demonstrates this was wrong: 
+`INVITE.capabilities` is the offered set and `ACCEPT.capability` is the result. An attacker 
+changing the offer leaves the acceptance result plausible from both sides' perspectives, 
+producing identical (but wrong) transcripts. A2 corrects this.
+
+---
+
+#### A2 — Initiator post-ACCEPT verification
+
+**New requirement** (between step 7 and step 9 of the handshake).
+
+After receiving ACCEPT and before computing CONFIRM, the initiator MUST verify:
+
+```
+(ACCEPT.capability & INVITE.capabilities) == ACCEPT.capability
+```
+
+That is, `ACCEPT.capability` must be exactly one bit that is a member of the set the initiator 
+offered in INVITE. If this check fails, the initiator MUST send REJECT and close.
+
+**Why this is belt-and-suspenders:** if the relay-MitM downgraded INVITE.capabilities but left 
+ACCEPT.capability consistent with the downgraded offer, the transcript mismatch catches it. The 
+initiator verification catches the degenerate case where an attacker upgrades 
+`ACCEPT.capability` beyond what was offered (which would NOT cause a transcript mismatch, since 
+the initiator's `inviteCaps` is its own original offer). Together, the two checks close all 
+capability-negotiation downgrade and upgrade vectors.
+
+---
+
+### A2.4 Updated wire protocol table (A2-ratified rows)
+
+Replaces §A1.4 CONFIRM table row (which replaced the base ADR CONFIRM row):
+
+| Byte | Name | Payload (ratified) |
+|---|---|---|
+| `0x0A` | `CONFIRM` | `{ transcriptHash: bytes[32] }` — SHA-256 over (ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| inviteCaps[1] \|\| negotiatedCap[1] \|\| presenceCapsA[1] \|\| presenceCapsB[1]); both sides MUST verify agreement before entering ACTIVE |
+
+---
+
+### A2.5 Updated handshake step
+
+Replaces §A1.5 step 9 (which replaced base ADR §Handshake step 9).
+
+**Step 9 (CONFIRM computation):**
+```
+9. After ACCEPT, both sides independently compute:
+   tenantBytes    = UTF8.GetBytes(localTenantId.Value)
+   transcriptHash = SHA-256(
+       HELLO_A.ephemeralPublicKey[32]
+       || HELLO_A.identityPublicKey[32]
+       || HELLO_B.ephemeralPublicKey[32]
+       || HELLO_B.identityPublicKey[32]
+       || uint32BE(len(tenantBytes)) || tenantBytes             // A1-ratified
+       || INVITE.capabilities[1]                               // A2 addition — offered cap bitmask
+       || ACCEPT.capability[1]                                  // A1-ratified: negotiatedCap only
+       || HELLO_A.presence.caps[1]                             // A1 Q1 — caps bound to detect downgrade
+       || HELLO_B.presence.caps[1]                             // A1 Q1 — caps bound to detect downgrade
+   )
+   and send CONFIRM { transcriptHash }.
+   Mismatch → REJECT + close. Session enters ACTIVE only after both CONFIRMs verified.
+```
+
+**Additional initiator step (between step 7 and step 9):**
+```
+7a. (Initiator only) After receiving ACCEPT, before computing CONFIRM:
+    VERIFY: (ACCEPT.capability & sentInviteCapabilities) == ACCEPT.capability
+    If check fails → send REJECT + close. Do not proceed to step 8/9.
+```
+
+---
+
+### A2.6 §A0 self-audit (per ADR 0069 discipline)
+
+This amendment introduces **no new `Sunfish.*` types**. All changes are to the CONFIRM 
+transcript hash specification and a new initiator verification step.
+
+| Symbol / Path | Classification | Verified |
+|---|---|---|
+| `ChannelCapability` (uint8 bitmask) | Existing | yes — W#45 P1 `ChannelCapability` enum in `foundation-channels`; `INVITE.capabilities` is a flags-combined uint8 per ADR 0076 §Wire protocol `0x03` row |
+| `INVITE.capabilities` field | Existing | yes — ADR 0076 §Wire protocol row `0x03`: `{ capabilities: uint8 }` |
+| `ACCEPT.capability` field | Existing | yes — ADR 0076 §Wire protocol row `0x04`: `{ capability: uint8 }` |
+
+No §A0.1 negative-existence check needed (no new types introduced).
+§A0.2: `inviteCaps` is an additional byte in the hash input — no false-positive type risk.
+§A0.3: The verification check `(ACCEPT.capability & INVITE.capabilities) == ACCEPT.capability` 
+is bitwise AND — standard .NET pattern.
+
+---
+
+### A2.7 Implementation checklist (W#45 P4 unblock — addendum to §A1.7)
+
+- [ ] `EncryptionHandshake.ComputeConfirmHash()` — add `inviteCaps[1]` as the 5th byte group 
+  (after tenantBytes length-prefix, before negotiatedCap); initiator passes its sent 
+  `INVITE.capabilities` byte; responder passes the received `INVITE.capabilities` byte
+- [ ] `SessionInitiator.OpenAsync()` — after receiving ACCEPT (step 7), add verification: 
+  `if ((accepted.Capability & sentCapabilities) != accepted.Capability) → send REJECT + throw`
+- [ ] Update §A1.7 known-answer test #3 (CONFIRM transcript hash) to include `inviteCaps[1]` 
+  in the fixture byte sequence and expected SHA-256 hash
+
+**Estimated effort:** ~45min sunfish-PM (one additional byte in one hash site + one equality 
+check + one test fixture update). May be combined with the P4 AEAD + glare-wiring work.
+
+---
+
+### A2.8 References
+
+- W#45 P4 COB question: `icm/_state/research-inbox/cob-question-2026-05-05T09-15Z-w45-p4-council-deferral-plan.md`
+- ADR 0076-A1 §A1.3 §A1 (prior CONFIRM transcript hash spec — superseded by A2.3)
+- ADR 0076 §Wire protocol `0x03` INVITE row
+- `packages/foundation-channels/` — `ChannelCapability` flags enum (W#45 P1)

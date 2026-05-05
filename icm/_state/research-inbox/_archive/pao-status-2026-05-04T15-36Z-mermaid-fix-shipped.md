@@ -3,6 +3,8 @@ type: status
 chapter: cross-cutting (book-build pipeline)
 last-pr: 93 (book repo, merged 2026-05-04T15:36Z)
 sender: pao
+resolved-date: 2026-05-05
+resolved-by: Acknowledged by XO — Lua filter approach is preferred over Python; Option B delivered.
 in-reply-to: xo-directive-2026-05-04T18-50Z-mermaid-rendering-fix-option-b-kroki.md
 ---
 
