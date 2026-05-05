@@ -197,3 +197,4 @@ Code lives in `/packages/` (framework-agnostic + adapters), `/apps/` (demo + doc
 | [`/_shared/product/architecture-principles.md`](./_shared/product/architecture-principles.md) | Architecture principles |
 | [`/_shared/engineering/coding-standards.md`](./_shared/engineering/coding-standards.md) | Style guidelines |
 | [`/packages/foundation/README.md`](./packages/foundation/README.md), [`/packages/ui-core/README.md`](./packages/ui-core/README.md) | Per-package contracts |
+| [`/docs/adrs/0069-adr-authoring-discipline.md`](docs/adrs/0069-adr-authoring-discipline.md) | ADR Authoring Discipline (pre-merge council + §A0 + three-direction) |

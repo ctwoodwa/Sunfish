@@ -32,6 +32,18 @@ amendments: []
 
 ---
 
+## A0 cited-symbol audit
+
+*Required for substrate-tier ADRs (per [ADR 0069](./0069-adr-authoring-discipline.md)). Enumerate every `Sunfish.*` symbol, ADR number, and package path cited in the Decision + Implementation + Compatibility sections, classified as Existing / Introduced / Removed. RECOMMENDED for process-tier and governance-tier ADRs where citations are present.*
+
+| Symbol / Path / ADR | Classification | Verified |
+|---|---|---|
+| *(enumerate all cited `Sunfish.*` types, package paths, and ADR numbers here)* | Existing \| Introduced \| Removed | yes / no — fix before acceptance |
+
+*§A0 is necessary but not sufficient. Structural-citation failures in the 2026-04/05 cohort had a 0-of-5 §A0 catch rate; all were caught by pre-merge council. §A0 forces enumeration — this enumeration habit is itself valuable (ADR 0028-A11's thorough 8-of-8 §A0 verification contributed to its first-try council clean pass) — but it does not substitute for pre-merge council review. See [ADR 0069](./0069-adr-authoring-discipline.md) §D2.*
+
+---
+
 ## Context
 
 Why is this decision being made now? What problem does it solve? What are the relevant constraints? Keep this tight — three to five paragraphs.
@@ -143,6 +155,8 @@ Conditions under which this ADR should be re-evaluated (e.g., "ADR 0004 algorith
 
 ## Pre-acceptance audit (5-minute self-check)
 
+> **D1 — substrate-tier ADRs:** Do NOT enable auto-merge before pre-merge council returns a verdict. Set PR description to "Awaiting pre-merge council per ADR 0069." Dispatch Opus + xhigh council subagent with explicit structural pressure-test points. Apply amendments; then enable auto-merge. See [ADR 0069](./0069-adr-authoring-discipline.md) §D1.
+
 Before flipping `Status:` to `Accepted`, run this checklist as the author. The cost is five minutes; the value is catching the most common Universal Planning anti-patterns before they ship.
 
 - [ ] **AHA pass.** Considered ≥1 alternative simpler approach (Stage 0 Check 0.9). Documented why it was rejected. *(Anti-pattern #10: first idea remaining unchallenged.)*
@@ -180,4 +194,4 @@ Also grep for **cross-ADR claims** like `"per ADR 0XYZ T2 boundary"` — open th
 
 ---
 
-*This template enforces the lightweight Universal Planning Framework checks documented in [`.claude/rules/universal-planning.md`](../../.claude/rules/universal-planning.md). Copy this file when starting a new ADR; rename to `NNNN-<short-slug>.md` matching the next available number.*
+*This template enforces the lightweight Universal Planning Framework checks documented in [`.claude/rules/universal-planning.md`](../../.claude/rules/universal-planning.md) and the ADR authoring discipline in [ADR 0069](./0069-adr-authoring-discipline.md) (pre-merge council + §A0 + three-direction). Copy this file when starting a new ADR; rename to `NNNN-<short-slug>.md` matching the next available number.*
