@@ -613,3 +613,14 @@
 | 22:30 | Flipped W#37 per-workstream file to ready-to-build | `icm/_state/workstreams/W37-*.md` | Phase 1 gate documented |
 | 22:30 | Updated W#1 per-workstream file | `icm/_state/workstreams/W01-*.md` | ADR 0084 Accepted noted; ADR 0085 Proposed noted |
 | 22:35 | Archived XO idle beacon; wrote new beacon | `icm/_state/research-inbox/` | Next: ADR 0066-A1 once W#53 P1a merges; or W#1 WS-B hand-off once ADR 0085 Accepted |
+
+## Session: 2026-05-06 (XO /loop — W#49 P2 H4 resolved)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| 00:00 | Verified PR #610 (W#49 P1) merged; PR #611 (COB question W#49 P2 H4) open | — | ADR 0077 Accepted (PR #608); ADR 0085 still Proposed |
+| 00:05 | Read COB question: IOperationSigner.VerifyAsync absent; IClock absent | `cob-question-2026-05-05T22-00Z-w49-p2-h4-verifyasync.md` | 3 paths offered; COB recommends Path A (add VerifyAsync) |
+| 00:10 | Verified IOperationVerifier exists at packages/foundation/Crypto/IOperationVerifier.cs | — | Path B (use IOperationVerifier) already possible; but correct ruling is API-layer auth, not service-level verify |
+| 00:15 | Resolved H4: signing validation is API/gateway-layer responsibility | `ood-watch-rotation-stage06-handoff.md` | DefaultOodWatchService does NOT inject IOperationVerifier; trusts authenticated requestedBy; uses TimeProvider (not IClock) |
+| 00:20 | Amended W#49 hand-off Phase 2 section | `ood-watch-rotation-stage06-handoff.md` | Removed IOperationSigner.VerifyAsync step; IClock→TimeProvider; test mocks updated; H4 resolved in halt-conditions; cohort precedents corrected |
+| 00:25 | Archived cob-question + stale XO beacon; wrote new XO idle beacon | `icm/_state/research-inbox/` | Next: W#1 WS-B hand-off once ADR 0085 Accepted; ADR 0066-A1 once W#53 P1a merges |
