@@ -1,8 +1,6 @@
 ---
 type: idle
 workstream-or-chapter: post-W#43-handoff — W#46 + W#43 Stage 06 hand-offs complete
-resolved-date: 2026-05-05
-resolved-by: Superseded — all blockers merged; ADR 0076-A2 in flight; W#45 P4 directive filed.
 last-pr: "#562 (W#46 Shared Design System Stage 06 hand-off; ledger W#46 → ready-to-build)"
 ---
 
