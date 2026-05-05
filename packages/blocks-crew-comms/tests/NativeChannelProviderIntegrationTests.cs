@@ -89,8 +89,37 @@ public class NativeChannelProviderIntegrationTests
     }
 
     [Fact]
-    public async Task SessionListener_DropNewest_OnFullChannel()
+    public void SessionListener_DropNewest_FillBoundedChannelDirectly()
     {
+        // Direct exercise of the bounded-channel drop path: bypass the
+        // handshake (which is exercised by the EndToEnd test) and feed
+        // 17 invitations directly through the internal write hook. The
+        // 17th MUST be dropped (capacity 16, FullMode = DropNewest) and
+        // OnInviteDropped MUST fire exactly once.
+        using var keyB = KeyPair.Generate();
+        var roster = new InMemoryCrewRoster(new[]
+        {
+            new CrewMember { Peer = PeerId.From(keyB.PrincipalId), DisplayName = "Bob" },
+        });
+        var listener = new SessionListener(keyB, roster);
+        var dropped = 0;
+        listener.OnInviteDropped = _ => Interlocked.Increment(ref dropped);
+
+        // Fill the channel to capacity + 1 via the internal test hook.
+        for (var i = 0; i < 17; i++)
+            listener.TryEnqueueForTest(new StubInvitation(PeerId.From(keyB.PrincipalId)));
+
+        Assert.Equal(1, dropped);
+        Assert.Equal(1L, listener.DroppedCount);
+    }
+
+    [Fact]
+    public async Task EndToEnd_TamperedCiphertext_DecryptionFails()
+    {
+        // AEAD round-trip negative: tamper one byte of an encrypted post-HELLO
+        // frame on the wire; the receiver MUST surface the tampering as a
+        // session-termination via TransportError (the reader pump catches the
+        // CryptographicException and Terminates).
         using var keyA = KeyPair.Generate();
         using var keyB = KeyPair.Generate();
         var roster = new InMemoryCrewRoster(new[]
@@ -99,44 +128,27 @@ public class NativeChannelProviderIntegrationTests
             new CrewMember { Peer = PeerId.From(keyB.PrincipalId), DisplayName = "Bob" },
         });
 
-        var listener = new SessionListener(keyB, roster);
-        var dropped = 0;
-        listener.OnInviteDropped = _ => Interlocked.Increment(ref dropped);
+        var (streamA, streamB) = MemoryDuplexStream.CreatePair();
+        var tamperingStream = new ByteFlippingDuplex(streamA, flipOffset: 30);
+        var fakeTransport = new SingleShotTransport(tamperingStream);
+        var initiatorSelector = new SingleTransportSelector(fakeTransport);
 
-        // Saturate the bounded channel by hand: 17 incoming streams (capacity 16; the 17th drops).
-        // We only need to verify the drop counter wires correctly — full handshake-completion
-        // for 17 streams would be slow and unnecessary for this assertion.
-        var saturationTasks = Enumerable.Range(0, 17).Select(async i =>
+        await using var providerA = new NativeChannelProvider(keyA, roster, initiatorSelector);
+        await using var providerB = new NativeChannelProvider(keyB, roster, new SingleTransportSelector(new UnreachableTransport()));
+
+        var listenTask = providerB.Listener.AcceptIncomingAsync(
+            streamB, Tenant, ChannelCapability.Text, CancellationToken.None);
+        var openTask = providerA.OpenAsync(
+            Tenant, PeerId.From(keyB.PrincipalId), ChannelCapability.Text, CancellationToken.None);
+
+        // The tamper happens AFTER HELLO (on the post-handshake INVITE/ACCEPT/CONFIRM
+        // path). Either side will surface it as an exception — the exact one varies
+        // depending on which frame the tampered byte ends up on. We just assert that
+        // the test does NOT successfully complete a session.
+        await Assert.ThrowsAnyAsync<Exception>(async () =>
         {
-            // Build initiator side and run the handshake to the point an invitation queues.
-            var (initStream, respStream) = MemoryDuplexStream.CreatePair();
-            using var initKey = KeyPair.Generate();
-            // Roster on the initiator side must include keyB; mock it minimally.
-            var initRoster = new InMemoryCrewRoster(new[]
-            {
-                new CrewMember { Peer = PeerId.From(initKey.PrincipalId), DisplayName = $"Init-{i}" },
-                new CrewMember { Peer = PeerId.From(keyB.PrincipalId), DisplayName = "Bob" },
-            });
-            // Add this initiator to keyB's roster so the responder accepts it.
-            var listenerSideRoster = new InMemoryCrewRoster(new[]
-            {
-                new CrewMember { Peer = PeerId.From(initKey.PrincipalId), DisplayName = $"Init-{i}" },
-                new CrewMember { Peer = PeerId.From(keyB.PrincipalId), DisplayName = "Bob" },
-            });
-            // Note: the listener under test was constructed with the original `roster` which
-            // doesn't include these initiators. Skip — this test verifies the drop callback
-            // path independently rather than the full handshake at saturation, which would
-            // require fixture rework. Mark as test-by-design simplification.
-            await Task.CompletedTask;
+            await Task.WhenAll(listenTask, openTask).WaitAsync(TimeSpan.FromSeconds(5));
         });
-        await Task.WhenAll(saturationTasks);
-
-        // Direct verification: the drop counter starts at zero, and the OnInviteDropped
-        // callback fires once per dropped INVITE. The full saturation simulation needs
-        // shared roster wiring beyond what this unit test provides; it is exercised in
-        // the kitchen-sink integration suite (Phase 5).
-        Assert.Equal(0, dropped);
-        Assert.Equal(0L, listener.DroppedCount);
     }
 
     private sealed class SingleTransportSelector : ITransportSelector
@@ -177,5 +189,39 @@ public class NativeChannelProviderIntegrationTests
             Task.FromResult<PeerEndpoint?>(null);
         public Task<IDuplexStream> ConnectAsync(PeerId peer, CancellationToken ct) =>
             throw new NotSupportedException("UnreachableTransport never connects.");
+    }
+
+    /// <summary>Pass-through duplex that flips one byte of ciphertext at a fixed offset on writes.</summary>
+    private sealed class ByteFlippingDuplex : IDuplexStream
+    {
+        private readonly IDuplexStream _inner;
+        private readonly int _flipOffset;
+        private long _bytesWritten;
+        public ByteFlippingDuplex(IDuplexStream inner, int flipOffset) { _inner = inner; _flipOffset = flipOffset; }
+        public System.IO.Stream Stream => throw new NotSupportedException();
+        public Task<int> ReadAsync(Memory<byte> buffer, CancellationToken ct) => _inner.ReadAsync(buffer, ct);
+        public async Task WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken ct)
+        {
+            var arr = buffer.ToArray();
+            for (var i = 0; i < arr.Length; i++)
+            {
+                var pos = _bytesWritten + i;
+                if (pos == _flipOffset) arr[i] ^= 0xFF;
+            }
+            _bytesWritten += arr.Length;
+            await _inner.WriteAsync(arr, ct);
+        }
+        public Task FlushAsync(CancellationToken ct) => _inner.FlushAsync(ct);
+        public ValueTask DisposeAsync() => _inner.DisposeAsync();
+    }
+
+    private sealed class StubInvitation : IChannelInvitation
+    {
+        public StubInvitation(PeerId from) { FromPeer = from; }
+        public PeerId FromPeer { get; }
+        public ChannelCapability OfferedCapabilities => ChannelCapability.Text;
+        public Task<IChannelSession> AcceptAsync(CancellationToken ct) =>
+            throw new NotSupportedException("Stub invitation; tests must not accept.");
+        public Task RejectAsync(string? reason, CancellationToken ct) => Task.CompletedTask;
     }
 }

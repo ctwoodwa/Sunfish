@@ -17,11 +17,25 @@ public sealed class InMemoryCrewRoster : ICrewRoster
 {
     private readonly IReadOnlyList<CrewMember> _members;
 
-    /// <summary>Creates a roster pre-populated with the supplied crew members.</summary>
+    /// <summary>
+    /// Creates a roster pre-populated with the supplied crew members.
+    /// Throws on duplicate <c>PeerId</c> in the seed — silent acceptance
+    /// would let a misconfigured tenant register two distinct display
+    /// names against the same Ed25519 identity (council finding #13).
+    /// </summary>
     public InMemoryCrewRoster(IEnumerable<CrewMember> seed)
     {
         ArgumentNullException.ThrowIfNull(seed);
-        _members = new List<CrewMember>(seed);
+        var list = new List<CrewMember>();
+        var peers = new HashSet<Sunfish.Federation.Common.PeerId>();
+        foreach (var member in seed)
+        {
+            if (!peers.Add(member.Peer))
+                throw new ArgumentException(
+                    $"Duplicate PeerId {member.Peer} in roster seed.", nameof(seed));
+            list.Add(member);
+        }
+        _members = list;
     }
 
     /// <inheritdoc />

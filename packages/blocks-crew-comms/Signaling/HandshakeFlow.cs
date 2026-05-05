@@ -87,6 +87,10 @@ internal static class HandshakeFlow
         handshake.DeriveSessionKey(
             localEphemeralKey, remoteHello.EphemeralPublicKey, localPeer, remotePeer);
 
+        // Per ADR 0076 §step 8 — all post-HELLO frames are AEAD-wrapped under the
+        // derived session key. Initiator role: nonce bit 63 = 0.
+        frames.EnableAead(handshake.SessionKey!, isInitiator: true);
+
         // Initiator sends INVITE
         var invitePayload = MessagePackSerializer.Serialize(
             new InvitePayload { Capabilities = (byte)preferredCapabilities },
@@ -111,6 +115,21 @@ internal static class HandshakeFlow
             throw new TimeoutException("ACCEPT was not received within the 60s INVITE budget.");
         }
         var negotiated = (ChannelCapability)accept.Capability;
+
+        // Per ADR 0076-A2: initiator MUST verify ACCEPT.capability ⊆ sent INVITE.capabilities.
+        // A relay-MitM that downgrades INVITE could otherwise propose an ACCEPT.capability
+        // not in the initiator's offered set; without this check the initiator would
+        // silently use the downgraded capability.
+        if ((accept.Capability & (byte)preferredCapabilities) != accept.Capability)
+        {
+            try
+            {
+                await frames.WriteFrameAsync(MessageType.Reject, Array.Empty<byte>(), ct).ConfigureAwait(false);
+            }
+            catch { /* best-effort */ }
+            throw new CapabilityNegotiationException(
+                $"ACCEPT.capability 0x{accept.Capability:X2} is not a subset of INVITE.capabilities 0x{(byte)preferredCapabilities:X2}.");
+        }
 
         // Compute transcript hash; both peers compute identically.
         var tenantBytes = EncryptionHandshake.TenantBytes(tenantId);
@@ -153,6 +172,10 @@ internal static class HandshakeFlow
     {
         handshake.DeriveSessionKey(
             localEphemeralKey, remoteHello.EphemeralPublicKey, initiatorPeer, responderPeer);
+
+        // Per ADR 0076 §step 8 — all post-HELLO frames are AEAD-wrapped under the
+        // derived session key. Responder role: nonce bit 63 = 1.
+        frames.EnableAead(handshake.SessionKey!, isInitiator: false);
 
         var (type, payload) = await frames.ReadFrameAsync(ct).ConfigureAwait(false);
         if (type != MessageType.Invite)
@@ -228,4 +251,15 @@ public sealed class TranscriptMismatchException : Exception
 {
     /// <inheritdoc />
     public TranscriptMismatchException(string message) : base(message) { }
+}
+
+/// <summary>
+/// Thrown by <c>SessionInitiator</c> when an inbound ACCEPT proposes a
+/// capability that was not in the initiator's INVITE offer set. Per
+/// ADR 0076-A2 — closes the relay-MitM downgrade vector.
+/// </summary>
+public sealed class CapabilityNegotiationException : Exception
+{
+    /// <inheritdoc />
+    public CapabilityNegotiationException(string message) : base(message) { }
 }

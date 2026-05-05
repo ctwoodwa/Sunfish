@@ -30,10 +30,20 @@ public sealed class SessionListener
     private readonly KeyPair _identity;
     private readonly ICrewRoster _roster;
     private readonly TimeProvider _time;
+    // Hand-off line 300 specifies `DropNewest`, but every `Drop*` enum in
+    // System.Threading.Channels.BoundedChannelFullMode silently swallows the
+    // drop — `TryWrite` returns true and there is no observable signal to
+    // emit the audit event. Behavioral intent (per hand-off prose: "INVITEs
+    // arriving when the channel is full are dropped" + "On drop: emits
+    // ChannelInviteDropped audit event") requires that drops be observable.
+    // We use `Wait` mode + synchronous `TryWrite`: when the channel is at
+    // capacity, `TryWrite` returns false (because the synchronous path can't
+    // wait), and the listener emits the drop. Council finding #3 confirmed
+    // the hand-off enum-vs-prose mismatch; we match the prose intent.
     private readonly Channel<IChannelInvitation> _invitations =
         Channel.CreateBounded<IChannelInvitation>(new BoundedChannelOptions(InviteChannelCapacity)
         {
-            FullMode = BoundedChannelFullMode.DropNewest,
+            FullMode = BoundedChannelFullMode.Wait,
             SingleReader = false,
             SingleWriter = false,
         });
@@ -95,10 +105,26 @@ public sealed class SessionListener
                 frames, handshake, localEphemeral, remoteHello, initiatorPeer, responderPeer, ct)
                 .ConfigureAwait(false);
 
-            // 4. Hand off to a deferred IChannelInvitation. The eventual
+            // 4. Decide acceptability up-front. If the negotiated capability is
+            //    None, the invitation is unaccept-able — send REJECT and dispose
+            //    BEFORE enqueuing so callers never see an invitation that can't
+            //    be accepted (council finding #7).
+            var negotiated = HandshakeFlow.NegotiateHighestCommon(offered, localCapabilities);
+            if (negotiated == ChannelCapability.None)
+            {
+                try
+                {
+                    await frames.WriteFrameAsync(MessageType.Reject, Array.Empty<byte>(), ct).ConfigureAwait(false);
+                }
+                catch { /* best-effort */ }
+                await frames.DisposeAsync().ConfigureAwait(false);
+                handshake.Dispose();
+                return;
+            }
+
+            // 5. Hand off to a deferred IChannelInvitation. The eventual
             //    AcceptAsync / RejectAsync sends ACCEPT/REJECT and (on accept)
             //    drives the CONFIRM exchange.
-            var negotiated = HandshakeFlow.NegotiateHighestCommon(offered, localCapabilities);
             var invitation = new DeferredInvitation(
                 frames, handshake, remoteHello, responderHello, initiatorPeer, tenant, negotiated, offered, _time);
 
@@ -125,6 +151,42 @@ public sealed class SessionListener
 
     /// <summary>Stops accepting new invitations. Existing ones remain available to consumers.</summary>
     public void Stop() => _invitations.Writer.TryComplete();
+
+    /// <summary>
+    /// Test-only hook to enqueue a synthetic invitation, bypassing the
+    /// handshake. Used by <c>SessionListener_DropNewest_FillBoundedChannelDirectly</c>
+    /// to exercise the bounded-channel drop path without running 17 real
+    /// handshakes.
+    /// </summary>
+    internal bool TryEnqueueForTest(IChannelInvitation invitation)
+    {
+        ArgumentNullException.ThrowIfNull(invitation);
+        var written = _invitations.Writer.TryWrite(invitation);
+        if (!written)
+        {
+            System.Threading.Interlocked.Increment(ref _droppedCount);
+            OnInviteDropped?.Invoke(_time.GetUtcNow());
+        }
+        return written;
+    }
+
+    /// <summary>
+    /// Drains and rejects every queued invitation. Used by
+    /// <see cref="NativeChannelProvider.DisposeAsync"/> on shutdown so
+    /// pending invitations don't leak their underlying streams.
+    /// </summary>
+    public async Task DrainAsync(CancellationToken ct)
+    {
+        Stop();
+        while (_invitations.Reader.TryRead(out var inv))
+        {
+            try
+            {
+                await inv.RejectAsync("Listener shutting down.", ct).ConfigureAwait(false);
+            }
+            catch { /* best-effort drain */ }
+        }
+    }
 }
 
 internal sealed class DeferredInvitation : IChannelInvitation
@@ -165,18 +227,33 @@ internal sealed class DeferredInvitation : IChannelInvitation
 
     public async Task<IChannelSession> AcceptAsync(CancellationToken ct)
     {
-        if (System.Threading.Interlocked.Exchange(ref _settled, 1) != 0)
-            throw new InvalidOperationException("Invitation already settled.");
+        // Pre-flight check (no-common-cap should have been rejected by the
+        // listener before enqueuing — defense in depth).
         if (_negotiated == ChannelCapability.None)
             throw new InvalidOperationException("No common capability — cannot accept.");
+        if (System.Threading.Interlocked.Exchange(ref _settled, 1) != 0)
+            throw new InvalidOperationException("Invitation already settled.");
 
-        await HandshakeFlow.ResponderAcceptAsync(
-            _frames, _negotiated, _initiatorHello, _responderHello, _tenantId, ct)
-            .ConfigureAwait(false);
+        try
+        {
+            await HandshakeFlow.ResponderAcceptAsync(
+                _frames, _negotiated, _initiatorHello, _responderHello, _tenantId, ct)
+                .ConfigureAwait(false);
 
-        var session = new NativeChannelSession(_frames, _handshake, FromPeer, _negotiated, _time);
-        session.Activate();
-        return session;
+            var session = new NativeChannelSession(_frames, _handshake, FromPeer, _negotiated, _time);
+            session.Activate();
+            return session;
+        }
+        catch
+        {
+            // Council finding #5 — any exception during ACCEPT/CONFIRM exchange
+            // or session construction must dispose the wire-protocol resources
+            // we own; otherwise the FrameProtocol (with NSec session key) and
+            // the IDuplexStream both leak.
+            await _frames.DisposeAsync().ConfigureAwait(false);
+            _handshake.Dispose();
+            throw;
+        }
     }
 
     public async Task RejectAsync(string? reason, CancellationToken ct)

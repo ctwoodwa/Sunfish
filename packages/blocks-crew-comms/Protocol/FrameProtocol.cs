@@ -1,9 +1,11 @@
 using System;
 using System.Buffers.Binary;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using MessagePack;
+using NSec.Cryptography;
 using Sunfish.Foundation.Transport;
 
 namespace Sunfish.Blocks.CrewComms.Protocol;
@@ -38,8 +40,17 @@ public sealed class FrameProtocol : IAsyncDisposable
     /// </remarks>
     public const int MaxFramePayloadBytes = 16 * 1024 * 1024;
 
+    private const int NonceLengthBytes = 12;
+    private const int AeadTagLengthBytes = 16;
+    private const ulong NonceRoleMask = 1UL << 63;
+
     private readonly IDuplexStream _stream;
     private readonly SemaphoreSlim _sendGate = new(1, 1);
+    private Key? _aeadKey;
+    private ulong _sendCounter;
+    private ulong _recvCounter;
+    private bool _aeadEnabled;
+    private bool _isInitiator;
     private bool _disposed;
 
     /// <summary>Wraps an open duplex stream with the crew-comms framing protocol.</summary>
@@ -48,6 +59,35 @@ public sealed class FrameProtocol : IAsyncDisposable
         ArgumentNullException.ThrowIfNull(stream);
         _stream = stream;
     }
+
+    /// <summary>
+    /// Switches the protocol from plaintext (HELLO-only) to ChaCha20-Poly1305
+    /// AEAD wrapping. Per ADR 0076 §step 8: every post-HELLO frame is encrypted
+    /// as <c>[Nonce(12)] ++ AEAD(sessionKey, nonce, plainFrame)</c>. Per the
+    /// XO P4 directive, nonces are role-split: initiator-to-responder frames
+    /// set bit 63 of the nonce counter to 0; responder-to-initiator frames
+    /// set bit 63 to 1. This prevents nonce collisions without requiring
+    /// state synchronization across reconnect.
+    /// </summary>
+    /// <param name="sessionKey">The HKDF-derived session key (caller-owned;
+    /// FrameProtocol does NOT dispose it).</param>
+    /// <param name="isInitiator">True if this side opened the session
+    /// (initiator); false if accepted (responder).</param>
+    public void EnableAead(Key sessionKey, bool isInitiator)
+    {
+        ArgumentNullException.ThrowIfNull(sessionKey);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+        if (_aeadEnabled)
+            throw new InvalidOperationException("AEAD already enabled — single-shot per session.");
+        _aeadKey = sessionKey;
+        _isInitiator = isInitiator;
+        _sendCounter = 0;
+        _recvCounter = 0;
+        _aeadEnabled = true;
+    }
+
+    /// <summary>True after <see cref="EnableAead"/> has been called.</summary>
+    public bool IsAeadEnabled => _aeadEnabled;
 
     /// <summary>
     /// Reads a single frame from the peer. Returns the frame type byte and
@@ -72,7 +112,23 @@ public sealed class FrameProtocol : IAsyncDisposable
         var payload = new byte[length];
         if (length > 0)
             await ReadExactlyAsync(payload, ct).ConfigureAwait(false);
-        return (type, payload);
+
+        if (!_aeadEnabled || type == MessageType.Hello)
+            return (type, payload);
+
+        // AEAD-encrypted frame: payload = [Nonce(12)] ++ ciphertext+tag
+        if (payload.Length < NonceLengthBytes + AeadTagLengthBytes)
+            throw new CryptographicException("AEAD-wrapped frame is shorter than the minimum nonce+tag size.");
+
+        var nonce = new ReadOnlySpan<byte>(payload, 0, NonceLengthBytes);
+        var ciphertext = new ReadOnlySpan<byte>(payload, NonceLengthBytes, payload.Length - NonceLengthBytes);
+        var aead = AeadAlgorithm.ChaCha20Poly1305;
+        var plaintext = aead.Decrypt(_aeadKey!, nonce, ReadOnlySpan<byte>.Empty, ciphertext)
+            ?? throw new CryptographicException("AEAD decryption failed — ciphertext or tag tampered.");
+        // Bump the receive counter for diagnostic/replay detection (no state synchronized);
+        // any out-of-order is detected by AEAD tag failure on the next frame.
+        Interlocked.Increment(ref _recvCounter);
+        return (type, plaintext);
     }
 
     /// <summary>
@@ -89,18 +145,51 @@ public sealed class FrameProtocol : IAsyncDisposable
         await _sendGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
+            ReadOnlyMemory<byte> framePayload;
+            if (_aeadEnabled && type != MessageType.Hello)
+            {
+                framePayload = EncryptFrame(payload.Span);
+            }
+            else
+            {
+                framePayload = payload;
+            }
+
+            if (framePayload.Length > MaxFramePayloadBytes)
+                throw new InvalidOperationException(
+                    $"AEAD-wrapped frame payload {framePayload.Length} exceeds maximum {MaxFramePayloadBytes} bytes.");
+
             var header = new byte[5];
-            BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(0, 4), (uint)payload.Length);
+            BinaryPrimitives.WriteUInt32LittleEndian(header.AsSpan(0, 4), (uint)framePayload.Length);
             header[4] = type;
             await _stream.WriteAsync(header, ct).ConfigureAwait(false);
-            if (payload.Length > 0)
-                await _stream.WriteAsync(payload, ct).ConfigureAwait(false);
+            if (framePayload.Length > 0)
+                await _stream.WriteAsync(framePayload, ct).ConfigureAwait(false);
             await _stream.FlushAsync(ct).ConfigureAwait(false);
         }
         finally
         {
             _sendGate.Release();
         }
+    }
+
+    private byte[] EncryptFrame(ReadOnlySpan<byte> plaintext)
+    {
+        var nonce = new byte[NonceLengthBytes];
+        var counter = Interlocked.Increment(ref _sendCounter);
+        // Big-endian counter in low 8 bytes; bit 63 of byte[0] = role split per XO directive.
+        BinaryPrimitives.WriteUInt64BigEndian(nonce.AsSpan(NonceLengthBytes - sizeof(ulong), sizeof(ulong)), counter);
+        if (_isInitiator)
+            nonce[0] |= 0x00; // initiator-to-responder: bit 63 = 0
+        else
+            nonce[0] |= 0x80; // responder-to-initiator: bit 63 = 1
+
+        var aead = AeadAlgorithm.ChaCha20Poly1305;
+        var ciphertext = aead.Encrypt(_aeadKey!, nonce, ReadOnlySpan<byte>.Empty, plaintext);
+        var output = new byte[NonceLengthBytes + ciphertext.Length];
+        Buffer.BlockCopy(nonce, 0, output, 0, NonceLengthBytes);
+        Buffer.BlockCopy(ciphertext, 0, output, NonceLengthBytes, ciphertext.Length);
+        return output;
     }
 
     /// <summary>
