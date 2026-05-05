@@ -52,6 +52,14 @@ amendments:
       initiator post-ACCEPT verification that ACCEPT.capability is a subset of INVITE.capabilities.
       Corrects A1 rationale error ("INVITE.capabilities subsumed by negotiatedCap" was wrong).
       Unblocks W#45 P4 council finding #8.
+  - date: 2026-05-05
+    summary: >
+      A3 conformance test vectors: ships 9 deterministic test vectors (HELLO ×3, HEARTBEAT ×3,
+      CONFIRM-transcript-hash ×3) that fix the A1+A2 ratified canonical encoding to authoritative
+      byte sequences. Closes A1 council finding F3 (interop-falsifiability gap). Vectors generated
+      by tools/icm/generate-channel-vectors.py (re-runnable; byte-stable); committed JSON at
+      tools/icm/channel-test-vectors.json. Per-implementation conformance protocol specified
+      in §A3.5. Domain-separator (F2) remains deferred to a future amendment.
 ---
 
 # ADR 0076 — Crew Comms: `foundation-channels` Contracts and Native Implementation
@@ -983,3 +991,262 @@ check + one test fixture update). May be combined with the P4 AEAD + glare-wirin
 - ADR 0076-A1 §A1.3 §A1 (prior CONFIRM transcript hash spec — superseded by A2.3)
 - ADR 0076 §Wire protocol `0x03` INVITE row
 - `packages/foundation-channels/` — `ChannelCapability` flags enum (W#45 P1)
+
+---
+
+## Amendment A3 — Conformance test vectors (HELLO / HEARTBEAT / CONFIRM transcript)
+
+**Amendment date:** 2026-05-05
+**Authors:** XO research session
+**Resolves:** A1 council review finding F3 (Major) — *"no test vectors for transcript-hash or HEARTBEAT signable; interop unfalsifiable"*
+**Pipeline variant:** `sunfish-feature-change` (specification artifact only; no new types; no wire-encoding change)
+**Pre-merge council:** mandatory (behavior-bearing artifact under cohort security discipline)
+
+---
+
+### A3.1 Context
+
+A1 ratified the wire-encoding canonical form (transcript-hash, TenantId, PeerId encodings, endianness convention); A2 closed the relay-MitM capability-downgrade vector by binding `INVITE.capabilities` into the CONFIRM transcript hash. Both amendments specify the encoding **in prose only**: byte-layout descriptions, length tables, ordering rules. The A1 council review (`0076-A1-council-review-2026-05-04.md` finding F3) flagged this as a Major gap:
+
+> The amendment ships pure prose; there are zero authoritative test vectors. The motivating concern for the amendment ("MessagePack key ordering is implementation-defined, meaning two conformant implementations may serialize identical logical payloads to different byte sequences") is exactly the kind of cross-implementation interop concern that test vectors are designed to lock down.
+
+The cohort precedent for crypto specifications (RFC 8439 ChaCha20-Poly1305 §Test Vectors; RFC 7748 X25519 §Test Vectors; RFC 5869 HKDF §Test Vectors; ADR 0028 JSON canonical-form examples) is to ship known-answer fixtures alongside the prose. Without them, the gate "implementations agree on transcript-hash bytes" (council AP-18 finding) is unverifiable cross-implementation.
+
+A3 closes F3 by defining a fixed, deterministic, version-controlled set of conformance test vectors that any implementation in any language MUST reproduce byte-for-byte to be considered conforming.
+
+---
+
+### A3.2 Decision drivers
+
+1. **Interop falsifiability.** A second-language implementation (iOS Swift, Android Kotlin, Rust) cannot demonstrate conformance against prose alone. Test vectors fail loud and immediate when an implementer mis-implements length-prefix endianness, `peerId` encoding, or capability-byte position.
+
+2. **Reproducibility from source.** Vectors are derived deterministically from short canonical phrases via SHA-256, not random seeds or binary blob fixtures. The entire vector set can be regenerated from the source script, so review/audit/regen does not require trusting committed binary data.
+
+3. **Single canonical generator.** One authoritative tool (`tools/icm/generate-channel-vectors.py`) produces the vectors; all implementations verify against the JSON output. The .NET reference impl is NOT the canonical source — that would couple the spec to NSec.Cryptography quirks. Python's `cryptography` package implements RFC 8032 deterministic Ed25519 + RFC 7748 X25519 + FIPS 180-4 SHA-256, which any conforming implementation matches by construction.
+
+4. **Cohort idiom — appendix-section over sidecar file.** A1 and A2 are inline amendments in the ADR file. A3 follows the same pattern; the JSON artifact is a separate file (`tools/icm/channel-test-vectors.json`) but the canonical specification of vector inputs + expected outputs lives in the ADR appendix below. No new ADR-sidecar precedent is set.
+
+5. **Domain-separator (F2) deferred.** A1 council finding F2 (no domain-separator prefix on transcript-hash) is NOT addressed by A3. F2 is a forward-compatibility concern (allows reusing the same hash construction for a future protocol version without collision); F3 is the cross-implementation interop concern. Closing F3 first is correct because F3 blocks every second-language implementer immediately, while F2 only matters when a v2 protocol is designed. F2 will be a follow-on amendment when Phase 3 (audio) lands or when a second-language implementation is in flight. The A3 vectors as authored here will need ONE regeneration when F2 lands; this cost is accepted.
+
+6. **No impl-vs-spec drift remediation in this amendment.** The .NET reference impl (`packages/blocks-crew-comms/Crypto/EncryptionHandshake.cs` on `main` as of W#45 P4) uses the A1-pre-ratification 6-parameter `ComputeTranscriptHash` signature (no `presence.caps` from A1, no `inviteCaps` from A2). The W#45 P4.5 hand-off (`icm/_state/handoffs/crew-comms-p45-stage06-addendum.md`) tracks the .NET impl catch-up as a separate sunfish-PM PR with its own pre-merge council. A3 vectors are the authoritative reference that the catch-up PR validates against; A3 does NOT modify the impl.
+
+---
+
+### A3.3 Decisions
+
+#### A3 Decision 1 — Conformance test-vector format and storage
+
+A3 authors a single canonical JSON document at:
+
+- `tools/icm/channel-test-vectors.json` — committed to the repo; CI-verifiable
+
+The document is generated by:
+
+- `tools/icm/generate-channel-vectors.py` — Python 3 + `cryptography` (PyPI); deterministic; byte-stable; supports `--check` for CI drift detection
+
+The schema is:
+
+```jsonc
+{
+  "schema_version": 1,
+  "adr_reference": "0076-A3",
+  "domain_separator": null,
+  "ratified_form": "A1+A2 (no domain-separator; F2 deferred to a later amendment)",
+  "fixed_inputs": {
+    "initiator_identity_seed_hex":   "<32-byte hex>",   // SHA-256 of canonical phrase
+    "initiator_identity_pubkey_hex": "<32-byte hex>",   // Ed25519 raw public key
+    "responder_identity_seed_hex":   "<32-byte hex>",
+    "responder_identity_pubkey_hex": "<32-byte hex>",
+    "initiator_x25519_seed_hex":     "<32-byte hex>",
+    "initiator_x25519_pubkey_hex":   "<32-byte hex>",   // X25519 raw public key
+    "responder_x25519_seed_hex":     "<32-byte hex>",
+    "responder_x25519_pubkey_hex":   "<32-byte hex>",
+    "sample_message_id":             "00000000-0000-4000-8000-000000000001",
+    "sample_timestamp_unix_ms":      1735689600000      // 2025-01-01T00:00:00Z UTC
+  },
+  "seed_provenance": { /* documents how seeds are derived */ },
+  "vectors": [
+    {
+      "id": "V1",
+      "kind": "HELLO",        // or "HEARTBEAT" or "CONFIRM_TRANSCRIPT"
+      "description": "...",
+      "inputs":   { /* per-vector input bag (kind-specific) */ },
+      "expected_signable_hex":   "...",   // HELLO + HEARTBEAT only
+      "expected_signable_length": 84,     // HELLO + HEARTBEAT only
+      "expected_signature_hex":  "...",   // HELLO + HEARTBEAT only
+      "expected_input_hex":      "...",   // CONFIRM_TRANSCRIPT only
+      "expected_input_length":   151,     // CONFIRM_TRANSCRIPT only
+      "expected_sha256_hex":     "..."    // CONFIRM_TRANSCRIPT only
+    }
+    // ...
+  ]
+}
+```
+
+All hex values are lowercase, unpadded, no `0x` prefix.
+
+#### A3 Decision 2 — Vector coverage
+
+A3 ships **9 vectors**: 3 HELLO, 3 HEARTBEAT, 3 CONFIRM-transcript-hash. Coverage rationale:
+
+| Kind | V# | Coverage axis | Tenant | Caps inputs |
+|---|---|---|---|---|
+| HELLO | V1 | Normal-shape ASCII tenant | `"tenant-001-acme"` (15 bytes) | presence.caps = 0x07 (text+audio+video) |
+| HELLO | V2 | Zero-length tenant edge | `""` (0 bytes) | presence.caps = 0x01 (text only) |
+| HELLO | V3 | UTF-8 multi-byte tenant | `"tenant-é-ünïcödë"` (21 bytes) | presence.caps = 0x03 (text+audio) |
+| HEARTBEAT | V4 | Normal-shape ASCII tenant | `"tenant-001-acme"` (15 bytes) | caps = 0x01, ts = 1735689600000 |
+| HEARTBEAT | V5 | Max-practical 63-byte ASCII tenant | `"x" * 63` | caps = 0x07, ts = 1735689600000 |
+| HEARTBEAT | V6 | Boundary 1-byte tenant | `"a"` (1 byte) | caps = 0x01, ts = 1735689600000 |
+| CONFIRM | V7 | Full A1+A2 form, normal tenant | `"tenant-001-acme"` | inviteCaps=0x07, negCap=0x01, presA=0x07, presB=0x03 |
+| CONFIRM | V8 | Zero-length tenant + minimal caps | `""` | All four caps fields = 0x01 |
+| CONFIRM | V9 | UTF-8 tenant + asymmetric caps | `"tenant-é-ünïcödë"` | inviteCaps=0x07, negCap=0x02, presA=0x07, presB=0x06 |
+
+This covers the three failure modes the council called out:
+- **Length-prefix endianness** (caught by V5's 0x3F = 63 length byte vs little-endian's 0x3F00 mis-encoding)
+- **Tenant boundary** (V2 zero-length and V6 one-byte expose off-by-one length-prefix bugs)
+- **UTF-8 byte-vs-character** (V3 + V9 fail on implementations that encode `tenant.length` as character count rather than byte count)
+
+The CONFIRM vectors additionally lock the **field ordering** (A1 step `presenceCapsA[1]` after `negotiatedCap[1]`; A2 insertion of `inviteCaps[1]` between `tenantBytes` and `negotiatedCap`) — the exact ordering the council flagged as silently mis-implementable.
+
+#### A3 Decision 3 — Test seeds (deterministic, reproducible)
+
+| Role | Algorithm | Seed = SHA-256 of phrase |
+|---|---|---|
+| Initiator identity | Ed25519 | `"sunfish-channels-test-initiator-id-v1"` |
+| Responder identity | Ed25519 | `"sunfish-channels-test-responder-id-v1"` |
+| Initiator ephemeral | X25519 | `"sunfish-channels-test-initiator-ephem-v1"` |
+| Responder ephemeral | X25519 | `"sunfish-channels-test-responder-ephem-v1"` |
+
+Resolved keys (informative — see `tools/icm/channel-test-vectors.json` `fixed_inputs` for the canonical artifact):
+
+```
+initiator identity pubkey (Ed25519, 32B):  4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35
+responder identity pubkey (Ed25519, 32B):  01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a
+initiator ephemeral pubkey (X25519, 32B):  005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e
+responder ephemeral pubkey (X25519, 32B):  0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c
+```
+
+> **Test-only fixtures — DO NOT use in production.** These keys are
+> deterministic and publicly committed in this repository. They MUST
+> NEVER be installed in any production roster, used to sign any
+> production frame, or treated as confidential. Any peer that produces
+> a HELLO or HEARTBEAT signature with these identity keys is by
+> construction non-production-bound.
+
+#### A3 Decision 4 — Expected outputs (informative summary; canonical artifact in JSON)
+
+The full byte-level expected outputs live in `tools/icm/channel-test-vectors.json`. The summary table below pins the SHA-256 transcript-hash outputs and signable lengths so reviewers can spot-check at a glance:
+
+| Vector | Kind | Signable / input length | Expected output (truncated for table) |
+|---|---|---|---|
+| V1 | HELLO | 84 B | sig = `b185c034c93a312a670fb46ae30b4818…` |
+| V2 | HELLO | 69 B | sig = `5aabffa12fdee040cf05cd001124fa54…` |
+| V3 | HELLO | 90 B | sig = `ca41dafb02e5be88993b32a73352d3f7…` |
+| V4 | HEARTBEAT | 60 B | sig = `fe31f6e8c1641b585a87ff8f52d7aa8a…` |
+| V5 | HEARTBEAT | 108 B | sig = `659265c63a6112faf1b9f19fbb79a49a…` |
+| V6 | HEARTBEAT | 46 B | sig = `13736db960d440d2df49c7ebd926dc37…` |
+| V7 | CONFIRM | 151 B | SHA-256 = `5c38292a921ea0bff9a3b20b49e255d8e8eb06579e1aaa44aa11ad539f03a8fb` |
+| V8 | CONFIRM | 136 B | SHA-256 = `de32c848e5a0c63e7919201a2d984a2d7fc0efef0ba928a4a3845ba02ee4d039` |
+| V9 | CONFIRM | 157 B | SHA-256 = `852c278135eccb596882767608598806eeefca4c5b546e22984497102d906cb6` |
+
+**Length-math validation** (per ADR §A1.4, §A2.3 §A1 ext):
+- HELLO: `32 + 32 + 4 + len(tenantBytes) + 1` → V1 = 32+32+4+15+1 = **84 ✓**, V2 = 32+32+4+0+1 = **69 ✓**, V3 = 32+32+4+21+1 = **90 ✓**
+- HEARTBEAT: `32 + 4 + len(tenantBytes) + 1 + 8` → V4 = 32+4+15+1+8 = **60 ✓**, V5 = 32+4+63+1+8 = **108 ✓**, V6 = 32+4+1+1+8 = **46 ✓**
+- CONFIRM (A1+A2): `4*32 + 4 + len(tenantBytes) + 4*1` → V7 = 128+4+15+4 = **151 ✓**, V8 = 128+4+0+4 = **136 ✓**, V9 = 128+4+21+4 = **157 ✓**
+
+---
+
+### A3.4 Cross-implementation conformance protocol
+
+A conforming implementation in any language (.NET, Swift, Kotlin, Rust, Go, …) MUST satisfy all three checks below. A failure on any vector means the implementation is non-conforming and cannot interop with peers that follow the spec.
+
+**Check 1 — Signable byte assembly.** For each `HELLO` and `HEARTBEAT` vector, the implementation reconstructs the signable buffer from `inputs` and asserts byte-for-byte equality against `expected_signable_hex`. This catches length-prefix endianness, byte vs character length, field-ordering, and `peerId` encoding bugs. (A signature mismatch alone does not localize the defect; the signable check does.)
+
+**Check 2 — Ed25519 signature.** For each `HELLO` and `HEARTBEAT` vector, the implementation signs the `expected_signable_hex` with the test seed (`initiator_identity_seed_hex` or `responder_identity_seed_hex`) using its Ed25519 implementation, and asserts byte-for-byte equality against `expected_signature_hex`. Per RFC 8032 Ed25519 is fully deterministic — there is no nonce/IV randomness — so any conforming implementation produces identical signature bytes.
+
+**Check 3 — CONFIRM SHA-256 transcript hash.** For each `CONFIRM_TRANSCRIPT` vector, the implementation reconstructs the input buffer from `inputs` and asserts byte-for-byte equality against `expected_input_hex`, then computes SHA-256 and asserts byte-for-byte equality against `expected_sha256_hex`. Both checks are required: input-buffer match without hash match would indicate SHA-256 implementation drift (very unlikely); hash match without input-buffer match would indicate a coincidentally-colliding bug (vanishingly unlikely but mathematically possible) — the input check is what makes the failure mode legible.
+
+**Verification cadence:** the conformance suite is a build-time gate, not a runtime gate. It runs in CI on every PR that touches `EncryptionHandshake`, `FrameProtocol`, `Payloads`, or any cross-language re-implementation of the wire encoding. A failing vector blocks merge.
+
+**Per-language fixture loader:** the JSON document is the source of truth. Each language implements one loader (e.g. `EncryptionHandshakeConformanceTests` in xUnit for .NET; an equivalent in `XCTest` for Swift; in `kotest` for Kotlin) that reads the JSON, drives Checks 1–3, and reports per-vector pass/fail. The loader is implementation-private; the JSON is shared.
+
+---
+
+### A3.5 Generation provenance
+
+The canonical generator is `tools/icm/generate-channel-vectors.py`. It uses:
+
+| Primitive | Source | Notes |
+|---|---|---|
+| Ed25519 sign / public-key derivation | Python `cryptography` package (via PyCA, libssl) | RFC 8032 deterministic; no nonce randomness |
+| X25519 public-key derivation | Python `cryptography` package | RFC 7748; no actual key-agreement is performed (only public-key derivation from seed) — A3 vectors do not contain DH-derived shared secrets, so HKDF / session-key correctness is NOT covered by these vectors and remains an integration-test concern |
+| SHA-256 | Python stdlib `hashlib` | FIPS 180-4 |
+
+**Why not the .NET reference impl as the canonical generator?** Coupling the spec to a single library's quirks (NSec.Cryptography wraps libsodium) creates a hidden dependency: a future second-language implementation that uses a different Ed25519 backend (e.g. swift-crypto, ring, BoringSSL) cannot validate against the spec without trusting that the .NET impl matched RFC 8032 exactly. By using a Python reference path (PyCA `cryptography` is a thin wrapper over OpenSSL/libssl Ed25519, also RFC 8032), the spec becomes library-portable: any RFC-conforming Ed25519 produces identical signatures.
+
+**Determinism rule.** `tools/icm/generate-channel-vectors.py --check` MUST exit 0 when run against the committed JSON. CI enforces this. Re-running the script must produce byte-identical JSON output (verified at authoring time: two consecutive runs produced an unchanged 11,980-byte document).
+
+**Update path.** When (not if) F2 lands and a domain-separator prefix is added to the transcript-hash construction, V7/V8/V9 expected hashes change. The amendment that introduces F2 will:
+1. Update `confirm_transcript_input` in the generator script to prepend the domain-separator
+2. Re-run `python3 tools/icm/generate-channel-vectors.py`
+3. Commit both the generator change and the regenerated `channel-test-vectors.json`
+4. Update the §A3.3 D4 SHA-256 column above with the new hashes
+
+The HELLO and HEARTBEAT vectors are unaffected by F2 (the domain-separator concern is CONFIRM-transcript-only).
+
+---
+
+### A3.6 §A0 self-audit (per ADR 0069 D1 discipline)
+
+This amendment introduces **no new `Sunfish.*` types**. Only specification artifacts (one Python tool + one JSON document + one ADR appendix).
+
+| Symbol / Path | Classification | Verified |
+|---|---|---|
+| `Sunfish.Foundation.Crypto.PrincipalId.AsSpan()` | Existing | yes — `packages/foundation/Crypto/PrincipalId.cs` line 49: `public ReadOnlySpan<byte> AsSpan() => _bytes;` returns 32 raw Ed25519 pubkey bytes; A3 §A3.4 Check 1 references this for HEARTBEAT signable |
+| `Sunfish.Foundation.Crypto.KeyPair.Sign(ReadOnlySpan<byte>)` | Existing | yes — `packages/foundation/Crypto/KeyPair.cs` line 54: `public Signature Sign(ReadOnlySpan<byte> data)` returns NSec `Signature`; A3 §A3.4 Check 2 verifies cross-implementation matches |
+| `Sunfish.Foundation.Crypto.KeyPair.VerifyRaw(...)` | Existing | yes — `KeyPair.cs` line 67: `public static bool VerifyRaw(...)`; cited in `EncryptionHandshake.VerifyHelloAsync` and `EncryptionHandshake.VerifyHeartbeat` |
+| `Sunfish.Federation.Common.PeerId.From(PrincipalId)` | Existing | yes — `packages/federation-common/PeerId.cs`; `PeerId` is base64url; A3 §A3.4 Check 1 explicitly mandates `PrincipalId.AsSpan()` (raw 32B), NOT `Encoding.UTF8.GetBytes(PeerId.Value)` (43B base64url) — preserves A1 §A1.3 §A3 mandate |
+| `Sunfish.Foundation.Assets.Common.TenantId(string Value)` | Existing | yes — string-backed; A3 vector inputs use `tenant_id_value` field (string) and derive `tenant_bytes_hex` as `UTF8.GetBytes(value)` consistently with A1 §A1.3 §A2 |
+| `Sunfish.Foundation.Channels.ChannelCapability` (uint8 flags) | Existing | yes — W#45 P1 `foundation-channels`; A3 vectors use raw byte values (0x01 text, 0x02 audio, 0x04 video, 0x07 all) consistent with the flags-enum cast contract |
+| `tools/icm/generate-channel-vectors.py` | New (authored in A3) | yes — committed in this PR; cohort precedent `tools/icm/render-ledger.py` for the byte-stable `--check` pattern |
+| `tools/icm/channel-test-vectors.json` | New (authored in A3) | yes — committed in this PR |
+
+**§A0.1 (negative existence — no parallel-session pre-emption):** `gh pr list --search "ADR 0076"` (run 2026-05-05) shows no in-flight A3 PR; PR #566 already merged a different A2 amendment (capability-negotiation verification), confirming this F3-resolution amendment is correctly numbered A3. No collision.
+
+**§A0.2 (no false-positive citations):** Every cited Sunfish.* symbol above was opened and read on `origin/main` (commit `7da6804`). The `EncryptionHandshake.cs` impl on `main` uses a 6-parameter `ComputeTranscriptHash` signature; A3 vectors reflect the **specified** (A1+A2-ratified, 9-equivalent-input) form, not the impl form. This impl-vs-spec drift is acknowledged here, tracked separately by the W#45 P4.5 hand-off (`crew-comms-p45-stage06-addendum.md` PR 1), and remediated by a future sunfish-PM PR that the A3 vectors will validate against. A3 does NOT modify the impl.
+
+**§A0.3 (structural correctness of every cited byte layout):**
+- `uint32BE` length-prefix encoding verified against §A1.3 §A2 explicit text and §A4 endianness convention
+- HEARTBEAT signable order `peerId_raw[32] || uint32BE(len) || tenantBytes || caps[1] || timestamp_BE[8]` verified against §A1.3 §A3 final paragraph
+- CONFIRM transcript order `ephemA || idA || ephemB || idB || u32be(len) || tenantBytes || inviteCaps || negotiatedCap || presenceCapsA || presenceCapsB` verified against §A2.5 step 9 (the A2-superseding form, NOT the A1.5 form)
+- Length-math (84/69/90/60/108/46/151/136/157) cross-checked against §A1.3 §A1 "Total input size: 32+32+32+32+4+len(tenantBytes)+1+1+1 = 135+len" formula updated by §A2.3 §A1ext to "+1 = 136+len(tenantBytes)" — which V7 (151 = 136+15) and V8 (136 = 136+0) and V9 (157 = 136+21) confirm.
+
+---
+
+### A3.7 Implementation checklist (information-only — no impl change in this PR)
+
+A3 itself ships only the spec + Python generator + JSON artifact. The downstream consumers are tracked separately:
+
+- [ ] (W#45 P4.5 PR 1; sunfish-PM) Update `EncryptionHandshake.ComputeTranscriptHash` to the 9-parameter A1+A2 signature, add the four caps inputs, and verify against vectors V7/V8/V9 in a known-answer xUnit test
+- [ ] (W#45 P4.5 PR 1; sunfish-PM) Add HELLO/HEARTBEAT known-answer xUnit tests against vectors V1–V6 (loads `tools/icm/channel-test-vectors.json` via path; asserts signable + signature byte-for-byte)
+- [ ] (W#45 P4.5 PR 1; sunfish-PM) Update §A1.7 / §A2.7 implementation checklist items to cite A3 vectors as the canonical reference
+- [ ] (Future second-language impl, e.g. iOS Swift for W#23) Implement an XCTest fixture loader that drives Checks 1–3 against the same JSON
+- [ ] (Future amendment closing F2) Add domain-separator prefix to `confirm_transcript_input`; regenerate vectors; replace V7/V8/V9 expected outputs in §A3.3 D4 + JSON
+
+**Estimated effort for the W#45 P4.5 PR 1 conformance-test addition:** ~1.5h on top of the existing P4.5 transcript-hash alignment work — one JSON loader + 9 known-answer assertions. Pre-merge council mandatory (per P4.5 hand-off; security artifact).
+
+**A3 is NOT a build-or-implementation amendment.** No COB action is required to ship A3 itself; its consumption happens in the W#45 P4.5 PR 1 cycle.
+
+---
+
+### A3.8 References
+
+- A1 council review (F3 origin): `icm/07_review/output/adr-audits/0076-A1-council-review-2026-05-04.md`
+- A1 ratification: `docs/adrs/0076-crew-comms-foundation-channels.md` §Amendment A1 (PR #564)
+- A2 capability-negotiation: §Amendment A2 (PR #566)
+- W#45 P4.5 hand-off (downstream consumer): `icm/_state/handoffs/crew-comms-p45-stage06-addendum.md`
+- Cohort precedent for byte-stable Python generation tools: `tools/icm/render-ledger.py`
+- Cohort precedent for crypto known-answer tests: `packages/foundation-recovery/tests/PaperKeyDerivationTests.cs` (BIP-39 vectors)
+- IETF crypto-spec test-vector convention: RFC 8439 §2.1.1 (ChaCha20-Poly1305); RFC 7748 §6.1 (X25519); RFC 5869 §A (HKDF); RFC 8032 §7 (Ed25519)
+- Generator: `tools/icm/generate-channel-vectors.py`
+- Canonical artifact: `tools/icm/channel-test-vectors.json`

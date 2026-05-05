@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "adr_reference": "0076-A3",
+  "domain_separator": null,
+  "ratified_form": "A1+A2 (no domain-separator; F2 deferred to a later amendment)",
+  "fixed_inputs": {
+    "initiator_identity_seed_hex": "1ad454587580b75594a7a8b708c79af1de8c499a2aa23a2cc2dc0c054a90548c",
+    "initiator_identity_pubkey_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+    "responder_identity_seed_hex": "aaa785cb637de9fe24dc9ddb93cc74c2aafdd48a6d85b4a198c70ecebbe2ef3c",
+    "responder_identity_pubkey_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+    "initiator_x25519_seed_hex": "76d4bb1642f231f5298d423e8746a514ce9813e0aa63663837d1d5583f64cbae",
+    "initiator_x25519_pubkey_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+    "responder_x25519_seed_hex": "6d7530075dd3917706265535a802a9614965057f9f29462c75a3d9e32da738f9",
+    "responder_x25519_pubkey_hex": "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+    "sample_message_id": "00000000-0000-4000-8000-000000000001",
+    "sample_timestamp_unix_ms": 1735689600000
+  },
+  "seed_provenance": {
+    "rule": "Each Ed25519 / X25519 seed is SHA-256(<canonical phrase>) so the fixture set is fully reproducible from source without binary blob data.",
+    "phrases": {
+      "initiator_identity": "sunfish-channels-test-initiator-id-v1",
+      "responder_identity": "sunfish-channels-test-responder-id-v1",
+      "initiator_ephemeral": "sunfish-channels-test-initiator-ephem-v1",
+      "responder_ephemeral": "sunfish-channels-test-responder-ephem-v1"
+    },
+    "warning": "These keys are deterministic test fixtures. They MUST NEVER be used to sign production frames or stored in any production roster."
+  },
+  "vectors": [
+    {
+      "id": "V1",
+      "kind": "HELLO",
+      "description": "HELLO signable + Ed25519 signature; initiator identity, tenant 'tenant-001-acme', presence.caps=0x07 (text+audio+video).",
+      "inputs": {
+        "ephemeral_public_key_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "identity_public_key_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "tenant_id_value": "tenant-001-acme",
+        "tenant_bytes_hex": "74656e616e742d3030312d61636d65",
+        "tenant_bytes_length": 15,
+        "presence_caps": 7
+      },
+      "expected_signable_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350000000f74656e616e742d3030312d61636d6507",
+      "expected_signable_length": 84,
+      "expected_signature_hex": "b185c034c93a312a670fb46ae30b4818f5bde417fdb3e0695d6c6aa7cb94128b51ff8bc03c75244ad4d28db3ee0828882c03eb6fec86246bbabfab55bd3b4101"
+    },
+    {
+      "id": "V2",
+      "kind": "HELLO",
+      "description": "HELLO signable + Ed25519 signature; zero-length tenant edge case (uint32BE(0) length prefix with no tenant bytes following).",
+      "inputs": {
+        "ephemeral_public_key_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "identity_public_key_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "tenant_id_value": "",
+        "tenant_bytes_hex": "",
+        "tenant_bytes_length": 0,
+        "presence_caps": 1
+      },
+      "expected_signable_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350000000001",
+      "expected_signable_length": 69,
+      "expected_signature_hex": "5aabffa12fdee040cf05cd001124fa544e48f978ce8d58371a6a181af9e0ec74369db87a75081d7445fbfc46a34b8135b0a6e745ed060ce46bd0e87219dc7d0e"
+    },
+    {
+      "id": "V3",
+      "kind": "HELLO",
+      "description": "HELLO signable + Ed25519 signature; UTF-8 multi-byte tenant ('tenant-é-ünïcödë' — 21 UTF-8 bytes), presence.caps=0x03.",
+      "inputs": {
+        "ephemeral_public_key_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "identity_public_key_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "tenant_id_value": "tenant-é-ünïcödë",
+        "tenant_bytes_hex": "74656e616e742dc3a92dc3bc6ec3af63c3b664c3ab",
+        "tenant_bytes_length": 21,
+        "presence_caps": 3
+      },
+      "expected_signable_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350000001574656e616e742dc3a92dc3bc6ec3af63c3b664c3ab03",
+      "expected_signable_length": 90,
+      "expected_signature_hex": "ca41dafb02e5be88993b32a73352d3f7a82e6647fbe9ec5cc1accd6e3a3f2b8038a55d60f0879360adf929719728a2596faf86806b77f88eeb5a309612ff8d04"
+    },
+    {
+      "id": "V4",
+      "kind": "HEARTBEAT",
+      "description": "HEARTBEAT signable + Ed25519 signature; initiator peerId raw (PrincipalId.AsSpan() — NOT base64url string), tenant 'tenant-001-acme', caps=0x01 (text), timestamp=1735689600000 (2025-01-01T00:00:00Z UTC).",
+      "inputs": {
+        "peer_id_raw_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "tenant_id_value": "tenant-001-acme",
+        "tenant_bytes_hex": "74656e616e742d3030312d61636d65",
+        "tenant_bytes_length": 15,
+        "caps": 1,
+        "timestamp_unix_ms": 1735689600000
+      },
+      "expected_signable_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350000000f74656e616e742d3030312d61636d6501000001941f297c00",
+      "expected_signable_length": 60,
+      "expected_signature_hex": "fe31f6e8c1641b585a87ff8f52d7aa8aebd3aa0f9c9b63fc2735322aa0267ddfbde473e4f68156e9cfe8167ff9faad45ad02cef1c8d1cc709a8506226560b801"
+    },
+    {
+      "id": "V5",
+      "kind": "HEARTBEAT",
+      "description": "HEARTBEAT signable + Ed25519 signature; responder peerId raw, 63-byte ASCII tenant (max practical real tenant size), caps=0x07 (all), timestamp=1735689600000.",
+      "inputs": {
+        "peer_id_raw_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant_id_value": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "tenant_bytes_hex": "787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878",
+        "tenant_bytes_length": 63,
+        "caps": 7,
+        "timestamp_unix_ms": 1735689600000
+      },
+      "expected_signable_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a0000003f78787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787878787807000001941f297c00",
+      "expected_signable_length": 108,
+      "expected_signature_hex": "659265c63a6112faf1b9f19fbb79a49ac0cb5bb482a2fb30a1e13c5603de26f2fe1fc3cfbb8acbebc7f4960e6caf7bf22754992888f3050666b5b6009884dd0e"
+    },
+    {
+      "id": "V6",
+      "kind": "HEARTBEAT",
+      "description": "HEARTBEAT signable + Ed25519 signature; 1-byte tenant 'a' (boundary case for the uint32BE length prefix).",
+      "inputs": {
+        "peer_id_raw_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "tenant_id_value": "a",
+        "tenant_bytes_hex": "61",
+        "tenant_bytes_length": 1,
+        "caps": 1,
+        "timestamp_unix_ms": 1735689600000
+      },
+      "expected_signable_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35000000016101000001941f297c00",
+      "expected_signable_length": 46,
+      "expected_signature_hex": "13736db960d440d2df49c7ebd926dc374b15aff2f6da42bae7ae182c7a6f606cfc6f7c75b892b93a3742fc12ede6c045c39eb6ec779f637aa78368ddabfe4f0f"
+    },
+    {
+      "id": "V7",
+      "kind": "CONFIRM_TRANSCRIPT",
+      "description": "CONFIRM transcript-hash; A1+A2 ratified canonical form; tenant 'tenant-001-acme'; inviteCaps=0x07; negotiatedCap=0x01; presenceCapsA=0x07; presenceCapsB=0x03.",
+      "inputs": {
+        "initiator_ephemeral_pubkey_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "initiator_identity_pubkey_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "responder_ephemeral_pubkey_hex": "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "responder_identity_pubkey_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant_id_value": "tenant-001-acme",
+        "tenant_bytes_hex": "74656e616e742d3030312d61636d65",
+        "tenant_bytes_length": 15,
+        "invite_capabilities": 7,
+        "negotiated_capability": 1,
+        "presence_caps_initiator": 7,
+        "presence_caps_responder": 3
+      },
+      "expected_input_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a0000000f74656e616e742d3030312d61636d6507010703",
+      "expected_input_length": 151,
+      "expected_sha256_hex": "5c38292a921ea0bff9a3b20b49e255d8e8eb06579e1aaa44aa11ad539f03a8fb"
+    },
+    {
+      "id": "V8",
+      "kind": "CONFIRM_TRANSCRIPT",
+      "description": "CONFIRM transcript-hash; zero-length tenant edge case (uint32BE(0) length-prefix with no tenant bytes); all caps=0x01.",
+      "inputs": {
+        "initiator_ephemeral_pubkey_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "initiator_identity_pubkey_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "responder_ephemeral_pubkey_hex": "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "responder_identity_pubkey_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant_id_value": "",
+        "tenant_bytes_hex": "",
+        "tenant_bytes_length": 0,
+        "invite_capabilities": 1,
+        "negotiated_capability": 1,
+        "presence_caps_initiator": 1,
+        "presence_caps_responder": 1
+      },
+      "expected_input_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a0000000001010101",
+      "expected_input_length": 136,
+      "expected_sha256_hex": "de32c848e5a0c63e7919201a2d984a2d7fc0efef0ba928a4a3845ba02ee4d039"
+    },
+    {
+      "id": "V9",
+      "kind": "CONFIRM_TRANSCRIPT",
+      "description": "CONFIRM transcript-hash; UTF-8 multi-byte tenant; inviteCaps=0x07 → negotiatedCap=0x02 (audio); presenceCapsA=0x07; presenceCapsB=0x06.",
+      "inputs": {
+        "initiator_ephemeral_pubkey_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e",
+        "initiator_identity_pubkey_hex": "4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db35",
+        "responder_ephemeral_pubkey_hex": "0238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c",
+        "responder_identity_pubkey_hex": "01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a",
+        "tenant_id_value": "tenant-é-ünïcödë",
+        "tenant_bytes_hex": "74656e616e742dc3a92dc3bc6ec3af63c3b664c3ab",
+        "tenant_bytes_length": 21,
+        "invite_capabilities": 7,
+        "negotiated_capability": 2,
+        "presence_caps_initiator": 7,
+        "presence_caps_responder": 6
+      },
+      "expected_input_hex": "005f111c8869fa005c1df5c8c775eb95a6a7dca4393e5df3ad152e017d78b23e4dba7077e2cbb3f4b66e1fb8e07911c9110d918326e707f60b8494974e85db350238bb7243d92826e653ae2b9f98b2fe93661fe19e5e53ca40d8f1552389fb3c01f61a817230f3abf2e2b88665cbd05d44aa6d8dfcdc6a58cfa24df20b6cd50a0000001574656e616e742dc3a92dc3bc6ec3af63c3b664c3ab07020706",
+      "expected_input_length": 157,
+      "expected_sha256_hex": "852c278135eccb596882767608598806eeefca4c5b546e22984497102d906cb6"
+    }
+  ]
+}
