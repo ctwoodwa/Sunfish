@@ -10,6 +10,7 @@
 - [ ] `origin/main` has `packages/foundation-wayfinder/StandingOrder.cs` ✓ (verified 2026-05-05)
 - [ ] `origin/main` has `packages/kernel-audit/AuditEventType.cs` ✓ (ADR 0049 substrate)
 - [ ] `origin/main` has `packages/foundation/Crypto/IOperationSigner.cs` ✓ (ADR 0046)
+- [ ] `origin/main` has `packages/foundation/Crypto/IOperationVerifier.cs` ✓ (ADR 0046)
 - [ ] No `OodWatch*.cs` or `IOodWatch*.cs` files in `packages/foundation-wayfinder/` (none on
   origin/main 2026-05-05 — symbols are net-new; confirm before Phase 1)
 - [ ] `foundation-wayfinder` has NOT shipped a public NuGet binary yet (pre-v1; if this changes,
@@ -261,23 +262,33 @@ subagent re-review — signing implementation is the critical path)
 
 **New file `DefaultOodWatchService.cs`** in `packages/foundation-wayfinder/`:
 
+> **H4 resolved (XO 2026-05-05):** `IOperationSigner.VerifyAsync` does not exist and will not
+> be added — signing and verification are separate concerns in Sunfish.Foundation.Crypto.
+> `IOperationVerifier` (at `packages/foundation/Crypto/IOperationVerifier.cs`) is the correct
+> verification interface, but the domain service does NOT call it directly. The ADR 0078 §Trust
+> attesting-signature requirement is enforced at the **API/gateway layer** (capability check +
+> principal authentication); `DefaultOodWatchService` trusts the authenticated `requestedBy`
+> `ActorId` that arrives through the already-validated call path — consistent with every other
+> domain service in the Sunfish.Foundation tier. `IClock` does not exist in this codebase; use
+> `System.TimeProvider` throughout (constructor-injected; `TimeProvider.GetUtcNow()` returns
+> `DateTimeOffset`). Council-approved precedent: W#49 P1 was already amended from NodaTime to
+> DateTimeOffset by council in PR #610.
+
 Key behavior per ADR 0078 §2 and §Trust:
 
 - `StartWatchAsync`:
-  1. Validate attesting signature via `IOperationSigner.VerifyAsync` with payload
-     `(TenantId, OodRole, incoming actor, issuedAt)`. Reject if `issuedAt` is outside
-     ±5 min of server clock (`IClock.GetCurrentInstant()`).
-  2. Check for existing `Active` watch via `IOodWatchRepository.GetCurrentWatchAsync`; throw
+  1. Check for existing `Active` watch via `IOodWatchRepository.GetCurrentWatchAsync`; throw
      `OodWatchConflictException` if one exists.
-  3. Generate `OodWatchId` server-side via `OodWatchId.NewId()` — callers MUST NOT supply it.
+  2. Generate `OodWatchId` server-side via `OodWatchId.NewId()` — callers MUST NOT supply it.
+     Set `StartedAt = _timeProvider.GetUtcNow()`.
+  3. If `maxDuration` is provided, set `ExpiresAt = StartedAt + maxDuration`.
   4. Persist via `IOodWatchRepository.StartWatchAsync`.
   5. Emit `AuditEventType.OodWatchStarted` with payload:
      `{ "watchId": id.Value, "tenantId": tenantId.Value, "role": role.ToString(),
         "actor": onWatchActor.Value, "startedBy": requestedBy.Value, "severity": "High" }`.
 
 - `HandoverWatchAsync`:
-  1. Validate attesting signature (same ±5 min window; payload includes `currentWatchId`).
-  2. Load current watch; throw `OodWatchConflictException` if not `Active`.
+  1. Load current watch; throw `OodWatchConflictException` if not `Active`.
   3. Atomically: `IOodWatchRepository.RelieveWatchAsync` + `IOodWatchRepository.StartWatchAsync`
      for the incoming actor.
   4. Emit `AuditEventType.OodWatchRelieved` for the relieved watch (severity `"Normal"`).
@@ -306,7 +317,9 @@ Key behavior per ADR 0078 §2 and §Trust:
 //   { "watchId": id.Value, "tenantId": tenantId.Value, "role": role.ToString(),
 //     "expiredAt": now.ToString(), "maxWatchDuration": duration.ToString(),
 //     "severity": "High" }
-// Unit tests MUST disable or mock the timer (inject IClock + override interval).
+// Inject TimeProvider (System.TimeProvider); use _timeProvider.GetUtcNow() for clock reads.
+// Unit tests MUST pass a FakeTimeProvider (from Microsoft.Extensions.TimeProvider.Testing)
+// or a subclass to override interval; avoids Thread.Sleep in tests.
 ```
 
 **Update DI extension** to register `DefaultOodWatchService` and `OodWatchExpiryService`.
@@ -324,7 +337,10 @@ Key behavior per ADR 0078 §2 and §Trust:
 | `ExpiryService_SetsExpiredState_EmitsAuditEvent` | Mocked clock; TTL exceeded |
 | `StandingOrder_IssuedDuringWatchId_PopulatedWhenActive` | IssuedDuringWatchId != null when watch active |
 
-All tests use NSubstitute for `IOodWatchRepository`, `IAuditTrail`, `IOperationSigner`, `IClock`.
+All tests use NSubstitute for `IOodWatchRepository`, `IAuditTrail`.
+`TimeProvider` is injected via `FakeTimeProvider` (from `Microsoft.Extensions.TimeProvider.Testing`)
+— do NOT mock it with NSubstitute; use the real test double from the BCL testing package.
+`IOperationSigner` and `IClock` are NOT injected into the service (H4 resolved — see note above).
 
 ### Phase 2 acceptance gate
 
@@ -380,16 +396,16 @@ PASS: W#49 ledger row says `built`
 | H1 | `foundation-wayfinder` has already shipped a public NuGet binary (v1+) | STOP — file ADR 0065 amendment for `IssuedDuringWatchId` before any W#49 work |
 | H2 | Unexpected `OodWatch*` symbols already exist on origin/main | STOP — write `cob-question-*.md` to research-inbox |
 | H3 | Pre-merge council returns NEEDS-AMENDMENT with non-mechanical findings | Apply; re-run council; do NOT enable auto-merge until APPROVED |
-| H4 | `IOperationSigner.VerifyAsync` does not exist (only `SignAsync`) | STOP — write `cob-question-*.md`; do not roll a custom verifier |
+| H4 | ~~`IOperationSigner.VerifyAsync` does not exist (only `SignAsync`)~~ | **RESOLVED 2026-05-05** — signing validation is API-layer responsibility; service trusts authenticated `requestedBy`. Use `TimeProvider.GetUtcNow()` for clock reads. See Phase 2 note above. |
 | H5 | `StandingOrder` positional constructor has changed shape since this hand-off was authored | Verify call-site count; adapt `IssuedDuringWatchId` addition accordingly |
 
 ---
 
 ## Cohort precedents
 
-- **Signing pattern**: `IOperationSigner.SignAsync` at `packages/foundation/Crypto/IOperationSigner.cs`; same ±5 min clock-skew window used in W#45 Crew Comms HMAC pairing tokens.
+- **Signing pattern**: `IOperationSigner.SignAsync` at `packages/foundation/Crypto/IOperationSigner.cs`. Verification is `IOperationVerifier.Verify<T>(SignedOperation<T>)` at `packages/foundation/Crypto/IOperationVerifier.cs`. Neither is called in the domain service — both live at API/gateway layer.
 - **AuditEventType addition pattern**: W#45 P1 (`packages/kernel-audit/AuditEventType.cs`) — add static-readonly constant; zero-impact on existing callers.
-- **Hosted service timer pattern**: W#45 P3 `SessionExpiryService` — inject `IClock`; override `ConfiguredInterval` in test setup to avoid `Thread.Sleep`.
+- **Hosted service timer pattern**: W#45 P3 `SessionExpiryService` — inject `TimeProvider`; use `FakeTimeProvider` (from `Microsoft.Extensions.TimeProvider.Testing`) in tests to avoid `Thread.Sleep`. Note: W#45 used `IClock` (NodaTime) but that type does not exist in this codebase; `TimeProvider` is the canonical BCL equivalent used across `foundation-transport`, `kernel-security`, `foundation-mission-space`.
 - **NSubstitute test style**: established in W#42, W#43, W#45 across `packages/foundation-wayfinder/tests/`.
 - **Pre-merge council before auto-merge**: mandatory per `feedback_council_before_automerge.md`; cohort batting average 29-of-30 substrate amendments needing council fixes.
 
