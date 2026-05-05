@@ -20,4 +20,7 @@
   <ItemGroup>
     <Compile Remove="tests/**/*.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Blocks.CrewComms.Tests" />
+  </ItemGroup>
 </Project>
