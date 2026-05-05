@@ -585,3 +585,17 @@
 | 2026-05-05 | Authored W#53 Stage 06 hand-off (ADR 0066 Helm + Identity Atlas) | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` | 2 phases / ~18-28h / ~5-6 PRs; Phase 3 deferred to W#54 |
 | — | Flipped W#53 design-in-flight → ready-to-build | `icm/_state/active-workstreams.md` | All 6 OQ resolutions documented; W#48 Phase 1 now unblockable |
 | — | IAtlasProvider<T> defined as covariant `out TView` base | `packages/ui-core/Wayfinder/IAtlasProvider.cs` (to be created by COB) | Phase 1 critical: base type for all Atlas specializations |
+
+## Session: 2026-05-05 (XO /loop — W#35 + W#1 + ADR 0084)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| 19:40 | Authored + committed ADR 0083 (W#55 Ship's Office) | /tmp/sunfish-adr-0083/ | PR #591 created |
+| 19:43 | Updated ledger + W#55 memory | active-workstreams.md | PR #592 auto-merged |
+| 19:55 | Ran W#1 Stage 01 Discovery codebase survey | icm/01_discovery/output/2026-05-05_multi-tenancy-type-surface.md | PR #595 auto-merged |
+| 20:10 | Authored ADR 0084 (W#1 WS-A) in worktree | /tmp/sunfish-adr-0084/ | 454-line draft |
+| 20:25 | Ran 4-perspective pre-merge council on ADR 0084 | — | 6 BLOCKING + 11 NB returned |
+| 20:45 | Applied 6 BLOCKING council amendments to ADR 0084 | 0084-tenant-selection-and-sentinel-governance.md | TenantId_Sentinel removed; CreateSentinel factory; get;init;; implicit cast moved to TenantSelection; ImmutableArray+SequenceEqual; §4 co-location note; §Trust-impact updated |
+| 20:50 | Committed + pushed ADR 0084; created PR #597 | docs/adrs/0084-tenant-selection-and-sentinel-governance.md | NO auto-merge (CO required) |
+| 20:52 | Updated W#1 ledger row | active-workstreams.md | PR #598 auto-merge |
+| 20:53 | Archived XO idle beacons; wrote new beacon | icm/_state/research-inbox/ | session state captured |
