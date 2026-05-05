@@ -2,6 +2,8 @@
 type: idle
 workstream-or-chapter: W#44 — ExtensionFields Feature-Evaluation Hook (ADR 0075 Accepted + Stage 06 hand-off)
 last-pr: "#567 (ADR 0075 council amendments + Status: Proposed → Accepted; ledger W#44 → ready-to-build)"
+resolved-by: "PR #567 merged; W#44 is ready-to-build"
+resolved-date: 2026-05-05
 ---
 
 ADR 0075 council amendments applied (PR #567): SC-3 ADR 0046 reference corrected +
