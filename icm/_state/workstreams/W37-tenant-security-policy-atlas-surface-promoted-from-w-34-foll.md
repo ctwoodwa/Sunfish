@@ -3,13 +3,21 @@ sort_order: 33
 number: 37
 slug: tenant-security-policy-atlas-surface-promoted-from-w-34-foll
 title: "**Tenant Security Policy + Atlas surface** (`sunfish-feature-change` pipeline) — promoted from W#34 follow-on"
-status: "design-in-flight"
-status_cell: "`design-in-flight` (CO promoted 2026-05-01; XO authoring next; needs general counsel + security-engineering + WCAG/a11y + Pedantic Lawyer council)"
-owner: "research"
-owner_cell: "research (XO)"
-reference_cell: "`icm/00_intake/output/2026-05-01_tenant-security-policy-intake.md`"
+status: "ready-to-build"
+status_cell: "`ready-to-build` (ADR 0068 Accepted 2026-05-05 via PR #584; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 when W#46 Phase 1 clears gate H1)"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
+reference_cell: "`icm/_state/handoffs/tenant-security-policy-stage06-handoff.md` + `docs/adrs/0068-tenant-security-policy.md` (PR #584 merged)"
 ---
 
 ## Notes
 
-**Promoted 2026-05-01 (CO).** Intake's ~ADR 0068 — tenant-configurable security posture (MFA enrollment / device-attestation / audit-policy / role-key rotation / recovery-contact policy). Effort large ~18-24h authoring + extended council. Highest commercial priority — regulated-industry tenants (HIPAA / PCI-DSS / SOC 2 / EU AI Act) launch-blocked without it. **General counsel engagement required before Stage 02 Architecture.** Hard prerequisite: W#36 (Wayfinder + Standing Order) lands first.
+**Hand-off ready 2026-05-05.** ADR 0068 Accepted; extended pre-merge council complete
+(adversarial + security-engineering + WCAG/a11y + Pedantic Lawyer). New package:
+`foundation-security-policy` (5 sub-domains: MFA enrollment / device attestation / audit
+retention / key rotation / recovery contacts). §GC.1 general-counsel note travels with
+every PR. **Phase 1 gate: W#46 Phase 1** (foundation-ship-common + ShipRole on origin/main)
+— ALL Phase 1 types reference ShipRole. Phase 2 gate: ADR 0066-A1 + W#53 Phase 1a
+(IAtlasProvider<T> in ui-core). ~14–20h sunfish-PM / 2 phases / ~4–5 PRs. Pre-merge council
+canonical per ADR 0069 D1. Security-engineering subagent mandatory for Phase 1. WCAG/a11y
+subagent mandatory for Phase 2.
