@@ -23,7 +23,15 @@ namespace Sunfish.Foundation.Catalog.ExtensionFields;
 /// </summary>
 public sealed class ExtensionFieldCatalog : IExtensionFieldCatalog
 {
-    private const string LocalNodeId = "local"; // Halt-C fallback per hand-off — INodeIdProvider is not on origin/main.
+    /// <summary>
+    /// Default <c>nodeId</c> used when no explicit value is supplied. Halt-C
+    /// fallback per hand-off — <c>INodeIdProvider</c> is not on origin/main;
+    /// hosts SHOULD pass their own node identifier (Anchor: hardware install
+    /// ID; Bridge: tenant-scoped node-id) to preserve cross-node provenance
+    /// in audit and sequestration records.
+    /// </summary>
+    public const string DefaultNodeId = "local";
+
     private static readonly CapabilityAction RedactExtensionFieldAction = new("redact-extension-field");
 
     private readonly ConcurrentDictionary<Type, List<ExtensionFieldSpec>> _byEntity = new();
@@ -33,6 +41,7 @@ public sealed class ExtensionFieldCatalog : IExtensionFieldCatalog
     private readonly ICapabilityGraph? _capabilityGraph;
     private readonly IOperationSigner? _signer;
     private readonly TimeProvider _clock;
+    private readonly string _nodeId;
 
     /// <summary>
     /// Backward-compatible constructor — registers a catalog with no
@@ -48,13 +57,21 @@ public sealed class ExtensionFieldCatalog : IExtensionFieldCatalog
     /// throw when their store / graph is null and a gated-OFF spec is hit).
     /// Per ADR 0075 §Lazy-DI optionality.
     /// </summary>
+    /// <param name="featureEvaluator">Optional feature evaluator. Null disables gating; all specs return as <see cref="GateState.Ungated"/>.</param>
+    /// <param name="auditTrail">Optional audit trail. Null skips audit emission silently.</param>
+    /// <param name="sequestrationStore">Required for <see cref="FeatureGateOffPolicy.Sequester"/>; null throws at evaluation time.</param>
+    /// <param name="capabilityGraph">Required for <see cref="FeatureGateOffPolicy.Redact"/>; null throws at evaluation time.</param>
+    /// <param name="signer">Required for audit signing AND for <see cref="FeatureGateOffPolicy.Redact"/> capability lookup; null skips audit silently and throws on Redact policy.</param>
+    /// <param name="clock">Time source for audit timestamps + capability-graph as-of queries. Defaults to <see cref="TimeProvider.System"/>.</param>
+    /// <param name="nodeId">Identifier of the host emitting sequester / audit records. Hosts SHOULD pass an Anchor install ID, Bridge tenant-scoped node-id, etc. Defaults to <see cref="DefaultNodeId"/> (<c>"local"</c>) when omitted.</param>
     public ExtensionFieldCatalog(
         IFeatureEvaluator? featureEvaluator,
         IAuditTrail? auditTrail,
         ISequestrationStore? sequestrationStore,
         ICapabilityGraph? capabilityGraph,
         IOperationSigner? signer,
-        TimeProvider? clock)
+        TimeProvider? clock,
+        string nodeId = DefaultNodeId)
     {
         _featureEvaluator = featureEvaluator;
         _auditTrail = auditTrail;
@@ -62,6 +79,7 @@ public sealed class ExtensionFieldCatalog : IExtensionFieldCatalog
         _capabilityGraph = capabilityGraph;
         _signer = signer;
         _clock = clock ?? TimeProvider.System;
+        _nodeId = nodeId ?? DefaultNodeId;
     }
 
     /// <inheritdoc />
@@ -188,13 +206,13 @@ public sealed class ExtensionFieldCatalog : IExtensionFieldCatalog
                             $"FeatureGateOffPolicy.Sequester requires ISequestrationStore on the catalog (entity={entityType.FullName}, field={spec.Key.Value}).");
                     var recordId = $"extension-field#{entityType.FullName}#{spec.Key.Value}";
                     await _sequestrationStore.SequesterAsync(
-                        LocalNodeId, recordId, SequestrationFlagKind.FeatureGateOff, cancellationToken)
+                        _nodeId, recordId, SequestrationFlagKind.FeatureGateOff, cancellationToken)
                         .ConfigureAwait(false);
                     await EmitAuditAsync(
                         AuditEventType.ExtensionFieldSequestered,
                         context,
                         ExtensionFieldGateAuditPayloads.Sequestered(
-                            entityType.FullName ?? entityType.Name, spec.Key.Value, featureKey.Value, LocalNodeId),
+                            entityType.FullName ?? entityType.Name, spec.Key.Value, featureKey.Value, _nodeId),
                         cancellationToken).ConfigureAwait(false);
                     break;
 
