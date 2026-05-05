@@ -50,8 +50,10 @@ Sessions coordinate via repo artifacts + auto-memory. No chat. XO's PM coverage 
 ### Canonical state files
 
 - **`icm/_state/MASTER-PLAN.md`** — stable; goals + done-conditions + velocity baseline. Updated only when goals/baseline shift.
-- **`icm/_state/active-workstreams.md`** — dynamic; in-flight workstreams + owner + state. Read at session start; update on state change.
+- **`icm/_state/workstreams/W{NN}-{slug}.md`** — **source of truth** for each in-flight workstream (one file per row). Frontmatter captures structured fields (number, status, owner, references); the `## Notes` body preserves free-text context. Edit these files when state changes.
+- **`icm/_state/active-workstreams.md`** — **regenerated** roll-up table. DO NOT EDIT directly. Run `python3 tools/icm/render-ledger.py` after editing any per-workstream file. Read this at session start (still greppable; only the write path moved to per-workstream files). CI verifies via `tools/icm/render-ledger.py --check`.
 - **`icm/_state/handoffs/`** — per-workstream hand-off specs (research → sunfish-PM).
+- **`tools/icm/`** — `render-ledger.py` (regen / `--check`), `migrate-ledger.py` (one-shot, retained for reference).
 
 ### Status format (executive summary on demand)
 
@@ -72,7 +74,7 @@ Status vocabulary: `design-in-flight` / `ready-to-build` / `building` / `built` 
 
 Before any code change beyond a one-line fix:
 
-1. **`active-workstreams.md`** — find the row. Must say `ready-to-build`. If `design-in-flight`/`held`, STOP + memory note to research.
+1. **`icm/_state/workstreams/W{NN}-*.md`** — find the per-workstream file (or read the regenerated `icm/_state/active-workstreams.md` roll-up). The `status:` frontmatter must say `ready-to-build`. If `design-in-flight`/`held`, STOP + memory note to research.
 2. **Intake / ADR `Status:` line** — must match `ready-to-build` (or be silent — ledger applies).
 3. **`icm/_state/handoffs/<workstream>.md`** — describes what to build, file-by-file, with acceptance criteria.
 4. **`gh pr list --state open`** — look for in-flight PRs touching the same package; especially auto-merge-enabled.
@@ -82,8 +84,9 @@ Any unexpected state → STOP, memory note naming workstream + observation + nee
 
 ### State transitions (research)
 
-- **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update ledger row, revoke/update existing hand-off.
-- **Design final:** write hand-off in `handoffs/<workstream>.md`, flip ledger row to `ready-to-build`, optionally write a project memory pointing at the hand-off.
+- **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update the per-workstream file's `status:` frontmatter under `icm/_state/workstreams/W{NN}-*.md`, run `python3 tools/icm/render-ledger.py` to refresh the roll-up, revoke/update existing hand-off.
+- **Design final:** write hand-off in `handoffs/<workstream>.md`, flip the per-workstream file's `status:` to `ready-to-build`, run `python3 tools/icm/render-ledger.py`, optionally write a project memory pointing at the hand-off.
+- **New workstream:** create `icm/_state/workstreams/W{NN}-{slug}.md` (next available W#); fill frontmatter (`sort_order`, `number`, `slug`, `title`, `status`, `status_cell`, `owner`, `owner_cell`, `reference_cell`) and a `## Notes` body; run `python3 tools/icm/render-ledger.py`. Commit both the per-workstream file and the regenerated `active-workstreams.md`.
 
 ### Memory-side coordination
 
@@ -95,7 +98,7 @@ Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially
 
 ### Fallback work order (sunfish-PM, when priority queue is dry)
 
-Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off file. When dry, sunfish-PM does **not idle** — falls through:
+Priority queue = `icm/_state/workstreams/W{NN}-*.md` files (or the regen'd `active-workstreams.md` table) where `status: ready-to-build` AND a hand-off file exists. When dry, sunfish-PM does **not idle** — falls through:
 
 | Rung | Work |
 |---|---|

@@ -1,0 +1,15 @@
+---
+sort_order: 44
+number: 41
+slug: foundation-missionspace-requirements-phase-1-substrate
+title: "Foundation.MissionSpace.Requirements Phase 1 substrate (ADR 0063 + A1 contract surface; extends W#40 package)"
+status: "built"
+status_cell: "`built` (5/5 phases shipped 2026-05-01: P1 #473 schema + 10 spec records + 5 audit constants; P2 #474 IMinimumSpecResolver + per-platform compose + verdicts; P3 #475 force-install + operator override + audit emission; P4 #476 ISystemRequirementsRenderer interface; P5 DI extension update + apps/docs page + W#38 stub soft-deprecation + ledger flip)"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
+reference_cell: "`icm/_state/handoffs/foundation-mission-space-requirements-stage06-handoff.md` + `docs/adrs/0063-mission-space-requirements.md` (post-A1; landed via PR #411)"
+---
+
+## Notes
+
+**Built 2026-05-01 — 164 / 164 tests green; halt-conditions clean.** W#38 stub at `Sunfish.Foundation.Catalog.Bundles.MinimumSpec` SOFT-DEPRECATED (documented removal date 2026-08-01); hard-`[Obsolete]` escalation deferred to follow-up PR per the W#41 hand-off allowance (TreatWarningsAsErrors=true would break the W#38 test surface today). ADR 0063 + A1 Accepted on origin/main; council batting average 14-of-14; A1 absorbed all 11 Required council recommendations + 4 Encouraged. Substrate-only Phase 1 EXTENDS W#40's `Sunfish.Foundation.MissionSpace` package per ADR 0063-A1 location guidance ("Located in `Sunfish.Foundation.MissionSpace` (extends ADR 0062's package; same DI extension `AddSunfishMissionSpace()`)"). Ships `MinimumSpec` schema + 10 per-dimension spec records (HardwareSpec / UserSpec / RegulatorySpec / RuntimeSpec / FormFactorSpec / EditionSpec / NetworkSpec / TrustSpec / SyncStateSpec / VersionVectorSpec) + `SpecPolicy` 3-value enum (Required/Recommended/Informational) + `PerPlatformSpec` per A1.7 COMPOSE rule (NOT REPLACE) + `IMinimumSpecResolver` evaluation contract per A1.6 cost class Medium + post-A1.4 OperatorRecoveryAction (NOT OperatorRecoveryHint) + post-A1.6 unit-alignment (MinMemoryBytes long? not MinMemoryBytesGb int?) + post-A1.13 ADR-0036-canonical SyncState values + post-A1.3 TransportTier values from W#30 + ISystemRequirementsRenderer interface (impls deferred to per-adapter Stage 06) + 5 new AuditEventType constants (MinimumSpecEvaluated / InstallBlocked / InstallWarned / PostInstallSpecRegression / InstallForceEnabled per A1.11) + DI extension update + apps/docs page + W#38 stub deprecation via using-alias to canonical type per stub-unblock addendum future-rename plan. **7 halt-conditions named** (W#38 stub deprecation timing; cross-package dimension types verified all built; per-platform COMPOSE edge cases; ISystemRequirementsRenderer interface consumer pattern; force-install audit shape parity with ADR 0062; CanonicalJson catch-all dictionary forward-compat; cohort-milestone discipline). Substrate-only; consumer wiring (Anchor MAUI + Bridge React + iOS SystemRequirementsRenderer impls) separate per-adapter Stage 06 workstreams. Mirrors W#34/W#35/W#36/W#39/W#40 cohort patterns. Replaces W#38 stub MinimumSpec with canonical type.
