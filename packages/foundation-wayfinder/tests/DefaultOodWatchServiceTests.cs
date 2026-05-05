@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Crypto;
@@ -24,8 +25,6 @@ public class DefaultOodWatchServiceTests
     {
         var (svc, repo, audit, _, _) = NewService();
         var produced = NewWatch(state: OodWatchState.Active);
-        repo.GetCurrentWatchAsync(Tenant, OodRole.OfficerOfTheDeck, Arg.Any<CancellationToken>())
-            .Returns((OodWatch?)null);
         repo.StartWatchAsync(
                 Tenant, OnWatch, OodRole.OfficerOfTheDeck, Arg.Any<TimeSpan?>(), Requester, Arg.Any<CancellationToken>())
             .Returns(produced);
@@ -38,15 +37,24 @@ public class DefaultOodWatchServiceTests
         await audit.Received(1).AppendAsync(
             Arg.Is<AuditRecord>(r => r != null && r.EventType == AuditEventType.OodWatchStarted),
             Arg.Any<CancellationToken>());
+        // R1 (XO post-merge council 2026-05-06): no service-tier pre-check.
+        // GetCurrentWatchAsync is the repo's own concern only — service must
+        // not call it as a TOCTOU pre-validation.
+        await repo.DidNotReceive().GetCurrentWatchAsync(
+            Arg.Any<TenantId>(), Arg.Any<OodRole>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task StartWatch_ConflictThrows_WhenActiveExists()
+    public async Task StartWatch_ConflictThrows_WhenRepoThrowsConflict()
     {
+        // R1 (XO post-merge council 2026-05-06): the conflict is raised by
+        // the persistence layer, not a service-tier pre-check. Test that the
+        // service propagates the repository exception unchanged.
         var (svc, repo, _, _, _) = NewService();
-        var existing = NewWatch(state: OodWatchState.Active);
-        repo.GetCurrentWatchAsync(Tenant, OodRole.OfficerOfTheDeck, Arg.Any<CancellationToken>())
-            .Returns(existing);
+        var existingId = OodWatchId.NewId();
+        repo.StartWatchAsync(
+                Tenant, OnWatch, OodRole.OfficerOfTheDeck, Arg.Any<TimeSpan?>(), Requester, Arg.Any<CancellationToken>())
+            .Returns<OodWatch>(_ => throw new OodWatchConflictException(existingId, Tenant, OodRole.OfficerOfTheDeck));
 
         await Assert.ThrowsAsync<OodWatchConflictException>(
             () => svc.StartWatchAsync(
@@ -66,7 +74,8 @@ public class DefaultOodWatchServiceTests
         repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
             .Returns((relieved, started));
 
-        var (r, s) = await svc.HandoverWatchAsync(current.Id, Incoming, Requester, "shift change");
+        var (r, s) = await svc.HandoverWatchAsync(
+            current.Id, Incoming, Requester, OodHandoverKind.Voluntary, "shift change");
 
         Assert.Equal(relieved, r);
         Assert.Equal(started, s);
@@ -90,7 +99,8 @@ public class DefaultOodWatchServiceTests
         repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
             .Returns((relieved, started));
 
-        await svc.HandoverWatchAsync(current.Id, Incoming, Requester, reason: null);
+        await svc.HandoverWatchAsync(
+            current.Id, Incoming, Requester, OodHandoverKind.Voluntary, reason: null);
 
         await audit.Received(1).AppendAsync(
             Arg.Is<AuditRecord>(r => r != null && r.EventType == AuditEventType.OodWatchRelieved),
@@ -101,18 +111,78 @@ public class DefaultOodWatchServiceTests
     }
 
     [Fact]
+    public async Task HandoverWatch_VoluntaryKind_AuditPayloadCarriesNormalSeverity()
+    {
+        // R3 (XO post-merge council 2026-05-06): handoverKind discriminator
+        // surfaces in the OodWatchRelieved payload; severity = "Normal" for
+        // a routine voluntary watch-change.
+        var (svc, repo, audit, _, _) = NewService();
+        var current = NewWatch(state: OodWatchState.Active);
+        var relieved = current with { State = OodWatchState.Relieved, RelievedAt = T0, RelievedBy = Requester };
+        var started = NewWatch(state: OodWatchState.Active, onWatch: Incoming);
+        repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
+            .Returns((relieved, started));
+
+        await svc.HandoverWatchAsync(
+            current.Id, Incoming, Requester, OodHandoverKind.Voluntary, reason: "shift change");
+
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r =>
+                r != null
+                && r.EventType == AuditEventType.OodWatchRelieved
+                && PayloadHas(r, "handoverKind", "Voluntary")
+                && PayloadHas(r, "severity", "Normal")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task HandoverWatch_CommandRelievedKind_AuditPayloadCarriesHighSeverity()
+    {
+        // R3 (XO post-merge council 2026-05-06): authority-ordered relief
+        // (incapacitation, emergency, disciplinary) emits severity "High".
+        var (svc, repo, audit, _, _) = NewService();
+        var current = NewWatch(state: OodWatchState.Active);
+        var relieved = current with { State = OodWatchState.Relieved, RelievedAt = T0, RelievedBy = Requester };
+        var started = NewWatch(state: OodWatchState.Active, onWatch: Incoming);
+        repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
+            .Returns((relieved, started));
+
+        await svc.HandoverWatchAsync(
+            current.Id, Incoming, Requester, OodHandoverKind.CommandRelieved, reason: "incapacitation");
+
+        await audit.Received(1).AppendAsync(
+            Arg.Is<AuditRecord>(r =>
+                r != null
+                && r.EventType == AuditEventType.OodWatchRelieved
+                && PayloadHas(r, "handoverKind", "CommandRelieved")
+                && PayloadHas(r, "severity", "High")),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static bool PayloadHas(AuditRecord r, string key, string value)
+    {
+        // SignedOperation<AuditPayload>.Payload.Body is the underlying
+        // dictionary on AuditPayload.
+        var body = r.Payload.Payload.Body;
+        return body.TryGetValue(key, out var actual) && actual is string s && s == value;
+    }
+
+    [Fact]
     public async Task StartWatch_NullAuditTrail_ThrowsInvalidOperation()
     {
         // Council Finding 1: OOD-authority operations require IAuditTrail
         // + IOperationSigner. Service throws InvalidOperationException
         // rather than running authority ops with no audit trail.
         var repo = Substitute.For<IOodWatchRepository>();
-        repo.GetCurrentWatchAsync(Tenant, OodRole.OfficerOfTheDeck, Arg.Any<CancellationToken>())
-            .Returns((OodWatch?)null);
         repo.StartWatchAsync(
                 Tenant, OnWatch, OodRole.OfficerOfTheDeck, Arg.Any<TimeSpan?>(), Requester, Arg.Any<CancellationToken>())
             .Returns(NewWatch(state: OodWatchState.Active));
-        var svc = new DefaultOodWatchService(repo, auditTrail: null, signer: NewSigner(), timeProvider: new FakeTimeProvider(T0));
+        var svc = new DefaultOodWatchService(
+            repo,
+            NullLogger<DefaultOodWatchService>.Instance,
+            auditTrail: null,
+            signer: NewSigner(),
+            timeProvider: new FakeTimeProvider(T0));
 
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => svc.StartWatchAsync(Tenant, OnWatch, OodRole.OfficerOfTheDeck, null, Requester).AsTask());
@@ -156,7 +226,8 @@ public class DefaultOodWatchServiceTests
             .Returns<(OodWatch, OodWatch)>(_ => throw new OodWatchConflictException(watchId, Tenant, OodRole.OfficerOfTheDeck));
 
         await Assert.ThrowsAsync<OodWatchConflictException>(
-            () => svc.HandoverWatchAsync(watchId, Incoming, Requester, null).AsTask());
+            () => svc.HandoverWatchAsync(
+                watchId, Incoming, Requester, OodHandoverKind.Voluntary, null).AsTask());
     }
 
     private static (DefaultOodWatchService svc, IOodWatchRepository repo, IAuditTrail audit, IOperationSigner signer, FakeTimeProvider time) NewService()
@@ -165,7 +236,12 @@ public class DefaultOodWatchServiceTests
         var audit = Substitute.For<IAuditTrail>();
         var signer = NewSigner();
         var time = new FakeTimeProvider(T0);
-        var svc = new DefaultOodWatchService(repo, audit, signer, time);
+        var svc = new DefaultOodWatchService(
+            repo,
+            NullLogger<DefaultOodWatchService>.Instance,
+            audit,
+            signer,
+            time);
         return (svc, repo, audit, signer, time);
     }
 

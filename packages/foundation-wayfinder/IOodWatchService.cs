@@ -29,13 +29,24 @@ public interface IOodWatchService
     /// Formal handover: relieves the current watch and starts a new one
     /// atomically. Returns the (relieved, started) pair.
     /// </summary>
+    /// <param name="currentWatchId">The Active watch being relieved.</param>
+    /// <param name="incomingActor">The actor who will hold the new watch.</param>
+    /// <param name="requestedBy">The actor invoking the handover (typically the relieving authority or the outgoing watch-keeper).</param>
+    /// <param name="handoverKind">
+    /// Distinguishes <see cref="OodHandoverKind.Voluntary"/> shift-changes
+    /// (severity "Normal") from <see cref="OodHandoverKind.CommandRelieved"/>
+    /// authority-ordered reliefs (severity "High"). Per W#49 P2 amendment R3.
+    /// </param>
+    /// <param name="reason">Free-form context written into the audit payload; may be null.</param>
+    /// <param name="ct">Cancellation token.</param>
     /// <exception cref="OodWatchConflictException">
     /// <paramref name="currentWatchId"/> is not in
     /// <see cref="OodWatchState.Active"/> at the time of the call.
     /// </exception>
     ValueTask<(OodWatch Relieved, OodWatch Started)> HandoverWatchAsync(
         OodWatchId currentWatchId, ActorId incomingActor,
-        ActorId requestedBy, string? reason, CancellationToken ct = default);
+        ActorId requestedBy, OodHandoverKind handoverKind, string? reason,
+        CancellationToken ct = default);
 
     /// <summary>
     /// Returns the Active watch for <paramref name="tenantId"/> +

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Sunfish.Foundation.Crypto;
 using Sunfish.Kernel.Audit;
 
@@ -19,15 +20,19 @@ namespace Sunfish.Foundation.Wayfinder;
 /// <c>Thread.Sleep</c>. Wall-clock reads use the injected
 /// <see cref="TimeProvider"/>; production hosts pass
 /// <see cref="TimeProvider.System"/>; tests pass a deterministic
-/// fake. Per the <see cref="IOodWatchRepository.GetExpiredCandidatesAsync"/>
-/// docstring, this service is the only legitimate caller of the
-/// cross-tenant sweep enumerator.
+/// fake. R4 (XO post-merge council 2026-05-06): the cross-tenant
+/// sweep enumerator lives on the internal
+/// <see cref="IOodWatchSweepRepository"/>, so this service is the
+/// only type that can resolve the contract — application code
+/// cannot accidentally enumerate Active watches across tenants.
 /// </remarks>
-public sealed class OodWatchExpiryService : BackgroundService
+internal sealed class OodWatchExpiryService : BackgroundService
 {
     private static readonly TimeSpan DefaultSweepInterval = TimeSpan.FromMinutes(5);
 
     private readonly IOodWatchRepository _repository;
+    private readonly IOodWatchSweepRepository _sweepRepository;
+    private readonly ILogger<OodWatchExpiryService> _logger;
     private readonly IAuditTrail? _auditTrail;
     private readonly IOperationSigner? _signer;
     private readonly TimeProvider _timeProvider;
@@ -35,15 +40,26 @@ public sealed class OodWatchExpiryService : BackgroundService
     /// <summary>How often the sweep fires. Defaults to 5 minutes.</summary>
     public TimeSpan SweepInterval { get; }
 
-    /// <summary>Creates a sweep service bound to the supplied repository + audit + clock.</summary>
+    /// <summary>Creates a sweep service bound to the supplied repository + sweep repo + audit + clock.</summary>
+    /// <param name="repository">Per-tenant operations (used to call <see cref="IOodWatchRepository.ExpireWatchAsync"/> on each candidate).</param>
+    /// <param name="sweepRepository">Cross-tenant sweep enumerator. R4 separation per W#49 P2 amendment.</param>
+    /// <param name="logger">Logger. R2 (XO post-merge council 2026-05-06): non-nullable so audit-write swallows are observable.</param>
+    /// <param name="auditTrail">Audit trail. MUST be non-null when expirations occur per §Trust.</param>
+    /// <param name="signer">Signer for audit-record envelopes. MUST be non-null when expirations occur per §Trust.</param>
+    /// <param name="timeProvider">Clock source. Defaults to <see cref="TimeProvider.System"/>.</param>
+    /// <param name="sweepInterval">Sweep cadence. Defaults to 5 minutes.</param>
     public OodWatchExpiryService(
         IOodWatchRepository repository,
+        IOodWatchSweepRepository sweepRepository,
+        ILogger<OodWatchExpiryService> logger,
         IAuditTrail? auditTrail = null,
         IOperationSigner? signer = null,
         TimeProvider? timeProvider = null,
         TimeSpan? sweepInterval = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _sweepRepository = sweepRepository ?? throw new ArgumentNullException(nameof(sweepRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _auditTrail = auditTrail;
         _signer = signer;
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -60,9 +76,13 @@ public sealed class OodWatchExpiryService : BackgroundService
                 await SweepOnceAsync(stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
-            catch
+            catch (Exception ex)
             {
-                // Sweep failures must not crash the host. Next iteration retries.
+                // R2 (XO post-merge council 2026-05-06): observable swallow.
+                // Sweep failures must not crash the host; next iteration
+                // retries — but they MUST surface in logs so operators can
+                // detect a stuck sweep.
+                _logger.LogError(ex, "OodWatchExpiry sweep iteration failed; will retry on next interval");
             }
             try
             {
@@ -75,13 +95,13 @@ public sealed class OodWatchExpiryService : BackgroundService
     /// <summary>
     /// Single-shot sweep entry-point exposed for tests. Production callers
     /// should rely on <see cref="ExecuteAsync"/>. Internal-only to honor
-    /// the <see cref="IOodWatchRepository.GetExpiredCandidatesAsync"/>
+    /// the <see cref="IOodWatchSweepRepository.GetExpiredCandidatesAsync"/>
     /// cross-tenant single-caller invariant per W#49 P2 council Finding 6.
     /// </summary>
     internal async Task SweepOnceAsync(CancellationToken ct)
     {
         var cutoff = _timeProvider.GetUtcNow();
-        await foreach (var candidate in _repository.GetExpiredCandidatesAsync(cutoff, ct).ConfigureAwait(false))
+        await foreach (var candidate in _sweepRepository.GetExpiredCandidatesAsync(cutoff, ct).ConfigureAwait(false))
         {
             var expired = await _repository.ExpireWatchAsync(candidate.Id, ct).ConfigureAwait(false);
             await EmitExpiredAuditAsync(expired, cutoff, ct).ConfigureAwait(false);
@@ -126,7 +146,10 @@ public sealed class OodWatchExpiryService : BackgroundService
         // integrity failures and cancellation; swallow only transient hiccups.
         catch (Exception ex) when (ex is not AuditSignatureException && ex is not OperationCanceledException)
         {
-            // Best-effort.
+            // R2 (XO post-merge council 2026-05-06): observable swallow.
+            _logger.LogError(ex,
+                "OOD audit write failed for OodWatchExpired on watch {WatchId}; continuing best-effort",
+                watch.Id.Value);
         }
     }
 }

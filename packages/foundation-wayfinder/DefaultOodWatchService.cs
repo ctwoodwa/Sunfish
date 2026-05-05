@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Crypto;
 using Sunfish.Kernel.Audit;
@@ -38,22 +39,26 @@ namespace Sunfish.Foundation.Wayfinder;
 public sealed class DefaultOodWatchService : IOodWatchService
 {
     private readonly IOodWatchRepository _repository;
+    private readonly ILogger<DefaultOodWatchService> _logger;
     private readonly IAuditTrail? _auditTrail;
     private readonly IOperationSigner? _signer;
     private readonly TimeProvider _timeProvider;
 
     /// <summary>Creates a service bound to the supplied repository + audit + clock.</summary>
     /// <param name="repository">Persistence boundary; throws on the single-Active invariant.</param>
+    /// <param name="logger">Logger. R2 (XO post-merge council 2026-05-06): non-nullable so audit-write swallows are observable in production.</param>
     /// <param name="auditTrail">Audit trail. MUST be non-null at first authority invocation per §Trust.</param>
     /// <param name="signer">Signer for audit-record envelopes. MUST be non-null at first authority invocation per §Trust.</param>
     /// <param name="timeProvider">Clock source. Defaults to <see cref="TimeProvider.System"/>.</param>
     public DefaultOodWatchService(
         IOodWatchRepository repository,
+        ILogger<DefaultOodWatchService> logger,
         IAuditTrail? auditTrail = null,
         IOperationSigner? signer = null,
         TimeProvider? timeProvider = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _auditTrail = auditTrail;
         _signer = signer;
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -64,10 +69,11 @@ public sealed class DefaultOodWatchService : IOodWatchService
         TenantId tenantId, ActorId onWatchActor, OodRole role,
         TimeSpan? maxDuration, ActorId requestedBy, CancellationToken ct = default)
     {
-        var existing = await _repository.GetCurrentWatchAsync(tenantId, role, ct).ConfigureAwait(false);
-        if (existing is not null)
-            throw new OodWatchConflictException(existing.Id, tenantId, role);
-
+        // R1 (XO post-merge council 2026-05-06): no service-tier pre-check.
+        // ADR 0078 §1 assigns the single-Active invariant to the persistence
+        // layer (DB unique index); IOodWatchRepository.StartWatchAsync throws
+        // OodWatchConflictException on violation. A pre-check here would be
+        // TOCTOU and adds a redundant round-trip without adding correctness.
         var watch = await _repository.StartWatchAsync(
             tenantId, onWatchActor, role, maxDuration, requestedBy, ct).ConfigureAwait(false);
 
@@ -87,7 +93,8 @@ public sealed class DefaultOodWatchService : IOodWatchService
     /// </remarks>
     public async ValueTask<(OodWatch Relieved, OodWatch Started)> HandoverWatchAsync(
         OodWatchId currentWatchId, ActorId incomingActor,
-        ActorId requestedBy, string? reason, CancellationToken ct = default)
+        ActorId requestedBy, OodHandoverKind handoverKind, string? reason,
+        CancellationToken ct = default)
     {
         // Capture a single OccurredAt so the relieve + start audit records
         // share an identical timestamp (council Finding 9).
@@ -95,7 +102,11 @@ public sealed class DefaultOodWatchService : IOodWatchService
         var (relieved, started) = await _repository.HandoverWatchAsync(
             currentWatchId, incomingActor, requestedBy, ct).ConfigureAwait(false);
 
-        await EmitRelievedAuditAsync(relieved, requestedBy, reason, occurredAt, ct).ConfigureAwait(false);
+        // R3 (XO post-merge council 2026-05-06): handoverKind discriminates
+        // routine voluntary watch-changes from authority-ordered reliefs;
+        // it changes audit severity (Normal vs High) but is not a persistence
+        // variant — repository contract is unchanged.
+        await EmitRelievedAuditAsync(relieved, requestedBy, handoverKind, reason, occurredAt, ct).ConfigureAwait(false);
         await EmitStartedAuditAsync(started, requestedBy, occurredAt, ct).ConfigureAwait(false);
 
         // TODO(W#49-P3): emit watch-transfer Standing Order via IStandingOrderIssuer
@@ -114,6 +125,7 @@ public sealed class DefaultOodWatchService : IOodWatchService
         => EmitAuditAsync(
             AuditEventType.OodWatchStarted,
             watch.TenantId,
+            watch.Id,
             new AuditPayload(new Dictionary<string, object?>
             {
                 ["actor"] = watch.OnWatchActor.Value,
@@ -126,24 +138,27 @@ public sealed class DefaultOodWatchService : IOodWatchService
             occurredAt,
             ct);
 
-    private ValueTask EmitRelievedAuditAsync(OodWatch watch, ActorId requestedBy, string? reason, DateTimeOffset occurredAt, CancellationToken ct)
+    private ValueTask EmitRelievedAuditAsync(
+        OodWatch watch, ActorId requestedBy, OodHandoverKind handoverKind,
+        string? reason, DateTimeOffset occurredAt, CancellationToken ct)
     {
         var body = new Dictionary<string, object?>
         {
             ["actor"] = watch.OnWatchActor.Value,
+            ["handoverKind"] = handoverKind.ToString(),
             ["relievedBy"] = requestedBy.Value,
             ["role"] = watch.Role.ToString(),
-            ["severity"] = "Normal",
+            ["severity"] = handoverKind == OodHandoverKind.CommandRelieved ? "High" : "Normal",
             ["tenantId"] = watch.TenantId.Value,
             ["watchId"] = watch.Id.Value,
         };
         if (reason is not null) body["reason"] = reason;
-        return EmitAuditAsync(AuditEventType.OodWatchRelieved, watch.TenantId, new AuditPayload(body), occurredAt, ct);
+        return EmitAuditAsync(AuditEventType.OodWatchRelieved, watch.TenantId, watch.Id, new AuditPayload(body), occurredAt, ct);
     }
 
     private async ValueTask EmitAuditAsync(
-        AuditEventType eventType, TenantId tenantId, AuditPayload payload,
-        DateTimeOffset occurredAt, CancellationToken ct)
+        AuditEventType eventType, TenantId tenantId, OodWatchId watchId,
+        AuditPayload payload, DateTimeOffset occurredAt, CancellationToken ct)
     {
         // Council Finding 1: OOD-authority operations require IAuditTrail
         // + IOperationSigner. Fail loudly at first invocation rather than
@@ -173,7 +188,13 @@ public sealed class DefaultOodWatchService : IOodWatchService
         // swallow only transient transport / backend hiccups.
         catch (Exception ex) when (ex is not AuditSignatureException && ex is not OperationCanceledException)
         {
-            // Best-effort: audit-backend hiccups must not deny authority operations.
+            // R2 (XO post-merge council 2026-05-06): observable swallow.
+            // Best-effort: audit-backend hiccups must not deny authority
+            // operations, but they MUST surface through the host's logging
+            // pipeline so SREs can investigate.
+            _logger.LogError(ex,
+                "OOD audit write failed for {EventType} on watch {WatchId}; continuing best-effort",
+                eventType, watchId.Value);
         }
     }
 }
