@@ -1,0 +1,15 @@
+---
+sort_order: 22
+number: 23
+slug: ios-field-capture-app-substrate-v1
+title: "iOS Field-Capture App substrate v1 (cluster cross-cutting)"
+status: "ready-to-build"
+status_cell: "`ready-to-build` (P0+P1+P2+P3+P3.5+P4+P4.5 shipped 2026-05-04; P5 pairing-flow next)"
+owner: "sunfish-PM"
+owner_cell: "sunfish-PM"
+reference_cell: "https://github.com/ctwoodwa/Sunfish/pull/478 (P0 install identity) + https://github.com/ctwoodwa/Sunfish/pull/498 (P1 SwiftUI scaffold) + https://github.com/ctwoodwa/Sunfish/pull/511 (P2 GRDB persistence; SQLCipher deferred) + https://github.com/ctwoodwa/Sunfish/pull/516 (P3 event envelope substrate; post-A9 wire shape) + https://github.com/ctwoodwa/Sunfish/pull/517 (P3.5 JsonCanonical Swift mirror) + https://github.com/ctwoodwa/Sunfish/pull/533 (P4+P4.5 atomic — Bridge field-event/blob endpoints + iOS URLSession sync substrate)"
+---
+
+## Notes
+
+**Substantial 2026-05-04 progress.** P0 per-device install identity (#478). P1 SwiftUI scaffold (#498). P2 GRDB persistence + content-addressed BlobStore + CompactionPolicy; SQLCipher deferred to follow-up (#511). P3 EventType + EventEnvelope + EventQueueService with post-A9 wire-shape (capturedUnderKernel + capturedUnderSchemaEpoch fields per ADR 0028-A9; #516). P3.5 JsonCanonical Swift mirror of `Sunfish.Foundation.Crypto.CanonicalJson` + 10-fixture cross-lang sanity corpus (#517). P4+P4.5 atomic ship (#533): Bridge `POST /api/v1/field/event` + `POST /api/v1/field/blob/{sha256}` with idempotency (canonical-JSON byte comparison) + SHA-256 path-param verification + 10 MiB max-size + configurable local-disk content-addressed storage (Bridge:Field:BlobRoot config) + W#32 both-or-neither audit emission via new `InMemoryAuditTrail` public production type (Option C in-memory v1 per the audit-infra unblock addendum) + 4 new `AuditEventType` constants (`FieldEventAccepted` / `FieldEventRejected` / `FieldBlobAccepted` / `FieldBlobRejected`); iOS-side `BackgroundUrlSession` (ADR 0028-A2.2 5-knob factory) + `RetryPolicy` + `SyncEngine` top-level coordinator. Cross-cutting: 4 ADR-amendment hand-offs landed for W#23 (P4 unblock + P4.5 audit-infra unblock + post-A9 envelope addendum + P3 substrate). **Substrate-v1 deferrals tracked:** SQLCipher persistence (P2 follow-up); pairing-token JWT validation (P5 scope); per-event-type schema validation; persistent idempotency cache; Ed25519 signature verification on the canonical envelope (Bridge); file-based EventUploadTask + BlobUploadTask resumable upload + SyncDelegate / -997 recovery path (P4 follow-up); attempt_count tracking + retry-policy backoff scheduling; cross-language test against .NET CanonicalJson reference (P3.5 follow-up); Bridge endpoint integration tests; persistent Bridge audit infra (~ADR 0076). **Next:** P5 pairing flow (SwiftUI screens + `POST /api/v1/field/pair` Bridge endpoint + Anchor desktop UI for issuing pairing code + 4 new pairing-related `AuditEventType` constants). **Capture-flow follow-up hand-offs queued separately** (W#23.1 Receipts → W#23.6 Work-Order-Response; ~37-54h additional).

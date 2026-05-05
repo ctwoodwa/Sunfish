@@ -1,0 +1,42 @@
+# This is the intended CI workflow for the ledger-render-check.
+# Copy this file to .github/workflows/ledger-check.yml manually (the
+# OAuth credential used by the agent that authored this PR did not
+# carry the `workflow` scope, so the file could not be pushed under
+# .github/workflows/ in the same commit).
+#
+# Once placed under .github/workflows/, no further setup is needed —
+# GitHub Actions picks it up on the next PR that touches the ledger
+# or the per-workstream files.
+
+name: Ledger render check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'icm/_state/active-workstreams.md'
+      - 'icm/_state/workstreams/**'
+      - 'tools/icm/**'
+      - '.github/workflows/ledger-check.yml'
+
+# Read-only check; verifies that the committed icm/_state/active-workstreams.md
+# matches the regen output of tools/icm/render-ledger.py.  Catches direct hand
+# edits to the generated ledger (the per-workstream files under
+# icm/_state/workstreams/W*.md are the source of truth).
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Verify ledger regen matches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Run render-ledger --check
+        run: python3 tools/icm/render-ledger.py --check
