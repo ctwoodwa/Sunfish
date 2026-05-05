@@ -16,6 +16,15 @@ namespace Sunfish.Foundation.Transport.Relay;
 /// <see cref="IDuplexStream"/> are the canonical entry points and
 /// SHOULD be preferred (per the contract on <see cref="IDuplexStream"/>).
 /// </summary>
+/// <remarks>
+/// <para>Concurrent writes from multiple Tasks are NOT supported — callers
+/// must serialize all <see cref="WriteAsync"/> calls. <see cref="ClientWebSocket"/>
+/// permits exactly one outstanding send and one outstanding receive at a
+/// time; concurrent sends throw <see cref="InvalidOperationException"/>.
+/// See <c>WebSocketSyncDaemonTransportConnection._sendGate</c> in kernel-sync
+/// or <c>FrameProtocol._sendGate</c> in blocks-crew-comms for the canonical
+/// <see cref="SemaphoreSlim"/> serialization pattern.</para>
+/// </remarks>
 internal sealed class WebSocketDuplexStream : IDuplexStream
 {
     private readonly ClientWebSocket _ws;

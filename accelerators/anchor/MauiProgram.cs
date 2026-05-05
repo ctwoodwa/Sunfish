@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sunfish.Anchor.Services;
+using Sunfish.Blocks.CrewComms.DependencyInjection;
 using Sunfish.Foundation.Extensions;
 using Sunfish.Kernel.Crdt;
 using Sunfish.Kernel.Crdt.DependencyInjection;
@@ -217,6 +218,16 @@ public static class MauiProgram
 			}
 		});
 		builder.Services.AddHostedService<AnchorSyncHostedService>();
+
+		// W#45 P5 — register the native crew-comms provider. Phase 1 ships
+		// with a hard-coded empty in-memory roster; production deployments
+		// will swap to a persistent ICrewRoster (tenant directory; W#23/W#36
+		// pairing-token issuance) before crew-comms is exposed in the UI.
+		// AddSunfishCrewComms uses TryAddSingleton<KeyPair> so callers may
+		// pre-register a persistent KeyPair (loaded from secure storage) to
+		// override the per-container fresh-keygen Phase-1 stub.
+		builder.Services.AddSunfishCrewComms(roster =>
+			roster.AddInMemory(System.Array.Empty<Sunfish.Foundation.Channels.CrewMember>()));
 
 		// Anchor-specific session state + onboarding service.
 		builder.Services.AddSingleton<AnchorSessionService>();
