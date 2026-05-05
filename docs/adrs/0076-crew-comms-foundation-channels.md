@@ -170,7 +170,7 @@ Payload encoding: MessagePack (binary-native; avoids base64 overhead on audio fr
 | `0x03` | `INVITE` | initiator → recipient | `{ capabilities: uint8 }` — flags-combined; negotiation picks highest common capability |
 | `0x04` | `ACCEPT` | recipient → initiator | `{ capability: uint8 }` — negotiated level |
 | `0x05` | `REJECT` | recipient → initiator | `{ reason: string? }` |
-| `0x0A` | `CONFIRM` | both sides after ACCEPT | `{ transcriptHash: bytes[32] }` — SHA-256(ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1]); both sides MUST verify agreement before entering ACTIVE. See §A1 rationale. |
+| `0x0A` | `CONFIRM` | both sides after ACCEPT | `{ transcriptHash: bytes[32] }` — SHA-256(UTF8("sunfish-crew-comms-v1-transcript\0") \|\| ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1]); both sides MUST verify agreement before entering ACTIVE. See §A1 rationale. |
 | `0x06` | `BYE` | either direction | `{}` |
 | `0x07` | `TYPING` | either in ACTIVE | `{}` — suppressed 3s after last keystroke |
 | `0x08` | `DELIVERED` | either in ACTIVE | `{ messageId: bytes[16] }` — RFC 4122 big-endian UUID |
@@ -202,26 +202,49 @@ Payload encoding: MessagePack (binary-native; avoids base64 overhead on audio fr
    [Nonce (12B counter)] ++ ChaCha20Poly1305.Encrypt(sessionKey, nonce, plainFrame)
 9. After ACCEPT, both sides independently compute:
    tenantBytes = UTF8(tenantId.Value)
+   label       = UTF8("sunfish-crew-comms-v1-transcript\0")  // domain-separator (A1)
    transcriptHash = SHA-256(
-     ephemA[32] || idA[32] ||         // from HELLO_A
-     ephemB[32] || idB[32] ||         // from HELLO_B
-     uint32BE(len(tenantBytes)) || tenantBytes ||  // tenant binding
-     negotiatedCap[1]                 // ACCEPT.capability byte
+     label ||                                                  // domain-separator prefix
+     ephemA[32] || idA[32] ||                                  // from HELLO_A
+     ephemB[32] || idB[32] ||                                  // from HELLO_B
+     uint32BE(len(tenantBytes)) || tenantBytes ||              // tenant binding (length-prefixed)
+     negotiatedCap[1]                                          // ACCEPT.capability byte
    )
    and send CONFIRM { transcriptHash }.
    Mismatch → REJECT + close. Session enters ACTIVE only after both CONFIRMs verified.
    Rationale (A1): reduced-form is robust to MessagePack key-ordering variance across
    platforms; full-frame-bytes bind to serialization details rather than semantic content.
+   Domain-separator "sunfish-crew-comms-v1-transcript\0" (32 bytes with NUL terminator)
+   guards against cross-version transcript confusion per cohort canonical pattern
+   (ADR 0046 §A2.3 + ADR 0076 §step 7 HKDF salt).
 ```
 
 **§A1 — Wire-encoding ratification (2026-05-04, unblocks W#45 P2):**
-Three wire-encoding choices ratified after P2 council pre-merge review (1 Critical + 4 Major):
+Three wire-encoding choices ratified after P2 council pre-merge review (1 Critical + 4 Major)
+(council dispatched by COB on local `feat/w45-p2-blocks-crew-comms` branch; findings summarized in
+resolved beacon at `icm/_state/research-inbox/_archive/cob-question-2026-05-04T21-22Z-w45-p2-adr-0076-a1.md`;
+no separate council-artifact file under `icm/07_review/output/adr-audits/` because P2 implementation
+council was on the impl branch, not on this ADR):
 
-1. **Transcript-hash canonical form (Critical finding).** The original draft specified `SHA-256(HELLO_A_bytes || HELLO_B_bytes || INVITE_bytes || ACCEPT_bytes)` — binding to full MessagePack serialization of the framed messages. This is brittle: MessagePack key ordering is implementation-defined, meaning two conformant implementations may serialize identical logical payloads to different byte sequences, causing spurious CONFIRM mismatches across platforms. **Decision: reduced field-extract form** — `SHA-256(ephemA[32] || idA[32] || ephemB[32] || idB[32] || uint32BE(len(tenantBytes)) || tenantBytes || negotiatedCap[1])` — extracting fixed-width semantic fields directly. This form is invariant to MessagePack key ordering. The length-prefix on `tenantBytes` prevents extension attack via variable-length field adjacency. The implementation already matched the reduced form; the ADR text now matches the implementation.
+**Length-prefix rule (applies to all signables in this amendment):** `UTF8(tenantId.Value)` is
+NOT length-prefixed in the HELLO and HEARTBEAT signables because it is the LAST variable-width field
+in those signables — an unambiguous trailing position. Any future amendment that adds a field after
+`tenantId` in either HELLO or HEARTBEAT MUST length-prefix `tenantId` at that time to preserve
+unambiguous concatenation. In hash inputs where `tenantId` is NOT the trailing field (transcript-hash),
+a `uint32BE(4-byte)` length-prefix is REQUIRED (see #1 below). The canonical statement:
+_"Wire-encode `tenantId` as `UTF8(TenantId.Value)`. Precede it with `uint32BE(len(UTF8(tenantId.Value)))`
+when it appears as a non-trailing variable-width field in a hash or signature input."_
 
-2. **`tenantId` wire encoding.** The original draft specified `tenantId: uuid (fixext 16, RFC 4122)`. However, `Sunfish.Foundation.Assets.Common.TenantId` is `string Value`-backed with no UUID semantics — forcing UUID encoding would require redefining `TenantId` across every multi-tenant package. **Decision: `tenantId` encodes as raw UTF-8 bytes of `TenantId.Value`** in HELLO and HEARTBEAT. This is internally consistent with the rest of the multi-tenant surface and avoids a cross-package breaking change.
+1. **Transcript-hash canonical form (Critical finding).** The original draft specified `SHA-256(HELLO_A_bytes || HELLO_B_bytes || INVITE_bytes || ACCEPT_bytes)` — binding to full MessagePack serialization of the framed messages. This is brittle: MessagePack key ordering is implementation-defined, meaning two conformant implementations may serialize identical logical payloads to different byte sequences, causing spurious CONFIRM mismatches across platforms. **Decision: reduced field-extract form with domain-separator prefix** — extracting fixed-width semantic fields directly and prepending a domain-separator to guard against cross-version transcript confusion. The length-prefix on `tenantBytes` prevents ambiguous concatenation (where a different `(tenantBytes, negotiatedCap)` split could produce the same byte sequence and thus the same hash). `uint32BE` (4 bytes) is used rather than a shorter prefix to future-proof for tenant names encoded as DN-string-style identifiers; the hash is computed once per session so the byte cost is negligible. The implementation already matched the reduced form; the ADR text now matches the implementation. Cohort canonical domain-separator pattern: ADR 0046 §A2.3 (`"sunfish-encrypted-field-v1"`) + ADR 0076 §step 7 (`"sunfish-crew-comms-v1"` HKDF salt); per TLS 1.3 / RFC 9180 `LabeledExtract` convention, every SHA-256 hash input that binds session state MUST carry a domain-separator label.
 
-3. **`peerId` wire encoding.** The original draft specified `peerId: uuid (fixext 16, RFC 4122)`. The implementation's `PeerId.From(PrincipalId)` produces the raw 32-byte Ed25519 identity public key. **Decision: `peerId` encodes as raw `bytes[32]`** (the raw Ed25519 public key). This is semantically correct (the peer *is* identified by its public key) and consistent with `identityPublicKey: bytes[32]` already in HELLO. The `fixext 16` UUID constraint is now scoped to `messageId` fields only.
+2. **`tenantId` wire encoding.** The original draft specified `tenantId: uuid (fixext 16, RFC 4122)`. However, `Sunfish.Foundation.Assets.Common.TenantId` is `string Value`-backed with no UUID semantics — forcing UUID encoding would require redefining `TenantId` across every multi-tenant package. **Decision: `tenantId` encodes as raw UTF-8 bytes of `TenantId.Value`** in HELLO and HEARTBEAT. This is internally consistent with the rest of the multi-tenant surface and avoids a cross-package breaking change. See the Length-prefix rule above for when to omit vs. include the `uint32BE` prefix.
+
+3. **`peerId` wire encoding.** The original draft specified `peerId: uuid (fixext 16, RFC 4122)`. `PeerId` in the implementation is constructed via `PeerId.From(PrincipalId)`, which sets `PeerId.Value = principal.ToBase64Url()` — a 43-character base64url-encoded string (verified at `packages/federation-common/PeerId.cs:13`; cross-reference ADR 0061 line 474). The raw 32-byte Ed25519 identity public key lives on the underlying `PrincipalId` (accessible via `PrincipalId.AsSpan()` at `packages/foundation/Crypto/PrincipalId.cs:49`; `LengthInBytes = 32` at line 31). **Decision: `peerId` encodes as raw `bytes[32]`** (the raw Ed25519 public key). Encoder path: either (a) carry `PrincipalId` alongside `PeerId` for sign-and-send paths and call `principalId.AsSpan()` directly, or (b) base64url-decode `PeerId.Value` at encode time via `PrincipalId.FromBase64Url(peerId.Value).AsSpan()`. Do NOT write `PeerId.Value` (the base64url ASCII string) directly onto the wire — that is a 43-byte string, not 32 raw bytes, and would silently produce wrong HEARTBEAT signatures. This encoding is semantically correct (the peer *is* identified by its public key) and consistent with `identityPublicKey: bytes[32]` already in HELLO. The `fixext 16` UUID constraint is now scoped to `messageId` fields only.
+
+**Follow-up:** A2 will introduce conformance test vectors for the transcript-hash canonical form,
+the HEARTBEAT signable byte sequence, and the HELLO signable byte sequence. Rationale: A1 ratifies
+the wire encoding; A2 ships the interop-falsifiable vectors that allow a second implementation to
+verify byte-exact agreement. A2 MUST receive pre-merge council review per ADR 0069 D1 before merge.
 
 **No session resumption:** each new `IDuplexStream` connection MUST perform a fresh DH handshake from step 1. Prior session keys MUST be zeroed in memory immediately on `CloseAsync`/`DisposeAsync`. There is no session ticket, no session ID carried across reconnects.
 
@@ -460,7 +483,7 @@ No existing packages are modified. Two new packages added:
 - [ ] Implement `ChannelCapability`, `PresenceStatus`, `CrewPresence`, `CrewMember` value types
 - [ ] Implement `ICrewRoster`, `IChannelSession`, `IChannelInvitation`, `IChannelProvider` interfaces
 - [ ] Scaffold `packages/blocks-crew-comms/Sunfish.Blocks.CrewComms.csproj` — IsPackable, deps on foundation-channels + foundation-transport + foundation-multitenancy
-- [ ] Implement `FrameProtocol` — length-prefix framing + MessagePack encode/decode for all v1 message types; RFC 4122 big-endian UUID encoding for `messageId` fields only (not `Guid.ToByteArray()`); `tenantId` as raw UTF-8 bytes; `peerId` as raw bytes[32] Ed25519 key (A1)
+- [ ] Implement `FrameProtocol` — length-prefix framing + MessagePack encode/decode for all v1 message types; RFC 4122 big-endian UUID encoding for `messageId` fields only (not `Guid.ToByteArray()`); `tenantId` as raw UTF-8 bytes; `peerId` as raw bytes[32] Ed25519 key per §A1 (this amendment)
 - [ ] Implement `EncryptionHandshake` — ephemeral X25519 + HKDF-SHA256 + ChaCha20-Poly1305 via `NSec.Cryptography`; Ed25519 sign (HELLO + HEARTBEAT) + verify; roster membership check on HELLO; CONFIRM transcript-hash exchange; session key zeroed on close; no session resume
 - [ ] Implement `PresenceBus` — 30s heartbeat timer with signed HEARTBEAT frames; `ICrewRoster.GetCrewAsync` for peer list; TTL-eviction at 45s; 20s in-session keepalive; mDNS cache fast-path via `ITransportSelector`
 - [ ] Implement `NativeChannelSession` — dedicated reader Task (concurrent with writer; verify `IDuplexStream` threading contract first); TEXT/TYPING/DELIVERED routing; `Completed` TaskCompletionSource; `CloseAsync` with 2s drain + BYE; `DisposeAsync` best-effort BYE
