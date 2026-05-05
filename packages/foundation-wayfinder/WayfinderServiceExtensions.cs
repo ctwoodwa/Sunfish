@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Sunfish.Foundation.Wayfinder;
 
@@ -42,6 +43,16 @@ public static class WayfinderServiceExtensions
         services.TryAddSingleton<IAtlasProjector>(
             sp => sp.GetRequiredService<DefaultAtlasProjector>());
         services.TryAddSingleton(TimeProvider.System);
+
+        // W#49 P2 — OOD watch rotation primitive. Hosts MUST separately
+        // register an IOodWatchRepository (no in-memory default exists in
+        // Phase 2; Phase 3 will add one). IAuditTrail + IOperationSigner
+        // are MANDATORY for OOD authority operations per ADR 0078 §Trust;
+        // DefaultOodWatchService throws InvalidOperationException at first
+        // invocation if either is missing.
+        services.TryAddSingleton<IOodWatchService, DefaultOodWatchService>();
+        services.AddHostedService<OodWatchExpiryService>();
+
         return services;
     }
 

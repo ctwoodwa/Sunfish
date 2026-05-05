@@ -31,6 +31,21 @@ public interface IOodWatchRepository
     ValueTask<OodWatch> RelieveWatchAsync(
         OodWatchId watchId, ActorId relievedBy, CancellationToken ct = default);
 
+    /// <summary>
+    /// Atomically relieves <paramref name="currentWatchId"/> and starts a new
+    /// watch for <paramref name="incomingActor"/> in the same (TenantId, OodRole)
+    /// scope as the relieved watch. Implementations MUST enforce transactional
+    /// atomicity — if the start-leg fails, the relieve-leg MUST be rolled
+    /// back so the (TenantId, OodRole) pair never enters an authority-vacuum
+    /// state. Per ADR 0078 §2 + W#49 P2 council Finding 3.
+    /// </summary>
+    /// <exception cref="OodWatchConflictException">
+    /// <paramref name="currentWatchId"/> is not in <see cref="OodWatchState.Active"/>.
+    /// </exception>
+    ValueTask<(OodWatch Relieved, OodWatch Started)> HandoverWatchAsync(
+        OodWatchId currentWatchId, ActorId incomingActor, ActorId requestedBy,
+        CancellationToken ct = default);
+
     /// <summary>Transitions the watch from Active to <see cref="OodWatchState.Expired"/>.</summary>
     ValueTask<OodWatch> ExpireWatchAsync(
         OodWatchId watchId, CancellationToken ct = default);
