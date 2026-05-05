@@ -954,15 +954,18 @@ transcript hash specification and a new initiator verification step.
 No §A0.1 negative-existence check needed (no new types introduced).
 §A0.2: `inviteCaps` is an additional byte in the hash input — no false-positive type risk.
 §A0.3: The verification check `(ACCEPT.capability & INVITE.capabilities) == ACCEPT.capability` 
-is bitwise AND — standard .NET pattern.
+is bitwise AND — standard .NET pattern. Implementers MUST cast `ChannelCapability` enum values to 
+`byte` at the wire boundary: `(byte)caps` when writing the frame field; `(ChannelCapability)b` when 
+reading. Mixing enum and uint8 without explicit cast produces a compile-time error in C#; this is 
+desirable and intentional.
 
 ---
 
 ### A2.7 Implementation checklist (W#45 P4 unblock — addendum to §A1.7)
 
-- [ ] `EncryptionHandshake.ComputeConfirmHash()` — add `inviteCaps[1]` as the 5th byte group 
-  (after tenantBytes length-prefix, before negotiatedCap); initiator passes its sent 
-  `INVITE.capabilities` byte; responder passes the received `INVITE.capabilities` byte
+- [ ] `EncryptionHandshake.ComputeConfirmHash()` — add `inviteCaps[1]` after tenantBytes 
+  and before negotiatedCap; initiator passes its sent `INVITE.capabilities` byte; 
+  responder passes the received `INVITE.capabilities` byte
 - [ ] `SessionInitiator.OpenAsync()` — after receiving ACCEPT (step 7), add verification: 
   `if ((accepted.Capability & sentCapabilities) != accepted.Capability) → send REJECT + throw`
 - [ ] Update §A1.7 known-answer test #3 (CONFIRM transcript hash) to include `inviteCaps[1]` 
@@ -976,6 +979,7 @@ check + one test fixture update). May be combined with the P4 AEAD + glare-wirin
 ### A2.8 References
 
 - W#45 P4 COB question: `icm/_state/research-inbox/cob-question-2026-05-05T09-15Z-w45-p4-council-deferral-plan.md`
+- W#45 P4 council review: `icm/07_review/output/adr-audits/0076-a2-council-review-2026-05-05.md` (finding #8 origin)
 - ADR 0076-A1 §A1.3 §A1 (prior CONFIRM transcript hash spec — superseded by A2.3)
 - ADR 0076 §Wire protocol `0x03` INVITE row
 - `packages/foundation-channels/` — `ChannelCapability` flags enum (W#45 P1)
