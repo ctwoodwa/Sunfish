@@ -14,28 +14,46 @@ to relieve. Per [ADR 0078 — OOD Watch Rotation Primitive](../../../../docs/adr
 | `OodWatchId` | Server-generated stable identifier |
 | `OodRole` | `OfficerOfTheDeck`, `EngineeringOfficerOfTheWatch` |
 | `OodWatchState` | `Active`, `Relieved`, `Expired` |
+| `OodHandoverKind` | `Voluntary`, `CommandRelieved` — discriminates a routine watch-change from an authority-ordered relief |
 | `OodWatchConflictException` | Single-Active-per-(tenant, role) invariant violation |
-| `IOodWatchRepository` | Persistence boundary; owns transactional atomicity |
+| `IOodWatchRepository` | Persistence boundary (per-tenant operations); owns transactional atomicity |
+| `IOodWatchSweepRepository` | `internal` — cross-tenant sweep boundary, only `OodWatchExpiryService` resolves it |
 | `IOodWatchService` | Public service surface (`StartWatchAsync`, `HandoverWatchAsync`, `GetActiveWatchAsync`) |
 | `DefaultOodWatchService` | Reference implementation |
-| `OodWatchExpiryService` | Background sweep (default 5-min cadence) |
+| `OodWatchExpiryService` | `internal sealed` background sweep (default 5-min cadence); registered via `AddHostedService<T>` |
 | `StandingOrder.IssuedDuringWatchId` | Optional `OodWatchId?` field correlating Standing Order issuances with the OOD watch active at issuance time |
 
 ## DI registration
 
 ```csharp
 services.AddSunfishWayfinder();
+
+// Hosts MUST separately register a concrete repository binding for BOTH
+// IOodWatchRepository (per-tenant operations) and IOodWatchSweepRepository
+// (cross-tenant sweep enumerator, internal — only OodWatchExpiryService
+// can resolve it). Concrete implementations typically implement both
+// interfaces; bind one singleton instance to both bindings:
+services.AddSingleton<MyOodWatchRepository>();
+services.AddSingleton<IOodWatchRepository>(sp =>
+    sp.GetRequiredService<MyOodWatchRepository>());
+services.AddSingleton<IOodWatchSweepRepository>(sp =>
+    sp.GetRequiredService<MyOodWatchRepository>());
 ```
 
 `AddSunfishWayfinder` registers `IOodWatchService → DefaultOodWatchService`
-and the `OodWatchExpiryService` hosted service. Hosts MUST separately
-register an `IOodWatchRepository` (no in-memory default ships in W#49 Phase 2;
-Phase 3 will add one).
+and the `OodWatchExpiryService` hosted service. No in-memory default
+repository ships in W#49 Phase 2; Phase 3 will add one.
 
 `IAuditTrail` and `IOperationSigner` are **mandatory** for OOD authority
 operations per ADR 0078 §Trust. The service throws
 `InvalidOperationException` at first emit attempt when either is missing —
 fail loudly rather than run authority operations with zero audit trail.
+
+`ILogger<T>` is auto-resolved when the host calls `services.AddLogging()`
+(every ASP.NET Core or Aspire host does). Best-effort audit-write swallows
+log at `Error` severity so SREs can detect a silently-degraded audit
+pipeline; cryptographic-integrity exceptions and cancellations propagate
+unchanged.
 
 ## Starting a watch
 
@@ -65,11 +83,26 @@ enforcement is API/gateway-layer responsibility per the ADR 0078
 ## Formal handover
 
 ```csharp
+// Routine voluntary shift-change — outgoing watch-keeper transfers to
+// the incoming actor. Audit severity is "Normal".
 var (relieved, started) = await oodWatchService.HandoverWatchAsync(
     currentWatchId: prior.Id,
     incomingActor: carol,
     requestedBy: alice,
+    handoverKind: OodHandoverKind.Voluntary,
     reason: "shift change at 16:00",
+    ct);
+```
+
+```csharp
+// Authority-ordered relief — commanding actor relieves the watch-keeper
+// (incapacitation, emergency, disciplinary). Audit severity is "High".
+var (relieved, started) = await oodWatchService.HandoverWatchAsync(
+    currentWatchId: prior.Id,
+    incomingActor: relief,
+    requestedBy: commander,
+    handoverKind: OodHandoverKind.CommandRelieved,
+    reason: "incapacitated; relieved by command",
     ct);
 ```
 
@@ -79,6 +112,11 @@ so the `(TenantId, OodRole)` pair never enters an authority-vacuum
 state. The new watch inherits the relieved watch's `MaxWatchDuration`;
 callers needing a fresh TTL must `RelieveWatchAsync` (via direct
 repository call) and then `StartWatchAsync` separately.
+
+`OodHandoverKind` is an audit discriminator only — it changes the
+emitted severity (`Normal` vs `High`) and surfaces in the
+`OodWatchRelieved` payload as `handoverKind`. The repository contract is
+unchanged regardless of kind.
 
 ## Consuming `GetActiveWatchAsync`
 
@@ -108,21 +146,22 @@ authority-absent.
 automatically by `AddSunfishWayfinder`). Default sweep interval is 5
 minutes. Each tick:
 
-1. Calls `IOodWatchRepository.GetExpiredCandidatesAsync(now)` to
+1. Calls `IOodWatchSweepRepository.GetExpiredCandidatesAsync(now)` to
    enumerate Active watches across all tenants whose
    `StartedAt + MaxWatchDuration ≤ now`.
-2. For each candidate: calls `ExpireWatchAsync(watch.Id)` and emits
-   `AuditEventType.OodWatchExpired` (severity `"High"`).
+2. For each candidate: calls `IOodWatchRepository.ExpireWatchAsync(watch.Id)`
+   and emits `AuditEventType.OodWatchExpired` (severity `"High"`).
 
 Tests inject a `FakeTimeProvider` subclass via the constructor's
 `timeProvider` parameter to exercise the sweep deterministically.
 
-> **Cross-tenant warning.** `GetExpiredCandidatesAsync` is the **only**
-> non-tenant-scoped method on `IOodWatchRepository`. The single
-> legitimate caller is `OodWatchExpiryService`. Application code MUST
-> NOT call this method directly. A future phase will move the sweep
-> contract to a separate internal interface to enforce this at the
-> type system.
+> **Cross-tenant boundary.** `GetExpiredCandidatesAsync` lives on the
+> `internal IOodWatchSweepRepository` — the type system now enforces
+> the single-caller invariant. Application code outside
+> `Sunfish.Foundation.Wayfinder` cannot resolve the contract. Concrete
+> repository implementations typically implement both
+> `IOodWatchRepository` (per-tenant) and `IOodWatchSweepRepository`
+> (cross-tenant), bound to the same singleton in DI as shown above.
 
 ## WCAG live-region contract (per ADR 0078 §7)
 
@@ -146,9 +185,9 @@ Every OOD authority operation emits exactly one of:
 
 | Event type | Triggered by |
 |---|---|
-| `OodWatchStarted` | `StartWatchAsync` succeeded; payload includes severity `"High"` |
-| `OodWatchRelieved` | `HandoverWatchAsync` relieved-leg; payload includes severity `"Normal"` + optional reason |
-| `OodWatchExpired` | `OodWatchExpiryService` tick advanced a watch past its TTL; payload includes severity `"High"` + maxWatchDuration |
+| `OodWatchStarted` | `StartWatchAsync` succeeded; payload severity `"High"` |
+| `OodWatchRelieved` | `HandoverWatchAsync` relieved-leg; payload includes `handoverKind` (`Voluntary` or `CommandRelieved`) and severity-switched value (`"Normal"` for `Voluntary`, `"High"` for `CommandRelieved`) + optional reason |
+| `OodWatchExpired` | `OodWatchExpiryService` tick advanced a watch past its TTL; payload severity `"High"` + `maxWatchDuration` |
 
 A successful `HandoverWatchAsync` emits both `OodWatchRelieved` (for
 the prior watch) and `OodWatchStarted` (for the new watch) with an
@@ -158,5 +197,6 @@ correlated pair.
 Audit emission is best-effort for transient transport hiccups —
 `AuditSignatureException` (cryptographic integrity failure) and
 `OperationCanceledException` propagate to the caller; other backend
-errors are swallowed so authority operations are not denied by audit
-backend issues.
+errors are logged at `Error` severity (so silent degradation is
+detectable in SRE dashboards) and then swallowed so authority operations
+are not denied by audit backend issues.
