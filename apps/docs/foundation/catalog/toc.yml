@@ -2,3 +2,5 @@
   href: overview.md
 - name: Bundle Manifests
   href: bundle-manifests.md
+- name: Feature-gated Extension Fields
+  href: feature-gated-extension-fields.md

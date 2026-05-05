@@ -14,6 +14,14 @@ for the semver rules that govern what qualifies as patch / minor / major.
 
 ### Added
 
+- `ExtensionFieldSpec.FeatureKey` and `ExtensionFieldSpec.FeatureGateOffPolicy` — optional parameters enabling operator-runtime field gating (ADR 0075, W#44).
+- `IExtensionFieldCatalog.GetFieldsAsync(Type, FeatureEvaluationContext, CancellationToken)` — async overload that evaluates feature gates and returns `MaterializedExtensionField` records.
+- `FeatureGateOffPolicy` enum (Hide / Sequester / Redact).
+- `MaterializedExtensionField` record + `GateState` enum.
+- `ExtensionFieldRedactionDeniedException` — thrown when Redact policy is denied by the capability graph.
+- 5 new `AuditEventType` constants: `ExtensionFieldGated`, `ExtensionFieldFiltered`, `ExtensionFieldSequestered`, `ExtensionFieldRedacted`, `ExtensionFieldGateEvaluationFailed`.
+- `AddExtensionFieldCatalogWithFeatureGating(IServiceCollection)` DI extension.
+
 ### Changed
 
 ### Deprecated
