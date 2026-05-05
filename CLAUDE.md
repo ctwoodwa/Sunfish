@@ -86,7 +86,12 @@ Any unexpected state → STOP, memory note naming workstream + observation + nee
 
 - **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update the per-workstream file's `status:` frontmatter under `icm/_state/workstreams/W{NN}-*.md`, run `python3 tools/icm/render-ledger.py` to refresh the roll-up, revoke/update existing hand-off.
 - **Design final:** write hand-off in `handoffs/<workstream>.md`, flip the per-workstream file's `status:` to `ready-to-build`, run `python3 tools/icm/render-ledger.py`, optionally write a project memory pointing at the hand-off.
-- **New workstream:** create `icm/_state/workstreams/W{NN}-{slug}.md` (next available W#); fill frontmatter (`sort_order`, `number`, `slug`, `title`, `status`, `status_cell`, `owner`, `owner_cell`, `reference_cell`) and a `## Notes` body; run `python3 tools/icm/render-ledger.py`. Commit both the per-workstream file and the regenerated `active-workstreams.md`.
+- **New workstream:** run `python3 tools/naming/check.py next-workstream` first to get the
+  next-free W# (checks disk + open PRs atomically — prevents parallel-session collisions like
+  W#54 + W#55 on 2026-05-05). Then create `icm/_state/workstreams/W{NN}-{slug}.md`; fill
+  frontmatter (`sort_order`, `number`, `slug`, `title`, `status`, `status_cell`, `owner`,
+  `owner_cell`, `reference_cell`) and a `## Notes` body; run `python3 tools/icm/render-ledger.py`.
+  Commit both the per-workstream file and the regenerated `active-workstreams.md`.
 
 ### Memory-side coordination
 

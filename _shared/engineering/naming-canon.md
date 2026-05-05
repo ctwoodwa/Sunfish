@@ -16,6 +16,7 @@ Naming friction has been a recurring source of cohort-quality issues. Specific i
 - **Wayfinder brainstorm rejected 8 candidates** (2026-05-01): Mission Control / Capability Center / Control Center / Bridge / Cockpit / Flight Deck / Flight Plan / Trade Space / Chart Table — each had collisions with macOS UI, Sunfish accelerators, prior ADRs, or commerce vocabulary.
 - **Naval-org "Yeoman" collision** (2026-05-01): Sunfish-side "Yeoman" role would have collided with the book-side technical-writer "Yeoman" session. Renamed Sunfish-side to "Scribe."
 - **ADR 0066 parallel-session collision** (2026-05-04): two parallel sessions both reached for ADR 0066 on the same day — XO (Helm + Identity Atlas, intake filed 2026-05-01) and ONR (Crew Comms — foundation-channels, drafted 2026-05-04). Resolved by first-claim discipline: Helm + Identity Atlas kept 0066 (3-day-prior intake); Crew Comms renumbered to 0076. **Reinforces**: cross-session naming requires registry discipline AND multi-session ADR-number-claim broadcasts. Future cross-session work should consult `naming-registry.yaml § reserved_adrs` BEFORE drafting (registry was already populated; ONR just didn't read it).
+- **W#54 + W#55 parallel-session collisions** (2026-05-05): two parallel XO author subagents independently allocated W#54 (Sick Bay, PR #601) and W#55 (Ship's Office, PR #603 + Bridge React renderer, PR #602) on the same day. Root cause: no atomic check for "is W#NN already claimed in main OR an open PR." Resolved by re-creating PR #601's ledger orphan row and renumbering #602 → W#56. Cost: 2 redo-PRs. **Fix shipped**: `tools/naming/check.py workstream <NN>` + `next-workstream` now check both disk state AND open PRs atomically.
 
 Each of these wasted 30 min – 2 hr. The pattern is clear: **propose-then-discover** is expensive; **search-then-propose** is cheap. **Multi-session caveat**: each session must also broadcast its claims to the registry, not just consult it.
 
@@ -36,17 +37,22 @@ tools/naming/check.py package blocks-foo      # is package name blocks-foo avail
 tools/naming/check.py namespace Sunfish.X.Y   # is C# namespace available?
 tools/naming/check.py vocabulary "MyTerm"     # is vocabulary term reserved/rejected?
 tools/naming/check.py auto Sunfish.Foo.Bar    # auto-detect what kind & check
+tools/naming/check.py workstream 57           # is W#57 free? (checks disk + open PRs)
+tools/naming/check.py next-workstream         # what is the next-available W# integer?
+tools/naming/check.py W57                     # auto-detect W# shape; same as `workstream 57`
 ```
 
-### Tool limitation: in-flight PRs
+### Tool limitation: in-flight PRs (ADR names and general names)
 
-`check.py` reflects the **on-disk origin/main state**. If a name is reserved by an open PR (e.g., a new ADR amendment authored in a branch but not yet merged), the tool reports CLEAN. To check in-flight reservations, also run:
+`check.py` reflects the **on-disk origin/main state** for most checks (ADR numbers, packages, namespaces, vocabulary). If a name is reserved by an open PR (e.g., a new ADR amendment authored in a branch but not yet merged), the tool reports CLEAN. To check in-flight reservations for those categories, also run:
 
 ```bash
 gh pr list --state open --search "in:title <candidate-name>"
 ```
 
 When in doubt, search the in-flight workstream ledger at `icm/_state/active-workstreams.md` and the open PR list.
+
+**Exception — workstream numbers**: the `workstream` and `next-workstream` subcommands DO check open PRs automatically (via `gh pr list --json number,files`). No manual PR scan needed for W# allocation.
 
 ---
 
@@ -96,8 +102,27 @@ Run `python3 tools/adr-projections/project.py --check-only` after authoring; 0 e
 
 ### Workstream numbers
 
-- Sequential integers in `icm/_state/active-workstreams.md` ledger.
-- Currently goes up to W#44 (verified 2026-05-04). Next available varies; check ledger.
+- Sequential integers; one per-workstream file at `icm/_state/workstreams/W{NN}-{slug}.md`.
+- Files are the source of truth; `icm/_state/active-workstreams.md` is a regenerated roll-up.
+- **Pre-flight check is mandatory before allocating a new W#** — parallel author sessions
+  independently picking "next available" caused 2 collisions on 2026-05-05 (W#54 + W#55).
+
+```bash
+# Allocate the next free number
+python3 tools/naming/check.py next-workstream    # → "NEXT WORKSTREAM: W#57"
+
+# Verify a specific number before using it
+python3 tools/naming/check.py workstream 57      # → EXACT MATCH / RESERVED / CLEAN
+
+# Auto-detect shorthand (W56, W#56, w56 all work)
+python3 tools/naming/check.py W57
+```
+
+The `workstream` and `next-workstream` subcommands check **both** the local disk checkout
+(EXACT MATCH) **and** open GitHub PRs (RESERVED) in a single call. No separate `gh pr list`
+scan is needed for W# allocation. Requires the `gh` CLI; if unavailable a warning is printed
+and only the disk check runs.
+
 - Sub-workstreams: not used yet; if needed, propose via ADR.
 
 ### Locked Sunfish vocabulary

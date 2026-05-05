@@ -11,10 +11,13 @@ USAGE
     tools/naming/check.py package blocks-foo      # package directory name
     tools/naming/check.py namespace Sunfish.X.Y   # C# namespace
     tools/naming/check.py vocabulary "MyTerm"     # arbitrary vocabulary term
+    tools/naming/check.py workstream 56           # check W# availability
+    tools/naming/check.py next-workstream         # print next-available W#
+    tools/naming/check.py W56                     # auto-detect W# shape
 
 OUTPUT (one of)
     EXACT MATCH       — name is taken on disk
-    RESERVED          — name has an intake stub claim (~ADR NNNN; not yet authored)
+    RESERVED          — name has an open-PR claim (in-flight branch, not yet merged)
     COLLISION         — name conflicts with locked-vocabulary registry entry
     REJECTED          — name was rejected during a prior brainstorm; reason cited
     FUZZY MATCH       — Levenshtein-1 or substring overlap with existing names
@@ -30,15 +33,24 @@ canon). This tool is the machine-readable view of the same intent.
 from __future__ import annotations
 
 import argparse
+import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 ROOT = Path(__file__).resolve().parents[2]
 PACKAGES_DIR = ROOT / "packages"
 ADR_DIR = ROOT / "docs" / "adrs"
 INTAKE_DIR = ROOT / "icm" / "00_intake" / "output"
 REGISTRY_FILE = ROOT / "_shared" / "engineering" / "naming-registry.yaml"
+WORKSTREAMS_DIR = ROOT / "icm" / "_state" / "workstreams"
+
+# W{NN}-{slug}.md filename pattern — zero-padded or bare integer, no limit on digits
+_WS_FILE_RE = re.compile(r"^W(\d+)-", re.IGNORECASE)
+# Auto-detect: W56, W#56, w56, w#56
+_WS_AUTO_RE = re.compile(r"^[Ww]#?(\d+)$")
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -392,16 +404,153 @@ def cmd_vocabulary(args) -> int:
     return 0
 
 
+# ────────────────────────────────────────────────────────────────────────────
+# Workstream helpers
+# ────────────────────────────────────────────────────────────────────────────
+
+
+def _list_workstreams_on_disk() -> dict[int, str]:
+    """{w_number: filename} for every W{NN}-*.md in icm/_state/workstreams/."""
+    out: dict[int, str] = {}
+    if not WORKSTREAMS_DIR.exists():
+        return out
+    for f in WORKSTREAMS_DIR.iterdir():
+        if not f.is_file():
+            continue
+        m = _WS_FILE_RE.match(f.name)
+        if m:
+            out[int(m.group(1))] = f.name
+    return out
+
+
+# Module-level cache for open-PR workstream claims so we only call `gh` once.
+_pr_workstream_cache: Optional[dict[int, list[int]]] = None  # {w_num: [pr_num, ...]}
+
+
+def _pr_workstream_claims() -> dict[int, list[int]]:
+    """Return {w_number: [pr_number, ...]} for workstream files added in open PRs.
+
+    Uses `gh pr list --state open --json number,files --limit 50`.
+    Result is cached for the lifetime of this process.
+    If `gh` is unavailable the function returns {} and prints a warning.
+    """
+    global _pr_workstream_cache
+    if _pr_workstream_cache is not None:
+        return _pr_workstream_cache
+
+    _pr_workstream_cache = {}
+    try:
+        result = subprocess.run(
+            ["gh", "pr", "list", "--state", "open", "--json", "number,files", "--limit", "50"],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+    except FileNotFoundError:
+        print(
+            "WARNING: `gh` CLI not found — RESERVED check (open-PR scan) is skipped. "
+            "Only disk state (EXACT MATCH) will be checked.",
+            file=sys.stderr,
+        )
+        return _pr_workstream_cache
+    except subprocess.TimeoutExpired:
+        print(
+            "WARNING: `gh pr list` timed out — RESERVED check (open-PR scan) is skipped.",
+            file=sys.stderr,
+        )
+        return _pr_workstream_cache
+
+    if result.returncode != 0:
+        print(
+            f"WARNING: `gh pr list` returned exit code {result.returncode} — "
+            "RESERVED check (open-PR scan) is skipped.",
+            file=sys.stderr,
+        )
+        return _pr_workstream_cache
+
+    try:
+        prs = json.loads(result.stdout)
+    except json.JSONDecodeError:
+        print("WARNING: Could not parse `gh pr list` JSON — RESERVED check skipped.", file=sys.stderr)
+        return _pr_workstream_cache
+
+    for pr in prs:
+        pr_num = pr.get("number")
+        for file_entry in pr.get("files") or []:
+            path = file_entry.get("path", "")
+            # Match icm/_state/workstreams/W{NN}-*.md paths
+            basename = path.split("/")[-1]
+            m = _WS_FILE_RE.match(basename)
+            if m and "icm/_state/workstreams/" in path:
+                w_num = int(m.group(1))
+                _pr_workstream_cache.setdefault(w_num, [])
+                if pr_num not in _pr_workstream_cache[w_num]:
+                    _pr_workstream_cache[w_num].append(pr_num)
+
+    return _pr_workstream_cache
+
+
+def cmd_workstream(args) -> int:
+    """Check whether a W# is free on disk + in open PRs."""
+    num = args.number
+    disk = _list_workstreams_on_disk()
+    if num in disk:
+        print(f"EXACT MATCH: W#{num} exists at icm/_state/workstreams/{disk[num]}")
+        return 1
+
+    claims = _pr_workstream_claims()
+    if num in claims:
+        pr_list = ", ".join(f"#{p}" for p in sorted(claims[num]))
+        print(f"RESERVED: W#{num} is claimed in open PR(s): {pr_list}")
+        return 1
+
+    # Compute next-available for context
+    all_nums = set(disk.keys()) | set(claims.keys())
+    next_num = (max(all_nums) + 1) if all_nums else 1
+    while next_num in all_nums:
+        next_num += 1
+
+    print(f"CLEAN: W#{num} is available.")
+    highest = max(all_nums) if all_nums else 0
+    print(f"  Highest claimed: W#{highest}; next-available: W#{next_num}")
+    return 0
+
+
+def cmd_next_workstream(args) -> int:  # noqa: ARG001
+    """Print the next-available W# (highest existing + open-PR claims + 1)."""
+    disk = _list_workstreams_on_disk()
+    claims = _pr_workstream_claims()
+    all_nums = set(disk.keys()) | set(claims.keys())
+    next_num = (max(all_nums) + 1) if all_nums else 1
+    while next_num in all_nums:
+        next_num += 1
+    highest = max(all_nums) if all_nums else 0
+    print(f"NEXT WORKSTREAM: W#{next_num}")
+    print(f"  Highest on disk: W#{max(disk.keys()) if disk else 0}")
+    if claims:
+        highest_pr = max(claims.keys())
+        print(f"  Highest in open PRs: W#{highest_pr} (PR(s): {', '.join(f'#{p}' for p in sorted(claims[highest_pr]))})")
+    else:
+        print(f"  Open PRs: none claiming a new W#")
+    print(f"  Combined highest: W#{highest}")
+    return 0
+
+
 def cmd_auto(args) -> int:
     """Auto-detect: try each check in turn."""
     name = args.name
 
     # Heuristics:
+    # - W{NN} / W#{NN} / w{NN} / w#{NN} → workstream number
     # - All digits, 1-4 chars → ADR number
     # - "An" or "An.m" → amendment (need adr context though; can't auto-detect)
     # - Contains "/" or starts with "Sunfish." → namespace
     # - Starts with "blocks-" / "foundation-" / "kernel-" / contains "-" → package
     # - Else → vocabulary
+
+    ws_m = _WS_AUTO_RE.match(name)
+    if ws_m:
+        return cmd_workstream(argparse.Namespace(number=int(ws_m.group(1))))
 
     if name.isdigit() and len(name) <= 4:
         args.number = int(name)
@@ -446,11 +595,28 @@ def main() -> int:
     voc.add_argument("name")
     voc.set_defaults(fn=cmd_vocabulary)
 
+    ws = sub.add_parser("workstream", help="Check W# availability (disk + open PRs)")
+    ws.add_argument("number", type=int, help="Workstream number to check (e.g. 56)")
+    ws.set_defaults(fn=cmd_workstream)
+
+    nws = sub.add_parser("next-workstream", help="Print next-available W# integer")
+    nws.set_defaults(fn=cmd_next_workstream)
+
     auto = sub.add_parser("auto", help="Auto-detect type from name shape")
     auto.add_argument("name")
     auto.set_defaults(fn=cmd_auto)
 
-    # Allow bare "check.py NAME" as shorthand for "check.py auto NAME"
+    # Allow bare "check.py NAME" as shorthand for "check.py auto NAME".
+    # Pre-process sys.argv: if the first non-flag argument looks like W56 / W#56
+    # route directly to cmd_workstream before argparse tries to match it as a
+    # subcommand name (argparse errors on unknown subcommand choices in Python ≥3.9).
+    import sys as _sys
+    raw_argv = _sys.argv[1:]
+    if raw_argv and not raw_argv[0].startswith("-"):
+        ws_m = _WS_AUTO_RE.match(raw_argv[0])
+        if ws_m:
+            return cmd_workstream(argparse.Namespace(number=int(ws_m.group(1))))
+
     args, leftover = p.parse_known_args()
     if not args.cmd and leftover:
         return cmd_auto(argparse.Namespace(name=leftover[0]))
