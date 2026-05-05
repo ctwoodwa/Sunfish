@@ -1,7 +1,7 @@
 ---
 id: 80
 title: Quarterdeck Entry-Point Surface
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: foundation
 pipeline_variant: sunfish-feature-change
