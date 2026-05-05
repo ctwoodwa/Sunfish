@@ -1,0 +1,119 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Sunfish.Foundation.Crypto;
+using Sunfish.Kernel.Audit;
+
+namespace Sunfish.Foundation.Wayfinder;
+
+/// <summary>
+/// Background hosted service that periodically expires
+/// <see cref="OodWatchState.Active"/> watches whose
+/// <c>StartedAt + MaxWatchDuration</c> has elapsed. Per ADR 0078 §5.
+/// </summary>
+/// <remarks>
+/// Default sweep interval is 5 minutes; tests override via the
+/// <see cref="SweepInterval"/> constructor parameter to avoid
+/// <c>Thread.Sleep</c>. Wall-clock reads use the injected
+/// <see cref="TimeProvider"/>; production hosts pass
+/// <see cref="TimeProvider.System"/>; tests pass a deterministic
+/// fake. Per the <see cref="IOodWatchRepository.GetExpiredCandidatesAsync"/>
+/// docstring, this service is the only legitimate caller of the
+/// cross-tenant sweep enumerator.
+/// </remarks>
+public sealed class OodWatchExpiryService : BackgroundService
+{
+    private static readonly TimeSpan DefaultSweepInterval = TimeSpan.FromMinutes(5);
+
+    private readonly IOodWatchRepository _repository;
+    private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly TimeProvider _timeProvider;
+
+    /// <summary>How often the sweep fires. Defaults to 5 minutes.</summary>
+    public TimeSpan SweepInterval { get; }
+
+    /// <summary>Creates a sweep service bound to the supplied repository + audit + clock.</summary>
+    public OodWatchExpiryService(
+        IOodWatchRepository repository,
+        IAuditTrail? auditTrail = null,
+        IOperationSigner? signer = null,
+        TimeProvider? timeProvider = null,
+        TimeSpan? sweepInterval = null)
+    {
+        _repository = repository ?? throw new ArgumentNullException(nameof(repository));
+        _auditTrail = auditTrail;
+        _signer = signer;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+        SweepInterval = sweepInterval ?? DefaultSweepInterval;
+    }
+
+    /// <inheritdoc />
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            try
+            {
+                await SweepOnceAsync(stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
+            catch
+            {
+                // Sweep failures must not crash the host. Next iteration retries.
+            }
+            try
+            {
+                await Task.Delay(SweepInterval, _timeProvider, stoppingToken).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { return; }
+        }
+    }
+
+    /// <summary>
+    /// Single-shot sweep entry-point exposed for tests. Production callers
+    /// should rely on <see cref="ExecuteAsync"/>.
+    /// </summary>
+    public async Task SweepOnceAsync(CancellationToken ct)
+    {
+        var cutoff = _timeProvider.GetUtcNow();
+        await foreach (var candidate in _repository.GetExpiredCandidatesAsync(cutoff, ct).ConfigureAwait(false))
+        {
+            var expired = await _repository.ExpireWatchAsync(candidate.Id, ct).ConfigureAwait(false);
+            await EmitExpiredAuditAsync(expired, cutoff, ct).ConfigureAwait(false);
+        }
+    }
+
+    private async ValueTask EmitExpiredAuditAsync(OodWatch watch, DateTimeOffset expiredAt, CancellationToken ct)
+    {
+        if (_auditTrail is null || _signer is null) return;
+        var payload = new AuditPayload(new Dictionary<string, object?>
+        {
+            ["expiredAt"] = expiredAt.ToString("O"),
+            ["maxWatchDuration"] = watch.MaxWatchDuration.ToString(),
+            ["role"] = watch.Role.ToString(),
+            ["severity"] = "High",
+            ["tenantId"] = watch.TenantId.Value,
+            ["watchId"] = watch.Id.Value,
+        });
+        var nonce = Guid.NewGuid();
+        var signed = await _signer.SignAsync(payload, expiredAt, nonce, ct).ConfigureAwait(false);
+        var record = new AuditRecord(
+            AuditId: Guid.NewGuid(),
+            TenantId: watch.TenantId,
+            EventType: AuditEventType.OodWatchExpired,
+            OccurredAt: expiredAt,
+            Payload: signed,
+            AttestingSignatures: Array.Empty<AttestingSignature>());
+        try
+        {
+            await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // Best-effort.
+        }
+    }
+}
