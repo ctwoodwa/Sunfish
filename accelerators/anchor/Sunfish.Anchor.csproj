@@ -143,6 +143,7 @@
              (paper §6.1 + sync-daemon-protocol spec).
              Phase 1 G2 adds kernel-crdt for the AnchorCrdtDeltaBridge that
              closes the Wave 2.5 DELTA_STREAM application loop. -->
+        <ProjectReference Include="..\..\packages\blocks-crew-comms\Sunfish.Blocks.CrewComms.csproj" />
         <ProjectReference Include="..\..\packages\foundation-localfirst\Sunfish.Foundation.LocalFirst.csproj" />
         <ProjectReference Include="..\..\packages\foundation-recovery\Sunfish.Foundation.Recovery.csproj" />
         <ProjectReference Include="..\..\packages\kernel-crdt\Sunfish.Kernel.Crdt.csproj" />
