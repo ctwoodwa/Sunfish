@@ -54,26 +54,30 @@ public class DefaultOodWatchServiceTests
     }
 
     [Fact]
-    public async Task HandoverWatch_AtomicRelieveAndStart()
+    public async Task HandoverWatch_DelegatesAtomicallyToRepository()
     {
+        // Council Finding 3: atomicity is owned by the repository's
+        // HandoverWatchAsync; the service does not call RelieveWatchAsync +
+        // StartWatchAsync separately.
         var (svc, repo, _, _, _) = NewService();
         var current = NewWatch(state: OodWatchState.Active);
         var relieved = current with { State = OodWatchState.Relieved, RelievedAt = T0, RelievedBy = Requester };
         var started = NewWatch(state: OodWatchState.Active, onWatch: Incoming);
-        repo.RelieveWatchAsync(current.Id, Requester, Arg.Any<CancellationToken>()).Returns(relieved);
-        repo.StartWatchAsync(
-                Tenant, Incoming, OodRole.OfficerOfTheDeck, current.MaxWatchDuration, Requester, Arg.Any<CancellationToken>())
-            .Returns(started);
+        repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
+            .Returns((relieved, started));
 
         var (r, s) = await svc.HandoverWatchAsync(current.Id, Incoming, Requester, "shift change");
 
-        Assert.Equal(OodWatchState.Relieved, r.State);
+        Assert.Equal(relieved, r);
         Assert.Equal(started, s);
-        Received.InOrder(() =>
-        {
-            repo.RelieveWatchAsync(current.Id, Requester, Arg.Any<CancellationToken>());
-            repo.StartWatchAsync(Tenant, Incoming, OodRole.OfficerOfTheDeck, current.MaxWatchDuration, Requester, Arg.Any<CancellationToken>());
-        });
+        await repo.Received(1).HandoverWatchAsync(
+            current.Id, Incoming, Requester, Arg.Any<CancellationToken>());
+        // Service does NOT call the separate Relieve/Start primitives.
+        await repo.DidNotReceive().RelieveWatchAsync(
+            Arg.Any<OodWatchId>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
+        await repo.DidNotReceive().StartWatchAsync(
+            Arg.Any<TenantId>(), Arg.Any<ActorId>(), Arg.Any<OodRole>(),
+            Arg.Any<TimeSpan?>(), Arg.Any<ActorId>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -83,10 +87,8 @@ public class DefaultOodWatchServiceTests
         var current = NewWatch(state: OodWatchState.Active);
         var relieved = current with { State = OodWatchState.Relieved, RelievedAt = T0, RelievedBy = Requester };
         var started = NewWatch(state: OodWatchState.Active, onWatch: Incoming);
-        repo.RelieveWatchAsync(current.Id, Requester, Arg.Any<CancellationToken>()).Returns(relieved);
-        repo.StartWatchAsync(
-                Tenant, Incoming, OodRole.OfficerOfTheDeck, current.MaxWatchDuration, Requester, Arg.Any<CancellationToken>())
-            .Returns(started);
+        repo.HandoverWatchAsync(current.Id, Incoming, Requester, Arg.Any<CancellationToken>())
+            .Returns((relieved, started));
 
         await svc.HandoverWatchAsync(current.Id, Incoming, Requester, reason: null);
 
@@ -96,6 +98,24 @@ public class DefaultOodWatchServiceTests
         await audit.Received(1).AppendAsync(
             Arg.Is<AuditRecord>(r => r != null && r.EventType == AuditEventType.OodWatchStarted),
             Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task StartWatch_NullAuditTrail_ThrowsInvalidOperation()
+    {
+        // Council Finding 1: OOD-authority operations require IAuditTrail
+        // + IOperationSigner. Service throws InvalidOperationException
+        // rather than running authority ops with no audit trail.
+        var repo = Substitute.For<IOodWatchRepository>();
+        repo.GetCurrentWatchAsync(Tenant, OodRole.OfficerOfTheDeck, Arg.Any<CancellationToken>())
+            .Returns((OodWatch?)null);
+        repo.StartWatchAsync(
+                Tenant, OnWatch, OodRole.OfficerOfTheDeck, Arg.Any<TimeSpan?>(), Requester, Arg.Any<CancellationToken>())
+            .Returns(NewWatch(state: OodWatchState.Active));
+        var svc = new DefaultOodWatchService(repo, auditTrail: null, signer: NewSigner(), timeProvider: new FakeTimeProvider(T0));
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => svc.StartWatchAsync(Tenant, OnWatch, OodRole.OfficerOfTheDeck, null, Requester).AsTask());
     }
 
     [Fact]
@@ -125,16 +145,18 @@ public class DefaultOodWatchServiceTests
     }
 
     [Fact]
-    public async Task HandoverWatch_RepositoryReturnsNonRelieved_Throws()
+    public async Task HandoverWatch_RepositoryThrowsConflict_PropagatesUnchanged()
     {
-        // Defensive: if the repo somehow returns a state other than Relieved,
-        // the service throws rather than continuing.
+        // Repository owns atomicity + state validation. If the watch is not
+        // Active, the repo throws OodWatchConflictException; the service
+        // surfaces it without wrapping.
         var (svc, repo, _, _, _) = NewService();
-        var watch = NewWatch(state: OodWatchState.Expired);
-        repo.RelieveWatchAsync(watch.Id, Requester, Arg.Any<CancellationToken>()).Returns(watch);
+        var watchId = OodWatchId.NewId();
+        repo.HandoverWatchAsync(watchId, Incoming, Requester, Arg.Any<CancellationToken>())
+            .Returns<(OodWatch, OodWatch)>(_ => throw new OodWatchConflictException(watchId, Tenant, OodRole.OfficerOfTheDeck));
 
         await Assert.ThrowsAsync<OodWatchConflictException>(
-            () => svc.HandoverWatchAsync(watch.Id, Incoming, Requester, null).AsTask());
+            () => svc.HandoverWatchAsync(watchId, Incoming, Requester, null).AsTask());
     }
 
     private static (DefaultOodWatchService svc, IOodWatchRepository repo, IAuditTrail audit, IOperationSigner signer, FakeTimeProvider time) NewService()

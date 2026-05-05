@@ -26,6 +26,14 @@ namespace Sunfish.Foundation.Wayfinder;
 /// Wall-clock reads use <see cref="TimeProvider.GetUtcNow"/>; tests inject
 /// a <c>FakeTimeProvider</c>-style subclass to avoid <c>Thread.Sleep</c>.
 /// </para>
+/// <para>
+/// <see cref="IAuditTrail"/> + <see cref="IOperationSigner"/> are MANDATORY
+/// for OOD-authority operations per ADR 0078 §Trust + W#49 P2 council
+/// Finding 1. Constructor accepts them as nullable for DI ergonomics; the
+/// emit path throws <see cref="InvalidOperationException"/> at first
+/// invocation when either is missing — fail loudly rather than run
+/// authority operations with zero audit trail.
+/// </para>
 /// </remarks>
 public sealed class DefaultOodWatchService : IOodWatchService
 {
@@ -36,8 +44,8 @@ public sealed class DefaultOodWatchService : IOodWatchService
 
     /// <summary>Creates a service bound to the supplied repository + audit + clock.</summary>
     /// <param name="repository">Persistence boundary; throws on the single-Active invariant.</param>
-    /// <param name="auditTrail">Optional audit trail. Null skips audit emission silently.</param>
-    /// <param name="signer">Optional signer for audit-record envelopes. Null skips audit emission silently.</param>
+    /// <param name="auditTrail">Audit trail. MUST be non-null at first authority invocation per §Trust.</param>
+    /// <param name="signer">Signer for audit-record envelopes. MUST be non-null at first authority invocation per §Trust.</param>
     /// <param name="timeProvider">Clock source. Defaults to <see cref="TimeProvider.System"/>.</param>
     public DefaultOodWatchService(
         IOodWatchRepository repository,
@@ -63,34 +71,37 @@ public sealed class DefaultOodWatchService : IOodWatchService
         var watch = await _repository.StartWatchAsync(
             tenantId, onWatchActor, role, maxDuration, requestedBy, ct).ConfigureAwait(false);
 
-        await EmitStartedAuditAsync(watch, requestedBy, ct).ConfigureAwait(false);
+        await EmitStartedAuditAsync(watch, requestedBy, _timeProvider.GetUtcNow(), ct).ConfigureAwait(false);
         return watch;
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Delegates to <see cref="IOodWatchRepository.HandoverWatchAsync"/> which
+    /// owns transactional atomicity per ADR 0078 §2 + W#49 P2 council Finding 3.
+    /// On partial failure the repository rolls back, so we never observe an
+    /// authority-vacuum state. The relieved watch's
+    /// <see cref="OodWatch.MaxWatchDuration"/> is inherited by the new watch
+    /// per the repository contract; callers needing a fresh TTL must
+    /// <see cref="StartWatchAsync"/> separately after relieve.
+    /// </remarks>
     public async ValueTask<(OodWatch Relieved, OodWatch Started)> HandoverWatchAsync(
         OodWatchId currentWatchId, ActorId incomingActor,
         ActorId requestedBy, string? reason, CancellationToken ct = default)
     {
-        // The repository contract owns the (TenantId, OodRole) discovery for
-        // the supplied watchId — RelieveWatchAsync will throw if the watch is
-        // not Active. We re-fetch immediately after to read tenant + role for
-        // the start-leg of the atomic handover.
-        var relieved = await _repository.RelieveWatchAsync(currentWatchId, requestedBy, ct).ConfigureAwait(false);
-        if (relieved.State != OodWatchState.Relieved)
-            throw new OodWatchConflictException(currentWatchId, relieved.TenantId, relieved.Role);
+        // Capture a single OccurredAt so the relieve + start audit records
+        // share an identical timestamp (council Finding 9).
+        var occurredAt = _timeProvider.GetUtcNow();
+        var (relieved, started) = await _repository.HandoverWatchAsync(
+            currentWatchId, incomingActor, requestedBy, ct).ConfigureAwait(false);
 
-        var started = await _repository.StartWatchAsync(
-            relieved.TenantId, incomingActor, relieved.Role,
-            relieved.MaxWatchDuration, requestedBy, ct).ConfigureAwait(false);
+        await EmitRelievedAuditAsync(relieved, requestedBy, reason, occurredAt, ct).ConfigureAwait(false);
+        await EmitStartedAuditAsync(started, requestedBy, occurredAt, ct).ConfigureAwait(false);
 
-        await EmitRelievedAuditAsync(relieved, requestedBy, reason, ct).ConfigureAwait(false);
-        await EmitStartedAuditAsync(started, requestedBy, ct).ConfigureAwait(false);
-
-        // TODO(W#49-P2): emit watch-transfer Standing Order via IStandingOrderIssuer
-        // once W#42 Phase 2 is built and the issuer is on origin/main. Path:
-        // coordination/ood-watch/{role.ToString().ToLowerInvariant()}/transfer
-        // with IssuedDuringWatchId = started.Id.
+        // TODO(W#49-P3): emit watch-transfer Standing Order via IStandingOrderIssuer
+        // once W#42 Phase 2 is built and the issuer is on origin/main. Field
+        // StandingOrder.IssuedDuringWatchId is already available (P1). Path:
+        // coordination/ood-watch/{role.ToString().ToLowerInvariant()}/transfer.
         return (relieved, started);
     }
 
@@ -99,7 +110,7 @@ public sealed class DefaultOodWatchService : IOodWatchService
         TenantId tenantId, OodRole role, CancellationToken ct = default)
         => _repository.GetCurrentWatchAsync(tenantId, role, ct);
 
-    private ValueTask EmitStartedAuditAsync(OodWatch watch, ActorId requestedBy, CancellationToken ct)
+    private ValueTask EmitStartedAuditAsync(OodWatch watch, ActorId requestedBy, DateTimeOffset occurredAt, CancellationToken ct)
         => EmitAuditAsync(
             AuditEventType.OodWatchStarted,
             watch.TenantId,
@@ -112,9 +123,10 @@ public sealed class DefaultOodWatchService : IOodWatchService
                 ["tenantId"] = watch.TenantId.Value,
                 ["watchId"] = watch.Id.Value,
             }),
+            occurredAt,
             ct);
 
-    private ValueTask EmitRelievedAuditAsync(OodWatch watch, ActorId requestedBy, string? reason, CancellationToken ct)
+    private ValueTask EmitRelievedAuditAsync(OodWatch watch, ActorId requestedBy, string? reason, DateTimeOffset occurredAt, CancellationToken ct)
     {
         var body = new Dictionary<string, object?>
         {
@@ -126,14 +138,23 @@ public sealed class DefaultOodWatchService : IOodWatchService
             ["watchId"] = watch.Id.Value,
         };
         if (reason is not null) body["reason"] = reason;
-        return EmitAuditAsync(AuditEventType.OodWatchRelieved, watch.TenantId, new AuditPayload(body), ct);
+        return EmitAuditAsync(AuditEventType.OodWatchRelieved, watch.TenantId, new AuditPayload(body), occurredAt, ct);
     }
 
     private async ValueTask EmitAuditAsync(
-        AuditEventType eventType, TenantId tenantId, AuditPayload payload, CancellationToken ct)
+        AuditEventType eventType, TenantId tenantId, AuditPayload payload,
+        DateTimeOffset occurredAt, CancellationToken ct)
     {
-        if (_auditTrail is null || _signer is null) return;
-        var occurredAt = _timeProvider.GetUtcNow();
+        // Council Finding 1: OOD-authority operations require IAuditTrail
+        // + IOperationSigner. Fail loudly at first invocation rather than
+        // run authority ops with zero audit trail.
+        if (_auditTrail is null || _signer is null)
+        {
+            throw new InvalidOperationException(
+                "OOD-authority operations require IAuditTrail + IOperationSigner. " +
+                "Register both via the host's DI container before invoking IOodWatchService.");
+        }
+
         var nonce = Guid.NewGuid();
         var signed = await _signer.SignAsync(payload, occurredAt, nonce, ct).ConfigureAwait(false);
         var record = new AuditRecord(
@@ -147,11 +168,12 @@ public sealed class DefaultOodWatchService : IOodWatchService
         {
             await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
         }
-        catch
+        // Council Finding 2: narrow catch — re-throw on cryptographic
+        // integrity failures (AuditSignatureException) and cancellation;
+        // swallow only transient transport / backend hiccups.
+        catch (Exception ex) when (ex is not AuditSignatureException && ex is not OperationCanceledException)
         {
-            // Best-effort audit emission — matches cohort precedent
-            // (TenantKeyProviderFieldDecryptor / ExtensionFieldCatalog). Audit
-            // backend hiccups must not deny domain operations.
+            // Best-effort: audit-backend hiccups must not deny authority operations.
         }
     }
 }

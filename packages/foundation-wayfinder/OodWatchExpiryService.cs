@@ -74,9 +74,11 @@ public sealed class OodWatchExpiryService : BackgroundService
 
     /// <summary>
     /// Single-shot sweep entry-point exposed for tests. Production callers
-    /// should rely on <see cref="ExecuteAsync"/>.
+    /// should rely on <see cref="ExecuteAsync"/>. Internal-only to honor
+    /// the <see cref="IOodWatchRepository.GetExpiredCandidatesAsync"/>
+    /// cross-tenant single-caller invariant per W#49 P2 council Finding 6.
     /// </summary>
-    public async Task SweepOnceAsync(CancellationToken ct)
+    internal async Task SweepOnceAsync(CancellationToken ct)
     {
         var cutoff = _timeProvider.GetUtcNow();
         await foreach (var candidate in _repository.GetExpiredCandidatesAsync(cutoff, ct).ConfigureAwait(false))
@@ -88,7 +90,16 @@ public sealed class OodWatchExpiryService : BackgroundService
 
     private async ValueTask EmitExpiredAuditAsync(OodWatch watch, DateTimeOffset expiredAt, CancellationToken ct)
     {
-        if (_auditTrail is null || _signer is null) return;
+        // Council Finding 1: OOD-authority operations require IAuditTrail
+        // + IOperationSigner. Fail loudly rather than expire authority
+        // records with no audit trail.
+        if (_auditTrail is null || _signer is null)
+        {
+            throw new InvalidOperationException(
+                "OodWatchExpiryService requires IAuditTrail + IOperationSigner. " +
+                "Register both via the host's DI container before adding the hosted service.");
+        }
+
         var payload = new AuditPayload(new Dictionary<string, object?>
         {
             ["expiredAt"] = expiredAt.ToString("O"),
@@ -111,7 +122,9 @@ public sealed class OodWatchExpiryService : BackgroundService
         {
             await _auditTrail.AppendAsync(record, ct).ConfigureAwait(false);
         }
-        catch
+        // Council Finding 2: narrow catch — re-throw on cryptographic
+        // integrity failures and cancellation; swallow only transient hiccups.
+        catch (Exception ex) when (ex is not AuditSignatureException && ex is not OperationCanceledException)
         {
             // Best-effort.
         }
