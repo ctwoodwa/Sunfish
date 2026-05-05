@@ -1,7 +1,7 @@
 ---
 id: 77
 title: Shared Design System (role taxonomy + permission tuple + decks + tokens + a11y baseline)
-status: Proposed
+status: Accepted
 date: 2026-05-04
 tier: foundation
 pipeline_variant: sunfish-feature-change
