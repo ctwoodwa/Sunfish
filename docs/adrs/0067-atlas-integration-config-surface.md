@@ -23,7 +23,27 @@ composes:
 extends: []
 supersedes: []
 superseded_by: null
-amendments: []
+amendments:
+  - id: council-fix-pass-2026-05-04
+    date: 2026-05-04
+    summary: |
+      Council BLOCK fix-pass on PR #539 (canonical council file
+      `icm/07_review/output/adr-audits/0067-council-review-2026-05-04.md`).
+      4 BLOCKING + 5 non-mechanical + 8 mechanical + 6 structural-citation
+      findings addressed. Substantive rework: (B1) validator-owned
+      liveness probe replaces non-existent `ValidateAsync` calls into
+      `IPaymentGateway` / `IMessagingGateway` / `IMeshVpnAdapter`;
+      (B2) `IFieldDecryptor` capability sourcing specified for user-driven
+      and background re-validation paths; (B3) `validation-status` moved
+      off the Standing-Order journal to a new `IValidationStatusStore`
+      (avoids unbounded append-only growth under background re-validation
+      cadence); (B4) `IStandingOrderIssuer.IssueAsync` composition fixed
+      (`ActorId` not `PrincipalId`, `IAuditTrail` as method parameter,
+      `Task<StandingOrder>` return); (NM1) package shape kept additive
+      to existing `packages/ui-core/Wayfinder/Integrations/` per ADR 0066;
+      (NM2) license-acknowledgement track CUT entirely, deferred to
+      ADR 0067-A1 follow-up amendment with `BannedSymbols.txt` enforcement
+      from ADR 0061 remaining canonical until that amendment lands.
 ---
 # ADR 0067 — Atlas Integration-Config UI Surface
 
@@ -49,12 +69,16 @@ The Wayfinder discovery (W#34 §5.6) classified **Layer 6 — integration config
 - ADR 0013 (Provider neutrality) — domain modules never reference vendor SDKs directly; providers are selected by name.
 - ADR 0051 (Foundation.Integrations.Payments) — `IPaymentGateway` adapter contract; first-wave adapters `providers-stripe` / `providers-square`.
 - ADR 0052 (Bidirectional Messaging Substrate) — provider-neutral messaging gateway; first-wave adapters `providers-postmark` / `providers-sendgrid` / `providers-twilio`.
-- ADR 0061 (Three-Tier Peer Transport) — `IPeerTransport` with `TransportTier` enum; mesh adapters `providers-mesh-headscale` / `providers-mesh-tailscale` / `providers-mesh-netbird`; license-screening posture (SSPL / BSL excluded by default; admin opt-in requires acknowledgement).
+- ADR 0061 (Three-Tier Peer Transport) — `IPeerTransport` with `TransportTier` enum; mesh adapters `providers-mesh-headscale` / `providers-mesh-tailscale` / `providers-mesh-netbird`; license-screening posture (SSPL / BSL adapters excluded at compile time via `BannedSymbols.txt` analyzer enforcement; an admin opt-in acknowledgement track is deferred to ADR 0067-A1 — see §9.7).
 - ADR 0028 §Phase 2.3 (CAPTCHA — already partially landed via `ICaptchaVerifier` in `packages/foundation-integrations/Captcha/`).
 
-What the portfolio does **not** specify is *how a tenant administrator selects, configures, validates, and rotates* these providers. Each adapter today either has no admin UI at all or invents its own ad-hoc surface. There is no consistent place a Bridge tenant admin (or an Anchor desktop user managing their own node) goes to ask "which payment gateway is active in this tenant?" — let alone to change it. There is no place that captures credentials in a uniform encrypted-at-rest envelope, no place that runs validation against the provider before activating it, no place that enforces ADR 0061's license-posture acknowledgement for SSPL/BSL mesh providers, and no place that emits audit events when a provider rotates.
+What the portfolio does **not** specify is *how a tenant administrator selects, configures, validates, and rotates* these providers. Each adapter today either has no admin UI at all or invents its own ad-hoc surface. There is no consistent place a Bridge tenant admin (or an Anchor desktop user managing their own node) goes to ask "which payment gateway is active in this tenant?" — let alone to change it. There is no place that captures credentials in a uniform encrypted-at-rest envelope, no place that runs validation against the provider before activating it, and no place that emits audit events when a provider rotates.
 
 **ADR 0065** (Wayfinder System + Standing Order Contract) gave Sunfish the substrate for *every* configuration layer: a `StandingOrder` is the event-type primitive that captures a configuration change; `IStandingOrderIssuer` validates and issues; `IAtlasProjector` computes the materialized view; `AtlasView` / `AtlasSettingSnapshot` carry the current value at a Wayfinder path. **ADR 0066** (Helm + Identity Atlas) generalized that into a UI-surface contract: `IAtlasProvider<T>` renders a configuration section from the projection; `IIdentityAtlasSurface` is the canonical issuance UX; `IHelmWidget` is the read-only live-state observer. ADR 0067 is the **first concrete `IAtlasProvider<T>` specialization** — the Atlas surface for integration providers — and serves as the proof-of-pattern for the four remaining Wayfinder layers (security policy, account-identity, domain config, user preferences).
+
+**Wayfinder vs Helm boundary.** Wayfinder is the **deep-config surface**: the place a tenant admin goes to *change* configuration, where every mutation is a Standing Order issued through `IStandingOrderIssuer` and audited by construction. Helm is the **live-state-glance surface**: the place an operator goes to *observe* current system state, where reads are projection-only and no mutation occurs. ADR 0067 is a Wayfinder layer — the integration-configuration tier — not a Helm widget. ADR 0066 carved this boundary explicitly; ADR 0067 inherits it.
+
+**ADR 0066 vs ADR 0067 type distinction (for fresh readers).** ADR 0066 introduces `AtlasView` (the foundation-tier projection output of `IAtlasProjector`); ADR 0067 introduces `IntegrationAtlasView` (a category-specific projection consumed by `IIntegrationAtlasProvider`). The two are different types: `AtlasView` is the substrate-level Wayfinder projection; `IntegrationAtlasView` (§3.6) is the Atlas-fine integration-category shape this ADR ships. `IIntegrationAtlasProvider` composes `IAtlasProjector` internally to produce `IntegrationAtlasView`; the rendering host never sees a raw `AtlasView` for the integration tier. The terms "Atlas surface" (the rendered UI) and "Atlas provider" (the `IAtlasProvider<T>` implementation) are used interchangeably throughout this ADR — they refer to the same concept viewed from the rendering side and the contract side respectively.
 
 The decision is load-bearing for Phase 2 commercial scope (W#5 — six tenants spanning payment / banking / SMS / email integrations) and for several already-queued workstreams (W#22 Leasing Pipeline payment+email; W#28 Public Listings CAPTCHA+email; W#30 mesh-VPN provider selection). Without this surface, every future block that needs a provider-backed integration must invent its own admin UX, defeating the framework-agnostic principle.
 
@@ -67,7 +91,7 @@ The decision is load-bearing for Phase 2 commercial scope (W#5 — six tenants s
 3. **Audit-by-construction.** Every provider change, every credential update, every license acknowledgement, every validation outcome MUST emit an `AuditRecord` per ADR 0049 — not by convention but because the issuance API requires the audit-emitter dependency. A provider rotation that is not audited is a compliance gap (especially for the Phase 2 commercial scope where providers move money).
 4. **Sensitive-by-default storage.** API keys, webhook secrets, mesh control-plane tokens, SMS auth tokens — all sensitive credentials MUST be stored as `EncryptedField` per ADR 0046-A2. Plaintext appears only at the moment the adapter consumes the value via `IFieldDecryptor`. The Atlas form view MUST mask sensitive fields by default and offer an explicit show/hide toggle with WCAG-compliant accessible labelling (SC 1.3.1).
 5. **Optimistic issuance + Mission-Space-gated availability.** Issue the Standing Order first; validate after. A failing validation does NOT roll the order back — it marks `integrations.{category}.validation-status` as `failed`, which the ADR 0062 `IMissionEnvelopeProvider` reads to gate downstream feature availability. This decouples *config persistence* from *config workability* and lets the admin save a partially-correct state to fix later.
-6. **License-screening as a first-class step.** ADR 0061's SSPL/BSL exclusion (and admin override requiring acknowledgement) is enforced inside the Atlas surface before the Standing Order issues. The acknowledgement event is itself an audit record.
+6. **License-screening deferred to ADR 0067-A1.** ADR 0061 enforces SSPL/BSL adapter exclusion at compile time via `BannedSymbols.txt` analyzer enforcement; there is no admin opt-in path on origin/main and ADR 0067 v1 does not introduce one. A follow-up amendment (ADR 0067-A1) is queued to design a license-acknowledgement opt-in track if and when general counsel approves the posture; until that lands, the v1 Atlas surface ships with `IntegrationCategory.MeshVpn` populated by adapters whose license posture is `Permissive` (per ADR 0061's already-canonical exclusion list). See §9.7.
 7. **Provider rotation is non-destructive.** Switching from `providers-stripe` to `providers-square` does NOT delete `integrations.payments.credentials.providers-stripe.api-key`. Old credentials remain in Atlas under the previous provider's path until explicitly cleared. Audit-trail records the rotation; the projector treats only the active provider's credentials as "live."
 8. **Multi-transport routing where the category demands it.** Email is the singular case in this ADR's scope: a tenant typically wants `providers-postmark` for transactional and `providers-sendgrid` for marketing simultaneously. The schema MUST express both selections as a single routing structure rather than two parallel category configs (which would lose the constraint that they are alternative renderings of "email transport").
 9. **WCAG 2.2 AA conformance as contract, not goal.** Per W#34 hardening + the council's general-counsel posture for ADR 0064, conformance is a requirement on every UI-bearing follow-on. Credential capture in particular hits multiple high-risk SCs (3.3.7 Redundant Entry, 3.3.8 Accessible Authentication, 1.3.1 Info and Relationships, 4.1.3 Status Messages). The contract specifies them; the rendering implementation tests them.
@@ -101,7 +125,7 @@ A single `IIntegrationAtlasProvider` (specialization of ADR 0066's `IAtlasProvid
 - New adapters compose without UI changes — they ship a schema; the Atlas surface picks it up.
 - Audit emission is contractual; you cannot construct an `IIntegrationAtlasProvider` without the audit-trail dependency, so omission is impossible.
 - Multi-transport routing has a natural location (the routing path under each category).
-- License-posture acknowledgement is rendered uniformly for any mesh provider with `LicensePostureKind: StrongCopyleft`.
+- (License-posture acknowledgement was a v1 driver in an earlier draft; deferred to ADR 0067-A1 per the council fix-pass — see §9.7.)
 - Reusable proof-of-pattern for the remaining four Wayfinder layers (security, account-identity, domain config, user prefs) — each layer ships its own `IAtlasProvider<T>` specialization with the same shape.
 
 **Cons.**
@@ -147,9 +171,9 @@ No runtime admin UI. Tenant operators edit `appsettings.json` (Anchor) or enviro
 
 ## Decision
 
-Adopt Option B. Sunfish ships a unified `IIntegrationAtlasProvider` contract — the first concrete specialization of ADR 0066's `IAtlasProvider<T>` — with dynamic schema-driven rendering, encrypted credential storage, audit-by-construction, license-posture enforcement, optimistic issuance with Mission-Space-gated availability, and non-destructive provider rotation.
+Adopt Option B. Sunfish ships a unified `IIntegrationAtlasProvider` contract — the first concrete specialization of ADR 0066's `IAtlasProvider<T>` — with dynamic schema-driven rendering, encrypted credential storage, audit-by-construction, optimistic issuance with Mission-Space-gated availability, and non-destructive provider rotation. License-acknowledgement opt-in for SSPL/BSL adapters is explicitly out of scope for v1 and deferred to ADR 0067-A1 (see §9.7); ADR 0061's `BannedSymbols.txt` analyzer enforcement remains the canonical exclusion mechanism until that follow-up amendment lands.
 
-The contract surface (§3 — §6) lives in a new `packages/ui-core-wayfinder/` package (net-new alongside the package introduced by ADR 0066). Reference implementations (§7) live in the same package. Adapter packages (`providers-stripe`, `providers-postmark`, `providers-twilio`, `providers-mesh-tailscale`, etc.) gain a single new export — the `IIntegrationSchemaProvider` registration (§6.1) — without changing their existing adapter contracts.
+The contract surface (§3 — §6) is **additive** to the existing `packages/ui-core/` package introduced by ADR 0066: new types live under `packages/ui-core/Wayfinder/Integrations/` with namespace `Sunfish.UICore.Wayfinder.Integrations`. No new package is created — this preserves ADR 0066's "additive, no new package required" framing. Reference implementations (§7) live in the same `packages/ui-core/Wayfinder/Integrations/` subtree. Adapter packages (`providers-stripe`, `providers-postmark`, `providers-twilio`, `providers-mesh-tailscale`, etc.) gain a single new export — the `IIntegrationSchemaProvider` registration (§6.1) — without changing their existing adapter contracts.
 
 Anchor renders the surface as a Blazor component family (`AtlasIntegrationConfig.razor` + per-category sub-components) under the existing accelerator MAUI Blazor host. Bridge renders the surface as a React/TSX component family under the existing Bridge ASP.NET + React tenant admin. Both consume identical `IIntegrationAtlasProvider` instances DI'd against the per-tenant Wayfinder substrate.
 
@@ -190,11 +214,13 @@ All integration configuration uses a flat dotted-kebab path namespace under the 
 integrations.{category}.active-provider                       — string
 integrations.{category}.credentials.{provider}.{credential}   — EncryptedField | JsonNode
 integrations.{category}.routing                               — JsonNode (optional, multi-transport categories only)
-integrations.{category}.license-acknowledged.{provider}       — JsonNode { acknowledgedBy, acknowledgedAt, postureKind }
-integrations.{category}.validation-status.{provider}          — JsonNode { status, lastValidatedAt, errorCode?, errorMessage? }
 ```
 
 `{category}` is the kebab-cased `IntegrationCategory` value (`payments`, `transactional-email`, `marketing-email`, `sms`, `mesh-vpn`, `captcha`). `{provider}` is the provider name as registered (e.g. `providers-stripe`). `{credential}` is the credential field key declared in the provider's `IntegrationProviderSchema` (e.g. `api-key`, `webhook-secret`).
+
+**Validation status is NOT a Standing Order.** Validation outcomes are transient state — repeatedly refreshed by background re-validation runs — not configuration intent. Per the council fix-pass, validation status lives in a separate `IValidationStatusStore` (§3.13) with its own append/read contract and audit emission, NOT in the Standing-Order journal. Modeling it as a Standing Order would generate ~100k orders per provider per tenant per year under the §5.6.1 staleness cadence, which violates the substrate's append-only-log scaling envelope.
+
+**License-acknowledgement is NOT a Standing Order in v1.** Per the council fix-pass and ADR 0067-A1 deferral (§9.7), no `license-acknowledged.{provider}` path is issued in v1. ADR 0067-A1 will design the path shape if a license-acknowledgement opt-in track is approved; until then ADR 0061's compile-time `BannedSymbols.txt` enforcement is canonical and Atlas does not surface acknowledgement UX.
 
 ### §2.1 — `active-provider`
 
@@ -215,19 +241,19 @@ integrations.marketing-email.routing       — string (active provider name, opt
 
 The `IntegrationAtlasView.EmailRouting` (§3.6) aggregates both into an `IntegrationEmailRouting` projection. Issuing `IssueRoutingAsync` with an `IntegrationEmailRouting` record writes both paths atomically (as two Standing Orders in sequence). The `TransactionalProvider` is required; `MarketingProvider` may be null (no-marketing-email mode).
 
-### §2.4 — `license-acknowledged.{provider}`
+### §2.4 — `license-acknowledged.{provider}` (deferred to ADR 0067-A1)
 
-Issued when a tenant admin acknowledges a `LicensePostureKind.StrongCopyleft` provider per ADR 0061. Per §5.5 below, this Standing Order MUST issue *before* the corresponding `active-provider` Standing Order; the issuance contract enforces this ordering.
+The license-acknowledgement Standing-Order path was previously specified here. Cut from v1 per the council fix-pass and §9.7 — ADR 0067-A1 will define the path shape (and the issuance ordering relative to `active-provider`) if and when general counsel approves an SSPL/BSL admin-opt-in track. Until ADR 0067-A1 lands, ADR 0061's compile-time `BannedSymbols.txt` enforcement is the canonical exclusion mechanism; the Atlas surface emits no acknowledgement-related Standing Orders.
 
-### §2.5 — `validation-status.{provider}`
+### §2.5 — Validation-status state (NOT a Standing Order)
 
-Mutable Standing Order updated by validation runs. Read by the ADR 0062 `IMissionEnvelopeProvider` to gate Sunfish features that require the integration. A `failed` status does NOT prevent the active-provider value from persisting; it only signals to consumers that the integration is not currently usable.
+Validation outcomes are stored in a dedicated `IValidationStatusStore` (§3.13) with its own append/read contract and its own audit emission (`IntegrationValidationSucceeded` / `IntegrationValidationFailed` per §8). The store is read by the ADR 0062 `IMissionEnvelopeProvider` to gate Sunfish features that require the integration. A `Failed` / `Invalid` / `Unreachable` status does NOT prevent the active-provider value from persisting; it only signals to consumers that the integration is not currently usable. See §3.13 for the contract and §5.6.1 for the staleness/TTL semantics.
 
 ---
 
 ## §3 — New types
 
-All types live in the new `packages/ui-core-wayfinder/` package, namespace `Sunfish.UICore.Wayfinder.Integrations`, except where noted.
+All types live under `packages/ui-core/Wayfinder/Integrations/` (additive to the existing `packages/ui-core/` package — no new package), namespace `Sunfish.UICore.Wayfinder.Integrations`, except where noted. This placement preserves ADR 0066's "additive, no new package required" framing — see §"Decision".
 
 ### §3.1 — `IntegrationProviderSchema`
 
@@ -238,13 +264,14 @@ public sealed record IntegrationProviderSchema
     public required IntegrationCategory Category { get; init; }
     public required string DisplayName { get; init; }
     public required IReadOnlyList<CredentialFieldSpec> CredentialFields { get; init; }
-    public LicensePostureKind? LicensePosture { get; init; }
     public int SchemaVersion { get; init; } = 1;
     public string? DocumentationUrl { get; init; }
 }
 ```
 
 `ProviderName` is the canonical adapter package name (e.g. `providers-stripe`) — matches `ProviderDescriptor.Key`'s string form (per §3.7 reconciliation). `SchemaVersion` enables forward migration when a provider's credential shape changes (§4.2).
+
+> **License posture deferred.** A `LicensePostureKind? LicensePosture` field was previously specified on this record; it is cut from v1 per the council fix-pass and §9.7. ADR 0067-A1 will reintroduce a license-posture surface if and when an SSPL/BSL opt-in track is approved by general counsel. Until then, the v1 surface assumes all registered adapters comply with ADR 0061's compile-time `BannedSymbols.txt` exclusion list (i.e., effectively `Permissive` posture) and the Atlas UI does not render any license-acknowledgement affordance.
 
 ### §3.2 — `CredentialFieldSpec`
 
@@ -295,18 +322,9 @@ When `CredentialFieldSpec.Sensitive == true`, the renderer MUST emit a toggle bu
 - A visible icon paired with visible text or `aria-label` — the button MUST be operable by AT users without relying on icon shape alone (SC 1.3.1, SC 4.1.2).
 - Toggling MUST update the input's `type` attribute between `"password"` and `"text"` AND announce the new state via the button's `aria-pressed` change. No separate live-region is needed because state is on the control itself.
 
-### §3.3 — `LicensePostureKind`
+### §3.3 — `LicensePostureKind` (deferred to ADR 0067-A1)
 
-```csharp
-public enum LicensePostureKind
-{
-    Permissive = 0,
-    WeakCopyleft = 1,
-    StrongCopyleft = 2,
-}
-```
-
-Per ADR 0061's classification: `Permissive` (MIT, Apache 2.0, BSD) requires no acknowledgement; `WeakCopyleft` (MPL, LGPL) shows a non-blocking informational notice; `StrongCopyleft` (SSPL, BSL, AGPL with non-trivial scope) presents the blocking acknowledgement modal (§5.5) and emits the `IntegrationLicenseAcknowledged` audit event before activation can proceed.
+The `LicensePostureKind` enum was previously specified here (`Permissive` / `WeakCopyleft` / `StrongCopyleft`). Cut from v1 per the council fix-pass — ADR 0067-A1 will reintroduce the type and the per-license-kind UX (acknowledgement modal, audit event, Standing-Order path) if and when general counsel approves an SSPL/BSL admin-opt-in track. ADR 0061's compile-time `BannedSymbols.txt` analyzer enforcement is canonical until that follow-up amendment lands; see §9.7.
 
 ### §3.4 — `IntegrationCategory`
 
@@ -361,19 +379,23 @@ The headline contract — specializes `IAtlasProvider<IntegrationAtlasView>` fro
 ```csharp
 public interface IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView>
 {
+    /// <summary>Lists registered provider schemas for <paramref name="category"/>; consumed by the Atlas dropdown in the rendering host.</summary>
     ValueTask<IReadOnlyList<IntegrationProviderSchema>> GetAvailableProvidersAsync(
         IntegrationCategory category,
         CancellationToken ct);
 
+    /// <summary>Returns the active provider name for <paramref name="category"/>, or <c>null</c> when no provider is active.</summary>
     ValueTask<string?> GetActiveProviderAsync(
         IntegrationCategory category,
         CancellationToken ct);
 
+    /// <summary>Activates <paramref name="providerName"/> for <paramref name="category"/> by issuing a Standing Order at <c>integrations.{category}.active-provider</c>; non-destructive — prior provider's credentials are preserved per §5.7.</summary>
     Task<StandingOrder> IssueProviderChangeAsync(
         IntegrationCategory category,
         string providerName,
         CancellationToken ct);
 
+    /// <summary>Encrypts <paramref name="plaintextBytes"/> via <c>IFieldEncryptor</c> and issues the resulting <c>EncryptedField</c> at the credential's Standing-Order path; emits <c>IntegrationCredentialUpdated</c> audit event (key only, never value).</summary>
     Task<StandingOrder> IssueSensitiveCredentialAsync(
         IntegrationCategory category,
         string providerName,
@@ -381,6 +403,7 @@ public interface IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView
         ReadOnlyMemory<byte> plaintextBytes,
         CancellationToken ct);
 
+    /// <summary>Issues <paramref name="value"/> as-is at the credential's Standing-Order path (no encryption); used for non-sensitive credentials per the schema's <c>CredentialFieldSpec.Sensitive</c> flag.</summary>
     Task<StandingOrder> IssueNonSensitiveCredentialAsync(
         IntegrationCategory category,
         string providerName,
@@ -388,28 +411,24 @@ public interface IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView
         JsonNode value,
         CancellationToken ct);
 
-    Task<StandingOrder> IssueLicenseAcknowledgementAsync(
-        IntegrationCategory category,
-        string providerName,
-        LicensePostureKind postureKind,
-        CancellationToken ct);
-
+    /// <summary>Runs the registered <c>IIntegrationProviderValidator</c> for <paramref name="providerName"/>, persists the outcome via <c>IValidationStatusStore</c> (§3.13), and returns the result. Background re-validation is a separate concern — see §5.3 for capability sourcing on user-driven vs unattended runs.</summary>
     Task<IntegrationValidationResult> ValidateProviderAsync(
         IntegrationCategory category,
         string providerName,
         CancellationToken ct);
 
+    /// <summary>Issues two Standing Orders atomically (transactional + marketing email routing paths) per §2.3; throws <c>UnknownProviderException</c> if either named provider is not registered.</summary>
     Task<StandingOrder> IssueRoutingAsync(
         IntegrationEmailRouting routing,
         CancellationToken ct);
 }
 ```
 
-**Issuance ordering invariant** (per §5.5): `IssueProviderChangeAsync` for a `LicensePostureKind.StrongCopyleft` provider MUST throw `LicenseAcknowledgementRequiredException` (§3.10) if no `IntegrationLicenseAcknowledged` Standing Order exists for that (tenant, provider) pair. Callers must invoke `IssueLicenseAcknowledgementAsync` first.
+**Issuance composition rationale.** Each `Issue*Async` wrapper above composes `IStandingOrderIssuer.IssueAsync(StandingOrderDraft draft, ActorId issuedBy, IAuditTrail auditTrail, CancellationToken ct)` (per the actual signature on origin/main at `packages/foundation-wayfinder/IStandingOrderIssuer.cs`). The wrapper is intentionally **domain-shaped** (not substrate-shaped) per the council §9.2 disposition: callers pass category-specific arguments rather than constructing a `StandingOrderDraft` themselves, and the `ActorId issuedBy` and `IAuditTrail auditTrail` parameters required by `IssueAsync` are sourced internally — `ActorId` from `IIntegrationAtlasContext.CurrentActorId` (§3.11), `IAuditTrail` from the constructor-injected `IAuditTrail` dependency (§6.1). The wrappers return `Task<StandingOrder>` (matching `IStandingOrderIssuer.IssueAsync`'s return shape) so downstream callers retain access to the realized `StandingOrder.Id`, `IssuedAt`, and `AuditRecordId` without requiring a separate read against the Standing-Order repository.
 
-**"Exists" defined:** an `IntegrationLicenseAcknowledged` Standing Order "exists" for a (tenant, provider) pair when the most-recent Standing Order at `integrations.{category}.license-acknowledged.{provider}` has a non-null `NewValue`. The acknowledgement is a **tenant-level legal commitment** — it is satisfied by any acknowledgement issued by *any* tenant principal, not exclusively by the same principal who is now attempting activation. A system administrator who acknowledges on behalf of the organization satisfies the invariant for all subsequent activations by any other tenant principal.
+This composition pattern is the canonical "domain-shaped wrapper over substrate API" idiom that ADR 0066's `IIdentityAtlasSurface` also follows — keeping the rendering-host API simple while preserving substrate audit-by-construction guarantees.
 
-**CRDT consistency model for the pre-activation check.** The pre-issuance check reads the *same Standing Order log replica* that the issuer's local projection is computed from (not a quorum-read). Concurrent acknowledgements on separate replicas merge as duplicate `IntegrationLicenseAcknowledged` audit records (deduplicated by `(tenant, provider, postureKind)` on projection); the activation-after-acknowledge invariant is satisfied as long as *some* acknowledgement is present in the merged log at projection time. The invariant is enforced by a `StandingOrderValidator` in the validation chain (per ADR 0065 §4), not solely at the API entry point — the API-layer guard is a UI convenience shortcut, not the authoritative enforcement point.
+> **License-acknowledgement issuance method removed.** The `IssueLicenseAcknowledgementAsync(IntegrationCategory, string, LicensePostureKind, CancellationToken)` method previously specified on this contract is cut from v1 per the council fix-pass and §9.7. ADR 0067-A1 will reintroduce the method (or a successor shape) if and when an SSPL/BSL opt-in track is approved.
 
 #### §3.5.1 — Context and identity resolution
 
@@ -429,7 +448,7 @@ public sealed record IntegrationAtlasView
 public sealed record ActiveProviderSnapshot(
     string ProviderName,
     DateTimeOffset ActivatedAt,
-    PrincipalId ActivatedBy);
+    ActorId ActivatedBy);
 ```
 
 The view is the projection consumed by the Atlas component family. `CredentialsByProvider[providerName][credentialKey]` returns the `AtlasSettingSnapshot` (per ADR 0065 §5) for that credential, which carries the value, last-issued-at, and the `StandingOrderId` that issued the value (per ADR 0065 §5 — `LastIssuedBy` is a pointer to the issuance event, not a principal identifier). The rendering host resolves the issuing actor display name from the Standing Order log via `IStandingOrderRepository.GetAsync(standingOrderId)` if it needs to surface 'last changed by' affordances.
@@ -468,35 +487,16 @@ public enum ProviderValidationStatus
     Valid = 1,
     Invalid = 2,
     Unreachable = 3,
-    LicenseAcknowledgementRequired = 4,
 }
 ```
 
-`LicenseAcknowledgementRequired` is set by `ValidateProviderAsync` when license-posture screening fails before any credential-level validation can run (e.g. SSPL provider, no acknowledgement issued). `Unreachable` distinguishes a provider that cannot be reached (network, DNS, suspended account) from `Invalid` (provider is reachable but rejects the credentials).
+`Unreachable` distinguishes a provider that cannot be reached (network, DNS, suspended account) from `Invalid` (provider is reachable but rejects the credentials). `Unknown` is the initial state before any validation has run, and the post-rotation state when the new provider has no credentials yet.
 
-### §3.10 — `LicenseAcknowledgementRequiredException`
+> **License-acknowledgement status value removed.** A `LicenseAcknowledgementRequired = 4` enum value previously sat alongside the four above; it is cut from v1 per the council fix-pass and §9.7. ADR 0067-A1 will reintroduce the value (or a sibling enum) if and when an SSPL/BSL opt-in track is approved.
 
-```csharp
-public sealed class LicenseAcknowledgementRequiredException : Exception
-{
-    public LicenseAcknowledgementRequiredException(
-        string providerName,
-        LicensePostureKind postureKind,
-        string? message = null)
-        : base(message ?? $"License acknowledgement required for provider '{providerName}' (posture: {postureKind}).")
-    {
-        ProviderName = providerName;
-        PostureKind = postureKind;
-    }
+### §3.10 — `LicenseAcknowledgementRequiredException` (deferred to ADR 0067-A1)
 
-    public string ProviderName { get; }
-    public LicensePostureKind PostureKind { get; }
-}
-```
-
-Thrown by `IssueProviderChangeAsync` when activation is attempted without a prior acknowledgement Standing Order. The Atlas form-renderer catches this exception and surfaces the acknowledgement modal (§5.5). Uses a positional constructor — `required` on `Exception` subclass init-only properties does not work at the throw site because C# `required` members must be set via object initializer syntax, which is unsupported after a `base(...)` call chain.
-
-> Note: because this is an `Exception` subclass, implementations MUST add a constructor that populates `Message` with a diagnostic string: `base($"License acknowledgement required for '{providerName}' (posture: {postureKind}). Call IssueLicenseAcknowledgementAsync before IssueProviderChangeAsync.")`.
+The `LicenseAcknowledgementRequiredException` class was previously specified here. Cut from v1 per the council fix-pass and §9.7 — there is no `IssueProviderChangeAsync` license-posture precondition in v1 because no license-acknowledgement track exists. ADR 0067-A1 will reintroduce the exception (or a successor shape) if and when an SSPL/BSL opt-in track is approved by general counsel.
 
 ### §3.11 — `IIntegrationAtlasContext`
 
@@ -522,6 +522,63 @@ public sealed record IntegrationEmailRouting
 
 Used by `IssueRoutingAsync` (§3.5). Implementations MUST verify that `TransactionalProvider` and `MarketingProvider` (if non-null) are registered `IIntegrationSchemaProvider` provider names with the appropriate email category. Issuance MUST throw `UnknownProviderException` for unregistered names. Provider-name comparison is ordinal-case-sensitive against the registered set.
 
+### §3.13 — `IValidationStatusStore`
+
+```csharp
+public interface IValidationStatusStore
+{
+    /// <summary>Returns the most recent validation status for <paramref name="provider"/> in <paramref name="tenant"/>; <c>null</c> when no validation has ever run for the (tenant, provider) pair.</summary>
+    ValueTask<ProviderValidationStatusEntry?> GetCurrentAsync(
+        TenantId tenant,
+        string provider,
+        CancellationToken ct);
+
+    /// <summary>Persists a new status snapshot. Emits an audit record (<c>IntegrationValidationSucceeded</c> or <c>IntegrationValidationFailed</c> per §8) via the constructor-injected <c>IAuditTrail</c>; the audit emission is non-optional.</summary>
+    ValueTask UpdateAsync(
+        TenantId tenant,
+        string provider,
+        ProviderValidationStatusEntry entry,
+        ActorId issuedBy,
+        CancellationToken ct);
+
+    /// <summary>Returns the historical status entries for <paramref name="provider"/> in <paramref name="tenant"/>, newest first; bounded by <paramref name="limit"/>. Used for surfacing "last 10 validation runs" in the Atlas UI.</summary>
+    IAsyncEnumerable<ProviderValidationStatusEntry> HistoryAsync(
+        TenantId tenant,
+        string provider,
+        int limit,
+        CancellationToken ct);
+}
+
+public sealed record ProviderValidationStatusEntry
+{
+    public required ProviderValidationStatus Status { get; init; }
+    public required DateTimeOffset ValidatedAt { get; init; }
+    public required ActorId ValidatedBy { get; init; }
+    public string? ErrorCode { get; init; }
+    public string? ErrorMessage { get; init; }
+}
+```
+
+**Substrate distinction.** `IValidationStatusStore` is a separate substrate from `IStandingOrderIssuer` because validation outcomes are **transient state**, not configuration intent. Standing Orders are append-only and intended to capture operator decisions ("activate provider X", "set credential Y") — issuing one Standing Order per validation run for every provider every 5 minutes (per §5.6.1's TTL-based re-validation) would generate ~100k orders per provider per tenant per year, breaking the substrate's append-only-log scaling envelope (the council fix-pass specifically called this out as a load-bearing scaling failure mode). The store's storage strategy is implementation-defined: it MAY use a per-(tenant, provider) keyed compaction strategy (only the last N entries retained for history), an append-only log with offline compaction, or any other strategy that satisfies the contract. The store's audit emission via `IAuditTrail` is non-optional — every `UpdateAsync` call MUST emit either `IntegrationValidationSucceeded` (status == Valid) or `IntegrationValidationFailed` (any other status), per §8.
+
+**Reference implementation.** Phase 2 (§10) ships `DefaultValidationStatusStore` (file-system-backed for Anchor; SQL-backed for Bridge) and `InMemoryValidationStatusStore` (test fixture; same shape as `InMemoryAuditTrail` per `packages/kernel-audit/InMemoryAuditTrail.cs`).
+
+### §3.14 — `IDecryptCapabilityProvider`
+
+```csharp
+public interface IDecryptCapabilityProvider
+{
+    /// <summary>Returns a short-lived <see cref="IDecryptCapability"/> bound to <paramref name="tenant"/> for the requested <paramref name="purpose"/> and TTL, or <c>null</c> when no capability can be issued for the requested scope. Implementations MUST validate the requested tenant scope before issuing — cross-tenant capability issuance is prohibited per ADR 0046-A4.</summary>
+    ValueTask<IDecryptCapability?> AcquireAsync(
+        TenantId tenant,
+        string purpose,
+        TimeSpan ttl,
+        CancellationToken ct);
+}
+```
+
+`IDecryptCapabilityProvider` is a NEW symbol introduced by this ADR (no prior origin/main artifact). The reference implementation ships in `foundation-recovery` per Phase 2 (§10); the host's `AddSunfishRecovery()` extension registers it as a singleton. The `purpose` string is canonical: ADR 0067 uses `"integration-validation"` for both user-driven and background paths; ADR 0067-A1 may add additional purpose strings if license-acknowledgement decryption requires a separate scope.
+
 ---
 
 ## §4 — Schema lifecycle
@@ -541,7 +598,6 @@ internal sealed class StripeSchemaProvider : IIntegrationSchemaProvider
             Category = IntegrationCategory.Payments,
             DisplayName = "Stripe",
             DocumentationUrl = "https://docs.sunfish.dev/integrations/stripe",
-            LicensePosture = LicensePostureKind.Permissive,
             CredentialFields =
             [
                 new() { Key = "secret-key", DisplayLabel = "Secret API key",
@@ -578,9 +634,9 @@ When an adapter changes its credential shape (e.g. Stripe deprecates the v1 webh
 
 The Atlas surface itself does NOT auto-migrate values. Adapter authors who need value-shape transformation (rare) ship a `IIntegrationCredentialMigrator` (out of v1 scope; deferred to a future amendment).
 
-**License-acknowledgement independence.** License acknowledgement (§2.4) is independent of credential schema version. An `IntegrationLicenseAcknowledged` Standing Order remains valid for the (tenant, provider) pair across schema-version increments, as long as the provider's `LicensePosture` value has not changed in a more-restrictive direction.
+**Encrypted-field key-rotation handling (§4.2.1).** Sensitive credentials are stored as `EncryptedField` (per ADR 0046-A2), which carries a `KeyVersion`. When a tenant's KEK rotates from v1 → v2, existing credential Standing Orders retain `KeyVersion = 1` envelopes. The v1 reference implementation **maintains both v1 and v2 decryptors simultaneously**: `IFieldDecryptor` resolves the per-version DEK at decrypt time (per `TenantKeyProviderFieldDecryptor` on origin/main) and the validator continues to function across the rotation. A re-encrypt sweep that rewrites prior credentials at the new key version is **out of v1 scope** (deferred to a future amendment per §9.4); ADR 0067 v1 relies on the multi-version decryptor pattern. Adapter authors do NOT see `KeyVersion` — the substrate handles it.
 
-**License-posture migration (§4.2.1).** When an adapter's `SchemaVersion` increments and the new schema carries a more-restrictive `LicensePostureKind` than the prior version (`Permissive → WeakCopyleft`, `Permissive → StrongCopyleft`, `WeakCopyleft → StrongCopyleft`), any existing `IntegrationLicenseAcknowledged` Standing Order for that (tenant, provider) pair is invalidated. `ValidateProviderAsync` MUST return `LicenseAcknowledgementRequired` until a fresh acknowledgement issues; `IssueProviderChangeAsync` MUST throw `LicenseAcknowledgementRequiredException`. Less-restrictive direction transitions (`StrongCopyleft → Permissive`) retain the prior acknowledgement. A schema bump that changes *only* the license posture without changing credentials MUST use a new `ProviderName` (e.g., `providers-mesh-headscale-agpl-fork`) rather than a `SchemaVersion` increment — schema versions are for credential-shape changes.
+**License-acknowledgement migration (deferred to ADR 0067-A1).** A previous draft of this section specified a license-acknowledgement migration ladder (Permissive → WeakCopyleft etc.). Cut from v1 per the council fix-pass and §9.7 — ADR 0067-A1 will reintroduce the migration semantics if and when a license-acknowledgement track is approved.
 
 ---
 
@@ -613,29 +669,55 @@ This satisfies SC 3.3.7 (Redundant Entry — no re-typing of a credential the ad
 
 ### §5.3 — Validation
 
-After all credentials are issued, the admin clicks "Validate":
+After all credentials are issued, the admin clicks "Validate" (or a background re-validation timer fires per §5.6.1):
 
-1. Atlas calls `ValidateProviderAsync(category, provider, ct)`.
+1. Caller invokes `ValidateProviderAsync(category, provider, ct)`.
 2. Implementation:
-   - Materializes the credentials from the Atlas projection.
-   - Decrypts sensitive fields via `IFieldDecryptor`.
-   - Routes to the adapter's category-specific validation hook (per §6.2 — each `IIntegrationProviderValidator` owns its own probe logic).
+   - Materializes the credentials from the Atlas projection (`IAtlasProjector.ProjectAsync` returns the current `AtlasView`; the §3.6 `IntegrationAtlasView.CredentialsByProvider[provider]` carries the per-credential `AtlasSettingSnapshot`).
+   - Acquires an `IDecryptCapability` per §5.3.1 (sourcing differs for user-driven vs background runs).
+   - Decrypts sensitive fields via `IFieldDecryptor.DecryptAsync(field, capability, tenant, ct)` — each successful decrypt emits a `FieldDecrypted` audit record per ADR 0046-A4; failures emit `FieldDecryptionDenied`.
+   - Resolves the registered `IIntegrationProviderValidator` for `(category, provider)` (per §6.2 resolution rules) and calls its `ValidateAsync(sensitiveCredentials, nonSensitiveCredentials, ct)` — the validator owns its own liveness probe (HTTP API call, mesh control-plane handshake, etc.); it does NOT delegate to any method on `IPaymentGateway` / `IMessagingGateway` / `IMeshVpnAdapter` (those contracts have no `ValidateAsync` method on origin/main, and extending them would require its own ADR amendment).
    - Captures the result.
-3. Implementation issues a Standing Order at `integrations.{category}.validation-status.{provider}` carrying the JSON `{ status, lastValidatedAt, errorCode, errorMessage }`.
-4. Audit event `IntegrationValidationSucceeded` (status == Valid) or `IntegrationValidationFailed` (any other status) emitted.
+3. Implementation calls `IValidationStatusStore.UpdateAsync(tenant, provider, entry, actorId, ct)` (§3.13) which persists the outcome and emits the audit event.
+4. Audit event `IntegrationValidationSucceeded` (status == Valid) or `IntegrationValidationFailed` (any other status) emitted by the store, NOT by issuing a Standing Order — see §2.5 for the rationale.
 5. The result is returned to the caller and rendered in the surface (§5.6 — visual feedback).
 
-### §5.3.1 — Decrypt capability and plaintext lifetime
+**No transport-contract `ValidateAsync` extension.** Per the council fix-pass, the validation flow does NOT call into the runtime egress contracts:
 
-**Capability acquisition.** `DefaultIntegrationAtlasProvider.ValidateProviderAsync` acquires an `IDecryptCapability` from the injected `IDecryptCapabilityProvider`. The capability is scoped to `(tenant, purpose="integration-validation", ttl=60s)` and is audited by `IFieldDecryptor` per ADR 0046-A4. The `IDecryptCapabilityProvider` is a §6.1 dependency; its absence at DI time causes `ValidateProviderAsync` to throw `DecryptCapabilityUnavailableException`, surfaced to the admin as a host-misconfiguration error. No decrypted credential ever crosses the contract boundary to a rendering host; decryption happens within the same DI scope as the per-category validator.
+- `IPaymentGateway` (ADR 0051) exposes only `AuthorizeAsync` / `CaptureAsync` / `RefundAsync`.
+- `IMessagingGateway` (ADR 0052) exposes only `SendAsync` / `GetStatusAsync`.
+- `IMeshVpnAdapter` (ADR 0061) exposes only `AdapterName` / `GetMeshStatusAsync` / `RegisterDeviceAsync`.
 
-**Plaintext lifetime constraints.** The `IIntegrationProviderValidator.ValidateAsync` method receives sensitive credentials as `ReadOnlyMemory<byte>` (not `JsonNode`) per §6.2.1. Implementations MUST:
+None has a `ValidateAsync` method, and ADR 0067 cannot extend those published transport contracts — that would be a breaking-change amendment to ADR 0051 / 0052 / 0061 each. Instead, every `IIntegrationProviderValidator` implementation owns its own liveness probe (e.g., `StripeIntegrationValidator` issues an HTTP `GET /v1/account` against the Stripe API using the configured credentials; `PostmarkIntegrationValidator` issues `GET /servers`; `TailscaleIntegrationValidator` issues a `GET /api/v2/tailnet/{tailnet}/keys`). Validators are free to reuse the adapter package's own HTTP client; what they MUST NOT do is depend on a substrate method that does not exist.
+
+### §5.3.1 — Decrypt-capability sourcing
+
+`IFieldDecryptor.DecryptAsync` requires an `IDecryptCapability` per ADR 0046-A2/A3 — the capability is the access-control gate. ADR 0067 sources the capability via three paths depending on the validation trigger:
+
+**1. User-driven validation (admin clicked "Validate").** The session capability of the issuing principal is used. `DefaultIntegrationAtlasProvider` reads `IIntegrationAtlasContext.CurrentActorId` (§3.11) and resolves the corresponding session capability via the host's authentication scope (Bridge: ASP.NET `HttpContext.User` + the recovery substrate's session-bound `IDecryptCapability`; Anchor: the local-node identity's capability). The session capability's `ValidateForDecrypt(tenant, now)` MUST succeed for the current tenant; rejection causes `ValidateProviderAsync` to fail-closed per the negative case below.
+
+**2. Background re-validation (scheduler or webhook trigger).** No human principal is present. `DefaultIntegrationAtlasProvider` resolves a **system-principal capability** with explicit tenant scope from the injected `IDecryptCapabilityProvider`. The capability is short-lived (TTL = 60s, refreshed per validation run) and tenant-scoped — the `IDecryptCapabilityProvider` MUST emit a fresh capability bound to the specific tenant whose validation status is being refreshed. Cross-tenant leakage in the Bridge multi-tenant case is prevented by tenant-scoped capability issuance: the host process holds N tenant capabilities; the wrong one is rejected by `IDecryptCapability.ValidateForDecrypt`. Every system-principal capability acquisition is itself audited by the recovery substrate (per ADR 0046-A4) — successful decrypts emit `FieldDecrypted` records carrying the capability id, and rejections emit `FieldDecryptionDenied`.
+
+**3. Negative case (fail-closed).** If no capability is available — capability provider not registered, capability validation fails, capability TTL expired, capability tenant-scope mismatched — `ValidateProviderAsync` MUST NOT silently skip decryption. Instead it MUST:
+
+- Return `IntegrationValidationResult { Status = Unknown, ErrorCode = "no-decrypt-capability", ErrorMessage = "Decrypt capability unavailable; validation skipped." }` for the user-driven path.
+- Emit `IntegrationValidationFailed` audit (not `Succeeded`) with the same `ErrorCode`.
+- Persist the `Unknown` status to `IValidationStatusStore` so consumers (`IMissionEnvelopeProvider`) treat the integration as not-currently-usable.
+- For the background-driven path, additionally emit a host-level diagnostic so the operator notices a misconfigured `IDecryptCapabilityProvider`.
+
+The `ErrorCode` constant `"no-decrypt-capability"` is the canonical name for this failure mode. Adapter packages MUST NOT introduce alternative error codes for decrypt-capability failures; this is a host-platform concern, not a per-adapter concern.
+
+`IDecryptCapabilityProvider` is a NEW symbol introduced by this ADR (no prior origin/main artifact); the contract surface is a single method `ValueTask<IDecryptCapability?> AcquireAsync(TenantId tenant, string purpose, TimeSpan ttl, CancellationToken ct)` returning `null` when no capability can be issued for the requested scope. Implementations are host-supplied; reference implementations ship in `foundation-recovery` per Phase 2 (§10).
+
+### §5.3.2 — Plaintext lifetime constraints
+
+The `IIntegrationProviderValidator.ValidateAsync` method receives sensitive credentials as `ReadOnlyMemory<byte>` (not `JsonNode`) per §6.2.1. Implementations MUST:
 1. Clear (`CryptographicOperations.ZeroMemory`) any owned plaintext buffers in a `finally` block after `ValidateAsync` returns.
 2. NEVER log credential bytes, include them in exception messages, or retain references after the method returns.
 3. NEVER cache decrypted credentials across calls.
 Phase 3 per-adapter parity tests assert these properties (positive: inject a marker credential, verify no log output contains the marker; negative: simulate a provider failure, assert exception message does not contain the credential).
 
-### §5.3.2 — Validation in-flight UX
+### §5.3.3 — Validation in-flight UX
 
 While `ValidateProviderAsync` is in flight the renderer MUST:
 - Set `aria-busy="true"` on the category panel.
@@ -653,33 +735,9 @@ After both `TransactionalEmail` and (optionally) `MarketingEmail` have active pr
 3. Implementation issues two Standing Orders atomically — one at `integrations.transactional-email.routing` with value `"providers-postmark"` and one at `integrations.marketing-email.routing` with value `"providers-sendgrid"` — per the §2.3 per-category paths.
 4. Audit event `IntegrationProviderChanged` emitted for each routing path issued (the path itself encodes the change; the audit payload includes the previous and new routing value for diff visibility).
 
-### §5.5 — License posture acknowledgement (mesh VPN)
+### §5.5 — License posture acknowledgement (deferred to ADR 0067-A1)
 
-When the admin selects a `StrongCopyleft` provider (e.g. `providers-mesh-headscale`):
-
-1. Atlas reads the schema's `LicensePosture == LicensePostureKind.StrongCopyleft`.
-2. Atlas presents the acknowledgement modal (Anchor: a Blazor `<AtlasLicenseAcknowledgementDialog>`; Bridge: a React `<LicenseAcknowledgementDialog />`). Modal copy is per-license-kind, drawn from a localized resource file in `packages/ui-core-wayfinder/Resources/`.
-3. The modal MUST require the admin to:
-   - Read the posture explanation (heading + paragraph identifying the license + the obligations).
-   - Click an explicit "I acknowledge and accept the license obligations" button; checkbox-only acknowledgement is forbidden per ADR 0061's "explicit acknowledgement" requirement (and per WCAG SC 3.3.4 Error Prevention for legal commitments).
-4. On acknowledgement, Atlas calls `IssueLicenseAcknowledgementAsync(category, provider, postureKind, ct)`.
-5. Implementation issues a Standing Order at `integrations.{category}.license-acknowledged.{provider}` with `{ acknowledgedBy, acknowledgedAt, postureKind }`.
-6. Audit event `IntegrationLicenseAcknowledged` emitted.
-7. Modal closes; provider activation flow resumes (§5.1 from step 4).
-
-If the admin attempts `IssueProviderChangeAsync` without a prior acknowledgement, the implementation throws `LicenseAcknowledgementRequiredException` (§3.10); the Atlas catches it and surfaces the modal as a recovery path.
-
-### §5.5.1 — Modal accessibility contract
-
-The license-acknowledgement dialog MUST:
-- Declare `role="dialog"` and `aria-modal="true"`.
-- Reference the dialog heading via `aria-labelledby` and the posture explanation text via `aria-describedby`.
-- On open, move focus to the dialog's heading or first *non-button* focusable element — NOT the acknowledgement button directly (which would skip the obligation text per SC 3.3.4).
-- Trap Tab/Shift-Tab focus within the dialog while open (SC 2.1.2 — users must be able to exit via ESC, not trapped without exit).
-- Handle ESC as "cancel" — equivalent to declining the acknowledgement; MUST NOT issue the `IssueLicenseAcknowledgementAsync` Standing Order on ESC.
-- Restore focus to the triggering provider-selection control on close (SC 2.4.3).
-
-Parity: Anchor (Blazor `<AtlasLicenseAcknowledgementDialog>`) and Bridge (React `<LicenseAcknowledgementDialog />`) MUST implement identical focus semantics; parity tests exercise open/close keyboard navigation.
+A license-acknowledgement modal flow was previously specified here for `StrongCopyleft` providers (e.g. `providers-mesh-headscale`). Cut from v1 per the council fix-pass and §9.7 — ADR 0061's compile-time `BannedSymbols.txt` analyzer enforcement is the canonical exclusion mechanism for SSPL/BSL adapters until ADR 0067-A1 designs an admin-opt-in track. Modal-accessibility requirements (focus trap, focus restoration, ESC-cancel, SC 3.3.4 explicit-action) move to ADR 0067-A1.
 
 ### §5.6 — Visual feedback
 
@@ -690,16 +748,22 @@ After validation completes the surface MUST present a clear status indicator per
 | `Valid` | Green check icon + "Connected" text | `aria-live="polite"`; text-only readers receive the "Connected" message |
 | `Invalid` | Red alert icon + error code + error message | `role="alert"`; immediately announced |
 | `Unreachable` | Amber warning icon + "Unreachable: {reason}" | `role="alert"`; announced |
-| `LicenseAcknowledgementRequired` | Amber warning + "Acknowledgement required" + button surfacing the modal | `role="alert"`; announced |
 | `Unknown` (pre-validation) | Neutral grey + "Not yet validated" | not announced (initial state) |
+| `Unknown` (post-rotation, post-credential-clear) | Neutral grey + "Not yet validated" | `aria-live="polite"` — IS a transition the user needs to know about |
 
-Color is never the sole signal; every state pairs a shape-distinct icon with the color (per SC 1.4.1). Required icon shapes: `Valid` = check mark (✓); `Invalid` = circle-with-X; `Unreachable` = cloud-with-slash; `LicenseAcknowledgementRequired` = scroll/document; `Unknown` = em-dash or empty circle. The icon's accessible name (`aria-label` or visually-hidden text) MUST match the status label text.
+Color is never the sole signal; every state pairs a shape-distinct icon with the color (per SC 1.4.1). Required icon shapes: `Valid` = check mark (✓); `Invalid` = circle-with-X; `Unreachable` = cloud-with-slash; `Unknown` = em-dash or empty circle. The icon's accessible name (`aria-label` or visually-hidden text) MUST match the status label text.
 
-The Status Message DOM region MUST be a single element per category panel with `aria-atomic="true"`. Status MUST NOT be re-announced on successive identical validation outcomes; only *status transitions* replace the live-region content. On `Unknown` state the live region MUST contain an empty text node, not stale content from a prior session. On `LicenseAcknowledgementRequired`, the announcement MUST precede focus moving to the modal trigger.
+**`Unknown` announcement disambiguation (per WCAG SC 4.1.3 council finding §6.4).** The renderer MUST distinguish two arrival paths to `Unknown`:
+- **First render** (no prior validation has ever run for the (tenant, provider) pair): `Unknown` is the initial state; MUST NOT be announced via `aria-live`.
+- **Post-rotation** (the `active-provider` Standing Order changed and the new provider has no credentials yet, OR the admin cleared credentials via §5.7's "Clear unused credentials" affordance): `Unknown` IS a state transition; MUST be announced via `aria-live="polite"`.
+
+Implementations track the previous-state via a per-category renderer-local hook; the `IntegrationAtlasView.StatusByCategory` projection is augmented with a transient "previous status" sidecar (`§3.6` covers the projection shape).
+
+The Status Message DOM region MUST be a single element per category panel with `aria-atomic="true"`. Status MUST NOT be re-announced on successive identical validation outcomes; only *status transitions* replace the live-region content. On `Unknown` first-render the live region MUST contain an empty text node, not stale content from a prior session.
 
 ### §5.6.1 — Validation staleness and Mission-Space gating
 
-Validation outcomes are *additive*. A new `ValidateProviderAsync` run DOES NOT overwrite a prior `Valid` status until the new outcome is `Valid` *or* the prior `Valid` outcome is older than `ValidationStalenessTtl` (default 24h, tenant-configurable). The `IMissionEnvelopeProvider` (ADR 0062) reads the *most-recently-Valid status within TTL*, falling back to `Unknown` once stale. This prevents a transient network outage (yielding `Unreachable`) from immediately demoting feature availability. `IntegrationAtlasView.StatusByCategory` exposes the most-recently-Valid status, not the last validation outcome.
+Validation outcomes are *additive*. A new `ValidateProviderAsync` run DOES NOT overwrite a prior `Valid` status until the new outcome is `Valid` *or* the prior `Valid` outcome is older than `ValidationStalenessTtl` (default 24h, tenant-configurable). The `IMissionEnvelopeProvider` (ADR 0062) reads the *most-recently-Valid status within TTL*, falling back to `Unknown` once stale. This prevents a transient network outage (yielding `Unreachable`) from immediately demoting feature availability. `IntegrationAtlasView.StatusByCategory` exposes the most-recently-Valid status, not the last validation outcome. Background re-validation runs at the same TTL cadence (default every 6h, configurable), each persisted to `IValidationStatusStore` with the `ActorId` of the host's system principal.
 
 ### §5.7 — Provider rotation
 
@@ -712,7 +776,9 @@ Admin changes the active provider (e.g. Stripe → Square):
 5. The admin retains the option to revert by re-issuing `active-provider = "providers-stripe"`; the prior credentials are still in the Standing Order log.
 6. To explicitly clear stale credentials, the admin uses a "Clear unused credentials" affordance (§7.3 — out of v1 surface scope; deferred).
 
-**Webhook-secret rotation window (providers-stripe, providers-twilio).** For providers that issue webhooks back to Sunfish, a rotation event creates a transition window where webhooks signed with the *previous* webhook secret may arrive after the new active provider's Standing Order has issued. The `IIntegrationProviderValidator` for these providers MUST accept both the old and new webhook secrets during validation and must surface both secrets to the adapter's webhook-signature-verification path until the previous provider's credentials are explicitly cleared. The Atlas projection retains both credential sets precisely to support this; clearing the old webhook secret before the transition window closes is an explicit admin action, not an automatic consequence of rotation.
+**Webhook-secret rotation window (providers-stripe, providers-twilio).** For providers that issue webhooks back to Sunfish, a rotation event creates a transition window where webhooks signed with the *previous* webhook secret may arrive after the new active provider's Standing Order has issued. The `IIntegrationProviderValidator` for these providers MUST accept signatures from EITHER the previous OR the new webhook-secret during the rotation grace window, and MUST surface both secrets to the adapter's webhook-signature-verification path. The Atlas projection retains both credential sets precisely to support this.
+
+**Grace-window authority.** The grace window ends when the previous credential's `EncryptedField` is excluded from a future Atlas projection — i.e., the next rotation evicts it via the §5.7 step 6 "Clear unused credentials" admin action, OR a future rotation issues a new credential at the same `(provider, credentialKey)` path that supersedes the prior value via Standing-Order LWW semantics. There is no automatic time-bound expiry of the previous webhook secret; eviction is admin-driven (or rotation-driven via subsequent issuance), not clock-driven. This is the substrate-canonical definition of "grace window closes" — it composes with ADR 0065's append-only Standing-Order log without requiring substrate-side TTL tracking.
 
 ---
 
@@ -730,6 +796,7 @@ public static IServiceCollection AddSunfishIntegrationAtlas(this IServiceCollect
             "IFieldEncryptor is required by DefaultIntegrationAtlasProvider.");
 
     services.AddSingleton<IIntegrationAtlasProvider, DefaultIntegrationAtlasProvider>();
+    services.AddSingleton<IValidationStatusStore, DefaultValidationStatusStore>();
     // IIntegrationAtlasContext is registered by the host (Bridge: scoped via HttpContext;
     // Anchor: singleton via local-node identity). NOT registered here — host responsibility.
     return services;
@@ -743,7 +810,9 @@ Note: `IFieldDecryptor` is no longer registered by this extension. It is the res
 - `IAtlasProjector` (from `foundation-wayfinder`)
 - `IAuditTrail` (from `kernel-audit`)
 - `IFieldEncryptor` (from `foundation-recovery` — registered by `AddSunfishRecovery()`)
+- `IFieldDecryptor` (from `foundation-recovery` — registered by `AddSunfishRecovery()`)
 - `IDecryptCapabilityProvider` (from `foundation-recovery` — provides short-lived capabilities for validation; registered by `AddSunfishRecovery()`)
+- `IValidationStatusStore` (from this package — registered by `AddSunfishIntegrationAtlas()` itself)
 - `IIntegrationAtlasContext` (from host — Bridge: scoped; Anchor: singleton)
 - `IEnumerable<IIntegrationSchemaProvider>` (from registered adapter packages)
 - `IEnumerable<IIntegrationProviderValidator>` (per §6.2)
@@ -769,7 +838,7 @@ public interface IIntegrationProviderValidator
 }
 ```
 
-Note: sensitive credentials passed as `ReadOnlyMemory<byte>` (already decrypted bytes) per §5.3.1; non-sensitive as `JsonNode` (raw Standing Order values).
+Note: sensitive credentials passed as `ReadOnlyMemory<byte>` (already decrypted bytes) per §5.3.2; non-sensitive as `JsonNode` (raw Standing Order values).
 
 Adapter packages register one validator per provider:
 
@@ -816,14 +885,14 @@ V1 ships without any registered custom renderers; the hook is a safety valve for
 
 ### §7.1 — `DefaultIntegrationAtlasProvider`
 
-A reference implementation in `packages/ui-core-wayfinder/` consuming the §6.1 dependencies. Composes:
+A reference implementation in `packages/ui-core/Wayfinder/Integrations/` consuming the §6.1 dependencies. Composes:
 
 - `IStandingOrderIssuer.IssueAsync` for every Standing Order emission.
 - `IAtlasProjector.ProjectAsync` for the projection feeding `IntegrationAtlasView`.
 - `IAuditTrail.AppendAsync` for every audit event.
 - `IFieldEncryptor.EncryptAsync` for sensitive credential issuance.
 
-Tests cover: provider listing, provider activation, license-posture enforcement (with `LicenseAcknowledgementRequiredException` cases), credential issuance (sensitive + non-sensitive), validation result issuance, routing issuance, rotation non-destruction, and a parity test against an `InMemoryIntegrationAtlasProvider` (§7.2) that exercises the full happy path without external dependencies.
+Tests cover: provider listing, provider activation, credential issuance (sensitive + non-sensitive), validation result issuance via `IValidationStatusStore`, validator-owned probe dispatch (with the `IIntegrationProviderValidator` discovery + missing-validator path), capability sourcing (user-driven session capability, background system-principal capability, fail-closed `Unknown + no-decrypt-capability` path), routing issuance, rotation non-destruction, and a parity test against an `InMemoryIntegrationAtlasProvider` (§7.2) that exercises the full happy path without external dependencies. License-posture-related tests are deferred to ADR 0067-A1 along with the deferred surface.
 
 ### §7.2 — `InMemoryIntegrationAtlasProvider`
 
@@ -835,14 +904,14 @@ A simpler in-memory variant for unit tests in consumer packages (blocks-leases, 
 - `<AtlasIntegrationConfig>` — the root component; one tab per `IntegrationCategory`.
 - `<AtlasIntegrationCategoryPanel>` — one per category; renders the active-provider dropdown + credential form + validation status.
 - `<AtlasCredentialField>` — renders a single `CredentialFieldSpec`; handles masking/reveal toggle + autocomplete attribute.
-- `<AtlasLicenseAcknowledgementDialog>` — modal per §5.5.
+- (License-acknowledgement modal deferred to ADR 0067-A1 — see §9.7.)
 - `<AtlasEmailRoutingPanel>` — special-case routing UI for email category.
 
 **Bridge (React/TSX):** `accelerators/bridge/` adds a parallel React component family with identical naming:
 - `<AtlasIntegrationConfig />`
 - `<AtlasIntegrationCategoryPanel />`
 - `<AtlasCredentialField />`
-- `<LicenseAcknowledgementDialog />`
+- (License-acknowledgement modal deferred to ADR 0067-A1 — see §9.7.)
 - `<EmailRoutingPanel />`
 
 Parity tests verify that both rendering targets produce structurally equivalent DOM (per ADR's adapter-parity principle), with framework-idiomatic differences allowed (ARIA implementation, focus management) but visible behavior equivalent.
@@ -869,11 +938,10 @@ public static readonly AuditEventType IntegrationCredentialUpdated = new("Integr
 /// <summary>A provider validation run reported success.</summary>
 public static readonly AuditEventType IntegrationValidationSucceeded = new("IntegrationValidationSucceeded");
 
-/// <summary>A provider validation run reported failure (Invalid / Unreachable / LicenseAcknowledgementRequired).</summary>
+/// <summary>A provider validation run reported failure (Invalid / Unreachable / Unknown).</summary>
 public static readonly AuditEventType IntegrationValidationFailed = new("IntegrationValidationFailed");
 
-/// <summary>An admin acknowledged a strong-copyleft license posture for a mesh-VPN provider per ADR 0061.</summary>
-public static readonly AuditEventType IntegrationLicenseAcknowledged = new("IntegrationLicenseAcknowledged");
+// IntegrationLicenseAcknowledged audit event deferred to ADR 0067-A1; see §9.7.
 ```
 
 Audit-record payloads (the `AuditRecord.Payload` JSON) carry per-event detail:
@@ -884,7 +952,6 @@ Audit-record payloads (the `AuditRecord.Payload` JSON) carry per-event detail:
 | `IntegrationCredentialUpdated` | `category`, `provider`, `credentialKey` (NEVER value), `tenantId` |
 | `IntegrationValidationSucceeded` | `category`, `provider`, `validatedAt`, `tenantId` |
 | `IntegrationValidationFailed` | `category`, `provider`, `validatedAt`, `errorCode`, `errorMessage`, `tenantId` |
-| `IntegrationLicenseAcknowledged` | `category`, `provider`, `postureKind`, `acknowledgedAt`, `tenantId` |
 
 The redaction rule is contractual: audit payload fields named `value`, `apiKey`, `secret`, `password`, `token`, `webhookSecret`, or any field whose name starts with `credential.` or ends with `.value` MUST never appear in an audit record produced by ADR 0067 code.
 
@@ -919,13 +986,40 @@ Some Bridge tenants may want credentials stored in their own KMS (AWS Secrets Ma
 
 Some providers (Stripe, Twilio) issue webhooks back to Sunfish. The webhook URL is *not* a credential the admin enters — it's a value Sunfish must surface for the admin to copy into the provider's dashboard. The Atlas form likely needs a "read-only output field" concept distinct from `CredentialFieldSpec`. Deferred to a future amendment; v1 handles webhook URLs as `HelpText` content directing the admin to the docs.
 
-### §9.5 — License-acknowledgement principal-revocation behavior
+### §9.5 — License-acknowledgement principal-revocation behavior (moved to ADR 0067-A1)
 
-When the principal who issued an `IntegrationLicenseAcknowledged` Standing Order leaves the tenant or has their `IntegrationsAdmin` role revoked, the acknowledgement persists in the log. Whether a revoked-principal acknowledgement satisfies the issuance-ordering invariant (§3.5) is a security-policy decision deferred to W#37 (Tenant Security Policy ADR). Until W#37 lands, the implementation MAY treat revoked-principal acknowledgements as still valid (log-immutability principle); W#37 is expected to introduce an explicit "re-acknowledge required" policy for SSPL/BSL providers when the acknowledging principal's role lapses.
+The question of whether a revoked-principal license acknowledgement still satisfies the activation invariant moves to ADR 0067-A1 along with the rest of the license-acknowledgement track. Composes with the W#37 Tenant Security Policy ADR.
 
-### §9.6 — OAuth-flow provider support
+### §9.6 — OAuth-flow provider support (out of v1 scope)
 
-The §6.3 custom-renderer escape hatch explicitly names "OAuth redirect dance" as the canonical example of a credential-capture workflow that cannot fit `CredentialFieldSpec`. v1 ships without any OAuth-flow providers. The first OAuth provider (e.g. a future `providers-google-workspace`, `providers-quickbooks`) requires its own ADR addressing: (a) callback URL whitelisting and per-tenant callback uniqueness; (b) CSRF-resistant `state` token generation and cross-tenant collision prevention; (c) PKCE challenge/verifier flow; (d) `aria-live` announcements for the popup/redirect lifecycle (per WCAG SC 4.1.3). Adapter authors MUST NOT add an OAuth-backed `IIntegrationSchemaProvider` to v1 without a companion ADR that addresses these requirements — doing so would leave CSRF and cross-tenant `state` collision undefined at the surface level.
+The §6.3 custom-renderer escape hatch explicitly names "OAuth redirect dance" as the canonical example of a credential-capture workflow that cannot fit `CredentialFieldSpec`. v1 ships without any OAuth-flow providers. The first OAuth provider (e.g. a future `providers-google-workspace`, `providers-quickbooks`) requires its own ADR addressing: (a) callback URL whitelisting and per-tenant callback uniqueness; (b) CSRF-resistant `state` token generation and cross-tenant collision prevention to prevent state-token collision across tenants; (c) PKCE challenge/verifier flow; (d) `aria-live` announcements for the popup/redirect lifecycle (per WCAG SC 4.1.3). Adapter authors MUST NOT add an OAuth-backed `IIntegrationSchemaProvider` to v1 without a companion ADR that addresses these requirements — doing so would leave CSRF and cross-tenant `state` collision undefined at the surface level. **Disposition:** OAuth-flow providers are explicitly OUT of v1 scope; the first OAuth provider triggers a follow-up ADR.
+
+### §9.7 — License-acknowledgement deferred to ADR 0067-A1
+
+Per the council fix-pass, the license-acknowledgement track (`LicensePostureKind`, `LicenseAcknowledgementRequiredException`, `IssueLicenseAcknowledgementAsync`, `IntegrationLicenseAcknowledged` audit event, `license-acknowledged.{provider}` Standing-Order path, §5.5 modal flow) is CUT from v1 because ADR 0061's actual posture excludes SSPL/BSL adapters at compile time via `BannedSymbols.txt` analyzer enforcement — there is no admin-acknowledgement opt-in path on origin/main and ADR 0067 cannot invent one without an ADR amendment to ADR 0061.
+
+A follow-up amendment (**ADR 0067-A1**) is queued at `icm/00_intake/output/2026-05-05_adr-0067-a1-license-acknowledgement-intake.md` to address the question if and when general counsel approves an SSPL/BSL admin-opt-in track. Until ADR 0067-A1 lands:
+- ADR 0061's `BannedSymbols.txt` enforcement remains the canonical exclusion mechanism.
+- v1 ships with `IntegrationCategory.MeshVpn` populated only by adapters whose license posture is permissive (`providers-mesh-headscale` per ADR 0061's existing analyst review; `providers-mesh-tailscale` and `providers-mesh-netbird` per their respective non-copyleft licenses).
+- The Atlas UI does not render any license-acknowledgement affordance.
+- Phase 1 / Phase 2 deliverables omit `LicensePostureKind`, `LicenseAcknowledgementRequiredException`, license-acknowledgement audit event, and the §5.5 modal flow.
+- W#37 Tenant Security Policy considerations (revoked-principal acknowledgement) move to ADR 0067-A1.
+
+**Disposition:** Deferred — explicitly out of v1 scope. ADR 0067-A1 intake stub filed.
+
+### §9.8 — Encrypted-field key-rotation re-encryption sweep
+
+Sensitive credentials are stored as `EncryptedField` (per ADR 0046-A2) which carries a `KeyVersion`. When a tenant's KEK rotates from v1 → v2, existing credential Standing Orders retain `KeyVersion = 1` envelopes. ADR 0067 v1 picks: **maintain v1 + v2 decryptors simultaneously; sweep is async background, deferred.** The reference `IFieldDecryptor` (`TenantKeyProviderFieldDecryptor` on origin/main) already supports per-version DEK resolution — the validator continues to function across the rotation without an immediate re-encrypt.
+
+**Open:** A future amendment may introduce `IIntegrationCredentialReencryptSweep` (an async background job that rewrites prior credentials at the new key version) once tenants accumulate enough cross-version credentials to motivate compaction. v1 ships without it.
+
+**Disposition:** Posture chosen (multi-version decryptor); sweep deferred. No blocking issue for v1.
+
+### §9.9 — Webhook secret rotation grace-window authority (resolved per §5.7)
+
+The grace window for accepting BOTH old and new webhook secrets ends when the prior credential's `EncryptedField` is excluded from a future Atlas projection (admin-driven via §5.7's "Clear unused credentials" action, or rotation-driven via subsequent issuance at the same `(provider, credentialKey)` path). There is no clock-driven expiry.
+
+**Disposition:** Resolved per §5.7 disposition. No further open question.
 
 ---
 
@@ -933,19 +1027,19 @@ The §6.3 custom-renderer escape hatch explicitly names "OAuth redirect dance" a
 
 ### Phase 1 — Contract surface
 
-**Scope:** the `packages/ui-core-wayfinder/` package introduced by ADR 0066, under sub-namespace `Sunfish.UICore.Wayfinder.Integrations`; contracts only.
+**Scope:** additive to the existing `packages/ui-core/` package introduced by ADR 0066, under `packages/ui-core/Wayfinder/Integrations/` with namespace `Sunfish.UICore.Wayfinder.Integrations`; contracts only.
 
 Deliverables:
 - `IIntegrationAtlasProvider` (§3.5)
 - `IntegrationProviderSchema`, `CredentialFieldSpec`, `CredentialAutocompleteHint`, `CredentialFieldKind` (§3.1, §3.2)
 - `IntegrationCategory`, `IntegrationCategoryMapping` (§3.4)
-- `LicensePostureKind` (§3.3)
 - `IntegrationAtlasView`, `ActiveProviderSnapshot` (§3.6)
 - `IIntegrationSchemaProvider` (§3.7)
 - `IntegrationValidationResult`, `ProviderValidationStatus` (§3.8, §3.9)
-- `LicenseAcknowledgementRequiredException` (§3.10)
 - `IIntegrationAtlasContext` (§3.11)
 - `IntegrationEmailRouting` (§3.12)
+- `IValidationStatusStore`, `ProviderValidationStatusEntry` (§3.13)
+- `IDecryptCapabilityProvider` (§5.3.1; new symbol introduced by this ADR)
 - `IIntegrationProviderValidator` (§6.2)
 - `ICustomIntegrationRenderer` (§6.3)
 - `AddSunfishIntegrationAtlas()` registration extension (§6.1)
@@ -955,33 +1049,45 @@ Tests not required for a pure-interface phase; XML docs required on every public
 
 ### Phase 2 — Reference implementation + audit
 
-**Scope:** `DefaultIntegrationAtlasProvider`, `InMemoryIntegrationAtlasProvider`, and audit constants.
+**Scope:** `DefaultIntegrationAtlasProvider`, `InMemoryIntegrationAtlasProvider`, the validation-status store, and audit constants.
 
 Deliverables:
-- `DefaultIntegrationAtlasProvider` in `packages/ui-core-wayfinder/` (§7.1)
-- `InMemoryIntegrationAtlasProvider` in same package (§7.2)
-- 5 new `AuditEventType` constants in `packages/kernel-audit/AuditEventType.cs` (§8)
-- Audit-record payload factory helpers (one per event type) in same package — `IntegrationAuditPayloads.cs`
+- `DefaultIntegrationAtlasProvider` in `packages/ui-core/Wayfinder/Integrations/` (§7.1)
+- `InMemoryIntegrationAtlasProvider` in same subtree (§7.2)
+- `DefaultValidationStatusStore` + `InMemoryValidationStatusStore` in same subtree (§3.13)
+- 4 new `AuditEventType` constants in `packages/kernel-audit/AuditEventType.cs` (§8) — `IntegrationProviderChanged`, `IntegrationCredentialUpdated`, `IntegrationValidationSucceeded`, `IntegrationValidationFailed`
+- Audit-record payload factory helpers (one per event type) in same subtree — `IntegrationAuditPayloads.cs`
 - `SUNFISH_INTEGRATION_AUDIT001` Roslyn analyzer in `packages/foundation-wayfinder-analyzers`
-- Unit tests covering all §5 flows
+- Unit tests covering all §5 flows (excluding deferred license-acknowledgement)
 - Audit-redaction corpus test (per §8 redaction rule) — `IntegrationAuditRedactionTests`
 - `DefaultIntegrationAtlasProviderTests.SensitiveCredential_IsEncryptedBeforeStandingOrder`
 - `ProviderRotationTests.RotationAudit_DoesNotContainPriorCredentials`
+- `ValidationCapabilityFailClosedTests` (per §5.3.1 negative case — three failure modes)
+- `ValidatorIsolationTests` (asserts the surface does NOT call `IPaymentGateway` / `IMessagingGateway` / `IMeshVpnAdapter` `ValidateAsync` — none exist)
 - `IFieldDecryptor` scope-isolation unit test (per §6.1.1)
 
-### Phase 3 — Adapter schema providers
+### Phase 3a — Provider package availability gate
 
-**Prerequisite gate:** W#30 mesh-VPN substrate PR merged to origin/main; `IMeshVpnAdapter` present or a follow-up amendment filed with a tracked workstream reference for any `ProbeAsync`/validation method needed by `TailscaleIntegrationValidator`. Reference §A0.4.
-
-**Scope:** every existing first-wave adapter package gains an `IIntegrationSchemaProvider` registration.
+**Scope:** verify the first-wave adapter packages exist on origin/main before Phase 3b runs. No Phase 3b adapter work begins until each named provider package has at minimum a stub `ProviderDescriptor` registration on origin/main.
 
 Deliverables:
+- Verify on origin/main: `providers-mesh-headscale` (exists), `providers-recaptcha` (exists).
+- Track via existing workstreams: `providers-stripe` + `providers-square` (W#5 commercial); `providers-postmark` + `providers-sendgrid` + `providers-mailchimp` (W#22 leasing-pipeline + Phase 2 commercial); `providers-twilio` (W#5 / W#22); `providers-mesh-tailscale` + `providers-mesh-netbird` (W#30 mesh-VPN); `providers-hcaptcha` (W#28 public listings).
+- For each not-yet-existing package, the Phase 3b deliverable is gated on the named workstream landing first; the ADR 0067 hand-off does NOT author the provider packages themselves.
+
+### Phase 3b — Schema-provider + validator additions
+
+**Prerequisite gate:** Phase 3a verified. Each adapter package adds its `IIntegrationSchemaProvider` registration and `IIntegrationProviderValidator` implementation; ADR 0067 work-stream is responsible for the Atlas-side surface contracts only.
+
+**Scope:** schema + validator registration in each existing or newly-landed first-wave adapter package.
+
+Deliverables (each conditional on the underlying provider package landing per Phase 3a):
 - `providers-stripe`: `StripeSchemaProvider` + `StripeIntegrationValidator` (§4.1, §6.2)
 - `providers-postmark`: `PostmarkSchemaProvider` + `PostmarkIntegrationValidator`
 - `providers-twilio`: `TwilioSchemaProvider` + `TwilioIntegrationValidator`
-- `providers-mesh-tailscale`: `TailscaleSchemaProvider` + `TailscaleIntegrationValidator` (per §6.2 mesh-VPN dependency on `IMeshVpnAdapter` — coordinate with W#30 build)
+- `providers-mesh-headscale` / `providers-mesh-tailscale`: `*SchemaProvider` + `*IntegrationValidator` (validator owns its own control-plane probe; does NOT call `IMeshVpnAdapter`)
 - `providers-recaptcha`: `RecaptchaSchemaProvider` + `RecaptchaIntegrationValidator`
-- Per-adapter parity tests asserting schema shape matches the actual credential consumption code, plaintext lifetime constraints (§5.3.1), and marker-credential leak tests
+- Per-adapter parity tests asserting schema shape matches the actual credential consumption code, plaintext lifetime constraints (§5.3.2), marker-credential leak tests, and `ValidatorIsolationTests` per-provider variant
 
 ### Phase 4 — Anchor + Bridge rendering
 
@@ -991,7 +1097,7 @@ Deliverables:
 - Anchor: `accelerators/anchor/Pages/Settings/Integrations/` + `<AtlasIntegrationConfig>` family
 - Bridge: `accelerators/bridge/src/admin/integrations/` + `<AtlasIntegrationConfig />` family
 - Parity tests asserting structural DOM equivalence
-- Component-level a11y tests against WCAG 2.2 AA criteria: 1.3.1 (info and relationships — masking state), 1.4.1 (use of color — status icons), 2.1.2 (no keyboard trap — modal dismissal), 2.4.3 (focus order — modal open/close), 2.5.3 (label in name — adjacent-control accessible names), 3.3.2 (labels/instructions — HelpText rendering), 3.3.4 (error prevention legal — acknowledgement explicit button), 3.3.7 (redundant entry — sensitive "leave unchanged" path), 3.3.8 (accessible authentication — `CredentialAutocompleteHint` enum values), 4.1.2 (name, role, value — show/hide toggle `aria-pressed`), 4.1.3 (status messages — including validation in-flight `aria-busy`). Tests MUST also cover the WAI-ARIA APG Tabs keyboard contract (§7.3.1).
+- Component-level a11y tests against WCAG 2.2 AA criteria: 1.3.1 (info and relationships — masking state), 1.4.1 (use of color — status icons), 1.4.11 (non-text contrast — status icons 3:1), 2.4.6 (headings and labels — descriptive `DisplayLabel`), 2.5.3 (label in name — adjacent-control accessible names), 3.3.2 (labels/instructions — HelpText rendering), 3.3.7 (redundant entry — sensitive "leave unchanged" path), 3.3.8 (accessible authentication — `CredentialAutocompleteHint` enum values), 4.1.2 (name, role, value — show/hide toggle `aria-pressed`), 4.1.3 (status messages — including validation in-flight `aria-busy` and post-rotation `Unknown` announcement). Tests MUST also cover the WAI-ARIA APG Tabs keyboard contract (§7.3.1). (Modal SCs 3.3.4 / 2.1.2 / 2.4.3 deferred to ADR 0067-A1.)
 - Snapshot-rendering tests with a representative tenant Atlas state
 
 ### Phase 5 — Ledger flip + apps/docs
@@ -1013,8 +1119,9 @@ Symbols, file paths, and prior-ADR references in this ADR were verified against 
 
 | Symbol / path | File on origin/main | Verified signature / existence | Match? |
 |---|---|---|---|
-| `IPaymentGateway` | `packages/foundation-integrations/Payments/IPaymentGateway.cs` | `AuthorizeAsync`, `CaptureAsync`, `RefundAsync` only — NO `ValidateAsync` | §6.2 validator is decoupled; see §A0.6 |
-| `IMessagingGateway` | `packages/foundation-integrations/Messaging/IMessagingGateway.cs` | `SendAsync`, `GetStatusAsync` only — NO `ValidateAsync` | §6.2 validator is decoupled; see §A0.6 |
+| `IPaymentGateway` | `packages/foundation-integrations/Payments/IPaymentGateway.cs` | `AuthorizeAsync`, `CaptureAsync`, `RefundAsync` only — NO `ValidateAsync` | §5.3 + §6.2: validator owns its own probe (does not call gateway); see §A0.6 |
+| `IMessagingGateway` | `packages/foundation-integrations/Messaging/IMessagingGateway.cs` | `SendAsync`, `GetStatusAsync` only — NO `ValidateAsync` | §5.3 + §6.2: same disposition as `IPaymentGateway` |
+| `IMeshVpnAdapter` | `packages/foundation-transport/IMeshVpnAdapter.cs` | `AdapterName`, `GetMeshStatusAsync`, `RegisterDeviceAsync` — NO `ValidateAsync` | §5.3 + §6.2: same disposition; mesh validator owns its own control-plane probe |
 | `IAtlasProjector` | `packages/foundation-wayfinder/IAtlasProjector.cs` | Present | ✓ |
 | `IStandingOrderIssuer.IssueAsync` | `packages/foundation-wayfinder/IStandingOrderIssuer.cs` | `Task<StandingOrder> IssueAsync(StandingOrderDraft, ActorId, IAuditTrail, CancellationToken)` | §3.5 uses correct return type + ActorId; see §A0.6 |
 | `AtlasView`, `AtlasSettingSnapshot` | `packages/foundation-wayfinder/` | Present; `AtlasSettingSnapshot.LastIssuedBy` is `StandingOrderId` (pointer to issuance event) | §3.6 clarified |
@@ -1045,9 +1152,9 @@ The drift is structural metadata only — the underlying contract semantics alig
 
 `IAtlasProvider<T>`, `IIdentityAtlasSurface`, and `IHelmWidget` (introduced by ADR 0066) are per ADR 0066 (PR #529, authored 2026-05-04; ADR 0067 is authored against the ADR 0066 specification text, not an origin/main implementation). **Mitigation:** Phase 1 of the §10 implementation checklist MUST land *after* ADR 0066's Phase 1 — the Phase 1 hand-off explicitly carries this dependency. If ADR 0066's surface drifts from its ADR text during build, ADR 0067's Phase 1 hand-off must be re-validated against the post-build origin/main shape; a regenerated §A0 captures the resolution.
 
-### §A0.4 — Correction: `IMeshVpnAdapter` is already on origin/main
+### §A0.4 — `IMeshVpnAdapter` is on origin/main (corrected)
 
-**Council correction (2026-05-04):** `IMeshVpnAdapter` IS present on `origin/main` at `packages/foundation-transport/IMeshVpnAdapter.cs` — it is not an uncommitted working-tree artifact. The §A0 pre-acceptance audit incorrectly classified it as in-flight. The actual interface surface on origin/main is:
+`IMeshVpnAdapter` IS present on `origin/main` at `packages/foundation-transport/IMeshVpnAdapter.cs`. A prior draft of this §A0 incorrectly classified it as uncommitted; that error was caught by the council fix-pass and is corrected here. The actual interface surface on origin/main is:
 
 ```csharp
 public interface IMeshVpnAdapter : IPeerTransport
@@ -1058,22 +1165,48 @@ public interface IMeshVpnAdapter : IPeerTransport
 }
 ```
 
-**Blocking implication (BLOCKING — left for CO disposition):** `IMeshVpnAdapter` has no `ValidateAsync` method. §6.2's claim that "the validator calls into the adapter's own `IMeshVpnAdapter.ValidateAsync()`" cannot compile against the committed surface. Adding `ValidateAsync` to `IMeshVpnAdapter` is a breaking change to a published transport contract that requires its own ADR amendment. The §6.2 dispatch path for mesh-VPN validation requires rework (non-mechanical; left for author + CO disposition).
+**Validation dispatch resolved.** `IMeshVpnAdapter` has no `ValidateAsync` method; ADR 0067 does NOT extend it (that would be a breaking change to a published transport contract requiring its own ADR amendment to ADR 0061). Per the council fix-pass, mesh-VPN validation is owned by `IIntegrationProviderValidator` itself — each `*MeshIntegrationValidator` issues its own control-plane probe (e.g., `TailscaleIntegrationValidator` calls Tailscale's `/api/v2/tailnet/{tailnet}/keys`; `HeadscaleIntegrationValidator` calls Headscale's API equivalent). See §5.3 + §6.2.
 
-### §A0.5 — Net-new package (no prior origin/main artifact)
+### §A0.5 — No new package introduced
 
-`packages/ui-core-wayfinder/` does not yet exist on origin/main; it is the package introduced by ADR 0066 (per its §implementation checklist) and extended by ADR 0067. If ADR 0066's package naming changes during council review, ADR 0067 Phase 1 inherits the rename mechanically.
+No new package is introduced by ADR 0067. Per the council fix-pass and ADR 0066 PR #529's "additive, no new package required" framing, all ADR 0067 types live under `packages/ui-core/Wayfinder/Integrations/` (additive to the existing `packages/ui-core/` package). The `Sunfish.UICore.Wayfinder.Integrations` namespace is net-new but the package boundary is preserved. If ADR 0066's namespace shape changes during council review, ADR 0067 Phase 1 inherits the rename mechanically; the package-shape decision is locked in for both ADRs.
 
 ### §A0.6 — Origin/main drift corrections applied to this ADR body
 
 | Drift item | Finding | ADR body resolution |
 |---|---|---|
-| `IStandingOrderIssuer.IssueAsync` signature | Returns `Task<StandingOrder>`, takes `ActorId`, requires `IAuditTrail`. ADR draft had `ValueTask<StandingOrderId>` + `PrincipalId`. | §3.5 methods now use `Task<StandingOrder>` + remove PrincipalId (ActorId from ambient context §3.11); §6.1 dependency list adds `IAuditTrail` |
-| `IPaymentGateway` has no `ValidateAsync` | Method does not exist on origin/main | §6.2 rewritten: validators decouple from runtime gateway; per-provider probe logic |
-| `IMessagingGateway` has no `ValidateAsync` | Method does not exist on origin/main | §6.2 same fix |
-| `IFieldEncryptor.EncryptAsync` takes `ReadOnlyMemory<byte>` | Draft §5.2 implied `JsonNode` wrapping | §5.2 updated: `IssueSensitiveCredentialAsync` takes `ReadOnlyMemory<byte>` |
-| `IFieldDecryptor.DecryptAsync` requires `IDecryptCapability` | Draft §5.3 silent on capability acquisition | §5.3.1 added: `IDecryptCapabilityProvider` injection |
-| `AtlasSettingSnapshot.LastIssuedBy` is `StandingOrderId` | Draft §3.6 implied it was a principal | §3.6 prose updated |
+| `IStandingOrderIssuer.IssueAsync` signature | Returns `Task<StandingOrder>`, takes `ActorId`, requires `IAuditTrail`. Earlier draft had `ValueTask<StandingOrderId>` + `PrincipalId`. | §3.5 methods now return `Task<StandingOrder>` and source `ActorId` from `IIntegrationAtlasContext` (§3.11); the wrapper composes `IStandingOrderIssuer.IssueAsync(draft, actorId, auditTrail, ct)` per the §3.5 issuance composition rationale. `PrincipalId` swept to `ActorId` throughout (§3.6 `ActiveProviderSnapshot.ActivatedBy`). |
+| `IPaymentGateway` has no `ValidateAsync` | Method does not exist on origin/main | §5.3 + §6.2 rewritten per council fix-pass: validators own their own liveness probes; ADR does NOT extend `IPaymentGateway`. |
+| `IMessagingGateway` has no `ValidateAsync` | Method does not exist on origin/main | §5.3 + §6.2 same fix as above. |
+| `IMeshVpnAdapter` has no `ValidateAsync` | Method does not exist on origin/main; the symbol IS on main (earlier §A0.4 false-uncommitted claim corrected). | §5.3 + §6.2 same fix; mesh validators own their own control-plane probe. |
+| `IFieldEncryptor.EncryptAsync` takes `ReadOnlyMemory<byte>` | Draft §5.2 implied `JsonNode` wrapping | §5.2 updated: `IssueSensitiveCredentialAsync` takes `ReadOnlyMemory<byte>`. |
+| `IFieldDecryptor.DecryptAsync` requires `IDecryptCapability` | Earlier draft §5.3 silent on capability acquisition | §5.3.1 specifies capability sourcing for user-driven (session capability) and background (system-principal capability) paths + fail-closed negative case with `ErrorCode = "no-decrypt-capability"`. |
+| `StandingOrder` is append-only | Earlier draft §2.5 `validation-status.{provider}` modeled as a Standing Order would generate ~100k orders/provider/tenant/year under §5.6.1 cadence | §3.13 introduces `IValidationStatusStore` as a separate substrate; Standing-Order journal carries configuration intent only. |
+| `AtlasSettingSnapshot.LastIssuedBy` is `StandingOrderId` | Earlier draft §3.6 implied it was a principal | §3.6 prose clarified; rendering host resolves issuer display name via `IStandingOrderRepository.GetAsync(standingOrderId)`. |
+| ADR 0061 does NOT have an admin-acknowledgement opt-in path | Earlier draft invented a `LicensePostureKind` / acknowledgement-modal flow contradicting ADR 0061's `BannedSymbols.txt` enforcement | License-acknowledgement track CUT entirely; deferred to ADR 0067-A1 follow-up amendment (intake stub at `icm/00_intake/output/2026-05-05_adr-0067-a1-license-acknowledgement-intake.md`). |
+| ADR 0066 declares `Sunfish.UICore.Wayfinder` additive to existing `packages/ui-core/` | Earlier draft declared a net-new `packages/ui-core-wayfinder/` package | §3 / §"Decision" / §10 Phase 1 updated: surface placed under `packages/ui-core/Wayfinder/Integrations/` namespace `Sunfish.UICore.Wayfinder.Integrations`; no new package. |
+
+### §A0.7 — Net-new symbols introduced by this ADR (no prior origin/main artifact)
+
+| Symbol | Where declared | Purpose |
+|---|---|---|
+| `IIntegrationAtlasProvider` | §3.5 | Headline contract; specializes `IAtlasProvider<IntegrationAtlasView>` |
+| `IIntegrationSchemaProvider` | §3.7 | Adapter-side schema registration |
+| `IIntegrationProviderValidator` | §6.2 | Per-provider liveness probe (validator owns dispatch) |
+| `IIntegrationAtlasContext` | §3.11 | Tenant + actor identity boundary |
+| `IValidationStatusStore` | §3.13 | Transient validation-status store (not a Standing Order) |
+| `IDecryptCapabilityProvider` | §3.14 | Issues short-lived `IDecryptCapability` for validation runs |
+| `IntegrationProviderSchema` | §3.1 | Adapter-declared credential schema |
+| `CredentialFieldSpec`, `CredentialAutocompleteHint`, `CredentialFieldKind` | §3.2 | Schema field shape |
+| `IntegrationCategory`, `IntegrationCategoryMapping` | §3.4 | Atlas-fine taxonomy + mapping to `ProviderCategory` |
+| `IntegrationAtlasView`, `ActiveProviderSnapshot` | §3.6 | Projection consumed by Atlas component |
+| `IntegrationValidationResult`, `ProviderValidationStatus`, `ProviderValidationStatusEntry` | §3.8, §3.9, §3.13 | Validation outcome shapes |
+| `IntegrationEmailRouting` | §3.12 | Multi-transport email routing |
+| `ICustomIntegrationRenderer` | §6.3 | Schema-extension escape hatch |
+| `AddSunfishIntegrationAtlas()` | §6.1 | DI registration extension |
+| 4 new `AuditEventType` constants | §8 | `IntegrationProviderChanged`, `IntegrationCredentialUpdated`, `IntegrationValidationSucceeded`, `IntegrationValidationFailed` |
+
+All symbols above are introduced by this ADR; council fix-pass verified none collide with prior origin/main symbols.
 
 ---
 
@@ -1085,28 +1218,27 @@ Council verifies, in addition to the standard adversarial review:
   - SC 3.3.7 (Redundant Entry): no credential is asked twice in the same session; sensitive credentials with prior values render in "leave unchanged" mode per §5.2.1.
   - SC 3.3.8 (Accessible Authentication): every sensitive `CredentialFieldSpec` has an `AutocompleteHint`; show/hide toggle has an accessible name; `CredentialAutocompleteHint` enum constrains autocomplete tokens to the WHATWG-valid set; no tenant-level credential uses `CurrentPassword`.
   - SC 1.3.1 (Info and Relationships): masking state is conveyed structurally, not just visually.
-  - SC 4.1.3 (Status Messages): validation outcomes use `aria-live="polite"` for success, `role="alert"` for errors; validation in-flight emits `aria-busy` + interim live-region message per §5.3.2.
+  - SC 4.1.3 (Status Messages): validation outcomes use `aria-live="polite"` for success, `role="alert"` for errors; validation in-flight emits `aria-busy` + interim live-region message per §5.3.3; post-rotation `Unknown` is announced (transition); first-render `Unknown` is not.
   - SC 1.4.1 (Use of Color): no validation state relies on color alone.
-  - SC 3.3.4 (Error Prevention — Legal): license-acknowledgement uses explicit button click, not checkbox.
-  - SC 2.1.2 + SC 2.4.3 (modal): license-acknowledgement dialog implements §5.5.1 focus-trap, focus-restoration, ESC-cancel.
+  - SC 1.4.11 (Non-text Contrast): status icons (§5.6) MUST meet 3:1 contrast against the surface background; renderer concern, but the contract commits to it. Phase 4 visual-regression tests assert the 3:1 ratio.
+  - SC 2.4.6 (Headings and Labels): `CredentialFieldSpec.DisplayLabel` SHOULD be descriptive — bare-noun labels like "Key" fail the SC. First-wave schema authors are responsible; Phase 3 sanity-check tests verify minimum descriptiveness.
   - SC 2.5.3 (Label in Name): adjacent-control accessible names include `DisplayLabel` verbatim per §3.2.
   - SC 3.3.2 (Labels or Instructions): `HelpText` rendered as persistent `aria-describedby` text per §3.2.
   - SC 4.1.2 (Name, Role, Value): show/hide toggle exposes `aria-pressed` + `aria-controls` per §3.2.1.
   - WAI-ARIA APG Tabs: category navigation arrow-key contract per §7.3.1.
+  - (License-acknowledgement modal SCs — 3.3.4, 2.1.2, 2.4.3 — moved to ADR 0067-A1 along with the deferred surface.)
 - **Security-engineering subagent:**
   - Sensitive credentials traverse `IFieldEncryptor` before any persistence path → asserted by `DefaultIntegrationAtlasProviderTests.SensitiveCredential_IsEncryptedBeforeStandingOrder` (Phase 2).
   - Audit payloads cannot leak credential values → asserted by marker-corpus test in `IntegrationAuditRedactionTests` (Phase 2) + `SUNFISH_INTEGRATION_AUDIT001` analyzer (Phase 2).
   - Provider rotation does not leak old credentials into the new provider's audit payload → asserted by `ProviderRotationTests.RotationAudit_DoesNotContainPriorCredentials` (Phase 2).
-  - License acknowledgement issues a Standing Order whose JSON content is audit-ready (no secrets) → asserted by `IntegrationAuditPayloads` factory unit test (Phase 2).
+  - Capability sourcing is fail-closed: missing/expired/wrong-tenant `IDecryptCapability` produces `ProviderValidationStatus.Unknown` + `ErrorCode = "no-decrypt-capability"`, NOT a silent skip — asserted by `ValidationCapabilityFailClosedTests` (Phase 2) covering all three failure modes.
   - The contract surface admits no method returning decrypted credentials to a rendering host → asserted by `ContractSurfaceTests.NoMethodReturnsDecryptedBytes` (reflection over `IIntegrationAtlasProvider`, Phase 1).
-- **Pedantic-Lawyer perspective:**
-  - SSPL/BSL acknowledgement copy is reviewable against the actual license text.
-  - Audit record retention satisfies the "configuration change auditing" obligation that any tenant policy may impose.
-  - Schema-version migration does not silently drop a tenant's prior license acknowledgement.
+- **Pedantic-Lawyer perspective:** (license-acknowledgement track moved to ADR 0067-A1; this perspective re-engages on that follow-up amendment).
 - **Skeptical Implementer:**
   - Dynamic schema rendering is testable end-to-end without a running provider.
   - A new provider can be added without touching `foundation-integrations` or the rendering hosts.
   - The custom-renderer escape hatch (§6.3) is genuinely a safety valve, not a default.
+  - Validation flow does NOT call into transport contracts (`IPaymentGateway` / `IMessagingGateway` / `IMeshVpnAdapter`) — asserted by `ValidatorIsolationTests` reflection check (Phase 2).
 
 ---
 
