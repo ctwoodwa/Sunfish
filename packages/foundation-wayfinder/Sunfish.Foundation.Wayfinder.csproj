@@ -22,5 +22,12 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Sunfish.Foundation.Wayfinder.Tests" />
+    <!-- W#49 P2 amendment R4 (XO post-merge council 2026-05-06): the
+         IOodWatchSweepRepository contract is internal so application code
+         cannot enumerate watches across tenants. NSubstitute uses Castle
+         DynamicProxy to mock interfaces, and DynamicProxy needs visibility
+         to internal types via this assembly-level IVT. Cohort precedent:
+         Sunfish.UIAdapters.Blazor / Sunfish.Foundation. -->
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 </Project>

@@ -45,11 +45,24 @@ public static class WayfinderServiceExtensions
         services.TryAddSingleton(TimeProvider.System);
 
         // W#49 P2 — OOD watch rotation primitive. Hosts MUST separately
-        // register an IOodWatchRepository (no in-memory default exists in
-        // Phase 2; Phase 3 will add one). IAuditTrail + IOperationSigner
-        // are MANDATORY for OOD authority operations per ADR 0078 §Trust;
-        // DefaultOodWatchService throws InvalidOperationException at first
-        // invocation if either is missing.
+        // register a concrete repository binding for BOTH IOodWatchRepository
+        // (per-tenant operations) and IOodWatchSweepRepository (cross-tenant
+        // sweep enumerator, internal — only OodWatchExpiryService can resolve
+        // it). The R4 split (XO post-merge council 2026-05-06) means hosts
+        // typically register one concrete impl and bind it to both interfaces:
+        //
+        //   services.AddSingleton<MyOodWatchRepository>();
+        //   services.AddSingleton<IOodWatchRepository>(sp =>
+        //       sp.GetRequiredService<MyOodWatchRepository>());
+        //   services.AddSingleton<IOodWatchSweepRepository>(sp =>
+        //       sp.GetRequiredService<MyOodWatchRepository>());
+        //
+        // No in-memory default exists in Phase 2; Phase 3 will add one.
+        // IAuditTrail + IOperationSigner are MANDATORY for OOD authority
+        // operations per ADR 0078 §Trust; DefaultOodWatchService throws
+        // InvalidOperationException at first invocation if either is missing.
+        // ILogger<T> is auto-resolved when the host calls AddLogging() (every
+        // ASP.NET Core or Aspire host does).
         services.TryAddSingleton<IOodWatchService, DefaultOodWatchService>();
         services.AddHostedService<OodWatchExpiryService>();
 

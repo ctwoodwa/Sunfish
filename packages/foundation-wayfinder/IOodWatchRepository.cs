@@ -60,23 +60,9 @@ public interface IOodWatchRepository
         DateTimeOffset from, DateTimeOffset to,
         CancellationToken ct = default);
 
-    /// <summary>
-    /// Returns all Active watches whose
-    /// <c>StartedAt + MaxWatchDuration &lt;= cutoff</c>. Used by the
-    /// expiry sweep to drive TTL across all tenants.
-    /// </summary>
-    /// <remarks>
-    /// <para>
-    /// <b>Cross-tenant enumeration.</b> Unlike every other method on this
-    /// interface, this method is NOT tenant-scoped — it intentionally
-    /// streams Active watches across every tenant in the system. The only
-    /// legitimate caller is <c>OodWatchExpiryService</c> (Phase 2 of W#49),
-    /// which is registered as a singleton background sweep. Application
-    /// code MUST NOT call this method directly. Phase 2 will move the
-    /// sweep contract to a separate internal interface to enforce this
-    /// at the type system per council Finding #5.
-    /// </para>
-    /// </remarks>
-    IAsyncEnumerable<OodWatch> GetExpiredCandidatesAsync(
-        DateTimeOffset cutoff, CancellationToken ct = default);
+    // R4 (XO post-merge council 2026-05-06): the cross-tenant sweep
+    // enumerator now lives on the internal IOodWatchSweepRepository so
+    // application code cannot accidentally enumerate Active watches across
+    // tenants. Concrete repository implementations typically implement
+    // both interfaces.
 }
