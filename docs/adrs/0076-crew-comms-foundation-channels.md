@@ -565,19 +565,21 @@ council returned **RETURN-FOR-REWORK** on three wire-encoding claims in the base
 the implementation correctly diverged from. This amendment ratifies the implementation's
 choices, which are superior to the base ADR's original text.
 
-The three items requiring ratification:
+The four items requiring ratification:
 
-1. **Transcript-hash canonical form** — the base ADR specifies "SHA-256 of all HELLO + INVITE + ACCEPT frame bytes." The implementation computes a reduced form over the cryptographically significant fields only.
+1. **Transcript-hash canonical form** — the base ADR specifies "SHA-256 of all HELLO + INVITE + ACCEPT frame bytes." The implementation computes a reduced form over the cryptographically significant fields only; this amendment also binds `presence.caps` from HELLO into the HELLO signable to close a relay-MitM capability-downgrade vector.
 2. **TenantId encoding in signables** — the base ADR claims `tenantId: uuid` (16 bytes RFC 4122). `TenantId(string Value)` is string-backed with no UUID semantics; UUID encoding is not implementable without a breaking multi-tenant type change.
-3. **PeerId encoding in HEARTBEAT** — the base ADR claims `peerId: uuid`. `PeerId.From(PrincipalId)` is the base64url encoding of the raw 32-byte Ed25519 pubkey; the implementation signs over the raw 32 bytes.
+3. **PeerId encoding in HEARTBEAT** — the base ADR claims `peerId: uuid`. `PeerId.From(PrincipalId)` is the base64url encoding of the raw 32-byte Ed25519 pubkey; the implementation signs over the raw 32 bytes (specifically `PrincipalId.AsSpan()`).
+4. **Endianness convention** — the base ADR does not state endianness for multi-byte signable integers; this amendment makes it explicit.
 
 ---
 
 ### A1.2 Decision drivers
 
-1. **Robustness over full-frame-bytes hashing.** Full MessagePack-serialized frame bytes are sensitive to library-level key-ordering, codec version, and frame-delimiter choices that may evolve across Sunfish versions. A reduced canonical form over the fixed-size cryptographic fields is stable across serialization changes.
-2. **`TenantId` is string-backed.** `Sunfish.Foundation.Assets.Common.TenantId(string Value)` has `string Value` as its only field (verified on `origin/main`). Encoding as UUID-16 is structurally impossible without introducing a parallel UUID-backed `TenantId` variant — a breaking change touching every multi-tenant package. UTF-8 bytes with a length prefix is the correct representation for a variable-length string field in a binary signing context.
-3. **`PeerId` is the base64url form of a 32-byte raw pubkey.** `PeerId.From(PrincipalId)` is defined as `principal.ToBase64Url()` (verified in `packages/federation-common/PeerId.cs`). Signing over the raw 32 bytes directly (the underlying `PrincipalId` bytes) is simpler, avoids double-encoding, and is consistent with HELLO's `identityPublicKey: bytes[32]` which is already the raw key.
+1. **Robustness over full-frame-bytes hashing.** Full MessagePack-serialized frame bytes are sensitive to library-level key-ordering, codec version, and frame-delimiter choices that may evolve across Sunfish versions. A reduced canonical form over the fixed-size cryptographic fields is stable across serialization changes. The `presence.caps` field in HELLO is additionally bound into the HELLO signable to prevent a relay-MitM from clamping advertised capabilities (causing the remote peer to never offer audio/video in INVITE without either side detecting the attack via CONFIRM).
+2. **`TenantId` is string-backed.** `Sunfish.Foundation.Assets.Common.TenantId(string Value)` has `string Value` as its only field (verified on `origin/main`). Encoding as UUID-16 is structurally impossible without introducing a parallel UUID-backed `TenantId` variant — a breaking change touching every multi-tenant package. UTF-8 bytes with a length prefix is the correct representation for a variable-length string field in a binary signing context. The length prefix is structurally redundant in HELLO (tenantBytes is the trailing field), but required in HEARTBEAT (where tenantBytes is flanked by fixed-length peerId and caps/timestamp); the unified encoding is intentional to keep `TenantId` canonicalization identical across all signables and prevent drift.
+3. **`PeerId` is the base64url form of a 32-byte raw pubkey.** `PeerId.From(PrincipalId)` is defined as `principal.ToBase64Url()` (verified in `packages/federation-common/PeerId.cs`). Signing over the raw 32 bytes directly (the underlying `PrincipalId.AsSpan()`) is simpler, avoids double-encoding, and is consistent with HELLO's `identityPublicKey: bytes[32]` which is already the raw key. Implementers MUST use `PrincipalId.AsSpan()` (32 bytes), NOT `System.Text.Encoding.UTF8.GetBytes(PeerId.Value)` (43 bytes of base64url string) — the latter would silently diverge from every other peer on the network.
+4. **Endianness must be explicit.** The base ADR's framing header uses little-endian (`Length: 4B LE`) but multi-byte integers in MessagePack payloads (including `timestamp: int64`) are big-endian per MessagePack spec. Without an explicit convention, an implementer applying framing-header endianness to signable inputs would produce a divergent HEARTBEAT signature that silently passes round-trip tests but fails interoperability with any second client.
 
 ---
 
@@ -597,6 +599,8 @@ transcriptHash = SHA-256(
     || idB[32]                                     // HELLO_B.identityPublicKey
     || uint32BE(len(tenantBytes)) || tenantBytes   // TenantId.Value as length-prefixed UTF-8
     || negotiatedCap[1]                            // ACCEPT.capability (uint8)
+    || presenceCapsA[1]                            // HELLO_A.presence.caps (uint8)
+    || presenceCapsB[1]                            // HELLO_B.presence.caps (uint8)
 )
 ```
 
@@ -605,10 +609,12 @@ Where:
 - `ephemB` / `idB` = the responder's ephemeral X25519 public key + Ed25519 identity public key from its HELLO frame.
 - `tenantBytes` = `System.Text.Encoding.UTF8.GetBytes(TenantId.Value)`.
 - `negotiatedCap` = the single `capability: uint8` byte from the ACCEPT frame.
+- `presenceCapsA` = the `presence.caps` uint8 field from HELLO_A (initiator's advertised capability bitmask).
+- `presenceCapsB` = the `presence.caps` uint8 field from HELLO_B (responder's advertised capability bitmask).
 
-**Rationale for NOT using full frame bytes:** MessagePack key ordering is serializer-dependent (dictionary vs struct codec); the `presence: PresenceHeartbeat` field in HELLO is variable-length and carries TTL/timestamp state that is irrelevant to session establishment integrity; INVITE has only `capabilities: uint8` which is subsumed by `negotiatedCap`. The reduced form includes every field that affects session security (shared DH material and tenant binding) and capability integrity (negotiated cap). Mismatch still detects all downgrade attacks.
+**Rationale for NOT using full frame bytes:** MessagePack key ordering is serializer-dependent (dictionary vs struct codec); the `presence: PresenceHeartbeat` field in HELLO carries TTL/timestamp state irrelevant to session integrity; INVITE has only `capabilities: uint8` subsumed by `negotiatedCap`. The reduced form includes every field that affects session security (shared DH material and tenant binding), capability negotiation, and capability advertisement. Both `presence.caps` values are bound so a relay-MitM cannot clamp either peer's advertised capability bitmask without CONFIRM detecting the tamper.
 
-**Total input size:** 32 + 32 + 32 + 32 + 4 + len(tenantBytes) + 1 = 133 + len(tenantBytes) bytes (≤ 200 bytes for any `TenantId.Value` ≤ 63 UTF-8 bytes, which covers all real tenant identifiers).
+**Total input size:** 32 + 32 + 32 + 32 + 4 + len(tenantBytes) + 1 + 1 + 1 = 135 + len(tenantBytes) bytes (≤ 200 bytes for any `TenantId.Value` ≤ 63 UTF-8 bytes, which covers all real tenant identifiers).
 
 ---
 
@@ -659,7 +665,7 @@ signature = Ed25519Sign(longTermPrivKey,
 )
 ```
 
-**Mapping from `PeerId` to signing input:** `PeerId` is `base64url(principalId.Bytes[32])`; the signing input is `principalId.Bytes[32]` directly. The `PeerId.Value` string is NOT used in the signing input.
+**Mapping from `PeerId` to signing input:** `PeerId` is `base64url(principalId.Bytes[32])`; the signing input is the 32 bytes returned by `PrincipalId.AsSpan()` directly. Implementers MUST call `PrincipalId.AsSpan()` to obtain these 32 bytes — NOT `System.Text.Encoding.UTF8.GetBytes(PeerId.Value)`, which returns 43 bytes of base64url string and would silently produce a divergent signature on every peer in the network. The `PeerId.Value` string is never used in any signing input.
 
 ---
 
@@ -669,9 +675,9 @@ Replaces base ADR §Wire protocol frame table rows `0x01`, `0x02`, `0x0A`:
 
 | Byte | Name | Payload (ratified) |
 |---|---|---|
-| `0x01` | `HELLO` | `{ ephemeralPublicKey: bytes[32], identityPublicKey: bytes[32], tenantId: bytes (uint32BE-len-prefixed UTF-8 of TenantId.Value), signature: bytes[64], presence: PresenceHeartbeat }` — `signature` = Ed25519(longTermPrivKey, ephemeralPublicKey \|\| identityPublicKey \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes) |
+| `0x01` | `HELLO` | `{ ephemeralPublicKey: bytes[32], identityPublicKey: bytes[32], tenantId: bytes (uint32BE-len-prefixed UTF-8 of TenantId.Value), signature: bytes[64], presence: PresenceHeartbeat }` — `signature` = Ed25519(longTermPrivKey, ephemeralPublicKey \|\| identityPublicKey \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| presence.caps[1]) |
 | `0x02` | `HEARTBEAT` | `{ peerId: bytes[32] (raw Ed25519 identity pubkey), tenantId: bytes (uint32BE-len-prefixed UTF-8 of TenantId.Value), caps: uint8, timestamp: int64, signature: bytes[64] }` — `signature` = Ed25519(longTermPrivKey, peerId_raw[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| caps[1] \|\| timestamp_BE[8]) |
-| `0x0A` | `CONFIRM` | `{ transcriptHash: bytes[32] }` — SHA-256 over (ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1]); both sides MUST verify agreement before entering ACTIVE |
+| `0x0A` | `CONFIRM` | `{ transcriptHash: bytes[32] }` — SHA-256 over (ephemA[32] \|\| idA[32] \|\| ephemB[32] \|\| idB[32] \|\| uint32BE(len(tenantBytes)) \|\| tenantBytes \|\| negotiatedCap[1] \|\| presenceCapsA[1] \|\| presenceCapsB[1]); both sides MUST verify agreement before entering ACTIVE |
 
 ---
 
@@ -687,7 +693,8 @@ Replaces base ADR §Handshake step 2 and step 9.
        tenantId = uint32BE(len(tenantBytes)) || tenantBytes,   // A1-ratified
        signature = Ed25519Sign(longTermPrivKey,
            ephemeralPublicKey || identityPublicKey
-           || uint32BE(len(tenantBytes)) || tenantBytes)        // A1-ratified
+           || uint32BE(len(tenantBytes)) || tenantBytes         // A1-ratified
+           || presence.caps[1])                                 // A1 Q1 — caps bound in signable
    }
 ```
 
@@ -702,6 +709,8 @@ Replaces base ADR §Handshake step 2 and step 9.
        || HELLO_B.identityPublicKey[32]
        || uint32BE(len(tenantBytes)) || tenantBytes             // A1-ratified
        || ACCEPT.capability[1]                                  // A1-ratified: negotiatedCap only
+       || HELLO_A.presence.caps[1]                             // A1 Q1 — caps bound to detect downgrade
+       || HELLO_B.presence.caps[1]                             // A1 Q1 — caps bound to detect downgrade
    )
    and send CONFIRM { transcriptHash }.
    Mismatch → REJECT + close. Session enters ACTIVE only after both CONFIRMs verified.
@@ -726,15 +735,39 @@ No §A0.2 false-positive risk: existing types are consumed at their verified sig
 
 ---
 
+### A4 — Endianness convention
+
+The ADR uses two distinct endianness contexts that MUST NOT be mixed:
+
+| Context | Endianness | Scope |
+|---|---|---|
+| Framing header `Length` field | Little-endian (LE) | 4-byte frame length prefix on the wire |
+| Signable integer inputs | Big-endian (BE) | All multi-byte integers in Ed25519Sign or SHA-256 inputs (`uint32BE` length prefixes, `int64` timestamps) |
+| MessagePack integer payloads | Big-endian (BE) | Per MessagePack spec; applies to `timestamp`, capability masks, etc. |
+
+**Implementation guidance:**
+
+- Use `BinaryPrimitives.WriteUInt32BigEndian(span, value)` (NOT `LE`) for `uint32BE(len(tenantBytes))` in HELLO, HEARTBEAT, and CONFIRM signing inputs.
+- Use `BinaryPrimitives.WriteInt64BigEndian(span, value)` (NOT `LE`) for `timestamp_BE[8]` in the HEARTBEAT signable.
+- The framing `Length: 4B LE` is the outer length prefix consumed before MessagePack deserialization — it does not determine endianness of any field inside the payload.
+
+**Why this can go silently wrong:** round-trip tests on a single implementation pass regardless of endianness (the same codec writes and reads). Cross-peer interoperability fails silently on the wire. Known-answer tests (see §A1.7) catch this class of error by comparing against a fixed expected byte sequence.
+
+---
+
 ### A1.7 Implementation checklist (W#45 P2 unblock)
 
-- [ ] `EncryptionHandshake` — update HELLO construction to use `uint32BE(len) || UTF8(tenantId.Value)` in the signable (replaces uuid-16 encoding)
-- [ ] `EncryptionHandshake` — update CONFIRM hash to use reduced-form input (A1.3 / A1.5 step 9), NOT full frame bytes
-- [ ] `PresenceBus` — update HEARTBEAT construction to use `peerId_raw[32]` (raw Ed25519 pubkey bytes) in the signable; update `tenantId` in HEARTBEAT payload to length-prefixed UTF-8
-- [ ] Verify 13/13 existing Phase 2 tests still pass after the encoding changes; no new tests required (existing tests cover the encoding paths; the change is mechanical)
+- [ ] `EncryptionHandshake` — update HELLO construction: (a) use `uint32BE(len) || UTF8(tenantId.Value)` in the signable (replaces uuid-16 encoding); (b) include `presence.caps[1]` as the trailing byte of the Ed25519 signable input (§A1.5 step 2)
+- [ ] `EncryptionHandshake` — update CONFIRM hash to use reduced-form input (A1.3 / A1.5 step 9), NOT full frame bytes; include `HELLO_A.presence.caps[1] || HELLO_B.presence.caps[1]` as the trailing two bytes of the SHA-256 input
+- [ ] `PresenceBus` — update HEARTBEAT construction: use `PrincipalId.AsSpan()` (32 bytes) for `peerId_raw[32]` in the signable (NOT `UTF8.GetBytes(PeerId.Value)`); update `tenantId` in HEARTBEAT payload to length-prefixed UTF-8; use `BinaryPrimitives.WriteUInt32BigEndian` / `WriteInt64BigEndian` per §A4
+- [ ] Add ≥4 known-answer tests (existing round-trip tests verify self-consistency only; byte-level tests are required for wire-protocol correctness):
+  1. **HELLO signable bytes** — construct a HELLO with fixed inputs (fixed ephemeral key, identity key, tenant "test-tenant", caps=0x03); assert the Ed25519 signing input is the exact expected byte sequence
+  2. **HEARTBEAT signable bytes** — construct a HEARTBEAT with fixed inputs (fixed peerId raw bytes, tenant "test-tenant", caps=0x01, timestamp=1234567890); assert the Ed25519 signing input is the exact expected byte sequence
+  3. **CONFIRM transcript hash** — construct a CONFIRM input with fixed HELLO_A, HELLO_B, ACCEPT, and caps; assert SHA-256 output equals expected hex
+  4. **TenantId edge cases** — test `TenantId("")` (zero-length → uint32BE(0) with no following bytes), `TenantId("a")` (1 byte), and a 63-byte value; assert length-prefix byte sequences are correct
 - [ ] Archive `cob-question-2026-05-04T21-22Z-w45-p2-adr-0076-a1.md` to research-inbox `_archive/` in this PR
 
-**Estimated effort:** ~30min sunfish-PM (mechanical substitution in 3 encoding sites; all tests already written per COB question).
+**Estimated effort:** ~2-3h sunfish-PM (3 encoding sites + 4 known-answer tests; the test fixtures require constructing exact byte arrays by hand, which is the non-trivial portion).
 
 ---
 
