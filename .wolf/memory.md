@@ -582,3 +582,6 @@
 | — | Flipped W#43 ready-to-build → built | `icm/_state/active-workstreams.md` | PR #576 WayfinderFeatureProvider merged 2026-05-05T15:46:52Z |
 | — | Flipped W#48 design-in-flight → ready-to-build | `icm/_state/active-workstreams.md` | ADR 0067 Accepted; hand-off at atlas-integration-config-stage06-handoff.md |
 | — | Added W#53 row for ADR 0066 Stage 06 | `icm/_state/active-workstreams.md` | design-in-flight; no hand-off yet; XO must author before COB begins W#48 P1 |
+| 2026-05-05 | Authored W#53 Stage 06 hand-off (ADR 0066 Helm + Identity Atlas) | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` | 2 phases / ~18-28h / ~5-6 PRs; Phase 3 deferred to W#54 |
+| — | Flipped W#53 design-in-flight → ready-to-build | `icm/_state/active-workstreams.md` | All 6 OQ resolutions documented; W#48 Phase 1 now unblockable |
+| — | IAtlasProvider<T> defined as covariant `out TView` base | `packages/ui-core/Wayfinder/IAtlasProvider.cs` (to be created by COB) | Phase 1 critical: base type for all Atlas specializations |
