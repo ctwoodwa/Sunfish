@@ -1,7 +1,7 @@
 ---
 id: 78
 title: OOD Watch Rotation Primitive
-status: Proposed
+status: Accepted
 date: 2026-05-05
 tier: foundation
 pipeline_variant: sunfish-feature-change
