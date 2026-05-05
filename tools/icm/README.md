@@ -64,14 +64,6 @@ mechanical artifact (regen-on-merge) instead of a hand-edited file.
 the committed roll-up does not match the regen output (catches direct
 hand-edits to the generated file).
 
-**Setup note:** the workflow file ships in this repo at
-`tools/icm/ledger-check.workflow.yml` (not under `.github/workflows/`)
-because the OAuth credential used by the agent that authored the
-migration PR did not carry the `workflow` scope.  A maintainer with
-`workflow` scope should `git mv tools/icm/ledger-check.workflow.yml
-.github/workflows/ledger-check.yml` in a follow-up commit; no other
-setup is required.
-
 ## Frontmatter notes
 
 - `sort_order` is the original row position in the pre-migration ledger.

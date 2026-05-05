@@ -1,13 +1,3 @@
-# This is the intended CI workflow for the ledger-render-check.
-# Copy this file to .github/workflows/ledger-check.yml manually (the
-# OAuth credential used by the agent that authored this PR did not
-# carry the `workflow` scope, so the file could not be pushed under
-# .github/workflows/ in the same commit).
-#
-# Once placed under .github/workflows/, no further setup is needed —
-# GitHub Actions picks it up on the next PR that touches the ledger
-# or the per-workstream files.
-
 name: Ledger render check
 
 on:
