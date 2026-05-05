@@ -572,3 +572,13 @@
 | Time | Action | File(s) | Outcome | ~Tokens |
 |------|--------|---------|---------|--------|
 | 01:52 | Created icm/_state/maintenance-runs/run-2026-04-30T01-52Z.md | — | ~992 |
+
+## Session: 2026-05-05 (XO: W#48 Stage 06 hand-off authored)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| — | Authored W#48 Stage 06 hand-off (ADR 0067 Atlas Integration-Config UI Surface) | `icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` | 5 phases / ~23-35h / ~6-8 PRs; Phase 1 gated on W#53 Phase 1 |
+| — | Flipped ADR 0067 status Proposed → Accepted | `docs/adrs/0067-atlas-integration-config-surface.md` | PR #539 was merged 2026-05-05T09:56:22Z |
+| — | Flipped W#43 ready-to-build → built | `icm/_state/active-workstreams.md` | PR #576 WayfinderFeatureProvider merged 2026-05-05T15:46:52Z |
+| — | Flipped W#48 design-in-flight → ready-to-build | `icm/_state/active-workstreams.md` | ADR 0067 Accepted; hand-off at atlas-integration-config-stage06-handoff.md |
+| — | Added W#53 row for ADR 0066 Stage 06 | `icm/_state/active-workstreams.md` | design-in-flight; no hand-off yet; XO must author before COB begins W#48 P1 |
