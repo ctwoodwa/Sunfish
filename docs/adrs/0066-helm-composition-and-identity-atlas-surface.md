@@ -29,7 +29,11 @@ composes:
 extends: []
 supersedes: []
 superseded_by: null
-amendments: []
+amendments:
+  - id: A1
+    title: IAtlasProvider<T> covariant Atlas-view base
+    date: 2026-05-05
+    status: Proposed
 ---
 # ADR 0066 — Helm Composition + Identity Atlas Surface
 
@@ -622,3 +626,159 @@ Top hits cited inline in §"Context".
 
 - `NodaTime` (transitively pulled in by `Sunfish.Foundation` per `Directory.Packages.props`) — used for `Instant`
 - `Microsoft.Extensions.DependencyInjection` — `IServiceCollection` extension methods
+
+---
+
+## Amendment A1 — `IAtlasProvider<T>` covariant Atlas-view base
+
+**Status:** Proposed
+**Date:** 2026-05-05
+**Authors:** XO research session
+**Council posture:** pre-merge canonical (per ADR 0069; cohort batting average ≥95% substrate amendments needed council fixes — auto-merge NOT enabled)
+**Scope:** additive amendment to `Sunfish.UICore.Wayfinder` in `packages/ui-core/`; no changes to existing types
+
+### A1.1 — Context
+
+ADR 0066 specifies `IHelmWidget` (Helm pane live-state surface) and `IIdentityAtlasSurface` (identity sub-surface within the Atlas). It does **not** define a generic Atlas-provider base type, because at the time of authoring the only planned Atlas sub-surface was the identity sub-surface and the general pattern had not crystallized.
+
+Two downstream requirements have since surfaced this gap:
+
+1. **W#48 Atlas Integration-Config UI Surface (ADR 0067)** — introduces `IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView>`. ADR 0067 §§2–3 define this as the first concrete specialization of a covariant generic base, but the base type `IAtlasProvider<T>` is not in the ADR 0066 body.
+
+2. **ADR 0068 Tenant Security Policy + Atlas Surface (W#37)** — Phase 2 of ADR 0068 introduces `ISecurityPolicyAtlasProvider : IAtlasProvider<SecurityPolicyAtlasView>`. ADR 0068 §7 explicitly gates Phase 2 on this amendment reaching `Accepted`.
+
+The W#53 (Helm + Identity Atlas) Stage 06 hand-off at `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` already specifies that `IAtlasProvider<T>` is built in Phase 1a. This amendment formally ratifies that contract in the ADR record.
+
+### A1.2 — Decision: `IAtlasProvider<out TView>` interface
+
+A new covariant generic interface in `Sunfish.UICore.Wayfinder`, aligned to the W#53
+Stage 06 hand-off spec:
+
+```csharp
+namespace Sunfish.UICore.Wayfinder;
+
+/// <summary>
+/// Base contract for Atlas sub-surface data providers. A provider
+/// materializes the current Atlas view for a given sub-surface (integration
+/// configuration, security policy, identity, etc.) without prescribing the
+/// rendering layer.
+/// </summary>
+/// <typeparam name="TView">
+/// Covariant Atlas-view type (must be a reference type). The <c>out</c>
+/// modifier permits assignment of <c>IAtlasProvider&lt;ConcreteView&gt;</c>
+/// to a variable typed as <c>IAtlasProvider&lt;object&gt;</c> without casting,
+/// enabling heterogeneous registration lists in the Atlas shell.
+/// </typeparam>
+/// <remarks>
+/// <para>
+/// Implementations are registered by the host accelerator (Anchor or Bridge)
+/// and resolved by the Atlas shell renderer. The provider is a read-model
+/// only — mutations are always issued via
+/// <c>Sunfish.Foundation.Wayfinder.IStandingOrderIssuer</c> (ADR 0065);
+/// the provider reacts to applied Standing Orders via
+/// <c>Sunfish.Foundation.Wayfinder.IStandingOrderEventStream</c> (ADR 0065-A1)
+/// to regenerate its view.
+/// </para>
+/// <para><strong>§GC.1 note:</strong> Implementations that surface regulated-data
+/// attributes (security policy presets, MFA posture) carry the ADR 0068 §GC.1
+/// general-counsel engagement obligation. This interface itself is neutral;
+/// the obligation travels with the concrete view-model type.</para>
+/// </remarks>
+public interface IAtlasProvider<out TView>
+    where TView : class
+{
+    /// <summary>
+    /// Materializes the current Atlas view for this sub-surface.
+    /// Must be side-effect-free; projection only.
+    /// </summary>
+    Task<TView> GetAtlasViewAsync(CancellationToken ct = default);
+}
+```
+
+**Return type (`Task<TView>`, non-nullable):** Aligned to the W#53 hand-off spec (line 96). The provider always produces a view; the Atlas shell decides whether to display or hide a sub-surface based on capability gates — that decision is above the provider layer. The non-nullable contract keeps downstream implementations (ADR 0067 `IIntegrationAtlasProvider`, ADR 0068 `ISecurityPolicyAtlasSurface`) free of null-propagation defensive code.
+
+**Covariance (`out TView where TView : class`):** The `where TView : class` reference-type constraint is required for covariance to work safely. C# covariance is limited to reference types; without the constraint, a value-type `TView` would violate the variance rules at compile time. The `out` modifier permits `IAtlasProvider<ConcreteView>` to be assigned to `IAtlasProvider<object>` (the covariance test in the W#53 hand-off uses `object` as the supertype for the registration list).
+
+### A1.3 — Namespace and package placement
+
+`IAtlasProvider<T>` lives in `Sunfish.UICore.Wayfinder` (namespace flat; `packages/ui-core/Wayfinder/`), consistent with ADR 0066 §5's namespace decision (OQ-2 — council confirmed flat namespace over split). The namespace does NOT exist on `origin/main` as of `ca4bbd9`; it is created by W#53 Phase 1a build (this amendment authorizes the type before the build, per the W#53 hand-off contract).
+
+Naming-tool check: `tools/naming/check.py auto IAtlasProvider` → CLEAN (no collisions with `foundation-wayfinder`, `Sunfish.Foundation.Wayfinder.*`, or `Sunfish.UICore.*` existing types on `origin/main`).
+
+### A1.4 — New type introduced by A1
+
+| Type | Namespace | Tier | Naming-check |
+|---|---|---|---|
+| `IAtlasProvider<out TView>` | `Sunfish.UICore.Wayfinder` | ui-core | CLEAN |
+
+Note: No `IAtlasView` marker interface is introduced by this amendment (deferred per YAGNI; no consumer of a heterogeneous `IAtlasProvider<IAtlasView>` list exists in any current ADR or hand-off; the W#53 covariance test uses `IAtlasProvider<object>`). A future amendment may introduce `IAtlasView` when a real consumer emerges.
+
+### A1.5 — Implementation checklist (W#53 Phase 1a)
+
+- [ ] `IAtlasProvider<out TView> where TView : class` interface in
+  `packages/ui-core/Wayfinder/IAtlasProvider.cs`
+- [ ] XML doc coverage including §GC.1 note (use plain `<c>` text for
+  cross-namespace crefs to avoid CS1574 — verify `packages/ui-core/ui-core.csproj`
+  includes a ProjectReference to `packages/foundation-wayfinder/` before using
+  `<see cref="IStandingOrderIssuer"/>`)
+- [ ] Negative-existence pre-flight: `grep -rn "IAtlasProvider" packages/ui-core/`
+  returns zero matches before Phase 1a PR; one match after
+- [ ] Unit test: covariance — `IAtlasProvider<object> _ = new StubAtlasProvider()`
+  where `StubAtlasProvider : IAtlasProvider<object>` (compile-time assignment,
+  matching W#53 hand-off lines 449–454)
+- [ ] Pre-merge council canonical; auto-merge disabled until verdict received
+
+**Halt-conditions (W#53 Phase 1a):**
+
+- **(HA1)** This amendment must reach `Status: Accepted` on `origin/main` before
+  W#53 Phase 1a PR may auto-merge. The W#48 Phase 1 operational gate is
+  `grep -rn "IAtlasProvider" packages/ui-core/` ≥ 1 match; this amendment is
+  the ADR-level ratification ahead of that check.
+
+### A1.6 — Cross-references
+
+- **W#48 ADR 0067** — first concrete specialization:
+  `IIntegrationAtlasProvider : IAtlasProvider<IntegrationAtlasView>`.
+  Phase 1 of W#48 gates on W#53 Phase 1 (this type landing on `origin/main`).
+- **ADR 0068 §7.1** — Phase 2 of ADR 0068 (security-policy Atlas surface:
+  `ISecurityPolicyAtlasSurface : IAtlasProvider<SecurityPolicyAtlasView>`) gates
+  on this amendment reaching `Accepted`. See ADR 0068 §§A0 + §7.1.
+- **W#53 Stage 06 hand-off** (`icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md`)
+  — Phase 1a builds `IAtlasProvider<T>`; halt-condition HA1 above must be clear
+  before Phase 1a PR auto-merges.
+
+### A1.7 — §A0 self-audit (additive)
+
+**Negative-existence (A1 symbol not yet on `origin/main`):**
+- `IAtlasProvider<T>` — verified `grep -rn "IAtlasProvider" packages/ui-core/`
+  returns zero results on `origin/main` `ca4bbd9`.
+
+**Positive-existence (cited symbols exist):**
+- `Sunfish.UICore.Wayfinder` namespace does NOT yet exist on `origin/main`; it is
+  created by W#53 Phase 1a build (this amendment authorizes the type before the
+  build, per the W#53 hand-off contract at
+  `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md`).
+- `IStandingOrderIssuer` — `packages/foundation-wayfinder/IStandingOrderIssuer.cs` ✓
+  (ADR 0065, built via W#42 PRs #503–#514).
+- `IStandingOrderEventStream` — `packages/foundation-wayfinder/IStandingOrderEventStream.cs` ✓
+  (ADR 0065-A1, built via W#42).
+
+**Structural-citation correctness:**
+- `Task<TView>` return type + `where TView : class` constraint — aligned to W#53
+  hand-off line 89 + 96 (both match).
+- Covariance (`out TView`): `TView` is used only in output position (`GetAtlasViewAsync`
+  return type) — valid covariant usage. The `where TView : class` constraint makes
+  C# accept the variance annotation without compile-time error.
+- `ISecurityPolicyAtlasSurface` (ADR 0068) — cited correctly; NOT
+  `ISecurityPolicyAtlasProvider` (council SC-1 correction applied).
+
+**Council disposition (this amendment):**
+- B-1 resolved: `Task<TView>` non-nullable aligned to W#53 hand-off.
+- B-2 resolved: `where TView : class` added.
+- B-3 resolved: `IAtlasView` marker dropped (YAGNI — defer to future amendment).
+- B-4 resolved: `Sunfish.UICore.Wayfinder` correctly described as not-yet-on-main.
+- NM-1 resolved: ProjectReference verification added to A1.5 checklist.
+- NM-2 resolved: HA2 dropped (moot — IAtlasView not introduced).
+- NM-3 resolved: covariance test aligned to `object` supertype per hand-off.
+- SC-1 resolved: `ISecurityPolicyAtlasSurface` corrected in A1.6.
+- SC-2 resolved: A1.4 now shows a single-row table (no ambiguity).
