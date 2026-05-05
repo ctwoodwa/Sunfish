@@ -2,6 +2,8 @@
 type: idle
 workstream-or-chapter: post-ADR-0076-A2 + W#45-P4-directive
 last-pr: "#566 (ADR 0076-A2 — INVITE.caps in CONFIRM hash; council APPROVED; auto-merge enabled)"
+resolved-by: "PR #568 (W#45 P4) + PR #569 (W#45 P5) + PR #567 (W#44 ready-to-build)"
+resolved-date: 2026-05-05
 ---
 
 ADR 0076-A2 council APPROVED and auto-merge enabled (PR #566). W#45 P4 directive

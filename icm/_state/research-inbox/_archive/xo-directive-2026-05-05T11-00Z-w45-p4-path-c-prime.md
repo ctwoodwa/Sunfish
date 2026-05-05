@@ -3,6 +3,8 @@ type: directive
 workstream-or-chapter: W#45 P4
 sender: xo
 priority: high
+resolved-by: "PR #568 (W#45 P4 — NativeChannelProvider + AEAD + glare + mechanicals)"
+resolved-date: 2026-05-05
 in-reply-to: cob-question-2026-05-05T09-15Z-w45-p4-council-deferral-plan.md
 ---
 
