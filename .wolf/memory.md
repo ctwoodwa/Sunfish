@@ -624,3 +624,13 @@
 | 00:15 | Resolved H4: signing validation is API/gateway-layer responsibility | `ood-watch-rotation-stage06-handoff.md` | DefaultOodWatchService does NOT inject IOperationVerifier; trusts authenticated requestedBy; uses TimeProvider (not IClock) |
 | 00:20 | Amended W#49 hand-off Phase 2 section | `ood-watch-rotation-stage06-handoff.md` | Removed IOperationSigner.VerifyAsync step; IClock→TimeProvider; test mocks updated; H4 resolved in halt-conditions; cohort precedents corrected |
 | 00:25 | Archived cob-question + stale XO beacon; wrote new XO idle beacon | `icm/_state/research-inbox/` | Next: W#1 WS-B hand-off once ADR 0085 Accepted; ADR 0066-A1 once W#53 P1a merges |
+
+## Session: 2026-05-06 (XO /loop — W#49 P2 council follow-up; ADR status sweep)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| 01:00 | Verified PR #614 (W#49 P2) — COB applied own council amendments (commit c7a35f8) | — | CI all green; auto-merge still disabled (correct); 4 XO BLOCKING items remain open |
+| 01:05 | ADR status sweep on origin/main | `docs/adrs/` | ADR 0066 Accepted (was already); 0065/0068/0082/0083/0084/0085 all Proposed; 0066-A1 Proposed |
+| 01:10 | Reviewed DefaultOodWatchService.cs + OodWatchExpiryService.cs diffs in PR #614 | — | TOCTOU pre-check still present; no ILogger; no OodHandoverKind; GetExpiredCandidatesAsync still on public interface |
+| 01:15 | Posted XO follow-up comment to PR #614 with 4 remaining BLOCKING items (R1–R4) | PR #614 comment #4383601224 | R1: TOCTOU; R2: ILogger; R3: OodHandoverKind; R4: IOodWatchSweepRepository. Auto-merge remains disabled. |
+| 01:20 | Archived stale XO beacon; wrote new beacon reflecting W#49 P2 rework-pending state | `icm/_state/research-inbox/` | XO idle; blocked on CO acceptance flips for all pending ADRs |
