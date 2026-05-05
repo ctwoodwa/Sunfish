@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Blocks.CrewComms</PackageId>
+    <RootNamespace>Sunfish.Blocks.CrewComms</RootNamespace>
+    <Description>Native crew communication reference implementation for Anchor (ADR 0076).</Description>
+    <NoWarn>$(NoWarn);CS1591;MsgPack017</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="NSec.Cryptography" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-channels\Sunfish.Foundation.Channels.csproj" />
+    <ProjectReference Include="..\foundation-transport\Sunfish.Foundation.Transport.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\federation-common\Sunfish.Federation.Common.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+</Project>
