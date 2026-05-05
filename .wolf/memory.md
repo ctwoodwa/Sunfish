@@ -634,3 +634,12 @@
 | 01:10 | Reviewed DefaultOodWatchService.cs + OodWatchExpiryService.cs diffs in PR #614 | — | TOCTOU pre-check still present; no ILogger; no OodHandoverKind; GetExpiredCandidatesAsync still on public interface |
 | 01:15 | Posted XO follow-up comment to PR #614 with 4 remaining BLOCKING items (R1–R4) | PR #614 comment #4383601224 | R1: TOCTOU; R2: ILogger; R3: OodHandoverKind; R4: IOodWatchSweepRepository. Auto-merge remains disabled. |
 | 01:20 | Archived stale XO beacon; wrote new beacon reflecting W#49 P2 rework-pending state | `icm/_state/research-inbox/` | XO idle; blocked on CO acceptance flips for all pending ADRs |
+
+## Session: 2026-05-06 (XO /loop — W#49 P2 post-merge audit; W#36 ledger fix)
+
+| Time | Action | File(s) | Outcome |
+|------|--------|---------|---------|
+| 18:56 | Discovered PR #614 already MERGED (22:58Z 2026-05-05) — XO R1–R4 comment posted to merged PR | — | Misread `autoMergeRequest:null` as "disabled" (was actually "already merged"); R1–R4 now live on origin/main |
+| 19:00 | Discovered W#36 ledger stale — says design-in-flight; ADR 0065 Proposed + W#42 substrate built | `W36-*.md` | Flipped W#36 to `built`; ADR 0065 Proposed pending CO flip |
+| 19:05 | Updated W#49 workstream file — `ready-to-build` → `building`; documented R1–R4 gaps | `W49-ood-watch-rotation.md` | P1+P2 shipped; R1–R4 known gaps; P3 pending |
+| 19:10 | Authored W#49 P2-amendment addendum — R1–R4 fixes required before P3 | `ood-watch-rotation-stage06-p2-amendment-addendum.md` | Specifies: TOCTOU removal; ILogger; OodHandoverKind enum; IOodWatchSweepRepository separation |
