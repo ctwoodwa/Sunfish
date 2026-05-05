@@ -511,6 +511,17 @@ public readonly record struct AuditEventType(string Value)
     /// <summary><c>IFeatureEvaluator.IsEnabledAsync</c> threw; gate treated as OFF (fail-closed); exception captured in payload. Per ADR 0075.</summary>
     public static readonly AuditEventType ExtensionFieldGateEvaluationFailed = new("ExtensionFieldGateEvaluationFailed");
 
+    // ===== ADR 0078 — OOD watch rotation primitive =====
+
+    /// <summary>A new OOD watch entered <c>Active</c> via <c>IOodWatchService.StartWatchAsync</c>. Per ADR 0078 §1.</summary>
+    public static readonly AuditEventType OodWatchStarted = new("OodWatchStarted");
+
+    /// <summary>An Active OOD watch transitioned to <c>Relieved</c> via <c>IOodWatchService.HandoverWatchAsync</c>. Per ADR 0078 §1.</summary>
+    public static readonly AuditEventType OodWatchRelieved = new("OodWatchRelieved");
+
+    /// <summary>An Active OOD watch transitioned to <c>Expired</c> via the expiry sweep (<c>StartedAt + MaxWatchDuration</c> elapsed). Per ADR 0078 §1.</summary>
+    public static readonly AuditEventType OodWatchExpired = new("OodWatchExpired");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

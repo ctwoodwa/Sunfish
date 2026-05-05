@@ -37,6 +37,7 @@ namespace Sunfish.Foundation.Wayfinder;
 /// <param name="ApprovalChain">Optional approval chain for orders that required multi-party sign-off; null for single-actor issuances.</param>
 /// <param name="AuditRecordId">Reference to the <c>Sunfish.Kernel.Audit.AuditRecord</c> emitted at issuance.</param>
 /// <param name="State">Current lifecycle state; see <see cref="StandingOrderState"/>.</param>
+/// <param name="IssuedDuringWatchId">Optional <see cref="OodWatchId"/> of the OOD watch active at issuance time. Per ADR 0078 §1 — populated by the OodWatchService-aware issuer (Phase 2 of W#49); null for orders issued outside an OOD watch context (e.g., bootstrap / system actor).</param>
 public sealed record StandingOrder(
     [property: JsonPropertyName("id")] StandingOrderId Id,
     [property: JsonPropertyName("tenantId")] TenantId TenantId,
@@ -47,7 +48,8 @@ public sealed record StandingOrder(
     [property: JsonPropertyName("rationale")] string Rationale,
     [property: JsonPropertyName("approvalChain")] ApprovalChain? ApprovalChain,
     [property: JsonPropertyName("auditRecordId")] AuditRecordId AuditRecordId,
-    [property: JsonPropertyName("state")] StandingOrderState State) : IMustHaveTenant;
+    [property: JsonPropertyName("state")] StandingOrderState State,
+    [property: JsonPropertyName("issuedDuringWatchId")] OodWatchId? IssuedDuringWatchId = null) : IMustHaveTenant;
 
 /// <summary>
 /// A single atomic mutation: a dotted path and the old / new values bracketing
