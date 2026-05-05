@@ -2,7 +2,7 @@
 
 **From:** XO research session
 **To:** sunfish-PM (COB) session
-**Workstream:** W#55 (W#42 follow-on — Bridge React per-adapter UI surface; sibling to W#47 Anchor MAUI)
+**Workstream:** W#56 (W#42 follow-on — Bridge React per-adapter UI surface; sibling to W#47 Anchor MAUI)
 **Spec:** [ADR 0063](../../docs/adrs/0063-mission-space-requirements.md) §A1.1 (Accepted; PR #411 merged) + [ADR 0065](../../docs/adrs/0065-wayfinder-system-and-standing-order-contract.md) §Decision §7 WCAG mandate (Accepted; PR #479 merged 2026-05-02) + [ADR 0030](../../docs/adrs/0030-react-adapter-scaffolding.md) (Accepted) + [ADR 0014](../../docs/adrs/0014-adapter-parity-policy.md) (Accepted) + [ADR 0031](../../docs/adrs/0031-bridge-hybrid-multi-tenant-saas.md) (Accepted) + [ADR 0006](../../docs/adrs/0006-bridge-is-saas-shell.md) (Accepted)
 **Pipeline variant:** `sunfish-feature-change`
 **Estimated effort:** 14–19 hours focused sunfish-PM time
@@ -91,7 +91,7 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 **Estimated effort:** 3–4h.
 
-**PR title:** `feat(bridge,ui-adapters-react): SystemRequirements JSON contract + Bridge endpoint (W#55 P1)`
+**PR title:** `feat(bridge,ui-adapters-react): SystemRequirements JSON contract + Bridge endpoint (W#56 P1)`
 
 **Gate:** `dotnet build -c Release` clean; `cd packages/ui-adapters-react && pnpm typecheck && pnpm test` clean; 4 new Bridge endpoint tests pass; the TypeScript contract file exists with the verified enum string-unions and interfaces; `Program.cs` has the new endpoint registration line.
 
@@ -132,7 +132,7 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 **Estimated effort:** 3–4h.
 
-**PR title:** `feat(ui-adapters-react): SystemRequirements PreInstallFullPage component (W#55 P2)`
+**PR title:** `feat(ui-adapters-react): SystemRequirements PreInstallFullPage component (W#56 P2)`
 
 **Gate:** `cd packages/ui-adapters-react && pnpm typecheck && pnpm test && pnpm build` all clean; 6 new Vitest tests pass; the component is exported from the package barrel; visual smoke via the new Storybook story (see Phase 4) renders all three verdict cases.
 
@@ -157,7 +157,7 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 **Estimated effort:** 3–4h.
 
-**PR title:** `feat(ui-adapters-react): SystemRequirements PostInstall modes (inline + regression banner) (W#55 P3)`
+**PR title:** `feat(ui-adapters-react): SystemRequirements PostInstall modes (inline + regression banner) (W#56 P3)`
 
 **Gate:** `pnpm typecheck && pnpm test && pnpm build` clean; 5 new Vitest tests pass cumulatively; `aria-live="assertive"` confirmed; the dispatch logic in `SystemRequirements.tsx` covers all three `SystemRequirementsRenderMode` values.
 
@@ -185,7 +185,7 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 **Estimated effort:** 3–4h.
 
-**PR title:** `feat(ui-adapters-react): SystemRequirements Storybook + WCAG 2.2 AA a11y baseline (W#55 P4)`
+**PR title:** `feat(ui-adapters-react): SystemRequirements Storybook + WCAG 2.2 AA a11y baseline (W#56 P4)`
 
 **Gate:** `pnpm build-storybook` clean; `node tooling/a11y-audit-runner/bin/run.mjs --shard 0 --total-shards 1` passes for the SystemRequirements stories (no `Serious` or `Critical` axe violations); `apps/docs/foundation/wayfinder/wcag.md` updated; `packages/ui-adapters-react/README.md` updated.
 
@@ -195,14 +195,14 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 **What to build:**
 
-- `_shared/engineering/adapter-parity.md` — add `SystemRequirements` row to the parity matrix (per ADR 0014 strict-parity rule). The row reads: Blazor: ✓ (W#47 ships Anchor MAUI consumer; the Razor renderer is in `accelerators/anchor/Components/Pages/SystemRequirements.razor`, NOT in `packages/ui-adapters-blazor/` — which is the canonical site for the parity-matrix entry; flag this in the matrix as "consumer-tier (Anchor) — substrate parity at `Sunfish.Foundation.MissionSpace.ISystemRequirementsRenderer`"); React: ✓ (W#55 ships `@sunfish/ui-adapters-react`'s `SystemRequirements` component); parity status: "**substrate-parity** (both adapters consume the same `ISystemRequirementsRenderer` contract; per-adapter UX divergence is intentional per ADR 0014 platform-conventional layout exemption)."
-- `icm/_state/workstreams/W55-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md` — flip status to `built` with the 5-PR list. NB: Per the per-workstream-files pattern (PRs #585+#588), edit this file directly + run `python3 tools/icm/render-ledger.py` + verify `--check` exits 0; do NOT hand-edit `icm/_state/active-workstreams.md`.
+- `_shared/engineering/adapter-parity.md` — add `SystemRequirements` row to the parity matrix (per ADR 0014 strict-parity rule). The row reads: Blazor: ✓ (W#47 ships Anchor MAUI consumer; the Razor renderer is in `accelerators/anchor/Components/Pages/SystemRequirements.razor`, NOT in `packages/ui-adapters-blazor/` — which is the canonical site for the parity-matrix entry; flag this in the matrix as "consumer-tier (Anchor) — substrate parity at `Sunfish.Foundation.MissionSpace.ISystemRequirementsRenderer`"); React: ✓ (W#56 ships `@sunfish/ui-adapters-react`'s `SystemRequirements` component); parity status: "**substrate-parity** (both adapters consume the same `ISystemRequirementsRenderer` contract; per-adapter UX divergence is intentional per ADR 0014 platform-conventional layout exemption)."
+- `icm/_state/workstreams/W56-w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface.md` — flip status to `built` with the 5-PR list. NB: Per the per-workstream-files pattern (PRs #585+#588), edit this file directly + run `python3 tools/icm/render-ledger.py` + verify `--check` exits 0; do NOT hand-edit `icm/_state/active-workstreams.md`.
 - `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_workstream_55_bridge_react_renderer_built.md` — memory entry summarizing the shipped scope (5 PRs + new types + a11y baseline + serialization contract + Bridge endpoint) for future-session auto-load.
 - Optional: short note in `icm/_state/research-inbox/` (`cob-resumed-...md` if COB had previously gone idle on this) per CLAUDE.md inbox protocol.
 
 **Estimated effort:** 30 minutes.
 
-**PR title:** `chore(icm): flip W#55 Bridge React renderer row to built (P5)`
+**PR title:** `chore(icm): flip W#56 Bridge React renderer row to built (P5)`
 
 **Gate:** `tools/icm/render-ledger.py --check` exits 0; `_shared/engineering/adapter-parity.md` row exists; memory file written.
 
@@ -212,9 +212,9 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 (Required halt conditions per ADR 0073 §4 plus workstream-specific items. Numbering aligned with the W#47 Anchor MAUI sibling cohort where applicable; React-specific items appended.)
 
-1. **Required (per ADR 0073):** if any prerequisite listed in §1 is not yet `built` when its phase is needed → halt; write `cob-question-2026-05-XXTHH-MMZ-w55-renderer-{slug}.md` naming the unmet prerequisite. Specifically: verify on origin/main at session-start `git log --all --oneline -10` that ledger row 42 reads `built` AND that ADR 0063 + ADR 0065 + ADR 0030 + ADR 0014 + ADR 0031 + ADR 0006 + ADR 0049 + ADR 0034 all read Status: Accepted on origin/main (canonical via `gh api repos/ctwoodwa/Sunfish/contents/docs/adrs/...` `frontmatter.status` field, or via reading the `status:` line in each ADR's frontmatter directly).
+1. **Required (per ADR 0073):** if any prerequisite listed in §1 is not yet `built` when its phase is needed → halt; write `cob-question-2026-05-XXTHH-MMZ-w56-renderer-{slug}.md` naming the unmet prerequisite. Specifically: verify on origin/main at session-start `git log --all --oneline -10` that ledger row 42 reads `built` AND that ADR 0063 + ADR 0065 + ADR 0030 + ADR 0014 + ADR 0031 + ADR 0006 + ADR 0049 + ADR 0034 all read Status: Accepted on origin/main (canonical via `gh api repos/ctwoodwa/Sunfish/contents/docs/adrs/...` `frontmatter.status` field, or via reading the `status:` line in each ADR's frontmatter directly).
 
-2. **Required (per ADR 0073):** if the `icm/_state/workstreams/W55-*.md` file's `status:` field does not read `ready-to-build` when COB begins → halt; write `cob-question-*` naming the discrepancy.
+2. **Required (per ADR 0073):** if the `icm/_state/workstreams/W56-*.md` file's `status:` field does not read `ready-to-build` when COB begins → halt; write `cob-question-*` naming the discrepancy.
 
 3. **WCAG/a11y subagent pre-merge canonical (per ADR 0065 §Decision §7).** ADR 0065 mandates a WCAG/a11y subagent on **every** UI-bearing follow-on. Phases 2, 3, 4 all carry a UI surface; pre-merge council MUST include a WCAG/a11y perspective BEFORE any phase commit. This is non-negotiable — mirrors the W#42 substrate hand-off Phase 3a/4 cohort posture (council batting average 22-of-22; substrate cohort needed amendments on every UI-bearing phase). If the WCAG/a11y subagent flags an issue, halt the phase + apply mechanical amendments per Decision Discipline Rule 3 (auto-accept rename / fix-citation / scope-tightening); raise non-mechanical findings to XO via `cob-question-*`.
 
@@ -248,7 +248,7 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 - [ ] `packages/ui-adapters-react/README.md` appended with `SystemRequirements` component entry.
 - [ ] `_shared/engineering/adapter-parity.md` parity-matrix row added per Halt-condition #9 guidance.
 - [ ] WCAG/a11y subagent pre-merge council fired on every UI-bearing phase (P2, P3, P4) per ADR 0065 §Decision §7; mechanical amendments applied per Decision Discipline Rule 3; non-mechanical findings raised to XO via `cob-question-*`.
-- [ ] `icm/_state/workstreams/W55-*.md` `status:` field reads `built` with PR list and PR URLs; `tools/icm/render-ledger.py --check` exits 0.
+- [ ] `icm/_state/workstreams/W56-*.md` `status:` field reads `built` with PR list and PR URLs; `tools/icm/render-ledger.py --check` exits 0.
 - [ ] Memory entry written at `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_workstream_55_bridge_react_renderer_built.md`.
 
 ---
@@ -257,11 +257,11 @@ The renderer is **multi-tenant-composition-aware** per ADR 0031: a Bridge React 
 
 | Phase | Subject | Hours | PR title prefix |
 |---|---|---|---|
-| 1 | Serialization contract + Bridge endpoint | 3–4 | `feat(bridge,ui-adapters-react): SystemRequirements JSON contract + Bridge endpoint (W#55 P1)` |
-| 2 | `PreInstallFullPage` React component + DimensionEvaluation rows | 3–4 | `feat(ui-adapters-react): SystemRequirements PreInstallFullPage component (W#55 P2)` |
-| 3 | `PostInstallInlineExplanation` + `PostInstallRegressionBanner` modes | 3–4 | `feat(ui-adapters-react): SystemRequirements PostInstall modes (inline + regression banner) (W#55 P3)` |
-| 4 | Storybook stories + axe-core a11y harness + WCAG baseline | 3–4 | `feat(ui-adapters-react): SystemRequirements Storybook + WCAG 2.2 AA a11y baseline (W#55 P4)` |
-| 5 | Adapter-parity matrix update + ledger flip + close | 0.5 | `chore(icm): flip W#55 Bridge React renderer row to built (P5)` |
+| 1 | Serialization contract + Bridge endpoint | 3–4 | `feat(bridge,ui-adapters-react): SystemRequirements JSON contract + Bridge endpoint (W#56 P1)` |
+| 2 | `PreInstallFullPage` React component + DimensionEvaluation rows | 3–4 | `feat(ui-adapters-react): SystemRequirements PreInstallFullPage component (W#56 P2)` |
+| 3 | `PostInstallInlineExplanation` + `PostInstallRegressionBanner` modes | 3–4 | `feat(ui-adapters-react): SystemRequirements PostInstall modes (inline + regression banner) (W#56 P3)` |
+| 4 | Storybook stories + axe-core a11y harness + WCAG baseline | 3–4 | `feat(ui-adapters-react): SystemRequirements Storybook + WCAG 2.2 AA a11y baseline (W#56 P4)` |
+| 5 | Adapter-parity matrix update + ledger flip + close | 0.5 | `chore(icm): flip W#56 Bridge React renderer row to built (P5)` |
 | **Total** | | **12.5–16.5h** | **5 PRs** |
 
 (The §1 `Estimated effort` range "14–19h" widens the table sum by ~+15% to absorb the WCAG/a11y subagent council loop on each UI-bearing phase, which the per-phase hours do not explicitly bake in. Per ADR 0073 estimate-honesty rule: §1 wins on disagreement; the table is the sub-budget. If the council loop runs >2× per phase, halt + escalate per halt-condition #3.)
@@ -281,7 +281,7 @@ This hand-off mirrors the patterns established by the W#33-derived substrate coh
 - **No audit emission from presentation layer.** Inherited from W#42 substrate's audit-by-construction discipline + ADR 0049 immutability (cohort discipline shared with W#47).
 - **Pre-merge council canonical for UI-bearing phases.** Per `feedback_council_before_automerge.md` + ADR 0065 §Decision §7 — council fires BEFORE PR creation, not in parallel with auto-merge. Mirrors W#42 P3a + P3b + P4 + W#47 cohort discipline.
 - **`apps/docs/foundation/wayfinder/wcag.md` baseline-not-conformance language.** Inherited from W#42 P4 + W#47 cohort; never claim "WCAG conformant" — claim "baseline established for [scope]."
-- **Per-workstream-files pattern for ledger.** Per CLAUDE.md update note (PRs #585+#588): edit `icm/_state/workstreams/W55-*.md` directly + run `python3 tools/icm/render-ledger.py`; do NOT hand-edit `icm/_state/active-workstreams.md`. CI check enforces.
+- **Per-workstream-files pattern for ledger.** Per CLAUDE.md update note (PRs #585+#588): edit `icm/_state/workstreams/W56-*.md` directly + run `python3 tools/icm/render-ledger.py`; do NOT hand-edit `icm/_state/active-workstreams.md`. CI check enforces.
 
 ---
 
@@ -309,7 +309,7 @@ Per `feedback_council_can_miss_spot_check_negative_existence.md` + the cohort ba
 
 **Positive-existence (17 cited Sunfish.* symbols verified on origin/main):** `ISystemRequirementsRenderer` (`packages/foundation-mission-space/Services/ISystemRequirementsRenderer.cs:31`); `ISystemRequirementsSurface` (same file:51); `SystemRequirementsResult` (`Models/Requirements.cs:263`); `DimensionEvaluation` (:241); `OperatorRecoveryAction` (:231); `MinimumSpec` (:31); `SystemRequirementsRenderMode` (`Models/RequirementsEnums.cs:50`); `OverallVerdict` (:20); `DimensionPolicyKind` (:33); `DimensionPassFail` (:42); `SpecPolicy` (:7); `IMinimumSpecResolver`; `IInstallForceEnableSurface`; `packages/ui-adapters-react/` (Vite+Vitest+Storybook+RTL per ADR 0030); PoC components `SunfishButton`/`SunfishDataGrid`/`SunfishDialog`; `tooling/a11y-audit-runner/`; Bridge `MapListingsEndpoints`+`MapFieldEndpoints` cohort in `Program.cs:145,150`.
 
-**Negative-existence (no parallel work):** `gh pr list --state open` zero matches for Bridge React renderer; `grep -rn "SystemRequirements" /accelerators/bridge/Sunfish.Bridge/` zero matches (no existing endpoint); `grep -rn "SystemRequirements" /packages/ui-adapters-react/` zero matches (no TypeScript projection); `W55-*.md` does not exist on origin/main (W#54 soft-reserved by W#53 for Phase 3 Atlas implementations; W#55 used here).
+**Negative-existence (no parallel work):** `gh pr list --state open` zero matches for Bridge React renderer; `grep -rn "SystemRequirements" /accelerators/bridge/Sunfish.Bridge/` zero matches (no existing endpoint); `grep -rn "SystemRequirements" /packages/ui-adapters-react/` zero matches (no TypeScript projection); `W56-*.md` does not exist on origin/main (W#54 soft-reserved by W#53 for Phase 3 Atlas implementations; W#56 used here).
 
 **Structural-citation (signatures match):** `ISystemRequirementsRenderer.RenderAsync(SystemRequirementsResult, ISystemRequirementsSurface, SystemRequirementsRenderMode, CancellationToken)` matches source verbatim; `SystemRequirementsResult.[JsonPropertyName]` attributes (`overall`/`dimensions`/`operatorRecoveryAction`/`evaluatedAt`) and `DimensionEvaluation.[JsonPropertyName]` (`dimension`/`policy`/`outcome`/`operatorRecoveryAction`/`detail`) match the Phase 1 TypeScript interface; `OverallVerdict` values (`Pass`, `WarnOnly`, `Block`) match the TypeScript union; every enum carries `[JsonConverter(typeof(JsonStringEnumConverter<...>))]` confirming PascalCase wire format (Halt #7 enforces); ADR 0014 strict-parity policy + ADR 0030 PoC scope (Button+DataGrid+Dialog) — `SystemRequirements` is the 4th React component, justified by W#42 per-adapter mandate + W#47 sibling cohort.
 
@@ -343,5 +343,5 @@ Per `feedback_council_can_miss_spot_check_negative_existence.md` + the cohort ba
 - This is the **second** per-adapter renderer in the W#42 follow-on chain (W#47 Anchor MAUI was first, shipped 2026-05-04 as PR #555). The phase shape mirrors W#47 verbatim except for Phase 1 (which W#47 does not need because MAUI Blazor Hybrid is in-process).
 - Pre-merge council canonical: dispatch the standard 4-perspective council subagent + a WCAG/a11y subagent BEFORE any UI-bearing phase commit (P2, P3, P4). Cohort batting average is 22-of-22 — every UI-bearing substrate has needed council fixes; pre-merge is dramatically cheaper than post-merge per `feedback_council_before_automerge.md`.
 - §A0 self-audit pattern is necessary but NOT sufficient for cited Sunfish.* symbols. Spot-check three directions per `feedback_council_can_miss_spot_check_negative_existence.md`: (1) negative-existence — does the cited symbol exist on origin/main? (2) positive-existence — does the cited namespace match? (3) structural-citation — do the cited fields / signatures match the actual file? The council's 22-of-22 batting average is a useful tail.
-- If COB hits a halt-condition or has a design question, file `cob-question-2026-05-XXTHH-MMZ-w55-renderer-{slug}.md` in `icm/_state/research-inbox/` + halt the workstream + add a note in the per-workstream file (`icm/_state/workstreams/W55-*.md` `## Notes` section) + ScheduleWakeup 1800s.
-- After Phase 5 closes the row, drop `cob-resumed-2026-05-XXTHH-MMZ-w55-renderer-built.md` to research-inbox if XO had a beacon waiting; otherwise continue with the rung-1/rung-2 fallback per CLAUDE.md fallback work order.
+- If COB hits a halt-condition or has a design question, file `cob-question-2026-05-XXTHH-MMZ-w56-renderer-{slug}.md` in `icm/_state/research-inbox/` + halt the workstream + add a note in the per-workstream file (`icm/_state/workstreams/W56-*.md` `## Notes` section) + ScheduleWakeup 1800s.
+- After Phase 5 closes the row, drop `cob-resumed-2026-05-XXTHH-MMZ-w56-renderer-built.md` to research-inbox if XO had a beacon waiting; otherwise continue with the rung-1/rung-2 fallback per CLAUDE.md fallback work order.

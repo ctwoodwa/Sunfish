@@ -1,6 +1,6 @@
 ---
-sort_order: 64
-number: 55
+sort_order: 65
+number: 56
 slug: w-42-follow-on-bridge-react-concrete-per-adapter-ui-surface
 title: "**W#42 follow-on — Bridge React `ISystemRequirementsRenderer`** (`sunfish-feature-change` pipeline) — concrete per-adapter UI surface for the W#42 Wayfinder substrate; ships TypeScript projection contract + Bridge JSON endpoint + React renderer in `packages/ui-adapters-react/`; sibling to W#47 Anchor MAUI"
 status: "ready-to-build"
