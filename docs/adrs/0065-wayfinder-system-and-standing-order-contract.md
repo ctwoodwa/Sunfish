@@ -17,7 +17,8 @@ composes:
 extends: []
 supersedes: []
 superseded_by: null
-amendments: []
+amendments:
+  - A1
 ---
 # ADR 0065 — Wayfinder System + Standing Order Contract (bundled)
 
@@ -444,3 +445,159 @@ The §A0 self-audit is *necessary but not sufficient* — council remains canoni
 - Stripe Dashboard diff-preview pattern (industry observation, no canonical link)
 - RFC draft 2020-12 (JSON Schema): <https://json-schema.org/draft/2020-12>
 - RFC 8785 (canonical JSON): <https://datatracker.ietf.org/doc/html/rfc8785>
+
+---
+
+## Amendment A1 — Standing Order event-stream contract
+
+**Status:** Proposed
+**Date:** 2026-05-04
+**Authors:** XO research session
+**Council posture:** pre-merge canonical (per ADR 0069; cohort batting average ~95% (23-of-24 via 2026-05-04) substrate amendments needed council fixes — auto-merge NOT enabled)
+**Scope:** additive amendment to ADR 0065's `Sunfish.Foundation.Wayfinder` package; no changes to existing types
+
+### Context
+
+ADR 0066 (Helm Composition + Identity Atlas Surface; PR #529) consumes the Wayfinder substrate and found that the cross-package event-stream contract for "Standing Order applied" events is undefined: `packages/foundation-wayfinder/IStandingOrderRepository.cs` ships only three imperative methods (`AppendAsync` / `GetAsync` / `EnumerateAsync`); neither `StandingOrderAppliedEvent` nor any `IObservable<T>` (or equivalent) exists in `packages/foundation-wayfinder/`; ADR 0065's body §1–§6 specifies the issuance pipeline, validation chain, and audit emission, but is silent on the post-issuance reactive surface.
+
+The canonical Opus 4.7 council review of ADR 0066 surfaced this as finding NM-2 (`icm/07_review/output/adr-audits/0066-council-review-2026-05-04.md`), and ADR 0066 §"Implementation checklist Phase 1" halt-condition H8 references the intake (`icm/00_intake/output/2026-05-04_adr-0065-a1-event-stream-contract-intake.md`) for this amendment.
+
+Multiple downstream consumers will need this contract:
+
+- **ADR 0066 §1.3 trigger #2** — Helm widgets (`recent-standing-orders`, `quick-toggles`) must recompute on Standing Order applied events. Without the event stream they fall back to periodic-refresh + envelope-change-only signalling, with up to 60-second stale state.
+- **ADR 0009 Amendment A1's `WayfinderFeatureProvider`** — the 5th-concept feature-management consumer recomputes its `IFeatureManager` cache on Standing Order applied events that touch the `feature-management.*` path-prefix.
+- **Future Bridge subscribers** (per ADR 0031 §A1 hosted-tenant subscription) need to fan out applied events to remote Anchors over the existing subscription-event-emitter.
+
+This amendment defines that contract.
+
+### Decision
+
+#### A1.1 — `StandingOrderAppliedEvent` record
+
+A new record in `Sunfish.Foundation.Wayfinder` capturing the durable observation surfaced after issuance + validation + CRDT-merge:
+
+```csharp
+public sealed record StandingOrderAppliedEvent(
+    StandingOrderId StandingOrderId,
+    TenantId TenantId,
+    ActorId IssuedBy,
+    DateTimeOffset AppliedAt,
+    StandingOrderScope Scope,
+    IReadOnlyList<StandingOrderTriple> Triples,
+    AuditRecordId AuditRecordId,
+    string? Rationale);
+```
+
+Field-shape rationale (matched to existing `StandingOrder` shape on origin/main):
+
+- `StandingOrderId`, `TenantId`, `IssuedBy`, `Scope`, `Triples`, `AuditRecordId` — copied through from the realized `StandingOrder`; consumers correlate the event to its issuance via `StandingOrderId` and to the audit ledger via `AuditRecordId`.
+- `AppliedAt` is `DateTimeOffset` (not `NodaTime.Instant`) per the existing `StandingOrder.IssuedAt` cohort precedent (W#34 / W#35 / W#40 / W#41) — aligns with `Sunfish.Kernel.Audit.AuditRecord.OccurredAt`.
+- `Rationale` is nullable: consumers that require the issuance-time rationale (e.g., compliance projections, forensic auditors) correlate to the audit record via `AuditRecordId` and read `AuditRecord.Payload`. The event payload mirrors the rationale when present as a convenience for in-process consumers (Helm widgets, `WayfinderFeatureProvider`) that do not need full audit-record fidelity. (Council SC-1 confirmed: the prose justification previously had the forensic-review direction inverted.)
+
+The event is emitted **once per applied issuance**, after the issuance has reached `StandingOrderState.Applied` (Atlas projection has incorporated the order). It is NOT emitted for `Rejected`, `Conflicted` (loser-side), or `Rescinded` states — those have their own audit-event types and downstream consumers that need them subscribe to `IAuditEventStream` for the corresponding `AuditEventType` constants.
+
+#### A1.2 — `IStandingOrderEventStream` interface
+
+A new interface in `Sunfish.Foundation.Wayfinder`, structurally parallel to the cohort prior art `Sunfish.Kernel.Audit.IAuditEventStream` (`packages/kernel-audit/IAuditEventStream.cs`):
+
+```csharp
+public interface IStandingOrderEventStream
+{
+    /// <summary>Replay every applied Standing Order in append order.</summary>
+    IReadOnlyList<StandingOrderAppliedEvent> ReplayAll();
+
+    /// <summary>
+    /// Subscribe a callback invoked for each newly-applied event.
+    /// Returns an <see cref="IDisposable"/> that unsubscribes on dispose.
+    /// </summary>
+    IDisposable Subscribe(Action<StandingOrderAppliedEvent> handler);
+}
+```
+
+**Rationale (`IStandingOrderEventStream` over raw `IObservable<T>`):** the kernel-audit cohort precedent uses the named-interface form (`IAuditEventStream`), not `IObservable<AuditRecord>`. Reasons documented in `packages/kernel-audit/IAuditEventStream.cs`: (1) `ReplayAll()` for projections that need to rebuild state without a snapshot is awkward as an `IObservable` extension, (2) the `IDisposable Subscribe(Action<T>)` shape avoids dragging `System.Reactive` into foundation-tier dependencies, (3) tests can unsubscribe deterministically via the returned disposable. Matching this precedent is per the `feedback_council_can_miss_spot_check_negative_existence.md` cohort discipline (structural-citation correctness wins over symmetry).
+
+The stream is **in-process only**. Cross-process / cross-host fanout (e.g., Bridge → remote-Anchor subscription delivery) is the existing ADR 0031 §A1 subscription-event-emitter's responsibility; a future workstream wires `IStandingOrderEventStream.Subscribe(...)` into that emitter as a producer.
+
+**`ReplayAll()` is restart-volatile.** For durable replay across process restarts, consumers rebuild from the persistent CRDT log via `IStandingOrderRepository.EnumerateAsync` (filtered to `State == Applied`). The in-memory event stream is the in-process fanout; the durable substrate is the per-tenant CRDT log.
+
+**`Subscribe` is all-tenant by design** (mirroring `IAuditEventStream`). The interface carries no tenant filter; consumers are responsible for filtering on `TenantId`. See §A1.6 for the recommended consumer idiom.
+
+#### A1.3 — One new `AuditEventType` constant
+
+A new `static readonly AuditEventType StandingOrderApplied = new("StandingOrderApplied");` in `Sunfish.Kernel.Audit.AuditEventType` (`packages/kernel-audit/AuditEventType.cs`).
+
+ADR 0065 §4 already lists 5 constants (`StandingOrderIssued`, `StandingOrderAmended`, `StandingOrderRescinded`, `StandingOrderRejected`, `StandingOrderConflictResolved`); `StandingOrderIssued` is fired at **the issuance grain** (validation passed, persisted to repository). `StandingOrderApplied` is the distinct **post-validation, post-CRDT-merge, post-Atlas-projection observable event** that downstream consumers care about — the difference between "the system accepted the order" and "the order is now live in the projected configuration." For Anchor single-actor + single-tenant topologies the gap is microseconds; for multi-anchor + Bridge-fanout topologies the gap can be seconds (CRDT convergence + delivery latency).
+
+#### A1.4 — `InMemoryStandingOrderEventStream` default implementation
+
+A default in-memory implementation, structurally parallel to `Sunfish.Kernel.Audit.InMemoryAuditEventStream` (`packages/kernel-audit/InMemoryAuditEventStream.cs`): `internal sealed class` with a list + lock + subscriber-snapshot pattern; `Publish(StandingOrderAppliedEvent)` adds to the list, snapshots subscribers under the lock, and invokes them outside the lock. The class is `internal` so it is not part of the public API surface; consumers see only `IStandingOrderEventStream`.
+
+Concurrent issuance ordering is **FIFO-by-Publish-call-order**: the lock serializes append + subscriber-snapshot, then invokes subscribers outside the lock. Consumers requiring monotonic-by-`AppliedAt` ordering must sort their own buffer.
+
+Cohort precedent for in-memory variants: kernel-audit's `InMemoryAuditEventStream`, kernel-audit's `InMemoryAuditTrail` (`packages/kernel-audit/InMemoryAuditTrail.cs`).
+
+#### A1.5 — DI wiring
+
+`AddSunfishWayfinder()` (`packages/foundation-wayfinder/WayfinderServiceExtensions.cs`) gains:
+
+```csharp
+services.TryAddSingleton<InMemoryStandingOrderEventStream>();
+services.TryAddSingleton<IStandingOrderEventStream>(
+    sp => sp.GetRequiredService<InMemoryStandingOrderEventStream>());
+```
+
+`DefaultStandingOrderIssuer` (`packages/foundation-wayfinder/DefaultStandingOrderIssuer.cs`) gains a constructor parameter (`InMemoryStandingOrderEventStream eventStream`) and, after the `AppendAsync` + audit-emission pair completes, calls `eventStream.Publish(new StandingOrderAppliedEvent(...))`.
+
+**Publish-site topology — Phase 1 vs Phase 2 (council NM-1).** The publish fires for the `Applied` state. In Phase 1 (this amendment), the `Validated` → `Applied` transition is synchronous in single-anchor topologies — `DefaultStandingOrderIssuer` publishes immediately after `AppendAsync` + audit-emit, making the publish the **last** step of the issuance (emitting before the CRDT append + audit append would expose consumers to events for un-persisted orders). In multi-anchor topologies (Phase 2 follow-on per ADR 0028 §A6.1), a separate `IAtlasProjector`-driven publisher fires `StandingOrderAppliedEvent` after CRDT convergence; in that mode the issuer's synchronous publish is suppressed to avoid double-firing.
+
+#### A1.6 — Consumer idiom: subscribe-then-replay with dedup + tenant filter
+
+Consumers that maintain a projection cache MUST subscribe **before** replaying to avoid missing events published in the gap between the two calls. The `StandingOrderId`-keyed `HashSet` provides natural idempotency for the overlap window:
+
+```csharp
+// CORRECT: subscribe first so no events fire-and-forget while we replay.
+var seen = new HashSet<StandingOrderId>();
+using var subscription = stream.Subscribe(evt =>
+{
+    if (evt.TenantId != myTenantId) return;  // tenant-scope filter (mandatory)
+    if (seen.Add(evt.StandingOrderId)) Process(evt);
+});
+foreach (var historical in stream.ReplayAll())
+{
+    if (historical.TenantId != myTenantId) continue;
+    if (seen.Add(historical.StandingOrderId)) Process(historical);
+}
+```
+
+**Tenant-scope filter is mandatory for tenant-scoped services.** `IStandingOrderEventStream.Subscribe` is all-tenant by design — a `WayfinderFeatureProvider` registered as `AddScoped<IFeatureManager, WayfinderFeatureProvider>()` MUST filter on `TenantId` to avoid recomputing on other tenants' applied events. Platform-admin services that legitimately observe all tenants may omit the filter; they MUST carry the appropriate `Capability.PlatformAdmin` (W#37 territory) before reading other tenants' Standing Orders.
+
+**`ReplayAll()` is restart-volatile.** Projection caches lost on process restart rebuild from `IStandingOrderRepository.EnumerateAsync(tenantId, ct)` (filtered to `State == Applied`) — not from `ReplayAll()`. The event stream is the in-process fanout; the CRDT log is the durable substrate.
+
+### Compatibility
+
+This amendment is **additive only**. Existing ADR 0065 callers are unchanged: `IStandingOrderRepository`, `IStandingOrderIssuer`, `StandingOrder`, `StandingOrderDraft`, `StandingOrderTriple`, `StandingOrderState`, `StandingOrderScope`, `IStandingOrderValidator`, `IAtlasProjector` are untouched. The new surface (`StandingOrderAppliedEvent`, `IStandingOrderEventStream`, `InMemoryStandingOrderEventStream`, the `StandingOrderApplied` `AuditEventType`) is purely additive. The `DefaultStandingOrderIssuer` constructor gains one new parameter — that is a binary-breaking change for callers constructing it manually, but cohort discipline is to register via `AddSunfishWayfinder()`, which the amendment also wires; there are no manual-construction sites on origin/main. Test fixtures that construct `DefaultStandingOrderIssuer` directly need a one-line update to pass an `InMemoryStandingOrderEventStream` instance; the W#42 Phase 2 test suite is the only known site (estimated &lt;30 min).
+
+### A0 — self-audit limitation block (per ADR 0062-A1.14 + ADR 0069 cohort discipline)
+
+The author of this amendment ran the standard 3-direction self-audit (negative-existence, positive-existence, structural-citation) and acknowledges:
+
+- **§A0.1 Negative-existence** — verified `Sunfish.Foundation.Wayfinder.{StandingOrderAppliedEvent, IStandingOrderEventStream, InMemoryStandingOrderEventStream}` and `Sunfish.Kernel.Audit.AuditEventType.StandingOrderApplied` *do not yet exist on origin/main* (`grep -rn "StandingOrderApplied\|IStandingOrderEventStream" packages/ = ZERO`). They are introduced by this amendment's Phase 1 build.
+- **§A0.2 Positive-existence** — verified on origin/main:
+    - `Sunfish.Kernel.Audit.IAuditEventStream` (`packages/kernel-audit/IAuditEventStream.cs`) — the structural template for `IStandingOrderEventStream`.
+    - `Sunfish.Kernel.Audit.InMemoryAuditEventStream` (`packages/kernel-audit/InMemoryAuditEventStream.cs`) — the structural template for `InMemoryStandingOrderEventStream`.
+    - `Sunfish.Kernel.Audit.AuditEventType` (`packages/kernel-audit/AuditEventType.cs`) — `readonly record struct(string Value)`; the 5 ADR-0065 entries are present at lines 466–481.
+    - `Sunfish.Foundation.Wayfinder.{StandingOrder, StandingOrderId, StandingOrderTriple, StandingOrderScope, StandingOrderState, IStandingOrderRepository, IStandingOrderIssuer, DefaultStandingOrderIssuer, WayfinderServiceExtensions}` (`packages/foundation-wayfinder/`).
+    - `Sunfish.Foundation.Assets.Common.{ActorId, TenantId}` (`packages/foundation/Assets/Common/`) and `Sunfish.Foundation.Wayfinder.AuditRecordId` (`packages/foundation-wayfinder/StandingOrderId.cs:16`). **SC-2 council correction (2026-05-04):** this amendment originally cited `Sunfish.Foundation.Assets.Common.AuditRecordId` — the actual `AuditRecordId` type lives in `Sunfish.Foundation.Wayfinder` (at `packages/foundation-wayfinder/StandingOrderId.cs:16`), not in `Sunfish.Foundation.Assets.Common`. `ActorId` and `TenantId` are correctly cited as `Sunfish.Foundation.Assets.Common`. **Correction to parent ADR 0065 §A0.2 (SEPARATE-PR):** the parent ADR cited `Sunfish.Foundation.Identity.ActorId` and `Sunfish.Foundation.MultiTenancy.TenantId`. The actual on-origin/main namespaces are `Sunfish.Foundation.Assets.Common.ActorId` (`packages/foundation/Assets/Common/ActorId.cs:4`) and `Sunfish.Foundation.Assets.Common.TenantId` (`packages/foundation/Assets/Common/TenantId.cs`). `Sunfish.Foundation.MultiTenancy` is a real namespace (`packages/foundation-multitenancy/`) but it carries `ITenantScoped`, `IMustHaveTenant`, `ITenantCatalog`, `TenantStatus` — not the `TenantId` value type. The parent ADR's §A0.2 prose fix is a separate-PR concern (`chore(adr): 0065 §A0.2 namespace-drift mechanical fix`); do NOT inline it into this amendment. Council confirmed SEPARATE-PR disposition.
+- **§A0.3 Structural-citation correctness** — per cohort discipline, this draft was self-corrected for: (a) `IAuditEventStream`'s actual signature is `IReadOnlyList<AuditRecord> ReplayAll()` and `IDisposable Subscribe(Action<AuditRecord> handler)` — `IStandingOrderEventStream` mirrors exactly; (b) `InMemoryAuditEventStream` is `internal sealed` (not `public`) — `InMemoryStandingOrderEventStream` matches; (c) `AddSunfishWayfinder()` uses `TryAddSingleton`, not `AddSingleton`, in the existing extension method (line 36–44) — the amendment's wiring matches; (d) `StandingOrder.IssuedAt` is `DateTimeOffset` (not `NodaTime.Instant` as suggested in ADR 0065 §1's pseudocode) per `packages/foundation-wayfinder/StandingOrder.cs:44` — `StandingOrderAppliedEvent.AppliedAt` mirrors. Council MUST still spot-check (e) whether `IAuditEventStream` is the canonical cohort precedent (or whether a closer prior-art interface exists on origin/main that this author missed), and (f) whether the new `StandingOrderApplied` constant placement under the `===== ADR 0065 — Wayfinder System + Standing Order Contract (W#42) =====` block in `AuditEventType.cs` is correct (placement, ordering relative to the existing 5 constants, comment text).
+
+The §A0 self-audit is *necessary but not sufficient* — council remains canonical defense per the cohort batting average of ~95% (23-of-24 via 2026-05-04) prior substrate amendments needing council fixes. Auto-merge is NOT enabled on the amendment PR.
+
+### Council disposition — pressure-test points
+
+Pre-merge Opus 4.7 canonical council (2026-05-04) reviewed all five pre-flagged points. Verdicts:
+
+1. **Issued-vs-Applied semantic distinction — council CONFIRMED load-bearing.** The distinction is necessary: ADR 0066 §1.3 trigger #2 (Helm widgets) cares about post-projection state; in multi-anchor + Bridge-fanout topologies (ADR 0028 §A6.1 + ADR 0031 §A1) the gap between `Validated` and `Applied` can be seconds (CRDT convergence + delivery latency). Firing `StandingOrderIssued` as "applied" would expose Helm widgets to stale-write surface — contradicting the "no surface drift" decision driver (ADR 0065 §"Decision drivers" #4). No amendment to §A1.1 structure required; prose clarification added per council recommendation.
+2. **`IStandingOrderEventStream` vs `IObservable<StandingOrderAppliedEvent>` — council CONFIRMED named interface.** Zero substrate-tier `IObservable<T>` uses found on origin/main; kernel-audit + kernel-ledger both use named-interface form. Author's choice stands.
+3. **Parent ADR 0065 §A0.2 namespace drift — council CONFIRMED SEPARATE-PR.** See §A0.2 note above; do NOT inline the parent-ADR fix into this amendment.
+4. **DI subscribe-then-replay race — council CONFIRMED, NM-2 finding, non-mechanical, applied.** §A1.6 adds the subscribe-then-replay idiom with `HashSet<StandingOrderId>` dedup + tenant-filter exemplar (NM-2 + NM-4 combined in §A1.6). §A1.2 adds the restart-volatility framing (NM-3). §A1.5 adds the Phase 1 / Phase 2 publish-site topology framing (NM-1).
+5. **Concurrent `Publish` ordering — council CONFIRMED FIFO-by-Publish-call-order.** The lock pattern serializes append + subscriber-snapshot; subscribers invoked outside the lock. Consumers requiring monotonic-by-`AppliedAt` ordering must sort their own buffer. No API change required.
