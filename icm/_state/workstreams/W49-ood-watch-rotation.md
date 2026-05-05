@@ -3,29 +3,43 @@ sort_order: 51
 number: 49
 slug: ood-watch-rotation
 title: "**OOD Watch Rotation** (ADR 0078; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
-status: "building"
-status_cell: "`building` (P1 substrate merged PR #610 2026-05-05; P2 `DefaultOodWatchService`+`OodWatchExpiryService` merged PR #614 2026-05-05 — **4 known gaps (R1–R4); fix BEFORE P3 via addendum**; P3 docs+ledger pending)"
+status: "built"
+status_cell: "`built` (Phases 1-3 complete + P2 amendment 2026-05-06)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
-reference_cell: "`docs/adrs/0078-ood-watch-rotation.md` (PR #571) + `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` + `icm/_state/handoffs/ood-watch-rotation-stage06-p2-amendment-addendum.md` (P2 gaps R1–R4)"
+reference_cell: "`docs/adrs/0078-ood-watch-rotation.md` (PR #571 merged) + `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` + `icm/_state/handoffs/ood-watch-rotation-stage06-p2-amendment-addendum.md` + `apps/docs/foundation/wayfinder/ood-watch.md`"
 ---
 
 ## Notes
 
-**P1 shipped (PR #610):** `OodWatch` + `OodWatchId` + `OodRole` + `OodWatchState` +
-`OodWatchConflictException` + `IOodWatchRepository` + `IOodWatchService` + 3 `AuditEventType`
-constants + `StandingOrder.IssuedDuringWatchId`. 8 tests.
+**Phases 1-3 built + P2 amendment 2026-05-06.** PRs:
 
-**P2 shipped (PR #614):** `DefaultOodWatchService` + `OodWatchExpiryService` + DI registration
-in `WayfinderServiceExtensions` + 8 tests. BUT: XO post-merge council review found 4 gaps
-that survived COB's own council pass. **Fix these BEFORE P3** per the P2-amendment addendum at
-`icm/_state/handoffs/ood-watch-rotation-stage06-p2-amendment-addendum.md`:
-- R1: TOCTOU pre-check still in `StartWatchAsync` (3 lines; remove — DB constraint owns invariant)
-- R2: No `ILogger` on audit swallow (add `ILogger<DefaultOodWatchService>` + `LogError`)
-- R3: No `OodHandoverKind` enum (add Voluntary|CommandRelieved + use in HandoverWatchAsync + payload)
-- R4: `GetExpiredCandidatesAsync` on public `IOodWatchRepository` (extract to `internal
-  IOodWatchSweepRepository`; `OodWatchExpiryService` takes sweep interface; cross-tenant sweep
-  path should NOT be on the general-purpose repo interface)
+- **P1 #610** — substrate types + audit constants + StandingOrder extension; council 2 Major
+  findings applied (`IMustHaveTenant` + `[JsonStringEnumConverter]`).
+- **P2 #614** — `DefaultOodWatchService` + `OodWatchExpiryService`; council 6 Major findings
+  applied (mandatory audit DI throw + narrowed catch + atomic
+  `IOodWatchRepository.HandoverWatchAsync` + DI registration + internal `SweepOnceAsync` +
+  single `occurredAt`).
+- **P2-amendment #619** merged 2026-05-06 — XO post-merge council R1–R4 applied:
+  - R1: removed TOCTOU pre-check from `StartWatchAsync` (DB unique index owns the invariant)
+  - R2: non-nullable `ILogger<T>` on both services with logging-on-swallow
+  - R3: new `OodHandoverKind` enum {`Voluntary`, `CommandRelieved`} discriminator on
+    `HandoverWatchAsync` with severity-switching audit payload
+  - R4: extracted `internal IOodWatchSweepRepository`; `OodWatchExpiryService` is now
+    `internal sealed`; cross-tenant single-caller invariant now type-enforced
+- **P3** (this PR) — docs + changelog + ledger flip.
 
-**P3 pending:** docs + changelog + ledger flip (`built`). Includes R1–R4 fixes from addendum.
-P3 estimates ~1.5–2.5h + 1–2 PRs (P2-amendment + P3 proper).
+**64/64** wayfinder tests pass.
+
+**H4 + IClock resolution:** signature enforcement deferred to API/gateway layer per XO
+directive 2026-05-05; service trusts authenticated `requestedBy`; uses
+`TimeProvider.GetUtcNow()`.
+
+**Cohort batting average:** 28-of-31 substrate amendments needed council fixes (P1 → 2 Major;
+P2 → 6 Major; P2-amend → 0 — clean READY-TO-MERGE pre-merge council).
+
+Unblocks W#50 (Engine Room Observability) Phase 3b EOOW-check wiring + W#51 (Quarterdeck)
+Phase 3a WatchBanner.
+
+**Phase 4 follow-up** (TODO comments): in-memory `IOodWatchRepository` impl (Phase 3 deferred);
+`StandingOrder` watch-transfer issuance via `IStandingOrderIssuer` (W#42 P2-gated).

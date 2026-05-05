@@ -21,6 +21,10 @@ for the semver rules that govern what qualifies as patch / minor / major.
 - `ExtensionFieldRedactionDeniedException` — thrown when Redact policy is denied by the capability graph.
 - 5 new `AuditEventType` constants: `ExtensionFieldGated`, `ExtensionFieldFiltered`, `ExtensionFieldSequestered`, `ExtensionFieldRedacted`, `ExtensionFieldGateEvaluationFailed`.
 - `AddExtensionFieldCatalogWithFeatureGating(IServiceCollection)` DI extension.
+- OOD Watch Rotation substrate in `Sunfish.Foundation.Wayfinder` — `IOodWatchService` + `IOodWatchRepository` + `internal IOodWatchSweepRepository` + `OodWatch` record + `OodWatchId` / `OodRole` / `OodWatchState` / `OodHandoverKind` + `OodWatchConflictException` + `DefaultOodWatchService` + `OodWatchExpiryService` (`internal sealed` hosted background sweep with 5-min default cadence). Per ADR 0078, W#49.
+- 3 new `AuditEventType` constants for OOD: `OodWatchStarted`, `OodWatchRelieved`, `OodWatchExpired`.
+- `OodHandoverKind` enum — `Voluntary` (severity `"Normal"`) vs `CommandRelieved` (severity `"High"`) discriminator on `IOodWatchService.HandoverWatchAsync`; surfaces in the `OodWatchRelieved` audit payload as `handoverKind`. Per W#49 P2 amendment R3.
+- `StandingOrder.IssuedDuringWatchId` — optional 11th positional `OodWatchId?` field correlating Standing Order issuances with the OOD watch active at issuance time. Per ADR 0078 §1.
 
 ### Changed
 
