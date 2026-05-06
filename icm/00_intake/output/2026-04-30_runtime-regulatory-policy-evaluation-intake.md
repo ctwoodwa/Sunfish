@@ -4,7 +4,9 @@
 **Requestor:** XO research session (synthesis output of W#33 Mission Space Matrix discovery)
 **Request:** New ADR ~0064 specifying runtime regulatory/jurisdictional policy evaluation — how a Sunfish deployment determines its current jurisdiction, evaluates per-jurisdiction policy rules at feature-invocation time, and enforces data-residency / sanctions / industry-compliance constraints.
 **Pipeline variant:** `sunfish-feature-change` (introduces new cross-cutting policy contract)
-**Stage:** 00 — pending CO promotion to active
+**Stage:** 02 — ADR 0064 drafted (Proposed); awaiting general-counsel engagement + ONR-led research before Status: Accepted
+**Owner:** ONR (Office of Naval Research session) — transferred from XO per CO directive 2026-05-06
+**ADR:** [`docs/adrs/0064-runtime-regulatory-policy-evaluation.md`](../../docs/adrs/0064-runtime-regulatory-policy-evaluation.md) — Status: Proposed; council + general-counsel sign-off required before Accepted
 
 > **Reader caution (Pedantic-Lawyer hardening pass output, carried forward from Mission Space Matrix §5.9):** specific statutory citations in this intake have not been verified against current Official Code text and may use practitioner shorthand. The downstream ADR MUST engage qualified general counsel before specifying enforcement behavior. This intake describes a *gap*, not a *solution*; the solution requires legal review.
 
@@ -57,13 +59,80 @@ Per discovery §5.9 (Pedantic-Lawyer-hardened citations):
 - **W#31 Foundation.Taxonomy** — jurisdictional classification taxonomies
 - **Phase 2 commercial MVP** — jurisdiction-aware feature surface
 
+## Authoring expectations (CO directive 2026-05-06)
+
+ADR 0064 is transferred from the XO author backlog to **ONR** (Office of Naval Research session) per CO directive 2026-05-06. The ADR is drafted (Status: Proposed) but requires ONR-led research-backed legal engagement before it can reach Status: Accepted. ONR's mandate:
+
+### Research-backed legal data
+
+ONR must produce citations to actual statutes / regulations / court cases / agency guidance — not "general principles" or practitioner shorthand. Concrete, jurisdiction-specific text references. Examples of the expected citation depth:
+
+- GDPR Article 22(1) text + EDPB Guidelines 05/2020 on automated decision-making (adopted 4 February 2021) + relevant CJEU rulings
+- HIPAA 45 CFR §164.308(a)(1)(ii)(A) exact text (risk analysis requirement) vs 45 CFR §164.312(a)(2)(iv) (encryption/decryption) — distinguish addressable vs required
+- OFAC 31 CFR Part 501 (Reporting, Procedures and Penalties) vs SDN list legal basis (IEEPA, TWEA, UNPA) — sanctions screening legal authority chain
+
+The ADR's current citations are Pedantic-Lawyer-flagged as unverified practitioner shorthand (see reader-caution block at top of ADR 0064). ONR must audit every statutory citation in §A0 + the Decision section against current Official Code text.
+
+### Pedantic-Lawyer perspective
+
+Apply the Pedantic-Lawyer adversarial lens both during ONR's §A0 self-audit and during the pre-merge council review (precedent: W#33 §5.9 hardening pass). Specifically:
+
+- Every statute cited must include: jurisdiction, official code section, most recent amendment date, and a note on which edition of the code was consulted.
+- Every agency guidance cited must include: issuing body, document identifier, publication date, and current effectiveness status (superseded? effective?).
+- Distinguish between "black-letter law," "regulatory guidance," "enforcement posture," and "industry best practice" — these are not equivalent legal authorities.
+
+### General-counsel engagement plan
+
+ONR drafts → cohort council (with Pedantic-Lawyer perspective subagent) → **general counsel as final-mile reviewer before Status: Accepted**. This is non-negotiable per the original intake's reader-caution block and per ADR 0064's internal halt-conditions. The PR description for any Accepted flip must document:
+
+- Name/role of general counsel reviewer
+- Date of review
+- Scope of review (which jurisdictions, which regimes)
+- Any conditions / carve-outs imposed by counsel
+
+If general counsel is not yet engaged, ONR's deliverable is a **research memo** (not a Status: Accepted flip) that equips CO to engage counsel. The research memo becomes the ADR 0064 §"Rule content" foundation.
+
+### Jurisdictional scope
+
+The ADR currently names: HIPAA / GDPR / PCI-DSS v4.0 / SOC 2 / EU AI Act / FHA (in-scope); FedRAMP / ITAR (out-of-scope, commercial-productization-only). ONR must:
+
+1. Propose a concrete jurisdictional scope declaration — which legal jurisdictions does the runtime probe and policy engine actually need to handle at Phase 1?
+2. Separate "regulatory regime" (HIPAA, GDPR) from "legal jurisdiction" (US Federal, US state-by-state, EU member states) — these are orthogonal dimensions.
+3. Identify which US state-level laws matter at Phase 1 (e.g., CCPA/CPRA California; VCDPA Virginia; CPA Colorado) vs which are deferred.
+4. Submit jurisdictional scope proposal to CO for confirmation before drafting rule-content.
+
+### Deliverable shape
+
+ADR 0064 is different from a typical Sunfish substrate ADR. ONR's deliverables may include some or all of:
+
+1. **Regulatory landscape survey** — per-regime summary of current enforcement posture, recent material developments, and Sunfish-specific applicability analysis
+2. **Per-jurisdiction policy table** — machine-readable (or table-formatted) mapping of `(jurisdiction × regime × feature-class) → policy verdict + legal authority citation`
+3. **Risk register** — ranked list of regulatory risks the Phase 1 substrate must handle vs defer; probability × impact × legal-authority chain
+4. **Runtime-policy-evaluation contract surface** — refined type surface for `IPolicyEvaluator`, `PolicyVerdict`, `RegulatoryRegimeStance` that reflects ONR's legal research (may amend current ADR 0064 § "Initial contract surface")
+5. **General-counsel briefing package** — compressed deck / memo suitable for handing to outside counsel; scopes what legal review is needed; defines what "sign-off" means per regime
+
+ONR proposes which deliverables are in scope for Phase 1; CO confirms.
+
+---
+
 ## Next Steps
 
-Promote to active workstream when CO confirms; proceed to Stage 01 Discovery. **General counsel engagement required** before Stage 02 Architecture.
+ADR 0064 is in Status: Proposed. ONR owns the path to Status: Accepted:
+
+1. ONR reads ADR 0064 in full; audits all statutory citations against current Official Code text
+2. ONR proposes jurisdictional scope (see above) → CO confirms
+3. ONR produces research memo (or research-backed ADR amendment) covering the deliverables above
+4. Pre-merge cohort council with Pedantic-Lawyer perspective subagent
+5. General counsel final-mile review
+6. CO flips Status: Accepted; amends ADR 0064 frontmatter accordingly
+
+**General counsel engagement required before any concrete enforcement behavior ships (Stage 06 build).** This gate is internal to ADR 0064's halt-conditions; ONR does not need to re-obtain CO permission to pause at this gate.
 
 ## Cross-references
 
+- **ADR 0064 (Proposed):** `docs/adrs/0064-runtime-regulatory-policy-evaluation.md`
 - Parent discovery: `icm/01_discovery/output/2026-04-30_mission-space-matrix.md` §5.9 + §6.3 + §7
 - Active workstream: W#33 in `icm/_state/active-workstreams.md`
 - ADRs 0057 + 0060 (concrete domain-specific precedents)
 - Mission Space plan: `~/.claude/plans/this-looks-pretty-comprehensive-concurrent-floyd.md`
+- Owner memory: `~/.claude/projects/-Users-christopherwood-Projects-Sunfish/memory/project_adr_0064_regulatory_onr_owned.md`
