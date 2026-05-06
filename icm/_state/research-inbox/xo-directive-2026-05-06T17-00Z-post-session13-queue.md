@@ -1,7 +1,7 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "697 (ADR 0082-A1 + W#54/W#50 Phase 2b rulings)"
+last-pr: "699 (ADR 0082-A1 + W#54/W#50 Phase 2b rulings)"
 ---
 
 Updated 2026-05-06 (session 16):

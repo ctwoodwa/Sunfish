@@ -33,16 +33,12 @@ extends: []
 supersedes: []
 superseded_by: null
 deprecated_in_favor_of: null
-amendments:
-  - id: A1
-    title: AtmosphereHealth.Unknown sentinel + NoopKeyRotationScheduler stub-success warning
-    date: 2026-05-06
-    status: Accepted
+amendments: [A1]
 ---
 
 # ADR 0082 — Sick Bay Aggregation Surface + IDC Role
 
-**Status:** Proposed
+**Status:** Accepted
 **Date:** 2026-05-05
 **Authors:** XO research session
 **Pipeline variant:** `sunfish-feature-change`
@@ -247,7 +243,8 @@ public sealed record AtmosphereReadout
     public required NodaTime.Instant        CapturedAt         { get; init; }
 }
 
-public enum AtmosphereHealth { Green, Yellow, Orange, Red }
+// ADR 0082-A1: Unknown added as zero-value sentinel — see §A1
+public enum AtmosphereHealth { Unknown, Green, Yellow, Orange, Red }
 
 // ── Snapshot ──────────────────────────────────────────────────────────────────
 // Full Sick Bay view — aggregates all three departments + medevac state.

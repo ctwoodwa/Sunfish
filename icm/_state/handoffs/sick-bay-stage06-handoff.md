@@ -127,7 +127,7 @@ Create the following files in `packages/foundation-sick-bay/`. All in namespace 
 - **`RotationHealth.cs`** — enum: `Current, RotationDue, RotationOverdue, Compromised`.
 - **`LabDiagnosticResult.cs`** — record with `ProbeName`, `DimensionId` (kebab-case), `Status` (`ProbeStatus` from `Sunfish.Foundation.MissionSpace`), `Degradation` (`DegradationKind` from `Sunfish.Foundation.MissionSpace`), `LastRunAt`, `DiagnosticDetail` (string? plain text).
 - **`AtmosphereReadout.cs`** — record with `OverallHealth` (`AtmosphereHealth`), `WarningProbeCount`, `CriticalProbeCount`, `ForceEnableActive`, `CapturedAt`.
-- **`AtmosphereHealth.cs`** — enum: `Green, Yellow, Orange, Red`.
+- **`AtmosphereHealth.cs`** — enum: `Unknown, Green, Yellow, Orange, Red`. **ADR 0082-A1**: `Unknown` is zero-value (numeric 0); stubs return `Unknown` until Phase 2b wires `IMissionEnvelopeProvider`.
 - **`MedevacState.cs`** — enum: `Idle, Requested, PendingAuthorization, Authorized, InProgress, Complete` (per state-transition table in ADR 0082 §2).
 - **`SickBaySnapshot.cs`** — record aggregating `IReadOnlyList<PharmacyInventoryEntry> Pharmacy`, `IReadOnlyList<LabDiagnosticResult> Lab`, `AtmosphereReadout Atmosphere`, `MedevacState MedevacState`, `CapturedAt`.
 - **`FirstAidHint.cs`** — record with `Key`, `Title`, `Body` (plain-text-validated; constructor REJECTS strings containing `<`, `>`, `&`, or ASCII control chars except `\n`), `Level` (`FirstAidLevel`).
@@ -306,8 +306,8 @@ Location: `packages/blocks-sick-bay/SickBayDataProvider.cs` (note: implementatio
 Per ADR 0082 §1 + §2 + Phase 2 implementation checklist:
 
 - **Pharmacy**: read `SickBayOptions.RegisteredFieldPurposes` for purpose labels and friendly names. Derive `RotationHealth` from `LastRotatedAt` + a configurable rotation-due threshold (in `SickBayOptions`; recommend `RotationDueAfter` default 60d, `RotationOverdueAfter` default 90d — DOCUMENT in option XML). Derive `RecordCount` via `PharmacyRecordCount.Exact(count)` — k-anonymity floor automatically applied by the factory.
-- **Lab**: `IMissionEnvelopeProvider.GetCurrentEnvelope(tenant)` (exact API per `Sunfish.Foundation.MissionSpace` — verify on origin/main) → derive `LabDiagnosticResult` per probe.
-- **Atmosphere**: map `MissionEnvelope` `DegradationKind` counts → `AtmosphereHealth` via documented thresholds (e.g., 0 critical → `Green`; ≥1 warning → `Yellow`; ≥1 critical → `Orange`; ≥3 critical or `ForceEnableActive` → `Red`). Document threshold choice in XML doc.
+- **Lab**: `await _missionEnvelopeProvider.GetCurrentAsync(ct)` (**ADR 0082-A1 corrected API** — no TenantId param; MissionEnvelope is process-level) → derive `LabDiagnosticResult` per probe using `ProbeStatus` + `DegradationKind` from each typed dimension record.
+- **Atmosphere**: call `GetCurrentAsync(ct)` → count `ProbeStatus` across all 10 dimensions (Hardware/User/Regulatory/Runtime/FormFactor/Edition/Network/TrustAnchor/SyncState/VersionVector). **Warning** = `ProbeStatus.Stale | PartiallyDegraded`; **Critical** = `ProbeStatus.Failed | Unreachable`. Thresholds: 0W 0C → `Green`; ≥1W 0C → `Yellow`; (≥2W 0C OR 1C) → `Orange`; ≥2C → `Red`; provider null or not yet fetched → `Unknown` (ADR 0082-A1). `ForceEnableActive = false` stub; Phase 3 wires `IInstallForceEnableSurface.HasActiveInstallOverrideAsync`. See XO ruling `xo-ruling-2026-05-06T20-00Z-w54-phase2b-atmosphere-mapping.md`.
 - **`SubscribeSnapshotAsync`**: subscribe to `IMissionEnvelopeObserver` for envelope changes; poll `SickBayOptions.FallbackPollingInterval` (default 60s) for Pharmacy + Lab data freshness. Coalesce concurrent change-events.
 - **FORBIDDEN**: NO `IFieldDecryptor` reference anywhere in the class graph. Verified by Phase 2 reflection test (H4):
 
