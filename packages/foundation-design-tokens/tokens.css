@@ -1,0 +1,196 @@
+/* Sunfish design-token CSS custom properties per ADR 0077 §5.
+ *
+ * W#46 Phase 2a: handcrafted from tokens.json source-of-truth. Phase 2b
+ * will replace this file with codegen output (tokens.json →
+ * tooling/design-tokens-codegen/ → tokens.css).
+ *
+ * Light theme is the :root default; dark theme is enabled via the
+ * `prefers-color-scheme: dark` media query (overridden by the
+ * `[data-theme="dark"]` attribute when a host explicitly sets the
+ * theme).
+ */
+
+:root {
+  /* sf.color.surface */
+  --sf-color-surface-primary: #ffffff;
+  --sf-color-surface-secondary: #f5f5f5;
+  --sf-color-surface-tertiary: #e5e5e5;
+
+  /* sf.color.text */
+  --sf-color-text-primary: #0a0a0a;
+  --sf-color-text-secondary: #404040;
+  --sf-color-text-tertiary: #737373;
+
+  /* sf.color.state */
+  --sf-color-state-success: #16a34a;
+  --sf-color-state-warning: #ca8a04;
+  --sf-color-state-error: #dc2626;
+  --sf-color-state-info: #2563eb;
+  --sf-color-state-focus-ring: #2563eb;
+
+  /* sf.color.role-band — PLACEHOLDER per Phase 2a; Phase 2b CVD audit */
+  --sf-color-role-band-captain: #7c3aed;
+  --sf-color-role-band-xo: #2563eb;
+  --sf-color-role-band-department-head: #0891b2;
+  --sf-color-role-band-division-officer: #16a34a;
+  --sf-color-role-band-idc: #ea580c;
+  --sf-color-role-band-scribe: #9333ea;
+  --sf-color-role-band-watch: #dc2626;
+
+  /* sf.typography */
+  --sf-typography-family-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sf-typography-family-serif: Georgia, "Times New Roman", serif;
+  --sf-typography-family-mono: ui-monospace, SFMono-Regular, "Consolas", monospace;
+  --sf-typography-size-xs: 12px;
+  --sf-typography-size-sm: 14px;
+  --sf-typography-size-md: 16px;
+  --sf-typography-size-lg: 18px;
+  --sf-typography-size-xl: 20px;
+  --sf-typography-size-2xl: 24px;
+  --sf-typography-size-3xl: 30px;
+  --sf-typography-size-4xl: 36px;
+  --sf-typography-weight-regular: 400;
+  --sf-typography-weight-medium: 500;
+  --sf-typography-weight-semibold: 600;
+  --sf-typography-weight-bold: 700;
+  --sf-typography-line-height-tight: 1.25;
+  --sf-typography-line-height-normal: 1.5;
+  --sf-typography-line-height-relaxed: 1.75;
+
+  /* sf.space (4px grid) */
+  --sf-space-0: 0px;
+  --sf-space-1: 4px;
+  --sf-space-2: 8px;
+  --sf-space-3: 12px;
+  --sf-space-4: 16px;
+  --sf-space-6: 24px;
+  --sf-space-8: 32px;
+  --sf-space-12: 48px;
+  --sf-space-16: 64px;
+  --sf-space-24: 96px;
+  --sf-space-32: 128px;
+  --sf-space-48: 192px;
+  --sf-space-64: 256px;
+
+  /* sf.radius */
+  --sf-radius-none: 0px;
+  --sf-radius-sm: 2px;
+  --sf-radius-md: 4px;
+  --sf-radius-lg: 8px;
+  --sf-radius-full: 9999px;
+
+  /* sf.elevation */
+  --sf-elevation-0: none;
+  --sf-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --sf-elevation-2: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --sf-elevation-3: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --sf-elevation-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --sf-elevation-drawer: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* sf.motion */
+  --sf-motion-duration-fast: 100ms;
+  --sf-motion-duration-normal: 200ms;
+  --sf-motion-duration-slow: 300ms;
+  --sf-motion-duration-slower: 500ms;
+  --sf-motion-easing-linear: cubic-bezier(0, 0, 1, 1);
+  --sf-motion-easing-in: cubic-bezier(0.4, 0, 1, 1);
+  --sf-motion-easing-out: cubic-bezier(0, 0, 0.2, 1);
+  --sf-motion-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --sf-motion-easing-standard: cubic-bezier(0.2, 0, 0, 1);
+
+  /* sf.target-size */
+  --sf-target-size-min-web: 24px;
+}
+
+/* OS-preference: dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --sf-color-surface-primary: #0a0a0a;
+    --sf-color-surface-secondary: #171717;
+    --sf-color-surface-tertiary: #262626;
+    --sf-color-text-primary: #fafafa;
+    --sf-color-text-secondary: #a3a3a3;
+    --sf-color-text-tertiary: #737373;
+    --sf-color-state-success: #22c55e;
+    --sf-color-state-warning: #eab308;
+    --sf-color-state-error: #ef4444;
+    --sf-color-state-info: #3b82f6;
+    --sf-color-state-focus-ring: #60a5fa;
+    --sf-color-role-band-captain: #a78bfa;
+    --sf-color-role-band-xo: #60a5fa;
+    --sf-color-role-band-department-head: #22d3ee;
+    --sf-color-role-band-division-officer: #4ade80;
+    --sf-color-role-band-idc: #fb923c;
+    --sf-color-role-band-scribe: #c084fc;
+    --sf-color-role-band-watch: #f87171;
+  }
+}
+
+/* Explicit dark-theme override */
+[data-theme="dark"] {
+  --sf-color-surface-primary: #0a0a0a;
+  --sf-color-surface-secondary: #171717;
+  --sf-color-surface-tertiary: #262626;
+  --sf-color-text-primary: #fafafa;
+  --sf-color-text-secondary: #a3a3a3;
+  --sf-color-text-tertiary: #737373;
+  --sf-color-state-success: #22c55e;
+  --sf-color-state-warning: #eab308;
+  --sf-color-state-error: #ef4444;
+  --sf-color-state-info: #3b82f6;
+  --sf-color-state-focus-ring: #60a5fa;
+  --sf-color-role-band-captain: #a78bfa;
+  --sf-color-role-band-xo: #60a5fa;
+  --sf-color-role-band-department-head: #22d3ee;
+  --sf-color-role-band-division-officer: #4ade80;
+  --sf-color-role-band-idc: #fb923c;
+  --sf-color-role-band-scribe: #c084fc;
+  --sf-color-role-band-watch: #f87171;
+}
+
+/* OS-preference: prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sf-motion-duration-fast: 0ms;
+    --sf-motion-duration-normal: 0ms;
+    --sf-motion-duration-slow: 0ms;
+    --sf-motion-duration-slower: 0ms;
+  }
+}
+
+/* OS-preference: prefers-reduced-transparency */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --sf-elevation-1: none;
+    --sf-elevation-2: 0 0 0 1px var(--sf-color-text-tertiary);
+    --sf-elevation-3: 0 0 0 1px var(--sf-color-text-tertiary);
+    --sf-elevation-modal: 0 0 0 2px var(--sf-color-text-primary);
+    --sf-elevation-drawer: 0 0 0 2px var(--sf-color-text-primary);
+  }
+}
+
+/* OS-preference: prefers-contrast: more (boosts contrast pairs) */
+@media (prefers-contrast: more) {
+  :root {
+    --sf-color-text-primary: #000000;
+    --sf-color-text-secondary: #1a1a1a;
+    --sf-color-state-focus-ring: #0000ff;
+  }
+}
+
+/* Windows High Contrast (forced-colors) — defer to system colors */
+@media (forced-colors: active) {
+  :root {
+    --sf-color-surface-primary: Canvas;
+    --sf-color-surface-secondary: Canvas;
+    --sf-color-surface-tertiary: Canvas;
+    --sf-color-text-primary: CanvasText;
+    --sf-color-text-secondary: CanvasText;
+    --sf-color-text-tertiary: GrayText;
+    --sf-color-state-success: LinkText;
+    --sf-color-state-warning: Mark;
+    --sf-color-state-error: LinkText;
+    --sf-color-state-info: LinkText;
+    --sf-color-state-focus-ring: Highlight;
+  }
+}

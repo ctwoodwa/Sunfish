@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.DesignTokens</PackageId>
+    <RootNamespace>Sunfish.Foundation.DesignTokens</RootNamespace>
+    <Description>Foundation-tier design-token catalog per ADR 0077 §5 — W3C Design Tokens format source-of-truth (tokens.json) + handcrafted C# const records for surface / text / state / role-band colors, typography, spacing, radius, elevation, motion, and target-size. W#46 Phase 2a substrate; Phase 2b adds the codegen pipeline (C# + CSS + Markdown) + WCAG 1.4.3/1.4.11 contrast verification CI gate + CVD ΔE2000 audit.</Description>
+    <PackageTags>sunfish;foundation;design-tokens;adr-0077</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Embed the W3C tokens.json source-of-truth so consumers can
+         resolve the canonical token catalog at runtime via a reflection
+         loader (Phase 2b will add a typed accessor). -->
+    <EmbeddedResource Include="tokens.json"
+                      LogicalName="Sunfish.Foundation.DesignTokens.tokens.json" />
+    <EmbeddedResource Include="tokens.css"
+                      LogicalName="Sunfish.Foundation.DesignTokens.tokens.css" />
+    <None Include="tokens.css" Pack="true" PackagePath="content\tokens.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.DesignTokens.Tests" />
+  </ItemGroup>
+</Project>
