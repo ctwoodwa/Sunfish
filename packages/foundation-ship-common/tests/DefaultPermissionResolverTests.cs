@@ -504,6 +504,12 @@ public class DefaultPermissionResolverTests
         Assert.Contains(ShipAction.EditShipsOfficeDocument, keys);
         Assert.Contains(ShipAction.PublishShipsOfficeDocument, keys);
         Assert.Contains(ShipAction.ArchiveShipsOfficeDocument, keys);
+        // W#50 Engine Room cohort additions.
+        Assert.Contains(ShipAction.ViewEngineRoom, keys);
+        Assert.Contains(ShipAction.ViewDamageControl, keys);
+        Assert.Contains(ShipAction.QuarantineDocument, keys);
+        Assert.Contains(ShipAction.ReleaseQuarantine, keys);
+        Assert.Contains(ShipAction.CompactDocument, keys);
 
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.Quarantine]);
         Assert.Equal(DeckDepth.BelowTheWaterline, DefaultPermissionResolver.ActionMinimumDeck[ShipAction.OverrideQuarantine]);

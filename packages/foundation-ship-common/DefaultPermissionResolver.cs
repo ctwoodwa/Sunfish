@@ -106,6 +106,18 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
             KeyValuePair.Create(ShipAction.EditShipsOfficeDocument, DeckDepth.TopDeck),
             KeyValuePair.Create(ShipAction.PublishShipsOfficeDocument, DeckDepth.MainDeck),
             KeyValuePair.Create(ShipAction.ArchiveShipsOfficeDocument, DeckDepth.MainDeck),
+            // ADR 0079 §4 — W#50 Engine Room cohort extension. Role-minimum
+            // enforcement (department-head / EngineerOfficer) is a Phase 2
+            // follow-up gated on ITenantSecurityPolicy. Damage Control
+            // operations (Quarantine / Release / Compact) sit at MainDeck
+            // (NOT BelowTheWaterline) per ADR 0079 §4 — they are reversible
+            // operations on a tenant-scoped CRDT, not destructive system-
+            // level deletes.
+            KeyValuePair.Create(ShipAction.ViewEngineRoom, DeckDepth.TopDeck),
+            KeyValuePair.Create(ShipAction.ViewDamageControl, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.QuarantineDocument, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.ReleaseQuarantine, DeckDepth.MainDeck),
+            KeyValuePair.Create(ShipAction.CompactDocument, DeckDepth.MainDeck),
         });
 
     /// <summary>
@@ -722,6 +734,14 @@ public sealed class DefaultPermissionResolver : IPermissionResolver
         if (action.Equals(ShipAction.EditShipsOfficeDocument)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.PublishShipsOfficeDocument)) return CapabilityAction.Write;
         if (action.Equals(ShipAction.ArchiveShipsOfficeDocument)) return CapabilityAction.Write;
+        // ADR 0079 §4 — W#50 Engine Room cohort extension. Damage Control
+        // ops (Quarantine / Release / Compact) map to Write — they mutate
+        // tenant-scoped CRDT state.
+        if (action.Equals(ShipAction.ViewEngineRoom)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.ViewDamageControl)) return CapabilityAction.Read;
+        if (action.Equals(ShipAction.QuarantineDocument)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.ReleaseQuarantine)) return CapabilityAction.Write;
+        if (action.Equals(ShipAction.CompactDocument)) return CapabilityAction.Write;
         throw new InvalidOperationException(
             $"unmapped ShipAction '{action.Name}' — update DefaultPermissionResolver.MapToCapabilityAction");
     }

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.EngineRoom</PackageId>
+    <RootNamespace>Sunfish.Foundation.EngineRoom</RootNamespace>
+    <Description>Foundation-tier substrate for the Engine Room observability surface (ADR 0079): provides IEngineRoomDataProvider + IEngineRoomCommandService contracts, the SyncDaemonHealth / CrdtGrowthMetrics / SubsystemHealth / EngineRoomHealthSummary data model, EngineRoomMetrics OTel instrument names, EngineRoomUnauthorizedException, and 8 AuditEventType constants. Per ADR 0079 §1+§2+§3, W#50 Phase 1.</Description>
+    <PackageTags>sunfish;foundation;engine-room;adr-0079</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.EngineRoom.Tests" />
+  </ItemGroup>
+</Project>
