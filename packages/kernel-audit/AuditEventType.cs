@@ -705,6 +705,20 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>Catch-all denial event emitted by <c>IAlertRouter</c>, <c>ITacticalRuleEngine</c>, and <c>ITacticalCommandService</c> on authority refusal, rate-limit breach, allowlist mismatch, or rule-evaluation-failure-rate breach. Carries a <c>denialReason</c> in the payload. Per ADR 0081 §2 + §8.</summary>
     public static readonly AuditEventType TacticalAuthorizationDenied = new("TacticalAuthorizationDenied");
 
+    // ===== ADR 0067 §8 — W#48 Atlas integration-config UI surface =====
+
+    /// <summary>The active provider for an <c>IntegrationCategory</c> changed (e.g., payment gateway switched from <c>"stripe"</c> to <c>"square"</c>). Emitted by <c>IIntegrationAtlasProvider.IssueProviderChangeAsync</c> after the activating Standing Order commits. Audit payload MUST NOT carry credential values per ADR 0067 §8 redaction rule.</summary>
+    public static readonly AuditEventType IntegrationProviderChanged = new("IntegrationProviderChanged");
+
+    /// <summary>A credential field on the active provider was updated. Emitted by <c>IIntegrationAtlasProvider.IssueSensitiveCredentialAsync</c> + <c>IssueNonSensitiveCredentialAsync</c> after the storing Standing Order commits. Audit payload MUST NOT carry the credential value (sensitive OR non-sensitive) — only the category + provider + credentialKey + tenant.</summary>
+    public static readonly AuditEventType IntegrationCredentialUpdated = new("IntegrationCredentialUpdated");
+
+    /// <summary>An <c>IIntegrationProviderValidator</c> returned <c>ProviderValidationStatus.Valid</c> for a provider's current credential set. Emitted by <c>IIntegrationAtlasProvider.ValidateProviderAsync</c> on success. Per ADR 0067 §5.3.1.</summary>
+    public static readonly AuditEventType IntegrationValidationSucceeded = new("IntegrationValidationSucceeded");
+
+    /// <summary>An <c>IIntegrationProviderValidator</c> returned a non-<c>Valid</c> status (Invalid / Unreachable / Unknown) for a provider's current credential set. Emitted by <c>IIntegrationAtlasProvider.ValidateProviderAsync</c> on validator failure or capability-acquisition failure. Carries a discriminating <c>errorCode</c> + <c>errorMessage</c> in the payload (e.g., <c>"no-decrypt-capability"</c>, <c>"no-validator-registered"</c>, validator-supplied codes). Per ADR 0067 §5.3.1.</summary>
+    public static readonly AuditEventType IntegrationValidationFailed = new("IntegrationValidationFailed");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }
