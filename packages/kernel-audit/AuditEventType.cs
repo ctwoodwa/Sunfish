@@ -522,6 +522,25 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>An Active OOD watch transitioned to <c>Expired</c> via the expiry sweep (<c>StartedAt + MaxWatchDuration</c> elapsed). Per ADR 0078 §1.</summary>
     public static readonly AuditEventType OodWatchExpired = new("OodWatchExpired");
 
+    // ===== ADR 0077 §2 — W#46 Shared Design System =====
+
+    /// <summary>
+    /// A permission request was denied by <c>IPermissionResolver.ResolveAsync</c>.
+    /// Per ADR 0077 §2.4 — every <c>Denied</c> decision audits; <c>Granted</c>
+    /// decisions audit only when the action is in <c>AuditLoudActions</c>.
+    /// </summary>
+    public static readonly AuditEventType PermissionDenied = new("PermissionDenied");
+
+    /// <summary>
+    /// The per-<c>(ActorId, ShipLocation)</c> denial-rate-limit was exceeded
+    /// within the 1-minute sliding window (default N=10). Per ADR 0077 §2.4
+    /// rate-limiting spec — emitted exactly once per window-exceedance; the
+    /// resolver returns <c>Denied(SecurityPolicyBlocked, ...)</c> for
+    /// subsequent calls within the window without invoking resolution steps
+    /// 0–7.
+    /// </summary>
+    public static readonly AuditEventType PermissionDenialRateExceeded = new("PermissionDenialRateExceeded");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

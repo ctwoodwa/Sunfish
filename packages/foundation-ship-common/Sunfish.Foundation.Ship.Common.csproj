@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Ship.Common</PackageId>
+    <RootNamespace>Sunfish.Foundation.Ship.Common</RootNamespace>
+    <Description>Foundation-tier substrate for the Sunfish Shared Design System (ADR 0077): the closed ShipRole taxonomy + IPermissionResolver + IDeckRegistry + DefaultPermissionResolver. Provides the role/location/deck/action permission tuple consumed by every W#35 cohort UI ADR (Quarterdeck, Engine Room, Tactical, Sick Bay, Ship's Office, OOD-Watch). Per ADR 0077, W#46 Phase 1.</Description>
+    <PackageTags>sunfish;foundation;ship;permissions;adr-0077</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\foundation-mission-space\Sunfish.Foundation.MissionSpace.csproj" />
+    <ProjectReference Include="..\foundation-wayfinder\Sunfish.Foundation.Wayfinder.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Ship.Common.Tests" />
+  </ItemGroup>
+</Project>
