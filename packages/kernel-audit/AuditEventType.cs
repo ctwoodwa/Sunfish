@@ -653,6 +653,17 @@ public readonly record struct AuditEventType(string Value)
     /// <summary>A recovery contact was added / updated / removed via the Sick Bay surface. Per ADR 0082 §6.</summary>
     public static readonly AuditEventType SickBayRecoveryContactManaged = new("SickBayRecoveryContactManaged");
 
+    // ===== ADR 0080 §5 — W#51 Quarterdeck Entry-Point =====
+
+    /// <summary>Pre-op intent emitted at the Quarterdeck when an operator initiates a watch transfer from the watch banner. Pairs with W#49's <see cref="OodWatchRelieved"/> (post-op success, emitted internally by <c>IOodWatchService.HandoverWatchAsync</c>); absence of <see cref="OodWatchRelieved"/> after <c>WatchHandoverRequested</c> in the audit trail indicates the handover was denied or the optimistic-concurrency check failed. Per ADR 0080 §5 + ADR 0078 §3.</summary>
+    public static readonly AuditEventType WatchHandoverRequested = new("WatchHandoverRequested");
+
+    /// <summary>Pre-op intent for a Quarterdeck alert acknowledgement: emitted BEFORE <c>IQuarterdeckCommandService.AcknowledgeAlertAsync</c> delegates to the underlying alert source, including for denied requests (intent is auditable even when authority refuses). Pairs with <see cref="AlertAcknowledged"/> (post-op success) or absence (post-op failure / denial). Per ADR 0080 §5 two-phase audit.</summary>
+    public static readonly AuditEventType AlertAcknowledgementRequested = new("AlertAcknowledgementRequested");
+
+    /// <summary>Post-op success for a Quarterdeck alert acknowledgement: emitted ONLY after the underlying alert source confirms acknowledgement. Absence of this event after <see cref="AlertAcknowledgementRequested"/> in the audit trail IS the failure signal — there is no separate <c>AlertAcknowledgementFailed</c> constant. Per ADR 0080 §5 two-phase audit.</summary>
+    public static readonly AuditEventType AlertAcknowledged = new("AlertAcknowledged");
+
     /// <inheritdoc />
     public override string ToString() => Value;
 }

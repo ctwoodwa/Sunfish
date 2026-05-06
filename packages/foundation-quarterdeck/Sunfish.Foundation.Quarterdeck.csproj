@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>true</IsPackable>
+    <PackageId>Sunfish.Foundation.Quarterdeck</PackageId>
+    <RootNamespace>Sunfish.Foundation.Quarterdeck</RootNamespace>
+    <Description>Foundation-tier substrate for the Quarterdeck entry-point surface (ADR 0080): IQuarterdeckDataProvider + IQuarterdeckCommandService + IQuarterdeckAlertSource + IDepartmentKpiSource contracts, the QuarterdeckSnapshot aggregate (OodWatch + MissionEnvelope + RecentOrders + PendingAlerts + KpiCards + DepartmentLinks), QuarterdeckOptions, and supporting enums (AlertVisibilityPolicy, AlertSeverity, DepartmentStatus, MissionEnvelopeStatus). Per ADR 0080 §1+§2+§3, W#51 Phase 1.</Description>
+    <PackageTags>sunfish;foundation;quarterdeck;adr-0080</PackageTags>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\foundation\Sunfish.Foundation.csproj" />
+    <ProjectReference Include="..\foundation-multitenancy\Sunfish.Foundation.MultiTenancy.csproj" />
+    <ProjectReference Include="..\foundation-ship-common\Sunfish.Foundation.Ship.Common.csproj" />
+    <ProjectReference Include="..\kernel-audit\Sunfish.Kernel.Audit.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Sunfish.Foundation.Quarterdeck.Tests" />
+  </ItemGroup>
+</Project>
