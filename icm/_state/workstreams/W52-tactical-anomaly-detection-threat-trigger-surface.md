@@ -4,7 +4,7 @@ number: 52
 slug: tactical-anomaly-detection-threat-trigger-surface
 title: "**Tactical Anomaly Detection + Threat-Trigger Surface** (ADR 0081; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 PR #658 — `foundation-tactical` substrate: 9 interfaces + 5 records + 11 enums + TacticalOptions + 13 AuditEventType + 7 ShipAction; Phase 2 UNBLOCKED — all gates ✓ (IActorPrincipalResolver shipped PR #678); **CRITICAL: read `tactical-p2-system-principal-authority-addendum.md` before Phase 2** — ShipRole.System gap resolved; Phases 2–4 pending)"
+status_cell: "`building` (Phase 1 #658 + Phase 2 fully shipped 2026-05-06: P2a alert-router #695 / P2b rule-engine #704+#707 council amendment / P2c threat-trigger #708+#709 council amendment; 3-PR cohort split per XO ruling. Phase 3a (Sonar Room + Lookout UI) UNBLOCKED; Phases 3a/3b/4 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0081-tactical-anomaly-detection.md` (PR #578 merged) + `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md` + `icm/_state/handoffs/tactical-p2-system-principal-authority-addendum.md` (ShipRole.System gap ruling)"
