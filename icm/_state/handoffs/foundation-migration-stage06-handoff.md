@@ -8,7 +8,7 @@
 **Approval:** ADR 0028-A5+A8 Accepted on origin/main; A8 absorbed all 10 council recommendations
 **Estimated cost:** ~12–16h sunfish-PM (foundation-tier package scaffold + ~12 type signatures + migration table + 6 audit constants + ~30–40 tests + DI + apps/docs page); same shape as W#34 Foundation.Versioning which shipped 59/59 tests in ~5 PRs
 **Pipeline:** `sunfish-feature-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep -E "^foundation-migration"` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep -E "^foundation-migration"` to confirm no collision (audit not yet run; COB confirms before Phase 1 commit)
 
 ---
 

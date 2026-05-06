@@ -8,7 +8,7 @@
 **Approval:** ADR 0064 Accepted on origin/main; A1 amendment absorbed all 4 Required council recommendations; council batting average 18-of-18
 **Estimated cost:** ~8–12h sunfish-PM (foundation-tier substrate package + ~14 type signatures + composite-confidence probe + rule engine + data-residency enforcer + sanctions screener + 10 audit constants + ~30–40 tests + DI + apps/docs page)
 **Pipeline:** `sunfish-feature-change`
-**Audit before build:** `ls /Users/christopherwood/Projects/Sunfish/packages/ | grep mission-space-regulatory` to confirm no collision (audit not yet run; COB confirms before commit)
+**Audit before build:** `ls /Users/christopherwood/Projects/SunfishSoftware/Sunfish/packages/ | grep mission-space-regulatory` to confirm no collision (audit not yet run; COB confirms before commit)
 
 ---
 

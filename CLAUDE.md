@@ -50,10 +50,8 @@ Sessions coordinate via repo artifacts + auto-memory. No chat. XO's PM coverage 
 ### Canonical state files
 
 - **`icm/_state/MASTER-PLAN.md`** — stable; goals + done-conditions + velocity baseline. Updated only when goals/baseline shift.
-- **`icm/_state/workstreams/W{NN}-{slug}.md`** — **source of truth** for each in-flight workstream (one file per row). Frontmatter captures structured fields (number, status, owner, references); the `## Notes` body preserves free-text context. Edit these files when state changes.
-- **`icm/_state/active-workstreams.md`** — **regenerated** roll-up table. DO NOT EDIT directly. Run `python3 tools/icm/render-ledger.py` after editing any per-workstream file. Read this at session start (still greppable; only the write path moved to per-workstream files). CI verifies via `tools/icm/render-ledger.py --check`.
+- **`icm/_state/active-workstreams.md`** — dynamic; in-flight workstreams + owner + state. Read at session start; update on state change.
 - **`icm/_state/handoffs/`** — per-workstream hand-off specs (research → sunfish-PM).
-- **`tools/icm/`** — `render-ledger.py` (regen / `--check`), `migrate-ledger.py` (one-shot, retained for reference).
 
 ### Status format (executive summary on demand)
 
@@ -74,7 +72,7 @@ Status vocabulary: `design-in-flight` / `ready-to-build` / `building` / `built` 
 
 Before any code change beyond a one-line fix:
 
-1. **`icm/_state/workstreams/W{NN}-*.md`** — find the per-workstream file (or read the regenerated `icm/_state/active-workstreams.md` roll-up). The `status:` frontmatter must say `ready-to-build`. If `design-in-flight`/`held`, STOP + memory note to research.
+1. **`active-workstreams.md`** — find the row. Must say `ready-to-build`. If `design-in-flight`/`held`, STOP + memory note to research.
 2. **Intake / ADR `Status:` line** — must match `ready-to-build` (or be silent — ledger applies).
 3. **`icm/_state/handoffs/<workstream>.md`** — describes what to build, file-by-file, with acceptance criteria.
 4. **`gh pr list --state open`** — look for in-flight PRs touching the same package; especially auto-merge-enabled.
@@ -84,14 +82,8 @@ Any unexpected state → STOP, memory note naming workstream + observation + nee
 
 ### State transitions (research)
 
-- **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update the per-workstream file's `status:` frontmatter under `icm/_state/workstreams/W{NN}-*.md`, run `python3 tools/icm/render-ledger.py` to refresh the roll-up, revoke/update existing hand-off.
-- **Design final:** write hand-off in `handoffs/<workstream>.md`, flip the per-workstream file's `status:` to `ready-to-build`, run `python3 tools/icm/render-ledger.py`, optionally write a project memory pointing at the hand-off.
-- **New workstream:** run `python3 tools/naming/check.py next-workstream` first to get the
-  next-free W# (checks disk + open PRs atomically — prevents parallel-session collisions like
-  W#54 + W#55 on 2026-05-05). Then create `icm/_state/workstreams/W{NN}-{slug}.md`; fill
-  frontmatter (`sort_order`, `number`, `slug`, `title`, `status`, `status_cell`, `owner`,
-  `owner_cell`, `reference_cell`) and a `## Notes` body; run `python3 tools/icm/render-ledger.py`.
-  Commit both the per-workstream file and the regenerated `active-workstreams.md`.
+- **Widening/revising mid-flight:** set intake `Status: design-in-flight`, update ledger row, revoke/update existing hand-off.
+- **Design final:** write hand-off in `handoffs/<workstream>.md`, flip ledger row to `ready-to-build`, optionally write a project memory pointing at the hand-off.
 
 ### Memory-side coordination
 
@@ -103,7 +95,7 @@ Per `feedback_verify_pr_state_at_session_start.md`: at session start (especially
 
 ### Fallback work order (sunfish-PM, when priority queue is dry)
 
-Priority queue = `icm/_state/workstreams/W{NN}-*.md` files (or the regen'd `active-workstreams.md` table) where `status: ready-to-build` AND a hand-off file exists. When dry, sunfish-PM does **not idle** — falls through:
+Priority queue = `active-workstreams.md` rows `ready-to-build` with a hand-off file. When dry, sunfish-PM does **not idle** — falls through:
 
 | Rung | Work |
 |---|---|
@@ -112,15 +104,15 @@ Priority queue = `icm/_state/workstreams/W{NN}-*.md` files (or the regen'd `acti
 | 3 | **Style-audit P0** per `icm/07_review/output/style-audits/TIER-4-RE-AUDIT.md`. |
 | 4 | **Test coverage gap-fill** — tests for existing public surface; no behavior changes. |
 | 5 | **Doc improvements** — XML docs, README gaps, `apps/docs/blocks/<block>.md` stubs. |
-| 6 | **Idle:** write `cob-idle-*.md` to research-inbox (see below) THEN `ScheduleWakeup 1800s`. Re-poll priority queue at wake. |
+| 6 | **Idle:** write `cob-idle-*.md` to coordination inbox (see below) THEN `ScheduleWakeup 1800s`. Re-poll priority queue at wake. |
 
-Rules: commits use `chore(fallback):` / `fix(build):` / `test(coverage):` / `docs:`. Design-question halts → `cob-question-*.md` (see below). Re-check priority queue after every merge; priority always wins. Cap concurrent fallback PRs at 3. **Research commitment:** maintain queue depth 2–3 `ready-to-build` rows; pre-write next 1–2 hand-offs after every PR merges. **XO scans `research-inbox/` every loop iteration.**
+Rules: commits use `chore(fallback):` / `fix(build):` / `test(coverage):` / `docs:`. Design-question halts → `cob-question-*.md` (see below). Re-check priority queue after every merge; priority always wins. Cap concurrent fallback PRs at 3. **Research commitment:** maintain queue depth 2–3 `ready-to-build` rows; pre-write next 1–2 hand-offs after every PR merges. **XO scans `coordination/inbox/` every loop iteration.**
 
-### Live signaling to XO — `research-inbox/`
+### Live signaling to XO — `SunfishSoftware/coordination/inbox/`
 
-Filesystem inbox at `icm/_state/research-inbox/` for sub-XO sessions → XO. Survives session restarts (committed to git); active beacons in root, resolved in `_archive/`. **File naming:** `{sender}-{type}-YYYY-MM-DDTHH-MMZ-{slug}.md` where `sender ∈ {cob, pao, yeoman}` and `type ∈ {idle, question, resumed}`. Body: 3-line YAML frontmatter (`type`, `workstream-or-chapter`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
+Filesystem inbox at the **parent folder** `/Users/christopherwood/Projects/SunfishSoftware/coordination/inbox/` (relative: `../coordination/inbox/`). The parent `SunfishSoftware/` folder is **not a git repo** — beacons are filesystem-coordinated only; this is a neutral surface across the Sunfish platform repo and the `the-inverted-stack` book repo. Active beacons in `inbox/`, resolved in `_archive/`. **File naming:** `{sender}-{type}-YYYY-MM-DDTHH-MMZ-{slug}.md` where `sender ∈ {cob, pao, yeoman, xo}` and `type ∈ {idle, question, resumed, directive, ruling, status, task}`. Body: 3-line YAML frontmatter (`type`, `workstream-or-chapter`, `last-pr`) + ≤2 lines context + ≤2 lines "what would unblock me."
 
-**COB writes** (`cob-*`): rung-6 idle → `cob-idle-*.md` + `ScheduleWakeup 1800s`. Design-ambiguity halt → `cob-question-*.md` + halt the workstream + ledger row note. **PAO writes** (`pao-*`, cross-repo from book repo via `cd /Users/christopherwood/Projects/Sunfish && git worktree ...`): book-side question that needs Sunfish architecture/ADR/workstream input the PAO cannot resolve from book + Sunfish docs alone → `pao-question-*.md`. PAO is the cross-repo funnel for the book side. **Yeoman writes** (`yeoman-*`) only as PAO-bypass fallback when PAO is offline AND a critical Sunfish question can't wait — flag in body "PAO-bypass." Yeoman's normal questions go to the book-local `.pao-inbox/` (Tier 1), not here. **XO reads each loop iteration:** `ls icm/_state/research-inbox/*.md 2>/dev/null`; non-empty → priority above ADR cadence; resolve via hand-off/answer/ledger update, then `git mv` to `_archive/` in the same PR. **Trim:** weekly `chore(housekeeping): prune research-inbox archive` deletes `_archive/*.md` >30 days old; active beacons >7 days unanswered → XO escalates to CO.
+**COB writes** (`cob-*`): rung-6 idle → `cob-idle-*.md` + `ScheduleWakeup 1800s`. Design-ambiguity halt → `cob-question-*.md` + halt the workstream + ledger row note. **PAO writes** (`pao-*`, cross-repo from book repo): book-side question that needs Sunfish architecture/ADR/workstream input the PAO cannot resolve from book + Sunfish docs alone → `pao-question-*.md` directly into the parent `coordination/inbox/` (no worktree needed since the parent folder is shared between sessions). PAO is the cross-repo funnel for the book side. **Yeoman writes** (`yeoman-*`) only as PAO-bypass fallback when PAO is offline AND a critical Sunfish question can't wait — flag in body "PAO-bypass." Yeoman's normal questions go to the book-local `.pao-inbox/` (Tier 1), not here. **XO reads each loop iteration:** `ls /Users/christopherwood/Projects/SunfishSoftware/coordination/inbox/*.md 2>/dev/null`; non-empty → priority above ADR cadence; resolve via hand-off/answer/ledger update, then `mv` (plain — not git mv, since the parent isn't a git repo) the resolved beacon to `coordination/_archive/`. **Trim:** weekly `mv` archive entries older than 30 days to `/dev/null` (filesystem cleanup, no PR); active beacons >7 days unanswered → XO escalates to CO. See `coordination/README.md` for the full protocol.
 
 ---
 
@@ -205,4 +197,3 @@ Code lives in `/packages/` (framework-agnostic + adapters), `/apps/` (demo + doc
 | [`/_shared/product/architecture-principles.md`](./_shared/product/architecture-principles.md) | Architecture principles |
 | [`/_shared/engineering/coding-standards.md`](./_shared/engineering/coding-standards.md) | Style guidelines |
 | [`/packages/foundation/README.md`](./packages/foundation/README.md), [`/packages/ui-core/README.md`](./packages/ui-core/README.md) | Per-package contracts |
-| [`/docs/adrs/0069-adr-authoring-discipline.md`](docs/adrs/0069-adr-authoring-discipline.md) | ADR Authoring Discipline (pre-merge council + §A0 + three-direction) |

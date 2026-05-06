@@ -24,10 +24,10 @@ You are the book-writing Claude Code session for The Inverted Stack at /Users/ch
 
 ## Cross-repo awareness — Sunfish
 
-Sunfish lives at /Users/christopherwood/Projects/Sunfish. The companion implementation. When the book references a Sunfish package, ADR, or roadmap entry, the truth lives there. Specifically:
-- /Users/christopherwood/Projects/Sunfish/icm/_state/MASTER-PLAN.md — cross-project plan including book scope decisions
-- /Users/christopherwood/Projects/Sunfish/docs/specifications/inverted-stack-package-roadmap.md — which Sunfish packages are book-committed vs. scaffolded vs. shipped
-- /Users/christopherwood/Projects/Sunfish/docs/adrs/ — ADRs the book chapters cross-reference
+Sunfish lives at /Users/christopherwood/Projects/SunfishSoftware/Sunfish. The companion implementation. When the book references a Sunfish package, ADR, or roadmap entry, the truth lives there. Specifically:
+- /Users/christopherwood/Projects/SunfishSoftware/Sunfish/icm/_state/MASTER-PLAN.md — cross-project plan including book scope decisions
+- /Users/christopherwood/Projects/SunfishSoftware/Sunfish/docs/specifications/inverted-stack-package-roadmap.md — which Sunfish packages are book-committed vs. scaffolded vs. shipped
+- /Users/christopherwood/Projects/SunfishSoftware/Sunfish/docs/adrs/ — ADRs the book chapters cross-reference
 
 If a chapter cites a Sunfish ADR or package, confirm it's still accurate by reading the source. If you find a contradiction (e.g., Sunfish ADR was amended in a way that affects the chapter's claim), surface it as a technical-review-stage finding.
 

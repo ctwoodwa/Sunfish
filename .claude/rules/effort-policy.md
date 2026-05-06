@@ -277,7 +277,7 @@ project default at level 4 is what kicks in when no override is set.
 
 ## How to verify
 
-Open a Claude Code session in `C:/Projects/Sunfish` and run:
+Open a Claude Code session in `/Users/christopherwood/Projects/SunfishSoftware/Sunfish` and run:
 
 ```text
 /effort
