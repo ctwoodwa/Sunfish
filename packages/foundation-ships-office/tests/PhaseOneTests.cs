@@ -158,6 +158,21 @@ public class AuditEventTypeConstantsTests
     }
 }
 
+public class PublishOutcomeTests
+{
+    [Fact]
+    public void PublishOutcome_HasExactlyTwoValues_PublishedAndRejected()
+    {
+        // W#55 P1 pre-merge council 2026-05-06 (Major SI-1): explicit
+        // outcome enum on PublishAsync prevents callers from
+        // interpreting absence-of-exception as confirmation.
+        var values = Enum.GetValues<PublishOutcome>();
+        Assert.Equal(2, values.Length);
+        Assert.Contains(PublishOutcome.Published, values);
+        Assert.Contains(PublishOutcome.Rejected, values);
+    }
+}
+
 public class ShipActionConstantsTests
 {
     [Fact]

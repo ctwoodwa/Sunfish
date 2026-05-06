@@ -22,6 +22,13 @@ public sealed class ShipsOfficeOptions
     /// returned by <see cref="IShipsOfficeDataProvider.GetSnapshotAsync"/>
     /// in a single page. Default 500.
     /// </summary>
+    /// <remarks>
+    /// Per W#55 P1 pre-merge council 2026-05-06 (Minor SE-1): tenants
+    /// with very large document corpora SHOULD lower this and rely on
+    /// <see cref="IShipsOfficeDataProvider.SearchAsync"/> paging instead.
+    /// The snapshot endpoint is intended for typical-tenant browse
+    /// hydration, not exhaustive enumeration.
+    /// </remarks>
     public int SnapshotPageSize { get; set; } = 500;
 
     /// <summary>
