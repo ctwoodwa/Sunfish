@@ -5,6 +5,8 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Sunfish.Foundation.Assets.Common;
 using Sunfish.Foundation.Crypto;
@@ -60,17 +62,31 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
     private readonly ISyncDaemonHealthSource? _syncDaemon;
     private readonly ICrdtDocumentRegistry? _crdtRegistry;
     private readonly IAuditTrail? _auditTrail;
+    private readonly IOperationSigner? _signer;
+    private readonly ILogger<DefaultEngineRoomDataProvider> _logger;
     private readonly TimeProvider _time;
 
     private readonly ConcurrentDictionary<DegradationKey, DateTimeOffset> _lastDegradationAuditAt =
         new();
 
     /// <summary>Construct the default data provider.</summary>
+    /// <remarks>
+    /// Audit emission requires BOTH <paramref name="auditTrail"/> AND
+    /// <paramref name="signer"/> to be registered (per W#50 P2 council
+    /// Critical: a placeholder all-zeros signature would fail
+    /// <see cref="IAuditTrail.AppendAsync"/>'s envelope verification and
+    /// the failure would be swallowed, producing silent §Trust gaps). When
+    /// either dependency is absent the provider skips degradation
+    /// audit emission entirely; Phase 2b will land the full signer-
+    /// integrated path.
+    /// </remarks>
     public DefaultEngineRoomDataProvider(
         IOptions<EngineRoomOptions> options,
         ISyncDaemonHealthSource? syncDaemon = null,
         ICrdtDocumentRegistry? crdtRegistry = null,
         IAuditTrail? auditTrail = null,
+        IOperationSigner? signer = null,
+        ILogger<DefaultEngineRoomDataProvider>? logger = null,
         TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -78,6 +94,8 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
         _syncDaemon = syncDaemon;
         _crdtRegistry = crdtRegistry;
         _auditTrail = auditTrail;
+        _signer = signer;
+        _logger = logger ?? NullLogger<DefaultEngineRoomDataProvider>.Instance;
         _time = timeProvider ?? TimeProvider.System;
     }
 
@@ -87,15 +105,28 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
         CancellationToken ct = default)
     {
         var sync = await GetSyncDaemonHealthAsync(tenantId, ct).ConfigureAwait(false);
+        // Per W#50 P2 council Critical (W#54 P2 precedent): subsystems
+        // without a registered probe source surface as Unknown, NOT
+        // Operational. Otherwise a UI tile would render "all green" while
+        // the host has no probe — a §Trust misrepresentation.
         var entries = new List<SubsystemHealth>(4)
         {
             new SubsystemHealth(
                 EngineRoomSubsystem.MainPropulsion,
-                MapSyncStatus(sync.Status),
-                sync.Status == SyncDaemonStatus.Healthy ? null : SyncMessage(sync)),
-            new SubsystemHealth(EngineRoomSubsystem.Electrical, SubsystemStatus.Operational, null),
-            new SubsystemHealth(EngineRoomSubsystem.DamageControl, SubsystemStatus.Operational, null),
-            new SubsystemHealth(EngineRoomSubsystem.QaWorkshop, SubsystemStatus.Operational, null),
+                MapSyncStatus(sync.Status, syncSourceRegistered: _syncDaemon is not null),
+                sync.Status == SyncDaemonStatus.Healthy ? null : SyncMessage(sync, _syncDaemon is not null)),
+            new SubsystemHealth(
+                EngineRoomSubsystem.Electrical,
+                SubsystemStatus.Unknown,
+                "No Electrical probe source registered (Phase 2a)."),
+            new SubsystemHealth(
+                EngineRoomSubsystem.DamageControl,
+                SubsystemStatus.Unknown,
+                "No Damage Control probe source registered (Phase 2a — wires in Phase 2b)."),
+            new SubsystemHealth(
+                EngineRoomSubsystem.QaWorkshop,
+                SubsystemStatus.Unknown,
+                "No QA Workshop probe source registered (Phase 2a)."),
         };
         return new EngineRoomHealthSummary(entries);
     }
@@ -184,19 +215,53 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
                 yield break;
             }
 
-            var current = await GetHealthSummaryAsync(tenantId, ct).ConfigureAwait(false);
+            // Per W#50 P2 council Major: synthesize Unavailable on
+            // sync-source faults so the heartbeat loop survives
+            // transient telemetry failures (cohort precedent:
+            // DefaultPermissionResolver.EmitAsync swallows audit
+            // failures the same way).
+            EngineRoomHealthSummary current;
+            try
+            {
+                current = await GetHealthSummaryAsync(tenantId, ct).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                yield break;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "Engine Room heartbeat health rollup failed; surfacing Unknown summary and continuing.");
+                current = new EngineRoomHealthSummary(
+                [
+                    new SubsystemHealth(EngineRoomSubsystem.MainPropulsion, SubsystemStatus.Unknown, "Telemetry source threw — see logs."),
+                    new SubsystemHealth(EngineRoomSubsystem.Electrical, SubsystemStatus.Unknown, null),
+                    new SubsystemHealth(EngineRoomSubsystem.DamageControl, SubsystemStatus.Unknown, null),
+                    new SubsystemHealth(EngineRoomSubsystem.QaWorkshop, SubsystemStatus.Unknown, null),
+                ]);
+            }
+
             EmitDegradationAudits(tenantId, prior, current);
             yield return current;
             prior = current;
         }
     }
 
-    private void EmitDegradationAudits(
+    /// <summary>
+    /// Per W#50 P2 council Critical: audit emission requires BOTH a
+    /// registered <see cref="IAuditTrail"/> AND
+    /// <see cref="IOperationSigner"/>. With either missing the provider
+    /// skips emission entirely (NOT a silent fake-signed record that
+    /// would throw <see cref="AuditSignatureException"/> at the audit
+    /// trail boundary). Phase 2b wires the signer-integrated path.
+    /// </summary>
+    internal void EmitDegradationAudits(
         TenantId tenantId,
         EngineRoomHealthSummary prior,
         EngineRoomHealthSummary current)
     {
-        if (_auditTrail is null)
+        if (_auditTrail is null || _signer is null)
         {
             return;
         }
@@ -223,24 +288,30 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
             var now = _time.GetUtcNow();
             var cooldown = _options.Value.DegradationDedupCooldown;
 
-            if (_lastDegradationAuditAt.TryGetValue(key, out var last) &&
-                now - last < cooldown)
+            // Atomic dedup — AddOrUpdate so two concurrent subscribers can
+            // never both observe "no prior" and both proceed to emit. If
+            // the existing entry is within cooldown, the closure returns
+            // it unchanged and the resulting value will not equal `now`,
+            // so the emit is skipped.
+            var actual = _lastDegradationAuditAt.AddOrUpdate(
+                key,
+                _ => now,
+                (_, last) => now - last < cooldown ? last : now);
+            if (actual != now)
             {
                 continue;
             }
 
-            _lastDegradationAuditAt[key] = now;
-            // Best-effort fire-and-forget — audit failures must not
-            // propagate into the heartbeat loop. Cohort precedent:
-            // DefaultPermissionResolver.EmitAsync.
-            _ = TryAppendAsync(_auditTrail, key, now);
+            _ = TryAppendAsync(_auditTrail, _signer, key, now, _logger);
         }
     }
 
     private static async Task TryAppendAsync(
         IAuditTrail trail,
+        IOperationSigner signer,
         DegradationKey key,
-        DateTimeOffset occurredAt)
+        DateTimeOffset occurredAt,
+        ILogger logger)
     {
         try
         {
@@ -250,47 +321,65 @@ public sealed class DefaultEngineRoomDataProvider : IEngineRoomDataProvider
                 ["status_from"] = key.From.ToString(),
                 ["status_to"] = key.To.ToString(),
             });
-            // Phase 2a stub: emit an UNSIGNED audit-payload-only marker
-            // record (placeholder signature bytes). Phase 2b wires the
-            // IOperationSigner cohort pattern to issue a real
-            // SignedOperation envelope.
+            var nonce = Guid.NewGuid();
+            var signed = await signer.SignAsync(payload, occurredAt, nonce, default)
+                .ConfigureAwait(false);
             var record = new AuditRecord(
                 AuditId: Guid.NewGuid(),
                 TenantId: key.TenantId,
                 EventType: AuditEventType.EngineRoomHealthDegraded,
                 OccurredAt: occurredAt,
-                Payload: new SignedOperation<AuditPayload>(
-                    Payload: payload,
-                    IssuerId: Sunfish.Foundation.Crypto.PrincipalId.FromBytes(new byte[32]),
-                    IssuedAt: occurredAt,
-                    Nonce: Guid.NewGuid(),
-                    Signature: Sunfish.Foundation.Crypto.Signature.FromBytes(new byte[64])),
+                Payload: signed,
                 AttestingSignatures: Array.Empty<AttestingSignature>());
             await trail.AppendAsync(record, default).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            // Audit-backend hiccups must not stop the heartbeat. Phase 2b
-            // adds proper logger plumbing per cohort precedent.
+            // Audit-backend hiccups must not stop the heartbeat — but per
+            // W#50 P2 council Major-1, swallowed-but-logged is the
+            // canonical posture. Cohort precedent:
+            // DefaultPermissionResolver.EmitAsync.
+            logger.LogError(ex,
+                "Engine Room degradation audit append failed for {Subsystem} ({From} → {To}); continuing best-effort.",
+                key.Subsystem, key.From, key.To);
         }
     }
 
-    private static SubsystemStatus MapSyncStatus(SyncDaemonStatus s) => s switch
+    private static SubsystemStatus MapSyncStatus(SyncDaemonStatus s, bool syncSourceRegistered)
     {
-        SyncDaemonStatus.Healthy => SubsystemStatus.Operational,
-        SyncDaemonStatus.Degraded => SubsystemStatus.Warning,
-        SyncDaemonStatus.Unavailable => SubsystemStatus.Critical,
-        _ => SubsystemStatus.Unknown,
-    };
+        // Per W#50 P2 council Critical: when no sync-daemon source is
+        // registered, surface Unknown rather than mapping the synthetic
+        // Unavailable default to Critical (which would imply real
+        // probe data exists and is failing). Only an authentic source
+        // returning Unavailable maps to Critical.
+        if (!syncSourceRegistered)
+        {
+            return SubsystemStatus.Unknown;
+        }
+        return s switch
+        {
+            SyncDaemonStatus.Healthy => SubsystemStatus.Operational,
+            SyncDaemonStatus.Degraded => SubsystemStatus.Warning,
+            SyncDaemonStatus.Unavailable => SubsystemStatus.Critical,
+            _ => SubsystemStatus.Unknown,
+        };
+    }
 
-    private static string SyncMessage(SyncDaemonHealth h) => h.Status switch
+    private static string SyncMessage(SyncDaemonHealth h, bool syncSourceRegistered)
     {
-        SyncDaemonStatus.Degraded =>
-            $"Sync daemon degraded ({h.PeerCount} peers, {h.EventsThroughput:F1} events/s).",
-        SyncDaemonStatus.Unavailable =>
-            "Sync daemon unavailable — no telemetry source registered.",
-        _ => "",
-    };
+        if (!syncSourceRegistered)
+        {
+            return "No sync-daemon telemetry source registered (Phase 2a stub).";
+        }
+        return h.Status switch
+        {
+            SyncDaemonStatus.Degraded =>
+                $"Sync daemon degraded ({h.PeerCount} peers, {h.EventsThroughput:F1} events/s).",
+            SyncDaemonStatus.Unavailable =>
+                "Sync daemon unavailable — no peers reachable.",
+            _ => "",
+        };
+    }
 
     private readonly record struct DegradationKey(
         TenantId TenantId,

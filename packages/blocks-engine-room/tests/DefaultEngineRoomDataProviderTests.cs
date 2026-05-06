@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 using Sunfish.Foundation.Assets.Common;
+using Sunfish.Foundation.Crypto;
 using Sunfish.Foundation.EngineRoom;
 using Sunfish.Kernel.Audit;
 using Xunit;
@@ -22,13 +23,42 @@ public class DefaultEngineRoomDataProviderTests
         ISyncDaemonHealthSource? syncDaemon = null,
         ICrdtDocumentRegistry? crdtRegistry = null,
         IAuditTrail? auditTrail = null,
+        IOperationSigner? signer = null,
         TimeProvider? time = null) =>
         new(
             Options.Create(options ?? new EngineRoomOptions()),
             syncDaemon,
             crdtRegistry,
             auditTrail,
+            signer,
+            logger: null,
             time);
+
+    private static IOperationSigner StubSigner()
+    {
+        var principalId = PrincipalId.FromBytes(new byte[32]);
+        var signer = Substitute.For<IOperationSigner>();
+        signer.IssuerId.Returns(principalId);
+        signer.SignAsync(
+                Arg.Any<AuditPayload>(),
+                Arg.Any<DateTimeOffset>(),
+                Arg.Any<Guid>(),
+                Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var payload = call.Arg<AuditPayload>();
+                var occurredAt = call.Arg<DateTimeOffset>();
+                var nonce = call.Arg<Guid>();
+                return new ValueTask<SignedOperation<AuditPayload>>(
+                    new SignedOperation<AuditPayload>(
+                        Payload: payload!,
+                        IssuerId: principalId,
+                        IssuedAt: occurredAt,
+                        Nonce: nonce,
+                        Signature: Signature.FromBytes(new byte[64])));
+            });
+        return signer;
+    }
 
     [Fact]
     public async Task GetHealthSummary_Returns_AllFourSubrooms()
@@ -50,6 +80,22 @@ public class DefaultEngineRoomDataProviderTests
         Assert.Equal(SyncDaemonStatus.Unavailable, snapshot.Status);
         Assert.Equal(0, snapshot.PeerCount);
         Assert.Equal(0d, snapshot.EventsThroughput);
+    }
+
+    /// <summary>
+    /// Per W#50 P2 council Critical (W#54 P2 precedent): subsystems
+    /// without a registered probe surface as
+    /// <see cref="SubsystemStatus.Unknown"/>, NOT
+    /// <see cref="SubsystemStatus.Operational"/>. This pins the §Trust
+    /// no-misrepresentation invariant.
+    /// </summary>
+    [Fact]
+    public async Task GetHealthSummary_NoSources_AllSubsystemsAreUnknown()
+    {
+        var summary = await Build().GetHealthSummaryAsync(TenantA);
+
+        Assert.All(summary.SubsystemHealthList, s =>
+            Assert.Equal(SubsystemStatus.Unknown, s.Status));
     }
 
     [Fact]
@@ -163,6 +209,7 @@ public class DefaultEngineRoomDataProviderTests
         var provider = Build(
             options: new EngineRoomOptions { DegradationDedupCooldown = TimeSpan.FromMinutes(1) },
             auditTrail: trail,
+            signer: StubSigner(),
             time: fakeTime);
 
         var allOk = new EngineRoomHealthSummary(
@@ -204,6 +251,7 @@ public class DefaultEngineRoomDataProviderTests
         var provider = Build(
             options: new EngineRoomOptions { DegradationDedupCooldown = TimeSpan.FromMinutes(1) },
             auditTrail: trail,
+            signer: StubSigner(),
             time: fakeTime);
 
         var allOk = new EngineRoomHealthSummary(
@@ -228,11 +276,46 @@ public class DefaultEngineRoomDataProviderTests
         Assert.Equal(2, trail.Records.Count);
     }
 
+    /// <summary>
+    /// Per W#50 P2 council Critical: when no signer is registered the
+    /// provider MUST NOT attempt to emit a placeholder-bytes audit
+    /// record (which would throw <see cref="AuditSignatureException"/>
+    /// at the <see cref="IAuditTrail"/> boundary and be silently
+    /// swallowed by the catch). Skip emission entirely until Phase 2b
+    /// wires the signer.
+    /// </summary>
+    [Fact]
+    public void EmitDegradationAudits_NoSigner_DoesNotEmitEvenWithAuditTrail()
+    {
+        var trail = new RecordingAuditTrail();
+        var provider = Build(auditTrail: trail, signer: null);
+
+        var allOk = new EngineRoomHealthSummary(
+        [
+            new SubsystemHealth(EngineRoomSubsystem.MainPropulsion, SubsystemStatus.Operational, null),
+            new SubsystemHealth(EngineRoomSubsystem.Electrical, SubsystemStatus.Operational, null),
+            new SubsystemHealth(EngineRoomSubsystem.DamageControl, SubsystemStatus.Operational, null),
+            new SubsystemHealth(EngineRoomSubsystem.QaWorkshop, SubsystemStatus.Operational, null),
+        ]);
+        var degraded = new EngineRoomHealthSummary(
+        [
+            new SubsystemHealth(EngineRoomSubsystem.MainPropulsion, SubsystemStatus.Critical, "x"),
+            new SubsystemHealth(EngineRoomSubsystem.Electrical, SubsystemStatus.Operational, null),
+            new SubsystemHealth(EngineRoomSubsystem.DamageControl, SubsystemStatus.Operational, null),
+            new SubsystemHealth(EngineRoomSubsystem.QaWorkshop, SubsystemStatus.Operational, null),
+        ]);
+
+        InvokeEmit(provider, TenantA, allOk, degraded);
+
+        Thread.Sleep(50);
+        Assert.Empty(trail.Records);
+    }
+
     [Fact]
     public void EmitDegradationAudits_RecoveryToOperational_DoesNotEmit()
     {
         var trail = new RecordingAuditTrail();
-        var provider = Build(auditTrail: trail);
+        var provider = Build(auditTrail: trail, signer: StubSigner());
 
         var degraded = new EngineRoomHealthSummary(
         [
