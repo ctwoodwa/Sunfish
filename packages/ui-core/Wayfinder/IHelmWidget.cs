@@ -94,6 +94,21 @@ public sealed record HelmWidgetViewState(
 /// Kind-specific target: a route path for <see cref="HelmActionInvocationKind.Navigate"/>;
 /// a Standing Order draft URI for <see cref="HelmActionInvocationKind.IssueStandingOrder"/>;
 /// a command identifier for <see cref="HelmActionInvocationKind.RunLocalCommand"/>.
+/// <para>
+/// <b><see cref="HelmActionInvocationKind.IssueStandingOrder"/>
+/// draft URI format (per W#53 P2 PR 2b precedent):</b>
+/// <c>"{Path}|{Scope}"</c> where <c>Path</c> is the Wayfinder
+/// path the order targets and <c>Scope</c> is the canonical
+/// <c>Sunfish.Foundation.Wayfinder.StandingOrderScope</c> enum
+/// member name (live values: <c>User</c> / <c>Tenant</c> /
+/// <c>Platform</c> / <c>Integration</c> / <c>Security</c>).
+/// Renderers parse on the first <c>'|'</c> and resolve the scope
+/// via <c>Enum.Parse&lt;StandingOrderScope&gt;(token, ignoreCase: false)</c>.
+/// Example: <c>"system.network.offline|Platform"</c>. A future
+/// amendment may introduce a strongly-typed action overload that
+/// carries <c>(Path, Scope)</c> as a value-object, removing the
+/// string-parse step.
+/// </para>
 /// </param>
 public sealed record HelmWidgetAction(
     string ActionId,
