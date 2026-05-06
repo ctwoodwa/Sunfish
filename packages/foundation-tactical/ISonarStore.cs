@@ -17,6 +17,21 @@ public interface ISonarStore
     /// <summary>Persist the alert. Implementations MUST be idempotent on <see cref="TacticalAlert.AlertId"/>; duplicate writes overwrite.</summary>
     ValueTask WriteAsync(TacticalAlert alert, CancellationToken ct = default);
 
-    /// <summary>Snapshot of all currently-active Sonar alerts for the tenant. Phase 2 enforces tenant-binding.</summary>
+    /// <summary>
+    /// Snapshot of all currently-active Sonar alerts for the tenant.
+    /// </summary>
+    /// <remarks>
+    /// <b>Tenant binding (§8.2) [normative]:</b> implementations MUST
+    /// resolve the ambient
+    /// <c>Sunfish.Foundation.MultiTenancy.ITenantContext.TenantId</c>
+    /// and verify it equals the supplied <paramref name="tenantId"/>
+    /// before reading any per-tenant state. On mismatch, throw
+    /// <see cref="TacticalUnauthorizedException"/> and emit
+    /// <see cref="Sunfish.Kernel.Audit.AuditEventType.TacticalAuthorizationDenied"/>
+    /// with <c>denialReason="tenant-mismatch"</c>. This method MUST NOT
+    /// be invoked from a DI scope without an
+    /// <c>ITenantContext</c> registered — Phase 2 startup wiring MUST
+    /// fail fast on missing scope.
+    /// </remarks>
     IReadOnlyList<TacticalAlert> GetActiveAlerts(TenantId tenantId);
 }

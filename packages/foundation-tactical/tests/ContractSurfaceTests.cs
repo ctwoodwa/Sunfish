@@ -1,6 +1,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Sunfish.Foundation.Ship.Common;
 using Sunfish.Foundation.Tactical;
 using Sunfish.Kernel.Audit;
@@ -182,5 +184,31 @@ public class ContractSurfaceTests
         Assert.Equal(2, Enum.GetValues<AlertRoutingPolicy>().Length);
         Assert.Equal(4, Enum.GetValues<AlertStatus>().Length);
         Assert.Equal(3, Enum.GetValues<IncidentStatus>().Length);
+    }
+
+    [Fact]
+    public void TacticalOptions_AllowedHighPriorityRulePrefixes_DefaultsToSunfishOnly()
+    {
+        var defaults = TacticalOptions.Default;
+        Assert.Single(defaults.AllowedHighPriorityRulePrefixes);
+        Assert.Equal("sunfish.*", defaults.AllowedHighPriorityRulePrefixes[0]);
+    }
+
+    [Fact]
+    public void AddSunfishTactical_BindsOptions_AndAppliesConfigure()
+    {
+        var services = new Microsoft.Extensions.DependencyInjection.ServiceCollection();
+        services.AddSunfishTactical(opts =>
+        {
+            opts.HeartbeatInterval = TimeSpan.FromSeconds(15);
+        });
+
+        var sp = services.BuildServiceProvider();
+        var bound = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<TacticalOptions>>().Value;
+        Assert.Equal(TimeSpan.FromSeconds(15), bound.HeartbeatInterval);
+        // Defaults survive for unconfigured fields.
+        Assert.Equal(200, bound.MaxActiveAlerts);
+        Assert.Equal(3, bound.MaxEmergencyOrdersPerMinute);
+        Assert.Equal("sunfish.*", bound.AllowedHighPriorityRulePrefixes[0]);
     }
 }

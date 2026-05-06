@@ -20,7 +20,11 @@ namespace Sunfish.Foundation.Tactical;
 /// permission resolution, and before any First-Aid surface — and emits
 /// the corresponding <c>*Acknowledged</c> / <c>*Opened</c> /
 /// <c>*Closed</c> post-op event ONLY on success. Absence of the
-/// post-op event in the audit trail IS the failure record.
+/// post-op event in the audit trail IS the failure record. The only
+/// acceptable reason to skip pre-op emission is failure of the audit
+/// infrastructure itself, which surfaces as a thrown exception (and
+/// therefore aborts the command before any state change); a silent
+/// catch-and-continue MUST NOT be implemented.
 /// </para>
 /// <para>
 /// <b>Authority check (§8):</b> implementations MUST resolve the

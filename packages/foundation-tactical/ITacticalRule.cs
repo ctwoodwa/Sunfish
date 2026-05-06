@@ -20,7 +20,21 @@ namespace Sunfish.Foundation.Tactical;
 /// </remarks>
 public interface ITacticalRule
 {
-    /// <summary>Stable rule name; used for routing + audit attribution + threat-trigger template matching.</summary>
+    /// <summary>
+    /// Stable rule name; used for routing + audit attribution +
+    /// threat-trigger template matching.
+    /// </summary>
+    /// <remarks>
+    /// <b>Naming [normative per ADR 0081 §8.3]:</b> first-party
+    /// Sunfish rules use the <c>sunfish.*</c> prefix; the prefix is
+    /// RESERVED for assemblies with verified Sunfish first-party
+    /// identity (strong-name or internal-only registration API).
+    /// Third-party modules MUST use <c>{vendor}.{product}.{signal}</c>
+    /// form. <see cref="ITacticalRuleEngine.RegisterRule"/> enforces
+    /// this at registration time; rules with reserved prefixes from
+    /// non-first-party assemblies throw
+    /// <see cref="System.InvalidOperationException"/>.
+    /// </remarks>
     string RuleName { get; }
 
     /// <summary>Default severity emitted by this rule when no per-alert override applies.</summary>

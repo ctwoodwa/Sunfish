@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace Sunfish.Foundation.Tactical;
 
@@ -30,15 +31,33 @@ public sealed class TacticalOptions
 
     /// <summary>
     /// Maximum emergency Standing Orders <see cref="IThreatTriggerService.TryIssueAsync"/>
-    /// may issue per minute per tenant per ADR 0081 §4.1. Above the
+    /// may issue per minute <b>per tenant globally (across all rules
+    /// and templates)</b> per ADR 0081 §4.1 + §8.5. Above the
     /// threshold, additional triggers emit
     /// <see cref="Sunfish.Kernel.Audit.AuditEventType.EmergencyStandingOrderIssuanceFailed"/>
-    /// with <c>denialReason="rate-limit"</c>. Default 3.
+    /// with <c>denialReason="rate-limit"</c>. The partition is
+    /// deliberately the (TenantId) tuple — partitioning by
+    /// (TenantId, RuleName) would multiply the effective limit by the
+    /// rule count, defeating the §4.1 anti-spoofing intent.
+    /// Default 3.
     /// </summary>
     public int MaxEmergencyOrdersPerMinute { get; set; } = 3;
 
     /// <summary>Maximum alerts <see cref="IAlertRouter.RouteAsync"/> may route per (TenantId, RuleName) per minute per ADR 0081 §8.4. Above the threshold, additional alerts emit <see cref="Sunfish.Kernel.Audit.AuditEventType.TacticalAuthorizationDenied"/>. Default 60.</summary>
     public int MaxAlertsPerMinutePerRule { get; set; } = 60;
+
+    /// <summary>
+    /// Rule-name prefixes permitted to declare
+    /// <see cref="AlertRoutingPolicy.HighPriorityLookout"/> routing per
+    /// ADR 0081 §8.3. Default <c>["sunfish.*"]</c>. Rules with
+    /// non-allowlisted prefixes are silently downgraded by Phase 2's
+    /// <c>DefaultAlertRouter</c> to
+    /// <see cref="AlertRoutingPolicy.InformationalSonar"/> with a
+    /// <see cref="Sunfish.Kernel.Audit.AuditEventType.TacticalAuthorizationDenied"/>
+    /// audit event carrying
+    /// <c>denialReason="high-priority-routing-not-allowlisted"</c>.
+    /// </summary>
+    public IReadOnlyList<string> AllowedHighPriorityRulePrefixes { get; set; } = new[] { "sunfish.*" };
 
     /// <summary>
     /// Canonical defaults per ADR 0081 §1: <c>HeartbeatInterval = 30s</c>,

@@ -125,21 +125,21 @@ public readonly record struct ShipAction(string Name)
     /// <summary>Acknowledge a pending Quarterdeck alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; alert source supplies the role gate per ADR 0080 §5; two-phase audit via <c>IQuarterdeckCommandService.AcknowledgeAlertAsync</c>).</summary>
     public static readonly ShipAction AcknowledgeAlert = new("acknowledge-alert");
 
-    // ===== ADR 0081 §8 — W#52 Tactical Anomaly Detection =====
+    // ===== ADR 0081 §6 + §8 — W#52 Tactical Anomaly Detection =====
 
-    /// <summary>Browse the Tactical surface (location-scoped; <see cref="DeckDepth.TopDeck"/>; minimum role <see cref="ShipRole.TacticalOfficer"/> per ADR 0081 §8 — operators with elevated authority see Sonar + Lookout; lower-role actors see only the Sonar view).</summary>
+    /// <summary>Browse the Tactical surface (location-scoped; <see cref="DeckDepth.TopDeck"/>; granted to <see cref="ShipRole.TacticalOfficer"/> + <see cref="ShipRole.XO"/> + <see cref="ShipRole.Captain"/> with full Sonar+Lookout view; granted to <see cref="ShipRole.DivisionOfficer"/> with Sonar-specialty scope only per ADR 0081 §6).</summary>
     public static readonly ShipAction ViewTactical = new("view-tactical");
 
-    /// <summary>Browse the Fire Control panel (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.TacticalOfficer"/> per ADR 0081 §8 — read-only in v1; emergency Standing-Order issuance is system-only via <c>IThreatTriggerService</c>).</summary>
+    /// <summary>Browse the Fire Control panel (resource-scoped; <see cref="DeckDepth.MainDeck"/>; granted to <see cref="ShipRole.TacticalOfficer"/> + <see cref="ShipRole.XO"/> + <see cref="ShipRole.Captain"/> per ADR 0081 §6 — read-only in v1; emergency Standing-Order issuance is system-only via <c>IThreatTriggerService</c>).</summary>
     public static readonly ShipAction ViewFireControl = new("view-fire-control");
 
-    /// <summary>Acknowledge a Tactical Lookout alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.DivisionOfficer"/> per ADR 0081 §8; two-phase audit via <c>ITacticalCommandService.AcknowledgeAlertAsync</c>).</summary>
+    /// <summary>Acknowledge a Tactical Lookout alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; granted to <see cref="ShipRole.TacticalOfficer"/> + <see cref="ShipRole.XO"/> + <see cref="ShipRole.Captain"/> per ADR 0081 §6; two-phase audit via <c>ITacticalCommandService.AcknowledgeAlertAsync</c>).</summary>
     public static readonly ShipAction AcknowledgeTacticalAlert = new("acknowledge-tactical-alert");
 
-    /// <summary>Open a Tactical incident from a root alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.DivisionOfficer"/> per ADR 0081 §8; two-phase audit via <c>ITacticalCommandService.OpenIncidentAsync</c>).</summary>
+    /// <summary>Open a Tactical incident from a root alert (resource-scoped; <see cref="DeckDepth.MainDeck"/>; granted to <see cref="ShipRole.TacticalOfficer"/> + <see cref="ShipRole.XO"/> + <see cref="ShipRole.Captain"/> per ADR 0081 §6; two-phase audit via <c>ITacticalCommandService.OpenIncidentAsync</c>).</summary>
     public static readonly ShipAction OpenIncident = new("open-incident");
 
-    /// <summary>Close a Tactical incident (resource-scoped; <see cref="DeckDepth.MainDeck"/>; minimum role <see cref="ShipRole.TacticalOfficer"/> per ADR 0081 §8 — close authority is one role above open; two-phase audit via <c>ITacticalCommandService.CloseIncidentAsync</c>).</summary>
+    /// <summary>Close a Tactical incident (resource-scoped; <see cref="DeckDepth.MainDeck"/>; granted to <see cref="ShipRole.TacticalOfficer"/> + <see cref="ShipRole.XO"/> + <see cref="ShipRole.Captain"/> per ADR 0081 §6; two-phase audit via <c>ITacticalCommandService.CloseIncidentAsync</c>).</summary>
     public static readonly ShipAction CloseIncident = new("close-incident");
 
     /// <summary>Issue an emergency Standing Order via the threat-trigger surface (resource-scoped; <see cref="DeckDepth.BelowTheWaterline"/>; SYSTEM PRINCIPAL ONLY per ADR 0081 §4.1 — resolved via <c>ISystemPrincipalProvider</c>; never granted to human actors). Phase 2 enforces this at the <c>IPermissionResolver</c> + the <c>IThreatTriggerService</c> implementation layer.</summary>
