@@ -12,6 +12,13 @@ reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` +
 
 ## Notes
 
+**XO priority recommendation 2026-05-06:** highest-leverage next pickup for COB.
+Phase 2 onwards unblocks the W#35 Ship Architecture cascade — W#49/W#50/W#51/W#52/W#54/W#55
+all halt-gated on this workstream's design-token + UICore-primitives surface landing on
+origin/main. ADR 0077 Status flip shipped via PR #608 (Proposed → Accepted) clears the
+pre-build checklist blocker. Parallel-safe with W#53 (Helm + Identity Atlas Phase 2) since
+substrate concerns don't overlap (Ship Architecture vs Wayfinder Helm/Atlas).
+
 **Phase 1 merged 2026-05-06 via PR #622.** New `Sunfish.Foundation.Ship.Common` package
 shipped with the closed `ShipRole` taxonomy (11 values) + `IPermissionResolver` +
 `DefaultPermissionResolver` + 9 `ShipAction` static-readonly fields + `PermissionDecision`

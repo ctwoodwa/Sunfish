@@ -12,6 +12,14 @@ reference_cell: "`icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + 
 
 ## Notes
 
+**XO priority recommendation 2026-05-06:** highest-leverage next pickup for COB
+alongside W#46. Phase 2 cascade-unblocks W#48 (Atlas Integration-Config UI Surface)
+which has explicit halt-condition "begin when W#53 Phase 1 lands" — that gate is now
+cleared (Phase 1 fully merged via PR #630 + #633). ADR 0066 + A1 already Accepted;
+hand-off ready at `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md`.
+Parallel-safe with W#46 (Shared Design System) since substrate concerns don't overlap
+(Wayfinder Helm/Atlas vs Ship Architecture design tokens + UICore primitives).
+
 **Phase 1 milestone complete 2026-05-06.** Phase 1a merged via PR #630
 (IAtlasProvider<TView> + IHelmWidget contract surface); Phase 1b merged
 via PR #633 (KeyFingerprint + IIdentityAtlasSurface + 8 view-model
