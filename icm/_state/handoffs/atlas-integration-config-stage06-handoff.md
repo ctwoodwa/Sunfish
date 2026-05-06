@@ -14,7 +14,7 @@
 |---|---|---|
 | ADR 0065 W#42 built | `grep -rn "IStandingOrderIssuer" packages/foundation-wayfinder/` ≥1 match | ✓ Built (PRs #503–#514 merged) |
 | ADR 0066 Stage 06 Phase 1 (W#53) landed | `grep -rn "IAtlasProvider" packages/ui-core/` ≥1 match | ✗ **NOT YET BUILT** — W#53 queued |
-| `IDecryptCapabilityProvider` in `foundation-recovery` | `grep -rn "IDecryptCapabilityProvider" packages/foundation-recovery/` ≥1 match | Verify at build time |
+| `IDecryptCapabilityProvider` in `foundation/Crypto/` | `grep -rn "IDecryptCapabilityProvider" packages/foundation/Crypto/` ≥1 match | Verify at build time (see cycle note below) |
 | `IFieldEncryptor` / `IFieldDecryptor` via `AddSunfishRecovery()` | `grep -rn "AddSunfishRecovery" packages/foundation-recovery/` ≥1 match | Verify at build time |
 
 **Phase 1 is BLOCKED until ADR 0066 Stage 06 Phase 1 (W#53) lands** — `IAtlasProvider<T>` (which `IIntegrationAtlasProvider` extends) is introduced by ADR 0066's Stage 06 build, not by ADR 0066's document merge. Per ADR 0067 §A0.3 mitigation: "Phase 1 of the §10 implementation checklist MUST land *after* ADR 0066's Phase 1."
@@ -135,8 +135,23 @@ public interface IValidationStatusStore
 }
 ```
 
-`IDecryptCapabilityProvider.cs` (§3.14 / §5.3.1 — new symbol; registered by `AddSunfishRecovery()`)
+`IDecryptCapabilityProvider.cs` (§3.14 / §5.3.1 — new symbol)
+
+**Cycle note:** This interface MUST go in `packages/foundation/Crypto/` (alongside
+`IDecryptCapability`), NOT in `foundation-recovery`. `ui-core` references `foundation`
+but CANNOT reference `foundation-recovery` — a `foundation-recovery` → `kernel-security`
+→ `ui-core` cycle already exists (same reason `KeyFingerprint` moved to
+`packages/foundation/Crypto/` during W#53 P1b, per the comment in
+`packages/ui-core/Sunfish.UICore.csproj`).
+
+The IMPLEMENTATION (`TenantKeyDecryptCapabilityProvider` or equivalent) lives in
+`foundation-recovery` and is registered via `AddSunfishRecovery()` (COB must add the
+registration to `packages/foundation-recovery/DependencyInjection/` as a **companion
+step in Phase 1b** — not a separate workstream).
+
 ```csharp
+// File: packages/foundation/Crypto/IDecryptCapabilityProvider.cs
+// Namespace: Sunfish.Foundation.Crypto (alongside IDecryptCapability)
 public interface IDecryptCapabilityProvider
 {
     Task<IDecryptCapability?> AcquireAsync(
@@ -217,14 +232,19 @@ public static class IntegrationCapabilityPurposes
 **DI extension:**
 
 `ServiceCollectionExtensions.cs` (§6.1)
+**Cycle note for the guard check:** `IFieldEncryptor` lives in `foundation-recovery`;
+`ui-core` cannot reference `foundation-recovery` (cycle). Guard against
+`IDecryptCapabilityProvider` instead — it is in `foundation/Crypto/` and is the
+direct dependency consumed by Phase 2's `DefaultIntegrationAtlasProvider`.
+
 ```csharp
 public static IServiceCollection AddSunfishIntegrationAtlas(
     this IServiceCollection services)
 {
-    if (!services.Any(d => d.ServiceType == typeof(IFieldEncryptor)))
+    if (!services.Any(d => d.ServiceType == typeof(IDecryptCapabilityProvider)))
         throw new InvalidOperationException(
             "AddSunfishRecovery() must be called before AddSunfishIntegrationAtlas(). " +
-            "IFieldEncryptor is required by DefaultIntegrationAtlasProvider.");
+            "IDecryptCapabilityProvider is required by DefaultIntegrationAtlasProvider.");
     services.AddSingleton<IIntegrationAtlasProvider, DefaultIntegrationAtlasProvider>();
     services.AddSingleton<IValidationStatusStore, DefaultValidationStatusStore>();
     return services;
@@ -258,6 +278,26 @@ Anchor: singleton via local-node identity) — NOT registered here.
 
 **Gate:** Phase 1 landed.
 
+> **⚠ CYCLE HALT — WRITE cob-question BEFORE STARTING PHASE 2 ⚠**
+>
+> `DefaultIntegrationAtlasProvider` depends on `IFieldEncryptor` + `IFieldDecryptor`
+> (both in `foundation-recovery`). `ui-core` CANNOT reference `foundation-recovery`
+> (cycle: `foundation-recovery → kernel-security → ui-core`). This means
+> `DefaultIntegrationAtlasProvider` CANNOT live in `packages/ui-core/` as the hand-off
+> originally specified.
+>
+> **Action:** Before writing any Phase 2 code, write
+> `cob-question-[timestamp]-w48-phase2-impl-package.md` to research-inbox with:
+> - `workstream-or-chapter: W#48 Phase 2`
+> - `last-pr: [Phase 1b PR number]`
+> - Context: DefaultIntegrationAtlasProvider needs IFieldEncryptor + IFieldDecryptor from
+>   foundation-recovery; ui-core cannot reference foundation-recovery (known cycle).
+>   Options: (A) new `packages/blocks-integrations/` package; (B) move IFieldEncryptor /
+>   IFieldDecryptor to foundation; (C) inject via delegate/factory in ui-core contracts.
+> - What would unblock: XO ruling on which package hosts DefaultIntegrationAtlasProvider.
+>
+> Do NOT proceed with Phase 2 until XO answers.
+
 **Scope:** `DefaultIntegrationAtlasProvider`, `InMemoryIntegrationAtlasProvider`, stores, audit constants,
 typed payload factories, SUNFISH_INTEGRATION_AUDIT001 analyzer.
 
@@ -271,7 +311,7 @@ typed payload factories, SUNFISH_INTEGRATION_AUDIT001 analyzer.
 - `IAuditTrail` (from `kernel-audit`)
 - `IFieldEncryptor` (from `foundation-recovery`)
 - `IFieldDecryptor` (from `foundation-recovery` — scope-isolated per §6.1.1)
-- `IDecryptCapabilityProvider` (from `foundation-recovery`)
+- `IDecryptCapabilityProvider` (from `foundation/Crypto/` — cycle-safe; impl in `foundation-recovery`)
 - `IValidationStatusStore` (from this package)
 - `IIntegrationAtlasContext` (from host)
 - `IEnumerable<IIntegrationSchemaProvider>` (adapter packages)
@@ -380,10 +420,14 @@ All tests in a new `packages/ui-core/tests/Wayfinder/Integrations/` sub-folder:
 
 ### Halt conditions (Phase 2)
 
-- **(H5) `IDecryptCapabilityProvider` on origin/main** (registered by `AddSunfishRecovery()`).
-  Verify: `grep -rn "IDecryptCapabilityProvider" packages/foundation-recovery/` ≥1 match.
-  If zero → HALT; post `cob-question-*.md` — this symbol is an ADR 0067 §A0.7 net-new symbol
-  that `AddSunfishRecovery()` must provide; check if `foundation-recovery` has a pending PR.
+- **(H5) `IDecryptCapabilityProvider` in `foundation/Crypto/` on origin/main.**
+  Interface verify: `grep -rn "IDecryptCapabilityProvider" packages/foundation/Crypto/` ≥1 match.
+  Implementation verify: `grep -rn "IDecryptCapabilityProvider" packages/foundation-recovery/` ≥1 match.
+  If the interface is zero → COB must CREATE `packages/foundation/Crypto/IDecryptCapabilityProvider.cs`
+  as part of Phase 1b (it's a new symbol per ADR 0067 §A0.7 — not pre-existing).
+  If the implementation is zero → COB must also ADD the registration to
+  `packages/foundation-recovery/DependencyInjection/` as part of Phase 1b companion step.
+  Both the interface and the `AddSunfishRecovery()` registration are Phase 1b deliverables.
 - **(H6) Pre-merge council + security-engineering subagent.** Mandatory for Phase 2
   (audit redaction, credential scope isolation, capability sourcing fail-closed semantics).
 - **(H7) `SUNFISH_INTEGRATION_AUDIT001` must be severity Error**, not Warning.
