@@ -1,5 +1,6 @@
 using System;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Sunfish.Foundation.Quarterdeck;
 
@@ -50,6 +51,17 @@ public static class QuarterdeckServiceCollectionExtensions
             // fields.
             configure?.Invoke(opts);
         });
+
+        // W#51 Phase 2: register the reference data provider. Hosts
+        // MUST separately register IPermissionResolver (W#46 P1) +
+        // IOodWatchService (W#49 P1) + IStandingOrderRepository (W#42)
+        // + IMissionEnvelopeProvider (W#40) before resolving
+        // IQuarterdeckDataProvider; the provider's constructor takes
+        // each as a non-optional dependency. IEnumerable<
+        // IQuarterdeckAlertSource> + IEnumerable<IDepartmentKpiSource>
+        // resolve as empty when no source is registered (cohort
+        // precedent for read-side aggregators).
+        services.TryAddSingleton<IQuarterdeckDataProvider, DefaultQuarterdeckDataProvider>();
 
         return services;
     }
