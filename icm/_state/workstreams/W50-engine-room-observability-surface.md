@@ -4,7 +4,7 @@ number: 50
 slug: engine-room-observability-surface
 title: "**Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline)"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #626; Phases 2-4 pending)"
+status_cell: "`building` (Phase 1 #626 + Phase 2a #696 shipped 2026-05-06 — DefaultEngineRoomDataProvider + dedup audit; Phase 2b XO ruling shipped via PR #698+#699 (IDocumentQuarantineStore in foundation-engine-room + signature stub); Phase 2b ready-to-build per ruling; Phases 3a/3b/4 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged)"
