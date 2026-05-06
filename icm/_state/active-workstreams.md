@@ -27,7 +27,7 @@ Canonical "what's in flight, who owns it, what state it's in" for cross-session 
 
 ---
 
-## Current state (last updated 2026-05-05 — W#53 Stage 06 hand-off authored; W#53 ready-to-build; unblocks W#48 Phase 1)
+## Current state (last updated 2026-05-06 — W#1 WS-A + WS-B Stage 06 hand-offs pre-authored (pending ADR 0084/0085 CO acceptance); W#57 added (ADR 0065-A1 event-stream, ready-to-build); W#53 Phase 1 COMPLETE (P1a #630 + P1b #633); W#54 H2 cleared (KeyFingerprint at packages/foundation/Crypto/); ADR 0066-A1 Accepted (PR #586 merged 2026-05-05))
 
 | # | Workstream | Status | Owner (current phase) | Reference | Notes |
 |---|---|---|---|---|---|
@@ -38,8 +38,10 @@ on TenantSelection + `IMayHaveTenant` [Obsolete] — all in `foundation` + `foun
 `AuditQuery.Tenant` + `EntityQuery.Tenant` + `ExportRequest.TenantId` from `TenantId?`
 → `TenantSelection?`. Adds `TenantSelection.Matches(TenantId)` helper to
 `foundation-multitenancy`. Source-compatible (implicit cast at call sites). ~3–5h / 1 PR.
-Council complete (6 BLOCKING resolved 2026-05-05); hand-off to be authored once ADR 0085
-Status: Accepted. **Flip to `ready-to-build` once BOTH ADR 0084 AND ADR 0085 Status: Accepted.** |
+Council complete (6 BLOCKING resolved 2026-05-05). **Stage 06 hand-offs pre-authored 2026-05-06
+(pending CO acceptance).** WS-A: `icm/_state/handoffs/tenant-selection-wsa-stage06-handoff.md`;
+WS-B: `icm/_state/handoffs/tenant-selection-wsb-stage06-handoff.md`.
+**Flip to `ready-to-build` once BOTH ADR 0084 AND ADR 0085 Status: Accepted AND WS-A built.** |
 | 2 | Kernel-audit Tier 1 retrofit | `built` (merged) | sunfish-PM | https://github.com/ctwoodwa/Sunfish/pull/198 (merged 2026-04-28 16:30Z) | AttestingSignature pair shape + IAuditTrail XML doc fix shipped. Tier 2 (`AuditQuery.TenantId → TenantSelection`) remains blocked on workstream #1's M2. |
 | 3 | Kernel-audit scaffold (PR #190) | `built` (merged) | sunfish-PM | https://github.com/ctwoodwa/Sunfish/pull/190 (merged 2026-04-28 08:43Z) | Tier 1 drift now resolved by workstream #2 (PR #198). Only Tier 2 (`AuditQuery → TenantSelection`) remains, blocked on workstream #1's M2. |
 | 4 | Kernel-event-bus test-flake fix (PR #191) | `built` (merged) | research session (exception turn) | https://github.com/ctwoodwa/Sunfish/pull/191 (merged 2026-04-28 08:26Z) | InMemoryEventBus + InMemoryEventBusTests deterministic readiness wait. Closes bug-268 in `.wolf/buglog.json`. |
