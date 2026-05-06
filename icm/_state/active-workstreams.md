@@ -180,7 +180,62 @@ Phase 3a WatchBanner.
 
 **Phase 4 follow-up** (TODO comments): in-memory `IOodWatchRepository` impl (Phase 3 deferred);
 `StandingOrder` watch-transfer issuance via `IStandingOrderIssuer` (W#42 P2-gated). |
-| 50 | **Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0079 Accepted 2026-05-05 via PR #572; Stage 06 hand-off at `icm/_state/handoffs/engine-room-observability-stage06-handoff.md`; sunfish-PM may begin Phase 1 when capacity opens) | research (XO) ✓ | `docs/adrs/0079-engine-room-observability.md` (PR #572 merged) | Hard prerequisites: ADR 0077 W#46 built (W#46 `ready-to-build`); ADR 0078 W#49 Stage 06 built. Key types: `IEngineRoomDataProvider` + `IEngineRoomCommandService`; `SyncDaemonHealth` + `CrdtGrowthMetrics` + `EngineRoomHealthSummary` (list-based); 8 new `AuditEventType` constants (two-phase quarantine + compaction + health-degraded + auth-denied); 5 new `ShipAction` constants; OTel metric catalog (`sunfish.engine_room.*`). Two new packages: `foundation-engine-room` + `blocks-engine-room`. 4-phase build: ~14-18h / ~5 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for Phases 2/3b/4 per §6.1 + §Trust). |
+| 50 | **Engine Room Observability Surface** (ADR 0079; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `building` (Phase 1 merged 2026-05-06 via PR #626; Phases 2-4 pending) | sunfish-PM | `docs/adrs/0079-engine-room-observability.md` (PR #572 merged) + `icm/_state/handoffs/engine-room-observability-stage06-handoff.md` + `packages/foundation-engine-room/` (P1 merged) | **Phase 1 merged 2026-05-06 via PR #626.** New `Sunfish.Foundation.EngineRoom`
+package shipped: 12 data-model types (SyncDaemon* / CrdtGrowth* /
+Subsystem* / EngineRoomHealthSummary with `For()` helper / Quarantine /
+Release / CompactionResult / EngineRoomUnauthorizedException) + 2
+contract interfaces (IEngineRoomDataProvider 5 methods, IEngineRoomCommandService
+3 methods); EngineRoomMetrics OTel constant catalog (`sunfish.engine_room.*`);
+`AddSunfishEngineRoom()` DI extension. Throws on §Trust-elevated denial
+(NOT cohort PublishOutcome — different posture for write-class destructive
+actions).
+
+**Pre-merge council** (security-engineering subagent; Opus + xhigh) returned
+MECHANICAL-AMENDMENTS-ONLY: 1 Major (Damage Control actions missing from
+ResourceScopedActions — substrate-tier null-resource bypass closed) + 4
+Minor (audit-emission ordering XML; DamageControlAuthorizationDenied
+dual-emission with PermissionDenied; QuarantineDocument MainDeck
+rationale; EngineRoomOptions package-of-origin clarification). All
+applied pre-merge. **Cohort batting average: 30-of-34** substrate
+amendments needed council fixes.
+
+**Constants added**: 8 new `AuditEventType` (DocumentQuarantineRequested/
+Quarantined/ReleaseRequested/Released, ManualCompactionInitiated/Completed,
+EngineRoomHealthDegraded, DamageControlAuthorizationDenied) + 5 new
+`ShipAction` (kebab-case per cohort: view-engine-room / view-damage-control
+/ quarantine-document / release-quarantine / compact-document).
+
+**Resolver cohort extension**: `ActionMinimumDeck` extended (5 entries;
+QuarantineDocument MainDeck per §4 reversibility argument);
+`MapToCapabilityAction` extended (5 entries); `ResourceScopedActions`
+extended (3 entries — Major M1 fix; ViewEngineRoom + ViewDamageControl
+stay location-scoped).
+
+**Tests**: 18/18 in foundation-engine-room; 26/26 in foundation-ship-common
+(was 25; +1 for Major M1 regression `ResourceScopeGuard_NullResourceForQuarantineDocument_Denied`).
+
+**Phase 1 Phase-2 follow-up TODOs**:
+- Concrete `IEngineRoomDataProvider` + `IEngineRoomCommandService` in
+  `blocks-engine-room` (Phase 2)
+- OTel meter registration + per-instrument observable callbacks (Phase 2)
+- `EngineRoomOptions` (HeartbeatInterval default 30s) (Phase 2)
+- Role-minimum enforcement (department-head / EngineerOfficer) — gated on
+  W#37 / `ITenantSecurityPolicy`
+
+**Remaining phases** (per hand-off):
+- **Phase 2** (~4-5h): reference impl in `blocks-engine-room` + OTel +
+  permission gating; pre-merge security-engineering subagent mandatory.
+- **Phase 3a** (~3-4h): `blocks-engine-room` read-only panels (Main
+  Propulsion / QA Workshop); pre-merge WCAG/a11y subagent mandatory.
+- **Phase 3b** (~3-4h): Damage Control panel + QA Workshop panel; pre-
+  merge WCAG/a11y + security-engineering subagents mandatory.
+- **Phase 4** (~2-3h): Anchor wiring + apps/docs + ledger flip.
+
+**W#35 Ship Architecture cohort substrate progress (4/7 on origin/main)**:
+W#46 P1 ✓ + W#49 all ✓ + W#55 P1 ✓ + W#50 P1 ✓ (this PR). Remaining:
+W#51 (Quarterdeck — gated on W#46 Phase 3) + W#52 (Tactical — gated on
+W#46 Phase 3) + W#54 (Sick Bay — H1 cleared, H2 gated on W#53 P1, H3 on
+ADR 0068 Accepted). |
 | 51 | **Quarterdeck Entry-Point Surface** (ADR 0080; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0080 Accepted 2026-05-05 via PR #574; Stage 06 hand-off at `icm/_state/handoffs/quarterdeck-entry-point-stage06-handoff.md`; sunfish-PM may begin Phase 1 when W#46 Phase 1 lands) | research (XO) ✓ | `docs/adrs/0080-quarterdeck-entry-point.md` (PR #574 merged) | Hard prerequisites: ADR 0077 W#46 Phase 1 (ShipAction catalog) must land before Phase 2; ADR 0078 W#49 Phase 1 (IOodWatchService) must land before Phase 3a; ADR 0077 W#46 Phase 3 (ILiveAnnouncer + IFocusTrap) must land before Phase 3a. Key types: `IQuarterdeckDataProvider` (`GetSnapshotAsync` / `SubscribeSnapshotAsync`) + `IQuarterdeckCommandService` (`AcknowledgeAlertAsync`) + `IQuarterdeckAlertSource` (SourceName + `GetAlertsAsync`) + `IDepartmentKpiSource` (SourceName + `GetKpisAsync`); `QuarterdeckOptions` (HeartbeatInterval + ProviderTimeout + PerSourceTimeout); `QuarterdeckSnapshot` aggregates 6 sources (OOD watch + mission envelope + standing orders + alerts + KPIs + permission-pre-resolved dept links); `AlertVisibilityPolicy` enum; 3 new `AuditEventType`: WatchHandoverRequested + AlertAcknowledgementRequested + AlertAcknowledged; split `ShipAction`: ViewQuarterdeck (any ShipRole) + ViewQuarterdeckAlerts (DivisionOfficer+) + AcknowledgeAlert. Two new packages: `foundation-quarterdeck` + `blocks-quarterdeck`. 4-phase build: ~14-20h / ~5 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for Phases 2/3a/3b/4). |
 | 52 | **Tactical Anomaly Detection + Threat-Trigger Surface** (ADR 0081; W#35 Ship Architecture follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0081 Accepted 2026-05-05 via PR #578; Stage 06 hand-off at `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md`; sunfish-PM may begin Phase 1 when W#46 Phase 1 lands) | research (XO) ✓ | `docs/adrs/0081-tactical-anomaly-detection.md` (PR #578 merged) + `icm/_state/handoffs/tactical-anomaly-detection-stage06-handoff.md` | Hard prerequisites: ADR 0077 W#46 Accepted ✓ + ADR 0065 W#42 built ✓. Soft cross-reference: ADR 0080 W#51 (`LookoutQuarterdeckAlertSource` supplies Quarterdeck ticker); ADR 0068 W#37 (security policy). Key types: `ITacticalRuleEngine` + `ITacticalRule` + `IAlertRouter` + `ISonarStore` + `ILookout` + `ITacticalDataProvider` + `ITacticalCommandService` + `IThreatTriggerService` + `ISystemPrincipalProvider` + `LookoutQuarterdeckAlertSource`; `TacticalOptions` (7 fields with normative bounds); 13 `AuditEventType` constants; 7 `ShipAction` constants (IssueEmergencyStandingOrder = System-only; ManageThreatTriggers = reserved v1). Two new packages: `foundation-tactical` + `blocks-tactical`. 4–5 phase build: ~16-22h / ~6 PRs. Pre-merge council canonical (WCAG/a11y + security subagents mandatory for all UI-bearing and authority-chain phases per §Trust + §8.5). |
 | 53 | **Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1** | `ready-to-build` (ADR 0066 Accepted 2026-05-05 via PR #529; Stage 06 hand-off at `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md`; sunfish-PM may begin Phase 1 immediately — prerequisites H1+H2 verified on origin/main) | sunfish-PM | `icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) | **Hand-off authored 2026-05-05. ~18-28h / ~5-6 PRs.** 2 build phases (Phase 3 identity Atlas implementations deferred to W#54). Phase 1: `IAtlasProvider<T>` + `IHelmWidget` + `IHelmWidgetRegistry` + `DefaultHelmWidgetRegistry` + `HelmServiceCollectionExtensions` (two-overload `AddSunfishHelm` + `AddHelmWidget<T>`) + `KeyFingerprint` (additive to `packages/foundation-recovery/`) + `IIdentityAtlasSurface` + view-model records + `RecoveryContact`. Phase 2: 6 canonical widgets + Blazor/React adapter renderers + WCAG tests. **W#48 Phase 1 unblocks when W#53 Phase 1 merges** (`IAtlasProvider<T>` on origin/main). Halt H7 (HistoricalKeysProjection absent → placeholder approach); H8 (IObservable<StandingOrderAppliedEvent> absent → periodic fallback). OQ-1/2/3/4/5/6 all resolved in hand-off. |
