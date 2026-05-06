@@ -1,13 +1,13 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "693 (W#1 WS-B unblock ledger sweep)"
+last-pr: "694 (W#50 Phase 2 + W#56 directive gap-fill)"
 ---
 
-Updated 2026-05-06 (session 14): item 0 DONE — W#1 security follow-up shipped PR #692.
-W#1 WS-B is now `ready-to-build` (item 9 promoted). All other items unchanged.
+Updated 2026-05-06 (session 15): added W#50 Phase 2 + W#56 to "also ready"; fixed W#47
+hand-off filename. Items 1-9 unchanged.
 
-## COB Priority Queue (post-session-14)
+## COB Priority Queue (post-session-15)
 
 1. **W#53 Phase 2 PR 2c-react** — TypeScript React adapter renderers for all 6 Helm widgets.
    H9 parity gate MUST be cleared before Phase 2 closes. WCAG/a11y subagent mandatory.
@@ -50,12 +50,20 @@ W#1 WS-B is now `ready-to-build` (item 9 promoted). All other items unchanged.
    (~4-6h; breaking api-change pipeline)
 
 **Also ready (no specific ordering constraint):**
+- **W#50 Phase 2** — `DefaultEngineRoomDataProvider` + `DefaultEngineRoomCommandService` +
+  OTel wiring. Both gates cleared: W#46 Phase 1 ✓ + W#49 Phase 1 ✓.
+  Security-engineering subagent mandatory. (~4-5h / 1 PR)
+  Hand-off at `engine-room-observability-stage06-handoff.md` §Phase 2.
 - **W#51 Phase 3a** — `blocks-quarterdeck` top-deck panels (WatchStatusPanel + alert ticker).
   Hand-off at `quarterdeck-entry-point-stage06-handoff.md` §Phase 3a. Both gates cleared:
   W#49 Phase 1 ✓ + W#46 Phase 3 ✓. WCAG/a11y subagent mandatory.
 - **W#44** — ExtensionFields feature-evaluation hook. Hand-off at
   `extension-fields-feature-gate-stage06-handoff.md`.
 - **W#47** — Anchor MAUI ISystemRequirementsRenderer. Hand-off at
-  `system-requirements-renderer-anchor-stage06-handoff.md`.
+  `foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md`.
+- **W#56** — Bridge React ISystemRequirementsRenderer (TypeScript projection contract +
+  Bridge JSON endpoint + React renderer). Hand-off at
+  `foundation-wayfinder-bridge-react-renderer-stage06-handoff.md`. (~14-19h / 5 PRs;
+  WCAG/a11y subagent mandatory before every UI-bearing phase)
 
 Cap concurrent PRs at 3.
