@@ -15,7 +15,7 @@
 | # | Prereq | Verify on origin/main | Phase gated |
 |---|---|---|---|
 | **H1** | W#46 Phase 1 merged — `foundation-ship-common` package + `ShipRole` enum + `IPermissionResolver` + `ShipAction` catalog | `ls packages/foundation-ship-common/Sunfish.Foundation.Ship.Common.csproj 2>/dev/null && grep -l "enum ShipRole" packages/foundation-ship-common/` must be non-empty | Phase 1 (`ShipRole.IDC` enum addition + 6 `ShipAction` constants) |
-| **H2** | W#53 Phase 1 merged — `KeyFingerprint` additive to `packages/foundation-recovery/` | `find packages/foundation-recovery -name "KeyFingerprint*"` must return ≥1 file | Phase 3a only (`KeyFingerprintDisplay.razor`); Phase 1/2 are NOT gated |
+| **H2** | W#53 Phase 1 merged — `KeyFingerprint` in `packages/foundation/Crypto/` (**not** `foundation-recovery` — cycle-prevention; see PR #633) | `find packages/foundation/Crypto -name "KeyFingerprint*"` must return ≥1 file | Phase 3a only (`KeyFingerprintDisplay.razor`); Phase 1/2 are NOT gated |
 | **H3** | ADR 0068 Status: Accepted (Tenant Security Policy / W#37) — typed `KeyRotationTrigger` available | `grep -l "Status: Accepted" docs/adrs/0068-tenant-security-policy.md` (PR #584 merged 2026-05-05) | Phase 2 only — `PharmacyInventoryEntry.PendingTriggerLabel` upgrade from `string?` to typed `KeyRotationTrigger?`. Phase 1 keeps the `string` shape per ADR 0082 §1 "Phase 2 addition" comment. |
 | **H4** | Security council pre-Phase-2 verification — `IFieldDecryptor` MUST NOT appear in any `ISickBayDataProvider` implementation | Reflection test in Phase 2: `[Fact] SickBayDataProvider_DoesNotReference_IFieldDecryptor()` | Phase 2 (mandatory pre-merge) |
 
@@ -55,7 +55,7 @@ grep -l "IAuditTrail"  packages/kernel-audit/IAuditTrail.cs
 
 # 4. H1 / H2 gate state — note absence is EXPECTED at hand-off authoring time
 ls packages/foundation-ship-common/ 2>/dev/null && echo "H1 cleared" || echo "H1 BLOCKED — wait for W#46 P1 merge"
-find packages/foundation-recovery -name "KeyFingerprint*" 2>/dev/null | head -1 \
+find packages/foundation/Crypto -name "KeyFingerprint*" 2>/dev/null | head -1 \
   && echo "H2 cleared" || echo "H2 BLOCKED — wait for W#53 P1 merge (Phase 3a only)"
 
 # 5. AuditEventType collision sweep (all 11 names MUST be absent)
@@ -618,7 +618,7 @@ All symbols verified on origin/main as of hand-off authoring (2026-05-05):
 | `AuditEventType` | `packages/kernel-audit/AuditEventType.cs` | ✓ |
 | `IAuditTrail` | `packages/kernel-audit/IAuditTrail.cs` | ✓ |
 | `ShipRole`, `IPermissionResolver`, `ShipAction` | `packages/foundation-ship-common/` | **ABSENT** (W#46 Phase 1 not yet built — H1) |
-| `KeyFingerprint` | `packages/foundation-recovery/` | **ABSENT** (W#53 Phase 1 not yet built — H2) |
+| `KeyFingerprint` | `packages/foundation/Crypto/KeyFingerprint.cs` (NOT foundation-recovery — cycle-prevention per PR #633) | **CLEARED** (W#53 Phase 1b merged via PR #633) |
 | `KeyRotationTrigger` | `packages/foundation-recovery/` (per ADR 0068) | **ABSENT** until ADR 0068 Status: Accepted (H3) |
 | `IKeyRotationScheduler` | NEW — introduced by THIS ADR (`Sunfish.Foundation.SickBay`) | net-new in Phase 1 |
 | `IFirstAidSurface` | NEW — introduced by THIS ADR | net-new in Phase 1 |

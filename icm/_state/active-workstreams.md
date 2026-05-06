@@ -470,6 +470,20 @@ this PR). Phases 2+ for each cohort workstream remain. |
 
 ## Last updated
 
+**2026-05-06 (XO: W#57 added + W#54 H2 path correction + W#53 Phase 1 complete confirmation)** —
+XO research session: **W#57 added** at `ready-to-build` — ADR 0065-A1 event-stream contract
+(`StandingOrderAppliedEvent` + `IStandingOrderEventStream`); hand-off at
+`icm/_state/handoffs/wayfinder-adr-0065-a1-event-stream-handoff.md` (PR #632 merged). ~2-3h/1 PR;
+clears W#46 halt-C + W#53 H8. **W#54 H2 path corrected:** `KeyFingerprint` shipped in
+`packages/foundation/Crypto/` (not `foundation-recovery` — W#53 P1b cycle-prevention);
+sick-bay hand-off H2 check updated to `find packages/foundation/Crypto -name "KeyFingerprint*"`.
+**W#53 Phase 1 confirmed complete** (PRs #630 + #633 on origin/main): `IAtlasProvider<T>` +
+`IHelmWidget` + `IHelmWidgetRegistry` + `DefaultHelmWidgetRegistry` + `KeyFingerprint` +
+`IIdentityAtlasSurface` + 8 view-model records. Phase 2 (6 canonical Helm widgets + adapters)
+gates only on Phase 1 merged — fully unblocked. **ADR 0066-A1 confirmed merged** (PR #586
+2026-05-05) — ADR 0066 `status: Accepted`. **ADR 0066-A1** unblocks W#48 Phase 2 + ADR 0068
+Phase 2 prerequisites.
+
 **2026-05-05 (XO: W#49 Stage 06 hand-off authored — OOD Watch Rotation)** — XO research session: W#49 Stage 06 hand-off authored at `icm/_state/handoffs/ood-watch-rotation-stage06-handoff.md` (3 phases, ~6-9h, ~3 PRs). ADR 0078 Accepted via PR #571. **W#49 row flipped `design-in-flight` → `ready-to-build`**. Substrate verification complete on origin/main: `StandingOrder.cs` exists in `foundation-wayfinder`; 3 call-sites identified (`DefaultStandingOrderIssuer.cs`, `StandingOrderShapeTests.cs`, `DefaultAtlasProjectorTests.cs`); binary-compat halt clear (no NuGet binary shipped yet). Key deliverables: Phase 1 (OOD types + audit constants + `StandingOrder.IssuedDuringWatchId` extension); Phase 2 (`DefaultOodWatchService` + `OodWatchExpiryService` + 8 tests); Phase 3 (docs + ledger flip). Pre-merge council + security-engineering subagent canonical for Phases 1+2. W#50 Phase 3b + W#51 Phase 3a are unblocked by W#49 Phase 1 landing.
 
 **2026-05-05 (XO: ADR 0081 Tactical Anomaly Detection authored + W#49/W#50/W#51 CO-acceptance sweep)** — XO research session: **W#52 added** at `design-in-flight` for Tactical Anomaly Detection + Threat-Trigger Surface (ADR 0081). PR #578 carries ADR + council review (32+ Critical/Major NEEDS-AMENDMENT findings all applied same session). Key contracts: `ITacticalRuleEngine` + `ITacticalRule` + `IAlertRouter` + `ISonarStore` + `ILookout` + `ITacticalDataProvider` + `ITacticalCommandService` + `IThreatTriggerService` + `ISystemPrincipalProvider`; `TacticalOptions` 7 fields with normative bounds; 13 `AuditEventType` constants + 7 `ShipAction` constants; `LookoutQuarterdeckAlertSource` (IQuarterdeckAlertSource for Quarterdeck ticker). Two packages: `foundation-tactical` + `blocks-tactical`. **CO acceptance sweep 2026-05-05:** CO merged PRs #571 (ADR 0078/W#49 OOD Watch Rotation) + #572 (ADR 0079/W#50 Engine Room Observability) + #574 (ADR 0080/W#51 Quarterdeck Entry-Point) — all three Accepted. W#49/W#50 rows updated from "awaiting CO acceptance" to Accepted; **W#51 row added** (was missing from ledger — PR #574 had merged but no ledger row existed). All four W#35 cohort ADRs (W#49/W#50/W#51/W#52) now pending Stage 06 hand-off from XO. Queue sequencing: W#49 hand-off first (smallest; ~6-9h / ~3 PRs; unblocks W#50 EOOW wiring and W#51 Phase 3a WatchBanner); W#50 next (~14-18h / ~5 PRs); W#51 next (~14-20h / ~5 PRs); W#52 after CO accepts ADR 0081.
