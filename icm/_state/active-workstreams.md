@@ -104,7 +104,7 @@ ADR 0065 acceptance flip unblocks IStandingOrderEventStream wiring across all co
 | 43 | **ADR 0009 amendment — 5th-concept FeatureManagement consumer of Wayfinder** (`sunfish-api-change` pipeline) — spinoff from W#42 council F4 finding | `built` (PR #576 merged 2026-05-05T15:46:52Z) | sunfish-PM ✓ | `icm/_state/handoffs/wayfinder-feature-provider-stage06-handoff.md` + `docs/adrs/0009-foundation-featuremanagement.md` (Amendment A1 at PR #486) + https://github.com/ctwoodwa/Sunfish/pull/576 (merged) | **Built 2026-05-05 via PR #576.** `WayfinderFeatureProvider` + 2 DI overloads + 8 unit tests + ProjectReference to `foundation-wayfinder`; pre-merge council passed. **Unblocks W#44.** |
 | 44 | **ExtensionFields feature-evaluation hook** (`sunfish-api-change` pipeline) — ADR 0009 follow-up #5; `Sunfish.Foundation.Catalog.ExtensionFields` feature-key gating | `ready-to-build` (ADR 0075 Accepted via PR #567; Stage 06 hand-off authored 2026-05-05; sunfish-PM may begin Phase 1 when COB capacity opens) | sunfish-PM | `icm/_state/handoffs/extension-fields-feature-gate-stage06-handoff.md` + `docs/adrs/0075-extensionfields-feature-evaluation-hook.md` | **ADR 0075 Accepted 2026-05-05 (PR #567). Stage 06 hand-off authored 2026-05-05.** Adds `FeatureGateOffPolicy` enum + `GateState` + `MaterializedExtensionField` + `GetFieldsAsync` overload to `foundation-catalog`; 5 new `AuditEventType` constants in `kernel-audit`; `ExtensionFieldRedactionDeniedException`; `AddExtensionFieldCatalogWithFeatureGating()` DI extension. ~11-15h / 4 PRs. Pre-merge council mandatory (api-change pipeline). W#43 build is NOT a prerequisite for COB to begin W#44 (foundation-catalog does not depend on foundation-wayfinder at build time). |
 | 45 | **Crew Comms** — real-time peer-to-peer crew communication for Anchor (`sunfish-feature-change` pipeline) | `built` (Phase 1 substrate complete 2026-05-05; P4.5 follow-up tracked) | sunfish-PM | `icm/_state/handoffs/foundation-channels-crew-comms-stage06-handoff.md` + `docs/adrs/0076-crew-comms-foundation-channels.md` (+ A1 PR #564 + A2 PR #566 + A3 conformance vectors) | **Phase 1 substrate built 2026-05-05.** PRs: P1 #546 (`foundation-channels` contracts), P2 #557 (`blocks-crew-comms` Protocol/+Crypto/+`KeyPair.Sign`), P3 #560 (`Session/`+`Presence/`+`Signaling/GlareResolver`), P4 #568 (`SessionInitiator`+`SessionListener`+`NativeChannelProvider`+DI+AEAD wrap+integration test), P5 (this PR; Anchor wiring + apps/docs/blocks/crew-comms + WebSocketDuplexStream threading note). Security: Ed25519-signed HELLO + HEARTBEAT; CONFIRM transcript-hash frame; TenantId binding; NSec.Cryptography (X25519 + HKDF + ChaCha20-Poly1305); ChaCha20-Poly1305 AEAD wrap on every post-HELLO frame with role-split nonce (initiator bit-63=0, responder=1); no session resume; capability-subset verification per A2; bounded ListenAsync `Channel(16)` with `Wait` mode + sync `TryWrite` drop-detection. **P4.5 hand-off authored 2026-05-05** at `icm/_state/handoffs/crew-comms-p45-stage06-addendum.md` — 3 PRs, ~4-6h: PR 1 transcript-hash alignment (security; pre-merge council), PR 2 TYPING+DELIVERED (standard review), PR 3 glare-wiring (pre-merge council). **A3 conformance test vectors authored 2026-05-05** (this PR `docs/adr-0076-a3-test-vectors`) — closes A1 council finding F3; 9 vectors (3 HELLO + 3 HEARTBEAT + 3 CONFIRM); generator at `tools/icm/generate-channel-vectors.py`; canonical artifact at `tools/icm/channel-test-vectors.json`; A3 vectors will be consumed as known-answer fixtures by P4.5 PR 1 (transcript-hash alignment). **Cohort batting average for substrate amendments needing council fixes: 24-of-24** (P2 council → 1 Critical + 4 Major; P4 council → 2 Critical + 8 Major). |
-| 46 | **Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2 | `building` (Phase 1 merged 2026-05-06 via PR #622; Phases 2-6 pending) | sunfish-PM | `icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged) | **XO priority recommendation 2026-05-06:** highest-leverage next pickup for COB.
+| 46 | **Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2 | `building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; Phase 2b + Phases 4-6 pending) | sunfish-PM | `icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged) | **XO priority recommendation 2026-05-06:** highest-leverage next pickup for COB.
 Phase 2 onwards unblocks the W#35 Ship Architecture cascade — W#49/W#50/W#51/W#52/W#54/W#55
 all halt-gated on this workstream's design-token + UICore-primitives surface landing on
 origin/main. ADR 0077 Status flip shipped via PR #608 (Proposed → Accepted) clears the
@@ -137,15 +137,21 @@ updated: 28-of-32 substrate amendments needed council fixes.**
 W#54 (Sick Bay Phase 1 H1 cleared; H2 still gated on W#53 P1; H3 on ADR 0068 Accepted).
 W#51 (Quarterdeck) + W#52 (Tactical) gate on W#46 Phase 3 (`ILiveAnnouncer` + `IFocusTrap`).
 
+**Phase 2a merged 2026-05-06 via PR #639.** `foundation-design-tokens` package scaffold +
+baseline `tokens.json` W3C Design Tokens catalog (10 namespace groups: SurfaceColors /
+TextColors / StateColors / RoleBandColors / Typography / Space / Radius / Elevation / Motion /
+TargetSize). Codegen pipeline (Phase 2b) still pending.
+
+**Phase 3 merged 2026-05-06 via PR #645.** `ILiveAnnouncer` + `IFocusTrap` + `LiveRegionPoliteness`
++ `IFormControlContract` + `IFirstAidContract` + `IAccessibilityAuditor` etc. — 18 types across 3
+namespace groups (`UICore.Primitives` / `UICore.FirstAid` / `UICore.Conformance`). **Clears W#51
+Phase 3a + W#52 Phase 3a gates** (confirmed 2026-05-06).
+
 **Remaining phases:**
 
-- **Phase 2** (~6h): `foundation-design-tokens` package + `tokens.json` (W3C Design Tokens)
-  + codegen pipeline (C# + CSS + Markdown) + CI contrast gate. Design-engineering subagent
-  council mandatory.
-- **Phase 3** (~5h): `Sunfish.UICore.Primitives` (`ILiveAnnouncer` / `IFocusTrap` /
-  `IFormControlContract` / `IDiffPreview` / `ISearchAsYouType`) + `Sunfish.UICore.FirstAid`
-  (`IFirstAidContract`) + `Sunfish.UICore.Conformance` (`IConformanceRegistry` +
-  `ConformanceDeclaration`). WCAG/a11y + security subagents mandatory.
+- **Phase 2b** (~3h): codegen pipeline — `tokens.json` → C# const records + CSS custom properties
+  + Markdown reference table + WCAG 1.4.3/1.4.11 contrast CI gate + CVD ΔE2000 audit. Fully
+  specified in hand-off. Design-engineering subagent council mandatory.
 - **Phase 4** (~8h): adapter implementations (Blazor + React + MAUI Win/Mac concrete
   primitives) + a11y harness extension + CI gates. WCAG/a11y subagent mandatory.
 - **Phase 5** (~3h): `apps/docs` + `AddSunfishSharedDesignSystem()` meta-extension + cross-link.
@@ -157,11 +163,22 @@ cache (halt-condition C in hand-off).
 
 **Hard prerequisite for ALL downstream W#35 cohort ADRs** (Quarterdeck / Engine Room /
 Tactical / Sick Bay / Ship's Office / OOD-Watch ✓ already built). |
-| 48 | **Atlas Integration-Config UI Surface** (ADR 0067; W#34 follow-on; `sunfish-feature-change` pipeline) | `ready-to-build` (ADR 0067 Accepted 2026-05-05 via PR #539; Stage 06 hand-off at `icm/_state/handoffs/atlas-integration-config-stage06-handoff.md`; **W#53 Phase 1a merged 2026-05-06 via PR #630 — `IAtlasProvider<T>` now on origin/main; sunfish-PM may begin Phase 1 immediately**) | sunfish-PM | `icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged) + `packages/ui-core/Wayfinder/IAtlasProvider.cs` (W#53 P1a — `IAtlasProvider<T>` substrate landed) | **Hard prerequisites:** ADR 0065 W#42 built ✓; ADR 0066 Stage 06 Phase 1a
-**now landed** (W#53 P1a / PR #630 merged 2026-05-06) — `IAtlasProvider<T>`
-+ Helm widget contract surface on origin/main. **W#48 Phase 1 is no
-longer blocked.** Triple council + re-council mechanical amendments
-applied 2026-05-05.
+| 48 | **Atlas Integration-Config UI Surface** (ADR 0067; W#34 follow-on; `sunfish-feature-change` pipeline) | `building` (Phase 1a shipped 2026-05-06 PR #640; P1.5 PR1 StandingOrderId shipped PR #641; P1.5 PR2 IDecryptCapability shipped PR #642; **Phase 1b NOW UNBLOCKED** — IIntegrationAtlasProvider + IntegrationAtlasView + IDecryptCapabilityProvider + AddSunfishIntegrationAtlas(); Phases 2-5 pending) | sunfish-PM | `icm/_state/handoffs/atlas-integration-config-stage06-handoff.md` + `docs/adrs/0067-atlas-integration-config-surface.md` (PR #539 merged) + `packages/ui-core/Wayfinder/IAtlasProvider.cs` (W#53 P1a — `IAtlasProvider<T>` substrate landed) | **Phase 1a shipped 2026-05-06 PR #640.** 16 files in
+`packages/ui-core/Wayfinder/Integrations/` — enums + CredentialFieldSpec +
+IntegrationProviderSchema + IIntegrationAtlasContext + IIntegrationProviderValidator
++ ICustomIntegrationRenderer + IValidationStatusStore + IIntegrationSchemaProvider
++ IntegrationCapabilityPurposes + IntegrationAtlasContractTests.cs.
+
+**Phase 1.5 COMPLETE 2026-05-06** — both cycle-break moves shipped:
+PR #641 `StandingOrderId` + `AuditRecordId` → `foundation/Assets/Common/`;
+PR #642 `IDecryptCapability` → `foundation/Crypto/`.
+
+**Phase 1b NOW UNBLOCKED** — COB can build `IIntegrationAtlasProvider` +
+`IntegrationAtlasView` + `ActiveProviderSnapshot` + `IDecryptCapabilityProvider` +
+`AddSunfishIntegrationAtlas()` + 4 `AuditEventType` constants + full
+`ContractSurfaceTests`. Hand-off: `atlas-integration-config-stage06-handoff.md`
+§Phase 1 + `atlas-integration-config-p15-cycle-break-handoff.md` §Phase 1b.
+Pre-merge council mandatory.
 
 **`IAtlasProvider<TView>` is invariant** (W#53 P1a council resolution —
 hand-off cited `out TView` but C# CS1961 rejects on `Task<T>` returns).
@@ -600,5 +617,7 @@ hand-off pre-authored at `icm/_state/handoffs/tenant-selection-wsb-stage06-hando
 `TenantSelection?`; gated on ADR 0084 + ADR 0085 Accepted + WS-A built). **W#1 row remains
 `design-in-flight`** — CO must flip both ADR 0084 + ADR 0085 `Status: Proposed → Accepted` before
 COB may begin. PR #637.
+
+**2026-05-06 (XO: W#46 + W#48 workstream status sync — Phase 2a/3 complete; P1a/1.5 complete)** — XO loop maintenance: updated W#46 source file to reflect Phase 2a (PR #639) + Phase 3 (PR #645) merged; Phase 2b (codegen + contrast CI + CVD audit) + Phases 4-6 pending. Updated W#48 source file to reflect Phase 1a (PR #640) + P1.5 both PRs (#641/#642) shipped; Phase 1b NOW UNBLOCKED; status changed from `ready-to-build` → `building`. Also: W#57 workstream source file added in PR #648 (row was lost in render-ledger regeneration; `IStandingOrderEventStream` hand-off now preserved).
 
 **2026-05-04 (XO: W#47 added — W#42 follow-on Anchor MAUI ISystemRequirementsRenderer Stage 06 hand-off authored)** — XO research session: **W#47 added** at `ready-to-build` for the W#42 follow-on Anchor MAUI concrete `ISystemRequirementsRenderer` per CO directive 2026-05-04. Hand-off at `icm/_state/handoffs/foundation-wayfinder-anchor-maui-renderer-stage06-handoff.md` (4,179 words; conforms to ADR 0073 hand-off template contract). 5 phases / 5 PRs / 13–18h sunfish-PM time. Estimate basis cites W#41 Phase 4 + W#42 Phase 4 cohort precedent envelope + `property-leasing-pipeline` Phase 5 UI-surface precedent; ±35% range applied per ADR 0073 first-of-kind estimate-honesty rule. Substrate (W#42 + W#41) is fully shipped on origin/main — `ISystemRequirementsRenderer` interface in `packages/foundation-mission-space/Services/`; `SystemRequirementsResult` + `DimensionEvaluation` in `packages/foundation-mission-space/Models/Requirements.cs`; `OverallVerdict` + `SystemRequirementsRenderMode` + `DimensionPolicyKind` + `DimensionPassFail` in `packages/foundation-mission-space/Models/RequirementsEnums.cs`; 5 audit event types (`MinimumSpecEvaluated` / `InstallBlocked` / `InstallWarned` / `PostInstallSpecRegression` / `InstallForceEnabled`) in `packages/kernel-audit/AuditEventType.cs`. Anchor architecture confirmed as **MAUI Blazor Hybrid** (`<UseMaui>true</UseMaui>` + `AddMauiBlazorWebView()`); renderer ships as Razor components, not pure XAML. Renders all three modes (`PreInstallFullPage` Phase 1 / `PostInstallInlineExplanation` Phase 2 / `PostInstallRegressionBanner` Phase 3) with WCAG 2.2 AA + EN 301 549 v3.2.1 baseline established Phase 4 via `Sunfish.UIAdapters.Blazor.A11y` harness on Win + MacCatalyst (iOS / Android deferred per ADR 0048-A1 mobile-scope gate). Pre-merge council canonical (4-perspective + WCAG/a11y subagent before EVERY UI-bearing phase per ADR 0065 §Decision §7 mandate; cohort batting average 22-of-22). 7 halt-conditions named including substrate-prereq verification, ledger sanity, WCAG/a11y subagent canonical, MAUI version compatibility, Win+MacCatalyst-only Phase-4 scope, audit-double-emission discipline (renderer MUST NOT emit audit; resolver does), and `IMinimumSpecResolver` scoping respecting `IActiveTeamAccessor` per ADR 0032. Bridge React + iOS SwiftUI + Android-native renderers remain queued as future per-adapter Stage 06 hand-offs. **Next-up XO author work after this lands:** W#43 ADR 0009 amendment council; W#33 §7.2 follow-on cohort (ADR 0028-A5 cross-form-factor migration); W#34/W#35 follow-on ADRs queue (~5 ADRs, ~70-100h XO).

@@ -4,7 +4,7 @@ number: 46
 slug: shared-design-system-load-bearing-w-35-ship-architecture-fol
 title: "**Shared Design System** (ADR 0077; `sunfish-feature-change` pipeline) — load-bearing W#35 Ship Architecture follow-on; sequences first per W#35 §9.2"
 status: "building"
-status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phases 2-6 pending)"
+status_cell: "`building` (Phase 1 merged 2026-05-06 via PR #622; Phase 2a merged 2026-05-06 via PR #639; Phase 3 merged 2026-05-06 via PR #645; Phase 2b + Phases 4-6 pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/shared-design-system-stage06-handoff.md` + `docs/adrs/0077-shared-design-system.md` (PR #543 merged) + `packages/foundation-ship-common/` (P1 merged)"
@@ -45,15 +45,21 @@ updated: 28-of-32 substrate amendments needed council fixes.**
 W#54 (Sick Bay Phase 1 H1 cleared; H2 still gated on W#53 P1; H3 on ADR 0068 Accepted).
 W#51 (Quarterdeck) + W#52 (Tactical) gate on W#46 Phase 3 (`ILiveAnnouncer` + `IFocusTrap`).
 
+**Phase 2a merged 2026-05-06 via PR #639.** `foundation-design-tokens` package scaffold +
+baseline `tokens.json` W3C Design Tokens catalog (10 namespace groups: SurfaceColors /
+TextColors / StateColors / RoleBandColors / Typography / Space / Radius / Elevation / Motion /
+TargetSize). Codegen pipeline (Phase 2b) still pending.
+
+**Phase 3 merged 2026-05-06 via PR #645.** `ILiveAnnouncer` + `IFocusTrap` + `LiveRegionPoliteness`
++ `IFormControlContract` + `IFirstAidContract` + `IAccessibilityAuditor` etc. — 18 types across 3
+namespace groups (`UICore.Primitives` / `UICore.FirstAid` / `UICore.Conformance`). **Clears W#51
+Phase 3a + W#52 Phase 3a gates** (confirmed 2026-05-06).
+
 **Remaining phases:**
 
-- **Phase 2** (~6h): `foundation-design-tokens` package + `tokens.json` (W3C Design Tokens)
-  + codegen pipeline (C# + CSS + Markdown) + CI contrast gate. Design-engineering subagent
-  council mandatory.
-- **Phase 3** (~5h): `Sunfish.UICore.Primitives` (`ILiveAnnouncer` / `IFocusTrap` /
-  `IFormControlContract` / `IDiffPreview` / `ISearchAsYouType`) + `Sunfish.UICore.FirstAid`
-  (`IFirstAidContract`) + `Sunfish.UICore.Conformance` (`IConformanceRegistry` +
-  `ConformanceDeclaration`). WCAG/a11y + security subagents mandatory.
+- **Phase 2b** (~3h): codegen pipeline — `tokens.json` → C# const records + CSS custom properties
+  + Markdown reference table + WCAG 1.4.3/1.4.11 contrast CI gate + CVD ΔE2000 audit. Fully
+  specified in hand-off. Design-engineering subagent council mandatory.
 - **Phase 4** (~8h): adapter implementations (Blazor + React + MAUI Win/Mac concrete
   primitives) + a11y harness extension + CI gates. WCAG/a11y subagent mandatory.
 - **Phase 5** (~3h): `apps/docs` + `AddSunfishSharedDesignSystem()` meta-extension + cross-link.
