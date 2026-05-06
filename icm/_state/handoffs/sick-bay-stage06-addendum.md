@@ -196,54 +196,32 @@ private static AtmosphereHealth DeriveOverallHealth(int warning, int critical, b
 
 `ForceEnableActive` is wired to a stub `false` for Phase 2b. A future amendment will inject `IFeatureForceEnableSurface` + the registered feature-keys list and replace the `false` with a real resolution. This is documented in ADR 0082 §A1.2.3.
 
-### 2.5 Implement `BuildLab`
+### 2.5 Lab projection — deferred to Amendment A2
+
+**Lab projection is NOT part of Phase 2b.** Council (PR #701, HA2 Path B) rejected the
+`DegradationKind.AdvisoryCaveat` fallback as a §Trust violation: synthesizing a degradation
+taxon not present in source data is the same class of misleading-success defect that A1.3
+(`AtmosphereHealth.Unknown`) and A1.4 (`NoopKeyRotationScheduler` guidance) reject.
+
+Phase 2b's `BuildSnapshotAsync` returns `Array.Empty<LabDiagnosticResult>()` for the Lab list:
 
 ```csharp
-private static IReadOnlyList<LabDiagnosticResult> BuildLab(
-    MissionEnvelope envelope,
-    DateTimeOffset capturedAt)
-{
-    // One LabDiagnosticResult per dimension; DimensionId is the kebab-case
-    // dimension name (matching ADR 0062 DimensionChangeKind enum members).
-    return
-    [
-        BuildLabResult("hardware",       envelope.Hardware.ProbeStatus,        capturedAt),
-        BuildLabResult("user",           envelope.User.ProbeStatus,            capturedAt),
-        BuildLabResult("regulatory",     envelope.Regulatory.ProbeStatus,      capturedAt),
-        BuildLabResult("runtime",        envelope.Runtime.ProbeStatus,         capturedAt),
-        BuildLabResult("form-factor",    envelope.FormFactor.ProbeStatus,      capturedAt),
-        BuildLabResult("edition",        envelope.Edition.ProbeStatus,         capturedAt),
-        BuildLabResult("network",        envelope.Network.ProbeStatus,         capturedAt),
-        BuildLabResult("trust-anchor",   envelope.TrustAnchor.ProbeStatus,     capturedAt),
-        BuildLabResult("sync-state",     envelope.SyncState.ProbeStatus,       capturedAt),
-        BuildLabResult("version-vector", envelope.VersionVector.ProbeStatus,   capturedAt),
-    ];
-}
-
-private static LabDiagnosticResult BuildLabResult(
-    string dimensionId, ProbeStatus status, DateTimeOffset capturedAt)
-{
-    // ADR 0082 A1.8 implementation note: the LabDiagnosticResult.Degradation
-    // field is populated from a feature-verdict projection. For Phase 2b, default
-    // to AdvisoryCaveat (least severe). A follow-up amendment may widen
-    // LabDiagnosticResult.Degradation to DegradationKind? if council disposes (HA2).
-    return new LabDiagnosticResult
-    {
-        ProbeName        = dimensionId,
-        DimensionId      = dimensionId,
-        Status           = status,
-        Degradation      = DegradationKind.AdvisoryCaveat,
-        LastRunAt        = NodaTime.Instant.FromDateTimeOffset(capturedAt),
-        DiagnosticDetail = null,
-    };
-}
+var lab = Array.Empty<LabDiagnosticResult>();
+// Lab projection deferred to Phase 2c (post-Amendment A2).
+// Amendment A2 will widen LabDiagnosticResult.Degradation to DegradationKind?
+// (nullable) so that "not-yet-evaluated" is represented as null, mirroring
+// the AtmosphereHealth.Unknown sentinel pattern from A1.3.
 ```
 
-Phase 2b ships the lab projection without a feature-verdict cross-walk; that wiring (most-severe-FeatureVerdict-DegradationKind whose `ContributingDimensions` includes the dimension) is **deferred** to Phase 3a or a follow-up amendment per ADR 0082 §A1.8 implementation note. The default `AdvisoryCaveat` is the least-severe `DegradationKind`; it's a safe default for read-model display.
+The Phase 2c implementation (post-A2) will:
+- Use constructor-style invocation (positional record — no object-initializer syntax):
+  `new LabDiagnosticResult(dimensionId, dimensionId, status, null, capturedAt, null)`
+- Use `DateTimeOffset capturedAt` directly for `LastRunAt` (NOT `NodaTime.Instant` —
+  cohort precedent W#46/W#49/W#50/W#54/W#55: `DateTimeOffset` over NodaTime per ADR 0082 line 360)
 
 ### 2.6 Update `BuildSnapshot` and `GetSnapshotAsync`
 
-Replace the synchronous `BuildSnapshot()` with an async `BuildSnapshotAsync(ct)` that awaits `BuildAtmosphereAsync` and uses its `MissionEnvelope` to feed `BuildLab`:
+Replace the synchronous `BuildSnapshot()` with an async `BuildSnapshotAsync(ct)` that awaits the envelope once and uses it for `BuildAtmosphereFromEnvelope` (Lab projection deferred to Phase 2c per HA2 Path B):
 
 ```csharp
 public async Task<SickBaySnapshot> GetSnapshotAsync(
@@ -273,9 +251,9 @@ private async ValueTask<SickBaySnapshot> BuildSnapshotAsync(CancellationToken ct
         ? BuildAtmosphereUnknown(capturedAt)
         : BuildAtmosphereFromEnvelope(envelope, capturedAt);
 
-    var lab = envelope is null
-        ? Array.Empty<LabDiagnosticResult>()
-        : BuildLab(envelope, capturedAt);
+    // Lab projection deferred to Phase 2c (post-Amendment A2) per HA2 Path B.
+    // A2 widens LabDiagnosticResult.Degradation to DegradationKind? (nullable).
+    var lab = Array.Empty<LabDiagnosticResult>();
 
     return new SickBaySnapshot(
         Pharmacy:     BuildPharmacy(capturedAt),
@@ -345,8 +323,9 @@ SickBayDataProviderTests (additions; existing tests preserved):
   [Fact] BuildAtmosphere_returns_Red_on_three_Failed_probes
   [Fact] BuildAtmosphere_returns_Orange_when_ForceEnableActive_stub_true
     (deferred: until A1.2.3 wires force-enable; Phase 2b stubs false)
-  [Fact] BuildLab_emits_one_result_per_dimension_with_kebab_case_DimensionId
-  [Fact] BuildLab_status_mirrors_dimension_ProbeStatus
+  [Fact] BuildAtmosphere_returns_derived_when_envelope_returns_synchronously
+    (pins the no-flicker invariant: when ValueTask resolves synchronously, first snapshot
+     has derived health and Unknown is never emitted — per council MIN4 / §7 hand-off note)
   [Fact] GetSnapshotAsync_uses_single_envelope_read_per_invocation
   [Fact] SubscribeSnapshotAsync_re_emits_on_IMissionEnvelopeObserver_change
   [Fact] SubscribeSnapshotAsync_unsubscribes_on_cancellation
@@ -365,7 +344,7 @@ The H4 reflection test from PR #695 remains in place and continues to pass — P
 | Halt | Action |
 |---|---|
 | **HA1** (ADR 0082 A1.10) — ADR 0082 A1 not yet `Status: Accepted` on origin/main | Wait. Phase 2b PR may NOT auto-merge until A1 is Accepted. (Auto-merge gated by ADR 0069 D1 anyway; this is operational reinforcement.) |
-| **HA2** (ADR 0082 A1.10) — pre-merge council rejects the `LabDiagnosticResult.Degradation` `AdvisoryCaveat` default projection | Drop the Lab projection from this PR; ship Atmosphere + Unknown sentinel + Noop guidance only. File a follow-up amendment widening `LabDiagnosticResult.Degradation` to `DegradationKind?`. |
+| **HA2 — RESOLVED Path B** | Lab projection is deferred to Phase 2c (post-Amendment A2). Phase 2b ships `Array.Empty<LabDiagnosticResult>()`. Amendment A2 widens `LabDiagnosticResult.Degradation` to `DegradationKind?`. No action needed by COB for Phase 2b. |
 | **Cycle in csproj graph** — adding ProjectReference `foundation-mission-space` to `Sunfish.Blocks.SickBay.csproj` introduces a cycle | HALT. Verify `foundation-mission-space` does NOT depend (transitively) on `foundation-sick-bay` (verified at addendum-time; recheck before PR build). |
 
 ---
@@ -390,5 +369,6 @@ The H4 reflection test from PR #695 remains in place and continues to pass — P
 | §2.4 NoopKeyRotationScheduler | Phase 2 ships it (per PR #695); Phase 2b makes registration host-opt-in via `SickBayOptions.RegisterNoopKeyRotationScheduler` |
 | §2.6 Phase 2 tests | Phase 2 reflection test + minimal pharmacy tests already shipped in PR #695; Phase 2b adds the test list in §3 above |
 | §2.7 Phase 2 halt H2.A | RESOLVED by this addendum's §1 |
+| Phase 3a Blazor — `AtmosphereHealth.Unknown` WCAG tests | Phase 3a hand-off must add two Bunit component tests per council MIN2: `AtmosphereHealth_Unknown_renders_aria_live_polite_region` + `AtmosphereHealth_Unknown_renders_non_color_marker_OR_text_label`. Both verify the SC 1.4.1 + SC 4.1.3 contract from ADR 0082 §8 for the Unknown state badge. |
 
 The original hand-off remains the canonical Phase 1 + Phase 3a + Phase 3b + Phase 4 + Phase 5 spec; Phase 2 is closed by PR #695; Phase 2b is specified by this addendum.

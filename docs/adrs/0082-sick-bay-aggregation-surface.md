@@ -592,6 +592,11 @@ NOT ship until each is verified by the WCAG/a11y council subagent:
 
 ### Trust impact / Security & privacy
 
+- **Atmosphere is host-scoped, not tenant-scoped.** `AtmosphereReadout` reflects the host
+  process's Mission Envelope. In multi-tenant hosted deployments (Bridge / Zone C), ALL tenants
+  sharing the host see the same Atmosphere readout. UI surfaces MUST label scope explicitly per
+  §A1.5; back-end consumers MUST NOT cache Atmosphere by tenant key (any tenant cache flush would
+  not invalidate cross-tenant readouts).
 - **Pharmacy read-model posture.** `ISickBayDataProvider` MUST NOT call `IFieldDecryptor`.
   The Pharmacy inventory shows metadata (purpose, count, rotation status) only.
   Any implementation that exposes decrypted field values or raw ciphertext is a
@@ -981,7 +986,9 @@ public enum AtmosphereHealth
 
 **Anchor + Bridge wiring (Phase 4 of ADR 0082):** `AddSunfishSickBayDefaults` (per cohort `AddSunfishXDefaults` convention) MUST register `NoopKeyRotationScheduler` only when the consumer explicitly opts in (e.g., a `SickBayOptions.RegisterNoopKeyRotationScheduler` flag, default `false`). This makes the Phase 2 stub posture a deliberate host decision, not a default-on hazard. The hand-off addendum (Phase 2b) specifies the option-flag wiring.
 
-**`SickBayMedevacSelfApprovalRejected` audit-event analogy:** ADR 0082 §6 already names this audit event. Its precedent — explicit audit emission for a rejected operation — is mirrored here by recommendation only, not by a new audit event: scheduling a Noop does NOT emit a new audit event; the existing `SickBayKeyRotationTriggered` (which Phase 3b's real `SickBayCommandService` emits before calling `IKeyRotationScheduler.ScheduleAsync`) is sufficient. Phase 2 hosts that surface `TriggerKeyRotation` MUST disable the affordance (per the §Trust bullet above), so no audit event is emitted in the misleading-success path.
+**No new audit event for Noop scheduling.** Scheduling a Noop produces no observable effect, so there is no rejected-operation event to emit (compare `SickBayMedevacSelfApprovalRejected`, which records a real rejected medevac decision — a four-eyes guard that the system has actively evaluated). Phase 2 hosts that opt into Noop registration MUST disable the `TriggerKeyRotation` UI affordance per the §Trust bullet above; the existing `SickBayKeyRotationTriggered` audit event ships in Phase 3b when the real `IKeyRotationScheduler` lands and is wired ahead of `IKeyRotationScheduler.ScheduleAsync`.
+
+**Residual risk (known v1 limitation):** the opt-in flag converts "silent default registration" to "explicit registration via flag," but a host operator setting `options.RegisterNoopKeyRotationScheduler = true` without reading the §Trust bullet above still produces a misleading-success outcome. This is a known v1 limitation. The long-term mitigation is a Roslyn analyzer that warns when `RegisterNoopKeyRotationScheduler = true` and the host registers any UI surface that emits `SickBayKeyRotationTriggered` audit events (or a `TriggerKeyRotation` ShipAction handler); that analyzer is out of scope for Phase 2b and is flagged as a future work item for a Phase 3a or analyzer-ADR follow-on.
 
 ### A1.5 — Scoping note: Atmosphere is host-scoped (process-level), not tenant-scoped
 
@@ -1011,7 +1018,7 @@ No other new types. No removed types. Phase 2b's `BuildAtmosphere` projection lo
 - `IMissionEnvelopeProvider.GetCurrentAsync(CancellationToken)` — `packages/foundation-mission-space/Services/Contracts.cs:51` ✓ (returns `ValueTask<MissionEnvelope>`).
 - `IMissionEnvelopeObserver` — `packages/foundation-mission-space/Services/Contracts.cs:35` ✓.
 - `MissionEnvelope` — `packages/foundation-mission-space/Models/MissionEnvelope.cs:13` ✓ (sealed record; ten dimension properties + `SnapshotAt` + `EnvelopeHash`).
-- The ten dimension records — `packages/foundation-mission-space/Models/Dimensions/Dimensions.cs` — verified each carries a `ProbeStatus` field: `HardwareCapabilities` (line 30), `UserCapabilities` (line 47), `RegulatoryCapabilities` (line 62), `RuntimeCapabilities` (line 82), `EditionCapabilities` (line 99), `NetworkCapabilities` (line 121), `TrustAnchorCapabilities` (line 135), `SyncStateSnapshot` (line 153), `FormFactorSnapshot` (line 164), `VersionVectorSnapshot` (line 175). All ten ✓.
+- The ten dimension records — `packages/foundation-mission-space/Models/Dimensions/Dimensions.cs` — verified each carries a `ProbeStatus` field: `HardwareCapabilities` (line 30), `UserCapabilities` (line 47), `RegulatoryCapabilities` (line 62), `RuntimeCapabilities` (line 82), `FormFactorSnapshot` (line 164), `EditionCapabilities` (line 99), `NetworkCapabilities` (line 121), `TrustAnchorCapabilities` (line 135), `SyncStateSnapshot` (line 153), `VersionVectorSnapshot` (line 175). All ten ✓. (Ordered to match `MissionEnvelope` property declaration order: Hardware, User, Regulatory, Runtime, FormFactor, Edition, Network, TrustAnchor, SyncState, VersionVector.)
 - `ProbeStatus` enum — `packages/foundation-mission-space/Models/Enums.cs:48–55` ✓ (five values: `Healthy`, `Stale`, `Failed`, `PartiallyDegraded`, `Unreachable`).
 - `IFeatureForceEnableSurface.ResolveAsync` — `packages/foundation-mission-space/Services/Contracts.cs:45` ✓.
 - `AtmosphereHealth` enum (Phase 1 four values) — `packages/foundation-sick-bay/AtmosphereHealth.cs:11–24` ✓.
@@ -1046,9 +1053,14 @@ Phase 2b is a new sub-phase in ADR 0082's §9 phase table — slotted between Ph
 - [ ] Update `packages/blocks-sick-bay/SickBayDataProvider.cs` `BuildAtmosphereStub` to return `AtmosphereHealth.Unknown` until the real provider is wired (this is a one-line stub fix; the real projection lands in the same PR via `BuildAtmosphere` below).
 - [ ] Inject `IMissionEnvelopeProvider` into `SickBayDataProvider` (constructor parameter; nullable for backward-compat with Phase 2 tests until the test fixture is updated in the same PR).
 - [ ] Implement `BuildAtmosphereAsync(MissionEnvelope envelope, DateTimeOffset capturedAt)` per §A1.2.1 + §A1.2.2 projection rules. Materialize once per `GetSnapshotAsync` invocation; do NOT call `GetCurrentAsync` more than once per snapshot.
-- [ ] Implement `BuildLab(MissionEnvelope envelope, DateTimeOffset capturedAt)` per the original ADR §1: one `LabDiagnosticResult` per dimension (10 entries), with `DimensionId` = the kebab-case dimension name (`hardware`, `user`, `regulatory`, ...), `Status` = the dimension's `ProbeStatus`, `Degradation` field — see implementation note below.
-
-  > **Lab `Degradation` field:** the Phase 1 `LabDiagnosticResult` shape includes `DegradationKind Degradation { get; init; }` per ADR 0082 §1. Mission Envelope's per-dimension records do NOT carry `DegradationKind` (it lives on `FeatureVerdict`). For Phase 2b, `LabDiagnosticResult.Degradation` is populated from the **most-severe** `FeatureVerdict.DegradationKind` whose `ContributingDimensions` includes the dimension being projected; if no feature verdict references the dimension, default to `DegradationKind.AdvisoryCaveat` (least severe, per ADR 0062 A1.2 ordering). The lab tab is a read-model surface — this projection is informational, not authoritative for feature-availability decisions. ADR 0082 council may push back on this projection; if so, the alternative is to add a nullable `DegradationKind?` to `LabDiagnosticResult` in a separate amendment. Phase 2b ships the most-severe-projection by default; the addendum specifies the fallback for council disposition.
+- [ ] **Lab projection deferred to Amendment A2.** Phase 2b ships `BuildSnapshotAsync` returning
+  `Array.Empty<LabDiagnosticResult>()` for the Lab list, with a code comment pointing at Amendment A2.
+  **Rationale (council HA2 Path B disposition):** synthesizing `DegradationKind.AdvisoryCaveat` from
+  per-dimension `ProbeStatus` data that contains no `DegradationKind` is the same §Trust failure class
+  that A1.3 + A1.4 reject — a dashboard surface MUST NOT synthesize a taxon not present in source data.
+  Amendment A2 will widen `LabDiagnosticResult.Degradation` to `DegradationKind?` (nullable) and spec
+  the full projection in Phase 2c (post-A2). Phase 2b ships Atmosphere + Unknown sentinel + Noop opt-in
+  only.
 
 - [ ] Wire `IMissionEnvelopeObserver.Subscribe` in `SubscribeSnapshotAsync` so envelope changes drive snapshot re-emission (replacing the current "emit-once-then-poll" stub). Coalesce concurrent change-events (debounce ~250ms) to avoid flapping during multi-dimension probe runs.
 - [ ] Add a `SickBayOptions.RegisterNoopKeyRotationScheduler` boolean flag (default `false`). `AddSunfishSickBayDefaults` registers `NoopKeyRotationScheduler` only when this flag is `true`; otherwise `IKeyRotationScheduler` is left unregistered (DI resolution failure surfaces to the caller).
@@ -1060,7 +1072,6 @@ Phase 2b is a new sub-phase in ADR 0082's §9 phase table — slotted between Ph
   - `BuildAtmosphere_returns_Red_on_three_Failed_probes` — fixture with Hardware/Network/Runtime Failed
   - `BuildAtmosphere_returns_Orange_when_ForceEnableActive` — fixture all Healthy + `ForceEnableActive = true` → expect `Orange` (escalation)
   - `BuildAtmosphere_returns_Unknown_when_provider_not_wired` — null provider injection (or provider throwing) → expect `Unknown`
-  - `BuildLab_emits_one_result_per_dimension` — fixture with 10 dimensions → 10 `LabDiagnosticResult` entries with kebab-case `DimensionId`
   - `SubscribeSnapshotAsync_re_emits_on_IMissionEnvelopeObserver_change` — observer-driven invalidation
   - `AddSunfishSickBayDefaults_does_not_register_NoopKeyRotationScheduler_by_default` — verify DI resolution fails for `IKeyRotationScheduler` unless flag is set
 - [ ] Pre-merge council: standard adversarial (per ADR 0069 D1). Auto-merge NOT enabled until verdict received.
@@ -1076,4 +1087,9 @@ Phase 2b is a new sub-phase in ADR 0082's §9 phase table — slotted between Ph
 ### A1.10 — Halt-conditions specific to A1
 
 - **(HA1)** This amendment must reach `Status: Accepted` on `origin/main` before Phase 2b PR may auto-merge. (Auto-merge is gated by ADR 0069 D1 anyway; this is operational reinforcement.)
-- **(HA2)** If pre-merge council finds the `LabDiagnosticResult.Degradation` "most-severe-FeatureVerdict-projection" rule (§A1.8 implementation note) untrustworthy, halt Phase 2b and ship a follow-up amendment widening `LabDiagnosticResult.Degradation` to `DegradationKind?` (nullable). Phase 2b's other deliverables (Atmosphere projection + Unknown sentinel + Noop guidance) are independent and can ship in a smaller-scope PR.
+- **(HA2 — RESOLVED Path B)** Pre-merge council (PR #701) rejected the `DegradationKind.AdvisoryCaveat`
+  fallback for `LabDiagnosticResult.Degradation` as a §Trust violation (same class as A1.3 + A1.4):
+  synthesizing a taxon not present in source data is a misleading-success defect. **Path B disposition:**
+  Lab projection is deferred to Amendment A2, which will widen `LabDiagnosticResult.Degradation` to
+  `DegradationKind?` (nullable). Phase 2b ships Atmosphere + Unknown sentinel + Noop opt-in only;
+  Phase 2c (post-A2) ships the Lab projection per the nullable contract.
