@@ -1,19 +1,18 @@
 ---
 type: directive
 workstream-or-chapter: multi-workstream — post-session-13 priority queue
-last-pr: "701 (W#52 Phase 2b/2c split ruling)"
+last-pr: "702 (W#52 split ruling + directive update)"
 ---
 
-Updated 2026-05-06 (session 17):
-- ADR 0082-A1 merged via PR #699; AtmosphereHealth.Unknown in production
-- W#52 Phase 2a (DefaultAlertRouter, PR #697) — security council CLEARED; auto-merge enabled.
-  Security council XOR guard amendment applied (commit e55a13db). Split ruling filed:
-  Phase 2b = DefaultTacticalRuleEngine; Phase 2c = DefaultThreatTriggerService.
-  Both have security-engineering subagent mandatory. Ruling at
-  `xo-ruling-2026-05-06T20-30Z-w52-phase2b-2c-split.md`.
-- PR #700 (COB's ADR 0082-A1 addendum) will conflict with #699 on ADR file + beacon archive;
-  see comment on PR #700 — COB must rebase and retain only sick-bay-stage06-addendum.md
-  + W54 source file + ledger flip.
+Updated 2026-05-06 (session 18 — housekeeping):
+- PR #697 MERGED — W#52 Phase 2a (DefaultAlertRouter) on origin/main.
+- PR #702 MERGED — W#52 split ruling + this directive update on origin/main.
+- PR #699 MERGED — ADR 0082-A1 (AtmosphereHealth.Unknown) on origin/main.
+- PR #700 (COB's ADR 0082-A1 addendum) — still open, needs rebase. PR #699 already
+  landed the ADR changes. COB must rebase, drop the ADR + beacon conflicts, and retain
+  only: sick-bay-stage06-addendum.md + W54 W*.md source + ledger flip.
+- W#52 COB question beacon archived (answered by ruling at T20-30Z).
+- Superseded T17-31Z W#50 store-placement ruling archived (superseded by T20-00Z).
 
 ## COB Priority Queue (post-session-17)
 
@@ -80,5 +79,9 @@ Updated 2026-05-06 (session 17):
   Bridge JSON endpoint + React renderer). Hand-off at
   `foundation-wayfinder-bridge-react-renderer-stage06-handoff.md`. (~14-19h / 5 PRs;
   WCAG/a11y subagent mandatory before every UI-bearing phase)
+- **W#45 P4.5** — Crew Comms follow-up: transcript-hash alignment (SECURITY — closes
+  relay-MitM capability-downgrade vector per A1+A2) + TYPING indicator + DELIVERED ack +
+  glare-wiring. Hand-off at `crew-comms-p45-stage06-addendum.md`. (~4-6h / 3 PRs;
+  PR 1 + PR 3 require pre-merge security council; PR 2 standard review.)
 
 Cap concurrent PRs at 3.
