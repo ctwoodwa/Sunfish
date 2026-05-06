@@ -4,7 +4,7 @@ number: 53
 slug: helm-identity-atlas-surface-stage-06-build-of-load-bearing-p
 title: "**Helm + Identity Atlas Surface** (ADR 0066; W#34 follow-on; `sunfish-feature-change` pipeline) — Stage 06 build of `IHelmWidget` + `IHelmWidgetRegistry` + `IAtlasProvider<T>` + `IIdentityAtlasSurface`; **load-bearing prerequisite for W#48 Phase 1**"
 status: "building"
-status_cell: "`building` (Phase 1 fully merged 2026-05-06 via PR #630 + #633 — `IAtlasProvider<T>` + Helm widget contract surface + KeyFingerprint + IIdentityAtlasSurface + 8 view-model records on origin/main; Phase 2 pending — 6 canonical Helm widgets + Blazor/React adapter renderers)"
+status_cell: "`building` (Phase 1 fully merged 2026-05-06 via PR #630 + #633; Phase 2 PR 2a merged 2026-05-06 PR #663 — 4 GlanceBand widgets (IdentityGlance + SyncState + ActiveTeam + MissionEnvelopeSummary) on origin/main; **H8 cleared** W#57 shipped PR #662; remaining: QuickTogglesWidget + RecentStandingOrdersWidget + Blazor/React adapter renderers; Phases 3-deferred pending)"
 owner: "sunfish-PM"
 owner_cell: "sunfish-PM"
 reference_cell: "`icm/_state/handoffs/helm-identity-atlas-stage06-handoff.md` + `docs/adrs/0066-helm-composition-and-identity-atlas-surface.md` (PR #529 merged) + `packages/ui-core/Wayfinder/` (P1 merged)"
@@ -69,9 +69,18 @@ cleanest substrate landings.
 **W#48 unblocked** by P1a (PR #630 merged 2026-05-06); ready for COB
 pickup.
 
-**Phase 2 remaining** (~12-19h, 3-4 PRs; now unblocked by Phase 1
-fully landed):
-- 6 canonical Helm widgets + Blazor/React adapter renderers + WCAG
-  tests. Pre-merge WCAG/a11y subagent mandatory.
+**Phase 2 PR 2a shipped 2026-05-06 PR #663.** 4 GlanceBand widgets on origin/main:
+`IdentityGlanceWidget` (orderHint 100) + `SyncStateWidget` (200) +
+`ActiveTeamWidget` (300) + `MissionEnvelopeSummaryWidget` (400).
+
+**H8 CLEARED 2026-05-06** — W#57 (PR #662) shipped `IStandingOrderEventStream`.
+`QuickTogglesWidget` + `RecentStandingOrdersWidget` no longer need H8 periodic-fallback
+workaround; full reactive subscribe-before-load is available.
+
+**Phase 2 remaining** (~6-10h, 2 PRs):
+- PR 2b: `QuickTogglesWidget` (ActionStack, orderHint 100) + `RecentStandingOrdersWidget`
+  (ActivityFeed, orderHint 100) + Blazor adapter renderers.
+- PR 2c: React adapter renderers + WCAG tests.
+  Pre-merge WCAG/a11y subagent mandatory for all remaining Phase 2 PRs.
 
 **Phase 3 deferred** to W#54 (identity Atlas implementations).
